@@ -878,7 +878,6 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty(&&_Array)[_Size
 }
 #endif // _HAS_CXX20
 
-// TUPLE INTERFACE TO array
 template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty& get(array<_Ty, _Size>& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");

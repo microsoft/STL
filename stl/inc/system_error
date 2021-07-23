@@ -385,7 +385,6 @@ _NODISCARD inline bool error_category::equivalent(const error_code& _Code, int _
     return *this == _Code.category() && _Code.value() == _Errval;
 }
 
-// MEMBER FUNCTIONS for error_code
 _NODISCARD inline error_condition error_code::default_error_condition() const noexcept {
     // make error_condition for error code
     return category().default_error_condition(value());

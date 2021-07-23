@@ -233,7 +233,6 @@ void _Run_chunked_parallel_work(const size_t _Hw_threads, _Work& _Operation) {
     _Run_available_chunked_work(_Operation);
 }
 
-// CHUNK CALCULATION FUNCTIONS
 // The parallel algorithms library below assumes that distance(first, last) fits into a size_t;
 // forward iterators must refer to objects in memory and therefore must meet this requirement.
 //

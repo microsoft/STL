@@ -106,7 +106,6 @@ public:
 };
 #endif // _M_CEE
 
-// LOCK PROPERTIES
 struct adopt_lock_t { // indicates adopt lock
     explicit adopt_lock_t() = default;
 };

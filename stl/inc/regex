@@ -1175,7 +1175,6 @@ _NODISCARD bool operator!=(const match_results<_BidIt, _Alloc>& _Left, const mat
 }
 #endif // !_HAS_CXX20
 
-// NFA PROPERTIES
 const unsigned int _BRE_MAX_GRP = 9U;
 
 const unsigned int _Bmp_max   = 256U; // must fit in an unsigned int
@@ -4538,7 +4537,6 @@ _Parser<_FwdIt, _Elem, _RxTraits>::_Parser(
     : _Pat(_Pfirst), _Begin(_Pfirst), _End(_Plast), _Grp_idx(0), _Disj_count(0), _Finished_grps(0), _Nfa(_Tr, _Fx),
       _Traits(_Tr), _Flags(_Fx) {
 
-    // PARSER LANGUAGE FLAGS
     constexpr unsigned int _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_grp | _L_asrt_gen
                                        | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni | _L_esc_hex | _L_esc_bsl
                                        | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl | _L_bzr_chr | _L_grp_esc | _L_ident_ECMA
