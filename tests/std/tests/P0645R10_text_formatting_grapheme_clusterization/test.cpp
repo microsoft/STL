@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <assert.h>
 #include <format>
 #include <string_view>
@@ -42,25 +43,19 @@ constexpr bool test_unicode_properties() {
 
 template <typename CharT, size_t N_enc, size_t N_dec>
 constexpr void test_utf_decode_helper(const CharT (&encoded)[N_enc], const char32_t (&decoded)[N_dec]) {
-    static_assert(_Is_any_of_v<CharT, unsigned char, wchar_t>);
-    const CharT* it = begin(encoded);
-    for (size_t i = 0; i < N_dec; ++i) {
-        char32_t val = 0;
-        it           = _Decode_utf(it, end(encoded), val);
-        assert(val == decoded[i]);
-    }
-    assert(it == end(encoded));
+    static_assert(_Is_any_of_v<CharT, char, wchar_t>);
+    assert(ranges::equal(_Unicode_codepoint_iterator(encoded, encoded + N_enc), _Unicode_codepoint_end_iterator{},
+        decoded, decoded + N_dec));
 }
 
 constexpr bool test_utf8_decode() {
-    test_utf_decode_helper<unsigned char>({0xC0, 0xAF, 0xE0, 0x80, 0xBF, 0xF0, 0x81, 0x82, 0x41},
-        {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41});
-    test_utf_decode_helper<unsigned char>({0xED, 0xA0, 0x80, 0xED, 0xBF, 0xBF, 0xED, 0xAF, 0x41},
-        {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41});
-    test_utf_decode_helper<unsigned char>({0xF4, 0x91, 0x92, 0x93, 0xFF, 0x41, 0x80, 0xBF, 0x42},
-        {0xFFFd, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0xFFFD, 0xFFFD, 0x42});
-    test_utf_decode_helper<unsigned char>(
-        {0xE1, 0x80, 0xE2, 0xF0, 0x91, 0x92, 0xF1, 0xBF, 0x41}, {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41});
+    test_utf_decode_helper<char>("\xC0\xAF\xE0\x80\xBF\xF0\x81\x82\x41",
+        {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0x0});
+    test_utf_decode_helper<char>("\xED\xA0\x80\xED\xBF\xBF\xED\xAF\x41",
+        {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0x0});
+    test_utf_decode_helper<char>("\xF4\x91\x92\x93\xFF\x41\x80\xBF\x42",
+        {0xFFFd, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0xFFFD, 0xFFFD, 0x42, 0x0});
+    test_utf_decode_helper<char>("\xE1\x80\xE2\xF0\x91\x92\xF1\xBF\x41", {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0x0});
     return true;
 }
 
@@ -74,6 +69,7 @@ constexpr bool test_utf16_decode() {
 }
 
 int main() {
+    _set_error_mode(_OUT_TO_MSGBOX);
     test_unicode_properties();
     static_assert(test_unicode_properties());
 
@@ -84,6 +80,7 @@ int main() {
     static_assert(test_utf16_decode());
 
     static_assert(forward_iterator<_Unicode_codepoint_iterator<char>>);
+    static_assert(sentinel_for<_Unicode_codepoint_end_iterator, _Unicode_codepoint_iterator<char>>);
     // static_assert(_STD input_or_output_iterator<_Grapheme_break_property_iterator<wchar_t>>);
     return 0;
 }

@@ -526,8 +526,7 @@ constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wchar_t* _Last
     return _First + 1;
 }
 
-constexpr const unsigned char* _Decode_utf(
-    const unsigned char* _First, const unsigned char* _Last, char32_t& _Val) noexcept {
+constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_t& _Val) noexcept {
     _STL_INTERNAL_CHECK(_First < _Last);
     // decode a UTF-8 value starting at _First and not exceding _Last, returning
     // one past the end of the character decoded. Any invalid codepoints will result in
@@ -535,7 +534,7 @@ constexpr const unsigned char* _Decode_utf(
     // maximal subpart of the ill-formed subsequence. So, most invalid utf-8 will result in
     // on U+FFFD for each byte of invalid data. Truncated but otherwise valid UTF-8 may
     // result in one U+FFFD for more than one input byte.
-    _Val = static_cast<char32_t>(*_First);
+    _Val = static_cast<char32_t>(static_cast<unsigned char>(*_First));
 
     // all UTF text is at least one byte
     // the zero extended values of the "prefix" bytes for
@@ -569,7 +568,7 @@ constexpr const unsigned char* _Decode_utf(
     case 0xE0:
         // we know _First[1] is in range because we just checked above,
         // and a leader of 0xe0 implies _Num_bytes == 3
-        if (_First[1] < 0xa0) {
+        if (static_cast<unsigned char>(_First[1]) < 0xa0) {
             // note, we just increment forward one byte,
             // even though _Num_bytes would imply the next
             // code-point starts at _First + 2, this is because
@@ -579,19 +578,19 @@ constexpr const unsigned char* _Decode_utf(
         }
         break;
     case 0xED:
-        if (_First[1] > 0x9F) {
+        if (static_cast<unsigned char>(_First[1]) > 0x9F) {
             _Val = 0xFFFD;
             return _First + 1;
         }
         break;
     case 0xF0:
-        if (_First[1] < 0x90) {
+        if (static_cast<unsigned char>(_First[1]) < 0x90) {
             _Val = 0xFFFD;
             return _First + 1;
         }
         break;
     case 0xF4:
-        if (_First[1] > 0x8f) {
+        if (static_cast<unsigned char>(_First[1]) > 0x8f) {
             _Val = 0xFFFD;
             return _First + 1;
         }
@@ -612,97 +611,79 @@ constexpr const unsigned char* _Decode_utf(
     }
 
     for (int _Idx = 1; _Idx < _Num_bytes; ++_Idx) {
-        if (_First + _Idx >= _Last || _First[_Idx] < 0x80 || _First[_Idx] > 0xBF) {
+        if (_First + _Idx >= _Last || static_cast<unsigned char>(_First[_Idx]) < 0x80
+            || static_cast<unsigned char>(_First[_Idx]) > 0xBF) {
             // truncated sequence
             _Val = 0xFFFD;
             return _First + _Idx;
         }
         // we know we're always in range due to the above check.
-        _Val = (_Val << 6) | (_First[_Idx] & 0b11'1111u);
+        _Val = (_Val << 6) | (static_cast<unsigned char>(_First[_Idx]) & 0b11'1111u);
     }
     return _First + _Num_bytes;
 }
 
 class _Unicode_codepoint_end_iterator {};
 
-template <typename _CharT, typename _Derived>
-class _Unicode_codepoint_iterator_base {
+template <typename _CharT>
+class _Unicode_codepoint_iterator {
 protected:
     const _CharT* _First = nullptr;
     const _CharT* _Last  = nullptr;
     char32_t _Val        = 0;
-
-    _Unicode_codepoint_iterator_base(const _CharT* _First_val, const _CharT* _Last_val)
-        : _First(_First_val), _Last(_Last_val) {
-        ++*this;
-    }
-
 
 public:
     using iterator_concept = forward_iterator_tag;
     using value_type       = char32_t;
     using difference_type  = ptrdiff_t;
 
-    _Unicode_codepoint_iterator_base() = default;
-
-    _Derived& operator++() noexcept {
-        _First = _Decode_utf(_First, _Last, _Val);
-        return *static_cast<_Derived*>(this);
+    constexpr _Unicode_codepoint_iterator(const _CharT* _First_val, const _CharT* _Last_val)
+        : _First(_First_val), _Last(_Last_val) {
+        ++*this;
     }
-    _Derived operator++(int) noexcept {
+
+    constexpr _Unicode_codepoint_iterator(const basic_string_view<_CharT>& _Str)
+        : _Unicode_codepoint_iterator(_Str.data(), _Str.data() + _Str.size()) {}
+
+    constexpr _Unicode_codepoint_iterator() = default;
+
+    constexpr _Unicode_codepoint_iterator& operator++() noexcept {
+        if (_First == _Last) {
+            // we're at the end, but still need a "one past the end" value
+            _First = nullptr;
+            return *this;
+        }
+        _First = _Decode_utf(_First, _Last, _Val);
+        return *(this);
+    }
+    constexpr _Unicode_codepoint_iterator operator++(int) noexcept {
         auto _Old = *this;
         ++*this;
         return _Old;
     }
-    value_type operator*() const noexcept {
+    constexpr value_type operator*() const noexcept {
         return _Val;
     }
-    bool operator==(_Unicode_codepoint_end_iterator) const noexcept {
-        _STL_INTERNAL_CHECK(_First <= _Last);
-        if (_First == _Last) {
+    constexpr bool operator==(_Unicode_codepoint_end_iterator) const noexcept {
+        if (_First == nullptr) {
             return true;
         }
         return false;
     }
-    bool operator==(const _Unicode_codepoint_iterator_base& _Other) const {
+    constexpr bool operator==(const _Unicode_codepoint_iterator& _Other) const {
         return (_First == _Other._First) && (_Last == _Other._Last);
     }
 };
 
-template <typename _CharT>
-class _Unicode_codepoint_iterator
-    : public _Unicode_codepoint_iterator_base<_CharT, _Unicode_codepoint_iterator<_CharT>> {
-    using _Mybase = _Unicode_codepoint_iterator_base<_CharT, _Unicode_codepoint_iterator<_CharT>>;
 
-public:
-    _Unicode_codepoint_iterator(const basic_string_view<_CharT>& _Str)
-        : _Mybase(_Str.data(), _Str.data() + _Str.size()) {}
-
-    using _Mybase::_Mybase;
-};
-
-template <>
-class _Unicode_codepoint_iterator<char>
-    : public _Unicode_codepoint_iterator_base<unsigned char, _Unicode_codepoint_iterator<char>> {
-    using _Mybase = _Unicode_codepoint_iterator_base<unsigned char, _Unicode_codepoint_iterator<char>>;
-
-public:
-    _Unicode_codepoint_iterator(const string_view& _Str)
-        : _Mybase(reinterpret_cast<const unsigned char*>(_Str.data()),
-            reinterpret_cast<const unsigned char*>(_Str.data() + _Str.size())) {}
-
-    using _Mybase::_Mybase;
-};
-
-template <typename _CharT>
-_Unicode_codepoint_iterator(const basic_string_view<_CharT>&) -> _Unicode_codepoint_iterator<_CharT>;
-
-/*
 template <typename _CharType>
 class _Grapheme_break_property_iterator {
-    using iterator_concept = forward_iterator_tag;
-    using value_type       = _CharType;
-    const _CharType* _WrappedIter;
+    using iterator_concept   = forward_iterator_tag;
+    using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharType>;
+    using value_type         = _Wrapped_iter_type::value_type;
+    using difference_type    = ptrdiff_t;
+    _Wrapped_iter_type _WrappedIter;
+    /*
     enum _State {
         _GB1_state,
         _GB2_state,
@@ -719,24 +700,54 @@ class _Grapheme_break_property_iterator {
         _GB12_state,
         _GB13_state,
         _GB999_state
+    };*/
+    enum _State {
+        _Sot_state,
+        _Done_state,
+        _Any_state,
+        _Cr_state,
+        _Control_Cr_Lf_state,
+        _L_state,
+        _LV_V_state,
+        _LVT_T_state,
+        _Prepend_state,
+        _Extended_pictographic_state,
+        _Extended_pictographic_Extend_state,
+        _Extended_pictographic_extend_ZWJ_state,
+        _Ri_state,
+        _Ri_Ri_state
     };
-    _State _Current_state;
+    _State _Current_state = _GB1_state;
 
 public:
-    _Grapheme_break_property_iterator& operator++() {
+    constexpr _Grapheme_break_property_iterator& operator++() noexcept {
+        _State _Next_state;
         for (;;) {
-            auto _Next_grapheme_brake_prop = _Grapheme_Break_Property_Data._Get_property_for_codepoint();
-            // switch (_Current_state) { case _GB1_state: }
+            // evaluate the next state
+            switch (_Current_state) {
+            case _Sot_state:
+                _Next_state = _Any_state;
+                break
+            }
+            if (_WrappedIter == _Unicode_codepoint_end_iterator{}) {
+                _Current_state = _GB2_state;
+                continue;
+            }
+            auto _Next_grapheme_break_prop =
+                _Grapheme_Break_Property_Data._Get_property_for_codepoint(static_cast<uint32_t>(*++_WrappedIter));
         }
-        return *this;
     }
-    _Grapheme_break_property_iterator operator++(int) {}
+    constexpr _Grapheme_break_property_iterator operator++(int) noexcept {
+        auto _Old = *this;
+        ++*this;
+        return _Old;
+    }
 
-    value_type operator*() const {
+    constexpr value_type operator*() const {
         return *_WrappedIter;
     }
 };
-*/
+
 template <class _Ty, class _CharT>
 concept _CharT_or_bool = same_as<_Ty, _CharT> || same_as<_Ty, bool>;
 
