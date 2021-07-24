@@ -559,7 +559,7 @@
 #define _MSVC_STL_UPDATE  202107L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
-#ifdef __CUDACC__
+#if defined(__CUDACC__) && !defined(__clang__)
 #if __CUDACC_VER_MAJOR__ < 10      \
     || (__CUDACC_VER_MAJOR__ == 10 \
         && (__CUDACC_VER_MINOR__ < 1 || (__CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ < 243)))
