@@ -17,6 +17,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C_UNLESS_PURE
 
+// macros for _Dtest return (0 => ZERO)
 #define _DENORM  (-2) // C9X only
 #define _FINITE  (-1)
 #define _INFCODE 1

@@ -474,7 +474,6 @@ private:
     static void __cdecl _Init_locks_dtor(_Init_locks*) noexcept;
 };
 
-// EXCEPTION MACROS
 #if _HAS_EXCEPTIONS
 #define _TRY_BEGIN try {
 #define _CATCH(x) \
