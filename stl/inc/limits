@@ -1050,7 +1050,7 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
     _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
                             + ((_Val >> 2) & static_cast<_Ty>(0x3333'3333'3333'3333ull)));
     _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F'0F0F'0F0F'0F0Full));
-    _Val = static_cast<_Ty>(_Val * static_cast<_Ty>(0x0101'0101'0101'0101));
+    _Val = static_cast<_Ty>(_Val * static_cast<_Ty>(0x0101'0101'0101'0101ull));
     return static_cast<int>(_Val >> (_Digits - 8));
 }
 
