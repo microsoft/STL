@@ -5947,7 +5947,7 @@ struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator
 // FUNCTION TEMPLATE _Float_abs_bits
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST auto _Float_abs_bits(const _Ty& _Xx) {
-    using _Traits = _Floating_type_traits<_Ty>;
+    using _Traits    = _Floating_type_traits<_Ty>;
     using _Uint_type = typename _Traits::_Uint_type;
     const auto _Bits = _Bit_cast<_Uint_type>(_Xx);
     return _Bits & ~_Traits::_Shifted_sign_mask;
