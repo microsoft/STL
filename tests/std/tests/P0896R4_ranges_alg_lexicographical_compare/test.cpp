@@ -5,6 +5,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -26,7 +27,7 @@ struct instantiator {
 
     template <class In1, class In2>
     static constexpr void call() {
-        using ranges::lexicographical_compare, ranges::less;
+        using ranges::lexicographical_compare, ranges::less, ranges::begin, ranges::end;
 
         // Validate range overload
         {
@@ -87,20 +88,20 @@ struct instantiator {
         }
 
         {
-            In1 empty1{};
+            In1 empty1{span<const P, 0>{}};
             In2 range2{right_equal};
             const same_as<bool> auto result = lexicographical_compare(empty1, range2, less{}, get_first, get_second);
             assert(result);
         }
         {
             In1 range1{left};
-            In2 empty2{};
+            In2 empty2{span<const P, 0>{}};
             const same_as<bool> auto result = lexicographical_compare(range1, empty2, less{}, get_first, get_second);
             assert(!result);
         }
         {
-            In1 empty1{};
-            In2 empty2{};
+            In1 empty1{span<const P, 0>{}};
+            In2 empty2{span<const P, 0>{}};
             const same_as<bool> auto result = lexicographical_compare(empty1, empty2, less{}, get_first, get_second);
             assert(!result);
         }
@@ -173,7 +174,7 @@ struct instantiator {
         }
 
         {
-            In1 empty1{};
+            In1 empty1{span<const P, 0>{}};
             In2 range2{right_equal};
             const same_as<bool> auto result = lexicographical_compare(
                 empty1.begin(), empty1.end(), range2.begin(), range2.end(), less{}, get_first, get_second);
@@ -181,14 +182,14 @@ struct instantiator {
         }
         {
             In1 range1{left};
-            In2 empty2{};
+            In2 empty2{span<const P, 0>{}};
             const same_as<bool> auto result = lexicographical_compare(
                 range1.begin(), range1.end(), empty2.begin(), empty2.end(), less{}, get_first, get_second);
             assert(!result);
         }
         {
-            In1 empty1{};
-            In2 empty2{};
+            In1 empty1{span<const P, 0>{}};
+            In2 empty2{span<const P, 0>{}};
             const same_as<bool> auto result = lexicographical_compare(
                 empty1.begin(), empty1.end(), empty2.begin(), empty2.end(), less{}, get_first, get_second);
             assert(!result);
@@ -201,6 +202,24 @@ struct instantiator {
             assert(!lexicographical_compare(arr1, arr2));
             arr2[2] = 1;
             assert(!lexicographical_compare(arr1, arr2));
+        }
+        { // Validate memcmp + unreachable_sentinel cases
+            unsigned char arr1[3]{0, 1, 2};
+            unsigned char arr2[3]{0, 1, 3};
+
+            assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr1), unreachable_sentinel));
+            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr1), end(arr1)));
+
+            assert(lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), unreachable_sentinel));
+            assert(lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
+            assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
+            arr2[2] = 2;
+            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
+            assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
+            arr2[2] = 1;
+            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), unreachable_sentinel));
+            assert(!lexicographical_compare(begin(arr1), unreachable_sentinel, begin(arr2), end(arr2)));
+            assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), unreachable_sentinel));
         }
     }
 };

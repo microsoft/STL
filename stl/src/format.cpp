@@ -8,8 +8,8 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
+#include <__msvc_xlocinfo_types.hpp>
 #include <xfilesystem_abi.h>
-#include <xlocinfo.h>
 
 #include <Windows.h>
 

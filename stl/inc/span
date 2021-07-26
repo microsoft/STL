@@ -33,7 +33,7 @@ inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 template <class _Ty>
 struct _Span_iterator {
 #ifdef __cpp_lib_concepts
-    using iterator_concept = contiguous_iterator_tag;
+    using iterator_concept  = contiguous_iterator_tag;
 #endif // __cpp_lib_concepts
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
@@ -116,7 +116,8 @@ struct _Span_iterator {
     }
 
     _NODISCARD friend constexpr _Span_iterator operator+(const difference_type _Off, _Span_iterator _Next) noexcept {
-        return _Next += _Off;
+        _Next += _Off;
+        return _Next;
     }
 
     constexpr _Span_iterator& operator-=(const difference_type _Off) noexcept {
@@ -179,7 +180,7 @@ struct _Span_iterator {
         _Myptr = _It;
     }
 
-    pointer _Myptr = nullptr;
+    pointer _Myptr   = nullptr;
 #if _ITERATOR_DEBUG_LEVEL >= 1
     pointer _Mybegin = nullptr;
     pointer _Myend   = nullptr;
@@ -232,7 +233,7 @@ class span;
 #ifdef __cpp_lib_concepts
 namespace ranges {
     template <class _Ty, size_t _Extent>
-    inline constexpr bool enable_view<span<_Ty, _Extent>> = _Extent == 0 || _Extent == dynamic_extent;
+    inline constexpr bool enable_view<span<_Ty, _Extent>> = true;
     template <class _Ty, size_t _Extent>
     inline constexpr bool enable_borrowed_range<span<_Ty, _Extent>> = true;
 } // namespace ranges

@@ -5,6 +5,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_tzdb.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_xlocinfo_types.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/algorithm
     ${CMAKE_CURRENT_LIST_DIR}/inc/any
     ${CMAKE_CURRENT_LIST_DIR}/inc/array
@@ -220,7 +221,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocale
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocbuf
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocinfo
-    ${CMAKE_CURRENT_LIST_DIR}/inc/xlocinfo.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocmes
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocmon
     ${CMAKE_CURRENT_LIST_DIR}/inc/xlocnum

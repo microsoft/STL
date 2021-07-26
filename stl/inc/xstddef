@@ -290,7 +290,11 @@ _NODISCARD constexpr _Ty* _Unfancy(_Ty* _Ptr) noexcept { // do nothing for plain
 }
 _STD_END
 
+#if defined(__EDG__) && defined(_M_X64) // TRANSITION, VSO-1356169
+#define _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) FUNC(_EMPTY_ARGUMENT, OPT1, OPT2, OPT3)
+#else // ^^^ workaround / no workaround vvv
 #define _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) FUNC(__cdecl, OPT1, OPT2, OPT3)
+#endif // ^^^ no workaround ^^^
 
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)

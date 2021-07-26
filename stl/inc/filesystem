@@ -256,7 +256,7 @@ namespace filesystem {
 
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const string_view _Input, _Conversion) {
-        static_assert(_Is_any_of_v<_Conversion, _Normal_conversion, _Utf8_conversion>);
+        _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Conversion, _Normal_conversion, _Utf8_conversion>);
 
         if constexpr (is_same_v<_Conversion, _Normal_conversion>) {
             return _Convert_narrow_to_wide(__std_fs_code_page(), _Input);
@@ -275,8 +275,8 @@ namespace filesystem {
 #ifdef __cpp_char8_t
     template <class _Conversion>
     _NODISCARD wstring _Convert_stringoid_to_wide(const basic_string_view<char8_t> _Input, _Conversion) {
-        static_assert(
-            is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
+        _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Conversion, _Normal_conversion, _Utf8_conversion>);
+
         const string_view _Input_as_char{reinterpret_cast<const char*>(_Input.data()), _Input.size()};
         return _Convert_narrow_to_wide(__std_code_page::_Utf8, _Input_as_char);
     }
@@ -1430,7 +1430,9 @@ namespace filesystem {
 #endif // !_HAS_CXX20
 
         _NODISCARD friend path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
-            return path(_Left) /= _Right;
+            path _Tmp = _Left;
+            _Tmp /= _Right;
+            return _Tmp;
         }
 
     private:
@@ -3927,7 +3929,7 @@ namespace filesystem {
         if (_Error == __std_win_error::_Success) {
             _Result = file_time_type{file_time_type::duration{_Stats._Last_write_time}};
         } else {
-            _Result = (file_time_type::min)();
+            _Result = (file_time_type::min) ();
         }
 
         return _Error;

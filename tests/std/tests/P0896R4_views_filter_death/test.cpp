@@ -13,18 +13,42 @@ using namespace std;
 
 static int some_ints[] = {0, 1, 2, 3};
 
-[[maybe_unused]] constexpr auto lambda = [x = 42](int) { return x == 42; };
-using FV                               = decltype(ranges::filter_view{some_ints, lambda});
+struct test_predicate {
+    struct tag {};
+
+    test_predicate() = default;
+    test_predicate(const test_predicate&) {
+        throw tag{};
+    }
+    test_predicate& operator=(const test_predicate&) = delete;
+
+    constexpr bool operator()(int i) const {
+        return i == 42;
+    }
+};
+
+auto with_no_predicate() {
+    using V = decltype(ranges::filter_view{some_ints, test_predicate{}});
+    V r{some_ints, {}};
+    try {
+        r = V{some_ints, {}};
+    } catch (const test_predicate::tag&) {
+    }
+    return r;
+}
 
 void test_view_predicate() {
-    FV r;
-    (void) r.pred(); // value-initialized filter_view has no predicate
+    auto r = with_no_predicate();
+    (void) r.pred(); // filter_view has no predicate
 }
 
 void test_view_begin() {
-    FV r;
+    auto r = with_no_predicate();
     (void) r.begin(); // N4861 [range.filter.view]/3 forbids calling begin on a filter_view that holds no predicate
 }
+
+constexpr auto lambda = [x = 42](int) { return x == 42; };
+using FV              = decltype(ranges::filter_view{some_ints, lambda});
 
 void test_constructor_wrong_range() {
     vector<int> vec0{0, 1, 2, 3};

@@ -111,6 +111,7 @@
 // P0858R0 Constexpr Iterator Requirements
 // P1065R2 constexpr INVOKE
 //     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
+// P2162R2 Inheriting From variant
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -240,10 +241,14 @@
 // P1976R2 Explicit Constructors For Fixed-Extent span From Dynamic-Extent Ranges
 // P1983R0 Fixing Minor Ranges Issues
 // P1994R1 elements_view Needs Its Own sentinel
+// P2017R1 Conditionally Borrowed Ranges
 // P2091R0 Fixing Issues With Range Access CPOs
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
+// P2259R1 Repairing Input Range Adaptors And counted_iterator
+//     (partially implemented)
+// P2325R3 Views Should Not Be Required To Be Default Constructible
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -253,6 +258,14 @@
 // P0767R1 Deprecating is_pod
 // P1831R1 Deprecating volatile In The Standard Library
 // Other C++20 deprecation warnings
+
+// _HAS_CXX23 directly controls:
+// P1048R1 is_scoped_enum
+// P1679R3 contains() For basic_string/basic_string_view
+// P1682R3 to_underlying() For Enumerations
+// P1989R2 Range Constructor For string_view
+// P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
+// P2186R2 Removing Garbage Collection Support
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -350,6 +363,20 @@
 // * unique_copy
 
 #include <vcruntime.h>
+
+// TRANSITION, <vcruntime.h> should define _HAS_CXX23
+#ifndef _HAS_CXX23
+#if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || defined(__cplusplus) && __cplusplus > 202002L)
+#define _HAS_CXX23 1
+#else
+#define _HAS_CXX23 0
+#endif
+#endif // _HAS_CXX23
+
+#if _HAS_CXX23 && !_HAS_CXX20
+#error _HAS_CXX23 must imply _HAS_CXX20.
+#endif
+
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
 #ifndef _STL_WARNING_LEVEL
@@ -471,6 +498,7 @@
 // warning: explicit(bool) is a C++20 extension [-Wc++20-extensions]
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
+// warning: '#pragma float_control' is not supported on this target - ignored [-Wignored-pragmas]
 // warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
 // warning: unknown pragma ignored [-Wunknown-pragmas]
 #ifndef _STL_DISABLE_CLANG_WARNINGS
@@ -481,6 +509,7 @@
     _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
     _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")      \
     _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")    \
+    _Pragma("clang diagnostic ignored \"-Wignored-pragmas\"")       \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
 // clang-format on
@@ -503,25 +532,31 @@
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
-#else // __clang__
+#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
 #define _STL_DISABLE_DEPRECATED_WARNING \
     __pragma(warning(push))             \
     __pragma(warning(disable : 4996)) // was declared deprecated
-#endif // __clang__
+#else // vvv MSVC vvv
+#define _STL_DISABLE_DEPRECATED_WARNING \
+    _Pragma("warning(push)")            \
+    _Pragma("warning(disable : 4996)") // was declared deprecated
+#endif // ^^^ MSVC ^^^
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
 
 #ifndef _STL_RESTORE_DEPRECATED_WARNING
 #ifdef __clang__
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("clang diagnostic pop")
-#else // __clang__
+#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
 #define _STL_RESTORE_DEPRECATED_WARNING __pragma(warning(pop))
-#endif // __clang__
+#else // vvv MSVC vvv
+#define _STL_RESTORE_DEPRECATED_WARNING _Pragma("warning(pop)")
+#endif // ^^^ MSVC ^^^
 #endif // _STL_RESTORE_DEPRECATED_WARNING
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202104L
+#define _MSVC_STL_UPDATE  202107L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -533,12 +568,12 @@
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 11
-#error STL1000: Unexpected compiler version, expected Clang 11.0.0 or newer.
+#if __clang_major__ < 12
+#error STL1000: Unexpected compiler version, expected Clang 12.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1929 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.29 or newer.
+#if _MSC_VER < 1930 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.30 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1092,6 +1127,16 @@
 #define _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20 (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
 
+
+#ifndef _HAS_FEATURES_REMOVED_IN_CXX23
+#define _HAS_FEATURES_REMOVED_IN_CXX23 (!_HAS_CXX23)
+#endif // _HAS_FEATURES_REMOVED_IN_CXX23
+
+// P2186R2 Removing Garbage Collection Support
+#ifndef _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
+#define _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23 (_HAS_FEATURES_REMOVED_IN_CXX23)
+#endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
+
 // LIBRARY FEATURE-TEST MACROS
 
 // C++14
@@ -1168,7 +1213,7 @@
 #define __cpp_lib_shared_ptr_weak_type  201606L
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
-#define __cpp_lib_variant               201606L
+#define __cpp_lib_variant               202102L
 #endif // _HAS_CXX17
 
 // C++20
@@ -1196,37 +1241,25 @@
 #define __cpp_lib_concepts 201907L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
-#define __cpp_lib_constexpr_algorithms 201806L
-#define __cpp_lib_constexpr_complex    201711L
-
-#ifdef __cpp_constexpr_dynamic_alloc
+#define __cpp_lib_constexpr_algorithms    201806L
+#define __cpp_lib_constexpr_complex       201711L
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
-#endif // __cpp_constexpr_dynamic_alloc
+#define __cpp_lib_constexpr_functional    201907L
+#define __cpp_lib_constexpr_iterator      201811L
+#define __cpp_lib_constexpr_memory        201811L
+#define __cpp_lib_constexpr_numeric       201911L
+#define __cpp_lib_constexpr_string        201907L
+#define __cpp_lib_constexpr_string_view   201811L
+#define __cpp_lib_constexpr_tuple         201811L
+#define __cpp_lib_constexpr_utility       201811L
+#define __cpp_lib_constexpr_vector        201907L
+#define __cpp_lib_destroying_delete       201806L
+#define __cpp_lib_endian                  201907L
+#define __cpp_lib_erase_if                202002L
 
-#define __cpp_lib_constexpr_functional 201907L
-#define __cpp_lib_constexpr_iterator   201811L
-#define __cpp_lib_constexpr_memory     201811L
-#define __cpp_lib_constexpr_numeric    201911L
-
-#if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
-#define __cpp_lib_constexpr_string 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
-
-#define __cpp_lib_constexpr_string_view 201811L
-#define __cpp_lib_constexpr_tuple       201811L
-#define __cpp_lib_constexpr_utility     201811L
-
-#if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
-#define __cpp_lib_constexpr_vector 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
-
-#define __cpp_lib_destroying_delete 201806L
-#define __cpp_lib_endian            201907L
-#define __cpp_lib_erase_if          202002L
-
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
 #define __cpp_lib_format 201907L
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1254,9 +1287,9 @@
 #define __cpp_lib_math_constants          201907L
 #define __cpp_lib_polymorphic_allocator   201902L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
-#define __cpp_lib_ranges 201911L
-#endif // __cpp_lib_concepts
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
+#define __cpp_lib_ranges 202106L
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
@@ -1314,23 +1347,16 @@
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
 
+// C++23
+#if _HAS_CXX23
+#define __cpp_lib_is_scoped_enum  202011L
+#define __cpp_lib_string_contains 202011L
+#define __cpp_lib_to_underlying   202102L
+#endif // _HAS_CXX23
+
 // EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
-
-// Functions that became constexpr in C++20 via P0784R7
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-#define _CONSTEXPR20_DYNALLOC constexpr
-#else
-#define _CONSTEXPR20_DYNALLOC inline
-#endif
-
-// Functions that became constexpr in C++20 via P0980R1 or P1004R2
-#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
-#define _CONSTEXPR20_CONTAINER constexpr
-#else
-#define _CONSTEXPR20_CONTAINER inline
-#endif
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL

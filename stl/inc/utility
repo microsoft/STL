@@ -29,7 +29,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 // FUNCTION TEMPLATE max
 template <class _Ty, class _Pr>
-_NODISCARD constexpr const _Ty&(max)(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
+_NODISCARD constexpr const _Ty&(max) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Left, _Right))) /* strengthened */ {
     // return larger of _Left and _Right
     return _Pred(_Left, _Right) ? _Right : _Left;
@@ -38,8 +38,8 @@ _NODISCARD constexpr const _Ty&(max)(const _Ty& _Left, const _Ty& _Right, _Pr _P
 #pragma warning(push)
 #pragma warning(disable : 28285) // (syntax error in SAL annotation, occurs when _Ty is not an integral type)
 template <class _Ty>
-_NODISCARD _Post_equal_to_(_Left < _Right ? _Right : _Left) constexpr const _Ty&(max)(
-    const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Left < _Right)) /* strengthened */ {
+_NODISCARD _Post_equal_to_(_Left < _Right ? _Right : _Left) constexpr const _Ty& //
+    (max) (const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Left < _Right)) /* strengthened */ {
     // return larger of _Left and _Right
     return _Left < _Right ? _Right : _Left;
 }
@@ -53,7 +53,7 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty>); // implemented in <algorit
 
 // FUNCTION TEMPLATE min
 template <class _Ty, class _Pr>
-_NODISCARD constexpr const _Ty&(min)(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
+_NODISCARD constexpr const _Ty&(min) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Right, _Left))) /* strengthened */ {
     // return smaller of _Left and _Right
     return _Pred(_Right, _Left) ? _Right : _Left;
@@ -62,8 +62,8 @@ _NODISCARD constexpr const _Ty&(min)(const _Ty& _Left, const _Ty& _Right, _Pr _P
 #pragma warning(push)
 #pragma warning(disable : 28285) // (syntax error in SAL annotation, occurs when _Ty is not an integral type)
 template <class _Ty>
-_NODISCARD _Post_equal_to_(_Right < _Left ? _Right : _Left) constexpr const _Ty&(min)(
-    const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */ {
+_NODISCARD _Post_equal_to_(_Right < _Left ? _Right : _Left) constexpr const _Ty& //
+    (min) (const _Ty& _Left, const _Ty& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */ {
     // return smaller of _Left and _Right
     return _Right < _Left ? _Right : _Left;
 }
@@ -762,6 +762,13 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
     return true;
 }
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+template <class _Ty>
+_NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
+    return static_cast<underlying_type_t<_Ty>>(_Value);
+}
+#endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {

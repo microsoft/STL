@@ -78,10 +78,20 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_No_throw_sentinel_for<_OSe, _Out>);
             _STL_INTERNAL_STATIC_ASSERT(constructible_from<iter_value_t<_Out>, iter_reference_t<_It>>);
 
-            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial
-                          && sized_sentinel_for<_Se, _It> && sized_sentinel_for<_OSe, _Out>) {
-                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
-                    _RANGES next(_OFirst, _STD move(_OLast)));
+            constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
+            constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
+            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+                          && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+                if constexpr (_Is_sized1 && _Is_sized2) {
+                    return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
+                        _RANGES next(_OFirst, _STD move(_OLast)));
+                } else if constexpr (_Is_sized1) {
+                    return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+                } else if constexpr (_Is_sized2) {
+                    return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                } else {
+                    _STL_ASSERT(false, "Tried to uninitialized_copy two ranges with unreachable sentinels");
+                }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -147,13 +157,20 @@ namespace ranges {
             }
 
             _Adl_verify_range(_First2, _Last2);
-            auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
-            auto _OFirst      = _Get_unwrapped(_STD move(_First2));
-            const auto _OLast = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial) {
-                auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
-                _IFirst       = _UResult.in;
-                _OFirst       = _UResult.out;
+            auto _IFirst = _Get_unwrapped_n(_STD move(_First1), _Count);
+            auto _OFirst = _Get_unwrapped(_STD move(_First2));
+            auto _OLast  = _Get_unwrapped(_STD move(_Last2));
+            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+                if constexpr (sized_sentinel_for<_OSe, _Out>) {
+                    auto _UResult = _Copy_memcpy_common(
+                        _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                    _IFirst = _STD move(_UResult.in);
+                    _OFirst = _STD move(_UResult.out);
+                } else {
+                    auto _UResult = _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
+                    _IFirst       = _STD move(_UResult.in);
+                    _OFirst       = _STD move(_UResult.out);
+                }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -286,10 +303,17 @@ namespace ranges {
             auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial) {
-                auto _UResult = _Copy_memcpy_common(_IFirst, _IFirst + _Count, _OFirst, _OLast);
-                _IFirst       = _UResult.in;
-                _OFirst       = _UResult.out;
+            if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+                if constexpr (sized_sentinel_for<_OSe, _Out>) {
+                    auto _UResult = _Copy_memcpy_common(
+                        _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
+                    _IFirst = _STD move(_UResult.in);
+                    _OFirst = _STD move(_UResult.out);
+                } else {
+                    auto _UResult = _Copy_memcpy_count(_IFirst, _OFirst, static_cast<size_t>(_Count));
+                    _IFirst       = _STD move(_UResult.in);
+                    _OFirst       = _STD move(_UResult.out);
+                }
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
@@ -457,7 +481,7 @@ namespace ranges {
             requires requires(void* _Void_ptr, _Types&&... _Args) {
                 ::new (_Void_ptr) _Ty(static_cast<_Types&&>(_Args)...);
             }
-        _CONSTEXPR20_DYNALLOC _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
+        constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
             noexcept(noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
                     _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
             // clang-format on
@@ -472,7 +496,7 @@ namespace ranges {
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
-    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
+    _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
     // clang-format on
 
     class _Destroy_at_fn : private _Not_quite_object {
@@ -480,7 +504,7 @@ namespace ranges {
         using _Not_quite_object::_Not_quite_object;
 
         template <destructible _Ty>
-        _CONSTEXPR20_DYNALLOC void operator()(_Ty* const _Location) const noexcept {
+        constexpr void operator()(_Ty* const _Location) const noexcept {
             if constexpr (is_array_v<_Ty>) {
                 (void) _RANGES _Destroy_unchecked(_RANGES begin(*_Location), _RANGES end(*_Location));
             } else {
@@ -496,7 +520,7 @@ namespace ranges {
 #if _HAS_CXX17
 // FUNCTION TEMPLATE destroy
 template <class _NoThrowFwdIt>
-_CONSTEXPR20_DYNALLOC void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
+_CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // destroy all elements in [_First, _Last)
     _Adl_verify_range(_First, _Last);
     _Destroy_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
@@ -508,7 +532,7 @@ namespace ranges {
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
-    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
+    _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
         // clang-format on
         if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
             _RANGES advance(_First, _STD move(_Last));
@@ -528,7 +552,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
-        _CONSTEXPR20_DYNALLOC _It operator()(_It _First, _Se _Last) const noexcept {
+        constexpr _It operator()(_It _First, _Se _Last) const noexcept {
             // clang-format on
             _Adl_verify_range(_First, _Last);
             _Seek_wrapped(_First,
@@ -539,7 +563,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_range _Rng>
             requires destructible<range_value_t<_Rng>>
-        _CONSTEXPR20_DYNALLOC borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
+        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
             // clang-format on
             auto _First = _RANGES begin(_Range);
             _Seek_wrapped(_First, _RANGES _Destroy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range)));
@@ -553,7 +577,7 @@ namespace ranges {
 
 // FUNCTION TEMPLATE destroy_n
 template <class _NoThrowFwdIt, class _Diff>
-_CONSTEXPR20_DYNALLOC _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
+_CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // destroy all elements in [_First, _First + _Count)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
@@ -583,7 +607,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
-        _CONSTEXPR20_DYNALLOC _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
+        constexpr _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
             // clang-format on
             _Algorithm_int_t<iter_difference_t<_It>> _Count = _Count_raw;
             if (_Count <= 0) {
@@ -1618,7 +1642,8 @@ public:
 
         if (_Fancy) {
             const _Raw_t _Raw = _Fancy;
-            const auto _Rx    = new _Ref_count_resource<_Fancy_t, _Deleter_t>(_Fancy, _Other.get_deleter());
+            const auto _Rx =
+                new _Ref_count_resource<_Fancy_t, _Deleter_t>(_Fancy, _STD forward<_Dx>(_Other.get_deleter()));
             _Set_ptr_rep_and_enable_shared(_Raw, _Rx);
             _Other.release();
         }
@@ -3586,6 +3611,7 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Out, c
 }
 
 // GARBAGE COLLECTION
+#if _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 enum class pointer_safety { relaxed, preferred, strict };
 
 inline void declare_reachable(void*) {}
@@ -3602,6 +3628,7 @@ inline void undeclare_no_pointers(char*, size_t) {}
 inline pointer_safety get_pointer_safety() noexcept {
     return pointer_safety::relaxed;
 }
+#endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
 // STRUCT TEMPLATE owner_less
 template <class _Ty = void>
