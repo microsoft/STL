@@ -255,20 +255,26 @@ void test_file_clock_from_utc(const leap_second& leap) {
 
 void test_utc_clock_from_sys(const leap_second& leap, seconds offset) {
     // Generalized from N4885 [time.clock.utc.members]/3 Example 1.
-    auto t = leap.date() - 2ns;
+    auto t = leap.date() - 2us;
+    if (leap.value() < 0s) {
+        t += leap.value();
+    }
     auto u = utc_clock::from_sys(t);
     assert(u.time_since_epoch() - t.time_since_epoch() == offset);
 
-    t += 1ns;
+    t += 1us;
     u = utc_clock::from_sys(t);
     assert(u.time_since_epoch() - t.time_since_epoch() == offset);
 
-    t += 1ns;
+    t += 1us;
+    if (leap.value() < 0s) {
+        t -= leap.value();
+    }
     u = utc_clock::from_sys(t);
     offset += leap.value();
     assert(u.time_since_epoch() - t.time_since_epoch() == offset);
 
-    t += 1ns;
+    t += 1us;
     u = utc_clock::from_sys(t);
     assert(u.time_since_epoch() - t.time_since_epoch() == offset);
 }

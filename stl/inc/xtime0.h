@@ -40,7 +40,6 @@ struct __std_utc_components_1s {
     short _Year;
     unsigned char _Month;
     unsigned char _Day;
-    unsigned char _Weekday;
     unsigned char _Hour;
     unsigned char _Minute;
     unsigned char _Second;
@@ -62,7 +61,7 @@ enum class __std_utc_to_file_time_errc {
     _Invalid_parameter = 0b001,
 
     // __std_utc_components_to_file_seconds only
-    // second 60 without a positive leap second, or second 59 deleted by a negative leap second
+    // unrepresentable second 60, deleted second 59, or nonexistent second 60
     // sets _Out_file_seconds to the value corresponding to second 00 of the next minute
     _Nonexistent = 0b010,
 

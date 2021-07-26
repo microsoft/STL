@@ -690,6 +690,28 @@ namespace chrono {
         return ((1461 * _Yp) >> 2) - _Century + (_Century >> 2) + _Day_of_year - 719468;
     }
 
+    struct system_clock;
+
+    // convert from date time breakdown (whole seconds) into sys_time
+    template <class _Duration = seconds>
+    constexpr time_point<system_clock, common_type_t<_Duration, seconds>> _Sys_seconds_from_civil(
+        const __std_utc_components_1s& _Utc) noexcept {
+        using _Common      = common_type_t<_Duration, seconds>;
+        using _Days        = _CHRONO duration<int, ratio<86'400>>;
+        using _Int_seconds = _CHRONO duration<int>;
+        const _Common _Ymd = _Days{_Days_from_civil(_Utc._Year, _Utc._Month, _Utc._Day)};
+        const _Common _Hms = hours{_Utc._Hour} + minutes{_Utc._Minute} + _Int_seconds{_Utc._Second};
+        return time_point<system_clock, _Common>{_Ymd + _Hms};
+    }
+
+    template <class _Duration>
+    struct _Utc_components {
+        static_assert(_Is_duration_v<_Duration>, "_Duration should be a specialization of std::chrono::duration");
+
+        __std_utc_components_1s _Whole_sec;
+        _Duration _Sub_sec;
+    };
+
     struct system_clock { // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
         using rep                       = long long;
         using period                    = ratio<1, 10'000'000>; // 100 nanoseconds
@@ -697,30 +719,53 @@ namespace chrono {
         using time_point                = _CHRONO time_point<system_clock>;
         static constexpr bool is_steady = false;
 
+#if _HAS_CXX20
+        template <class _Duration>
+        _NODISCARD static constexpr _Utc_components<common_type_t<_Duration, seconds>> _To_utc_components(
+            const _CHRONO time_point<system_clock, _Duration>& _Sys_time) noexcept;
+#endif // _HAS_CXX20
+
+        template <class _Duration>
+        _NODISCARD static constexpr _CHRONO time_point<system_clock, common_type_t<_Duration, seconds>>
+            _From_utc_components(const _Utc_components<_Duration>& _Utc) noexcept {
+            using _Common             = common_type_t<_Duration, seconds>;
+            using _Sys_time           = _CHRONO time_point<system_clock, _Common>;
+            const _Sys_time _Sys_secs = _Sys_seconds_from_civil<_Duration>(_Utc._Whole_sec);
+
+            if (_Utc._Whole_sec._Second < 60) {
+                return _Sys_secs + _Utc._Sub_sec;
+            }
+
+            // positive leap second
+            using _Common_rep = typename _Common::rep;
+            if constexpr (treat_as_floating_point_v<_Common_rep>) {
+                // TRANSITION, GH-1909
+                const _Common_rep _After_leap_sec = _Sys_secs.time_since_epoch().count();
+                const _Common_rep _Before_leap_sec =
+                    _STD nextafter(_After_leap_sec, -numeric_limits<_Common_rep>::infinity());
+                return _Sys_time{_Common{_Before_leap_sec}};
+            } else {
+                return _Sys_secs - _Common{1};
+            }
+        }
+
         _NODISCARD static time_point now() noexcept { // get current time
             constexpr long long __std_fs_file_time_epoch_adjustment = 0x19DB1DED53E8000LL; // TRANSITION, ABI
 
             const duration _File_time{_Xtime_get_ticks() + __std_fs_file_time_epoch_adjustment};
             const auto _File_seconds = _CHRONO duration_cast<seconds>(_File_time);
 
-            __std_utc_components_1s _Utc;
-            const __std_file_time_to_utc_errc _Ec = __std_file_seconds_to_utc_components(_File_seconds.count(), &_Utc);
+            _Utc_components<duration> _Utc;
+            const __std_file_time_to_utc_errc _Ec =
+                __std_file_seconds_to_utc_components(_File_seconds.count(), &_Utc._Whole_sec);
             _STL_INTERNAL_CHECK(_Ec == __std_file_time_to_utc_errc::_Success);
-            if (_Ec == __std_file_time_to_utc_errc::_Invalid_parameter) {
-                return time_point{_File_time - duration{__std_fs_file_time_epoch_adjustment}};
+            _Utc._Sub_sec = _File_time - _File_seconds;
+
+            if (_Ec != __std_file_time_to_utc_errc::_Invalid_parameter) {
+                return _From_utc_components(_Utc);
             }
 
-            using _Days         = _CHRONO duration<int, ratio<86'400>>;
-            using _Int_seconds  = _CHRONO duration<int>;
-            const duration _Ymd = _Days{_Days_from_civil(_Utc._Year, _Utc._Month, _Utc._Day)};
-            const duration _Hms = hours{_Utc._Hour} + minutes{_Utc._Minute} + _Int_seconds{_Utc._Second};
-
-            if (_Utc._Second < 60) {
-                return time_point{_Ymd + _Hms + (_File_time - _File_seconds)};
-            } else {
-                // positive leap second
-                return time_point{_Ymd + _Hms - duration{1}};
-            }
+            return time_point{_File_time - duration{__std_fs_file_time_epoch_adjustment}};
         }
 
         _NODISCARD static __time64_t to_time_t(const time_point& _Time) noexcept { // convert to __time64_t
@@ -3172,6 +3217,39 @@ namespace chrono {
 
     // [time.clock.utc]
 
+    // convert from sys_seconds into date time breakdown
+    _NODISCARD constexpr __std_utc_components_1s _Civil_from_sys_seconds(const sys_seconds _Sys_time) noexcept {
+        using _Int_seconds = _CHRONO duration<int>;
+
+        const sys_days _Days = _CHRONO floor<days>(_Sys_time);
+        const year_month_day _Ymd{_Days};
+
+        auto _Second     = static_cast<_Int_seconds>(_Sys_time - _Days);
+        const auto _Hour = _CHRONO duration_cast<hours>(_Second);
+        _Second -= _Hour;
+        const auto _Minute = _CHRONO duration_cast<minutes>(_Second);
+        _Second -= _Minute;
+
+        return {
+            ._Year   = static_cast<short>(static_cast<int>(_Ymd.year())),
+            ._Month  = static_cast<unsigned char>(static_cast<unsigned int>(_Ymd.month())),
+            ._Day    = static_cast<unsigned char>(static_cast<unsigned int>(_Ymd.day())),
+            ._Hour   = static_cast<unsigned char>(_Hour.count()),
+            ._Minute = static_cast<unsigned char>(_Minute.count()),
+            ._Second = static_cast<unsigned char>(_Second.count()),
+        };
+    }
+
+    template <class _Duration>
+    _NODISCARD constexpr _Utc_components<common_type_t<_Duration, seconds>> system_clock::_To_utc_components(
+        const _CHRONO time_point<system_clock, _Duration>& _Sys_time) noexcept {
+        const sys_seconds _Sys_secs = _CHRONO floor<seconds>(_Sys_time);
+        return {
+            ._Whole_sec = _CHRONO _Civil_from_sys_seconds(_Sys_secs),
+            ._Sub_sec   = _Sys_time - _Sys_secs,
+        };
+    }
+
     class utc_clock;
     template <class _Duration>
     using utc_time    = time_point<utc_clock, _Duration>;
@@ -3298,6 +3376,14 @@ namespace chrono {
             const auto _Offset = _It == _Ls_vector.begin() ? seconds{0} : (--_It)->_Elapsed();
             return utc_time<common_type_t<_Duration, seconds>>{_Sys_time.time_since_epoch() + _Offset};
         }
+
+        template <class _Duration>
+        _NODISCARD static _Utc_components<common_type_t<_Duration, seconds>> _To_utc_components(
+            const utc_time<_Duration>& _Utc_time) noexcept; // FIXME
+
+        template <class _Duration>
+        _NODISCARD static utc_time<common_type_t<_Duration, seconds>> _From_utc_components(
+            const _Utc_components<_Duration>& _Utc) noexcept; // FIXME
     };
 
     // [time.clock.tai]
@@ -3441,6 +3527,58 @@ namespace filesystem {
             }
 
             return _File_time;
+        }
+
+        template <class _Duration>
+        _NODISCARD static chrono::_Utc_components<common_type_t<_Duration, chrono::seconds>> _To_utc_components(
+            const chrono::file_time<_Duration>& _File_time) noexcept {
+            using namespace chrono;
+            const auto _File_seconds = _CHRONO floor<seconds>(_File_time);
+
+            _Utc_components<duration> _Utc;
+            const __std_file_time_to_utc_errc _Ec =
+                __std_file_seconds_to_utc_components(_File_seconds.time_since_epoch().count(), &_Utc._Whole_sec);
+            _Utc._Sub_sec = _File_time - _File_seconds;
+
+            if (_Ec != __std_file_time_to_utc_errc::_Invalid_parameter) {
+                return _Utc;
+            }
+
+            constexpr sys_seconds _Epoch = sys_days{year{1601} / January / 1};
+            _Utc._Whole_sec              = _Civil_from_sys_seconds(_Epoch + _File_seconds.time_since_epoch());
+            return _Utc;
+        }
+
+        template <class _Duration>
+        _NODISCARD static chrono::file_time<common_type_t<_Duration, chrono::seconds>> _From_utc_components(
+            const chrono::_Utc_components<_Duration>& _Utc) noexcept {
+            using namespace chrono;
+            using _Common = common_type_t<_Duration, chrono::seconds>;
+
+            long long _File_seconds;
+            const __std_utc_to_file_time_errc _Ec =
+                __std_utc_components_to_file_seconds(&_Utc._Whole_sec, &_File_seconds);
+
+            if (_Ec == __std_utc_to_file_time_errc::_Nonexistent) {
+                // unrepresentable second 60, deleted second 59, or nonexistent second 60
+                using _Common_rep = typename _Common::rep;
+                if constexpr (treat_as_floating_point_v<_Common_rep>) {
+                    // TRANSITION, GH-1909
+                    const _Common_rep _Next_representable = _Common{seconds{_File_seconds}}.count();
+                    const _Common_rep _Prev_representable =
+                        _STD nextafter(_Next_representable, -numeric_limits<_Common_rep>::infinity());
+                    return file_time<_Common>{_Common{_Prev_representable}};
+                } else {
+                    return file_time<_Common>{seconds{_File_seconds} - _Common{1}};
+                }
+            }
+
+            if (_Ec != __std_utc_to_file_time_errc::_Invalid_parameter) {
+                return file_time<_Common>{seconds{_File_seconds} + _Utc._Sub_sec};
+            }
+
+            constexpr sys_time<_Common> _Epoch = sys_days{year{1601} / January / 1};
+            return file_time<_Common>{system_clock::_From_utc_components(_Utc) - _Epoch};
         }
 #endif // ^^^ _HAS_CXX20
     };
