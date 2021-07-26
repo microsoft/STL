@@ -8,6 +8,7 @@
 #define _CHRONO_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <cmath>
 #include <ctime>
 #include <limits>
 #include <ratio>
@@ -19,7 +20,6 @@
 #include <__msvc_tzdb.hpp>
 #include <algorithm>
 #include <atomic>
-#include <cmath>
 #include <compare>
 #include <forward_list>
 #include <istream>
