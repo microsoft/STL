@@ -1539,7 +1539,6 @@ public:
         is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
         const pointer _Whereptr = _Where._Ptr;
         auto& _My_data          = _Mypair._Myval2;
-        pointer& _Myfirst       = _My_data._Myfirst;
         pointer& _Mylast        = _My_data._Mylast;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
@@ -1548,7 +1547,7 @@ public:
             "vector erase iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        _ASAN_ANNOTATE(*this, static_cast<size_type>(_Mylast - _Myfirst) - 1);
+        _ASAN_ANNOTATE(*this, static_cast<size_type>(_Mylast - _My_data._Myfirst) - 1);
 
         _Orphan_range(_Whereptr, _Mylast);
         _Move_unchecked(_Whereptr + 1, _Mylast, _Whereptr);
