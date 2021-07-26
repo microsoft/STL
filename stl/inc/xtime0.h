@@ -14,6 +14,8 @@
 
 #include <yvals_core.h>
 
+#include <type_traits>
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)

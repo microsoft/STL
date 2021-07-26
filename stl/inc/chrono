@@ -681,7 +681,7 @@ namespace chrono {
             "This algorithm has not been ported to a 16 bit unsigned integer");
         static_assert(
             numeric_limits<int>::digits >= 26, "This algorithm has not been ported to a 16 bit signed integer");
-        const int _Yp          = static_cast<int>(_Year) - (_Month <= 2);
+        const int _Yp          = _Year - (_Month <= 2);
         const int _Century     = (_Yp >= 0 ? _Yp : _Yp - 99) / 100;
         const unsigned int _Mp = _Month + (_Month > 2 ? static_cast<unsigned int>(-3) : 9); // [0, 11]
         // Formula 1
@@ -6729,12 +6729,6 @@ _NODISCARD bool _To_xtime_10_day_clamped_v2(
     _Tx0 -= _Whole_seconds;
     _Xt.nsec = static_cast<long>(_Tx0.count());
     return _Clamped;
-}
-
-template <class _Rep, class _Period>
-_NODISCARD bool _To_xtime_10_day_clamped(_CSTD xtime& _Xt, const _CHRONO duration<_Rep, _Period>& _Rel_time) noexcept(
-    is_arithmetic_v<_Rep>) {
-    return _To_xtime_10_day_clamped_v2(_Xt, _Rel_time);
 }
 
 // duration LITERALS
