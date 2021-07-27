@@ -42,6 +42,8 @@ _NODISCARD constexpr bool has_single_bit(const _Ty _Val) noexcept {
     return _Val != 0 && (_Val & (_Val - 1)) == 0;
 }
 
+inline void _Precondition_violation_in_bit_ceil() noexcept {}
+
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
     if (_Val <= 1u) {
@@ -61,8 +63,9 @@ _NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
             // "Preconditions: N is representable as a value of type T."
             // "Remarks: A function call expression that violates the precondition in the Preconditions: element
             // is not a core constant expression (7.7)."
-            constexpr int _Offset_for_ub = numeric_limits<unsigned int>::digits - numeric_limits<_Ty>::digits;
-            return static_cast<_Ty>(1u << (_Num + _Offset_for_ub) >> _Offset_for_ub);
+            if (_Num == numeric_limits<_Ty>::digits) {
+                _Precondition_violation_in_bit_ceil();
+            }
         }
     }
 
