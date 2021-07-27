@@ -1638,7 +1638,7 @@ namespace ranges {
                 : _Current{_STD move(_It._Current)}, _Parent{_It._Parent} {}
             // clang-format on
 
-            _NODISCARD constexpr const iterator_t<_Base>& base() const& /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept /* strengthened */ {
                 return _Current;
             }
             _NODISCARD constexpr iterator_t<_Base> base() && noexcept(
@@ -4060,7 +4060,7 @@ namespace ranges {
                 : _Current{_STD move(_It._Current)} {}
             // clang-format on
 
-            _NODISCARD constexpr const iterator_t<_Base>& base() const& /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept /* strengthened */ {
                 return _Current;
             }
 
