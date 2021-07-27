@@ -5971,12 +5971,8 @@ _NODISCARD _CONSTEXPR_BIT_CAST _Ty _Float_copysign(const _Ty _Magnitude, const _
 // FUNCTION TEMPLATE _Is_nan
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_nan(const _Ty _Xx) { // constexpr isnan()
-#if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
-    return _CSTD _LDtest(&_Xx) == _NANCODE;
-#else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
     using _Traits = _Floating_type_traits<_Ty>;
     return _Float_abs_bits(_Xx) > _Traits::_Shifted_exponent_mask;
-#endif // ^^^ 64-bit long double ^^^
 }
 
 // FUNCTION TEMPLATE _Is_signaling_nan
@@ -6002,7 +5998,7 @@ _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_inf(const _Ty _Xx) { // constexpr isinf(
 template <class _Ty, enable_if_t<is_floating_point_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
 #if defined(__LDBL_DIG__) && __LDBL_DIG__ == 18
-    return _CSTD _LDtest(&_Xx) == _INFCODE;
+    return _CSTD _LDtest(&_Xx) == _FINITE;
 #else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
     using _Traits = _Floating_type_traits<_Ty>;
     return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
