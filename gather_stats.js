@@ -11,7 +11,7 @@ const { DateTime, Duration, Settings } = require('luxon');
 const { graphql } = require('@octokit/graphql');
 const yargs = require('yargs/yargs');
 
-Settings.defaultZoneName = 'America/Los_Angeles';
+Settings.defaultZone = 'America/Los_Angeles';
 
 if (process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN === undefined) {
     // GitHub Actions will provide the PAT as an environment variable. Otherwise, we need to load the .env file.
