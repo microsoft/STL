@@ -202,12 +202,12 @@ struct _Unicode_Property_Data {
 // The data format is a set of arrays for each character property. The first is an array of uint32_t encoding
 // the lower bound of each range of codepoints that has the given property. The second is an array of uint16_t encoding
 // both the range size and property value as follows:
-// 16               12               8                   0
+// 16               12                 8                 0
 // +-----------------------------------------------------+
-// | proprety_value  |              range_size           |
+// | property_value  |              range_size           |
 // +-----------------------------------------------------+
 // that is: the size is stored in the least significant 12 bits (leading to a max size of 4095), and the property value
-// is stored in the most significant 4 bits, leading to a maximum of 15 property values.
+// is stored in the most significant 4 bits, leading to a maximum of 16 property values.
 //
 // Note that the Extended_Pictographic property only has one value, and we endode it as zero in the most significant 4
 // bits so the most significant 4 bits of _Extended_Pictographic_Props_And_Range is "unused", in some sense.
