@@ -52,12 +52,15 @@ _NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
 
     if constexpr (sizeof(_Ty) < sizeof(unsigned int)) { // for types subject to integral promotion
         if (_STD is_constant_evaluated()) {
-            // because https://en.cppreference.com/w/cpp/language/implicit_conversion#Integral_promotion
+            // Because N4892 [expr.shift]/1 "integral promotions are performed"
             // the compiler will not generate a compile time error for
             // uint8_t{1} << 8
             // or
             // uint16_t{1} << 16
-            // so we do conversions to work with the "unsigned int" type, for which the compiler will generate errors
+            // so we must manually enforce N4892 [bit.pow.two]/5, 8:
+            // "Preconditions: N is representable as a value of type T."
+            // "Remarks: A function call expression that violates the precondition in the Preconditions: element
+            // is not a core constant expression (7.7)."
             constexpr int _Offset_for_ub = numeric_limits<unsigned int>::digits - numeric_limits<_Ty>::digits;
             return static_cast<_Ty>(1u << (_Num + _Offset_for_ub) >> _Offset_for_ub);
         }
