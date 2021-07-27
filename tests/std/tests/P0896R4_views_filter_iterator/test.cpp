@@ -89,7 +89,7 @@ struct iterator_instantiator {
             static_assert(noexcept(*i0));
 
             assert(ranges::iter_move(i0) == 0); // NB: moving from int leaves it unchanged
-            // static_assert(noexcept(ranges::iter_move(i0)));
+            static_assert(noexcept(ranges::iter_move(i0)) == noexcept(ranges::iter_move(declval<Iter>())));
 
             if constexpr (forward_iterator<Iter>) {
                 auto i1 = ranges::next(i0);
