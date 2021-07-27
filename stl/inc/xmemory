@@ -782,7 +782,6 @@ struct _Simple_types { // wraps types from allocators with simple addressing for
 };
 
 #if _HAS_CXX23
-// STRUCT TEMPLATE allocation_result
 template <class _Ptr>
 struct allocation_result {
     _Ptr ptr;
@@ -790,7 +789,6 @@ struct allocation_result {
 };
 
 #ifdef __cpp_lib_concepts
-// FUNCTION TEMPLATE allocate_at_least
 template <class _Alloc>
 concept _Has_member_allocate_at_least = requires(_Alloc _Al, size_t _Count) {
     _Al.allocate_at_least(_Count);
