@@ -444,8 +444,8 @@ STATIC_ASSERT(!std::is_trivially_copyable_v<std::allocation_result<fancy_pointer
 #ifdef __cpp_lib_concepts
 STATIC_ASSERT(std::is_same_v<decltype(std::allocate_at_least(std::declval<fancy_allocator<int>&>(), std::size_t{})),
     std::allocation_result<fancy_pointer<int>>>);
-#endif
-#endif
+#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23
 
 void instantiate() {
     random_iterators_test<std::deque<T1, fancy_allocator<T1>>>();

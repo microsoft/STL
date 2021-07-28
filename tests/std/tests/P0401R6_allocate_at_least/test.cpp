@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <concepts>
 #include <memory>
 #include <numeric>
 #include <type_traits>
