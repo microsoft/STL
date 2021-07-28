@@ -464,7 +464,7 @@ public:
     constexpr _Asan_annotater(const _Ty& _Target) : _Target_vec(_Target), _Old_last(nullptr) {}
 
     _CONSTEXPR20 _Asan_annotater(const _Ty& _Target, _Size_type _New_size) : _Target_vec(_Target) {
-#ifdef __cpp_lib_constexpr_dynamic_alloc
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return;
         }
