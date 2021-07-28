@@ -6002,7 +6002,7 @@ _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isf
 #else // ^^^ 80-bit long double (not supported by MSVC in general, see GH-1316) / 64-bit long double vvv
     using _Traits = _Floating_type_traits<_Ty>;
     return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
-#endif // ^^^ 64-bit long double ^^^
+#endif // 64-bit long double
 }
 
 // STRUCT _Nontrivial_dummy_type
