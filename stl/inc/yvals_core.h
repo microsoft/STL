@@ -61,7 +61,6 @@
 // P1164R1 Making create_directory() Intuitive
 // P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
-// P1951R1 Default Template Arguments For pair's Forwarding Constructor
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -264,6 +263,7 @@
 // P1048R1 is_scoped_enum
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
+// P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support

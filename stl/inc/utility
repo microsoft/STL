@@ -185,14 +185,19 @@ struct pair { // store a pair of values
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
 #if _HAS_CONDITIONAL_EXPLICIT
+#if _HAS_CXX23
     template <class _Other1 = _Ty1, class _Other2 = _Ty2,
+#else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
+    template <class _Other1, class _Other2,
+#endif // ^^^ !_HAS_CXX23 ^^^
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
     constexpr explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(_Other1&& _Val1, _Other2&& _Val2) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
-        : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {}
+        : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {
+    }
 #else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Other1 = _Ty1, class _Other2 = _Ty2,
+    template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>,
                         is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>,
             int> = 0>
@@ -200,7 +205,7 @@ struct pair { // store a pair of values
         is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {}
 
-    template <class _Other1 = _Ty1, class _Other2 = _Ty2,
+    template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>,
                         negation<conjunction<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>>>,
             int> = 0>
