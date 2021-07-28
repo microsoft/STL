@@ -444,12 +444,13 @@ constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain
 extern "C" void __sanitizer_annotate_contiguous_container(const void*, const void*, const void*, const void*);
 
 template <class _Vec, class = void>
-bool _Has_minimum_allocation_alignment = disjunction_v<bool_constant<alignof(typename _Vec::value_type) >= 8>,
-    is_same<typename _Vec::allocator_type, allocator<typename _Vec::value_type>>>::value;
+constexpr bool _Has_minimum_allocation_alignment = disjunction_v<bool_constant<alignof(typename _Vec::value_type) >= 8>,
+    is_same<typename _Vec::allocator_type, allocator<typename _Vec::value_type>>>;
 
 template <class _Vec>
-bool _Has_minimum_allocation_alignment<_Vec, void_t<decltype(_Vec::allocator_type::_Minimum_allocation_alignment)>> =
-    _Vec::allocator_type::_Minimum_allocation_alignment >= 8;
+constexpr bool
+    _Has_minimum_allocation_alignment<_Vec, void_t<decltype(_Vec::allocator_type::_Minimum_allocation_alignment)>> =
+        _Vec::allocator_type::_Minimum_allocation_alignment >= 8;
 
 template <class _Ty, bool = _Has_minimum_allocation_alignment<_Ty>>
 class _NODISCARD _Asan_annotater {
@@ -460,7 +461,7 @@ private:
     using _Value_type = typename _Ty::value_type;
 
 public:
-    constexpr _Asan_annotater(const _Ty& _Target) : _Target_vec(_Target), _Old_last(nullptr) {}
+    explicit constexpr _Asan_annotater(const _Ty& _Target) noexcept : _Target_vec(_Target), _Old_last(nullptr) {}
 
     _CONSTEXPR20 _Asan_annotater(const _Ty& _Target, const _Size_type _New_size)
         : _Target_vec(_Target), _Old_last(nullptr) {
@@ -487,7 +488,7 @@ public:
     }
 
     _CONSTEXPR20 ~_Asan_annotater() {
-#ifdef _HAS_CXX20
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return;
         }
@@ -541,10 +542,11 @@ private:
     }
 
 public:
-    constexpr _Asan_annotater(const _Ty& _Target) : _Target_vec(_Target), _Old_last(nullptr), _Aligned_first(nullptr) {}
+    explicit constexpr _Asan_annotater(const _Ty& _Target) noexcept
+        : _Target_vec(_Target), _Old_last(nullptr), _Aligned_first(nullptr) {}
 
     _CONSTEXPR20 _Asan_annotater(const _Ty& _Target, _Size_type _New_size) : _Target_vec(_Target), _Old_last(nullptr) {
-#ifdef _HAS_CXX20
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return;
         }
@@ -575,7 +577,7 @@ public:
     }
 
     _CONSTEXPR20 ~_Asan_annotater() {
-#ifdef _HAS_CXX20
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return;
         }
