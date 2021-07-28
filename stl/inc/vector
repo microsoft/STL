@@ -468,7 +468,7 @@ public:
         if (_STD is_constant_evaluated()) {
             return;
         }
-#endif // __cpp_lib_constexpr_dynamic_alloc
+#endif // _HAS_CXX20
 
         const auto& _My_data     = _Target_vec._Mypair._Myval2;
         const _Pointer& _Myfirst = _My_data._Myfirst;
