@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// REQUIRES: asan
+// REQUIRES: asan, x64 || x86
 
 #include <cassert>
 #include <list>
