@@ -1088,12 +1088,12 @@ public:
     _Container_proxy* _Myproxy = nullptr;
 
 private:
-    _CONSTEXPR20 void _Orphan_all_unlocked() noexcept;
+    _CONSTEXPR20 void _Orphan_all_unlocked_v3() noexcept;
     _CONSTEXPR20 void _Swap_proxy_and_iterators_unlocked(_Container_base12&) noexcept;
 
-    void _Orphan_all_locked() noexcept {
+    void _Orphan_all_locked_v3() noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
-        _Orphan_all_unlocked();
+        _Orphan_all_unlocked_v3();
     }
 
     void _Swap_proxy_and_iterators_locked(_Container_base12& _Right) noexcept {
@@ -1130,11 +1130,11 @@ public:
     _CONSTEXPR20 ~_Iterator_base12() noexcept {
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
-            _Orphan_me_unlocked();
+            _Orphan_me_unlocked_v3();
         } else
 #endif // _HAS_CXX20
         {
-            _Orphan_me_locked();
+            _Orphan_me_locked_v3();
         }
     }
 
@@ -1177,7 +1177,7 @@ private:
         if (_Right._Myproxy) {
             _Adopt_unlocked(_Right._Myproxy->_Mycont);
         } else { // becoming invalid, disown current parent
-            _Orphan_me_unlocked();
+            _Orphan_me_unlocked_v3();
         }
     }
 
@@ -1188,14 +1188,14 @@ private:
 
     _CONSTEXPR20 void _Adopt_unlocked(const _Container_base12* _Parent) noexcept {
         if (!_Parent) {
-            _Orphan_me_unlocked();
+            _Orphan_me_unlocked_v3();
             return;
         }
 
         _Container_proxy* _Parent_proxy = _Parent->_Myproxy;
         if (_Myproxy != _Parent_proxy) { // change parentage
             if (_Myproxy) { // adopted, remove self from list
-                _Orphan_me_unlocked();
+                _Orphan_me_unlocked_v3();
             }
             _Mynextiter                 = _Parent_proxy->_Myfirstiter;
             _Parent_proxy->_Myfirstiter = this;
@@ -1208,7 +1208,7 @@ private:
         _Adopt_unlocked(_Parent);
     }
 
-    _CONSTEXPR20 void _Orphan_me_unlocked() noexcept {
+    _CONSTEXPR20 void _Orphan_me_unlocked_v3() noexcept {
         if (!_Myproxy) { // already orphaned
             return;
         }
@@ -1225,15 +1225,15 @@ private:
         _Myproxy = nullptr;
     }
 
-    void _Orphan_me_locked() noexcept {
+    void _Orphan_me_locked_v3() noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
-        _Orphan_me_unlocked();
+        _Orphan_me_unlocked_v3();
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 };
 
 // MEMBER FUNCTIONS FOR _Container_base12
-_CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked() noexcept {
+_CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked_v3() noexcept {
     if (!_Myproxy) { // no proxy, already done
         return;
     }
@@ -1249,11 +1249,11 @@ _CONSTEXPR20 void _Container_base12::_Orphan_all() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
 #if _HAS_CXX20
     if (_STD is_constant_evaluated()) {
-        _Orphan_all_unlocked();
+        _Orphan_all_unlocked_v3();
     } else
 #endif // _HAS_CXX20
     {
-        _Orphan_all_locked();
+        _Orphan_all_locked_v3();
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 }
