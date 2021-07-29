@@ -9,12 +9,12 @@
 using namespace std;
 
 // Concurrently destroy and invalidate iterators
-template <class container>
+template <class Container>
 void test_concurrent_destruction() {
-    container c;
+    Container c;
     c.insert(c.begin(), 0);
 
-    vector<typename container::iterator> iters(1000, c.begin());
+    vector<typename Container::iterator> iters(1000, c.begin());
     {
         auto destroyIters = async(launch::async, [&]() { iters.clear(); });
 
@@ -23,12 +23,12 @@ void test_concurrent_destruction() {
 }
 
 // Concurrently create and invalidate iterators
-template <class container>
+template <class Container>
 void test_concurrent_creation() {
-    container c;
+    Container c;
     c.insert(c.begin(), 0);
 
-    vector<typename container::iterator> iters;
+    vector<typename Container::iterator> iters;
     iters.reserve(1000);
 
     const auto iter = c.begin();
