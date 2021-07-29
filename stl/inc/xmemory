@@ -1186,7 +1186,7 @@ private:
             return;
         }
 
-        if (_Right._Myproxy && _Right._Myproxy->_Mycont) {
+        if (_Right._Myproxy) {
             _Adopt_unlocked(_Right._Myproxy->_Mycont);
         } else { // becoming invalid, disown current parent
             _Orphan_me_unlocked();
