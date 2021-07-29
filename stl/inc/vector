@@ -441,14 +441,14 @@ constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain
 }
 
 #ifdef __SANITIZE_ADDRESS__
-extern "C" void __sanitizer_annotate_contiguous_container(const void*, const void*, const void*, const void*);
+extern "C" void __sanitizer_annotate_contiguous_container(const void* _First, const void* _End, const void* _Old_last, const void* _New_last) noexcept;
 
 template <class _Vec, class = void>
-constexpr bool _Has_minimum_allocation_alignment = disjunction_v<bool_constant<alignof(typename _Vec::value_type) >= 8>,
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment = disjunction_v<bool_constant<alignof(typename _Vec::value_type) >= 8>,
     is_same<typename _Vec::allocator_type, allocator<typename _Vec::value_type>>>;
 
 template <class _Vec>
-constexpr bool
+_INLINE_VAR constexpr bool
     _Has_minimum_allocation_alignment<_Vec, void_t<decltype(_Vec::allocator_type::_Minimum_allocation_alignment)>> =
         _Vec::allocator_type::_Minimum_allocation_alignment >= 8;
 
@@ -477,13 +477,16 @@ public:
         const _Pointer& _Myend   = _My_data._Myend;
 
         if (_New_size > static_cast<_Size_type>(_Myend - _Myfirst)) {
+            // New size is larger than current capacity; assume we're allocating a new block.
             return;
         }
 
-        _Old_last = static_cast<const void*>(_Mylast);
+        // New size is less than current capacity; assume we're reusing the same block.
+        _Old_last = _Unfancy_maybe_null(_Mylast);
 
         if (_New_size > static_cast<_Size_type>(_Mylast - _Myfirst)) {
-            __sanitizer_annotate_contiguous_container(_Myfirst, _Myend, _Old_last, _Myfirst + _New_size);
+            const auto _Raw_first = _Unfancy(_Myfirst);
+            __sanitizer_annotate_contiguous_container(_Raw_first, _Unfancy(_Myend), _Old_last, _Raw_first + _New_size);
         }
     }
 
@@ -563,7 +566,7 @@ public:
 
         _Aligned_first = _Get_aligned_start();
         if (!_Aligned_first) {
-            _Old_last = _Myend;
+            _Old_last = _Unfancy(_Myend);
             return;
         } else {
             const void* _New_last = static_cast<const void*>(_Myfirst + _New_size);
@@ -643,7 +646,7 @@ public:
 
 private:
 #ifdef __SANITIZE_ADDRESS__
-    friend _Asan_annotater<vector<_Ty, _Alloc>>;
+    friend _Asan_annotater<vector>;
 #endif // __SANITIZE_ADDRESS__
 
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
@@ -1038,7 +1041,6 @@ private:
         auto& _Al        = _Getal();
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
-
 
         const pointer _Oldfirst     = _My_data._Myfirst;
         const pointer _Oldlast      = _Mylast;
