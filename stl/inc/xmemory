@@ -1148,18 +1148,6 @@ public:
             _Adopt_locked(_Parent);
         }
     }
-
-    _CONSTEXPR20 void _Orphan_me_v2() noexcept {
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _Orphan_me_unlocked();
-        } else
-#endif // _HAS_CXX20
-        {
-            _Orphan_me_locked();
-        }
-    }
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
     _CONSTEXPR20 void _Adopt(const _Container_base12* _Parent) noexcept {
         if (_Parent) { // have a parent, do adoption
