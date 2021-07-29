@@ -1112,11 +1112,11 @@ public:
 
     _CONSTEXPR20 _Iterator_base12& operator=(const _Iterator_base12& _Right) noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-#ifdef __cpp_lib_constexpr_dynamic_alloc
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             _Assign_unlocked(_Right);
         } else
-#endif // __cpp_lib_constexpr_dynamic_alloc
+#endif // _HAS_CXX20
         {
             _Assign_locked(_Right);
         }
@@ -1134,33 +1134,33 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
     _CONSTEXPR20 ~_Iterator_base12() noexcept {
-#ifdef __cpp_lib_constexpr_dynamic_alloc
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             _Orphan_me_unlocked();
         } else
-#endif // __cpp_lib_constexpr_dynamic_alloc
+#endif // _HAS_CXX20
         {
             _Orphan_me_locked();
         }
     }
 
     _CONSTEXPR20 void _Adopt(const _Container_base12* _Parent) noexcept {
-#ifdef __cpp_lib_constexpr_dynamic_alloc
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             _Adopt_unlocked(_Parent);
         } else
-#endif // __cpp_lib_constexpr_dynamic_alloc
+#endif // _HAS_CXX20
         {
             _Adopt_locked(_Parent);
         }
     }
 
     _CONSTEXPR20 void _Orphan_me_v2() noexcept {
-#ifdef __cpp_lib_constexpr_dynamic_alloc
+#if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             _Orphan_me_unlocked();
         } else
-#endif // __cpp_lib_constexpr_dynamic_alloc
+#endif // _HAS_CXX20
         {
             _Orphan_me_locked();
         }
@@ -1265,11 +1265,11 @@ _CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked() noexcept {
 
 _CONSTEXPR20 void _Container_base12::_Orphan_all() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-#ifdef __cpp_lib_constexpr_dynamic_alloc
+#if _HAS_CXX20
     if (_STD is_constant_evaluated()) {
         _Orphan_all_unlocked();
     } else
-#endif // __cpp_lib_constexpr_dynamic_alloc
+#endif // _HAS_CXX20
     {
         _Orphan_all_locked();
     }
