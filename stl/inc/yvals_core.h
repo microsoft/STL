@@ -260,6 +260,7 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
+// P0401R6 Providing Size Feedback In The Allocator Interface
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
 // P1679R3 contains() For basic_string/basic_string_view
@@ -1351,6 +1352,10 @@
 
 // C++23
 #if _HAS_CXX23
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_allocate_at_least 202106L
+#endif // __cpp_lib_concepts
+
 #define __cpp_lib_is_scoped_enum 202011L
 
 #ifdef __cpp_lib_concepts
