@@ -710,9 +710,18 @@ namespace chrono {
             // It assumes that _Freq * period::den does not overflow, which is currently true for nano period.
             // It is not realistic for _Ctr to accumulate to large values from zero with this assumption,
             // but the initial value of _Ctr could be large.
-            const long long _Whole = (_Ctr / _Freq) * period::den;
-            const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
-            return time_point(duration(_Whole + _Part));
+            // 10 MHz is a very common QPC frequency on modern PCs. Optimizing for
+            // this specific frequency can double the performance of this function by
+            // avoiding the expensive frequency conversion path.
+            if (_Freq == 10000000) {
+                static_assert(period::den % 10000000 == 0, "It should never fail.");
+                constexpr long long _Multiplier = period::den / 10000000;
+                return time_point(duration(_Ctr * _Multiplier));
+            } else {
+                const long long _Whole = (_Ctr / _Freq) * period::den;
+                const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
+                return time_point(duration(_Whole + _Part));
+            }
         }
     };
 
