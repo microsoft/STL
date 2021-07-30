@@ -386,6 +386,7 @@ tests\P0896R4_views_elements
 tests\P0896R4_views_empty
 tests\P0896R4_views_filter
 tests\P0896R4_views_filter_death
+tests\P0896R4_views_filter_iterator
 tests\P0896R4_views_iota
 tests\P0896R4_views_join
 tests\P0896R4_views_reverse
@@ -408,6 +409,7 @@ tests\P1007R3_assume_aligned
 tests\P1020R1_smart_pointer_for_overwrite
 tests\P1023R0_constexpr_for_array_comparisons
 tests\P1032R1_miscellaneous_constexpr
+tests\P1132R7_out_ptr
 tests\P1135R6_atomic_flag_test
 tests\P1135R6_atomic_wait
 tests\P1135R6_atomic_wait_vista
@@ -421,6 +423,7 @@ tests\P1502R1_standard_library_header_units
 tests\P1614R2_spaceship
 tests\P1645R1_constexpr_numeric
 tests\P1682R3_to_underlying
+tests\P1951R1_default_arguments_pair_forward_ctor
 tests\P2162R2_std_visit_for_derived_classes_from_variant
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions
