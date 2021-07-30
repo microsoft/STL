@@ -503,9 +503,14 @@ public:
         const _Pointer& _Myend   = _My_data._Myend;
 
         if (!_Old_last) {
-            __sanitizer_annotate_contiguous_container(_Myfirst, _Myend, _Myend, _Mylast);
-        } else if (static_cast<const void*>(_Mylast) < _Old_last) {
-            __sanitizer_annotate_contiguous_container(_Myfirst, _Myend, _Old_last, _Mylast);
+            const _Raw_end = _Unfancy(_Myend);
+            __sanitizer_annotate_contiguous_container(_Myfirst, _Raw_end, _Raw_end, _Mylast);
+            return;
+        }
+
+        const _Raw_last = _Unfancy(_Mylast);
+        if (static_cast<const void*>(_Raw_last) < _Old_last) {
+            __sanitizer_annotate_contiguous_container(_Unfancy(_Myfirst), _Unfancy(_Myend), _Old_last, _Raw_last);
         }
     }
 
