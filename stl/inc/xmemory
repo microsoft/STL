@@ -1120,12 +1120,12 @@ public:
     _Container_proxy* _Myproxy = nullptr;
 
 private:
-    _CONSTEXPR20 void _Orphan_all_unlocked() noexcept;
+    _CONSTEXPR20 void _Orphan_all_unlocked_v3() noexcept;
     _CONSTEXPR20 void _Swap_proxy_and_iterators_unlocked(_Container_base12&) noexcept;
 
-    void _Orphan_all_locked() noexcept {
+    void _Orphan_all_locked_v3() noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
-        _Orphan_all_unlocked();
+        _Orphan_all_unlocked_v3();
     }
 
     void _Swap_proxy_and_iterators_locked(_Container_base12& _Right) noexcept {
@@ -1143,56 +1143,43 @@ public:
     }
 
     _CONSTEXPR20 _Iterator_base12& operator=(const _Iterator_base12& _Right) noexcept {
-        if (_Myproxy != _Right._Myproxy) {
-            if (_Right._Myproxy) {
-                _Adopt(_Right._Myproxy->_Mycont);
-            } else { // becoming invalid, disown current parent
 #if _ITERATOR_DEBUG_LEVEL == 2
-                _Orphan_me_v2();
-#else // _ITERATOR_DEBUG_LEVEL == 2
-                _Myproxy = nullptr;
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-            }
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            _Assign_unlocked(_Right);
+        } else
+#endif // _HAS_CXX20
+        {
+            _Assign_locked(_Right);
         }
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
+        _Myproxy = _Right._Myproxy;
+#endif // _ITERATOR_DEBUG_LEVEL != 2
         return *this;
     }
 
 #if _ITERATOR_DEBUG_LEVEL == 2
     _CONSTEXPR20 ~_Iterator_base12() noexcept {
-        _Orphan_me_v2();
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            _Orphan_me_unlocked_v3();
+        } else
+#endif // _HAS_CXX20
+        {
+            _Orphan_me_locked_v3();
+        }
     }
 
     _CONSTEXPR20 void _Adopt(const _Container_base12* _Parent) noexcept {
-        if (_Parent) { // have a parent, do adoption
-            _Container_proxy* _Parent_proxy = _Parent->_Myproxy;
-            if (_Myproxy != _Parent_proxy) { // change parentage
 #if _HAS_CXX20
-                if (_STD is_constant_evaluated()) {
-                    _Adopt_unlocked(_Parent_proxy);
-                } else
+        if (_STD is_constant_evaluated()) {
+            _Adopt_unlocked(_Parent);
+        } else
 #endif // _HAS_CXX20
-                {
-                    _Adopt_locked(_Parent_proxy);
-                }
-            }
-        } else { // no future parent, just disown current parent
-            _Orphan_me_v2();
+        {
+            _Adopt_locked(_Parent);
         }
     }
-
-    _CONSTEXPR20 void _Orphan_me_v2() noexcept {
-        if (_Myproxy) { // adopted, remove self from list
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) {
-                _Orphan_me_unlocked();
-            } else
-#endif // _HAS_CXX20
-            {
-                _Orphan_me_locked();
-            }
-        }
-    }
-
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 ^^^ / vvv _ITERATOR_DEBUG_LEVEL != 2 vvv
     _CONSTEXPR20 void _Adopt(const _Container_base12* _Parent) noexcept {
         if (_Parent) { // have a parent, do adoption
@@ -1214,21 +1201,51 @@ public:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
 private:
-    _CONSTEXPR20 void _Adopt_unlocked(_Container_proxy* _Parent_proxy) noexcept {
-        if (_Myproxy) { // adopted, remove self from list
-            _Orphan_me_unlocked();
+    _CONSTEXPR20 void _Assign_unlocked(const _Iterator_base12& _Right) noexcept {
+        if (_Myproxy == _Right._Myproxy) {
+            return;
         }
-        _Mynextiter                 = _Parent_proxy->_Myfirstiter;
-        _Parent_proxy->_Myfirstiter = this;
-        _Myproxy                    = _Parent_proxy;
+
+        if (_Right._Myproxy) {
+            _Adopt_unlocked(_Right._Myproxy->_Mycont);
+        } else { // becoming invalid, disown current parent
+            _Orphan_me_unlocked_v3();
+        }
     }
 
-    void _Adopt_locked(_Container_proxy* _Parent_proxy) noexcept {
+    void _Assign_locked(const _Iterator_base12& _Right) noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
-        _Adopt_unlocked(_Parent_proxy);
+        _Assign_unlocked(_Right);
     }
 
-    _CONSTEXPR20 void _Orphan_me_unlocked() noexcept {
+    _CONSTEXPR20 void _Adopt_unlocked(const _Container_base12* _Parent) noexcept {
+        if (!_Parent) {
+            _Orphan_me_unlocked_v3();
+            return;
+        }
+
+        _Container_proxy* _Parent_proxy = _Parent->_Myproxy;
+        if (_Myproxy != _Parent_proxy) { // change parentage
+            if (_Myproxy) { // adopted, remove self from list
+                _Orphan_me_unlocked_v3();
+            }
+            _Mynextiter                 = _Parent_proxy->_Myfirstiter;
+            _Parent_proxy->_Myfirstiter = this;
+            _Myproxy                    = _Parent_proxy;
+        }
+    }
+
+    void _Adopt_locked(const _Container_base12* _Parent) noexcept {
+        _Lockit _Lock(_LOCK_DEBUG);
+        _Adopt_unlocked(_Parent);
+    }
+
+    _CONSTEXPR20 void _Orphan_me_unlocked_v3() noexcept {
+        if (!_Myproxy) { // already orphaned
+            return;
+        }
+
+        // adopted, remove self from list
         _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
         while (*_Pnext && *_Pnext != this) {
             const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
@@ -1240,15 +1257,20 @@ private:
         _Myproxy = nullptr;
     }
 
-    void _Orphan_me_locked() noexcept {
+    void _Orphan_me_locked_v3() noexcept {
         _Lockit _Lock(_LOCK_DEBUG);
-        _Orphan_me_unlocked();
+        _Orphan_me_unlocked_v3();
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 };
 
 // MEMBER FUNCTIONS FOR _Container_base12
-_CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked() noexcept {
+_CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked_v3() noexcept {
+    if (!_Myproxy) { // no proxy, already done
+        return;
+    }
+
+    // proxy allocated, drain it
     for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
         _Pnext->_Myproxy = nullptr;
     }
@@ -1257,15 +1279,13 @@ _CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked() noexcept {
 
 _CONSTEXPR20 void _Container_base12::_Orphan_all() noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
-    if (_Myproxy) { // proxy allocated, drain it
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _Orphan_all_unlocked();
-        } else
+    if (_STD is_constant_evaluated()) {
+        _Orphan_all_unlocked_v3();
+    } else
 #endif // _HAS_CXX20
-        {
-            _Orphan_all_locked();
-        }
+    {
+        _Orphan_all_locked_v3();
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 }
