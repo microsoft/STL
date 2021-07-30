@@ -11,6 +11,7 @@
 #include <ctime>
 #include <limits>
 #include <ratio>
+#include <type_traits>
 #include <utility>
 #include <xtimec.h>
 
@@ -277,6 +278,13 @@ namespace chrono {
         _Duration _MyDur{duration::zero()}; // duration since the epoch
     };
 } // namespace chrono
+
+template <class _Rep, class _Period>
+_INLINE_VAR constexpr bool _Is_trivially_swappable_v<chrono::duration<_Rep, _Period>> = _Is_trivially_swappable_v<_Rep>;
+
+template <class _Clock, class _Duration>
+_INLINE_VAR constexpr bool _Is_trivially_swappable_v<chrono::time_point<_Clock, _Duration>> =
+    _Is_trivially_swappable_v<_Duration>;
 
 // STRUCT TEMPLATE _Lcm (LEAST COMMON MULTIPLE)
 template <intmax_t _Ax, intmax_t _Bx>
