@@ -31,10 +31,6 @@ struct _Init_wcout { // ensures that wcout is initialized
         if (_Ptr_wcerr != nullptr) {
             _Ptr_wcerr->tie(_Ptr_wcout);
         }
-
-        if (_Ptr_wclog != nullptr) {
-            _Ptr_wclog->tie(_Ptr_wcout);
-        }
     }
 };
 __PURE_APPDOMAIN_GLOBAL static _Init_wcout init_wcout;

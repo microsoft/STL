@@ -175,6 +175,7 @@ tests\GH_001411_core_headers
 tests\GH_001530_binomial_accuracy
 tests\GH_001541_case_sensitive_boolalpha
 tests\GH_001638_dllexport_derived_classes
+tests\GH_001850_clog_tied_to_cout
 tests\GH_002039_byte_is_not_trivially_swappable
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
