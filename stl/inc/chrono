@@ -702,8 +702,8 @@ namespace chrono {
         static constexpr bool is_steady = true;
 
         _NODISCARD static time_point now() noexcept { // get current time
-            const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
-            const long long _Ctr  = _Query_perf_counter();
+            static const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
+            const long long _Ctr         = _Query_perf_counter();
             static_assert(period::num == 1, "This assumes period::num == 1.");
             // Instead of just having "(_Ctr * period::den) / _Freq",
             // the algorithm below prevents overflow when _Ctr is sufficiently large.
