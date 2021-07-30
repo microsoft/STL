@@ -408,6 +408,7 @@ tests\P1007R3_assume_aligned
 tests\P1020R1_smart_pointer_for_overwrite
 tests\P1023R0_constexpr_for_array_comparisons
 tests\P1032R1_miscellaneous_constexpr
+tests\P1132R7_out_ptr
 tests\P1135R6_atomic_flag_test
 tests\P1135R6_atomic_wait
 tests\P1135R6_atomic_wait_vista

@@ -1185,6 +1185,20 @@ STATIC_ASSERT(__cpp_lib_optional == 201606L);
 #endif
 #endif
 
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_out_ptr
+#error __cpp_lib_out_ptr is not defined
+#elif __cpp_lib_out_ptr != 202106L
+#error __cpp_lib_out_ptr is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_out_ptr == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_out_ptr
+#error __cpp_lib_out_ptr is defined
+#endif
+#endif
+
 #if _HAS_CXX17 && !defined(_M_CEE)
 #ifndef __cpp_lib_parallel_algorithm
 #error __cpp_lib_parallel_algorithm is not defined
