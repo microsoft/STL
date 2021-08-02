@@ -194,9 +194,9 @@ bool test_operator_arrow() {
     return true;
 }
 
-// After P2259, common_iterator supports "copyable but not equality_comparable" iterators, which combination
-// test::iterator does not provide (I don't think this is a combination of properties that any real iterator will ever
-// exhibit). Whip up something so we can test the iterator_category metaprogramming.
+// common_iterator supports "copyable but not equality_comparable" iterators, which combination test::iterator does not
+// provide (I don't think this is a combination of properties that any real iterator will ever exhibit). Whip up
+// something so we can test the iterator_category metaprogramming.
 // clang-format off
 template <class T>
 concept no_iterator_traits = !requires { typename iterator_traits<T>::iterator_concept; }
