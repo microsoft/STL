@@ -4018,7 +4018,7 @@ namespace ranges {
         template <forward_range _Base>
         struct _Category_base<_Base> {
             using iterator_category =
-                conditional_t<is_rvalue_reference_v<decltype(_STD get<_Index>(*_STD declval<iterator_t<_Base>>()))>,
+                conditional_t<!is_lvalue_reference_v<decltype(_STD get<_Index>(*_STD declval<iterator_t<_Base>>()))>,
                     input_iterator_tag,
                     conditional_t<derived_from<_Iter_cat_t<iterator_t<_Base>>, random_access_iterator_tag>,
                         random_access_iterator_tag, _Iter_cat_t<iterator_t<_Base>>>>;
