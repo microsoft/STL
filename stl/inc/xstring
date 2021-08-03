@@ -550,7 +550,7 @@ template <class _Traits>
 struct _Char_traits_eq {
     using _Elem = typename _Traits::char_type;
 
-    bool operator()(_Elem _Left, _Elem _Right) const {
+    bool operator()(_Elem _Left, _Elem _Right) const noexcept {
         return _Traits::eq(_Left, _Right);
     }
 };
@@ -560,7 +560,7 @@ template <class _Traits>
 struct _Char_traits_lt {
     using _Elem = typename _Traits::char_type;
 
-    bool operator()(_Elem _Left, _Elem _Right) const {
+    bool operator()(_Elem _Left, _Elem _Right) const noexcept {
         return _Traits::lt(_Left, _Right);
     }
 };
@@ -698,7 +698,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
 template <class _Elem, bool = _Is_character<_Elem>::value>
 class _String_bitmap { // _String_bitmap for character types
 public:
-    constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) {
+    constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) noexcept {
         // mark this bitmap such that the characters in [_First, _Last) are intended to match
         // returns whether all inputs can be placed in the bitmap
         for (; _First != _Last; ++_First) {
@@ -708,7 +708,7 @@ public:
         return true;
     }
 
-    constexpr bool _Match(const _Elem _Ch) const { // test if _Ch is in the bitmap
+    constexpr bool _Match(const _Elem _Ch) const noexcept { // test if _Ch is in the bitmap
         return _Matches[static_cast<unsigned char>(_Ch)];
     }
 
@@ -723,7 +723,7 @@ public:
         "Standard char_traits is only provided for char, wchar_t, char16_t, and char32_t. See N5687 [char.traits]. "
         "Visual C++ accepts other unsigned integral types as an extension.");
 
-    constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) {
+    constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) noexcept {
         // mark this bitmap such that the characters in [_First, _Last) are intended to match
         // returns whether all inputs can be placed in the bitmap
         for (; _First != _Last; ++_First) {
@@ -738,7 +738,7 @@ public:
         return true;
     }
 
-    constexpr bool _Match(const _Elem _Ch) const { // test if _Ch is in the bitmap
+    constexpr bool _Match(const _Elem _Ch) const noexcept { // test if _Ch is in the bitmap
         return _Ch < 256U && _Matches[_Ch];
     }
 
