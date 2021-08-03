@@ -75,7 +75,7 @@ constexpr void test_integral() {
         static_assert(same_as<typename I::iterator_concept, random_access_iterator_tag>);
         static_assert(same_as<typename iterator_traits<I>::iterator_category, input_iterator_tag>);
 
-        assert(I{} == I{T{0}});
+        assert(I{} == (I{{}, T{0}}));
         static_assert(is_nothrow_default_constructible_v<I>);
         assert(I{} == I{});
         assert(!(I{} != I{}));
@@ -93,9 +93,9 @@ constexpr void test_integral() {
         assert(*second == T{1});
         static_assert(noexcept(*first));
 
-        assert(first == I{T{0}});
-        assert(second == I{T{1}});
-        static_assert(noexcept(noexcept(I{T{0}}))); // strengthened
+        assert(first == (I{{}, T{0}}));
+        assert(second == (I{{}, T{1}}));
+        static_assert(noexcept(noexcept(I{{}, T{0}}))); // strengthened
 
         {
             I tmp = first;

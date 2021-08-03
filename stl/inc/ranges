@@ -783,12 +783,6 @@ namespace ranges {
         using value_type       = _Wi;
         using difference_type  = _Iota_diff_t<_Wi>;
 
-        // clang-format off
-        _Ioterator() requires default_initializable<_Wi> = default;
-        // clang-format on
-
-        constexpr _Ioterator(const _Wi& _Value) noexcept(is_nothrow_copy_constructible_v<_Wi>) : _Current(_Value) {}
-
         _NODISCARD constexpr _Wi operator*() const noexcept(is_nothrow_copy_constructible_v<_Wi>) {
             return _Current;
         }
@@ -923,15 +917,15 @@ namespace ranges {
 
         _NODISCARD friend constexpr _Ioterator operator+(_Ioterator _It, const difference_type _Off) noexcept(
             noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
-            return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
+            return _Ioterator{{}, static_cast<_Wi>(_It._Current + _Off)};
         }
         _NODISCARD friend constexpr _Ioterator operator+(const difference_type _Off, _Ioterator _It) noexcept(
             noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
-            return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
+            return _Ioterator{{}, static_cast<_Wi>(_It._Current + _Off)};
         }
         _NODISCARD friend constexpr _Ioterator operator-(_Ioterator _It, const difference_type _Off) noexcept(
             noexcept(static_cast<_Wi>(_It._Current - _Off))) /* strengthened */ requires _Advanceable<_Wi> {
-            return _Ioterator{static_cast<_Wi>(_It._Current - _Off)};
+            return _Ioterator{{}, static_cast<_Wi>(_It._Current - _Off)};
         }
         _NODISCARD friend constexpr difference_type
             operator-(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
@@ -1023,11 +1017,13 @@ namespace ranges {
             : _Value(_STD move(_First._Current)), _Bound(_STD move(_Bound_from(_Last))) {}
 
         _NODISCARD constexpr _It begin() const noexcept(is_nothrow_copy_constructible_v<_Wi>) /* strengthened */ {
-            return _It{_Value};
+            return _It{{}, _Value};
         }
 
         _NODISCARD constexpr _Se end() const noexcept(is_nothrow_copy_constructible_v<_Bo>) /* strengthened */ {
-            if constexpr (same_as<_Bo, unreachable_sentinel_t>) {
+            if constexpr (same_as<_Wi, _Bo>) {
+                return _It{{}, _Bound};
+            } else if constexpr (same_as<_Bo, unreachable_sentinel_t>) {
                 return unreachable_sentinel;
             } else {
                 return _Se{_Bound};
