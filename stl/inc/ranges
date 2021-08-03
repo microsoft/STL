@@ -1298,7 +1298,9 @@ namespace ranges {
             // clang-format on
             using iterator_category =
                 conditional_t<derived_from<_Iter_cat_t<iterator_t<_View>>, bidirectional_iterator_tag>,
-                    bidirectional_iterator_tag, input_iterator_tag>;
+                    bidirectional_iterator_tag,
+                    conditional_t<derived_from<_Iter_cat_t<iterator_t<_View>>, forward_iterator_tag>,
+                        forward_iterator_tag, _Iter_cat_t<iterator_t<_View>>>>;
         };
 
         class _Iterator : public _Category_base<_Vw> {
