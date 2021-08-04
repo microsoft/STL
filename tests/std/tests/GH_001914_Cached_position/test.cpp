@@ -9,9 +9,9 @@ using namespace std;
 template <class View>
 class test_cache : public ranges::_Cached_position<View, test_cache<View>> {
 public:
-    constexpr test_cache(View view) noexcept : _view(move(view)) {}
+    constexpr test_cache(View view) : _view(move(view)) {}
 
-    constexpr void set_cache() noexcept {
+    constexpr void set_cache() {
         this->_Set_cache(_view, _view.begin());
     }
 

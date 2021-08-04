@@ -187,20 +187,19 @@ namespace ranges {
 
         // a copied iterator doesn't point into a copied range, so cache values must not propagate via copy
         constexpr _Cached_position(const _Cached_position&) noexcept(is_nothrow_default_constructible_v<_It>) {}
-        constexpr _Cached_position& operator=(const _Cached_position&) noexcept(
-            is_nothrow_default_constructible_v<_It>) {
+        constexpr _Cached_position& operator=(const _Cached_position&) noexcept(noexcept(_Pos = _It{})) {
             _Pos    = _It{};
             _Cached = false;
             return *this;
         }
 
-        // a moved iterator doesn't point into a moved range, so cache values must not propagate via move
-        constexpr _Cached_position(_Cached_position&& _Other) noexcept(is_nothrow_default_constructible_v<_It>) {
+        // a moved iterator doesn't point into a moved range, so cache values must not propagate via move;
+        // similarly, a cache value might not be valid for a moved-from view so clear move sources
+        constexpr _Cached_position(_Cached_position&& _Other) noexcept(noexcept(_Pos = _It{})) {
             _Other._Pos    = _It{};
             _Other._Cached = false;
         }
-        constexpr _Cached_position& operator=(_Cached_position&& _Other) noexcept(
-            is_nothrow_default_constructible_v<_It>) {
+        constexpr _Cached_position& operator=(_Cached_position&& _Other) noexcept(noexcept(_Pos = _It{})) {
             _Pos           = _It{};
             _Cached        = false;
             _Other._Pos    = _It{};
@@ -231,19 +230,17 @@ namespace ranges {
         range_difference_t<_Rng> _Off = -1;
 
     protected:
-        constexpr _Cached_position()  = default;
-        constexpr ~_Cached_position() = default;
+        _Cached_position()  = default;
+        ~_Cached_position() = default;
 
         // Offsets are oblivious to copying, so cache values _do_ propagate via copying.
-        constexpr _Cached_position(const _Cached_position&) = default;
-        constexpr _Cached_position& operator=(const _Cached_position&) = default;
+        _Cached_position(const _Cached_position&) = default;
+        _Cached_position& operator=(const _Cached_position&) = default;
 
-        // Offsets are potentially invalidated by move, so cached values are invalidated after move
-        constexpr _Cached_position(_Cached_position&& _Other) noexcept(
-            is_nothrow_move_assignable_v<range_difference_t<_Rng>>)
+        // Offsets are potentially invalidated by move, so source caches are invalidated after move
+        constexpr _Cached_position(_Cached_position&& _Other) noexcept
             : _Off(_STD exchange(_Other._Off, range_difference_t<_Rng>{-1})) {}
-        constexpr _Cached_position& operator=(_Cached_position&& _Other) noexcept(
-            is_nothrow_move_assignable_v<range_difference_t<_Rng>>) {
+        constexpr _Cached_position& operator=(_Cached_position&& _Other) noexcept {
             _Off = _STD exchange(_Other._Off, range_difference_t<_Rng>{-1});
             return *this;
         }
