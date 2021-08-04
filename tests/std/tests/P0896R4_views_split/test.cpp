@@ -266,7 +266,7 @@ struct instantiator {
             test_one(move_if_needed(read), ' ', expected_trailing);
         }
 
-        { // LWG-3505, mutlichar pattern
+        { // LWG-3505, multichar pattern
             Read read{span{lwg3505_pattern}};
             test_one(move_if_needed(read), "xy"sv, expected_lwg3505);
         }

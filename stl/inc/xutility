@@ -3515,11 +3515,12 @@ namespace ranges {
         // clang-format off
         subrange() requires default_initializable<_It> = default;
 
-        // TRANSITION, DevCom-1331017
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1331017
         constexpr subrange(const subrange&) = default;
         constexpr subrange(subrange&&)      = default;
         constexpr subrange& operator=(const subrange&) = default;
         constexpr subrange& operator=(subrange&&) = default;
+#endif // TRANSITION
         // clang-format on
 
         template <_Convertible_to_non_slicing<_It> _It2>

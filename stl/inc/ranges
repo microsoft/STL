@@ -3416,7 +3416,7 @@ namespace ranges {
                     do {
                         auto _Result = _RANGES mismatch(_Cur, _End, _Pat_first, _Pat_last);
                         if (_Result.in2 == _Pat_last) { // pattern matches
-                            _Cur = _Result.in1;
+                            _Cur = _STD move(_Result.in1);
                             if (_Cur == _End) {
                                 _Trailing_empty = true;
                             }
@@ -3530,7 +3530,7 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Outer_iter<_Const>>) // strengthened
                 : _It{_STD move(_It_)} {}
 
-            constexpr const iterator_t<_BaseTy>& base() const& {
+            constexpr const iterator_t<_BaseTy>& base() const& noexcept /* strengthened */ {
                 return _It._Get_current();
             }
 
@@ -3811,7 +3811,7 @@ namespace ranges {
         }
 
     public:
-        split_view() = default;
+        split_view() requires default_initializable<_Vw> && default_initializable<_Pat> = default;
 
         constexpr split_view(_Vw _Range_, _Pat _Pattern_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pat>) // strengthened
@@ -3822,8 +3822,9 @@ namespace ranges {
             requires constructible_from<_Vw, views::all_t<_Rng>>
                 && constructible_from<_Pat, single_view<range_value_t<_Rng>>>
         constexpr split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
-            noexcept(noexcept(_Vw(views::all(_STD forward<_Rng>(_Range_))))
-                && noexcept(_Pat(single_view{_STD move(_Elem)}))) // strengthened
+            noexcept(is_nothrow_constructible_v<_Vw, views::all_t<Rng>>
+                && is_nothrow_constructible_v<_Pat, single_view<range_value_t<_Rng>>>
+                && is_nothrow_move_constructible_v<range_value_t<_Rng>>)
             : _Range(views::all(_STD forward<_Rng>(_Range_))), _Pattern(single_view{_STD move(_Elem)}) {}
         // clang-format on
 
