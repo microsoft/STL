@@ -314,7 +314,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif
 #endif // _CRTDATA2_IMPORT
 
-// INTEGER PROPERTIES
+// integer properties
 #define _MAX_EXP_DIG    8 // for parsing numerics
 #define _MAX_INT_DIG    32
 #define _MAX_SIG_DIG_V1 36 // TRANSITION, ABI

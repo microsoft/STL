@@ -261,8 +261,7 @@ using _Any_tag = _Unused_parameter; // generic fallback/default/"other" target f
 template <class _Ty>
 using _Algorithm_int_t = conditional_t<is_integral_v<_Ty>, _Ty, ptrdiff_t>;
 
-// ITERATOR STUFF (from <iterator>)
-// ITERATOR TAGS (from <iterator>)
+// from <iterator>
 struct input_iterator_tag {};
 
 struct output_iterator_tag {};

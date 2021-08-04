@@ -2035,9 +2035,8 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
         return (_Left & _Elements) == _Elements;                                                                    \
     }
 
-// FNV-1a UTILITIES
-// These functions are extremely performance sensitive, check examples like
-// that in VSO-653642 before making changes.
+// These FNV-1a utility functions are extremely performance sensitive,
+// check examples like that in VSO-653642 before making changes.
 #if defined(_WIN64)
 _INLINE_VAR constexpr size_t _FNV_offset_basis = 14695981039346656037ULL;
 _INLINE_VAR constexpr size_t _FNV_prime        = 1099511628211ULL;

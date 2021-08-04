@@ -54,7 +54,7 @@ struct _C_ldouble_complex {
 };
 #endif // _C_COMPLEX_T
 
-// COMPLEX _Val OFFSETS
+// complex _Val offsets
 #define _RE 0
 #define _IM 1
 
