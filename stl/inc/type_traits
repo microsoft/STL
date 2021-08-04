@@ -2124,6 +2124,11 @@ template <class _Ty>
 _INLINE_VAR constexpr bool _Is_trivially_swappable_v = conjunction_v<is_trivially_destructible<_Ty>,
     is_trivially_move_constructible<_Ty>, is_trivially_move_assignable<_Ty>, negation<_Has_ADL_swap<_Ty>>>;
 
+#ifdef __cpp_lib_byte
+template <>
+inline constexpr bool _Is_trivially_swappable_v<byte> = true;
+#endif // __cpp_lib_byte
+
 template <class _Ty>
 struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
     // true_type if and only if it is valid to swap two _Ty lvalues by exchanging object representations.
