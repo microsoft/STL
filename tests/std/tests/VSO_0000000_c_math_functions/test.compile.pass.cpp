@@ -1,8 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// This header is included after one of <cmath>, <cstdlib>, or both, by different TUs
-#pragma once
+#if defined(BOTH)
+#include <cmath>
+#include <cstdlib>
+#elif defined(CMATH)
+#include <cmath>
+#elif defined(CSTDLIB)
+#include <cstdlib>
+#else
+#error This test requires one of BOTH, CMATH, or CSTDLIB to be defined.
+#endif
 
 #include <type_traits>
 
@@ -16,3 +24,5 @@ STATIC_ASSERT(std::is_same_v<decltype(abs(0.0)), double>);
 STATIC_ASSERT(std::is_same_v<decltype(abs(0.0L)), long double>);
 
 #undef STATIC_ASSERT
+
+int main() {} // COMPILE-ONLY

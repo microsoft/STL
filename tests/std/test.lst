@@ -175,6 +175,9 @@ tests\GH_001411_core_headers
 tests\GH_001530_binomial_accuracy
 tests\GH_001541_case_sensitive_boolalpha
 tests\GH_001638_dllexport_derived_classes
+tests\GH_001850_clog_tied_to_cout
+tests\GH_002039_byte_is_not_trivially_swappable
+tests\GH_002058_debug_iterator_race
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0019R8_atomic_ref
@@ -240,6 +243,7 @@ tests\P0355R7_calendars_and_time_zones_time_zones
 tests\P0355R7_calendars_and_time_zones_zoned_time
 tests\P0356R5_bind_front
 tests\P0357R3_supporting_incomplete_types_in_reference_wrapper
+tests\P0401R6_allocate_at_least
 tests\P0408R7_efficient_access_to_stringbuf_buffer
 tests\P0414R2_shared_ptr_for_arrays
 tests\P0415R1_constexpr_complex
@@ -385,6 +389,7 @@ tests\P0896R4_views_elements
 tests\P0896R4_views_empty
 tests\P0896R4_views_filter
 tests\P0896R4_views_filter_death
+tests\P0896R4_views_filter_iterator
 tests\P0896R4_views_iota
 tests\P0896R4_views_join
 tests\P0896R4_views_lazy_split
@@ -408,6 +413,7 @@ tests\P1007R3_assume_aligned
 tests\P1020R1_smart_pointer_for_overwrite
 tests\P1023R0_constexpr_for_array_comparisons
 tests\P1032R1_miscellaneous_constexpr
+tests\P1132R7_out_ptr
 tests\P1135R6_atomic_flag_test
 tests\P1135R6_atomic_wait
 tests\P1135R6_atomic_wait_vista
@@ -421,6 +427,7 @@ tests\P1502R1_standard_library_header_units
 tests\P1614R2_spaceship
 tests\P1645R1_constexpr_numeric
 tests\P1682R3_to_underlying
+tests\P1951R1_default_arguments_pair_forward_ctor
 tests\P2162R2_std_visit_for_derived_classes_from_variant
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions

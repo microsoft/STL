@@ -2695,6 +2695,40 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_swappable<_It1, _It2>);
 
+#if _USE_STD_VECTOR_ALGORITHMS
+            using _Elem1 = remove_reference_t<iter_reference_t<_It1>>;
+            using _Elem2 = remove_reference_t<iter_reference_t<_It2>>;
+            if constexpr (same_as<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1> //
+                          && contiguous_iterator<_It1> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> //
+                          && contiguous_iterator<_It2> && _Sized_or_unreachable_sentinel_for<_Se2, _It2>) {
+                if (!_STD is_constant_evaluated()) {
+                    constexpr bool _Is_sized1 = sized_sentinel_for<_Se1, _It1>;
+                    constexpr bool _Is_sized2 = sized_sentinel_for<_Se2, _It2>;
+                    const auto _First1_addr   = _STD to_address(_First1);
+                    const auto _First2_addr   = _STD to_address(_First2);
+                    if constexpr (_Is_sized1 && _Is_sized2) {
+                        const size_t _Count =
+                            (_STD min) (static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
+                        const auto _Last1_addr = _First1_addr + _Count;
+                        __std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
+                        return {_First1 + _Count, _First2 + _Count};
+                    } else if constexpr (_Is_sized1) {
+                        const auto _Final1     = _RANGES next(_First1, _Last1);
+                        const auto _Last1_addr = _STD to_address(_Final1);
+                        __std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
+                        return {_Final1, _First2 + (_Last1 - _First1)};
+                    } else if constexpr (_Is_sized2) {
+                        const auto _Final2     = _RANGES next(_First2, _Last2);
+                        const auto _Last2_addr = _STD to_address(_Final2);
+                        __std_swap_ranges_trivially_swappable_noalias(_First2_addr, _Last2_addr, _First1_addr);
+                        return {_First1 + (_Last2 - _First2), _Final2};
+                    } else {
+                        _STL_ASSERT(false, "Tried to swap_ranges with two unreachable sentinels");
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
             for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) {
                 _RANGES iter_swap(_First1, _First2);
             }
