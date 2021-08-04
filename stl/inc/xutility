@@ -5783,6 +5783,7 @@ struct _Nontrivial_dummy_type {
 _STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
 
 #if _HAS_CXX17
+// [variant.monostate]
 struct monostate {};
 #endif // _HAS_CXX17
 

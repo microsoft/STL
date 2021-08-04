@@ -353,9 +353,11 @@ struct _Meta_cartesian_product_<_List1<_List2<_Items...>, _Lists...>> {
 
 #define _STL_STAMP(n, x) x(_STL_STAMP##n, n)
 
+// [variant.variant]
 template <class... _Types>
 class variant;
 
+// [variant.helper]
 template <class _Ty>
 struct variant_size; // undefined
 template <class _Ty>
@@ -399,6 +401,7 @@ struct variant_alternative<_Idx, variant<_Types...>> {
 
 inline constexpr size_t variant_npos = _Meta_npos;
 
+// [variant.bad.access]
 class bad_variant_access
     : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
 public:
