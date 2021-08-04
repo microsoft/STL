@@ -11,6 +11,7 @@
 #include <ctime>
 #include <limits>
 #include <ratio>
+#include <type_traits>
 #include <utility>
 #include <xtimec.h>
 
@@ -71,7 +72,7 @@ namespace chrono {
 
         _NODISCARD static constexpr _Rep(max)() noexcept {
             // get largest value
-            return (numeric_limits<_Rep>::max)();
+            return (numeric_limits<_Rep>::max) ();
         }
     };
 
@@ -201,12 +202,12 @@ namespace chrono {
 
         _NODISCARD static constexpr duration(min)() noexcept {
             // get minimum value
-            return duration((duration_values<_Rep>::min)());
+            return duration((duration_values<_Rep>::min) ());
         }
 
         _NODISCARD static constexpr duration(max)() noexcept {
             // get maximum value
-            return duration((duration_values<_Rep>::max)());
+            return duration((duration_values<_Rep>::max) ());
         }
 
     private:
@@ -266,17 +267,24 @@ namespace chrono {
         }
 
         _NODISCARD static constexpr time_point(min)() noexcept {
-            return time_point((_Duration::min)());
+            return time_point((_Duration::min) ());
         }
 
         _NODISCARD static constexpr time_point(max)() noexcept {
-            return time_point((_Duration::max)());
+            return time_point((_Duration::max) ());
         }
 
     private:
         _Duration _MyDur{duration::zero()}; // duration since the epoch
     };
 } // namespace chrono
+
+template <class _Rep, class _Period>
+_INLINE_VAR constexpr bool _Is_trivially_swappable_v<chrono::duration<_Rep, _Period>> = _Is_trivially_swappable_v<_Rep>;
+
+template <class _Clock, class _Duration>
+_INLINE_VAR constexpr bool _Is_trivially_swappable_v<chrono::time_point<_Clock, _Duration>> =
+    _Is_trivially_swappable_v<_Duration>;
 
 // STRUCT TEMPLATE _Lcm (LEAST COMMON MULTIPLE)
 template <intmax_t _Ax, intmax_t _Bx>
@@ -2424,8 +2432,8 @@ namespace chrono {
             return local_time<common_type_t<_Duration, seconds>>{_Sys.time_since_epoch() + _Info.offset};
         }
 
-        static constexpr sys_seconds _Min_seconds{sys_days{(year::min)() / January / 1}};
-        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max)() / December / 32}} - seconds{1}};
+        static constexpr sys_seconds _Min_seconds{sys_days{(year::min) () / January / 1}};
+        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max) () / December / 32}} - seconds{1}};
 
     private:
         template <class _Duration>
@@ -2717,7 +2725,7 @@ namespace chrono {
         // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
         constexpr size_t _Pre_2018_count = 27;
         const size_t _Known_post_2018_ls_size =
-            (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
+            (_STD max) (_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
 
         size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
         unique_ptr<__std_tzdb_leap_info[], _Tzdb_deleter<__std_tzdb_leap_info[]>> _Reg_ls_data{
@@ -4041,7 +4049,7 @@ namespace chrono {
             if constexpr (is_integral_v<_Rep1>) {
                 // Must have _Period1 <= _Period2 and numeric_limits<_Rep1>::max() >= _Period2 / _Period1. For example,
                 // std::days can't represent std::seconds, and duration<int, atto>::max() is ~9.2 seconds.
-                constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max)());
+                constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max) ());
 
                 // clang-format off
                 return ratio_less_equal_v<_Period1, _Period2>
@@ -4687,7 +4695,7 @@ namespace chrono {
                         _Multiplier /= 10;
                         _Subsecond_ += _Digit * _Multiplier;
                     } else {
-                        if (_Second_ > ((numeric_limits<int>::max)() - _Digit) / 10) {
+                        if (_Second_ > ((numeric_limits<int>::max) () - _Digit) / 10) {
                             return ios_base::failbit;
                         }
 
@@ -4928,7 +4936,7 @@ namespace chrono {
                             _Width = static_cast<unsigned int>(_Flag - '0');
                             while (++_FmtFirst != _FmtLast && _Ctype_fac.is(ctype_base::digit, *_FmtFirst)) {
                                 const auto _Digit = static_cast<unsigned int>(_Ctype_fac.narrow(*_FmtFirst) - '0');
-                                if (_Width > ((numeric_limits<unsigned int>::max)() - _Digit) / 10) {
+                                if (_Width > ((numeric_limits<unsigned int>::max) () - _Digit) / 10) {
                                     _State |= ios_base::failbit;
                                     break;
                                 }
@@ -5193,9 +5201,9 @@ namespace chrono {
     }
 
     template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        class = void_t<decltype(
-            _CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(), _STD declval<const _CharT*>(),
-                _STD declval<_Parsable&>(), _STD declval<basic_string<_CharT, _Traits, _Alloc>*>()))>>
+        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
+            _STD declval<const _CharT*>(), _STD declval<_Parsable&>(),
+            _STD declval<basic_string<_CharT, _Traits, _Alloc>*>()))>>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev) {
         return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev)};
@@ -5339,7 +5347,7 @@ public:
             _THROW(format_error("Invalid modifier specification."));
         }
 
-        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
             _THROW(format_error("Invalid type specification."));
         }
 
@@ -5357,7 +5365,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max) ())) {
             _THROW(format_error("Dynamic width or precision index too large."));
         }
 
@@ -5750,7 +5758,7 @@ namespace chrono {
     }
 
     template <class _CharT, class _Traits, class _Duration>
-    // clang-format off
+        // clang-format off
         requires (!treat_as_floating_point_v<typename _Duration::rep> && _Duration{1} < days{1})
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_time<_Duration>& _Val) {
         // clang-format on
@@ -5966,7 +5974,8 @@ namespace chrono {
 
                     _Validate_specifiers(_Spec, _Val);
 
-                    _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec).data());
+                    _CharT _Fmt_str[4];
+                    _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec, _Fmt_str));
                 }
             }
 
@@ -6028,7 +6037,8 @@ namespace chrono {
                     }
 
                     const char _Gregorian_type = _Spec._Type == 'g' ? 'y' : 'Y';
-                    _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}).data());
+                    _CharT _Fmt_str[4];
+                    _Os << _STD put_time(&_Time, _Fmt_string({._Type = _Gregorian_type}, _Fmt_str));
                     return true;
                 }
 
@@ -6290,8 +6300,7 @@ namespace chrono {
             }
         }
 
-        _NODISCARD static array<_CharT, 4> _Fmt_string(const _Chrono_spec<_CharT>& _Spec) {
-            array<_CharT, 4> _Fmt_str;
+        _NODISCARD static const _CharT* _Fmt_string(const _Chrono_spec<_CharT>& _Spec, _CharT (&_Fmt_str)[4]) {
             size_t _Next_idx      = 0;
             _Fmt_str[_Next_idx++] = _CharT{'%'};
             if (_Spec._Modifier != '\0') {

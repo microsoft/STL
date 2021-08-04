@@ -33,10 +33,6 @@ struct _Init_cout { // ensures that cout is initialized
         if (_Ptr_cerr != nullptr) {
             _Ptr_cerr->tie(_Ptr_cout);
         }
-
-        if (_Ptr_clog != nullptr) {
-            _Ptr_clog->tie(_Ptr_cout);
-        }
     }
 };
 

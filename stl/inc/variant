@@ -770,8 +770,8 @@ class _Variant_base;
 
 template <size_t _Count>
 using _Variant_index_t = // signed so that conversion of -1 to size_t can cheaply sign extend
-    conditional_t<(_Count < static_cast<size_t>((numeric_limits<signed char>::max)())), signed char,
-        conditional_t<(_Count < static_cast<size_t>((numeric_limits<short>::max)())), short, int>>;
+    conditional_t<(_Count < static_cast<size_t>((numeric_limits<signed char>::max) ())), signed char,
+        conditional_t<(_Count < static_cast<size_t>((numeric_limits<short>::max) ())), short, int>>;
 
 template <class... _Types>
 struct _Variant_construct_visitor { // visitor that constructs the same alternative in a target _Variant_base as is
@@ -1180,7 +1180,7 @@ public:
                             conjunction_v<is_nothrow_move_constructible<_Types>..., is_nothrow_swappable<_Types>...>) {
                             constexpr size_t _That_idx = decltype(_That_ref)::_Idx;
 #ifdef __EDG__ // TRANSITION, VSO-657455
-                            constexpr size_t _My_idx = decltype(_My_ref)::_Idx + 0 * _That_idx;
+                            constexpr size_t _My_idx   = decltype(_My_ref)::_Idx + 0 * _That_idx;
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
                             constexpr size_t _My_idx = decltype(_My_ref)::_Idx;
 #endif // TRANSITION, VSO-657455

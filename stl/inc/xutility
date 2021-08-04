@@ -139,7 +139,7 @@ _NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
 #if _HAS_CXX20
 template <class _Ty, class... _Types,
     class = void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
-_CONSTEXPR20_DYNALLOC _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
+constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
     noexcept(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
     return ::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...);
 }
@@ -147,13 +147,13 @@ _CONSTEXPR20_DYNALLOC _Ty* construct_at(_Ty* const _Location, _Types&&... _Args)
 
 // FUNCTION TEMPLATE _Construct_in_place
 template <class _Ty, class... _Types>
-_CONSTEXPR20_DYNALLOC void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(
+_CONSTEXPR20 void _Construct_in_place(_Ty& _Obj, _Types&&... _Args) noexcept(
     is_nothrow_constructible_v<_Ty, _Types...>) {
-#ifdef __cpp_lib_constexpr_dynamic_alloc
+#if _HAS_CXX20
     if (_STD is_constant_evaluated()) {
         _STD construct_at(_STD addressof(_Obj), _STD forward<_Types>(_Args)...);
     } else
-#endif // __cpp_lib_constexpr_dynamic_alloc
+#endif // _HAS_CXX20
     {
         ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty(_STD forward<_Types>(_Args)...);
     }
@@ -1047,7 +1047,7 @@ concept indirectly_movable_storable = indirectly_movable<_In, _Out>
     && indirectly_writable<_Out, iter_value_t<_In>>
     && movable<iter_value_t<_In>>
     && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
-    && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In>>;
+    && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In> >;
 
 // CONCEPT indirectly_copyable
 template <class _In, class _Out>
@@ -4190,9 +4190,9 @@ _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
     if constexpr (_Ptr_copy_cat<_InIt, _OutIt>::_Trivially_copyable) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Copy_memmove(_First, _Last, _Dest);
         }
@@ -4314,9 +4314,9 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
         if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
             if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
             {
                 _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
                 _Seek_wrapped(_Dest, _UDest);
@@ -4381,9 +4381,9 @@ template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // copy [_First, _Last) backwards to [..., _Dest)
     if constexpr (_Ptr_copy_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Copy_backward_memmove(_First, _Last, _Dest);
         }
@@ -4422,9 +4422,9 @@ _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     // note: _Move_unchecked has callers other than the move family
     if constexpr (_Ptr_move_cat<_InIt, _OutIt>::_Trivially_copyable) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Copy_memmove(_First, _Last, _Dest);
         }
@@ -4465,9 +4465,9 @@ _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _Bi
     // move [_First, _Last) backwards to [..., _Dest)
     // note: _Move_backward_unchecked has callers other than the move_backward family
     if constexpr (_Ptr_move_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Copy_backward_memmove(_First, _Last, _Dest);
         }
@@ -4580,9 +4580,9 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
     } else {
         auto _UFirst      = _Get_unwrapped(_First);
         const auto _ULast = _Get_unwrapped(_Last);
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             if constexpr (_Fill_memset_is_safe<decltype(_UFirst), _Ty>) {
                 _Fill_memset(_UFirst, _Val, static_cast<size_t>(_ULast - _UFirst));
@@ -4623,9 +4623,9 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
             return _Last;
         } else {
             auto _UDest = _Get_unwrapped_n(_Dest, _Count);
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
             if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
             {
                 if constexpr (_Fill_memset_is_safe<decltype(_UDest), _Ty>) {
                     _Fill_memset(_UDest, _Val, static_cast<size_t>(_Count));
@@ -4803,9 +4803,9 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped_n(_First2, _Idl_distance<_InIt1>(_UFirst1, _ULast1));
     if constexpr (_Equal_memcmp_is_safe<decltype(_UFirst1), decltype(_UFirst2), _Pr>) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Memcmp_ranges(_UFirst1, _ULast1, _UFirst2) == 0;
         }
@@ -5123,15 +5123,15 @@ template <class _CtgIt1, class _CtgIt2, class _Pr, class _Memcmp_pr>
 _NODISCARD _CONSTEXPR20 bool _Lex_compare_unchecked(
     _CtgIt1 _First1, _CtgIt1 _Last1, _CtgIt2 _First2, _CtgIt2 _Last2, _Pr _Pred, _Lex_compare_optimize<_Memcmp_pr>) {
     // order [_First1, _Last1) vs. [_First2, _Last2) memcmp optimization
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
     if (_STD is_constant_evaluated()) {
         return _Lex_compare_unchecked(_First1, _Last1, _First2, _Last2, _Pred, _Lex_compare_optimize<void>{});
     }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
     (void) _Pred;
     const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
     const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
-    const int _Ans   = _Memcmp_count(_First1, _First2, (_STD min)(_Num1, _Num2));
+    const int _Ans   = _Memcmp_count(_First1, _First2, (_STD min) (_Num1, _Num2));
     return _Memcmp_pr{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
 }
 
@@ -5203,7 +5203,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
         if (!_STD is_constant_evaluated()) {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
+            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min) (_Num1, _Num2));
             if (_Ans == 0) {
                 return _Num1 <=> _Num2;
             } else {
@@ -5323,12 +5323,12 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked1(_InIt _First, const _InIt _Last, 
         return _Last;
     }
 
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
     if (_STD is_constant_evaluated()) {
         using _Elem = _Iter_value_t<_InIt>;
         return _Find_unchecked1(_First, _Last, static_cast<_Elem>(_Val), false_type{});
     }
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
     const auto _First_ptr = _To_address(_First);
     const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_InIt>>*>(
         _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
@@ -5551,9 +5551,9 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
 
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
     if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             if constexpr (_Nx == 1) {
                 __std_reverse_trivially_swappable_1(_To_address(_UFirst), _To_address(_ULast));
@@ -5808,32 +5808,30 @@ _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _T
 // FUNCTION TEMPLATE _Swap_ranges_unchecked
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
-    // swap [_First1, _Last1) with [_First2, ...), no special optimization
+    // swap [_First1, _Last1) with [_First2, ...)
+
+#if _USE_STD_VECTOR_ALGORITHMS
+    using _Elem1 = remove_reference_t<_Iter_ref_t<_FwdIt1>>;
+    using _Elem2 = remove_reference_t<_Iter_ref_t<_FwdIt2>>;
+    if constexpr (is_same_v<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1> //
+                  && _Iterators_are_contiguous<_FwdIt1, _FwdIt2>) {
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            __std_swap_ranges_trivially_swappable_noalias(
+                _To_address(_First1), _To_address(_Last1), _To_address(_First2));
+            return _First2 + (_Last1 - _First1);
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
     for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
         _STD iter_swap(_First1, _First2);
     }
 
     return _First2;
 }
-
-#if _USE_STD_VECTOR_ALGORITHMS
-template <class _Ty, enable_if_t<_Is_trivially_swappable_v<_Ty>, int> = 0>
-_CONSTEXPR20 _Ty* _Swap_ranges_unchecked(_Ty* _First1, _Ty* const _Last1, _Ty* _First2) {
-    // swap [_First1, _Last1) with [_First2, ...), trivially swappable optimization
-#ifdef __cpp_lib_is_constant_evaluated
-    if (_STD is_constant_evaluated()) {
-        for (; _First1 != _Last1; ++_First1, (void) ++_First2) {
-            _STD iter_swap(_First1, _First2);
-        }
-
-        return _First2;
-    }
-#endif // __cpp_lib_is_constant_evaluated
-
-    __std_swap_ranges_trivially_swappable_noalias(_First1, _Last1, _First2);
-    return _First2 + (_Last1 - _First1);
-}
-#endif // _USE_STD_VECTOR_ALGORITHMS
 
 // CLASS TEMPLATE _Rng_from_urng
 template <class _Diff, class _Urng>
@@ -5845,7 +5843,7 @@ public:
     using _Udiff = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
 
     explicit _Rng_from_urng(_Urng& _Func) : _Ref(_Func), _Bits(CHAR_BIT * sizeof(_Udiff)), _Bmask(_Udiff(-1)) {
-        for (; (_Urng::max)() - (_Urng::min)() < _Bmask; _Bmask >>= 1) {
+        for (; (_Urng::max) () - (_Urng::min) () < _Bmask; _Bmask >>= 1) {
             --_Bits;
         }
     }
@@ -5889,7 +5887,7 @@ public:
 private:
     _Udiff _Get_bits() { // return a random value within [0, _Bmask]
         for (;;) { // repeat until random value is in range
-            _Udiff _Val = _Ref() - (_Urng::min)();
+            _Udiff _Val = _Ref() - (_Urng::min) ();
 
             if (_Val <= _Bmask) {
                 return _Val;
@@ -6009,10 +6007,10 @@ struct _Nontrivial_dummy_type {
 };
 _STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
 
-#ifdef __cpp_lib_variant
+#if _HAS_CXX17
 // CLASS monostate [variant.monostate]
 struct monostate {};
-#endif // __cpp_lib_variant
+#endif // _HAS_CXX17
 
 _STD_END
 #pragma pop_macro("new")
