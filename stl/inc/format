@@ -623,6 +623,12 @@ constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_
     return _First + _Num_bytes;
 }
 
+constexpr const char32_t* _Decode_utf(const char32_t* _First, const char32_t* _Last, char32_t& _Val) noexcept {
+    (void) _Last;
+    _Val = *_First;
+    return _First + 1;
+}
+
 class _Unicode_codepoint_end_iterator {};
 
 template <typename _CharT>
@@ -653,7 +659,7 @@ public:
             _First = nullptr;
             return *this;
         }
-        _First = _Decode_utf(_First, _Last, _Val);
+        _First = _STD _Decode_utf(_First, _Last, _Val);
         return *(this);
     }
     constexpr _Unicode_codepoint_iterator operator++(int) noexcept {
@@ -676,60 +682,138 @@ public:
 };
 
 
-template <typename _CharType>
-class _Grapheme_break_property_iterator {
-    using iterator_concept   = forward_iterator_tag;
-    using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharType>;
-    using value_type         = _Wrapped_iter_type::value_type;
-    using difference_type    = ptrdiff_t;
-    _Wrapped_iter_type _WrappedIter;
-    enum _State {
-        _Sot_state,
-        _Done_state,
-        _Any_state,
-        _Cr_state,
-        _Control_Lf_state,
-        _L_state,
-        _LV_V_state,
-        _LVT_T_state,
-        _Prepend_state,
-        _Extended_pictographic_state,
-        _Extended_pictographic_Extend_state,
-        _Extended_pictographic_extend_ZWJ_state,
-        _Ri_state,
-        _Ri_Ri_state
-    };
-    _State _Current_state = _GB1_state;
+// implements a DFA matching the regex on the left side of rule GB11. The DFA is:
+//
+// +---+   ExtPic      +---+    ZWJ        +---+
+// | 1 +---------------> 2 +---------------> 3 |
+// +---+               ++-^+               +---+
+//                      | |
+//                      +-+
+//                      Extend
+//
+// Note state 3 is never explicitly transitioned to, since it's the "accept" state, we just
+// transition back to state 1 and return true.
+class _GB11_LeftHand_regex {
+    enum { _Start, _ExtPic } _State = _Start;
 
 public:
+    bool _Match(const _Grapheme_Break_Property_Values _Left_gbp, _Extended_Pictographic_Property_Values _Left_ExtPic) {
+        switch (_State) {
+        case _Start:
+            if (_Left_ExtPic == _Extended_Pictographic_Property_Values::_Extended_Pictographic_value) {
+                _State = _ExtPic;
+            }
+            return false;
+        case _ExtPic:
+            if (_Left_gbp == _Grapheme_Break_Property_Values::_ZWJ_value) {
+                _State = _Start;
+                return true;
+            } else if (_Left_gbp != _Grapheme_Break_Property_Values::_Extend_value) {
+                _State = _Start;
+                return false;
+            }
+            return false;
+        }
+    }
+};
+
+class _Grapheme_break_property_end_iterator {};
+
+template <typename _CharT>
+class _Grapheme_break_property_iterator {
+    using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharT>;
+
+    _Wrapped_iter_type _WrappedIter;
+    size_t _Num_RIs = 0;
+    _GB11_LeftHand_regex _GB11_rx;
+
+    friend bool operator==(const _Grapheme_break_property_iterator& _Lhs, _Grapheme_break_property_end_iterator) {
+        return _Lhs._WrappedIter == _Unicode_codepoint_end_iterator{};
+    }
+    friend bool operator==(
+        const _Grapheme_break_property_iterator& _Lhs, const _Grapheme_break_property_iterator& _Rhs) {
+        return _Lhs._WrappedIter == _Rhs._WrappedIter && _Lhs._Num_RIs == _Rhs._Num_RIs
+            && _Lhs._GB11_rx == _Rhs._GB11_rx;
+    }
+
+public:
+    using iterator_concept = forward_iterator_tag;
+    using difference_type  = ptrdiff_t;
+    using value_type       = typename _Wrapped_iter_type::value_type;
+
+    constexpr _Grapheme_break_property_iterator(const _CharT* _First, const _CharT* _Last)
+        : _WrappedIter(_First, _Last) {}
+
+    constexpr _Grapheme_break_property_iterator() = default;
+
     constexpr _Grapheme_break_property_iterator& operator++() noexcept {
-        _State _Next_state;
-        for (;;) {
+        auto _Left_gbp     = _Grapheme_Break_Property_Data._Get_property_for_codepoint(*_WrappedIter);
+        auto _Left_ExtPic  = _Extended_Pictographic_Property_Data._Get_property_for_codepoint(*_WrappedIter);
+        auto _Right_gbp    = _Grapheme_Break_Property_Values::_No_value;
+        auto _Right_ExtPic = _Extended_Pictographic_Property_Values::_No_value;
+        for (;; _Left_gbp = _Right_gbp, _Left_ExtPic = _Right_ExtPic) {
             ++_WrappedIter;
-            // evaluate the next state
-            // GB1
-            if (_Current_state == _Sot_state) {
-                _Next_state = _Any_state;
-                return *this;
-            }
-            // GB2
             if (_WrappedIter == _Unicode_codepoint_end_iterator{}) {
-                _Current_state = _Done_state;
-                return *this;
+                return *this; // GB2 Any % eot
             }
-            auto _Next_grapheme_break_prop =
-                _Grapheme_Break_Property_Data._Get_property_for_codepoint(static_cast<uint32_t>(*_WrappedIter));
-            // GB3
-            if (_Current_state == _Cr_state
-                && _Next_grapheme_break_prop == _Grapheme_break_property_values::_LF_value) {
-                _Next_state = _Control_Lf_state;
-                continue;
+            _Right_gbp    = _Grapheme_Break_Property_Data._Get_property_for_codepoint(*_WrappedIter);
+            _Right_ExtPic = _Extended_Pictographic_Property_Data._Get_property_for_codepoint(*_WrappedIter);
+            // match GB11 now, so that we're sure to update it for every character, not just ones where
+            // the GB11 rule is considered
+            bool _GB11_Match = _GB11_rx._Match(_Left_gbp, _Left_ExtPic);
+            // Also update the nubmer of RIs immediately
+            if (_Left_gbp == _Grapheme_Break_Property_Values::_Regional_Indicator_value) {
+                ++_Num_RIs;
             }
-            // GB4
-            if (_Current_state == _Cr_state || _Current_state == _Control_Lf_state) {
-                _Next_state =
+            if (_Left_gbp == _Grapheme_Break_Property_Values::_CR_value
+                && _Right_gbp == _Grapheme_Break_Property_Values::_LF_value) {
+                continue; // GB3 CR x LF
             }
-            _Current_state = _Next_state;
+            if (_Left_gbp == _Grapheme_Break_Property_Values::_Control_value
+                || _Left_gbp == _Grapheme_Break_Property_Values::_CR_value
+                || _Left_gbp == _Grapheme_Break_Property_Values::_LF_value) {
+                return *this; // GB4 (Control | CR | LF) % Any
+            }
+            if (_Right_gbp == _Grapheme_Break_Property_Values::_Control_value
+                || _Right_gbp == _Grapheme_Break_Property_Values::_CR_value
+                || _Right_gbp == _Grapheme_Break_Property_Values::_LF_value) {
+                return *this; // GB5 Any % (Control | CR | LF)
+            }
+            if (_Left_gbp == _Grapheme_Break_Property_Values::_L_value
+                && (_Right_gbp == _Grapheme_Break_Property_Values::_L_value
+                    || _Right_gbp == _Grapheme_Break_Property_Values::_V_value
+                    || _Right_gbp == _Grapheme_Break_Property_Values::_LV_value
+                    || _Right_gbp == _Grapheme_Break_Property_Values::_LVT_value)) {
+                continue; // GB6 L x (L | V | LV | LVT)
+            }
+            if ((_Left_gbp == _Grapheme_Break_Property_Values::_LV_value
+                    || _Left_gbp == _Grapheme_Break_Property_Values::_V_value)
+                && (_Right_gbp == _Grapheme_Break_Property_Values::_V_value
+                    || _Right_gbp == _Grapheme_Break_Property_Values::_T_value)) {
+                continue; // GB7 (LV | V) x (V | T)
+            }
+            if ((_Left_gbp == _Grapheme_Break_Property_Values::_LVT_value
+                    || _Left_gbp == _Grapheme_Break_Property_Values::_T_value)
+                && _Right_gbp == _Grapheme_Break_Property_Values::_T_value) {
+                continue; // GB8 (LVT | T) x T
+            }
+            if (_Right_gbp == _Grapheme_Break_Property_Values::_Extend_value
+                || _Right_gbp == _Grapheme_Break_Property_Values::_ZWJ_value) {
+                continue; // GB9 x (Extend | ZWJ)
+            }
+            if (_Right_gbp == _Grapheme_Break_Property_Values::_SpacingMark_value) {
+                continue; // GB9a x SpacingMark
+            }
+            if (_Left_gbp == _Grapheme_Break_Property_Values::_Prepend_value) {
+                continue; // GB9b Prepend x
+            }
+            if (_GB11_Match && _Right_ExtPic == _Extended_Pictographic_Property_Values::_Extended_Pictographic_value) {
+                continue; // GB11 \p{ExtendedPictographic} Extend* ZWJ x \p{ExtendedPictographc}
+            }
+            if (_Num_RIs % 2 != 0) {
+                continue; // GB12 and 13, do not break if there are an odd number of RIs before the breakpoint
+            }
+            return *this;
         }
     }
     constexpr _Grapheme_break_property_iterator operator++(int) noexcept {
