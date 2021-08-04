@@ -45,7 +45,6 @@ struct _Convertible_from_all : bool_constant<conjunction_v<is_convertible<_From,
     // variadic is_convertible
 };
 
-// METAPROGRAMMING UTILITIES
 template <class...>
 struct _Meta_list {}; // a sequence of types
 struct _Meta_nil {};
@@ -565,7 +564,6 @@ public:
 };
 #endif // __cplusplus_winrt
 
-// _Variant_storage VISITATION AND ACCESS
 template <size_t _Idx, class _Storage>
 _NODISCARD constexpr decltype(auto) _Variant_raw_get(
     _Storage&& _Obj) noexcept { // access the _Idx-th element of a _Variant_storage

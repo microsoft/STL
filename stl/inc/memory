@@ -3680,7 +3680,6 @@ _NODISCARD constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcept /* strengthen
 }
 #endif // _HAS_CXX20
 
-// SPIN LOCKS
 _EXTERN_C
 _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock();
 _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock();

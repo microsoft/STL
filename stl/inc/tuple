@@ -734,7 +734,6 @@ template <class _Alloc, class... _Types>
 tuple(allocator_arg_t, _Alloc, tuple<_Types...>) -> tuple<_Types...>;
 #endif // _HAS_CXX17
 
-// OPERATORS FOR tuple
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator==(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     static_assert(sizeof...(_Types1) == sizeof...(_Types2), "cannot compare tuples of different sizes");

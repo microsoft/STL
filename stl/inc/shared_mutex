@@ -370,7 +370,6 @@ private:
     }
 };
 
-// SWAP
 template <class _Mutex>
 void swap(shared_lock<_Mutex>& _Left, shared_lock<_Mutex>& _Right) noexcept {
     _Left.swap(_Right);

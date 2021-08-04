@@ -755,8 +755,6 @@ template class _CRTIMP2_PURE_IMPORT basic_iostream<unsigned short, char_traits<u
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
 
-// EXTRACTORS
-
 template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& _Istream_extract_into_buffer(
     basic_istream<_Elem, _Traits>& _Istr, size_t _Size, _Elem* _Str) {

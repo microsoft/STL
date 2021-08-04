@@ -58,7 +58,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-// NAMED CONSTANTS
 enum _Meta_type { // meta character representations for parser
     _Meta_lpar  = '(',
     _Meta_rpar  = ')',
@@ -100,7 +99,6 @@ enum _Meta_type { // meta character representations for parser
     _Esc_uni      = 'u'
 };
 
-// NAMESPACE regex_constants
 namespace regex_constants {
     // constants used in regular expressions
     enum syntax_option_type : int { // specify RE syntax rules
@@ -2707,7 +2705,6 @@ using wcregex_token_iterator = regex_token_iterator<const wchar_t*>;
 using sregex_token_iterator  = regex_token_iterator<string::const_iterator>;
 using wsregex_token_iterator = regex_token_iterator<wstring::const_iterator>;
 
-// IMPLEMENTATION OF _Builder
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Builder<_FwdIt, _Elem, _RxTraits>::_Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type _Fx)
     : _Root(new _Root_node), _Current(_Root), _Flags(_Fx), _Traits(_Tr),
@@ -3116,7 +3113,6 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
     _Root = nullptr;
 }
 
-// IMPLEMENTATION OF _Matcher
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
 bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_if(_Node_if* _Node) { // apply if node
     _Tgt_state_t<_It> _St = _Tgt_state;
@@ -3788,7 +3784,6 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
     return _First_arg;
 }
 
-// IMPLEMENTATION OF _Parser
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_Error(regex_constants::error_type _Code) { // handle error
     _Xregex_error(_Code);

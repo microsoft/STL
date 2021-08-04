@@ -5030,7 +5030,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// PREDEFINED GENERATORS
 using minstd_rand0 = linear_congruential_engine<unsigned int, 16807, 0, 2147483647>;
 using minstd_rand  = linear_congruential_engine<unsigned int, 48271, 0, 2147483647>;
 

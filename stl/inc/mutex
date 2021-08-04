@@ -33,7 +33,6 @@ _STD_BEGIN
 class condition_variable;
 class condition_variable_any;
 
-// MUTUAL EXCLUSION
 class _Mutex_base { // base class for all mutex types
 public:
     _Mutex_base(int _Flags = 0) noexcept {

@@ -1364,7 +1364,6 @@
 #define __cpp_lib_to_underlying   202102L
 #endif // _HAS_CXX23
 
-// EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
 

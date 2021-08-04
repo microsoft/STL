@@ -632,7 +632,6 @@ public:
     }
 };
 
-// DEDUCTION GUIDES
 template <class _Ty, size_t _Extent>
 span(_Ty (&)[_Extent]) -> span<_Ty, _Extent>;
 

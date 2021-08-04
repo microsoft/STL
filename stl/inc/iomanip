@@ -340,7 +340,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Ostr << _STD quoted(_Ref, _Manip._Delim, _Manip._Escape);
 }
 
-// quoted EXTRACTOR
 template <class _Elem, class _Traits, class _Alloc>
 basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
     const _Quote_in<_Elem, _Traits, _Alloc>& _Manip) { // get quoted string from input stream
@@ -410,7 +409,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Ostr;
 }
 
-// INSTANTIATIONS
 _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl resetiosflags(ios_base::fmtflags);
 _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl setiosflags(ios_base::fmtflags);
 _NODISCARD _MRTIMP2 _Smanip<int> __cdecl setbase(int);

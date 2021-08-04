@@ -476,7 +476,6 @@ struct _CXX20_DEPRECATE_VOLATILE _MSVC_KNOWN_SEMANTICS tuple_element<_Index, con
 template <size_t _Index, class _Tuple>
 using tuple_element_t = typename tuple_element<_Index, _Tuple>::type;
 
-// TUPLE INTERFACE TO array
 template <class _Ty, size_t _Size>
 class array;
 
@@ -490,7 +489,6 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, array<_Ty, _Size>> {
     using type = _Ty;
 };
 
-// TUPLE INTERFACE TO tuple
 template <class... _Types>
 struct tuple_size<tuple<_Types...>> : integral_constant<size_t, sizeof...(_Types)> {}; // size of tuple
 
@@ -510,7 +508,6 @@ template <size_t _Index, class _This, class... _Rest>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<_This, _Rest...>>
     : tuple_element<_Index - 1, tuple<_Rest...>> {}; // recursive tuple_element definition
 
-// TUPLE INTERFACE TO pair
 template <class _Ty1, class _Ty2>
 struct tuple_size<pair<_Ty1, _Ty2>> : integral_constant<size_t, 2> {}; // size of pair
 

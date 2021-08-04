@@ -1992,7 +1992,6 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
     // true_type if and only if it is valid to swap two _Ty lvalues by exchanging object representations.
 };
 
-// BITMASK OPERATIONS
 #define _BITMASK_OPS(_BITMASK)                                                                                      \
     _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept { /* return _Left & _Right */ \
         using _IntTy = _STD underlying_type_t<_BITMASK>;                                                            \

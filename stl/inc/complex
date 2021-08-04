@@ -2077,7 +2077,6 @@ _NODISCARD complex<_Ty> tan(const complex<_Ty>& _Left) {
     return complex<_Ty>(imag(_Zv), -real(_Zv));
 }
 
-// ADDITIONAL OVERLOADS
 template <class _Ty>
 using _Upgrade_to_double = conditional_t<is_integral_v<_Ty>, double, _Ty>;
 

@@ -419,7 +419,6 @@ private:
     void(__CLRCALL_OR_CDECL* _Pfree)(void*); // the pointer to free function
 };
 
-// strstreambuf OPERATORS
 inline void swap(strstreambuf& _Left, strstreambuf& _Right) {
     _Left.swap(_Right);
 }
@@ -483,7 +482,6 @@ private:
     _Mysb _Strbuffer; // the string buffer
 };
 
-// istrstream OPERATORS
 inline void swap(istrstream& _Left, istrstream& _Right) {
     _Left.swap(_Right);
 }
@@ -546,7 +544,6 @@ private:
     _Mysb _Strbuffer; // the string buffer
 };
 
-// ostrstream OPERATORS
 inline void swap(ostrstream& _Left, ostrstream& _Right) {
     _Left.swap(_Right);
 }
@@ -614,7 +611,6 @@ private:
     _Mysb _Strbuffer; // the string buffer
 };
 
-// strstream OPERATORS
 inline void swap(strstream& _Left, strstream& _Right) {
     _Left.swap(_Right);
 }

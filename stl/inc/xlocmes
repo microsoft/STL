@@ -90,7 +90,6 @@ protected:
     virtual void __CLR_OR_THIS_CALL do_close(catalog) const {} // close catalog (do nothing)
 };
 
-// STATIC messages::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"

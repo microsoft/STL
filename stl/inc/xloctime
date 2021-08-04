@@ -606,7 +606,6 @@ private:
     _Locinfo::_Cvtvec _Cvt; // conversion information
 };
 
-// STATIC time_get::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -745,7 +744,6 @@ private:
     _Locinfo::_Timevec _Tnames; // locale-specific stuff for _Strftime
 };
 
-// STATIC time_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -874,7 +872,6 @@ private:
     _Locinfo::_Timevec _Tnames; // locale-specific stuff for _Wcsftime
 };
 
-// STATIC time_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -1005,7 +1002,6 @@ private:
     _Locinfo::_Timevec _Tnames; // locale-specific stuff for _Wcsftime
 };
 
-// STATIC time_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"

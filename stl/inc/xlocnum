@@ -245,7 +245,6 @@ protected:
     virtual __CLR_OR_THIS_CALL ~numpunct_byname() noexcept {}
 };
 
-// STATIC numpunct::id OBJECT
 #if !defined(_CRTBLD) || defined(CRTDLL2) || !defined(_DLL) || defined(_M_CEE_PURE) // TRANSITION, VSO-578955
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -1125,7 +1124,6 @@ private:
 #undef _ENABLE_V2_BEHAVIOR
 };
 
-// STATIC num_get::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -1595,7 +1593,6 @@ private:
     }
 };
 
-// STATIC num_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"

@@ -276,11 +276,9 @@ protected:
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
 #endif // __clang__
 
-// STATIC moneypunct::intl OBJECT
 template <class _Elem, bool _Intl>
 _PGLOBAL const bool moneypunct<_Elem, _Intl>::intl = _Intl;
 
-// STATIC moneypunct::id OBJECT
 template <class _Elem, bool _Intl>
 __PURE_APPDOMAIN_GLOBAL locale::id moneypunct<_Elem, _Intl>::id;
 
@@ -595,7 +593,6 @@ private:
     }
 };
 
-// STATIC money_get::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -872,7 +869,6 @@ private:
     }
 };
 
-// STATIC money_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"

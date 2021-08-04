@@ -626,8 +626,6 @@ _NODISCARD _CONSTEXPR20 _Not_fn<decay_t<_Callable>> not_fn(_Callable&& _Obj) noe
 }
 #endif // _HAS_CXX17
 
-// IMPLEMENT function
-
 class bad_function_call : public exception { // exception thrown when an empty std::function is called
 public:
     bad_function_call() noexcept {}
@@ -1471,7 +1469,6 @@ struct uses_allocator<function<_Fty>, _Alloc> : true_type {}; // true_type if co
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
 #if _HAS_CXX17
-// HETEROGENEOUS MEMORY BLOCK UTILITIES
 inline void _Add_alloc_size(size_t& _Size, const size_t _Size_added, const size_t _Alignment) {
     // moves _Size up to account for storing an object of size _Size_added with alignment _Alignment in a memory buffer
     // assumes that the memory buffer will be allocated for the "worst" alignment used in the resulting buffer

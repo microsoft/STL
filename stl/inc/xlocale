@@ -773,7 +773,6 @@ protected:
     }
 };
 
-// STATIC codecvt::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -2590,7 +2589,6 @@ private:
     _Locinfo::_Cvtvec _Cvt; // conversion information
 };
 
-// STATIC ctype::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"

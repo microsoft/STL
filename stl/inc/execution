@@ -70,7 +70,6 @@ constexpr size_t _Oversubscription_multiplier = 32;
 constexpr size_t _Oversubmission_multiplier   = 4;
 constexpr size_t _Still_active                = static_cast<size_t>(-1);
 
-// EXECUTION POLICIES
 namespace execution {
     class sequenced_policy {
         // indicates support for only sequential execution, and requests termination on exceptions
