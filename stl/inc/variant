@@ -1232,7 +1232,7 @@ private:
     }
 };
 
-// VALUE ACCESS [variant.get]
+// [variant.get]
 template <class _Ty, class... _Types>
 _NODISCARD constexpr bool holds_alternative(
     const variant<_Types...>& _Var) noexcept { // true iff _Var holds alternative _Ty
@@ -1346,7 +1346,7 @@ _NODISCARD constexpr add_pointer_t<const _Ty> get_if(
     return _STD get_if<_Idx>(_Ptr);
 }
 
-// RELATIONAL OPERATORS [variant.relops]
+// [variant.relops]
 template <class _Op, class _Result, class... _Types>
 struct _Variant_relop_visitor2 { // evaluate _Op with the contained value of two variants that hold the same alternative
     const _Variant_storage<_Types...>& _Left;
@@ -1459,7 +1459,7 @@ _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Ty
 }
 #endif // __cpp_lib_concepts
 
-// VISITATION [variant.visit]
+// [variant.visit]
 template <class... _Variants>
 inline constexpr size_t _Variant_total_states =
     (size_t{1} * ... * (variant_size_v<_Variants> + 1)); // +1 to account for the valueless state
@@ -1695,7 +1695,7 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
 }
 #endif // _HAS_CXX20
 
-// monostate RELATIONAL OPERATORS [variant.monostate.relops]
+// [variant.monostate.relops]
 _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
     return true;
 }
@@ -1722,14 +1722,14 @@ _NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
 }
 #endif // !_HAS_CXX20
 
-// SPECIALIZED ALGORITHMS [variant.specalg]
+// [variant.specalg]
 template <class... _Types,
     enable_if_t<conjunction_v<is_move_constructible<_Types>..., is_swappable<_Types>...>, int> = 0>
 void swap(variant<_Types...>& _Left, variant<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
-// HASH SUPPORT [variant.hash]
+// [variant.hash]
 struct _Variant_hash_visitor { // visitation function for hashing variants
     template <class _Ty, size_t _Idx>
     _NODISCARD size_t operator()(_Tagged<const _Ty&, _Idx> _Obj) const

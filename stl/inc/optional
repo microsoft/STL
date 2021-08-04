@@ -450,7 +450,7 @@ public:
 template <class _Ty>
 optional(_Ty) -> optional<_Ty>;
 
-// RELATIONAL OPERATORS [optional.relops]
+// [optional.relops]
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) {
     const bool _Left_has_value = _Left.has_value();
