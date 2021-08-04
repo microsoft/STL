@@ -565,7 +565,7 @@ int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Las
 // FUNCTION TEMPLATE _Is_word
 inline bool _Is_word(unsigned char _UCh) {
     // special casing char to avoid branches for std::regex in this path
-    static constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max)() + 1] = {
+    static constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max) () + 1] = {
         //        X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 XA XB XC XD XE XF
         /* 0X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         /* 1X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -2516,8 +2516,8 @@ public:
                 _MyRe = nullptr;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-                this->_Orphan_me_v2();
-#endif // _ITERATOR_DEBUG_LEVEL
+                this->_Adopt(nullptr);
+#endif // _ITERATOR_DEBUG_LEVEL == 2
 
                 return *this;
             }
@@ -2965,7 +2965,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(typename _Regex_traits
     bool _Negate) { // add contents of named class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Add_elts(_Node, _Cl, _Negate);
-    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max)())) {
+    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max) ())) {
         _Node->_Classes = static_cast<_Regex_traits_base::char_class_type>(_Node->_Classes | _Cl);
     }
 }
@@ -3012,7 +3012,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_equiv(_FwdIt _First, _FwdIt _Last,
             _Node->_Small->_Mark(_Ch);
         }
     }
-    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max)())) { // map range
+    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max) ())) { // map range
         _Sequence<_Elem>** _Cur = _STD addressof(_Node->_Equiv);
         _Char_to_elts(_First, _Last, _Diff, _Cur);
     }
@@ -4329,7 +4329,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape() { // check for valid 
         return _IdentityEscape();
     }
 
-    if ((numeric_limits<typename _RxTraits::_Uelem>::max)() < static_cast<unsigned int>(_Val)) {
+    if ((numeric_limits<typename _RxTraits::_Uelem>::max) () < static_cast<unsigned int>(_Val)) {
         _Error(regex_constants::error_escape);
     }
 
