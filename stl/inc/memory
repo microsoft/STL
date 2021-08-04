@@ -481,7 +481,7 @@ namespace ranges {
             requires requires(void* _Void_ptr, _Types&&... _Args) {
                 ::new (_Void_ptr) _Ty(static_cast<_Types&&>(_Args)...);
             }
-        _CONSTEXPR20_DYNALLOC _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
+        constexpr _Ty* operator()(_Ty* _Location, _Types&&... _Args) const
             noexcept(noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
                     _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
             // clang-format on
@@ -496,7 +496,7 @@ namespace ranges {
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
-    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
+    _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept;
     // clang-format on
 
     class _Destroy_at_fn : private _Not_quite_object {
@@ -504,7 +504,7 @@ namespace ranges {
         using _Not_quite_object::_Not_quite_object;
 
         template <destructible _Ty>
-        _CONSTEXPR20_DYNALLOC void operator()(_Ty* const _Location) const noexcept {
+        constexpr void operator()(_Ty* const _Location) const noexcept {
             if constexpr (is_array_v<_Ty>) {
                 (void) _RANGES _Destroy_unchecked(_RANGES begin(*_Location), _RANGES end(*_Location));
             } else {
@@ -520,7 +520,7 @@ namespace ranges {
 #if _HAS_CXX17
 // FUNCTION TEMPLATE destroy
 template <class _NoThrowFwdIt>
-_CONSTEXPR20_DYNALLOC void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
+_CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // destroy all elements in [_First, _Last)
     _Adl_verify_range(_First, _Last);
     _Destroy_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
@@ -532,7 +532,7 @@ namespace ranges {
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
-    _NODISCARD _CONSTEXPR20_DYNALLOC _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
+    _NODISCARD constexpr _It _Destroy_unchecked(_It _First, _Se _Last) noexcept {
         // clang-format on
         if constexpr (is_trivially_destructible_v<iter_value_t<_It>>) {
             _RANGES advance(_First, _STD move(_Last));
@@ -552,7 +552,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
             requires destructible<iter_value_t<_It>>
-        _CONSTEXPR20_DYNALLOC _It operator()(_It _First, _Se _Last) const noexcept {
+        constexpr _It operator()(_It _First, _Se _Last) const noexcept {
             // clang-format on
             _Adl_verify_range(_First, _Last);
             _Seek_wrapped(_First,
@@ -563,7 +563,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_range _Rng>
             requires destructible<range_value_t<_Rng>>
-        _CONSTEXPR20_DYNALLOC borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
+        constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range) const noexcept {
             // clang-format on
             auto _First = _RANGES begin(_Range);
             _Seek_wrapped(_First, _RANGES _Destroy_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range)));
@@ -577,7 +577,7 @@ namespace ranges {
 
 // FUNCTION TEMPLATE destroy_n
 template <class _NoThrowFwdIt, class _Diff>
-_CONSTEXPR20_DYNALLOC _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
+_CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // destroy all elements in [_First, _First + _Count)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (_Count <= 0) {
@@ -607,7 +607,7 @@ namespace ranges {
         // clang-format off
         template <_No_throw_input_iterator _It>
             requires destructible<iter_value_t<_It>>
-        _CONSTEXPR20_DYNALLOC _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
+        constexpr _It operator()(_It _First, const iter_difference_t<_It> _Count_raw) const noexcept {
             // clang-format on
             _Algorithm_int_t<iter_difference_t<_It>> _Count = _Count_raw;
             if (_Count <= 0) {
@@ -4120,6 +4120,201 @@ public:
     }
 };
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+template <class _Ty>
+struct _Pointer_of_helper {};
+
+// clang-format off
+template <_Has_member_pointer _Ty>
+struct _Pointer_of_helper<_Ty> {
+    using type = typename _Ty::pointer;
+};
+
+template <_Has_member_element_type _Ty>
+    requires (!_Has_member_pointer<_Ty>)
+struct _Pointer_of_helper<_Ty> {
+    using type = typename _Ty::element_type*;
+};
+
+template <class _Ty>
+    requires (!_Has_member_element_type<_Ty> && !_Has_member_pointer<_Ty>
+        && _Has_member_element_type<pointer_traits<_Ty>>)
+struct _Pointer_of_helper<_Ty> {
+    using type = typename pointer_traits<_Ty>::element_type*;
+};
+// clang-format on
+
+template <class _Ty>
+using _Pointer_of = typename _Pointer_of_helper<_Ty>::type;
+
+template <class _Ty, class _Uty>
+struct _Pointer_of_or_helper {
+    using type = _Uty;
+};
+
+// clang-format off
+template <class _Ty, class _Uty>
+    requires requires { typename _Pointer_of<_Ty>; }
+struct _Pointer_of_or_helper<_Ty, _Uty> {
+    using type = _Pointer_of<_Ty>;
+};
+// clang-format on
+
+template <class _Ty, class _Uty>
+using _Pointer_of_or = typename _Pointer_of_or_helper<_Ty, _Uty>::type;
+
+// TRANSITION, requires expression support
+template <class _SmartPtr, class _Sp, class _Pointer, class... _ArgsT>
+concept _Resettable_pointer = requires(_SmartPtr& _Smart_ptr, _Pointer _Ptr, _ArgsT&&... _Args) {
+    _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args)...);
+};
+
+template <class _SmartPtr, class _Pointer, class... _ArgsT>
+class out_ptr_t {
+    static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr> || sizeof...(_ArgsT) != 0,
+        "out_ptr_t with shared_ptr requires a deleter (N4892 [out.ptr.t]/3)");
+
+public:
+    explicit out_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
+        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>) /* strengthened */
+        : _Smart_ptr(_Smart_ptr_),
+          _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...}) {}
+
+    out_ptr_t(const out_ptr_t&) = delete;
+
+    ~out_ptr_t() {
+        if (!_Get_ptr()) {
+            return;
+        }
+
+        _STD apply(
+            [this](auto&&... _Args_) {
+                using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
+                if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
+                    _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                } else {
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4892 [out.ptr.t]/9.3)");
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                }
+            },
+            _STD move(_Get_args()));
+    }
+
+    operator _Pointer*() const noexcept {
+        return _STD addressof(_Get_ptr());
+    }
+
+    operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
+        static_assert(is_pointer_v<_Pointer>, "conversion of out_ptr_t<Smart, Pointer, Args...> to void** requires "
+                                              "Pointer to be a raw pointer (N4892 [out.ptr.t]/13)");
+        return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
+    }
+
+    // clang-format off
+private:
+    _NODISCARD _Pointer& _Get_ptr() const noexcept {
+        return const_cast<_Pointer&>(_Mypair._Myval2);
+    }
+    // clang-format on
+
+    _NODISCARD tuple<_ArgsT...>& _Get_args() noexcept {
+        return _Mypair._Get_first();
+    }
+
+    _SmartPtr& _Smart_ptr;
+    _Compressed_pair<tuple<_ArgsT...>, _Pointer> _Mypair;
+};
+
+template <class _Pointer = void, class _SmartPtr, class... _ArgsT>
+_NODISCARD auto out_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
+    if constexpr (is_void_v<_Pointer>) {
+        return out_ptr_t<_SmartPtr, _Pointer_of<_SmartPtr>, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    } else {
+        return out_ptr_t<_SmartPtr, _Pointer, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    }
+}
+
+template <class _SmartPtr, class _Pointer, class... _ArgsT>
+class inout_ptr_t {
+    static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr>,
+        "inout_ptr_t doesn't work with shared_ptr (N4892 [inout.ptr.t]/3)");
+
+private:
+    _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept requires is_pointer_v<_SmartPtr> {
+        return _Smart_ptr;
+    }
+
+    _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept(noexcept(_Smart_ptr.get())) {
+        return _Smart_ptr.get();
+    }
+
+public:
+    explicit inout_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
+        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>&& noexcept(
+            _Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
+        : _Smart_ptr(_Smart_ptr_),
+          _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...},
+              _Get_ptr_from_smart(_Smart_ptr_)) {}
+
+    inout_ptr_t(const inout_ptr_t&) = delete;
+
+    ~inout_ptr_t() {
+        if (!_Get_ptr()) {
+            return;
+        }
+
+        _STD apply(
+            [this](auto&&... _Args_) {
+                using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
+                if constexpr (is_pointer_v<_SmartPtr>) {
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
+                    _Smart_ptr.release();
+                    _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                } else {
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4892 [inout.ptr.t]/11.4)");
+                    _Smart_ptr.release();
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                }
+            },
+            _STD move(_Get_args()));
+    }
+
+    operator _Pointer*() const noexcept {
+        return _STD addressof(_Get_ptr());
+    }
+
+    operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
+        static_assert(is_pointer_v<_Pointer>, "conversion of inout_ptr_t<Smart, Pointer, Args...> to void** requires "
+                                              "Pointer to be a raw pointer (N4892 [inout.ptr.t]/15)");
+        return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
+    }
+
+    // clang-format off
+private:
+    _NODISCARD _Pointer& _Get_ptr() const noexcept {
+        return const_cast<_Pointer&>(_Mypair._Myval2);
+    }
+    // clang-format on
+
+    _NODISCARD tuple<_ArgsT...>& _Get_args() noexcept {
+        return _Mypair._Get_first();
+    }
+
+    _SmartPtr& _Smart_ptr;
+    _Compressed_pair<tuple<_ArgsT...>, _Pointer> _Mypair;
+};
+
+template <class _Pointer = void, class _SmartPtr, class... _ArgsT>
+_NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
+    if constexpr (is_void_v<_Pointer>) {
+        return inout_ptr_t<_SmartPtr, _Pointer_of<_SmartPtr>, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    } else {
+        return inout_ptr_t<_SmartPtr, _Pointer, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    }
+}
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
