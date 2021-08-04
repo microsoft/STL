@@ -352,11 +352,9 @@ struct _Meta_cartesian_product_<_List1<_List2<_Items...>, _Lists...>> {
 
 #define _STL_STAMP(n, x) x(_STL_STAMP##n, n)
 
-// [variant.variant]
 template <class... _Types>
 class variant;
 
-// [variant.helper]
 template <class _Ty>
 struct variant_size; // undefined
 template <class _Ty>
@@ -400,7 +398,6 @@ struct variant_alternative<_Idx, variant<_Types...>> {
 
 inline constexpr size_t variant_npos = _Meta_npos;
 
-// [variant.bad.access]
 class bad_variant_access
     : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
 public:
@@ -1015,7 +1012,6 @@ public:
         "variant<> (with no template arguments) may not be instantiated (N4835 [variant.variant]/3).");
     using _Mybase = _SMF_control<_Variant_destroy_layer<_Types...>, _Types...>;
 
-    // constructors [variant.ctor]
     template <class _First = _Meta_front<variant>, enable_if_t<is_default_constructible_v<_First>, int> = 0>
     constexpr variant() noexcept(is_nothrow_default_constructible_v<_First>)
         : _Mybase(in_place_index<0>) {} // value-initialize alternative 0
@@ -1063,7 +1059,6 @@ public:
         // initialize alternative _Idx from _Ilist and _Args...
     }
 
-    // assignment [variant.assign]
     template <class _Ty, enable_if_t<!is_same_v<_Remove_cvref_t<_Ty>, variant> //
                                          && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty> //
                                          && is_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>, //
@@ -1090,7 +1085,6 @@ public:
         return *this;
     }
 
-    // modifiers [variant.mod]
     using _Mybase::_Storage;
 
     template <class _Ty, class... _ArgTypes, size_t _Idx = _Meta_find_unique_index<variant, _Ty>::value,
@@ -1127,11 +1121,9 @@ public:
         return _Emplace_valueless<_Idx>(_Ilist, static_cast<_ArgTypes&&>(_Args)...);
     }
 
-    // value status [variant.status]
     using _Mybase::index;
     using _Mybase::valueless_by_exception;
 
-    // swap [variant.swap]
 #ifdef __clang__ // TRANSITION, LLVM-45398
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-lambda-capture"
@@ -1230,7 +1222,6 @@ private:
     }
 };
 
-// [variant.get]
 template <class _Ty, class... _Types>
 _NODISCARD constexpr bool holds_alternative(
     const variant<_Types...>& _Var) noexcept { // true iff _Var holds alternative _Ty
@@ -1344,7 +1335,6 @@ _NODISCARD constexpr add_pointer_t<const _Ty> get_if(
     return _STD get_if<_Idx>(_Ptr);
 }
 
-// [variant.relops]
 template <class _Op, class _Result, class... _Types>
 struct _Variant_relop_visitor2 { // evaluate _Op with the contained value of two variants that hold the same alternative
     const _Variant_storage<_Types...>& _Left;
@@ -1457,7 +1447,6 @@ _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Ty
 }
 #endif // __cpp_lib_concepts
 
-// [variant.visit]
 template <class... _Variants>
 inline constexpr size_t _Variant_total_states =
     (size_t{1} * ... * (variant_size_v<_Variants> + 1)); // +1 to account for the valueless state
@@ -1693,7 +1682,6 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
 }
 #endif // _HAS_CXX20
 
-// [variant.monostate.relops]
 _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
     return true;
 }
@@ -1720,14 +1708,12 @@ _NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
 }
 #endif // !_HAS_CXX20
 
-// [variant.specalg]
 template <class... _Types,
     enable_if_t<conjunction_v<is_move_constructible<_Types>..., is_swappable<_Types>...>, int> = 0>
 void swap(variant<_Types...>& _Left, variant<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
-// [variant.hash]
 struct _Variant_hash_visitor { // visitation function for hashing variants
     template <class _Ty, size_t _Idx>
     _NODISCARD size_t operator()(_Tagged<const _Ty&, _Idx> _Obj) const
