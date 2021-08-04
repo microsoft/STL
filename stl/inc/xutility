@@ -351,18 +351,20 @@ concept _Has_member_reference = requires {
     typename _Ty::reference;
 };
 
-// CONCEPT _Destructible_object
 template <class _Ty>
-concept _Destructible_object = is_object_v<_Ty>;
+concept _Destructible_object = is_object_v<_Ty> && destructible<_Ty>;
 
 // STRUCT TEMPLATE incrementable_traits
 template <class>
 struct incrementable_traits {};
 
-template <_Destructible_object _Ty>
+// clang-format off
+template <class _Ty>
+    requires is_object_v<_Ty>
 struct incrementable_traits<_Ty*> {
     using difference_type = ptrdiff_t;
 };
+// clang-format on
 
 template <class _Ty>
 struct incrementable_traits<const _Ty> : incrementable_traits<_Ty> {};
@@ -400,10 +402,13 @@ using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_trait
 template <class>
 struct _Cond_value_type {};
 
-template <_Destructible_object _Ty>
+// clang-format off
+template <class _Ty>
+    requires is_object_v<_Ty>
 struct _Cond_value_type<_Ty> {
     using value_type = remove_cv_t<_Ty>;
 };
+// clang-format on
 
 template <class>
 struct indirectly_readable_traits {};
@@ -667,8 +672,11 @@ struct iterator_traits : _Iterator_traits_base<_Ty> {
     using _From_primary = iterator_traits;
 };
 
-template <_Destructible_object _Ty>
+// clang-format off
+template <class _Ty>
+    requires is_object_v<_Ty>
 struct iterator_traits<_Ty*> {
+    // clang-format on
     using iterator_concept  = contiguous_iterator_tag;
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;

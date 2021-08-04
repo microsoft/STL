@@ -636,18 +636,14 @@ namespace ranges {
         /* [[no_unique_address]] */ _Ty _Value{};
     };
 
-    // CLASS TEMPLATE ranges::_Non_propagating_cache
-    // clang-format off
     template <_Destructible_object _Ty>
     class _Non_propagating_cache { // a simplified optional that resets on copy / move
-        // clang-format on
     public:
-        constexpr _Non_propagating_cache() noexcept : _Dummy{} {}
+        constexpr _Non_propagating_cache() noexcept {}
 
-        _CONSTEXPR20 ~_Non_propagating_cache() noexcept {
+        constexpr ~_Non_propagating_cache() {
             if (_Engaged) {
                 _Val.~_Ty();
-                _Construct_in_place(_Dummy);
             }
         }
 
@@ -655,40 +651,36 @@ namespace ranges {
         ~_Non_propagating_cache() requires is_trivially_destructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept : _Dummy{} {}
+        constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept {}
 
-        _CONSTEXPR20 _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept : _Dummy{} {
+        constexpr _Non_propagating_cache(_Non_propagating_cache&& _Other) noexcept {
             if (_Other._Engaged) {
                 _Other._Val.~_Ty();
-                _Construct_in_place(_Other._Dummy);
                 _Other._Engaged = false;
             }
         }
 
-        _CONSTEXPR20 _Non_propagating_cache& operator=(const _Non_propagating_cache& _Other) noexcept {
+        constexpr _Non_propagating_cache& operator=(const _Non_propagating_cache& _Other) noexcept {
             if (_STD addressof(_Other) == this) {
                 return *this;
             }
 
             if (_Engaged) {
                 _Val.~_Ty();
-                _Construct_in_place(_Dummy);
                 _Engaged = false;
             }
 
             return *this;
         }
 
-        _CONSTEXPR20 _Non_propagating_cache& operator=(_Non_propagating_cache&& _Other) noexcept {
+        constexpr _Non_propagating_cache& operator=(_Non_propagating_cache&& _Other) noexcept {
             if (_Engaged) {
                 _Val.~_Ty();
-                _Construct_in_place(_Dummy);
                 _Engaged = false;
             }
 
             if (_Other._Engaged) {
                 _Other._Val.~_Ty();
-                _Construct_in_place(_Other._Dummy);
                 _Other._Engaged = false;
             }
 
@@ -705,10 +697,10 @@ namespace ranges {
         }
 
         template <class _It>
-        _CONSTEXPR20 _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
+        constexpr _Ty& _Emplace_deref(_It& _Iter) noexcept(
+            is_nothrow_constructible_v<_Ty, iter_reference_t<_It>>) /* strengthened */ {
             if (_Engaged) {
                 _Val.~_Ty();
-                _Construct_in_place(_Dummy);
                 _Engaged = false;
             }
 
@@ -727,47 +719,10 @@ namespace ranges {
     };
 
     // clang-format off
-    template <_Destructible_object _Ty>
-        requires is_trivially_destructible_v<_Ty> && is_default_constructible_v<_Ty>
-    class _Non_propagating_cache<_Ty> {
-        // provide the same API more efficiently for trivially destructible and default constructible types
-        // clang-format on
-    public:
-        _Non_propagating_cache() = default;
-
-        constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept(
-            is_nothrow_default_constructible_v<_Ty>) {}
-
-        constexpr _Non_propagating_cache(_Non_propagating_cache&&) noexcept(is_nothrow_default_constructible_v<_Ty>) {}
-
-        constexpr _Non_propagating_cache& operator=(const _Non_propagating_cache&) noexcept {
-            return *this;
-        }
-
-        constexpr _Non_propagating_cache& operator=(_Non_propagating_cache&&) noexcept {
-            return *this;
-        }
-
-        _NODISCARD constexpr _Ty& operator*() noexcept {
-            return _Val;
-        }
-        _NODISCARD constexpr const _Ty& operator*() const noexcept {
-            return _Val;
-        }
-
-        template <class _It>
-        _CONSTEXPR20 _Ty& _Emplace_deref(_It& _Iter) noexcept(noexcept(_Ty(*_Iter))) /* strengthened */ {
-            _Construct_in_place(_Val, *_Iter);
-            return _Val;
-        }
-
-    private:
-        _Ty _Val{};
-    };
-
-    // CLASS TEMPLATE ranges::empty_view
-    template <_Destructible_object _Ty>
+    template <class _Ty>
+        requires is_object_v<_Ty>
     class empty_view : public view_interface<empty_view<_Ty>> {
+        // clang-format on
     public:
         _NODISCARD static constexpr _Ty* begin() noexcept {
             return nullptr;
@@ -797,8 +752,11 @@ namespace ranges {
     } // namespace views
 
     // CLASS TEMPLATE ranges::single_view
-    template <_Copy_constructible_object _Ty>
+    // clang-format off
+    template <copy_constructible _Ty>
+        requires is_object_v<_Ty>
     class single_view : public view_interface<single_view<_Ty>> {
+        // clang-format on
     public:
         // clang-format off
         single_view() requires default_initializable<_Ty> = default;
