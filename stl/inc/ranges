@@ -3803,11 +3803,14 @@ namespace ranges {
                 ++_Begin;
                 ++_End;
             }
+
             return {_STD move(_Begin), _STD move(_End)};
         }
 
     public:
+        // clang-format off
         split_view() requires default_initializable<_Vw> && default_initializable<_Pat> = default;
+        // clang-format on
 
         constexpr split_view(_Vw _Range_, _Pat _Pattern_) noexcept(
             is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pat>) // strengthened

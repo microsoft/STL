@@ -3521,14 +3521,13 @@ namespace ranges {
         constexpr subrange& operator=(const subrange&) = default;
         constexpr subrange& operator=(subrange&&) = default;
 #endif // TRANSITION
-        // clang-format on
 
         template <_Convertible_to_non_slicing<_It> _It2>
-        constexpr subrange(_It2 _First_, _Se _Last_) requires(!_Store_size)
+        constexpr subrange(_It2 _First_, _Se _Last_) requires (!_Store_size)
             : _First(_STD move(_First_)), _Last(_STD move(_Last_)) {}
 
         template <_Convertible_to_non_slicing<_It> _It2>
-        constexpr subrange(_It2 _First_, _Se _Last_, const _Size_type _Size_) requires(_Ki == subrange_kind::sized)
+        constexpr subrange(_It2 _First_, _Se _Last_, const _Size_type _Size_) requires (_Ki == subrange_kind::sized)
             : _Mybase(_Size_), _First(_STD move(_First_)), _Last(_STD move(_Last_)) {
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 _STL_ASSERT(_Size_ == static_cast<_Size_type>(_Last - _First),
@@ -3537,7 +3536,6 @@ namespace ranges {
             }
         }
 
-        // clang-format off
         template <_Not_same_as<subrange> _Rng>
             requires borrowed_range<_Rng>
                 && _Convertible_to_non_slicing<iterator_t<_Rng>, _It>
