@@ -164,10 +164,18 @@ _STL_DISABLE_CLANG_WARNINGS
 #error _ITERATOR_DEBUG_LEVEL != 0 must imply _CONTAINER_DEBUG_LEVEL == 1.
 #endif // _ITERATOR_DEBUG_LEVEL != 0 && _CONTAINER_DEBUG_LEVEL == 0
 
-#define _STL_REPORT_ERROR(mesg)              \
-    do {                                     \
-        _RPTF0(_CRT_ASSERT, mesg);           \
-        _CRT_SECURE_INVALID_PARAMETER(mesg); \
+#ifndef _STL_CRT_SECURE_INVALID_PARAMETER
+#ifdef _DEBUG // avoid emitting unused long strings for function names; see GH-1956
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
+#else // _DEBUG
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
+#endif // _DEBUG
+#endif // _STL_CRT_SECURE_INVALID_PARAMETER
+
+#define _STL_REPORT_ERROR(mesg)                  \
+    do {                                         \
+        _RPTF0(_CRT_ASSERT, mesg);               \
+        _STL_CRT_SECURE_INVALID_PARAMETER(mesg); \
     } while (false)
 
 #ifdef __clang__
