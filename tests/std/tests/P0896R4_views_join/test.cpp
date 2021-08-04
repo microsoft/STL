@@ -462,7 +462,6 @@ void test_move_only_views() {
     test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{input}, expected_ints);
 }
 
-
 constexpr array<string_view, 5> prvalue_input = {{{}, "Hello "sv, {}, "World!"sv, {}}};
 
 constexpr auto ToVector(const int val) {
