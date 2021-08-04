@@ -1086,6 +1086,7 @@ public:
             _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list splice_after iterator outside range");
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Right._Mypair._Myval2),
             "forward_list splice_after iterator outside range");
+        _STL_VERIFY(_First._Ptr->_Next != nullptr, "forward_list splice_after iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         _Splice_after(_Where._Ptr, _Right, _First._Ptr);
