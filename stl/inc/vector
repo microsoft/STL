@@ -441,11 +441,13 @@ constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain
 }
 
 #ifdef __SANITIZE_ADDRESS__
-extern "C" void __sanitizer_annotate_contiguous_container(const void* _First, const void* _End, const void* _Old_last, const void* _New_last) noexcept;
+extern "C" void __sanitizer_annotate_contiguous_container(
+    const void* _First, const void* _End, const void* _Old_last, const void* _New_last) noexcept;
 
 template <class _Vec, class = void>
-_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment = disjunction_v<bool_constant<alignof(typename _Vec::value_type) >= 8>,
-    is_same<typename _Vec::allocator_type, allocator<typename _Vec::value_type>>>;
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment =
+    disjunction_v<bool_constant<alignof(typename _Vec::value_type) >= 8>,
+        is_same<typename _Vec::allocator_type, allocator<typename _Vec::value_type>>>;
 
 template <class _Vec>
 _INLINE_VAR constexpr bool
