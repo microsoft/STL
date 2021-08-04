@@ -1714,8 +1714,8 @@ struct _Invoke_traits_nonzero {
 };
 
 template <class _Callable, class _Ty1, class... _Types2>
-using _Decltype_invoke_nonzero = decltype(
-    _Invoker1<_Callable, _Ty1>::_Call(_STD declval<_Callable>(), _STD declval<_Ty1>(), _STD declval<_Types2>()...));
+using _Decltype_invoke_nonzero = decltype(_Invoker1<_Callable, _Ty1>::_Call(
+    _STD declval<_Callable>(), _STD declval<_Ty1>(), _STD declval<_Types2>()...));
 
 template <class _Callable, class _Ty1, class... _Types2>
 struct _Invoke_traits_nonzero<void_t<_Decltype_invoke_nonzero<_Callable, _Ty1, _Types2...>>, _Callable, _Ty1,
@@ -2123,6 +2123,11 @@ using _Has_ADL_swap_detail::_Has_ADL_swap;
 template <class _Ty>
 _INLINE_VAR constexpr bool _Is_trivially_swappable_v = conjunction_v<is_trivially_destructible<_Ty>,
     is_trivially_move_constructible<_Ty>, is_trivially_move_assignable<_Ty>, negation<_Has_ADL_swap<_Ty>>>;
+
+#ifdef __cpp_lib_byte
+template <>
+inline constexpr bool _Is_trivially_swappable_v<byte> = true;
+#endif // __cpp_lib_byte
 
 template <class _Ty>
 struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {

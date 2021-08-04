@@ -33,7 +33,7 @@ namespace {
         *b.started = 1;
         _Cnd_signal(*b.cond);
         _Mtx_unlock(*b.mtx);
-        const unsigned int res = (b.func)(b.data);
+        const unsigned int res = (b.func) (b.data);
         _Cnd_do_broadcast_at_thread_exit();
         return res;
     }

@@ -49,13 +49,13 @@ template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
     // convert an iterator difference_type to a ptrdiff_t for use in temporary buffers
     using _CT = common_type_t<ptrdiff_t, _Diff>;
-    return static_cast<ptrdiff_t>((_STD min)(static_cast<_CT>(PTRDIFF_MAX), static_cast<_CT>(_Value)));
+    return static_cast<ptrdiff_t>((_STD min) (static_cast<_CT>(PTRDIFF_MAX), static_cast<_CT>(_Value)));
 }
 
 template <class _Ty>
 struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like attempt
     static constexpr size_t _Optimistic_size  = 4096; // default to ~1 page
-    static constexpr size_t _Optimistic_count = (_STD max)(static_cast<size_t>(1), _Optimistic_size / sizeof(_Ty));
+    static constexpr size_t _Optimistic_count = (_STD max) (static_cast<size_t>(1), _Optimistic_size / sizeof(_Ty));
 
     template <class _Diff>
     explicit _Optimistic_temporary_buffer(const _Diff _Requested_size) noexcept { // get temporary storage
@@ -670,7 +670,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         using _CT         = _Common_diff_t<_InIt1, _InIt2>;
         const _CT _Count1 = _ULast1 - _UFirst1;
         const _CT _Count2 = _ULast2 - _UFirst2;
-        const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min)(_Count1, _Count2));
+        const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min) (_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
         while (_UFirst1 != _ULast1 && _Pred(*_UFirst1, *_UFirst2)) {
             ++_UFirst1;
@@ -1926,9 +1926,9 @@ template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, ...) to [_First2, _Last2)
     if constexpr (_Equal_memcmp_is_safe<_InIt1, _InIt2, _Pr>) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             return _Memcmp_ranges(_First2, _Last2, _First1) == 0;
         }
@@ -2178,7 +2178,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
         return _First;
     }
 
-    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>((numeric_limits<_Iter_diff_t<_FwdIt>>::max)())) {
+    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>((numeric_limits<_Iter_diff_t<_FwdIt>>::max) ())) {
         // if the number of _Vals searched for is larger than the longest possible sequence, we can't find it
         return _Last;
     }
@@ -2847,6 +2847,40 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_swappable<_It1, _It2>);
 
+#if _USE_STD_VECTOR_ALGORITHMS
+            using _Elem1 = remove_reference_t<iter_reference_t<_It1>>;
+            using _Elem2 = remove_reference_t<iter_reference_t<_It2>>;
+            if constexpr (same_as<_Elem1, _Elem2> && _Is_trivially_swappable_v<_Elem1> //
+                          && contiguous_iterator<_It1> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> //
+                          && contiguous_iterator<_It2> && _Sized_or_unreachable_sentinel_for<_Se2, _It2>) {
+                if (!_STD is_constant_evaluated()) {
+                    constexpr bool _Is_sized1 = sized_sentinel_for<_Se1, _It1>;
+                    constexpr bool _Is_sized2 = sized_sentinel_for<_Se2, _It2>;
+                    const auto _First1_addr   = _STD to_address(_First1);
+                    const auto _First2_addr   = _STD to_address(_First2);
+                    if constexpr (_Is_sized1 && _Is_sized2) {
+                        const size_t _Count =
+                            (_STD min) (static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
+                        const auto _Last1_addr = _First1_addr + _Count;
+                        __std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
+                        return {_First1 + _Count, _First2 + _Count};
+                    } else if constexpr (_Is_sized1) {
+                        const auto _Final1     = _RANGES next(_First1, _Last1);
+                        const auto _Last1_addr = _STD to_address(_Final1);
+                        __std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
+                        return {_Final1, _First2 + (_Last1 - _First1)};
+                    } else if constexpr (_Is_sized2) {
+                        const auto _Final2     = _RANGES next(_First2, _Last2);
+                        const auto _Last2_addr = _STD to_address(_Final2);
+                        __std_swap_ranges_trivially_swappable_noalias(_First2_addr, _Last2_addr, _First1_addr);
+                        return {_First1 + (_Last2 - _First2), _Final2};
+                    } else {
+                        _STL_ASSERT(false, "Tried to swap_ranges with two unreachable sentinels");
+                    }
+                }
+            }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
             for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) {
                 _RANGES iter_swap(_First1, _First2);
             }
@@ -3426,7 +3460,7 @@ namespace ranges {
         template <class _Ty, output_range<const _Ty&> _Rng>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Value) const {
             auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(_First, (*this)(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Value));
+            _Seek_wrapped(_First, (*this) (_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Value));
             return _First;
         }
     };
@@ -4262,9 +4296,9 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
 
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
     if constexpr (_Allow_vectorization && _Nx <= 8 && (_Nx & (_Nx - 1)) == 0) {
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
         if (!_STD is_constant_evaluated())
-#endif // __cpp_lib_is_constant_evaluated
+#endif // _HAS_CXX20
         {
             if constexpr (_Nx == 1) {
                 __std_reverse_copy_trivially_copyable_1(_To_address(_UFirst), _To_address(_ULast), _To_address(_UDest));
@@ -6867,7 +6901,7 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
     }
 
     const _Diff _Count2 = _STD distance(_UMid, _ULast);
-    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min)(_Count1, _Count2)};
+    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min) (_Count1, _Count2)};
     _Buffered_inplace_merge_unchecked_impl(
         _UFirst, _UMid, _ULast, _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _Pass_fn(_Pred));
 }
@@ -7218,7 +7252,7 @@ namespace ranges {
             }
 
             const iter_difference_t<_It> _Count2 = _RANGES distance(_Mid, _Last);
-            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{(_STD min)(_Count1, _Count2)};
+            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{(_STD min) (_Count1, _Count2)};
             if (_Count1 <= _Count2 && _Count1 <= _Temp_buf._Capacity) {
                 _RANGES _Inplace_merge_buffer_left(_STD move(_First), _STD move(_Mid), _STD move(_Last),
                     _Temp_buf._Data, _Temp_buf._Capacity, _Pred, _Proj);
@@ -7706,7 +7740,7 @@ void _Uninitialized_chunked_merge_unchecked2(
     while (_Count > _Isort_max<_BidIt>) {
         _Count -= _Isort_max<_BidIt>;
         const _BidIt _Mid1 = _STD next(_First, _Isort_max<_BidIt>);
-        const auto _Chunk2 = (_STD min)(_Isort_max<_BidIt>, _Count);
+        const auto _Chunk2 = (_STD min) (_Isort_max<_BidIt>, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Backout._Last     = _Uninitialized_merge_move(_First, _Mid1, _Mid2, _Backout._Last, _Pred);
@@ -7726,7 +7760,7 @@ void _Chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _OutIt _Dest, c
     while (_Chunk < _Count) {
         _Count -= _Chunk;
         const _BidIt _Mid1 = _STD next(_First, _Chunk);
-        const auto _Chunk2 = (_STD min)(_Chunk, _Count);
+        const auto _Chunk2 = (_STD min) (_Chunk, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Dest              = _Merge_move(_First, _Mid1, _Mid2, _Dest, _Pred);
@@ -7981,7 +8015,7 @@ namespace ranges {
             const auto _Backout_end = _Dest + _Count;
             while (_Isort_max<_It> < _Count) {
                 _Count -= _Isort_max<_It>;
-                const auto _Chunk2 = (_STD min)(_Isort_max<_It>, _Count);
+                const auto _Chunk2 = (_STD min) (_Isort_max<_It>, _Count);
                 _Count -= _Chunk2;
 
                 auto _Mid1     = _First + _Isort_max<_It>;
@@ -8077,7 +8111,7 @@ namespace ranges {
 
             while (_Chunk_size < _Count) {
                 _Count -= _Chunk_size;
-                const auto _Right_chunk_size = (_STD min)(_Chunk_size, _Count);
+                const auto _Right_chunk_size = (_STD min) (_Chunk_size, _Count);
                 _Count -= _Right_chunk_size;
 
                 auto _Mid1  = _First + _Chunk_size;
@@ -9548,7 +9582,7 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
 template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
     // return leftmost/largest
-    return (_STD max)(_Ilist, less<>{});
+    return (_STD max) (_Ilist, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -9628,7 +9662,7 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
 template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
     // return leftmost/smallest
-    return (_STD min)(_Ilist, less<>{});
+    return (_STD min) (_Ilist, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -9760,11 +9794,13 @@ namespace ranges {
             return {static_cast<_Ty>(*_Found.min), static_cast<_Ty>(*_Found.max)};
         }
 
+        // clang-format off
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
-        requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-            _NODISCARD constexpr minmax_result<range_value_t<_Rng>> operator()(
-                _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
+        _NODISCARD constexpr minmax_result<range_value_t<_Rng>> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            // clang-format on
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
@@ -10280,7 +10316,7 @@ namespace ranges {
                         _Num2 = SIZE_MAX;
                     }
 
-                    const int _Ans = _Memcmp_count(_First1, _First2, (_STD min)(_Num1, _Num2));
+                    const int _Ans = _Memcmp_count(_First1, _First2, (_STD min) (_Num1, _Num2));
                     return _Memcmp_classification_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
                 }
             }

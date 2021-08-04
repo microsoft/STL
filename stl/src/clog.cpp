@@ -28,7 +28,6 @@ __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream clog(&flog);
 struct _Init_clog { // ensures that clog is initialized
     __CLR_OR_THIS_CALL _Init_clog() { // initialize clog
         _Ptr_clog = &clog;
-        clog.tie(_Ptr_cout);
     }
 };
 

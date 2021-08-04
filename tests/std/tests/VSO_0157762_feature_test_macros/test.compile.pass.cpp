@@ -30,6 +30,20 @@ STATIC_ASSERT(__cpp_lib_adaptor_iterator_pair_constructor == 202106L);
 STATIC_ASSERT(__cpp_lib_addressof_constexpr == 201603L);
 #endif
 
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_allocate_at_least
+#error __cpp_lib_allocate_at_least is not defined
+#elif __cpp_lib_allocate_at_least != 202106L
+#error __cpp_lib_allocate_at_least is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_allocate_at_least == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_allocate_at_least
+#error __cpp_lib_allocate_at_least is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_allocator_traits_is_always_equal
 #error __cpp_lib_allocator_traits_is_always_equal is not defined
 #elif __cpp_lib_allocator_traits_is_always_equal != 201411L
@@ -430,7 +444,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_dynamic_alloc
 #error __cpp_lib_constexpr_dynamic_alloc is not defined
 #elif __cpp_lib_constexpr_dynamic_alloc != 201907L
@@ -500,7 +514,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__clang__) // TRANSITION, LLVM-48606
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_string
 #error __cpp_lib_constexpr_string is not defined
 #elif __cpp_lib_constexpr_string != 201907L
@@ -556,7 +570,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_vector
 #error __cpp_lib_constexpr_vector is not defined
 #elif __cpp_lib_constexpr_vector != 201907L
@@ -1195,6 +1209,20 @@ STATIC_ASSERT(__cpp_lib_optional == 201606L);
 #else
 #ifdef __cpp_lib_optional
 #error __cpp_lib_optional is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_out_ptr
+#error __cpp_lib_out_ptr is not defined
+#elif __cpp_lib_out_ptr != 202106L
+#error __cpp_lib_out_ptr is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_out_ptr == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_out_ptr
+#error __cpp_lib_out_ptr is defined
 #endif
 #endif
 
