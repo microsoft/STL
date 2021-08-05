@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cassert>
 #include <ranges>
+#include <utility>
 
 #include <range_algorithm_support.hpp>
 using namespace std;
@@ -15,7 +17,7 @@ public:
         this->_Set_cache(_view, _view.begin());
     }
 
-    _NODISCARD constexpr bool has_cache() const noexcept {
+    [[nodiscard]] constexpr bool has_cache() const noexcept {
         return this->_Has_cache();
     }
 
