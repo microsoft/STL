@@ -4121,6 +4121,201 @@ public:
 };
 #endif // _HAS_CXX20
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+template <class _Ty>
+struct _Pointer_of_helper {};
+
+// clang-format off
+template <_Has_member_pointer _Ty>
+struct _Pointer_of_helper<_Ty> {
+    using type = typename _Ty::pointer;
+};
+
+template <_Has_member_element_type _Ty>
+    requires (!_Has_member_pointer<_Ty>)
+struct _Pointer_of_helper<_Ty> {
+    using type = typename _Ty::element_type*;
+};
+
+template <class _Ty>
+    requires (!_Has_member_element_type<_Ty> && !_Has_member_pointer<_Ty>
+        && _Has_member_element_type<pointer_traits<_Ty>>)
+struct _Pointer_of_helper<_Ty> {
+    using type = typename pointer_traits<_Ty>::element_type*;
+};
+// clang-format on
+
+template <class _Ty>
+using _Pointer_of = typename _Pointer_of_helper<_Ty>::type;
+
+template <class _Ty, class _Uty>
+struct _Pointer_of_or_helper {
+    using type = _Uty;
+};
+
+// clang-format off
+template <class _Ty, class _Uty>
+    requires requires { typename _Pointer_of<_Ty>; }
+struct _Pointer_of_or_helper<_Ty, _Uty> {
+    using type = _Pointer_of<_Ty>;
+};
+// clang-format on
+
+template <class _Ty, class _Uty>
+using _Pointer_of_or = typename _Pointer_of_or_helper<_Ty, _Uty>::type;
+
+// TRANSITION, requires expression support
+template <class _SmartPtr, class _Sp, class _Pointer, class... _ArgsT>
+concept _Resettable_pointer = requires(_SmartPtr& _Smart_ptr, _Pointer _Ptr, _ArgsT&&... _Args) {
+    _Smart_ptr.reset(static_cast<_Sp>(_Ptr), _STD forward<_ArgsT>(_Args)...);
+};
+
+template <class _SmartPtr, class _Pointer, class... _ArgsT>
+class out_ptr_t {
+    static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr> || sizeof...(_ArgsT) != 0,
+        "out_ptr_t with shared_ptr requires a deleter (N4892 [out.ptr.t]/3)");
+
+public:
+    explicit out_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
+        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>) /* strengthened */
+        : _Smart_ptr(_Smart_ptr_),
+          _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...}) {}
+
+    out_ptr_t(const out_ptr_t&) = delete;
+
+    ~out_ptr_t() {
+        if (!_Get_ptr()) {
+            return;
+        }
+
+        _STD apply(
+            [this](auto&&... _Args_) {
+                using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
+                if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
+                    _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                } else {
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4892 [out.ptr.t]/9.3)");
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                }
+            },
+            _STD move(_Get_args()));
+    }
+
+    operator _Pointer*() const noexcept {
+        return _STD addressof(_Get_ptr());
+    }
+
+    operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
+        static_assert(is_pointer_v<_Pointer>, "conversion of out_ptr_t<Smart, Pointer, Args...> to void** requires "
+                                              "Pointer to be a raw pointer (N4892 [out.ptr.t]/13)");
+        return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
+    }
+
+    // clang-format off
+private:
+    _NODISCARD _Pointer& _Get_ptr() const noexcept {
+        return const_cast<_Pointer&>(_Mypair._Myval2);
+    }
+    // clang-format on
+
+    _NODISCARD tuple<_ArgsT...>& _Get_args() noexcept {
+        return _Mypair._Get_first();
+    }
+
+    _SmartPtr& _Smart_ptr;
+    _Compressed_pair<tuple<_ArgsT...>, _Pointer> _Mypair;
+};
+
+template <class _Pointer = void, class _SmartPtr, class... _ArgsT>
+_NODISCARD auto out_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
+    if constexpr (is_void_v<_Pointer>) {
+        return out_ptr_t<_SmartPtr, _Pointer_of<_SmartPtr>, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    } else {
+        return out_ptr_t<_SmartPtr, _Pointer, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    }
+}
+
+template <class _SmartPtr, class _Pointer, class... _ArgsT>
+class inout_ptr_t {
+    static_assert(!_Is_specialization_v<_SmartPtr, shared_ptr>,
+        "inout_ptr_t doesn't work with shared_ptr (N4892 [inout.ptr.t]/3)");
+
+private:
+    _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept requires is_pointer_v<_SmartPtr> {
+        return _Smart_ptr;
+    }
+
+    _NODISCARD static auto _Get_ptr_from_smart(_SmartPtr& _Smart_ptr) noexcept(noexcept(_Smart_ptr.get())) {
+        return _Smart_ptr.get();
+    }
+
+public:
+    explicit inout_ptr_t(_SmartPtr& _Smart_ptr_, _ArgsT... _Args_) noexcept(
+        is_nothrow_constructible_v<tuple<_ArgsT...>, _ArgsT...>&& noexcept(
+            _Get_ptr_from_smart(_Smart_ptr_))) /* strengthened */
+        : _Smart_ptr(_Smart_ptr_),
+          _Mypair(_One_then_variadic_args_t{}, tuple<_ArgsT...>{_STD forward<_ArgsT>(_Args_)...},
+              _Get_ptr_from_smart(_Smart_ptr_)) {}
+
+    inout_ptr_t(const inout_ptr_t&) = delete;
+
+    ~inout_ptr_t() {
+        if (!_Get_ptr()) {
+            return;
+        }
+
+        _STD apply(
+            [this](auto&&... _Args_) {
+                using _Sp = _Pointer_of_or<_SmartPtr, _Pointer>;
+                if constexpr (is_pointer_v<_SmartPtr>) {
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                } else if constexpr (_Resettable_pointer<_SmartPtr, _Sp, _Pointer, _ArgsT...>) {
+                    _Smart_ptr.release();
+                    _Smart_ptr.reset(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                } else {
+                    static_assert(is_constructible_v<_SmartPtr, _Sp, _ArgsT...>, "(N4892 [inout.ptr.t]/11.4)");
+                    _Smart_ptr.release();
+                    _Smart_ptr = _SmartPtr(static_cast<_Sp>(_Get_ptr()), _STD forward<_ArgsT>(_Args_)...);
+                }
+            },
+            _STD move(_Get_args()));
+    }
+
+    operator _Pointer*() const noexcept {
+        return _STD addressof(_Get_ptr());
+    }
+
+    operator void**() const noexcept requires(!is_same_v<_Pointer, void*>) {
+        static_assert(is_pointer_v<_Pointer>, "conversion of inout_ptr_t<Smart, Pointer, Args...> to void** requires "
+                                              "Pointer to be a raw pointer (N4892 [inout.ptr.t]/15)");
+        return reinterpret_cast<void**>(_STD addressof(_Get_ptr()));
+    }
+
+    // clang-format off
+private:
+    _NODISCARD _Pointer& _Get_ptr() const noexcept {
+        return const_cast<_Pointer&>(_Mypair._Myval2);
+    }
+    // clang-format on
+
+    _NODISCARD tuple<_ArgsT...>& _Get_args() noexcept {
+        return _Mypair._Get_first();
+    }
+
+    _SmartPtr& _Smart_ptr;
+    _Compressed_pair<tuple<_ArgsT...>, _Pointer> _Mypair;
+};
+
+template <class _Pointer = void, class _SmartPtr, class... _ArgsT>
+_NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
+    if constexpr (is_void_v<_Pointer>) {
+        return inout_ptr_t<_SmartPtr, _Pointer_of<_SmartPtr>, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    } else {
+        return inout_ptr_t<_SmartPtr, _Pointer, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
+    }
+}
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
     using _STD allocate_shared;

@@ -24,7 +24,6 @@ __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream wclog(&wflog);
 struct _Init_wclog { // ensures that wclog is initialized
     __CLR_OR_THIS_CALL _Init_wclog() { // initialize wclog
         _Ptr_wclog = &wclog;
-        wclog.tie(_Ptr_wcout);
     }
 };
 __PURE_APPDOMAIN_GLOBAL static _Init_wclog init_wclog;
