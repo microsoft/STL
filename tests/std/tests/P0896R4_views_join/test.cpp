@@ -472,6 +472,14 @@ constexpr auto ToString(const size_t val) {
     return string{prvalue_input[val]};
 }
 
+struct Immovable {
+    Immovable()                 = default;
+    Immovable(const Immovable&) = delete;
+    Immovable(Immovable&&)      = delete;
+    Immovable& operator=(const Immovable&) = delete;
+    Immovable& operator=(Immovable&&) = delete;
+};
+
 int main() {
     // Validate views
     constexpr string_view expected = "Hello World!"sv;
@@ -554,6 +562,12 @@ int main() {
 #if defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-934264
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
 #endif // not MSVC
+    }
+
+    { // Immovable type
+        auto ToArrayOfImmovable = [](const int) { return array<Immovable, 3>{}; };
+        assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
+        static_assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
     }
 
     STATIC_ASSERT(instantiation_test());

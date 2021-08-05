@@ -694,15 +694,14 @@ namespace ranges {
             return _Val;
         }
 
-        template <class _It>
-        constexpr _Ty& _Emplace_deref(_It& _Iter) noexcept(
-            is_nothrow_constructible_v<_Ty, iter_reference_t<_It>>) /* strengthened */ {
+        template <class... _Types>
+        constexpr _Ty& _Emplace(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
             if (_Engaged) {
                 _Val.~_Ty();
                 _Engaged = false;
             }
 
-            _Construct_in_place(_Val, *_Iter);
+            _Construct_in_place(_Val, _STD forward<_Types>(_Args)...);
             _Engaged = true;
 
             return _Val;
@@ -2962,8 +2961,16 @@ namespace ranges {
 
     template <class _Vw>
     class _Join_view_base : public view_interface<join_view<_Vw>> {
+    private:
+        struct _Cache_wrapper {
+            template <input_iterator _Iter>
+            constexpr _Cache_wrapper(const _Iter& _It) noexcept(noexcept(*_It)) : _Val(*_It) {}
+
+            remove_cv_t<range_reference_t<_Vw>> _Val;
+        };
+
     protected:
-        /* [[no_unique_address]] */ _Non_propagating_cache<remove_cv_t<range_reference_t<_Vw>>> _Inner{};
+        /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper> _Inner{};
     };
 
     // clang-format off
@@ -3033,7 +3040,7 @@ namespace ranges {
                 if constexpr (_Deref_is_glvalue) {
                     return *_Outer;
                 } else {
-                    return _Parent->_Inner._Emplace_deref(_Outer);
+                    return _Parent->_Inner._Emplace(_Outer)._Val;
                 }
             }
 
@@ -3059,7 +3066,7 @@ namespace ranges {
                 if constexpr (_Deref_is_glvalue) {
                     _Last = _RANGES end(*_Outer);
                 } else {
-                    _Last = _RANGES end(*_Parent->_Inner);
+                    _Last = _RANGES end((*_Parent->_Inner)._Val);
                 }
                 _STL_VERIFY(_Inner && *_Inner != _Last, "cannot dereference join_view end iterator");
             }
@@ -3127,7 +3134,7 @@ namespace ranges {
                         _Satisfy();
                     }
                 } else {
-                    if (++*_Inner == _RANGES end(*_Parent->_Inner)) {
+                    if (++*_Inner == _RANGES end((*_Parent->_Inner)._Val)) {
                         ++_Outer;
                         _Satisfy();
                     }
