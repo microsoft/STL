@@ -389,7 +389,6 @@ namespace ranges {
 
     private:
         union {
-            _Nontrivial_dummy_type _Dummy;
             _Ty _Val;
         };
         bool _Engaged;
@@ -457,7 +456,7 @@ namespace ranges {
     template <movable _Ty>
     class _Defaultabox { // a simplified optional that augments movable types with default-constructibility
     public:
-        constexpr _Defaultabox() noexcept : _Dummy{} {}
+        constexpr _Defaultabox() noexcept {}
 
         // clang-format off
         ~_Defaultabox() requires is_trivially_destructible_v<_Ty> = default;
@@ -593,7 +592,6 @@ namespace ranges {
 
     private:
         union {
-            _Nontrivial_dummy_type _Dummy;
             _Ty _Val;
         };
         bool _Engaged = false;
@@ -712,7 +710,6 @@ namespace ranges {
 
     private:
         union {
-            _Nontrivial_dummy_type _Dummy;
             _Ty _Val;
         };
         bool _Engaged = false;
