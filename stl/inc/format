@@ -2497,11 +2497,13 @@ _NODISCARD _OutputIt _Fmt_write(
     // Add 3 to the bit width so we always round up on the division.
     // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
     // Add 2 for the 0x prefix.
-    auto _Width = 2 + static_cast<int>(_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4;
+    int _Width;
 
     // Since the bit width of 0 is 0, special case it instead of complicating the math even more.
     if (_Value == nullptr) {
         _Width = 3;
+    } else {
+        _Width = 2 + static_cast<int>(_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4;
     }
 
     return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,
