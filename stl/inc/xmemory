@@ -146,7 +146,7 @@ inline void _Adjust_manually_vector_aligned(void*& _Ptr, size_t& _Bytes) {
     // adjust parameters from _Allocate_manually_vector_aligned to pass to operator delete
     _Bytes += _Non_user_size;
 
-    const uintptr_t* const _Ptr_user = reinterpret_cast<uintptr_t*>(_Ptr);
+    const uintptr_t* const _Ptr_user = static_cast<uintptr_t*>(_Ptr);
     const uintptr_t _Ptr_container   = _Ptr_user[-1];
 
     // If the following asserts, it likely means that we are performing
