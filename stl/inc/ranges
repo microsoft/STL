@@ -2960,7 +2960,8 @@ namespace ranges {
     private:
         struct _Cache_wrapper {
             template <input_iterator _Iter>
-            constexpr _Cache_wrapper(const _Iter& _It) noexcept(noexcept(*_It)) : _Val(*_It) {}
+            constexpr _Cache_wrapper(_Not_quite_object::_Construct_tag, const _Iter& _It) noexcept(noexcept(*_It))
+                : _Val(*_It) {}
 
             remove_cv_t<range_reference_t<_Vw>> _Val;
         };
@@ -3036,7 +3037,7 @@ namespace ranges {
                 if constexpr (_Deref_is_glvalue) {
                     return *_Outer;
                 } else {
-                    return _Parent->_Inner._Emplace(_Outer)._Val;
+                    return _Parent->_Inner._Emplace(_Not_quite_object::_Construct_tag{}, _Outer)._Val;
                 }
             }
 
