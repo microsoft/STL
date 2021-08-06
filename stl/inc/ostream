@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #pragma vtordisp(push, 2) // compiler bug workaround
 
-// CLASS TEMPLATE basic_ostream
 template <class _Elem, class _Traits>
 class basic_ostream : virtual public basic_ios<_Elem, _Traits> { // control insertions into a stream buffer
 public:
@@ -60,7 +59,7 @@ public:
     __CLR_OR_THIS_CALL basic_ostream(const basic_ostream&) = delete;
     basic_ostream& __CLR_OR_THIS_CALL operator=(const basic_ostream&) = delete;
 
-    virtual __CLR_OR_THIS_CALL ~basic_ostream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_ostream() noexcept override {}
 
     using int_type = typename _Traits::int_type;
     using pos_type = typename _Traits::pos_type;
@@ -659,8 +658,6 @@ template class _CRTIMP2_PURE_IMPORT basic_ostream<unsigned short, char_traits<un
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
 
-// INSERTERS
-
 template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const char* _Val) { // insert NTBS
     ios_base::iostate _State = ios_base::goodbit;
@@ -984,7 +981,6 @@ _Ostr&& operator<<(_Ostr&& _Os, const _Ty& _Val) { // insert to rvalue stream
     return _STD move(_Os);
 }
 
-// MANIPULATORS
 template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL endl(
     basic_ostream<_Elem, _Traits>& _Ostr) { // insert newline and flush stream
@@ -1044,7 +1040,6 @@ basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>&) = dele
 #endif // _CPPRTTI
 #endif // _HAS_CXX20
 
-// INSERTER FOR error_category
 template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     const error_code& _Errcode) { // display error code
