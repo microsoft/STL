@@ -565,7 +565,7 @@ int main() {
     }
 
     { // Immovable type
-        auto ToArrayOfImmovable = [](const int) { return array<Immovable, 3>{}; };
+        auto ToArrayOfImmovable = [](int) { return array<Immovable, 3>{}; };
         assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
         static_assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
     }
