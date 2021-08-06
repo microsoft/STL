@@ -8,7 +8,7 @@ variables:
   buildOutputLocation: 'D:\build'
   vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
 
-pool: 'StlBuild-2021-06-02'
+pool: 'StlBuild-2021-07-18'
 
 stages:
   - stage: Code_Format
@@ -33,7 +33,7 @@ stages:
               if exist "$(buildOutputLocation)" (
                 rmdir /S /Q "$(buildOutputLocation)"
               )
-              call "%PROGRAMFILES(X86)%\Microsoft Visual Studio\2019\Preview\Common7\Tools\VsDevCmd.bat" ^
+              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
               -host_arch=amd64 -arch=amd64 -no_logo
               cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
               -S $(Build.SourcesDirectory)\tools -B $(buildOutputLocation)
@@ -59,17 +59,8 @@ stages:
               arguments: '$(buildOutputLocation)/validate/validate.exe'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 
-  - stage: Build_And_Test_x86
-    dependsOn: Code_Format
-    displayName: 'Build and Test'
-    jobs:
-      - template: azure-devops/native-build-test.yml
-        parameters:
-          targetPlatform: x86
-          vsDevCmdArch: x86
-
   - stage: Build_And_Test_x64
-    dependsOn: Build_And_Test_x86
+    dependsOn: Code_Format
     displayName: 'Build and Test'
     jobs:
       - template: azure-devops/native-build-test.yml
@@ -77,8 +68,17 @@ stages:
           targetPlatform: x64
           vsDevCmdArch: amd64
 
+  - stage: Build_And_Test_x86
+    dependsOn: Build_And_Test_x64
+    displayName: 'Build and Test'
+    jobs:
+      - template: azure-devops/native-build-test.yml
+        parameters:
+          targetPlatform: x86
+          vsDevCmdArch: x86
+
   - stage: Build_ARM
-    dependsOn: Build_And_Test_x86
+    dependsOn: Build_And_Test_x64
     displayName: 'Build'
     jobs:
       - template: azure-devops/cross-build.yml
@@ -87,7 +87,7 @@ stages:
           vsDevCmdArch: arm
 
   - stage: Build_ARM64
-    dependsOn: Build_And_Test_x86
+    dependsOn: Build_And_Test_x64
     displayName: 'Build'
     jobs:
       - template: azure-devops/cross-build.yml

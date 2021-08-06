@@ -3,11 +3,14 @@
 
 #include <array>
 #include <assert.h>
+#include <deque>
 #include <sstream>
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
 #include <string_view>
+#include <type_traits>
+#include <vector>
 
 #include <constexpr_char_traits.hpp>
 
@@ -65,6 +68,11 @@ const evil_conversion_to_string_view_lvalue_only convert_lvalue_only{};
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif // __clang__
+
+// We provide a non-standard guarantee that basic_string_view is trivially copyable;
+// P2251 may eventually standardize that guarantee.
+static_assert(is_trivially_copyable_v<string_view>);
+static_assert(is_trivially_copyable_v<wstring_view>);
 
 // noexcept assertions:
 // (functions that explicitly throw have their throws tested and therefore have no static_asserts)
@@ -322,6 +330,31 @@ constexpr bool test_case_contiguous_constructor() {
     return true;
 }
 
+constexpr bool test_case_range_constructor() {
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
+    // Also tests the corresponding deduction guide:
+    same_as<string_view> auto sv = basic_string_view(expectedData);
+    assert(sv.data() == expectedData.data());
+    assert(sv.size() == 7);
+
+    // Also tests some of the constraints:
+    static_assert(is_constructible_v<string_view, vector<char>>);
+    static_assert(is_convertible_v<vector<char>, string_view>);
+
+    static_assert(!is_constructible_v<string_view, deque<char>>); // not contiguous
+    static_assert(!is_convertible_v<deque<char>, string_view>);
+
+    static_assert(!is_constructible_v<string_view, vector<unsigned char>>); // different elements
+    static_assert(!is_convertible_v<vector<unsigned char>, string_view>);
+
+    static_assert(!is_constructible_v<string_view, basic_string<char, constexpr_char_traits>>); // different traits
+    static_assert(!is_convertible_v<basic_string<char, constexpr_char_traits>, string_view>);
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+    return true;
+}
+
 template <class CharT, class Traits>
 constexpr bool test_case_iterators() {
     using iterator = typename basic_string_view<CharT, Traits>::iterator;
@@ -358,7 +391,11 @@ constexpr bool test_case_iterators() {
     assert(*testIterator == static_cast<CharT>('h'));
     testIterator += 8;
     assert(*testIterator == static_cast<CharT>('r'));
+#if defined(__EDG__) && defined(_M_X64) // TRANSITION, VSO-1356637
+    testIterator -= 4;
+#else // ^^^ workaround / no workaround vvv
     testIterator += -4;
+#endif // ^^^ no workaround ^^^
     assert(*testIterator == static_cast<CharT>('o'));
 
     assert(*(testIterator + 6) == static_cast<CharT>('d'));
@@ -810,7 +847,115 @@ constexpr bool test_case_starts_with_ends_with() {
 
     return true;
 }
-#endif //_HAS_CXX20
+#endif // _HAS_CXX20
+
+// P1679R3 contains() For basic_string/basic_string_view
+#if _HAS_CXX23
+template <class CharT, class Traits, bool TestBasicString>
+constexpr bool test_case_contains() {
+    const basic_string_view<CharT, Traits> empty_sv(TYPED_LITERAL(CharT, ""));
+    const CharT null_c = '\0';
+    const CharT* const empty_cp(TYPED_LITERAL(CharT, ""));
+
+    const basic_string_view<CharT, Traits> a(TYPED_LITERAL(CharT, "a"));
+    const CharT b = 'b';
+    const CharT* const c(TYPED_LITERAL(CharT, "c"));
+
+    if constexpr (TestBasicString) {
+        basic_string<CharT, Traits> text(TYPED_LITERAL(CharT, "text"));
+        basic_string<CharT, Traits> empty_text(TYPED_LITERAL(CharT, ""));
+
+        const basic_string_view<CharT, Traits> te(TYPED_LITERAL(CharT, "te"));
+        const CharT x = 'x';
+        const CharT* const ext(TYPED_LITERAL(CharT, "ext"));
+        const basic_string_view<CharT, Traits> text_sv(TYPED_LITERAL(CharT, "text"));
+        const CharT* const text_cp(TYPED_LITERAL(CharT, "text"));
+        const basic_string_view<CharT, Traits> next_sv(TYPED_LITERAL(CharT, "next"));
+        const CharT* const next_cp(TYPED_LITERAL(CharT, "next"));
+        const basic_string_view<CharT, Traits> texture_sv(TYPED_LITERAL(CharT, "texture"));
+        const CharT* const texture_cp(TYPED_LITERAL(CharT, "texture"));
+
+        assert(text.contains(te));
+        assert(text.contains(x));
+        assert(text.contains(ext));
+        assert(text.contains(text));
+        assert(text.contains(text_sv));
+        assert(text.contains(text_cp));
+        assert(!text.contains(next_sv));
+        assert(!text.contains(next_cp));
+        assert(!text.contains(texture_sv));
+        assert(!text.contains(texture_cp));
+        assert(text.contains(empty_sv));
+        assert(!text.contains(null_c));
+        assert(text.contains(empty_cp));
+        assert(!text.contains(a));
+        assert(!text.contains(b));
+        assert(!text.contains(c));
+
+        assert(!empty_text.contains(te));
+        assert(!empty_text.contains(x));
+        assert(!empty_text.contains(ext));
+        assert(empty_text.contains(empty_text));
+        assert(empty_text.contains(empty_sv));
+        assert(!empty_text.contains(null_c));
+        assert(empty_text.contains(empty_cp));
+
+        basic_string<CharT, Traits> rocking(TYPED_LITERAL(CharT, "rocking"));
+
+        const basic_string_view<CharT, Traits> rocket_sv(TYPED_LITERAL(CharT, "rocket"));
+        const CharT* const rocket_cp(TYPED_LITERAL(CharT, "rocket"));
+
+        assert(!rocking.contains(rocket_sv));
+        assert(!rocking.contains(rocket_cp));
+    }
+
+    const basic_string_view<CharT, Traits> hello(TYPED_LITERAL(CharT, "hello"));
+
+    const basic_string_view<CharT, Traits> he(TYPED_LITERAL(CharT, "he"));
+    const CharT e = 'e';
+    const CharT* const llo(TYPED_LITERAL(CharT, "llo"));
+    const basic_string_view<CharT, Traits> hello_sv(TYPED_LITERAL(CharT, "hello"));
+    const CharT* const hello_cp(TYPED_LITERAL(CharT, "hello"));
+    const basic_string_view<CharT, Traits> cello_sv(TYPED_LITERAL(CharT, "cello"));
+    const CharT* const cello_cp(TYPED_LITERAL(CharT, "cello"));
+    const basic_string_view<CharT, Traits> helloworld_sv(TYPED_LITERAL(CharT, "helloworld"));
+    const CharT* const helloworld_cp(TYPED_LITERAL(CharT, "helloworld"));
+
+    assert(hello.contains(he));
+    assert(hello.contains(e));
+    assert(hello.contains(llo));
+    assert(hello.contains(hello));
+    assert(hello.contains(hello_sv));
+    assert(hello.contains(hello_cp));
+    assert(!hello.contains(cello_sv));
+    assert(!hello.contains(cello_cp));
+    assert(!hello.contains(helloworld_sv));
+    assert(!hello.contains(helloworld_cp));
+    assert(hello.contains(empty_sv));
+    assert(!hello.contains(null_c));
+    assert(hello.contains(empty_cp));
+    assert(!hello.contains(a));
+    assert(!hello.contains(b));
+    assert(!hello.contains(c));
+
+    assert(!empty_sv.contains(he));
+    assert(!empty_sv.contains(e));
+    assert(!empty_sv.contains(llo));
+    assert(empty_sv.contains(empty_sv));
+    assert(!empty_sv.contains(null_c));
+    assert(empty_sv.contains(empty_cp));
+
+    const basic_string_view<CharT, Traits> playing(TYPED_LITERAL(CharT, "playing"));
+
+    const basic_string_view<CharT, Traits> player_sv(TYPED_LITERAL(CharT, "player"));
+    const CharT* const player_cp(TYPED_LITERAL(CharT, "player"));
+
+    assert(!playing.contains(player_sv));
+    assert(!playing.contains(player_cp));
+
+    return true;
+}
+#endif // _HAS_CXX23
 
 template <typename CharT, typename Traits>
 constexpr bool test_case_find() {
@@ -1048,6 +1193,7 @@ static_assert(test_case_default_constructor());
 static_assert(test_case_ntcts_constructor<constexpr_char_traits>());
 static_assert(test_case_buffer_constructor());
 static_assert(test_case_contiguous_constructor());
+static_assert(test_case_range_constructor());
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-284079 "C1XX's C++14 constexpr emits bogus warnings C4146,
                                            // C4308, C4307 for basic_string_view::iterator"
 static_assert(test_case_iterators<char, constexpr_char_traits>());
@@ -1062,6 +1208,9 @@ static_assert(test_case_copy<constexpr_char_traits>());
 static_assert(test_case_Copy_s<constexpr_char_traits>());
 static_assert(test_case_starts_with_ends_with<char, constexpr_char_traits, false>());
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+static_assert(test_case_contains<char, constexpr_char_traits, false>());
+#endif // _HAS_CXX23
 static_assert(test_case_operators<char, constexpr_char_traits>());
 static_assert(test_case_find<char, constexpr_char_traits>());
 
@@ -1088,11 +1237,19 @@ static_assert(u8"abc"sv[1] == u8'b');
 static_assert(noexcept(u8"abc"sv));
 #endif // __cpp_char8_t
 
+// P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
+#if _HAS_CXX23
+static_assert(!is_constructible_v<string_view, nullptr_t>, "constructing string_view from nullptr_t is prohibited");
+static_assert(!is_constructible_v<string, nullptr_t>, "constructing string from nullptr_t is prohibited");
+static_assert(!is_assignable_v<string&, nullptr_t>, "assigning nullptr_t to string is prohibited");
+#endif // _HAS_CXX23
+
 int main() {
     test_case_default_constructor();
     test_case_ntcts_constructor();
     test_case_buffer_constructor();
     test_case_contiguous_constructor();
+    test_case_range_constructor();
     test_case_iterators<char, char_traits<char>>();
     test_case_iterators<wchar_t, char_traits<wchar_t>>();
     test_case_prefix<char, char_traits<char>>();
@@ -1115,6 +1272,10 @@ int main() {
     test_case_starts_with_ends_with<char, char_traits<char>, true>();
     test_case_starts_with_ends_with<wchar_t, char_traits<wchar_t>, true>();
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+    test_case_contains<char, char_traits<char>, true>();
+    test_case_contains<wchar_t, char_traits<wchar_t>, true>();
+#endif // _HAS_CXX23
     test_case_find<char, char_traits<char>>();
     test_case_find<wchar_t, char_traits<wchar_t>>();
     test_case_operators<char, char_traits<char>>();

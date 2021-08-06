@@ -44,7 +44,6 @@
 #pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
-#include <array>
 #include <charconv>
 #include <concepts>
 #include <cstdint>
@@ -67,6 +66,9 @@ _STL_DISABLE_CLANG_WARNINGS
 extern "C" _NODISCARD __std_win_error __stdcall __std_get_cvt(__std_code_page _Codepage, _Cvtvec* _Pcvt) noexcept;
 
 _STD_BEGIN
+
+template <class, class>
+class vector;
 
 class format_error : public runtime_error {
     using runtime_error::runtime_error;
@@ -366,7 +368,7 @@ _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
     const _CharT* _First, const _CharT* _Last, unsigned int& _Value) {
     _STL_INTERNAL_CHECK(_First != _Last && '0' <= *_First && *_First <= '9');
 
-    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
+    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max) ());
     constexpr auto _Big_int = _Max_int / 10u;
 
     _Value = 0;
@@ -1053,7 +1055,7 @@ public:
     }
 
     constexpr void _On_type(const _CharT _Type) {
-        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
             _THROW(format_error("Invalid type specification."));
         }
         _Specs._Type = static_cast<char>(_Type);
@@ -1121,7 +1123,7 @@ template <class _Handler, class _FormatArg>
 _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler{}, _Arg);
-    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max)())) {
+    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max) ())) {
         _THROW(format_error("Number is too big."));
     }
 
@@ -1195,7 +1197,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max) ())) {
             _THROW(format_error("Dynamic width or precision index too large."));
         }
 
@@ -1273,105 +1275,69 @@ concept _Has_formatter = requires(const _Ty& _Val, _Context& _Ctx) {
     _STD declval<typename _Context::template formatter_type<_Ty>>().format(_Val, _Ctx);
 };
 
-template <class _CharT>
-_NODISCARD constexpr size_t _Get_format_arg_type_storage_size(_Basic_format_arg_type _Type) noexcept {
-    switch (_Type) {
-    case _Basic_format_arg_type::_Int_type:
-        return sizeof(int);
-    case _Basic_format_arg_type::_UInt_type:
-        return sizeof(unsigned int);
-    case _Basic_format_arg_type::_Long_long_type:
-        return sizeof(long long);
-    case _Basic_format_arg_type::_ULong_long_type:
-        return sizeof(unsigned long long);
-    case _Basic_format_arg_type::_Bool_type:
-        return sizeof(bool);
-    case _Basic_format_arg_type::_Char_type:
-        return sizeof(_CharT);
-    case _Basic_format_arg_type::_Float_type:
-        return sizeof(float);
-    case _Basic_format_arg_type::_Double_type:
-        return sizeof(double);
-    case _Basic_format_arg_type::_Long_double_type:
-        return sizeof(long double);
-    case _Basic_format_arg_type::_Pointer_type:
-        return sizeof(void*);
-    case _Basic_format_arg_type::_CString_type:
-        return sizeof(const _CharT*);
-    case _Basic_format_arg_type::_String_type:
-        return sizeof(basic_string_view<_CharT>);
-    case _Basic_format_arg_type::_Custom_type:
-        return sizeof(void*) + sizeof(void (*)());
-    case _Basic_format_arg_type::_None:
-    default:
-        _STL_INTERNAL_CHECK(false);
-        return 0;
-    }
-}
-
-// See N4878 [format.arg]/5
-template <class _Context, _Has_formatter<_Context> _Ty>
-auto _Get_format_arg_storage_type(const _Ty&) {
-    // This function implements a mapping between types; it is never called outside of unevaluated operands.
+template <class _Context>
+struct _Format_arg_traits {
     using _Char_type = typename _Context::char_type;
-    if constexpr (is_same_v<_Ty, monostate>) {
-        return monostate{};
-    } else if constexpr (is_same_v<_Ty, bool>) {
-        return bool{};
-    } else if constexpr (is_same_v<_Ty, _Char_type>) {
-        return _Char_type{};
-    } else if constexpr (is_same_v<_Ty, char> && is_same_v<_Char_type, wchar_t>) {
-        return _Char_type{};
-    } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(int)) {
-        return int{};
-    } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int)) {
-        return static_cast<unsigned int>(42);
-    } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(long long)) {
-        return static_cast<long long>(42);
-    } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned long long)) {
-        return static_cast<unsigned long long>(42);
-    } else if constexpr (is_same_v<_Ty, float>) {
-        return float{};
-    } else if constexpr (is_same_v<_Ty, double>) {
-        return double{};
-    } else if constexpr (is_same_v<_Ty, long double>) {
-        return static_cast<long double>(42);
-    } else {
-        return typename basic_format_arg<_Context>::handle{42};
+
+    // These overloads mirror the exposition-only single-argument constructor
+    // set of basic_format_arg (N4885 [format.arg]). They determine the mapping
+    // from "raw" to "erased" argument type for _Format_arg_store.
+    template <_Has_formatter<_Context> _Ty>
+    static auto _Phony_basic_format_arg_constructor(const _Ty&) {
+        // See N4885 [format.arg]/5
+        if constexpr (is_same_v<_Ty, bool>) {
+            return bool{};
+        } else if constexpr (is_same_v<_Ty, _Char_type>) {
+            return _Char_type{};
+        } else if constexpr (is_same_v<_Ty, char> && is_same_v<_Char_type, wchar_t>) {
+            return _Char_type{};
+        } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(int)) {
+            return int{};
+        } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int)) {
+            return static_cast<unsigned int>(42);
+        } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(long long)) {
+            return static_cast<long long>(42);
+        } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned long long)) {
+            return static_cast<unsigned long long>(42);
+        } else {
+            return typename basic_format_arg<_Context>::handle{42};
+        }
     }
-}
 
-template <class _Context>
-auto _Get_format_arg_storage_type(const typename _Context::char_type*) // not defined
-    -> const typename _Context::char_type*;
+    static auto _Phony_basic_format_arg_constructor(float) -> float; // not defined
+    static auto _Phony_basic_format_arg_constructor(double) -> double; // not defined
+    static auto _Phony_basic_format_arg_constructor(long double) -> long double; // not defined
 
-template <class _Context, class _Traits>
-auto _Get_format_arg_storage_type(basic_string_view<typename _Context::char_type, _Traits>)
-    -> basic_string_view<typename _Context::char_type>; // not defined
+    static auto _Phony_basic_format_arg_constructor(const _Char_type*) -> const _Char_type*; // not defined
 
-template <class _Context, class _Traits, class _Alloc>
-auto _Get_format_arg_storage_type(const basic_string<typename _Context::char_type, _Traits, _Alloc>&)
-    -> basic_string_view<typename _Context::char_type>; // not defined
+    template <class _Traits>
+    static auto _Phony_basic_format_arg_constructor(basic_string_view<_Char_type, _Traits>)
+        -> basic_string_view<_Char_type>; // not defined
 
-template <class _Context>
-const void* _Get_format_arg_storage_type(nullptr_t); // not defined
+    template <class _Traits, class _Alloc>
+    static auto _Phony_basic_format_arg_constructor(const basic_string<_Char_type, _Traits, _Alloc>&)
+        -> basic_string_view<_Char_type>; // not defined
 
-// clang-format off
-template <class _Context, class _Ty>
-    requires is_void_v<_Ty>
-const void* _Get_format_arg_storage_type(_Ty*); // not defined
-// clang-format on
+    static auto _Phony_basic_format_arg_constructor(nullptr_t) -> const void*; // not defined
 
-template <class _Context, class _Ty>
-inline constexpr size_t _Get_format_arg_storage_size = sizeof(
-    _Get_format_arg_storage_type<_Context>(_STD declval<const _Ty&>()));
+    // clang-format off
+    template <class _Ty>
+        requires is_void_v<_Ty>
+    static auto _Phony_basic_format_arg_constructor(_Ty*) -> const void*; // not defined
+    // clang-format on
 
-struct _Format_arg_store_packed_index {
+    template <class _Ty>
+    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<const _Ty&>()));
+
+    template <class _Ty>
+    static constexpr size_t _Storage_size = sizeof(_Storage_type<_Ty>);
+};
+
+struct _Format_arg_index {
     // TRANSITION, Should be templated on number of arguments for even less storage
-    using _Index_type = size_t;
 
-    constexpr _Format_arg_store_packed_index() = default;
-    constexpr explicit _Format_arg_store_packed_index(const size_t _Index_) : _Index(_Index_) {
+    constexpr _Format_arg_index() = default;
+    constexpr explicit _Format_arg_index(const size_t _Index_) noexcept : _Index(_Index_) {
         _Type(_Basic_format_arg_type::_None);
     }
 
@@ -1380,11 +1346,11 @@ struct _Format_arg_store_packed_index {
     }
 
     constexpr void _Type(_Basic_format_arg_type _Val) noexcept {
-        _Type_ = static_cast<_Index_type>(_Val);
+        _Type_ = static_cast<size_t>(_Val);
     }
 
-    _Index_type _Index : (sizeof(_Index_type) * 8 - 4);
-    _Index_type _Type_ : 4;
+    size_t _Index : (sizeof(size_t) * 8 - 4);
+    size_t _Type_ : 4;
 };
 
 template <class _Context>
@@ -1393,96 +1359,77 @@ class basic_format_args;
 template <class _Context, class... _Args>
 class _Format_arg_store {
 private:
-    using _CharType   = typename _Context::char_type;
-    using _Index_type = _Format_arg_store_packed_index;
+    using _CharType = typename _Context::char_type;
+    using _Traits   = _Format_arg_traits<_Context>;
 
     friend basic_format_args<_Context>;
 
     static constexpr size_t _Num_args       = sizeof...(_Args);
-    static constexpr size_t _Index_length   = _Num_args * sizeof(_Index_type);
-    static constexpr size_t _Storage_length = (_Get_format_arg_storage_size<_Context, _Args> + ... + 0);
+    static constexpr size_t _Storage_length = (_Traits::template _Storage_size<_Args> + ...);
 
-    // we store the data in memory as _Format_arg_store_packed_index[_Num_args] + unsigned char[_Storage_length]
-    alignas(_Index_type) unsigned char _Storage[_Index_length + _Storage_length];
+    // The actual storage representation: _Num_args offsets into _Storage, followed immediately by the untyped _Storage
+    // which holds copies of the object representations of arguments (with no regard for alignment). These must be
+    // allocated consecutively, since basic_format_args thinks it can store a pointer to _Index_array and use arithmetic
+    // to access the bytes of _Storage.
+    _Format_arg_index _Index_array[_Num_args];
+    unsigned char _Storage[_Storage_length];
 
     template <class _Ty>
-    void _Store_impl(const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, _Ty _Val) noexcept {
-        const auto _Index_array = reinterpret_cast<_Index_type*>(_Storage);
-        const auto _Store_index = _Index_array[_Arg_index]._Index;
-        const auto _Length      = _Get_format_arg_type_storage_size<_CharType>(_Arg_type);
+    void _Store_impl(
+        const size_t _Arg_index, const _Basic_format_arg_type _Arg_type, const type_identity_t<_Ty>& _Val) noexcept {
+        _STL_INTERNAL_CHECK(_Arg_index < _Num_args);
 
-        _CSTD memcpy(_Storage + _Index_length + _Store_index, _STD addressof(_Val), _Length);
+        const auto _Store_index = _Index_array[_Arg_index]._Index;
+
+        _CSTD memcpy(_Storage + _Store_index, _STD addressof(_Val), sizeof(_Ty));
         _Index_array[_Arg_index]._Type(_Arg_type);
         if (_Arg_index + 1 < _Num_args) {
             // Set the starting index of the next arg, as that is dynamic, must be called with increasing index
-            _Index_array[_Arg_index + 1] = _Format_arg_store_packed_index{_Store_index + _Length};
+#pragma warning(suppress : 6386) // Buffer overrun while writing to '%s' ...
+            _Index_array[_Arg_index + 1] = _Format_arg_index{_Store_index + sizeof(_Ty)};
         }
     }
 
-    // See N4885 [format.arg]/5
-    // clang-format off
-    template <_Has_formatter<_Context> _Ty>
-    void _Store(const size_t _Arg_index, const _Ty& _Val) noexcept {
-        // clang-format on
-        if constexpr (is_same_v<_Ty, bool>) {
-            _Store_impl<bool>(_Arg_index, _Basic_format_arg_type::_Bool_type, _Val);
-        } else if constexpr (is_same_v<_Ty, _CharType>) {
-            _Store_impl<_CharType>(_Arg_index, _Basic_format_arg_type::_Char_type, _Val);
-        } else if constexpr (is_same_v<_Ty, char> && is_same_v<_CharType, wchar_t>) {
-            _Store_impl<_CharType>(_Arg_index, _Basic_format_arg_type::_Char_type, static_cast<wchar_t>(_Val));
-        } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(int)) {
-            _Store_impl<int>(_Arg_index, _Basic_format_arg_type::_Int_type, static_cast<int>(_Val));
-        } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int)) {
-            _Store_impl<unsigned int>(_Arg_index, _Basic_format_arg_type::_UInt_type, static_cast<unsigned int>(_Val));
-        } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(long long)) {
-            _Store_impl<long long>(_Arg_index, _Basic_format_arg_type::_Long_long_type, static_cast<long long>(_Val));
-        } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned long long)) {
-            _Store_impl<unsigned long long>(
-                _Arg_index, _Basic_format_arg_type::_ULong_long_type, static_cast<unsigned long long>(_Val));
-        } else if constexpr (is_same_v<_Ty, float>) {
-            _Store_impl<float>(_Arg_index, _Basic_format_arg_type::_Float_type, _Val);
-        } else if constexpr (is_same_v<_Ty, double>) {
-            _Store_impl<double>(_Arg_index, _Basic_format_arg_type::_Double_type, _Val);
-        } else if constexpr (is_same_v<_Ty, long double>) {
-            _Store_impl<long double>(_Arg_index, _Basic_format_arg_type::_Long_double_type, _Val);
-        } else {
-            using _Handle_type = typename basic_format_arg<_Context>::handle;
-            _Store_impl<_Handle_type>(_Arg_index, _Basic_format_arg_type::_Custom_type, _Handle_type{_Val});
-        }
-    }
-
-    void _Store(const size_t _Arg_index, const _CharType* _Val) noexcept {
-        _Store_impl<const _CharType*>(_Arg_index, _Basic_format_arg_type::_CString_type, _Val);
-    }
-
-    template <class _Traits>
-    void _Store(const size_t _Arg_index, basic_string_view<_CharType, _Traits> _Val) noexcept {
-        _Store_impl<basic_string_view<_CharType>>(
-            _Arg_index, _Basic_format_arg_type::_String_type, basic_string_view<_CharType>{_Val});
-    }
-
-    template <class _Traits, class _Alloc>
-    void _Store(const size_t _Arg_index, const basic_string<_CharType, _Traits, _Alloc>& _Val) noexcept {
-        _Store_impl<basic_string_view<_CharType>>(
-            _Arg_index, _Basic_format_arg_type::_String_type, basic_string_view<_CharType>{_Val.data(), _Val.size()});
-    }
-
-    void _Store(const size_t _Arg_index, nullptr_t) noexcept {
-        _Store_impl<const void*>(_Arg_index, _Basic_format_arg_type::_Pointer_type, static_cast<const void*>(nullptr));
-    }
-
-    // clang-format off
     template <class _Ty>
-        requires is_void_v<_Ty>
-    void _Store(const size_t _Arg_index, _Ty* _Ptr) noexcept {
-        // clang-format on
-        _Store_impl<const void*>(_Arg_index, _Basic_format_arg_type::_Pointer_type, static_cast<const void*>(_Ptr));
+    void _Store(const size_t _Arg_index, const _Ty& _Val) noexcept {
+        using _Erased_type = typename _Traits::template _Storage_type<_Ty>;
+
+        _Basic_format_arg_type _Arg_type;
+        if constexpr (is_same_v<_Erased_type, bool>) {
+            _Arg_type = _Basic_format_arg_type::_Bool_type;
+        } else if constexpr (is_same_v<_Erased_type, _CharType>) {
+            _Arg_type = _Basic_format_arg_type::_Char_type;
+        } else if constexpr (is_same_v<_Erased_type, int>) {
+            _Arg_type = _Basic_format_arg_type::_Int_type;
+        } else if constexpr (is_same_v<_Erased_type, unsigned int>) {
+            _Arg_type = _Basic_format_arg_type::_UInt_type;
+        } else if constexpr (is_same_v<_Erased_type, long long>) {
+            _Arg_type = _Basic_format_arg_type::_Long_long_type;
+        } else if constexpr (is_same_v<_Erased_type, unsigned long long>) {
+            _Arg_type = _Basic_format_arg_type::_ULong_long_type;
+        } else if constexpr (is_same_v<_Erased_type, float>) {
+            _Arg_type = _Basic_format_arg_type::_Float_type;
+        } else if constexpr (is_same_v<_Erased_type, double>) {
+            _Arg_type = _Basic_format_arg_type::_Double_type;
+        } else if constexpr (is_same_v<_Erased_type, long double>) {
+            _Arg_type = _Basic_format_arg_type::_Long_double_type;
+        } else if constexpr (is_same_v<_Erased_type, const void*>) {
+            _Arg_type = _Basic_format_arg_type::_Pointer_type;
+        } else if constexpr (is_same_v<_Erased_type, const _CharType*>) {
+            _Arg_type = _Basic_format_arg_type::_CString_type;
+        } else if constexpr (is_same_v<_Erased_type, basic_string_view<_CharType>>) {
+            _Arg_type = _Basic_format_arg_type::_String_type;
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Erased_type, typename basic_format_arg<_Context>::handle>);
+            _Arg_type = _Basic_format_arg_type::_Custom_type;
+        }
+
+        _Store_impl<_Erased_type>(_Arg_index, _Arg_type, static_cast<_Erased_type>(_Val));
     }
 
 public:
     _Format_arg_store(const _Args&... _Vals) noexcept {
-        // Note: _Storage is uninitialized, so manually initialize the first index
-        _STD construct_at(reinterpret_cast<_Format_arg_store_packed_index*>(_Storage));
+        _Index_array[0]   = {};
         size_t _Arg_index = 0;
         (_Store(_Arg_index++, _Vals), ...);
     }
@@ -1493,32 +1440,28 @@ class _Format_arg_store<_Context> {};
 
 template <class _Context>
 class basic_format_args {
-private:
-    template <class _Ty>
-    _NODISCARD static auto _Get_value_from_memory(const unsigned char* _Val) noexcept {
-        auto& _Temp = *reinterpret_cast<const unsigned char(*)[sizeof(_Ty)]>(_Val);
-        return _Bit_cast<_Ty>(_Temp);
-    }
-
 public:
     basic_format_args() noexcept;
     basic_format_args(const _Format_arg_store<_Context>&) noexcept {}
     template <class... _Args>
     basic_format_args(const _Format_arg_store<_Context, _Args...>& _Store) noexcept
-        : _Num_args(sizeof...(_Args)), _Storage(_Store._Storage) {}
+        : _Num_args(sizeof...(_Args)), _Index_array(_Store._Index_array) {}
 
     _NODISCARD basic_format_arg<_Context> get(const size_t _Index) const noexcept {
         if (_Index >= _Num_args) {
             return basic_format_arg<_Context>{};
         }
 
-        using _CharType                   = typename _Context::char_type;
-        const auto _Packed_index          = reinterpret_cast<const _Format_arg_store_packed_index*>(_Storage)[_Index];
-        const auto _Index_length          = _Num_args * sizeof(_Format_arg_store_packed_index);
-        const unsigned char* _Arg_storage = _Storage + _Index_length + _Packed_index._Index;
+        using _CharType = typename _Context::char_type;
+        // The explanatory comment in _Format_arg_store explains how the following works.
+        const auto _Packed_index = _Index_array[_Index];
+        const auto _Arg_storage =
+            reinterpret_cast<const unsigned char*>(_Index_array + _Num_args) + _Packed_index._Index;
 
         switch (_Packed_index._Type()) {
         case _Basic_format_arg_type::_None:
+        default:
+            _STL_ASSERT(false, "Invalid basic_format_arg type");
             return basic_format_arg<_Context>{};
         case _Basic_format_arg_type::_Int_type:
             return basic_format_arg<_Context>{_Get_value_from_memory<int>(_Arg_storage)};
@@ -1547,9 +1490,6 @@ public:
         case _Basic_format_arg_type::_Custom_type:
             return basic_format_arg<_Context>{
                 _Get_value_from_memory<typename basic_format_arg<_Context>::handle>(_Arg_storage)};
-        default:
-            _STL_ASSERT(false, "Invalid basic_format_arg type");
-            return basic_format_arg<_Context>{};
         }
     }
 
@@ -1572,8 +1512,14 @@ public:
     }
 
 private:
-    size_t _Num_args              = 0;
-    const unsigned char* _Storage = nullptr;
+    template <class _Ty>
+    _NODISCARD static auto _Get_value_from_memory(const unsigned char* const _Val) noexcept {
+        auto& _Temp = *reinterpret_cast<const unsigned char(*)[sizeof(_Ty)]>(_Val);
+        return _Bit_cast<_Ty>(_Temp);
+    }
+
+    size_t _Num_args                      = 0;
+    const _Format_arg_index* _Index_array = nullptr;
 };
 
 // _Lazy_locale is used instead of a std::locale so that the locale is only
@@ -1744,6 +1690,24 @@ public:
 
 inline constexpr size_t _Fmt_buffer_size = 256;
 
+template <class _Iterator>
+struct _Back_insert_iterator_container_type {
+    using type = void;
+};
+
+template <class _Container>
+struct _Back_insert_iterator_container_type<back_insert_iterator<_Container>> {
+    using type = _Container;
+};
+
+template <class _Container>
+struct _Back_insert_iterator_container_access : back_insert_iterator<_Container> {
+    explicit _Back_insert_iterator_container_access(back_insert_iterator<_Container> _Iter)
+        : back_insert_iterator<_Container>(_Iter) {}
+
+    using back_insert_iterator<_Container>::container;
+};
+
 template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
 class _Fmt_iterator_buffer final : public _Traits, public _Fmt_buffer<_Ty> {
 private:
@@ -1759,7 +1723,16 @@ private:
     void _Flush() {
         auto _Size = this->_Size();
         this->_Clear();
-        _Output = _STD _Copy_unchecked(_Data, _Data + this->_Limit(_Size), _STD move(_Output));
+        const auto _End = _Data + this->_Limit(_Size);
+
+        // extracts back_insert_iterator's underlying container type, or void if not.
+        using _Container = typename _Back_insert_iterator_container_type<_OutputIt>::type;
+        if constexpr (_Is_specialization_v<_Container, basic_string> || _Is_specialization_v<_Container, vector>) {
+            auto& _Cont = *_Back_insert_iterator_container_access<_Container>{_Output}.container;
+            _Cont.insert(_Cont.end(), _Data, _End);
+        } else {
+            _Output = _STD _Copy_unchecked(_Data, _End, _STD move(_Output));
+        }
     }
 
 public:
@@ -1792,41 +1765,6 @@ public:
 
     _NODISCARD _Ty* _Out() noexcept {
         return this->end();
-    }
-};
-
-// clang-format off
-template <class _Container>
-    requires _RANGES contiguous_range<_Container> && _RANGES sized_range<_Container>
-        && requires(_Container& _Cont, const _RANGES range_value_t<_Container>& _Val) {
-            _Cont.push_back(_Val);
-        }
-// clang-format on
-class _Fmt_iterator_buffer<back_insert_iterator<_Container>, _RANGES range_value_t<_Container>> final
-    : public _Fmt_buffer<_RANGES range_value_t<_Container>> {
-private:
-    _Container& _Cont;
-
-    struct _Accessor : back_insert_iterator<_Container> {
-        explicit _Accessor(back_insert_iterator<_Container> _Iter) : back_insert_iterator<_Container>(_Iter) {}
-
-        using back_insert_iterator<_Container>::container;
-    };
-
-    void _Grow(size_t _Capacity) final {
-        _Cont.resize(_Capacity);
-        this->_Set(_RANGES data(_Cont), _Capacity);
-    }
-
-public:
-    explicit _Fmt_iterator_buffer(_Container& _Cont_)
-        : _Fmt_buffer<_RANGES range_value_t<_Container>>(_RANGES size(_Cont_)), _Cont(_Cont_) {}
-
-    explicit _Fmt_iterator_buffer(back_insert_iterator<_Container> _Out, ptrdiff_t = 0)
-        : _Fmt_iterator_buffer(*_Accessor{_Out}.container) {}
-
-    _NODISCARD auto _Out() noexcept {
-        return back_insert_iterator{_Cont};
     }
 };
 
@@ -1905,10 +1843,10 @@ template <class _CharT, class _OutputIt, class _Arithmetic>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value) {
     // clang-format on
     // TRANSITION, Reusable buffer
-    array<char, _Format_min_buffer_length> _Buffer;
-    const auto [_End, _Ec] = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value);
+    char _Buffer[_Format_min_buffer_length];
+    const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), _Value);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
-    return _RANGES _Copy_unchecked(_Buffer.data(), _End, _STD move(_Out)).out;
+    return _RANGES _Copy_unchecked(_Buffer, _End, _STD move(_Out)).out;
 }
 #pragma warning(pop)
 
@@ -1932,13 +1870,12 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _CharT _Value) {
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value) {
     // TRANSITION, Reusable buffer
-    array<char, _Format_min_buffer_length> _Buffer;
-    const auto [_End, _Ec] =
-        _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), reinterpret_cast<uintptr_t>(_Value), 16);
+    char _Buffer[_Format_min_buffer_length];
+    const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), reinterpret_cast<uintptr_t>(_Value), 16);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
     *_Out++ = '0';
     *_Out++ = 'x';
-    return _RANGES _Copy_unchecked(_Buffer.data(), _End, _STD move(_Out)).out;
+    return _RANGES _Copy_unchecked(_Buffer, _End, _STD move(_Out)).out;
 }
 #pragma warning(pop)
 
@@ -2199,11 +2136,11 @@ _NODISCARD _OutputIt _Write_integral(
     }
 
     // long long -1 representation in binary is 64 bits + sign
-    array<char, 65> _Buffer;
-    const auto [_End, _Ec] = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value, _Base);
+    char _Buffer[65];
+    const auto [_End, _Ec] = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Base);
     _STL_ASSERT(_Ec == errc{}, "to_chars failed");
 
-    auto _Buffer_start = _Buffer.data();
+    auto _Buffer_start = _Buffer;
     auto _Width        = static_cast<int>(_End - _Buffer_start);
 
     if (_Value >= _Integral{0}) {
@@ -2387,7 +2324,7 @@ _NODISCARD _OutputIt _Fmt_write(
     // We need to add an additional number to the max exponent to accommodate the ones place.
     constexpr auto _Max_precision = 1074;
     constexpr auto _Buffer_size   = _Max_precision + DBL_MAX_10_EXP + 3;
-    array<char, _Buffer_size> _Buffer;
+    char _Buffer[_Buffer_size];
     to_chars_result _Result;
 
     auto _Extra_precision = 0;
@@ -2397,17 +2334,17 @@ _NODISCARD _OutputIt _Fmt_write(
     }
 
     if (_Precision == -1) {
-        _Result = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value, _Format);
+        _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format);
     } else {
-        _Result = _STD to_chars(_Buffer.data(), _Buffer.data() + _Buffer.size(), _Value, _Format, _Precision);
+        _Result = _STD to_chars(_Buffer, _STD end(_Buffer), _Value, _Format, _Precision);
     }
 
     _STL_ASSERT(_Result.ec == errc{}, "to_chars failed");
 
-    auto _Buffer_start = _Buffer.data();
+    auto _Buffer_start = _Buffer;
     auto _Width        = static_cast<int>(_Result.ptr - _Buffer_start);
 
-    const auto _Is_negative = (_STD signbit)(_Value);
+    const auto _Is_negative = (_STD signbit) (_Value);
 
     if (_Is_negative) {
         // Remove the '-', it will be dealt with directly
@@ -2423,7 +2360,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Exponent = static_cast<char>(_CSTD toupper(_Exponent));
     }
 
-    const auto _Is_finite = (_STD isfinite)(_Value);
+    const auto _Is_finite = (_STD isfinite) (_Value);
 
     auto _Append_decimal   = false;
     auto _Exponent_start   = _Result.ptr;
@@ -2441,7 +2378,7 @@ _NODISCARD _OutputIt _Fmt_write(
                 _Exponent_start = _It;
             }
         }
-        _Integral_end = (_STD min)(_Radix_point, _Exponent_start);
+        _Integral_end = (_STD min) (_Radix_point, _Exponent_start);
 
         if (_Specs._Alt) {
             if (_Radix_point == _Result.ptr) {
@@ -2586,7 +2523,7 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     const auto _Last     = _Pos + _Value.size();
     int _Estimated_width = 0; // the estimated width of [_Value.data(), _Pos)
     const _Fmt_codec<_CharT> _Codec;
-    constexpr auto _Max_int = (numeric_limits<int>::max)();
+    constexpr auto _Max_int = (numeric_limits<int>::max) ();
 
     while (_Pos != _Last) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {
@@ -2753,7 +2690,7 @@ struct _Format_handler {
 };
 
 // Generic formatter definition, the deleted default constructor
-// makes it "disabled" as per N4868 [formatter.formatter.spec]/5
+// makes it "disabled" as per N4885 [format.formatter.spec]/5
 template <class _Ty, class _CharT>
 struct formatter {
     formatter()                 = delete;

@@ -140,6 +140,10 @@ void test_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t
         }
     }
 
+    if (offset) {
+        *offset = minutes::min();
+    }
+
     basic_stringstream<CharT> sstr{str};
     if (abbrev) {
         if (offset) {
@@ -718,6 +722,8 @@ void parse_calendar_types_basic() {
     test_parse("366 2004-12-31", "%j %F", ymd);
     assert(ymd == 2004y / December / last);
 
+    test_parse("82 1882", "%j %Y", ymd);
+    assert(ymd == 23d / March / 1882y);
     fail_parse("366 2001", "%j %Y", ymd);
     fail_parse("367 2004", "%j %Y", ymd);
 
@@ -888,22 +894,68 @@ void insert_leap_second(const sys_days& date, const seconds& value) {
         tzdb{my_tzdb.version, move(zones), move(links), move(leap_vec), my_tzdb._All_ls_positive && (value == 1s)});
 }
 
+void test_gh_1952() {
+    const auto time_str{"2021-06-02T17:51:05.696028Z"};
+    const auto fmt{"%FT%TZ"};
+    const auto utc_ref = clock_cast<utc_clock>(sys_days{2021y / June / 2d} + 17h + 51min + 5s + 696028us);
+
+    utc_time<microseconds> utc_parsed;
+    test_parse(time_str, fmt, utc_parsed);
+    assert(utc_parsed == utc_ref);
+
+    sys_time<microseconds> sys_parsed;
+    test_parse(time_str, fmt, sys_parsed);
+    assert(sys_parsed == clock_cast<system_clock>(utc_ref));
+
+    file_time<microseconds> file_parsed;
+    test_parse(time_str, fmt, file_parsed);
+    assert(file_parsed == clock_cast<file_clock>(utc_ref));
+
+    local_time<microseconds> local_parsed;
+    test_parse(time_str, fmt, local_parsed);
+    assert(local_parsed.time_since_epoch() == clock_cast<system_clock>(utc_ref).time_since_epoch());
+
+    const auto elapsed_leap = get_leap_second_info(utc_ref).elapsed;
+    const auto tai_offset   = 10s + elapsed_leap;
+    tai_time<microseconds> tai_parsed;
+    test_parse(time_str, fmt, tai_parsed);
+    assert(tai_parsed + tai_offset == clock_cast<tai_clock>(utc_ref));
+
+    const auto gps_offset = -9s + elapsed_leap;
+    gps_time<microseconds> gps_parsed;
+    test_parse(time_str, fmt, gps_parsed);
+    assert(gps_parsed + gps_offset == clock_cast<gps_clock>(utc_ref));
+}
+
 void parse_timepoints() {
     sys_seconds ref = sys_days{2020y / October / 29d} + 19h + 1min + 42s;
     sys_seconds st;
     utc_seconds ut;
     file_time<seconds> ft;
+    local_seconds lt;
 
     test_parse("oct 29 19:01:42 2020", "%c", st);
     test_parse("oct 29 19:01:42 2020", "%c", ut);
     test_parse("oct 29 19:01:42 2020", "%c", ft);
+    test_parse("oct 29 19:01:42 2020", "%c", lt);
 
     assert(st == ref);
-    assert(ut == utc_clock::from_sys(ref));
+    assert(ut == clock_cast<utc_clock>(ref));
     assert(ft == clock_cast<file_clock>(ref));
+    assert(lt.time_since_epoch() == ref.time_since_epoch());
 
-    test_parse("oct 29 19:01:42 2020 0430", "%c %z", st);
-    assert(st == ref - (4h + 30min));
+    minutes offset;
+    test_parse("oct 29 19:01:42 2020 0430", "%c %z", st, nullptr, &offset);
+    assert(st == ref - offset && offset == 4h + 30min);
+
+    test_parse("oct 29 19:01:42 2020 0430", "%c %z", ut, nullptr, &offset);
+    assert(ut == clock_cast<utc_clock>(ref) - offset && offset == 4h + 30min);
+
+    test_parse("oct 29 19:01:42 2020 0430", "%c %z", ft, nullptr, &offset);
+    assert(ft == clock_cast<file_clock>(ref) - offset && offset == 4h + 30min);
+
+    test_parse("oct 29 19:01:42 2020 0430", "%c %z", lt, nullptr, &offset);
+    assert(lt.time_since_epoch() == ref.time_since_epoch() && offset == 4h + 30min);
 
     // N4878 [time.clock.tai]/1:
     // The clock tai_clock measures seconds since 1958-01-01 00:00:00 and is offset 10s ahead of UTC at this date.
@@ -920,6 +972,8 @@ void parse_timepoints() {
     ref = sys_days{2000y / January / 1d};
     test_parse("jan 1 00:00:32 2000", "%c", tt);
     assert(tt == clock_cast<tai_clock>(ref));
+    test_parse("jan 1 00:00:32 2000 0430", "%c %z", tt, nullptr, &offset);
+    assert(tt == clock_cast<tai_clock>(ref) - offset && offset == 4h + 30min);
 
     // N4878 [time.clock.gps]/1:
     // The clock gps_clock measures seconds since the first Sunday of January, 1980 00:00:00 UTC. Leap seconds are
@@ -930,6 +984,8 @@ void parse_timepoints() {
 
     gps_seconds gt;
     ref = sys_days{1980y / January / 6d};
+    test_parse("jan 6 00:00:00 1980 0430", "%c %z", gt, nullptr, &offset);
+    assert(gt == clock_cast<gps_clock>(ref) - offset && offset == 4h + 30min);
     test_parse("jan 6 00:00:00 1980", "%c", gt);
     assert(gt == clock_cast<gps_clock>(ref));
     test_parse("jan 6 00:00:19 1980", "%c", tt);
@@ -994,7 +1050,6 @@ void parse_timepoints() {
     fail_parse("dec 31 23:59:59 2019", "%c", st);
     fail_parse("dec 31 23:59:59 2019", "%c", ft);
 
-    local_seconds lt;
     test_parse("dec 31 23:59:59 2019", "%c", lt); // Not UTC, might be valid depending on the time zone.
     assert(lt.time_since_epoch() == ref.time_since_epoch());
 
@@ -1086,6 +1141,12 @@ void parse_timepoints() {
     assert(st == sys_days{23d / June / 1912y});
     test_parse("1912-06-23 23:59:59", "%F %T", st);
     assert(st == sys_days{23d / June / 1912y} + 23h + 59min + 59s);
+
+    // GH-1938: parsing timepoint with year and day-of-year
+    test_parse("1882.82", "%Y.%j", st);
+    assert(st == sys_days{23d / March / 1882y});
+
+    test_gh_1952();
 }
 
 void parse_wchar() {

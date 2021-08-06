@@ -324,14 +324,8 @@ std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FA
 
 
 # *** CLANG COMPILER BUGS ***
-# LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
-std/thread/macro.pass.cpp:1 FAIL
-
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 std/depr/depr.c.headers/tgmath_h.pass.cpp:1 FAIL
-
-# LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
-std/language.support/support.limits/support.limits.general/vector.version.pass.cpp:1 FAIL
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -654,6 +648,22 @@ std/language.support/support.limits/support.limits.general/chrono.version.pass.c
 # "should not be defined when TEST_HAS_BUILTIN(__builtin_addressof) || TEST_GCC_VER >= 700 is not defined!"
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
 
+# Test should be enabled after LLVM update
+# updated test https://github.com/llvm/llvm-project/commit/0324b46cd873abc4fabe19f4bd468d10398ffd0d#diff-a9be5c3f8e18be99f40fb35f58960f400413a76252d86b53f80d76cb09cb53ef
+# should work
+std/language.support/support.limits/support.limits.general/variant.version.pass.cpp FAIL
+
+# libc++ doesn't implement P2186R2 Removing Garbage Collection Support
+std/utilities/memory/util.dynamic.safety/get_pointer_safety.pass.cpp FAIL
+std/utilities/memory/util.dynamic.safety/declare_no_pointers.pass.cpp FAIL
+std/utilities/memory/util.dynamic.safety/declare_reachable.pass.cpp FAIL
+
+# Clang 12 emits a warning-as-error; this has likely been fixed upstream already:
+# error: temporary whose address is used as value of local variable 'it2' will be destroyed at the end of the full-expression [-Werror,-Wdangling]
+std/iterators/predef.iterators/reverse.iterators/reverse.iter.ops/reverse.iter.op-=/difference_type.pass.cpp:1 FAIL
+std/iterators/predef.iterators/reverse.iterators/reverse.iter.ops/reverse.iter.op+=/difference_type.pass.cpp:1 FAIL
+std/iterators/predef.iterators/reverse.iterators/reverse.iter.ops/reverse.iter.op=/reverse_iterator.pass.cpp:1 FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
@@ -774,8 +784,6 @@ std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_result_type.pass.cpp FAIL
 std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_sseq.pass.cpp FAIL
 std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_result_type.pass.cpp FAIL
 std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_sseq.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.mers/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.mers/ctor_sseq.pass.cpp FAIL
 std/numerics/rand/rand.eng/rand.eng.sub/ctor_result_type.pass.cpp FAIL
 std/numerics/rand/rand.eng/rand.eng.sub/ctor_sseq.pass.cpp FAIL
 
@@ -789,13 +797,7 @@ std/thread/futures/futures.promise/set_rvalue.pass.cpp FAIL
 
 # Possible STL bugs in pair and tuple.
 std/utilities/tuple/tuple.tuple/tuple.cnstr/PR23256_constrain_UTypes_ctor.pass.cpp:0 FAIL
-std/utilities/tuple/tuple.tuple/tuple.cnstr/PR31384.pass.cpp FAIL
-
-# Likely STL bugs in mersenne_twister; also fails at runtime
-# random(1186,26):  error: constexpr variable '_WMSK' must be initialized by a constant expression
-#    static constexpr _Ty _WMSK = ~((~_Ty(0) << (_Wx - 1)) << 1);
-#                         ^       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-std/numerics/rand/rand.eng/rand.eng.mers/ctor_sseq_all_zero.pass.cpp FAIL
+std/utilities/tuple/tuple.tuple/tuple.cnstr/PR31384.pass.cpp:0 FAIL
 
 # Bugs/questionable choices in codecvt<char(16|32)_t, char, mbstate_t>, which we probably will not fix since
 # (1) they are deprecated, and (2) we don't want to break existing users.

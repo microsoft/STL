@@ -6,7 +6,6 @@
 #include <iostream>
 _STD_BEGIN
 
-// OBJECT DECLARATIONS
 __PURE_APPDOMAIN_GLOBAL int _Winit::_Init_cnt = -1;
 
 _CRTIMP2_PURE __thiscall _Winit::_Winit() { // initialize standard wide streams first time

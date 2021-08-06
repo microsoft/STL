@@ -242,14 +242,14 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(CanEnd<const R&> == (range<const V> && const_invocable));
     if (!is_empty) {
         same_as<sentinel_t<R>> auto s = r.end();
-        static_assert(is_same_v<sentinel_t<R>, iterator_t<R>> == common_range<V>);
+        STATIC_ASSERT(is_same_v<sentinel_t<R>, iterator_t<R>> == common_range<V>);
         if constexpr (bidirectional_range<R> && common_range<R>) {
             assert(*prev(s) == *prev(end(expected)));
         }
 
         if constexpr (CanEnd<const R&>) {
             same_as<sentinel_t<const R>> auto sc = as_const(r).end();
-            static_assert(is_same_v<sentinel_t<const R>, iterator_t<const R>> == common_range<const V>);
+            STATIC_ASSERT(is_same_v<sentinel_t<const R>, iterator_t<const R>> == common_range<const V>);
             if constexpr (bidirectional_range<const R> && common_range<const R>) {
                 assert(*prev(sc) == *prev(end(expected)));
             }
@@ -436,9 +436,12 @@ struct iterator_instantiator {
                 input_iterator_tag>>);
 
         { // Validate iterator special member functions and base
-            I defaultConstructed{};
-            assert(std::move(defaultConstructed).base().peek() == nullptr);
-            STATIC_ASSERT(is_nothrow_default_constructible_v<I>);
+            STATIC_ASSERT(default_initializable<I> == default_initializable<Iter>);
+            if constexpr (default_initializable<Iter>) {
+                I defaultConstructed{};
+                assert(move(defaultConstructed).base().peek() == nullptr);
+                STATIC_ASSERT(is_nothrow_default_constructible_v<I>);
+            }
 
             auto r0 = make_view();
             I valueConstructed{r0, Iter{mutable_ints}};
@@ -449,11 +452,16 @@ struct iterator_instantiator {
                 assert(copyConstructed == valueConstructed);
                 STATIC_ASSERT(is_nothrow_copy_constructible_v<I>);
 
-                defaultConstructed = copyConstructed;
-                assert(defaultConstructed == valueConstructed);
+                auto r1 = make_view();
+                I copyAssigned{r1, Iter{mutable_ints + 8}};
+                copyAssigned = copyConstructed;
+                assert(copyAssigned == valueConstructed);
                 STATIC_ASSERT(is_nothrow_copy_assignable_v<I>);
+                STATIC_ASSERT(same_as<const Iter&, decltype(as_const(copyConstructed).base())>);
             }
-            assert(std::move(valueConstructed).base().peek() == mutable_ints);
+            assert(as_const(valueConstructed).base().peek() == mutable_ints);
+            assert(move(valueConstructed).base().peek() == mutable_ints);
+            STATIC_ASSERT(same_as<Iter, decltype(move(valueConstructed).base())>);
 
             if constexpr (forward_iterator<Iter>) {
                 auto r1      = make_view();
@@ -518,7 +526,7 @@ struct iterator_instantiator {
             auto r0 = make_view();
             auto i0 = r0.begin();
             assert(&++i0 == &i0);
-            assert(std::move(i0).base().peek() == mutable_ints + 1);
+            assert(move(i0).base().peek() == mutable_ints + 1);
             STATIC_ASSERT(noexcept(++i0));
 
             auto r1 = make_view();
@@ -528,7 +536,7 @@ struct iterator_instantiator {
             } else {
                 i1++;
             }
-            assert(std::move(i1).base().peek() == mutable_ints + 1);
+            assert(move(i1).base().peek() == mutable_ints + 1);
             STATIC_ASSERT(noexcept(i0++));
         }
 
@@ -750,12 +758,6 @@ int main() {
 
         STATIC_ASSERT((instantiation_test(), true));
         instantiation_test();
-    }
-
-    { // Validate a non-view borrowed range
-        constexpr span s{some_ints};
-        STATIC_ASSERT(test_one(s, transformed_ints));
-        test_one(s, transformed_ints);
     }
 
     STATIC_ASSERT((iterator_instantiation_test(), true));

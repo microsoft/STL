@@ -32,7 +32,6 @@ _STD_BEGIN
 
 namespace pmr {
 
-    // FUNCTION set_default_resource
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_set_default_resource(memory_resource*) noexcept;
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_set_default_resource(memory_resource*) noexcept;
 
@@ -46,17 +45,16 @@ namespace pmr {
 
     extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept;
 
-    // FUNCTION new_delete_resource
     class _Identity_equal_resource : public memory_resource {
     protected:
-        virtual bool do_is_equal(const memory_resource& _That) const noexcept override {
+        bool do_is_equal(const memory_resource& _That) const noexcept override {
             return this == &_That;
         }
     };
 
     class _Unaligned_new_delete_resource_impl final
         : public _Identity_equal_resource { // implementation for new_delete_resource with /Zc:alignedNew-
-        virtual void* do_allocate(const size_t _Bytes, const size_t _Align) override {
+        void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             if (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 _Xbad_alloc();
             }
@@ -64,7 +62,7 @@ namespace pmr {
             return ::operator new(_Bytes);
         }
 
-        virtual void do_deallocate(void* const _Ptr, const size_t _Bytes, size_t) noexcept override /* strengthened */ {
+        void do_deallocate(void* const _Ptr, const size_t _Bytes, size_t) noexcept override /* strengthened */ {
             ::operator delete(_Ptr, _Bytes);
         }
     };
@@ -74,7 +72,7 @@ namespace pmr {
 #ifdef __cpp_aligned_new
     class _Aligned_new_delete_resource_impl final
         : public _Identity_equal_resource { // implementation for new_delete_resource with aligned new support
-        virtual void* do_allocate(const size_t _Bytes, const size_t _Align) override {
+        void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             if (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 return ::operator new (_Bytes, align_val_t{_Align});
             }
@@ -82,7 +80,7 @@ namespace pmr {
             return ::operator new(_Bytes);
         }
 
-        virtual void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) noexcept override
+        void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) noexcept override
         /* strengthened */ {
             if (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 return ::operator delete (_Ptr, _Bytes, align_val_t{_Align});
@@ -105,7 +103,6 @@ namespace pmr {
     }
 #endif // __cpp_aligned_new
 
-    // CLASS unsynchronized_pool_resource
     template <class _Tag = void>
     struct _Double_link { // base class for intrusive doubly-linked structures
         _Double_link* _Next;
@@ -257,7 +254,7 @@ namespace pmr {
         unsynchronized_pool_resource(const unsynchronized_pool_resource&) = delete;
         unsynchronized_pool_resource& operator=(const unsynchronized_pool_resource&) = delete;
 
-        virtual ~unsynchronized_pool_resource() noexcept override {
+        ~unsynchronized_pool_resource() noexcept override {
             // destroy this pool resource, releasing all allocations back upstream
             release();
         }
@@ -291,7 +288,7 @@ namespace pmr {
         }
 
     protected:
-        virtual void* do_allocate(size_t _Bytes, const size_t _Align) override {
+        void* do_allocate(size_t _Bytes, const size_t _Align) override {
             // allocate a block from the appropriate pool, or directly from upstream if too large
             if (_Bytes <= _Options.largest_required_pool_block) {
                 auto _Result = _Find_pool(_Bytes, _Align);
@@ -305,7 +302,7 @@ namespace pmr {
             return _Allocate_oversized(_Bytes, _Align);
         }
 
-        virtual void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) override {
+        void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) override {
             // deallocate a block from the appropriate pool, or directly from upstream if too large
             if (_Bytes <= _Options.largest_required_pool_block) {
                 const auto _Result = _Find_pool(_Bytes, _Align);
@@ -333,7 +330,7 @@ namespace pmr {
 
         static constexpr bool _Prepare_oversized(size_t& _Bytes, size_t& _Align) noexcept {
             // adjust size and alignment to allow for an _Oversized_header
-            _Align = (_STD max)(_Align, alignof(_Oversized_header));
+            _Align = (_STD max) (_Align, alignof(_Oversized_header));
 
             if (_Bytes > SIZE_MAX - sizeof(_Oversized_header) - alignof(_Oversized_header) + 1) {
                 // no room for header + alignment padding
@@ -531,8 +528,8 @@ namespace pmr {
 
                 // scale _Next_capacity by 2, saturating so that _Size_for_capacity(_Next_capacity) cannot overflow
                 _Next_capacity =
-                    (_STD min)(_Next_capacity << 1, (_STD min)((PTRDIFF_MAX - sizeof(_Chunk)) >> _Log_of_size,
-                                                        _Pool_resource._Options.max_blocks_per_chunk));
+                    (_STD min) (_Next_capacity << 1, (_STD min) ((PTRDIFF_MAX - sizeof(_Chunk)) >> _Log_of_size,
+                                                         _Pool_resource._Options.max_blocks_per_chunk));
             }
         };
 
@@ -559,7 +556,7 @@ namespace pmr {
         pair<pmr::vector<_Pool>::iterator, unsigned char> _Find_pool(
             const size_t _Bytes, const size_t _Align) noexcept {
             // find the pool from which to allocate a block with size _Bytes and alignment _Align
-            const size_t _Size      = (_STD max)(_Bytes + sizeof(void*), _Align);
+            const size_t _Size      = (_STD max) (_Bytes + sizeof(void*), _Align);
             const auto _Log_of_size = static_cast<unsigned char>(_Ceiling_of_log_2(_Size));
             return {_STD lower_bound(_Pools.begin(), _Pools.end(), _Log_of_size,
                         [](const _Pool& _Al, const unsigned char _Log) { return _Al._Log_of_size < _Log; }),
@@ -582,12 +579,12 @@ namespace pmr {
         }
 
     protected:
-        virtual void* do_allocate(const size_t _Bytes, const size_t _Align) override {
+        void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             lock_guard<mutex> _Guard{_Mtx};
             return this->unsynchronized_pool_resource::do_allocate(_Bytes, _Align);
         }
 
-        virtual void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) override {
+        void do_deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align) override {
             lock_guard<mutex> _Guard{_Mtx};
             this->unsynchronized_pool_resource::do_deallocate(_Ptr, _Bytes, _Align);
         }
@@ -597,7 +594,6 @@ namespace pmr {
     };
 #endif // _M_CEE
 
-    // CLASS TEMPLATE monotonic_buffer_resource
     class monotonic_buffer_resource : public _Identity_equal_resource {
     public:
         explicit monotonic_buffer_resource(memory_resource* const _Upstream) noexcept // strengthened
@@ -626,7 +622,7 @@ namespace pmr {
             // initialize this resource with initial buffer
         }
 
-        virtual ~monotonic_buffer_resource() noexcept override {
+        ~monotonic_buffer_resource() noexcept override {
             release();
         }
 
@@ -645,7 +641,7 @@ namespace pmr {
             // unscale _Next_buffer_size so the next allocation will be the same size as the most recent allocation
             // (keep synchronized with monotonic_buffer_resource::_Scale)
             const size_t _Unscaled = (_Next_buffer_size / 3 * 2 + alignof(_Header) - 1) & _Max_allocation;
-            _Next_buffer_size      = (_STD max)(_Unscaled, _Min_allocation);
+            _Next_buffer_size      = (_STD max) (_Unscaled, _Min_allocation);
 
             _Intrusive_stack<_Header> _Tmp{};
             _STD swap(_Tmp, _Chunks);
@@ -661,7 +657,7 @@ namespace pmr {
         }
 
     protected:
-        virtual void* do_allocate(const size_t _Bytes, const size_t _Align) override {
+        void* do_allocate(const size_t _Bytes, const size_t _Align) override {
             // allocate from the current buffer or a new larger buffer from upstream
             if (!_STD align(_Align, _Bytes, _Current_buffer, _Space_available)) {
                 _Increase_capacity(_Bytes, _Align);
@@ -673,7 +669,7 @@ namespace pmr {
             return _Result;
         }
 
-        virtual void do_deallocate(void*, size_t, size_t) override {} // nothing to do
+        void do_deallocate(void*, size_t, size_t) override {} // nothing to do
 
     private:
         struct _Header : _Single_link<> { // track the size and alignment of an allocation from upstream
@@ -727,7 +723,7 @@ namespace pmr {
                 _New_size = (_Bytes + sizeof(_Header) + alignof(_Header) - 1) & _Max_allocation;
             }
 
-            const size_t _New_align = (_STD max)(alignof(_Header), _Align);
+            const size_t _New_align = (_STD max) (alignof(_Header), _Align);
 
             void* _New_buffer = _Resource->allocate(_New_size, _New_align);
             _Check_alignment(_New_buffer, _New_align);

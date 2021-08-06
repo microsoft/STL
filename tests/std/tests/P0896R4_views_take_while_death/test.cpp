@@ -9,22 +9,43 @@
 #include <test_death.hpp>
 using namespace std;
 
-[[maybe_unused]] constexpr auto lambda = [x = 42](int) { return x == 42; };
-using TWV                              = decltype(ranges::take_while_view{span<int, 0>{}, lambda});
+struct test_predicate {
+    struct tag {};
+
+    test_predicate() = default;
+    test_predicate(const test_predicate&) {
+        throw tag{};
+    }
+    test_predicate& operator=(const test_predicate&) = delete;
+
+    constexpr bool operator()(int i) const {
+        return i == 42;
+    }
+};
+
+auto with_no_predicate() {
+    using TWV = decltype(ranges::take_while_view{span<int, 0>{}, test_predicate{}});
+    TWV r;
+    try {
+        r = TWV{};
+    } catch (const test_predicate::tag&) {
+    }
+    return r;
+}
 
 void test_view_predicate() {
-    TWV r;
-    (void) r.pred(); // value-initialized take_while_view has no predicate
+    auto r = with_no_predicate();
+    (void) r.pred(); // take_while_view has no predicate
 }
 
 void test_view_end() {
-    TWV r;
-    (void) r.end(); // N4868 [range.take_while.view] forbids calling end on a take_while_view that holds no predicate
+    auto r = with_no_predicate();
+    (void) r.end(); // cannot call end on a take_while_view with no predicate
 }
 
 void test_view_const_end() {
-    const TWV r;
-    (void) r.end(); // N4868 [range.take_while.view] forbids calling end on a take_while_view that holds no predicate
+    const auto r = with_no_predicate();
+    (void) r.end(); // cannot call end on a take_while_view with no predicate
 }
 
 int main(int argc, char* argv[]) {

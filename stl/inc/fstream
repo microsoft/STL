@@ -48,6 +48,18 @@ namespace experimental {
 } // namespace experimental
 #endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
 
+// clang-format off
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_any_path = _Is_any_of_v<_Ty
+#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
+    , experimental::filesystem::path
+#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
+#if _HAS_CXX17
+    , filesystem::path
+#endif // _HAS_CXX17
+    >;
+// clang-format on
+
 extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
 extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
 
@@ -55,7 +67,6 @@ extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_b
 extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Fgetc
 template <class _Elem>
 bool _Fgetc(_Elem& _Ch, FILE* _File) { // get an element from a C stream
     return _CSTD fread(&_Ch, sizeof(_Elem), 1, _File) == 1;
@@ -96,7 +107,6 @@ inline bool _Fgetc(unsigned short& _Wchar, FILE* _File) { // get an unsigned sho
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Fputc
 template <class _Elem>
 bool _Fputc(_Elem _Ch, FILE* _File) { // put an element to a C stream
     return _CSTD fwrite(&_Ch, 1, sizeof(_Elem), _File) == sizeof(_Elem);
@@ -119,7 +129,6 @@ inline bool _Fputc(unsigned short _Wchar, FILE* _File) { // put an unsigned shor
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Ungetc
 template <class _Elem>
 bool _Ungetc(const _Elem&, FILE*) { // put back an arbitrary element to a C stream (always fail)
     return false;
@@ -152,7 +161,6 @@ inline bool _Ungetc(const unsigned short& _Wchar, FILE* _File) { // put back an 
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// CLASS TEMPLATE basic_filebuf
 template <class _Elem, class _Traits>
 class basic_filebuf : public basic_streambuf<_Elem, _Traits> { // stream buffer associated with a C stream
 public:
@@ -167,7 +175,7 @@ public:
         _Init(_File, _Newfl);
     }
 
-    virtual __CLR_OR_THIS_CALL ~basic_filebuf() noexcept {
+    __CLR_OR_THIS_CALL ~basic_filebuf() noexcept override {
         if (_Myfile) {
             _Reset_back(); // revert from _Mychar buffer
         }
@@ -390,20 +398,20 @@ public:
         return _Ans;
     }
 
-    virtual void __CLR_OR_THIS_CALL _Lock() override { // lock file instead of stream buffer
+    void __CLR_OR_THIS_CALL _Lock() override { // lock file instead of stream buffer
         if (_Myfile) {
             _CSTD _lock_file(_Myfile);
         }
     }
 
-    virtual void __CLR_OR_THIS_CALL _Unlock() override { // unlock file instead of stream buffer
+    void __CLR_OR_THIS_CALL _Unlock() override { // unlock file instead of stream buffer
         if (_Myfile) {
             _CSTD _unlock_file(_Myfile);
         }
     }
 
 protected:
-    virtual int_type __CLR_OR_THIS_CALL overflow(int_type _Meta = _Traits::eof()) override { // put an element to stream
+    int_type __CLR_OR_THIS_CALL overflow(int_type _Meta = _Traits::eof()) override { // put an element to stream
         if (_Traits::eq_int_type(_Traits::eof(), _Meta)) {
             return _Traits::not_eof(_Meta); // EOF, return success code
         }
@@ -455,7 +463,7 @@ protected:
         }
     }
 
-    virtual int_type __CLR_OR_THIS_CALL pbackfail(int_type _Meta = _Traits::eof()) override {
+    int_type __CLR_OR_THIS_CALL pbackfail(int_type _Meta = _Traits::eof()) override {
         // put an element back to stream
         if (_Mysb::gptr() && _Mysb::eback() < _Mysb::gptr()
             && (_Traits::eq_int_type(_Traits::eof(), _Meta)
@@ -476,7 +484,7 @@ protected:
         }
     }
 
-    virtual int_type __CLR_OR_THIS_CALL underflow() override { // get an element from stream, but don't point past it
+    int_type __CLR_OR_THIS_CALL underflow() override { // get an element from stream, but don't point past it
         int_type _Meta;
         if (_Mysb::gptr() && _Mysb::gptr() < _Mysb::egptr()) {
             return _Traits::to_int_type(*_Mysb::gptr()); // return buffered
@@ -488,7 +496,7 @@ protected:
         }
     }
 
-    virtual int_type __CLR_OR_THIS_CALL uflow() override { // get an element from stream, point past it
+    int_type __CLR_OR_THIS_CALL uflow() override { // get an element from stream, point past it
         if (_Mysb::gptr() && _Mysb::gptr() < _Mysb::egptr()) {
             return _Traits::to_int_type(*_Mysb::_Gninc()); // return buffered
         }
@@ -546,7 +554,7 @@ protected:
 
 #pragma warning(push)
 #pragma warning(disable : 4127) // conditional expression is constant
-    virtual streamsize __CLR_OR_THIS_CALL xsgetn(_Elem* _Ptr, streamsize _Count) override {
+    streamsize __CLR_OR_THIS_CALL xsgetn(_Elem* _Ptr, streamsize _Count) override {
         // get _Count characters from stream
         if constexpr (sizeof(_Elem) == 1) {
             if (_Count <= 0) {
@@ -562,7 +570,7 @@ protected:
             const auto _Start_count = _Count;
             const auto _Available   = static_cast<size_t>(_Mysb::_Gnavail());
             if (0 < _Available) { // copy from get area
-                const auto _Read_size = (_STD min)(_Count_s, _Available);
+                const auto _Read_size = (_STD min) (_Count_s, _Available);
                 _Traits::copy(_Ptr, _Mysb::gptr(), _Read_size);
                 _Ptr += _Read_size;
                 _Count_s -= _Read_size;
@@ -594,7 +602,7 @@ protected:
         }
     }
 
-    virtual streamsize __CLR_OR_THIS_CALL xsputn(const _Elem* _Ptr, streamsize _Count) override {
+    streamsize __CLR_OR_THIS_CALL xsputn(const _Elem* _Ptr, streamsize _Count) override {
         // put _Count characters to stream
         if constexpr (sizeof(_Elem) == 1) {
             if (_Pcvt) { // if we need a nontrivial codecvt transform, do the default expensive thing
@@ -625,7 +633,7 @@ protected:
     }
 #pragma warning(pop)
 
-    virtual pos_type __CLR_OR_THIS_CALL seekoff(off_type _Off, ios_base::seekdir _Way,
+    pos_type __CLR_OR_THIS_CALL seekoff(off_type _Off, ios_base::seekdir _Way,
         ios_base::openmode = ios_base::in | ios_base::out) override { // change position by _Off
         fpos_t _Fileposition;
 
@@ -645,8 +653,7 @@ protected:
         return pos_type(_State, _Fileposition); // return new position
     }
 
-    virtual pos_type __CLR_OR_THIS_CALL seekpos(
-        pos_type _Pos, ios_base::openmode = ios_base::in | ios_base::out) override {
+    pos_type __CLR_OR_THIS_CALL seekpos(pos_type _Pos, ios_base::openmode = ios_base::in | ios_base::out) override {
         // change position to _Pos
         off_type _Off = static_cast<off_type>(_Pos);
 
@@ -659,7 +666,7 @@ protected:
         return pos_type(_State, _Off); // return new position
     }
 
-    virtual _Mysb* __CLR_OR_THIS_CALL setbuf(_Elem* _Buffer, streamsize _Count) override { // offer _Buffer to C stream
+    _Mysb* __CLR_OR_THIS_CALL setbuf(_Elem* _Buffer, streamsize _Count) override { // offer _Buffer to C stream
         int _Mode;
         if (!_Buffer && _Count == 0) {
             _Mode = _IONBF;
@@ -678,7 +685,7 @@ protected:
         return this;
     }
 
-    virtual int __CLR_OR_THIS_CALL sync() override { // synchronize C stream with external file
+    int __CLR_OR_THIS_CALL sync() override { // synchronize C stream with external file
         if (!_Myfile || _Traits::eq_int_type(_Traits::eof(), overflow()) || 0 <= _CSTD fflush(_Myfile)) {
             return 0;
         }
@@ -686,7 +693,7 @@ protected:
         return -1;
     }
 
-    virtual void __CLR_OR_THIS_CALL imbue(const locale& _Loc) override {
+    void __CLR_OR_THIS_CALL imbue(const locale& _Loc) override {
         // set locale to argument (capture nontrivial codecvt facet)
         _Initcvt(_STD use_facet<_Cvt>(_Loc));
     }
@@ -794,7 +801,6 @@ void swap(basic_filebuf<_Elem, _Traits>& _Left, basic_filebuf<_Elem, _Traits>& _
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_ifstream
 template <class _Elem, class _Traits>
 class basic_ifstream : public basic_istream<_Elem, _Traits> { // input stream associated with a C stream
 public:
@@ -830,19 +836,10 @@ public:
         const wstring& _Str, ios_base::openmode _Mode = ios_base::in, int _Prot = ios_base::_Default_open_prot)
         : basic_ifstream(_Str.c_str(), _Mode, _Prot) {} // extension
 
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    template <class _Path_ish = experimental::filesystem::path>
-    explicit basic_ifstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::in,
-        int _Prot = ios_base::_Default_open_prot)
+    template <class _Ty, enable_if_t<_Is_any_path<_Ty>, int> = 0>
+    explicit basic_ifstream(
+        const _Ty& _Path, ios_base::openmode _Mode = ios_base::in, int _Prot = ios_base::_Default_open_prot)
         : basic_ifstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-
-#if _HAS_CXX17
-    template <int = 0, class _Path_ish = filesystem::path>
-    explicit basic_ifstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::in,
-        int _Prot = ios_base::_Default_open_prot)
-        : basic_ifstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _HAS_CXX17
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
     explicit basic_ifstream(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::in,
@@ -942,7 +939,7 @@ public:
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-    virtual __CLR_OR_THIS_CALL ~basic_ifstream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_ifstream() noexcept override {}
 
     _NODISCARD _Myfb* rdbuf() const {
         return const_cast<_Myfb*>(_STD addressof(_Filebuffer));
@@ -988,7 +985,6 @@ void swap(basic_ifstream<_Elem, _Traits>& _Left, basic_ifstream<_Elem, _Traits>&
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_ofstream
 template <class _Elem, class _Traits>
 class basic_ofstream : public basic_ostream<_Elem, _Traits> { // output stream associated with a C stream
 public:
@@ -1023,19 +1019,10 @@ public:
         const wstring& _Str, ios_base::openmode _Mode = ios_base::out, int _Prot = ios_base::_Default_open_prot)
         : basic_ofstream(_Str.c_str(), _Mode, _Prot) {} // extension
 
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    template <class _Path_ish = experimental::filesystem::path>
-    explicit basic_ofstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::out,
-        int _Prot = ios_base::_Default_open_prot)
+    template <class _Ty, enable_if_t<_Is_any_path<_Ty>, int> = 0>
+    explicit basic_ofstream(
+        const _Ty& _Path, ios_base::openmode _Mode = ios_base::out, int _Prot = ios_base::_Default_open_prot)
         : basic_ofstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-
-#if _HAS_CXX17
-    template <int = 0, class _Path_ish = filesystem::path>
-    explicit basic_ofstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::out,
-        int _Prot = ios_base::_Default_open_prot)
-        : basic_ofstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _HAS_CXX17
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
     explicit basic_ofstream(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::out,
@@ -1135,7 +1122,7 @@ public:
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-    virtual __CLR_OR_THIS_CALL ~basic_ofstream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_ofstream() noexcept override {}
 
     _NODISCARD _Myfb* rdbuf() const {
         return const_cast<_Myfb*>(_STD addressof(_Filebuffer));
@@ -1181,7 +1168,6 @@ void swap(basic_ofstream<_Elem, _Traits>& _Left, basic_ofstream<_Elem, _Traits>&
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_fstream
 template <class _Elem, class _Traits>
 class basic_fstream : public basic_iostream<_Elem, _Traits> { // input/output stream associated with a C stream
 public:
@@ -1221,19 +1207,10 @@ public:
         int _Prot = ios_base::_Default_open_prot)
         : basic_fstream(_Str.c_str(), _Mode, _Prot) {} // extension
 
-#if _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-    template <class _Path_ish = experimental::filesystem::path>
-    explicit basic_fstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::in | ios_base::out,
+    template <class _Ty, enable_if_t<_Is_any_path<_Ty>, int> = 0>
+    explicit basic_fstream(const _Ty& _Path, ios_base::openmode _Mode = ios_base::in | ios_base::out,
         int _Prot = ios_base::_Default_open_prot)
         : basic_fstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _FSTREAM_SUPPORTS_EXPERIMENTAL_FILESYSTEM
-
-#if _HAS_CXX17
-    template <int = 0, class _Path_ish = filesystem::path>
-    explicit basic_fstream(const _Identity_t<_Path_ish>& _Path, ios_base::openmode _Mode = ios_base::in | ios_base::out,
-        int _Prot = ios_base::_Default_open_prot)
-        : basic_fstream(_Path.c_str(), _Mode, _Prot) {} // _Prot is an extension
-#endif // _HAS_CXX17
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
     explicit basic_fstream(const unsigned short* _Filename, ios_base::openmode _Mode = ios_base::in | ios_base::out,
@@ -1334,7 +1311,7 @@ public:
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-    virtual __CLR_OR_THIS_CALL ~basic_fstream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_fstream() noexcept override {}
 
     _NODISCARD _Myfb* rdbuf() const {
         return const_cast<_Myfb*>(_STD addressof(_Filebuffer));

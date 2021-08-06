@@ -57,12 +57,12 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4885][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4892][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
 Standards differ from the Working Paper, and we often need to refer to the C Standard Library and ECMAScript regular
-expression specifications.) We're currently prioritizing C++20 features before starting any work on C++23.
+expression specifications.)
 
 Our primary goals are conformance, performance, usability, and compatibility.
 
@@ -79,8 +79,8 @@ significantly more complicated and fragile. That is, there's a "complexity budge
 debugging checks. For example, we've extensively marked the STL with `[[nodiscard]]` attributes because this helps
 programmers avoid bugs.
 
-* Compatibility: This includes binary compatibility and source compatibility. We're keeping VS 2019 binary-compatible
-with VS 2017 and VS 2015, which restricts what we can change in VS 2019 updates. (We've found that significant changes
+* Compatibility: This includes binary compatibility and source compatibility. We're keeping VS 2022 binary-compatible
+with VS 2015/2017/2019, which restricts what we can change in VS 2022 updates. (We've found that significant changes
 are possible even though other changes are impossible, which we'll be documenting in our Contribution Guidelines soon.)
 While there are a few exceptions to this rule (e.g. if a feature is added to the Working Paper, we implement it, and
 then the feature is significantly changed before the International Standard is finalized, we reserve the right to break
@@ -143,7 +143,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
 acquire this dependency.
 
-1. Install Visual Studio 2019 16.11 Preview 1 or later.
+1. Install Visual Studio 2022 17.0 Preview 2 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.20 or later, and [Ninja][] 1.10.2 or later.
@@ -158,7 +158,7 @@ acquire this dependency.
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2019 16.11 Preview 1 or later.
+1. Install Visual Studio 2022 17.0 Preview 2 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.20 or later, and [Ninja][] 1.10.2 or later.
@@ -172,14 +172,14 @@ acquire this dependency.
 
 To build the x86 target:
 
-1. Open an "x86 Native Tools Command Prompt for VS 2019 Preview".
+1. Open an "x86 Native Tools Command Prompt for VS 2022 Preview".
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake -G Ninja -S . -B out\build\x86`
 4. `ninja -C out\build\x86`
 
-To build the x64 target:
+To build the x64 target (recommended):
 
-1. Open an "x64 Native Tools Command Prompt for VS 2019 Preview".
+1. Open an "x64 Native Tools Command Prompt for VS 2022 Preview".
 2. Change directories to the previously cloned `STL` directory.
 3. `cmake -G Ninja -S . -B out\build\x64`
 4. `ninja -C out\build\x64`
@@ -205,7 +205,7 @@ your .exe would "win" over the versions in System32.
 The compiler looks for include directories according to the `INCLUDE` environment variable, and the linker looks for
 import library directories according to the `LIB` environment variable, and the Windows loader will (eventually) look
 for DLL dependencies according to directories in the `PATH` environment variable. From an
-"x64 Native Tools Command Prompt for VS 2019 Preview":
+"x64 Native Tools Command Prompt for VS 2022 Preview":
 
 ```
 C:\Users\username\Desktop>set INCLUDE=C:\Dev\STL\out\build\x64\out\inc;%INCLUDE%
@@ -234,7 +234,7 @@ C:\Users\username\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 # How To Run The Tests With A Native Tools Command Prompt
 
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
-2. Acquire [Python][] 3.9.5 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
+2. Acquire [Python][] 3.9.6 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
 3. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
     * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
     `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.
@@ -354,7 +354,7 @@ those features first the tests will begin passing unexpectedly for us and return
 this it is necessary to add a `PASS` entry to the `expected_results.txt` of the testsuite in question.
 
 The `UNSUPPORTED` result code means that the requirements for a test are not met and so it will not be run. Currently
-all tests which use the `/clr` or `/clr:pure` options are unsupported. Also, the `/BE` option is unsupported for x64.
+all tests which use the `/clr` or `/clr:pure` options are unsupported. Also, the `/BE` option is unsupported for x86.
 
 The `SKIPPED` result code indicates that a given test was explicitly skipped by adding a `SKIPPED` entry to the
 `expected_results.txt`. A test may be skipped for a number of reasons, which include, but are not limited to:
@@ -404,8 +404,8 @@ set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
 
 ### Modify The Visualizer
 
-To modify how components are visualized in the debugger edit the file `stl\debugger\STL.natvis`. For more information on
-how to modify this file check the [natvis documentation][].
+To modify how components are visualized in the debugger, edit the file `stl\debugger\STL.natvis`. For more information
+on how to modify this file, check the [natvis documentation][].
 
 ### Test Your Changes
 
@@ -456,7 +456,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4885]: https://wg21.link/n4885
+[N4892]: https://wg21.link/n4892
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main

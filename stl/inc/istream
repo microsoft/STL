@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #pragma vtordisp(push, 2) // compiler bug workaround
 
-// CLASS TEMPLATE basic_istream
 template <class _Elem, class _Traits>
 class basic_istream : virtual public basic_ios<_Elem, _Traits> { // control extractions from a stream buffer
 public:
@@ -69,13 +68,12 @@ public:
     __CLR_OR_THIS_CALL basic_istream(const basic_istream&) = delete;
     basic_istream& __CLR_OR_THIS_CALL operator=(const basic_istream&) = delete;
 
-    virtual __CLR_OR_THIS_CALL ~basic_istream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_istream() noexcept override {}
 
     using int_type = typename _Traits::int_type;
     using pos_type = typename _Traits::pos_type;
     using off_type = typename _Traits::off_type;
 
-    // CLASS TEMPLATE sentry
     class _Sentry_base {
     public:
         __CLR_OR_THIS_CALL _Sentry_base(basic_istream& _Istr) : _Myistr(_Istr) {
@@ -208,7 +206,7 @@ private:
 
     template <class = void>
     void _Increment_gcount() {
-        if (_Chcount != (numeric_limits<streamsize>::max)()) {
+        if (_Chcount != (numeric_limits<streamsize>::max) ()) {
             ++_Chcount;
         }
     }
@@ -490,7 +488,7 @@ public:
             _TRY_IO_BEGIN
             for (;;) { // get a metacharacter if more room in buffer
                 int_type _Meta;
-                if (_Count != (numeric_limits<streamsize>::max)() && --_Count < 0) {
+                if (_Count != (numeric_limits<streamsize>::max) () && --_Count < 0) {
                     break; // buffer full, quit
                 } else if (_Traits::eq_int_type(_Traits::eof(),
                                _Meta = _Myios::rdbuf()->sbumpc())) { // end of file, quit
@@ -705,7 +703,6 @@ template class _CRTIMP2_PURE_IMPORT basic_istream<unsigned short, char_traits<un
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
 
-// CLASS TEMPLATE basic_iostream
 template <class _Elem, class _Traits>
 class basic_iostream : public basic_istream<_Elem, _Traits>,
                        public basic_ostream<_Elem, _Traits> { // control insertions and extractions from a stream buffer
@@ -743,7 +740,7 @@ public:
     __CLR_OR_THIS_CALL basic_iostream(const basic_iostream&) = delete;
     basic_iostream& __CLR_OR_THIS_CALL operator=(const basic_iostream&) = delete;
 
-    virtual __CLR_OR_THIS_CALL ~basic_iostream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_iostream() noexcept override {}
 };
 
 #if defined(_DLL_CPPLIB)
@@ -757,8 +754,6 @@ template class _CRTIMP2_PURE_IMPORT basic_iostream<wchar_t, char_traits<wchar_t>
 template class _CRTIMP2_PURE_IMPORT basic_iostream<unsigned short, char_traits<unsigned short>>;
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
-
-// EXTRACTORS
 
 template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& _Istream_extract_into_buffer(
@@ -890,7 +885,6 @@ _Istr&& operator>>(_Istr&& _Is, _Ty&& _Val) { // extract from rvalue stream
     return _STD move(_Is);
 }
 
-// MANIPULATORS
 template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& __CLRCALL_OR_CDECL ws(basic_istream<_Elem, _Traits>& _Istr) { // consume whitespace
     const typename basic_istream<_Elem, _Traits>::sentry _Ok(_Istr, true);

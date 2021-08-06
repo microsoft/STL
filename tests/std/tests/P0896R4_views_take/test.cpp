@@ -429,7 +429,7 @@ struct instantiator {
         R r{some_ints};
         test_one(r, only_four_ints);
 
-        R empty_range{};
+        R empty_range{span<const int, 0>{}};
         test_one(empty_range, span<const int, 0>{});
     }
 };
@@ -580,11 +580,6 @@ int main() {
     instantiation_test();
 
     {
-        // Validate a non-view borrowed range
-        constexpr span s{some_ints};
-        STATIC_ASSERT(test_one(s, only_four_ints));
-        test_one(s, only_four_ints);
-
         // Validate a view borrowed range
         constexpr auto v =
             views::iota(0ull, ranges::size(some_ints)) | views::transform([](auto i) { return some_ints[i]; });
