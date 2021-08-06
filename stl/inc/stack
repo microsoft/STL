@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE stack
 template <class _Ty, class _Container = deque<_Ty>>
 class stack {
 public:

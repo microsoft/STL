@@ -26,7 +26,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C_UNLESS_PURE
 
-// SUPPLEMENTAL LOCALE MACROS AND DECLARATIONS
 #define _X_ALL      LC_ALL
 #define _X_COLLATE  LC_COLLATE
 #define _X_CTYPE    LC_CTYPE
@@ -46,7 +45,6 @@ _EXTERN_C_UNLESS_PURE
 #define _M_MESSAGES _CATMASK(_X_MESSAGES)
 #define _M_ALL      (_CATMASK(_NCAT) - 1)
 
-// FUNCTION DECLARATIONS
 _CRTIMP2_PURE _Collvec __CLRCALL_PURE_OR_CDECL _Getcoll();
 _CRTIMP2_PURE _Ctypevec __CLRCALL_PURE_OR_CDECL _Getctype();
 _CRTIMP2_PURE _Cvtvec __CLRCALL_PURE_OR_CDECL _Getcvt();
@@ -117,7 +115,6 @@ _MRTIMP2 _locale_t __cdecl _GetLocaleForCP(unsigned int);
 #endif // _M_CEE_PURE
 
 _STD_BEGIN
-// CLASS _Timevec
 class _CRTIMP2_PURE_IMPORT _Timevec { // smart pointer to information used by _Strftime
 public:
     explicit __CLR_OR_THIS_CALL _Timevec(void* _Ptr = nullptr) : _Timeptr(_Ptr) {}
@@ -148,7 +145,6 @@ private:
     void* _Timeptr; // pointer to time information
 };
 
-// CLASS TEMPLATE _Yarn
 template <class _Elem>
 class _CRTIMP2_PURE_IMPORT _Yarn { // wrap a NTCTS
 public:
@@ -230,7 +226,6 @@ private:
     _Elem _Nul; // nul terminator for unallocated string
 };
 
-// CLASS _Locinfo
 class _CRTIMP2_PURE_IMPORT _Locinfo { // summary of all stuff specific to a locale used by standard facets
 public:
     using _Collvec  = ::_Collvec;
@@ -405,7 +400,6 @@ private:
     _Yarn<char> _Newlocname; // new locale name for this object
 };
 
-// FUNCTION TEMPLATE _LStrcoll
 template <class _Elem>
 int __CRTDECL _LStrcoll(const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2,
     const _Locinfo::_Collvec*) { // perform locale-specific comparison of _Elem sequences
@@ -433,7 +427,6 @@ inline int __CRTDECL _LStrcoll(const wchar_t* _First1, const wchar_t* _Last1, co
     return _Wcscoll(_First1, _Last1, _First2, _Last2, _Vector);
 }
 
-// FUNCTION TEMPLATE _LStrxfrm
 template <class _Elem>
 size_t __CRTDECL _LStrxfrm(_Elem* _First1, _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2,
     const _Locinfo::_Collvec*) { // perform locale-specific transform of _Elems [_First1, _Last1)
