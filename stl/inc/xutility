@@ -1280,10 +1280,10 @@ struct _Distance_unknown {
 };
 
 template <class _Diff>
-_INLINE_VAR constexpr auto _Max_possible_v = _Diff{static_cast<make_unsigned_t<_Diff>>(-1) >> 1};
+_INLINE_VAR constexpr _Diff _Max_possible_v{static_cast<make_unsigned_t<_Diff>>(-1) >> 1};
 
 template <class _Diff>
-_INLINE_VAR constexpr auto _Min_possible_v = _Diff{-_Max_possible_v<_Diff> - 1};
+_INLINE_VAR constexpr _Diff _Min_possible_v{-_Max_possible_v<_Diff> - 1};
 
 template <class _Iter, class = void>
 _INLINE_VAR constexpr bool _Offset_verifiable_v = false;
