@@ -1813,7 +1813,7 @@ namespace filesystem {
             return _Path2;
         }
 
-        _NODISCARD virtual const char* what() const noexcept override {
+        _NODISCARD const char* what() const noexcept override {
             return _What.c_str();
         }
 
@@ -1844,7 +1844,7 @@ namespace filesystem {
 
 #if !_HAS_EXCEPTIONS
     protected:
-        virtual void _Doraise() const override { // perform class-specific exception handling
+        void _Doraise() const override { // perform class-specific exception handling
             _RAISE(*this);
         }
 #endif // !_HAS_EXCEPTIONS

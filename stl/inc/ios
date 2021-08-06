@@ -35,7 +35,7 @@ public:
         init(_Strbuf);
     }
 
-    virtual __CLR_OR_THIS_CALL ~basic_ios() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_ios() noexcept override {}
 
     void __CLR_OR_THIS_CALL clear(iostate _State = goodbit, bool _Reraise = false) {
         // set state, possibly reraise exception

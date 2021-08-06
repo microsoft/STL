@@ -480,7 +480,7 @@ public:
 
 #if !_HAS_EXCEPTIONS
 protected:
-    virtual void _Doraise() const override { // perform class-specific exception handling
+    void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 #endif // !_HAS_EXCEPTIONS
@@ -512,11 +512,11 @@ class _Generic_error_category : public error_category { // categorize a generic 
 public:
     constexpr _Generic_error_category() noexcept : error_category(_Generic_addr) {}
 
-    _NODISCARD virtual const char* name() const noexcept override {
+    _NODISCARD const char* name() const noexcept override {
         return "generic";
     }
 
-    _NODISCARD virtual string message(int _Errcode) const override {
+    _NODISCARD string message(int _Errcode) const override {
         return _Syserror_map(_Errcode);
     }
 };
@@ -525,11 +525,11 @@ class _Iostream_error_category2 : public error_category { // categorize an iostr
 public:
     constexpr _Iostream_error_category2() noexcept : error_category(_Iostream_addr) {}
 
-    _NODISCARD virtual const char* name() const noexcept override {
+    _NODISCARD const char* name() const noexcept override {
         return "iostream";
     }
 
-    _NODISCARD virtual string message(int _Errcode) const override {
+    _NODISCARD string message(int _Errcode) const override {
         if (_Errcode == static_cast<int>(io_errc::stream)) {
             static constexpr char _Iostream_error[] = "iostream stream error";
             constexpr size_t _Iostream_error_length = sizeof(_Iostream_error) - 1; // TRANSITION, DevCom-906503
@@ -544,11 +544,11 @@ class _System_error_category : public error_category { // categorize an operatin
 public:
     constexpr _System_error_category() noexcept : error_category(_System_addr) {}
 
-    _NODISCARD virtual const char* name() const noexcept override {
+    _NODISCARD const char* name() const noexcept override {
         return "system";
     }
 
-    _NODISCARD virtual string message(int _Errcode) const override {
+    _NODISCARD string message(int _Errcode) const override {
         const _System_error_message _Msg(static_cast<unsigned long>(_Errcode));
         if (_Msg._Length == 0) {
             static constexpr char _Unknown_error[] = "unknown error";
@@ -559,7 +559,7 @@ public:
         }
     }
 
-    _NODISCARD virtual error_condition default_error_condition(int _Errval) const noexcept override {
+    _NODISCARD error_condition default_error_condition(int _Errval) const noexcept override {
         // make error_condition for error code (generic if possible)
         const int _Posv = _Winerror_map(_Errval);
         if (_Posv == 0) {

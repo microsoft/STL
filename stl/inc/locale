@@ -68,7 +68,7 @@ public:
     }
 
 protected:
-    __CLR_OR_THIS_CALL ~collate() noexcept {
+    __CLR_OR_THIS_CALL ~collate() noexcept override {
         _CSTD free(_Coll._LocaleName);
     }
 
@@ -156,7 +156,7 @@ public:
         : collate<_Elem>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~collate_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~collate_byname() noexcept override {}
 };
 
 // FUNCTION TEMPLATE has_facet

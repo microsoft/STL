@@ -158,7 +158,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~numpunct() noexcept {
+    __CLR_OR_THIS_CALL ~numpunct() noexcept override {
         _Tidy();
     }
 
@@ -249,7 +249,7 @@ public:
         : numpunct<_Elem>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~numpunct_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~numpunct_byname() noexcept override {}
 };
 
 // STATIC numpunct::id OBJECT
@@ -286,7 +286,7 @@ public:
     __PURE_APPDOMAIN_GLOBAL static locale::id id; // unique facet id
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~num_get() noexcept {}
+    __CLR_OR_THIS_CALL ~num_get() noexcept override {}
 
     void _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
@@ -1204,7 +1204,7 @@ public:
     __PURE_APPDOMAIN_GLOBAL static locale::id id; // unique facet id
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~num_put() noexcept {}
+    __CLR_OR_THIS_CALL ~num_put() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo&) {} // initialize from _Locinfo object
 

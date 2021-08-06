@@ -140,14 +140,14 @@ struct is_execution_policy<execution::unsequenced_policy> : true_type {};
 
 // STRUCT _Parallelism_resources_exhausted
 struct _Parallelism_resources_exhausted : exception {
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
         return "Insufficient resources were available to use additional parallelism.";
     }
 
 #if !_HAS_EXCEPTIONS
 protected:
-    virtual void _Doraise() const override { // perform class-specific exception handling
+    void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 #endif // !_HAS_EXCEPTIONS

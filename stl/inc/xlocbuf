@@ -58,7 +58,7 @@ public:
         _Loc = locale(_Loc, _Pcvt);
     }
 
-    virtual ~wbuffer_convert() noexcept {
+    ~wbuffer_convert() noexcept override {
         while (_Status == _Wrote) { // put any trailing homing shift
             if (_Str.size() < _STRING_INC) {
                 _Str.assign(_STRING_INC, '\0');
@@ -113,7 +113,7 @@ public:
     wbuffer_convert& operator=(const wbuffer_convert&) = delete;
 
 protected:
-    virtual int_type overflow(int_type _Meta = _Traits::eof()) { // put an element to stream
+    int_type overflow(int_type _Meta = _Traits::eof()) override { // put an element to stream
         if (_Traits::eq_int_type(_Traits::eof(), _Meta)) {
             return _Traits::not_eof(_Meta); // EOF, return success code
         } else if (!_Mystrbuf || 0 < _Nback || (_Status != _Unused && _Status != _Wrote)) {
@@ -172,7 +172,7 @@ protected:
         }
     }
 
-    virtual int_type pbackfail(int_type _Meta = _Traits::eof()) { // put an element back to stream
+    int_type pbackfail(int_type _Meta = _Traits::eof()) override { // put an element back to stream
         if (sizeof(_Myback) / sizeof(_Myback[0]) <= _Nback || _Status == _Wrote) {
             return _Traits::eof(); // nowhere to put back
         } else { // enough room, put it back
@@ -189,7 +189,7 @@ protected:
         }
     }
 
-    virtual int_type underflow() { // get an element from stream, but don't point past it
+    int_type underflow() override { // get an element from stream, but don't point past it
         int_type _Meta;
 
         if (0 >= _Nback) {
@@ -206,7 +206,7 @@ protected:
 #pragma warning(push)
 #pragma warning(disable : 6385) // Reading invalid data from 'this->_Myback':
                                 // the readable size is 'X' bytes, but 'Y' bytes may be read.
-    virtual int_type uflow() { // get an element from stream, point past it
+    int_type uflow() override { // get an element from stream, point past it
         int_type _Meta;
 
         if (0 >= _Nback) {
@@ -221,13 +221,15 @@ protected:
     }
 #pragma warning(pop)
 
-    virtual pos_type seekoff(off_type, ios_base::seekdir,
-        ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) { // change position by _Off
+    pos_type seekoff(off_type, ios_base::seekdir,
+        ios_base::openmode = static_cast<ios_base::openmode>(
+            ios_base::in | ios_base::out)) override { // change position by _Off
         return pos_type(-1); // always fail
     }
 
-    virtual pos_type seekpos(pos_type,
-        ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) { // change position to _Pos
+    pos_type seekpos(pos_type,
+        ios_base::openmode = static_cast<ios_base::openmode>(
+            ios_base::in | ios_base::out)) override { // change position to _Pos
         return pos_type(-1); // always fail
     }
 

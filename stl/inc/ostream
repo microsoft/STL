@@ -60,7 +60,7 @@ public:
     __CLR_OR_THIS_CALL basic_ostream(const basic_ostream&) = delete;
     basic_ostream& __CLR_OR_THIS_CALL operator=(const basic_ostream&) = delete;
 
-    virtual __CLR_OR_THIS_CALL ~basic_ostream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_ostream() noexcept override {}
 
     using int_type = typename _Traits::int_type;
     using pos_type = typename _Traits::pos_type;

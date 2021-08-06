@@ -124,10 +124,10 @@ class bad_exception : public exception { // base of all bad exceptions
 public:
     __CLR_OR_THIS_CALL bad_exception(const char* _Message = "bad exception") noexcept : exception(_Message) {}
 
-    virtual __CLR_OR_THIS_CALL ~bad_exception() noexcept {}
+    __CLR_OR_THIS_CALL ~bad_exception() noexcept override {}
 
 protected:
-    virtual void __CLR_OR_THIS_CALL _Doraise() const override { // raise this exception
+    void __CLR_OR_THIS_CALL _Doraise() const override { // raise this exception
         _RAISE(*this);
     }
 };
@@ -138,7 +138,7 @@ public:
     __CLR_OR_THIS_CALL bad_alloc() noexcept
         : exception("bad allocation", 1) {} // construct from message string with no memory allocation
 
-    virtual __CLR_OR_THIS_CALL ~bad_alloc() noexcept {}
+    __CLR_OR_THIS_CALL ~bad_alloc() noexcept override {}
 
 private:
     friend class bad_array_new_length;
@@ -147,7 +147,7 @@ private:
         : exception(_Message, 1) {} // construct from message string with no memory allocation
 
 protected:
-    virtual void __CLR_OR_THIS_CALL _Doraise() const override { // perform class-specific exception handling
+    void __CLR_OR_THIS_CALL _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 };

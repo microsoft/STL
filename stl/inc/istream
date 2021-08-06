@@ -69,7 +69,7 @@ public:
     __CLR_OR_THIS_CALL basic_istream(const basic_istream&) = delete;
     basic_istream& __CLR_OR_THIS_CALL operator=(const basic_istream&) = delete;
 
-    virtual __CLR_OR_THIS_CALL ~basic_istream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_istream() noexcept override {}
 
     using int_type = typename _Traits::int_type;
     using pos_type = typename _Traits::pos_type;
@@ -743,7 +743,7 @@ public:
     __CLR_OR_THIS_CALL basic_iostream(const basic_iostream&) = delete;
     basic_iostream& __CLR_OR_THIS_CALL operator=(const basic_iostream&) = delete;
 
-    virtual __CLR_OR_THIS_CALL ~basic_iostream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_iostream() noexcept override {}
 };
 
 #if defined(_DLL_CPPLIB)

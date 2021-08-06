@@ -161,7 +161,7 @@ public:
     }
 
 protected:
-    virtual int sync() override {
+    int sync() override {
         _Mybase::_Sync_recorded = true;
 
         if (_Mybase::_Emit_on_sync) {
@@ -172,7 +172,7 @@ protected:
         return 0;
     }
 
-    virtual int_type overflow(int_type _Current_elem) override {
+    int_type overflow(int_type _Current_elem) override {
         if (!_Wrapped) {
             return _Traits::eof();
         }
@@ -266,7 +266,7 @@ private:
         _STD swap(_Get_mutex(), _Right._Get_mutex());
     }
 
-    virtual bool _Do_emit() override {
+    bool _Do_emit() override {
         return emit();
     }
 

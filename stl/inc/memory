@@ -1062,7 +1062,7 @@ class bad_weak_ptr : public exception { // exception type for invalid use of exp
 public:
     bad_weak_ptr() noexcept {}
 
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
         return "bad_weak_ptr";
     }
@@ -1157,11 +1157,11 @@ public:
     explicit _Ref_count(_Ty* _Px) : _Ref_count_base(), _Ptr(_Px) {}
 
 private:
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         delete _Ptr;
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         delete this;
     }
 
@@ -1176,12 +1176,12 @@ public:
         : _Ref_count_base(), _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Px) {}
 
 #ifdef __EDG__ // TRANSITION, VSO-1292293
-    virtual ~_Ref_count_resource() noexcept override {} // TRANSITION, should be non-virtual
+    ~_Ref_count_resource() noexcept override {} // TRANSITION, should be non-virtual
 #else // ^^^ workaround / no workaround vvv
-    virtual ~_Ref_count_resource() noexcept override = default; // TRANSITION, should be non-virtual
+    ~_Ref_count_resource() noexcept override = default; // TRANSITION, should be non-virtual
 #endif // ^^^ no workaround ^^^
 
-    virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
+    void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
         if (_Typeid == typeid(_Dx)) {
             return const_cast<_Dx*>(_STD addressof(_Mypair._Get_first()));
@@ -1194,11 +1194,11 @@ public:
     }
 
 private:
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         _Mypair._Get_first()(_Mypair._Myval2);
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         delete this;
     }
 
@@ -1215,12 +1215,12 @@ public:
           _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _One_then_variadic_args_t{}, _Ax, _Px) {}
 
 #ifdef __EDG__ // TRANSITION, VSO-1292293
-    virtual ~_Ref_count_resource_alloc() noexcept override {} // TRANSITION, should be non-virtual
+    ~_Ref_count_resource_alloc() noexcept override {} // TRANSITION, should be non-virtual
 #else // ^^^ workaround / no workaround vvv
-    virtual ~_Ref_count_resource_alloc() noexcept override = default; // TRANSITION, should be non-virtual
+    ~_Ref_count_resource_alloc() noexcept override = default; // TRANSITION, should be non-virtual
 #endif // ^^^ no workaround ^^^
 
-    virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
+    void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
         if (_Typeid == typeid(_Dx)) {
             return const_cast<_Dx*>(_STD addressof(_Mypair._Get_first()));
@@ -1235,11 +1235,11 @@ public:
 private:
     using _Myalty = _Rebind_alloc_t<_Alloc, _Ref_count_resource_alloc>;
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         _Mypair._Get_first()(_Mypair._Myval2._Myval2);
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         _Myalty _Al = _Mypair._Myval2._Get_first();
         this->~_Ref_count_resource_alloc();
         _Deallocate_plain(_Al, this);
@@ -2055,7 +2055,7 @@ public:
         }
     }
 
-    virtual ~_Ref_count_obj2() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_obj2() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage._Value was already destroyed in _Destroy
 
         // N4849 [class.dtor]/7:
@@ -2068,11 +2068,11 @@ public:
     };
 
 private:
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         _Destroy_in_place(_Storage._Value);
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         delete this;
     }
 };
@@ -2319,17 +2319,17 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    virtual ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Ty is trivially destructible
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         // nothing to do, _Ty is trivially destructible
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         this->~_Ref_count_unbounded_array();
         _Deallocate_flexible_array(this);
     }
@@ -2367,17 +2367,17 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    virtual ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage was already destroyed in _Destroy
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         _Reverse_destroy_multidimensional_n(_Get_ptr(), _Size);
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         this->~_Ref_count_unbounded_array();
         _Deallocate_flexible_array(this);
     }
@@ -2406,17 +2406,17 @@ public:
     };
 
 private:
-    virtual ~_Ref_count_bounded_array() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_bounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage was already destroyed in _Destroy
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         _Destroy_in_place(_Storage); // not _Storage._Value, see N4849 [expr.prim.id.dtor]
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         delete this;
     }
 };
@@ -2492,17 +2492,17 @@ public:
     };
 
 private:
-    virtual ~_Ref_count_obj_alloc3() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_obj_alloc3() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         allocator_traits<_Rebound>::destroy(this->_Get_val(), _STD addressof(_Storage._Value));
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         _Rebind_alloc_t<_Alloc, _Ref_count_obj_alloc3> _Al(this->_Get_val());
         this->~_Ref_count_obj_alloc3();
         _Deallocate_plain(_Al, this);
@@ -2680,19 +2680,19 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    virtual ~_Ref_count_unbounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_unbounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         if constexpr (!conjunction_v<is_trivially_destructible<_Item>, _Uses_default_destroy<_Rebound, _Item*>>) {
             _Reverse_destroy_multidimensional_n_al(_Get_ptr(), _Size, this->_Get_val());
         }
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         constexpr size_t _Align = alignof(_Ref_count_unbounded_array_alloc);
         using _Storage          = _Alignas_storage_unit<_Align>;
 
@@ -2741,19 +2741,19 @@ public:
     };
 
 private:
-    virtual ~_Ref_count_bounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_bounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         if constexpr (!conjunction_v<is_trivially_destructible<_Item>, _Uses_default_destroy<_Rebound, _Item*>>) {
             _Reverse_destroy_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, this->_Get_val());
         }
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         _Rebind_alloc_t<_Alloc, _Ref_count_bounded_array_alloc> _Al(this->_Get_val());
         this->~_Ref_count_bounded_array_alloc();
         _Deallocate_plain(_Al, this);

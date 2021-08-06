@@ -132,11 +132,11 @@ public:
             return static_cast<size_t>(-1);
         }
 
-        virtual void __CLR_OR_THIS_CALL _Incref() noexcept override { // increment use count
+        void __CLR_OR_THIS_CALL _Incref() noexcept override { // increment use count
             _MT_INCR(_Myrefs);
         }
 
-        virtual _Facet_base* __CLR_OR_THIS_CALL _Decref() noexcept override { // decrement use count
+        _Facet_base* __CLR_OR_THIS_CALL _Decref() noexcept override { // decrement use count
             if (_MT_DECR(_Myrefs) == 0) {
                 return this;
             }
@@ -152,7 +152,7 @@ public:
             : _Myrefs(static_cast<_Atomic_counter_t>(_Initrefs)) // non-atomic initialization
         {}
 
-        virtual __CLR_OR_THIS_CALL ~facet() noexcept override {}
+        __CLR_OR_THIS_CALL ~facet() noexcept override {}
 
     public:
         __CLR_OR_THIS_CALL facet(const facet&) = delete;
@@ -721,11 +721,11 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
-    virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
+    bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
         // return true if conversions never change input (from codecvt)
         return is_same_v<_Byte, _Elem>;
     }
@@ -908,7 +908,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo&) {} // initialize
 
@@ -1114,12 +1114,12 @@ protected:
         return _Codecvt_do_length(*this, _State, _First1, _Last1, _Count);
     }
 
-    virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
+    bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
         // return true if conversions never change input
         return false;
     }
 
-    virtual int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
+    int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
         // return maximum length required for a conversion
 
         if ((_Mode & _Consume_header) != 0) {
@@ -1133,7 +1133,7 @@ protected:
         return 6; // 6-byte max input sequence, no 3-byte header
     }
 
-    virtual int do_encoding() const noexcept override {
+    int do_encoding() const noexcept override {
         return 0; // 0 => varying length
     }
 
@@ -1207,7 +1207,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo&) {} // initialize
 
@@ -1356,17 +1356,17 @@ protected:
         return _Codecvt_do_length(*this, _State, _First1, _Last1, _Count);
     }
 
-    virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
+    bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
         // return true if conversions never change input
         return false;
     }
 
-    virtual int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
+    int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
         // return maximum length required for a conversion
         return (_Mode & (_Consume_header | _Generate_header)) != 0 ? 9 : 6;
     }
 
-    virtual int __CLR_OR_THIS_CALL do_encoding() const noexcept override {
+    int __CLR_OR_THIS_CALL do_encoding() const noexcept override {
         // return length of code sequence (from codecvt)
         return (_Mode & (_Consume_header | _Generate_header)) != 0 ? -1
                                                                    : 0; // -1 => state dependent, 0 => varying length
@@ -1444,7 +1444,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept override = default;
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override = default;
 
     virtual result __CLR_OR_THIS_CALL do_in(mbstate_t&, const char8_t* _First1, const char8_t* _Last1,
         const char8_t*& _Mid1, char16_t* _First2, char16_t* _Last2, char16_t*& _Mid2) const {
@@ -1663,17 +1663,17 @@ protected:
         return static_cast<int>((_STD min) (_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
-    virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
+    bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
         // return true if conversions never change input
         return false;
     }
 
-    virtual int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
+    int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
         // return maximum length required for a conversion
         return 4; // 4-byte max input sequence
     }
 
-    virtual int __CLR_OR_THIS_CALL do_encoding() const noexcept override {
+    int __CLR_OR_THIS_CALL do_encoding() const noexcept override {
         // return length of code sequence (from codecvt)
         return 0; // 0 => varying length
     }
@@ -1726,7 +1726,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept override = default;
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override = default;
 
     virtual result __CLR_OR_THIS_CALL do_in(mbstate_t&, const char8_t* _First1, const char8_t* _Last1,
         const char8_t*& _Mid1, char32_t* _First2, char32_t* _Last2, char32_t*& _Mid2) const {
@@ -1906,17 +1906,17 @@ protected:
         return static_cast<int>((_STD min) (_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
-    virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
+    bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
         // return true if conversions never change input
         return false;
     }
 
-    virtual int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
+    int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
         // return maximum length required for a conversion
         return 4;
     }
 
-    virtual int __CLR_OR_THIS_CALL do_encoding() const noexcept override {
+    int __CLR_OR_THIS_CALL do_encoding() const noexcept override {
         // return length of code sequence (from codecvt)
         return 0; // varying length
     }
@@ -1977,7 +1977,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo& _Lobj) { // initialize from _Lobj
         _Cvt = _Lobj._Getcvt();
@@ -2103,17 +2103,17 @@ protected:
         return static_cast<int>((_STD min) (_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
-    virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
+    bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
         // return true if conversions never change input
         return false;
     }
 
-    virtual int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
+    int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
         // return maximum length required for a conversion (from codecvt)
         return static_cast<int>(_Cvt._Mbcurmax);
     }
 
-    virtual int __CLR_OR_THIS_CALL do_encoding() const noexcept override {
+    int __CLR_OR_THIS_CALL do_encoding() const noexcept override {
         // return length of code sequence (from codecvt)
         return _Cvt._Mbcurmax == 1; // 0 => varying length, 1 => fixed length
     }
@@ -2177,7 +2177,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo& _Lobj) { // initialize from _Lobj
         _Cvt = _Lobj._Getcvt();
@@ -2305,17 +2305,17 @@ protected:
         return static_cast<int>((_STD min) (_First1 - _Old_first1, ptrdiff_t{INT_MAX}));
     }
 
-    virtual bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
+    bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
         // return true if conversions never change input
         return false;
     }
 
-    virtual int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
+    int __CLR_OR_THIS_CALL do_max_length() const noexcept override {
         // return maximum length required for a conversion (from codecvt)
         return static_cast<int>(_Cvt._Mbcurmax);
     }
 
-    virtual int __CLR_OR_THIS_CALL do_encoding() const noexcept override {
+    int __CLR_OR_THIS_CALL do_encoding() const noexcept override {
         // return length of code sequence (from codecvt)
         return _Cvt._Mbcurmax == 1u; // 0 => varying length, 1 => fixed length
     }
@@ -2344,7 +2344,7 @@ public:
         : codecvt<_Elem, _Byte, _Statype>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~codecvt_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~codecvt_byname() noexcept override {}
 };
 
 // CTYPE CODE BITS
@@ -2378,7 +2378,7 @@ struct _CRTIMP2_PURE_IMPORT ctype_base : locale::facet { // base for ctype
 
     __CLR_OR_THIS_CALL ctype_base(size_t _Refs = 0) : locale::facet(_Refs) {}
 
-    __CLR_OR_THIS_CALL ~ctype_base() noexcept {}
+    __CLR_OR_THIS_CALL ~ctype_base() noexcept override {}
 };
 
 #undef _XA
@@ -2476,7 +2476,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~ctype() noexcept {
+    __CLR_OR_THIS_CALL ~ctype() noexcept override {
         if (_Ctype._Delfl) {
             _CSTD free(const_cast<short*>(_Ctype._Table));
         }
@@ -2745,7 +2745,7 @@ public:
     _PGLOBAL static const size_t table_size = 1 << CHAR_BIT; // size of ctype mapping table, typically 256
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~ctype() noexcept {
+    __CLR_OR_THIS_CALL ~ctype() noexcept override {
         _Tidy();
     }
 
@@ -2901,7 +2901,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~ctype() noexcept {
+    __CLR_OR_THIS_CALL ~ctype() noexcept override {
         if (_Ctype._Delfl) {
             _CSTD free(const_cast<short*>(_Ctype._Table));
         }
@@ -3103,7 +3103,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~ctype() noexcept {
+    __CLR_OR_THIS_CALL ~ctype() noexcept override {
         if (_Ctype._Delfl) {
             _CSTD free(const_cast<short*>(_Ctype._Table));
         }
@@ -3240,7 +3240,7 @@ public:
         : ctype<_Elem>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~ctype_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~ctype_byname() noexcept override {}
 };
 
 // FUNCTION TEMPLATE _Getloctxt
