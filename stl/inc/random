@@ -27,7 +27,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma warning(disable : 4127) // conditional expression is constant
 
 _STD_BEGIN
-// TYPE ASSERT MACROS
 #define _RNG_PROHIBIT_CHAR(_CheckedType)               \
     static_assert(!_Is_character<_CheckedType>::value, \
         "note: char, signed char, unsigned char, char8_t, int8_t, and uint8_t are not allowed")
@@ -50,7 +49,6 @@ _STD_BEGIN
         "unsigned short, unsigned int, unsigned long, or unsigned long long");                                 \
     _RNG_PROHIBIT_CHAR(_CheckedType)
 
-// ALIAS TEMPLATE _Enable_if_seed_seq_t
 template <class _Seed_seq, class _Self, class _Engine = _Self>
 using _Enable_if_seed_seq_t = enable_if_t<
     !is_convertible_v<remove_cv_t<_Seed_seq>,
@@ -58,18 +56,15 @@ using _Enable_if_seed_seq_t = enable_if_t<
             result_type> && !is_same_v<remove_cv_t<_Seed_seq>, _Self> && !is_same_v<remove_cv_t<_Seed_seq>, _Engine>,
     int>;
 
-// CONSTANTS
 _INLINE_VAR constexpr long double _Pi    = 3.14159265358979323846264338327950288L;
 _INLINE_VAR constexpr long double _Exp1  = 2.71828182845904523536028747135266250L;
 _INLINE_VAR constexpr long double _Two32 = 4294967296.0L;
 _INLINE_VAR constexpr long double _Two31 = 2147483648.0L;
 
-// HELPER FUNCTIONS
 _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float);
 _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double);
 _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double);
 
-// I/O HELPERS FOR FLOATING-POINT VALUES
 _INLINE_VAR constexpr int _Nwords = 4;
 
 template <class _Elem, class _Traits>
@@ -109,7 +104,7 @@ basic_istream<_Elem, _Traits>& _Read(
 template <class _Elem, class _Traits, class _Ty>
 basic_istream<_Elem, _Traits>& _In(basic_istream<_Elem, _Traits>& _Is, _Ty& _Dx) { // read from stream
     long double _Vx;
-    _Ty _Max = (numeric_limits<_Ty>::max)();
+    _Ty _Max = (numeric_limits<_Ty>::max) ();
     _Read(_Is, _Vx);
     if (_CSTD fabsl(_Vx) <= _Max) {
         _Dx = static_cast<_Ty>(_Vx);
@@ -148,7 +143,6 @@ private:
     basic_istream<_Elem, _Traits>& _Str;
 };
 
-// CLASS seed_seq
 class seed_seq { // standard sequence of seed values
 public:
     using result_type = unsigned int;
@@ -244,7 +238,6 @@ private:
     vector<result_type> _Myvec;
 };
 
-// FUNCTION TEMPLATE generate_canonical
 template <class _Real, size_t _Bits, class _Gen>
 _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(generate_canonical, _Real);
@@ -252,8 +245,8 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     const size_t _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
     const size_t _Minbits = _Digits < _Bits ? _Digits : _Bits;
 
-    const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
-    const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
+    const _Real _Gxmin = static_cast<_Real>((_Gx.min) ());
+    const _Real _Gxmax = static_cast<_Real>((_Gx.max) ());
     const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
 
     const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Minbits) / _STD log2(_Rx)));
@@ -272,7 +265,6 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
 
 #define _NRAND(eng, resty) (_STD generate_canonical<resty, static_cast<size_t>(-1)>(eng))
 
-// CLASS TEMPLATE linear_congruential_engine
 _INLINE_VAR constexpr int _MP_len = 5;
 using _MP_arr                     = uint64_t[_MP_len];
 
@@ -462,7 +454,6 @@ private:
     result_type _Prev;
 };
 
-// CLASS TEMPLATE linear_congruential
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 class linear_congruential { // linear congruential random engine
 public:
@@ -555,7 +546,6 @@ private:
     _Uint _Prev;
 };
 
-// CLASS TEMPLATE _Circ_buf FOR subtract_with_carry, subtract_with_carry_01, AND mersenne_twister
 template <class _Ty, size_t _Nw>
 struct _Circ_buf { // holds historical values for generators
     _Ty _At(size_t _Ix) const {
@@ -612,7 +602,6 @@ struct _Circ_buf { // holds historical values for generators
     _Ty _Ax[2 * _Nw];
 };
 
-// CLASS TEMPLATE _Swc_base (subtract_with_carry, subtract_with_carry_01)
 template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
 class _Swc_base : public _Circ_buf<_Ty, _Rx> { // common bits of subtract_with_carry/_01
 public:
@@ -761,7 +750,6 @@ const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::short_lag;
 template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
 const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::long_lag;
 
-// STRUCT TEMPLATE _Swc_traits
 template <class _Ty, _Ty _Mx, size_t _Nw>
 struct _Swc_traits { // traits for subtract_with_carry generator
     using _Cy_t   = int;
@@ -838,7 +826,6 @@ struct _Swc_traits { // traits for subtract_with_carry generator
     }
 };
 
-// CLASS TEMPLATE subtract_with_carry
 template <class _Ty, _Ty _Mx, size_t _Sx, size_t _Rx>
 class subtract_with_carry
     : public _Swc_base<_Ty, _Sx, _Rx, _Swc_traits<_Ty, _Mx, _Rx>> { // subtract_with_carry generator
@@ -857,7 +844,6 @@ public:
     subtract_with_carry(_Gen& _Gx) : _Mybase(_Gx) {}
 };
 
-// CLASS TEMPLATE subtract_with_carry_engine
 template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class subtract_with_carry_engine : public subtract_with_carry<_Ty, (_Ty{1} << (_Wx - 1)) << 1, _Sx, _Rx> {
     // subtract_with_carry generator
@@ -925,7 +911,6 @@ public:
 };
 
 #if _HAS_TR1_NAMESPACE
-// STRUCT TEMPLATE _Swc_01_traits
 template <class _Ty, size_t _Wx, size_t _Rx>
 struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     using _Cy_t   = _Ty;
@@ -997,7 +982,6 @@ const _Ty _Swc_01_traits<_Ty, _Wx, _Rx>::_Max = 1;
 template <class _Ty, size_t _Wx, size_t _Rx>
 const _Ty _Swc_01_traits<_Ty, _Wx, _Rx>::_Scale1 = static_cast<_Ty>(_CSTD ldexp(1.0, _Wx % 32));
 
-// CLASS TEMPLATE subtract_with_carry_01
 template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class _DEPRECATE_TR1_NAMESPACE subtract_with_carry_01
     : public _Swc_base<_Ty, _Sx, _Rx, _Swc_01_traits<_Ty, _Wx, _Rx>> { // subtract_with_carry_01 generator
@@ -1021,7 +1005,6 @@ _STL_RESTORE_DEPRECATED_WARNING
 
 #endif // _HAS_TR1_NAMESPACE
 
-// CLASS TEMPLATE mersenne_twister
 template <class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx, _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
 class mersenne_twister : public _Circ_buf<_Ty, _Nx> { // mersenne twister generator
 public:
@@ -1201,7 +1184,6 @@ basic_ostream<_Elem, _S_Traits>& operator<<(basic_ostream<_Elem, _S_Traits>& _Os
     return _Eng._Write(_Ostr);
 }
 
-// CLASS TEMPLATE mersenne_twister_engine
 template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx, size_t _Sx, _Ty _Bx,
     size_t _Tx, _Ty _Cx, size_t _Lx, _Ty _Fx>
 class mersenne_twister_engine : public mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx> {
@@ -1286,7 +1268,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE discard_block
 template <class _Engine, int _Px, int _Rx>
 class discard_block { // discard_block compound engine
 public:
@@ -1326,11 +1307,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const {
-        return (_Eng.min)();
+        return (_Eng.min) ();
     }
 
     _NODISCARD result_type(max)() const {
-        return (_Eng.max)();
+        return (_Eng.max) ();
     }
 
     _NODISCARD result_type operator()() {
@@ -1400,7 +1381,6 @@ basic_ostream<_Elem, _Traits>& operator<<(
     return _Eng._Write(_Ostr);
 }
 
-// CLASS TEMPLATE discard_block_engine
 template <class _Engine, size_t _Px, size_t _Rx>
 class discard_block_engine : public discard_block<_Engine, _Px, _Rx> { // discard_block_engine compound engine
 public:
@@ -1421,15 +1401,14 @@ public:
     explicit discard_block_engine(_Seed_seq& _Seq) : _Mybase(_Seq) {}
 
     _NODISCARD static constexpr typename _Engine::result_type(min)() {
-        return (_Engine::min)();
+        return (_Engine::min) ();
     }
 
     _NODISCARD static constexpr typename _Engine::result_type(max)() {
-        return (_Engine::max)();
+        return (_Engine::max) ();
     }
 };
 
-// CLASS TEMPLATE independent_bits_engine
 template <class _Engine, size_t _Wx, class _UIntType>
 class independent_bits_engine { // independent_bits_engine compound engine
 public:
@@ -1496,7 +1475,7 @@ public:
 
         for (; _Idx < _Nx0; ++_Idx) { // pack _Wx0-bit values
             for (;;) { // get a small enough value
-                _Val = _Eng() - (_Engine::min)();
+                _Val = _Eng() - (_Engine::min) ();
                 if (_Val <= _Yx0) {
                     break;
                 }
@@ -1507,7 +1486,7 @@ public:
         _Mask = _Mask << 1 | 1;
         for (; _Idx < _Nx; ++_Idx) { // pack _Wx0+1-bit values
             for (;;) { // get a small enough value
-                _Val = _Eng() - (_Engine::min)();
+                _Val = _Eng() - (_Engine::min) ();
                 if (_Val <= _Yx1) {
                     break;
                 }
@@ -1536,7 +1515,7 @@ public:
 private:
     void _Init() { // compute values for operator()
         size_t _Mx = 0;
-        _Eres _Rx  = (_Engine::max)() - (_Engine::min)() + 1;
+        _Eres _Rx  = (_Engine::max) () - (_Engine::min) () + 1;
 
         _Eres _Tmp = _Rx;
         if (_Tmp == 0) { // all bits used, make _Rx finite
@@ -1593,7 +1572,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Eng._Write(_Ostr);
 }
 
-// CLASS TEMPLATE shuffle_order_engine
 template <class _Engine, size_t _Kx>
 class shuffle_order_engine { // shuffle_order_engine compound engine
 public:
@@ -1646,15 +1624,15 @@ public:
     }
 
     _NODISCARD static constexpr result_type(min)() {
-        return (_Engine::min)();
+        return (_Engine::min) ();
     }
 
     _NODISCARD static constexpr result_type(max)() {
-        return (_Engine::max)();
+        return (_Engine::max) ();
     }
 
     _NODISCARD result_type operator()() {
-        size_t _Idx = static_cast<size_t>(static_cast<double>(_Yx - (_Eng.min)()) * _Scale);
+        size_t _Idx = static_cast<size_t>(static_cast<double>(_Yx - (_Eng.min) ()) * _Scale);
 
         _Yx        = _Arr[_Idx];
         _Arr[_Idx] = _Eng();
@@ -1695,7 +1673,7 @@ private:
 
         _Yx = _Eng();
         _Scale =
-            static_cast<double>(_Kx) / (static_cast<double>((_Eng.max)()) - static_cast<double>((_Eng.min)()) + 1.0);
+            static_cast<double>(_Kx) / (static_cast<double>((_Eng.max) ()) - static_cast<double>((_Eng.min) ()) + 1.0);
     }
 
     _Engine _Eng; // the stored engine
@@ -1728,7 +1706,6 @@ basic_ostream<_Elem, _Traits>& operator<<(
     return _Eng._Write(_Ostr);
 }
 
-// CLASS TEMPLATE uniform_int
 template <class _Ty = int>
 class uniform_int { // uniform integer distribution
 public:
@@ -1882,7 +1859,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE uniform_int_distribution
 template <class _Ty = int>
 class uniform_int_distribution : public uniform_int<_Ty> { // uniform integer distribution
 public:
@@ -1895,17 +1871,17 @@ public:
     struct param_type : _Mypbase { // parameter package
         using distribution_type = uniform_int_distribution;
 
-        param_type() : _Mypbase(0, (numeric_limits<_Ty>::max)()) {}
+        param_type() : _Mypbase(0, (numeric_limits<_Ty>::max) ()) {}
 
-        explicit param_type(result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max)())
+        explicit param_type(result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max) ())
             : _Mypbase(_Min0, _Max0) {}
 
         param_type(const _Mypbase& _Right) : _Mypbase(_Right) {}
     };
 
-    uniform_int_distribution() : _Mybase(0, (numeric_limits<_Ty>::max)()) {}
+    uniform_int_distribution() : _Mybase(0, (numeric_limits<_Ty>::max) ()) {}
 
-    explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max)()) : _Mybase(_Min0, _Max0) {}
+    explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max) ()) : _Mybase(_Min0, _Max0) {}
 
     explicit uniform_int_distribution(const param_type& _Par0) : _Mybase(_Par0) {}
 };
@@ -1920,7 +1896,6 @@ _NODISCARD bool operator!=(const uniform_int_distribution<_Ty>& _Left, const uni
     return !(_Left == _Right);
 }
 
-// CLASS bernoulli_distribution
 class bernoulli_distribution { // class for bernoulli distribution
 public:
     using result_type = bool;
@@ -2038,7 +2013,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// FUNCTION TEMPLATE _Float_upper_bound
 
 // Returns smallest _Flt such that static_cast<_Ty>(_Result) > _Val.
 // First truncate to largest _Flt <= _Val, then add ceil(ulp).
@@ -2077,7 +2051,6 @@ _NODISCARD _Flt _Float_upper_bound(_Ty _Val) {
     }
 }
 
-// CLASS TEMPLATE geometric_distribution
 template <class _Ty = int>
 class geometric_distribution { // geometric distribution
 public:
@@ -2143,7 +2116,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return (numeric_limits<result_type>::max) ();
     }
 
     void reset() {} // clear internal state
@@ -2176,7 +2149,7 @@ private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         using _Uty = make_unsigned_t<_Ty>;
-        constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
+        constexpr auto _Ty_max{(numeric_limits<_Ty>::max) ()};
         const auto _Ty1_max{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Ty_max))};
 
         _Ty1 _Val;
@@ -2211,7 +2184,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE poisson_distribution AND HELPER
 template <class _Ty = int>
 class _Small_poisson_distribution { // poisson distribution with small mean
 public:
@@ -2310,7 +2282,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return (numeric_limits<result_type>::max) ();
     }
 
     void reset() {} // clear internal state
@@ -2348,7 +2320,7 @@ private:
 
         for (;;) { // generate and reject
             using _Uty = make_unsigned_t<_Ty>;
-            constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
+            constexpr auto _Ty_max{(numeric_limits<_Ty>::max) ()};
             const auto _Ty1_max{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Ty_max))};
 
             _Ty _Res;
@@ -2394,7 +2366,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE binomial_distribution
 template <class _Ty = int>
 class binomial_distribution { // binomial distribution
 public:
@@ -2540,7 +2511,7 @@ private:
             // inequality gives -1+p*t >= -(1-p)^t, so 1 - (1-p)^t <= p*t = mean. For the other bound, 1-(1-p)^t =
             // 1-(1-p)(1-mean/t)^(t-1) <= 1-(1-p)(1-1/t)^(t-1) <= 1-(1-p)/e.
             const _Ty1 _Ub =
-                (_STD min)(_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Pp + _Ty1{6.32120558828557678e-1});
+                (_STD min) (_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Pp + _Ty1{6.32120558828557678e-1});
             if (_Rand > _Ub) {
                 _Res = _Ty{0};
             } else {
@@ -2601,7 +2572,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE uniform_real
 template <class _Ty = double>
 class uniform_real { // uniform real distribution
 public:
@@ -2635,7 +2605,7 @@ public:
         }
 
         void _Init(_Ty _Min0, _Ty _Max0) { // set internal state
-            _STL_ASSERT(_Min0 <= _Max0 && (0 <= _Min0 || _Max0 <= _Min0 + (numeric_limits<_Ty>::max)()),
+            _STL_ASSERT(_Min0 <= _Max0 && (0 <= _Min0 || _Max0 <= _Min0 + (numeric_limits<_Ty>::max) ()),
                 "invalid min and max arguments for uniform_real");
             _Min = _Min0;
             _Max = _Max0;
@@ -2725,7 +2695,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE uniform_real_distribution
 template <class _Ty = double>
 class uniform_real_distribution : public uniform_real<_Ty> { // uniform real distribution
 public:
@@ -2762,7 +2731,6 @@ _NODISCARD bool operator!=(const uniform_real_distribution<_Ty>& _Left, const un
     return !(_Left == _Right);
 }
 
-// CLASS TEMPLATE exponential_distribution
 template <class _Ty = double>
 class exponential_distribution { // exponential distribution
 public:
@@ -2884,7 +2852,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE normal_distribution
 template <class _Ty = double>
 class normal_distribution { // normal distribution
 public:
@@ -3036,7 +3003,7 @@ private:
                 // Bad _Sx value! Very small values will overflow log(_Sx) / _Sx.
                 // Generate a new value based on scaling method.
                 const _Ty _Ln2{_Ty{0.69314718055994530941723212145818}};
-                const _Ty _Maxabs{(_STD max)(_STD abs(_Vx1), _STD abs(_Vx2))};
+                const _Ty _Maxabs{(_STD max) (_STD abs(_Vx1), _STD abs(_Vx2))};
                 const int _ExpMax{_STD ilogb(_Maxabs)};
                 _Vx1   = _STD scalbn(_Vx1, -_ExpMax);
                 _Vx2   = _STD scalbn(_Vx2, -_ExpMax);
@@ -3081,7 +3048,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE gamma_distribution
 template <class _Ty = double>
 class gamma_distribution { // gamma distribution
 public:
@@ -3277,7 +3243,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE weibull_distribution
 template <class _Ty = double>
 class weibull_distribution { // weibull distribution
 public:
@@ -3414,7 +3379,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE extreme_value_distribution
 template <class _Ty = double>
 class extreme_value_distribution { // extreme value distribution
 public:
@@ -3552,7 +3516,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE lognormal_distribution
 template <class _Ty = double>
 class lognormal_distribution { // lognormal_distribution
 public:
@@ -3688,7 +3651,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE chi_squared_distribution
 template <class _Ty = double>
 class chi_squared_distribution { // chi squared distribution
 public:
@@ -3810,7 +3772,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE cauchy_distribution
 template <class _Ty = double>
 class cauchy_distribution { // Cauchy distribution
 public:
@@ -3946,7 +3907,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE _Beta_distribution
 template <class _Ty = double>
 class _Beta_distribution { // beta distribution
 public:
@@ -4006,7 +3966,6 @@ private:
     _Ty _Bx;
 };
 
-// CLASS TEMPLATE fisher_f_distribution
 template <class _Ty = double>
 class fisher_f_distribution { // fisher_f distribution
 public:
@@ -4154,7 +4113,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE student_t_distribution
 template <class _Ty = double>
 class student_t_distribution { // student_t distribution
 public:
@@ -4291,7 +4249,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE negative_binomial_distribution
 template <class _Ty = int>
 class negative_binomial_distribution { // negative binomial distribution
 public:
@@ -4366,7 +4323,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max)();
+        return (numeric_limits<result_type>::max) ();
     }
 
     void reset() {} // clear internal state
@@ -4437,7 +4394,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE discrete_distribution
 template <class _Ty = int>
 class discrete_distribution { // discrete integer distribution
 public:
@@ -4634,7 +4590,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr, _Dist._Par);
 }
 
-// CLASS TEMPLATE piecewise_constant_distribution
 template <class _Ty = double>
 class piecewise_constant_distribution
     : public discrete_distribution<size_t> { // piecewise constant floating-point distribution
@@ -4827,7 +4782,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// CLASS TEMPLATE piecewise_linear_distribution
 template <class _Ty = double>
 class piecewise_linear_distribution
     : public discrete_distribution<size_t> { // piecewise linear floating-point distribution
@@ -5076,7 +5030,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Dist._Write(_Ostr);
 }
 
-// PREDEFINED GENERATORS
 using minstd_rand0 = linear_congruential_engine<unsigned int, 16807, 0, 2147483647>;
 using minstd_rand  = linear_congruential_engine<unsigned int, 48271, 0, 2147483647>;
 
@@ -5107,7 +5060,6 @@ using knuth_b       = shuffle_order_engine<minstd_rand0, 256>;
 
 using default_random_engine = mt19937;
 
-// CLASS random_device
 
 _CRTIMP2_PURE unsigned int __CLRCALL_PURE_OR_CDECL _Random_device();
 

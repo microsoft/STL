@@ -16,7 +16,7 @@ void test_sqrt(const rounding_mode mode) {
 #if FP_PRESET_FAST
     constexpr int ulp_tolerance = 4;
 #else // ^^^ fp:fast / not fp:fast vvv
-    const int ulp_tolerance = is_directed_rounding_mode(mode) ? 3 : 2;
+    const int ulp_tolerance                          = is_directed_rounding_mode(mode) ? 3 : 2;
 #endif // ^^^ not fp:fast ^^^
 
     const auto check_result = [&](const auto& result, const auto& test_case) {
