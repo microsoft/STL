@@ -89,10 +89,6 @@ struct _Char_traits { // properties of a string or stream element
             // If _First1 is in the src range, we need a backward loop.
             // Otherwise, the forward loop works (even if the back of dest overlaps the front of src).
 
-            if (_First1 == _First2) {
-                return _First1; // Self-assignment; either loop would work, but returning immediately is faster.
-            }
-
             // Usually, we would compare pointers with less-than, even though they could belong to different arrays.
             // However, we're not allowed to do that during constant evaluation, so we need a linear scan for equality.
             bool _Loop_forward = true;
