@@ -1135,12 +1135,12 @@ public:
     }
 
 #if _USE_FUNCTION_INT_0_SFINAE
-    template <class _Fx, typename _Mybase::template _Enable_if_callable_t<_Fx&, function> = 0>
+    template <class _Fx, typename _Mybase::template _Enable_if_callable_t<decay_t<_Fx>&, function> = 0>
 #else // ^^^ _USE_FUNCTION_INT_0_SFINAE // !_USE_FUNCTION_INT_0_SFINAE vvv
-    template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<_Fx&, function>>
+    template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<decay_t<_Fx>&, function>>
 #endif // _USE_FUNCTION_INT_0_SFINAE
-    function(_Fx _Func) {
-        this->_Reset(_STD move(_Func));
+    function(_Fx&& _Func) {
+        this->_Reset(_STD forward<_Fx>(_Func));
     }
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
