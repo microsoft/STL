@@ -187,10 +187,23 @@ namespace ranges {
 
         // a copied iterator doesn't point into a copied range, so cache values must not propagate via copy
         constexpr _Cached_position(const _Cached_position&) noexcept(is_nothrow_default_constructible_v<_It>) {}
-        constexpr _Cached_position& operator=(const _Cached_position&) noexcept(
-            is_nothrow_default_constructible_v<_It>) {
+        constexpr _Cached_position& operator=(const _Cached_position&) noexcept(noexcept(_Pos = _It{})) {
             _Pos    = _It{};
             _Cached = false;
+            return *this;
+        }
+
+        // a moved iterator doesn't point into a moved range, so cache values must not propagate via move;
+        // similarly, a cache value might not be valid for a moved-from view so clear move sources
+        constexpr _Cached_position(_Cached_position&& _Other) noexcept(noexcept(_Pos = _It{})) {
+            _Other._Pos    = _It{};
+            _Other._Cached = false;
+        }
+        constexpr _Cached_position& operator=(_Cached_position&& _Other) noexcept(noexcept(_Pos = _It{})) {
+            _Pos           = _It{};
+            _Cached        = false;
+            _Other._Pos    = _It{};
+            _Other._Cached = false;
             return *this;
         }
 
@@ -203,7 +216,7 @@ namespace ranges {
             return _Pos;
         }
 
-        _NODISCARD constexpr void _Set_cache(_Rng&, _It _Iter) noexcept(is_nothrow_move_assignable_v<_It>) {
+        constexpr void _Set_cache(_Rng&, _It _Iter) noexcept(is_nothrow_move_assignable_v<_It>) {
             _Pos    = _STD move(_Iter);
             _Cached = true;
         }
@@ -224,6 +237,14 @@ namespace ranges {
         _Cached_position(const _Cached_position&) = default;
         _Cached_position& operator=(const _Cached_position&) = default;
 
+        // Offsets are potentially invalidated by move, so source caches are invalidated after move
+        constexpr _Cached_position(_Cached_position&& _Other) noexcept
+            : _Off(_STD exchange(_Other._Off, range_difference_t<_Rng>{-1})) {}
+        constexpr _Cached_position& operator=(_Cached_position&& _Other) noexcept {
+            _Off = _STD exchange(_Other._Off, range_difference_t<_Rng>{-1});
+            return *this;
+        }
+
         _NODISCARD constexpr bool _Has_cache() const noexcept { // Is there a cached position?
             return _Off >= range_difference_t<_Rng>{0};
         }
@@ -233,7 +254,7 @@ namespace ranges {
             return _RANGES begin(_Range) + _Off;
         }
 
-        _NODISCARD constexpr void _Set_cache(_Rng& _Range, const _It& _Iter) noexcept(
+        constexpr void _Set_cache(_Rng& _Range, const _It& _Iter) noexcept(
             noexcept(_Off = _Iter - _RANGES begin(_Range))) {
             _Off = _Iter - _RANGES begin(_Range);
         }
