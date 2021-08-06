@@ -1157,7 +1157,7 @@ public:
     }
 
     _NODISCARD future<_Ty> get_future() {
-        return future<_Ty>(_MyPromise._Get_state_for_future(), _Nil());
+        return future<_Ty>(_MyPromise._Get_state_for_future(), _Nil{});
     }
 
     void set_value(const _Ty& _Val) {
@@ -1219,7 +1219,7 @@ public:
     }
 
     _NODISCARD future<_Ty&> get_future() {
-        return future<_Ty&>(_MyPromise._Get_state_for_future(), _Nil());
+        return future<_Ty&>(_MyPromise._Get_state_for_future(), _Nil{});
     }
 
     void set_value(_Ty& _Val) {
@@ -1273,7 +1273,7 @@ public:
     }
 
     _NODISCARD future<void> get_future() {
-        return future<void>(_MyPromise._Get_state_for_future(), _Nil());
+        return future<void>(_MyPromise._Get_state_for_future(), _Nil{});
     }
 
     void set_value() {
@@ -1365,7 +1365,7 @@ public:
     }
 
     _NODISCARD future<_Ret> get_future() {
-        return future<_Ret>(_MyPromise._Get_state_for_future(), _Nil());
+        return future<_Ret>(_MyPromise._Get_state_for_future(), _Nil{});
     }
 
     void operator()(_ArgTypes... _Args) {
@@ -1494,7 +1494,7 @@ _NODISCARD future<_Invoke_result_t<decay_t<_Fty>, decay_t<_ArgTypes>...>> async(
         _Get_associated_state<_Ret>(_Policy, _Fake_no_copy_callable_adapter<_Fty, _ArgTypes...>(
                                                  _STD forward<_Fty>(_Fnarg), _STD forward<_ArgTypes>(_Args)...)));
 
-    return future<_Ret>(_Pr._Get_state_for_future(), _Nil());
+    return future<_Ret>(_Pr._Get_state_for_future(), _Nil{});
 }
 
 template <class _Fty, class... _ArgTypes>
