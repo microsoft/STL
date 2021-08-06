@@ -15,7 +15,16 @@ struct Fn {
     void operator()() const {}
 };
 
-STATIC_ASSERT(!is_constructible_v<function<void()>, const Fn&>);
-STATIC_ASSERT(!is_constructible_v<function<void()>, Fn&&>);
+template <typename, typename...>
+struct detector : false_type {};
+
+template <typename T, typename... Args>
+struct detector<T, void_t<decltype(T(declval<Args>()...))>, Args...> : true_type {};
+
+template <typename Arg>
+using can_instantiate = detector<function<void()>, Arg>;
+
+STATIC_ASSERT(!can_instantiate<const Fn&>::value);
+STATIC_ASSERT(!can_instantiate<Fn&&>::value);
 
 int main() {} // COMPILE-ONLY
