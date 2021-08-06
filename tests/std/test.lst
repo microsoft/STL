@@ -179,7 +179,6 @@ tests\GH_001850_clog_tied_to_cout
 tests\GH_002039_byte_is_not_trivially_swappable
 tests\GH_002058_debug_iterator_race
 tests\LWG2597_complex_branch_cut
-tests\LWG2774_function_construction_vs_assignment
 tests\LWG3018_shared_ptr_function
 tests\P0019R8_atomic_ref
 tests\P0024R2_parallel_algorithms_adjacent_difference
