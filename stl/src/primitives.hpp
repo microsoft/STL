@@ -43,24 +43,24 @@ namespace Concurrency {
             stl_critical_section_vista& operator=(const stl_critical_section_vista&) = delete;
             ~stl_critical_section_vista()                                            = delete;
 
-            virtual void destroy() override {
+            void destroy() override {
                 DeleteCriticalSection(&_M_critical_section);
             }
 
-            virtual void lock() override {
+            void lock() override {
                 EnterCriticalSection(&_M_critical_section);
             }
 
-            virtual bool try_lock() override {
+            bool try_lock() override {
                 return TryEnterCriticalSection(&_M_critical_section) != 0;
             }
 
-            virtual bool try_lock_for(unsigned int) override {
+            bool try_lock_for(unsigned int) override {
                 // STL will call try_lock_for once again if this call will not succeed
                 return stl_critical_section_vista::try_lock();
             }
 
-            virtual void unlock() override {
+            void unlock() override {
                 LeaveCriticalSection(&_M_critical_section);
             }
 
@@ -82,25 +82,25 @@ namespace Concurrency {
             stl_condition_variable_vista(const stl_condition_variable_vista&) = delete;
             stl_condition_variable_vista& operator=(const stl_condition_variable_vista&) = delete;
 
-            virtual void destroy() override {}
+            void destroy() override {}
 
-            virtual void wait(stl_critical_section_interface* lock) override {
+            void wait(stl_critical_section_interface* lock) override {
                 if (!stl_condition_variable_vista::wait_for(lock, INFINITE)) {
                     std::terminate();
                 }
             }
 
-            virtual bool wait_for(stl_critical_section_interface* lock, unsigned int timeout) override {
+            bool wait_for(stl_critical_section_interface* lock, unsigned int timeout) override {
                 return SleepConditionVariableCS(&m_condition_variable,
                            static_cast<stl_critical_section_vista*>(lock)->native_handle(), timeout)
                     != 0;
             }
 
-            virtual void notify_one() override {
+            void notify_one() override {
                 WakeConditionVariable(&m_condition_variable);
             }
 
-            virtual void notify_all() override {
+            void notify_all() override {
                 WakeAllConditionVariable(&m_condition_variable);
             }
 
@@ -118,22 +118,22 @@ namespace Concurrency {
             stl_critical_section_win7(const stl_critical_section_win7&) = delete;
             stl_critical_section_win7& operator=(const stl_critical_section_win7&) = delete;
 
-            virtual void destroy() override {}
+            void destroy() override {}
 
-            virtual void lock() override {
+            void lock() override {
                 AcquireSRWLockExclusive(&m_srw_lock);
             }
 
-            virtual bool try_lock() override {
+            bool try_lock() override {
                 return __crtTryAcquireSRWLockExclusive(&m_srw_lock) != 0;
             }
 
-            virtual bool try_lock_for(unsigned int) override {
+            bool try_lock_for(unsigned int) override {
                 // STL will call try_lock_for once again if this call will not succeed
                 return stl_critical_section_win7::try_lock();
             }
 
-            virtual void unlock() override {
+            void unlock() override {
                 ReleaseSRWLockExclusive(&m_srw_lock);
             }
 
@@ -155,25 +155,25 @@ namespace Concurrency {
             stl_condition_variable_win7(const stl_condition_variable_win7&) = delete;
             stl_condition_variable_win7& operator=(const stl_condition_variable_win7&) = delete;
 
-            virtual void destroy() override {}
+            void destroy() override {}
 
-            virtual void wait(stl_critical_section_interface* lock) override {
+            void wait(stl_critical_section_interface* lock) override {
                 if (!stl_condition_variable_win7::wait_for(lock, INFINITE)) {
                     std::terminate();
                 }
             }
 
-            virtual bool wait_for(stl_critical_section_interface* lock, unsigned int timeout) override {
+            bool wait_for(stl_critical_section_interface* lock, unsigned int timeout) override {
                 return SleepConditionVariableSRW(&m_condition_variable,
                            static_cast<stl_critical_section_win7*>(lock)->native_handle(), timeout, 0)
                     != 0;
             }
 
-            virtual void notify_one() override {
+            void notify_one() override {
                 WakeConditionVariable(&m_condition_variable);
             }
 
-            virtual void notify_all() override {
+            void notify_all() override {
                 WakeAllConditionVariable(&m_condition_variable);
             }
 
