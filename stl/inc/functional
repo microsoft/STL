@@ -1140,6 +1140,11 @@ public:
     template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<decay_t<_Fx>&, function>>
 #endif // _USE_FUNCTION_INT_0_SFINAE
     function(_Fx&& _Func) {
+        // Per LWG-2774
+        static_assert(is_copy_constructible_v<decay_t<_Fx>>, "decay_t<F> shall be copy constructible");
+        // Per LWG-2774
+        static_assert(is_constructible_v<decay_t<_Fx>, _Fx>, "decay_t<F> shall be constructible with F");
+
         this->_Reset(_STD forward<_Fx>(_Func));
     }
 
