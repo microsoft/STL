@@ -18,39 +18,39 @@ template <typename T>
 struct soccc_allocator {
     using value_type = T;
 
-    _CONSTEXPR20_CONTAINER soccc_allocator() noexcept = default;
-    _CONSTEXPR20_CONTAINER explicit soccc_allocator(const int id_) noexcept : id(id_), soccc_generation(0) {}
-    _CONSTEXPR20_CONTAINER explicit soccc_allocator(const int id_, const int soccc_generation_) noexcept
+    constexpr soccc_allocator() noexcept = default;
+    constexpr explicit soccc_allocator(const int id_) noexcept : id(id_), soccc_generation(0) {}
+    constexpr explicit soccc_allocator(const int id_, const int soccc_generation_) noexcept
         : id(id_), soccc_generation(soccc_generation_) {}
     template <typename U>
-    _CONSTEXPR20_CONTAINER soccc_allocator(const soccc_allocator<U>& other) noexcept
+    constexpr soccc_allocator(const soccc_allocator<U>& other) noexcept
         : id(other.id), soccc_generation(other.soccc_generation) {}
-    _CONSTEXPR20_CONTAINER soccc_allocator(const soccc_allocator& other) noexcept
+    constexpr soccc_allocator(const soccc_allocator& other) noexcept
         : id(other.id + 1), soccc_generation(other.soccc_generation) {}
 
-    _CONSTEXPR20_CONTAINER soccc_allocator& operator=(const soccc_allocator&) noexcept {
+    constexpr soccc_allocator& operator=(const soccc_allocator&) noexcept {
         return *this;
     }
 
-    _CONSTEXPR20_CONTAINER soccc_allocator select_on_container_copy_construction() const noexcept {
+    constexpr soccc_allocator select_on_container_copy_construction() const noexcept {
         return soccc_allocator(id, soccc_generation + 1);
     }
 
     template <typename U>
-    _CONSTEXPR20_CONTAINER bool operator==(const soccc_allocator<U>&) const noexcept {
+    constexpr bool operator==(const soccc_allocator<U>&) const noexcept {
         return true;
     }
 
-    _CONSTEXPR20_CONTAINER T* allocate(const size_t n) {
+    constexpr T* allocate(const size_t n) {
         return allocator<T>{}.allocate(n);
     }
 
-    _CONSTEXPR20_CONTAINER void deallocate(T* const p, const size_t n) noexcept {
+    constexpr void deallocate(T* const p, const size_t n) noexcept {
         allocator<T>{}.deallocate(p, n);
     }
 
     template <class... Args>
-    _CONSTEXPR20_CONTAINER void construct(T* const p, Args&&... args) {
+    constexpr void construct(T* const p, Args&&... args) {
         construct_at(p, forward<Args>(args)...);
     }
 
@@ -60,7 +60,7 @@ struct soccc_allocator {
 
 using vec = vector<int, soccc_allocator<int>>;
 
-_CONSTEXPR20_CONTAINER bool test_interface() {
+constexpr bool test_interface() {
     { // constructors
 
         // Non allocator constructors
@@ -236,6 +236,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         static_assert(is_same_v<remove_const_t<decltype(cb2)>, vec::const_iterator>);
         assert(*cb2 == 0);
 
+#if !(defined(__EDG__) && defined(_M_X64)) // TRANSITION, VSO-1356637
         const auto e = range_constructed.end();
         static_assert(is_same_v<remove_const_t<decltype(e)>, vec::iterator>);
         assert(*prev(e) == 5);
@@ -247,6 +248,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const auto ce2 = const_range_constructed.end();
         static_assert(is_same_v<remove_const_t<decltype(ce2)>, vec::const_iterator>);
         assert(*prev(ce2) == 5);
+#endif // TRANSITION, VSO-1356637
 
         const auto rb = range_constructed.rbegin();
         static_assert(is_same_v<remove_const_t<decltype(rb)>, reverse_iterator<vec::iterator>>);
@@ -313,6 +315,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         static_assert(is_same_v<remove_const_t<decltype(cf)>, int>);
         assert(cf == 0);
 
+#if !(defined(__EDG__) && defined(_M_X64)) // TRANSITION, VSO-1356637
         const auto b = range_constructed.back();
         static_assert(is_same_v<remove_const_t<decltype(b)>, int>);
         assert(b == 5);
@@ -320,6 +323,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
         const auto cb = const_range_constructed.back();
         static_assert(is_same_v<remove_const_t<decltype(cb)>, int>);
         assert(cb == 5);
+#endif // TRANSITION, VSO-1356637
 
         const auto d = range_constructed.data();
         static_assert(is_same_v<remove_const_t<decltype(d)>, int*>);
@@ -511,7 +515,7 @@ _CONSTEXPR20_CONTAINER bool test_interface() {
     return true;
 }
 
-_CONSTEXPR20_CONTAINER bool test_iterators() {
+constexpr bool test_iterators() {
     vec range_constructed(begin(input), end(input));
 
 #if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273381
@@ -551,6 +555,7 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
         assert(*cit == 4);
     }
 
+#if !(defined(__EDG__) && defined(_M_X64)) // TRANSITION, VSO-1356637
     { // advance back
         auto it = range_constructed.end() - 2;
         assert(*it == 4);
@@ -562,6 +567,7 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
         cit -= 2;
         assert(*cit == 2);
     }
+#endif // TRANSITION, VSO-1356637
 
     { // difference
         const auto it1 = range_constructed.begin();
@@ -610,7 +616,7 @@ _CONSTEXPR20_CONTAINER bool test_iterators() {
     return true;
 }
 
-_CONSTEXPR20_CONTAINER bool test_growth() {
+constexpr bool test_growth() {
     {
         vector<int> v(1000, 1729);
 
@@ -714,9 +720,7 @@ int main() {
     test_interface();
     test_iterators();
     test_growth();
-#ifdef __cpp_lib_constexpr_vector
     static_assert(test_interface());
     static_assert(test_iterators());
     static_assert(test_growth());
-#endif // __cpp_lib_constexpr_vector
 }

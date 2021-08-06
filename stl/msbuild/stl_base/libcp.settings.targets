@@ -11,6 +11,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
         <TargetCoreSystem Condition="'$(MsvcpFlavor)' == 'onecore'">true</TargetCoreSystem>
         <DependsOnConcRT Condition="'$(MsvcpFlavor)' == 'kernel32'">true</DependsOnConcRT>
+        <Arm64CombinedPdb>true</Arm64CombinedPdb>
     </PropertyGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt_build.settings.targets"/>
@@ -24,8 +25,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </PropertyGroup>
 
     <PropertyGroup>
-        <ClProgramDataBaseFileName>$(OutputLibPath)$(OutputName)$(PdbVerName).pdb</ClProgramDataBaseFileName>
-        <ClProgramDataBaseFileName Condition="'$(BuildArchitecture)' =='arm64ec' and '$(_BuildArch)' != '$(BuildArchitecture)'">$(OutputLibPath)$(OutputName).arm64.pdb</ClProgramDataBaseFileName>
+        <ClProgramDataBaseFileName>$(OutputLibPdbPath)$(OutputName)$(PdbVerName).pdb</ClProgramDataBaseFileName>
         <ClDefines Condition="'$(DependsOnConcRT)' == 'true'">$(ClDefines);_STL_CONCRT_SUPPORT</ClDefines>
         <ClDefines>$(ClDefines);_VCRT_ALLOW_INTERNALS</ClDefines>
     </PropertyGroup>

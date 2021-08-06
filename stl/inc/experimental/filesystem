@@ -62,7 +62,6 @@ using _Pchar = wchar_t; // UTF16
 
 struct _Char8_t; // flag for UTF8
 
-// ENUM file_type
 enum class file_type { // names for file types
     not_found = -1,
     none,
@@ -76,7 +75,6 @@ enum class file_type { // names for file types
     unknown
 };
 
-// ENUM copy_options
 enum class copy_options { // names for copy options
     none                                  = 0,
     skip_existing                         = 1,
@@ -93,13 +91,11 @@ enum class copy_options { // names for copy options
 
 _BITMASK_OPS(copy_options)
 
-// ENUM directory_options
 enum class directory_options { // names for directory options
     none = 0,
     follow_directory_symlink
 };
 
-// ENUM perms
 enum class perms { // names for permissions
     none             = 0,
     owner_read       = 0400, // S_IRUSR
@@ -127,7 +123,6 @@ enum class perms { // names for permissions
 
 _BITMASK_OPS(perms)
 
-// CLASS file_status
 class file_status { // stores file status
 public:
     explicit file_status(file_type _Ftype = file_type::none, perms _Prms = perms::unknown) noexcept
@@ -160,14 +155,12 @@ private:
     perms _Myperms;
 };
 
-// STRUCT space_info
 struct space_info { // space information for a file
     uintmax_t capacity;
     uintmax_t free;
     uintmax_t available;
 };
 
-// SYSTEM SUPPORT FUNCTIONS
 // wide filenames
 _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(wchar_t (&)[_MAX_FILESYS_NAME], const wchar_t*, int&, file_type&);
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(wchar_t (&)[_MAX_FILESYS_NAME], void*, file_type&);
@@ -197,7 +190,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Unlink(const wchar_t*);
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t*, const wchar_t*);
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t*, perms);
 
-// STRUCT TEMPLATE _Path_cvt
 template <class _Inchar, class _Outchar, class _Outtraits = char_traits<_Outchar>,
     class _Outalloc = allocator<_Outchar>>
 struct _Path_cvt { // converts among {char, wchar_t, UTF8, char16_t, char32_t} paths
@@ -435,7 +427,6 @@ struct _Path_cvt<char32_t, wchar_t, _Outtraits,
 };
 _STL_RESTORE_DEPRECATED_WARNING
 
-// FORWARD REFERENCES
 class path;
 path operator/(const path&, const path&);
 
@@ -571,7 +562,6 @@ path system_complete(const path&, error_code&);
 path temp_directory_path();
 path temp_directory_path(error_code&);
 
-// CLASS TEMPLATE _Path_iterator
 template <class _Path_type>
 class _Path_iterator {
 public:
@@ -731,7 +721,6 @@ private:
     size_t _Myoff; // current offset in full path
 };
 
-// CLASS path AND FRIENDS
 class path { // stores a pathname
 public:
     using value_type  = _Pchar;
@@ -742,8 +731,6 @@ public:
     path() {}
 
     path(const path& _Right) : _Mystr(_Right._Mystr) {}
-
-    // ARBITRARY SOURCE CONSTRUCT
 
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path(_InIt _First, _InIt _Last) {
@@ -770,8 +757,6 @@ public:
         string_type _Str_out;
         *this /= _Path_cvt<_Elem, value_type>::_Cvt(_Str_out, _Str.c_str(), _Str.size());
     }
-
-    // ARBITRARY SOURCE CONSTRUCT, WITH LOCALE
 
     template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
     path(_InIt _First, _InIt _Last, const locale& _Loc) {
@@ -808,7 +793,6 @@ public:
 
     ~path() noexcept {}
 
-    // ARBITRARY SOURCE ASSIGN
     path& operator=(const path& _Right) {
         _Mystr = _Right._Mystr;
         return *this;
@@ -839,7 +823,6 @@ public:
         return *this = path(_Str);
     }
 
-    // ARBITRARY SOURCE APPEND
     path& operator/=(const path& _Path) { // append copy
         return append(_Path._Mystr);
     }
@@ -886,7 +869,6 @@ public:
         return *this;
     }
 
-    // ARBITRARY SOURCE CONCATENATE
     path& operator+=(const path& _Path) { // concatenate copy
         return concat(_Path._Mystr);
     }
@@ -935,7 +917,6 @@ public:
         return *this;
     }
 
-    // PATH MODIFIERS
     void clear() noexcept { // clear the stored string
         _Mystr.clear();
     }
@@ -987,7 +968,6 @@ public:
         _Mystr.swap(_Right._Mystr);
     }
 
-    // NATIVE FORMAT OBSERVERS
     _NODISCARD const string_type& native() const noexcept {
         return _Mystr;
     }
@@ -1035,8 +1015,6 @@ public:
                     return _Path_cvt<value_type, char32_t>::_Cvt(_Str, _Mystr.c_str(), _Mystr.size());
                 }
 #endif // 0
-
-    // GENERIC FORMAT OBSERVERS
 
     string_type _Make_generic() const { // copy and convert any '\' to '/'
         string_type _Str = _Mystr;
@@ -1086,7 +1064,6 @@ public:
                 }
 #endif // 0
 
-    // PATH COMPARISON
     _NODISCARD int compare(const path& _Path) const noexcept { // compare native() to _Path.native()
         return _Mystr.compare(_Path._Mystr);
     }
@@ -1099,7 +1076,6 @@ public:
         return _Mystr.compare(_Ptr);
     }
 
-    // PATH DECOMPOSITION
     _NODISCARD path root_name() const {
         return path(_Mystr.substr(0, _Prefix_end()));
     }
@@ -1202,7 +1178,6 @@ public:
         return !is_absolute();
     }
 
-    // PATH ITERATOR SUPPORT
     using iterator       = _Path_iterator<path>;
     using const_iterator = iterator;
 
@@ -1281,7 +1256,8 @@ _NODISCARD inline bool operator>=(const path& _Left, const path& _Right) noexcep
 
 _NODISCARD inline path operator/(const path& _Left, const path& _Right) { // concatenate paths
     path _Ans = _Left;
-    return _Ans /= _Right;
+    _Ans /= _Right;
+    return _Ans;
 }
 
 template <class _Elem, class _Traits>
@@ -1297,7 +1273,6 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, 
     return _Istr;
 }
 
-// FUNCTION TEMPLATE u8path
 template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
 _NODISCARD path u8path(_InIt _First, _InIt _Last) { // make path from [_First, _Last) UTF8, given iterators
     string _Str(_First, _Last);
@@ -1322,7 +1297,6 @@ _NODISCARD path u8path(const basic_string<char, _Traits, _Alloc>& _Str) { // mak
     return path(_Path_cvt<_Char8_t, _Pchar>::_Cvt(_Str_out, _Str.c_str(), _Str.size()));
 }
 
-// CLASS filesystem_error AND FRIENDS
 class filesystem_error : public system_error { // base of all filesystem-error exceptions
 public:
     explicit filesystem_error(
@@ -1335,7 +1309,7 @@ public:
     filesystem_error(const string& _Message, const path& _Path1, const path& _Path2, error_code _Errcode)
         : system_error(_Errcode, _Message), _Mypval1(_Path1), _Mypval2(_Path2) {}
 
-    virtual __CLR_OR_THIS_CALL ~filesystem_error() noexcept {}
+    __CLR_OR_THIS_CALL ~filesystem_error() noexcept override {}
 
     filesystem_error(filesystem_error&& _Right) noexcept
         : system_error(_Right.code(), _Right.what()), _Mypval1(_STD move(_Right._Mypval1)),
@@ -1365,7 +1339,7 @@ private:
 
 #if !_HAS_EXCEPTIONS
 protected:
-    virtual __CLR_OR_THIS_CALL void _Doraise() const override { // perform class-specific exception handling
+    __CLR_OR_THIS_CALL void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 #endif // !_HAS_EXCEPTIONS
@@ -1375,7 +1349,6 @@ protected:
     _THROW(filesystem_error{_Message}); // centralize construction of temporary string
 }
 
-// CLASS directory_entry AND FRIENDS
 class directory_entry { // represents a directory entry
 public:
     using string_type = _FSPFX path::string_type;
@@ -1624,7 +1597,6 @@ _NODISCARD inline directory_iterator end(const directory_iterator&) noexcept {
     return {};
 }
 
-// CLASS recursive_directory_iterator
 class recursive_directory_iterator {
 public:
     using _Myiter     = _Directory_iterator<false_type>;
@@ -1774,7 +1746,6 @@ _NODISCARD inline recursive_directory_iterator end(const recursive_directory_ite
     return {};
 }
 
-// OPERATIONAL FUNCTIONS
 inline path _Absolute(const path& _Path, const path& _Base,
     error_code& _Code) { // make absolute path from _Path and directory _Base; errors in _Code
     _Code.clear();
@@ -2427,7 +2398,7 @@ _NODISCARD inline file_time_type last_write_time(const path& _Path, error_code& 
     _Code.clear();
     if (_Ticks == -1) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
-        return (file_time_type::min)();
+        return (file_time_type::min) ();
     }
     return file_time_type(chrono::system_clock::duration(_Ticks));
 }
