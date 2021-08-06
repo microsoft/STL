@@ -128,8 +128,9 @@ protected:
                 char* _Buf = &_Str[0];
                 const _Elem* _Src;
                 char* _Dest;
-                switch (_Pcvt->out(_State, &_Ch, &_Ch + 1, _Src, _Buf, _Buf + _Str.size(),
-                    _Dest)) { // test result of converting one element
+
+                // test result of converting one element
+                switch (_Pcvt->out(_State, &_Ch, &_Ch + 1, _Src, _Buf, _Buf + _Str.size(), _Dest)) {
                 case _Codecvt::partial:
                 case _Codecvt::ok:
                     { // converted something, try to put it out
@@ -258,8 +259,8 @@ private:
                     }
                 }
 
-                switch (_Pcvt->in(_State, _Buf, _Buf + _Str.size(), _Src, &_Ch, &_Ch + 1,
-                    _Dest)) { // test result of converting one element
+                // test result of converting one element
+                switch (_Pcvt->in(_State, _Buf, _Buf + _Str.size(), _Src, &_Ch, &_Ch + 1, _Dest)) {
                 case _Codecvt::partial:
                 case _Codecvt::ok:
                     _Str.erase(0, static_cast<size_t>(_Src - _Buf)); // discard any used input
@@ -379,8 +380,8 @@ public:
             _Elem* _Dest = &_Wbuf[0];
             _Elem* _Dnext;
 
-            switch (_Pcvt->in(_State, _First, _Last, _First, _Dest, _Dest + _Wbuf.size(),
-                _Dnext)) { // test result of converting one or more bytes
+            // test result of converting one or more bytes
+            switch (_Pcvt->in(_State, _First, _Last, _First, _Dest, _Dest + _Wbuf.size(), _Dnext)) {
             case _Codecvt::partial:
             case _Codecvt::ok:
                 if (_Dest < _Dnext) {
@@ -447,8 +448,8 @@ public:
             char* _Dest = &_Bbuf[0];
             char* _Dnext;
 
-            switch (_Pcvt->out(_State, _First, _Last, _First, _Dest, _Dest + _Bbuf.size(),
-                _Dnext)) { // test result of converting one or more wide chars
+            // test result of converting one or more wide chars
+            switch (_Pcvt->out(_State, _First, _Last, _First, _Dest, _Dest + _Bbuf.size(), _Dnext)) {
             case _Codecvt::partial:
             case _Codecvt::ok:
                 if (_Dest < _Dnext) {
