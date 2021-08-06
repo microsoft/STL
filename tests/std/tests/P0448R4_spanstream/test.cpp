@@ -294,6 +294,10 @@ void test_spanbuf() {
         result = input_buffer.seekoff(-7, ios_base::end, ios_base::in);
         assert(result == 3);
 
+        // integer overflow due to large off
+        result = input_buffer.seekoff(numeric_limits<long long>::max(), ios_base::end, ios_base::in);
+        assert(result == -1);
+
         test_buf output_buffer{span<CharT>{buffer}, ios_base::out};
         // gptr not set but off is 0
         result = output_buffer.seekoff(0, ios_base::end, ios_base::in);
@@ -335,6 +339,10 @@ void test_spanbuf() {
         result = output_buffer.seekoff(3, ios_base::end, ios_base::out);
         assert(result == -1);
 
+        // integer overflow due to large off
+        result = output_buffer.seekoff(numeric_limits<long long>::max(), ios_base::end, ios_base::in);
+        assert(result == -1);
+
         test_buf inout_buffer{span<CharT>{buffer}, ios_base::in | ios_base::out};
         // all fine we move to end of stream
         result = inout_buffer.seekoff(0, ios_base::end, ios_base::in);
@@ -363,6 +371,10 @@ void test_spanbuf() {
         // always from front
         result = inout_buffer.seekoff(-7, ios_base::end, ios_base::in);
         assert(result == 3);
+
+        // integer overflow due to large off
+        result = inout_buffer.seekoff(numeric_limits<long long>::max(), ios_base::end, ios_base::in);
+        assert(result == -1);
     }
 
     { // seekoff ios_base::cur

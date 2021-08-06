@@ -39,39 +39,29 @@ public:
     using off_type    = typename _Traits::off_type;
     using traits_type = _Traits;
 
-    // [spanbuf.ctor], constructors
+    // N4892 [spanbuf.ctor], constructors
     basic_spanbuf() = default;
 
     explicit basic_spanbuf(ios_base::openmode _Which) : _Mysb(), _Mode(_Which) {}
 
     explicit basic_spanbuf(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::in | ios_base::out)
-        : _Mysb(), _Mode(_Which), _Buf(_Span) {
-        if (_Mode & ios_base::out) {
-            if (_Mode & ios_base::ate) {
-                _Mysb::setp(_Buf.data(), _Buf.data() + _Buf.size(), _Buf.data() + _Buf.size());
-            } else {
-                _Mysb::setp(_Buf.data(), _Buf.data(), _Buf.data() + _Buf.size());
-            }
-        }
-
-        if (_Mode & ios_base::in) {
-            _Mysb::setg(_Buf.data(), _Buf.data(), _Buf.data() + _Buf.size());
-        }
+        : _Mysb(), _Mode(_Which), _Buf() {
+        this->span(_Span);
     }
 
     basic_spanbuf(const basic_spanbuf&) = delete;
     basic_spanbuf(basic_spanbuf&& _Right)
-        : _Mysb(_STD move(_Right)), _Mode(_STD move(_Right._Mode)), _Buf(_STD move(_Right._Buf)) {
+        : _Mysb(_STD move(_Right)), _Mode(_STD move(_Right._Mode)), _Buf(_STD exchange(_Right._Buf, {})) {
         _Right.setp(nullptr, nullptr, nullptr);
         _Right.setg(nullptr, nullptr, nullptr);
     }
 
-    // [spanbuf.assign], assignment and swap
+    // N4892 [spanbuf.assign], assignment and swap
     basic_spanbuf& operator=(const basic_spanbuf&) = delete;
 
     basic_spanbuf& operator=(basic_spanbuf&& _Right) {
-        basic_spanbuf tmp{move(_Right)};
-        this->swap(tmp);
+        basic_spanbuf _Tmp{_STD move(_Right)};
+        this->swap(_Tmp);
         return *this;
     }
 
@@ -81,86 +71,87 @@ public:
         _STD swap(_Buf, _Right._Buf);
     }
 
-    // [spanbuf.members], member functions
-    _STD span<_Elem> span() const noexcept {
+    // N4892 [spanbuf.members], member functions
+    _NODISCARD _STD span<_Elem> span() const noexcept {
         if (_Mode & ios_base::out) {
-            return _STD span<_Elem>(_Mysb::pbase(), _Mysb::pptr());
+            return _STD span<_Elem>{_Mysb::pbase(), _Mysb::pptr()};
         }
 
         return _Buf;
     }
 
     void span(_STD span<_Elem> _Span) noexcept {
-        _Buf = _Span;
+        _Buf              = _Span;
+        const auto _First = _Buf.data();
+        const auto _Last  = _First + _Buf.size();
         if (_Mode & ios_base::out) {
             if (_Mode & ios_base::ate) {
-                _Mysb::setp(_Buf.data(), _Buf.data() + _Buf.size(), _Buf.data() + _Buf.size());
+                _Mysb::setp(_First, _Last, _Last);
             } else {
-                _Mysb::setp(_Buf.data(), _Buf.data(), _Buf.data() + _Buf.size());
+                _Mysb::setp(_First, _First, _Last);
             }
         }
 
         if (_Mode & ios_base::in) {
-            _Mysb::setg(_Buf.data(), _Buf.data(), _Buf.data() + _Buf.size());
+            _Mysb::setg(_First, _First, _Last);
         }
     }
 
 protected:
-    // [spanbuf.virtuals], overridden virtual functions
-    pos_type __CLR_OR_THIS_CALL seekoff(
+    // N4892 [spanbuf.virtuals], overridden virtual functions
+    pos_type seekoff(
         off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Which = ios_base::in | ios_base::out) override {
         const bool _Sequence_in  = _Which & ios_base::in;
         const bool _Sequence_out = _Which & ios_base::out;
         switch (_Way) {
         case ios_base::beg:
-            {
-                // [spanbuf.virtuals]/4.1 baseoff = 0
-                if (static_cast<size_t>(_Off) > _Buf.size()) { // negative wraparound to positive to save a compare
-                    return pos_type(off_type(-1)); // [spanbuf.virtuals]/5 report failure
-                }
-
-                break;
+            // N4892 [spanbuf.virtuals]/4.1 baseoff = 0
+            if (static_cast<size_t>(_Off) > _Buf.size()) { // negative wraparound to positive to save a compare
+                return pos_type(off_type(-1)); // N4892 [spanbuf.virtuals]/5 report failure
             }
+
+            break;
         case ios_base::end:
             {
-                // [spanbuf.virtuals]/4.3 baseoff =
-                const auto _Baseoff = _Mode & ios_base::out && !(_Mode & ios_base::in)
+                // N4892 [spanbuf.virtuals]/4.3 baseoff =
+                const auto _Baseoff = (_Mode & ios_base::out) && !(_Mode & ios_base::in)
                                         ? static_cast<off_type>(_Mysb::pptr() - _Mysb::pbase())
                                         : static_cast<off_type>(_Buf.size());
+                if (_Off > (numeric_limits<off_type>::max) () - _Baseoff) { // overflow, _Baseoff is always positive
+                    return pos_type(off_type(-1)); // report failure
+                }
 
                 _Off += _Baseoff;
                 if (static_cast<size_t>(_Off) > _Buf.size()) { // negative wraparound to positive to save a compare
-                    return pos_type(off_type(-1)); // [spanbuf.virtuals]/5 report failure
+                    return pos_type(off_type(-1)); // N4892 [spanbuf.virtuals]/5 report failure
                 }
 
                 break;
             }
         case ios_base::cur:
-            {
-                if (_Sequence_in && _Sequence_out) {
-                    return pos_type(off_type(-1)); // report failure
-                } else if (_Sequence_in || _Sequence_out) {
-                    const off_type _Oldoff  = _Sequence_in ? static_cast<off_type>(_Mysb::gptr() - _Mysb::eback())
-                                                           : static_cast<off_type>(_Mysb::pptr() - _Mysb::pbase());
-                    const off_type _Oldleft = static_cast<off_type>(_Buf.size() - _Oldoff);
-                    if (_Off < -_Oldoff || _Off > _Oldleft) { // out of bounds
-                        return pos_type(off_type(-1));
-                    }
-
-                    _Off += _Oldoff;
-                } else {
-                    return pos_type(off_type(-1)); // report failure
+            if (_Sequence_in && _Sequence_out) {
+                return pos_type(off_type(-1)); // report failure
+            } else if (_Sequence_in || _Sequence_out) {
+                const off_type _Oldoff  = _Sequence_in ? static_cast<off_type>(_Mysb::gptr() - _Mysb::eback())
+                                                       : static_cast<off_type>(_Mysb::pptr() - _Mysb::pbase());
+                const off_type _Oldleft = static_cast<off_type>(_Buf.size() - _Oldoff);
+                if (_Off < -_Oldoff || _Off > _Oldleft) { // out of bounds
+                    return pos_type(off_type(-1));
                 }
-                break;
+
+                _Off += _Oldoff;
+            } else {
+                return pos_type(off_type(-1)); // report failure
             }
+            break;
         default:
             return pos_type(off_type(-1)); // report failure
         }
 
-        // [spanbuf.virtuals]/4: For a sequence to be positioned, if its next pointer is a null pointer and newoff
-        // is not equal 0, the positioning operation fails.
+        // N4892 [spanbuf.virtuals]/4: For a sequence to be positioned, if its next pointer is a null pointer and newoff
+        // is not equal to 0, the positioning operation fails.
         if (_Off != 0 && ((_Sequence_in && !_Mysb::gptr()) || (_Sequence_out && !_Mysb::pptr()))) {
-            return pos_type(off_type(-1));
+            return pos_type(off_type(-1)); // report failure
         }
 
         if (_Sequence_in) {
@@ -174,12 +165,11 @@ protected:
         return pos_type(_Off);
     }
 
-    pos_type __CLR_OR_THIS_CALL seekpos(
-        pos_type _Pos, ios_base::openmode _Which = ios_base::in | ios_base::out) override {
+    pos_type seekpos(pos_type _Pos, ios_base::openmode _Which = ios_base::in | ios_base::out) override {
         return seekoff(off_type{_Pos}, ios_base::beg, _Which);
     }
 
-    _Mysb* __CLR_OR_THIS_CALL setbuf(_Elem* _Buffer, streamsize _Count) override {
+    _Mysb* setbuf(_Elem* _Buffer, streamsize _Count) override {
         this->span(_STD span<_Elem>{_Buffer, static_cast<size_t>(_Count)});
         return this;
     }
@@ -205,7 +195,7 @@ public:
     using off_type    = typename _Traits::off_type;
     using traits_type = _Traits;
 
-    // [ispanstream.ctor], constructors
+    // N4892 [ispanstream.ctor], constructors
     explicit basic_ispanstream(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::in)
         : _Mybase(_STD addressof(_Buf)), _Buf(_Span, _Which | ios_base::in) {}
 
@@ -226,7 +216,7 @@ public:
     // clang-format on
 #endif // __cpp_lib_concepts
 
-    // [ispanstream.assign], assignment and swap
+    // N4892 [ispanstream.assign], assignment and swap
     basic_ispanstream& operator=(const basic_ispanstream&) = delete;
 
     basic_ispanstream& operator=(basic_ispanstream&& _Right) {
@@ -239,7 +229,7 @@ public:
         _STD swap(_Buf, _Right._Buf);
     }
 
-    // [ispanstream.members], member functions
+    // N4892 [ispanstream.members], member functions
     _Mysb* rdbuf() const noexcept {
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
@@ -284,7 +274,7 @@ public:
     using off_type    = typename _Traits::off_type;
     using traits_type = _Traits;
 
-    // [ospanstream.ctor], constructors
+    // N4892 [ospanstream.ctor], constructors
     explicit basic_ospanstream(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::out)
         : _Mybase(_STD addressof(_Buf)), _Buf(_Span, _Which | ios_base::out) {}
 
@@ -294,7 +284,7 @@ public:
         _Mybase::set_rdbuf(_STD addressof(_Buf));
     }
 
-    // [ospanstream.assign], assignment and swap
+    // N4892 [ospanstream.assign], assignment and swap
     basic_ospanstream& operator=(const basic_ospanstream&) = delete;
 
     basic_ospanstream& operator=(basic_ospanstream&& _Right) {
@@ -307,7 +297,7 @@ public:
         _STD swap(_Buf, _Right._Buf);
     }
 
-    // [ospanstream.members], member functions
+    // N4892 [ospanstream.members], member functions
     _Mysb* rdbuf() const noexcept {
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
@@ -340,7 +330,7 @@ public:
     using off_type    = typename _Traits::off_type;
     using traits_type = _Traits;
 
-    // [spanstream.ctor], constructors
+    // N4892 [spanstream.ctor], constructors
     explicit basic_spanstream(_STD span<_Elem> _Span, ios_base::openmode _Which = ios_base::out | ios_base::in)
         : _Mybase(_STD addressof(_Buf)), _Buf(_Span, _Which) {}
 
@@ -350,7 +340,7 @@ public:
         _Mybase::set_rdbuf(_STD addressof(_Buf));
     }
 
-    // [spanstream.assign], assignment and swap
+    // N4892 [spanstream.assign], assignment and swap
     basic_spanstream& operator=(const basic_spanstream&) = delete;
 
     basic_spanstream& operator=(basic_spanstream&& _Right) {
@@ -363,7 +353,7 @@ public:
         _STD swap(_Buf, _Right._Buf);
     }
 
-    // [spanstream.members], members
+    // N4892 [spanstream.members], members
     _Mysb* rdbuf() const noexcept {
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
