@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// I/O EXCEPTION MACROS
 
 #if _HAS_EXCEPTIONS
 #define _TRY_IO_BEGIN _TRY_BEGIN // begin try block
@@ -44,11 +43,10 @@ _STD_BEGIN
 #define _CATCH_IO_(xtype, x) } // catch block for basic_ios x
 #endif // _HAS_EXCEPTIONS
 
-// STREAM POSITIONING TYPES (from <streambuf>)
+// from <streambuf>
 using streamoff  = long long;
 using streamsize = long long;
 
-// CLASS TEMPLATE fpos (from <streambuf>)
 template <class _Statetype>
 class fpos { // store arbitrary file position
 public:
@@ -139,7 +137,6 @@ private:
 using streampos  = fpos<_Mbstatet>;
 using wstreampos = streampos;
 
-// FORWARD REFERENCES
 class locale;
 template <class _Facet>
 const _Facet& __CRTDECL use_facet(const locale&);
@@ -228,7 +225,6 @@ template <class _Elem>
 class collate;
 #endif // defined(_DLL_CPPLIB)
 
-// char TYPEDEFS
 using ios           = basic_ios<char, char_traits<char>>;
 using streambuf     = basic_streambuf<char, char_traits<char>>;
 using istream       = basic_istream<char, char_traits<char>>;
@@ -253,7 +249,6 @@ using ospanstream = basic_ospanstream<char>;
 using spanstream  = basic_spanstream<char>;
 #endif // _HAS_CXX23
 
-// wchar_t TYPEDEFS
 using wios           = basic_ios<wchar_t, char_traits<wchar_t>>;
 using wstreambuf     = basic_streambuf<wchar_t, char_traits<wchar_t>>;
 using wistream       = basic_istream<wchar_t, char_traits<wchar_t>>;
@@ -279,7 +274,6 @@ using wspanstream  = basic_spanstream<wchar_t>;
 #endif // _HAS_CXX23
 
 #if defined(_CRTBLD)
-// unsigned short TYPEDEFS
 using ushistream = basic_istream<unsigned short, char_traits<unsigned short>>;
 using ushostream = basic_ostream<unsigned short, char_traits<unsigned short>>;
 using ushfilebuf = basic_filebuf<unsigned short, char_traits<unsigned short>>;
