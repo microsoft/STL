@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE basic_ios
 template <class _Elem, class _Traits>
 class basic_ios : public ios_base { // base class for basic_istream/basic_ostream
 public:
@@ -35,7 +34,7 @@ public:
         init(_Strbuf);
     }
 
-    virtual __CLR_OR_THIS_CALL ~basic_ios() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_ios() noexcept override {}
 
     void __CLR_OR_THIS_CALL clear(iostate _State = goodbit, bool _Reraise = false) {
         // set state, possibly reraise exception
@@ -182,7 +181,6 @@ template class _CRTIMP2_PURE_IMPORT basic_ios<unsigned short, char_traits<unsign
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
 
-// MANIPULATORS
 inline ios_base& __CLRCALL_OR_CDECL boolalpha(ios_base& _Iosbase) { // set boolalpha
     _Iosbase.setf(ios_base::boolalpha);
     return _Iosbase;
