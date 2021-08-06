@@ -30,12 +30,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// ENUM CLASS io_errc
 enum class io_errc { // error codes for ios_base::failure
     stream = 1
 };
 
-// STRUCT TEMPLATE is_error_code_enum
 template <class _Enum>
 struct is_error_code_enum : false_type {};
 
@@ -45,7 +43,6 @@ struct is_error_code_enum<io_errc> : true_type {};
 template <class _Ty>
 _INLINE_VAR constexpr bool is_error_code_enum_v = is_error_code_enum<_Ty>::value;
 
-// STRUCT TEMPLATE is_error_condition_enum
 template <class _Enum>
 struct is_error_condition_enum : false_type {};
 
@@ -62,7 +59,6 @@ _NODISCARD error_code make_error_code(io_errc) noexcept;
 _NODISCARD error_condition make_error_condition(errc) noexcept;
 _NODISCARD error_condition make_error_condition(io_errc) noexcept;
 
-// CLASS error_category
 class error_category;
 
 _NODISCARD const error_category& generic_category() noexcept;
@@ -131,7 +127,6 @@ protected:
 _NODISCARD inline bool _System_error_equal(const error_code&, const error_condition&) noexcept;
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 
-// CLASS error_code
 class error_code { // store an implementation-specific error code and category
 public:
     error_code() noexcept : _Myval(0), _Mycat(&_STD system_category()) {} // construct non-error
@@ -224,7 +219,6 @@ private:
     const error_category* _Mycat; // pointer to error category
 };
 
-// CLASS error_condition
 class error_condition { // store an abstract error code and category
 public:
     error_condition() noexcept : _Myval(0), _Mycat(&_STD generic_category()) {} // construct non-error
@@ -377,7 +371,6 @@ _NODISCARD inline bool operator!=(const error_condition& _Left, const error_cond
 #endif // !_HAS_CXX20
 #endif // _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
 
-// VIRTUALS FOR error_category
 _NODISCARD inline error_condition error_category::default_error_condition(int _Errval) const noexcept {
     // make error_condition for error code
     return error_condition(_Errval, *this);
@@ -391,13 +384,11 @@ _NODISCARD inline bool error_category::equivalent(const error_code& _Code, int _
     return *this == _Code.category() && _Code.value() == _Errval;
 }
 
-// MEMBER FUNCTIONS for error_code
 _NODISCARD inline error_condition error_code::default_error_condition() const noexcept {
     // make error_condition for error code
     return category().default_error_condition(value());
 }
 
-// FUNCTION make_error_code
 _NODISCARD inline error_code make_error_code(errc _Errno) noexcept {
     return error_code(static_cast<int>(_Errno), _STD generic_category());
 }
@@ -406,7 +397,6 @@ _NODISCARD inline error_code make_error_code(io_errc _Errno) noexcept {
     return error_code(static_cast<int>(_Errno), _STD iostream_category());
 }
 
-// FUNCTION make_error_condition
 _NODISCARD inline error_condition make_error_condition(errc _Errno) noexcept {
     return error_condition(static_cast<int>(_Errno), _STD generic_category());
 }
@@ -415,7 +405,6 @@ _NODISCARD inline error_condition make_error_condition(io_errc _Errno) noexcept 
     return error_condition(static_cast<int>(_Errno), _STD iostream_category());
 }
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <>
 struct hash<error_code> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef error_code _ARGUMENT_TYPE_NAME;
@@ -436,7 +425,6 @@ struct hash<error_condition> {
     }
 };
 
-// CLASS system_error
 class _System_error : public runtime_error { // base of all system-error exceptions
 private:
     static string _Makestr(error_code _Errcode, string _Message) { // compose error message

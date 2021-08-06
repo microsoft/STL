@@ -35,7 +35,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-// TYPE TRAITS
 template <class...>
 struct _All_same : true_type {};
 template <class _First, class... _Rest>
@@ -46,12 +45,10 @@ struct _Convertible_from_all : bool_constant<conjunction_v<is_convertible<_From,
     // variadic is_convertible
 };
 
-// METAPROGRAMMING UTILITIES
 template <class...>
 struct _Meta_list {}; // a sequence of types
 struct _Meta_nil {};
 
-// ALIAS TEMPLATE _Meta_front
 template <class _List>
 struct _Meta_front_;
 template <class _List>
@@ -64,7 +61,6 @@ struct _Meta_front_<_List<_First, _Rest...>> {
     using type = _First;
 };
 
-// ALIAS TEMPLATE _Meta_pop_front
 template <class _List>
 struct _Meta_pop_front_;
 template <class _List>
@@ -77,7 +73,6 @@ struct _Meta_pop_front_<_List<_First, _Rest...>> {
     using type = _List<_Rest...>;
 };
 
-// ALIAS TEMPLATE _Meta_push_front
 template <class _List, class _Ty>
 struct _Meta_push_front_;
 template <class _List, class _Ty>
@@ -90,7 +85,6 @@ struct _Meta_push_front_<_List<_Types...>, _Ty> {
     using type = _List<_Ty, _Types...>;
 };
 
-// STRUCT TEMPLATE _Meta_quote
 template <class _Void, template <class...> class _Fn, class... _Args>
 struct _Meta_quote_helper_;
 template <template <class...> class _Fn, class... _Args>
@@ -103,19 +97,16 @@ struct _Meta_quote { // encapsulate a template into a meta-callable type
     using _Invoke = typename _Meta_quote_helper_<void, _Fn, _Types...>::type;
 };
 
-// ALIAS TEMPLATE _Meta_invoke
 template <class _Fn, class... _Args>
 using _Meta_invoke = // invoke meta-callable _Fn with _Args
     typename _Fn::template _Invoke<_Args...>;
 
-// STRUCT TEMPLATE _Meta_bind_back
 template <class _Fn, class... _Args>
 struct _Meta_bind_back { // construct a meta-callable that passes its arguments and _Args to _Fn
     template <class... _Types>
     using _Invoke = _Meta_invoke<_Fn, _Types..., _Args...>;
 };
 
-// ALIAS TEMPLATE _Meta_apply
 template <class _Fn, class _List>
 struct _Meta_apply_;
 template <class _Fn, class _List>
@@ -135,7 +126,6 @@ struct _Meta_apply_<_Fn,
     using type = _Meta_invoke<_Fn, integral_constant<_Ty, _Idxs>...>;
 };
 
-// ALIAS TEMPLATE _Meta_transform
 template <class _Fn, class _List>
 struct _Meta_transform_;
 template <class _Fn, class _List>
@@ -148,7 +138,6 @@ struct _Meta_transform_<_Fn, _List<_Types...>> {
     using type = _List<_Meta_invoke<_Fn, _Types>...>;
 };
 
-// ALIAS TEMPLATE _Meta_repeat_n_c
 template <class, class, template <class...> class>
 struct _Meta_repeat_n_c_;
 template <size_t _Count, class _Ty, template <class...> class _Continue>
@@ -164,7 +153,6 @@ struct _Meta_repeat_n_c_<_Ty, index_sequence<_Idxs...>, _Continue> {
     using type = _Continue<_Meta_repeat_first_helper<_Ty, _Idxs>...>;
 };
 
-// ALIAS TEMPLATE _Meta_at_c
 template <class _List, size_t _Idx, class = void>
 struct _Meta_at_;
 template <class _List, size_t _Idx>
@@ -196,7 +184,6 @@ struct _Meta_at_<_List<_Types...>, _Idx, enable_if_t<(_Idx < sizeof...(_Types))>
 };
 #endif // __clang__
 
-// ALIAS TEMPLATE _Meta_find_index
 inline constexpr auto _Meta_npos = ~size_t{0};
 
 template <class _List, class _Ty>
@@ -225,7 +212,6 @@ struct _Meta_find_index_<_List<_First, _Rest...>, _Ty> {
     using type                     = integral_constant<size_t, _Meta_find_index_i_(_Bools, 1 + sizeof...(_Rest))>;
 };
 
-// ALIAS TEMPLATE _Meta_find_unique_index
 template <class _List, class _Ty>
 struct _Meta_find_unique_index_ {
     using type = integral_constant<size_t, _Meta_npos>;
@@ -252,7 +238,6 @@ struct _Meta_find_unique_index_<_List<_First, _Rest...>, _Ty> {
         _Meta_find_unique_index_i_(_Meta_find_index_<_List<_First, _Rest...>, _Ty>::_Bools, 1 + sizeof...(_Rest))>;
 };
 
-// ALIAS TEMPLATE _Meta_as_list
 template <class>
 struct _Meta_as_list_;
 template <class _Ty>
@@ -272,7 +257,6 @@ struct _Meta_as_list_<integer_sequence<_Ty, _Idxs...>> { // convert an integer_s
     using type = _Meta_list<integral_constant<_Ty, _Idxs>...>;
 };
 
-// ALIAS TEMPLATE _Meta_as_integer_sequence
 template <class _List>
 struct _Meta_as_integer_sequence_;
 template <class _List>
@@ -285,7 +269,6 @@ struct _Meta_as_integer_sequence_<_List<integral_constant<_Ty, _Idxs>...>> {
     using type = integer_sequence<_Ty, _Idxs...>;
 };
 
-// ALIAS TEMPLATE _Meta_concat
 template <class...>
 struct _Meta_concat_;
 template <class... _Types>
@@ -318,13 +301,11 @@ struct _Meta_concat_<_List<_Items1...>, _List<_Items2...>, _List<_Items3...>, _R
     using type = _Meta_concat<_List<_Items1..., _Items2..., _Items3...>, _Rest...>;
 };
 
-// ALIAS TEMPLATE _Meta_join
 template <class _ListOfLists>
 using _Meta_join =
     // transform a list of lists of elements into a single list containing those elements
     _Meta_apply<_Meta_quote<_Meta_concat>, _ListOfLists>;
 
-// ALIAS TEMPLATE _Meta_cartesian_product
 template <class>
 struct _Meta_cartesian_product_;
 template <class _ListOfLists>
@@ -371,11 +352,9 @@ struct _Meta_cartesian_product_<_List1<_List2<_Items...>, _Lists...>> {
 
 #define _STL_STAMP(n, x) x(_STL_STAMP##n, n)
 
-// VARIANT OF VALUE TYPES [variant.variant]
 template <class... _Types>
 class variant;
 
-// VARIANT HELPER CLASSES [variant.helper]
 template <class _Ty>
 struct variant_size; // undefined
 template <class _Ty>
@@ -419,7 +398,6 @@ struct variant_alternative<_Idx, variant<_Types...>> {
 
 inline constexpr size_t variant_npos = _Meta_npos;
 
-// CLASS bad_variant_access [variant.bad.access]
 class bad_variant_access
     : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
 public:
@@ -444,7 +422,6 @@ protected:
 template <bool _TrivialDestruction, class... _Types>
 class _Variant_storage_ {}; // empty storage (empty "_Types" case)
 
-// ALIAS TEMPLATE _Variant_storage
 template <class... _Types>
 using _Variant_storage = _Variant_storage_<conjunction_v<is_trivially_destructible<_Types>...>, _Types...>;
 
@@ -584,7 +561,6 @@ public:
 };
 #endif // __cplusplus_winrt
 
-// _Variant_storage VISITATION AND ACCESS
 template <size_t _Idx, class _Storage>
 _NODISCARD constexpr decltype(auto) _Variant_raw_get(
     _Storage&& _Obj) noexcept { // access the _Idx-th element of a _Variant_storage
@@ -764,7 +740,6 @@ _NODISCARD constexpr _Variant_raw_visit_t<_Fn, _Storage> _Variant_raw_visit(
     return _Variant_raw_visit1<_Strategy>::_Visit(_Idx, static_cast<_Fn&&>(_Func), static_cast<_Storage&&>(_Obj));
 }
 
-// STRUCT TEMPLATE _Variant_base
 template <class...>
 class _Variant_base;
 
@@ -956,7 +931,6 @@ template <class... _Types>
 using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destructible<_Types>...>,
     _Variant_base<_Types...>, _Variant_destroy_layer_<_Types...>>;
 
-// CLASS TEMPLATE variant
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-volatile"
@@ -1038,7 +1012,6 @@ public:
         "variant<> (with no template arguments) may not be instantiated (N4835 [variant.variant]/3).");
     using _Mybase = _SMF_control<_Variant_destroy_layer<_Types...>, _Types...>;
 
-    // constructors [variant.ctor]
     template <class _First = _Meta_front<variant>, enable_if_t<is_default_constructible_v<_First>, int> = 0>
     constexpr variant() noexcept(is_nothrow_default_constructible_v<_First>)
         : _Mybase(in_place_index<0>) {} // value-initialize alternative 0
@@ -1086,7 +1059,6 @@ public:
         // initialize alternative _Idx from _Ilist and _Args...
     }
 
-    // assignment [variant.assign]
     template <class _Ty, enable_if_t<!is_same_v<_Remove_cvref_t<_Ty>, variant> //
                                          && is_constructible_v<_Variant_init_type<_Ty, _Types...>, _Ty> //
                                          && is_assignable_v<_Variant_init_type<_Ty, _Types...>&, _Ty>, //
@@ -1113,7 +1085,6 @@ public:
         return *this;
     }
 
-    // modifiers [variant.mod]
     using _Mybase::_Storage;
 
     template <class _Ty, class... _ArgTypes, size_t _Idx = _Meta_find_unique_index<variant, _Ty>::value,
@@ -1150,11 +1121,9 @@ public:
         return _Emplace_valueless<_Idx>(_Ilist, static_cast<_ArgTypes&&>(_Args)...);
     }
 
-    // value status [variant.status]
     using _Mybase::index;
     using _Mybase::valueless_by_exception;
 
-    // swap [variant.swap]
 #ifdef __clang__ // TRANSITION, LLVM-45398
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-lambda-capture"
@@ -1253,7 +1222,6 @@ private:
     }
 };
 
-// VALUE ACCESS [variant.get]
 template <class _Ty, class... _Types>
 _NODISCARD constexpr bool holds_alternative(
     const variant<_Types...>& _Var) noexcept { // true iff _Var holds alternative _Ty
@@ -1367,7 +1335,6 @@ _NODISCARD constexpr add_pointer_t<const _Ty> get_if(
     return _STD get_if<_Idx>(_Ptr);
 }
 
-// RELATIONAL OPERATORS [variant.relops]
 template <class _Op, class _Result, class... _Types>
 struct _Variant_relop_visitor2 { // evaluate _Op with the contained value of two variants that hold the same alternative
     const _Variant_storage<_Types...>& _Left;
@@ -1480,7 +1447,6 @@ _NODISCARD constexpr common_comparison_category_t<compare_three_way_result_t<_Ty
 }
 #endif // __cpp_lib_concepts
 
-// VISITATION [variant.visit]
 template <class... _Variants>
 inline constexpr size_t _Variant_total_states =
     (size_t{1} * ... * (variant_size_v<_Variants> + 1)); // +1 to account for the valueless state
@@ -1716,7 +1682,6 @@ constexpr _Ret visit(_Callable&& _Obj, _Variants&&... _Args) {
 }
 #endif // _HAS_CXX20
 
-// monostate RELATIONAL OPERATORS [variant.monostate.relops]
 _NODISCARD constexpr bool operator==(monostate, monostate) noexcept {
     return true;
 }
@@ -1743,14 +1708,12 @@ _NODISCARD constexpr bool operator>=(monostate, monostate) noexcept {
 }
 #endif // !_HAS_CXX20
 
-// SPECIALIZED ALGORITHMS [variant.specalg]
 template <class... _Types,
     enable_if_t<conjunction_v<is_move_constructible<_Types>..., is_swappable<_Types>...>, int> = 0>
 void swap(variant<_Types...>& _Left, variant<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
-// HASH SUPPORT [variant.hash]
 struct _Variant_hash_visitor { // visitation function for hashing variants
     template <class _Ty, size_t _Idx>
     _NODISCARD size_t operator()(_Tagged<const _Ty&, _Idx> _Obj) const

@@ -29,7 +29,6 @@ enum _CXX17_DEPRECATE_CODECVT_HEADER codecvt_mode { consume_header = 4, generate
 using _Statype = _CSTD mbstate_t;
 
 _STL_DISABLE_DEPRECATED_WARNING
-// CLASS TEMPLATE codecvt_utf8
 template <class _Elem, unsigned long _Mymax = 0x10ffff, codecvt_mode _Mymode = codecvt_mode{}>
 class _CXX17_DEPRECATE_CODECVT_HEADER codecvt_utf8 : public codecvt<_Elem, char, _Statype> {
     // facet for converting between _Elem and UTF-8 byte sequences
@@ -214,7 +213,6 @@ protected:
     }
 };
 
-// CLASS TEMPLATE codecvt_utf16
 template <class _Elem, unsigned long _Mymax = 0x10ffff, codecvt_mode _Mymode = codecvt_mode{}>
 class _CXX17_DEPRECATE_CODECVT_HEADER codecvt_utf16 : public codecvt<_Elem, char, _Statype> {
     // facet for converting between _Elem and UTF-16 multibyte sequences
@@ -422,7 +420,6 @@ protected:
     }
 };
 
-// CLASS codecvt_utf8_utf16
 template <class _Elem, unsigned long _Mymax = 0x10ffff, codecvt_mode _Mymode = codecvt_mode{}>
 class _CXX17_DEPRECATE_CODECVT_HEADER codecvt_utf8_utf16
     : public codecvt<_Elem, char, _Statype> { // facet for converting between UTF-16 _Elem and UTF-8 byte sequences

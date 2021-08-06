@@ -67,7 +67,6 @@ extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_b
 extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Fgetc
 template <class _Elem>
 bool _Fgetc(_Elem& _Ch, FILE* _File) { // get an element from a C stream
     return _CSTD fread(&_Ch, sizeof(_Elem), 1, _File) == 1;
@@ -108,7 +107,6 @@ inline bool _Fgetc(unsigned short& _Wchar, FILE* _File) { // get an unsigned sho
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Fputc
 template <class _Elem>
 bool _Fputc(_Elem _Ch, FILE* _File) { // put an element to a C stream
     return _CSTD fwrite(&_Ch, 1, sizeof(_Elem), _File) == sizeof(_Elem);
@@ -131,7 +129,6 @@ inline bool _Fputc(unsigned short _Wchar, FILE* _File) { // put an unsigned shor
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// FUNCTION TEMPLATE _Ungetc
 template <class _Elem>
 bool _Ungetc(const _Elem&, FILE*) { // put back an arbitrary element to a C stream (always fail)
     return false;
@@ -164,7 +161,6 @@ inline bool _Ungetc(const unsigned short& _Wchar, FILE* _File) { // put back an 
 }
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// CLASS TEMPLATE basic_filebuf
 template <class _Elem, class _Traits>
 class basic_filebuf : public basic_streambuf<_Elem, _Traits> { // stream buffer associated with a C stream
 public:
@@ -805,7 +801,6 @@ void swap(basic_filebuf<_Elem, _Traits>& _Left, basic_filebuf<_Elem, _Traits>& _
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_ifstream
 template <class _Elem, class _Traits>
 class basic_ifstream : public basic_istream<_Elem, _Traits> { // input stream associated with a C stream
 public:
@@ -990,7 +985,6 @@ void swap(basic_ifstream<_Elem, _Traits>& _Left, basic_ifstream<_Elem, _Traits>&
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_ofstream
 template <class _Elem, class _Traits>
 class basic_ofstream : public basic_ostream<_Elem, _Traits> { // output stream associated with a C stream
 public:
@@ -1174,7 +1168,6 @@ void swap(basic_ofstream<_Elem, _Traits>& _Left, basic_ofstream<_Elem, _Traits>&
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_fstream
 template <class _Elem, class _Traits>
 class basic_fstream : public basic_iostream<_Elem, _Traits> { // input/output stream associated with a C stream
 public:

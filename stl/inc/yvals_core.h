@@ -1140,8 +1140,6 @@
 #define _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23 (_HAS_FEATURES_REMOVED_IN_CXX23)
 #endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
-// LIBRARY FEATURE-TEST MACROS
-
 // C++14
 #define __cpp_lib_chrono_udls                 201304L
 #define __cpp_lib_complex_udls                201309L
@@ -1366,7 +1364,6 @@
 #define __cpp_lib_to_underlying   202102L
 #endif // _HAS_CXX23
 
-// EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
 
@@ -1381,7 +1378,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STRINGIZE(x)   _STRINGIZEX(x)
 #define _EMPTY_ARGUMENT // for empty macro argument
 
-// NAMESPACE
 #define _STD_BEGIN namespace std {
 #define _STD_END   }
 #define _STD       ::std::

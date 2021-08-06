@@ -409,7 +409,6 @@ namespace filesystem {
         }
     }
 
-    // FUNCTION TEMPLATE _Unaligned_load
     template <class _Ty>
     _NODISCARD _Ty _Unaligned_load(const void* _Ptr) { // load a _Ty from _Ptr
         static_assert(is_trivial_v<_Ty>, "Unaligned loads require trivial types");
@@ -674,7 +673,6 @@ namespace filesystem {
         }
     };
 
-    // CLASS path
     template <class _Base_iter>
     class _Path_iterator;
 
@@ -1451,7 +1449,6 @@ namespace filesystem {
         return path(_Convert_range_to_wide(_First, _Last, _Utf8_conversion{}));
     }
 
-    // CLASS TEMPLATE _Path_iterator
     template <class _Base_iter>
     class _Path_iterator { // almost bidirectional iterator for path
     public:
@@ -1790,7 +1787,6 @@ namespace filesystem {
         return iterator(_Text.cend(), this);
     }
 
-    // CLASS filesystem_error
     class filesystem_error : public system_error { // base of all filesystem-error exceptions
     public:
         filesystem_error(const string& _Message, const error_code _Errcode)
@@ -1872,7 +1868,6 @@ namespace filesystem {
         _THROW(filesystem_error(_Op, _Path1, _Path2, _Error));
     }
 
-    // ENUM CLASS file_type
     enum class file_type {
         none,
         not_found,
@@ -1892,7 +1887,6 @@ namespace filesystem {
         junction // implementation-defined value indicating an NT junction
     };
 
-    // ENUM CLASS perms
     enum class perms {
         none = 0,
 
@@ -1924,7 +1918,6 @@ namespace filesystem {
 
     _BITMASK_OPS(perms)
 
-    // ENUM CLASS copy_options
     enum class copy_options {
         none = static_cast<int>(__std_fs_copy_options::_None),
 
@@ -1949,7 +1942,6 @@ namespace filesystem {
 
     _BITMASK_OPS(copy_options)
 
-    // CLASS file_status
     class file_status {
     public:
         // [fs.file_status.cons], constructors and destructor
@@ -2104,7 +2096,6 @@ namespace filesystem {
         return _Status.type() == file_type::symlink;
     }
 
-    // STRUCT _File_status_and_error
     struct _File_status_and_error {
         file_status _Status;
         __std_win_error _Error;
@@ -2123,14 +2114,12 @@ namespace filesystem {
     inline constexpr auto _Symlink_status_stats_flags =
         __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
 
-    // ALIAS file_time_type
 #if _HAS_CXX20
     using file_time_type = _CHRONO time_point<_CHRONO file_clock>;
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     using file_time_type = _CHRONO time_point<filesystem::_File_time_clock>;
 #endif // ^^^ !_HAS_CXX20
 
-    // CLASS directory_entry
     class directory_entry {
     public:
         // [fs.dir.entry.cons], constructors and destructor
@@ -2532,7 +2521,6 @@ namespace filesystem {
         filesystem::path _Path;
     };
 
-    // ENUM CLASS directory_options
     enum class directory_options { none = 0, follow_directory_symlink = 1, skip_permission_denied = 2 };
     _BITMASK_OPS(directory_options)
 
@@ -2641,7 +2629,6 @@ namespace filesystem {
     class directory_iterator;
     class recursive_directory_iterator;
 
-    // STRUCT _Directory_entry_proxy
     struct _Directory_entry_proxy {
         _NODISCARD directory_entry operator*() && noexcept {
             return _STD move(_Entry);
@@ -2656,7 +2643,6 @@ namespace filesystem {
         directory_entry _Entry;
     };
 
-    // CLASS directory_iterator
     class directory_iterator {
     public:
         using iterator_category = input_iterator_tag;
@@ -2875,7 +2861,6 @@ namespace filesystem {
             : _Dir_enum_impl(_STD move(_Create_data)), _Options(_Options_arg) {}
     };
 
-    // CLASS recursive_directory_iterator
     class recursive_directory_iterator {
     public:
         using iterator_category = input_iterator_tag;
@@ -2998,7 +2983,6 @@ namespace filesystem {
         return {};
     }
 
-    // FUNCTION absolute
     _NODISCARD inline __std_win_error _Absolute(path& _Result, const wstring& _Text) { // pre: _Result.empty()
         if (_Text.empty()) {
             return __std_win_error::_Success;
@@ -3041,7 +3025,6 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION canonical
     _NODISCARD inline __std_win_error _Canonical(path& _Result, const wstring& _Text) { // pre: _Result.empty()
         if (_Text.empty()) {
             return __std_win_error::_Success;
@@ -3116,7 +3099,6 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION create_directory_symlink
     _NODISCARD inline unique_ptr<wchar_t[]> _Get_cleaned_symlink_target(const path& _To) noexcept {
         // transforms /s in the root-name to \s, and all other directory-separators into single \s
         // example: a/\/b -> a\b
@@ -3179,7 +3161,6 @@ namespace filesystem {
         }
     }
 
-    // FUNCTION create_hard_link
     inline void create_hard_link(const path& _To, const path& _New_hard_link) {
         // create a hard link for a file, _New_hard_link -> _To
         // note reversed parameter order:
@@ -3195,7 +3176,6 @@ namespace filesystem {
         _Ec = _Make_ec(__std_fs_create_hard_link(_New_hard_link.c_str(), _To.c_str()));
     }
 
-    // FUNCTION create_symlink
     inline void create_symlink(const path& _To, const path& _New_symlink) {
         // create a symlink for a file, _New_symlink -> _To
         const auto _Cleaned = _Get_cleaned_symlink_target(_To);
@@ -3221,7 +3201,6 @@ namespace filesystem {
         }
     }
 
-    // FUNCTION read_symlink
     _NODISCARD inline __std_win_error _Read_symlink_reparse_data(
         const _Fs_file& _Handle, unique_ptr<char[]>& _Buffer_unique_ptr) noexcept {
         constexpr auto _Buffer_size = 16 * 1024 + sizeof(wchar_t); // MAXIMUM_REPARSE_DATA_BUFFER_SIZE + sizeof(wchar_t)
@@ -3286,7 +3265,6 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION copy_symlink
     _NODISCARD inline __std_win_error _Copy_symlink(const path& _Symlink, const path& _New_symlink) noexcept {
         __std_win_error _Err;
         unique_ptr<char[]> _Buffer_unique_ptr;
@@ -3342,7 +3320,6 @@ namespace filesystem {
         }
     }
 
-    // FUNCTION copy_file
     inline bool copy_file(const path& _From, const path& _To, const copy_options _Options, error_code& _Ec) noexcept
     /* strengthened */ {
         // copy a file _From -> _To according to _Options
@@ -3373,7 +3350,6 @@ namespace filesystem {
         return _STD filesystem::copy_file(_From, _To, copy_options::none);
     }
 
-    // FUNCTION equivalent
     _NODISCARD inline pair<__std_win_error, bool> _Equivalent(
         const wchar_t* const _Lhs, const wchar_t* const _Rhs) noexcept {
         __std_fs_file_id _Left_id;
@@ -3408,7 +3384,6 @@ namespace filesystem {
         return _Result.second;
     }
 
-    // FUNCTION exists
     _NODISCARD inline file_status status(const path& _Path);
     _NODISCARD inline file_status status(const path& _Path, error_code& _Ec) noexcept;
     _NODISCARD inline file_status symlink_status(const path& _Path);
@@ -3434,7 +3409,6 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION file_size
     _NODISCARD inline __std_win_error _File_size(const path& _Path, uintmax_t& _Result) noexcept {
         __std_fs_stats _Stats;
         const auto _Error = __std_fs_get_stats(
@@ -3464,7 +3438,6 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION hard_link_count
     _NODISCARD inline __std_win_error _Hard_link_count(const path& _Path, uintmax_t& _Result) noexcept {
         __std_fs_stats _Stats;
         const auto _Error = __std_fs_get_stats(
@@ -3495,7 +3468,6 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION is_block_file
     _NODISCARD inline bool is_block_file(const path&) noexcept /* strengthened */ {
         // tests whether the input path is a block special file (never on Windows)
         return false;
@@ -3507,7 +3479,6 @@ namespace filesystem {
         return false; // note status sets _Ec to an error on nonexistent input
     }
 
-    // FUNCTION is_character_file
     _NODISCARD inline bool is_character_file(const path&) noexcept /* strengthened */ {
         // tests whether the input path is a character special file (never on Windows)
         return false;
@@ -3519,7 +3490,6 @@ namespace filesystem {
         return false; // note status sets _Ec to an error on nonexistent input
     }
 
-    // FUNCTION is_directory
     _NODISCARD inline bool is_directory(const path& _Path) { // tests whether _Path is a directory
         return _STD filesystem::is_directory(_STD filesystem::status(_Path));
     }
@@ -3529,7 +3499,6 @@ namespace filesystem {
         return _STD filesystem::is_directory(_STD filesystem::status(_Path, _Ec));
     }
 
-    // FUNCTION is_empty
     _NODISCARD inline bool is_empty(const path& _Path, error_code& _Ec) {
         // test whether _Path refers to a zero sized file or empty directory
         constexpr auto _Flags = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_File_size
@@ -3560,7 +3529,6 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION is_fifo
     _NODISCARD inline bool is_fifo(const path&) noexcept /* strengthened */ {
         // tests whether the input path is a fifo (never on Windows)
         return false;
@@ -3572,7 +3540,6 @@ namespace filesystem {
         return false; // note status sets _Ec to an error on nonexistent input
     }
 
-    // FUNCTION is_other
     _NODISCARD inline bool is_other(const path& _Path) { // tests whether _Path is an other file (such as a junction)
         return _STD filesystem::is_other(_STD filesystem::status(_Path));
     }
@@ -3582,7 +3549,6 @@ namespace filesystem {
         return _STD filesystem::is_other(_STD filesystem::status(_Path, _Ec));
     }
 
-    // FUNCTION is_regular_file
     _NODISCARD inline bool is_regular_file(const path& _Path) { // tests whether _Path is a regular file
         return _STD filesystem::is_regular_file(_STD filesystem::status(_Path));
     }
@@ -3592,7 +3558,6 @@ namespace filesystem {
         return _STD filesystem::is_regular_file(_STD filesystem::status(_Path, _Ec));
     }
 
-    // FUNCTION is_socket
     _NODISCARD inline bool is_socket(const path&) noexcept /* strengthened */ {
         // tests whether the input path is a socket (never on Windows)
         return false;
@@ -3604,7 +3569,6 @@ namespace filesystem {
         return false; // note status sets _Ec to an error on nonexistent input
     }
 
-    // FUNCTION is_symlink
     _NODISCARD inline bool is_symlink(const path& _Path) { // tests whether _Path is a symlink
         return _STD filesystem::is_symlink(_STD filesystem::symlink_status(_Path));
     }
@@ -3613,7 +3577,6 @@ namespace filesystem {
         return _STD filesystem::is_symlink(_STD filesystem::symlink_status(_Path, _Ec));
     }
 
-    // FUNCTION remove
     inline bool remove(const path& _Target) {
         // remove file _Target (even if it is a directory); returns whether the file was removed
         // note !exists(_Target) is not an error, and merely returns false
@@ -3633,7 +3596,6 @@ namespace filesystem {
         return _Result._Removed;
     }
 
-    // FUNCTION rename
     inline void rename(const path& _Old_p, const path& _New_p) {
         // rename _Old_p to _New_p, overwriting _New_p if it is an existing non-directory file
         // the standard explicitly allows an implementation to not replace _New_p if it is a directory,
@@ -3651,7 +3613,6 @@ namespace filesystem {
         _Ec = _Make_ec(__std_fs_rename(_Old_p.c_str(), _New_p.c_str()));
     }
 
-    // FUNCTION resize_file
     inline void resize_file(const path& _Target, const uintmax_t _New_size) {
         // set the size of _Target to _New_size
         const auto _Err = __std_fs_resize_file(_Target.c_str(), _New_size);
@@ -3665,7 +3626,6 @@ namespace filesystem {
         _Ec = _Make_ec(__std_fs_resize_file(_Target.c_str(), _New_size));
     }
 
-    // FUNCTION space
     struct space_info {
         uintmax_t capacity;
         uintmax_t free;
@@ -3694,12 +3654,10 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION status_known
     _NODISCARD inline bool status_known(const file_status _Status) noexcept {
         return _Status.type() != file_type::none;
     }
 
-    // FUNCTION status
     _NODISCARD inline _File_status_and_error _Get_any_status(
         const path& _Path, const __std_fs_stats_flags _Flags) noexcept {
         _File_status_and_error _Result;
@@ -3726,7 +3684,6 @@ namespace filesystem {
         return _Result._Status;
     }
 
-    // FUNCTION symlink_status
     _NODISCARD inline file_status symlink_status(const path& _Path, error_code& _Ec) noexcept {
         const auto _Result = _Get_any_status(_Path, _Symlink_status_stats_flags);
         _Ec                = _Make_ec(_Result._Error);
@@ -3742,7 +3699,6 @@ namespace filesystem {
         return _Result._Status;
     }
 
-    // FUNCTION create_directory
     inline bool create_directory(const path& _Path) {
         const auto _Result = __std_fs_create_directory(_Path.c_str());
         if (_Result._Error != __std_win_error::_Success) {
@@ -3773,7 +3729,6 @@ namespace filesystem {
         return _Result._Created;
     }
 
-    // FUNCTION create_directories
     inline bool create_directories(const path& _Path, error_code& _Ec) {
         if (_Path.empty()) {
             _Ec = _Make_ec(__std_win_error::_Path_not_found);
@@ -3844,7 +3799,6 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION remove_all
     inline constexpr int _Remove_all_retry_count = 10;
 
     inline void _Remove_all_dir(const path& _Path, error_code& _Ec, uintmax_t& _Removed_count) {
@@ -3921,7 +3875,6 @@ namespace filesystem {
         return _Removed_count;
     }
 
-    // FUNCTION last_write_time
     _NODISCARD inline __std_win_error _Last_write_time(const path& _Path, file_time_type& _Result) noexcept {
         __std_fs_stats _Stats;
         const auto _Error = __std_fs_get_stats(
@@ -3964,7 +3917,6 @@ namespace filesystem {
         _Ec = _Make_ec(__std_fs_set_last_write_time(_New_time.time_since_epoch().count(), _Target.c_str()));
     }
 
-    // FUNCTION permissions
     enum class perm_options { replace = 0x1, add = 0x2, remove = 0x4, nofollow = 0x8 };
 
     _BITMASK_OPS(perm_options)
@@ -4023,7 +3975,6 @@ namespace filesystem {
         _STD filesystem::permissions(_Target, _Perms, perm_options::replace, _Ec);
     }
 
-    // FUNCTION temp_directory_path
     _NODISCARD inline path temp_directory_path(error_code& _Ec) {
         // get a location suitable for temporary storage, and verify that it is a directory
         _Ec.clear(); // for exception safety
@@ -4050,7 +4001,6 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION current_path
     _NODISCARD inline __std_win_error _Current_path(path& _Result) noexcept {
         _Result._Text.resize(__std_fs_max_path);
         for (;;) {
@@ -4090,7 +4040,6 @@ namespace filesystem {
         }
     }
 
-    // FUNCTION weakly_canonical
     _NODISCARD inline path weakly_canonical(const path& _Input, error_code& _Ec) {
         // eventually calls GetFinalPathNameByHandleW
         _Ec.clear(); // for exception safety
@@ -4153,7 +4102,6 @@ namespace filesystem {
         return _Result;
     }
 
-    // FUNCTION proximate
     _NODISCARD inline path proximate(const path& _Path, const path& _Base = _STD filesystem::current_path()) {
         // eventually calls GetFinalPathNameByHandleW
         const path _Weakly_canonical_path = _STD filesystem::weakly_canonical(_Path);
@@ -4189,7 +4137,6 @@ namespace filesystem {
         return _STD filesystem::proximate(_Path, _Base, _Ec);
     }
 
-    // FUNCTION relative
     _NODISCARD inline path relative(const path& _Path, const path& _Base = _STD filesystem::current_path()) {
         // eventually calls GetFinalPathNameByHandleW
         const path _Weakly_canonical_path = _STD filesystem::weakly_canonical(_Path);
@@ -4225,7 +4172,6 @@ namespace filesystem {
         return _STD filesystem::relative(_Path, _Base, _Ec);
     }
 
-    // FUNCTION copy
     inline void _Copy_impl(
         const directory_entry& _From, const path& _To, const copy_options _Options, error_code& _Ec) {
         // implement copy, does not clear _Ec for callers

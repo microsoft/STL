@@ -18,14 +18,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT messages_base
 struct messages_base : locale::facet { // base class for messages
     using catalog = int;
 
     explicit messages_base(size_t _Refs = 0) : locale::facet(_Refs) {}
 };
 
-// CLASS TEMPLATE messages
 template <class _Elem>
 class messages : public messages_base { // facet for obtaining messages from a catalog
 public:
@@ -92,7 +90,6 @@ protected:
     virtual void __CLR_OR_THIS_CALL do_close(catalog) const {} // close catalog (do nothing)
 };
 
-// STATIC messages::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -105,7 +102,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id messages<_Elem>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS TEMPLATE messages_byname
 template <class _Elem>
 class messages_byname : public messages<_Elem> { // messages for named locale
 public:

@@ -22,7 +22,6 @@ namespace stdext {
     namespace cvt {
         using _Statype = _CSTD mbstate_t;
 
-        // CLASS TEMPLATE codecvt_ebcdic
         template <class _Elem, unsigned char _Maxcode = 0xff>
         class codecvt_ebcdic
             : public _STD

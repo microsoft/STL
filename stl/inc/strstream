@@ -22,7 +22,6 @@ _STD_BEGIN
 _CXX17_DEPRECATE_STRSTREAM typedef int _Header_strstream;
 using _Hdr_strstream = _Header_strstream;
 
-// CLASS strstreambuf
 class strstreambuf : public streambuf { // stream buffer associated with static or allocated character array
 public:
     using _Mysb = streambuf;
@@ -420,12 +419,10 @@ private:
     void(__CLRCALL_OR_CDECL* _Pfree)(void*); // the pointer to free function
 };
 
-// strstreambuf OPERATORS
 inline void swap(strstreambuf& _Left, strstreambuf& _Right) {
     _Left.swap(_Right);
 }
 
-// CLASS istrstream
 class istrstream : public istream { // input stream associated with a character array
 public:
     using _Mybase = istream;
@@ -485,12 +482,10 @@ private:
     _Mysb _Strbuffer; // the string buffer
 };
 
-// istrstream OPERATORS
 inline void swap(istrstream& _Left, istrstream& _Right) {
     _Left.swap(_Right);
 }
 
-// CLASS ostrstream
 class ostrstream : public ostream { // output stream associated with a character array
 public:
     using _Mybase = ostream;
@@ -549,12 +544,10 @@ private:
     _Mysb _Strbuffer; // the string buffer
 };
 
-// ostrstream OPERATORS
 inline void swap(ostrstream& _Left, ostrstream& _Right) {
     _Left.swap(_Right);
 }
 
-// CLASS strstream
 class strstream : public iostream { // input/output stream associated with character array buffer
 public:
     using _Mybase = iostream;
@@ -618,7 +611,6 @@ private:
     _Mysb _Strbuffer; // the string buffer
 };
 
-// strstream OPERATORS
 inline void swap(strstream& _Left, strstream& _Right) {
     _Left.swap(_Right);
 }

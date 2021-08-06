@@ -32,7 +32,6 @@ _STD_BEGIN
 
 namespace pmr {
 
-    // FUNCTION set_default_resource
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_set_default_resource(memory_resource*) noexcept;
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_set_default_resource(memory_resource*) noexcept;
 
@@ -46,7 +45,6 @@ namespace pmr {
 
     extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept;
 
-    // FUNCTION new_delete_resource
     class _Identity_equal_resource : public memory_resource {
     protected:
         bool do_is_equal(const memory_resource& _That) const noexcept override {
@@ -105,7 +103,6 @@ namespace pmr {
     }
 #endif // __cpp_aligned_new
 
-    // CLASS unsynchronized_pool_resource
     template <class _Tag = void>
     struct _Double_link { // base class for intrusive doubly-linked structures
         _Double_link* _Next;
@@ -597,7 +594,6 @@ namespace pmr {
     };
 #endif // _M_CEE
 
-    // CLASS TEMPLATE monotonic_buffer_resource
     class monotonic_buffer_resource : public _Identity_equal_resource {
     public:
         explicit monotonic_buffer_resource(memory_resource* const _Upstream) noexcept // strengthened

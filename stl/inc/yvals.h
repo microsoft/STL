@@ -31,7 +31,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #define __PURE_APPDOMAIN_GLOBAL
 #endif
 
-// CURRENT DLL NAMES
 #ifndef _CRT_MSVCP_CURRENT
 #ifdef _CRT_WINDOWS
 // Windows
@@ -315,14 +314,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif
 #endif // _CRTDATA2_IMPORT
 
-// INTEGER PROPERTIES
+// integer properties
 #define _MAX_EXP_DIG    8 // for parsing numerics
 #define _MAX_INT_DIG    32
 #define _MAX_SIG_DIG_V1 36 // TRANSITION, ABI
 #define _MAX_SIG_DIG_V2 768
 
-// MULTITHREAD PROPERTIES
-// LOCK MACROS
 #define _LOCK_LOCALE         0
 #define _LOCK_MALLOC         1
 #define _LOCK_STREAM         2
@@ -351,7 +348,6 @@ enum _Uninitialized { // tag for suppressing initialization
     _Noinit
 };
 
-// CLASS _Lockit
 class _CRTIMP2_PURE_IMPORT _Lockit { // lock while object in existence -- MUST NEST
 public:
 #ifdef _M_CEE_PURE
@@ -483,7 +479,6 @@ private:
     static void __cdecl _Init_locks_dtor(_Init_locks*) noexcept;
 };
 
-// EXCEPTION MACROS
 #if _HAS_EXCEPTIONS
 #define _TRY_BEGIN try {
 #define _CATCH(x) \
