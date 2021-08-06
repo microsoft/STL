@@ -643,6 +643,17 @@ void test_ispanstream() {
         is.span(get_input_view<CharT>());
         assert(is.span().data() == input_range.data());
         assert(is.span().size() == input_range.size());
+
+        if constexpr (is_same_v<CharT, char>) {
+            const char const_buffer[] = "1 2 3 4 5";
+            basic_ispanstream<CharT> is_const_buffer{span<const CharT>{const_buffer}};
+            int read = 0;
+            for (int expected = 1; expected <= 5; ++expected) {
+                assert(is_const_buffer.good());
+                is_const_buffer >> read;
+                assert(read == expected);
+            }
+        }
 #endif // __cpp_lib_concepts
     }
 

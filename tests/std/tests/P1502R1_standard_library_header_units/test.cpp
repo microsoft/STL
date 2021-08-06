@@ -709,6 +709,17 @@ int main() {
             assert(read == expected);
         }
 
+#ifdef __cpp_lib_concepts
+        const char const_buffer[] = "1 2 3 4 5";
+        basic_ispanstream<char> is_const_buffer{span<const char>{const_buffer}};
+        read = 0;
+        for (int expected = 1; expected <= 5; ++expected) {
+            assert(is_const_buffer.good());
+            is_const_buffer >> read;
+            assert(read == expected);
+        }
+#endif // __cpp_lib_concepts
+
         const auto expected = "102030"sv;
         char obuffer[10];
         ospanstream os{span<char>{obuffer}};
