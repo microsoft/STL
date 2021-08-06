@@ -31,10 +31,8 @@ _STD_BEGIN
 namespace experimental {
 
 #ifndef __EDG__
-    // STRUCT noop_coroutine_promise
     struct noop_coroutine_promise {};
 
-    // STRUCT coroutine_handle<noop_coroutine_promise>
     template <>
     struct coroutine_handle<noop_coroutine_promise> : coroutine_handle<> {
         friend coroutine_handle noop_coroutine() noexcept;
@@ -67,10 +65,8 @@ namespace experimental {
         }
     };
 
-    // ALIAS noop_coroutine_handle
     using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
 
-    // FUNCTION noop_coroutine
     _NODISCARD inline noop_coroutine_handle noop_coroutine() noexcept {
         // Returns a handle to a coroutine that has no observable effects when resumed or destroyed.
         return noop_coroutine_handle{};
