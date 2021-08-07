@@ -6444,9 +6444,7 @@ namespace msvc {
     namespace big_variant {
 #ifdef __EDG__
         constexpr std::size_t big = 20;
-#elif defined(__clang__)
-        constexpr std::size_t big = 256; // Clang supports more, but avoid the test timing out.
-#else // C1XX
+#else // C1XX and Clang
         constexpr std::size_t big = 120;
 #endif // tune value of "big" to a bit less than the largest variant the front-end can handle
         constexpr std::size_t n = 16;
