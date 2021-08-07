@@ -35,7 +35,7 @@ struct Dummy {
 };
 
 template <class T>
-_CONSTEXPR20_OPTIONAL bool test_optional() {
+constexpr bool test_optional() {
     { // empty construction
         optional<T> defaut_constructed;
         assert(!defaut_constructed.has_value());
@@ -180,7 +180,7 @@ _CONSTEXPR20_OPTIONAL bool test_optional() {
 }
 
 template <class T>
-_CONSTEXPR20_VARIANT bool test_variant() {
+constexpr bool test_variant() {
     { // construction from underlying type
         const T input{42};
         variant<Dummy, T> copy_constructed{input};
