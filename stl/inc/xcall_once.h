@@ -17,7 +17,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT once_flag
 struct once_flag { // opaque data structure for call_once()
     constexpr once_flag() noexcept : _Opaque(nullptr) {}
 

@@ -32,7 +32,6 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
-// CLASS TEMPLATE _Basic_syncbuf_impl
 template <class _Elem, class _Traits>
 class _Basic_syncbuf_impl : public basic_streambuf<_Elem, _Traits> {
 public:
@@ -67,7 +66,6 @@ protected:
     bool _Sync_recorded{false};
 };
 
-// CLASS TEMPLATE basic_syncbuf
 template <class _Elem, class _Traits, class _Alloc>
 class basic_syncbuf : public _Basic_syncbuf_impl<_Elem, _Traits> {
 public:
@@ -161,7 +159,7 @@ public:
     }
 
 protected:
-    virtual int sync() override {
+    int sync() override {
         _Mybase::_Sync_recorded = true;
 
         if (_Mybase::_Emit_on_sync) {
@@ -172,7 +170,7 @@ protected:
         return 0;
     }
 
-    virtual int_type overflow(int_type _Current_elem) override {
+    int_type overflow(int_type _Current_elem) override {
         if (!_Wrapped) {
             return _Traits::eof();
         }
@@ -266,7 +264,7 @@ private:
         _STD swap(_Get_mutex(), _Right._Get_mutex());
     }
 
-    virtual bool _Do_emit() override {
+    bool _Do_emit() override {
         return emit();
     }
 
@@ -319,7 +317,6 @@ void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left,
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_osyncstream
 template <class _Elem, class _Traits, class _Alloc>
 class basic_osyncstream : public basic_ostream<_Elem, _Traits> {
 public:

@@ -198,8 +198,8 @@ namespace test {
         constexpr explicit proxy_reference(Element& r) : ref_{r} {}
         proxy_reference(proxy_reference const&) = default;
 
-        constexpr proxy_reference const& operator=(proxy_reference const& that) const
-            requires assignable_from<Element&, Element&> {
+        constexpr proxy_reference const& operator=(
+            proxy_reference const& that) const requires assignable_from<Element&, Element&> {
             ref_ = that.ref_;
             return *this;
         }
@@ -217,13 +217,13 @@ namespace test {
         // clang-format on
 
         template <class Cat, class Elem>
-        [[nodiscard]] constexpr boolish operator==(proxy_reference<Cat, Elem> that) const
-            requires CanEq<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator==(
+            proxy_reference<Cat, Elem> that) const requires CanEq<Element, Elem> {
             return {ref_ == that.peek()};
         }
         template <class Cat, class Elem>
-        [[nodiscard]] constexpr boolish operator!=(proxy_reference<Cat, Elem> that) const
-            requires CanNEq<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator!=(
+            proxy_reference<Cat, Elem> that) const requires CanNEq<Element, Elem> {
             return {ref_ != that.peek()};
         }
         template <class Cat, class Elem>
@@ -235,13 +235,13 @@ namespace test {
             return {ref_ > that.peek()};
         }
         template <class Cat, class Elem>
-        [[nodiscard]] constexpr boolish operator<=(proxy_reference<Cat, Elem> that) const
-            requires CanLtE<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator<=(
+            proxy_reference<Cat, Elem> that) const requires CanLtE<Element, Elem> {
             return {ref_ <= that.peek()};
         }
         template <class Cat, class Elem>
-        [[nodiscard]] constexpr boolish operator>=(proxy_reference<Cat, Elem> that) const
-            requires CanGtE<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator>=(
+            proxy_reference<Cat, Elem> that) const requires CanGtE<Element, Elem> {
             return {ref_ >= that.peek()};
         }
 
@@ -311,7 +311,7 @@ namespace test {
         template <class Cat, class Elem>
             requires convertible_to<Elem&, Ref>
         common_reference(proxy_reference<Cat, Elem> pref) : ref_{pref.peek()} {}
-        // clang-format on
+            // clang-format on
     };
 } // namespace test
 
@@ -326,6 +326,14 @@ template <class T, class Cat, class Elem, template <class> class TQuals, templat
     requires std::common_reference_with<TQuals<T>, Elem&>
 struct std::basic_common_reference<T, ::test::proxy_reference<Cat, Elem>, TQuals, UQuals> {
     using type = common_reference_t<TQuals<T>, Elem&>;
+};
+
+template <class Cat1, class Elem1, class Cat2, class Elem2, template <class> class TQuals,
+    template <class> class UQuals>
+    requires std::common_reference_with<Elem1&, Elem2&>
+struct std::basic_common_reference<::test::proxy_reference<Cat1, Elem1>, ::test::proxy_reference<Cat2, Elem2>, TQuals,
+    UQuals> {
+    using type = common_reference_t<Elem1&, Elem2&>;
 };
 // clang-format on
 
@@ -1311,11 +1319,11 @@ struct get_nth_fn {
     { return get<I>(std::forward<T>(t)); }
 
     template <class T, class Elem>
-    [[nodiscard]] constexpr decltype(auto) operator()(test::proxy_reference<T, Elem> r) const noexcept
-        requires requires {
+    [[nodiscard]] constexpr decltype(auto) operator()(
+        test::proxy_reference<T, Elem> r) const noexcept requires requires {
         (*this)(r.peek());
     }
-    { return (*this)(r.peek()); }
+    { return (*this) (r.peek()); }
 };
 inline constexpr get_nth_fn<0> get_first;
 inline constexpr get_nth_fn<1> get_second;

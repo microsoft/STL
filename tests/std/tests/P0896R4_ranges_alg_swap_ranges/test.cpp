@@ -95,6 +95,8 @@ constexpr void run_tests() {
     instantiator::call<test_range<bidi, ProxyRef::yes>, test_range<input, ProxyRef::yes>>();
     instantiator::call<test_range<random, ProxyRef::yes>, test_range<input, ProxyRef::yes>>();
     instantiator::call<test_range<contiguous, ProxyRef::no>, test_range<input, ProxyRef::yes>>();
+
+    instantiator::call<test_range<contiguous, ProxyRef::no>, test_range<contiguous, ProxyRef::no>>();
 }
 
 int main() {

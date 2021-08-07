@@ -3,12 +3,14 @@
 
 #include <array>
 #include <assert.h>
+#include <deque>
 #include <sstream>
 #include <stdexcept>
 #include <stdlib.h>
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <vector>
 
 #include <constexpr_char_traits.hpp>
 
@@ -66,6 +68,11 @@ const evil_conversion_to_string_view_lvalue_only convert_lvalue_only{};
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif // __clang__
+
+// We provide a non-standard guarantee that basic_string_view is trivially copyable;
+// P2251 may eventually standardize that guarantee.
+static_assert(is_trivially_copyable_v<string_view>);
+static_assert(is_trivially_copyable_v<wstring_view>);
 
 // noexcept assertions:
 // (functions that explicitly throw have their throws tested and therefore have no static_asserts)
@@ -323,6 +330,31 @@ constexpr bool test_case_contiguous_constructor() {
     return true;
 }
 
+constexpr bool test_case_range_constructor() {
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+    const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
+    // Also tests the corresponding deduction guide:
+    same_as<string_view> auto sv = basic_string_view(expectedData);
+    assert(sv.data() == expectedData.data());
+    assert(sv.size() == 7);
+
+    // Also tests some of the constraints:
+    static_assert(is_constructible_v<string_view, vector<char>>);
+    static_assert(is_convertible_v<vector<char>, string_view>);
+
+    static_assert(!is_constructible_v<string_view, deque<char>>); // not contiguous
+    static_assert(!is_convertible_v<deque<char>, string_view>);
+
+    static_assert(!is_constructible_v<string_view, vector<unsigned char>>); // different elements
+    static_assert(!is_convertible_v<vector<unsigned char>, string_view>);
+
+    static_assert(!is_constructible_v<string_view, basic_string<char, constexpr_char_traits>>); // different traits
+    static_assert(!is_convertible_v<basic_string<char, constexpr_char_traits>, string_view>);
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
+    return true;
+}
+
 template <class CharT, class Traits>
 constexpr bool test_case_iterators() {
     using iterator = typename basic_string_view<CharT, Traits>::iterator;
@@ -359,7 +391,11 @@ constexpr bool test_case_iterators() {
     assert(*testIterator == static_cast<CharT>('h'));
     testIterator += 8;
     assert(*testIterator == static_cast<CharT>('r'));
+#if defined(__EDG__) && defined(_M_X64) // TRANSITION, VSO-1356637
+    testIterator -= 4;
+#else // ^^^ workaround / no workaround vvv
     testIterator += -4;
+#endif // ^^^ no workaround ^^^
     assert(*testIterator == static_cast<CharT>('o'));
 
     assert(*(testIterator + 6) == static_cast<CharT>('d'));
@@ -1157,6 +1193,7 @@ static_assert(test_case_default_constructor());
 static_assert(test_case_ntcts_constructor<constexpr_char_traits>());
 static_assert(test_case_buffer_constructor());
 static_assert(test_case_contiguous_constructor());
+static_assert(test_case_range_constructor());
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-284079 "C1XX's C++14 constexpr emits bogus warnings C4146,
                                            // C4308, C4307 for basic_string_view::iterator"
 static_assert(test_case_iterators<char, constexpr_char_traits>());
@@ -1212,6 +1249,7 @@ int main() {
     test_case_ntcts_constructor();
     test_case_buffer_constructor();
     test_case_contiguous_constructor();
+    test_case_range_constructor();
     test_case_iterators<char, char_traits<char>>();
     test_case_iterators<wchar_t, char_traits<wchar_t>>();
     test_case_prefix<char, char_traits<char>>();
