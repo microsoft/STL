@@ -4596,7 +4596,14 @@ int run_test()
         typedef X T;
         static_assert(!std::is_trivially_destructible<T>::value, "");
         static_assert(!std::is_trivially_destructible<optional<T>>::value, "");
+
+#if _HAS_CXX20 && !defined(__clang__) // ***FIXME***, NOT YET INVESTIGATED!
+        // P2231R1 Completing constexpr In optional And variant
+        static_assert(std::is_literal_type<optional<T>>::value, "");
+#else // ^^^ after P2231R1 / before P2231R1 vvv
         static_assert(!std::is_literal_type<optional<T>>::value, "");
+#endif // ^^^ before P2231R1 ^^^
+
         {
             X x;
             optional<X> opt{x};
