@@ -1185,8 +1185,7 @@ STATIC_ASSERT(__cpp_lib_not_fn == 201603L);
 STATIC_ASSERT(__cpp_lib_null_iterators == 201304L);
 #endif
 
-#if defined(__cpp_lib_constexpr_dynamic_alloc) \
-    && (defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING))
+#if _HAS_CXX20
 #ifndef __cpp_lib_optional
 #error __cpp_lib_optional is not defined
 #elif __cpp_lib_optional != 202106L
@@ -1698,8 +1697,7 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #endif
 #endif
 
-#if defined(__cpp_lib_constexpr_dynamic_alloc) \
-    && (defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING))
+#if _HAS_CXX20
 #ifndef __cpp_lib_variant
 #error __cpp_lib_variant is not defined
 #elif __cpp_lib_variant != 202106L
