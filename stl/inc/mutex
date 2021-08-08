@@ -33,7 +33,6 @@ _STD_BEGIN
 class condition_variable;
 class condition_variable_any;
 
-// MUTUAL EXCLUSION
 class _Mutex_base { // base class for all mutex types
 public:
     _Mutex_base(int _Flags = 0) noexcept {
@@ -106,7 +105,6 @@ public:
 };
 #endif // _M_CEE
 
-// LOCK PROPERTIES
 struct adopt_lock_t { // indicates adopt lock
     explicit adopt_lock_t() = default;
 };
@@ -123,13 +121,11 @@ _INLINE_VAR constexpr adopt_lock_t adopt_lock{};
 _INLINE_VAR constexpr defer_lock_t defer_lock{};
 _INLINE_VAR constexpr try_to_lock_t try_to_lock{};
 
-// CLASS TEMPLATE unique_lock
 template <class _Mutex>
 class unique_lock { // whizzy class with destructor that unlocks mutex
 public:
     using mutex_type = _Mutex;
 
-    // CONSTRUCT, ASSIGN, AND DESTROY
     unique_lock() noexcept : _Pmtx(nullptr), _Owns(false) {}
 
     _NODISCARD_CTOR explicit unique_lock(_Mutex& _Mtx)
@@ -276,20 +272,17 @@ private:
     }
 };
 
-// FUNCTION TEMPLATE swap FOR unique_lock
 template <class _Mutex>
 void swap(unique_lock<_Mutex>& _Left, unique_lock<_Mutex>& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-// FUNCTION TEMPLATE _Lock_from_locks
 template <size_t... _Indices, class... _LockN>
 void _Lock_from_locks(const int _Target, index_sequence<_Indices...>, _LockN&... _LkN) { // lock _LkN[_Target]
     int _Ignored[] = {((static_cast<int>(_Indices) == _Target ? (void) _LkN.lock() : void()), 0)...};
     (void) _Ignored;
 }
 
-// FUNCTION TEMPLATE _Try_lock_from_locks
 template <size_t... _Indices, class... _LockN>
 bool _Try_lock_from_locks(
     const int _Target, index_sequence<_Indices...>, _LockN&... _LkN) { // try to lock _LkN[_Target]
@@ -299,7 +292,6 @@ bool _Try_lock_from_locks(
     return _Result;
 }
 
-// FUNCTION TEMPLATE _Unlock_locks
 template <size_t... _Indices, class... _LockN>
 void _Unlock_locks(const int _First, const int _Last, index_sequence<_Indices...>, _LockN&... _LkN) noexcept
 /* terminates */ {
@@ -310,7 +302,6 @@ void _Unlock_locks(const int _First, const int _Last, index_sequence<_Indices...
     (void) _Ignored;
 }
 
-// FUNCTION TEMPLATE try_lock
 template <class... _LockN>
 int _Try_lock_range(const int _First, const int _Last, _LockN&... _LkN) {
     using _Indices = index_sequence_for<_LockN...>;
@@ -360,7 +351,6 @@ _NODISCARD int try_lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // try to
     return _Try_lock1(_Lk0, _Lk1, _LkN...);
 }
 
-// FUNCTION TEMPLATE lock
 template <class... _LockN>
 int _Lock_attempt(const int _Hard_lock, _LockN&... _LkN) {
     // attempt to lock 3 or more locks, starting by locking _LkN[_Hard_lock] and trying to lock the rest
@@ -428,7 +418,6 @@ void lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // lock multiple locks,
     _Lock_nonmember1(_Lk0, _Lk1, _LkN...);
 }
 
-// CLASS TEMPLATE lock_guard
 template <class _Mutex>
 class _NODISCARD lock_guard { // class with destructor that unlocks a mutex
 public:
@@ -452,7 +441,6 @@ private:
 };
 
 #if _HAS_CXX17
-// CLASS TEMPLATE scoped_lock
 template <class... _Mutexes>
 class _NODISCARD scoped_lock { // class with destructor that unlocks mutexes
 public:
@@ -507,7 +495,6 @@ public:
 };
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE call_once
 #ifdef _M_CEE
 #define _WINDOWS_API              __stdcall
 #define _RENAME_WINDOWS_API(_Api) _Api##_clr

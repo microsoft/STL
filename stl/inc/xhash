@@ -33,7 +33,6 @@ namespace stdext {
     using _STD less;
     using _STD size_t;
 
-    // FUNCTION TEMPLATE hash_value
     template <class _Kty>
     _NODISCARD size_t hash_value(const _Kty& _Keyval) noexcept {
         if constexpr (_STD is_pointer_v<_Kty> || _STD is_null_pointer_v<_Kty>) {
@@ -56,7 +55,6 @@ namespace stdext {
         return _STD _Hash_array_representation(_Str, _CSTD wcslen(_Str));
     }
 
-    // CLASS TEMPLATE hash_compare
     template <class _Kty, class _Pr = less<_Kty>>
     class hash_compare { // traits class for hash containers
     public:
@@ -113,7 +111,6 @@ template <class _Hasher, class _Kty>
 _INLINE_VAR constexpr bool _Nothrow_hash = noexcept(
     static_cast<size_t>(_STD declval<const _Hasher&>()(_STD declval<const _Kty&>())));
 
-// CLASS TEMPLATE _Uhash_compare
 template <class _Kty, class _Hasher, class _Keyeq>
 class _Uhash_compare
     : public _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq> { // traits class for unordered containers
@@ -167,7 +164,6 @@ public:
     _Compressed_pair<_Hasher, _Compressed_pair<_Keyeq, float>> _Mypair;
 };
 
-// CLASS TEMPLATE _Reinterpret_move_iter
 template <class _Iter, class _Val>
 struct _Reinterpret_move_iter {
     _Iter _Base;
@@ -206,7 +202,6 @@ struct _Reinterpret_move_iter {
 #endif // !_HAS_CXX20
 };
 
-// STRUCT TEMPLATE _List_head_construct_ptr
 template <class _Alnode>
 struct _List_head_construct_ptr {
     using value_type = typename _Alnode::value_type;
@@ -320,7 +315,6 @@ struct _Hash_vec {
     _Compressed_pair<_Aliter, _Aliter_scary_val> _Mypair;
 };
 
-// CLASS TEMPLATE _Hash
 template <class _Traits>
 class _Hash { // hash table -- list with vector of iterators for quick access
 protected:
@@ -1938,7 +1932,7 @@ protected:
 };
 
 #if _HAS_CXX17
-// ALIAS TEMPLATE _Is_hasher FOR CONSTRAINING DEDUCTION GUIDES, N4687 26.2.7 [unord.req]/17.3
+// For constraining deduction guides (N4892 [unord.req]/18.3)
 template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17
