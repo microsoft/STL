@@ -1068,6 +1068,9 @@
 #define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
 #endif // ^^^ warning disabled ^^^
 
+// STL4033 is used to warn about the contents of some header is available only with specific C++ standard or later. See
+// example at stl/inc/any, line 13
+
 // next warning number: STL4034
 
 // P0619R4 Removing C++17-Deprecated Features
