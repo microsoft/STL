@@ -307,17 +307,15 @@ constexpr bool test_variant() {
 int main() {
     test_optional<With_trivial_destrutor>();
     test_optional<With_nontrivial_destrutor>();
-#if defined(__cpp_lib_constexpr_dynamic_alloc) \
-    && (defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING))
+#if defined(__clang__) || defined(__EDG__)
     static_assert(test_optional<With_trivial_destrutor>());
     static_assert(test_optional<With_nontrivial_destrutor>());
-#endif // __cpp_lib_constexpr_dynamic_alloc && (__clang__ || __EDG__ || MSVC_INTERNAL_TESTING)
+#endif // __clang__ || __EDG__
 
     test_variant<With_trivial_destrutor>();
     test_variant<With_nontrivial_destrutor>();
-#if defined(__cpp_lib_constexpr_dynamic_alloc) \
-    && (defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING))
+#if defined(__clang__) || defined(__EDG__)
     static_assert(test_variant<With_trivial_destrutor>());
     static_assert(test_variant<With_nontrivial_destrutor>());
-#endif // __cpp_lib_constexpr_dynamic_alloc && (__clang__ || __EDG__ || MSVC_INTERNAL_TESTING)
+#endif // __clang__ || __EDG__
 }

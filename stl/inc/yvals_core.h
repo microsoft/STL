@@ -1325,13 +1325,17 @@
 
 #if _HAS_CXX20
 #define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
-#define __cpp_lib_optional        202106L // P2231R1 Completing constexpr In optional And variant
-#define __cpp_lib_variant         202106L // P2231R1 Completing constexpr In optional And variant
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
-#define __cpp_lib_optional        201606L // P0307R2 Making Optional Greater Equal Again
-#define __cpp_lib_variant         202102L // P2162R2 Inheriting From variant
 #endif // _HAS_CXX17
+
+#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__))
+#define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
+#define __cpp_lib_variant  202106L // P2231R1 Completing constexpr In optional And variant
+#elif _HAS_CXX17 // ^^^ _HAS_CXX20 non MSVC / _HAS_CXX17 or MSVC vvv
+#define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
+#define __cpp_lib_variant  202102L // P2162R2 Inheriting From variant
+#endif // _HAS_CXX17 or MSVC vvv
 
 #if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
