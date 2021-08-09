@@ -324,13 +324,13 @@ const test_case_data test_data[] = {{{U'\x20', U'\x20'}, {0ull, 1ull, 2ull}},
 
 
 bool run_unicode_test_data_utf32() {
-    for (auto& test : test_data) {
-        _Grapheme_break_property_iterator<char32_t> iter(
-            test.code_points.data(), test.code_points.data() + test.code_points.size());
-        int i = 0;
+    for (size_t test_idx = 0; test_idx < size(test_data); ++test_idx) {
+        _Grapheme_break_property_iterator<char32_t> iter(test_data[test_idx].code_points.data(),
+            test_data[test_idx].code_points.data() + test_data[test_idx].code_points.size());
+        size_t i = 0;
         while (iter != _Grapheme_break_property_end_iterator{}) {
-            assert(i < test.breaks.size());
-            assert(*iter == test.code_points[test.breaks[i]]);
+            assert(i < test_data[test_idx].breaks.size());
+            assert(*iter == test_data[test_idx].code_points[test_data[test_idx].breaks[i]]);
             ++iter;
             ++i;
         }
@@ -398,7 +398,6 @@ constexpr bool test_utf16_decode() {
 }
 
 int main() {
-    _set_error_mode(_OUT_TO_MSGBOX);
     test_unicode_properties();
     static_assert(test_unicode_properties());
 
@@ -407,6 +406,8 @@ int main() {
 
     test_utf16_decode();
     static_assert(test_utf16_decode());
+
+    run_unicode_test_data_utf32();
 
     static_assert(forward_iterator<_Unicode_codepoint_iterator<char>>);
     static_assert(sentinel_for<_Unicode_codepoint_end_iterator, _Unicode_codepoint_iterator<char>>);

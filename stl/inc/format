@@ -713,6 +713,9 @@ public:
                 return false;
             }
             return false;
+        default:
+            _STL_ASSERT(false, "Invalid GB11 state.");
+            return false;
         }
     }
 };
@@ -761,9 +764,11 @@ public:
             // match GB11 now, so that we're sure to update it for every character, not just ones where
             // the GB11 rule is considered
             bool _GB11_Match = _GB11_rx._Match(_Left_gbp, _Left_ExtPic);
-            // Also update the nubmer of RIs immediately
+            // Also update the nubmer of sequential RIs immediately
             if (_Left_gbp == _Grapheme_Break_Property_Values::_Regional_Indicator_value) {
                 ++_Num_RIs;
+            } else {
+                _Num_RIs = 0;
             }
             if (_Left_gbp == _Grapheme_Break_Property_Values::_CR_value
                 && _Right_gbp == _Grapheme_Break_Property_Values::_LF_value) {
@@ -810,8 +815,10 @@ public:
             if (_GB11_Match && _Right_ExtPic == _Extended_Pictographic_Property_Values::_Extended_Pictographic_value) {
                 continue; // GB11 \p{ExtendedPictographic} Extend* ZWJ x \p{ExtendedPictographc}
             }
-            if (_Num_RIs % 2 != 0) {
-                continue; // GB12 and 13, do not break if there are an odd number of RIs before the breakpoint
+            if (_Left_gbp == _Grapheme_Break_Property_Values::_Regional_Indicator_value
+                && _Right_gbp == _Grapheme_Break_Property_Values::_Regional_Indicator_value && _Num_RIs % 2 != 0) {
+                continue; // GB12 and 13, do not break between RIs if there are an odd number of RIs before the
+                          // breakpoint
             }
             return *this;
         }
