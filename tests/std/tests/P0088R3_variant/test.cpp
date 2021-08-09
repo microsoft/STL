@@ -6445,7 +6445,7 @@ namespace msvc {
 #ifdef __EDG__
         constexpr std::size_t big = 20;
 #else // C1XX and Clang
-        constexpr std::size_t big = 120;
+        constexpr std::size_t big = 64;
 #endif // tune value of "big" to a bit less than the largest variant the front-end can handle
         constexpr std::size_t n = 16;
 
