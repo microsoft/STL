@@ -147,6 +147,8 @@ acquire this dependency.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.20 or later, and [Ninja][] 1.10.2 or later.
+    * We recommend selecting "Python 3".
+    * Otherwise, make sure Python 3.9 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
@@ -162,6 +164,8 @@ acquire this dependency.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.20 or later, and [Ninja][] 1.10.2 or later.
+    * We recommend selecting "Python 3".
+    * Otherwise, make sure Python 3.9 or later is available to CMake.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
 4. `git clone https://github.com/microsoft/STL`
