@@ -535,7 +535,7 @@ int main() {
     { // P2328 range of prvalue vector using global function
         static constexpr int result[] = {1, 2, 3, 4, 5};
         assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
-#if defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-934264
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
 #endif // not MSVC
     }
@@ -544,14 +544,14 @@ int main() {
         static constexpr int result[] = {1, 2, 3, 4, 5};
         auto ToVectorLambda           = [](const int i) { return vector{i + 1}; };
         assert(ranges::equal(views::iota(0, 5) | views::transform(ToVectorLambda) | views::join, result));
-#if defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-934264
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVectorLambda) | views::join, result));
 #endif // not MSVC
     }
 
     { // P2328 range of prvalue string using global function
         assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
-#if defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-934264
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
 #endif // not MSVC
     }
@@ -559,7 +559,7 @@ int main() {
     { // P2328 range of prvalue string using lambda
         auto ToStringLambda = [](const size_t i) { return string{prvalue_input[i]}; };
         assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
-#if defined(__clang__) || defined(__EDG__) || defined(MSVC_INTERNAL_TESTING) // TRANSITION, VSO-934264
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
 #endif // not MSVC
     }
