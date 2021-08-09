@@ -1425,9 +1425,6 @@ namespace test_constructible_from {
     STATIC_ASSERT(test<int&, ExplicitTo<int&>>());
     STATIC_ASSERT(test<int const&, ExplicitTo<int&>>());
     STATIC_ASSERT(test<int const&, ExplicitTo<int&>&>());
-#if defined(__clang__) // TRANSITION, VSO-1357053 (MSVC) and VSO-1357056 (EDG)
-    STATIC_ASSERT(test<int const&, ExplicitTo<int&&>>());
-#endif // TRANSITION, VSO-1357053 (MSVC) and VSO-1357056 (EDG)
 
     struct Multiparameter {
         explicit Multiparameter(int);
