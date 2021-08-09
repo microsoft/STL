@@ -55,6 +55,20 @@ extern "C" {
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept {
 #if !defined(_M_ARM64EC)
+    constexpr size_t _Mask_64 = ~((static_cast<size_t>(1) << 6) - 1);
+    if (_Byte_length(_First1, _Last1) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX512)) {
+        const void* _Stop_at = _First1;
+        _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_64);
+        do {
+            const __m512i _Left  = _mm512_loadu_si512(static_cast<__m512i*>(_First1));
+            const __m512i _Right = _mm512_loadu_si512(static_cast<__m512i*>(_First2));
+            _mm512_storeu_si512(static_cast<__m256i*>(_First1), _Right);
+            _mm512_storeu_si512(static_cast<__m256i*>(_First2), _Left);
+            _Advance_bytes(_First1, 64);
+            _Advance_bytes(_First2, 64);
+        } while (_First1 != _Stop_at);
+    }
+
     constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
     if (_Byte_length(_First1, _Last1) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const void* _Stop_at = _First1;
@@ -138,6 +152,29 @@ void* __cdecl __std_swap_ranges_trivially_swappable(void* _First1, void* _Last1,
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _First, void* _Last) noexcept {
 #if !defined(_M_ARM64EC)
+    if (_Byte_length(_First, _Last) >= 128 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX512)) {
+        const __m512i _Reverse_8x64bit_avx512 = _mm512_set_epi64(1, 0, 3, 2, 5, 4, 7, 6);
+        const __m512i _Reverse_8x8bit_avx512  = _mm512_set_epi8( //
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+        const void* _Stop_at                  = _First;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 7 << 6);
+        do {
+            _Advance_bytes(_Last, -64);
+            const __m512i _Left               = _mm512_loadu_si512(static_cast<__m512i*>(_First));
+            const __m512i _Right              = _mm512_loadu_si512(static_cast<__m512i*>(_Last));
+            const __m512i _Left_lane_swapped  = _mm512_permutexvar_epi64(_Reverse_8x64bit_avx512, _Left);
+            const __m512i _Right_lane_swapped = _mm512_permutexvar_epi64(_Reverse_8x64bit_avx512, _Right);
+            const __m512i _Left_reversed      = _mm512_shuffle_epi8(_Left_lane_swapped, _Reverse_8x8bit_avx512);
+            const __m512i _Right_reversed     = _mm512_shuffle_epi8(_Right_lane_swapped, _Reverse_8x8bit_avx512);
+            _mm512_storeu_si512(static_cast<__m512i*>(_First), _Right_reversed);
+            _mm512_storeu_si512(static_cast<__m512i*>(_Last), _Left_reversed);
+            _Advance_bytes(_First, 64);
+        } while (_First != _Stop_at);
+    }
+
     if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
@@ -180,6 +217,23 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept {
 #if !defined(_M_ARM64EC)
+    if (_Byte_length(_First, _Last) >= 128 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX512)) {
+        const __m512i _Reverse_32x16bit_avx512 = _mm512_set_epi16(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31);
+        const void* _Stop_at                   = _First;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 7 << 6);
+        do {
+            _Advance_bytes(_Last, -64);
+            const __m512i _Left           = _mm512_loadu_si512(static_cast<__m512i*>(_First));
+            const __m512i _Right          = _mm512_loadu_si512(static_cast<__m512i*>(_Last));
+            const __m512i _Left_reversed  = _mm512_permutexvar_epi16(_Reverse_32x16bit_avx512, _Left);
+            const __m512i _Right_reversed = _mm512_permutexvar_epi16(_Reverse_32x16bit_avx512, _Right);
+            _mm512_storeu_si512(static_cast<__m512i*>(_First), _Right_reversed);
+            _mm512_storeu_si512(static_cast<__m512i*>(_Last), _Left_reversed);
+            _Advance_bytes(_First, 64);
+        } while (_First != _Stop_at);
+    }
+
     if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
@@ -220,6 +274,22 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept {
 #if !defined(_M_ARM64EC)
+    if (_Byte_length(_First, _Last) >= 128 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX512)) {
+        const __m512i _Reverse_16x32bit_avx512 = _mm512_set_epi32(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+        const void* _Stop_at                   = _First;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 7 << 6);
+        do {
+            _Advance_bytes(_Last, -64);
+            const __m512i _Left           = _mm512_loadu_si512(static_cast<__m512i*>(_First));
+            const __m512i _Right          = _mm512_loadu_si512(static_cast<__m512i*>(_Last));
+            const __m512i _Left_reversed  = _mm512_permutexvar_epi32(_Reverse_16x32bit_avx512, _Left);
+            const __m512i _Right_reversed = _mm512_permutexvar_epi32(_Reverse_16x32bit_avx512, _Right);
+            _mm512_storeu_si512(static_cast<__m512i*>(_First), _Right_reversed);
+            _mm512_storeu_si512(static_cast<__m512i*>(_Last), _Left_reversed);
+            _Advance_bytes(_First, 64);
+        } while (_First != _Stop_at);
+    }
+
     if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
@@ -260,6 +330,22 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept {
 #if !defined(_M_ARM64EC)
+    if (_Byte_length(_First, _Last) >= 128 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX512)) {
+        const __m512i _Reverse_8x64bit_avx512 = _mm512_set_epi64(0, 1, 2, 3, 4, 5, 6, 7);
+        const void* _Stop_at                  = _First;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 7 << 6);
+        do {
+            _Advance_bytes(_Last, -64);
+            const __m512i _Left           = _mm512_loadu_si512(static_cast<__m512i*>(_First));
+            const __m512i _Right          = _mm512_loadu_si512(static_cast<__m512i*>(_Last));
+            const __m512i _Left_reversed  = _mm512_permutexvar_epi64(_Reverse_8x64bit_avx512, _Left);
+            const __m512i _Right_reversed = _mm512_permutexvar_epi64(_Reverse_8x64bit_avx512, _Right);
+            _mm512_storeu_si512(static_cast<__m512i*>(_First), _Right_reversed);
+            _mm512_storeu_si512(static_cast<__m512i*>(_Last), _Left_reversed);
+            _Advance_bytes(_First, 64);
+        } while (_First != _Stop_at);
+    }
+
     if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
@@ -301,6 +387,25 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept {
 #if !defined(_M_ARM64EC)
+    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX512)) {
+        const __m512i _Reverse_8x64bit_avx512 = _mm512_set_epi64(1, 0, 3, 2, 5, 4, 7, 6);
+        const __m512i _Reverse_8x8bit_avx512  = _mm512_set_epi8( //
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+        const void* _Stop_at                  = _Dest;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 6);
+        do {
+            _Advance_bytes(_Last, -64);
+            const __m512i _Block              = _mm512_loadu_si512(static_cast<const __m512i*>(_Last));
+            const __m512i _Block_lane_swapped = _mm512_permutexvar_epi64(_Reverse_8x64bit_avx512, _Block);
+            const __m512i _Block_reversed     = _mm512_shuffle_epi8(_Block_lane_swapped, _Reverse_8x8bit_avx512);
+            _mm512_storeu_si512(static_cast<__m512i*>(_Dest), _Block_reversed);
+            _Advance_bytes(_Dest, 64);
+        } while (_Dest != _Stop_at);
+    }
+
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
@@ -337,6 +442,20 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
     const void* _First, const void* _Last, void* _Dest) noexcept {
 #if !defined(_M_ARM64EC)
+    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX512)) {
+        const __m512i _Reverse_32x16bit_avx512 = _mm512_set_epi16(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31);
+        const void* _Stop_at                   = _Dest;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 6);
+        do {
+            _Advance_bytes(_Last, -64);
+            const __m512i _Block          = _mm512_loadu_si512(static_cast<const __m512i*>(_Last));
+            const __m512i _Block_reversed = _mm512_permutexvar_epi16(_Reverse_32x16bit_avx512, _Block);
+            _mm512_storeu_si512(static_cast<__m512i*>(_Dest), _Block_reversed);
+            _Advance_bytes(_Dest, 64);
+        } while (_Dest != _Stop_at);
+    }
+
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
@@ -373,6 +492,19 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept {
 #if !defined(_M_ARM64EC)
+    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX512)) {
+        const __m512i _Reverse_16x32bit_avx512 = _mm512_set_epi32(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+        const void* _Stop_at                   = _Dest;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 6);
+        do {
+            _Advance_bytes(_Last, -64);
+            const __m512i _Block          = _mm512_loadu_si512(static_cast<const __m512i*>(_Last));
+            const __m512i _Block_reversed = _mm512_permutexvar_epi32(_Reverse_16x32bit_avx512, _Block);
+            _mm512_storeu_si512(static_cast<__m512i*>(_Dest), _Block_reversed);
+            _Advance_bytes(_Dest, 64);
+        } while (_Dest != _Stop_at);
+    }
+
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
@@ -409,6 +541,19 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept {
 #if !defined(_M_ARM64EC)
+    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX512)) {
+        const __m512i _Reverse_8x64bit_avx512 = _mm512_set_epi64(0, 1, 2, 3, 4, 5, 6, 7);
+        const void* _Stop_at                  = _Dest;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 6);
+        do {
+            _Advance_bytes(_Last, -64);
+            const __m512i _Block          = _mm512_loadu_si512(static_cast<const __m512i*>(_Last));
+            const __m512i _Block_reversed = _mm512_permutexvar_epi64(_Reverse_8x64bit_avx512, _Block);
+            _mm512_storeu_si512(static_cast<__m512i*>(_Dest), _Block_reversed);
+            _Advance_bytes(_Dest, 64);
+        } while (_Dest != _Stop_at);
+    }
+
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
