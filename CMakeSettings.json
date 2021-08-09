@@ -5,52 +5,52 @@
       "buildCommandArgs": "-v",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "cmakeCommandArgs": "",
+      "cmakeToolchain": "${projectDir}\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake",
       "configurationType": "Debug",
       "ctestCommandArgs": "",
       "generator": "Ninja",
       "inheritEnvironments": [ "msvc_x86" ],
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "variables": [],
-      "cmakeToolchain": "./vcpkg/scripts/buildsystems/vcpkg.cmake"
+      "variables": []
     },
     {
       "name": "x64",
       "buildCommandArgs": "-v",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "cmakeCommandArgs": "",
+      "cmakeToolchain": "${projectDir}\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake",
       "configurationType": "Debug",
       "ctestCommandArgs": "",
       "generator": "Ninja",
       "inheritEnvironments": [ "msvc_x64_x64" ],
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "variables": [],
-      "cmakeToolchain": "./vcpkg/scripts/buildsystems/vcpkg.cmake"
+      "variables": []
     },
     {
       "name": "ARM",
       "buildCommandArgs": "-v",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "cmakeCommandArgs": "",
+      "cmakeToolchain": "${projectDir}\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake",
       "configurationType": "Debug",
       "ctestCommandArgs": "",
       "generator": "Ninja",
       "inheritEnvironments": [ "msvc_arm" ],
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "variables": [],
-      "cmakeToolchain": "./vcpkg/scripts/buildsystems/vcpkg.cmake"
+      "variables": []
     },
     {
       "name": "ARM64",
       "buildCommandArgs": "-v",
       "buildRoot": "${projectDir}\\out\\build\\${name}",
       "cmakeCommandArgs": "",
+      "cmakeToolchain": "${projectDir}\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake",
       "configurationType": "Debug",
       "ctestCommandArgs": "",
       "generator": "Ninja",
       "inheritEnvironments": [ "msvc_arm64" ],
       "installRoot": "${projectDir}\\out\\install\\${name}",
-      "variables": [],
-      "cmakeToolchain": "./vcpkg/scripts/buildsystems/vcpkg.cmake"
+      "variables": []
     }
   ]
 }
