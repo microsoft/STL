@@ -78,11 +78,11 @@ namespace {
         _Test_reverse_oracle(reinterpret_cast<_Integer*>(test_oracle.data()),
             reinterpret_cast<_Integer*>(test_oracle.data() + test_oracle.size()));
 
-        asssert(test_oracle != test_vector);
+        assert(test_oracle != test_vector);
 
         swap_fn(test_vector.data(), test_vector.data() + test_vector.size());
 
-        asssert(test_oracle == test_vector);
+        assert(test_oracle == test_vector);
     }
 
     template <typename _Integer>
@@ -103,11 +103,11 @@ namespace {
         ::std::vector<unsigned char> test_vector{/* */};
         test_vector.resize(num_of_samples);
 
-        asssert(test_oracle != test_vector);
+        assert(test_oracle != test_vector);
 
         swap_fn(test_source.data(), test_source.data() + test_source.size(), test_vector.data());
 
-        asssert(test_oracle == test_vector);
+        assert(test_oracle == test_vector);
     }
 
 } // namespace
