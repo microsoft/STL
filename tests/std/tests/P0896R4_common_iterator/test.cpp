@@ -195,23 +195,23 @@ bool test_operator_arrow() {
 }
 
 struct poor_sentinel {
-    template <weakly_incrementable _Winc>
-    [[nodiscard]] constexpr bool operator==(const _Winc&) const noexcept {
+    template <weakly_incrementable Winc>
+    [[nodiscard]] constexpr bool operator==(const Winc&) const noexcept {
         return true;
     }
 
-    template <weakly_incrementable _Winc>
-    [[nodiscard]] constexpr iter_difference_t<_Winc> operator-(const _Winc&) const noexcept {
+    template <weakly_incrementable Winc>
+    [[nodiscard]] constexpr iter_difference_t<Winc> operator-(const Winc&) const noexcept {
         return 0;
     }
 
-    template <weakly_incrementable _Winc>
-    [[nodiscard]] friend constexpr iter_difference_t<_Winc> operator-(const _Winc&, const poor_sentinel&) noexcept {
+    template <weakly_incrementable Winc>
+    [[nodiscard]] friend constexpr iter_difference_t<Winc> operator-(const Winc&, const poor_sentinel&) noexcept {
         return 0;
     }
 };
 
-void test_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
+void test_gh_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
     {
         int x = 42;
         common_iterator<int*, unreachable_sentinel_t> it1{&x};
@@ -232,5 +232,5 @@ int main() {
 
     test_operator_arrow();
 
-    test_2065();
+    test_gh_2065();
 }

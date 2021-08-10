@@ -994,10 +994,10 @@ public:
         return _RANGES iter_swap(_Left._Val._Iterator, _Right_val._Iterator);
     }
 
-    _Variantish<_Iter, _Se>& _Get_val() {
+    _NODISCARD _Variantish<_Iter, _Se>& _Get_val() noexcept {
         return _Val;
     }
-    const _Variantish<_Iter, _Se>& _Get_val() const {
+    _NODISCARD const _Variantish<_Iter, _Se>& _Get_val() const noexcept {
         return _Val;
     }
 
