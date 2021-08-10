@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE queue
 template <class _Ty, class _Container = deque<_Ty>>
 class queue {
 public:
@@ -173,7 +172,6 @@ void swap(queue<_Ty, _Container>& _Left, queue<_Ty, _Container>& _Right) noexcep
 template <class _Ty, class _Container, class _Alloc>
 struct uses_allocator<queue<_Ty, _Container>, _Alloc> : uses_allocator<_Container, _Alloc>::type {};
 
-// CLASS TEMPLATE priority_queue
 template <class _Ty, class _Container = vector<_Ty>, class _Pr = less<typename _Container::value_type>>
 class priority_queue {
 public:
