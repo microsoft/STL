@@ -17,6 +17,20 @@ int main() {} // COMPILE-ONLY
 STATIC_ASSERT(__cpp_lib_addressof_constexpr == 201603L);
 #endif
 
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_allocate_at_least
+#error __cpp_lib_allocate_at_least is not defined
+#elif __cpp_lib_allocate_at_least != 202106L
+#error __cpp_lib_allocate_at_least is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_allocate_at_least == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_allocate_at_least
+#error __cpp_lib_allocate_at_least is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_allocator_traits_is_always_equal
 #error __cpp_lib_allocator_traits_is_always_equal is not defined
 #elif __cpp_lib_allocator_traits_is_always_equal != 201411L
@@ -1192,6 +1206,20 @@ STATIC_ASSERT(__cpp_lib_optional == 201606L);
 #else
 #ifdef __cpp_lib_optional
 #error __cpp_lib_optional is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_out_ptr
+#error __cpp_lib_out_ptr is not defined
+#elif __cpp_lib_out_ptr != 202106L
+#error __cpp_lib_out_ptr is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_out_ptr == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_out_ptr
+#error __cpp_lib_out_ptr is defined
 #endif
 #endif
 

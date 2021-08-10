@@ -28,7 +28,6 @@ static_assert(__std_code_page::_Utf8 == __std_code_page{CP_UTF8});
 
 namespace {
 
-    // MACRO __vcrt_CreateSymbolicLinkW
 #ifdef _CRT_APP
     BOOLEAN __stdcall _Not_supported_CreateSymbolicLinkW(const wchar_t*, const wchar_t*, DWORD) {
         SetLastError(ERROR_NOT_SUPPORTED);
@@ -39,7 +38,6 @@ namespace {
 #define __vcrt_CreateSymbolicLinkW CreateSymbolicLinkW
 #endif // _CRT_APP
 
-    // FUNCTION / MACRO __vcp_CreateFile
 #ifdef _CRT_APP
     HANDLE __stdcall __vcp_CreateFile(const wchar_t* const _File_name, const unsigned long _Desired_access,
         const unsigned long _Share, SECURITY_ATTRIBUTES* const _Security_attributes,
@@ -57,7 +55,6 @@ namespace {
 #define __vcp_CreateFile CreateFileW
 #endif // _CRT_APP
 
-    // FUNCTION _Translate_CreateFile_last_error
     [[nodiscard]] __std_win_error __stdcall _Translate_CreateFile_last_error(const HANDLE _Handle) {
         if (_Handle != INVALID_HANDLE_VALUE) {
             return __std_win_error::_Success;
@@ -66,7 +63,6 @@ namespace {
         return __std_win_error{GetLastError()};
     }
 
-    // FUNCTION __vcp_CopyFile
     [[nodiscard]] __std_fs_copy_file_result __stdcall __vcp_Copyfile(
         const wchar_t* const _Source, const wchar_t* const _Target, const bool _Fail_if_exists) noexcept {
 #if defined(_CRT_APP)

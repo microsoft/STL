@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE bitset
 template <size_t _Bits>
 class bitset { // store fixed-length sequence of Boolean elements
 public:
@@ -28,7 +27,6 @@ public:
     using _Ty = conditional_t<_Bits <= sizeof(unsigned long) * CHAR_BIT, unsigned long, unsigned long long>;
 #pragma warning(pop)
 
-    // CLASS reference
     class reference { // proxy for an element
         friend bitset<_Bits>;
 
@@ -508,7 +506,6 @@ basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const bi
     return _Ostr << _Right.template to_string<_Elem, _Tr, allocator<_Elem>>(_Elem0, _Elem1);
 }
 
-// TEMPLATE operator>>
 template <class _Elem, class _Tr, size_t _Bits>
 basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_Bits>& _Right) {
     using _Istr_t                    = basic_istream<_Elem, _Tr>;
@@ -556,7 +553,6 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, bitset<_
     return _Istr;
 }
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <size_t _Bits>
 struct hash<bitset<_Bits>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bitset<_Bits> _ARGUMENT_TYPE_NAME;
