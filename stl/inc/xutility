@@ -323,6 +323,9 @@ concept _Has_member_reference = requires {
     typename _Ty::reference;
 };
 
+template <class _Ty>
+concept _Destructible_object = is_object_v<_Ty> && destructible<_Ty>;
+
 template <class>
 struct incrementable_traits {};
 
@@ -638,6 +641,7 @@ struct iterator_traits : _Iterator_traits_base<_Ty> {
 template <class _Ty>
     requires is_object_v<_Ty>
 struct iterator_traits<_Ty*> {
+    // clang-format on
     using iterator_concept  = contiguous_iterator_tag;
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
@@ -645,7 +649,6 @@ struct iterator_traits<_Ty*> {
     using pointer           = _Ty*;
     using reference         = _Ty&;
 };
-// clang-format on
 
 namespace ranges {
     namespace _Iter_move {
