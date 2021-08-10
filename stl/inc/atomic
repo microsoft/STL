@@ -287,20 +287,9 @@ _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
 }
 
 inline void _Load_barrier(const memory_order _Order) noexcept { // implement memory barrier for atomic load functions
-    switch (_Order) {
-    case memory_order_relaxed:
-        // no barrier
-        break;
-    default:
-    case memory_order_release:
-    case memory_order_acq_rel:
-        _INVALID_MEMORY_ORDER;
-        // [[fallthrough]];
-    case memory_order_consume:
-    case memory_order_acquire:
-    case memory_order_seq_cst:
+    _Check_load_memory_order(_Order);
+    if (_Order != memory_order_relaxed) {
         _Compiler_or_memory_barrier();
-        break;
     }
 }
 
