@@ -204,6 +204,8 @@ class STLTest(Test):
         self.linkFlags.extend(self.envlstEntry.getEnvVal('PM_LINK', '').split())
 
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
+            self._addCustomFeature('clang')
+
             targetArch = litConfig.target_arch.casefold()
             if (targetArch == 'x64'.casefold()):
                 self.compileFlags.append('-m64')
@@ -213,10 +215,13 @@ class STLTest(Test):
                 return Result(UNSUPPORTED, 'clang targeting arm is not supported')
             elif (targetArch == 'arm64'.casefold()):
                 self.compileFlags.append('--target=arm64-pc-windows-msvc')
+        elif ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
+            self._addCustomFeature('nvcc')
 
-        if ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
             # nvcc only supports targeting x64
             self.requires.append('x64')
+        else:
+            self._addCustomFeature('cl')
 
         self.cxx = os.path.normpath(cxx)
         return None
@@ -251,6 +256,9 @@ class STLTest(Test):
                 self.requires.append('arch_ia32') # available for x86, see features.py
             elif flag[1:] == 'arch:VFPv4':
                 self.requires.append('arch_vfpv4') # available for arm, see features.py
+            elif flag[1:] == 'fsanitize=address':
+                self._addCustomFeature('asan')
+                self.requires.append('cl') # We only run AddressSanitizer tests with cl for now
 
         if not foundStd:
             self._addCustomFeature('c++14')
