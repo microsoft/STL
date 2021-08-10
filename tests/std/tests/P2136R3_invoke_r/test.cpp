@@ -91,15 +91,19 @@ constexpr bool test_invoke_r() {
     static_assert(is_same_v<decltype(invoke(&Thing::moo, thing)), int&>);
     static_assert(is_same_v<decltype(invoke_r<int>(&Thing::moo, thing)), int>);
 
-    int count = 0;
-    assert(invoke_r<int>([&count] { return ++count; }) == 1);
-    assert(count == 1);
+    auto lambda = [counter = 0]() mutable { return ++counter; };
+    assert(lambda() == 1);
+    assert(lambda() == 2);
+    assert(invoke_r<int>(lambda) == 3);
+    assert(invoke_r<int>(lambda) == 4);
+    assert(lambda() == 5);
 
+    int lvalue = 0;
     assert(invoke_r<int>(RefQualified{}, 0) == 1);
-    assert(invoke_r<int>(RefQualified{}, count) == 2);
+    assert(invoke_r<int>(RefQualified{}, lvalue) == 2);
     RefQualified r;
     assert(invoke_r<int>(r, 0) == 3);
-    assert(invoke_r<int>(r, count) == 4);
+    assert(invoke_r<int>(r, lvalue) == 4);
 
     return true;
 }
