@@ -65,16 +65,16 @@ struct RefQualified {
 constexpr bool test_invoke_r() {
     auto v1 = invoke_r<long>(square, 3);
     assert(v1 == 9L);
-    static_assert(is_same_v<decltype(v1), long>);
+    STATIC_ASSERT(is_same_v<decltype(v1), long>);
 
     auto v2 = invoke_r<double>([]() -> int { return 5; });
     assert(v2 == 5);
-    static_assert(is_same_v<decltype(v2), double>);
-    static_assert(is_void_v<decltype(invoke_r<void>(square, 1))>);
+    STATIC_ASSERT(is_same_v<decltype(v2), double>);
+    STATIC_ASSERT(is_void_v<decltype(invoke_r<void>(square, 1))>);
 
     // TRANSITION, DevCom-1457457
-    static_assert(noexcept(invoke_r<int>(square, 3)) == is_permissive, "invoke_r<int>(square, 3) is noexcept");
-    static_assert(noexcept(invoke(square, 3)) == is_permissive, "invoke(square, 3) is noexcept");
+    STATIC_ASSERT(noexcept(invoke_r<int>(square, 3)) == is_permissive);
+    STATIC_ASSERT(noexcept(invoke(square, 3)) == is_permissive);
 
     constexpr bool has_noexcept_in_type =
 #ifdef __cpp_noexcept_function_type
@@ -89,8 +89,8 @@ constexpr bool test_invoke_r() {
 
     Thing thing;
     invoke_r<void>(&Thing::n, thing); // no nodiscard warning
-    static_assert(is_same_v<decltype(invoke(&Thing::moo, thing)), int&>);
-    static_assert(is_same_v<decltype(invoke_r<int>(&Thing::moo, thing)), int>);
+    STATIC_ASSERT(is_same_v<decltype(invoke(&Thing::moo, thing)), int&>);
+    STATIC_ASSERT(is_same_v<decltype(invoke_r<int>(&Thing::moo, thing)), int>);
 
     auto lambda = [counter = 0]() mutable { return ++counter; };
     assert(lambda() == 1);
@@ -111,5 +111,5 @@ constexpr bool test_invoke_r() {
 
 int main() {
     test_invoke_r();
-    static_assert(test_invoke_r());
+    STATIC_ASSERT(test_invoke_r());
 }
