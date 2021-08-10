@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <functional>
+#include <string>
 #include <type_traits>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
