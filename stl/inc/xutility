@@ -323,6 +323,9 @@ concept _Has_member_reference = requires {
     typename _Ty::reference;
 };
 
+template <class _Ty>
+concept _Destructible_object = is_object_v<_Ty> && destructible<_Ty>;
+
 template <class>
 struct incrementable_traits {};
 
@@ -638,6 +641,7 @@ struct iterator_traits : _Iterator_traits_base<_Ty> {
 template <class _Ty>
     requires is_object_v<_Ty>
 struct iterator_traits<_Ty*> {
+    // clang-format on
     using iterator_concept  = contiguous_iterator_tag;
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
@@ -645,7 +649,6 @@ struct iterator_traits<_Ty*> {
     using pointer           = _Ty*;
     using reference         = _Ty&;
 };
-// clang-format on
 
 namespace ranges {
     namespace _Iter_move {
@@ -3329,13 +3332,13 @@ namespace ranges {
         // [[no_unique_address]] conditional_t<_Store_size, _Size_type, _Nil> _Size{};
 
         template <class _Rng>
-        constexpr subrange(true_type, _Rng&& _Val) : subrange{_STD forward<_Rng>(_Val), _RANGES size(_Val)} {
+        constexpr subrange(true_type, _Rng&& _Val) : subrange(_STD forward<_Rng>(_Val), _RANGES size(_Val)) {
             // delegation target for subrange(_Rng&&) when we must store the range size
             _STL_INTERNAL_STATIC_ASSERT(_Store_size);
         }
 
         template <class _Rng>
-        constexpr subrange(false_type, _Rng&& _Val) : subrange{_RANGES begin(_Val), _RANGES end(_Val)} {
+        constexpr subrange(false_type, _Rng&& _Val) : subrange(_RANGES begin(_Val), _RANGES end(_Val)) {
             // delegation target for subrange(_Rng&&) when we need not store the range size
             _STL_INTERNAL_STATIC_ASSERT(!_Store_size);
         }
