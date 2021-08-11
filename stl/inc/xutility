@@ -3331,13 +3331,13 @@ namespace ranges {
         // [[no_unique_address]] conditional_t<_Store_size, _Size_type, _Nil> _Size{};
 
         template <class _Rng>
-        constexpr subrange(true_type, _Rng&& _Val) : subrange{_STD forward<_Rng>(_Val), _RANGES size(_Val)} {
+        constexpr subrange(true_type, _Rng&& _Val) : subrange(_STD forward<_Rng>(_Val), _RANGES size(_Val)) {
             // delegation target for subrange(_Rng&&) when we must store the range size
             _STL_INTERNAL_STATIC_ASSERT(_Store_size);
         }
 
         template <class _Rng>
-        constexpr subrange(false_type, _Rng&& _Val) : subrange{_RANGES begin(_Val), _RANGES end(_Val)} {
+        constexpr subrange(false_type, _Rng&& _Val) : subrange(_RANGES begin(_Val), _RANGES end(_Val)) {
             // delegation target for subrange(_Rng&&) when we need not store the range size
             _STL_INTERNAL_STATIC_ASSERT(!_Store_size);
         }
