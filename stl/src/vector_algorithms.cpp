@@ -62,8 +62,8 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         do {
             const __m512i _Left  = _mm512_loadu_si512(static_cast<__m512i*>(_First1));
             const __m512i _Right = _mm512_loadu_si512(static_cast<__m512i*>(_First2));
-            _mm512_storeu_si512(static_cast<__m256i*>(_First1), _Right);
-            _mm512_storeu_si512(static_cast<__m256i*>(_First2), _Left);
+            _mm512_storeu_si512(static_cast<__m512i*>(_First1), _Right);
+            _mm512_storeu_si512(static_cast<__m512i*>(_First2), _Left);
             _Advance_bytes(_First1, 64);
             _Advance_bytes(_First2, 64);
         } while (_First1 != _Stop_at);
