@@ -1,17 +1,16 @@
-#include <algorithm>
-#include <cassert>
 #include <cstdlib>
 #include <xutility>
 
-#if !defined(_USE_STD_VECTOR_ALGORITHMS) || !_USE_STD_VECTOR_ALGORITHMS
+#if defined(_M_ARM64EC) || !defined(_USE_STD_VECTOR_ALGORITHMS) || !_USE_STD_VECTOR_ALGORITHMS
 
 int main() {
-    assert(false);
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
 
-#else // defined(_USE_STD_VECTOR_ALGORITHMS) && _USE_STD_VECTOR_ALGORITHMS
+#else // defined(_M_ARM64EC) || !defined(_USE_STD_VECTOR_ALGORITHMS) || !_USE_STD_VECTOR_ALGORITHMS
 
+#include <algorithm>
+#include <cassert>
 #include <vector>
 
 extern "C" long __isa_enabled;
@@ -114,8 +113,7 @@ namespace {
 
 int main() {
     if (!_bittest(&__isa_enabled, 6 /* __ISA_AVAILABLE_AVX512 */)) {
-        assert(false);
-        return EXIT_FAILURE;
+        return EXIT_SUCCESS;
     }
 
     _Test_swap();
@@ -133,4 +131,4 @@ int main() {
     return EXIT_SUCCESS;
 }
 
-#endif // defined(_USE_STD_VECTOR_ALGORITHMS) && _USE_STD_VECTOR_ALGORITHMS
+#endif // defined(_M_ARM64EC) || !defined(_USE_STD_VECTOR_ALGORITHMS) || !_USE_STD_VECTOR_ALGORITHMS
