@@ -1029,6 +1029,14 @@ bool test_lerp() {
     return true;
 }
 
+void test_GH_2112() {
+    assert(lerp(int{}, int{}, int{}) == 0.0);
+    STATIC_ASSERT(lerp(int{}, int{}, int{}) == 0.0);
+
+    assert(lerp(float{}, float{}, double{}) == 0.0);
+    STATIC_ASSERT(lerp(float{}, float{}, double{}) == 0.0);
+}
+
 int main() {
     test_constants<float>();
     test_constants<double>();
@@ -1099,4 +1107,6 @@ int main() {
     test_lerp<float>();
     test_lerp<double>();
     test_lerp<long double>();
+
+    test_GH_2112();
 }

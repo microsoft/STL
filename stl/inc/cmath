@@ -23,6 +23,7 @@
 #endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20
+#include <type_traits>
 #include <xutility>
 #endif // _HAS_CXX20
 
@@ -1322,6 +1323,19 @@ _NODISCARD constexpr inline double lerp(const double _ArgA, const double _ArgB, 
 _NODISCARD constexpr inline long double lerp(
     const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
+}
+
+template <class _Ty>
+concept _Arithmetic = is_arithmetic_v<_Ty>;
+
+template <_Arithmetic _Ty1, _Arithmetic _Ty2, _Arithmetic _Ty3>
+_NODISCARD constexpr auto lerp(const _Ty1 _ArgA, const _Ty2 _ArgB, const _Ty3 _ArgT) noexcept {
+    if constexpr (is_same_v<_Ty1, long double> || is_same_v<_Ty2, long double> || is_same_v<_Ty3, long double>) {
+        return _STD lerp(
+            static_cast<long double>(_ArgA), static_cast<long double>(_ArgB), static_cast<long double>(_ArgT));
+    } else {
+        return _STD lerp(static_cast<double>(_ArgA), static_cast<double>(_ArgB), static_cast<double>(_ArgT));
+    }
 }
 #endif // _HAS_CXX20
 _STD_END
