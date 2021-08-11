@@ -703,6 +703,10 @@ namespace ranges {
             return *this;
         }
 
+        _NODISCARD constexpr explicit operator bool() const noexcept {
+            return _Engaged;
+        }
+
         _NODISCARD constexpr _Ty& operator*() noexcept {
             _STL_INTERNAL_CHECK(_Engaged);
             return _Val;
@@ -3782,6 +3786,7 @@ namespace ranges {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Pat _Pattern{};
+        _Non_propagating_cache<subrange<iterator_t<_Vw>>> _Next{};
 
         class _Sentinel;
 
@@ -3916,7 +3921,10 @@ namespace ranges {
 
         _NODISCARD constexpr auto begin() {
             auto _First = _RANGES begin(_Range);
-            return _Iterator{*this, _First, _Find_next(_First)};
+            if (!_Next) {
+                _Next._Emplace(_Find_next(_First));
+            }
+            return _Iterator{*this, _First, *_Next};
         }
 
         _NODISCARD constexpr auto end() {
