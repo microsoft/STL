@@ -296,16 +296,16 @@ constexpr bool instantiation_test() {
     instantiator::call<test_range<forward_iterator_tag, Common::yes, CanView::yes, Copyability::copyable>>();
 
     { // ensure we get something contiguous
-        for (std::string_view sv : "127..0..0..1"sv | std::views::split(".."sv)) {
+        for (string_view sv : "127..0..0..1"sv | views::split(".."sv)) {
             assert(!sv.empty());
         }
     }
 
     if (!is_constant_evaluated()) { // test the from_chars example
         auto ip    = "1.2.3.4"sv;
-        auto parts = ip | std::views::split('.') | std::views::transform([](std::span<char const> s) {
+        auto parts = ip | views::split('.') | views::transform([](span<char const> s) {
             int i;
-            std::from_chars(s.data(), s.data() + s.size(), i);
+            from_chars(s.data(), s.data() + s.size(), i);
             return i;
         });
 

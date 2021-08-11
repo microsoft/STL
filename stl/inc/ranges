@@ -3741,28 +3741,28 @@ namespace ranges {
 
                 template <viewable_range _Rng>
                 _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
-                    noexcept(lazy_split_view{_STD forward<_Rng>(_Range), _Delimiter})) requires requires {
-                    lazy_split_view{static_cast<_Rng&&>(_Range), _Delimiter};
+                    noexcept(lazy_split_view(_STD forward<_Rng>(_Range), _Delimiter))) requires requires {
+                    lazy_split_view(static_cast<_Rng&&>(_Range), _Delimiter);
                 }
-                { return lazy_split_view{_STD forward<_Rng>(_Range), _Delimiter}; }
+                { return lazy_split_view(_STD forward<_Rng>(_Range), _Delimiter); }
 
                 template <viewable_range _Rng>
                 _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(noexcept(
-                    lazy_split_view{_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)})) requires requires {
-                    lazy_split_view{static_cast<_Rng&&>(_Range), static_cast<_Delim&&>(_Delimiter)};
+                    lazy_split_view(_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)))) requires requires {
+                    lazy_split_view(static_cast<_Rng&&>(_Range), static_cast<_Delim&&>(_Delimiter));
                 }
-                { return lazy_split_view{_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)}; }
+                { return lazy_split_view(_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)); }
             };
 
         public:
             // clang-format off
             template <viewable_range _Rng, class _Pat>
             _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pat&& _Pattern) const noexcept(noexcept(
-                lazy_split_view{_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)})) requires requires {
-                lazy_split_view{static_cast<_Rng&&>(_Range), static_cast<_Pat&&>(_Pattern)};
+                lazy_split_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)))) requires requires {
+                lazy_split_view(static_cast<_Rng&&>(_Range), static_cast<_Pat&&>(_Pattern));
             } {
                 // clang-format on
-                return lazy_split_view{_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)};
+                return lazy_split_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern));
             }
 
             // clang-format off
