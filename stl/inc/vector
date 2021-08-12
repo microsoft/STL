@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Vector_const_iterator
 template <class _Myvec>
 class _Vector_const_iterator : public _Iterator_base {
 public:
@@ -246,7 +245,6 @@ struct pointer_traits<_Vector_const_iterator<_Myvec>> {
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE _Vector_iterator
 template <class _Myvec>
 class _Vector_iterator : public _Vector_const_iterator<_Myvec> {
 public:
@@ -372,7 +370,6 @@ struct pointer_traits<_Vector_iterator<_Myvec>> {
 };
 #endif // _HAS_CXX20
 
-// vector TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
     class _Reference, class _Const_reference>
 struct _Vec_iter_types {
@@ -383,12 +380,10 @@ struct _Vec_iter_types {
     using const_pointer   = _Const_pointer;
 };
 
-// STRUCT _Value_init_tag
 struct _Value_init_tag { // tag to request value-initialization
     explicit _Value_init_tag() = default;
 };
 
-// CLASS TEMPLATE _Vector_val
 template <class _Val_types>
 class _Vector_val : public _Container_base {
 public:
@@ -428,7 +423,6 @@ public:
     pointer _Myend; // pointer to end of array
 };
 
-// FUNCTION TEMPLATE _Unfancy_maybe_null
 template <class _Ptrty>
 constexpr auto _Unfancy_maybe_null(_Ptrty _Ptr) noexcept {
     // converts from a (potentially null) fancy pointer to a plain pointer
@@ -440,7 +434,6 @@ constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain
     return _Ptr;
 }
 
-// CLASS TEMPLATE vector
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
@@ -1953,13 +1946,11 @@ constexpr typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& 
 }
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE vector<bool, Alloc> AND FRIENDS
 template <class _Alloc0>
 struct _Wrap_alloc { // TRANSITION, ABI compat, preserves symbol names of vector<bool>::iterator
     using _Alloc = _Alloc0;
 };
 
-// CLASS _Vb_iter_base
 template <class _Alvbase_wrapped>
 class _Vb_iter_base : public _Iterator_base {
     // store information common to reference and iterators
@@ -1995,7 +1986,6 @@ public:
     _Size_type _Myoff    = 0;
 };
 
-// CLASS _Vb_reference
 template <class _Alvbase_wrapped>
 class _Vb_reference : public _Vb_iter_base<_Alvbase_wrapped> {
     // reference to a bit within a base word
@@ -2057,7 +2047,6 @@ protected:
     }
 };
 
-// CLASS _Vb_const_iterator
 template <class _Alvbase_wrapped>
 class _Vb_const_iterator : public _Vb_iter_base<_Alvbase_wrapped> {
 private:
@@ -2264,7 +2253,6 @@ _NODISCARD _CONSTEXPR20 _Vb_const_iterator<_Alvbase_wrapped> operator+(
     return _Right;
 }
 
-// CLASS _Vb_iterator
 template <class _Alvbase_wrapped>
 class _Vb_iterator : public _Vb_const_iterator<_Alvbase_wrapped> {
 public:
@@ -2357,7 +2345,6 @@ _NODISCARD _CONSTEXPR20 _Vb_iterator<_Alvbase_wrapped> operator+(
     return _Right;
 }
 
-// CLASS TEMPLATE _Vb_val
 template <class _Alloc>
 class _Vb_val : public _Container_base {
 public:
@@ -2435,7 +2422,6 @@ public:
     size_type _Mysize; // current length of sequence
 };
 
-// CLASS vector<bool>
 template <class _Alloc>
 class vector<bool, _Alloc> : public _Vb_val<_Alloc> {
 public:
@@ -3054,7 +3040,6 @@ public:
     }
 };
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <class _Alloc>
 struct hash<vector<bool, _Alloc>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef vector<bool, _Alloc> _ARGUMENT_TYPE_NAME;
@@ -3072,7 +3057,6 @@ namespace pmr {
 } // namespace pmr
 #endif // _HAS_CXX17
 
-// VARIABLE TEMPLATE _Is_vb_iterator
 template <class _Alloc, bool _RequiresMutable>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutable> = true;
 

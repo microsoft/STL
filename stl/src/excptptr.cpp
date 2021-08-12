@@ -214,11 +214,11 @@ namespace {
         // reference count control block for special "never allocates" exceptions like the bad_alloc or bad_exception
         // exception_ptrs
     private:
-        virtual void _Destroy() noexcept override {
+        void _Destroy() noexcept override {
             // intentionally does nothing
         }
 
-        virtual void _Delete_this() noexcept override {
+        void _Delete_this() noexcept override {
             // intentionally does nothing
         }
 
@@ -244,7 +244,7 @@ namespace {
         // reference count control block for exception_ptrs; the exception object is stored at
         // reinterpret_cast<unsigned char*>(this) + sizeof(_ExceptionPtr_normal)
     private:
-        virtual void _Destroy() noexcept override {
+        void _Destroy() noexcept override {
             // call the destructor for a stored pure or native C++ exception if necessary
             const auto& _CppEhRecord = reinterpret_cast<EHExceptionRecord&>(_ExRecord);
 
@@ -290,7 +290,7 @@ namespace {
             }
         }
 
-        virtual void _Delete_this() noexcept override {
+        void _Delete_this() noexcept override {
             free(this);
         }
 

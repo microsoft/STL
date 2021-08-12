@@ -21,7 +21,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 _STD_BEGIN
-// CLASS TEMPLATE _Tset_traits
 template <class _Kty, // key/value type
     class _Pr, // comparator predicate type
     class _Alloc, // actual allocator type (should be value allocator)
@@ -49,7 +48,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE set
 template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>>
 class set : public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, false>> {
     // ordered red-black tree of key values, unique keys
@@ -229,7 +227,6 @@ typename set<_Kty, _Keylt, _Alloc>::size_type erase_if(set<_Kty, _Keylt, _Alloc>
 }
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE multiset
 template <class _Kty, class _Pr = less<_Kty>, class _Alloc = allocator<_Kty>>
 class multiset : public _Tree<_Tset_traits<_Kty, _Pr, _Alloc, true>> {
     // ordered red-black tree of key values, non-unique keys

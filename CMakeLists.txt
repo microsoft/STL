@@ -11,7 +11,7 @@ project(msvc_standard_libraries LANGUAGES CXX)
 
 find_package(Boost REQUIRED)
 
-set(VCLIBS_MIN_BOOST_VERSION 1.75.0)
+set(VCLIBS_MIN_BOOST_VERSION 1.76.0)
 if("${Boost_VERSION}" VERSION_LESS "${VCLIBS_MIN_BOOST_VERSION}")
     message(FATAL_ERROR "Detected Boost version is too old (older than ${VCLIBS_MIN_BOOST_VERSION}).")
 endif()
