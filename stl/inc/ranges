@@ -777,24 +777,35 @@ namespace ranges {
         };
 
     template <class _Wi>
-    struct _Ioterator_category_base {};
+    struct _Ioterator_category_base {
+        auto operator<=>(const _Ioterator_category_base&) const = default;
+    };
 
     template <incrementable _Wi>
     struct _Ioterator_category_base<_Wi> {
         using iterator_category = input_iterator_tag;
+
+        auto operator<=>(const _Ioterator_category_base&) const = default;
     };
 
     template <weakly_incrementable _Wi>
         requires copyable<_Wi>
     struct _Ioterator : _Ioterator_category_base<_Wi> {
         // clang-format on
-        /* [[no_unique_address]] */ _Wi _Current;
+        /* [[no_unique_address]] */ _Wi _Current{};
 
         using iterator_concept = conditional_t<_Advanceable<_Wi>, random_access_iterator_tag,
             conditional_t<_Decrementable<_Wi>, bidirectional_iterator_tag,
                 conditional_t<incrementable<_Wi>, forward_iterator_tag, input_iterator_tag>>>;
         using value_type       = _Wi;
         using difference_type  = _Iota_diff_t<_Wi>;
+
+        // clang-format off
+        _Ioterator() requires default_initializable<_Wi> = default;
+        // clang-format on
+
+        constexpr explicit _Ioterator(_Wi _Val) noexcept(is_nothrow_move_constructible_v<_Wi>) /* strengthened */
+            : _Current(_STD move(_Val)) {}
 
         _NODISCARD constexpr _Wi operator*() const noexcept(is_nothrow_copy_constructible_v<_Wi>) {
             return _Current;
@@ -900,10 +911,11 @@ namespace ranges {
             }
         }
 
-        _NODISCARD friend constexpr bool operator==(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
-            noexcept(_Left._Current == _Right._Current)) /* strengthened */ requires equality_comparable<_Wi> {
-            return _Left._Current == _Right._Current;
-        }
+        // clang-format off
+        _NODISCARD friend constexpr bool operator==(
+            const _Ioterator&, const _Ioterator&) requires equality_comparable<_Wi> = default;
+        // clang-format on
+
         _NODISCARD friend constexpr bool operator<(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
             noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires totally_ordered<_Wi> {
             return _Left._Current < _Right._Current;
@@ -920,25 +932,23 @@ namespace ranges {
             noexcept(!(_Left._Current < _Right._Current))) /* strengthened */ requires totally_ordered<_Wi> {
             return !(_Left._Current < _Right._Current);
         }
+
         // clang-format off
-        _NODISCARD friend constexpr auto operator<=>(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
-            noexcept(_Left._Current <=> _Right._Current)) /* strengthened */
-            requires totally_ordered<_Wi> && three_way_comparable<_Wi> {
-            // clang-format on
-            return _Left._Current <=> _Right._Current;
-        }
+        _NODISCARD friend constexpr auto operator<=>(const _Ioterator& _Left, const _Ioterator& _Right)
+            requires totally_ordered<_Wi> && three_way_comparable<_Wi> = default;
+        // clang-format on
 
         _NODISCARD friend constexpr _Ioterator operator+(_Ioterator _It, const difference_type _Off) noexcept(
             noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
-            return _Ioterator{{}, static_cast<_Wi>(_It._Current + _Off)};
+            return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
         }
         _NODISCARD friend constexpr _Ioterator operator+(const difference_type _Off, _Ioterator _It) noexcept(
             noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
-            return _Ioterator{{}, static_cast<_Wi>(_It._Current + _Off)};
+            return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
         }
         _NODISCARD friend constexpr _Ioterator operator-(_Ioterator _It, const difference_type _Off) noexcept(
             noexcept(static_cast<_Wi>(_It._Current - _Off))) /* strengthened */ requires _Advanceable<_Wi> {
-            return _Ioterator{{}, static_cast<_Wi>(_It._Current - _Off)};
+            return _Ioterator{static_cast<_Wi>(_It._Current - _Off)};
         }
         _NODISCARD friend constexpr difference_type
             operator-(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
@@ -1030,12 +1040,12 @@ namespace ranges {
             : _Value(_STD move(_First._Current)), _Bound(_STD move(_Bound_from(_Last))) {}
 
         _NODISCARD constexpr _It begin() const noexcept(is_nothrow_copy_constructible_v<_Wi>) /* strengthened */ {
-            return _It{{}, _Value};
+            return _It{_Value};
         }
 
         _NODISCARD constexpr _Se end() const noexcept(is_nothrow_copy_constructible_v<_Bo>) /* strengthened */ {
             if constexpr (same_as<_Wi, _Bo>) {
-                return _It{{}, _Bound};
+                return _It{_Bound};
             } else if constexpr (same_as<_Bo, unreachable_sentinel_t>) {
                 return unreachable_sentinel;
             } else {
