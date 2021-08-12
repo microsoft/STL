@@ -405,7 +405,7 @@ inline void _Atomic_lock_acquire(long& _Spinlock) noexcept {
     // Example 2-4. Contended Locks with Increasing Back-off Example - Improved Version, page 2-22
     // The code in mentioned manual is covered by the 0BSD license.
     int _Current_backoff   = 1;
-    const int _Max_backoff = 64;
+    constexpr int _Max_backoff = 64;
     while (_InterlockedExchange(&_Spinlock, 1) != 0) {
         while (__iso_volatile_load32(&reinterpret_cast<int&>(_Spinlock)) != 0) {
             for (int _Count_down = _Current_backoff; _Count_down != 0; --_Count_down) {

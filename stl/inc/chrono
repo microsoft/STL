@@ -60,7 +60,7 @@ namespace chrono {
     struct duration_values { // gets arithmetic properties of a type
         _NODISCARD static constexpr _Rep zero() noexcept {
             // get zero value
-            return _Rep(0);
+            return static_cast<_Rep>(0);
         }
 
         _NODISCARD static constexpr _Rep(min)() noexcept {

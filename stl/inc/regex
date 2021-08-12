@@ -1173,16 +1173,16 @@ _NODISCARD bool operator!=(const match_results<_BidIt, _Alloc>& _Left, const mat
 }
 #endif // !_HAS_CXX20
 
-const unsigned int _BRE_MAX_GRP = 9U;
+constexpr unsigned int _BRE_MAX_GRP = 9U;
 
-const unsigned int _Bmp_max   = 256U; // must fit in an unsigned int
-const unsigned int _Bmp_shift = 3U;
-const unsigned int _Bmp_chrs  = 1U << _Bmp_shift; // # of bits to be stored in each char
-const unsigned int _Bmp_mask  = _Bmp_chrs - 1U;
-const unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _Bmp_chrs;
+constexpr unsigned int _Bmp_max = 256U; // must fit in an unsigned int
+constexpr unsigned int _Bmp_shift = 3U;
+constexpr unsigned int _Bmp_chrs = 1U << _Bmp_shift; // # of bits to be stored in each char
+constexpr unsigned int _Bmp_mask  = _Bmp_chrs - 1U;
+constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _Bmp_chrs;
 
-const unsigned int _Buf_incr        = 16U;
-const unsigned int _ARRAY_THRESHOLD = 4U;
+constexpr unsigned int _Buf_incr    = 16U;
+constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_none    = 0x00,

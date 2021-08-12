@@ -1115,7 +1115,7 @@ void _Assemble_floating_point_infinity(const bool _Is_negative, _FloatingType& _
     _Uint_type _Sign_component = _Is_negative;
     _Sign_component <<= _Floating_traits::_Sign_shift;
 
-    const _Uint_type _Exponent_component = _Floating_traits::_Shifted_exponent_mask;
+    constexpr _Uint_type _Exponent_component = _Floating_traits::_Shifted_exponent_mask;
 
     _Result = _Bit_cast<_FloatingType>(_Sign_component | _Exponent_component);
 }
@@ -1362,12 +1362,12 @@ _NODISCARD errc _Assemble_floating_point_value_from_big_integer_flt(const _Big_i
     _FloatingType& _Result) noexcept {
     using _Traits = _Floating_type_traits<_FloatingType>;
 
-    const int32_t _Base_exponent = _Traits::_Mantissa_bits - 1;
+    constexpr int32_t _Base_exponent = _Traits::_Mantissa_bits - 1;
 
     // Very fast case: If we have 64 bits of precision or fewer,
     // we can just take the two low order elements from the _Big_integer_flt:
     if (_Integer_bits_of_precision <= 64) {
-        const int32_t _Exponent = _Base_exponent;
+        constexpr int32_t _Exponent = _Base_exponent;
 
         const uint32_t _Mantissa_low  = _Integer_value._Myused > 0 ? _Integer_value._Mydata[0] : 0;
         const uint32_t _Mantissa_high = _Integer_value._Myused > 1 ? _Integer_value._Mydata[1] : 0;
@@ -1470,7 +1470,7 @@ _NODISCARD errc _Convert_decimal_string_to_floating_type(
     // To generate an N bit mantissa we require N + 1 bits of precision. The extra bit is used to correctly round
     // the mantissa (if there are fewer bits than this available, then that's totally okay;
     // in that case we use what we have and we don't need to round).
-    const uint32_t _Required_bits_of_precision = static_cast<uint32_t>(_Traits::_Mantissa_bits + 1);
+    constexpr uint32_t _Required_bits_of_precision = static_cast<uint32_t>(_Traits::_Mantissa_bits + 1);
 
     // The input is of the form 0.mantissa * 10^exponent, where 'mantissa' are the decimal digits of the mantissa
     // and 'exponent' is the decimal exponent. We decompose the mantissa into two parts: an integer part and a
@@ -2302,7 +2302,7 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_shortest(
         // C11 7.21.6.1 "The fprintf function"/8: "If the value is zero, the exponent is zero."
         // Special-casing zero is necessary because of the exponent.
         const char* const _Str = "0p+0";
-        const size_t _Len      = 4;
+        constexpr size_t _Len  = 4;
 
         if (_Last - _First < static_cast<ptrdiff_t>(_Len)) {
             return {_Last, errc::value_too_large};

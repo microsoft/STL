@@ -244,7 +244,7 @@ protected:
             || (_Which & ios_base::out && !pptr())) { // N4727 [depr.strstreambuf.virtuals]/14:
                                                       // For a sequence to be positioned, if its next pointer
                                                       // is a null pointer, the positioning operation fails.
-            return pos_type(off_type(-1));
+            return static_cast<pos_type>(off_type(-1));
         }
 
         const auto _Seeklow  = eback();
@@ -257,14 +257,14 @@ protected:
             // check that _Off is in acceptable range [0, _Seekdist]
             if (static_cast<unsigned long long>(_Off)
                 > static_cast<unsigned long long>(_Seekdist)) { // negative wraparound to positive to save a compare
-                return pos_type(off_type(-1));
+                return static_cast<pos_type>(off_type(-1));
             }
             break;
         case ios_base::end:
             // check that _Off is in acceptable range [-_Seekdist, 0]
             // is: _Off + _Seekdist in range [0, _Seekdist]
             if (static_cast<unsigned long long>(_Off) + _Seekdist > static_cast<unsigned long long>(_Seekdist)) {
-                return pos_type(off_type(-1));
+                return static_cast<pos_type>(off_type(-1));
             }
 
             _Off += _Seekdist;
@@ -274,7 +274,7 @@ protected:
                 constexpr auto _Both = ios_base::in | ios_base::out;
                 if ((_Which & _Both)
                     == _Both) { // prohibited by N4727 [depr.strstreambuf.virtuals] Table 137 "seekoff positioning"
-                    return pos_type(off_type(-1));
+                    return static_cast<pos_type>(off_type(-1));
                 }
 
                 off_type _Oldoff;
@@ -286,12 +286,12 @@ protected:
                     _Oldoff  = pptr() - pbase();
                     _Oldleft = _Seekhigh - pptr();
                 } else {
-                    return pos_type(off_type(-1));
+                    return static_cast<pos_type>(off_type(-1));
                 }
 
                 if (_Off < -_Oldoff // runs off beginning
                     || _Off > _Oldleft) { // runs off end
-                    return pos_type(off_type(-1));
+                    return static_cast<pos_type>(off_type(-1));
                 }
 
                 _Off += _Oldoff;
@@ -299,7 +299,7 @@ protected:
 
             break;
         default:
-            return pos_type(off_type(-1));
+            return static_cast<pos_type>(off_type(-1));
         }
 
         if (_Which & ios_base::in) {
@@ -310,7 +310,7 @@ protected:
             pbump(static_cast<int>(_Off - (pptr() - pbase())));
         }
 
-        return pos_type(_Off);
+        return static_cast<pos_type>(_Off);
     }
 
     pos_type __CLR_OR_THIS_CALL seekpos(
@@ -321,14 +321,14 @@ protected:
         }
 
         if (((_Which & ios_base::in) && !gptr()) || ((_Which & ios_base::out) && !pptr())) {
-            return pos_type(off_type(-1));
+            return static_cast<pos_type>(off_type(-1));
         }
 
         const auto _Off      = static_cast<off_type>(_Sp);
         const auto _Seeklow  = eback();
         const auto _Seekdist = _Seekhigh - _Seeklow;
         if (_Off > _Seekdist) {
-            return pos_type(off_type(-1));
+            return static_cast<pos_type>(off_type(-1));
         }
 
         if (_Which & ios_base::in) {
@@ -339,7 +339,7 @@ protected:
             pbump(static_cast<int>(_Off - (pptr() - pbase())));
         }
 
-        return pos_type(_Off);
+        return static_cast<pos_type>(_Off);
     }
 
     void __CLR_OR_THIS_CALL _Init(
