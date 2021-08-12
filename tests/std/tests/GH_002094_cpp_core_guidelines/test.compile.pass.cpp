@@ -7,6 +7,7 @@
 
 // clang-format off
 
+// TRANSITION, DevCom-1407027
 #pragma warning(disable : 26457) // (void) should not be used to ignore return values, use 'std::ignore =' instead (es.48)
 
 #pragma warning(default : 26433) // Function '%1$s' should be marked with 'override'(c .128).
