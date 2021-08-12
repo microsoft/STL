@@ -9,21 +9,21 @@
 
 using namespace std;
 
-struct With_trivial_destrutor {
+struct With_trivial_destructor {
     int _val = 0;
-    constexpr With_trivial_destrutor(const int val) noexcept : _val(val) {}
-    constexpr With_trivial_destrutor(initializer_list<int> vals) noexcept : _val(*vals.begin()) {}
+    constexpr With_trivial_destructor(const int val) noexcept : _val(val) {}
+    constexpr With_trivial_destructor(initializer_list<int> vals) noexcept : _val(*vals.begin()) {}
 
     constexpr bool operator==(const int right) const noexcept {
         return _val == right;
     }
 };
 
-struct With_nontrivial_destrutor {
+struct With_nontrivial_destructor {
     int _val = 0;
-    constexpr With_nontrivial_destrutor(const int val) noexcept : _val(val) {}
-    constexpr With_nontrivial_destrutor(initializer_list<int> vals) noexcept : _val(*vals.begin()) {}
-    constexpr ~With_nontrivial_destrutor() {}
+    constexpr With_nontrivial_destructor(const int val) noexcept : _val(val) {}
+    constexpr With_nontrivial_destructor(initializer_list<int> vals) noexcept : _val(*vals.begin()) {}
+    constexpr ~With_nontrivial_destructor() {}
 
     constexpr bool operator==(const int right) const noexcept {
         return _val == right;
@@ -305,17 +305,17 @@ constexpr bool test_variant() {
 }
 
 int main() {
-    test_optional<With_trivial_destrutor>();
-    test_optional<With_nontrivial_destrutor>();
+    test_optional<With_trivial_destructor>();
+    test_optional<With_nontrivial_destructor>();
 #if defined(__clang__) || defined(__EDG__)
-    static_assert(test_optional<With_trivial_destrutor>());
-    static_assert(test_optional<With_nontrivial_destrutor>());
+    static_assert(test_optional<With_trivial_destructor>());
+    static_assert(test_optional<With_nontrivial_destructor>());
 #endif // __clang__ || __EDG__
 
-    test_variant<With_trivial_destrutor>();
-    test_variant<With_nontrivial_destrutor>();
+    test_variant<With_trivial_destructor>();
+    test_variant<With_nontrivial_destructor>();
 #if defined(__clang__) || defined(__EDG__)
-    static_assert(test_variant<With_trivial_destrutor>());
-    static_assert(test_variant<With_nontrivial_destrutor>());
+    static_assert(test_variant<With_trivial_destructor>());
+    static_assert(test_variant<With_nontrivial_destructor>());
 #endif // __clang__ || __EDG__
 }
