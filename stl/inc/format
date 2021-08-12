@@ -562,7 +562,7 @@ constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_
     }
     if (_Num_bytes > 0 && _First + 1 > _Last) {
         // we got a multibyte sequence and the next byte is off the end, we need
-        // to check just the next byte here since we need to look for overlong sequences
+        // to check just the next byte here since we need to look for overlong sequences.
         // We want to return one past the end of a truncated sequence if everything is
         // otherwise valid, so we can't check if _First + _Num_bytes is off the end
         _Val = 0xFFFD;
