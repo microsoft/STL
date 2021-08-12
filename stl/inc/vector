@@ -457,32 +457,40 @@ private:
     using _Value_type = typename _Ty::value_type;
 
 public:
-    explicit constexpr _Asan_annotater(const _Ty& _Target) noexcept : _Target_vec(_Target), _Old_last(nullptr) {}
+    _Asan_annotater(const _Asan_annotater&) = delete;
+    _Asan_annotater& operator=(const _Asan_annotater&) = delete;
+
+    explicit constexpr _Asan_annotater(const _Ty& _Target) noexcept : _Target_vec(_Target), _Asan_last(nullptr) {}
 
     _CONSTEXPR20 _Asan_annotater(const _Ty& _Target, const _Size_type _New_size)
-        : _Target_vec(_Target), _Old_last(nullptr) {
+        : _Target_vec(_Target), _Asan_last(nullptr) {
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return;
         }
 #endif // _HAS_CXX20
 
-        const auto& _My_data     = _Target_vec._Mypair._Myval2;
-        const _Pointer& _Myfirst = _My_data._Myfirst;
-        const _Pointer& _Mylast  = _My_data._Mylast;
-        const _Pointer& _Myend   = _My_data._Myend;
+        const auto& _My_data          = _Target_vec._Mypair._Myval2;
+        const _Value_type* _Raw_first = _Unfancy_maybe_null(_My_data._Myfirst);
+        const _Value_type* _Raw_last  = _Unfancy_maybe_null(_My_data._Mylast);
+        const _Value_type* _Raw_end   = _Unfancy_maybe_null(_My_data._Myend);
 
-        if (_New_size > static_cast<_Size_type>(_Myend - _Myfirst)) {
-            // New size is larger than current capacity; assume we're allocating a new block.
+        if (_New_size > static_cast<_Size_type>(_Raw_end - _Raw_first)) {
+            if (_Raw_end != _Raw_first) {
+                // New size is larger than current capacity; assume we're allocating a new block.
+                __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Raw_last, _Raw_end);
+            }
             return;
         }
 
         // New size is less than current capacity; assume we're reusing the same block.
-        _Old_last = _Unfancy_maybe_null(_Mylast);
+        const _Value_type* _New_last = _Raw_first + _New_size;
+        _Asan_last = _Raw_last;
 
-        if (_New_size > static_cast<_Size_type>(_Mylast - _Myfirst)) {
-            const auto _Raw_first = _Unfancy(_Myfirst);
-            __sanitizer_annotate_contiguous_container(_Raw_first, _Unfancy(_Myend), _Old_last, _Raw_first + _New_size);
+        if (_Asan_last < _New_last) {
+            // If the new size is larger than the current size extend the legal range of the container.
+            __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Asan_last, _New_last);
+            _Asan_last = _New_last;
         }
     }
 
@@ -493,90 +501,102 @@ public:
         }
 #endif // _HAS_CXX20
 
-        const auto& _My_data     = _Target_vec._Mypair._Myval2;
-        const _Pointer& _Myfirst = _My_data._Myfirst;
-        const _Pointer& _Mylast  = _My_data._Mylast;
-        const _Pointer& _Myend   = _My_data._Myend;
+        const auto& _My_data          = _Target_vec._Mypair._Myval2;
+        const _Value_type* _Raw_first = _Unfancy(_My_data._Myfirst);
+        const _Value_type* _Raw_last  = _Unfancy(_My_data._Mylast);
+        const _Value_type* _Raw_end   = _Unfancy(_My_data._Myend);
 
-        if (!_Old_last) {
-            const _Raw_end = _Unfancy(_Myend);
-            __sanitizer_annotate_contiguous_container(_Myfirst, _Raw_end, _Raw_end, _Mylast);
+        if (!_Asan_last) {
+            // New size was larger than current capacity; pessimisticly re-annotate the whole illegal range of the container.
+            __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Raw_end, _Raw_last);
             return;
         }
 
-        const _Raw_last = _Unfancy(_Mylast);
-        if (static_cast<const void*>(_Raw_last) < _Old_last) {
-            __sanitizer_annotate_contiguous_container(_Unfancy(_Myfirst), _Unfancy(_Myend), _Old_last, _Raw_last);
+        if (_Raw_last != _Asan_last) {
+            __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Asan_last, _Raw_last);
         }
     }
 
 private:
     const _Ty& _Target_vec;
-    const void* _Old_last;
+    const _Value_type* _Asan_last;
 };
 
 template <class _Ty>
 class _NODISCARD _Asan_annotater<_Ty, false> {
 private:
     using _Alloc      = typename _Ty::allocator_type;
-    using _Pointer    = typename _Ty::pointer;
     using _Size_type  = typename _Ty::size_type;
     using _Value_type = typename _Ty::value_type;
 
     const void* _Get_aligned_start() {
-        const auto& _My_data       = _Target_vec._Mypair._Myval2;
-        const _Pointer& _Myfirst   = _My_data._Myfirst;
-        const _Pointer& _Myend     = _My_data._Myend;
-        const _Size_type _Capacity = static_cast<_Size_type>(_Myend - _Myfirst);
+        const auto& _My_data          = _Target_vec._Mypair._Myval2;
+        const _Value_type* _Raw_first = _Unfancy_maybe_null(_My_data._Myfirst);
+        const _Value_type* _Raw_end   = _Unfancy_maybe_null(_My_data._Myend);
+        const _Size_type _Capacity = static_cast<_Size_type>(_Raw_end - _Raw_first);
 
-        if (_Capacity * sizeof(_Value_type) < 8) {
-            uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_Myfirst) & 0x7;
-            if (_Alignment_offset) {
-                _Alignment_offset = 8 - _Alignment_offset;
-            }
-
-            if (_Capacity * sizeof(_Value_type) > _Alignment_offset) {
-                return reinterpret_cast<const char*>(_Myfirst) + _Alignment_offset;
-            } else {
-                return nullptr;
-            }
-        } else {
-            return reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(_Myfirst) + 7) & ~7);
+        if (_Capacity * sizeof(_Value_type) >= 8) {
+            // We are guaranteed to have sufficient space to find a legal aligned address.
+            return reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(_Raw_first) + 7) & ~7);
         }
+
+        uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_Raw_first) & 7;
+        if (_Alignment_offset) {
+            _Alignment_offset = 8 - _Alignment_offset;
+        }
+
+        if (_Capacity * sizeof(_Value_type) > _Alignment_offset) {
+            return reinterpret_cast<const char*>(_Raw_first) + _Alignment_offset;
+        }
+
+        return nullptr;
     }
 
 public:
-    explicit constexpr _Asan_annotater(const _Ty& _Target) noexcept
-        : _Target_vec(_Target), _Old_last(nullptr), _Aligned_first(nullptr) {}
+    _Asan_annotater(const _Asan_annotater&) = delete;
+    _Asan_annotater& operator=(const _Asan_annotater&) = delete;
 
-    _CONSTEXPR20 _Asan_annotater(const _Ty& _Target, _Size_type _New_size) : _Target_vec(_Target), _Old_last(nullptr) {
+    explicit constexpr _Asan_annotater(const _Ty& _Target) noexcept
+        : _Target_vec(_Target), _Asan_last(nullptr), _Aligned_first(nullptr) {}
+
+    _CONSTEXPR20 _Asan_annotater(const _Ty& _Target, _Size_type _New_size) : _Target_vec(_Target), _Asan_last(nullptr) {
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return;
         }
 #endif // _HAS_CXX20
 
-        const auto& _My_data     = _Target_vec._Mypair._Myval2;
-        const _Pointer& _Myfirst = _My_data._Myfirst;
-        const _Pointer& _Mylast  = _My_data._Mylast;
-        const _Pointer& _Myend   = _My_data._Myend;
-
-        if (_New_size > static_cast<_Size_type>(_Myend - _Myfirst)) {
-            return;
-        }
+        const auto& _My_data          = _Target_vec._Mypair._Myval2;
+        const _Value_type* _Raw_first = _Unfancy_maybe_null(_My_data._Myfirst);
+        const _Value_type* _Raw_last  = _Unfancy_maybe_null(_My_data._Mylast);
+        const _Value_type* _Raw_end   = _Unfancy_maybe_null(_My_data._Myend);
 
         _Aligned_first = _Get_aligned_start();
         if (!_Aligned_first) {
-            _Old_last = _Unfancy(_Myend);
+            // There is no aligned address within the underlying buffer. The whole region is legal.
+            _Asan_last = _Raw_end;
             return;
-        } else {
-            const void* _New_last = static_cast<const void*>(_Myfirst + _New_size);
-            _New_last             = _New_last > _Aligned_first ? _New_last : _Aligned_first;
-            _Old_last             = _Mylast > _Aligned_first ? _Mylast : _Aligned_first;
+        }
 
-            if (_New_last > _Old_last) {
-                __sanitizer_annotate_contiguous_container(_Aligned_first, _Myend, _Old_last, _New_last);
+        // New size is less than current capacity; assume we're reusing the same block.
+        const void* _New_last = _Raw_first + _New_size;
+        _New_last             = _New_last < _Aligned_first ? _Aligned_first : _New_last;
+        _Asan_last            = _Raw_last < _Aligned_first ? _Aligned_first : _Raw_last;
+
+        if (_New_size > static_cast<_Size_type>(_Raw_end - _Raw_first)) {
+            // New size is larger than current capacity; assume we're allocating a new block.
+            if (_Raw_end != _Raw_first) {
+                __sanitizer_annotate_contiguous_container(_Aligned_first, _Raw_end, _Asan_last, _Raw_end);
             }
+
+            _Asan_last = nullptr;
+            return;
+        }
+
+        if (_Asan_last < _New_last) {
+            // If the new size is larger than the current size extend the legal range of the container.
+            __sanitizer_annotate_contiguous_container(_Aligned_first, _Raw_end, _Asan_last, _New_last);
+            _Asan_last = _New_last;
         }
     }
 
@@ -587,32 +607,31 @@ public:
         }
 #endif // _HAS_CXX20
 
-        const auto& _My_data    = _Target_vec._Mypair._Myval2;
-        const _Pointer& _Mylast = _My_data._Mylast;
-        const _Pointer& _Myend  = _My_data._Myend;
+        const auto& _My_data         = _Target_vec._Mypair._Myval2;
+        const _Value_type* _Raw_last = _Unfancy(_My_data._Mylast);
+        const _Value_type* _Raw_end  = _Unfancy(_My_data._Myend);
 
-        if (!_Old_last) {
+        if (!_Asan_last) {
+            // New size was larger than current capacity; pessimisticly re-annotate the whole illegal range of the container.
             _Aligned_first = _Get_aligned_start();
             if (_Aligned_first) {
-                const void* _New_last = static_cast<const void*>(_Mylast);
-                _New_last             = _New_last > _Aligned_first ? _New_last : _Aligned_first;
+                _Asan_last = _Raw_last > _Aligned_first ? _Raw_last : _Aligned_first;
 
-                __sanitizer_annotate_contiguous_container(_Aligned_first, _Myend, _Myend, _New_last);
+                __sanitizer_annotate_contiguous_container(_Aligned_first, _Raw_end, _Raw_end, _Asan_last);
             }
             return;
         } else if (_Aligned_first) {
-            const void* _New_last = static_cast<const void*>(_Mylast);
-            _New_last             = _New_last > _Aligned_first ? _New_last : _Aligned_first;
+            const void *_New_last = _Raw_last < _Aligned_first ? _Aligned_first : _Raw_last;
 
-            if (_Old_last > _New_last) {
-                __sanitizer_annotate_contiguous_container(_Aligned_first, _Myend, _Old_last, _New_last);
+            if (_New_last != _Asan_last) {
+                __sanitizer_annotate_contiguous_container(_Aligned_first, _Raw_end, _Asan_last, _New_last);
             }
         }
     }
 
 private:
     const _Ty& _Target_vec;
-    const void* _Old_last;
+    const void* _Asan_last;
     const void* _Aligned_first;
 };
 
@@ -1021,6 +1040,10 @@ private:
         const auto _Whereoff = static_cast<size_type>(_Where._Ptr - _Myfirst);
         const auto _Oldsize  = static_cast<size_type>(_Mylast - _Myfirst);
 
+        // Pessimistically assume that we will fill the vector's capacity.
+        // This causes the entire underlying buffer to initially be marked as legal.
+        _ASAN_ANNOTATE(*this, static_cast<size_type>(_My_data._Myend - _Myfirst) + 1);
+
         // For one-at-back, provide strong guarantee.
         // Otherwise, provide basic guarantee (despite N4659 26.3.11.5 [vector.modifiers]/1).
 
@@ -1207,6 +1230,10 @@ private:
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
+
+        // Pessimistically assume that we will fill the vector's capacity.
+        // This causes the entire underlying buffer to initially be marked as legal.
+        _ASAN_ANNOTATE(*this, static_cast<size_type>(_My_data._Myend - _Myfirst) + 1);
 
         _My_data._Orphan_all();
 
@@ -2171,6 +2198,7 @@ constexpr typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& 
 }
 #endif // _HAS_CXX20
 
+// CLASS TEMPLATE vector<bool, Alloc> AND FRIENDS
 template <class _Alloc0>
 struct _Wrap_alloc { // TRANSITION, ABI compat, preserves symbol names of vector<bool>::iterator
     using _Alloc = _Alloc0;

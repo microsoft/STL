@@ -4,7 +4,6 @@
 // REQUIRES: asan, x64 || x86
 
 #include <cassert>
-#include <list>
 #include <memory>
 #include <type_traits>
 #include <vector>
@@ -13,17 +12,69 @@ using namespace std;
 
 extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end);
 
+template <class T, int N>
+class input_iterator_tester {
+private:
+    T data[N] = {};
+
+public:
+    class iterator {
+    private:
+        T* curr;
+
+    public:
+        using iterator_category = input_iterator_tag;
+        using value_type = T;
+        using difference_type = ptrdiff_t;
+        using pointer = T*;
+        using reference = T&;
+
+        iterator(T* start) : curr(start) { }
+
+        reference operator*() const {
+            return *curr;
+        }
+
+        iterator& operator++() {
+            ++curr;
+            return *this;
+        }
+
+        iterator operator++(int) {
+            auto tmp = *this;
+            ++curr;
+            return tmp;
+        }
+
+        bool operator==(const iterator& that) const {
+            return curr == that.curr;
+        }
+
+        bool operator!=(const iterator& that) const {
+            return !(*this == that);
+        }
+    };
+
+    iterator begin() {
+        return iterator(data);
+    }
+
+    iterator end() {
+        return iterator(data + N);
+    }
+};
+
 template <class T, class Alloc>
 bool verify_vector(vector<T, Alloc>& vec) {
     size_t buffer_size  = vec.capacity() * sizeof(T);
-    void* buffer        = static_cast<void*>(vec.data());
+    void* buffer        = vec.data();
     void* aligned_start = align(8, 1, buffer, buffer_size);
 
     if (!aligned_start) {
         return true;
     }
 
-    void* mid = static_cast<void*>(vec.data() + vec.size());
+    void* mid = vec.data() + vec.size();
     mid       = mid > aligned_start ? mid : aligned_start;
 
     return __sanitizer_verify_contiguous_container(aligned_start, mid, vec.data() + vec.capacity()) != 0;
@@ -36,16 +87,16 @@ struct custom_test_allocator {
     using is_always_equal                        = Stateless;
 };
 
-template <class T, class Pocma, class Stateless>
-constexpr bool operator==(const custom_test_allocator<T, Pocma, Stateless>& lhs,
-    const custom_test_allocator<T, Pocma, Stateless>& rhs) noexcept {
-    return Stateless::value || (&lhs == &rhs);
+template <class T1, class T2, class Pocma, class Stateless>
+constexpr bool operator==(const custom_test_allocator<T1, Pocma, Stateless>&,
+    const custom_test_allocator<T2, Pocma, Stateless>&) noexcept {
+    return Stateless::value;
 }
 
-template <class T, class Pocma, class Stateless>
-constexpr bool operator!=(const custom_test_allocator<T, Pocma, Stateless>& lhs,
-    const custom_test_allocator<T, Pocma, Stateless>& rhs) noexcept {
-    return !(lhs == rhs);
+template <class T1, class T2, class Pocma, class Stateless>
+constexpr bool operator!=(const custom_test_allocator<T1, Pocma, Stateless>&,
+    const custom_test_allocator<T2, Pocma, Stateless>&) noexcept {
+    return !Stateless::value;
 }
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
@@ -124,7 +175,7 @@ void test_case_reserve_shrink() {
     assert(verify_vector(v));
 
     for (int i = 0; i < Size; i += Stride) {
-        for (int j = i; j < Stride && j + i < Size; ++j) {
+        for (int j = 0; j < Stride && j + i < Size; ++j) {
             v.push_back(T());
         }
 
@@ -135,7 +186,7 @@ void test_case_reserve_shrink() {
     assert(verify_vector(v));
 
     for (int i = 0; i < Size; i += Stride) {
-        for (int j = i; j < Stride && j + i < Size; ++j) {
+        for (int j = 0; j < Stride && j + i < Size; ++j) {
             v.pop_back();
         }
 
@@ -144,6 +195,7 @@ void test_case_reserve_shrink() {
     }
 
     v.pop_back();
+    assert(verify_vector(v));
     v.shrink_to_fit();
     assert(verify_vector(v));
 }
@@ -252,7 +304,7 @@ void test_case_insert_range() {
 
     vector<T, Alloc> v1(1);
     vector<T, Alloc> v2(N);
-    list<T> l(N);
+    input_iterator_tester<T, N> t;
 
     v1.insert(v1.begin(), v2.begin(), v2.end());
     assert(verify_vector(v1));
@@ -261,11 +313,11 @@ void test_case_insert_range() {
     v1.insert(v1.begin() + N, v2.begin(), v2.end());
     assert(verify_vector(v1));
 
-    v1.insert(v1.begin(), l.begin(), l.end());
+    v1.insert(v1.begin(), t.begin(), t.end());
     assert(verify_vector(v1));
-    v1.insert(v1.end(), l.begin(), l.end());
+    v1.insert(v1.end(), t.begin(), t.end());
     assert(verify_vector(v1));
-    v1.insert(v1.begin() + N, l.begin(), l.end());
+    v1.insert(v1.begin() + N, t.begin(), t.end());
     assert(verify_vector(v1));
 }
 
@@ -276,8 +328,8 @@ void test_case_assign() {
     vector<T, Alloc> v1(1);
     vector<T, Alloc> v2(N + 1);
     vector<T, Alloc> v3(N + 2);
-    list<T> l1(N + 2);
-    list<T> l2(N + 3);
+    input_iterator_tester<T, N + 2> t1;
+    input_iterator_tester<T, N + 3> t2;
 
     v1.assign(N, T());
     assert(verify_vector(v1));
@@ -285,11 +337,11 @@ void test_case_assign() {
     assert(verify_vector(v1));
     v1.assign(v3.begin(), v3.end());
     assert(verify_vector(v1));
-    v1.assign(l1.begin(), l1.end());
+    v1.assign(t1.begin(), t1.end());
     assert(verify_vector(v1));
-    v1.assign(l2.begin(), l2.end());
+    v1.assign(t2.begin(), t2.end());
     assert(verify_vector(v1));
-    v1.assign(l1.begin(), l1.end());
+    v1.assign(t1.begin(), t1.end());
     assert(verify_vector(v1));
     v1.assign(v3.begin(), v3.end());
     assert(verify_vector(v1));
