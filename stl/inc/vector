@@ -451,8 +451,6 @@ _INLINE_VAR constexpr bool
 template <class _Ty, bool = _Has_minimum_allocation_alignment<_Ty>>
 class _NODISCARD _Asan_annotater {
 private:
-    using _Alloc      = typename _Ty::allocator_type;
-    using _Pointer    = typename _Ty::pointer;
     using _Size_type  = typename _Ty::size_type;
     using _Value_type = typename _Ty::value_type;
 
@@ -525,7 +523,6 @@ private:
 template <class _Ty>
 class _NODISCARD _Asan_annotater<_Ty, false> {
 private:
-    using _Alloc      = typename _Ty::allocator_type;
     using _Size_type  = typename _Ty::size_type;
     using _Value_type = typename _Ty::value_type;
 
