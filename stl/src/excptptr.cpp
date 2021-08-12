@@ -142,7 +142,7 @@ namespace {
 
         // copy the number of parameters in use
         constexpr auto _Max_parameters = static_cast<DWORD>(EXCEPTION_MAXIMUM_PARAMETERS);
-        const auto _In_use             = (_STD min)(_Parameters, _Max_parameters);
+        const auto _In_use             = (_STD min) (_Parameters, _Max_parameters);
         _CSTD memcpy(_Dest.ExceptionInformation, _Src.ExceptionInformation, _In_use * sizeof(ULONG_PTR));
         _CSTD memset(&_Dest.ExceptionInformation[_In_use], 0, (_Max_parameters - _In_use) * sizeof(ULONG_PTR));
     }
@@ -214,11 +214,11 @@ namespace {
         // reference count control block for special "never allocates" exceptions like the bad_alloc or bad_exception
         // exception_ptrs
     private:
-        virtual void _Destroy() noexcept override {
+        void _Destroy() noexcept override {
             // intentionally does nothing
         }
 
-        virtual void _Delete_this() noexcept override {
+        void _Delete_this() noexcept override {
             // intentionally does nothing
         }
 
@@ -244,7 +244,7 @@ namespace {
         // reference count control block for exception_ptrs; the exception object is stored at
         // reinterpret_cast<unsigned char*>(this) + sizeof(_ExceptionPtr_normal)
     private:
-        virtual void _Destroy() noexcept override {
+        void _Destroy() noexcept override {
             // call the destructor for a stored pure or native C++ exception if necessary
             const auto& _CppEhRecord = reinterpret_cast<EHExceptionRecord&>(_ExRecord);
 
@@ -290,7 +290,7 @@ namespace {
             }
         }
 
-        virtual void _Delete_this() noexcept override {
+        void _Delete_this() noexcept override {
             free(this);
         }
 
@@ -510,7 +510,7 @@ _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL __ExceptionPtrCurrentException(void* 
         const auto _PType = reinterpret_cast<CatchableType*>(
             static_cast<uintptr_t>(_CatchableTypeArray->arrayOfCatchableTypes[0]) + _ThrowImageBase);
 #else // ^^^ _EH_RELATIVE_TYPEINFO // !_EH_RELATIVE_TYPEINFO vvv
-        const auto _PType = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
+        const auto _PType              = _PThrow->pCatchableTypeArray->arrayOfCatchableTypes[0];
 #endif // _EH_RELATIVE_TYPEINFO
 
         // Alloc memory on stack for exception object. This might cause a stack overflow SEH exception, or another C++

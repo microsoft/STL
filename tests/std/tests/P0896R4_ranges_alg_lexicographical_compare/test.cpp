@@ -5,6 +5,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -87,20 +88,20 @@ struct instantiator {
         }
 
         {
-            In1 empty1{};
+            In1 empty1{span<const P, 0>{}};
             In2 range2{right_equal};
             const same_as<bool> auto result = lexicographical_compare(empty1, range2, less{}, get_first, get_second);
             assert(result);
         }
         {
             In1 range1{left};
-            In2 empty2{};
+            In2 empty2{span<const P, 0>{}};
             const same_as<bool> auto result = lexicographical_compare(range1, empty2, less{}, get_first, get_second);
             assert(!result);
         }
         {
-            In1 empty1{};
-            In2 empty2{};
+            In1 empty1{span<const P, 0>{}};
+            In2 empty2{span<const P, 0>{}};
             const same_as<bool> auto result = lexicographical_compare(empty1, empty2, less{}, get_first, get_second);
             assert(!result);
         }
@@ -173,7 +174,7 @@ struct instantiator {
         }
 
         {
-            In1 empty1{};
+            In1 empty1{span<const P, 0>{}};
             In2 range2{right_equal};
             const same_as<bool> auto result = lexicographical_compare(
                 empty1.begin(), empty1.end(), range2.begin(), range2.end(), less{}, get_first, get_second);
@@ -181,14 +182,14 @@ struct instantiator {
         }
         {
             In1 range1{left};
-            In2 empty2{};
+            In2 empty2{span<const P, 0>{}};
             const same_as<bool> auto result = lexicographical_compare(
                 range1.begin(), range1.end(), empty2.begin(), empty2.end(), less{}, get_first, get_second);
             assert(!result);
         }
         {
-            In1 empty1{};
-            In2 empty2{};
+            In1 empty1{span<const P, 0>{}};
+            In2 empty2{span<const P, 0>{}};
             const same_as<bool> auto result = lexicographical_compare(
                 empty1.begin(), empty1.end(), empty2.begin(), empty2.end(), less{}, get_first, get_second);
             assert(!result);

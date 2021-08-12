@@ -222,7 +222,6 @@ void test_array(const T& val) {
 #endif // __cpp_lib_concepts
 }
 
-#ifdef __cpp_lib_constexpr_dynamic_alloc
 template <class T>
 struct storage_for {
     union {
@@ -286,7 +285,6 @@ struct nontrivial_A {
 };
 
 constexpr void test_compiletime_destroy_variants() {
-#ifndef __EDG__ // TRANSITION, VSO-1327238
     {
         allocator<A<int>> alloc{};
         A<int>* a = alloc.allocate(10);
@@ -305,7 +303,6 @@ constexpr void test_compiletime_destroy_variants() {
         destroy(a, a + 10);
         alloc.deallocate(a, 10);
     }
-#endif // __EDG__
 #ifdef __cpp_lib_concepts
     {
         allocator<A<int>> alloc{};
@@ -412,11 +409,11 @@ struct Alloc {
         allocator<T>{}.deallocate(ptr, n);
     }
 
-    constexpr void construct(value_type* ptr, value_type n) requires(Construct) {
+    constexpr void construct(value_type* ptr, value_type n) requires Construct {
         construct_at(ptr, n);
     }
 
-    constexpr void destroy(value_type* ptr) requires(Destroy) {
+    constexpr void destroy(value_type* ptr) requires Destroy {
         destroy_at(ptr);
     }
 
@@ -525,7 +522,6 @@ constexpr void test_compiletime_operators() {
     }
 }
 static_assert((test_compiletime_operators(), true));
-#endif // __cpp_lib_constexpr_dynamic_alloc
 
 int main() {
     test_runtime(1234);

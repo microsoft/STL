@@ -432,13 +432,6 @@ int main() {
         test_one(lst, expected_output);
     }
 
-    // Validate a non-view borrowed range
-    {
-        constexpr span s{some_ints};
-        STATIC_ASSERT(test_one(s, expected_output));
-        test_one(s, expected_output);
-    }
-
     // take_while/reverse interaction test
     {
         auto twr_pipe = views::take_while(is_less_than<3>) | views::reverse;

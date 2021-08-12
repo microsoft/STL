@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Flist_unchecked_const_iterator
 template <class _Mylist, class _Base = _Iterator_base0>
 class _Flist_unchecked_const_iterator : public _Base {
 public:
@@ -82,7 +81,6 @@ public:
     _Nodeptr _Ptr; // pointer to node
 };
 
-// CLASS TEMPLATE _Flist_unchecked_iterator
 template <class _Mylist>
 class _Flist_unchecked_iterator : public _Flist_unchecked_const_iterator<_Mylist> {
 public:
@@ -117,7 +115,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE _Flist_const_iterator
 template <class _Mylist>
 class _Flist_const_iterator : public _Flist_unchecked_const_iterator<_Mylist, _Iterator_base> {
 public:
@@ -189,7 +186,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE _Flist_iterator
 template <class _Mylist>
 class _Flist_iterator : public _Flist_const_iterator<_Mylist> {
 public:
@@ -230,7 +226,6 @@ public:
     }
 };
 
-// forward_list TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
     class _Reference, class _Const_reference, class _Nodeptr_type>
 struct _Flist_iter_types {
@@ -266,7 +261,6 @@ struct _Flist_simple_types : _Simple_types<_Ty> {
     using _Nodeptr = _Node*;
 };
 
-// CLASS TEMPLATE _Flist_val
 template <class _Val_types>
 class _Flist_val : public _Container_base {
 public:
@@ -512,7 +506,6 @@ private:
     pointer _Head; // Points at the first constructed node.
 };
 
-// CLASS TEMPLATE forward_list
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class forward_list { // singly linked list
 private:
@@ -881,8 +874,8 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min)(
-            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alnode_traits::max_size(_Getal()));
+        return (_STD min) (static_cast<size_type>((numeric_limits<difference_type>::max) ()),
+            _Alnode_traits::max_size(_Getal()));
     }
 
     _NODISCARD bool empty() const noexcept {
@@ -1093,6 +1086,7 @@ public:
             _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list splice_after iterator outside range");
         _STL_VERIFY(_First._Getcont() == _STD addressof(_Right._Mypair._Myval2),
             "forward_list splice_after iterator outside range");
+        _STL_VERIFY(_First._Ptr->_Next != nullptr, "forward_list splice_after iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         _Splice_after(_Where._Ptr, _Right, _First._Ptr);
