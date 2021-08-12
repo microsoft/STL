@@ -6,14 +6,15 @@
 #pragma warning(disable : ALL_CPPCORECHECK_WARNINGS)
 
 // TRANSITION, DevCom-1407027
-#pragma warning( \
-    disable : 26457) // (void) should not be used to ignore return values, use 'std::ignore =' instead (es.48)
+#pragma warning(disable : 26457) // (void) should not be used to ignore return values,
+                                 // use 'std::ignore =' instead (es.48)
 
+#pragma warning(default : 26407) // Prefer scoped objects, don't heap-allocate unnecessarily (r.5).
 #pragma warning(default : 26433) // Function '%1$s' should be marked with 'override'(c .128).
 
-// TODO: add C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Tools\MSVC\14.30.30423\include to %caexcludepath%
-//#pragma warning(default : 26435) // Function '%1$s' should specify exactly one of 'virtual', 'override', or 'final'
-//(c.128).
+// TODO: add VC\Tools\MSVC\14.30.30423\include to %caexcludepath%
+// #pragma warning(default : 26435) // Function '%1$s' should specify exactly one of
+//                                  // 'virtual', 'override', or 'final' (c.128).
 
 #pragma warning(default : 26437) // Do not slice (es.63)
 #pragma warning(default : 26441) // Guard objects must be named (cp.44)
