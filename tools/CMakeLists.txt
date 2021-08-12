@@ -15,5 +15,4 @@ include_directories(inc)
 
 add_subdirectory(jobify)
 add_subdirectory(parallelize)
-add_subdirectory(unicode_properties_parse)
 add_subdirectory(validate)
