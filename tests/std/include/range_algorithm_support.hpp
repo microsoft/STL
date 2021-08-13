@@ -615,7 +615,7 @@ namespace test {
 template <class Category, class Element, ::test::CanDifference Diff, ::test::CanCompare Eq, ::test::ProxyRef Proxy,
     ::test::IsWrapped Wrapped>
 struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>
-    : ::test::iterator_traits_base<Category, derived_from<forward_iterator_tag, Category>,
+    : ::test::iterator_traits_base<Category, derived_from<Category, forward_iterator_tag>,
           Proxy == ::test::ProxyRef::yes, Eq == ::test::CanCompare::yes> {
     using iterator_concept = Category;
     using value_type       = remove_cv_t<Element>;
