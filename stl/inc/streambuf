@@ -357,12 +357,12 @@ protected:
     virtual pos_type __CLR_OR_THIS_CALL seekoff(
         off_type, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out) {
         // change position by offset, according to way and mode
-        return pos_type(-1);
+        return pos_type(off_type(-1));
     }
 
     virtual pos_type __CLR_OR_THIS_CALL seekpos(pos_type, ios_base::openmode = ios_base::in | ios_base::out) {
         // change to specified position, according to mode
-        return pos_type(-1);
+        return pos_type(off_type(-1));
     }
 
     virtual basic_streambuf* __CLR_OR_THIS_CALL setbuf(_Elem*, streamsize) {
