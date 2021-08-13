@@ -34,6 +34,7 @@ static_assert(std::memory_order_seq_cst == memory_order_seq_cst);
 
 static_assert(is_same_v<std::atomic_flag, atomic_flag>);
 
+static_assert(is_same_v<std::atomic_bool, atomic_bool>);
 static_assert(is_same_v<std::atomic_char, atomic_char>);
 static_assert(is_same_v<std::atomic_schar, atomic_schar>);
 static_assert(is_same_v<std::atomic_uchar, atomic_uchar>);
@@ -45,6 +46,11 @@ static_assert(is_same_v<std::atomic_long, atomic_long>);
 static_assert(is_same_v<std::atomic_ulong, atomic_ulong>);
 static_assert(is_same_v<std::atomic_llong, atomic_llong>);
 static_assert(is_same_v<std::atomic_ullong, atomic_ullong>);
+
+#ifdef __cpp_lib_char8_t
+static_assert(is_same_v<std::atomic_char8_t, atomic_char8_t>);
+#endif // __cpp_lib_char8_t
+
 static_assert(is_same_v<std::atomic_char16_t, atomic_char16_t>);
 static_assert(is_same_v<std::atomic_char32_t, atomic_char32_t>);
 static_assert(is_same_v<std::atomic_wchar_t, atomic_wchar_t>);
@@ -108,4 +114,4 @@ namespace test {
 static_assert(std::atomic_thread_fence == atomic_thread_fence);
 static_assert(std::atomic_signal_fence == atomic_signal_fence);
 
-int main() {}
+int main() {} // COMPILE-ONLY

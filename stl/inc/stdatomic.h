@@ -42,6 +42,7 @@ using _STD memory_order_seq_cst;
 
 using _STD atomic_flag;
 
+using _STD atomic_bool;
 using _STD atomic_char;
 using _STD atomic_schar;
 using _STD atomic_uchar;
@@ -53,6 +54,11 @@ using _STD atomic_long;
 using _STD atomic_ulong;
 using _STD atomic_llong;
 using _STD atomic_ullong;
+
+#ifdef __cpp_lib_char8_t
+using _STD atomic_char8_t;
+#endif // __cpp_lib_char8_t
+
 using _STD atomic_char16_t;
 using _STD atomic_char32_t;
 using _STD atomic_wchar_t;
