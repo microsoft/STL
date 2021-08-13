@@ -183,6 +183,8 @@ int main() {
     test_various_containers();
 #ifndef _M_CEE_PURE
 #if defined(_M_IX86) || defined(_M_X64)
+    disable_instructions(__ISA_AVAILABLE_AVX512);
+    test_vector_algorithms();
     disable_instructions(__ISA_AVAILABLE_AVX2);
     test_vector_algorithms();
     disable_instructions(__ISA_AVAILABLE_SSE42);
