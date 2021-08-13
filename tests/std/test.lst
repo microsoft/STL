@@ -160,7 +160,6 @@ tests\GH_000545_include_compare
 tests\GH_000625_vector_bool_optimization
 tests\GH_000685_condition_variable_any
 tests\GH_000690_overaligned_function
-tests\GH_000814_avx512_vector_algorithms
 tests\GH_000890_pow_template
 tests\GH_000935_complex_numerical_accuracy
 tests\GH_000940_missing_valarray_copy
