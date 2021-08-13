@@ -1,4 +1,4 @@
-# generate test data from GraphemeBreakTest.txt
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from pathlib import Path
 from dataclasses import dataclass, field
