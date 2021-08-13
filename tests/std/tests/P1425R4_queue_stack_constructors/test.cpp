@@ -103,6 +103,19 @@ void test_container() {
     }
 
 #if _HAS_CXX17
+    priority_queue pq2(range.begin(), range.end(), greater<int>{});
+    static_assert(is_same_v<decltype(pq2), priority_queue<int, vector<int>, greater<int>>>);
+#else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
+    priority_queue<int, vector<int>, greater<int>> pq2(range.begin(), range.end(), greater<int>{});
+#endif // !_HAS_CXX17
+    assert(pq2.size() == size(some_data));
+    result = 0;
+    while (!pq2.empty()) {
+        assert(pq2.top() == result++);
+        pq2.pop();
+    }
+
+#if _HAS_CXX17
     priority_queue pq3(range.begin(), range.end(), custom_allocator<int>{});
     static_assert(is_same_v<decltype(pq3), priority_queue<int, vector<int, custom_allocator<int>>, less<int>>>);
 #else // ^^^ _HAS_CXX17 ^^^ / vvv !_HAS_CXX17 vvv
