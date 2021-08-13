@@ -778,14 +778,14 @@ namespace ranges {
 
     template <class _Wi>
     struct _Ioterator_category_base {
-        auto operator<=>(const _Ioterator_category_base&) const = default;
+        _NODISCARD auto operator<=>(const _Ioterator_category_base&) const = default;
     };
 
     template <incrementable _Wi>
     struct _Ioterator_category_base<_Wi> {
         using iterator_category = input_iterator_tag;
 
-        auto operator<=>(const _Ioterator_category_base&) const = default;
+        _NODISCARD auto operator<=>(const _Ioterator_category_base&) const = default;
     };
 
     template <weakly_incrementable _Wi>
