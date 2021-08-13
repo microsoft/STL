@@ -226,7 +226,7 @@ void test_lwg_3536() {
     minutes mm{20};
 
     {
-        istringstream iss{"2:2:20"};
+        istringstream iss{"2:2:30"};
         iss >> parse(string{"%H:%M:%S"}, mm);
         assert(iss.fail() && mm == 20min);
     }
