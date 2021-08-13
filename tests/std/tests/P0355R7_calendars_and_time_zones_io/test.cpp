@@ -285,8 +285,6 @@ void parse_seconds() {
 
     fail_parse("1.2 1.3", "%S %S", time_ms);
     fail_parse("1.2 2.2", "%S %S", time_ms);
-
-    test_lwg_3536();
 }
 
 void parse_minutes() {
@@ -1207,6 +1205,7 @@ void parse_wchar() {
 }
 
 void test_parse() {
+    test_lwg_3536();
     parse_seconds();
     parse_minutes();
     parse_hours();
