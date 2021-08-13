@@ -64,7 +64,8 @@ cpp_test_data_line_template = "{{ {{{}}}, {{{}}} }}"
 
 
 def lineToCppDataLine(line: BreakTestItem) -> str:
-    return cpp_test_data_line_template.format(','.join(["U'\\x" + format(x, 'x') + "'" for x in line.code_points]), ','.join(
+    return cpp_test_data_line_template.format(','.join(
+        ["U'\\x" + format(x, 'x') + "'" for x in line.code_points]), ','.join(
         [str(x) + 'ull' for x in line.breaks]))
 
 
