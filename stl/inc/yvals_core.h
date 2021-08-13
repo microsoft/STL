@@ -1319,10 +1319,6 @@
 #define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23
-#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
-#endif // _HAS_CXX23
-
 #ifndef _M_CEE
 #if _HAS_CXX20
 #define __cpp_lib_execution 201902L // P1001R2 execution::unseq
@@ -1357,6 +1353,8 @@
 
 // C++23
 #if _HAS_CXX23
+#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
+
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_allocate_at_least 202106L
 #endif // __cpp_lib_concepts
