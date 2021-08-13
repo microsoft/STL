@@ -13,4 +13,3 @@ class CustomTestFormat(STLTestFormat):
         shared.env["esp.annotationbuildlevel"] = "ignore"
         for step in super().getBuildSteps(test, litConfig, shared):
             yield step
-
