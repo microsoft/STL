@@ -42,8 +42,6 @@
 #pragma warning(default : 26817) // Potentially expensive copy of variable '%1$s' in range-for loop.
                                  // Consider making it a const reference (es.71).
 
-#define MEOW_ANGLE(X) <X>
-
-#include MEOW_ANGLE(MEOW_HEADER)
+#include <__msvc_all_public_headers.hpp>
 
 int main() noexcept {} // COMPILE-ONLY
