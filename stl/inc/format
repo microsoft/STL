@@ -638,9 +638,10 @@ class _Unicode_codepoint_end_iterator {};
 
 template <typename _CharT>
 class _Unicode_codepoint_iterator {
-protected:
+private:
     const _CharT* _First = nullptr;
     const _CharT* _Last  = nullptr;
+    const _CharT* _Next  = nullptr;
     char32_t _Val        = 0;
 
 public:
@@ -650,7 +651,7 @@ public:
 
     constexpr _Unicode_codepoint_iterator(const _CharT* _First_val, const _CharT* _Last_val)
         : _First(_First_val), _Last(_Last_val) {
-        ++*this;
+        _Next = _Decode_utf(_First, _Last, _Val);
     }
 
     constexpr _Unicode_codepoint_iterator(const basic_string_view<_CharT>& _Str)
@@ -659,12 +660,11 @@ public:
     constexpr _Unicode_codepoint_iterator() = default;
 
     constexpr _Unicode_codepoint_iterator& operator++() noexcept {
-        if (_First == _Last) {
-            // we're at the end, but still need a "one past the end" value
-            _First = nullptr;
-            return *this;
+        _First = _Next;
+        if (_First != _Last) {
+            _Next = _STD _Decode_utf(_First, _Last, _Val);
         }
-        _First = _STD _Decode_utf(_First, _Last, _Val);
+
         return *(this);
     }
     constexpr _Unicode_codepoint_iterator operator++(int) noexcept {
@@ -675,8 +675,13 @@ public:
     constexpr value_type operator*() const noexcept {
         return _Val;
     }
+
+    constexpr const _CharT* _Position() const {
+        return _First;
+    }
+
     constexpr bool operator==(_Unicode_codepoint_end_iterator) const noexcept {
-        if (_First == nullptr) {
+        if (_First == _Last) {
             return true;
         }
         return false;
@@ -735,11 +740,12 @@ class _Grapheme_break_property_iterator {
     size_t _Num_RIs = 0;
     _GB11_LeftHand_regex _GB11_rx;
 
-    friend bool operator==(const _Grapheme_break_property_iterator& _Lhs, _Grapheme_break_property_end_iterator) {
+    constexpr friend bool operator==(
+        const _Grapheme_break_property_iterator& _Lhs, _Grapheme_break_property_end_iterator) noexcept {
         return _Lhs._WrappedIter == _Unicode_codepoint_end_iterator{};
     }
-    friend bool operator==(
-        const _Grapheme_break_property_iterator& _Lhs, const _Grapheme_break_property_iterator& _Rhs) {
+    constexpr friend bool operator==(
+        const _Grapheme_break_property_iterator& _Lhs, const _Grapheme_break_property_iterator& _Rhs) noexcept {
         return _Lhs._WrappedIter == _Rhs._WrappedIter && _Lhs._Num_RIs == _Rhs._Num_RIs
             && _Lhs._GB11_rx == _Rhs._GB11_rx;
     }
@@ -832,6 +838,10 @@ public:
         auto _Old = *this;
         ++*this;
         return _Old;
+    }
+
+    constexpr const _CharT* _Position() const {
+        return _WrappedIter._Position();
     }
 
     constexpr value_type operator*() const {
@@ -1126,18 +1136,15 @@ _NODISCARD constexpr bool _Is_execution_charset_utf8() {
 #pragma warning(pop)
 }
 
-inline constexpr char16_t _Width_estimate_low_intervals[] = { // Per N4885 [format.string.std]/11
+inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4885 [format.string.std]/11
     0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u, 0xFE10u,
-    0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u};
+    0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u,
+    0x2FFFEu, 0x30000u, 0x3FFFEu};
 
-inline constexpr char32_t _Width_estimate_high_intervals[] = { // Per N4885 [format.string.std]/11
-    0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu};
-
-template <auto& _Bounds>
 _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
     // Computes the width estimation for Unicode characters from N4885 [format.string.std]/11
     int _Result = 1;
-    for (const auto& _Bound : _Bounds) {
+    for (const auto& _Bound : _Width_estimate_intervals) {
         if (_Ch < _Bound) {
             return _Result;
         }
@@ -1190,59 +1197,35 @@ class _Fmt_codec<char, _Statically_Utf8> : private _Fmt_codec_base<_Statically_U
 private:
     _NODISCARD static constexpr int _Utf8_code_units_in_next_character(
         const char* const _First, const char* const _Last) noexcept {
-        // Returns a count of the number of UTF-8 code units that compose the first encoded character in [_First,
-        // _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or *_First is not a valid lead
-        // byte.
-        const auto _Ch = static_cast<unsigned char>(*_First);
-        if (_Ch < 0b1000'0000u) {
-            return 1;
-        }
-
-        const auto _Len = static_cast<size_t>(_Last - _First);
-
-        if (_Ch < 0b1110'0000u) {
-            // check for non-lead byte or partial 2-byte encoded character
-            return (_Ch >= 0b1100'0000u && _Len >= 2) ? 2 : -1;
-        }
-
-        if (_Ch < 0b1111'0000u) {
-            // check for partial 3-byte encoded character
-            return (_Len >= 3) ? 3 : -1;
-        }
-
-        // check for partial 4-byte encoded character
-        return (_Len >= 4) ? 4 : -1;
-    }
-
-    _NODISCARD static int _Estimate_utf8_character_width(const char* const _Ptr, const int _Units) noexcept {
-        // Return an estimate for the width of the character composed of _Units code units,
-        // whose first code unit is denoted by _Ptr.
-        auto _Ch = static_cast<char32_t>(*_Ptr);
-        switch (_Units) {
-        default:
-        case 1:
-        case 2:
-            return 1;
-        case 3:
-            _Ch &= 0b1111u;
-            break;
-        case 4:
-            _Ch &= 0b111u;
-            break;
-        }
-
-        for (int _Idx = 1; _Idx < _Units; ++_Idx) {
-            _Ch = _Ch << 6 | (_Ptr[_Idx] & 0b11'1111u);
-        }
-
-        if (_Units == 3) {
-            return _Unicode_width_estimate<_Width_estimate_low_intervals>(_Ch);
-        }
-
-        return _Unicode_width_estimate<_Width_estimate_high_intervals>(_Ch);
+        char32_t _Ch;
+        const char* _Next = _Decode_utf(_First, _Last, _Ch);
+        _STL_INTERNAL_CHECK(_Next - _First <= 4);
+        return static_cast<int>(_Next - _First);
     }
 
 public:
+    _NODISCARD const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
+        // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
+        // continuation byte) in [_First, _Last).
+        if constexpr (_Statically_Utf8) {
+            return _Find_unchecked(_First, _Last, _Val);
+        } else {
+            if (this->_Cvt._Mbcurmax == 1 || this->_Cvt._Mbcurmax == 4) {
+                // As above and in _Mbrtowc, assume 4-byte encodings are UTF-8
+                return _Find_unchecked(_First, _Last, _Val);
+            }
+
+            while (_First != _Last && *_First != _Val) {
+                const int _Units = this->_Double_byte_encoding_code_units_in_next_character(_First, _Last);
+                if (_Units < 0) {
+                    _THROW(format_error("Invalid encoded character in format string."));
+                }
+                _First += _Units;
+            }
+
+            return _First;
+        }
+    }
     _NODISCARD int _Units_in_next_character(const char* const _First, const char* const _Last) const noexcept {
         // Returns a count of the number of code units that compose the first encoded character in
         // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
@@ -1267,89 +1250,20 @@ public:
             }
         }
     }
-
-    _NODISCARD const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
-        // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
-        // continuation byte) in [_First, _Last).
-        if constexpr (_Statically_Utf8) {
-            return _Find_unchecked(_First, _Last, _Val);
-        } else {
-            if (this->_Cvt._Mbcurmax == 1 || this->_Cvt._Mbcurmax == 4) {
-                // As above and in _Mbrtowc, assume 4-byte encodings are UTF-8
-                return _Find_unchecked(_First, _Last, _Val);
-            }
-
-            while (_First != _Last && *_First != _Val) {
-                const int _Units = _Units_in_next_character(_First, _Last);
-                if (_Units < 0) {
-                    _THROW(format_error("Invalid encoded character in format string."));
-                }
-                _First += _Units;
-            }
-
-            return _First;
-        }
-    }
-
-    _NODISCARD int _Estimate_width(const char* const _Ptr, const int _Units) const {
-        // Return an estimate for the width of the character composed of _Units code units,
-        // whose first code unit is denoted by _Ptr.
-        if constexpr (_Statically_Utf8) {
-            return _Estimate_utf8_character_width(_Ptr, _Units);
-        } else {
-            if (this->_Cvt._Mbcurmax != 4) {
-                // not a Unicode encoding; estimate width == number of code units
-                return _Units;
-            }
-
-            // assume UTF-8
-            return _Estimate_utf8_character_width(_Ptr, _Units);
-        }
-    }
 };
 
 template <bool _Statically_Utf8>
 class _Fmt_codec<wchar_t, _Statically_Utf8> {
 public:
-    _NODISCARD int _Units_in_next_character(const wchar_t* _First, const wchar_t* const _Last) const noexcept {
-        // Returns a count of the number of code units that compose the first encoded character in
-        // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
-        // *_First is an unpaired surrogate.
-        _STL_INTERNAL_CHECK(_First < _Last);
-
-        if (*_First < 0xD800u || *_First >= 0xE000u) {
-            return 1;
-        }
-
-        if (*_First >= 0xDC00u) { // unpaired low surrogate
-            return -1;
-        }
-
-        if (++_First == _Last || *_First < 0xDC00u || *_First >= 0xE000u) { // unpaired high surrogate
-            return -1;
-        }
-
-        return 2; // surrogate pair
-    }
-
     _NODISCARD const wchar_t* _Find_encoded(
         const wchar_t* const _First, const wchar_t* const _Last, const wchar_t _Val) const {
         return _Find_unchecked(_First, _Last, _Val);
     }
-
-    _NODISCARD int _Estimate_width(const wchar_t* const _Ptr, const int _Units) const {
-        // Return an estimate for the width of the character composed of _Units code units,
-        // whose first code unit is denoted by _Ptr.
-        auto _Ch = static_cast<char32_t>(*_Ptr);
-        if (_Units == 1) {
-            return _Unicode_width_estimate<_Width_estimate_low_intervals>(_Ch);
-        }
-
-        // surrogate pair
-        _Ch = (_Ch - 0xD800u) << 10;
-        _Ch += static_cast<char32_t>(_Ptr[1]) - 0xDC00u;
-        _Ch += 0x10000u;
-        return _Unicode_width_estimate<_Width_estimate_high_intervals>(_Ch);
+    _NODISCARD int _Units_in_next_character(const wchar_t* _First, const wchar_t* const _Last) const noexcept {
+        char32_t _Ch;
+        auto _Next = _Decode_utf(_First, _Last, _Ch);
+        _STL_INTERNAL_CHECK(_Next - _First <= 2);
+        return static_cast<int>(_Next - _First);
     }
 };
 
@@ -2043,10 +1957,10 @@ private:
     static constexpr size_t _Num_args       = sizeof...(_Args);
     static constexpr size_t _Storage_length = (_Traits::template _Storage_size<_Args> + ...);
 
-    // The actual storage representation: _Num_args offsets into _Storage, followed immediately by the untyped _Storage
-    // which holds copies of the object representations of arguments (with no regard for alignment). These must be
-    // allocated consecutively, since basic_format_args thinks it can store a pointer to _Index_array and use arithmetic
-    // to access the bytes of _Storage.
+    // The actual storage representation: _Num_args offsets into _Storage, followed immediately by the untyped
+    // _Storage which holds copies of the object representations of arguments (with no regard for alignment). These
+    // must be allocated consecutively, since basic_format_args thinks it can store a pointer to _Index_array and
+    // use arithmetic to access the bytes of _Storage.
     _Format_arg_index _Index_array[_Num_args];
     unsigned char _Storage[_Storage_length];
 
@@ -2995,9 +2909,9 @@ _NODISCARD _OutputIt _Fmt_write(
     // Therefore, the min subnormal 2^-1074 consumes 1074 digits of precision (digits after the decimal point).
     // We need 3 more characters for a potential negative sign, the zero integer part, and the decimal point.
     // Therefore, the precision can be clamped to 1074.
-    // The largest number consumes 309 digits before the decimal point. With a precision of 1074, and it being negative,
-    // it would use a buffer of size 1074+309+2.
-    // We need to add an additional number to the max exponent to accommodate the ones place.
+    // The largest number consumes 309 digits before the decimal point. With a precision of 1074, and it being
+    // negative, it would use a buffer of size 1074+309+2. We need to add an additional number to the max exponent
+    // to accommodate the ones place.
     constexpr auto _Max_precision = 1074;
     constexpr auto _Buffer_size   = _Max_precision + DBL_MAX_10_EXP + 3;
     char _Buffer[_Buffer_size];
@@ -3200,32 +3114,142 @@ _NODISCARD _OutputIt _Fmt_write(
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
 
+class _Measure_string_prefix_end_iterator {};
+
+// width iterator for utf-8 and utf-16
+template <typename _CharT>
+class _Measure_string_prefix_iterator_utf {
+    _Grapheme_break_property_iterator<_CharT> _WrappedIter;
+
+    constexpr friend bool operator==(
+        const _Measure_string_prefix_iterator_utf& _Lhs, const _Measure_string_prefix_iterator_utf& _Rhs) noexcept {
+        return _Lhs._WrappedIter == _Rhs._WrappedIter;
+    }
+    constexpr friend bool operator==(
+        const _Measure_string_prefix_iterator_utf& _Lhs, _Measure_string_prefix_end_iterator) noexcept {
+        return _Lhs._WrappedIter == _Grapheme_break_property_end_iterator{};
+    }
+
+
+public:
+    using iterator_concept = forward_iterator_tag;
+    using difference_type  = ptrdiff_t;
+    using value_type       = int;
+
+    constexpr _Measure_string_prefix_iterator_utf(const _CharT* _First, const _CharT* _Last)
+        : _WrappedIter(_First, _Last) {}
+
+    constexpr _Measure_string_prefix_iterator_utf() = default;
+
+    constexpr value_type operator*() const {
+        return _Unicode_width_estimate(*_WrappedIter);
+    }
+
+    constexpr _Measure_string_prefix_iterator_utf operator++(int) noexcept {
+        auto _Old = *this;
+        ++*this;
+        return _Old;
+    }
+
+    constexpr const _CharT* _Position() const {
+        return _WrappedIter._Position();
+    }
+
+    constexpr _Measure_string_prefix_iterator_utf& operator++() noexcept {
+        ++_WrappedIter;
+        return *this;
+    }
+};
+
+
+class _Measure_string_prefix_iterator_legacy {
+    _Fmt_codec<char, false> _Codec;
+    const char* _First = nullptr;
+    const char* _Last  = nullptr;
+    int _Units         = 0;
+
+    constexpr friend bool operator==(
+        const _Measure_string_prefix_iterator_legacy& _Lhs, _Measure_string_prefix_end_iterator) noexcept {
+        return _Lhs._First >= _Lhs._Last;
+    }
+    constexpr friend bool operator==(const _Measure_string_prefix_iterator_legacy& _Lhs,
+        const _Measure_string_prefix_iterator_legacy& _Rhs) noexcept {
+        return _Lhs._First == _Rhs._First && _Lhs._Last == _Rhs._Last;
+    }
+
+    void _Update_units() {
+        if (_First < _Last) {
+            _Units = _Codec._Units_in_next_character(_First, _Last);
+        } else {
+            _Units = -1;
+        }
+    }
+
+public:
+    using iterator_concept = forward_iterator_tag;
+    using difference_type  = ptrdiff_t;
+    using value_type       = int;
+
+    _Measure_string_prefix_iterator_legacy(const char* _First_val, const char* _Last_val)
+        : _First(_First_val), _Last(_Last_val) {
+        _Update_units();
+    }
+
+    _Measure_string_prefix_iterator_legacy() = default;
+
+    _Measure_string_prefix_iterator_legacy& operator++() noexcept {
+        _First += _Units;
+        _Update_units();
+        return *this;
+    }
+    _Measure_string_prefix_iterator_legacy operator++(int) noexcept {
+        auto _Old = *this;
+        ++*this;
+        return _Old;
+    }
+    value_type operator*() const {
+        return _Units;
+    }
+
+    const char* _Position() const {
+        return _First;
+    }
+};
+
+template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_utf8()>
+struct _Measure_string_prefix_iterator : _Measure_string_prefix_iterator_utf<_CharT> {
+    using _Measure_string_prefix_iterator_utf<_CharT>::_Measure_string_prefix_iterator_utf;
+};
+
+template <>
+struct _Measure_string_prefix_iterator<char, false> : _Measure_string_prefix_iterator_legacy {
+    using _Measure_string_prefix_iterator_legacy::_Measure_string_prefix_iterator_legacy;
+};
+
 template <class _CharT>
 _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> _Value, int& _Width) {
     // Returns a pointer past-the-end of the largest prefix of _Value that fits in _Width, or all
     // of _Value if _Width is negative. Updates _Width to the estimated width of that prefix.
     const int _Max_width = _Width;
-    auto _Pos            = _Value.data();
-    const auto _Last     = _Pos + _Value.size();
-    int _Estimated_width = 0; // the estimated width of [_Value.data(), _Pos)
-    const _Fmt_codec<_CharT> _Codec;
+    _Measure_string_prefix_iterator<_CharT> _Pfx_iter(_Value.data(), _Value.data() + _Value.size());
+    auto _Pos               = _Value.data();
+    const auto _Last        = _Pos + _Value.size();
+    int _Estimated_width    = 0; // the estimated width of [_Value.data(), _Pos)
     constexpr auto _Max_int = (numeric_limits<int>::max) ();
 
-    while (_Pos != _Last) {
+    while (_Pfx_iter != _Measure_string_prefix_end_iterator{}) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {
             // We're at our maximum length
             break;
         }
 
-        // TRANSITION, extended grapheme clustering
-        const int _Units           = _Codec._Units_in_next_character(_Pos, _Last);
-        const int _Character_width = _Codec._Estimate_width(_Pos, _Units);
+        const int _Character_width = *_Pfx_iter;
 
         if (_Max_int - _Character_width < _Estimated_width) { // avoid overflow
             // Either _Max_width isn't set, or adding this character will exceed it.
             if (_Max_width < 0) { // unset; saturate width estimate and take all characters
-                _Estimated_width = _Max_int;
-                _Pos             = _Last;
+                _Width = _Max_int;
+                return _Last;
             }
             break;
         }
@@ -3236,12 +3260,11 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
             _Estimated_width -= _Character_width;
             break;
         }
-
-        _Pos += _Units;
+        ++_Pfx_iter;
     }
 
     _Width = _Estimated_width;
-    return _Pos;
+    return _Pfx_iter._Position();
 }
 
 template <class _CharT, class _OutputIt>
@@ -3448,8 +3471,8 @@ _FORMAT_SPECIALIZE_FOR(unsigned char, _Basic_format_arg_type::_UInt_type);
 template <>
 struct formatter<wchar_t, wchar_t> : _Formatter_base<wchar_t, wchar_t, _Basic_format_arg_type::_Char_type> {};
 
-// We could use the macro for these specializations, but it's confusing to refer to symbols that are defined inside the
-// macro in the macro's "call".
+// We could use the macro for these specializations, but it's confusing to refer to symbols that are defined inside
+// the macro in the macro's "call".
 template <_Format_supported_charT _CharT>
 struct formatter<_CharT*, _CharT> : _Formatter_base<_CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
 
