@@ -1,0 +1,11 @@
+{
+    "name": "stl",
+    "version-string": "143",
+    "builtin-baseline": "1257354a3ab0bebd8abe95281ca561537853578c",
+    "dependencies": [
+        {
+            "name": "boost-math",
+            "version>=": "1.76.0"
+        }
+    ]
+}

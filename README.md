@@ -152,8 +152,7 @@ acquire this dependency.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
 4. In the terminal, invoke `git submodule update --init --progress llvm-project vcpkg`
 5. In the terminal, invoke `.\vcpkg\bootstrap-vcpkg.bat`
-6. In the terminal, invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
-7. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+6. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json`.
 
 # How To Build With A Native Tools Command Prompt
@@ -168,7 +167,6 @@ acquire this dependency.
 5. `cd STL`
 6. `git submodule update --init --progress llvm-project vcpkg`
 7. `.\vcpkg\bootstrap-vcpkg.bat`
-8. `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
 
 To build the x86 target:
 
