@@ -20,7 +20,6 @@
 #pragma warning(default : 26441) // Guard objects must be named (cp.44)
 #pragma warning(default : 26444) // Don't try to declare a local variable with no name (es.84)
 #pragma warning(default : 26471) // Don't use reinterpret_cast. A cast from void* can use static_cast (type.1).
-#pragma warning(default : 26475) // Do not use function style C-casts (es.49).
 #pragma warning(default : 26477) // Use 'nullptr' rather than 0 or NULL (es.47).
 #pragma warning(default : 26478) // Don't use std::move on constant variables. (es.56).
 #pragma warning(default : 26479) // Don't use std::move to return a local variable. (f.48).
