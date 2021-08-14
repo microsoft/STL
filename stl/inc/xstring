@@ -2929,9 +2929,9 @@ private:
         // pre: this != &_Right
         // pre: *this owns no memory, iterators orphaned (note:
         // _Buf/_Ptr/_Mysize/_Myres may be garbage init)
-        auto& _Right_data             = _Right._Mypair._Myval2;
-        const size_type _Right_size   = _Right_data._Mysize;
-        auto& _My_data                = _Mypair._Myval2;
+        auto& _Right_data           = _Right._Mypair._Myval2;
+        const size_type _Right_size = _Right_data._Mysize;
+        auto& _My_data              = _Mypair._Myval2;
 
 #if _HAS_CXX20
         const bool _Stay_small = _Right_size < _BUF_SIZE && !_STD is_constant_evaluated();
