@@ -2957,11 +2957,8 @@ private:
         if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
             _Traits::assign(_Unfancy(_New_array), _New_capacity + 1, _Elem());
         }
-        const _Elem* const _Right_ptr = _Right_data._Myptr();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const _Elem* const _Right_ptr = _Right_data._Bx._Ptr;
 #endif // _HAS_CXX20
-        _Traits::copy(_Unfancy(_New_array), _Right_ptr, _Right_size + 1);
+        _Traits::copy(_Unfancy(_New_array), _Unfancy(_Right_data._Bx._Ptr), _Right_size + 1);
         _My_data._Mysize = _Right_size;
         _My_data._Myres  = _New_capacity;
     }
