@@ -2355,17 +2355,9 @@ public:
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
-        _CONSTEXPR20 _Bxty() noexcept { // user-provided, for fancy pointers
-            if constexpr (!is_trivially_constructible_v<pointer>) {
-                new (static_cast<void*>(&_Ptr)) pointer();
-            }
-        }
+        _CONSTEXPR20 _Bxty() noexcept : _Ptr() {} // user-provided, for fancy pointers
 
-        _CONSTEXPR20 ~_Bxty() noexcept { // user-provided, for fancy pointers
-            if constexpr (!is_trivially_destructible_v<pointer>) {
-                _Ptr.~pointer();
-            }
-        }
+        _CONSTEXPR20 ~_Bxty() noexcept {} // user-provided, for fancy pointers
 
         value_type _Buf[_BUF_SIZE];
         pointer _Ptr;
