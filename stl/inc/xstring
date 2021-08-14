@@ -2942,7 +2942,7 @@ private:
         // NOTE: even if _Right is in large mode, we only go into large mode ourselves if the actual size of _Right
         // requires it
         if (_Stay_small) { // stay small, don't allocate
-            _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _BUF_SIZE);
+            _Traits::copy(_My_data._Bx._Buf, _Right_data._Myptr(), _BUF_SIZE);
             _My_data._Mysize = _Right_size;
             _My_data._Myres  = _Right_data._Myres;
             return;
