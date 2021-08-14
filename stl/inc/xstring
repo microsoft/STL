@@ -2931,7 +2931,6 @@ private:
         // _Buf/_Ptr/_Mysize/_Myres may be garbage init)
         auto& _Right_data             = _Right._Mypair._Myval2;
         const size_type _Right_size   = _Right_data._Mysize;
-        const _Elem* const _Right_ptr = _Right_data._Myptr();
         auto& _My_data                = _Mypair._Myval2;
 
 #if _HAS_CXX20
@@ -2943,9 +2942,9 @@ private:
         // NOTE: even if _Right is in large mode, we only go into large mode ourselves if the actual size of _Right
         // requires it
         if (_Stay_small) { // stay small, don't allocate
-            _Traits::copy(_My_data._Bx._Buf, _Right_ptr, _BUF_SIZE);
-            _My_data._Mysize = _Right_size;
-            _My_data._Myres  = _BUF_SIZE - 1;
+            _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _BUF_SIZE);
+            _My_data._Mysize = _Right_data._Mysize;
+            _My_data._Myres  = _Right_data._Myres;
             return;
         }
 
@@ -2959,7 +2958,7 @@ private:
             _Traits::assign(_Unfancy(_New_array), _New_capacity + 1, _Elem());
         }
 #endif // _HAS_CXX20
-        _Traits::copy(_Unfancy(_New_array), _Right_ptr, _Right_size + 1);
+        _Traits::copy(_Unfancy(_New_array), _Right_data._Bx._Ptr, _Right_size + 1);
         _My_data._Mysize = _Right_size;
         _My_data._Myres  = _New_capacity;
     }
