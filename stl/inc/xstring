@@ -2364,8 +2364,8 @@ public:
         char _Alias[_BUF_SIZE]; // TRANSITION, ABI: _Alias is preserved for binary compatibility (especially /clr)
     } _Bx;
 
-    size_type _Mysize = 0; // current length of string
-    size_type _Myres  = 0; // current storage reserved for string
+    size_type _Mysize; // current length of string
+    size_type _Myres; // current storage reserved for string
 };
 
 template <class _Ty>
