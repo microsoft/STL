@@ -2933,16 +2933,22 @@ private:
         const size_type _Right_size = _Right_data._Mysize;
         auto& _My_data              = _Mypair._Myval2;
 
+        if (!_Right_data._Large_string_engaged()) {
+            // Both SSO
+            memcpy(&_My_data, &_Right_data, sizeof(_My_data));
+            return;
+        }
+
 #if _HAS_CXX20
-        const bool _Stay_small = _Right_size < _BUF_SIZE && !_STD is_constant_evaluated();
+        const bool _Become_small = _Right_size < _BUF_SIZE && !_STD is_constant_evaluated();
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const bool _Stay_small = _Right_size < _BUF_SIZE;
+        const bool _Become_small = _Right_size < _BUF_SIZE;
 #endif // _HAS_CXX20
 
         // NOTE: even if _Right is in large mode, we only go into large mode ourselves if the actual size of _Right
         // requires it
-        if (_Stay_small) { // stay small, don't allocate
-            _Traits::copy(_My_data._Bx._Buf, _Right_data._Myptr(), _BUF_SIZE);
+        if (_Become_small) { // stay small, don't allocate
+            _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Right_data._Bx._Ptr), _BUF_SIZE);
             _My_data._Mysize = _Right_size;
             _My_data._Myres  = _Right_data._Myres;
             return;
