@@ -2355,9 +2355,17 @@ public:
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
-        _CONSTEXPR20 _Bxty() noexcept : _Ptr() {} // user-provided, for fancy pointers
+        _CONSTEXPR20 _Bxty() noexcept { // user-provided, for fancy pointers
+            if constexpr (!is_trivially_constructible_v<pointer>) {
+                new (static_cast<void*>(&_Ptr)) pointer();
+            }
+        }
 
-        _CONSTEXPR20 ~_Bxty() noexcept {} // user-provided, for fancy pointers
+        _CONSTEXPR20 ~_Bxty() noexcept { // user-provided, for fancy pointers
+            if constexpr (!is_trivially_destructible_v<pointer>) {
+                _Ptr.~pointer();
+            }
+        }
 
         value_type _Buf[_BUF_SIZE];
         pointer _Ptr;
@@ -2943,7 +2951,7 @@ private:
         // requires it
         if (_Stay_small) { // stay small, don't allocate
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _BUF_SIZE);
-            _My_data._Mysize = _Right_data._Mysize;
+            _My_data._Mysize = _Right_size;
             _My_data._Myres  = _Right_data._Myres;
             return;
         }
