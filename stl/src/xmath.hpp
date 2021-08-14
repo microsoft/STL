@@ -173,14 +173,14 @@ _END_EXTERN_C_UNLESS_PURE
 
 template <typename T>
 _NODISCARD T _Xfe_overflow(const T sign) noexcept {
-    static_assert(_STD is_floating_point_v<T>);
+    static_assert(_STD is_floating_point_v<T>, "Expected is_floating_point_v<T>.");
     constexpr T huge = _STD numeric_limits<T>::max();
     return _STD copysign(huge, sign) * huge;
 }
 
 template <typename T>
 _NODISCARD T _Xfe_underflow(const T sign) noexcept {
-    static_assert(_STD is_floating_point_v<T>);
+    static_assert(_STD is_floating_point_v<T>, "Expected is_floating_point_v<T>.");
     constexpr T tiny = _STD numeric_limits<T>::min();
     return _STD copysign(tiny, sign) * tiny;
 }
