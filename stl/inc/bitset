@@ -340,7 +340,7 @@ public:
 #if defined(_M_IX86) || defined(_M_X64)
 
 #ifdef __AVX__
-        const bool _Definitely_have_popcnt = true;
+        constexpr bool _Definitely_have_popcnt = true;
 #else
         const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
 #endif // !defined(__AVX__)
