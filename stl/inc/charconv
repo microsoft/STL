@@ -2603,7 +2603,6 @@ struct _General_precision_tables<float> {
         0x76453719u, 0x77F684DFu, 0x799A130Bu, 0x7B4097CEu, 0x7CF0BDC2u, 0x7E967699u, 0x7F7FFFFFu};
 };
 
-
 template <>
 struct _General_precision_tables<double> {
     static constexpr int _Max_special_P = 15;
