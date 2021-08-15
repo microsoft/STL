@@ -160,6 +160,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <!-- Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib
              (controlled by IncludeInLink and IncludeInImportLib). -->
         <BuildFiles Include="
+            $(CrtRoot)\github\stl\src\charconv.cpp;
             $(CrtRoot)\github\stl\src\filesystem.cpp;
             $(CrtRoot)\github\stl\src\format.cpp;
             $(CrtRoot)\github\stl\src\locale0_implib.cpp;
@@ -167,6 +168,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
             $(CrtRoot)\github\stl\src\sharedmutex.cpp;
             $(CrtRoot)\github\stl\src\syserror_import_lib.cpp;
             $(CrtRoot)\github\stl\src\vector_algorithms.cpp;
+            $(CrtRoot)\github\stl\src\xcharconv_ryu_tables.cpp;
             $(CrtRoot)\github\stl\src\xonce2.cpp;
             ">
             <BuildAs>nativecpp</BuildAs>
