@@ -220,11 +220,16 @@
         };
         const timeframe_github = {
             min: '2019-09-20', // first Friday after 2019-09-16
+            time: { unit: 'quarter' },
+        };
+        const timeframe_2021 = {
+            min: '2021-01-01',
             time: { unit: 'month' },
         };
         const timeframes = [
             timeframe_all,
             timeframe_github,
+            timeframe_2021,
         ];
         let timeframe_idx = 1;
 
@@ -442,8 +447,9 @@
                 options: merge_options,
             });
 
-            document.getElementById('toggleTimeframe').addEventListener('click', function () {
-                timeframe_idx = (timeframe_idx + 1) % timeframes.length;
+            function update_timeframe() {
+                document.getElementById('moreHistory').disabled = timeframe_idx === 0;
+                document.getElementById('lessHistory').disabled = timeframe_idx === timeframes.length - 1;
 
                 const xAxis = window.status_chart.options.scales.x;
                 const new_timeframe = timeframes[timeframe_idx];
@@ -452,6 +458,22 @@
                 xAxis.time.unit = new_timeframe.time.unit;
 
                 window.status_chart.update();
+            }
+
+            document.getElementById('moreHistory').addEventListener('click', function () {
+                if (timeframe_idx > 0) {
+                    --timeframe_idx;
+                }
+
+                update_timeframe();
+            });
+
+            document.getElementById('lessHistory').addEventListener('click', function () {
+                if (timeframe_idx < timeframes.length - 1) {
+                    ++timeframe_idx;
+                }
+
+                update_timeframe();
             });
 
             for (const field of ['cxx20', 'cxx23', 'lwg', 'pr', 'bug', 'issue', 'avg_age', 'avg_wait', 'sum_age',
@@ -470,7 +492,8 @@
 
 <body>
     <canvas id="statusChart"></canvas>
-    <button id="toggleTimeframe">Toggle Timeframe: All/GitHub</button>
+    <button id="moreHistory">More History</button>
+    <button id="lessHistory">Less History</button>
 
     <h1>Explanation</h1>
     <p>This tracks the progress of the <a href="https://github.com/microsoft/STL">microsoft/STL</a> repo.
