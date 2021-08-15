@@ -338,7 +338,13 @@ public:
 
     _NODISCARD size_t count() const noexcept { // count number of set bits
 #if defined(_M_IX86) || defined(_M_X64)
+
+#ifdef __AVX__
+        const bool _Definitely_have_popcnt = true;
+#else
         const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+#endif // !defined(__AVX__)
+
         if (_Definitely_have_popcnt) {
             size_t _Val = 0;
             for (size_t _Wpos = 0; _Wpos <= _Words; ++_Wpos) {
