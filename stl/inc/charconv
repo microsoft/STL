@@ -713,7 +713,7 @@ _NODISCARD inline bool _Multiply_by_power_of_ten(_Big_integer_flt& _Xval, const 
     // file.
 
     // The minimum value representable with double-precision is 5E-324.
-    // With this table we can thus compute most multiplications with a single multiply.
+    // With _Large_power_data table we can thus compute most multiplications with a single multiply.
 
     struct _Unpack_index {
         uint16_t _Offset; // The offset of this power's initial element in the array
