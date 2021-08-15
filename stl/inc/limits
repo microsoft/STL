@@ -1116,6 +1116,19 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
 }
 #endif // _HAS_POPCNT_INTRINSICS
 
+#if defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
+#define _HAS_CNT_INTRINSICS 1
+#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#define _HAS_CNT_INTRINSICS 0
+#endif // ^^^ intrinsics unavailable ^^^
+
+#if _HAS_CNT_INTRINSICS
+_NODISCARD int _Arm64_popcount(const unsigned long long _Val) noexcept {
+    const __n64 _Result = neon_cnt(__uint64ToN64_v(_Val));
+    return static_cast<int>(_Result.n64_i64[0]);
+}
+#endif // _HAS_CNT_INTRINSICS
+
 template <class _Ty>
 constexpr bool _Is_standard_unsigned_integer =
     _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
@@ -1135,14 +1148,18 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
 _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
-#if _HAS_POPCNT_INTRINSICS
+#if _HAS_POPCNT_INTRINSICS || _HAS_CNT_INTRINSICS
 #if _HAS_CXX20
     if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
     {
+#if _HAS_POPCNT_INTRINSICS
         return _Checked_x86_x64_popcount(_Val);
+#elif _HAS_CNT_INTRINSICS
+        return _Arm64_popcount(_Val);
+#endif
     }
-#endif // _HAS_POPCNT_INTRINSICS
+#endif // _HAS_POPCNT_INTRINSICS || _HAS_CNT_INTRINSICS
     return _Popcount_fallback(_Val);
 }
 
