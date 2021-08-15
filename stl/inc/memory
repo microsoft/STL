@@ -3241,6 +3241,12 @@ private:
     _Compressed_pair<_Dx, pointer> _Mypair;
 };
 
+#ifdef __CUDACC__ // TRANSITION, CUDA
+#define _USE_MEMORY_INT_0_SFINAE 0
+#else
+#define _USE_MEMORY_INT_0_SFINAE 1
+#endif // __CUDACC__
+
 template <class _Ty, class _Dx>
 class unique_ptr<_Ty[], _Dx> { // non-copyable pointer to an array object
 public:
@@ -3254,22 +3260,41 @@ public:
     template <class _Uty, class _Is_nullptr = is_same<_Uty, nullptr_t>>
     using _Enable_ctor_reset =
         enable_if_t<is_same_v<_Uty, pointer> //
-                    || _Is_nullptr::value //
-                    || (is_same_v<pointer, element_type*> //
-                        && is_pointer_v<_Uty> //
-                        && is_convertible_v<remove_pointer_t<_Uty> (*)[], element_type (*)[]>)>; // TRANSITION, GH-248
+                        || _Is_nullptr::value //
+                        || (is_same_v<pointer, element_type*> //
+                            && is_pointer_v<_Uty> //
+                            && is_convertible_v<remove_pointer_t<_Uty> (*)[], element_type (*)[]>),
+            int>;
 
+#if _USE_MEMORY_INT_0_SFINAE
+    template <class _Uty, class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0, _Enable_ctor_reset<_Uty> = 0>
+#else // ^^^ _USE_MEMORY_INT_0_SFINAE // !_USE_MEMORY_INT_0_SFINAE vvv
     template <class _Uty, class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0, class = _Enable_ctor_reset<_Uty>>
-    explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
+#endif // _USE_MEMORY_INT_0_SFINAE
+    explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {
+    }
 
+#if _USE_MEMORY_INT_0_SFINAE
+    template <class _Uty, class _Dx2 = _Dx, enable_if_t<is_constructible_v<_Dx2, const _Dx2&>, int> = 0,
+        _Enable_ctor_reset<_Uty> = 0>
+#else // ^^^ _USE_MEMORY_INT_0_SFINAE // !_USE_MEMORY_INT_0_SFINAE vvv
     template <class _Uty, class _Dx2 = _Dx, enable_if_t<is_constructible_v<_Dx2, const _Dx2&>, int> = 0,
         class = _Enable_ctor_reset<_Uty>>
-    unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
+#endif // _USE_MEMORY_INT_0_SFINAE
+    unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {
+    }
 
+#if _USE_MEMORY_INT_0_SFINAE
+    template <class _Uty, class _Dx2 = _Dx,
+        enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0,
+        _Enable_ctor_reset<_Uty>                                                                    = 0>
+#else // ^^^ _USE_MEMORY_INT_0_SFINAE // !_USE_MEMORY_INT_0_SFINAE vvv
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0,
         class = _Enable_ctor_reset<_Uty>>
-    unique_ptr(_Uty _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
+#endif // _USE_MEMORY_INT_0_SFINAE
+    unique_ptr(_Uty _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {
+    }
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
@@ -3293,15 +3318,27 @@ public:
         class _UP_element_type = typename unique_ptr<_Uty, _Ex>::element_type>
     using _Enable_conversion = enable_if_t<
         conjunction_v<is_array<_Uty>, is_same<pointer, element_type*>, is_same<_UP_pointer, _UP_element_type*>,
-            is_convertible<_UP_element_type (*)[], element_type (*)[]>, _More>>; // TRANSITION, GH-248
+            is_convertible<_UP_element_type (*)[], element_type (*)[]>, _More>,
+        int>;
 
+#if _USE_MEMORY_INT_0_SFINAE
+    template <class _Uty, class _Ex,
+        _Enable_conversion<_Uty, _Ex, conditional_t<is_reference_v<_Dx>, is_same<_Ex, _Dx>, is_convertible<_Ex, _Dx>>> =
+            0>
+#else // ^^^ _USE_MEMORY_INT_0_SFINAE // !_USE_MEMORY_INT_0_SFINAE vvv
     template <class _Uty, class _Ex,
         class = _Enable_conversion<_Uty, _Ex,
             conditional_t<is_reference_v<_Dx>, is_same<_Ex, _Dx>, is_convertible<_Ex, _Dx>>>>
+#endif // _USE_MEMORY_INT_0_SFINAE
     unique_ptr(unique_ptr<_Uty, _Ex>&& _Right) noexcept
-        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {}
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {
+    }
 
+#if _USE_MEMORY_INT_0_SFINAE
+    template <class _Uty, class _Ex, _Enable_conversion<_Uty, _Ex, is_assignable<_Dx&, _Ex>> = 0>
+#else // ^^^ _USE_MEMORY_INT_0_SFINAE // !_USE_MEMORY_INT_0_SFINAE vvv
     template <class _Uty, class _Ex, class = _Enable_conversion<_Uty, _Ex, is_assignable<_Dx&, _Ex>>>
+#endif // _USE_MEMORY_INT_0_SFINAE
     unique_ptr& operator=(unique_ptr<_Uty, _Ex>&& _Right) noexcept {
         reset(_Right.release());
         _Mypair._Get_first() = _STD forward<_Ex>(_Right._Mypair._Get_first());
@@ -3355,7 +3392,11 @@ public:
         return _STD exchange(_Mypair._Myval2, nullptr);
     }
 
+#if _USE_MEMORY_INT_0_SFINAE
+    template <class _Uty, _Enable_ctor_reset<_Uty, false_type> = 0>
+#else // ^^^ _USE_MEMORY_INT_0_SFINAE // !_USE_MEMORY_INT_0_SFINAE vvv
     template <class _Uty, class = _Enable_ctor_reset<_Uty, false_type>>
+#endif // _USE_MEMORY_INT_0_SFINAE
     void reset(_Uty _Ptr) noexcept {
         pointer _Old = _STD exchange(_Mypair._Myval2, _Ptr);
         if (_Old) {
