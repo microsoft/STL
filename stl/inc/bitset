@@ -337,7 +337,7 @@ public:
     }
 
     _NODISCARD size_t count() const noexcept {
-        size_t _Val             = 0;
+        size_t _Val = 0;
 
         for (size_t _Wpos = 0; _Wpos <= _Words; ++_Wpos) {
             _Val += _Popcount(_Array[_Wpos]);
