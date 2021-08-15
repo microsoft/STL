@@ -2495,7 +2495,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
     // Since the bit width of 0 is 0, special case it instead of complicating the math even more.
     int _Width = 3;
-    if (_Value != nullptr) {
+    if (__builtin_expect(_Value != nullptr, true) {
         // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
         // Add 3 to the bit width so we always round up on the division.
         // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
@@ -2504,7 +2504,8 @@ _NODISCARD _OutputIt _Fmt_write(
     }
 
     return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,
-        [=](_OutputIt _Out) { return _Fmt_write<_CharT>(_STD move(_Out), _Value); });
+        [=](_OutputIt _Out) {
+        return _Fmt_write<_CharT>(_STD move(_Out), _Value); });
 }
 
 template <class _CharT, class _OutputIt>
