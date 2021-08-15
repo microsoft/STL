@@ -336,7 +336,7 @@ public:
         return _Str;
     }
 
-    _NODISCARD size_t count() const noexcept {
+    _NODISCARD size_t count() const noexcept { // count number of set bits
 #if defined(_M_IX86) || defined(_M_X64)
         const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
         if (_Definitely_have_popcnt) {
