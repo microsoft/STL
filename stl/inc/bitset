@@ -337,19 +337,10 @@ public:
     }
 
     _NODISCARD size_t count() const noexcept {
-        constexpr bool _Zero_length = _Bits == 0;
-        if constexpr (_Zero_length) { // must test for this, otherwise would count one full word
-            return 0;
-        }
-
         size_t _Val             = 0;
         constexpr bool _No_padding = _Bits % _Bitsperword == 0;
-        for (size_t _Wpos = 0; _Wpos < _Words + _No_padding; ++_Wpos) {
+        for (size_t _Wpos = 0; _Wpos <= _Words; ++_Wpos) {
             _Val += _Popcount(_Array[_Wpos]);
-        }
-
-        if (!_No_padding) {
-            _Val += _Popcount(_Array[_Words] & ((static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1));
         }
 
         return _Val;
