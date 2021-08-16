@@ -12,6 +12,9 @@
 #include <climits>
 #include <cwchar>
 #include <intrin0.h>
+#if defined(_M_ARM64) && !defined(_M_ARM64EC) // TRANSITION, GH-2129
+#include <arm64_neon.h>
+#endif // defined(_M_ARM64) && !defined(_M_ARM64EC)
 #include <isa_availability.h>
 #include <xstddef>
 
@@ -1116,7 +1119,7 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
 }
 #endif // _HAS_POPCNT_INTRINSICS
 
-#if defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
+#if defined(_M_ARM64) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
 #define _HAS_CNT_INTRINSICS 1
 #else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
 #define _HAS_CNT_INTRINSICS 0
