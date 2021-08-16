@@ -1245,6 +1245,16 @@ static_assert(!is_assignable_v<string&, nullptr_t>, "assigning nullptr_t to stri
 #endif // _HAS_CXX23
 
 static_assert(is_trivially_move_constructible_v<string_view>);
+static_assert(is_trivially_copy_constructible_v<string_view>);
+static_assert(is_trivially_copy_assignable_v<string_view>);
+static_assert(is_trivially_move_assignable_v<string_view>);
+static_assert(is_trivially_destructible_v<string_view>);
+
+static_assert(is_trivially_move_constructible_v<wstring_view>);
+static_assert(is_trivially_copy_constructible_v<wstring_view>);
+static_assert(is_trivially_copy_assignable_v<wstring_view>);
+static_assert(is_trivially_move_assignable_v<wstring_view>);
+static_assert(is_trivially_destructible_v<wstring_view>);
 
 int main() {
     test_case_default_constructor();
