@@ -1119,7 +1119,8 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
 }
 #endif // _HAS_POPCNT_INTRINSICS
 
-#if defined(_M_ARM64) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER)
+#if defined(_M_ARM64) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) && !defined(__INTEL_COMPILER) \
+    && !defined(__clang__) // TRANSITION, LLVM-51488
 #define _HAS_CNT_INTRINSICS 1
 #else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
 #define _HAS_CNT_INTRINSICS 0
