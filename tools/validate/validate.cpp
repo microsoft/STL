@@ -197,6 +197,12 @@ int main() {
         L"out"sv,
     };
 
+    static constexpr array skipped_files{
+        L"GraphemeBreakProperty.txt"sv,
+        L"GraphemeBreakTest.txt"sv,
+        L"emoji-data.txt"sv,
+    };
+
     static constexpr array skipped_extensions{
         L".dll"sv,
         L".exe"sv,
@@ -225,6 +231,9 @@ int main() {
                 }
             }
 
+            continue;
+        }
+        if (binary_search(skipped_files.begin(), skipped_files.end(), filename)) {
             continue;
         }
 
