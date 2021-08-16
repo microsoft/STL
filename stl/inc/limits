@@ -1127,8 +1127,8 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
 
 #if _HAS_CNT_INTRINSICS
 _NODISCARD inline int _Arm64_popcount(const unsigned long long _Val) noexcept {
-    const __n64 _Result = neon_cnt(__uint64ToN64_v(_Val));
-    return neon_addv8(_Result).n8_i8[0];
+    const __n64 _Temp = neon_cnt(__uint64ToN64_v(_Val));
+    return neon_addv8(_Temp).n8_i8[0];
 }
 #endif // _HAS_CNT_INTRINSICS
 
