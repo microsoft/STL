@@ -1248,8 +1248,6 @@ public:
 
     constexpr basic_string_view(const basic_string_view&) noexcept = default;
     constexpr basic_string_view& operator=(const basic_string_view&) noexcept = default;
-    constexpr basic_string_view(basic_string_view&&) noexcept                 = default;
-    constexpr basic_string_view& operator=(basic_string_view&&) noexcept = default;
 
     /* implicit */ constexpr basic_string_view(_In_z_ const const_pointer _Ntcts) noexcept // strengthened
         : _Mydata(_Ntcts), _Mysize(_Traits::length(_Ntcts)) {}
@@ -1279,6 +1277,7 @@ public:
     template <_RANGES contiguous_range _Range>
         requires (_RANGES sized_range<_Range>
             && same_as<_RANGES range_value_t<_Range>, _Elem>
+            && !same_as<remove_cvref_t<_Range>, basic_string_view>
             && (!is_convertible_v<_Range, const _Elem*>)
             && (!requires(remove_cvref_t<_Range>& _Rng) {
                 _Rng.operator _STD basic_string_view<_Elem, _Traits>();
