@@ -1244,6 +1244,8 @@ static_assert(!is_constructible_v<string, nullptr_t>, "constructing string from 
 static_assert(!is_assignable_v<string&, nullptr_t>, "assigning nullptr_t to string is prohibited");
 #endif // _HAS_CXX23
 
+static_assert(is_trivially_move_constructible_v<string_view>);
+
 int main() {
     test_case_default_constructor();
     test_case_ntcts_constructor();

@@ -1248,6 +1248,8 @@ public:
 
     constexpr basic_string_view(const basic_string_view&) noexcept = default;
     constexpr basic_string_view& operator=(const basic_string_view&) noexcept = default;
+    constexpr basic_string_view(basic_string_view&&) noexcept                 = default;
+    constexpr basic_string_view& operator=(basic_string_view&&) noexcept = default;
 
     /* implicit */ constexpr basic_string_view(_In_z_ const const_pointer _Ntcts) noexcept // strengthened
         : _Mydata(_Ntcts), _Mysize(_Traits::length(_Ntcts)) {}
