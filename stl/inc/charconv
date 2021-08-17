@@ -16,6 +16,7 @@
 #include <intrin0.h>
 #include <xbit_ops.h>
 #include <xcharconv.h>
+#include <xcharconv_tables.h>
 #include <xcharconv_ryu.h>
 #include <xutility>
 
@@ -701,7 +702,7 @@ _NODISCARD inline bool _Multiply(_Big_integer_flt& _Multiplicand, const _Big_int
     return true;
 }
 
-extern const uint32_t _Large_power_data[];
+extern const uint32_t _Large_power_data[578];
 
 // Multiplies the high-precision integer _Xval by 10^_Power. Returns true if the multiplication was successful;
 // false if it overflowed. When overflow occurs, the high-precision integer is reset to zero.
@@ -759,54 +760,6 @@ _NODISCARD inline bool _Multiply_by_power_of_ten(_Big_integer_flt& _Xval, const 
 
     return _Multiply(_Xval, _Small_powers_of_ten[_Small_power - 1]); // when overflow occurs, resets to zero
 }
-
-// The following non-compiled code is the generator for the big powers of ten table found in
-// _Multiply_by_power_of_ten(). This code is provided for future use if the table needs to be amended.
-// Do not remove this code.
-#if 0
-#include <algorithm>
-#include <charconv>
-#include <stdint.h>
-#include <stdio.h>
-#include <tuple>
-#include <vector>
-using namespace std;
-
-int main() {
-    vector<uint32_t> elements;
-    vector<tuple<uint32_t, uint32_t, uint32_t>> indices;
-
-    for (uint32_t power = 10; power != 390; power += 10) {
-        _Big_integer_flt big = _Make_big_integer_flt_one();
-
-        for (uint32_t i = 0; i != power; ++i) {
-            (void) _Multiply(big, 10); // assumes no overflow
-        }
-
-        const uint32_t* const first = big._Mydata;
-        const uint32_t* const last = first + big._Myused;
-        const uint32_t* const mid = find_if(first, last, [](const uint32_t elem) { return elem != 0; });
-
-        indices.emplace_back(static_cast<uint32_t>(elements.size()), static_cast<uint32_t>(mid - first),
-            static_cast<uint32_t>(last - mid));
-
-        elements.insert(elements.end(), mid, last);
-    }
-
-    printf("static constexpr uint32_t _Large_power_data[] =\n{");
-    for (uint32_t i = 0; i != elements.size(); ++i) {
-        printf("%s0x%08x, ", i % 8 == 0 ? "\n\t" : "", elements[i]);
-    }
-    printf("\n};\n");
-
-    printf("static constexpr _Unpack_index _Large_power_indices[] =\n{");
-    for (uint32_t i = 0; i != indices.size(); ++i) {
-        printf(
-            "%s{ %u, %u, %u }, ", i % 6 == 0 ? "\n\t" : "", get<0>(indices[i]), get<1>(indices[i]), get<2>(indices[i]));
-    }
-    printf("\n};\n");
-}
-#endif // 0
 
 // Computes the number of zeroes higher than the most significant set bit in _Ux
 _NODISCARD inline uint32_t _Count_sequential_high_zeroes(const uint32_t _Ux) noexcept {
@@ -2345,274 +2298,7 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_shortest(
     return _STD to_chars(_First, _Last, static_cast<uint32_t>(_Unbiased_exponent));
 }
 
-// For general precision, we can use lookup tables to avoid performing trial formatting.
 
-// For a simple example, imagine counting the number of digits D in an integer, and needing to know
-// whether D is less than 3, equal to 3/4/5/6, or greater than 6. We could use a lookup table:
-// D | Largest integer with D digits
-// 2 |      99
-// 3 |     999
-// 4 |   9'999
-// 5 |  99'999
-// 6 | 999'999
-// 7 | table end
-// Looking up an integer in this table with lower_bound() will work:
-// * Too-small integers, like 7, 70, and 99, will cause lower_bound() to return the D == 2 row. (If all we care
-//   about is whether D is less than 3, then it's okay to smash the D == 1 and D == 2 cases together.)
-// * Integers in [100, 999] will cause lower_bound() to return the D == 3 row, and so forth.
-// * Too-large integers, like 1'000'000 and above, will cause lower_bound() to return the end of the table. If we
-//   compute D from that index, this will be considered D == 7, which will activate any "greater than 6" logic.
-
-// Floating-point is slightly more complicated.
-
-// The ordinary lookup tables are for X within [-5, 38] for float, and [-5, 308] for double.
-// (-5 absorbs too-negative exponents, outside the P > X >= -4 criterion. 38 and 308 are the maximum exponents.)
-// Due to the P > X condition, we can use a subset of the table for X within [-5, P - 1], suitably clamped.
-
-// When P is small, rounding can affect X. For example:
-// For P == 1, the largest double with X == 0 is: 9.4999999999999982236431605997495353221893310546875
-// For P == 2, the largest double with X == 0 is: 9.949999999999999289457264239899814128875732421875
-// For P == 3, the largest double with X == 0 is: 9.9949999999999992184029906638897955417633056640625
-
-// Exponent adjustment is a concern for P within [1, 7] for float, and [1, 15] for double (determined via
-// brute force). While larger values of P still perform rounding, they can't trigger exponent adjustment.
-// This is because only values with repeated '9' digits can undergo exponent adjustment during rounding,
-// and floating-point granularity limits the number of consecutive '9' digits that can appear.
-
-// So, we need special lookup tables for small values of P.
-// These tables have varying lengths due to the P > X >= -4 criterion. For example:
-// For P == 1, need table entries for X: -5, -4, -3, -2, -1, 0
-// For P == 2, need table entries for X: -5, -4, -3, -2, -1, 0, 1
-// For P == 3, need table entries for X: -5, -4, -3, -2, -1, 0, 1, 2
-// For P == 4, need table entries for X: -5, -4, -3, -2, -1, 0, 1, 2, 3
-
-// We can concatenate these tables for compact storage, using triangular numbers to access them.
-// The table for P begins at index (P - 1) * (P + 10) / 2 with length P + 5.
-
-// For both the ordinary and special lookup tables, after an index I is returned by lower_bound(), X is I - 5.
-
-// We need to special-case the floating-point value 0.0, which is considered to have X == 0.
-// Otherwise, the lookup tables would consider it to have a highly negative X.
-
-// Finally, because we're working with positive floating-point values,
-// representation comparisons behave identically to floating-point comparisons.
-
-// The following code generated the lookup tables for the scientific exponent X. Don't remove this code.
-#if 0
-// cl /EHsc /nologo /W4 /MT /O2 /std:c++17 generate_tables.cpp && generate_tables
-
-#include <algorithm>
-#include <assert.h>
-#include <charconv>
-#include <cmath>
-#include <limits>
-#include <map>
-#include <stdint.h>
-#include <stdio.h>
-#include <system_error>
-#include <type_traits>
-#include <vector>
-using namespace std;
-
-template <typename UInt, typename Pred>
-[[nodiscard]] UInt uint_partition_point(UInt first, const UInt last, Pred pred) {
-    // Find the beginning of the false partition in [first, last).
-    // [first, last) is partitioned when all of the true values occur before all of the false values.
-
-    static_assert(is_unsigned_v<UInt>);
-    assert(first <= last);
-
-    for (UInt n = last - first; n > 0;) {
-        const UInt n2  = n / 2;
-        const UInt mid = first + n2;
-
-        if (pred(mid)) {
-            first = mid + 1;
-            n     = n - n2 - 1;
-        } else {
-            n = n2;
-        }
-    }
-
-    return first;
-}
-
-template <typename Floating>
-[[nodiscard]] int scientific_exponent_X(const int P, const Floating flt) {
-    char buf[400]; // more than enough
-
-    // C11 7.21.6.1 "The fprintf function"/8 performs trial formatting with scientific precision P - 1.
-    const auto to_result = to_chars(buf, end(buf), flt, chars_format::scientific, P - 1);
-    assert(to_result.ec == errc{});
-
-    const char* exp_ptr = find(buf, to_result.ptr, 'e');
-    assert(exp_ptr != to_result.ptr);
-
-    ++exp_ptr; // advance past 'e'
-
-    if (*exp_ptr == '+') {
-        ++exp_ptr; // advance past '+' which from_chars() won't parse
-    }
-
-    int X;
-    const auto from_result = from_chars(exp_ptr, to_result.ptr, X);
-    assert(from_result.ec == errc{});
-    return X;
-}
-
-template <typename UInt>
-void print_table(const vector<UInt>& v, const char* const name) {
-    constexpr const char* UIntName = is_same_v<UInt, uint32_t> ? "uint32_t" : "uint64_t";
-
-    printf("static constexpr %s %s[%zu] = {\n", UIntName, name, v.size());
-
-    for (const auto& val : v) {
-        if constexpr (is_same_v<UInt, uint32_t>) {
-            printf("0x%08Xu,\n", val);
-        } else {
-            printf("0x%016llXu,\n", val);
-        }
-    }
-
-    printf("};\n");
-}
-
-enum class Mode { Tables, Tests };
-
-template <typename Floating>
-void generate_tables(const Mode mode) {
-    using Limits = numeric_limits<Floating>;
-    using UInt   = conditional_t<is_same_v<Floating, float>, uint32_t, uint64_t>;
-
-    map<int, map<int, UInt>> P_X_LargestValWithX;
-
-    constexpr int MaxP = Limits::max_exponent10 + 1; // MaxP performs no rounding during trial formatting
-
-    for (int P = 1; P <= MaxP; ++P) {
-        for (int X = -5; X < P; ++X) {
-            constexpr Floating first = static_cast<Floating>(9e-5); // well below 9.5e-5, otherwise arbitrary
-            constexpr Floating last  = Limits::infinity(); // one bit above Limits::max()
-
-            const UInt val_beyond_X = uint_partition_point(reinterpret_cast<const UInt&>(first),
-                reinterpret_cast<const UInt&>(last),
-                [P, X](const UInt u) { return scientific_exponent_X(P, reinterpret_cast<const Floating&>(u)) <= X; });
-
-            P_X_LargestValWithX[P][X] = val_beyond_X - 1;
-        }
-    }
-
-    constexpr const char* FloatingName = is_same_v<Floating, float> ? "float" : "double";
-
-    constexpr int MaxSpecialP = is_same_v<Floating, float> ? 7 : 15; // MaxSpecialP is affected by exponent adjustment
-
-    if (mode == Mode::Tables) {
-        printf("template <>\n");
-        printf("struct _General_precision_tables<%s> {\n", FloatingName);
-
-        printf("static constexpr int _Max_special_P = %d;\n", MaxSpecialP);
-
-        vector<UInt> special;
-
-        for (int P = 1; P <= MaxSpecialP; ++P) {
-            for (int X = -5; X < P; ++X) {
-                const UInt val = P_X_LargestValWithX[P][X];
-                special.push_back(val);
-            }
-        }
-
-        print_table(special, "_Special_X_table");
-
-        for (int P = MaxSpecialP + 1; P < MaxP; ++P) {
-            for (int X = -5; X < P; ++X) {
-                const UInt val = P_X_LargestValWithX[P][X];
-                assert(val == P_X_LargestValWithX[MaxP][X]);
-            }
-        }
-
-        printf("static constexpr int _Max_P = %d;\n", MaxP);
-
-        vector<UInt> ordinary;
-
-        for (int X = -5; X < MaxP; ++X) {
-            const UInt val = P_X_LargestValWithX[MaxP][X];
-            ordinary.push_back(val);
-        }
-
-        print_table(ordinary, "_Ordinary_X_table");
-
-        printf("};\n");
-    } else {
-        printf("==========\n");
-        printf("Test cases for %s:\n", FloatingName);
-
-        constexpr int Hexits         = is_same_v<Floating, float> ? 6 : 13;
-        constexpr const char* Suffix = is_same_v<Floating, float> ? "f" : "";
-
-        for (int P = 1; P <= MaxP; ++P) {
-            for (int X = -5; X < P; ++X) {
-                if (P <= MaxSpecialP || P == 25 || P == MaxP || X == P - 1) {
-                    const UInt val1   = P_X_LargestValWithX[P][X];
-                    const Floating f1 = reinterpret_cast<const Floating&>(val1);
-                    const UInt val2   = val1 + 1;
-                    const Floating f2 = reinterpret_cast<const Floating&>(val2);
-
-                    printf("{%.*a%s, chars_format::general, %d, \"%.*g\"},\n", Hexits, f1, Suffix, P, P, f1);
-                    if (isfinite(f2)) {
-                        printf("{%.*a%s, chars_format::general, %d, \"%.*g\"},\n", Hexits, f2, Suffix, P, P, f2);
-                    }
-                }
-            }
-        }
-    }
-}
-
-int main() {
-    printf("template <class _Floating>\n");
-    printf("struct _General_precision_tables;\n");
-    generate_tables<float>(Mode::Tables);
-    generate_tables<double>(Mode::Tables);
-    generate_tables<float>(Mode::Tests);
-    generate_tables<double>(Mode::Tests);
-}
-#endif // 0
-
-template <class _Floating>
-struct _General_precision_tables;
-
-template <>
-struct _General_precision_tables<float> {
-    static constexpr int _Max_special_P = 7;
-
-    static constexpr uint32_t _Special_X_table[63] = {0x38C73ABCu, 0x3A79096Bu, 0x3C1BA5E3u, 0x3DC28F5Cu, 0x3F733333u,
-        0x4117FFFFu, 0x38D0AAA7u, 0x3A826AA8u, 0x3C230553u, 0x3DCBC6A7u, 0x3F7EB851u, 0x411F3333u, 0x42C6FFFFu,
-        0x38D19C3Fu, 0x3A8301A7u, 0x3C23C211u, 0x3DCCB295u, 0x3F7FDF3Bu, 0x411FEB85u, 0x42C7E666u, 0x4479DFFFu,
-        0x38D1B468u, 0x3A8310C1u, 0x3C23D4F1u, 0x3DCCCA2Du, 0x3F7FFCB9u, 0x411FFDF3u, 0x42C7FD70u, 0x4479FCCCu,
-        0x461C3DFFu, 0x38D1B6D2u, 0x3A831243u, 0x3C23D6D4u, 0x3DCCCC89u, 0x3F7FFFACu, 0x411FFFCBu, 0x42C7FFBEu,
-        0x4479FFAEu, 0x461C3FCCu, 0x47C34FBFu, 0x38D1B710u, 0x3A83126Au, 0x3C23D704u, 0x3DCCCCC6u, 0x3F7FFFF7u,
-        0x411FFFFAu, 0x42C7FFF9u, 0x4479FFF7u, 0x461C3FFAu, 0x47C34FF9u, 0x497423F7u, 0x38D1B716u, 0x3A83126Eu,
-        0x3C23D709u, 0x3DCCCCCCu, 0x3F7FFFFFu, 0x411FFFFFu, 0x42C7FFFFu, 0x4479FFFFu, 0x461C3FFFu, 0x47C34FFFu,
-        0x497423FFu, 0x4B18967Fu};
-
-    static constexpr int _Max_P = 39;
-
-    static constexpr uint32_t _Ordinary_X_table[44] = {0x38D1B717u, 0x3A83126Eu, 0x3C23D70Au, 0x3DCCCCCCu, 0x3F7FFFFFu,
-        0x411FFFFFu, 0x42C7FFFFu, 0x4479FFFFu, 0x461C3FFFu, 0x47C34FFFu, 0x497423FFu, 0x4B18967Fu, 0x4CBEBC1Fu,
-        0x4E6E6B27u, 0x501502F8u, 0x51BA43B7u, 0x5368D4A5u, 0x551184E7u, 0x56B5E620u, 0x58635FA9u, 0x5A0E1BC9u,
-        0x5BB1A2BCu, 0x5D5E0B6Bu, 0x5F0AC723u, 0x60AD78EBu, 0x6258D726u, 0x64078678u, 0x65A96816u, 0x6753C21Bu,
-        0x69045951u, 0x6AA56FA5u, 0x6C4ECB8Fu, 0x6E013F39u, 0x6FA18F07u, 0x7149F2C9u, 0x72FC6F7Cu, 0x749DC5ADu,
-        0x76453719u, 0x77F684DFu, 0x799A130Bu, 0x7B4097CEu, 0x7CF0BDC2u, 0x7E967699u, 0x7F7FFFFFu};
-};
-
-template <>
-struct _General_precision_tables<double> {
-    static constexpr int _Max_special_P = 15;
-
-    static const uint64_t _Special_X_table[195];
-
-    static constexpr int _Max_P = 309;
-
-    static const uint64_t _Ordinary_X_table[314];
-};
 
 template <class _Floating>
 _NODISCARD inline to_chars_result _Floating_to_chars_general_precision(
@@ -2662,7 +2348,7 @@ _NODISCARD inline to_chars_result _Floating_to_chars_general_precision(
     // /8: "Finally, [...] any trailing zeros are removed from the fractional portion of the result
     // and the decimal-point character is removed if there is no fractional portion remaining."
 
-    using _Tables = _General_precision_tables<_Floating>;
+    using _Tables = _General_precision_tables_2<_Floating>;
 
     const _Uint_type* _Table_begin;
     const _Uint_type* _Table_end;

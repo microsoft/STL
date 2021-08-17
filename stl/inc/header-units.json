@@ -120,6 +120,7 @@
         "xbit_ops.h",
         "xcall_once.h",
         "xcharconv.h",
+        "xcharconv_tables.h",
         "xcharconv_ryu.h",
         "xcharconv_ryu_tables.h",
         "xerrc.h",

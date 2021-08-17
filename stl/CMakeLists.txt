@@ -210,6 +210,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xbit_ops.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcall_once.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv.h
+    ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_tables.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_ryu.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_ryu_tables.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xerrc.h
@@ -256,6 +257,8 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/sharedmutex.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/xcharconv_tables_double.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/xcharconv_tables_float.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xcharconv_ryu_tables.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xonce2.cpp
 )
