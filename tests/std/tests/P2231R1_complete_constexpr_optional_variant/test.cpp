@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <initializer_list>
 #include <optional>
+#include <type_traits>
 #include <utility>
 #include <variant>
 
