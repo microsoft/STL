@@ -711,9 +711,10 @@ const daily_table = [
     { date: '2021-08-09', merged: 27.22, pr: 54, cxx20: 6, cxx23: 8, lwg: 6, issue: 373, bug: 117, avg_age: 101.14, avg_wait: 85.59, sum_age: 182.06, sum_wait: 154.06, },
     { date: '2021-08-10', merged: 28.87, pr: 53, cxx20: 4, cxx23: 8, lwg: 6, issue: 373, bug: 117, avg_age: 102.55, avg_wait: 87.33, sum_age: 181.17, sum_wait: 154.28, },
     { date: '2021-08-11', merged: 28.52, pr: 55, cxx20: 4, cxx23: 8, lwg: 6, issue: 375, bug: 119, avg_age: 99.80, avg_wait: 85.13, sum_age: 182.96, sum_wait: 156.07, },
-    { date: '2021-08-12', merged: 28.17, pr: 59, cxx20: 4, cxx23: 8, lwg: 6, issue: 376, bug: 119, avg_age: 94.00, avg_wait: 80.17, sum_age: 184.86, sum_wait: 157.67, },
-    { date: '2021-08-13', merged: 27.82, pr: 60, cxx20: 4, cxx23: 8, lwg: 6, issue: 376, bug: 119, avg_age: 93.43, avg_wait: 79.82, sum_age: 186.86, sum_wait: 159.63, },
-    { date: '2021-08-14', merged: 27.47, pr: 60, cxx20: 4, cxx23: 8, lwg: 6, issue: 376, bug: 119, avg_age: 94.43, avg_wait: 80.82, sum_age: 188.86, sum_wait: 161.63, },
-    { date: '2021-08-15', merged: 27.12, pr: 65, cxx20: 4, cxx23: 8, lwg: 6, issue: 376, bug: 119, avg_age: 88.13, avg_wait: 75.57, sum_age: 190.96, sum_wait: 163.73, },
+    { date: '2021-08-12', merged: 28.17, pr: 59, cxx20: 4, cxx23: 8, lwg: 6, issue: 376, bug: 120, avg_age: 94.00, avg_wait: 80.17, sum_age: 184.86, sum_wait: 157.67, },
+    { date: '2021-08-13', merged: 27.82, pr: 60, cxx20: 4, cxx23: 8, lwg: 6, issue: 376, bug: 120, avg_age: 93.43, avg_wait: 79.82, sum_age: 186.86, sum_wait: 159.63, },
+    { date: '2021-08-14', merged: 27.47, pr: 60, cxx20: 4, cxx23: 8, lwg: 6, issue: 376, bug: 120, avg_age: 94.43, avg_wait: 80.82, sum_age: 188.86, sum_wait: 161.63, },
+    { date: '2021-08-15', merged: 27.12, pr: 65, cxx20: 4, cxx23: 8, lwg: 6, issue: 376, bug: 120, avg_age: 88.13, avg_wait: 75.57, sum_age: 190.96, sum_wait: 163.73, },
+    { date: '2021-08-16', merged: 40.77, pr: 51, cxx20: 4, cxx23: 5, lwg: 4, issue: 374, bug: 118, avg_age: 102.58, avg_wait: 90.61, sum_age: 174.39, sum_wait: 154.04, },
 ];
 // Generated file - DO NOT EDIT manually!
