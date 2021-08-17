@@ -483,7 +483,7 @@ public:
 
         // New size is less than current capacity; assume we're reusing the same block.
         const _Value_type* _New_last = _Raw_first + _New_size;
-        _Asan_last = _Raw_last;
+        _Asan_last                   = _Raw_last;
 
         if (_Asan_last < _New_last) {
             // If the new size is larger than the current size extend the legal range of the container.
@@ -504,8 +504,14 @@ public:
         const _Value_type* _Raw_last  = _Unfancy(_My_data._Mylast);
         const _Value_type* _Raw_end   = _Unfancy(_My_data._Myend);
 
+        if (!_Raw_first) {
+            // The operation did not allocate any memory. Do nothing.
+            return;
+        }
+
         if (!_Asan_last) {
-            // New size was larger than current capacity; pessimisticly re-annotate the whole illegal range of the container.
+            // New size was larger than current capacity; pessimisticly re-annotate the whole illegal range of the
+            // container.
             __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Raw_end, _Raw_last);
             return;
         }
@@ -530,7 +536,7 @@ private:
         const auto& _My_data          = _Target_vec._Mypair._Myval2;
         const _Value_type* _Raw_first = _Unfancy_maybe_null(_My_data._Myfirst);
         const _Value_type* _Raw_end   = _Unfancy_maybe_null(_My_data._Myend);
-        const _Size_type _Capacity = static_cast<_Size_type>(_Raw_end - _Raw_first);
+        const _Size_type _Capacity    = static_cast<_Size_type>(_Raw_end - _Raw_first);
 
         if (_Capacity * sizeof(_Value_type) >= 8) {
             // We are guaranteed to have sufficient space to find a legal aligned address.
@@ -567,6 +573,11 @@ public:
         const _Value_type* _Raw_first = _Unfancy_maybe_null(_My_data._Myfirst);
         const _Value_type* _Raw_last  = _Unfancy_maybe_null(_My_data._Mylast);
         const _Value_type* _Raw_end   = _Unfancy_maybe_null(_My_data._Myend);
+
+        if (!_Raw_first) {
+            // The operation did not allocate any memory. Do nothing.
+            return;
+        }
 
         _Aligned_first = _Get_aligned_start();
         if (!_Aligned_first) {
@@ -609,7 +620,8 @@ public:
         const _Value_type* _Raw_end  = _Unfancy(_My_data._Myend);
 
         if (!_Asan_last) {
-            // New size was larger than current capacity; pessimisticly re-annotate the whole illegal range of the container.
+            // New size was larger than current capacity; pessimisticly re-annotate the whole illegal range of the
+            // container.
             _Aligned_first = _Get_aligned_start();
             if (_Aligned_first) {
                 _Asan_last = _Raw_last > _Aligned_first ? _Raw_last : _Aligned_first;
@@ -617,8 +629,10 @@ public:
                 __sanitizer_annotate_contiguous_container(_Aligned_first, _Raw_end, _Raw_end, _Asan_last);
             }
             return;
-        } else if (_Aligned_first) {
-            const void *_New_last = _Raw_last < _Aligned_first ? _Aligned_first : _Raw_last;
+        }
+
+        if (_Aligned_first) {
+            const void* _New_last = _Raw_last < _Aligned_first ? _Aligned_first : _Raw_last;
 
             if (_New_last != _Asan_last) {
                 __sanitizer_annotate_contiguous_container(_Aligned_first, _Raw_end, _Asan_last, _New_last);
@@ -671,6 +685,7 @@ private:
 
     template <class... _Valty>
     _CONSTEXPR20 _Ty& _Emplace_one_at_back(_Valty&&... _Val) {
+        // insert by perfectly forwarding into element at end, provide strong guarantee
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
 
@@ -723,7 +738,8 @@ public:
             _Tidy_guard<vector> _Guard{this};
 
             for (; _UFirst != _ULast; ++_UFirst) {
-                _Emplace_one_at_back(*_UFirst);
+                _Emplace_one_at_back(*_UFirst); // performance note: except for one-at-back, emplace_back()'s strong
+                                                // guarantee is unnecessary here.
             }
 
             _Guard._Target = nullptr;
@@ -740,7 +756,6 @@ public:
     _CONSTEXPR20 vector(const vector& _Right)
         : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
         _ASAN_ANNOTATE(*this);
-
         const auto& _Right_data = _Right._Mypair._Myval2;
         const auto _Count       = static_cast<size_type>(_Right_data._Mylast - _Right_data._Myfirst);
         _Construct_n(_Count, _Right_data._Myfirst, _Right_data._Mylast);
@@ -817,7 +832,7 @@ public:
 
 private:
     template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) _Emplace_back_with_unused_capacity(_Valty&&... _Val) {
+    _CONSTEXPR20 _Ty& _Emplace_back_with_unused_capacity(_Valty&&... _Val) {
         // insert by perfectly forwarding into element at end, provide strong guarantee
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
@@ -1043,6 +1058,7 @@ private:
 
         // For one-at-back, provide strong guarantee.
         // Otherwise, provide basic guarantee (despite N4659 26.3.11.5 [vector.modifiers]/1).
+        // Performance note: except for one-at-back, _Emplace_one_at_back()'s strong guarantee is unnecessary here.
 
         for (; _First != _Last; ++_First) {
             _Emplace_one_at_back(*_First);
@@ -1251,7 +1267,8 @@ private:
 
         // Append.
         for (; _First != _Last; ++_First) {
-            _Emplace_one_at_back(*_First);
+            _Emplace_one_at_back(
+                *_First); // perfromance note: _Emplace_one_at_back()'s strong guarantee is unnecessary here
         }
     }
 

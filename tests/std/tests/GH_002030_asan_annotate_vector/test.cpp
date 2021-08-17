@@ -12,6 +12,30 @@ using namespace std;
 
 extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end);
 
+struct throw_on_construction {
+    throw_on_construction() {
+        throw 0;
+    }
+
+    explicit throw_on_construction(bool should_throw) {
+        if (should_throw) {
+            throw 0;
+        }
+    }
+
+    throw_on_construction(const throw_on_construction&) {
+        throw 0;
+    }
+};
+
+struct throw_on_copy {
+    throw_on_copy() = default;
+    throw_on_copy(const throw_on_copy&) {
+        throw 0;
+    }
+    throw_on_copy(throw_on_copy&&) {}
+};
+
 template <class T, int N>
 class input_iterator_tester {
 private:
@@ -24,12 +48,12 @@ public:
 
     public:
         using iterator_category = input_iterator_tag;
-        using value_type = T;
-        using difference_type = ptrdiff_t;
-        using pointer = T*;
-        using reference = T&;
+        using value_type        = T;
+        using difference_type   = ptrdiff_t;
+        using pointer           = T*;
+        using reference         = T&;
 
-        iterator(T* start) : curr(start) { }
+        iterator(T* start) : curr(start) {}
 
         reference operator*() const {
             return *curr;
@@ -88,14 +112,14 @@ struct custom_test_allocator {
 };
 
 template <class T1, class T2, class Pocma, class Stateless>
-constexpr bool operator==(const custom_test_allocator<T1, Pocma, Stateless>&,
-    const custom_test_allocator<T2, Pocma, Stateless>&) noexcept {
+constexpr bool operator==(
+    const custom_test_allocator<T1, Pocma, Stateless>&, const custom_test_allocator<T2, Pocma, Stateless>&) noexcept {
     return Stateless::value;
 }
 
 template <class T1, class T2, class Pocma, class Stateless>
-constexpr bool operator!=(const custom_test_allocator<T1, Pocma, Stateless>&,
-    const custom_test_allocator<T2, Pocma, Stateless>&) noexcept {
+constexpr bool operator!=(
+    const custom_test_allocator<T1, Pocma, Stateless>&, const custom_test_allocator<T2, Pocma, Stateless>&) noexcept {
     return !Stateless::value;
 }
 
@@ -151,7 +175,7 @@ struct implicit_allocator : public custom_test_allocator<T, Pocma, Stateless> {
 };
 
 template <class Alloc>
-void test_case_push_pop() {
+void test_push_pop() {
     using T = typename Alloc::value_type;
 
     vector<T, Alloc> v;
@@ -165,7 +189,7 @@ void test_case_push_pop() {
 }
 
 template <class Alloc, int Size = 1024, int Stride = 128>
-void test_case_reserve_shrink() {
+void test_reserve_shrink() {
     using T = typename Alloc::value_type;
 
     vector<T, Alloc> v;
@@ -201,7 +225,7 @@ void test_case_reserve_shrink() {
 }
 
 template <class Alloc>
-void test_case_emplace_pop() {
+void test_emplace_pop() {
     using T = typename Alloc::value_type;
 
     vector<T, Alloc> v;
@@ -221,7 +245,7 @@ void test_case_emplace_pop() {
 }
 
 template <class Alloc>
-void test_case_move_assign() {
+void test_move_assign() {
     using T = typename Alloc::value_type;
 
     vector<T, Alloc> v1;
@@ -238,7 +262,7 @@ void test_case_move_assign() {
 }
 
 template <class Alloc>
-void test_case_copy_assign() {
+void test_copy_assign() {
     using T = typename Alloc::value_type;
 
     vector<T, Alloc> v1;
@@ -255,7 +279,7 @@ void test_case_copy_assign() {
 }
 
 template <class Alloc, int N = 128>
-void test_case_constructors() {
+void test_constructors() {
     using T  = typename Alloc::value_type;
     Alloc al = Alloc();
 
@@ -285,7 +309,7 @@ void test_case_constructors() {
 }
 
 template <class Alloc, int N = 128>
-void test_case_insert_n() {
+void test_insert_n() {
     using T = typename Alloc::value_type;
 
     vector<T, Alloc> v(1);
@@ -299,7 +323,7 @@ void test_case_insert_n() {
 }
 
 template <class Alloc, int N = 128>
-void test_case_insert_range() {
+void test_insert_range() {
     using T = typename Alloc::value_type;
 
     vector<T, Alloc> v1(1);
@@ -322,7 +346,7 @@ void test_case_insert_range() {
 }
 
 template <class Alloc, int N = 128>
-void test_case_assign() {
+void test_assign() {
     using T = typename Alloc::value_type;
 
     vector<T, Alloc> v1(1);
@@ -360,7 +384,7 @@ void test_case_assign() {
 }
 
 template <class Alloc, int N = 128>
-void test_case_resize() {
+void test_resize() {
     using T = typename Alloc::value_type;
 
     vector<T, Alloc> v;
@@ -370,18 +394,316 @@ void test_case_resize() {
     assert(verify_vector(v));
 }
 
+void test_push_back_throw() {
+    {
+        vector<throw_on_construction> v;
+        v.reserve(1);
+
+        throw_on_construction t(false);
+        try {
+            v.push_back(t);
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+    {
+        vector<throw_on_construction> v;
+
+        throw_on_construction t(false);
+        try {
+            v.push_back(t);
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+    {
+        vector<throw_on_construction> v;
+        v.reserve(1);
+
+        try {
+            v.push_back(throw_on_construction(false));
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+    {
+        vector<throw_on_construction> v;
+
+        try {
+            v.push_back(throw_on_construction(false));
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+}
+
+void test_emplace_back_throw() {
+
+    {
+        vector<throw_on_construction> v;
+        v.reserve(1);
+
+        try {
+            v.emplace_back(true);
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+    {
+        vector<throw_on_construction> v;
+
+        try {
+            v.emplace_back(true);
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+}
+
+void test_insert_range_throw() {
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(4);
+        v.emplace_back(false);
+        v.emplace_back(false);
+
+        try {
+            v.insert(v.begin(), {throw_on_construction(false), throw_on_construction(false)});
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(2);
+        v.emplace_back(false);
+        v.emplace_back(false);
+
+        try {
+            v.insert(v.begin(), {throw_on_construction(false), throw_on_construction(false)});
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(2);
+
+        try {
+            v.insert(v.end(), {throw_on_construction(false), throw_on_construction(false)});
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        try {
+            v.insert(v.end(), {throw_on_construction(false), throw_on_construction(false)});
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+}
+
+void test_insert_throw() {
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(3);
+        v.emplace_back(false);
+        v.emplace_back(false);
+
+        try {
+            v.insert(v.begin(), throw_on_construction(false));
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(2);
+        v.emplace_back(false);
+        v.emplace_back(false);
+
+        try {
+            v.insert(v.begin(), throw_on_construction(false));
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(1);
+
+        try {
+            v.insert(v.end(), throw_on_construction(false));
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        try {
+            v.insert(v.end(), throw_on_construction(false));
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+}
+
+void test_emplace_throw() {
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(3);
+        v.emplace_back(false);
+        v.emplace_back(false);
+
+        try {
+            v.emplace(v.begin(), false);
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(2);
+        v.emplace_back(false);
+        v.emplace_back(false);
+
+        try {
+            v.emplace(v.begin(), true);
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(1);
+
+        try {
+            v.emplace(v.end(), true);
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        try {
+            v.emplace(v.end(), true);
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+}
+
+void test_resize_throw() {
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(2);
+        v.emplace_back(false);
+
+        try {
+            v.resize(2);
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(1);
+        v.emplace_back(false);
+
+        try {
+            v.resize(2);
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_copy> v;
+
+        v.reserve(2);
+        v.push_back(throw_on_copy());
+
+        try {
+            v.resize(2, throw_on_copy());
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_copy> v;
+
+        v.reserve(1);
+        v.push_back(throw_on_copy());
+
+        try {
+            v.resize(2, throw_on_copy());
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+}
+
 template <class Alloc>
 void run_tests() {
-    test_case_push_pop<Alloc>();
-    test_case_reserve_shrink<Alloc>();
-    test_case_emplace_pop<Alloc>();
-    test_case_move_assign<Alloc>();
-    test_case_copy_assign<Alloc>();
-    test_case_constructors<Alloc>();
-    test_case_insert_n<Alloc>();
-    test_case_insert_range<Alloc>();
-    test_case_assign<Alloc>();
-    test_case_resize<Alloc>();
+    test_push_pop<Alloc>();
+    test_reserve_shrink<Alloc>();
+    test_emplace_pop<Alloc>();
+    test_move_assign<Alloc>();
+    test_copy_assign<Alloc>();
+    test_constructors<Alloc>();
+    test_insert_n<Alloc>();
+    test_insert_range<Alloc>();
+    test_assign<Alloc>();
+    test_resize<Alloc>();
 }
 
 template <class T, template <class, class, class> class AllocT>
@@ -405,5 +727,10 @@ int main() {
     run_allocator_matrix<int>();
     run_allocator_matrix<double>();
 
-    // TODO: Test a type that throws.
+    test_push_back_throw();
+    test_emplace_back_throw();
+    test_insert_range_throw();
+    test_insert_throw();
+    test_emplace_throw();
+    test_resize_throw();
 }
