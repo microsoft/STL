@@ -32,10 +32,11 @@ support Clang. You can define _SILENCE_CLANG_COROUTINE_MESSAGE to silence this m
 unsupported.
 #endif // defined(__clang__) && !defined(_SILENCE_CLANG_COROUTINE_MESSAGE)
 
-#ifdef __cpp_impl_coroutine
+#if defined(__cpp_impl_coroutine) && !defined(_SILENCE_EXPERIMENTAL_COROUTINE_WARNING)
 #error The <experimental/coroutine> and <experimental/resumable> headers are only supported \
-with /await and implement pre-C++20 coroutine support. Use <coroutine> for standard C++20 coroutines.
-#endif // __cpp_impl_coroutine
+with /await and implement pre-C++20 coroutine support. Use <coroutine> for standard C++20 coroutines. \
+You can define _SILENCE_EXPERIMENTAL_COROUTINE_WARNING to acknowledge that you have received this warning.
+#endif // defined(__cpp_impl_coroutine) && !defined(_SILENCE_EXPERIMENTAL_COROUTINE_WARNING)
 
 // intrinsics used in implementation of coroutine_handle
 extern "C" size_t _coro_resume(void*);
