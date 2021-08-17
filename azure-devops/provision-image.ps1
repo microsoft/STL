@@ -123,6 +123,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
 }
 
 $Workloads = @(
+  'Microsoft.VisualStudio.Component.VC.ASAN',
   'Microsoft.VisualStudio.Component.VC.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.CMake.Project',
   'Microsoft.VisualStudio.Component.VC.CoreIde',
