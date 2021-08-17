@@ -37,8 +37,8 @@ struct Dummy {
 template <class T>
 constexpr bool test_optional() {
     { // empty construction
-        optional<T> defaut_constructed;
-        assert(!defaut_constructed.has_value());
+        optional<T> default_constructed;
+        assert(!default_constructed.has_value());
 
         optional<T> nullopt_constructed{nullopt};
         assert(!nullopt_constructed.has_value());
@@ -307,14 +307,14 @@ constexpr bool test_variant() {
 int main() {
     test_optional<With_trivial_destructor>();
     test_optional<With_nontrivial_destructor>();
-#if defined(__clang__) || defined(__EDG__)
+#if 1 // defined(__clang__) || defined(__EDG__)
     static_assert(test_optional<With_trivial_destructor>());
     static_assert(test_optional<With_nontrivial_destructor>());
 #endif // __clang__ || __EDG__
 
     test_variant<With_trivial_destructor>();
     test_variant<With_nontrivial_destructor>();
-#if defined(__clang__) || defined(__EDG__)
+#if 1 // defined(__clang__) || defined(__EDG__)
     static_assert(test_variant<With_trivial_destructor>());
     static_assert(test_variant<With_nontrivial_destructor>());
 #endif // __clang__ || __EDG__
