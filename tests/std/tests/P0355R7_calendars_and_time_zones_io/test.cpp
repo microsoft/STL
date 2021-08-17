@@ -221,6 +221,29 @@ void test_limits(const char* flag, const IntType min, const IntType max) {
     assert(value == TimeType{max});
 }
 
+void test_lwg_3536() {
+    // LWG-3536, "Should chrono::from_stream() assign zero to duration for failure?"
+    minutes mm{20};
+
+    {
+        istringstream iss{"2:2:30"};
+        iss >> parse(string{"%H:%M:%S"}, mm);
+        assert(iss.fail() && mm == 20min);
+    }
+
+    {
+        istringstream iss{"June"};
+        iss >> parse(string{"%B"}, mm);
+        assert(iss.fail() && mm == 20min);
+    }
+
+    {
+        istringstream iss{""};
+        iss >> parse(string{"%B"}, mm);
+        assert(iss.fail() && mm == 20min);
+    }
+}
+
 void parse_seconds() {
     seconds time;
     test_parse("1", "%S", time);
@@ -1182,6 +1205,7 @@ void parse_wchar() {
 }
 
 void test_parse() {
+    test_lwg_3536();
     parse_seconds();
     parse_minutes();
     parse_hours();

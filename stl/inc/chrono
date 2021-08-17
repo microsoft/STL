@@ -691,14 +691,24 @@ namespace chrono {
             const long long _Freq = _Query_perf_frequency(); // doesn't change after system boot
             const long long _Ctr  = _Query_perf_counter();
             static_assert(period::num == 1, "This assumes period::num == 1.");
-            // Instead of just having "(_Ctr * period::den) / _Freq",
-            // the algorithm below prevents overflow when _Ctr is sufficiently large.
-            // It assumes that _Freq * period::den does not overflow, which is currently true for nano period.
-            // It is not realistic for _Ctr to accumulate to large values from zero with this assumption,
-            // but the initial value of _Ctr could be large.
-            const long long _Whole = (_Ctr / _Freq) * period::den;
-            const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
-            return time_point(duration(_Whole + _Part));
+            // 10 MHz is a very common QPC frequency on modern PCs. Optimizing for
+            // this specific frequency can double the performance of this function by
+            // avoiding the expensive frequency conversion path.
+            constexpr long long _TenMHz = 10'000'000;
+            if (_Freq == _TenMHz) {
+                static_assert(period::den % _TenMHz == 0, "It should never fail.");
+                constexpr long long _Multiplier = period::den / _TenMHz;
+                return time_point(duration(_Ctr * _Multiplier));
+            } else {
+                // Instead of just having "(_Ctr * period::den) / _Freq",
+                // the algorithm below prevents overflow when _Ctr is sufficiently large.
+                // It assumes that _Freq * period::den does not overflow, which is currently true for nano period.
+                // It is not realistic for _Ctr to accumulate to large values from zero with this assumption,
+                // but the initial value of _Ctr could be large.
+                const long long _Whole = (_Ctr / _Freq) * period::den;
+                const long long _Part  = (_Ctr % _Freq) * period::den / _Freq;
+                return time_point(duration(_Whole + _Part));
+            }
         }
     };
 
@@ -4096,7 +4106,6 @@ namespace chrono {
         _NODISCARD bool _Make_duration(duration<_Rep, _Period>& _Duration_result) {
             const bool _Consistent = _Calculate_hour24();
             if (_Consistent) {
-                _Duration_result = duration<_Rep, _Period>::zero(); // TRANSITION: LWG-3536 & GH-1740
                 return _Apply_duration_fields<_Parse_tp_or_duration::_Duration>(_Duration_result);
             }
 
