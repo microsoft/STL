@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT time_base
 struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
     enum dateorder { // constants for different orders of date components
         no_order,
@@ -32,10 +31,9 @@ struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_g
 
     __CLR_OR_THIS_CALL time_base(size_t _Refs = 0) : locale::facet(_Refs) {}
 
-    __CLR_OR_THIS_CALL ~time_base() noexcept {}
+    __CLR_OR_THIS_CALL ~time_base() noexcept override {}
 };
 
-// CLASS TEMPLATE time_get
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_get : public time_base { // facet for converting text to encoded times
 private:
@@ -159,7 +157,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_get() noexcept {
+    __CLR_OR_THIS_CALL ~time_get() noexcept override {
         _Tidy();
     }
 
@@ -608,7 +606,6 @@ private:
     _Locinfo::_Cvtvec _Cvt; // conversion information
 };
 
-// STATIC time_get::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -621,7 +618,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_get<_Elem, _InIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS TEMPLATE time_get_byname
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_get_byname : public time_get<_Elem, _InIt> { // time_get for named locale
 public:
@@ -634,10 +630,9 @@ public:
         : time_get<_Elem, _InIt>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_get_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
-// CLASS TEMPLATE time_put
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put : public locale::facet { // facet for converting encoded times to text
 public:
@@ -709,7 +704,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo& _Lobj) { // initialize from _Lobj
         _Tnames = _Lobj._Gettnames();
@@ -749,7 +744,6 @@ private:
     _Locinfo::_Timevec _Tnames; // locale-specific stuff for _Strftime
 };
 
-// STATIC time_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -762,7 +756,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<_Elem, _OutIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS time_put<wchar_t>
 template <class _OutIt>
 class _CRTIMP2_PURE_IMPORT time_put<wchar_t, _OutIt>
     : public locale::facet { // facet for converting encoded times to wchar_t text
@@ -834,7 +827,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put() noexcept override {}
 
     __CLR_OR_THIS_CALL time_put(const char* _Locname, size_t _Refs = 0) : locale::facet(_Refs) {
         _BEGIN_LOCINFO(_Lobj(_Locname))
@@ -879,7 +872,6 @@ private:
     _Locinfo::_Timevec _Tnames; // locale-specific stuff for _Wcsftime
 };
 
-// STATIC time_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -893,7 +885,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<wchar_t, _OutIt>::id;
 #endif // __clang__
 
 #if defined(_CRTBLD)
-// CLASS time_put<unsigned short>
 
 template <class _OutIt>
 class _CRTIMP2_PURE_IMPORT time_put<unsigned short, _OutIt>
@@ -965,7 +956,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put() noexcept override {}
 
     __CLR_OR_THIS_CALL time_put(const char* _Locname, size_t _Refs = 0) : locale::facet(_Refs) {
         _BEGIN_LOCINFO(_Lobj(_Locname))
@@ -1011,7 +1002,6 @@ private:
     _Locinfo::_Timevec _Tnames; // locale-specific stuff for _Wcsftime
 };
 
-// STATIC time_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -1025,7 +1015,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<unsigned short, _OutIt>::id;
 #endif // __clang__
 #endif // defined(_CRTBLD)
 
-// CLASS TEMPLATE time_put_byname
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put_byname : public time_put<_Elem, _OutIt> { // time_put for named locale
 public:
@@ -1038,7 +1027,7 @@ public:
         : time_put<_Elem, _OutIt>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put_byname() noexcept override {}
 };
 
 #if defined(_DLL_CPPLIB)
