@@ -16,8 +16,8 @@
 #include <intrin0.h>
 #include <xbit_ops.h>
 #include <xcharconv.h>
-#include <xcharconv_tables.h>
 #include <xcharconv_ryu.h>
+#include <xcharconv_tables.h>
 #include <xutility>
 
 #pragma pack(push, _CRT_PACKING)
@@ -2297,7 +2297,6 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_shortest(
     // We've already printed '-' if necessary, so static_cast<uint32_t> avoids testing that again.
     return _STD to_chars(_First, _Last, static_cast<uint32_t>(_Unbiased_exponent));
 }
-
 
 
 template <class _Floating>
