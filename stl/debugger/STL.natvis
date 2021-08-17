@@ -608,6 +608,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <Type Name="std::_Front_binder&lt;*&gt;">
+      <DisplayString>bind_front({_Mypair}, {_Mypair._Myval2,view(noparens)})</DisplayString>
+      <Expand>
+          <Item Name="[f]">_Mypair</Item>
+          <Item Name="[bound_args]">_Mypair._Myval2</Item>
+      </Expand>
+  </Type>
+
 
   <!-- VC 2013 -->
   <Type Name="std::_Mem_fn_wrap&lt;*&gt;">
@@ -924,6 +932,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
    * char32_t = s32 format
    -->
   <Type Name="std::basic_string&lt;char,*&gt;">
+    <AlternativeType Name="std::basic_string&lt;char8_t,*&gt;" />
+
     <Intrinsic Name="size" Expression="_Mypair._Myval2._Mysize" />
     <Intrinsic Name="capacity" Expression="_Mypair._Myval2._Myres" />
     <!-- _BUF_SIZE = 16 / sizeof(char) &lt; 1 ? 1 : 16 / sizeof(char) == 16 -->
@@ -997,6 +1007,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <Type Name="std::_String_iterator&lt;std::_String_val&lt;std::_Simple_types&lt;char&gt; &gt; &gt;">
       <AlternativeType Name="std::_String_const_iterator&lt;std::_String_val&lt;std::_Simple_types&lt;char&gt; &gt; &gt;" />
+      <AlternativeType Name="std::_String_iterator&lt;std::_String_val&lt;std::_Simple_types&lt;char8_t&gt; &gt; &gt;" />
+      <AlternativeType Name="std::_String_const_iterator&lt;std::_String_val&lt;std::_Simple_types&lt;char8_t&gt; &gt; &gt;" />
       <SmartPointer Usage="Indexable">_Ptr,na</SmartPointer>
       <Expand>
           <Item Name="[ptr]">_Ptr</Item>
@@ -1825,6 +1837,90 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Expand>
       <Item Name="[ptr]">_Myptr</Item>
     </Expand>
+  </Type>
+
+  <Type Name="std::default_sentinel_t">
+    <DisplayString>default sentinel</DisplayString>
+  </Type>
+
+  <Type Name="std::unreachable_sentinel_t">
+    <DisplayString>unreachable</DisplayString>
+  </Type>
+
+  <Type Name="std::ranges::empty_view&lt;*&gt;">
+    <DisplayString>{{}}</DisplayString>
+  </Type>
+
+  <Type Name="std::ranges::single_view&lt;*&gt;">
+    <DisplayString>{{ _Val._Val }}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>1</Size>
+        <ValuePointer>&amp;_Val._Val</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::iota_view&lt;*,*&gt;">
+    <Intrinsic Optional="true" Name="size" Expression="(size_t)(_Bound - _Value)" />
+    <DisplayString Optional="true">[{_Value}; {_Bound})</DisplayString>
+    <Expand>
+      <Item Optional="true" Name="[size]">size()</Item>
+      <CustomListItems Optional="true">
+        <Variable Name="val" InitialValue="_Value" />
+
+        <Size>size()</Size>
+        <Loop>
+          <Break Condition="val == _Bound" />
+          <Item>val</Item>
+          <Exec>++val</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::iota_view&lt;*,std::unreachable_sentinel_t&gt;">
+    <DisplayString>[{_Value}; +&#8734;)</DisplayString>
+    <Expand>
+      <Item Name="[begin]">_Value</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::_Ioterator&lt;*&gt;">
+    <SmartPointer Usage="Minimal">&amp;_Current,na</SmartPointer>
+    <Expand>
+      <Item Name="[value]">_Current</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::_Iotinel&lt;*&gt;">
+    <DisplayString>{&amp;_Last,na}</DisplayString>
+    <Expand>
+      <Item Name="[bound]">_Last</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::ref_view&lt;*&gt;">
+    <DisplayString>{*_Range}</DisplayString>
+    <Expand>
+      <ExpandedItem>*_Range</ExpandedItem>
+    </Expand>
+  </Type>
+
+  <Type Name="std::thread">
+    <DisplayString>{{ id={_Thr._Id} }}</DisplayString>
+  </Type>
+
+  <Type Name="std::thread::id">
+    <DisplayString>{_Id}</DisplayString>
+  </Type>
+
+  <Type Name="std::jthread">
+    <DisplayString>{_Impl}</DisplayString>
+  </Type>
+
+  <Type Name="std::filesystem::path">
+    <DisplayString>{_Text}</DisplayString>
   </Type>
 
   <Type Name="std::source_location">

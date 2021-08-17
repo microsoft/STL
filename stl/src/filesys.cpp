@@ -37,7 +37,6 @@ _FS_DLL void __CLRCALL_PURE_OR_CDECL _Close_dir(void* _Handle) { // close a dire
     FindClose(_Handle);
 }
 
-// DIRECTORY FUNCTIONS
 static wchar_t* _Strcpy(wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t* _Src) { // copy an NTCTS
     ::wcscpy_s(_Dest, _MAX_FILESYS_NAME, _Src);
     return _Dest;
@@ -189,7 +188,6 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Remove_dir(const wchar_t* _Fname) { // rem
     return _wrmdir(_Fname) != -1;
 }
 
-// FILE STATUS FUNCTIONS
 _FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t* _Fname, perms* _Pmode) { // get file status
     WIN32_FILE_ATTRIBUTE_DATA _Data;
 
@@ -390,7 +388,6 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
 }
 
 
-// FILE LINKAGE FUNCTIONS
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t* _Fname2) {
     // link _Fname2 to _Fname1
 #ifdef _CRT_APP
