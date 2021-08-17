@@ -194,6 +194,37 @@ bool test_operator_arrow() {
     return true;
 }
 
+// common_iterator supports "copyable but not equality_comparable" iterators, which combination test::iterator does not
+// provide (I don't think this is a combination of properties that any real iterator will ever exhibit). Whip up
+// something so we can test the iterator_category metaprogramming.
+// clang-format off
+template <class T>
+concept no_iterator_traits = !requires { typename iterator_traits<T>::iterator_concept; }
+    && !requires { typename iterator_traits<T>::iterator_category; }
+    && !requires { typename iterator_traits<T>::value_type; }
+    && !requires { typename iterator_traits<T>::difference_type; }
+    && !requires { typename iterator_traits<T>::pointer; }
+    && !requires { typename iterator_traits<T>::reference; };
+// clang-format on
+
+struct input_copy_but_no_eq {
+    using value_type      = int;
+    using difference_type = int;
+
+    input_copy_but_no_eq() = delete;
+
+    int operator*() const;
+    input_copy_but_no_eq& operator++();
+    void operator++(int);
+
+    bool operator==(default_sentinel_t) const;
+};
+STATIC_ASSERT(input_iterator<input_copy_but_no_eq>);
+STATIC_ASSERT(no_iterator_traits<input_copy_but_no_eq>);
+STATIC_ASSERT(sentinel_for<default_sentinel_t, input_copy_but_no_eq>);
+using ICID = iterator_traits<common_iterator<input_copy_but_no_eq, default_sentinel_t>>;
+STATIC_ASSERT(same_as<typename ICID::iterator_category, input_iterator_tag>);
+
 struct poor_sentinel {
     template <weakly_incrementable Winc>
     [[nodiscard]] constexpr bool operator==(const Winc&) const noexcept {

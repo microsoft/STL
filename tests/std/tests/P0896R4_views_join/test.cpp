@@ -33,8 +33,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
 
     // clang-format off
     constexpr bool can_test = ranges::viewable_range<Outer>
-        && input_range<range_reference_t<Outer>>
-        && (deref_is_glvalue || ranges::view<Inner>);
+        && input_range<range_reference_t<Outer>>;
     // clang-format on
 
     if constexpr (can_test) {
@@ -463,6 +462,24 @@ void test_move_only_views() {
     test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{input}, expected_ints);
 }
 
+constexpr array<string_view, 5> prvalue_input = {{{}, "Hello "sv, {}, "World!"sv, {}}};
+
+constexpr auto ToVector(const int val) {
+    return vector{val + 1};
+}
+
+constexpr auto ToString(const size_t val) {
+    return string{prvalue_input[val]};
+}
+
+struct Immovable {
+    Immovable()                 = default;
+    Immovable(const Immovable&) = delete;
+    Immovable(Immovable&&)      = delete;
+    Immovable& operator=(const Immovable&) = delete;
+    Immovable& operator=(Immovable&&) = delete;
+};
+
 int main() {
     // Validate views
     constexpr string_view expected = "Hello World!"sv;
@@ -472,6 +489,10 @@ int main() {
         constexpr span<const string_view, 5> sp{input};
         static_assert(test_one(sp, expected));
         test_one(sp, expected);
+    }
+    { // ...copyable rvalue
+        static_assert(test_one(array<string_view, 5>{{{}, "Hello "sv, {}, "World!"sv, {}}}, expected));
+        test_one(array<string_view, 5>{{{}, "Hello "sv, {}, "World!"sv, {}}}, expected);
     }
     // ... move-only
     test_move_only_views();
@@ -504,8 +525,51 @@ int main() {
         assert(ranges::equal(joined, result));
     }
 
+    { // P2328 range of prvalue array
+        static constexpr int result[] = {1, 2, 3, 4, 5};
+        auto ToArray                  = [](const int i) { return array<int, 1>{i + 1}; };
+        assert(ranges::equal(views::iota(0, 5) | views::transform(ToArray) | views::join, result));
+        static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToArray) | views::join, result));
+    }
+
+    { // P2328 range of prvalue vector using global function
+        static constexpr int result[] = {1, 2, 3, 4, 5};
+        assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
+        static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
+#endif // not MSVC
+    }
+
+    { // P2328 range of prvalue vector using lambda
+        static constexpr int result[] = {1, 2, 3, 4, 5};
+        auto ToVectorLambda           = [](const int i) { return vector{i + 1}; };
+        assert(ranges::equal(views::iota(0, 5) | views::transform(ToVectorLambda) | views::join, result));
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
+        static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVectorLambda) | views::join, result));
+#endif // not MSVC
+    }
+
+    { // P2328 range of prvalue string using global function
+        assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
+        static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
+#endif // not MSVC
+    }
+
+    { // P2328 range of prvalue string using lambda
+        auto ToStringLambda = [](const size_t i) { return string{prvalue_input[i]}; };
+        assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
+        static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
+#endif // not MSVC
+    }
+
+    { // Immovable type
+        auto ToArrayOfImmovable = [](int) { return array<Immovable, 3>{}; };
+        assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
+        static_assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
+    }
+
     STATIC_ASSERT(instantiation_test());
-#endif // TRANSITION, VSO-934264
     instantiation_test();
 }
