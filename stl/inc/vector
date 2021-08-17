@@ -651,7 +651,6 @@ private:
 #define _ASAN_ANNOTATE(...)
 #endif // !__SANITIZE_ADDRESS__
 
-// CLASS TEMPLATE vector
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
@@ -2212,7 +2211,6 @@ constexpr typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& 
 }
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE vector<bool, Alloc> AND FRIENDS
 template <class _Alloc0>
 struct _Wrap_alloc { // TRANSITION, ABI compat, preserves symbol names of vector<bool>::iterator
     using _Alloc = _Alloc0;
