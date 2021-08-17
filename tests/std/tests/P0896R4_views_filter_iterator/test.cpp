@@ -30,10 +30,13 @@ struct iterator_instantiator {
             conditional_t<bidirectional_iterator<Iter>, bidirectional_iterator_tag,
                 conditional_t<forward_iterator<Iter>, forward_iterator_tag, input_iterator_tag>>>);
 
-        using C = typename iterator_traits<Iter>::iterator_category;
-        static_assert(is_same_v<typename I::iterator_category,
-            conditional_t<derived_from<C, bidirectional_iterator_tag>, bidirectional_iterator_tag,
-                conditional_t<derived_from<C, forward_iterator_tag>, forward_iterator_tag, input_iterator_tag>>>);
+        static_assert(_Has_member_iterator_category<I> == forward_iterator<Iter>);
+        if constexpr (forward_iterator<Iter>) {
+            using C = typename iterator_traits<Iter>::iterator_category;
+            static_assert(is_same_v<typename I::iterator_category,
+                conditional_t<derived_from<C, bidirectional_iterator_tag>, bidirectional_iterator_tag,
+                    conditional_t<derived_from<C, forward_iterator_tag>, forward_iterator_tag, input_iterator_tag>>>);
+        }
 
         { // Validate iterator special member functions and base
             static_assert(default_initializable<I> == default_initializable<Iter>);

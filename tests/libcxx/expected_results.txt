@@ -557,6 +557,11 @@ std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/pow.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
 
+# Assertion failed: c == NaN || c == non_zero_nan
+# Testing input values outside the range of [complex.value.ops]/9
+# libc++ handles those input values differently
+std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
+
 # Assertion failed: std::abs(skew - x_skew) < 0.01
 # Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
 std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
@@ -720,7 +725,6 @@ std/numerics/complex.number/complex.transcendentals/asinh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/atanh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/cos.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/cosh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/exp.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/log10.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/pow_complex_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/pow_complex_scalar.pass.cpp FAIL
@@ -729,7 +733,6 @@ std/numerics/complex.number/complex.transcendentals/sin.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/sinh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/tanh.pass.cpp FAIL
 std/numerics/complex.number/complex.value.ops/norm.pass.cpp FAIL
-std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 std/localization/locale.categories/category.ctype/facet.ctype.special/facet.ctype.char.statics/classic_table.pass.cpp FAIL
