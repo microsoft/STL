@@ -1065,12 +1065,11 @@ namespace test_subrange {
     struct with_converting_iterators {
         template <bool IsConst>
         struct iterator {
-            using iterator_concept  = input_iterator_tag;
-            using iterator_category = void; // TRANSITION, LWG-3289
-            using value_type        = int;
-            using difference_type   = int;
-            using pointer           = void;
-            using reference         = int;
+            using iterator_concept = input_iterator_tag;
+            using value_type       = int;
+            using difference_type  = int;
+            using pointer          = void;
+            using reference        = int;
 
             iterator() = default;
             iterator(iterator<!IsConst>) requires IsConst;
