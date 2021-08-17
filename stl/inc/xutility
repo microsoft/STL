@@ -5786,13 +5786,6 @@ _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isf
     return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
 }
 
-struct _Nontrivial_dummy_type {
-    constexpr _Nontrivial_dummy_type() noexcept {
-        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
-    }
-};
-_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
-
 #if _HAS_CXX17
 struct monostate {};
 #endif // _HAS_CXX17
