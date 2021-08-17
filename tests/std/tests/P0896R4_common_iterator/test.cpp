@@ -225,8 +225,43 @@ STATIC_ASSERT(sentinel_for<default_sentinel_t, input_copy_but_no_eq>);
 using ICID = iterator_traits<common_iterator<input_copy_but_no_eq, default_sentinel_t>>;
 STATIC_ASSERT(same_as<typename ICID::iterator_category, input_iterator_tag>);
 
+struct poor_sentinel {
+    template <weakly_incrementable Winc>
+    [[nodiscard]] constexpr bool operator==(const Winc&) const noexcept {
+        return true;
+    }
+
+    template <weakly_incrementable Winc>
+    [[nodiscard]] constexpr iter_difference_t<Winc> operator-(const Winc&) const noexcept {
+        return 0;
+    }
+
+    template <weakly_incrementable Winc>
+    [[nodiscard]] friend constexpr iter_difference_t<Winc> operator-(const Winc&, const poor_sentinel&) noexcept {
+        return 0;
+    }
+};
+
+void test_gh_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
+    {
+        int x = 42;
+        common_iterator<int*, unreachable_sentinel_t> it1{&x};
+        common_iterator<const int*, unreachable_sentinel_t> it2{&x};
+        assert(it1 == it2);
+    }
+
+    {
+        int i = 1729;
+        common_iterator<int*, poor_sentinel> it1{&i};
+        common_iterator<const int*, poor_sentinel> it2{&i};
+        assert(it1 - it2 == 0);
+    }
+}
+
 int main() {
     with_writable_iterators<instantiator, P>::call();
 
     test_operator_arrow();
+
+    test_gh_2065();
 }
