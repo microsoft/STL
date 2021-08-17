@@ -423,6 +423,7 @@ tests\P1135R6_semaphore
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1208R6_source_location
 tests\P1423R3_char8_t_remediation
+tests\P1425R4_queue_stack_constructors
 tests\P1502R1_standard_library_header_units
 tests\P1614R2_spaceship
 tests\P1645R1_constexpr_numeric

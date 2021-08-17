@@ -265,6 +265,7 @@
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
+// P1425R4 Iterator Pair Constructors For stack And queue
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
@@ -1352,6 +1353,8 @@
 
 // C++23
 #if _HAS_CXX23
+#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
+
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_allocate_at_least 202106L
 #endif // __cpp_lib_concepts
