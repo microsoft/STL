@@ -103,7 +103,7 @@ constexpr bool test_optional() {
         assert(move_constructed.has_value());
         assert(*move_constructed == 42);
 
-#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, FIXME
+#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
         if constexpr (!is_same_v<T, With_nontrivial_destructor>) {
             if (!is_constant_evaluated()) {
 #endif // TRANSITION
@@ -118,10 +118,10 @@ constexpr bool test_optional() {
                 move_assigned = move(constructed);
                 assert(move_assigned.has_value());
                 assert(*move_assigned == 42);
-#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, FIXME
+#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
             }
         }
-#endif // TRANSITION, FIXME
+#endif // TRANSITION, DevCom-1331017
     }
 
     { // construction from optional with convertible types
@@ -225,7 +225,7 @@ constexpr bool test_variant() {
         assert(move_constructed.index() == 1);
         assert(get<T>(move_constructed) == 42);
 
-#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, FIXME
+#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
         if constexpr (!is_same_v<T, With_nontrivial_destructor>) {
             if (!is_constant_evaluated()) {
 #endif // TRANSITION
@@ -240,7 +240,7 @@ constexpr bool test_variant() {
                 move_assigned = move(constructed);
                 assert(move_assigned.index() == 1);
                 assert(get<T>(move_assigned) == 42);
-#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, FIXME
+#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
             }
         }
 #endif // TRANSITION
