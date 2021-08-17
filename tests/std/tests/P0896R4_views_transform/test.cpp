@@ -242,14 +242,14 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(CanEnd<const R&> == (range<const V> && const_invocable));
     if (!is_empty) {
         same_as<sentinel_t<R>> auto s = r.end();
-        static_assert(is_same_v<sentinel_t<R>, iterator_t<R>> == common_range<V>);
+        STATIC_ASSERT(is_same_v<sentinel_t<R>, iterator_t<R>> == common_range<V>);
         if constexpr (bidirectional_range<R> && common_range<R>) {
             assert(*prev(s) == *prev(end(expected)));
         }
 
         if constexpr (CanEnd<const R&>) {
             same_as<sentinel_t<const R>> auto sc = as_const(r).end();
-            static_assert(is_same_v<sentinel_t<const R>, iterator_t<const R>> == common_range<const V>);
+            STATIC_ASSERT(is_same_v<sentinel_t<const R>, iterator_t<const R>> == common_range<const V>);
             if constexpr (bidirectional_range<const R> && common_range<const R>) {
                 assert(*prev(sc) == *prev(end(expected)));
             }
@@ -429,11 +429,10 @@ struct iterator_instantiator {
                 conditional_t<bidirectional_iterator<Iter>, bidirectional_iterator_tag,
                     conditional_t<forward_iterator<Iter>, forward_iterator_tag, input_iterator_tag>>>>);
 
-        using C = typename iterator_traits<Iter>::iterator_category;
-        STATIC_ASSERT(is_same_v<typename I::iterator_category,
-            conditional_t<is_lvalue_reference_v<invoke_result_t<decltype((add8)), iter_reference_t<Iter>>>,
-                conditional_t<derived_from<C, contiguous_iterator_tag>, random_access_iterator_tag, C>,
-                input_iterator_tag>>);
+        STATIC_ASSERT(_Has_member_iterator_category<I> == forward_iterator<Iter>);
+        if constexpr (forward_iterator<Iter>) {
+            STATIC_ASSERT(is_same_v<typename I::iterator_category, input_iterator_tag>);
+        }
 
         { // Validate iterator special member functions and base
             STATIC_ASSERT(default_initializable<I> == default_initializable<Iter>);
@@ -457,8 +456,11 @@ struct iterator_instantiator {
                 copyAssigned = copyConstructed;
                 assert(copyAssigned == valueConstructed);
                 STATIC_ASSERT(is_nothrow_copy_assignable_v<I>);
+                STATIC_ASSERT(same_as<const Iter&, decltype(as_const(copyConstructed).base())>);
             }
+            assert(as_const(valueConstructed).base().peek() == mutable_ints);
             assert(move(valueConstructed).base().peek() == mutable_ints);
+            STATIC_ASSERT(same_as<Iter, decltype(move(valueConstructed).base())>);
 
             if constexpr (forward_iterator<Iter>) {
                 auto r1      = make_view();

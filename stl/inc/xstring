@@ -31,7 +31,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // ^^^ use workaround ^^^
 
 _STD_BEGIN
-// STRUCT TEMPLATE _Char_traits (FROM <string>)
 template <class _Elem, class _Int_type>
 struct _Char_traits { // properties of a string or stream element
     using char_type  = _Elem;
@@ -89,10 +88,6 @@ struct _Char_traits { // properties of a string or stream element
             // We need to handle overlapping ranges.
             // If _First1 is in the src range, we need a backward loop.
             // Otherwise, the forward loop works (even if the back of dest overlaps the front of src).
-
-            if (_First1 == _First2) {
-                return _First1; // Self-assignment; either loop would work, but returning immediately is faster.
-            }
 
             // Usually, we would compare pointers with less-than, even though they could belong to different arrays.
             // However, we're not allowed to do that during constant evaluation, so we need a linear scan for equality.
@@ -222,7 +217,6 @@ struct _Char_traits { // properties of a string or stream element
     }
 };
 
-// STRUCT TEMPLATE _WChar_traits
 template <class _Elem>
 struct _WChar_traits : private _Char_traits<_Elem, unsigned short> {
     // char_traits for the char16_t-likes: char16_t, wchar_t, unsigned short
@@ -330,28 +324,23 @@ public:
     }
 };
 
-// STRUCT TEMPLATE char_traits
 template <class _Elem>
 struct char_traits : _Char_traits<_Elem, long> {}; // properties of a string or stream unknown element
 
-// STRUCT char_traits<char16_t>
 template <>
 struct char_traits<char16_t> : _WChar_traits<char16_t> {};
 
 using u16streampos = streampos;
 
-// STRUCT char_traits<char32_t>
 template <>
 struct char_traits<char32_t> : _Char_traits<char32_t, unsigned int> {};
 
 using u32streampos = streampos;
 
-// STRUCT char_traits<wchar_t>
 template <>
 struct char_traits<wchar_t> : _WChar_traits<wchar_t> {};
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
-// STRUCT char_traits<unsigned short>
 template <>
 struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
 #endif // _NATIVE_WCHAR_T_DEFINED
@@ -362,7 +351,6 @@ struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
 #define _HAS_U8_INTRINSICS 0
 #endif // Detect u8 intrinsics
 
-// STRUCT TEMPLATE _Narrow_char_traits
 template <class _Elem, class _Int_type>
 struct _Narrow_char_traits : private _Char_traits<_Elem, _Int_type> {
     // Implement char_traits for narrow character types char and char8_t
@@ -482,12 +470,10 @@ public:
 #undef _HAS_U8_INTRINSICS
 #undef _HAS_MEMCPY_MEMMOVE_INTRINSICS
 
-// STRUCT char_traits<char> (FROM <string>)
 template <>
 struct char_traits<char> : _Narrow_char_traits<char, int> {}; // properties of a string or stream char element
 
 #ifdef __cpp_char8_t
-// STRUCT char_traits<char8_t>
 template <>
 struct char_traits<char8_t> : _Narrow_char_traits<char8_t, unsigned int> {};
 
@@ -545,22 +531,20 @@ basic_ostream<_Elem, _Traits>& _Insert_string(
     return _Ostr;
 }
 
-// STRUCT TEMPLATE _Char_traits_eq
 template <class _Traits>
 struct _Char_traits_eq {
     using _Elem = typename _Traits::char_type;
 
-    bool operator()(_Elem _Left, _Elem _Right) const {
+    bool operator()(_Elem _Left, _Elem _Right) const noexcept {
         return _Traits::eq(_Left, _Right);
     }
 };
 
-// STRUCT TEMPLATE _Char_traits_lt
 template <class _Traits>
 struct _Char_traits_lt {
     using _Elem = typename _Traits::char_type;
 
-    bool operator()(_Elem _Left, _Elem _Right) const {
+    bool operator()(_Elem _Left, _Elem _Right) const noexcept {
         return _Traits::lt(_Left, _Right);
     }
 };
@@ -698,7 +682,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
 template <class _Elem, bool = _Is_character<_Elem>::value>
 class _String_bitmap { // _String_bitmap for character types
 public:
-    constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) {
+    constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) noexcept {
         // mark this bitmap such that the characters in [_First, _Last) are intended to match
         // returns whether all inputs can be placed in the bitmap
         for (; _First != _Last; ++_First) {
@@ -708,7 +692,7 @@ public:
         return true;
     }
 
-    constexpr bool _Match(const _Elem _Ch) const { // test if _Ch is in the bitmap
+    constexpr bool _Match(const _Elem _Ch) const noexcept { // test if _Ch is in the bitmap
         return _Matches[static_cast<unsigned char>(_Ch)];
     }
 
@@ -723,7 +707,7 @@ public:
         "Standard char_traits is only provided for char, wchar_t, char16_t, and char32_t. See N5687 [char.traits]. "
         "Visual C++ accepts other unsigned integral types as an extension.");
 
-    constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) {
+    constexpr bool _Mark(const _Elem* _First, const _Elem* const _Last) noexcept {
         // mark this bitmap such that the characters in [_First, _Last) are intended to match
         // returns whether all inputs can be placed in the bitmap
         for (; _First != _Last; ++_First) {
@@ -738,7 +722,7 @@ public:
         return true;
     }
 
-    constexpr bool _Match(const _Elem _Ch) const { // test if _Ch is in the bitmap
+    constexpr bool _Match(const _Elem _Ch) const noexcept { // test if _Ch is in the bitmap
         return _Ch < 256U && _Matches[_Ch];
     }
 
@@ -965,7 +949,6 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
 
 
 #if _HAS_CXX17
-// CLASS TEMPLATE _String_view_iterator
 template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_string_view;
 
@@ -1235,7 +1218,6 @@ struct pointer_traits<_String_view_iterator<_Traits>> {
 #endif // _HAS_CXX20
 
 
-// CLASS TEMPLATE basic_string_view
 template <class _Elem, class _Traits>
 class basic_string_view { // wrapper for any kind of contiguous character buffer
 public:
@@ -1728,7 +1710,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATES operator== FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator==(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1750,7 +1731,6 @@ _NODISCARD constexpr bool operator==(
 }
 
 #if !_HAS_CXX20
-// FUNCTION TEMPLATES operator!= FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator!=(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1770,7 +1750,6 @@ _NODISCARD constexpr bool operator!=(
 }
 
 
-// FUNCTION TEMPLATES operator< FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator<(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1790,7 +1769,6 @@ _NODISCARD constexpr bool operator<(
 }
 
 
-// FUNCTION TEMPLATES operator> FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator>(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1810,7 +1788,6 @@ _NODISCARD constexpr bool operator>(
 }
 
 
-// FUNCTION TEMPLATES operator<= FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator<=(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1830,7 +1807,6 @@ _NODISCARD constexpr bool operator<=(
 }
 
 
-// FUNCTION TEMPLATES operator>= FOR basic_string_view
 template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator>=(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
@@ -1880,7 +1856,6 @@ _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
 }
 #endif // _HAS_CXX20
 
-// TYPEDEFS FOR basic_string_view
 using string_view = basic_string_view<char>;
 #ifdef __cpp_lib_char8_t
 using u8string_view = basic_string_view<char8_t>;
@@ -1890,7 +1865,6 @@ using u32string_view = basic_string_view<char32_t>;
 using wstring_view   = basic_string_view<wchar_t>;
 
 
-// STRUCT TEMPLATE SPECIALIZATION hash FOR basic_string_view
 template <class _Elem, class _Traits>
 struct hash<basic_string_view<_Elem, _Traits>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string_view<_Elem, _Traits> _ARGUMENT_TYPE_NAME;
@@ -1908,7 +1882,6 @@ basic_ostream<_Elem, _Traits>& operator<<(
 }
 
 
-// basic_string_view LITERALS
 inline namespace literals {
     inline namespace string_view_literals {
         _NODISCARD constexpr string_view operator"" sv(const char* _Str, size_t _Len) noexcept {
@@ -1936,7 +1909,6 @@ inline namespace literals {
 } // namespace literals
 #endif // _HAS_CXX17
 
-// CLASS TEMPLATE _String_const_iterator
 template <class _Mystr>
 class _String_const_iterator : public _Iterator_base {
 public:
@@ -2178,7 +2150,6 @@ struct pointer_traits<_String_const_iterator<_Mystr>> {
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE _String_iterator
 template <class _Mystr>
 class _String_iterator : public _String_const_iterator<_Mystr> {
 public:
@@ -2301,7 +2272,6 @@ struct pointer_traits<_String_iterator<_Mystr>> {
 };
 #endif // _HAS_CXX20
 
-// basic_string TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
     class _Reference, class _Const_reference>
 struct _String_iter_types {
@@ -2312,7 +2282,6 @@ struct _String_iter_types {
     using const_pointer   = _Const_pointer;
 };
 
-// CLASS TEMPLATE _String_val
 template <class _Val_types>
 class _String_val : public _Container_base {
 public:
@@ -2399,7 +2368,6 @@ public:
     size_type _Myres  = 0; // current storage reserved for string
 };
 
-// CLASS TEMPLATE basic_string
 template <class _Ty>
 constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty); // get _Ty's size after being EBCO'd
 
@@ -4957,7 +4925,6 @@ using u8string = basic_string<char8_t, char_traits<char8_t>, allocator<char8_t>>
 using u16string = basic_string<char16_t, char_traits<char16_t>, allocator<char16_t>>;
 using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32_t>>;
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <class _Elem, class _Traits, class _Alloc>
 struct hash<basic_string<_Elem, _Traits, _Alloc>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string<_Elem, _Traits, _Alloc> _ARGUMENT_TYPE_NAME;
@@ -4968,7 +4935,6 @@ struct hash<basic_string<_Elem, _Traits, _Alloc>> {
     }
 };
 
-// basic_string INSERTERS AND EXTRACTORS
 template <class _Elem, class _Traits, class _Alloc>
 basic_istream<_Elem, _Traits>& operator>>(
     basic_istream<_Elem, _Traits>&& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
@@ -5030,7 +4996,6 @@ basic_ostream<_Elem, _Traits>& operator<<(
     return _Insert_string(_Ostr, _Str.data(), _Str.size());
 }
 
-// basic_string LITERALS
 inline namespace literals {
     inline namespace string_literals {
 
