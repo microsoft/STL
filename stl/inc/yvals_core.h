@@ -271,6 +271,7 @@
 // P1682R3 to_underlying() For Enumerations
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
+// P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 
@@ -1360,6 +1361,7 @@
 #define __cpp_lib_allocate_at_least 202106L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_invoke_r       202106L
 #define __cpp_lib_is_scoped_enum 202011L
 
 #ifdef __cpp_lib_concepts

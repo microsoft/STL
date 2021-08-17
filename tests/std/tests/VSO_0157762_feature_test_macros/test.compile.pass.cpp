@@ -874,6 +874,16 @@ STATIC_ASSERT(__cpp_lib_interpolate == 201902L);
 STATIC_ASSERT(__cpp_lib_invoke == 201411L);
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_invoke_r
+#error __cpp_lib_invoke_r is not defined
+#elif __cpp_lib_invoke_r != 202106L
+#error __cpp_lib_invoke_r is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_invoke_r == 202106L);
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_is_aggregate
 #error __cpp_lib_is_aggregate is not defined
