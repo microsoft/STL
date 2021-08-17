@@ -25,7 +25,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// ENUM CLASS chars_format
 enum class chars_format {
     scientific = 0b001,
     fixed      = 0b010,
@@ -35,7 +34,6 @@ enum class chars_format {
 
 _BITMASK_OPS(chars_format)
 
-// STRUCT to_chars_result
 struct to_chars_result {
     char* ptr;
     errc ec;

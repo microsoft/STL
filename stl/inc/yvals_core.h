@@ -247,8 +247,9 @@
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
-//     (partially implemented)
 // P2325R3 Views Should Not Be Required To Be Default Constructible
+// P2328R1 join_view Should Join All views Of ranges
+// P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -260,10 +261,16 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
+// P0401R6 Providing Size Feedback In The Allocator Interface
+// P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
+// P1132R7 out_ptr(), inout_ptr()
+// P1425R4 Iterator Pair Constructors For stack And queue
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
+// P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
+// P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 
@@ -555,8 +562,8 @@
 #endif // _STL_RESTORE_DEPRECATED_WARNING
 
 #define _CPPLIB_VER       650
-#define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202107L
+#define _MSVC_STL_VERSION 143
+#define _MSVC_STL_UPDATE  202108L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && !defined(__clang__)
@@ -1137,8 +1144,6 @@
 #define _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23 (_HAS_FEATURES_REMOVED_IN_CXX23)
 #endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
-// LIBRARY FEATURE-TEST MACROS
-
 // C++14
 #define __cpp_lib_chrono_udls                 201304L
 #define __cpp_lib_complex_udls                201309L
@@ -1349,12 +1354,24 @@
 
 // C++23
 #if _HAS_CXX23
-#define __cpp_lib_is_scoped_enum  202011L
+#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_allocate_at_least 202106L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_invoke_r       202106L
+#define __cpp_lib_is_scoped_enum 202011L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_out_ptr 202106L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_stdatomic_h     202011L
 #define __cpp_lib_string_contains 202011L
 #define __cpp_lib_to_underlying   202102L
 #endif // _HAS_CXX23
 
-// EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
 
@@ -1369,7 +1386,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STRINGIZE(x)   _STRINGIZEX(x)
 #define _EMPTY_ARGUMENT // for empty macro argument
 
-// NAMESPACE
 #define _STD_BEGIN namespace std {
 #define _STD_END   }
 #define _STD       ::std::

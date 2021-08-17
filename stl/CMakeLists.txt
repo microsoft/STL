@@ -184,6 +184,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/span
     ${CMAKE_CURRENT_LIST_DIR}/inc/sstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/stack
+    ${CMAKE_CURRENT_LIST_DIR}/inc/stdatomic.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/stdexcept
     ${CMAKE_CURRENT_LIST_DIR}/inc/stop_token
     ${CMAKE_CURRENT_LIST_DIR}/inc/streambuf
