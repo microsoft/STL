@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 _STD_BEGIN
 
-// CLASS TEMPLATE basic_stringbuf
 template <class _Elem, class _Traits, class _Alloc>
 class basic_stringbuf
     : public basic_streambuf<_Elem, _Traits> { // stream buffer maintaining an allocated character array
@@ -107,7 +106,7 @@ public:
     basic_stringbuf(const basic_stringbuf&) = delete;
     basic_stringbuf& operator=(const basic_stringbuf&) = delete;
 
-    virtual ~basic_stringbuf() noexcept {
+    ~basic_stringbuf() noexcept override {
         _Tidy();
     }
 
@@ -234,7 +233,7 @@ public:
 #endif // _HAS_CXX20
 
 protected:
-    virtual int_type overflow(int_type _Meta = _Traits::eof()) { // put an element to stream
+    int_type overflow(int_type _Meta = _Traits::eof()) override { // put an element to stream
         if (_Mystate & _Constant) {
             return _Traits::eof(); // array nonmutable, fail
         }
@@ -291,7 +290,7 @@ protected:
         return _Meta;
     }
 
-    virtual int_type pbackfail(int_type _Meta = _Traits::eof()) { // put an element back to stream
+    int_type pbackfail(int_type _Meta = _Traits::eof()) override { // put an element back to stream
         const auto _Gptr = _Mysb::gptr();
         if (!_Gptr || _Gptr <= _Mysb::eback()
             || (!_Traits::eq_int_type(_Traits::eof(), _Meta) && !_Traits::eq(_Traits::to_char_type(_Meta), _Gptr[-1])
@@ -308,7 +307,7 @@ protected:
         return _Traits::not_eof(_Meta);
     }
 
-    virtual int_type underflow() { // get an element from stream, but don't point past it
+    int_type underflow() override { // get an element from stream, but don't point past it
         const auto _Gptr = _Mysb::gptr();
         if (!_Gptr) { // no character buffer, fail
             return _Traits::eof();
@@ -334,8 +333,8 @@ protected:
         return _Traits::to_int_type(*_Mysb::gptr());
     }
 
-    virtual pos_type seekoff(
-        off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Mode = ios_base::in | ios_base::out) {
+    pos_type seekoff(
+        off_type _Off, ios_base::seekdir _Way, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
         // change position by _Off, according to _Way, _Mode
         const auto _Gptr_old = _Mysb::gptr();
         const auto _Pptr_old = (_Mystate & _Constant) ? nullptr : _Mysb::pptr();
@@ -396,7 +395,7 @@ protected:
         return pos_type(_Off);
     }
 
-    virtual pos_type seekpos(pos_type _Pos, ios_base::openmode _Mode = ios_base::in | ios_base::out) {
+    pos_type seekpos(pos_type _Pos, ios_base::openmode _Mode = ios_base::in | ios_base::out) override {
         // change position to _Pos, according to _Mode
         const auto _Off      = static_cast<streamoff>(_Pos);
         const auto _Gptr_old = _Mysb::gptr();
@@ -544,7 +543,6 @@ void swap(basic_stringbuf<_Elem, _Traits, _Alloc>& _Left, basic_stringbuf<_Elem,
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_istringstream
 template <class _Elem, class _Traits, class _Alloc>
 class basic_istringstream : public basic_istream<_Elem, _Traits> { // input stream associated with a character array
 public:
@@ -612,7 +610,7 @@ public:
     basic_istringstream(const basic_istringstream&) = delete;
     basic_istringstream& operator=(const basic_istringstream&) = delete;
 
-    virtual ~basic_istringstream() noexcept {}
+    ~basic_istringstream() noexcept override {}
 
     _NODISCARD _Mysb* rdbuf() const {
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
@@ -664,7 +662,6 @@ void swap(basic_istringstream<_Elem, _Traits, _Alloc>& _Left, basic_istringstrea
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_ostringstream
 template <class _Elem, class _Traits, class _Alloc>
 class basic_ostringstream : public basic_ostream<_Elem, _Traits> { // output stream associated with a character array
 public:
@@ -732,7 +729,7 @@ public:
     basic_ostringstream(const basic_ostringstream&) = delete;
     basic_ostringstream& operator=(const basic_ostringstream&) = delete;
 
-    virtual ~basic_ostringstream() noexcept {}
+    ~basic_ostringstream() noexcept override {}
 
     _NODISCARD _Mysb* rdbuf() const {
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
@@ -784,7 +781,6 @@ void swap(basic_ostringstream<_Elem, _Traits, _Alloc>& _Left, basic_ostringstrea
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_stringstream
 template <class _Elem, class _Traits, class _Alloc>
 class basic_stringstream
     : public basic_iostream<_Elem, _Traits> { // input/output stream associated with a character array
@@ -858,7 +854,7 @@ public:
     basic_stringstream(const basic_stringstream&) = delete;
     basic_stringstream& operator=(const basic_stringstream&) = delete;
 
-    virtual ~basic_stringstream() noexcept {}
+    ~basic_stringstream() noexcept override {}
 
     _NODISCARD _Mysb* rdbuf() const {
         return const_cast<_Mysb*>(_STD addressof(_Stringbuffer));
