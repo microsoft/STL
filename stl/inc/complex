@@ -54,7 +54,7 @@ struct _C_ldouble_complex {
 };
 #endif // _C_COMPLEX_T
 
-// COMPLEX _Val OFFSETS
+// complex _Val offsets
 #define _RE 0
 #define _IM 1
 
@@ -363,7 +363,6 @@ class complex<double>;
 template <>
 class complex<long double>;
 
-// CLASS TEMPLATE _Ctraits
 template <class _Ty>
 class _Ctraits {
 public:
@@ -499,7 +498,6 @@ public:
     }
 };
 
-// CLASS _Ctraits<long double>
 template <>
 class _Ctraits<long double> {
 public:
@@ -643,7 +641,6 @@ public:
     }
 };
 
-// CLASS _Ctraits<double>
 template <>
 class _Ctraits<double> {
 public:
@@ -782,7 +779,6 @@ public:
     }
 };
 
-// CLASS _Ctraits<float>
 template <>
 class _Ctraits<float> {
 public:
@@ -918,14 +914,12 @@ public:
     }
 };
 
-// STRUCT TEMPLATE _Complex_value
 template <class _Ty>
 struct _Complex_value {
     enum { _Re = 0, _Im = 1 };
     _Ty _Val[2];
 };
 
-// CLASS TEMPLATE _Complex_base
 template <class _Ty, class _Valbase>
 class _Complex_base : public _Valbase {
 public:
@@ -1015,7 +1009,6 @@ protected:
     }
 };
 
-// CLASS complex<float>
 template <>
 class complex<float> : public _Complex_base<float, _Fcomplex_value> {
 public:
@@ -1107,7 +1100,6 @@ public:
     }
 };
 
-// CLASS complex<double>
 template <>
 class complex<double> : public _Complex_base<double, _Dcomplex_value> {
 public:
@@ -1199,7 +1191,6 @@ public:
     }
 };
 
-// CLASS complex<long double>
 template <>
 class complex<long double> : public _Complex_base<long double, _Lcomplex_value> {
 public:
@@ -1291,7 +1282,6 @@ public:
     }
 };
 
-// CONSTRUCTORS FOR complex SPECIALIZATIONS
 constexpr complex<float>::complex(const complex<double>& _Right)
     : _Complex_base<float, _Fcomplex_value>(static_cast<_Ty>(_Right.real()), static_cast<_Ty>(_Right.imag())) {}
 
@@ -1310,7 +1300,6 @@ constexpr complex<long double>::complex(const complex<float>& _Right)
 constexpr complex<long double>::complex(const complex<double>& _Right)
     : _Complex_base<long double, _Lcomplex_value>(_Right.real(), _Right.imag()) {}
 
-// CLASS TEMPLATE complex
 template <class _Ty>
 class complex : public _Complex_base<_Ty, _Complex_value<_Ty>> {
 public:
@@ -1402,7 +1391,6 @@ public:
     }
 };
 
-// FUNCTION TEMPLATE operator+
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
@@ -1424,7 +1412,6 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const _Ty& _Left, const complex<_
     return _Tmp;
 }
 
-// FUNCTION TEMPLATE operator-
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
@@ -1446,7 +1433,6 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const _Ty& _Left, const complex<_
     return _Tmp;
 }
 
-// FUNCTION TEMPLATE operator*
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
@@ -1469,7 +1455,6 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const _Ty& _Left, const complex<_
     return _Tmp;
 }
 
-// FUNCTION TEMPLATE operator/
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
     complex<_Ty> _Tmp(_Left);
@@ -1492,19 +1477,16 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const _Ty& _Left, const complex<_
     return _Tmp;
 }
 
-// FUNCTION TEMPLATE UNARY operator+
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left) {
     return _Left;
 }
 
-// FUNCTION TEMPLATE UNARY operator-
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left) {
     return complex<_Ty>(-_Left.real(), -_Left.imag());
 }
 
-// FUNCTION TEMPLATE operator==
 template <class _Ty>
 _NODISCARD constexpr bool operator==(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
     return _Left.real() == _Right.real() && _Left.imag() == _Right.imag();
@@ -1522,7 +1504,6 @@ _NODISCARD constexpr bool operator==(const _Ty& _Left, const complex<_Ty>& _Righ
 }
 #endif // !_HAS_CXX20
 
-// FUNCTION TEMPLATE operator!=
 #if !_HAS_CXX20
 template <class _Ty>
 _NODISCARD constexpr bool operator!=(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
@@ -1540,13 +1521,11 @@ _NODISCARD constexpr bool operator!=(const _Ty& _Left, const complex<_Ty>& _Righ
 }
 #endif // !_HAS_CXX20
 
-// FUNCTION TEMPLATE imag
 template <class _Ty>
 _NODISCARD constexpr _Ty imag(const complex<_Ty>& _Left) {
     return _Left.imag();
 }
 
-// FUNCTION TEMPLATE real
 template <class _Ty>
 _NODISCARD constexpr _Ty real(const complex<_Ty>& _Left) {
     return _Left.real();
@@ -1555,13 +1534,11 @@ _NODISCARD constexpr _Ty real(const complex<_Ty>& _Left) {
 template <class _Ty>
 _NODISCARD complex<_Ty> sqrt(const complex<_Ty>& _Left);
 
-// FUNCTION TEMPLATE abs
 template <class _Ty>
 _NODISCARD _Ty abs(const complex<_Ty>& _Left) {
     return _Ctraits<_Ty>::hypot(_Left.real(), _Left.imag());
 }
 
-// FUNCTION TEMPLATE acos
 template <class _Ty>
 _NODISCARD complex<_Ty> acos(const complex<_Ty>& _Left) {
     const _Ty _Arcbig = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::_Flt_max());
@@ -1629,7 +1606,6 @@ _NODISCARD complex<_Ty> acos(const complex<_Ty>& _Left) {
     return complex<_Ty>(_Ux, _Vx);
 }
 
-// FUNCTION TEMPLATE acosh
 template <class _Ty>
 _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
     const _Ty _Arcbig = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::_Flt_max());
@@ -1700,7 +1676,6 @@ _NODISCARD complex<_Ty> acosh(const complex<_Ty>& _Left) {
     return complex<_Ty>(_Ux, _Vx);
 }
 
-// FUNCTION TEMPLATE asinh
 template <class _Ty>
 _NODISCARD complex<_Ty> asinh(const complex<_Ty>& _Left) {
     const _Ty _Arcbig = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::_Flt_max());
@@ -1766,7 +1741,6 @@ _NODISCARD complex<_Ty> asinh(const complex<_Ty>& _Left) {
     return complex<_Ty>(_Ux, _Vx);
 }
 
-// FUNCTION TEMPLATE asin
 template <class _Ty>
 _NODISCARD complex<_Ty> asin(const complex<_Ty>& _Left) {
     complex<_Ty> _Asinh = _STD asinh(complex<_Ty>(-imag(_Left), real(_Left)));
@@ -1774,7 +1748,6 @@ _NODISCARD complex<_Ty> asin(const complex<_Ty>& _Left) {
     return complex<_Ty>(imag(_Asinh), -real(_Asinh));
 }
 
-// FUNCTION TEMPLATE atanh
 template <class _Ty>
 _NODISCARD complex<_Ty> atanh(const complex<_Ty>& _Left) {
     const _Ty _Arcbig    = static_cast<_Ty>(0.25) * _Ctraits<_Ty>::sqrt(_Ctraits<_Ty>::_Flt_max());
@@ -1827,7 +1800,6 @@ _NODISCARD complex<_Ty> atanh(const complex<_Ty>& _Left) {
     return complex<_Ty>(_Ux, _Vx);
 }
 
-// FUNCTION TEMPLATE atan
 template <class _Ty>
 _NODISCARD complex<_Ty> atan(const complex<_Ty>& _Left) {
     complex<_Ty> _Atanh = _STD atanh(complex<_Ty>(-imag(_Left), real(_Left)));
@@ -1835,23 +1807,54 @@ _NODISCARD complex<_Ty> atan(const complex<_Ty>& _Left) {
     return complex<_Ty>(imag(_Atanh), -real(_Atanh));
 }
 
-// FUNCTION TEMPLATE cosh
 template <class _Ty>
 _NODISCARD complex<_Ty> cosh(const complex<_Ty>& _Left) {
     return complex<_Ty>(_Ctraits<_Ty>::_Cosh(real(_Left), _Ctraits<_Ty>::cos(imag(_Left))),
         _Ctraits<_Ty>::_Sinh(real(_Left), _Ctraits<_Ty>::sin(imag(_Left))));
 }
 
-// FUNCTION TEMPLATE exp
 template <class _Ty>
-_NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) {
-    _Ty _Real(real(_Left)), _Imag(real(_Left));
-    _Ctraits<_Ty>::_Exp(&_Real, _Ctraits<_Ty>::cos(imag(_Left)), 0);
-    _Ctraits<_Ty>::_Exp(&_Imag, _Ctraits<_Ty>::sin(imag(_Left)), 0);
-    return complex<_Ty>(_Real, _Imag);
+_NODISCARD complex<_Ty> _Polar_positive_nan_inf_zero_rho(const _Ty& _Rho, const _Ty& _Theta) { // _Rho is +NaN/+Inf/+0
+    if (_Ctraits<_Ty>::_Isnan(_Theta) || _Ctraits<_Ty>::_Isinf(_Theta)) { // _Theta is NaN/Inf
+        if (_Ctraits<_Ty>::_Isinf(_Rho)) {
+            return complex<_Ty>(_Rho, _Ctraits<_Ty>::sin(_Theta)); // (Inf, NaN/Inf)
+        } else {
+            return complex<_Ty>(_Rho, _Ctraits<_Ty>::_Copysign(_Rho, _Theta)); // (NaN/0, NaN/Inf)
+        }
+    } else if (_Theta == _Ty{0}) { // _Theta is zero
+        return complex<_Ty>(_Rho, _Theta); // (NaN/Inf/0, 0)
+    } else { // _Theta is finite non-zero
+        // (NaN/Inf/0, finite non-zero)
+        return complex<_Ty>(_Rho * _Ctraits<_Ty>::cos(_Theta), _Rho * _Ctraits<_Ty>::sin(_Theta));
+    }
 }
 
-// FUNCTION TEMPLATE _Fabs
+template <class _Ty>
+_NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) {
+    const _Ty _Log_rho = _STD real(_Left);
+    const _Ty _Theta   = _STD imag(_Left);
+
+    if (!_Ctraits<_Ty>::_Isnan(_Log_rho) && !_Ctraits<_Ty>::_Isinf(_Log_rho)) { // real component is finite
+        _Ty _Real = _Log_rho;
+        _Ty _Imag = _Log_rho;
+        _Ctraits<_Ty>::_Exp(&_Real, _Ctraits<_Ty>::cos(_Theta), 0);
+        _Ctraits<_Ty>::_Exp(&_Imag, _Ctraits<_Ty>::sin(_Theta), 0);
+        return complex<_Ty>(_Real, _Imag);
+    }
+
+    // real component is NaN/Inf
+    // return polar(exp(re), im)
+    if (_Ctraits<_Ty>::_Isinf(_Log_rho)) {
+        if (_Log_rho < _Ty{0}) {
+            return _Polar_positive_nan_inf_zero_rho(_Ty{0}, _Theta); // exp(-Inf) = +0
+        } else {
+            return _Polar_positive_nan_inf_zero_rho(_Log_rho, _Theta); // exp(+Inf) = +Inf
+        }
+    } else {
+        return _Polar_positive_nan_inf_zero_rho(_Ctraits<_Ty>::_Abs(_Log_rho), _Theta); // exp(NaN) = +NaN
+    }
+}
+
 template <class _Ty>
 _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // Used by sqrt(), return magnitude and scale factor.
                                                    // Returns a non-zero even integer in *_Pexp when _Left is finite
@@ -1917,7 +1920,6 @@ _Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // Used by sqrt(), return mag
     }
 }
 
-// FUNCTION TEMPLATE log
 template <class _Ty>
 _NODISCARD _Ty _Log_abs(const complex<_Ty>& _Left) noexcept { // for double, long double, and non-floating-point types
     return static_cast<_Ty>(
@@ -1935,7 +1937,6 @@ _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
     return complex<_Ty>(_Log_abs_v, _Theta);
 }
 
-// FUNCTION TEMPLATE pow
 template <class _Ty>
 complex<_Ty> _Pow(const _Ty& _Left, const _Ty& _Right) {
     if (0 <= _Left) {
@@ -1980,14 +1981,12 @@ _NODISCARD complex<_Ty> pow(const complex<_Ty>& _Left, const complex<_Ty>& _Righ
     }
 }
 
-// FUNCTION TEMPLATE sinh
 template <class _Ty>
 _NODISCARD complex<_Ty> sinh(const complex<_Ty>& _Left) {
     return complex<_Ty>(_Ctraits<_Ty>::_Sinh(real(_Left), _Ctraits<_Ty>::cos(imag(_Left))),
         _Ctraits<_Ty>::_Cosh(real(_Left), _Ctraits<_Ty>::sin(imag(_Left))));
 }
 
-// FUNCTION TEMPLATE sqrt
 template <class _Ty>
 _NODISCARD complex<_Ty> sqrt(const complex<_Ty>& _Left) {
     int _Leftexp;
@@ -2032,7 +2031,6 @@ _NODISCARD complex<_Ty> sqrt(const complex<_Ty>& _Left) {
     }
 }
 
-// FUNCTION TEMPLATE tanh
 template <class _Ty>
 _NODISCARD complex<_Ty> tanh(const complex<_Ty>& _Left) {
     _Ty _Tv = _Ctraits<_Ty>::tan(imag(_Left));
@@ -2055,19 +2053,16 @@ _NODISCARD complex<_Ty> tanh(const complex<_Ty>& _Left) {
     return complex<_Ty>((_Ctraits<_Ty>::sqrt(_Ty{1} + _Sv * _Sv)) * _Bv / _Dv, _Tv / _Dv);
 }
 
-// FUNCTION TEMPLATE arg
 template <class _Ty>
 _NODISCARD _Ty arg(const complex<_Ty>& _Left) { // return phase angle of complex as real
     return _Ctraits<_Ty>::atan2(imag(_Left), real(_Left));
 }
 
-// FUNCTION TEMPLATE conj
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> conj(const complex<_Ty>& _Left) { // return complex conjugate
     return complex<_Ty>(real(_Left), -imag(_Left));
 }
 
-// FUNCTION TEMPLATE proj
 template <class _Ty>
 _NODISCARD complex<_Ty> proj(const complex<_Ty>& _Left) { // return complex projection
     if (_Ctraits<_Ty>::_Isinf(real(_Left)) || _Ctraits<_Ty>::_Isinf(imag(_Left))) {
@@ -2078,29 +2073,34 @@ _NODISCARD complex<_Ty> proj(const complex<_Ty>& _Left) { // return complex proj
     return _Left;
 }
 
-// FUNCTION TEMPLATE cos
 template <class _Ty>
 _NODISCARD complex<_Ty> cos(const complex<_Ty>& _Left) {
     return complex<_Ty>(_Ctraits<_Ty>::_Cosh(imag(_Left), _Ctraits<_Ty>::cos(real(_Left))),
         -_Ctraits<_Ty>::_Sinh(imag(_Left), _Ctraits<_Ty>::sin(real(_Left))));
 }
 
-// FUNCTION TEMPLATE log10
 template <class _Ty>
 _NODISCARD complex<_Ty> log10(const complex<_Ty>& _Left) {
     return log(_Left) * static_cast<_Ty>(0.43429448190325182765112891891660508L);
 }
 
-// FUNCTION TEMPLATE norm
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 _Ty norm(const complex<_Ty>& _Left) { // return squared magnitude
     return real(_Left) * real(_Left) + imag(_Left) * imag(_Left);
 }
 
-// FUNCTION TEMPLATE polar
 template <class _Ty>
 _NODISCARD complex<_Ty> polar(const _Ty& _Rho, const _Ty& _Theta) { // return _Rho * exp(i * _Theta) as complex
-    return complex<_Ty>(_Rho * _Ctraits<_Ty>::cos(_Theta), _Rho * _Ctraits<_Ty>::sin(_Theta));
+    if (!_Ctraits<_Ty>::_Isnan(_Rho) && !_Ctraits<_Ty>::_Isinf(_Rho) && _Rho != _Ty{0}) { // _Rho is finite non-zero
+        return complex<_Ty>(_Rho * _Ctraits<_Ty>::cos(_Theta), _Rho * _Ctraits<_Ty>::sin(_Theta));
+    }
+
+    // _Rho is NaN/Inf/0
+    if (_Ctraits<_Ty>::_Signbit(_Rho)) {
+        return -_Polar_positive_nan_inf_zero_rho(-_Rho, _Theta);
+    } else {
+        return _Polar_positive_nan_inf_zero_rho(_Rho, _Theta);
+    }
 }
 
 template <class _Ty>
@@ -2108,21 +2108,18 @@ _NODISCARD complex<_Ty> polar(const _Ty& _Rho) { // return _Rho * exp(i * 0) as 
     return complex<_Ty>(_Rho, _Ty{0});
 }
 
-// FUNCTION TEMPLATE sin
 template <class _Ty>
 _NODISCARD complex<_Ty> sin(const complex<_Ty>& _Left) {
     return complex<_Ty>(_Ctraits<_Ty>::_Cosh(imag(_Left), _Ctraits<_Ty>::sin(real(_Left))),
         _Ctraits<_Ty>::_Sinh(imag(_Left), _Ctraits<_Ty>::cos(real(_Left))));
 }
 
-// FUNCTION TEMPLATE tan
 template <class _Ty>
 _NODISCARD complex<_Ty> tan(const complex<_Ty>& _Left) {
     complex<_Ty> _Zv(tanh(complex<_Ty>(-imag(_Left), real(_Left))));
     return complex<_Ty>(imag(_Zv), -real(_Zv));
 }
 
-// ADDITIONAL OVERLOADS
 template <class _Ty>
 using _Upgrade_to_double = conditional_t<is_integral_v<_Ty>, double, _Ty>;
 
@@ -2177,7 +2174,6 @@ _NODISCARD complex<_Upgrade_to_double<_Ty>> proj(_Ty _Left) {
     return complex<_Upgraded>(_Val, 0);
 }
 
-// FUNCTION TEMPLATE pow
 template <class _Ty1, class _Ty2>
 _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const complex<_Ty1>& _Left, const complex<_Ty2>& _Right) {
     using _Type = complex<_Common_float_type_t<_Ty1, _Ty2>>;
@@ -2198,7 +2194,6 @@ _NODISCARD complex<_Common_float_type_t<_Ty1, _Ty2>> pow(const _Ty1& _Left, cons
     return _STD pow(_Type(static_cast<_Promoted>(_Left)), _Type(_Right));
 }
 
-// FUNCTION TEMPLATE operator>>
 template <class _Ty, class _Elem, class _Tr>
 basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, complex<_Ty>& _Right) {
     const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Istr.getloc());
@@ -2229,7 +2224,6 @@ basic_istream<_Elem, _Tr>& operator>>(basic_istream<_Elem, _Tr>& _Istr, complex<
     return _Istr;
 }
 
-// FUNCTION TEMPLATE operator<<
 template <class _Ty, class _Elem, class _Tr>
 basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const complex<_Ty>& _Right) {
     const ctype<_Elem>& _Ctype_fac = _STD use_facet<ctype<_Elem>>(_Ostr.getloc());
@@ -2243,7 +2237,6 @@ basic_ostream<_Elem, _Tr>& operator<<(basic_ostream<_Elem, _Tr>& _Ostr, const co
     return _Ostr << _Sstr.str();
 }
 
-// complex LITERALS
 inline namespace literals {
     inline namespace complex_literals {
         _NODISCARD constexpr complex<long double> operator""il(long double _Val) {

@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Tree_unchecked_const_iterator
 template <class _Mytree, class _Base = _Iterator_base0>
 class _Tree_unchecked_const_iterator : public _Base {
 public:
@@ -118,7 +117,6 @@ public:
     _Nodeptr _Ptr; // pointer to node
 };
 
-// CLASS TEMPLATE _Tree_unchecked_iterator
 template <class _Mytree>
 class _Tree_unchecked_iterator : public _Tree_unchecked_const_iterator<_Mytree> {
 public:
@@ -164,7 +162,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE _Tree_const_iterator
 template <class _Mytree>
 class _Tree_const_iterator : public _Tree_unchecked_const_iterator<_Mytree, _Iterator_base> {
 public:
@@ -259,7 +256,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE _Tree_iterator
 template <class _Mytree>
 class _Tree_iterator : public _Tree_const_iterator<_Mytree> {
 public:
@@ -312,7 +308,6 @@ public:
     }
 };
 
-// tree TYPE WRAPPERS
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
     class _Reference, class _Const_reference, class _Nodeptr_type>
 struct _Tree_iter_types {
@@ -421,7 +416,6 @@ struct _Tree_find_hint_result {
     _Xlength_error("map/set too long");
 }
 
-// CLASS TEMPLATE _Tree_val
 template <class _Val_types>
 class _Tree_val : public _Container_base {
 public:
@@ -763,7 +757,6 @@ public:
     size_type _Mysize; // number of elements
 };
 
-// STRUCT TEMPLATE _Tree_head_scoped_ptr
 template <class _Alnode, class _Scary_val>
 struct _Tree_head_scoped_ptr { // temporary storage for allocated node pointers to ensure exception safety
     _Alnode& _Al;
@@ -830,7 +823,6 @@ struct _Tree_temp_node : _Tree_temp_node_alloc<_Alnode> {
     }
 };
 
-// CLASS TEMPLATE _Tree
 template <class _Traits>
 class _Tree { // ordered red-black tree for map/multimap/set/multiset
 public:

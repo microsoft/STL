@@ -22,7 +22,6 @@ _STD_BEGIN
 namespace experimental {
     inline namespace fundamentals_v2 {
 
-        // FUNCTION TEMPLATE erase_if
         template <class _Kty, class _Hasher, class _Keyeq, class _Alloc, class _Pr>
         _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _Cont, _Pr _Pred) {
             _Erase_nodes_if(_Cont, _Pass_fn(_Pred));
