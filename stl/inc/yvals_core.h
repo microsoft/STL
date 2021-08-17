@@ -248,8 +248,9 @@
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
-//     (partially implemented)
 // P2325R3 Views Should Not Be Required To Be Default Constructible
+// P2328R1 join_view Should Join All views Of ranges
+// P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -261,10 +262,16 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
+// P0401R6 Providing Size Feedback In The Allocator Interface
+// P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
+// P1132R7 out_ptr(), inout_ptr()
+// P1425R4 Iterator Pair Constructors For stack And queue
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
+// P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
+// P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 
@@ -499,6 +506,7 @@
 // warning: explicit(bool) is a C++20 extension [-Wc++20-extensions]
 // warning: ignoring __declspec(allocator) because the function return type '%s' is not a pointer or reference type
 //     [-Wignored-attributes]
+// warning: '#pragma float_control' is not supported on this target - ignored [-Wignored-pragmas]
 // warning: user-defined literal suffixes not starting with '_' are reserved [-Wuser-defined-literals]
 // warning: unknown pragma ignored [-Wunknown-pragmas]
 #ifndef _STL_DISABLE_CLANG_WARNINGS
@@ -509,6 +517,7 @@
     _Pragma("clang diagnostic ignored \"-Wc++17-extensions\"")      \
     _Pragma("clang diagnostic ignored \"-Wc++20-extensions\"")      \
     _Pragma("clang diagnostic ignored \"-Wignored-attributes\"")    \
+    _Pragma("clang diagnostic ignored \"-Wignored-pragmas\"")       \
     _Pragma("clang diagnostic ignored \"-Wuser-defined-literals\"") \
     _Pragma("clang diagnostic ignored \"-Wunknown-pragmas\"")
 // clang-format on
@@ -531,7 +540,7 @@
 #define _STL_DISABLE_DEPRECATED_WARNING \
     _Pragma("clang diagnostic push")    \
     _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
-#elif defined(__EDG__) || defined(__CUDACC__) || defined(__INTEL_COMPILER) // TRANSITION, VSO-1329304
+#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
 #define _STL_DISABLE_DEPRECATED_WARNING \
     __pragma(warning(push))             \
     __pragma(warning(disable : 4996)) // was declared deprecated
@@ -546,7 +555,7 @@
 #ifndef _STL_RESTORE_DEPRECATED_WARNING
 #ifdef __clang__
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("clang diagnostic pop")
-#elif defined(__EDG__) || defined(__CUDACC__) || defined(__INTEL_COMPILER) // TRANSITION, VSO-1329304
+#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
 #define _STL_RESTORE_DEPRECATED_WARNING __pragma(warning(pop))
 #else // vvv MSVC vvv
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("warning(pop)")
@@ -554,8 +563,8 @@
 #endif // _STL_RESTORE_DEPRECATED_WARNING
 
 #define _CPPLIB_VER       650
-#define _MSVC_STL_VERSION 142
-#define _MSVC_STL_UPDATE  202106L
+#define _MSVC_STL_VERSION 143
+#define _MSVC_STL_UPDATE  202108L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -567,12 +576,12 @@
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 11
-#error STL1000: Unexpected compiler version, expected Clang 11.0.0 or newer.
+#if __clang_major__ < 12
+#error STL1000: Unexpected compiler version, expected Clang 12.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1929 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.29 or newer.
+#if _MSC_VER < 1930 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.30 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1136,8 +1145,6 @@
 #define _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23 (_HAS_FEATURES_REMOVED_IN_CXX23)
 #endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
-// LIBRARY FEATURE-TEST MACROS
-
 // C++14
 #define __cpp_lib_chrono_udls                 201304L
 #define __cpp_lib_complex_udls                201309L
@@ -1240,33 +1247,21 @@
 #define __cpp_lib_concepts 201907L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
-#define __cpp_lib_constexpr_algorithms 201806L
-#define __cpp_lib_constexpr_complex    201711L
-
-#ifdef __cpp_constexpr_dynamic_alloc
+#define __cpp_lib_constexpr_algorithms    201806L
+#define __cpp_lib_constexpr_complex       201711L
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
-#endif // __cpp_constexpr_dynamic_alloc
-
-#define __cpp_lib_constexpr_functional 201907L
-#define __cpp_lib_constexpr_iterator   201811L
-#define __cpp_lib_constexpr_memory     201811L
-#define __cpp_lib_constexpr_numeric    201911L
-
-#if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
-#define __cpp_lib_constexpr_string 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
-
-#define __cpp_lib_constexpr_string_view 201811L
-#define __cpp_lib_constexpr_tuple       201811L
-#define __cpp_lib_constexpr_utility     201811L
-
-#if defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
-#define __cpp_lib_constexpr_vector 201907L
-#endif // defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__)
-
-#define __cpp_lib_destroying_delete 201806L
-#define __cpp_lib_endian            201907L
-#define __cpp_lib_erase_if          202002L
+#define __cpp_lib_constexpr_functional    201907L
+#define __cpp_lib_constexpr_iterator      201811L
+#define __cpp_lib_constexpr_memory        201811L
+#define __cpp_lib_constexpr_numeric       201911L
+#define __cpp_lib_constexpr_string        201907L
+#define __cpp_lib_constexpr_string_view   201811L
+#define __cpp_lib_constexpr_tuple         201811L
+#define __cpp_lib_constexpr_utility       201811L
+#define __cpp_lib_constexpr_vector        201907L
+#define __cpp_lib_destroying_delete       201806L
+#define __cpp_lib_endian                  201907L
+#define __cpp_lib_erase_if                202002L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
 #define __cpp_lib_format 201907L
@@ -1360,28 +1355,26 @@
 
 // C++23
 #if _HAS_CXX23
-#define __cpp_lib_is_scoped_enum  202011L
+#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_allocate_at_least 202106L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_invoke_r       202106L
+#define __cpp_lib_is_scoped_enum 202011L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_out_ptr 202106L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_stdatomic_h     202011L
 #define __cpp_lib_string_contains 202011L
 #define __cpp_lib_to_underlying   202102L
 #endif // _HAS_CXX23
 
-// EXPERIMENTAL
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
-
-// Functions that became constexpr in C++20 via P0784R7
-#ifdef __cpp_lib_constexpr_dynamic_alloc
-#define _CONSTEXPR20_DYNALLOC constexpr
-#else
-#define _CONSTEXPR20_DYNALLOC inline
-#endif
-
-// Functions that became constexpr in C++20 via P0980R1 or P1004R2
-#if defined(__cpp_lib_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
-#define _CONSTEXPR20_CONTAINER constexpr
-#else
-#define _CONSTEXPR20_CONTAINER inline
-#endif
 
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL
@@ -1394,7 +1387,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STRINGIZE(x)   _STRINGIZEX(x)
 #define _EMPTY_ARGUMENT // for empty macro argument
 
-// NAMESPACE
 #define _STD_BEGIN namespace std {
 #define _STD_END   }
 #define _STD       ::std::

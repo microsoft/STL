@@ -324,14 +324,8 @@ algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
 
 
 # *** CLANG COMPILER BUGS ***
-# LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
-thread\macro.pass.cpp
-
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
-
-# LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
-language.support\support.limits\support.limits.general\vector.version.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -563,6 +557,11 @@ numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\pow.pass.cpp
 numerics\complex.number\cmplx.over\proj.pass.cpp
 
+# Assertion failed: c == NaN || c == non_zero_nan
+# Testing input values outside the range of [complex.value.ops]/9
+# libc++ handles those input values differently
+numerics\complex.number\complex.value.ops\polar.pass.cpp
+
 # Assertion failed: std::abs(skew - x_skew) < 0.01
 # Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
 numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
@@ -664,6 +663,13 @@ utilities\memory\util.dynamic.safety\get_pointer_safety.pass.cpp
 utilities\memory\util.dynamic.safety\declare_no_pointers.pass.cpp
 utilities\memory\util.dynamic.safety\declare_reachable.pass.cpp
 
+# Clang 12 emits a warning-as-error; this has likely been fixed upstream already:
+# error: temporary whose address is used as value of local variable 'it2' will be destroyed at the end of the full-expression [-Werror,-Wdangling]
+iterators\predef.iterators\reverse.iterators\reverse.iter.ops\reverse.iter.op-=\difference_type.pass.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.ops\reverse.iter.op+=\difference_type.pass.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.ops\reverse.iter.op=\reverse_iterator.pass.cpp
+
+
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
 numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.bin\eval_param.pass.cpp
@@ -719,7 +725,6 @@ numerics\complex.number\complex.transcendentals\asinh.pass.cpp
 numerics\complex.number\complex.transcendentals\atanh.pass.cpp
 numerics\complex.number\complex.transcendentals\cos.pass.cpp
 numerics\complex.number\complex.transcendentals\cosh.pass.cpp
-numerics\complex.number\complex.transcendentals\exp.pass.cpp
 numerics\complex.number\complex.transcendentals\log10.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_complex_complex.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_complex_scalar.pass.cpp
@@ -728,7 +733,6 @@ numerics\complex.number\complex.transcendentals\sin.pass.cpp
 numerics\complex.number\complex.transcendentals\sinh.pass.cpp
 numerics\complex.number\complex.transcendentals\tanh.pass.cpp
 numerics\complex.number\complex.value.ops\norm.pass.cpp
-numerics\complex.number\complex.value.ops\polar.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 localization\locale.categories\category.ctype\facet.ctype.special\facet.ctype.char.statics\classic_table.pass.cpp

@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Uset_traits
 template <class _Kty, // key type (same as value type)
     class _Tr, // comparator predicate type
     class _Alloc, // actual allocator type (should be value allocator)
@@ -60,7 +59,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE unordered_set
 template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>, class _Alloc = allocator<_Kty>>
 class unordered_set : public _Hash<_Uset_traits<_Kty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, false>> {
     // hash table of key-values, unique keys
@@ -330,7 +328,6 @@ _NODISCARD bool operator!=(const unordered_set<_Kty, _Hasher, _Keyeq, _Alloc>& _
 }
 #endif // !_HAS_CXX20
 
-// CLASS TEMPLATE unordered_multiset
 template <class _Kty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>, class _Alloc = allocator<_Kty>>
 class unordered_multiset : public _Hash<_Uset_traits<_Kty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, true>> {
     // hash table of key-values, non-unique keys

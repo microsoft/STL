@@ -8,6 +8,19 @@
 int main() {} // COMPILE-ONLY
 
 // LIBRARY FEATURE-TEST MACROS
+#if _HAS_CXX23
+#ifndef __cpp_lib_adaptor_iterator_pair_constructor
+#error __cpp_lib_adaptor_iterator_pair_constructor is not defined
+#elif __cpp_lib_adaptor_iterator_pair_constructor != 202106L
+#error __cpp_lib_adaptor_iterator_pair_constructor is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_adaptor_iterator_pair_constructor == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_adaptor_iterator_pair_constructor
+#error __cpp_lib_adaptor_iterator_pair_constructor is defined
+#endif
+#endif
 
 #ifndef __cpp_lib_addressof_constexpr
 #error __cpp_lib_addressof_constexpr is not defined
@@ -15,6 +28,20 @@ int main() {} // COMPILE-ONLY
 #error __cpp_lib_addressof_constexpr is not 201603L
 #else
 STATIC_ASSERT(__cpp_lib_addressof_constexpr == 201603L);
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_allocate_at_least
+#error __cpp_lib_allocate_at_least is not defined
+#elif __cpp_lib_allocate_at_least != 202106L
+#error __cpp_lib_allocate_at_least is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_allocate_at_least == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_allocate_at_least
+#error __cpp_lib_allocate_at_least is defined
+#endif
 #endif
 
 #ifndef __cpp_lib_allocator_traits_is_always_equal
@@ -417,7 +444,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_complex == 201711L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_dynamic_alloc
 #error __cpp_lib_constexpr_dynamic_alloc is not defined
 #elif __cpp_lib_constexpr_dynamic_alloc != 201907L
@@ -487,7 +514,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_numeric == 201911L);
 #endif
 #endif
 
-#if _HAS_CXX20 && !defined(__clang__) // TRANSITION, LLVM-48606
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_string
 #error __cpp_lib_constexpr_string is not defined
 #elif __cpp_lib_constexpr_string != 201907L
@@ -543,7 +570,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_utility == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc) && !defined(__clang__) // TRANSITION, LLVM-48606
+#if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_vector
 #error __cpp_lib_constexpr_vector is not defined
 #elif __cpp_lib_constexpr_vector != 201907L
@@ -845,6 +872,16 @@ STATIC_ASSERT(__cpp_lib_interpolate == 201902L);
 #error __cpp_lib_invoke is not 201411L
 #else
 STATIC_ASSERT(__cpp_lib_invoke == 201411L);
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_invoke_r
+#error __cpp_lib_invoke_r is not defined
+#elif __cpp_lib_invoke_r != 202106L
+#error __cpp_lib_invoke_r is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_invoke_r == 202106L);
+#endif
 #endif
 
 #if _HAS_CXX17
@@ -1185,6 +1222,20 @@ STATIC_ASSERT(__cpp_lib_optional == 201606L);
 #endif
 #endif
 
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_out_ptr
+#error __cpp_lib_out_ptr is not defined
+#elif __cpp_lib_out_ptr != 202106L
+#error __cpp_lib_out_ptr is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_out_ptr == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_out_ptr
+#error __cpp_lib_out_ptr is defined
+#endif
+#endif
+
 #if _HAS_CXX17 && !defined(_M_CEE)
 #ifndef __cpp_lib_parallel_algorithm
 #error __cpp_lib_parallel_algorithm is not defined
@@ -1454,6 +1505,20 @@ STATIC_ASSERT(__cpp_lib_starts_ends_with == 201711L);
 #else
 #ifdef __cpp_lib_starts_ends_with
 #error __cpp_lib_starts_ends_with is defined
+#endif
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_stdatomic_h
+#error __cpp_lib_stdatomic_h is not defined
+#elif __cpp_lib_stdatomic_h != 202011L
+#error __cpp_lib_stdatomic_h is not 202011L
+#else
+STATIC_ASSERT(__cpp_lib_stdatomic_h == 202011L);
+#endif
+#else
+#ifdef __cpp_lib_stdatomic_h
+#error __cpp_lib_stdatomic_h is defined
 #endif
 #endif
 

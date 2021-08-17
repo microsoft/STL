@@ -58,7 +58,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-// NAMED CONSTANTS
 enum _Meta_type { // meta character representations for parser
     _Meta_lpar  = '(',
     _Meta_rpar  = ')',
@@ -100,7 +99,6 @@ enum _Meta_type { // meta character representations for parser
     _Esc_uni      = 'u'
 };
 
-// NAMESPACE regex_constants
 namespace regex_constants {
     // constants used in regular expressions
     enum syntax_option_type : int { // specify RE syntax rules
@@ -161,7 +159,6 @@ namespace regex_constants {
 
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xregex_error(regex_constants::error_type _Code);
 
-// CLASS TEMPLATE regex_traits
 template <class _Elem>
 class regex_traits;
 
@@ -389,7 +386,6 @@ private:
     locale_type _Loc;
 };
 
-// CLASS regex_traits<char>
 template <>
 class regex_traits<char> : public _Regex_traits<char> {
 public:
@@ -414,7 +410,6 @@ public:
     }
 };
 
-// CLASS regex_traits<wchar_t>
 template <>
 class regex_traits<wchar_t> : public _Regex_traits<wchar_t> {
 public:
@@ -439,7 +434,6 @@ public:
     }
 };
 
-// CLASS regex_error
 class regex_error : public runtime_error { // type of all regular expression exceptions
 public:
     explicit regex_error(regex_constants::error_type _Ex) : runtime_error(_Stringify(_Ex)), _Err(_Ex) {}
@@ -507,7 +501,6 @@ private:
     regex_constants::error_type _Err;
 };
 
-// FUNCTION TEMPLATE _Iter_compare
 template <class _Traits, class _FwdIt1, class _FwdIt2>
 int _Iter_compare3(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, true_type) {
     // _Iter_compare for memory buffer ranges
@@ -562,10 +555,9 @@ int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Las
         _Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2), _Get_unwrapped(_Last2));
 }
 
-// FUNCTION TEMPLATE _Is_word
 inline bool _Is_word(unsigned char _UCh) {
     // special casing char to avoid branches for std::regex in this path
-    static constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max)() + 1] = {
+    static constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max) () + 1] = {
         //        X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 XA XB XC XD XE XF
         /* 0X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         /* 1X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -605,7 +597,6 @@ struct _Get_member_comparison_category<_Ty, void_t<typename _Ty::comparison_cate
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE sub_match
 template <class _BidIt>
 class sub_match : public pair<_BidIt, _BidIt> { // class to hold contents of a capture group
 public:
@@ -757,7 +748,6 @@ _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const sub_match<_BidI
 }
 #endif // !_HAS_CXX20
 
-// COMPARE sub_match AND NTBS
 template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>* _Right) {
     return _Left._Match_equal(_Right);
@@ -825,7 +815,6 @@ _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 }
 #endif // !_HAS_CXX20
 
-// COMPARE sub_match AND ELEMENT
 template <class _BidIt>
 _NODISCARD bool operator==(const sub_match<_BidIt>& _Left, const _Iter_value_t<_BidIt>& _Right) {
     return _Left._Match_equal(_STD addressof(_Right), 1);
@@ -894,7 +883,6 @@ _NODISCARD bool operator>=(const sub_match<_BidIt>& _Left, const _Iter_value_t<_
 }
 #endif // !_HAS_CXX20
 
-// COMPARE sub_match AND string
 template <class _BidIt, class _Traits, class _Alloc>
 _NODISCARD bool operator==(
     const sub_match<_BidIt>& _Left, const basic_string<_Iter_value_t<_BidIt>, _Traits, _Alloc>& _Right) {
@@ -975,13 +963,11 @@ _NODISCARD bool operator>=(
 }
 #endif // !_HAS_CXX20
 
-// INSERT sub_match IN STREAM
 template <class _Elem, class _Traits, class _BidIt>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const sub_match<_BidIt>& _Match) {
     return _Ostr << _Match.str();
 }
 
-// FORWARD DECLARATIONS
 template <class _BidIt, class _Alloc = allocator<sub_match<_BidIt>>>
 class match_results;
 
@@ -993,7 +979,6 @@ template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
 _OutIt _Format_sed(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _InIt _First, _InIt _Last,
     regex_constants::match_flag_type _Flags = regex_constants::format_default);
 
-// CLASS TEMPLATE match_results
 template <class _BidIt, class _Alloc>
 class match_results { // class to hold contents of all capture groups
 public:
@@ -1188,7 +1173,6 @@ _NODISCARD bool operator!=(const match_results<_BidIt, _Alloc>& _Left, const mat
 }
 #endif // !_HAS_CXX20
 
-// NFA PROPERTIES
 const unsigned int _BRE_MAX_GRP = 9U;
 
 const unsigned int _Bmp_max   = 256U; // must fit in an unsigned int
@@ -1235,7 +1219,6 @@ enum _Node_type { // type flag for nfa nodes
     _N_end
 };
 
-// STRUCT TEMPLATE _Buf
 template <class _Elem>
 struct _Buf { // character buffer
     _Buf() : _Sz(0), _Nchrs(0), _Chrs(nullptr) {}
@@ -1295,7 +1278,6 @@ private:
     _Elem* _Chrs;
 };
 
-// STRUCT _Bitmap
 struct _Bitmap { // accelerator table for small character values
     _Bitmap() {
         _CSTD memset(_Chrs, '\0', _Bmp_size);
@@ -1319,7 +1301,6 @@ private:
     unsigned char _Chrs[_Bmp_size];
 };
 
-// STRUCT TEMPLATE _Sequence
 template <class _Elem>
 struct _Sequence { // holds sequences of _Sz elements
     explicit _Sequence(unsigned int _Len) : _Sz(_Len) {}
@@ -1329,7 +1310,6 @@ struct _Sequence { // holds sequences of _Sz elements
     _Sequence* _Next;
 };
 
-// CLASS _Node_base
 class _Node_base { // base class for all nfa nodes
 public:
     explicit _Node_base(_Node_type _Ty, _Node_flags _Fl = _Fl_none)
@@ -1343,7 +1323,6 @@ public:
     virtual ~_Node_base() noexcept {}
 };
 
-// FUNCTION _Destroy_node
 inline void _Destroy_node(_Node_base* _Nx, _Node_base* _Ne = nullptr) noexcept { // destroy sublist of nodes
     while (_Nx != _Ne && _Nx) { // destroy node
         _Node_base* _Tmp = _Nx;
@@ -1353,7 +1332,6 @@ inline void _Destroy_node(_Node_base* _Nx, _Node_base* _Ne = nullptr) noexcept {
     }
 }
 
-// CLASS _Root_node
 class _Root_node : public _Node_base { // root of parse tree
 public:
     _Root_node() : _Node_base(_N_begin), _Loops(0), _Marks(0), _Refs(0) {
@@ -1366,7 +1344,6 @@ public:
     unsigned int _Refs;
 };
 
-// CLASS _Node_end_group
 class _Node_end_group : public _Node_base { // node that marks end of a group
 public:
     _Node_end_group(_Node_type _Ty, _Node_flags _Fl, _Node_base* _Bx) : _Node_base(_Ty, _Fl), _Back(_Bx) {}
@@ -1374,7 +1351,6 @@ public:
     _Node_base* _Back;
 };
 
-// CLASS _Node_assert
 class _Node_assert : public _Node_base { // node that holds an ECMAScript assertion
 public:
     explicit _Node_assert(_Node_type _Ty, _Node_flags _Fl = _Fl_none) : _Node_base(_Ty, _Fl), _Child(nullptr) {}
@@ -1386,7 +1362,6 @@ public:
     _Node_base* _Child;
 };
 
-// CLASS TEMPLATE _Node_capture
 class _Node_capture : public _Node_base { // node that marks beginning of a capture group
 public:
     explicit _Node_capture(unsigned int _Ix) : _Node_base(_N_capture, _Fl_none), _Idx(_Ix) {}
@@ -1394,7 +1369,6 @@ public:
     unsigned int _Idx;
 };
 
-// CLASS _Node_back
 class _Node_back : public _Node_base { // node that holds a back reference
 public:
     explicit _Node_back(unsigned int _Ix) : _Node_base(_N_back, _Fl_none), _Idx(_Ix) {}
@@ -1402,7 +1376,6 @@ public:
     unsigned int _Idx;
 };
 
-// CLASS TEMPLATE _Node_str
 template <class _Elem>
 class _Node_str : public _Node_base { // node that holds text
 public:
@@ -1411,7 +1384,6 @@ public:
     _Buf<_Elem> _Data;
 };
 
-// CLASS TEMPLATE _Node_class
 template <class _Elem, class _RxTraits>
 class _Node_class : public _Node_base { // node that holds a character class (POSIX bracket expression)
 public:
@@ -1443,13 +1415,11 @@ public:
     _Sequence<_Elem>* _Equiv;
 };
 
-// CLASS _Node_endif
 class _Node_endif : public _Node_base { // node that marks the end of an alternative
 public:
     _Node_endif() : _Node_base(_N_endif, _Fl_none) {}
 };
 
-// CLASS _Node_if
 class _Node_if : public _Node_base { // node that marks the beginning of an alternative
 public:
     explicit _Node_if(_Node_base* _End)
@@ -1469,7 +1439,6 @@ public:
     _Node_if* _Child;
 };
 
-// CLASS _Node_end_rep
 class _Node_rep;
 
 class _Node_end_rep : public _Node_base { // node that marks the end of a repetition
@@ -1481,13 +1450,11 @@ public:
     _Node_end_rep& operator=(const _Node_end_rep&) = delete;
 };
 
-// CLASS _Loop_vals_t
 struct _Loop_vals_t { // storage for loop administration
     int _Loop_idx;
     void* _Loop_iter;
 };
 
-// CLASS _Node_rep
 class _Node_rep : public _Node_base { // node that marks the beginning of a repetition
 public:
     _Node_rep(bool _Greedy, int _Mn, int _Mx, _Node_end_rep* _End, unsigned int _Number)
@@ -1503,7 +1470,6 @@ public:
     _Node_rep& operator=(const _Node_rep&) = delete;
 };
 
-// CLASS TEMPLATE _Builder
 template <class _FwdIt, class _Elem, class _RxTraits>
 class _Builder { // provides operations used by _Parser to build the nfa
 public:
@@ -1566,7 +1532,6 @@ public:
     _Builder& operator=(const _Builder&) = delete;
 };
 
-// CLASS TEMPLATE _Bt_state_t
 template <class _BidIt>
 class _Bt_state_t { // holds the state needed for backtracking
 public:
@@ -1574,7 +1539,6 @@ public:
     vector<bool> _Grp_valid;
 };
 
-// CLASS TEMPLATE _Tgt_state_t
 template <class _BidIt>
 class _Tgt_state_t : public _Bt_state_t<_BidIt> { // holds the current state of the match
 public:
@@ -1590,7 +1554,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE _Matcher
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
 class _Matcher { // provides ways to match a regular expression to a text sequence
 public:
@@ -1711,7 +1674,6 @@ enum _Prs_ret { // indicate class element type
     _Prs_set
 };
 
-// CLASS TEMPLATE _Parser
 template <class _FwdIt, class _Elem, class _RxTraits>
 class _Parser { // parse a regular expression
 public:
@@ -1807,7 +1769,6 @@ enum _Lang_flags { // describe language properties
     _L_mtch_long  = 0x40000000, // find longest match (ERE, BRE)
 };
 
-// CLASS _Regex_base
 class _Regex_base : public _Container_base { // base class for basic_regex to construct and destroy proxy
 public:
 #if 0 < _ITERATOR_DEBUG_LEVEL
@@ -1824,7 +1785,6 @@ public:
 #endif // 0 < _ITERATOR_DEBUG_LEVEL
 };
 
-// CLASS TEMPLATE basic_regex
 template <class _Elem, class _RxTraits = regex_traits<_Elem>>
 class basic_regex : public _Regex_base { // regular expression
 public:
@@ -2095,7 +2055,6 @@ using wcmatch = match_results<const wchar_t*>;
 using smatch  = match_results<string::const_iterator>;
 using wsmatch = match_results<wstring::const_iterator>;
 
-// FUNCTION TEMPLATE _Format_default
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
 _OutIt _Format_default(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _InIt _First, _InIt _Last,
     regex_constants::match_flag_type) { // format with ECMAScript rules
@@ -2142,7 +2101,6 @@ _OutIt _Format_default(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out,
     return _Out;
 }
 
-// FUNCTION TEMPLATE _Format_sed
 template <class _BidIt, class _Alloc, class _InIt, class _OutIt>
 _OutIt _Format_sed(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _InIt _First, _InIt _Last,
     regex_constants::match_flag_type) { // format with sed rules
@@ -2169,7 +2127,6 @@ _OutIt _Format_sed(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out, _In
     return _Out;
 }
 
-// FUNCTION TEMPLATE _Regex_match1
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits, class _It>
 bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs,
@@ -2183,7 +2140,6 @@ bool _Regex_match1(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matche
     return _Mx._Match(_Matches, _Full);
 }
 
-// FUNCTION TEMPLATE regex_match
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
 bool regex_match(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2240,7 +2196,6 @@ _NODISCARD bool regex_match(const basic_string<_Elem, _StTraits, _StAlloc>& _Str
         _Re, _Flgs | regex_constants::match_any, true);
 }
 
-// FUNCTION TEMPLATE _Regex_search2
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits, class _It>
 bool _Regex_search2(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs, _It _Org) {
@@ -2283,7 +2238,6 @@ bool _Regex_search2(_It _First, _It _Last, match_results<_BidIt, _Alloc>* _Match
     return _Found;
 }
 
-// FUNCTION TEMPLATE regex_search
 template <class _BidIt, class _Alloc, class _Elem, class _RxTraits>
 bool regex_search(_BidIt _First, _BidIt _Last, match_results<_BidIt, _Alloc>& _Matches,
     const basic_regex<_Elem, _RxTraits>& _Re, regex_constants::match_flag_type _Flgs = regex_constants::match_default) {
@@ -2344,7 +2298,6 @@ _NODISCARD bool regex_search(const basic_string<_Elem, _StTraits, _StAlloc>& _St
         _First, _Last, static_cast<match_results<_Iter>*>(nullptr), _Re, _Flgs | regex_constants::match_any, _First);
 }
 
-// FUNCTION TEMPLATE regex_replace
 template <class _OutIt, class _BidIt, class _RxTraits, class _Elem, class _Traits, class _Alloc>
 _OutIt _Regex_replace1(_OutIt _Result, _BidIt _First, _BidIt _Last, const basic_regex<_Elem, _RxTraits>& _Re,
     const basic_string<_Elem, _Traits, _Alloc>& _Fmt, regex_constants::match_flag_type _Flgs) {
@@ -2439,7 +2392,6 @@ _NODISCARD basic_string<_Elem> regex_replace(const _Elem* _Pstr, const basic_reg
     return _Res;
 }
 
-// CLASS TEMPLATE regex_iterator
 template <class _BidIt, class _Elem = _Iter_value_t<_BidIt>, class _RxTraits = regex_traits<_Elem>>
 class regex_iterator : public _Iterator_base {
 public:
@@ -2516,8 +2468,8 @@ public:
                 _MyRe = nullptr;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-                this->_Orphan_me_v2();
-#endif // _ITERATOR_DEBUG_LEVEL
+                this->_Adopt(nullptr);
+#endif // _ITERATOR_DEBUG_LEVEL == 2
 
                 return *this;
             }
@@ -2569,7 +2521,6 @@ using wcregex_iterator = regex_iterator<const wchar_t*>;
 using sregex_iterator  = regex_iterator<string::const_iterator>;
 using wsregex_iterator = regex_iterator<wstring::const_iterator>;
 
-// CLASS TEMPLATE regex_token_iterator
 template <class _BidIt, class _Elem = _Iter_value_t<_BidIt>, class _RxTraits = regex_traits<_Elem>>
 class regex_token_iterator {
 public:
@@ -2754,7 +2705,6 @@ using wcregex_token_iterator = regex_token_iterator<const wchar_t*>;
 using sregex_token_iterator  = regex_token_iterator<string::const_iterator>;
 using wsregex_token_iterator = regex_token_iterator<wstring::const_iterator>;
 
-// IMPLEMENTATION OF _Builder
 template <class _FwdIt, class _Elem, class _RxTraits>
 _Builder<_FwdIt, _Elem, _RxTraits>::_Builder(const _RxTraits& _Tr, regex_constants::syntax_option_type _Fx)
     : _Root(new _Root_node), _Current(_Root), _Flags(_Fx), _Traits(_Tr),
@@ -2965,7 +2915,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(typename _Regex_traits
     bool _Negate) { // add contents of named class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Add_elts(_Node, _Cl, _Negate);
-    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max)())) {
+    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max) ())) {
         _Node->_Classes = static_cast<_Regex_traits_base::char_class_type>(_Node->_Classes | _Cl);
     }
 }
@@ -3012,7 +2962,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_equiv(_FwdIt _First, _FwdIt _Last,
             _Node->_Small->_Mark(_Ch);
         }
     }
-    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max)())) { // map range
+    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max) ())) { // map range
         _Sequence<_Elem>** _Cur = _STD addressof(_Node->_Equiv);
         _Char_to_elts(_First, _Last, _Diff, _Cur);
     }
@@ -3163,7 +3113,6 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Tidy() noexcept { // free memory
     _Root = nullptr;
 }
 
-// IMPLEMENTATION OF _Matcher
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
 bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_if(_Node_if* _Node) { // apply if node
     _Tgt_state_t<_It> _St = _Tgt_state;
@@ -3835,7 +3784,6 @@ _BidIt _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Skip(_BidIt _First_arg, _BidIt 
     return _First_arg;
 }
 
-// IMPLEMENTATION OF _Parser
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_Error(regex_constants::error_type _Code) { // handle error
     _Xregex_error(_Code);
@@ -4329,7 +4277,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape() { // check for valid 
         return _IdentityEscape();
     }
 
-    if ((numeric_limits<typename _RxTraits::_Uelem>::max)() < static_cast<unsigned int>(_Val)) {
+    if ((numeric_limits<typename _RxTraits::_Uelem>::max) () < static_cast<unsigned int>(_Val)) {
         _Error(regex_constants::error_escape);
     }
 
@@ -4584,7 +4532,6 @@ _Parser<_FwdIt, _Elem, _RxTraits>::_Parser(
     : _Pat(_Pfirst), _Begin(_Pfirst), _End(_Plast), _Grp_idx(0), _Disj_count(0), _Finished_grps(0), _Nfa(_Tr, _Fx),
       _Traits(_Tr), _Flags(_Fx) {
 
-    // PARSER LANGUAGE FLAGS
     constexpr unsigned int _ECMA_flags = _L_ext_rep | _L_alt_pipe | _L_nex_grp | _L_nex_rep | _L_nc_grp | _L_asrt_gen
                                        | _L_asrt_wrd | _L_bckr | _L_ngr_rep | _L_esc_uni | _L_esc_hex | _L_esc_bsl
                                        | _L_esc_ffn | _L_esc_wsd | _L_esc_ctrl | _L_bzr_chr | _L_grp_esc | _L_ident_ECMA
