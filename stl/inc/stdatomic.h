@@ -14,7 +14,7 @@
 #endif // _M_CEE_PURE
 
 #if !_HAS_CXX23
-#pragma message("The contents of <stdatomic.h> are available only with C++23 or later.")
+#pragma message(_WARNING_MESSAGE("STL4033", "The contents of <stdatomic.h> are available only with C++23 or later."))
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
 #include <atomic>
