@@ -307,15 +307,15 @@ constexpr bool test_variant() {
 int main() {
     test_optional<With_trivial_destructor>();
     test_optional<With_nontrivial_destructor>();
-#if 1 // defined(__clang__) || defined(__EDG__)
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, FIXME
     static_assert(test_optional<With_trivial_destructor>());
     static_assert(test_optional<With_nontrivial_destructor>());
-#endif // __clang__ || __EDG__
+#endif // TRANSITION
 
     test_variant<With_trivial_destructor>();
     test_variant<With_nontrivial_destructor>();
-#if 1 // defined(__clang__) || defined(__EDG__)
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, FIXME
     static_assert(test_variant<With_trivial_destructor>());
     static_assert(test_variant<With_nontrivial_destructor>());
-#endif // __clang__ || __EDG__
+#endif // TRANSITION
 }
