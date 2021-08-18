@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <array>
 #include <assert.h>
 #include <functional>
 #include <iterator>
@@ -468,50 +467,54 @@ constexpr void test_pop_heap_and_push_heap() {
 }
 
 constexpr void test_permutations() {
-    int buff[] = {1, 2, 3, 4};
-    // using std::array here is TRANSITION, DevCom-892153
-    constexpr array<const int, 4> expected[] = {
-        array<const int, 4>{10, 20, 30, 40},
-        array<const int, 4>{10, 20, 40, 30},
-        array<const int, 4>{10, 30, 20, 40},
-        array<const int, 4>{10, 30, 40, 20},
-        array<const int, 4>{10, 40, 20, 30},
-        array<const int, 4>{10, 40, 30, 20},
-        array<const int, 4>{20, 10, 30, 40},
-        array<const int, 4>{20, 10, 40, 30},
-        array<const int, 4>{20, 30, 10, 40},
-        array<const int, 4>{20, 30, 40, 10},
-        array<const int, 4>{20, 40, 10, 30},
-        array<const int, 4>{20, 40, 30, 10},
-        array<const int, 4>{30, 10, 20, 40},
-        array<const int, 4>{30, 10, 40, 20},
-        array<const int, 4>{30, 20, 10, 40},
-        array<const int, 4>{30, 20, 40, 10},
-        array<const int, 4>{30, 40, 10, 20},
-        array<const int, 4>{30, 40, 20, 10},
-        array<const int, 4>{40, 10, 20, 30},
-        array<const int, 4>{40, 10, 30, 20},
-        array<const int, 4>{40, 20, 10, 30},
-        array<const int, 4>{40, 20, 30, 10},
-        array<const int, 4>{40, 30, 10, 20},
-        array<const int, 4>{40, 30, 20, 10},
+    int buff[] = {10, 20, 30, 40};
+
+    constexpr int expected[24][4] = {
+        {10, 20, 30, 40},
+        {10, 20, 40, 30},
+        {10, 30, 20, 40},
+        {10, 30, 40, 20},
+        {10, 40, 20, 30},
+        {10, 40, 30, 20},
+        {20, 10, 30, 40},
+        {20, 10, 40, 30},
+        {20, 30, 10, 40},
+        {20, 30, 40, 10},
+        {20, 40, 10, 30},
+        {20, 40, 30, 10},
+        {30, 10, 20, 40},
+        {30, 10, 40, 20},
+        {30, 20, 10, 40},
+        {30, 20, 40, 10},
+        {30, 40, 10, 20},
+        {30, 40, 20, 10},
+        {40, 10, 20, 30},
+        {40, 10, 30, 20},
+        {40, 20, 10, 30},
+        {40, 20, 30, 10},
+        {40, 30, 10, 20},
+        {40, 30, 20, 10},
     };
 
-    auto cursor = begin(expected);
+    size_t cursor = 0;
     do {
-        assert(equal(begin(buff), end(buff), cursor->begin(), cursor->end()));
+        assert(equal(begin(buff), end(buff), begin(expected[cursor]), end(expected[cursor])));
         ++cursor;
     } while (next_permutation(begin(buff), end(buff)));
 
-    assert(cursor == end(expected));
+    assert(cursor == 24);
+    assert(equal(begin(buff), end(buff), begin(expected[0]), end(expected[0])));
+
     assert(!prev_permutation(begin(buff), end(buff)));
+    cursor = 23;
 
     do {
-        assert(equal(begin(buff), end(buff), cursor->begin(), cursor->end()));
+        assert(equal(begin(buff), end(buff), begin(expected[cursor]), end(expected[cursor])));
         --cursor;
     } while (prev_permutation(begin(buff), end(buff)));
 
-    assert(is_sorted(begin(buff), end(buff)));
+    assert(cursor == static_cast<size_t>(-1));
+    assert(equal(begin(buff), end(buff), begin(expected[23]), end(expected[23])));
 }
 
 constexpr bool test() {
