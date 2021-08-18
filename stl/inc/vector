@@ -481,11 +481,12 @@ public:
 
         if (_New_size > static_cast<_Size_type>(_Raw_end - _Raw_first)) {
             // New size is larger than current capacity; assume we're allocating a new block.
+            // Clean up the shadow memory annotations for the buffer being freed.
             __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Raw_last, _Raw_end);
             return;
         }
 
-        // New size is less than current capacity; assume we're reusing the same block.
+        // New size first in current capacity; assume we're reusing the same block.
         const _Value_type* _New_last = _Raw_first + _New_size;
         _Asan_last                   = _Raw_last;
 
@@ -598,6 +599,7 @@ public:
 
         if (_New_size > static_cast<_Size_type>(_Raw_end - _Raw_first)) {
             // New size is larger than current capacity; assume we're allocating a new block.
+            // Clean up the shadow memory annotations for the buffer being freed.
             __sanitizer_annotate_contiguous_container(_Aligned_first, _Raw_end, _Asan_last, _Raw_end);
             _Asan_last = nullptr;
             return;
@@ -1055,7 +1057,7 @@ private:
 
         // Pessimistically assume that we will fill the vector's capacity.
         // This causes the entire underlying buffer to initially be marked as accessible.
-        _ASAN_ANNOTATE(*this, static_cast<size_type>(_My_data._Myend - _Myfirst) + 1);
+        _ASAN_ANNOTATE(*this, ~size_type{0});
 
         // For one-at-back, provide strong guarantee.
         // Otherwise, provide basic guarantee (despite N4659 26.3.11.5 [vector.modifiers]/1).
@@ -1247,7 +1249,7 @@ private:
 
         // Pessimistically assume that we will fill the vector's capacity.
         // This causes the entire underlying buffer to initially be marked as accessible.
-        _ASAN_ANNOTATE(*this, static_cast<size_type>(_My_data._Myend - _Myfirst) + 1);
+        _ASAN_ANNOTATE(*this, ~size_type{0});
 
         _My_data._Orphan_all();
 
