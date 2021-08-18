@@ -9,6 +9,10 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#ifndef __cplusplus
+#error <stdatomic.h> is not yet supported when compiling as C, but this is planned for a future release.
+#endif // __cplusplus
+
 #ifdef _M_CEE_PURE
 #error <stdatomic.h> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
