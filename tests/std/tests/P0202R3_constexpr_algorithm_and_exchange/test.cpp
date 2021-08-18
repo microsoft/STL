@@ -566,6 +566,7 @@ constexpr bool test() {
     test_is_heap();
     test_make_heap_and_sort_heap();
     test_pop_heap_and_push_heap();
+    test_permutations();
 
     return true;
 }
