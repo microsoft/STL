@@ -10,7 +10,7 @@
 
 using namespace std;
 
-extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end);
+extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end) noexcept;
 
 struct throw_on_construction {
     throw_on_construction() {
@@ -50,10 +50,10 @@ public:
         using iterator_category = input_iterator_tag;
         using value_type        = T;
         using difference_type   = ptrdiff_t;
-        using pointer           = T*;
+        using pointer           = void;
         using reference         = T&;
 
-        iterator(T* start) : curr(start) {}
+        explicit iterator(T* start) : curr(start) {}
 
         reference operator*() const {
             return *curr;
@@ -692,6 +692,22 @@ void test_resize_throw() {
     }
 }
 
+void test_insert_n_throw() {
+    {
+        vector<throw_on_copy> v;
+
+        v.reserve(1);
+        v.push_back(throw_on_copy());
+
+        try {
+            v.resize(2, throw_on_copy());
+            assert(0);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+}
+
 template <class Alloc>
 void run_tests() {
     test_push_pop<Alloc>();
@@ -733,4 +749,5 @@ int main() {
     test_insert_throw();
     test_emplace_throw();
     test_resize_throw();
+    test_insert_n_throw();
 }

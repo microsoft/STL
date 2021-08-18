@@ -470,14 +470,18 @@ public:
 
         const auto& _My_data          = _Target_vec._Mypair._Myval2;
         const _Value_type* _Raw_first = _Unfancy_maybe_null(_My_data._Myfirst);
-        const _Value_type* _Raw_last  = _Unfancy_maybe_null(_My_data._Mylast);
-        const _Value_type* _Raw_end   = _Unfancy_maybe_null(_My_data._Myend);
+
+        if (!_Raw_first) {
+            // The vector is empty. We'll extend the accessible range in the destructor.
+            return;
+        }
+
+        const _Value_type* _Raw_last = _Unfancy(_My_data._Mylast);
+        const _Value_type* _Raw_end  = _Unfancy(_My_data._Myend);
 
         if (_New_size > static_cast<_Size_type>(_Raw_end - _Raw_first)) {
-            if (_Raw_end != _Raw_first) {
-                // New size is larger than current capacity; assume we're allocating a new block.
-                __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Raw_last, _Raw_end);
-            }
+            // New size is larger than current capacity; assume we're allocating a new block.
+            __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Raw_last, _Raw_end);
             return;
         }
 
@@ -486,7 +490,7 @@ public:
         _Asan_last                   = _Raw_last;
 
         if (_Asan_last < _New_last) {
-            // If the new size is larger than the current size extend the legal range of the container.
+            // If the new size is larger than the current size extend the accessible range of the container.
             __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Asan_last, _New_last);
             _Asan_last = _New_last;
         }
@@ -500,17 +504,18 @@ public:
 #endif // _HAS_CXX20
 
         const auto& _My_data          = _Target_vec._Mypair._Myval2;
-        const _Value_type* _Raw_first = _Unfancy(_My_data._Myfirst);
-        const _Value_type* _Raw_last  = _Unfancy(_My_data._Mylast);
-        const _Value_type* _Raw_end   = _Unfancy(_My_data._Myend);
+        const _Value_type* _Raw_first = _Unfancy_maybe_null(_My_data._Myfirst);
 
         if (!_Raw_first) {
             // The operation did not allocate any memory. Do nothing.
             return;
         }
 
+        const _Value_type* _Raw_last = _Unfancy(_My_data._Mylast);
+        const _Value_type* _Raw_end  = _Unfancy(_My_data._Myend);
+
         if (!_Asan_last) {
-            // New size was larger than current capacity; pessimisticly re-annotate the whole illegal range of the
+            // New size was larger than current capacity; pessimisticly re-annotate the whole inaccessible range of the
             // container.
             __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Raw_end, _Raw_last);
             return;
@@ -539,7 +544,7 @@ private:
         const _Size_type _Capacity    = static_cast<_Size_type>(_Raw_end - _Raw_first);
 
         if (_Capacity * sizeof(_Value_type) >= 8) {
-            // We are guaranteed to have sufficient space to find a legal aligned address.
+            // We are guaranteed to have sufficient space to find an aligned address.
             return reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(_Raw_first) + 7) & ~7);
         }
 
@@ -571,38 +576,35 @@ public:
 
         const auto& _My_data          = _Target_vec._Mypair._Myval2;
         const _Value_type* _Raw_first = _Unfancy_maybe_null(_My_data._Myfirst);
-        const _Value_type* _Raw_last  = _Unfancy_maybe_null(_My_data._Mylast);
-        const _Value_type* _Raw_end   = _Unfancy_maybe_null(_My_data._Myend);
 
         if (!_Raw_first) {
             // The operation did not allocate any memory. Do nothing.
             return;
         }
 
+        const _Value_type* _Raw_last = _Unfancy(_My_data._Mylast);
+        const _Value_type* _Raw_end  = _Unfancy(_My_data._Myend);
+
         _Aligned_first = _Get_aligned_start();
         if (!_Aligned_first) {
-            // There is no aligned address within the underlying buffer. The whole region is legal.
+            // There is no aligned address within the underlying buffer. Allow access to the while region.
             _Asan_last = _Raw_end;
             return;
         }
 
-        // New size is less than current capacity; assume we're reusing the same block.
         const void* _New_last = _Raw_first + _New_size;
         _New_last             = _New_last < _Aligned_first ? _Aligned_first : _New_last;
         _Asan_last            = _Raw_last < _Aligned_first ? _Aligned_first : _Raw_last;
 
         if (_New_size > static_cast<_Size_type>(_Raw_end - _Raw_first)) {
             // New size is larger than current capacity; assume we're allocating a new block.
-            if (_Raw_end != _Raw_first) {
-                __sanitizer_annotate_contiguous_container(_Aligned_first, _Raw_end, _Asan_last, _Raw_end);
-            }
-
+            __sanitizer_annotate_contiguous_container(_Aligned_first, _Raw_end, _Asan_last, _Raw_end);
             _Asan_last = nullptr;
             return;
         }
 
         if (_Asan_last < _New_last) {
-            // If the new size is larger than the current size extend the legal range of the container.
+            // If the new size is larger than the current size extend the accessible range of the container.
             __sanitizer_annotate_contiguous_container(_Aligned_first, _Raw_end, _Asan_last, _New_last);
             _Asan_last = _New_last;
         }
@@ -620,7 +622,7 @@ public:
         const _Value_type* _Raw_end  = _Unfancy(_My_data._Myend);
 
         if (!_Asan_last) {
-            // New size was larger than current capacity; pessimisticly re-annotate the whole illegal range of the
+            // New size was larger than current capacity; pessimisticly re-annotate the whole inaccessible range of the
             // container.
             _Aligned_first = _Get_aligned_start();
             if (_Aligned_first) {
@@ -1052,7 +1054,7 @@ private:
         const auto _Oldsize  = static_cast<size_type>(_Mylast - _Myfirst);
 
         // Pessimistically assume that we will fill the vector's capacity.
-        // This causes the entire underlying buffer to initially be marked as legal.
+        // This causes the entire underlying buffer to initially be marked as accessible.
         _ASAN_ANNOTATE(*this, static_cast<size_type>(_My_data._Myend - _Myfirst) + 1);
 
         // For one-at-back, provide strong guarantee.
@@ -1244,7 +1246,7 @@ private:
         pointer& _Mylast  = _My_data._Mylast;
 
         // Pessimistically assume that we will fill the vector's capacity.
-        // This causes the entire underlying buffer to initially be marked as legal.
+        // This causes the entire underlying buffer to initially be marked as accessible.
         _ASAN_ANNOTATE(*this, static_cast<size_type>(_My_data._Myend - _Myfirst) + 1);
 
         _My_data._Orphan_all();
@@ -1267,7 +1269,7 @@ private:
         // Append.
         for (; _First != _Last; ++_First) {
             _Emplace_one_at_back(
-                *_First); // perfromance note: _Emplace_one_at_back()'s strong guarantee is unnecessary here
+                *_First); // performance note: _Emplace_one_at_back()'s strong guarantee is unnecessary here
         }
     }
 
