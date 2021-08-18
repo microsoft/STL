@@ -506,14 +506,13 @@ constexpr void test_permutations() {
     assert(equal(begin(buff), end(buff), begin(expected[0]), end(expected[0])));
 
     assert(!prev_permutation(begin(buff), end(buff)));
-    cursor = 23;
 
     do {
-        assert(equal(begin(buff), end(buff), begin(expected[cursor]), end(expected[cursor])));
         --cursor;
+        assert(equal(begin(buff), end(buff), begin(expected[cursor]), end(expected[cursor])));
     } while (prev_permutation(begin(buff), end(buff)));
 
-    assert(cursor == static_cast<size_t>(-1));
+    assert(cursor == 0);
     assert(equal(begin(buff), end(buff), begin(expected[23]), end(expected[23])));
 }
 
