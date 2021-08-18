@@ -515,7 +515,7 @@ public:
         const _Value_type* _Raw_end  = _Unfancy(_My_data._Myend);
 
         if (!_Asan_last) {
-            // New size was larger than current capacity; pessimisticly re-annotate the whole inaccessible range of the
+            // New size is larger than prior capacity; pessimistically re-annotate the whole accessible range of the
             // container.
             __sanitizer_annotate_contiguous_container(_Raw_first, _Raw_end, _Raw_end, _Raw_last);
             return;
@@ -622,7 +622,7 @@ public:
         const _Value_type* _Raw_end  = _Unfancy(_My_data._Myend);
 
         if (!_Asan_last) {
-            // New size was larger than current capacity; pessimisticly re-annotate the whole inaccessible range of the
+            // New size is larger than prior capacity; pessimistically re-annotate the whole accessible range of the
             // container.
             _Aligned_first = _Get_aligned_start();
             if (_Aligned_first) {

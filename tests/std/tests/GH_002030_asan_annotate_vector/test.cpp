@@ -442,7 +442,6 @@ void test_push_back_throw() {
 }
 
 void test_emplace_back_throw() {
-
     {
         vector<throw_on_construction> v;
         v.reserve(1);
