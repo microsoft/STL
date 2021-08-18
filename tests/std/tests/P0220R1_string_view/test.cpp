@@ -74,6 +74,19 @@ const evil_conversion_to_string_view_lvalue_only convert_lvalue_only{};
 static_assert(is_trivially_copyable_v<string_view>);
 static_assert(is_trivially_copyable_v<wstring_view>);
 
+// Similar non-standard guarantees
+static_assert(is_trivially_move_constructible_v<string_view>);
+static_assert(is_trivially_copy_constructible_v<string_view>);
+static_assert(is_trivially_move_assignable_v<string_view>);
+static_assert(is_trivially_copy_assignable_v<string_view>);
+static_assert(is_trivially_destructible_v<string_view>);
+
+static_assert(is_trivially_move_constructible_v<wstring_view>);
+static_assert(is_trivially_copy_constructible_v<wstring_view>);
+static_assert(is_trivially_move_assignable_v<wstring_view>);
+static_assert(is_trivially_copy_assignable_v<wstring_view>);
+static_assert(is_trivially_destructible_v<wstring_view>);
+
 // noexcept assertions:
 // (functions that explicitly throw have their throws tested and therefore have no static_asserts)
 static_assert(noexcept(string_view{}), "default constructor not noexcept");
@@ -1243,18 +1256,6 @@ static_assert(!is_constructible_v<string_view, nullptr_t>, "constructing string_
 static_assert(!is_constructible_v<string, nullptr_t>, "constructing string from nullptr_t is prohibited");
 static_assert(!is_assignable_v<string&, nullptr_t>, "assigning nullptr_t to string is prohibited");
 #endif // _HAS_CXX23
-
-static_assert(is_trivially_move_constructible_v<string_view>);
-static_assert(is_trivially_copy_constructible_v<string_view>);
-static_assert(is_trivially_move_assignable_v<string_view>);
-static_assert(is_trivially_copy_assignable_v<string_view>);
-static_assert(is_trivially_destructible_v<string_view>);
-
-static_assert(is_trivially_move_constructible_v<wstring_view>);
-static_assert(is_trivially_copy_constructible_v<wstring_view>);
-static_assert(is_trivially_move_assignable_v<wstring_view>);
-static_assert(is_trivially_copy_assignable_v<wstring_view>);
-static_assert(is_trivially_destructible_v<wstring_view>);
 
 int main() {
     test_case_default_constructor();
