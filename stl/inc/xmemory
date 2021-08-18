@@ -949,19 +949,15 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _L
 }
 
 template <class _Size_type>
-_NODISCARD constexpr _Size_type _Convert_size(const size_t _Len) noexcept {
+_NODISCARD constexpr _Size_type _Convert_size(const size_t _Len) noexcept(is_same_v<_Size_type, size_t>) {
     // convert size_t to _Size_type, avoiding truncation
-    if (_Len > (numeric_limits<_Size_type>::max) ()) {
-        _Xlength_error("size_t too long for _Size_type");
+    if constexpr (!is_same_v<_Size_type, size_t>) {
+        if (_Len > (numeric_limits<_Size_type>::max) ()) {
+            _Xlength_error("size_t too long for _Size_type");
+        }
     }
 
     return static_cast<_Size_type>(_Len);
-}
-
-template <>
-_NODISCARD constexpr size_t _Convert_size<size_t>(const size_t _Len) noexcept {
-    // convert size_t to size_t, unchanged
-    return _Len;
 }
 
 template <class _Alloc>
