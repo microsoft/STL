@@ -222,14 +222,12 @@ protected:
 #pragma warning(pop)
 
     pos_type seekoff(off_type, ios_base::seekdir,
-        ios_base::openmode = static_cast<ios_base::openmode>(
-            ios_base::in | ios_base::out)) override { // change position by _Off
+        ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) override {
         return pos_type(-1); // always fail
     }
 
-    pos_type seekpos(pos_type,
-        ios_base::openmode = static_cast<ios_base::openmode>(
-            ios_base::in | ios_base::out)) override { // change position to _Pos
+    pos_type seekpos(
+        pos_type, ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) override {
         return pos_type(-1); // always fail
     }
 
