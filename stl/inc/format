@@ -168,12 +168,16 @@ struct _Unicode_Property_Data {
     uint32_t _Lower_bounds[_Num_ranges];
     uint16_t _Props_And_Size[_Num_ranges];
     _NODISCARD constexpr _Value_enum _Get_property_for_codepoint(uint32_t _Code_point) const noexcept {
-        ptrdiff_t _Upper_idx = _STD upper_bound(_Lower_bounds, _STD end(_Lower_bounds), _Code_point) - _Lower_bounds;
-        if (_Upper_idx == 0) {
-            // the first lower bound was greater than the target element, it can't be in the set;
-            return static_cast<_Value_enum>((numeric_limits<uint8_t>::max) ());
+        ptrdiff_t _Upper_idx = _STD lower_bound(_Lower_bounds, _STD end(_Lower_bounds), _Code_point) - _Lower_bounds;
+        if (_Upper_idx == _Num_ranges) {
+            --_Upper_idx;
+        } else if (_Lower_bounds[_Upper_idx] != _Code_point) {
+            if (_Upper_idx != 0) {
+                --_Upper_idx;
+            } else {
+                return static_cast<_Value_enum>((numeric_limits<uint8_t>::max) ());
+            }
         }
-        --_Upper_idx;
         uint32_t _Lower_bound = _Lower_bounds[_Upper_idx];
         uint16_t _Data        = _Props_And_Size[_Upper_idx];
         uint16_t _Size        = static_cast<uint16_t>(_Data & 0x0FFF);
