@@ -126,16 +126,27 @@ constexpr bool test_optional() {
     }
 
     { // construction from optional with convertible types
-        optional<T> constructed{42};
         optional<int> input{42};
 
-        constructed = input;
-        assert(constructed.has_value());
-        assert(*constructed == 42);
+        optional<T> copy_constructed{input};
+        assert(copy_constructed.has_value());
+        assert(*copy_constructed == 42);
 
-        constructed = optional<int>{3};
-        assert(constructed.has_value());
-        assert(*constructed == 3);
+        optional<T> move_constructed{optional<int>{3}};
+        assert(move_constructed.has_value());
+        assert(*move_constructed == 3);
+
+        optional<T> copy_assigned;
+        assert(!copy_assigned.has_value());
+        copy_assigned = input;
+        assert(copy_assigned.has_value());
+        assert(*copy_assigned == 42);
+
+        optional<T> move_assigned;
+        assert(!move_assigned.has_value());
+        move_assigned = optional<int>{3};
+        assert(move_assigned.has_value());
+        assert(*move_assigned == 3);
     }
 
     { // emplace
