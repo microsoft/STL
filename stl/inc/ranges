@@ -652,7 +652,7 @@ namespace ranges {
         /* [[no_unique_address]] */ _Ty _Value{};
     };
 
-    template <_Destructible_object _Ty, bool _Needs_operator_bool = false>
+    template <_Destructible_object _Ty, bool _Needs_operator_bool = true>
     class _Non_propagating_cache { // a simplified optional that resets on copy / move
     public:
         constexpr _Non_propagating_cache() noexcept {}
@@ -3015,7 +3015,7 @@ namespace ranges {
         };
 
     protected:
-        /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper> _Inner{};
+        /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper, false> _Inner{};
     };
 
     // clang-format off
