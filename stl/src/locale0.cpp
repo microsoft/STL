@@ -7,10 +7,8 @@
 #include <internal_shared.h>
 #include <xfacet>
 
-// This must be as small as possible, because its contents are
-// injected into the msvcprt.lib and msvcprtd.lib import libraries.
-// Do not include or define anything else here.
-// In particular, basic_string must not be included here.
+// This file is compiled into import library.
+// Limitations apply to what can be included here; see import_library_modules.txt
 
 // This should probably go to a compiler section just after the locks - unfortunately we have per-appdomain
 // and per-process variables to initialize

@@ -3,10 +3,8 @@
 
 #include <synchapi.h>
 
-// This must be as small as possible, because its contents are
-// injected into the msvcprt.lib and msvcprtd.lib import libraries.
-// Do not include or define anything else here.
-// In particular, basic_string must not be included here.
+// This file is compiled into import library.
+// Limitations apply to what can be included here; see import_library_modules.txt
 
 // these declarations must be in sync with those in xthreads.h
 
