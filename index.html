@@ -231,7 +231,8 @@
             timeframe_github,
             timeframe_2021,
         ];
-        let timeframe_idx = 1;
+        const timeframe_github_idx = 1;
+        let timeframe_idx = timeframe_github_idx;
 
         const common_options = {
             animation: {
@@ -447,17 +448,25 @@
                 options: merge_options,
             });
 
-            function update_timeframe() {
-                document.getElementById('moreHistory').disabled = timeframe_idx === 0;
-                document.getElementById('lessHistory').disabled = timeframe_idx === timeframes.length - 1;
-
-                const xAxis = window.status_chart.options.scales.x;
-                const new_timeframe = timeframes[timeframe_idx];
+            function update_chart_timeframe(chart, idx) {
+                const xAxis = chart.options.scales.x;
+                const new_timeframe = timeframes[idx];
 
                 xAxis.min = new_timeframe.min;
                 xAxis.time.unit = new_timeframe.time.unit;
 
-                window.status_chart.update();
+                chart.update();
+            }
+
+            function update_all_timeframes() {
+                document.getElementById('moreHistory').disabled = timeframe_idx === 0;
+                document.getElementById('lessHistory').disabled = timeframe_idx === timeframes.length - 1;
+
+                const clamped_idx = Math.max(timeframe_idx, timeframe_github_idx);
+
+                update_chart_timeframe(window.status_chart, timeframe_idx);
+                update_chart_timeframe(window.age_chart, clamped_idx);
+                update_chart_timeframe(window.merge_chart, clamped_idx);
             }
 
             document.getElementById('moreHistory').addEventListener('click', function () {
@@ -465,7 +474,7 @@
                     --timeframe_idx;
                 }
 
-                update_timeframe();
+                update_all_timeframes();
             });
 
             document.getElementById('lessHistory').addEventListener('click', function () {
@@ -473,7 +482,7 @@
                     ++timeframe_idx;
                 }
 
-                update_timeframe();
+                update_all_timeframes();
             });
 
             for (const field of ['cxx20', 'cxx23', 'lwg', 'pr', 'bug', 'issue', 'avg_age', 'avg_wait', 'sum_age',
