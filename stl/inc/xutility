@@ -5306,66 +5306,66 @@ enum class _TrimResult : unsigned char { _Continue, _Break, _ReturnFalse, _Retur
 
 template <class _BidIt1, class _BidIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _TrimResult _Trim_equal(
-    _BidIt1& _First1, _BidIt1& _Last1, _BidIt2& _First2, _BidIt2& _Last2, _Pr _Pred) {
-    _STL_INTERNAL_CHECK(_First1 != _Last1);
-    _STL_INTERNAL_CHECK(_STD distance(_First1, _Last1) == _STD distance(_First2, _Last2));
+    _BidIt1& _First1, _BidIt1& _Back1, _BidIt2& _First2, _BidIt2& _Back2, _Pr _Pred) {
+    _STL_INTERNAL_CHECK(_First1 != _Back1);
+    _STL_INTERNAL_CHECK(_STD distance(_First1, _Back1) == _STD distance(_First2, _Back2));
     if (_Pred(*_First1, *_First2)) {
         do {
             ++_First1;
             ++_First2;
-            if (_First1 == _Last1) {
+            if (_First1 == _Back1) {
                 // only one element is left
                 return _Pred(*_First1, *_First2) ? _TrimResult::_ReturnTrue : _TrimResult::_ReturnFalse;
             }
         } while (_Pred(*_First1, *_First2));
     } else {
-        if (!_Pred(*_Last1, *_Last2)) {
+        if (!_Pred(*_Back1, *_Back2)) {
             // nothing to trim, break
             return _TrimResult::_Break;
         }
-        --_Last1;
-        --_Last2;
+        --_Back1;
+        --_Back2;
     }
 
-    while (_Pred(*_Last1, *_Last2)) {
-        --_Last1;
-        --_Last2;
+    while (_Pred(*_Back1, *_Back2)) {
+        --_Back1;
+        --_Back2;
     }
 
     // if only one element is left return false, otherwise continue trimming
-    return _First1 == _Last1 ? _TrimResult::_ReturnFalse : _TrimResult::_Continue;
+    return _First1 == _Back1 ? _TrimResult::_ReturnFalse : _TrimResult::_Continue;
 }
 
 template <class _BidIt1, class _BidIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _TrimResult _Trim_reversed(
-    _BidIt1& _First1, _BidIt1& _Last1, _BidIt2& _First2, _BidIt2& _Last2, _Pr _Pred) {
-    _STL_INTERNAL_CHECK(_First1 != _Last1);
-    _STL_INTERNAL_CHECK(_STD distance(_First1, _Last1) == _STD distance(_First2, _Last2));
-    if (_Pred(*_First1, *_Last2)) {
+    _BidIt1& _First1, _BidIt1& _Back1, _BidIt2& _First2, _BidIt2& _Back2, _Pr _Pred) {
+    _STL_INTERNAL_CHECK(_First1 != _Back1);
+    _STL_INTERNAL_CHECK(_STD distance(_First1, _Back1) == _STD distance(_First2, _Back2));
+    if (_Pred(*_First1, *_Back2)) {
         do {
             ++_First1;
-            --_Last2;
-            if (_First1 == _Last1) {
+            --_Back2;
+            if (_First1 == _Back1) {
                 // only one element is left
                 return _Pred(*_First1, *_First2) ? _TrimResult::_ReturnTrue : _TrimResult::_ReturnFalse;
             }
-        } while (_Pred(*_First1, *_Last2));
+        } while (_Pred(*_First1, *_Back2));
     } else {
-        if (!_Pred(*_Last1, *_First2)) {
+        if (!_Pred(*_Back1, *_First2)) {
             // nothing to trim, break
             return _TrimResult::_Break;
         }
-        --_Last1;
+        --_Back1;
         ++_First2;
     }
 
-    while (_Pred(*_Last1, *_First2)) {
-        --_Last1;
+    while (_Pred(*_Back1, *_First2)) {
+        --_Back1;
         ++_First2;
     }
 
     // if only one element is left return false, otherwise continue trimming
-    return _First1 == _Last1 ? _TrimResult::_ReturnFalse : _TrimResult::_Continue;
+    return _First1 == _Back1 ? _TrimResult::_ReturnFalse : _TrimResult::_Continue;
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
