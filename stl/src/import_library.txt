@@ -24,4 +24,4 @@ The caveats of this technic are:
    cannot use anything that depends on _CONTAINER_DEBUG_LEVEL or _ITERATOR_DEBUG_LEVEL value.
 
 For these reasons, especially the last one, there should be a strict control
-of what is added to the import library. In particular, basic_string must not be there.
+of what is used by the import library. In particular, basic_string must not be there.
