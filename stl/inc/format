@@ -2793,6 +2793,20 @@ template <_Format_supported_charT _CharT, class _Traits>
 struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
 
+template <class _CharT, class... _Args>
+struct _Basic_format_string {
+    basic_string_view<_CharT> _Str;
+
+    template <convertible_to<basic_string_view<_CharT>> _Ty>
+    consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {}
+};
+
+template <class... _Args>
+using _Fmt_string = _Basic_format_string<char, type_identity_t<_Args>...>;
+
+template <class... _Args>
+using _Fmt_wstring = _Basic_format_string<wchar_t, type_identity_t<_Args>...>;
+
 using format_args  = basic_format_args<format_context>;
 using wformat_args = basic_format_args<wformat_context>;
 
@@ -2863,23 +2877,23 @@ _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const string_view _Fmt, const _Types&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_format_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Fmt._Str, _STD make_format_args(_Args...));
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const wstring_view _Fmt, const _Types&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_wformat_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Fmt._Str, _STD make_wformat_args(_Args...));
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_format_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt._Str, _STD make_format_args(_Args...));
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_wformat_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt._Str, _STD make_wformat_args(_Args...));
 }
 
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1433873
@@ -2925,23 +2939,23 @@ wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args 
 #undef _TEMPLATE_INT_0_NODISCARD // TRANSITION, VSO-1433873
 
 template <class... _Types>
-_NODISCARD string format(const string_view _Fmt, const _Types&... _Args) {
-    return _STD vformat(_Fmt, _STD make_format_args(_Args...));
+_NODISCARD string format(const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Fmt._Str, _STD make_format_args(_Args...));
 }
 
 template <class... _Types>
-_NODISCARD wstring format(const wstring_view _Fmt, const _Types&... _Args) {
-    return _STD vformat(_Fmt, _STD make_wformat_args(_Args...));
+_NODISCARD wstring format(const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Fmt._Str, _STD make_wformat_args(_Args...));
 }
 
 template <class... _Types>
-_NODISCARD string format(const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
-    return _STD vformat(_Loc, _Fmt, _STD make_format_args(_Args...));
+_NODISCARD string format(const locale& _Loc, const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Loc, _Fmt._Str, _STD make_format_args(_Args...));
 }
 
 template <class... _Types>
-_NODISCARD wstring format(const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
-    return _STD vformat(_Loc, _Fmt, _STD make_wformat_args(_Args...));
+_NODISCARD wstring format(const locale& _Loc, const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Loc, _Fmt._Str, _STD make_wformat_args(_Args...));
 }
 
 template <class _OutputIt>
