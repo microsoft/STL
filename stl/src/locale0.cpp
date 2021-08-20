@@ -8,7 +8,7 @@
 #include <xfacet>
 
 // This file is compiled into import library.
-// Limitations apply to what can be included here; see import_library_modules.txt
+// Limitations apply to what can be included here; see import_library.txt
 
 // This should probably go to a compiler section just after the locks - unfortunately we have per-appdomain
 // and per-process variables to initialize

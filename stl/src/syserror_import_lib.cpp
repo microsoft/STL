@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // This file is compiled into import library.
-// Limitations apply to what can be included here; see import_library_modules.txt
+// Limitations apply to what can be included here; see import_library.txt
 
 #include <__msvc_system_error_abi.hpp>
 

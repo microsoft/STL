@@ -4,7 +4,7 @@
 #include <synchapi.h>
 
 // This file is compiled into import library.
-// Limitations apply to what can be included here; see import_library_modules.txt
+// Limitations apply to what can be included here; see import_library.txt
 
 // these declarations must be in sync with those in xthreads.h
 
