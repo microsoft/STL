@@ -8,6 +8,7 @@
 #define _UTILITY_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <initializer_list>
 #include <type_traits>
 #include <xstddef>
 

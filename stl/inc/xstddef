@@ -13,7 +13,6 @@
 #if _STL_COMPILER_PREPROCESSOR
 #include <cstddef>
 #include <cstdlib>
-#include <initializer_list>
 #include <xtr1common>
 
 #pragma pack(push, _CRT_PACKING)
