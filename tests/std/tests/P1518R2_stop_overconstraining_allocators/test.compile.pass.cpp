@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <forward_list>
+#include <functional>
 #include <list>
 #include <map>
 #include <memory_resource>
@@ -60,7 +61,7 @@ void test_vector_bool(pmr::vector<bool>& px) {
 
 void test_map(pmr::map<int, int>& px) {
     [[maybe_unused]] auto x = SfinaeTester<map>::test(px, &mr);
-    [[maybe_unused]] auto y = SfinaeTester<map>::test(px, &mr);
+    [[maybe_unused]] auto y = SfinaeTester<map>::test(move(px), &mr);
 }
 
 void test_multimap(pmr::multimap<int, int>& px) {
@@ -116,6 +117,11 @@ void test_stack1(stack<int, pmr::vector<int>>& px) {
 void test_priority_queue2(less<int> comp, pmr::vector<int>& pc) {
     [[maybe_unused]] auto x = SfinaeTester<priority_queue>::test(comp, pc, &mr);
     [[maybe_unused]] auto y = SfinaeTester<priority_queue>::test(comp, move(pc), &mr);
+}
+
+void test_priority_queue3(int* begin, int* end, less<int> comp, pmr::vector<int>& pc) {
+    [[maybe_unused]] auto x = SfinaeTester<priority_queue>::test(begin, end, comp, pc, &mr);
+    [[maybe_unused]] auto y = SfinaeTester<priority_queue>::test(begin, end, comp, move(pc), &mr);
 }
 
 void test_queue2(pmr::deque<int>& pc) {
