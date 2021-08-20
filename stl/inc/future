@@ -35,8 +35,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma warning(disable : 4355) // 'this' : used in base member initializer list
 #pragma warning(disable : 5204) // 'type-name': class has virtual functions, but its trivial destructor is not virtual;
                                 // instances of objects derived from this class may not be destructed correctly
-#pragma warning(disable : 5220) // 'name': a non-static data member with a volatile qualified type no longer implies 
-                                // that compiler generated copy/move constructors and copy/move assignment operators are not trivial
+#pragma warning(disable : 5220) // 'name': a non-static data member with a volatile qualified type no longer implies
+                                // that compiler generated copy/move constructors and copy/move assignment operators are
+                                // not trivial
 
 #include <ppltasks.h>
 #pragma warning(pop)
