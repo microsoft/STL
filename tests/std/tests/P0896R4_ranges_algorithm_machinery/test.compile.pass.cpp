@@ -938,9 +938,12 @@ namespace gh_1089 {
 
     void test() {
         {
+#pragma warning(push)
+#pragma warning(disable : 5204) //  'Base': class has virtual functions, but its trivial destructor is not virtual;
             struct Base {
                 virtual int purr() = 0;
             };
+#pragma warning(pop)
 
             struct Derived1 : virtual Base {
                 int purr() override {
@@ -970,6 +973,7 @@ namespace gh_1089 {
 
             using PMD_Cat = int Cat::*;
             // Quantum effects: we must observe the size before defining Cat or it will become smaller.
+#pragma warning(suppress : 5243) // using incomplete class 'gh_1089::test::Cat' can cause potential one definition rule violation due to ABI limitation
             STATIC_ASSERT(sizeof(PMD_Cat) > sizeof(void*));
 
             struct Cat {

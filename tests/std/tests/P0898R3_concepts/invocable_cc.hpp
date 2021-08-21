@@ -5,6 +5,8 @@
 // convention for member functions) to be defined before including; undefines all three.
 
 void NAME() {
+#pragma warning(push)
+#pragma warning(disable : 4822) // local class member function does not have a body
     struct S {
         using FreeFunc = short(CALLCONV*)(long);
         operator FreeFunc() const;
@@ -13,6 +15,7 @@ void NAME() {
         double volatile& MCALLCONV operator()(char, int&) volatile;
         double const volatile& MCALLCONV operator()(char, int&) const volatile;
     };
+#pragma warning(pop)
 
     {
         using Fn  = int (MCALLCONV tag::*)(int);

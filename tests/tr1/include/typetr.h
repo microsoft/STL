@@ -136,10 +136,15 @@ struct is_bool_wrapper<STD true_type> { // true_type is a boolean wrapper
         T_NOBASE(trait, const volatile XX, b); \
     } while (0)
 
+
 // TYPES
+
+#pragma warning(push)
+#pragma warning(disable : 5204) //  'A': class has virtual functions, but its trivial destructor is not virtual;
 struct A { // abstract class
     virtual void f() = 0;
 };
+#pragma warning(pop)
 
 struct B { // dummy class for member pointers
     virtual ~B() noexcept {}
