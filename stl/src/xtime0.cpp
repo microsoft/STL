@@ -6,8 +6,6 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
-#include <algorithm>
-#include <chrono>
 #include <xtime0.h>
 
 #include "awint.hpp"
@@ -24,6 +22,23 @@ _NODISCARD static constexpr FILETIME _File_time_from_ticks(const long long _Tick
         .dwLowDateTime  = static_cast<DWORD>(_Ticks),
         .dwHighDateTime = static_cast<DWORD>(_Ticks >> 32),
     };
+}
+
+_NODISCARD static constexpr bool _Is_leap_year(const WORD _Year) noexcept {
+    return _Year % 4 == 0 && (_Year % 100 != 0 || _Year % 400 == 0);
+}
+
+_NODISCARD static constexpr WORD _Days_of_month(const WORD _Year, const WORD _Month) noexcept {
+    if (_Month == 2) {
+        return _Is_leap_year(_Year) ? WORD{29} : WORD{28};
+    }
+
+    //        _Month        | _Month >> 3 | _Month ^ (_Month >> 3) |    Result
+    // 0b00xx0 (4, 6)       |   0b00000   |        0b00xx0         | 0b11110 (30)
+    // 0b00xx1 (1, 3, 5, 7) |   0b00000   |        0b00xx1         | 0b11111 (31)
+    // 0b01xx0 (8, 10, 12)  |   0b00001   |        0b01xx1         | 0b11111 (31)
+    // 0b01xx1 (9, 11)      |   0b00001   |        0b01xx0         | 0b11110 (30)
+    return static_cast<WORD>((_Month ^ (_Month >> 3)) | WORD{30});
 }
 
 _EXTERN_C
@@ -47,9 +62,9 @@ _NODISCARD bool __stdcall __std_win_file_time_to_system_time(
 
 _END_EXTERN_C
 
+// increases the STSTEMTIME by one clock minute (not necessarily 60 seconds because of leap seconds)
+// _St.wDayOfWeek is ignored and is not updated
 static constexpr void _Increase_minute(SYSTEMTIME& _St) noexcept {
-    using namespace std::chrono;
-
     ++_St.wMinute;
     if (_St.wMinute < 60) {
         return;
@@ -62,12 +77,20 @@ static constexpr void _Increase_minute(SYSTEMTIME& _St) noexcept {
     }
 
     _St.wHour -= 24;
-    const sys_days _Sys_d     = year{_St.wYear} / month{_St.wMonth} / day{_St.wDay + 1u};
-    _St.wDayOfWeek            = static_cast<WORD>(weekday{_Sys_d}.c_encoding());
-    const year_month_day _Ymd = _Sys_d;
-    _St.wDay                  = static_cast<WORD>(static_cast<unsigned int>(_Ymd.day()));
-    _St.wMonth                = static_cast<WORD>(static_cast<unsigned int>(_Ymd.month()));
-    _St.wYear                 = static_cast<WORD>(static_cast<int>(_Ymd.year()));
+    const WORD _Days = _Days_of_month(_St.wYear, _St.wMonth);
+    ++_St.wDay;
+    if (_St.wDay <= _Days) {
+        return;
+    }
+
+    _St.wDay -= _Days;
+    ++_St.wMonth;
+    if (_St.wMonth <= 12) {
+        return;
+    }
+
+    _St.wMonth -= 12;
+    ++_St.wYear;
 }
 
 static constexpr int _Ticks_per_sec = 10'000'000;
