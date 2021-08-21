@@ -26,7 +26,8 @@ void test_dll() {
     HMODULE hLibrary = LoadLibraryExW(L"testdll.dll", nullptr, 0);
     assert(hLibrary != nullptr);
     typedef void (*TheFuncProc)();
-    TheFuncProc pFunc = (TheFuncProc) GetProcAddress(hLibrary, "DllTest");
+#pragma warning(suppress : 4191) // 'type cast': unsafe conversion from 'FARPROC' to 'TheFuncProc'
+    TheFuncProc pFunc = reinterpret_cast<TheFuncProc>(GetProcAddress(hLibrary, "DllTest"));
     assert(pFunc != nullptr);
     pFunc();
     FreeLibrary(hLibrary);
