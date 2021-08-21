@@ -293,7 +293,7 @@ void test_file_clock_to_utc(const leap_second& leap, seconds offset) {
         offset = 27s;
     }
 
-    offset -= duration_cast<seconds>(file_clock::duration{filesystem::__std_fs_file_time_epoch_adjustment});
+    offset -= duration_cast<seconds>(file_clock::duration{__std_fs_file_time_epoch_adjustment});
 
     auto u = file_clock::to_utc(t);
     assert(u.time_since_epoch() - t.time_since_epoch() == offset);

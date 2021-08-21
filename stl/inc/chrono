@@ -736,9 +736,7 @@ namespace chrono {
         }
 
         _NODISCARD static time_point now() noexcept { // get current time
-            constexpr long long __std_fs_file_time_epoch_adjustment = 0x19DB1DED53E8000LL; // TRANSITION, ABI
-
-            const duration _File_time{_Xtime_get_ticks() + __std_fs_file_time_epoch_adjustment};
+            const duration _File_time{_Xtime_get_ticks() + __std_fs_file_time_epoch_adjustment}; // TRANSITION, ABI
             const auto _File_seconds = _CHRONO duration_cast<seconds>(_File_time);
 
             _Utc_components<duration> _Utc;
@@ -3448,8 +3446,6 @@ namespace chrono {
 
 #if _HAS_CXX17
 namespace filesystem {
-    inline constexpr long long __std_fs_file_time_epoch_adjustment = 0x19DB1DED53E8000LL; // TRANSITION, ABI
-
     struct _File_time_clock { // Implementation of trivial-clock
         using rep                       = long long;
         using period                    = chrono::system_clock::period;
@@ -5289,7 +5285,7 @@ namespace chrono {
         _Duration _Dur;
         if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_File_time)) {
             constexpr auto _File_clock_adj{_CHRONO duration_cast<_Duration>(
-                filesystem::_File_time_clock::duration{filesystem::__std_fs_file_time_epoch_adjustment})};
+                filesystem::_File_time_clock::duration{__std_fs_file_time_epoch_adjustment})};
             _Tp = file_time<_Duration>{_Dur} + _File_clock_adj;
         } else {
             _Istr.setstate(ios_base::failbit);

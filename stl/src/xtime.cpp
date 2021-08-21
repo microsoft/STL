@@ -42,7 +42,6 @@ static xtime xtime_diff(const xtime* xt,
 }
 
 
-constexpr long long _Epoch      = 0x19DB1DED53E8000LL;
 constexpr long _Nsec100_per_sec = _Nsec_per_sec / 100;
 
 _EXTERN_C
@@ -50,7 +49,8 @@ _EXTERN_C
 long long _Xtime_get_ticks() { // get system time in 100-nanosecond intervals since the epoch
     FILETIME ft;
     __crtGetSystemTimePreciseAsFileTime(&ft);
-    return ((static_cast<long long>(ft.dwHighDateTime)) << 32) + static_cast<long long>(ft.dwLowDateTime) - _Epoch;
+    return ((static_cast<long long>(ft.dwHighDateTime)) << 32) + static_cast<long long>(ft.dwLowDateTime)
+         - __std_fs_file_time_epoch_adjustment;
 }
 
 static void sys_get_time(xtime* xt) { // get system time with nanosecond resolution

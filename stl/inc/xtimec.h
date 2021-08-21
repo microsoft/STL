@@ -36,6 +36,8 @@ _CRTIMP2_PURE long long __cdecl _Query_perf_frequency();
 
 _END_EXTERN_C
 
+_INLINE_VAR constexpr long long __std_fs_file_time_epoch_adjustment = 0x19DB1DED53E8000LL;
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
