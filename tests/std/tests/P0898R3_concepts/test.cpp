@@ -134,7 +134,8 @@ struct NotDefaultConstructible {
 };
 
 #pragma warning(push)
-#pragma warning(disable : 5204) //  warning C5204: 'PrivateAbstract': class has virtual functions, but its trivial destructor is not virtual
+#pragma warning(disable : 5204) //  warning C5204: 'PrivateAbstract': class has virtual functions,
+                                // but its trivial destructor is not virtual
 class PublicAbstract {
 public:
     virtual void meow() = 0;
