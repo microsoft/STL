@@ -249,7 +249,7 @@ void check_type(const char* label, const char* file_name, int line_number, const
 #endif // __cplusplus
 
 void check_double(const char* label, const char* file_name, int line_number, double left, double right) {
-    int ans             = left == right;
+    int ans = left == right;
 
     if (!terse && !ans) { // print hex or decimal floating-point
         if (afmt)
