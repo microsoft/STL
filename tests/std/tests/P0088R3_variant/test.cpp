@@ -77,6 +77,8 @@ public:
 
 #include "test_macros.h"
 
+#pragma warning(disable : 4822) //  warning C4822: local class member function does not have a body
+
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 namespace bad_variant_access {

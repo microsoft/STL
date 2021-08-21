@@ -9,6 +9,8 @@ using namespace std;
 
 int main() {} // COMPILE-ONLY
 
+#pragma warning(disable : 5204) //  '...': class has virtual functions, but its trivial destructor is not virtual;
+
 STATIC_ASSERT(!is_aggregate_v<int>);
 STATIC_ASSERT(!is_aggregate_v<const int>);
 STATIC_ASSERT(!is_aggregate_v<void>);
