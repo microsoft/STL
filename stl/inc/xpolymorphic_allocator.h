@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 #if !_HAS_CXX20
-// FUNCTION TEMPLATE _Uses_allocator_construct
 template <class _Ty, class _Outer_alloc, class _Inner_alloc, class... _Types>
 void _Uses_allocator_construct2(
     true_type, _Ty* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Types&&... _Args) {
@@ -138,7 +137,6 @@ void _Uses_allocator_construct(
 
 #if _HAS_CXX17
 namespace pmr {
-    // CLASS memory_resource
     class __declspec(novtable) memory_resource {
     public:
         virtual ~memory_resource() noexcept = default;
@@ -176,7 +174,6 @@ namespace pmr {
     }
 #endif // !_HAS_CXX20
 
-    // FUNCTION get_default_resource
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_get_default_resource() noexcept;
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_get_default_resource() noexcept;
 
@@ -188,7 +185,6 @@ namespace pmr {
 #endif // __cpp_aligned_new
     }
 
-    // CLASS TEMPLATE polymorphic_allocator
 #if _HAS_CXX20 && defined(__cpp_lib_byte)
     template <class _Ty = byte>
 #else

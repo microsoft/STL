@@ -1425,9 +1425,6 @@ namespace test_constructible_from {
     STATIC_ASSERT(test<int&, ExplicitTo<int&>>());
     STATIC_ASSERT(test<int const&, ExplicitTo<int&>>());
     STATIC_ASSERT(test<int const&, ExplicitTo<int&>&>());
-#if defined(__clang__) // TRANSITION, VSO-1357053 (MSVC) and VSO-1357056 (EDG)
-    STATIC_ASSERT(test<int const&, ExplicitTo<int&&>>());
-#endif // TRANSITION, VSO-1357053 (MSVC) and VSO-1357056 (EDG)
 
     struct Multiparameter {
         explicit Multiparameter(int);
@@ -1457,9 +1454,6 @@ namespace test_constructible_from {
     // Binding through reference-compatible type is required to perform
     // direct-initialization as described in N4849 [over.match.ref]/1.1:
     STATIC_ASSERT(test<int&, ExplicitTo<int&>>());
-#if defined(__clang__) // TRANSITION, VSO-1357053 (MSVC) and VSO-1357056 (EDG)
-    STATIC_ASSERT(test<int const&, ExplicitTo<int&&>>());
-#endif // TRANSITION, VSO-1357053 (MSVC) and VSO-1357056 (EDG)
     STATIC_ASSERT(test<int&&, ExplicitTo<int&&>>());
 
     // Binding through temporary behaves like copy-initialization,

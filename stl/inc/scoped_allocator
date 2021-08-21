@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// FUNCTION TEMPLATE _Scoped_outermost
 template <class _Alloc, class = void>
 struct _Scoped_outermost_helper { // gets the outermost allocator
     static decltype(auto) _Fn(_Alloc& _Al) { // gets the outermost allocator
@@ -41,15 +40,12 @@ decltype(auto) _Scoped_outermost(_Alloc& _Al) { // gets the outermost allocator
     return _Scoped_outermost_helper<_Alloc>::_Fn(_Al);
 }
 
-// ALIAS TEMPLATE _Scoped_outermost_t
 template <class _Alloc>
 using _Scoped_outermost_t = remove_reference_t<decltype(_Scoped_outermost(_STD declval<_Alloc&>()))>;
 
-// ALIAS TEMPLATE _Scoped_outermost_traits
 template <class _Alloc>
 using _Scoped_outermost_traits = allocator_traits<_Scoped_outermost_t<_Alloc>>;
 
-// CLASS TEMPLATE _Scoped_base
 template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor;
 
@@ -125,7 +121,6 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
     }
 };
 
-// CLASS TEMPLATE scoped_allocator_adaptor
 template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor : public _Scoped_base<_Outer, _Inner...> { // nest of allocators
     using _Mybase       = _Scoped_base<_Outer, _Inner...>;
