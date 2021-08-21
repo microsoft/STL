@@ -22,6 +22,7 @@ using namespace std::filesystem;
 
 template <typename Clock>
 void test_clock_now() {
+    // Typical system clock resolution: (1/64) s = 15.625 ms
     constexpr auto tolerance = 16ms;
 
     const auto before = get_system_time();
