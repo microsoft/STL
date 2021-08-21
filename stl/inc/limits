@@ -15,6 +15,17 @@
 #include <isa_availability.h>
 #include <xstddef>
 
+#if defined(_M_ARM64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+    && !defined(__INTEL_COMPILER) && !defined(__clang__) // TRANSITION, LLVM-51488
+#define _HAS_CNT_INTRINSICS 1
+#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#define _HAS_CNT_INTRINSICS 0
+#endif // ^^^ intrinsics unavailable ^^^
+
+#if _HAS_CNT_INTRINSICS
+#include <arm64_neon.h> // TRANSITION, GH-2129
+#endif
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -1116,16 +1127,7 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
 }
 #endif // _HAS_POPCNT_INTRINSICS
 
-#if defined(_M_ARM64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
-    && !defined(__INTEL_COMPILER) && !defined(__clang__) // TRANSITION, LLVM-51488
-#define _HAS_CNT_INTRINSICS 1
-#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
-#define _HAS_CNT_INTRINSICS 0
-#endif // ^^^ intrinsics unavailable ^^^
-
 #if _HAS_CNT_INTRINSICS
-#include <arm64_neon.h> // TRANSITION, GH-2129
-
 _NODISCARD inline int _Arm64_popcount(const unsigned long long _Val) noexcept {
     const __n64 _Temp = neon_cnt(__uint64ToN64_v(_Val));
     return neon_addv8(_Temp).n8_i8[0];
