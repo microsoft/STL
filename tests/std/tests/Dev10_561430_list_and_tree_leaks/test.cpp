@@ -194,6 +194,9 @@ int main() {
 
 // Also test DevDiv-819467 "<memory>: Custom allocator with virtual max_size function causes infinite recursion".
 
+#pragma warning(push)
+#pragma warning(disable : 5204) //  warning C5204: 'WeirdAllocator': class has virtual functions,
+                                // but its trivial destructor is not virtual
 template <typename T>
 struct WeirdAllocator {
     typedef T value_type;
@@ -230,6 +233,7 @@ struct WeirdAllocator {
         return *this;
     }
 };
+#pragma warning(pop)
 
 void test_virtual_allocator() {
     std::vector<int, WeirdAllocator<int>> v;

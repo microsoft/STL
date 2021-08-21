@@ -21,6 +21,9 @@ union test_union_2 {
     float b;
 };
 
+#pragma warning(push)
+#pragma warning(disable : 5204) //  warning C5204: 'middle_class_1': class has virtual functions,
+                                // but its trivial destructor is not virtual
 struct middle_class_1 {
     double d;
     virtual void a_member_function_1() {}
@@ -34,6 +37,7 @@ struct middle_class_2 {
 struct derived_class : middle_class_1, middle_class_2 {
     virtual void a_member_function_2() override {}
 };
+#pragma warning(pop)
 
 struct test_struct_1 {
     char a;

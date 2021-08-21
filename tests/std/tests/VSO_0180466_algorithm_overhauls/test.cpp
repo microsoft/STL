@@ -3,6 +3,7 @@
 
 #pragma warning(disable : 4018) // signed/unsigned mismatch in comparison
 #pragma warning(disable : 4365) // signed/unsigned mismatch in implicit conversion
+#pragma warning(disable : 4388) // signed/unsigned mismatch in comparison
 #pragma warning(disable : 4389) // signed/unsigned mismatch in arithmetic
 
 #ifdef __clang__

@@ -1326,9 +1326,14 @@ namespace iterator_concept_readable_test {
     };
     STATIC_ASSERT(!indirectly_readable<no_value_type>);
 
+
+#pragma warning(push)
+#pragma warning(disable : 5204) //  warning C5204: 'simple_abstract': class has virtual functions,
+                                // but its trivial destructor is not virtual
     struct simple_abstract {
         virtual void f() = 0;
     };
+#pragma warning(pop)
     STATIC_ASSERT(indirectly_readable<dereferences_to<simple_abstract&>>);
 } // namespace iterator_concept_readable_test
 
