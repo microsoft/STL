@@ -4304,6 +4304,8 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
 } // namespace tr1
 #endif // _HAS_TR1_NAMESPACE
 
+#undef _USE_MEMORY_INT_0_SFINAE
+
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

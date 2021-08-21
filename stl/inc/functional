@@ -2158,6 +2158,8 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
 } // namespace tr1
 #endif // _HAS_TR1_NAMESPACE
 
+#undef _USE_FUNCTION_INT_0_SFINAE
+
 _STD_END
 
 #pragma pop_macro("new")
