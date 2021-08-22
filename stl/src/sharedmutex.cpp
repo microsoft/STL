@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <synchapi.h>
-
 // This file is compiled into import library.
 // Limitations apply to what can be included here; see ../../docs/import_library.txt
+
+#include <synchapi.h>
 
 // these declarations must be in sync with those in xthreads.h
 

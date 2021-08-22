@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// This file is compiled into import library.
+// Limitations apply to what can be included here; see ../../docs/import_library.txt
+
 #include <yvals_core.h>
 
 #include <synchapi.h>
-
-// This file is compiled into import library.
-// Limitations apply to what can be included here; see ../../docs/import_library.txt
 
 // Provides forwarders for InitOnceBeginInitialize and InitOnceComplete for
 // environments that can't use aliasobj, like /clr.
