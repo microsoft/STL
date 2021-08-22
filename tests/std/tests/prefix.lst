@@ -35,7 +35,7 @@ PM_CL="/FIforce_include.hpp /w14165 /w14254 /w14263 /w14264 /w14266 /w14287 /w14
 # C4598 '#include "header"': header number header-number in the precompiled header does not match current compilation at that position
 # C4599 'option path': command-line argument number number does not match pre-compiled header
 # C4605 '/Dmacro' specified on current command line, but was not specified when precompiled header was built
-# C4608 'union_member' has already been initialized by another union member in the initializer list, 'union_member' 
+# C4608 'union_member' has already been initialized by another union member in the initializer list, 'union_member'
 # C4619 #pragma warning: there is no warning number 'number'
 # C4628 digraphs not supported with -Ze. Character sequence 'digraph' not interpreted as alternate token for 'char'
 # C4640 'instance': construction of local static object is not thread-safe
