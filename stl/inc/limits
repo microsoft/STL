@@ -1135,8 +1135,7 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 
 _NODISCARD _CONSTEXPR20 inline int _Get_isa_available() noexcept {
 #if _HAS_CXX20
-    if (_STD is_constant_evaluated())
-    {
+    if (_STD is_constant_evaluated()) {
         return 0;
     }
 #endif // _HAS_CXX20
