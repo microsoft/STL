@@ -1100,7 +1100,9 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val, const int _Isa_availabl
     if (!_Definitely_have_popcnt) {
         return _Popcount_fallback(_Val);
     }
-#endif // !defined(__AVX__)
+#else // ^^^ pre-__AVX__ ^^^ / vvv __AVX__ vvv
+    (void) _Isa_available;
+#endif // ^^^ __AVX__ ^^^
 
     if constexpr (_Digits <= 16) {
         return static_cast<int>(__popcnt16(_Val));
@@ -1151,7 +1153,9 @@ _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val, const int _Isa_available =
     {
         return _Checked_x86_x64_popcount(_Val, _Isa_available);
     }
-#endif // _HAS_POPCNT_INTRINSICS
+#else // ^^^ _HAS_POPCNT_INTRINSICS ^^^ / vvv !// _HAS_POPCNT_INTRINSICS vvv
+    (void) _Isa_available;
+#endif // ^^^ !_HAS_POPCNT_INTRINSICS ^^^
     return _Popcount_fallback(_Val);
 }
 
