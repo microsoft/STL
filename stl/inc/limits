@@ -1133,7 +1133,7 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
     return _Countr_zero_fallback(_Val);
 }
 
-_NODISCARD _CONSTEXPR20 int _Get_isa_available() noexcept {
+_NODISCARD constexpr int _Get_isa_available() noexcept {
 #if _HAS_CXX20
     if (_STD is_constant_evaluated()) {
         return 0;
