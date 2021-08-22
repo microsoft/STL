@@ -1093,10 +1093,10 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 
 #if _HAS_POPCNT_INTRINSICS
 template <class _Ty>
-_NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
+_NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val, const int _Isa_available) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
 #ifndef __AVX__
-    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+    const bool _Definitely_have_popcnt = _Isa_available >= __ISA_AVAILABLE_SSE42;
     if (!_Definitely_have_popcnt) {
         return _Popcount_fallback(_Val);
     }
@@ -1134,13 +1134,13 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
-_NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
+_NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val, const int _Isa_available = __isa_available) noexcept {
 #if _HAS_POPCNT_INTRINSICS
 #if _HAS_CXX20
     if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
     {
-        return _Checked_x86_x64_popcount(_Val);
+        return _Checked_x86_x64_popcount(_Val, _Isa_available);
     }
 #endif // _HAS_POPCNT_INTRINSICS
     return _Popcount_fallback(_Val);

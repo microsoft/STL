@@ -337,35 +337,11 @@ public:
     }
 
     _NODISCARD size_t count() const noexcept { // count number of set bits
-#if defined(_M_IX86) || defined(_M_X64)
-
-#ifdef __AVX__
-        constexpr bool _Definitely_have_popcnt = true;
-#else
-        const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
-#endif // !defined(__AVX__)
-
-        if (_Definitely_have_popcnt) {
-            size_t _Val = 0;
-            for (size_t _Wpos = 0; _Wpos <= _Words; ++_Wpos) {
-                if constexpr (sizeof(_Ty) == 4) {
-                    _Val += __popcnt(_Array[_Wpos]);
-                } else if constexpr (sizeof(_Ty) == 8) {
-#ifdef _M_IX86
-                    _Val += (__popcnt(_Array[_Wpos] >> 32) + __popcnt(static_cast<unsigned int>(_Array[_Wpos])));
-#else // ^^^ _M_IX86 / !_M_IX86 vvv
-                    _Val += __popcnt64(_Array[_Wpos]);
-#endif // _M_IX86
-                } else {
-                    static_assert(_Always_false<_Ty>, "unexpected underlying type size");
-                }
-            }
-            return _Val;
-        }
-#endif // defined(_M_IX86) || defined(_M_X64)
+        // local copy allows the compiler to move the condition out of loop
+        const int _Isa_available = __isa_available;
         size_t _Val = 0;
         for (size_t _Wpos = 0; _Wpos <= _Words; ++_Wpos) {
-            _Val += _Popcount_fallback(_Array[_Wpos]);
+            _Val += _Popcount(_Array[_Wpos], _Isa_available);
         }
         return _Val;
     }
