@@ -6,6 +6,11 @@
 #pragma once
 #ifndef _YVALS_CORE_H_
 #define _YVALS_CORE_H_
+
+#ifndef __cplusplus
+#error STL1003: Unexpected compiler, expected C++ compiler
+#endif // __cplusplus
+
 #ifndef _STL_COMPILER_PREPROCESSOR
 // All STL headers avoid exposing their contents when included by various
 // non-C++-compiler tools to avoid breaking builds when we use newer language
@@ -373,7 +378,7 @@
 
 // TRANSITION, <vcruntime.h> should define _HAS_CXX23
 #ifndef _HAS_CXX23
-#if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || defined(__cplusplus) && __cplusplus > 202002L)
+#if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || __cplusplus > 202002L)
 #define _HAS_CXX23 1
 #else
 #define _HAS_CXX23 0
@@ -1397,17 +1402,10 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STDEXT_END   }
 #define _STDEXT       ::stdext::
 
-#ifdef __cplusplus
 #define _CSTD ::
 
 #define _EXTERN_C     extern "C" {
 #define _END_EXTERN_C }
-#else // ^^^ __cplusplus / !__cplusplus vvv
-#define _CSTD
-
-#define _EXTERN_C
-#define _END_EXTERN_C
-#endif // __cplusplus
 
 #ifdef _M_CEE_PURE
 #define _EXTERN_C_UNLESS_PURE

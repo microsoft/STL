@@ -6,7 +6,18 @@
 #pragma once
 #ifndef _ISO646
 #define _ISO646
-#include <yvals_core.h>
+
+#ifndef _STL_COMPILER_PREPROCESSOR
+// All STL headers avoid exposing their contents when included by various
+// non-C++-compiler tools to avoid breaking builds when we use newer language
+// features in the headers than such tools understand.
+#if defined(RC_INVOKED) || defined(Q_MOC_RUN) || defined(__midl)
+#define _STL_COMPILER_PREPROCESSOR 0
+#else
+#define _STL_COMPILER_PREPROCESSOR 1
+#endif
+#endif // _STL_COMPILER_PREPROCESSOR
+
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !defined(__cplusplus) || defined(_MSC_EXTENSIONS)
