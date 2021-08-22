@@ -1141,7 +1141,11 @@ _NODISCARD _CONSTEXPR20 int _Get_isa_available() noexcept {
         return 0;
     }
 #endif // _HAS_CXX20
+#if defined(_M_IX86) || defined(_M_X64)
     return __isa_available;
+#else
+    return 0;
+#endif
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
