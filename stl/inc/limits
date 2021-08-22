@@ -1157,7 +1157,7 @@ _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val, const int _Isa_available =
     {
         return _Checked_x86_x64_popcount(_Val, _Isa_available);
     }
-#else // ^^^ _HAS_POPCNT_INTRINSICS ^^^ / vvv !// _HAS_POPCNT_INTRINSICS vvv
+#else // ^^^ _HAS_POPCNT_INTRINSICS ^^^ / vvv !_HAS_POPCNT_INTRINSICS vvv
     (void) _Isa_available;
 #endif // ^^^ !_HAS_POPCNT_INTRINSICS ^^^
     return _Popcount_fallback(_Val);
