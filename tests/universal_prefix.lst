@@ -1,4 +1,20 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-PM_CL="/nologo /Od /W4 /w14061 /w14242 /w14265 /w14582 /w14583 /w14587 /w14588 /w14749 /w14841 /w14842 /w15038 /w15214 /w15215 /w15216 /w15217 /sdl /WX /Zc:strictStrings /D_ENABLE_STL_INTERNAL_CHECK /bigobj" PM_LINK="/MANIFEST:EMBED"
+PM_CL="/nologo /Od /W4 /w14061 /w14062 /w14242 /w14265 /w14582 /w14583 /w14587 /w14588 /w14749 /w14841 /w14842 /w15038 /w15214 /w15215 /w15216 /w15217 /sdl /WX /Zc:strictStrings /D_ENABLE_STL_INTERNAL_CHECK /bigobj" PM_LINK="/MANIFEST:EMBED"
+# C4061 enumerator 'identifier' in a switch of enum 'enumeration' is not explicitly handled by a case label
+# C4062 enumerator 'identifier' in a switch of enum 'enumeration' is not handled
+# C4242 'identifier': conversion from 'type1' to 'type2', possible loss of data
+# C4265 'class': class has virtual functions, but destructor is not virtual
+# C4582 'type': constructor is not implicitly called
+# C4583 'type': destructor is not implicitly called
+# C4587 'anonymous_structure': behavior change: constructor is no longer implicitly called
+# C4588 'anonymous_structure': behavior change: destructor is no longer implicitly called
+# C4749 conditionally supported: offsetof applied to non-standard-layout type 'type'
+# C4841 non-standard extension used: compound member designator used in offsetof
+# C4842 the result of 'offsetof' applied to a type using multiple inheritance is not guaranteed to be consistent between compiler releases
+# C5038 data member 'member1' will be initialized after data member 'member2'
+# C5214 applying 'keyword' to an operand with a volatile qualified type is deprecated in C++20
+# C5215 'function-parameter' a function parameter with a volatile qualified type is deprecated in C++20
+# C5216 'return-type' a volatile qualified return type is deprecated in C++20
+# C5217 a structured binding declaration that includes volatile is deprecated in C++20

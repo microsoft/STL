@@ -3,4 +3,83 @@
 
 RUNALL_INCLUDE ..\..\universal_prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/FIforce_include.hpp /w14062 /w14165 /w14254 /w14263 /w14264 /w14266 /w14287 /w14289 /w14296 /w14339 /w14365 /w14388 /w14412 /w14426 /w14437 /w14444 /w14464 /w14471 /w14472 /w14536 /w14545 /w14546 /w14547 /w14548 /w14549 /w14555 /w14557 /w14571 /w14577 /w14596 /w14598 /w14599 /w14605 /w14608 /w14619 /w14628 /w14640 /w14643 /w14647 /w14654 /w14682 /w14692 /w14767 /w14774 /w14777 /w14786 /w14822 /w14826 /w14837 /w14905 /w14906 /w14917 /w14928 /w14931 /w14946 /w14962 /w14986 /w14987 /w14988 /w15022 /w15023 /w15024 /w15025 /w15029 /w15031 /w15032 /w15034 /w15035 /w15036 /w15041 /w15042 /w15052 /w15204 /w15233 /w15240 /w15243 /w15245 /w15247 /w15248 /w15249 /w15250 /D_ENFORCE_FACET_SPECIALIZATIONS=1"
+PM_CL="/FIforce_include.hpp /w14165 /w14254 /w14263 /w14264 /w14266 /w14287 /w14289 /w14296 /w14339 /w14388 /w14412 /w14426 /w14437 /w14444 /w14464 /w14471 /w14472 /w14536 /w14545 /w14546 /w14547 /w14548 /w14549 /w14555 /w14557 /w14571 /w14577 /w14596 /w14598 /w14599 /w14605 /w14608 /w14619 /w14628 /w14640 /w14643 /w14647 /w14654 /w14682 /w14692 /w14767 /w14774 /w14777 /w14786 /w14822 /w14826 /w14837 /w14905 /w14906 /w14917 /w14928 /w14931 /w14946 /w14962 /w14986 /w14987 /w14988 /w15022 /w15023 /w15024 /w15025 /w15029 /w15031 /w15032 /w15034 /w15035 /w15036 /w15041 /w15042 /w15052 /w15204 /w15233 /w15240 /w15243 /w15245 /w15247 /w15248 /w15249 /w15250 /D_ENFORCE_FACET_SPECIALIZATIONS=1"
+# C4165 'HRESULT' is being converted to 'bool'; are you sure this is what you want?
+# C4254 'operator': conversion from 'type1' to 'type2', possible loss of data
+# C4263 'function': member function does not override any base class virtual member function
+# C4264 'virtual_function': no override available for virtual member function from base 'class'; function is hidden
+# C4266 'function': no override available for virtual member function from base 'type'; function is hidden
+# C4287 'operator': unsigned/negative constant mismatch
+# C4289 nonstandard extension used : 'var' : loop control variable declared in the for-loop is used outside the for-loop scope
+# C4296 'operator': expression is always false
+# C4339 'type' : use of undefined type detected in CLR meta-data - use of this type may lead to a runtime exception
+# C4388 signed/unsigned mismatch
+# C4412 'function': function signature contains type 'type'; C++ objects are unsafe to pass between pure code and mixed or native
+# C4426 optimization flags changed after including header, may be due to #pragma optimize()
+# C4437 dynamic_cast from virtual base 'class1' to 'class2' could fail in some contexts
+# C4444 top level '__unaligned' is not implemented in this context
+# C4464 relative include path contains '..'
+# C4471 a forward declaration of an unscoped enumeration must have an underlying type (int assumed)
+# C4472 'identifier' is a native enum: add an access specifier (private/public) to declare a managed enum
+# C4536 'type name': type-name exceeds meta-data limit of 'limit' characters
+# C4545 expression before comma evaluates to a function which is missing an argument list
+# C4546 function call before comma missing argument list
+# C4547 'operator': operator before comma has no effect; expected operator with side-effect
+# C4548 expression before comma has no effect; expected expression with side-effect
+# C4549 'operator1': operator before comma has no effect; did you intend 'operator2'?
+# C4555 expression has no effect; expected expression with side-effect
+# C4557 '__assume' contains effect 'effect'
+# C4571 informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
+# C4577 'noexcept' used with no exception handling mode specified; termination on exception is not guaranteed. Specify /EHsc
+# C4596 'identifier': illegal qualified name in member declaration
+# C4598 '#include "header"': header number header-number in the precompiled header does not match current compilation at that position
+# C4599 'option path': command-line argument number number does not match pre-compiled header
+# C4605 '/Dmacro' specified on current command line, but was not specified when precompiled header was built
+# C4608 'union_member' has already been initialized by another union member in the initializer list, 'union_member' 
+# C4619 #pragma warning: there is no warning number 'number'
+# C4628 digraphs not supported with -Ze. Character sequence 'digraph' not interpreted as alternate token for 'char'
+# C4640 'instance': construction of local static object is not thread-safe
+# C4643 Forward declaring 'identifier' in namespace std is not permitted by the C++ Standard.
+# C4647 behavior change: __is_pod(type) has different value in previous versions
+# C4654 Code placed before include of precompiled header line will be ignored. Add code to precompiled header.
+# C4682 'symbol' : no directional parameter attribute specified, defaulting to [in]
+# C4692 'function': signature of non-private member contains assembly private native type 'native_type'
+# C4767 section name 'symbol' is longer than 8 characters and will be truncated by the linker
+# C4774 'string' : format string expected in argument number is not a string literal
+# C4777 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2'
+# C4786 'symbol' : object name was truncated to 'number' characters in the debug information
+# C4822 'member': local class member function does not have a body
+# C4826 Conversion from 'type1' to 'type2' is sign-extended. This may cause unexpected runtime behavior.
+# C4837 trigraph detected: '??character' replaced by 'character'
+# C4905 wide string literal cast to 'LPSTR'
+# C4906 string literal cast to 'LPWSTR'
+# C4917 'declarator': a GUID can only be associated with a class, interface, or namespace
+# C4928 illegal copy-initialization; more than one user-defined conversion has been implicitly applied
+# C4931 we are assuming the type library was built for number-bit pointers
+# C4946 reinterpret_cast used between related classes: 'class1' and 'class2'
+# C4962 'function': profile-guided optimizations disabled because optimizations caused profile data to become inconsistent
+# C4986 'symbol': exception specification does not match previous declaration
+# C4987 nonstandard extension used: 'throw (...)'
+# C4988 'symbol': variable declared outside class/function scope
+# C5022 'type': multiple move constructors specified
+# C5023 'type': multiple move assignment operators specified
+# C5024 'type': move constructor was implicitly defined as deleted
+# C5025 'type': move assignment operator was implicitly defined as deleted
+# C5029 nonstandard extension used: alignment attributes in C++ apply to variables, data members and tag types only
+# C5031 #pragma warning(pop): likely mismatch, popping warning state pushed in different file
+# C5032 detected #pragma warning(push) with no corresponding #pragma warning(pop)
+# C5034 use of intrinsic 'intrinsic' causes function function-name to be compiled as guest code
+# C5035 use of feature 'feature' causes function function-name to be compiled as guest code
+# C5036 varargs function pointer conversion when compiling with /hybrid:x86arm64 'type1' to 'type2'
+# C5041 'member-name': out-of-line definition for constexpr static data member is not needed and is deprecated in C++17.
+# C5042 'function': function declarations at block scope cannot be specified 'inline' in standard C++; remove 'inline' specifier
+# C5052 Keyword 'keyword-name' was introduced in C++version and requires use of the 'option' command-line option`
+# C5204 A class with virtual functions has non-virtual trivial destructor
+# C5233 explicit lambda capture 'identifier' is not used
+# C5240 'attribute-name': attribute is ignored in this syntactic position
+# C5243 'type-name': using incomplete class 'class-name' can cause potential one definition rule violation due to ABI limitation
+# C5245 'function': unreferenced function with internal linkage has been removed
+# C5247 Section 'section-name' is reserved for C++ dynamic initialization. Manually creating the section will interfere with C++ dynamic initialization and may lead to undefined behavior
+# C5248 Section 'section-name' is reserved for C++ dynamic initialization. Variable manually put into the section may be optimized out and its order relative to compiler generated dynamic initializers is unspecified
+# C5249 'bitfield' of type 'enumeration_name' has named enumerators with values that cannot be represented in the given bit field width of 'bitfield_width'
+# C5250 'function_name': intrinsic function not declared.
