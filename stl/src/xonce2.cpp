@@ -6,7 +6,7 @@
 #include <synchapi.h>
 
 // This file is compiled into import library.
-// Limitations apply to what can be included here; see import_library.txt
+// Limitations apply to what can be included here; see ../../docs/import_library.txt
 
 // Provides forwarders for InitOnceBeginInitialize and InitOnceComplete for
 // environments that can't use aliasobj, like /clr.

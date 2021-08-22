@@ -5,7 +5,7 @@
 // (see filesys.cpp for <experimental/filesystem> implementation)
 
 // This file is compiled into import library.
-// Limitations apply to what can be included here; see import_library.txt
+// Limitations apply to what can be included here; see ../../docs/import_library.txt
 
 #include <clocale>
 #include <corecrt_terminate.h>

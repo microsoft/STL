@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // This header is used to compile import library.
-// Limitations apply to what can be included here; see ../src/import_library.txt
+// Limitations apply to what can be included here; see ../../docs/import_library.txt
 
 #pragma once
 #ifndef _TYPE_TRAITS_

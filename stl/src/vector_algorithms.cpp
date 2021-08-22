@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // This file is compiled into import library.
-// Limitations apply to what can be included here; see import_library.txt
+// Limitations apply to what can be included here; see ../../docs/import_library.txt
 
 #ifdef _M_CEE_PURE
 #error _M_CEE_PURE should not be defined when compiling vector_algorithms.cpp.
