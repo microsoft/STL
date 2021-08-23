@@ -140,9 +140,6 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
-acquire this dependency.
-
 1. Install Visual Studio 2022 17.0 Preview 3 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
@@ -152,10 +149,8 @@ acquire this dependency.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
-4. In the terminal, invoke `git submodule update --init --progress llvm-project vcpkg`
-5. In the terminal, invoke `.\vcpkg\bootstrap-vcpkg.bat`
-6. In the terminal, invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
-7. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+4. In the terminal, invoke `git submodule update --init --progress llvm-project boost-math`
+5. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json`.
 
 # How To Build With A Native Tools Command Prompt
@@ -170,9 +165,7 @@ acquire this dependency.
 3. Change directories to a location where you'd like a clone of this STL repository.
 4. `git clone https://github.com/microsoft/STL`
 5. `cd STL`
-6. `git submodule update --init --progress llvm-project vcpkg`
-7. `.\vcpkg\bootstrap-vcpkg.bat`
-8. `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
+6. `git submodule update --init --progress llvm-project boost-math`
 
 To build the x86 target:
 
@@ -477,5 +470,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
-[vcpkg]: https://github.com/microsoft/vcpkg
 [natvis documentation]: https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects
