@@ -4,3 +4,6 @@
 [submodule "llvm-project"]
 	path = llvm-project
 	url = https://github.com/llvm/llvm-project.git
+[submodule "boost-math"]
+	path = boost-math
+	url = https://github.com/boostorg/math.git
