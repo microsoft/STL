@@ -6,4 +6,4 @@
 	url = https://github.com/llvm/llvm-project.git
 [submodule "boost-math"]
 	path = boost-math
-	url = https://github.com/boostorg/math.git
+	url = https://github.com/michael-herwig/boostorg-math.git
