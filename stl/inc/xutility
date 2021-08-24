@@ -323,6 +323,9 @@ concept _Has_member_reference = requires {
     typename _Ty::reference;
 };
 
+template <class _Ty>
+concept _Destructible_object = is_object_v<_Ty> && destructible<_Ty>;
+
 template <class>
 struct incrementable_traits {};
 
@@ -441,8 +444,8 @@ struct _Old_iter_traits_pointer<false> {
 template <_Has_iter_types _It>
 struct _Iterator_traits_base<_It> {
     using iterator_category = typename _It::iterator_category;
-    using difference_type   = typename _It::difference_type;
     using value_type        = typename _It::value_type;
+    using difference_type   = typename _It::difference_type;
     using pointer           = typename _Old_iter_traits_pointer<_Has_member_pointer<_It>>::template _Apply<_It>;
     using reference         = typename _It::reference;
 };
@@ -481,15 +484,12 @@ concept _Cpp17_input_iterator = _Cpp17_iterator<_It>
     };
 
 template <class _It>
-    requires (!_Has_iter_types<_It> && _Cpp17_iterator<_It> && !_Cpp17_input_iterator<_It>
-        // Implements the proposed resolution of LWG-3283:
-        && (!requires { typename _It::iterator_category; }
-            || derived_from<typename _It::iterator_category, output_iterator_tag>))
+    requires (!_Has_iter_types<_It> && _Cpp17_iterator<_It> && !_Cpp17_input_iterator<_It>)
 struct _Iterator_traits_base<_It> {
     using iterator_category = output_iterator_tag;
+    using value_type = void;
     using difference_type =
         typename _Iter_traits_difference<_Has_member_difference_type<incrementable_traits<_It>>>::template _Apply<_It>;
-    using value_type = void;
     using pointer    = void;
     using reference  = void;
 };
@@ -619,8 +619,8 @@ template <class _It>
     requires (!_Has_iter_types<_It> && _Cpp17_input_iterator<_It>)
 struct _Iterator_traits_base<_It> {
     using iterator_category = typename _Iter_traits_category<_Has_member_iterator_category<_It>>::template _Apply<_It>;
-    using difference_type   = typename incrementable_traits<_It>::difference_type;
     using value_type        = typename indirectly_readable_traits<_It>::value_type;
+    using difference_type   = typename incrementable_traits<_It>::difference_type;
     using pointer           = typename _Iter_traits_pointer<(
         _Has_member_pointer<_It> ? _Itraits_pointer_strategy::_Use_member
                                  : _Has_member_arrow<_It&> ? _Itraits_pointer_strategy::_Use_decltype
@@ -638,6 +638,7 @@ struct iterator_traits : _Iterator_traits_base<_Ty> {
 template <class _Ty>
     requires is_object_v<_Ty>
 struct iterator_traits<_Ty*> {
+    // clang-format on
     using iterator_concept  = contiguous_iterator_tag;
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
@@ -645,7 +646,6 @@ struct iterator_traits<_Ty*> {
     using pointer           = _Ty*;
     using reference         = _Ty&;
 };
-// clang-format on
 
 namespace ranges {
     namespace _Iter_move {
@@ -3328,13 +3328,13 @@ namespace ranges {
         // [[no_unique_address]] conditional_t<_Store_size, _Size_type, _Nil> _Size{};
 
         template <class _Rng>
-        constexpr subrange(true_type, _Rng&& _Val) : subrange{_STD forward<_Rng>(_Val), _RANGES size(_Val)} {
+        constexpr subrange(true_type, _Rng&& _Val) : subrange(_STD forward<_Rng>(_Val), _RANGES size(_Val)) {
             // delegation target for subrange(_Rng&&) when we must store the range size
             _STL_INTERNAL_STATIC_ASSERT(_Store_size);
         }
 
         template <class _Rng>
-        constexpr subrange(false_type, _Rng&& _Val) : subrange{_RANGES begin(_Val), _RANGES end(_Val)} {
+        constexpr subrange(false_type, _Rng&& _Val) : subrange(_RANGES begin(_Val), _RANGES end(_Val)) {
             // delegation target for subrange(_Rng&&) when we need not store the range size
             _STL_INTERNAL_STATIC_ASSERT(!_Store_size);
         }
@@ -3551,24 +3551,36 @@ struct _Default_sentinel {}; // empty struct to serve as the end of a range
 #ifdef __cpp_lib_concepts
 template <semiregular>
 class move_sentinel;
+
+template <class>
+struct _Move_iterator_category {};
+
+// clang-format off
+template <class _Iter>
+    requires requires { typename _Iter_cat_t<_Iter>; }
+struct _Move_iterator_category<_Iter> {
+    using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
+        random_access_iterator_tag, _Iter_cat_t<_Iter>>;
+};
+// clang-format on
+#else // ^^^ Ranges / no Ranges vvv
+template <class _Iter>
+struct _Move_iterator_category {
+    using iterator_category = _Iter_cat_t<_Iter>;
+};
 #endif // __cpp_lib_concepts
 
 template <class _Iter>
-class move_iterator {
+class move_iterator : public _Move_iterator_category<_Iter> {
 public:
-    using iterator_type = _Iter;
-#ifdef __cpp_lib_concepts
-    using iterator_concept  = input_iterator_tag;
-    using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
-        random_access_iterator_tag, _Iter_cat_t<_Iter>>;
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
-    using iterator_category = _Iter_cat_t<_Iter>;
-#endif // __cpp_lib_concepts
+    using iterator_type   = _Iter;
     using value_type      = _Iter_value_t<_Iter>;
     using difference_type = _Iter_diff_t<_Iter>;
     using pointer         = _Iter;
+
 #ifdef __cpp_lib_concepts
-    using reference = iter_rvalue_reference_t<_Iter>;
+    using iterator_concept = input_iterator_tag;
+    using reference        = iter_rvalue_reference_t<_Iter>;
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     using reference =
         conditional_t<is_reference_v<_Iter_ref_t<_Iter>>, remove_reference_t<_Iter_ref_t<_Iter>>&&, _Iter_ref_t<_Iter>>;
@@ -5773,13 +5785,6 @@ _NODISCARD _CONSTEXPR_BIT_CAST bool _Is_finite(const _Ty _Xx) { // constexpr isf
     using _Traits = _Floating_type_traits<_Ty>;
     return _Float_abs_bits(_Xx) < _Traits::_Shifted_exponent_mask;
 }
-
-struct _Nontrivial_dummy_type {
-    constexpr _Nontrivial_dummy_type() noexcept {
-        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
-    }
-};
-_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
 
 #if _HAS_CXX17
 struct monostate {};

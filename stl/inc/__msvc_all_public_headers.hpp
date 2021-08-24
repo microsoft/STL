@@ -139,6 +139,7 @@
 #include <barrier>
 #include <latch>
 #include <semaphore>
+#include <stdatomic.h>
 #include <stop_token>
 #endif // _M_CEE_PURE
 

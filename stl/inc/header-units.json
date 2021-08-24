@@ -95,6 +95,7 @@
         "spanstream",
         "sstream",
         "stack",
+        "stdatomic.h",
         "stdexcept",
         "stop_token",
         "streambuf",
