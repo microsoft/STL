@@ -156,7 +156,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
     // Validate split_view::begin
     STATIC_ASSERT(CanMemberBegin<R>);
-    STATIC_ASSERT(!CanMemberBegin<const R>);
+    STATIC_ASSERT(!CanBegin<const R&>);
     const auto i = r.begin();
     if (!is_empty) {
         assert(ranges::equal(*i, *ranges::begin(expected)));
@@ -172,7 +172,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
     // Validate split_view::end
     STATIC_ASSERT(CanMemberEnd<R>);
-    STATIC_ASSERT(!CanMemberEnd<const R>);
+    STATIC_ASSERT(!CanEnd<const R&>);
     STATIC_ASSERT(ranges::common_range<R> == ranges::common_range<Base>);
     same_as<ranges::sentinel_t<R>> auto s = r.end();
     assert((r.begin() == s) == is_empty);
