@@ -803,6 +803,11 @@ public:
     _Variantish_state _Contains;
 };
 
+template <class _Iter>
+concept _Postfix_can_reference = input_or_output_iterator<_Iter> && requires(_Iter& __it) {
+    { *__it++ } -> _Can_reference;
+};
+
 // clang-format off
 template <input_or_output_iterator _Iter, sentinel_for<_Iter> _Se>
     requires (!same_as<_Iter, _Se> && copyable<_Iter>)
@@ -821,6 +826,16 @@ private:
         _NODISCARD const iter_value_t<_Iter>* operator->() const noexcept /* strengthened */ {
             return _STD addressof(_Keep);
         }
+    };
+
+    class _Postfix_proxy {
+    private:
+        iter_value_t<_Iter> _Keep;
+
+    public:
+        explicit _Postfix_proxy(iter_reference_t<_Iter>&& _Right) noexcept(
+            is_nothrow_constructible_v<iter_value_t<_Iter>, iter_reference_t<_Iter>>) // strengthened
+            : _Keep(_STD forward<iter_reference_t<_Iter>>(_Right)) {}
 
         _NODISCARD const iter_value_t<_Iter>& operator*() const noexcept /* strengthened */ {
             return _Keep;
@@ -913,12 +928,12 @@ public:
             common_iterator _Tmp = *this;
             ++_Val._Iterator;
             return _Tmp;
-        } else if constexpr (_Can_reference<_Iter> //
+        } else if constexpr (_Postfix_can_reference<_Iter> //
                              || !(constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>> //
                                   && move_constructible<iter_value_t<_Iter>>) ) {
             return _Val._Iterator++;
         } else {
-            auto _Tmp = _Proxy{*_Val._Iterator};
+            auto _Tmp = _Postfix_proxy{*_Val._Iterator};
             ++_Val._Iterator;
             return _Tmp;
         }
