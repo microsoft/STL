@@ -62,7 +62,7 @@ steps:
 
     git remote get-url boostorg
     if errorlevel 1 (
-      git remote add boostorg https://github.com/michael-herwig/boostorg-math.git
+      git remote add boostorg https://github.com/boostorg/math.git
       git config --local extensions.partialClone boostorg
     )
 
