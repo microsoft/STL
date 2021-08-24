@@ -247,8 +247,9 @@
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
-//     (partially implemented)
 // P2325R3 Views Should Not Be Required To Be Default Constructible
+// P2328R1 join_view Should Join All views Of ranges
+// P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -261,13 +262,16 @@
 
 // _HAS_CXX23 directly controls:
 // P0401R6 Providing Size Feedback In The Allocator Interface
+// P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
+// P1425R4 Iterator Pair Constructors For stack And queue
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
+// P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 
@@ -1357,16 +1361,20 @@
 
 // C++23
 #if _HAS_CXX23
+#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
+
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_allocate_at_least 202106L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_invoke_r       202106L
 #define __cpp_lib_is_scoped_enum 202011L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr 202106L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_stdatomic_h     202011L
 #define __cpp_lib_string_contains 202011L
 #define __cpp_lib_to_underlying   202102L
 #endif // _HAS_CXX23

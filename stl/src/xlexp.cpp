@@ -18,11 +18,14 @@ static const long double invln2 = 1.4426950408889634073599246810018921L;
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(
     long double* px, long double y, short eoff) { // compute y * e^(*px), (*px) finite, |y| not huge
-    if (*px < -hugexp || y == 0.0L) { // certain underflow
-        *px = 0.0L;
+    if (y == 0.0L) { // zero
+        *px = y;
+        return 0;
+    } else if (*px < -hugexp) { // certain underflow
+        *px = _Xfe_underflow(y);
         return 0;
     } else if (hugexp < *px) { // certain overflow
-        *px = _LInf._Long_double;
+        *px = _Xfe_overflow(y);
         return _INFCODE;
     } else { // xexp won't overflow
         long double g = *px * invln2;
@@ -40,7 +43,21 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LExp(
             *px = (w + g) / (w - g) * 2.0L * y;
             --xexp;
         }
-        return _LDscale(px, static_cast<long>(xexp) + eoff);
+
+        const short result_code = _LDscale(px, static_cast<long>(xexp) + eoff);
+
+        switch (result_code) {
+        case 0:
+            *px = _Xfe_underflow(y);
+            break;
+        case _INFCODE:
+            *px = _Xfe_overflow(y);
+            break;
+        default:
+            break;
+        }
+
+        return result_code;
     }
 }
 
