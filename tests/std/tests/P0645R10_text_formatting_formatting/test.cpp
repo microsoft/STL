@@ -58,7 +58,7 @@ auto make_testing_format_args(Args&&... vals) {
 template <class charT, class... Args>
 void throw_helper(const charT* fmt, const Args&... vals) {
     try {
-        (void) format(fmt, vals...);
+        (void) vformat(fmt, make_testing_format_args<charT>(vals...));
         assert(false);
     } catch (const format_error&) {
     }
@@ -574,7 +574,8 @@ void test_integral_specs() {
 
 template <class charT, class T>
 void test_type(const charT* fmt, T val) {
-    assert(format(fmt, val) == format(fmt, static_cast<int>(val)));
+    assert(vformat(fmt, make_testing_format_args<charT>(val))
+           == vformat(fmt, make_testing_format_args<charT>(static_cast<int>(val))));
 }
 
 template <class charT>
@@ -993,7 +994,7 @@ void test_size_helper(const size_t expected_size, const basic_string_view<charT>
         assert(res.size == signed_size);
         assert(res.out - str.begin() == signed_size);
         assert(res.out == str.end());
-        assert(format(fmt, args...) == str);
+        assert(vformat(fmt, make_testing_format_args<charT>(args...)) == str);
 
         basic_string<charT> locale_str;
         locale_str.resize(expected_size);
