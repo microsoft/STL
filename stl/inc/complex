@@ -1814,11 +1814,45 @@ _NODISCARD complex<_Ty> cosh(const complex<_Ty>& _Left) {
 }
 
 template <class _Ty>
+_NODISCARD complex<_Ty> _Polar_positive_nan_inf_zero_rho(const _Ty& _Rho, const _Ty& _Theta) { // _Rho is +NaN/+Inf/+0
+    if (_Ctraits<_Ty>::_Isnan(_Theta) || _Ctraits<_Ty>::_Isinf(_Theta)) { // _Theta is NaN/Inf
+        if (_Ctraits<_Ty>::_Isinf(_Rho)) {
+            return complex<_Ty>(_Rho, _Ctraits<_Ty>::sin(_Theta)); // (Inf, NaN/Inf)
+        } else {
+            return complex<_Ty>(_Rho, _Ctraits<_Ty>::_Copysign(_Rho, _Theta)); // (NaN/0, NaN/Inf)
+        }
+    } else if (_Theta == _Ty{0}) { // _Theta is zero
+        return complex<_Ty>(_Rho, _Theta); // (NaN/Inf/0, 0)
+    } else { // _Theta is finite non-zero
+        // (NaN/Inf/0, finite non-zero)
+        return complex<_Ty>(_Rho * _Ctraits<_Ty>::cos(_Theta), _Rho * _Ctraits<_Ty>::sin(_Theta));
+    }
+}
+
+template <class _Ty>
 _NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) {
-    _Ty _Real(real(_Left)), _Imag(real(_Left));
-    _Ctraits<_Ty>::_Exp(&_Real, _Ctraits<_Ty>::cos(imag(_Left)), 0);
-    _Ctraits<_Ty>::_Exp(&_Imag, _Ctraits<_Ty>::sin(imag(_Left)), 0);
-    return complex<_Ty>(_Real, _Imag);
+    const _Ty _Log_rho = _STD real(_Left);
+    const _Ty _Theta   = _STD imag(_Left);
+
+    if (!_Ctraits<_Ty>::_Isnan(_Log_rho) && !_Ctraits<_Ty>::_Isinf(_Log_rho)) { // real component is finite
+        _Ty _Real = _Log_rho;
+        _Ty _Imag = _Log_rho;
+        _Ctraits<_Ty>::_Exp(&_Real, _Ctraits<_Ty>::cos(_Theta), 0);
+        _Ctraits<_Ty>::_Exp(&_Imag, _Ctraits<_Ty>::sin(_Theta), 0);
+        return complex<_Ty>(_Real, _Imag);
+    }
+
+    // real component is NaN/Inf
+    // return polar(exp(re), im)
+    if (_Ctraits<_Ty>::_Isinf(_Log_rho)) {
+        if (_Log_rho < _Ty{0}) {
+            return _Polar_positive_nan_inf_zero_rho(_Ty{0}, _Theta); // exp(-Inf) = +0
+        } else {
+            return _Polar_positive_nan_inf_zero_rho(_Log_rho, _Theta); // exp(+Inf) = +Inf
+        }
+    } else {
+        return _Polar_positive_nan_inf_zero_rho(_Ctraits<_Ty>::_Abs(_Log_rho), _Theta); // exp(NaN) = +NaN
+    }
 }
 
 template <class _Ty>
@@ -2057,7 +2091,16 @@ _NODISCARD _CONSTEXPR20 _Ty norm(const complex<_Ty>& _Left) { // return squared 
 
 template <class _Ty>
 _NODISCARD complex<_Ty> polar(const _Ty& _Rho, const _Ty& _Theta) { // return _Rho * exp(i * _Theta) as complex
-    return complex<_Ty>(_Rho * _Ctraits<_Ty>::cos(_Theta), _Rho * _Ctraits<_Ty>::sin(_Theta));
+    if (!_Ctraits<_Ty>::_Isnan(_Rho) && !_Ctraits<_Ty>::_Isinf(_Rho) && _Rho != _Ty{0}) { // _Rho is finite non-zero
+        return complex<_Ty>(_Rho * _Ctraits<_Ty>::cos(_Theta), _Rho * _Ctraits<_Ty>::sin(_Theta));
+    }
+
+    // _Rho is NaN/Inf/0
+    if (_Ctraits<_Ty>::_Signbit(_Rho)) {
+        return -_Polar_positive_nan_inf_zero_rho(-_Rho, _Theta);
+    } else {
+        return _Polar_positive_nan_inf_zero_rho(_Rho, _Theta);
+    }
 }
 
 template <class _Ty>
