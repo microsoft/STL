@@ -47,48 +47,48 @@ constexpr bool test_optional() {
 
     { // construction from underlying type
         const T input{42};
-        optional<T> copy_constructed{input};
-        assert(copy_constructed.has_value());
-        assert(*copy_constructed == 42);
+        optional<T> construct_from_type{input};
+        assert(construct_from_type.has_value());
+        assert(*construct_from_type == 42);
 
-        optional<T> move_constructed{T{42}};
-        assert(move_constructed.has_value());
-        assert(*move_constructed == 42);
+        optional<T> construct_from_type_rvalue{T{42}};
+        assert(construct_from_type_rvalue.has_value());
+        assert(*construct_from_type_rvalue == 42);
 
-        optional<T> copy_assigned;
-        assert(!copy_assigned.has_value());
-        copy_assigned = input;
-        assert(copy_assigned.has_value());
-        assert(*copy_assigned == 42);
+        optional<T> assign_from_type;
+        assert(!assign_from_type.has_value());
+        assign_from_type = input;
+        assert(assign_from_type.has_value());
+        assert(*assign_from_type == 42);
 
-        optional<T> move_assigned;
-        assert(!move_assigned.has_value());
-        move_assigned = T{42};
-        assert(move_assigned.has_value());
-        assert(*move_assigned == 42);
+        optional<T> assign_from_type_rvalue;
+        assert(!assign_from_type_rvalue.has_value());
+        assign_from_type_rvalue = T{42};
+        assert(assign_from_type_rvalue.has_value());
+        assert(*assign_from_type_rvalue == 42);
     }
 
     { // construction from convertible type
         const int input{42};
-        optional<T> copy_constructed{input};
-        assert(copy_constructed.has_value());
-        assert(*copy_constructed == 42);
+        optional<T> construct_from_convertible_type{input};
+        assert(construct_from_convertible_type.has_value());
+        assert(*construct_from_convertible_type == 42);
 
-        optional<T> move_constructed{42};
-        assert(move_constructed.has_value());
-        assert(*move_constructed == 42);
+        optional<T> construct_from_convertible_type_rvalue{42};
+        assert(construct_from_convertible_type_rvalue.has_value());
+        assert(*construct_from_convertible_type_rvalue == 42);
 
-        optional<T> copy_assigned;
-        assert(!copy_assigned.has_value());
-        copy_assigned = input;
-        assert(copy_assigned.has_value());
-        assert(*copy_assigned == 42);
+        optional<T> assign_from_convertible_type;
+        assert(!assign_from_convertible_type.has_value());
+        assign_from_convertible_type = input;
+        assert(assign_from_convertible_type.has_value());
+        assert(*assign_from_convertible_type == 42);
 
-        optional<T> move_assigned;
-        assert(!move_assigned.has_value());
-        move_assigned = 42;
-        assert(move_assigned.has_value());
-        assert(*move_assigned == 42);
+        optional<T> assign_from_convertible_type_rvalue;
+        assert(!assign_from_convertible_type_rvalue.has_value());
+        assign_from_convertible_type_rvalue = 42;
+        assert(assign_from_convertible_type_rvalue.has_value());
+        assert(*assign_from_convertible_type_rvalue == 42);
     }
 
     { // construction from optional with same type
@@ -110,13 +110,13 @@ constexpr bool test_optional() {
 #endif // TRANSITION
                 optional<T> copy_assigned;
                 assert(!copy_assigned.has_value());
-                copy_assigned = constructed;
+                copy_assigned = move_constructed;
                 assert(copy_assigned.has_value());
                 assert(*copy_assigned == 42);
 
                 optional<T> move_assigned;
                 assert(!move_assigned.has_value());
-                move_assigned = move(constructed);
+                move_assigned = move(copy_assigned);
                 assert(move_assigned.has_value());
                 assert(*move_assigned == 42);
 #if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
@@ -128,25 +128,25 @@ constexpr bool test_optional() {
     { // construction from optional with convertible types
         optional<int> input{42};
 
-        optional<T> copy_constructed{input};
-        assert(copy_constructed.has_value());
-        assert(*copy_constructed == 42);
+        optional<T> construct_from_convertible_optional{input};
+        assert(construct_from_convertible_optional.has_value());
+        assert(*construct_from_convertible_optional == 42);
 
-        optional<T> move_constructed{optional<int>{3}};
-        assert(move_constructed.has_value());
-        assert(*move_constructed == 3);
+        optional<T> construct_from_convertible_optional_rvalue{optional<int>{3}};
+        assert(construct_from_convertible_optional_rvalue.has_value());
+        assert(*construct_from_convertible_optional_rvalue == 3);
 
-        optional<T> copy_assigned;
-        assert(!copy_assigned.has_value());
-        copy_assigned = input;
-        assert(copy_assigned.has_value());
-        assert(*copy_assigned == 42);
+        optional<T> assign_from_convertible_optional;
+        assert(!assign_from_convertible_optional.has_value());
+        assign_from_convertible_optional = input;
+        assert(assign_from_convertible_optional.has_value());
+        assert(*assign_from_convertible_optional == 42);
 
-        optional<T> move_assigned;
-        assert(!move_assigned.has_value());
-        move_assigned = optional<int>{3};
-        assert(move_assigned.has_value());
-        assert(*move_assigned == 3);
+        optional<T> assign_from_convertible_optional_rvalue;
+        assert(!assign_from_convertible_optional_rvalue.has_value());
+        assign_from_convertible_optional_rvalue = optional<int>{3};
+        assert(assign_from_convertible_optional_rvalue.has_value());
+        assert(*assign_from_convertible_optional_rvalue == 3);
     }
 
     { // emplace
@@ -203,25 +203,25 @@ template <class T>
 constexpr bool test_variant() {
     { // construction from underlying type
         const T input{42};
-        variant<Dummy, T> copy_constructed{input};
-        assert(copy_constructed.index() == 1);
-        assert(get<T>(copy_constructed) == 42);
+        variant<Dummy, T> construct_from_type{input};
+        assert(construct_from_type.index() == 1);
+        assert(get<T>(construct_from_type) == 42);
 
-        variant<Dummy, T> move_constructed{T{42}};
-        assert(move_constructed.index() == 1);
-        assert(get<T>(move_constructed) == 42);
+        variant<Dummy, T> construct_from_type_rvalue{T{42}};
+        assert(construct_from_type_rvalue.index() == 1);
+        assert(get<T>(construct_from_type_rvalue) == 42);
 
-        variant<Dummy, T> copy_assigned;
-        assert(copy_assigned.index() == 0);
-        copy_assigned = input;
-        assert(copy_assigned.index() == 1);
-        assert(get<T>(copy_assigned) == 42);
+        variant<Dummy, T> assign_from_type;
+        assert(assign_from_type.index() == 0);
+        assign_from_type = input;
+        assert(assign_from_type.index() == 1);
+        assert(get<T>(assign_from_type) == 42);
 
-        variant<Dummy, T> move_assigned;
-        assert(move_assigned.index() == 0);
-        move_assigned = T{42};
-        assert(move_assigned.index() == 1);
-        assert(get<T>(move_assigned) == 42);
+        variant<Dummy, T> assign_from_type_rvalue;
+        assert(assign_from_type_rvalue.index() == 0);
+        assign_from_type_rvalue = T{42};
+        assert(assign_from_type_rvalue.index() == 1);
+        assert(get<T>(assign_from_type_rvalue) == 42);
     }
 
     { // construction from variant with same type
