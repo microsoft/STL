@@ -60,7 +60,6 @@ void test_istream_exceptions() {
     }
 }
 
-
 template <class CharT>
 void test_ostream_exceptions() {
     throwing_buffer<CharT> buffer;

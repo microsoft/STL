@@ -206,7 +206,7 @@ private:
 
     template <class = void>
     void _Increment_gcount() {
-        if (_Chcount != (numeric_limits<streamsize>::max) ()) {
+        if (_Chcount != (numeric_limits<streamsize>::max)()) {
             ++_Chcount;
         }
     }
@@ -359,8 +359,8 @@ public:
         return get(_Str, _Count, _Myios::widen('\n'));
     }
 
-    basic_istream& __CLR_OR_THIS_CALL get(
-        _Elem* _Str, streamsize _Count, _Elem _Delim) { // get up to _Count characters into NTCS, stop before _Delim
+    basic_istream& __CLR_OR_THIS_CALL get(_Elem* _Str, streamsize _Count, _Elem _Delim) {
+        // get up to _Count characters into NTCS, stop before _Delim
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -401,8 +401,8 @@ public:
         return get(_Strbuf, _Myios::widen('\n'));
     }
 
-    basic_istream& __CLR_OR_THIS_CALL get(
-        _Mysb& _Strbuf, _Elem _Delim) { // extract up to delimiter and insert into stream buffer
+    basic_istream& __CLR_OR_THIS_CALL get(_Mysb& _Strbuf, _Elem _Delim) {
+        // extract up to delimiter and insert into stream buffer
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -437,13 +437,13 @@ public:
         return *this;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL getline(
-        _Elem* _Str, streamsize _Count) { // get up to _Count characters into NTCS, discard newline
+    basic_istream& __CLR_OR_THIS_CALL getline(_Elem* _Str, streamsize _Count) {
+        // get up to _Count characters into NTCS, discard newline
         return getline(_Str, _Count, _Myios::widen('\n'));
     }
 
-    basic_istream& __CLR_OR_THIS_CALL getline(
-        _Elem* _Str, streamsize _Count, _Elem _Delim) { // get up to _Count characters into NTCS, discard _Delim
+    basic_istream& __CLR_OR_THIS_CALL getline(_Elem* _Str, streamsize _Count, _Elem _Delim) {
+        // get up to _Count characters into NTCS, discard _Delim
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -478,8 +478,8 @@ public:
         return *this;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL ignore(streamsize _Count = 1,
-        int_type _Metadelim = _Traits::eof()) { // ignore up to _Count characters, discarding delimiter
+    basic_istream& __CLR_OR_THIS_CALL ignore(streamsize _Count = 1, int_type _Metadelim = _Traits::eof()) {
+        // ignore up to _Count characters, discarding delimiter
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -488,7 +488,7 @@ public:
             _TRY_IO_BEGIN
             for (;;) { // get a metacharacter if more room in buffer
                 int_type _Meta;
-                if (_Count != (numeric_limits<streamsize>::max) () && --_Count < 0) {
+                if (_Count != (numeric_limits<streamsize>::max)() && --_Count < 0) {
                     break; // buffer full, quit
                 } else if (_Traits::eq_int_type(_Traits::eof(),
                                _Meta = _Myios::rdbuf()->sbumpc())) { // end of file, quit
@@ -528,8 +528,8 @@ public:
         return *this;
     }
 
-    streamsize __CLR_OR_THIS_CALL readsome(_Elem* _Str,
-        streamsize _Count) { // read up to _Count characters into buffer, without blocking
+    streamsize __CLR_OR_THIS_CALL readsome(_Elem* _Str, streamsize _Count) {
+        // read up to _Count characters into buffer, without blocking
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -647,8 +647,8 @@ public:
         return *this;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL seekg(
-        off_type _Off, ios_base::seekdir _Way) { // change input stream position by _Off, according to _Way
+    basic_istream& __CLR_OR_THIS_CALL seekg(off_type _Off, ios_base::seekdir _Way) {
+        // change input stream position by _Off, according to _Way
         ios_base::iostate _State    = ios_base::goodbit;
         ios_base::iostate _Oldstate = _Myios::rdstate();
         _Myios::clear(_Oldstate & ~ios_base::eofbit);
@@ -872,14 +872,14 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, 
 }
 
 template <class _Traits>
-basic_istream<char, _Traits>& operator>>(
-    basic_istream<char, _Traits>& _Istr, signed char& _Ch) { // extract a signed char
+basic_istream<char, _Traits>& operator>>(basic_istream<char, _Traits>& _Istr, signed char& _Ch) {
+    // extract a signed char
     return _Istr >> reinterpret_cast<char&>(_Ch);
 }
 
 template <class _Traits>
-basic_istream<char, _Traits>& operator>>(
-    basic_istream<char, _Traits>& _Istr, unsigned char& _Ch) { // extract an unsigned char
+basic_istream<char, _Traits>& operator>>(basic_istream<char, _Traits>& _Istr, unsigned char& _Ch) {
+    // extract an unsigned char
     return _Istr >> reinterpret_cast<char&>(_Ch);
 }
 
