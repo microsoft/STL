@@ -2409,6 +2409,7 @@ _NODISCARD _OutputIt _Fmt_write(
             break;
         case 'F':
         case 'f':
+            _Zeroes_to_append = _Extra_precision;
             break;
         case 'G':
         case 'g':
