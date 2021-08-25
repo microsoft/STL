@@ -155,6 +155,12 @@ tests\Dev11_1140665_unique_ptr_array_conversions
 tests\Dev11_1150223_shared_mutex
 tests\Dev11_1158803_regex_thread_safety
 tests\Dev11_1180290_filesystem_error_code
+tests\GH_000431_copy_move_family
+tests\GH_000431_equal_family
+tests\GH_000431_equal_memcmp_is_safe
+tests\GH_000431_iter_copy_move_cat
+tests\GH_000431_lex_compare_family
+tests\GH_000431_lex_compare_memcmp_classify
 tests\GH_000457_system_error_message
 tests\GH_000545_include_compare
 tests\GH_000625_vector_bool_optimization
@@ -489,7 +495,6 @@ tests\VSO_0157762_feature_test_macros
 tests\VSO_0174871_string_replace
 tests\VSO_0180466_algorithm_overhauls
 tests\VSO_0180469_fill_family
-tests\VSO_0180469_ptr_cat
 tests\VSO_0191296_allocator_construct
 tests\VSO_0204655_heap_algorithms_integer_overflow
 tests\VSO_0224478_scoped_allocator
