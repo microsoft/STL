@@ -2,15 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <ios>
 #include <istream>
 #include <ostream>
+#include <streambuf>
 
 using namespace std;
 
 template <class CharT>
 class throwing_buffer : public basic_streambuf<CharT> {
 public:
-    streampos seekoff(streamoff, ios::seekdir, ios_base::openmode = ios_base::in | ios_base::out) override {
+    streampos seekoff(streamoff, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out) override {
         throw 42;
     }
 
