@@ -576,8 +576,8 @@ void test_algorithms(EqualFn equal) {
     }
 
     { // Test member function pointers
-        using mfn_ptr  = int (StatefulBase::*)();
-        using mfn_ptr2 = int (StatefulDerived::*)();
+        using mfn_ptr    = int (StatefulBase::*)();
+        using mfn_ptr2   = int (StatefulDerived::*)();
         mfn_ptr arr1[5]  = {&StatefulBase::get_i, &StatefulBase::get_i2, nullptr, &StatefulBase::get_i2, nullptr};
         mfn_ptr arr2[5]  = {&StatefulBase::get_i, &StatefulBase::get_i2, nullptr, &StatefulBase::get_i2, nullptr};
         mfn_ptr arr3[5]  = {&StatefulBase::get_i, &StatefulBase::get_i, nullptr, &StatefulBase::get_i2, nullptr};

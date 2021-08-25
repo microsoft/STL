@@ -10102,8 +10102,8 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
 
             using _Memcmp_classification_pred = _Lex_compare_memcmp_classify<_It1, _It2, _Pr>;
-            constexpr bool _Is_sized1 = sized_sentinel_for<_Se1, _It1>;
-            constexpr bool _Is_sized2 = sized_sentinel_for<_Se2, _It2>;
+            constexpr bool _Is_sized1         = sized_sentinel_for<_Se1, _It1>;
+            constexpr bool _Is_sized2         = sized_sentinel_for<_Se2, _It2>;
             if constexpr (!is_void_v<_Memcmp_classification_pred> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> //
                           && _Sized_or_unreachable_sentinel_for<_Se2, _It2> //
                           && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {

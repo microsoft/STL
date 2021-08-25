@@ -560,7 +560,7 @@ _INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred<_Elem, _Elem, _Char_tr
 template <class _Elem>
 struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Char_traits_lt<char_traits<_Elem>>> {
     using _UElem = make_unsigned_t<_Elem>;
-    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_UElem, _UElem>, less<int>, void>;
+    using _Pred  = conditional_t<_Lex_compare_memcmp_classify_elements<_UElem, _UElem>, less<int>, void>;
 };
 
 template <class _Traits>

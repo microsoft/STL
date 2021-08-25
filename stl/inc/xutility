@@ -4542,8 +4542,8 @@ _INLINE_VAR constexpr bool
 
 template <class _Ty1, class _Ty2>
 _INLINE_VAR constexpr bool _Is_pointer_address_comparable =
-    (_Is_pointer_address_convertible<_Ty1,
-         _Ty2> || _Is_pointer_address_convertible<_Ty2, _Ty1>) &&_Can_compare_with_operator_equal<_Ty1*, _Ty2*>;
+    _Can_compare_with_operator_equal<_Ty1*,
+        _Ty2*> && (_Is_pointer_address_convertible<_Ty1, _Ty2> || _Is_pointer_address_convertible<_Ty2, _Ty1>);
 
 // _Can_memcmp_elements<_Elem1, _Elem2> reports whether `_Elem1 == _Elem2` can be optimized to memcmp.
 // Here, _Elem1 and _Elem2 aren't top-level const, because we remove_const_t before using _Can_memcmp_elements.
