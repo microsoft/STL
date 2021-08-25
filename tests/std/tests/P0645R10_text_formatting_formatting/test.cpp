@@ -801,19 +801,19 @@ void test_float_specs() {
     if constexpr (is_same_v<charT, char>) {
         charT buffer[2048];
 
-        string_view expected{buffer, to_chars(buffer, buffer + sizeof(buffer), value, chars_format::general, 2000).ptr};
+        string_view expected{buffer, to_chars(begin(buffer), end(buffer), value, chars_format::general, 2000).ptr};
         assert(format("{:.2000}", value) == expected);
 
-        expected = {buffer, to_chars(buffer, buffer + sizeof(buffer), value, chars_format::hex, 2000).ptr};
+        expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::hex, 2000).ptr};
         assert(format("{:.2000a}", value) == expected);
 
-        expected = {buffer, to_chars(buffer, buffer + sizeof(buffer), value, chars_format::scientific, 2000).ptr};
+        expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::scientific, 2000).ptr};
         assert(format("{:.2000e}", value) == expected);
 
-        expected = {buffer, to_chars(buffer, buffer + sizeof(buffer), value, chars_format::fixed, 2000).ptr};
+        expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::fixed, 2000).ptr};
         assert(format("{:.2000f}", value) == expected);
 
-        expected = {buffer, to_chars(buffer, buffer + sizeof(buffer), value, chars_format::general, 2000).ptr};
+        expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::general, 2000).ptr};
         assert(format("{:.2000g}", value) == expected);
     }
 
