@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 from io import StringIO
 from pathlib import Path
@@ -47,7 +48,7 @@ enum class _{prop_name}_Property_Values : uint8_t {{
 """
 
 DATA_ARRAY_TEMPLATE = """
-static constexpr _Unicode_Property_Data<_{prop_name}_Property_Values, {size}> _{prop_name}_Property_Data{{
+inline constexpr _Unicode_Property_Data<_{prop_name}_Property_Values, {size}> _{prop_name}_Property_Data{{
     {{{lower_bounds}}},
     {{{props_and_size}}}
 }};

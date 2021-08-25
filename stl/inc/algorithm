@@ -5956,39 +5956,7 @@ namespace ranges {
     };
 
     inline constexpr _Lower_bound_fn lower_bound{_Not_quite_object::_Construct_tag{}};
-} // namespace ranges
-#endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _Ty, class _Pr>
-_NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
-    // find first element that _Val is before
-    _Adl_verify_range(_First, _Last);
-    auto _UFirst                = _Get_unwrapped(_First);
-    _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
-
-    while (0 < _Count) { // divide and conquer, find half that contains answer
-        _Iter_diff_t<_FwdIt> _Count2 = _Count / 2;
-        const auto _UMid             = _STD next(_UFirst, _Count2);
-        if (_Pred(_Val, *_UMid)) {
-            _Count = _Count2;
-        } else { // try top half
-            _UFirst = _Next_iter(_UMid);
-            _Count -= _Count2 + 1;
-        }
-    }
-
-    _Seek_wrapped(_First, _UFirst);
-    return _First;
-}
-
-template <class _FwdIt, class _Ty>
-_NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
-    // find first element that _Val is before
-    return _STD upper_bound(_First, _Last, _Val, less<>{});
-}
-
-#ifdef __cpp_lib_concepts
-namespace ranges {
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Upper_bound_unchecked(
         _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {

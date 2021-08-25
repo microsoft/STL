@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 from pathlib import Path
@@ -52,8 +53,8 @@ def parseBreakTestLine(input: TextIO) -> Optional[BreakTestItem]:
 
 cpp_template = """
 struct test_case_data {{
-    std::vector<char32_t> code_points;
-    std::vector<size_t> breaks;
+    vector<char32_t> code_points;
+    vector<size_t> breaks;
 }};
 const test_case_data test_data[] = {{
     {}
@@ -66,7 +67,7 @@ cpp_test_data_line_template = "{{ {{{}}}, {{{}}} }}"
 def lineToCppDataLine(line: BreakTestItem) -> str:
     return cpp_test_data_line_template.format(','.join(
         ["U'\\x" + format(x, 'x') + "'" for x in line.code_points]), ','.join(
-        [str(x) + 'ull' for x in line.breaks]))
+        [str(x) for x in line.breaks]))
 
 
 if __name__ == "__main__":

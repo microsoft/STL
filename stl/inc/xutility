@@ -5735,6 +5735,34 @@ _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _T
     return _STD lower_bound(_First, _Last, _Val, less<>{});
 }
 
+template <class _FwdIt, class _Ty, class _Pr>
+_NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
+    // find first element that _Val is before
+    _Adl_verify_range(_First, _Last);
+    auto _UFirst                = _Get_unwrapped(_First);
+    _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
+
+    while (0 < _Count) { // divide and conquer, find half that contains answer
+        _Iter_diff_t<_FwdIt> _Count2 = _Count / 2;
+        const auto _UMid             = _STD next(_UFirst, _Count2);
+        if (_Pred(_Val, *_UMid)) {
+            _Count = _Count2;
+        } else { // try top half
+            _UFirst = _Next_iter(_UMid);
+            _Count -= _Count2 + 1;
+        }
+    }
+
+    _Seek_wrapped(_First, _UFirst);
+    return _First;
+}
+
+template <class _FwdIt, class _Ty>
+_NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+    // find first element that _Val is before
+    return _STD upper_bound(_First, _Last, _Val, less<>{});
+}
+
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)

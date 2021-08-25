@@ -163,21 +163,16 @@ concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
 };
 // clang-format on
 
-template <typename _Value_enum, size_t _Num_ranges>
+template <class _Value_enum, size_t _Num_ranges>
 struct _Unicode_Property_Data {
     uint32_t _Lower_bounds[_Num_ranges];
     uint16_t _Props_And_Size[_Num_ranges];
-    _NODISCARD constexpr _Value_enum _Get_property_for_codepoint(uint32_t _Code_point) const noexcept {
-        ptrdiff_t _Upper_idx = _STD lower_bound(_Lower_bounds, _STD end(_Lower_bounds), _Code_point) - _Lower_bounds;
-        if (_Upper_idx == _Num_ranges) {
-            --_Upper_idx;
-        } else if (_Lower_bounds[_Upper_idx] != _Code_point) {
-            if (_Upper_idx != 0) {
-                --_Upper_idx;
-            } else {
-                return static_cast<_Value_enum>((numeric_limits<uint8_t>::max) ());
-            }
+    _NODISCARD constexpr _Value_enum _Get_property_for_codepoint(const uint32_t _Code_point) const noexcept {
+        ptrdiff_t _Upper_idx = _STD upper_bound(_Lower_bounds, _STD end(_Lower_bounds), _Code_point) - _Lower_bounds;
+        if (_Upper_idx == 0) {
+            return static_cast<_Value_enum>((numeric_limits<uint8_t>::max) ());
         }
+        --_Upper_idx;
         uint32_t _Lower_bound = _Lower_bounds[_Upper_idx];
         uint16_t _Data        = _Props_And_Size[_Upper_idx];
         uint16_t _Size        = static_cast<uint16_t>(_Data & 0x0FFF);
@@ -213,11 +208,12 @@ struct _Unicode_Property_Data {
 // that is: the size is stored in the least significant 12 bits (leading to a max size of 4095), and the property value
 // is stored in the most significant 4 bits, leading to a maximum of 16 property values.
 //
-// Note that the Extended_Pictographic property only has one value, and we endode it as zero in the most significant 4
-// bits so the most significant 4 bits of _Extended_Pictographic_Props_And_Range is "unused", in some sense.
+// Note that the Extended_Pictographic property only has one value, and we encode it as zero in the most significant 4
+// bits, so the most significant 4 bits of _Extended_Pictographic_Props_And_Range are "unused", in some sense.
 //
 // Code point ranges may not overlap, and, within one property, a codepoint may only appear once. Further the codepoint
 // lower bounds appear in sorted (ascending) order.
+
 
 enum class _Grapheme_Break_Property_Values : uint8_t {
     _CR_value,
@@ -236,7 +232,7 @@ enum class _Grapheme_Break_Property_Values : uint8_t {
     _No_value = 255
 };
 
-static constexpr _Unicode_Property_Data<_Grapheme_Break_Property_Values, 1364> _Grapheme_Break_Property_Data{
+inline constexpr _Unicode_Property_Data<_Grapheme_Break_Property_Values, 1364> _Grapheme_Break_Property_Data{
     {0x0, 0xa, 0xb, 0xd, 0xe, 0x7f, 0xad, 0x300, 0x483, 0x488, 0x591, 0x5bf, 0x5c1, 0x5c4, 0x5c7, 0x600, 0x610, 0x61c,
         0x64b, 0x670, 0x6d6, 0x6dd, 0x6df, 0x6e7, 0x6ea, 0x70f, 0x711, 0x730, 0x7a6, 0x7eb, 0x7fd, 0x816, 0x81b, 0x825,
         0x829, 0x859, 0x8d3, 0x8e2, 0x8e3, 0x903, 0x93a, 0x93b, 0x93c, 0x93e, 0x941, 0x949, 0x94d, 0x94e, 0x951, 0x962,
@@ -438,7 +434,7 @@ static constexpr _Unicode_Property_Data<_Grapheme_Break_Property_Values, 1364> _
 
 enum class _Extended_Pictographic_Property_Values : uint8_t { _Extended_Pictographic_value, _No_value = 255 };
 
-static constexpr _Unicode_Property_Data<_Extended_Pictographic_Property_Values, 491>
+inline constexpr _Unicode_Property_Data<_Extended_Pictographic_Property_Values, 491>
     _Extended_Pictographic_Property_Data{
         {0xa9, 0xae, 0x203c, 0x2049, 0x2122, 0x2139, 0x2194, 0x21a9, 0x231a, 0x2328, 0x2388, 0x23cf, 0x23e9, 0x23ed,
             0x23ef, 0x23f0, 0x23f1, 0x23f3, 0x23f8, 0x24c2, 0x25aa, 0x25b6, 0x25c0, 0x25fb, 0x2600, 0x2602, 0x2604,
@@ -537,11 +533,11 @@ constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wchar_t* _Last
 
 constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_t& _Val) noexcept {
     _STL_INTERNAL_CHECK(_First < _Last);
-    // decode a UTF-8 value starting at _First and not exceding _Last, returning
+    // decode a UTF-8 value starting at _First and not exceeding _Last, returning
     // one past the end of the character decoded. Any invalid codepoints will result in
     // _Val == U+FFFD and _Decode_utf8 will return one past the
     // maximal subpart of the ill-formed subsequence. So, most invalid utf-8 will result in
-    // on U+FFFD for each byte of invalid data. Truncated but otherwise valid UTF-8 may
+    // one U+FFFD for each byte of invalid data. Truncated but otherwise valid UTF-8 may
     // result in one U+FFFD for more than one input byte.
     _Val = static_cast<char32_t>(static_cast<unsigned char>(*_First));
 
@@ -735,7 +731,7 @@ public:
     }
 };
 
-class _Grapheme_break_property_end_iterator {};
+class _Grapheme_break_property_sentinel {};
 
 template <typename _CharT>
 class _Grapheme_break_property_iterator {
@@ -746,7 +742,7 @@ class _Grapheme_break_property_iterator {
     _GB11_LeftHand_regex _GB11_rx;
 
     constexpr friend bool operator==(
-        const _Grapheme_break_property_iterator& _Lhs, _Grapheme_break_property_end_iterator) noexcept {
+        const _Grapheme_break_property_iterator& _Lhs, _Grapheme_break_property_sentinel) noexcept {
         return _Lhs._WrappedIter == _Unicode_codepoint_end_iterator{};
     }
     constexpr friend bool operator==(
@@ -3119,7 +3115,7 @@ _NODISCARD _OutputIt _Fmt_write(
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
 
-class _Measure_string_prefix_end_iterator {};
+class _Measure_string_prefix_sentinel {};
 
 // width iterator for utf-8 and utf-16
 template <typename _CharT>
@@ -3131,8 +3127,8 @@ class _Measure_string_prefix_iterator_utf {
         return _Lhs._WrappedIter == _Rhs._WrappedIter;
     }
     constexpr friend bool operator==(
-        const _Measure_string_prefix_iterator_utf& _Lhs, _Measure_string_prefix_end_iterator) noexcept {
-        return _Lhs._WrappedIter == _Grapheme_break_property_end_iterator{};
+        const _Measure_string_prefix_iterator_utf& _Lhs, _Measure_string_prefix_sentinel) noexcept {
+        return _Lhs._WrappedIter == _Grapheme_break_property_sentinel{};
     }
 
 
@@ -3174,7 +3170,7 @@ class _Measure_string_prefix_iterator_legacy {
     int _Units         = 0;
 
     constexpr friend bool operator==(
-        const _Measure_string_prefix_iterator_legacy& _Lhs, _Measure_string_prefix_end_iterator) noexcept {
+        const _Measure_string_prefix_iterator_legacy& _Lhs, _Measure_string_prefix_sentinel) noexcept {
         return _Lhs._First >= _Lhs._Last;
     }
     constexpr friend bool operator==(const _Measure_string_prefix_iterator_legacy& _Lhs,
@@ -3242,7 +3238,7 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     int _Estimated_width    = 0; // the estimated width of [_Value.data(), _Pos)
     constexpr auto _Max_int = (numeric_limits<int>::max) ();
 
-    while (_Pfx_iter != _Measure_string_prefix_end_iterator{}) {
+    while (_Pfx_iter != _Measure_string_prefix_sentinel{}) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {
             // We're at our maximum length
             break;

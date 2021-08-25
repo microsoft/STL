@@ -214,6 +214,7 @@ int main() {
     };
 
     static_assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
+    static_assert(is_sorted(skipped_files.begin(), skipped_files.end()));
     static_assert(is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
     static_assert(is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
 
@@ -233,6 +234,7 @@ int main() {
 
             continue;
         }
+
         if (binary_search(skipped_files.begin(), skipped_files.end(), filename)) {
             continue;
         }
