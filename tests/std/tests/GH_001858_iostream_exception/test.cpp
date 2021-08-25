@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstring>
 #include <ios>
 #include <istream>
 #include <ostream>
@@ -40,11 +41,53 @@ void test_istream_exceptions() {
         assert(is.bad());
     }
 
+    { // sync with exceptions
+        basic_istream<CharT> is(buffer.to_buf());
+        try {
+            is.exceptions(ios_base::failbit);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(is.bad());
+        } catch (...) {
+            assert(false);
+        }
+
+        try {
+            assert(is.sync() == -1);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(is.bad());
+        } catch (...) {
+            assert(false);
+        }
+    }
+
     { // seekg
         basic_istream<CharT> is(buffer.to_buf());
         assert(!is.bad());
         is.seekg(0);
         assert(is.bad());
+    }
+
+    { // seekg with exceptions
+        basic_istream<CharT> is(buffer.to_buf());
+        try {
+            is.exceptions(ios_base::failbit);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(is.bad());
+        } catch (...) {
+            assert(false);
+        }
+
+        try {
+            is.seekg(0);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(is.bad());
+        } catch (...) {
+            assert(false);
+        }
     }
 
     { // seekg
@@ -54,11 +97,53 @@ void test_istream_exceptions() {
         assert(is.bad());
     }
 
+    { // seekg with exceptions
+        basic_istream<CharT> is(buffer.to_buf());
+        try {
+            is.exceptions(ios_base::failbit);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(is.bad());
+        } catch (...) {
+            assert(false);
+        }
+
+        try {
+            is.seekg(0, ios_base::beg);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(is.bad());
+        } catch (...) {
+            assert(false);
+        }
+    }
+
     { // tellg
         basic_istream<CharT> is(buffer.to_buf());
         assert(!is.bad());
         assert(is.tellg() == -1);
         assert(is.bad());
+    }
+
+    { // tellg with exceptions
+        basic_istream<CharT> is(buffer.to_buf());
+        try {
+            is.exceptions(ios_base::failbit);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(is.bad());
+        } catch (...) {
+            assert(false);
+        }
+
+        try {
+            assert(is.tellg() == -1);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(is.bad());
+        } catch (...) {
+            assert(false);
+        }
     }
 }
 
@@ -73,11 +158,53 @@ void test_ostream_exceptions() {
         assert(os.bad());
     }
 
+    { // flush with exceptions
+        basic_ostream<CharT> os(buffer.to_buf());
+        try {
+            os.exceptions(ios_base::failbit);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(os.bad());
+        } catch (...) {
+            assert(false);
+        }
+
+        try {
+            os.flush();
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(os.bad());
+        } catch (...) {
+            assert(false);
+        }
+    }
+
     { // seekp
         basic_ostream<CharT> os(buffer.to_buf());
         assert(!os.bad());
         os.seekp(0);
         assert(os.bad());
+    }
+
+    { // seekp with exceptions
+        basic_ostream<CharT> os(buffer.to_buf());
+        try {
+            os.exceptions(ios_base::failbit);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(os.bad());
+        } catch (...) {
+            assert(false);
+        }
+
+        try {
+            os.seekp(0);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(os.bad());
+        } catch (...) {
+            assert(false);
+        }
     }
 
     { // seekp
@@ -87,11 +214,53 @@ void test_ostream_exceptions() {
         assert(os.bad());
     }
 
+    { // seekp with exceptions
+        basic_ostream<CharT> os(buffer.to_buf());
+        try {
+            os.exceptions(ios_base::failbit);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(os.bad());
+        } catch (...) {
+            assert(false);
+        }
+
+        try {
+            os.seekp(0, ios_base::beg);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(os.bad());
+        } catch (...) {
+            assert(false);
+        }
+    }
+
     { // tellp
         basic_ostream<CharT> os(buffer.to_buf());
         assert(!os.bad());
         assert(os.tellp() == -1);
         assert(os.bad());
+    }
+
+    { // tellp with exceptions
+        basic_ostream<CharT> os(buffer.to_buf());
+        try {
+            os.exceptions(ios_base::failbit);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(os.bad());
+        } catch (...) {
+            assert(false);
+        }
+
+        try {
+            assert(os.tellp() == -1);
+        } catch (const ios_base::failure& e) {
+            assert(strcmp(e.what(), "ios_base::failbit set"));
+            assert(os.bad());
+        } catch (...) {
+            assert(false);
+        }
     }
 }
 
