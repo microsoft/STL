@@ -65,11 +65,6 @@ void test_lex_compare_three_way_memcmp_classify_for_comp_helper() {
 template <class Expected, class Type1, class Type2, class Pred>
 void test_lex_compare_memcmp_classify_for_pred() {
     test_lex_compare_memcmp_classify_for_pred_helper<Expected, Type1, Type2, Pred>();
-
-    // No volatile
-    test_lex_compare_memcmp_classify_for_pred_helper<void, volatile Type1, Type2, Pred>();
-    test_lex_compare_memcmp_classify_for_pred_helper<void, Type1, volatile Type2, Pred>();
-    test_lex_compare_memcmp_classify_for_pred_helper<void, volatile Type1, volatile Type2, Pred>();
 }
 
 #ifdef __cpp_lib_concepts
@@ -120,20 +115,10 @@ void test_lex_compare_memcmp_classify_for_opaque_preds() {
     test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Enum1, Type2, EnumPred>();
     test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Type1, Enum2, EnumPred>();
     test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Enum1, Enum2, EnumPred>();
-    test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, EnumClass1, Type2, EnumPred>();
-    test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Type1, EnumClass2, EnumPred>();
-    test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, EnumClass1, Enum2, EnumPred>();
-    test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Enum1, EnumClass2, EnumPred>();
-    test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, EnumClass1, EnumClass2, EnumPred>();
     test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Type1, Type2, EnumClassPred>();
     test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Enum1, Type2, EnumClassPred>();
     test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Type1, Enum2, EnumClassPred>();
     test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Enum1, Enum2, EnumClassPred>();
-    test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, EnumClass1, Type2, EnumClassPred>();
-    test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Type1, EnumClass2, EnumClassPred>();
-    test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, EnumClass1, Enum2, EnumClassPred>();
-    test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, Enum1, EnumClass2, EnumClassPred>();
-    test_lex_compare_memcmp_classify_for_opaque_preds_helper<false, EnumClass1, EnumClass2, EnumClassPred>();
 }
 
 template <bool Expected, class Type1, class Type2>
@@ -335,6 +320,11 @@ void lex_compare_memcmp_classify_test_cases() {
     assert_lex_compare_memcmp_classify<less<int>, counted_iterator<unsigned char*>, counted_iterator<unsigned char*>,
         less<>>();
 #endif // __cpp_lib_concepts
+
+    // No volatile
+    test_lex_compare_memcmp_classify_for_pred_helper<void, volatile unsigned char, unsigned char, less<>>();
+    test_lex_compare_memcmp_classify_for_pred_helper<void, unsigned char, volatile unsigned char, less<>>();
+    test_lex_compare_memcmp_classify_for_pred_helper<void, volatile unsigned char, volatile unsigned char, less<>>();
 }
 
 int main() {} // COMPILE-ONLY
