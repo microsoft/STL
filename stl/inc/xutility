@@ -3952,7 +3952,8 @@ struct _Trivial_cat {
         // Conversion from non-bool => non-bool | bool => bool | bool => non-bool is fine.
         // Conversion from non-bool => bool is not fine.
         && is_same_v<bool, _USource> >= is_same_v<bool, _UDest> //
-        && (is_same_v<_Source, _Dest> || !(is_member_pointer_v<_Source> || is_member_pointer_v<_Dest>) );
+        && (is_same_v<_USource, _UDest> || (is_integral_v<_USource> && is_integral_v<_UDest>)
+            || (is_floating_point_v<_USource> && is_floating_point_v<_UDest>) );
 
     static constexpr bool _Trivially_constructible =
         _Same_size_and_compatible && is_trivially_constructible_v<_Dest, _SourceRef>;

@@ -368,6 +368,13 @@ void iter_cat_test_cases() {
     test_iter_cat_for_trivially_copyable_types<sizeof(double) == sizeof(long double), double, long double>();
     test_iter_cat_for_trivially_copyable_types<sizeof(double) == sizeof(long double), long double, double>();
 
+    test_iter_cat_for_trivially_copyable_types<false, int, float>();
+    test_iter_cat_for_trivially_copyable_types<false, float, int>();
+    test_iter_cat_for_trivially_copyable_types<false, long long, double>();
+    test_iter_cat_for_trivially_copyable_types<false, double, long long>();
+    test_iter_cat_for_trivially_copyable_types<false, long long, long double>();
+    test_iter_cat_for_trivially_copyable_types<false, long double, long long>();
+
     // Test pointers
     test_iter_cat_for_pointers_with_volatile<true, int, int>();
     test_iter_cat_for_pointers<false, int, long>();

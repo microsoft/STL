@@ -254,6 +254,26 @@ void test_algorithms(CopyFn copy) {
         assert(equal(begin(expected), end(expected), begin(dst)));
     }
 
+    { // Test float => int
+        float src[7]    = {5.0f, 2.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f};
+        int expected[7] = {5, 2, 1, 0, -1, 0, 0};
+        int dst[7]{};
+
+        copy(begin(src), end(src), begin(dst));
+
+        assert(equal(begin(expected), end(expected), begin(dst)));
+    }
+
+    { // Test int => float
+        int src[7]        = {5, 2, 1, 0, -1, 0, 0};
+        float expected[7] = {5.0f, 2.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f};
+        float dst[7]{};
+
+        copy(begin(src), end(src), begin(dst));
+
+        assert(equal(begin(expected), end(expected), begin(dst)));
+    }
+
     { // Test double => long double
         double src[7]           = {5.0, 2.0, 1.0, 0.0, -1.0, 0.0, 0.0};
         long double expected[7] = {5.0L, 2.0L, 1.0L, 0.0L, -1.0L, 0.0L, 0.0L};
