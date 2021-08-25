@@ -547,11 +547,13 @@ public:
             const sentry _Ok(*this);
 
             if (_Ok) {
+                ios_base::iostate _State = ios_base::goodbit;
                 _TRY_IO_BEGIN
                 if (_Rdbuf->pubsync() == -1) {
-                    _Myios::setstate(ios_base::badbit); // sync failed
+                    _State |= ios_base::badbit; // sync failed
                 }
                 _CATCH_IO_END
+                _Myios::setstate(_State);
             }
         }
         return *this;
@@ -561,11 +563,13 @@ public:
         const sentry _Ok(*this);
 
         if (!this->fail()) {
+            ios_base::iostate _State = ios_base::goodbit;
             _TRY_IO_BEGIN
             if (static_cast<off_type>(_Myios::rdbuf()->pubseekpos(_Pos, ios_base::out)) == -1) {
-                _Myios::setstate(ios_base::failbit);
+                _State |= ios_base::failbit; // seek failed
             }
             _CATCH_IO_END
+            _Myios::setstate(_State);
         }
 
         return *this;
@@ -576,11 +580,13 @@ public:
         const sentry _Ok(*this);
 
         if (!this->fail()) {
+            ios_base::iostate _State = ios_base::goodbit;
             _TRY_IO_BEGIN
             if (static_cast<off_type>(_Myios::rdbuf()->pubseekoff(_Off, _Way, ios_base::out)) == -1) {
-                _Myios::setstate(ios_base::failbit);
+                _State |= ios_base::failbit; // seek failed
             }
             _CATCH_IO_END
+            _Myios::setstate(_State);
         }
 
         return *this;
