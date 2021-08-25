@@ -2394,10 +2394,12 @@ _NODISCARD _OutputIt _Fmt_write(
         }
 
         switch (_Specs._Type) {
-        case 'a':
+        case '\0':
+            break;
         case 'A':
-        case 'e':
+        case 'a':
         case 'E':
+        case 'e':
             if (_Extra_precision != 0) {
                 while (*_Exponent_start != _Exponent) { // Trailing zeroes are in front of the exponent
                     --_Exponent_start;
@@ -2405,12 +2407,11 @@ _NODISCARD _OutputIt _Fmt_write(
                 _Zeroes_to_append = _Extra_precision;
             }
             break;
-        case 'f':
         case 'F':
-            _Zeroes_to_append = _Extra_precision;
+        case 'f':
             break;
-        case 'g':
         case 'G':
+        case 'g':
             if (_Specs._Alt) {
                 auto _Digits = static_cast<int>(_Exponent_start - _Buffer_start);
 
@@ -2433,7 +2434,7 @@ _NODISCARD _OutputIt _Fmt_write(
             }
             break;
         default:
-            break;
+            _THROW(format_error("invalid floating point type"));
         }
     }
 
