@@ -2428,7 +2428,7 @@ _NODISCARD _OutputIt _Fmt_write(
             }
             break;
         default:
-            _THROW(format_error("invalid floating point type"));
+            __assume(false);
         }
     }
 
