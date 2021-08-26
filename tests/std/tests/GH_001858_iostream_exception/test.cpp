@@ -43,22 +43,14 @@ void test_istream_exceptions() {
 
     { // sync with exceptions
         basic_istream<CharT> is(buffer.to_buf());
-        try {
-            is.exceptions(ios_base::failbit);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(is.bad());
-        } catch (...) {
-            assert(false);
-        }
+        is.exceptions(ios_base::badbit);
 
         try {
             assert(is.sync() == -1);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(is.bad());
-        } catch (...) {
+        } catch (const ios_base::failure&) {
             assert(false);
+        } catch (...) {
+            // Expected case
         }
     }
 
@@ -71,22 +63,14 @@ void test_istream_exceptions() {
 
     { // seekg with exceptions
         basic_istream<CharT> is(buffer.to_buf());
-        try {
-            is.exceptions(ios_base::failbit);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(is.bad());
-        } catch (...) {
-            assert(false);
-        }
+        is.exceptions(ios_base::badbit);
 
         try {
             is.seekg(0);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(is.bad());
-        } catch (...) {
+        } catch (const ios_base::failure&) {
             assert(false);
+        } catch (...) {
+            // Expected case
         }
     }
 
@@ -99,22 +83,14 @@ void test_istream_exceptions() {
 
     { // seekg with exceptions
         basic_istream<CharT> is(buffer.to_buf());
-        try {
-            is.exceptions(ios_base::failbit);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(is.bad());
-        } catch (...) {
-            assert(false);
-        }
+        is.exceptions(ios_base::badbit);
 
         try {
             is.seekg(0, ios_base::beg);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(is.bad());
-        } catch (...) {
+        } catch (const ios_base::failure&) {
             assert(false);
+        } catch (...) {
+            // Expected case
         }
     }
 
@@ -127,22 +103,14 @@ void test_istream_exceptions() {
 
     { // tellg with exceptions
         basic_istream<CharT> is(buffer.to_buf());
-        try {
-            is.exceptions(ios_base::failbit);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(is.bad());
-        } catch (...) {
-            assert(false);
-        }
+        is.exceptions(ios_base::badbit);
 
         try {
             assert(is.tellg() == -1);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(is.bad());
-        } catch (...) {
+        } catch (const ios_base::failure&) {
             assert(false);
+        } catch (...) {
+            // Expected case
         }
     }
 }
@@ -160,22 +128,14 @@ void test_ostream_exceptions() {
 
     { // flush with exceptions
         basic_ostream<CharT> os(buffer.to_buf());
-        try {
-            os.exceptions(ios_base::failbit);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(os.bad());
-        } catch (...) {
-            assert(false);
-        }
+        os.exceptions(ios_base::badbit);
 
         try {
             os.flush();
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(os.bad());
-        } catch (...) {
+        } catch (const ios_base::failure&) {
             assert(false);
+        } catch (...) {
+            // Expected case
         }
     }
 
@@ -188,22 +148,15 @@ void test_ostream_exceptions() {
 
     { // seekp with exceptions
         basic_ostream<CharT> os(buffer.to_buf());
-        try {
-            os.exceptions(ios_base::failbit);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(os.bad());
-        } catch (...) {
-            assert(false);
-        }
+        os.exceptions(ios_base::badbit);
 
         try {
             os.seekp(0);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(os.bad());
-        } catch (...) {
             assert(false);
+        } catch (const ios_base::failure&) {
+            assert(false);
+        } catch (...) {
+            // Expected case
         }
     }
 
@@ -216,22 +169,15 @@ void test_ostream_exceptions() {
 
     { // seekp with exceptions
         basic_ostream<CharT> os(buffer.to_buf());
-        try {
-            os.exceptions(ios_base::failbit);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(os.bad());
-        } catch (...) {
-            assert(false);
-        }
+        os.exceptions(ios_base::badbit);
 
         try {
             os.seekp(0, ios_base::beg);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(os.bad());
-        } catch (...) {
             assert(false);
+        } catch (const ios_base::failure&) {
+            assert(false);
+        } catch (...) {
+            // Expected case
         }
     }
 
@@ -244,22 +190,15 @@ void test_ostream_exceptions() {
 
     { // tellp with exceptions
         basic_ostream<CharT> os(buffer.to_buf());
-        try {
-            os.exceptions(ios_base::failbit);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(os.bad());
-        } catch (...) {
-            assert(false);
-        }
+        os.exceptions(ios_base::badbit);
 
         try {
             assert(os.tellp() == -1);
-        } catch (const ios_base::failure& e) {
-            assert(strcmp(e.what(), "ios_base::failbit set"));
-            assert(os.bad());
-        } catch (...) {
             assert(false);
+        } catch (const ios_base::failure&) {
+            assert(false);
+        } catch (...) {
+            // Expected case
         }
     }
 }
