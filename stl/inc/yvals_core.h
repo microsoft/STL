@@ -246,6 +246,7 @@
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
+// P2231R1 Completing constexpr In optional And variant
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
 // P2325R3 Views Should Not Be Required To Be Default Constructible
 // P2328R1 join_view Should Join All views Of ranges
@@ -1208,7 +1209,6 @@
 #define __cpp_lib_memory_resource                   201603L
 #define __cpp_lib_node_extract                      201606L
 #define __cpp_lib_not_fn                            201603L
-#define __cpp_lib_optional                          201606L
 #ifndef _M_CEE
 #define __cpp_lib_parallel_algorithm 201603L
 #endif // _M_CEE
@@ -1218,7 +1218,6 @@
 #define __cpp_lib_shared_ptr_weak_type  201606L
 #define __cpp_lib_string_view           201803L
 #define __cpp_lib_to_chars              201611L
-#define __cpp_lib_variant               202102L
 #endif // _HAS_CXX17
 
 // C++20
@@ -1331,7 +1330,15 @@
 #if _HAS_CXX20
 #define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
-#define __cpp_lib_array_constexpr 201803L
+#define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
+#define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
+#define __cpp_lib_variant  202106L // P2231R1 Completing constexpr In optional And variant
+#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
+#define __cpp_lib_variant  202102L // P2162R2 Inheriting From variant
 #endif // _HAS_CXX17
 
 #if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
