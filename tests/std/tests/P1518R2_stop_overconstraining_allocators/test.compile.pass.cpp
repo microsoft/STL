@@ -17,7 +17,7 @@
 
 using namespace std;
 
-extern pmr::monotonic_buffer_resource mr;
+pmr::monotonic_buffer_resource mr;
 
 template <template <class...> class Ctr>
 struct SfinaeTester {
