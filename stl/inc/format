@@ -2393,26 +2393,19 @@ _NODISCARD _OutputIt _Fmt_write(
             }
         }
 
-        switch (_Specs._Type) {
-        case '\0':
-            break;
-        case 'A':
-        case 'a':
-        case 'E':
-        case 'e':
+        switch (_Format) {
+        case chars_format::hex:
+        case chars_format::scientific:
             if (_Extra_precision != 0) {
                 while (*_Exponent_start != _Exponent) { // Trailing zeroes are in front of the exponent
                     --_Exponent_start;
                 }
-                _Zeroes_to_append = _Extra_precision;
             }
-            break;
-        case 'F':
-        case 'f':
+            [[fallthrough]];
+        case chars_format::fixed:
             _Zeroes_to_append = _Extra_precision;
             break;
-        case 'G':
-        case 'g':
+        case chars_format::general:
             if (_Specs._Alt) {
                 auto _Digits = static_cast<int>(_Exponent_start - _Buffer_start);
 
