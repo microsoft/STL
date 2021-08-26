@@ -1697,7 +1697,7 @@ private:
                     _Clear_and_reserve_geometric(_Newsize);
                 }
 
-                _Mylast = _Refancy<pointer>(_Copy_memmove(_Unfancy(_First), _Unfancy(_Last), _Unfancy(_Myfirst)));
+                _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
             } else {
                 auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
 

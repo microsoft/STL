@@ -24,72 +24,78 @@
 using namespace std;
 
 template <typename C>
-void assert_equal(const C& c, initializer_list<typename C::value_type> il) {
+_CONSTEXPR20 void assert_equal(const C& c, initializer_list<typename C::value_type> il) {
     assert(equal(c.begin(), c.end(), il.begin(), il.end()));
 }
 
 template <typename C>
-void assert_is_permutation(const C& c, initializer_list<typename C::value_type> il) {
+_CONSTEXPR20 void assert_is_permutation(const C& c, initializer_list<typename C::value_type> il) {
     assert(is_permutation(c.begin(), c.end(), il.begin(), il.end()));
 }
 
 template <typename T, typename POCCA, typename POCMA, typename POCS, typename EQUAL>
 class MyAlloc {
 private:
-    size_t m_offset;
+    size_t _offset;
 
-    size_t allocation_offset() const noexcept {
-        return is_always_equal::value ? 10 : m_offset;
+    [[nodiscard]] _CONSTEXPR20 size_t allocation_offset() const noexcept {
+        return is_always_equal::value ? 10 : _offset;
     }
 
 public:
-    size_t offset() const noexcept {
-        return m_offset;
+    [[nodiscard]] _CONSTEXPR20 size_t offset() const noexcept {
+        return _offset;
     }
 
-    typedef T value_type;
+    using value_type = T;
 
-    typedef POCCA propagate_on_container_copy_assignment;
-    typedef POCMA propagate_on_container_move_assignment;
-    typedef POCS propagate_on_container_swap;
-    typedef EQUAL is_always_equal;
+    using propagate_on_container_copy_assignment = POCCA;
+    using propagate_on_container_move_assignment = POCMA;
+    using propagate_on_container_swap            = POCS;
+    using is_always_equal                        = EQUAL;
 
-    explicit MyAlloc(const size_t off) : m_offset(off) {}
-
-    template <typename U>
-    MyAlloc(const MyAlloc<U, POCCA, POCMA, POCS, EQUAL>& other) noexcept : m_offset(other.offset()) {}
+    _CONSTEXPR20 explicit MyAlloc(const size_t off) : _offset(off) {}
 
     template <typename U>
-    bool operator==(const MyAlloc<U, POCCA, POCMA, POCS, EQUAL>& other) const noexcept {
+    _CONSTEXPR20 MyAlloc(const MyAlloc<U, POCCA, POCMA, POCS, EQUAL>& other) noexcept : _offset(other.offset()) {}
+
+    template <typename U>
+    [[nodiscard]] _CONSTEXPR20 bool operator==(const MyAlloc<U, POCCA, POCMA, POCS, EQUAL>& other) const noexcept {
         return allocation_offset() == other.allocation_offset();
     }
 
     template <typename U>
-    bool operator!=(const MyAlloc<U, POCCA, POCMA, POCS, EQUAL>& other) const noexcept {
+    [[nodiscard]] _CONSTEXPR20 bool operator!=(const MyAlloc<U, POCCA, POCMA, POCS, EQUAL>& other) const noexcept {
         return allocation_offset() != other.allocation_offset();
     }
 
-    T* allocate(const size_t n) {
+    _CONSTEXPR20 T* allocate(const size_t n) {
         if (n == 0) {
             return nullptr;
         }
 
         const auto allocationOffset = allocation_offset();
+        const auto _allocated       = n + allocationOffset;
 
         // Production code should check for integer overflow.
-        void* const pv = malloc((n + allocationOffset) * sizeof(T));
+        auto pv = allocator<T>{}.allocate(_allocated);
         if (!pv) {
             throw bad_alloc();
         }
 
-        memset(pv, 0xAB, (n + allocationOffset) * sizeof(T));
+#if _HAS_CXX20
+        if (!is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            memset(pv, 0xAB, (_allocated) * sizeof(T));
+        }
 
-        return static_cast<T*>(pv) + allocationOffset;
+        return pv + allocationOffset;
     }
 
-    void deallocate(T* const p, size_t) noexcept {
+    _CONSTEXPR20 void deallocate(T* const p, const size_t size) noexcept {
         if (p) {
-            free(p - allocation_offset());
+            allocator<T>{}.deallocate(p - allocation_offset(), size + allocation_offset());
         }
     }
 };
@@ -111,8 +117,7 @@ using SwapEqualAlloc = MyAlloc<T, false_type, false_type, true_type, true_type>;
 
 
 template <template <typename, typename> class Sequence>
-void test_sequence_copy_ctor() {
-
+_CONSTEXPR20 void test_sequence_copy_ctor() {
     Sequence<int, StationaryAlloc<int>> src({10, 20, 30}, StationaryAlloc<int>(11));
     auto src_it = src.begin();
 
@@ -136,8 +141,7 @@ void test_sequence_copy_ctor() {
 }
 
 template <template <typename, typename> class Sequence>
-void test_sequence_copy_alloc_ctor(const size_t offset1, const size_t offset2) {
-
+_CONSTEXPR20 void test_sequence_copy_alloc_ctor(const size_t offset1, const size_t offset2) {
     Sequence<int, StationaryAlloc<int>> src({10, 20, 30}, StationaryAlloc<int>(offset1));
     auto src_it = src.begin();
 
@@ -161,8 +165,7 @@ void test_sequence_copy_alloc_ctor(const size_t offset1, const size_t offset2) {
 }
 
 template <template <typename, typename> class Sequence, typename Alloc>
-void test_sequence_copy_assign(const size_t offset1, const size_t offset2, const size_t offset3) {
-
+_CONSTEXPR20 void test_sequence_copy_assign(const size_t offset1, const size_t offset2, const size_t offset3) {
     Sequence<int, Alloc> src({10, 20, 30}, Alloc(offset1));
     Sequence<int, Alloc> dst({0, 0, 0}, Alloc(offset2));
 
@@ -190,8 +193,7 @@ void test_sequence_copy_assign(const size_t offset1, const size_t offset2, const
 }
 
 template <template <typename, typename> class Sequence>
-void test_sequence_move_ctor() {
-
+_CONSTEXPR20 void test_sequence_move_ctor() {
     Sequence<int, StationaryAlloc<int>> src({10, 20, 30}, StationaryAlloc<int>(11));
     auto it1 = src.begin();
 
@@ -219,8 +221,7 @@ void test_sequence_move_ctor() {
 }
 
 template <template <typename, typename> class Sequence>
-void test_sequence_move_alloc_ctor(const size_t offset1, const size_t offset2) {
-
+_CONSTEXPR20 void test_sequence_move_alloc_ctor(const size_t offset1, const size_t offset2) {
     Sequence<int, StationaryAlloc<int>> src({10, 20, 30}, StationaryAlloc<int>(offset1));
     auto it1 = src.begin();
 
@@ -253,8 +254,7 @@ void test_sequence_move_alloc_ctor(const size_t offset1, const size_t offset2) {
 }
 
 template <template <typename, typename> class Sequence, typename Alloc>
-void test_sequence_move_assign(const size_t offset1, const size_t offset2, const size_t offset3) {
-
+_CONSTEXPR20 void test_sequence_move_assign(const size_t offset1, const size_t offset2, const size_t offset3) {
     Sequence<int, Alloc> src({10, 20, 30}, Alloc(offset1));
     Sequence<int, Alloc> dst({0, 0, 0}, Alloc(offset2));
 
@@ -290,8 +290,7 @@ void test_sequence_move_assign(const size_t offset1, const size_t offset2, const
 }
 
 template <template <typename, typename> class Sequence, typename Alloc>
-void test_sequence_swap(const size_t offset1, const size_t offset2) {
-
+_CONSTEXPR20 void test_sequence_swap(const size_t offset1, const size_t offset2) {
     Sequence<int, Alloc> src({10, 20, 30}, Alloc(offset1));
     Sequence<int, Alloc> dst({40, 50, 60}, Alloc(offset2));
 
@@ -317,8 +316,7 @@ void test_sequence_swap(const size_t offset1, const size_t offset2) {
 }
 
 template <template <typename, typename> class Sequence>
-void test_sequence() {
-
+_CONSTEXPR20 bool test_sequence() {
     test_sequence_copy_ctor<Sequence>();
 
     test_sequence_copy_alloc_ctor<Sequence>(11, 11); // equal allocators
@@ -346,6 +344,8 @@ void test_sequence() {
     test_sequence_swap<Sequence, SwapAlloc<int>>(11, 11); // POCS, equal allocators
     test_sequence_swap<Sequence, SwapAlloc<int>>(11, 22); // POCS, non-equal allocators
     test_sequence_swap<Sequence, SwapEqualAlloc<int>>(11, 22); // POCS, always-equal allocators
+
+    return true;
 }
 
 
@@ -1675,6 +1675,9 @@ int main() {
     test_sequence<deque>();
     test_sequence<list>();
     test_sequence<vector>();
+#if _HAS_CXX20 && !defined(__EDG__)
+    static_assert(test_sequence<vector>());
+#endif // _HAS_CXX20
 
     test_flist();
     test_string();
