@@ -41,7 +41,7 @@ _STD_BEGIN
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 template <class _It>
-_INLINE_VAR constexpr auto _Isort_max = _Iter_diff_t<_It>{_ISORT_MAX};
+_INLINE_VAR constexpr _Iter_diff_t<_It> _Isort_max{_ISORT_MAX};
 
 template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
@@ -887,12 +887,10 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _Fw
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <class _It, class _Se>
     concept _Bidi_common = is_same_v<_It, _Se> && bidirectional_iterator<_It>;
     template <class _Rng>
     concept _Bidi_common_range = common_range<_Rng> && bidirectional_iterator<iterator_t<_Rng>>;
-    // clang-format on
 
     class _Is_permutation_fn : private _Not_quite_object {
     public:
@@ -3913,16 +3911,14 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// clang-format off
 #ifdef __cpp_lib_concepts
 template <class _InIt, class _OutIt>
 concept _Can_reread_dest = forward_iterator<_OutIt> && same_as<iter_value_t<_InIt>, iter_value_t<_OutIt>>;
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _InIt, class _OutIt>
-_INLINE_VAR constexpr bool _Can_reread_dest =
-    _Is_fwd_iter_v<_OutIt> && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
+_INLINE_VAR constexpr bool _Can_reread_dest = _Is_fwd_iter_v<_OutIt> //
+    && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
 #endif // __cpp_lib_concepts
-// clang-format on
 
 template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
@@ -4010,15 +4006,14 @@ namespace ranges {
     template <class _In, class _Out>
     using unique_copy_result = in_out_result<_In, _Out>;
 
-    // clang-format off
     template <class _It, class _Ty>
     concept _Is_input_with_value_type = input_iterator<_It> && same_as<iter_value_t<_It>, _Ty>;
 
     template <class _It, class _Out>
-    concept _Can_reread_or_store = forward_iterator<_It>
-                                || _Is_input_with_value_type<_Out, iter_value_t<_It>>
-                                || indirectly_copyable_storable<_It, _Out>;
-    // clang-format on
+    concept _Can_reread_or_store = forward_iterator<_It> //
+        || _Is_input_with_value_type<_Out, iter_value_t<_It>> //
+        || indirectly_copyable_storable<_It, _Out>;
+
     class _Unique_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -7077,7 +7072,7 @@ namespace ranges {
                 "ranges::inplace_merge requires the range [first, middle) to be sorted");
             _STL_VERIFY(_RANGES _Is_sorted_until_unchecked(_Mid, _Last, _Pred, _Proj) == _Last,
                 "ranges::inplace_merge requires the range [middle, last) to be sorted");
-#endif //_ITERATOR_DEBUG_LEVEL == 2
+#endif // _ITERATOR_DEBUG_LEVEL == 2
 
             // Find first element in [_First, _Mid) that is greater than *_Mid
             while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
@@ -9412,13 +9407,11 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <class _It>
     concept _Prefer_iterator_copies = // When we have a choice, should we copy iterators or copy elements?
-        // pre: input_iterator<_It>
+                                      // pre: input_iterator<_It>
         sizeof(_It) <= 2 * sizeof(iter_value_t<_It>)
         && (is_trivially_copyable_v<_It> || !is_trivially_copyable_v<iter_value_t<_It>>);
-    // clang-format on
 
     class _Max_fn : private _Not_quite_object {
     public:

@@ -17,11 +17,14 @@ static const double invln2 = 1.4426950408889634073599246810018921;
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(
     double* px, double y, short eoff) { // compute y * e^(*px), (*px) finite, |y| not huge
-    if (*px < -hugexp || y == 0.0) { // certain underflow
-        *px = 0.0;
+    if (y == 0.0) { // zero
+        *px = y;
+        return 0;
+    } else if (*px < -hugexp) { // certain underflow
+        *px = _Xfe_underflow(y);
         return 0;
     } else if (hugexp < *px) { // certain overflow
-        *px = _Inf._Double;
+        *px = _Xfe_overflow(y);
         return _INFCODE;
     } else { // xexp won't overflow
         double g   = *px * invln2;
@@ -39,7 +42,21 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Exp(
             *px = (w + g) / (w - g) * 2.0 * y;
             --xexp;
         }
-        return _Dscale(px, static_cast<long>(xexp) + eoff);
+
+        const short result_code = _Dscale(px, static_cast<long>(xexp) + eoff);
+
+        switch (result_code) {
+        case 0:
+            *px = _Xfe_underflow(y);
+            break;
+        case _INFCODE:
+            *px = _Xfe_overflow(y);
+            break;
+        default:
+            break;
+        }
+
+        return result_code;
     }
 }
 
