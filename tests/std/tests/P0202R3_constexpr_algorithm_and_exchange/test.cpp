@@ -496,8 +496,8 @@ constexpr void test_permutations() {
         {40, 30, 20, 10},
     };
 
-    for (const auto& arr : expected) {
-        assert(is_permutation(begin(buff), end(buff), begin(arr), end(arr)));
+    for (size_t i = 0; i < size(expected); ++i) {
+        assert(is_permutation(begin(buff), end(buff), begin(expected[i]), end(expected[i])));
     }
 
     size_t cursor = 0;
