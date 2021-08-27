@@ -31,10 +31,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
     using Inner                     = range_value_t<Outer>;
     constexpr bool deref_is_glvalue = is_reference_v<range_reference_t<Outer>>;
 
-    // clang-format off
-    constexpr bool can_test = ranges::viewable_range<Outer>
-        && input_range<range_reference_t<Outer>>;
-    // clang-format on
+    constexpr bool can_test = ranges::viewable_range<Outer> && input_range<range_reference_t<Outer>>;
 
     if constexpr (can_test) {
         using V = views::all_t<Outer>;
