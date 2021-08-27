@@ -163,9 +163,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
-4. `git clone https://github.com/microsoft/STL`
-5. `cd STL`
-6. `git submodule update --init --progress llvm-project boost-math`
+4. `git clone https://github.com/microsoft/STL --recurse-submodules`
 
 To build the x86 target:
 

@@ -2493,15 +2493,14 @@ _NODISCARD _OutputIt _Fmt_write(
         _THROW(format_error("const void* cannot be localized"));
     }
 
-    // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
-    // Add 3 to the bit width so we always round up on the division.
-    // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
-    // Add 2 for the 0x prefix.
-    auto _Width = 2 + static_cast<int>(_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4;
-
-    // Since the bit width of 0 is 0, special case it instead of complicating the math even more.
-    if (_Value == nullptr) {
-        _Width = 3;
+    // Since the bit width of 0 is 0x0, special-case it instead of complicating the math even more.
+    int _Width = 3;
+    if (_Value != nullptr) {
+        // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
+        // Add 3 to the bit width so we always round up on the division.
+        // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
+        // Add 2 for the 0x prefix.
+        _Width = static_cast<int>(2 + (_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4);
     }
 
     return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,

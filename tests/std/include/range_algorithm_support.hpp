@@ -156,7 +156,6 @@ namespace test {
         }
     };
 
-    // clang-format off
     template <class T, class U>
     concept CanEq = requires(T const& t, U const& u) {
         { t == u } -> convertible_to<bool>;
@@ -186,7 +185,6 @@ namespace test {
     concept CanGtE = requires(T const& t, U const& u) {
         { t >= u } -> convertible_to<bool>;
     };
-    // clang-format on
 
     template <class Category, class Element>
     class proxy_reference {
