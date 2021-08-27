@@ -168,11 +168,10 @@ acquire this dependency.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
-4. `git clone https://github.com/microsoft/STL`
+4. `git clone https://github.com/microsoft/STL --recurse-submodules`
 5. `cd STL`
-6. `git submodule update --init --progress llvm-project vcpkg`
-7. `.\vcpkg\bootstrap-vcpkg.bat`
-8. `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
+6. `.\vcpkg\bootstrap-vcpkg.bat`
+7. `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
 
 To build the x86 target:
 
