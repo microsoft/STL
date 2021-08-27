@@ -360,7 +360,7 @@ protected:
             _State |= ios_base::eofbit;
         }
 
-        if (_Str.size() == 0) {
+        if (_Str.empty()) {
             _State |= ios_base::failbit; // _Getmfld failed
         } else { // convert to long double
             const char* _Eb = _Str.c_str();
@@ -476,7 +476,7 @@ private:
                     int _Fracdigseen        = 0;
                     int _Fracdigits         = _Ppunct_fac->frac_digits();
                     const string _Grouping  = _Ppunct_fac->grouping();
-                    const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Ppunct_fac->thousands_sep();
+                    const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Ppunct_fac->thousands_sep();
 
                     if (_Kseparator == _Elem{} || CHAR_MAX <= static_cast<unsigned char>(*_Grouping.c_str())) {
                         for (; _First != _Last && (_Idx = _Find_elem(_Atoms, *_First)) < 10; ++_First) {
@@ -540,7 +540,7 @@ private:
                         }
                     }
 
-                    if (_Val.size() == 0) {
+                    if (_Val.empty()) {
                         _Bad = true; // fail if no elements parsed
                     } else {
                         for (; _Fracdigseen < _Fracdigits; ++_Fracdigseen) {

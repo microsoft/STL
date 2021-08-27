@@ -154,8 +154,8 @@ namespace stdext {
                     _Elem* _Mid2;
                     _Elem _Ch;
 
-                    switch (do_in(_Mystate, _First1, _Last1, _Mid1, &_Ch, &_Ch + 1,
-                        _Mid2)) { // test result of single wide-char conversion
+                    // test result of single wide-char conversion
+                    switch (do_in(_Mystate, _First1, _Last1, _Mid1, &_Ch, &_Ch + 1, _Mid2)) {
                     case _Mybase::noconv:
                         return static_cast<int>(_Wchars + (_Last1 - _First1));
 
