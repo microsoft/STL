@@ -78,8 +78,9 @@ namespace stdext {
 
                     char* _Buf = &_Str[0];
                     char* _Dest;
-                    switch (
-                        _Pcvt->unshift(_State, _Buf, _Buf + _Str.size(), _Dest)) { // test result of homing conversion
+
+                    // test result of homing conversion
+                    switch (_Pcvt->unshift(_State, _Buf, _Buf + _Str.size(), _Dest)) {
                     case _Codecvt::ok:
                         _Status = _Unused; // homed successfully
 
@@ -143,8 +144,9 @@ namespace stdext {
                         char* _Buf = &_Str[0];
                         const _Elem* _Src;
                         char* _Dest;
-                        switch (_Pcvt->out(_State, &_Ch, &_Ch + 1, _Src, _Buf, _Buf + _Str.size(),
-                            _Dest)) { // test result of converting one element
+
+                        // test result of converting one element
+                        switch (_Pcvt->out(_State, &_Ch, &_Ch + 1, _Src, _Buf, _Buf + _Str.size(), _Dest)) {
                         case _Codecvt::partial:
                         case _Codecvt::ok:
                             { // converted something, try to put it out
@@ -274,8 +276,8 @@ namespace stdext {
                             }
                         }
 
-                        switch (_Pcvt->in(_State, _Buf, _Buf + _Str.size(), _Src, &_Ch, &_Ch + 1,
-                            _Dest)) { // test result of converting one element
+                        // test result of converting one element
+                        switch (_Pcvt->in(_State, _Buf, _Buf + _Str.size(), _Src, &_Ch, &_Ch + 1, _Dest)) {
                         case _Codecvt::partial:
                         case _Codecvt::ok:
                             _Str.erase(0, static_cast<size_t>(_Src - _Buf)); // discard any used input

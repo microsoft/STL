@@ -901,6 +901,7 @@ namespace ranges {
             _Ty(__j - __n);
             { __j - __j } -> convertible_to<_Iota_diff_t<_Ty>>;
         };
+    // clang-format on
 
     template <class _Wi>
     struct _Ioterator_category_base {
@@ -914,6 +915,7 @@ namespace ranges {
         _NODISCARD auto operator<=>(const _Ioterator_category_base&) const = default;
     };
 
+    // clang-format off
     template <weakly_incrementable _Wi>
         requires copyable<_Wi>
     struct _Ioterator : _Ioterator_category_base<_Wi> {
@@ -967,12 +969,13 @@ namespace ranges {
         }
 
 #if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1347136
-    private :
-
+        // clang-format off
+    private:
         template <class _Left, class _Right>
         static constexpr bool _Nothrow_plus_equal = noexcept(_STD declval<_Left&>() += _STD declval<const _Right&>());
         template <_Integer_like _Left, class _Right>
         static constexpr bool _Nothrow_plus_equal<_Left, _Right> = true;
+        // clang-format on
 
         template <class _Left, class _Right>
         static constexpr bool _Nothrow_minus_equal = noexcept(_STD declval<_Left&>() -= _STD declval<const _Right&>());
@@ -1435,10 +1438,9 @@ namespace ranges {
 
         template <class _View>
         struct _Category_base {};
-        // clang-format off
+
         template <forward_range _View>
         struct _Category_base<_View> {
-            // clang-format on
             using iterator_category =
                 conditional_t<derived_from<_Iter_cat_t<iterator_t<_View>>, bidirectional_iterator_tag>,
                     bidirectional_iterator_tag,
@@ -1720,10 +1722,9 @@ namespace ranges {
 
         template <class _Base>
         struct _Category_base {};
-        // clang-format off
+
         template <forward_range _Base>
         struct _Category_base<_Base> {
-            // clang-format on
             using iterator_category =
                 conditional_t<is_lvalue_reference_v<invoke_result_t<_Fn&, range_reference_t<_Base>>>,
                     conditional_t<derived_from<_Iter_cat_t<iterator_t<_Base>>, contiguous_iterator_tag>,
@@ -2352,10 +2353,8 @@ namespace ranges {
         template <class _It, class _Se, subrange_kind _Ki>
         inline constexpr bool _Is_subrange<subrange<_It, _Se, _Ki>> = true;
 
-        // clang-format off
         template <class _Rng>
         concept _Random_sized_range = random_access_range<_Rng> && sized_range<_Rng>;
-        // clang-format on
 
         class _Take_fn {
         private:
@@ -2439,11 +2438,9 @@ namespace ranges {
             };
 
         public:
-            // clang-format off
             template <viewable_range _Rng>
-            _NODISCARD constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count) const noexcept(
-                _Choice<_Rng>._No_throw) {
-                // clang-format on
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count) const
+                noexcept(_Choice<_Rng>._No_throw) {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr (_Strat == _St::_Empty) {
@@ -2870,11 +2867,9 @@ namespace ranges {
             };
 
         public:
-            // clang-format off
             template <viewable_range _Rng>
-            _NODISCARD constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count) const noexcept(
-                _Choice<_Rng>._No_throw) {
-                // clang-format on
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count) const
+                noexcept(_Choice<_Rng>._No_throw) {
                 constexpr _St _Strat = _Choice<_Rng>._Strategy;
 
                 if constexpr (_Strat == _St::_Empty) {
@@ -3340,11 +3335,9 @@ namespace ranges {
             return _Iterator<true>{*this, _RANGES begin(_Range)};
         }
 
-        // clang-format off
         _NODISCARD constexpr auto end() {
-            if constexpr (forward_range<_Vw> && is_reference_v<_InnerRng<false>>
-                    && forward_range<_InnerRng<false>> && common_range<_Vw> && common_range<_InnerRng<false>>) {
-                // clang-format on
+            if constexpr (forward_range<_Vw> && is_reference_v<_InnerRng<false>> //
+                          && forward_range<_InnerRng<false>> && common_range<_Vw> && common_range<_InnerRng<false>>) {
                 return _Iterator<_Simple_view<_Vw>>{*this, _RANGES end(_Range)};
             } else {
                 return _Sentinel<_Simple_view<_Vw>>{*this};
