@@ -430,9 +430,7 @@ void iter_cat_test_cases() {
     test_iter_cat_for_trivially_copyable_types<false, int (EmptyDerived::*)(), int (EmptyBase::*)()>();
 
 #if _HAS_CXX17
-#ifndef _MSC_VER // TRANSITION, GH-2128
     test_iter_cat_for_trivially_copyable_types<true, string_view, string_view>();
-#endif // !defined(_MSC_VER)
     test_iter_cat_for_trivially_copyable_types<false, string_view, wstring_view>();
 #endif // _HAS_CXX17
 
