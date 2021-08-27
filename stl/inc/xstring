@@ -1283,8 +1283,10 @@ public:
 
 #if _HAS_CXX23
     // clang-format off
-    template <_RANGES contiguous_range _Range>
-        requires (_RANGES sized_range<_Range>
+    template <class _Range>
+        requires (!same_as<remove_cvref_t<_Range>, basic_string_view> // per LWG issue filed on 2021-08-16
+            && _RANGES contiguous_range<_Range>
+            && _RANGES sized_range<_Range>
             && same_as<_RANGES range_value_t<_Range>, _Elem>
             && (!is_convertible_v<_Range, const _Elem*>)
             && (!requires(remove_cvref_t<_Range>& _Rng) {
@@ -4946,7 +4948,7 @@ struct hash<basic_string<_Elem, _Traits, _Alloc>> {
 
 template <class _Elem, class _Traits, class _Alloc>
 basic_istream<_Elem, _Traits>& operator>>(
-    basic_istream<_Elem, _Traits>&& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
+    basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
     using _Myis   = basic_istream<_Elem, _Traits>;
     using _Ctype  = typename _Myis::_Ctype;
     using _Mystr  = basic_string<_Elem, _Traits, _Alloc>;
@@ -4990,13 +4992,7 @@ basic_istream<_Elem, _Traits>& operator>>(
     }
 
     _Istr.setstate(_State);
-    return static_cast<basic_istream<_Elem, _Traits>&>(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Alloc>
-basic_istream<_Elem, _Traits>& operator>>(
-    basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
-    return _STD move(_Istr) >> _Str;
+    return _Istr;
 }
 
 template <class _Elem, class _Traits, class _Alloc>

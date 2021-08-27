@@ -520,7 +520,8 @@ public:
         _Construct_n(_Count, _Right_data._Myfirst, _Right_data._Mylast);
     }
 
-    _CONSTEXPR20 vector(const vector& _Right, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+    _CONSTEXPR20 vector(const vector& _Right, const _Identity_t<_Alloc>& _Al)
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
         const auto& _Right_data = _Right._Mypair._Myval2;
         const auto _Count       = static_cast<size_type>(_Right_data._Mylast - _Right_data._Myfirst);
         _Construct_n(_Count, _Right_data._Myfirst, _Right_data._Mylast);
@@ -535,7 +536,7 @@ public:
         _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
     }
 
-    _CONSTEXPR20 vector(vector&& _Right, const _Alloc& _Al_) noexcept(
+    _CONSTEXPR20 vector(vector&& _Right, const _Identity_t<_Alloc>& _Al_) noexcept(
         _Alty_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al_) {
         _Alty& _Al        = _Getal();
@@ -2473,7 +2474,7 @@ public:
 
     _CONSTEXPR20 vector(const vector& _Right) : _Mybase(_Right) {}
 
-    _CONSTEXPR20 vector(const vector& _Right, const _Alloc& _Al) : _Mybase(_Right, _Al) {}
+    _CONSTEXPR20 vector(const vector& _Right, const _Identity_t<_Alloc>& _Al) : _Mybase(_Right, _Al) {}
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mybase(_Al) {
@@ -2490,7 +2491,7 @@ public:
         this->_Swap_proxy_and_iterators(_Right);
     }
 
-    _CONSTEXPR20 vector(vector&& _Right, const _Alloc& _Al) noexcept(
+    _CONSTEXPR20 vector(vector&& _Right, const _Identity_t<_Alloc>& _Al) noexcept(
         is_nothrow_constructible_v<_Mybase, _Mybase, const _Alloc&>)
         : _Mybase(_STD move(_Right), _Al) {
         if constexpr (!_Alvbase_traits::is_always_equal::value) {
