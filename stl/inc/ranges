@@ -652,7 +652,7 @@ namespace ranges {
         /* [[no_unique_address]] */ _Ty _Value{};
     };
 
-    template <_Destructible_object _Ty>
+    template <_Destructible_object _Ty, bool _Needs_operator_bool = true>
     class _Non_propagating_cache { // a simplified optional that resets on copy / move
     public:
         constexpr _Non_propagating_cache() noexcept {}
@@ -703,6 +703,10 @@ namespace ranges {
             return *this;
         }
 
+        _NODISCARD constexpr explicit operator bool() const noexcept requires _Needs_operator_bool {
+            return _Engaged;
+        }
+
         _NODISCARD constexpr _Ty& operator*() noexcept {
             _STL_INTERNAL_CHECK(_Engaged);
             return _Val;
@@ -730,6 +734,46 @@ namespace ranges {
             _Ty _Val;
         };
         bool _Engaged = false;
+    };
+
+    template <_Destructible_object _Ty>
+        requires is_trivially_destructible_v<_Ty>
+    class _Non_propagating_cache<_Ty, false> { // a specialization for trivially destructible types where checking if
+                                               // the cache contains a value is not needed
+    public:
+        constexpr _Non_propagating_cache() noexcept {}
+
+        ~_Non_propagating_cache() = default;
+
+        constexpr _Non_propagating_cache(const _Non_propagating_cache&) noexcept {}
+
+        constexpr _Non_propagating_cache(_Non_propagating_cache&&) noexcept {}
+
+        constexpr _Non_propagating_cache& operator=(const _Non_propagating_cache&) noexcept {
+            return *this;
+        }
+
+        constexpr _Non_propagating_cache& operator=(_Non_propagating_cache&&) noexcept {
+            return *this;
+        }
+
+        _NODISCARD constexpr _Ty& operator*() noexcept {
+            return _Val;
+        }
+        _NODISCARD constexpr const _Ty& operator*() const noexcept {
+            return _Val;
+        }
+
+        template <class... _Types>
+        constexpr _Ty& _Emplace(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
+            _Construct_in_place(_Val, _STD forward<_Types>(_Args)...);
+            return _Val;
+        }
+
+    private:
+        union {
+            _Ty _Val;
+        };
     };
 
     // clang-format off
@@ -2989,7 +3033,7 @@ namespace ranges {
         };
 
     protected:
-        /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper> _Inner{};
+        /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper, false> _Inner{};
     };
 
     // clang-format off
