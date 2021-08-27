@@ -4939,7 +4939,7 @@ struct hash<basic_string<_Elem, _Traits, _Alloc>> {
 
 template <class _Elem, class _Traits, class _Alloc>
 basic_istream<_Elem, _Traits>& operator>>(
-    basic_istream<_Elem, _Traits>&& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
+    basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
     using _Myis   = basic_istream<_Elem, _Traits>;
     using _Ctype  = typename _Myis::_Ctype;
     using _Mystr  = basic_string<_Elem, _Traits, _Alloc>;
@@ -4983,13 +4983,7 @@ basic_istream<_Elem, _Traits>& operator>>(
     }
 
     _Istr.setstate(_State);
-    return static_cast<basic_istream<_Elem, _Traits>&>(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Alloc>
-basic_istream<_Elem, _Traits>& operator>>(
-    basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
-    return _STD move(_Istr) >> _Str;
+    return _Istr;
 }
 
 template <class _Elem, class _Traits, class _Alloc>
