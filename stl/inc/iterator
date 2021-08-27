@@ -841,7 +841,7 @@ public:
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
     constexpr common_iterator(const common_iterator<_OIter, _OSe>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _OIter&>&& is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
-        : _Val{_Right._Val} {}
+        : _Val{_Right._Get_val()} {}
 
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
@@ -851,7 +851,7 @@ public:
             && is_nothrow_assignable_v<_Iter&, const _OIter&>
             && is_nothrow_assignable_v<_Se&, const _OSe&>) /* strengthened */ {
         // clang-format on
-        _Val = _Right._Val;
+        _Val = _Right._Get_val();
         return *this;
     }
 
@@ -919,25 +919,26 @@ public:
         requires sentinel_for<_Se, _OIter>
     _NODISCARD friend bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
+        auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
-            _Left._Val._Contains != _Variantish_state::_Nothing && _Right._Val._Contains != _Variantish_state::_Nothing,
+            _Left._Val._Contains != _Variantish_state::_Nothing && _Right_val._Contains != _Variantish_state::_Nothing,
             "common_iterators can only be compared if both hold a value");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         if (_Left._Val._Contains == _Variantish_state::_Holds_iter) {
-            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
+            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
                 if constexpr (equality_comparable_with<_Iter, _OIter>) {
-                    return _Left._Val._Iterator == _Right._Val._Iterator;
+                    return _Left._Val._Iterator == _Right_val._Iterator;
                 } else {
                     return true;
                 }
             } else {
-                return _Left._Val._Iterator == _Right._Val._Sentinel;
+                return _Left._Val._Iterator == _Right_val._Sentinel;
             }
         } else {
-            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
-                return _Left._Val._Sentinel == _Right._Val._Iterator;
+            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
+                return _Left._Val._Sentinel == _Right_val._Iterator;
             } else {
                 return true;
             }
@@ -950,21 +951,22 @@ public:
     _NODISCARD friend iter_difference_t<_OIter> operator-(
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
+        auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
-            _Left._Val._Contains != _Variantish_state::_Nothing && _Right._Val._Contains != _Variantish_state::_Nothing,
+            _Left._Val._Contains != _Variantish_state::_Nothing && _Right_val._Contains != _Variantish_state::_Nothing,
             "Cannot take difference of valueless common_iterators");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         if (_Left._Val._Contains == _Variantish_state::_Holds_iter) {
-            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
-                return _Left._Val._Iterator - _Right._Val._Iterator;
+            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
+                return _Left._Val._Iterator - _Right_val._Iterator;
             } else {
-                return _Left._Val._Iterator - _Right._Val._Sentinel;
+                return _Left._Val._Iterator - _Right_val._Sentinel;
             }
         } else {
-            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
-                return _Left._Val._Sentinel - _Right._Val._Iterator;
+            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
+                return _Left._Val._Sentinel - _Right_val._Iterator;
             } else {
                 return 0;
             }
@@ -982,22 +984,24 @@ public:
 
     template <indirectly_swappable<_Iter> _OIter, class _OSe>
     friend void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) noexcept(
-        noexcept(_RANGES iter_swap(_Left._Val._Iterator, _Right._Val._Iterator))) {
+        noexcept(_RANGES iter_swap(_Left._Val._Iterator, _Right._Get_val()._Iterator))) {
+        auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Left._Val._Contains == _Variantish_state::_Holds_iter
-                        && _Right._Val._Contains == _Variantish_state::_Holds_iter,
+                        && _Right_val._Contains == _Variantish_state::_Holds_iter,
             "can only iter_swap common_iterators if both hold iterators");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return _RANGES iter_swap(_Left._Val._Iterator, _Right._Val._Iterator);
+        return _RANGES iter_swap(_Left._Val._Iterator, _Right_val._Iterator);
+    }
+
+    _NODISCARD _Variantish<_Iter, _Se>& _Get_val() noexcept {
+        return _Val;
+    }
+    _NODISCARD const _Variantish<_Iter, _Se>& _Get_val() const noexcept {
+        return _Val;
     }
 
 private:
-    // clang-format off
-    template <input_or_output_iterator _OIter, sentinel_for<_OIter> _OSe>
-        requires (!same_as<_OIter, _OSe> && copyable<_OIter>)
-    friend class common_iterator;
-    // clang-format on
-
     _Variantish<_Iter, _Se> _Val;
 };
 
@@ -1016,15 +1020,20 @@ struct _Common_iterator_pointer_type<_Iter> {
     using pointer = decltype(_STD declval<_Iter&>().operator->());
 };
 
+template <class _Iter>
+concept _Has_forward_category = requires {
+    typename _Iter_cat_t<_Iter>;
+    requires derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>;
+};
+
 template <input_iterator _Iter, class _Se>
 struct iterator_traits<common_iterator<_Iter, _Se>> {
-    using iterator_concept = conditional_t<forward_iterator<_Iter>, forward_iterator_tag, input_iterator_tag>;
-    using iterator_category =
-        conditional_t<derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>, forward_iterator_tag, input_iterator_tag>;
-    using value_type      = iter_value_t<_Iter>;
-    using difference_type = iter_difference_t<_Iter>;
-    using pointer         = typename _Common_iterator_pointer_type<_Iter>::pointer;
-    using reference       = iter_reference_t<_Iter>;
+    using iterator_concept  = conditional_t<forward_iterator<_Iter>, forward_iterator_tag, input_iterator_tag>;
+    using iterator_category = conditional_t<_Has_forward_category<_Iter>, forward_iterator_tag, input_iterator_tag>;
+    using value_type        = iter_value_t<_Iter>;
+    using difference_type   = iter_difference_t<_Iter>;
+    using pointer           = typename _Common_iterator_pointer_type<_Iter>::pointer;
+    using reference         = iter_reference_t<_Iter>;
 };
 
 template <class _Iter>
