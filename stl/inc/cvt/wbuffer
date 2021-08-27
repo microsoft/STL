@@ -254,7 +254,7 @@ namespace stdext {
                 if (_Mystrbuf && _Status != _Wrote) {
                     // got buffer, haven't written, try to compose an element
                     if (_Status != _Eof) {
-                        if (_Str.size() == 0) {
+                        if (_Str.empty()) {
                             _Status = _Need;
                         } else {
                             _Status = _Got;

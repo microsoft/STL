@@ -281,16 +281,7 @@ utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
 
 
 # *** MISSING STL FEATURES ***
-# C++23 P1048R1 "is_scoped_enum"
-utilities\meta\meta.unary\meta.unary.prop\is_scoped_enum.pass.cpp
-
-# C++23 P1679R3 "contains() For basic_string/basic_string_view"
-strings\basic.string\string.contains\contains.char.pass.cpp
-strings\basic.string\string.contains\contains.ptr.pass.cpp
-strings\basic.string\string.contains\contains.string_view.pass.cpp
-strings\string.view\string.view.template\contains.char.pass.cpp
-strings\string.view\string.view.template\contains.ptr.pass.cpp
-strings\string.view\string.view.template\contains.string_view.pass.cpp
+# Nothing here! :-)
 
 
 # *** MISSING COMPILER FEATURES ***

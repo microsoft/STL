@@ -41,7 +41,7 @@ _STD_BEGIN
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 template <class _It>
-_INLINE_VAR constexpr auto _Isort_max = _Iter_diff_t<_It>{_ISORT_MAX};
+_INLINE_VAR constexpr _Iter_diff_t<_It> _Isort_max{_ISORT_MAX};
 
 template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
