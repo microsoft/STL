@@ -4056,12 +4056,12 @@ public:
 template <class _Ty>
 struct _Pointer_of_helper {};
 
-// clang-format off
 template <_Has_member_pointer _Ty>
 struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::pointer;
 };
 
+// clang-format off
 template <_Has_member_element_type _Ty>
     requires (!_Has_member_pointer<_Ty>)
 struct _Pointer_of_helper<_Ty> {

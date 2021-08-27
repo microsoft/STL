@@ -54,6 +54,13 @@ protected:
     _THROW(bad_optional_access{});
 }
 
+struct _Nontrivial_dummy_type {
+    constexpr _Nontrivial_dummy_type() noexcept {
+        // This default constructor is user-provided to avoid zero-initialization when objects are value-initialized.
+    }
+};
+_STL_INTERNAL_STATIC_ASSERT(!is_trivially_default_constructible_v<_Nontrivial_dummy_type>);
+
 template <class _Ty, bool = is_trivially_destructible_v<_Ty>>
 struct _Optional_destruct_base { // either contains a value of _Ty or is empty (trivial destructor)
     union {
@@ -68,7 +75,7 @@ struct _Optional_destruct_base { // either contains a value of _Ty or is empty (
     constexpr explicit _Optional_destruct_base(in_place_t, _Types&&... _Args)
         : _Value(_STD forward<_Types>(_Args)...), _Has_value{true} {} // initialize contained value with _Args...
 
-    void reset() noexcept {
+    _CONSTEXPR20 void reset() noexcept {
         _Has_value = false;
     }
 };
@@ -81,7 +88,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
     };
     bool _Has_value;
 
-    ~_Optional_destruct_base() noexcept {
+    _CONSTEXPR20 ~_Optional_destruct_base() noexcept {
         if (_Has_value) {
             _Destroy_in_place(_Value);
         }
@@ -98,7 +105,7 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
     _Optional_destruct_base& operator=(const _Optional_destruct_base&) = default;
     _Optional_destruct_base& operator=(_Optional_destruct_base&&) = default;
 
-    void reset() noexcept {
+    _CONSTEXPR20 void reset() noexcept {
         if (_Has_value) {
             _Destroy_in_place(_Value);
             _Has_value = false;
@@ -112,7 +119,8 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
     using _Optional_destruct_base<_Ty>::_Optional_destruct_base;
 
     template <class... _Types>
-    _Ty& _Construct(_Types&&... _Args) { // transition from the empty to the value-containing state
+    _CONSTEXPR20 _Ty& _Construct(_Types&&... _Args) {
+        // transition from the empty to the value-containing state
         _STL_INTERNAL_CHECK(!this->_Has_value);
         _Construct_in_place(this->_Value, _STD forward<_Types>(_Args)...);
         this->_Has_value = true;
@@ -120,7 +128,7 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
     }
 
     template <class _Ty2>
-    void _Assign(_Ty2&& _Right) { // assign / initialize the contained value from _Right
+    _CONSTEXPR20 void _Assign(_Ty2&& _Right) { // assign / initialize the contained value from _Right
         if (this->_Has_value) {
             this->_Value = _STD forward<_Ty2>(_Right);
         } else {
@@ -129,7 +137,7 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
     }
 
     template <class _Self>
-    void _Construct_from(_Self&& _Right) noexcept(
+    _CONSTEXPR20 void _Construct_from(_Self&& _Right) noexcept(
         is_nothrow_constructible_v<_Ty, decltype((_STD forward<_Self>(_Right)._Value))>) {
         // initialize contained value from _Right iff it contains a value
         if (_Right._Has_value) {
@@ -138,7 +146,7 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
     }
 
     template <class _Self>
-    void _Assign_from(_Self&& _Right) noexcept(
+    _CONSTEXPR20 void _Assign_from(_Self&& _Right) noexcept(
         is_nothrow_constructible_v<_Ty, decltype((_STD forward<_Self>(_Right)._Value))>&&
             is_nothrow_assignable_v<_Ty&, decltype((_STD forward<_Self>(_Right)._Value))>) {
         // assign/initialize/destroy contained value from _Right
@@ -201,7 +209,7 @@ public:
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Ty2,
         enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, const _Ty2&>>, int> = 0>
-    explicit(!is_convertible_v<const _Ty2&, _Ty>) optional(const optional<_Ty2>& _Right) {
+    _CONSTEXPR20 explicit(!is_convertible_v<const _Ty2&, _Ty>) optional(const optional<_Ty2>& _Right) {
         if (_Right) {
             this->_Construct(*_Right);
         }
@@ -227,7 +235,7 @@ public:
 
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, _Ty2>>, int> = 0>
-    explicit(!is_convertible_v<_Ty2, _Ty>) optional(optional<_Ty2>&& _Right) {
+    _CONSTEXPR20 explicit(!is_convertible_v<_Ty2, _Ty>) optional(optional<_Ty2>&& _Right) {
         if (_Right) {
             this->_Construct(_STD move(*_Right));
         }
@@ -251,7 +259,7 @@ public:
     }
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
-    optional& operator=(nullopt_t) noexcept {
+    _CONSTEXPR20 optional& operator=(nullopt_t) noexcept {
         reset();
         return *this;
     }
@@ -260,7 +268,7 @@ public:
                                                 negation<conjunction<is_scalar<_Ty>, is_same<_Ty, decay_t<_Ty2>>>>,
                                                 is_constructible<_Ty, _Ty2>, is_assignable<_Ty&, _Ty2>>,
                                     int> = 0>
-    optional& operator=(_Ty2&& _Right) {
+    _CONSTEXPR20 optional& operator=(_Ty2&& _Right) {
         this->_Assign(_STD forward<_Ty2>(_Right));
         return *this;
     }
@@ -274,7 +282,7 @@ public:
     template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrappingAssignment<_Ty2>,
                                           is_constructible<_Ty, const _Ty2&>, is_assignable<_Ty&, const _Ty2&>>,
                               int> = 0>
-    optional& operator=(const optional<_Ty2>& _Right) {
+    _CONSTEXPR20 optional& operator=(const optional<_Ty2>& _Right) {
         if (_Right) {
             this->_Assign(*_Right);
         } else {
@@ -287,7 +295,7 @@ public:
     template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrappingAssignment<_Ty2>, is_constructible<_Ty, _Ty2>,
                                           is_assignable<_Ty&, _Ty2>>,
                               int> = 0>
-    optional& operator=(optional<_Ty2>&& _Right) {
+    _CONSTEXPR20 optional& operator=(optional<_Ty2>&& _Right) {
         if (_Right) {
             this->_Assign(_STD move(*_Right));
         } else {
@@ -298,19 +306,20 @@ public:
     }
 
     template <class... _Types>
-    _Ty& emplace(_Types&&... _Args) {
+    _CONSTEXPR20 _Ty& emplace(_Types&&... _Args) {
         reset();
         return this->_Construct(_STD forward<_Types>(_Args)...);
     }
 
     template <class _Elem, class... _Types,
         enable_if_t<is_constructible_v<_Ty, initializer_list<_Elem>&, _Types...>, int> = 0>
-    _Ty& emplace(initializer_list<_Elem> _Ilist, _Types&&... _Args) {
+    _CONSTEXPR20 _Ty& emplace(initializer_list<_Elem> _Ilist, _Types&&... _Args) {
         reset();
         return this->_Construct(_Ilist, _STD forward<_Types>(_Args)...);
     }
 
-    void swap(optional& _Right) noexcept(is_nothrow_move_constructible_v<_Ty>&& is_nothrow_swappable_v<_Ty>) {
+    _CONSTEXPR20 void swap(optional& _Right) noexcept(
+        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_swappable_v<_Ty>) {
         static_assert(is_move_constructible_v<_Ty>,
             "optional<T>::swap requires T to be move constructible (N4828 [optional.swap]/1).");
         static_assert(!is_move_constructible_v<_Ty> || is_swappable_v<_Ty>,
@@ -647,7 +656,7 @@ _NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2>
 #endif // __cpp_lib_concepts
 
 template <class _Ty, enable_if_t<is_move_constructible_v<_Ty> && is_swappable_v<_Ty>, int> = 0>
-void swap(optional<_Ty>& _Left, optional<_Ty>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
+_CONSTEXPR20 void swap(optional<_Ty>& _Left, optional<_Ty>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     _Left.swap(_Right);
 }
 
