@@ -9,6 +9,10 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#ifndef __cplusplus
+#error <stdatomic.h> is not yet supported when compiling as C, but this is planned for a future release.
+#endif // __cplusplus
+
 #ifdef _M_CEE_PURE
 #error <stdatomic.h> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
@@ -31,7 +35,6 @@ using _Std_atomic = _STD atomic<_Ty>;
 
 #define _Atomic(T) _Std_atomic<T>
 
-// clang-format off
 using _STD memory_order;
 using _STD memory_order_relaxed;
 using _STD memory_order_consume;
@@ -119,7 +122,6 @@ using _STD atomic_flag_clear_explicit;
 
 using _STD atomic_thread_fence;
 using _STD atomic_signal_fence;
-// clang-format on
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
