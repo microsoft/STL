@@ -1075,7 +1075,7 @@
 #define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
 #endif // ^^^ warning disabled ^^^
 
-// next critical error number: STL1003
+// next critical error number: STL1004
 // next error number: STL2001
 // next warning number: STL4033
 
