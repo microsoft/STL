@@ -29,6 +29,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
+// In this file, _STD span is qualified to avoid ambiguity with span() member functions.
+// This qualification is consistently used even when it isn't strictly necessary.
+
 template <class _Elem, class _Traits>
 class basic_spanbuf : public basic_streambuf<_Elem, _Traits> {
 public:
