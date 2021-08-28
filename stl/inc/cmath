@@ -1256,10 +1256,10 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             return _ArgB;
         }
         auto __calc;
-        if(_ArgT < 1 && _argT > 0){
+        if(_ArgT < 1 && _argT >= -1){
             __calc = _ArgA + (_ArgT * _ArgB) - (_ArgT * _ArgA);
         }
-        else if(_ArgT > 1){
+        else if(_ArgT > 1 || _ArgT < -1){
             __calc = _ArgT * ((_ArgA / _ArgT) + (_ArgB - _ArgA));
         }
 
