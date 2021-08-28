@@ -237,11 +237,11 @@ public:
     }
 
     // N4892 [ispanstream.members], member functions
-    _Mysb* rdbuf() const noexcept {
+    _NODISCARD _Mysb* rdbuf() const noexcept {
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
 
-    span<const _Elem> span() const noexcept {
+    _NODISCARD span<const _Elem> span() const noexcept {
         return this->rdbuf()->span();
     }
 
@@ -307,11 +307,11 @@ public:
     }
 
     // N4892 [ospanstream.members], member functions
-    _Mysb* rdbuf() const noexcept {
+    _NODISCARD _Mysb* rdbuf() const noexcept {
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
 
-    span<const _Elem> span() const noexcept {
+    _NODISCARD span<const _Elem> span() const noexcept {
         return this->rdbuf()->span();
     }
 
@@ -365,11 +365,11 @@ public:
     }
 
     // N4892 [spanstream.members], members
-    _Mysb* rdbuf() const noexcept {
+    _NODISCARD _Mysb* rdbuf() const noexcept {
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
 
-    span<const _Elem> span() const noexcept {
+    _NODISCARD span<const _Elem> span() const noexcept {
         return this->rdbuf()->span();
     }
 
