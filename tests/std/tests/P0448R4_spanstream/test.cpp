@@ -474,7 +474,7 @@ void test_spanbuf() {
         result = inout_buffer.seekoff(-1, ios_base::cur, ios_base::out);
         assert(result == -1);
 
-        // Moves input sequece to position 3
+        // Moves input sequence to position 3
         result = inout_buffer.seekoff(3, ios_base::cur, ios_base::in);
         assert(result == 3);
 
