@@ -122,7 +122,7 @@ protected:
                 const auto _Baseoff = (_Mode & ios_base::out) && !(_Mode & ios_base::in)
                                         ? static_cast<off_type>(_Mysb::pptr() - _Mysb::pbase())
                                         : static_cast<off_type>(_Buf.size());
-                if (_Off > (numeric_limits<off_type>::max) () - _Baseoff) { // overflow, _Baseoff is always positive
+                if (_Off > (numeric_limits<off_type>::max) () - _Baseoff) { // overflow, _Baseoff is always non-negative
                     return pos_type(off_type(-1)); // report failure
                 }
 
