@@ -1255,6 +1255,7 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             // exact
             return _ArgB;
         }
+        //Variable to store the value of interpolation
         auto __calc;
         if(_ArgT < 1 && _argT >= -1){
             __calc = _ArgA + (_ArgT * _ArgB) - (_ArgT * _ArgA);
