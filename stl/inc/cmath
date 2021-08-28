@@ -1238,15 +1238,12 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
 
     const bool _T_is_finite = _Is_finite(_ArgT);
     if (_T_is_finite && _Is_finite(_ArgA) && _Is_finite(_ArgB)) {
-        if (_ArgT < 0){
-            return -1;
-        }
         // 99% case, put it first; this block comes from P0811R3
         if ((_ArgA <= 0 && _ArgB >= 0) || (_ArgA >= 0 && _ArgB <= 0)) {
             // exact, monotonic, bounded, determinate, and (for _ArgA == _ArgB == 0) consistent:
             return _ArgT * _ArgB + (1 - _ArgT) * _ArgA;
         }
-        //exact at _ArgT == 0 and _ArgT == 1
+        // exact at _ArgT == 0 and _ArgT == 1
         if (_ArgT == 0) {
             //exact
             return _ArgA;
@@ -1255,13 +1252,13 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             // exact
             return _ArgB;
         }
-        //Variable to store the value of interpolation
-        auto _Calc;
-        else if(_ArgT < 1 && _argT >= -1){
+        // Variable to store the value of interpolation
+        auto _Calc = 0.0;
+        else if ((_ArgT < 1) && (_argT >= -1)) {
             _Calc = _ArgA + (_ArgT * _ArgB) - (_ArgT * _ArgA);
         }
-        else if(_ArgT > 1 || _ArgT < -1){
-            _Calc = _ArgT * ((_ArgA / _ArgT) + (_ArgB - _ArgA));
+        else if ((_ArgT > 1) || (_ArgT < -1)) {
+            _Calc = _ArgT * (((_ArgA * 1.0)/ _ArgT) + (_ArgB - _ArgA));
         }
 
         // exact at _ArgT == 0, monotonic except near _ArgT == 1, bounded, determinate, and consistent:
