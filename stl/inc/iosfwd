@@ -155,10 +155,6 @@ template <>
 struct char_traits<char32_t>;
 template <>
 struct char_traits<wchar_t>;
-#ifdef _NATIVE_WCHAR_T_DEFINED
-template <>
-struct char_traits<unsigned short>;
-#endif // _NATIVE_WCHAR_T_DEFINED
 
 template <class _Ty>
 class allocator;
