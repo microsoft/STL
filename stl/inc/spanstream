@@ -229,6 +229,7 @@ public:
     basic_ispanstream& operator=(basic_ispanstream&& _Right) {
         _Mybase::swap(_Right);
         _Buf.swap(_Right._Buf);
+        return *this;
     }
 
     void swap(basic_ispanstream& _Right) {
@@ -299,6 +300,7 @@ public:
     basic_ospanstream& operator=(basic_ospanstream&& _Right) {
         _Mybase::swap(_Right);
         _Buf.swap(_Right._Buf);
+        return *this;
     }
 
     void swap(basic_ospanstream& _Right) {
@@ -357,6 +359,7 @@ public:
     basic_spanstream& operator=(basic_spanstream&& _Right) {
         _Mybase::swap(_Right);
         _Buf.swap(_Right._Buf);
+        return *this;
     }
 
     void swap(basic_spanstream& _Right) {
