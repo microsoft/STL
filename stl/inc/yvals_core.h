@@ -6,11 +6,6 @@
 #pragma once
 #ifndef _YVALS_CORE_H_
 #define _YVALS_CORE_H_
-
-#ifndef __cplusplus
-#error STL1003: Unexpected compiler, expected C++ compiler.
-#endif // __cplusplus
-
 #ifndef _STL_COMPILER_PREPROCESSOR
 // All STL headers avoid exposing their contents when included by various
 // non-C++-compiler tools to avoid breaking builds when we use newer language
@@ -23,6 +18,11 @@
 #endif // _STL_COMPILER_PREPROCESSOR
 
 #if _STL_COMPILER_PREPROCESSOR
+
+#ifndef __cplusplus
+#error STL1003: Unexpected compiler, expected C++ compiler.
+#endif // __cplusplus
+
 // Implemented unconditionally:
 // N3911 void_t
 // N4089 Safe Conversions In unique_ptr<T[]>
