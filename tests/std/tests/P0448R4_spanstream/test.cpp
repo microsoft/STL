@@ -892,14 +892,14 @@ void test_spanstream() {
 
     { // span
         CharT buffer[10];
-        basic_ospanstream<CharT> is{span<CharT>{buffer}};
-        assert(is.span().data() == buffer);
-        assert(is.span().size() == 0);
+        basic_spanstream<CharT> s{span<CharT>{buffer}};
+        assert(s.span().data() == buffer);
+        assert(s.span().size() == 0);
 
         CharT other_buffer[20];
-        is.span(span<CharT>{other_buffer});
-        assert(is.span().data() == other_buffer);
-        assert(is.span().size() == 0);
+        s.span(span<CharT>{other_buffer});
+        assert(s.span().data() == other_buffer);
+        assert(s.span().size() == 0);
     }
 
     { // swap
@@ -958,60 +958,60 @@ void test_spanstream() {
     // rdbuf already tested above
 
     { // read from stream
-        basic_ispanstream<CharT> is{span<const CharT>{get_input_array<CharT>(), 9}};
+        basic_spanstream<CharT> s{span<const CharT>{get_input_array<CharT>(), 9}};
         int read = 0;
         for (int expected = 1; expected <= 5; ++expected) {
-            assert(is.good());
-            is >> read;
+            assert(s.good());
+            s >> read;
             assert(read == expected);
         }
-        assert(!is.good());
-        assert(!is.fail());
-        assert(!is.bad());
-        is >> read;
+        assert(!s.good());
+        assert(!s.fail());
+        assert(!s.bad());
+        s >> read;
 
-        assert(!is.good());
-        assert(is.fail());
-        assert(!is.bad());
+        assert(!s.good());
+        assert(s.fail());
+        assert(!s.bad());
     }
 
     { // write to stream with sufficient space
         CharT output_buffer[30];
-        basic_spanstream<CharT> os{span<CharT>{output_buffer}};
+        basic_spanstream<CharT> s{span<CharT>{output_buffer}};
 
-        assert(os.good());
-        assert(!os.fail());
-        assert(!os.bad());
-        os << 10 << 20 << 30;
-        assert(os.good());
-        assert(!os.fail());
-        assert(!os.bad());
+        assert(s.good());
+        assert(!s.fail());
+        assert(!s.bad());
+        s << 10 << 20 << 30;
+        assert(s.good());
+        assert(!s.fail());
+        assert(!s.bad());
 
         const auto expected = "102030"sv;
-        assert(os.span().size() == 6);
-        assert(equal(begin(os.span()), end(os.span()), begin(expected), end(expected)));
-        assert(os.span().data() == output_buffer);
+        assert(s.span().size() == 6);
+        assert(equal(begin(s.span()), end(s.span()), begin(expected), end(expected)));
+        assert(s.span().data() == output_buffer);
     }
 
     { // write to stream with overflow
         CharT output_buffer[30];
-        basic_spanstream<CharT> os{span<CharT>{output_buffer}};
+        basic_spanstream<CharT> s{span<CharT>{output_buffer}};
 
-        os << 10 << 20 << 30;
-        assert(os.good());
-        assert(!os.fail());
-        assert(!os.bad());
+        s << 10 << 20 << 30;
+        assert(s.good());
+        assert(!s.fail());
+        assert(!s.bad());
         if constexpr (is_same_v<CharT, char>) {
-            os << "hello world and a long string with more than 30 chars";
+            s << "hello world and a long string with more than 30 chars";
         } else {
-            os << L"hello world and a long string with more than 30 chars";
+            s << L"hello world and a long string with more than 30 chars";
         }
-        assert(!os.good());
-        assert(os.fail());
-        assert(os.bad());
+        assert(!s.good());
+        assert(s.fail());
+        assert(s.bad());
 
         const auto expected = "102030hello world and a long s"sv;
-        assert(os.span().size() == size(output_buffer));
+        assert(s.span().size() == size(output_buffer));
         assert(equal(begin(output_buffer), end(output_buffer), begin(expected), end(expected)));
     }
 }
