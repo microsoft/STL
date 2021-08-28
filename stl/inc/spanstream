@@ -367,7 +367,7 @@ public:
         _Buf.swap(_Right._Buf);
     }
 
-    // N4892 [spanstream.members], members
+    // N4892 [spanstream.members], member functions
     _NODISCARD _Mysb* rdbuf() const noexcept {
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
