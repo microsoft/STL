@@ -32,7 +32,7 @@ constexpr auto get_input_view() {
 }
 
 template <class Spanbuf>
-class test_buf : public Spanbuf {
+class basic_test_buf : public Spanbuf {
 public:
     using Spanbuf::Spanbuf;
 
@@ -52,7 +52,7 @@ public:
 
 template <class CharT>
 void test_spanbuf() {
-    using test_buf = test_buf<basic_spanbuf<CharT>>;
+    using test_buf = basic_test_buf<basic_spanbuf<CharT>>;
     { // construction
         CharT buffer[10];
         const test_buf default_constructed{};
@@ -596,7 +596,7 @@ void test_spanbuf() {
 
 template <class CharT>
 void test_ispanstream() {
-    using test_buf = test_buf<basic_spanbuf<CharT>>;
+    using test_buf = basic_test_buf<basic_spanbuf<CharT>>;
     { // construction
         CharT buffer[10];
         basic_ispanstream<CharT> span_constructed{span<CharT>{buffer}};
@@ -736,7 +736,7 @@ void test_ispanstream() {
 
 template <class CharT>
 void test_ospanstream() {
-    using test_buf = test_buf<basic_spanbuf<CharT>>;
+    using test_buf = basic_test_buf<basic_spanbuf<CharT>>;
     { // construction
         CharT buffer[10];
         basic_ospanstream<CharT> span_constructed{span<CharT>{buffer}};
@@ -868,7 +868,7 @@ void test_ospanstream() {
 
 template <class CharT>
 void test_spanstream() {
-    using test_buf = test_buf<basic_spanbuf<CharT>>;
+    using test_buf = basic_test_buf<basic_spanbuf<CharT>>;
     { // construction
         CharT buffer[10];
         basic_spanstream<CharT> span_constructed{span<CharT>{buffer}};
