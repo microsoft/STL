@@ -33,9 +33,6 @@ jobs:
     displayName: 'Setup TMP Directory'
 
   - template: checkout-sources.yml
-  - template: vcpkg-dependencies.yml
-    parameters:
-      targetPlatform: ${{ parameters.targetPlatform }}
   - template: cmake-configure-build.yml
     parameters:
       targetPlatform: ${{ parameters.targetPlatform }}
