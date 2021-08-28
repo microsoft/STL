@@ -340,6 +340,11 @@ using u32streampos = streampos;
 template <>
 struct char_traits<wchar_t> : _WChar_traits<wchar_t> {};
 
+#if defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
+template <>
+struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
+#endif // defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
+
 #if defined(__cpp_char8_t) && !defined(__EDG__) && !defined(__clang__)
 #define _HAS_U8_INTRINSICS 1
 #else // ^^^ Use intrinsics for char8_t / don't use said intrinsics vvv

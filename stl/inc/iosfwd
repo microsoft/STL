@@ -155,6 +155,10 @@ template <>
 struct char_traits<char32_t>;
 template <>
 struct char_traits<wchar_t>;
+#if defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
+template <>
+struct char_traits<unsigned short>;
+#endif // defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 
 template <class _Ty>
 class allocator;

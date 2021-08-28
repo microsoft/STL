@@ -200,10 +200,10 @@ public:
         static void __CLRCALL_OR_CDECL _Makewloc(
             const _Locinfo&, category, _Locimp*, const locale*); // make wchar_t facets
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
+#if defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
         static void __CLRCALL_OR_CDECL _Makeushloc(
             const _Locinfo&, category, _Locimp*, const locale*); // make ushort facets
-#endif // _NATIVE_WCHAR_T_DEFINED
+#endif // defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 
         static void __CLRCALL_OR_CDECL _Makexloc(
             const _Locinfo&, category, _Locimp*, const locale*); // make remaining facets
@@ -472,7 +472,7 @@ inline char __CRTDECL _Maklocbyte(wchar_t _Char, const _Locinfo::_Cvtvec& _Cvt) 
     return _Byte;
 }
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
+#if defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 template <>
 inline char __CRTDECL _Maklocbyte(unsigned short _Char, const _Locinfo::_Cvtvec& _Cvt) {
     // convert unsigned short to char using _Cvtvec
@@ -481,7 +481,7 @@ inline char __CRTDECL _Maklocbyte(unsigned short _Char, const _Locinfo::_Cvtvec&
     _Wcrtomb(&_Byte, static_cast<wchar_t>(_Char), &_Mbst1, &_Cvt);
     return _Byte;
 }
-#endif // _NATIVE_WCHAR_T_DEFINED
+#endif // defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 
 template <class _Elem>
 _Elem __CRTDECL _Maklocchr(char _Byte, _Elem*, const _Locinfo::_Cvtvec&) {
@@ -498,7 +498,7 @@ inline wchar_t __CRTDECL _Maklocchr(char _Byte, wchar_t*, const _Locinfo::_Cvtve
     return _Wc;
 }
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
+#if defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 template <>
 inline unsigned short __CRTDECL _Maklocchr(char _Byte, unsigned short*, const _Locinfo::_Cvtvec& _Cvt) {
     // convert char to unsigned short using _Cvtvec
@@ -507,7 +507,7 @@ inline unsigned short __CRTDECL _Maklocchr(char _Byte, unsigned short*, const _L
     _Mbrtowc(reinterpret_cast<wchar_t*>(&_Wc), &_Byte, 1, &_Mbst1, &_Cvt);
     return _Wc;
 }
-#endif // _NATIVE_WCHAR_T_DEFINED
+#endif // defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 
 template <class _Elem>
 _Elem* __CRTDECL _Maklocstr(const char* _Ptr, _Elem*, const _Locinfo::_Cvtvec&) {
@@ -567,7 +567,7 @@ inline wchar_t* __CRTDECL _Maklocstr(const char* _Ptr, wchar_t*, const _Locinfo:
     return _Ptrdest;
 }
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
+#if defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 template <>
 inline unsigned short* __CRTDECL _Maklocstr(const char* _Ptr, unsigned short*, const _Locinfo::_Cvtvec& _Cvt) {
     // convert C string to unsigned short sequence using _Cvtvec
@@ -605,7 +605,7 @@ inline unsigned short* __CRTDECL _Maklocstr(const char* _Ptr, unsigned short*, c
     *_Ptrnext = L'\0';
     return reinterpret_cast<unsigned short*>(_Ptrdest);
 }
-#endif // _NATIVE_WCHAR_T_DEFINED
+#endif // defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 
 class _CRTIMP2_PURE_IMPORT codecvt_base : public locale::facet { // base class for codecvt
 public:
@@ -2103,7 +2103,7 @@ private:
     _Locinfo::_Cvtvec _Cvt; // locale info passed to _Mbrtowc, _Wcrtomb
 };
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
+#if defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 template <>
 class _CRTIMP2_PURE_IMPORT codecvt<unsigned short, char, mbstate_t> : public codecvt_base {
     // facet for converting between unsigned short and char sequences
@@ -2303,7 +2303,7 @@ protected:
 private:
     _Locinfo::_Cvtvec _Cvt; // locale info passed to _Mbrtowc, _Wcrtomb
 };
-#endif // _NATIVE_WCHAR_T_DEFINED
+#endif // defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 
 template <class _Elem, class _Byte, class _Statype>
 class codecvt_byname : public codecvt<_Elem, _Byte, _Statype> { // codecvt for named locale
@@ -2991,7 +2991,7 @@ private:
     _Locinfo::_Cvtvec _Cvt; // conversion information
 };
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
+#if defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 template <>
 class _CRTIMP2_PURE_IMPORT ctype<unsigned short>
     : public ctype_base { // facet for classifying unsigned short elements, converting cases
@@ -3197,7 +3197,7 @@ private:
     _Locinfo::_Ctypevec _Ctype; // locale info passed to _Tolower, etc.
     _Locinfo::_Cvtvec _Cvt; // conversion information
 };
-#endif // _NATIVE_WCHAR_T_DEFINED
+#endif // defined(_NATIVE_WCHAR_T_DEFINED) && defined(_CRTBLD)
 
 template <class _Elem>
 class ctype_byname : public ctype<_Elem> { // ctype for named locale
