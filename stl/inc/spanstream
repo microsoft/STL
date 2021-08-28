@@ -313,7 +313,7 @@ public:
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
 
-    _NODISCARD _STD span<const _Elem> span() const noexcept {
+    _NODISCARD _STD span<_Elem> span() const noexcept {
         return rdbuf()->span();
     }
 
@@ -372,7 +372,7 @@ public:
         return const_cast<_Mysb*>(_STD addressof(_Buf));
     }
 
-    _NODISCARD _STD span<const _Elem> span() const noexcept {
+    _NODISCARD _STD span<_Elem> span() const noexcept {
         return rdbuf()->span();
     }
 
