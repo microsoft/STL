@@ -1243,7 +1243,7 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             // exact, monotonic, bounded, determinate, and (for _ArgA == _ArgB == 0) consistent:
             return _ArgT * _ArgB + (1 - _ArgT) * _ArgA;
         }
-        auto _Calc = 0.0;
+        _Ty _Calc = 0.0;
         // exact at _ArgT == 0 and _ArgT == 1
         if (_ArgT == 0) {
             // exact
