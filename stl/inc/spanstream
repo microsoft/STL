@@ -243,11 +243,11 @@ public:
     }
 
     _NODISCARD _STD span<const _Elem> span() const noexcept {
-        return this->rdbuf()->span();
+        return rdbuf()->span();
     }
 
     void span(_STD span<_Elem> _Span) noexcept {
-        this->rdbuf()->span(_Span);
+        rdbuf()->span(_Span);
     }
 
 #ifdef __cpp_lib_concepts
@@ -314,11 +314,11 @@ public:
     }
 
     _NODISCARD _STD span<const _Elem> span() const noexcept {
-        return this->rdbuf()->span();
+        return rdbuf()->span();
     }
 
     void span(_STD span<_Elem> _Span) noexcept {
-        this->rdbuf()->span(_Span);
+        rdbuf()->span(_Span);
     }
 
 private:
@@ -373,11 +373,11 @@ public:
     }
 
     _NODISCARD _STD span<const _Elem> span() const noexcept {
-        return this->rdbuf()->span();
+        return rdbuf()->span();
     }
 
     void span(_STD span<_Elem> _Span) noexcept {
-        this->rdbuf()->span(_Span);
+        rdbuf()->span(_Span);
     }
 
 private:
