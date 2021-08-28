@@ -646,6 +646,10 @@ void test_ispanstream() {
         assert(is.span().data() == buffer);
         assert(is.span().size() == size(buffer));
 
+        // ensure the underlying span is *not* mutable
+        static_assert(is_same_v<decltype(is.span()), span<const CharT>>);
+        static_assert(is_same_v<decltype(as_const(is).span()), span<const CharT>>);
+
         CharT other_buffer[20];
         is.span(span<CharT>{other_buffer});
         assert(is.span().data() == other_buffer);
@@ -773,6 +777,10 @@ void test_ospanstream() {
         basic_ospanstream<CharT> os{span<CharT>{buffer}};
         assert(os.span().data() == buffer);
         assert(os.span().size() == 0);
+
+        // ensure the underlying span is mutable
+        static_assert(is_same_v<decltype(os.span()), span<CharT>>);
+        static_assert(is_same_v<decltype(as_const(os).span()), span<CharT>>);
 
         CharT other_buffer[20];
         os.span(span<CharT>{other_buffer});
@@ -905,6 +913,10 @@ void test_spanstream() {
         basic_spanstream<CharT> s{span<CharT>{buffer}};
         assert(s.span().data() == buffer);
         assert(s.span().size() == 0);
+
+        // ensure the underlying span is mutable
+        static_assert(is_same_v<decltype(s.span()), span<CharT>>);
+        static_assert(is_same_v<decltype(as_const(s).span()), span<CharT>>);
 
         CharT other_buffer[20];
         s.span(span<CharT>{other_buffer});
