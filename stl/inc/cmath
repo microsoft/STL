@@ -1251,21 +1251,21 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
             //exact
             return _ArgA;
         }
-        if (_ArgT == 1) {
+        else if (_ArgT == 1) {
             // exact
             return _ArgB;
         }
         //Variable to store the value of interpolation
-        auto __calc;
-        if(_ArgT < 1 && _argT >= -1){
-            __calc = _ArgA + (_ArgT * _ArgB) - (_ArgT * _ArgA);
+        auto _Calc;
+        else if(_ArgT < 1 && _argT >= -1){
+            _Calc = _ArgA + (_ArgT * _ArgB) - (_ArgT * _ArgA);
         }
         else if(_ArgT > 1 || _ArgT < -1){
-            __calc = _ArgT * ((_ArgA / _ArgT) + (_ArgB - _ArgA));
+            _Calc = _ArgT * ((_ArgA / _ArgT) + (_ArgB - _ArgA));
         }
 
         // exact at _ArgT == 0, monotonic except near _ArgT == 1, bounded, determinate, and consistent:
-        const auto _Candidate = __calc;
+        const auto _Candidate = _Calc;
         // monotonic near _ArgT == 1:
         if ((_ArgT > 1) == (_ArgB > _ArgA)) {
             if (_ArgB > _Candidate) {
