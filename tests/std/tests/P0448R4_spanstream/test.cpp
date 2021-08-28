@@ -760,14 +760,14 @@ void test_ospanstream() {
 
     { // span
         CharT buffer[10];
-        basic_ospanstream<CharT> is{span<CharT>{buffer}};
-        assert(is.span().data() == buffer);
-        assert(is.span().size() == 0);
+        basic_ospanstream<CharT> os{span<CharT>{buffer}};
+        assert(os.span().data() == buffer);
+        assert(os.span().size() == 0);
 
         CharT other_buffer[20];
-        is.span(span<CharT>{other_buffer});
-        assert(is.span().data() == other_buffer);
-        assert(is.span().size() == 0);
+        os.span(span<CharT>{other_buffer});
+        assert(os.span().data() == other_buffer);
+        assert(os.span().size() == 0);
     }
 
     { // swap
