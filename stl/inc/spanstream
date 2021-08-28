@@ -228,12 +228,12 @@ public:
 
     basic_ispanstream& operator=(basic_ispanstream&& _Right) {
         _Mybase::swap(_Right);
-        _STD swap(_Buf, _Right._Buf);
+        _Buf.swap(_Right._Buf);
     }
 
     void swap(basic_ispanstream& _Right) {
         _Mybase::swap(_Right);
-        _STD swap(_Buf, _Right._Buf);
+        _Buf.swap(_Right._Buf);
     }
 
     // N4892 [ispanstream.members], member functions
@@ -298,12 +298,12 @@ public:
 
     basic_ospanstream& operator=(basic_ospanstream&& _Right) {
         _Mybase::swap(_Right);
-        _STD swap(_Buf, _Right._Buf);
+        _Buf.swap(_Right._Buf);
     }
 
     void swap(basic_ospanstream& _Right) {
         _Mybase::swap(_Right);
-        _STD swap(_Buf, _Right._Buf);
+        _Buf.swap(_Right._Buf);
     }
 
     // N4892 [ospanstream.members], member functions
@@ -356,12 +356,12 @@ public:
 
     basic_spanstream& operator=(basic_spanstream&& _Right) {
         _Mybase::swap(_Right);
-        _STD swap(_Buf, _Right._Buf);
+        _Buf.swap(_Right._Buf);
     }
 
     void swap(basic_spanstream& _Right) {
         _Mybase::swap(_Right);
-        _STD swap(_Buf, _Right._Buf);
+        _Buf.swap(_Right._Buf);
     }
 
     // N4892 [spanstream.members], members
