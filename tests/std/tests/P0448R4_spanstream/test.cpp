@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <array>
 #include <assert.h>
 #include <ios>
 #include <limits>
@@ -28,6 +29,15 @@ constexpr auto get_input_view() {
         return "1 2 3 4 5"sv;
     } else {
         return L"1 2 3 4 5"sv;
+    }
+}
+
+template <class CharT>
+constexpr auto get_input_std_array() {
+    if constexpr (is_same_v<CharT, char>) {
+        return array{'1', ' ', '2', ' ', '3', ' ', '4', ' ', '5'};
+    } else {
+        return array{L'1', L' ', L'2', L' ', L'3', L' ', L'4', L' ', L'5'};
     }
 }
 
@@ -958,7 +968,8 @@ void test_spanstream() {
     // rdbuf already tested above
 
     { // read from stream
-        basic_spanstream<CharT> s{span<const CharT>{get_input_array<CharT>(), 9}};
+        auto arr = get_input_std_array<CharT>();
+        basic_spanstream<CharT> s{span<CharT>{arr.data(), 9}};
         int read = 0;
         for (int expected = 1; expected <= 5; ++expected) {
             assert(s.good());
