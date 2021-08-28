@@ -8,7 +8,7 @@
 #define _YVALS_CORE_H_
 
 #ifndef __cplusplus
-#error STL1003: Unexpected compiler, expected C++ compiler
+#error STL1003: Unexpected compiler, expected C++ compiler.
 #endif // __cplusplus
 
 #ifndef _STL_COMPILER_PREPROCESSOR
