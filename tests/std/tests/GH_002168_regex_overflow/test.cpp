@@ -6,16 +6,13 @@
 
 using namespace std;
 
-bool shouldThrow(const char* const regexString) {
-    try {
-        regex regex{regexString, regex_constants::ECMAScript};
-        return false;
-    } catch (const regex_error& e) {
-        return e.code() == regex_constants::error_backref;
-    }
-}
-
 int main() {
-    assert(shouldThrow("\\3333333334"));
-    assert(shouldThrow("\\2147483648"));
+    for (const char* regexString : {"\\3333333334", "\\2147483648"}) {
+        try {
+            regex testRegex{regexString, regex_constants::ECMAScript};
+            assert(false);
+        } catch (const regex_error& e) {
+            assert(e.code() == regex_constants::error_backref);
+        }
+    }
 }
