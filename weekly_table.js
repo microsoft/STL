@@ -221,4 +221,7 @@ const weekly_table = [
     { date: '2021-08-06', vso: 169, libcxx: 603 },
     { date: '2021-08-13', vso: 172, libcxx: 603 },
     { date: '2021-08-20', vso: 172, libcxx: 602 },
+    { date: '2021-08-27', vso: 168, libcxx: 604 },
+    { date: '2021-09-03', vso: 167, libcxx: 604 },
+    { date: '2021-09-10', vso: 168, libcxx: 604 },
 ];
