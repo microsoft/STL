@@ -3909,10 +3909,11 @@ int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(int _Base, int _Count) { // tr
     int _Chv;
     _Val = 0;
     while (_Count != 0 && (_Chv = _Traits.value(_Char, _Base)) != -1) { // append next digit
-        if (_Val > ((INT_MAX - _Chv) / _Base)) {
-            _Error(regex_constants::error_backref);
-        }
         --_Count;
+        if (_Val > ((INT_MAX - _Chv) / _Base)) {
+            _Val = INT_MAX;
+            return _Count;
+        }
         _Val *= _Base;
         _Val += _Chv;
         _Next();
