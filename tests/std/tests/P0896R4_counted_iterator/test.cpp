@@ -53,7 +53,10 @@ struct instantiator {
         int input[5] = {1, 2, 3, 4, 5};
         // [counted.iter.const]
         {
-            [[maybe_unused]] counted_iterator<Iter> defaultConstructed{};
+            STATIC_ASSERT(default_initializable<counted_iterator<Iter>> == default_initializable<Iter>);
+            if constexpr (default_initializable<Iter>) {
+                [[maybe_unused]] counted_iterator<Iter> defaultConstructed{};
+            }
 
             counted_iterator<Iter> constructed(Iter{input}, iter_difference_t<Iter>{2});
             counted_iterator<Iter> constructedEmpty{Iter{input}, iter_difference_t<Iter>{0}};
@@ -198,7 +201,7 @@ struct instantiator {
                 const same_as<iter_difference_t<Iter>> auto diff2 = iter2 - iter1;
                 assert(diff2 == -1);
             }
-            { // difference value-initialized
+            if constexpr (default_initializable<Iter>) { // difference value-initialized
                 const same_as<iter_difference_t<Iter>> auto diff1 = counted_iterator<Iter>{} - counted_iterator<Iter>{};
                 assert(diff1 == 0);
             }
@@ -269,7 +272,7 @@ struct instantiator {
                 assert(iter1 <=> iter1 == strong_ordering::equal);
                 assert(iter1 <=> iter1 == strong_ordering::equivalent);
             }
-            { // spaceship value-initialized
+            if constexpr (default_initializable<Iter>) { // spaceship value-initialized
                 assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equal);
                 assert(counted_iterator<Iter>{} <=> counted_iterator<Iter>{} == strong_ordering::equivalent);
             }
@@ -302,6 +305,43 @@ struct instantiator {
     }
 };
 
+// Also test P2259R1 Repairing input range adaptors and counted_iterator
+struct simple_forward_iter {
+    using value_type        = double;
+    using difference_type   = long;
+    using iterator_category = input_iterator_tag;
+    using iterator_concept  = forward_iterator_tag;
+
+    value_type operator*() const;
+    simple_forward_iter& operator++();
+    simple_forward_iter operator++(int);
+
+    bool operator==(const simple_forward_iter&) const;
+};
+
+using CI = counted_iterator<simple_forward_iter>;
+
+static_assert(same_as<iterator_traits<simple_forward_iter>::iterator_category, input_iterator_tag>);
+static_assert(forward_iterator<simple_forward_iter>);
+static_assert(forward_iterator<CI>);
+static_assert(!contiguous_iterator<CI>);
+static_assert(same_as<CI::value_type, double>);
+static_assert(same_as<CI::difference_type, long>);
+static_assert(same_as<CI::iterator_category, input_iterator_tag>);
+static_assert(same_as<CI::iterator_concept, forward_iterator_tag>);
+
+void test_P2259() {
+    struct A {
+        int m;
+    };
+    A a[2] = {{1}, {2}};
+    counted_iterator ci{a, 2};
+    reverse_iterator ri{ci + 1};
+    static_assert(contiguous_iterator<decltype(ci)>);
+    assert(ci->m == 1);
+    assert(ri->m == 1);
+}
+
 int main() {
     STATIC_ASSERT((with_writable_iterators<instantiator, int>::call(), true));
     with_writable_iterators<instantiator, int>::call();
@@ -314,4 +354,6 @@ int main() {
         _Seek_wrapped(ci, uci);
         assert((ci == counted_iterator{ranges::next(lst.begin()), 1}));
     }
+
+    test_P2259();
 }

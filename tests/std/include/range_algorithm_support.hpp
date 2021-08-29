@@ -4,9 +4,9 @@
 #pragma once
 
 #include <cassert>
-#include <concepts>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <ranges>
 #include <span>
 #include <type_traits>
@@ -156,7 +156,6 @@ namespace test {
         }
     };
 
-    // clang-format off
     template <class T, class U>
     concept CanEq = requires(T const& t, U const& u) {
         { t == u } -> convertible_to<bool>;
@@ -186,7 +185,6 @@ namespace test {
     concept CanGtE = requires(T const& t, U const& u) {
         { t >= u } -> convertible_to<bool>;
     };
-    // clang-format on
 
     template <class Category, class Element>
     class proxy_reference {
@@ -198,8 +196,8 @@ namespace test {
         constexpr explicit proxy_reference(Element& r) : ref_{r} {}
         proxy_reference(proxy_reference const&) = default;
 
-        constexpr proxy_reference const& operator=(proxy_reference const& that) const
-            requires assignable_from<Element&, Element&> {
+        constexpr proxy_reference const& operator=(
+            proxy_reference const& that) const requires assignable_from<Element&, Element&> {
             ref_ = that.ref_;
             return *this;
         }
@@ -217,13 +215,13 @@ namespace test {
         // clang-format on
 
         template <class Cat, class Elem>
-        [[nodiscard]] constexpr boolish operator==(proxy_reference<Cat, Elem> that) const
-            requires CanEq<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator==(
+            proxy_reference<Cat, Elem> that) const requires CanEq<Element, Elem> {
             return {ref_ == that.peek()};
         }
         template <class Cat, class Elem>
-        [[nodiscard]] constexpr boolish operator!=(proxy_reference<Cat, Elem> that) const
-            requires CanNEq<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator!=(
+            proxy_reference<Cat, Elem> that) const requires CanNEq<Element, Elem> {
             return {ref_ != that.peek()};
         }
         template <class Cat, class Elem>
@@ -235,13 +233,13 @@ namespace test {
             return {ref_ > that.peek()};
         }
         template <class Cat, class Elem>
-        [[nodiscard]] constexpr boolish operator<=(proxy_reference<Cat, Elem> that) const
-            requires CanLtE<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator<=(
+            proxy_reference<Cat, Elem> that) const requires CanLtE<Element, Elem> {
             return {ref_ <= that.peek()};
         }
         template <class Cat, class Elem>
-        [[nodiscard]] constexpr boolish operator>=(proxy_reference<Cat, Elem> that) const
-            requires CanGtE<Element, Elem> {
+        [[nodiscard]] constexpr boolish operator>=(
+            proxy_reference<Cat, Elem> that) const requires CanGtE<Element, Elem> {
             return {ref_ >= that.peek()};
         }
 
@@ -311,7 +309,7 @@ namespace test {
         template <class Cat, class Elem>
             requires convertible_to<Elem&, Ref>
         common_reference(proxy_reference<Cat, Elem> pref) : ref_{pref.peek()} {}
-        // clang-format on
+            // clang-format on
     };
 } // namespace test
 
@@ -326,6 +324,14 @@ template <class T, class Cat, class Elem, template <class> class TQuals, templat
     requires std::common_reference_with<TQuals<T>, Elem&>
 struct std::basic_common_reference<T, ::test::proxy_reference<Cat, Elem>, TQuals, UQuals> {
     using type = common_reference_t<TQuals<T>, Elem&>;
+};
+
+template <class Cat1, class Elem1, class Cat2, class Elem2, template <class> class TQuals,
+    template <class> class UQuals>
+    requires std::common_reference_with<Elem1&, Elem2&>
+struct std::basic_common_reference<::test::proxy_reference<Cat1, Elem1>, ::test::proxy_reference<Cat2, Elem2>, TQuals,
+    UQuals> {
+    using type = common_reference_t<Elem1&, Elem2&>;
 };
 // clang-format on
 
@@ -370,7 +376,7 @@ namespace test {
         using Consterator = iterator<Category, const Element, Diff, Eq, Proxy, Wrapped>;
 
         // output iterator operations
-        iterator() = default;
+        iterator() requires at_least<fwd> || (Eq == CanCompare::yes) = default;
 
         constexpr explicit iterator(Element* ptr) noexcept : ptr_{ptr} {}
 
@@ -584,19 +590,36 @@ namespace test {
         }
     };
     // clang-format on
+
+    template <class Category, bool IsForward, bool IsProxy, bool EqAndCopy>
+    struct iterator_traits_base {};
+
+    template <class Category>
+    struct iterator_traits_base<Category, true, false, true> {
+        using iterator_category = Category;
+    };
+
+    template <class Category>
+    struct iterator_traits_base<Category, true, true, true> {
+        using iterator_category = input;
+    };
+
+    template <class Category, bool IsProxy>
+    struct iterator_traits_base<Category, false, IsProxy, true> {
+        using iterator_category = input;
+    };
 } // namespace test
 
 template <class Category, class Element, ::test::CanDifference Diff, ::test::CanCompare Eq, ::test::ProxyRef Proxy,
     ::test::IsWrapped Wrapped>
-struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>> {
-    using iterator_concept  = Category;
-    using iterator_category = conditional_t<derived_from<Category, forward_iterator_tag>, //
-        conditional_t<Proxy == ::test::ProxyRef::no, Category, input_iterator_tag>, //
-        conditional_t<static_cast<bool>(Eq), Category, void>>; // TRANSITION, LWG-3289
-    using value_type        = remove_cv_t<Element>;
-    using difference_type   = ptrdiff_t;
-    using pointer           = conditional_t<derived_from<Category, contiguous_iterator_tag>, Element*, void>;
-    using reference         = iter_reference_t<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>;
+struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>
+    : ::test::iterator_traits_base<Category, derived_from<Category, forward_iterator_tag>,
+          Proxy == ::test::ProxyRef::yes, Eq == ::test::CanCompare::yes> {
+    using iterator_concept = Category;
+    using value_type       = remove_cv_t<Element>;
+    using difference_type  = ptrdiff_t;
+    using pointer          = conditional_t<derived_from<Category, contiguous_iterator_tag>, Element*, void>;
+    using reference        = iter_reference_t<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>;
 };
 
 template <class Element, ::test::CanDifference Diff, ::test::IsWrapped Wrapped>
@@ -624,7 +647,7 @@ namespace test {
         public:
             static_assert(Copy == Copyability::immobile);
 
-            range_base() = default;
+            range_base() = delete;
             constexpr explicit range_base(span<Element> elements) noexcept : elements_{elements} {}
 
             range_base(const range_base&) = delete;
@@ -640,7 +663,7 @@ namespace test {
         template <class Element>
         class range_base<Element, Copyability::move_only> {
         public:
-            range_base() = default;
+            range_base() = delete;
             constexpr explicit range_base(span<Element> elements) noexcept : elements_{elements} {}
 
             constexpr range_base(range_base&& that) noexcept
@@ -1311,11 +1334,11 @@ struct get_nth_fn {
     { return get<I>(std::forward<T>(t)); }
 
     template <class T, class Elem>
-    [[nodiscard]] constexpr decltype(auto) operator()(test::proxy_reference<T, Elem> r) const noexcept
-        requires requires {
+    [[nodiscard]] constexpr decltype(auto) operator()(
+        test::proxy_reference<T, Elem> r) const noexcept requires requires {
         (*this)(r.peek());
     }
-    { return (*this)(r.peek()); }
+    { return (*this) (r.peek()); }
 };
 inline constexpr get_nth_fn<0> get_first;
 inline constexpr get_nth_fn<1> get_second;

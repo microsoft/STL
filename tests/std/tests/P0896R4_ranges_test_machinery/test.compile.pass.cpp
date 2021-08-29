@@ -21,7 +21,7 @@ constexpr bool iter_test() {
 
     using I = iterator<Category, Element, Diff, Eq, Proxy, Wrapped>;
 
-    STATIC_ASSERT(default_initializable<I>);
+    STATIC_ASSERT(default_initializable<I> == (Eq == CanCompare::yes));
     STATIC_ASSERT(movable<I>);
 
     STATIC_ASSERT(!movable<Element> || indirectly_writable<I, Element>);
@@ -151,13 +151,11 @@ STATIC_ASSERT(
 STATIC_ASSERT(same_as<_Unwrapped_t<test::sentinel<int, IsWrapped::yes>>, test::sentinel<int, IsWrapped::no>>);
 
 // Validate test::range
-// clang-format off
 template <class R>
 concept has_member_size = requires(const R& r) {
     typename ranges::range_size_t<R>;
     { r.size() } -> same_as<ranges::range_size_t<R>>;
 };
-// clang-format on
 
 using test::Sized, test::Common;
 

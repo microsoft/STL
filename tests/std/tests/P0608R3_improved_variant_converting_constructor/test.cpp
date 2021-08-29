@@ -38,17 +38,13 @@ void assert_P0608R3() {
     static_assert(is_constructible_v<variant<char, optional<char16_t>>, char16_t>);
     static_assert(is_constructible_v<variant<int, reference_wrapper<double>>, double&>);
     static_assert(is_constructible_v<variant<float, int>, char>);
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
     static_assert(is_constructible_v<variant<float, long>, int>);
     static_assert(is_constructible_v<variant<float, long long>, int>);
     static_assert(is_constructible_v<variant<float, long, double>, int>);
     static_assert(is_constructible_v<variant<float, vector<int>, long long>, int>);
-#endif // !__EDG__
     static_assert(is_constructible_v<variant<float, int, long long>, char>);
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
     static_assert(!is_constructible_v<variant<float>, int>);
     static_assert(!is_constructible_v<variant<float, vector<int>>, int>);
-#endif // !__EDG__
     static_assert(!is_constructible_v<variant<float, char>, int>);
 
     static_assert(is_assignable_v<variant<string, bool>, const char*>);
@@ -56,17 +52,13 @@ void assert_P0608R3() {
     static_assert(is_assignable_v<variant<char, optional<char16_t>>, char16_t>);
     static_assert(is_assignable_v<variant<int, reference_wrapper<double>>, double&>);
     static_assert(is_assignable_v<variant<float, int>, char>);
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
     static_assert(is_assignable_v<variant<float, long>, int>);
     static_assert(is_assignable_v<variant<float, long long>, int>);
     static_assert(is_assignable_v<variant<float, long, double>, int>);
     static_assert(is_assignable_v<variant<float, vector<int>, long long>, int>);
-#endif // !__EDG__
     static_assert(is_assignable_v<variant<float, int, long long>, char>);
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
     static_assert(!is_assignable_v<variant<float>, int>);
     static_assert(!is_assignable_v<variant<float, vector<int>>, int>);
-#endif // !__EDG__
     static_assert(!is_assignable_v<variant<float, char>, int>);
 }
 
@@ -93,13 +85,9 @@ void assert_more_examples() {
     static_assert(is_constructible_v<variant<float, bool, convertible_bool>, convertible_bool>);
     static_assert(is_constructible_v<variant<float, bool, convertible_bool>, bool>);
     static_assert(is_constructible_v<variant<char, int>, bool>);
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
-#ifdef __clang__ // TRANSITION, DevCom-1338628
     static_assert(is_constructible_v<variant<double_double>, int>);
-#endif // __clang__
     static_assert(!is_constructible_v<variant<float>, unsigned int>);
     static_assert(!is_constructible_v<variant<char, default_struct>, int>);
-#endif // !__EDG__
     static_assert(!is_constructible_v<variant<float, long, long long>, int>);
 
     static_assert(is_assignable_v<variant<double_double>, double>);
@@ -112,13 +100,9 @@ void assert_more_examples() {
     static_assert(is_assignable_v<variant<float, bool, convertible_bool>, convertible_bool>);
     static_assert(is_assignable_v<variant<float, bool, convertible_bool>, bool>);
     static_assert(is_assignable_v<variant<char, int>, bool>);
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
-#ifdef __clang__ // TRANSITION, DevCom-1338628
     static_assert(is_assignable_v<variant<double_double>, int>);
-#endif // __clang__
     static_assert(!is_assignable_v<variant<float>, unsigned int>);
     static_assert(!is_assignable_v<variant<char, default_struct>, int>);
-#endif // !__EDG__
     static_assert(!is_assignable_v<variant<float, long, long long>, int>);
 }
 
@@ -144,16 +128,13 @@ void test_variant_constructor_P0608R3() {
 
     variant<float, long> e;
     assert(e.index() == 0);
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
     e = 0; // long
     assert(e.index() == 1);
-#endif // !__EDG__
 
     variant<float, int> f = 'a'; // int
     assert(f.index() == 1);
     assert(get<int>(f) == 97);
 
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
     variant<float, long> g = 0; // long
     assert(g.index() == 1);
 
@@ -162,7 +143,6 @@ void test_variant_constructor_P0608R3() {
 
     variant<float, vector<int>, long long> i = 0; // long long
     assert(i.index() == 2);
-#endif // !__EDG__
 
     variant<float, int, long long> j = 'a'; // int
     assert(j.index() == 1);
@@ -223,7 +203,6 @@ void test_assignment_operator() {
     assert(a.index() == 1);
     assert(get<bool>(a) == true);
 
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
     bool b_data                         = true;
     variant<bool, int, double_double> b = b_data; // bool
     assert(b.index() == 0);
@@ -234,9 +213,7 @@ void test_assignment_operator() {
     b = 12.5; // double_double
     assert(b.index() == 2);
     assert(get<2>(b).x_ == 12.5);
-#endif // !__EDG__
 
-#ifdef __clang__ // TRANSITION, DevCom-1338628
     variant<void*, bool, double_double> c;
     assert(c.index() == 0);
     c = false; // bool
@@ -249,7 +226,6 @@ void test_assignment_operator() {
     c = static_cast<void*>(&c_data); // void*
     assert(c.index() == 0);
     assert(static_cast<double_double*>(get<0>(c))->x_ == 1.2);
-#endif // __clang__
 }
 
 int main() {

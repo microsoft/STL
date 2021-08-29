@@ -1315,9 +1315,7 @@ namespace test_constructible_from {
     STATIC_ASSERT(test<void(&&)(), void (&)()>());
     STATIC_ASSERT(test<void(&&)(), void(&&)()>());
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-752709
     STATIC_ASSERT(test<int&&, double&>());
-#endif // TRANSITION, VSO-752709
 
     STATIC_ASSERT(test<initializer_list<int>>());
 
@@ -1427,9 +1425,6 @@ namespace test_constructible_from {
     STATIC_ASSERT(test<int&, ExplicitTo<int&>>());
     STATIC_ASSERT(test<int const&, ExplicitTo<int&>>());
     STATIC_ASSERT(test<int const&, ExplicitTo<int&>&>());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-752709
-    STATIC_ASSERT(test<int const&, ExplicitTo<int&&>>());
-#endif // TRANSITION, VSO-752709
 
     struct Multiparameter {
         explicit Multiparameter(int);
@@ -1459,9 +1454,6 @@ namespace test_constructible_from {
     // Binding through reference-compatible type is required to perform
     // direct-initialization as described in N4849 [over.match.ref]/1.1:
     STATIC_ASSERT(test<int&, ExplicitTo<int&>>());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-752709
-    STATIC_ASSERT(test<int const&, ExplicitTo<int&&>>());
-#endif // TRANSITION, VSO-752709
     STATIC_ASSERT(test<int&&, ExplicitTo<int&&>>());
 
     // Binding through temporary behaves like copy-initialization,
@@ -1492,13 +1484,9 @@ namespace test_default_initializable {
     using std::default_initializable, std::initializer_list;
 
     STATIC_ASSERT(default_initializable<int>);
-#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<int const>);
-#endif // TRANSITION, DevCom-952724
     STATIC_ASSERT(default_initializable<int volatile>);
-#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<int const volatile>);
-#endif // TRANSITION, DevCom-952724
     STATIC_ASSERT(default_initializable<double>);
     STATIC_ASSERT(!default_initializable<void>);
 
@@ -1511,9 +1499,7 @@ namespace test_default_initializable {
     STATIC_ASSERT(!default_initializable<int[]>);
     STATIC_ASSERT(!default_initializable<char[]>);
     STATIC_ASSERT(!default_initializable<char[][3]>);
-#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<int const[2]>);
-#endif // TRANSITION, DevCom-952724
 
     STATIC_ASSERT(!default_initializable<int&>);
     STATIC_ASSERT(!default_initializable<int const&>);

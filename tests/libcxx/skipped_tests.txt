@@ -57,11 +57,17 @@ language.support\support.limits\support.limits.general\locale.version.pass.cpp
 language.support\support.limits\support.limits.general\ostream.version.pass.cpp
 language.support\support.limits\support.limits.general\string_view.version.pass.cpp
 
+# libc++ doesn't yet implement P2231R1, so it expects an old value for `__cpp_lib_optional`
+language.support\support.limits\support.limits.general\optional.version.pass.cpp
+
 # test emits warning C4310: cast truncates constant value
 numerics\bit\bitops.rot\rotl.pass.cpp
 
 # libc++ doesn't yet implement P1754R1 or P1964R2, so it expects an old value for `__cpp_lib_concepts`
 language.support\support.limits\support.limits.general\concepts.version.pass.cpp
+
+# Bogus test believes that optional<non_constexpr_destructor> cannot be a literal type
+utilities\optional\optional.object\optional.object.dtor\dtor.pass.cpp
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -275,16 +281,7 @@ utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
 
 
 # *** MISSING STL FEATURES ***
-# C++23 P1048R1 "is_scoped_enum"
-utilities\meta\meta.unary\meta.unary.prop\is_scoped_enum.pass.cpp
-
-# C++23 P1679R3 "contains() For basic_string/basic_string_view"
-strings\basic.string\string.contains\contains.char.pass.cpp
-strings\basic.string\string.contains\contains.ptr.pass.cpp
-strings\basic.string\string.contains\contains.string_view.pass.cpp
-strings\string.view\string.view.template\contains.char.pass.cpp
-strings\string.view\string.view.template\contains.ptr.pass.cpp
-strings\string.view\string.view.template\contains.string_view.pass.cpp
+# Nothing here! :-)
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -324,14 +321,8 @@ algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
 
 
 # *** CLANG COMPILER BUGS ***
-# LLVM-33230 "Clang on Windows should define __STDCPP_THREADS__ to be 1"
-thread\macro.pass.cpp
-
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
-
-# LLVM-48606 "Clang rejects creation of struct with mutable member during constant evaluation"
-language.support\support.limits\support.limits.general\vector.version.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -431,9 +422,6 @@ numerics\c.math\cmath.pass.cpp
 
 # GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
 algorithms\robust_against_adl.pass.cpp
-
-# GH-1595: <bit>: bit_ceil(T(-1)) should not be a constant expression
-numerics\bit\bit.pow.two\bit_ceil.fail.cpp
 
 
 # *** CRT BUGS ***
@@ -566,6 +554,11 @@ numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\pow.pass.cpp
 numerics\complex.number\cmplx.over\proj.pass.cpp
 
+# Assertion failed: c == NaN || c == non_zero_nan
+# Testing input values outside the range of [complex.value.ops]/9
+# libc++ handles those input values differently
+numerics\complex.number\complex.value.ops\polar.pass.cpp
+
 # Assertion failed: std::abs(skew - x_skew) < 0.01
 # Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
 numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
@@ -625,6 +618,16 @@ utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
 
+# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
+strings\string.conversions\stod.pass.cpp
+strings\string.conversions\stof.pass.cpp
+strings\string.conversions\stoi.pass.cpp
+strings\string.conversions\stol.pass.cpp
+strings\string.conversions\stold.pass.cpp
+strings\string.conversions\stoll.pass.cpp
+strings\string.conversions\stoul.pass.cpp
+strings\string.conversions\stoull.pass.cpp
+
 # Bogus test uses std::cout without including <iostream>.
 utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.nonmembers\streaming.pass.cpp
 
@@ -646,6 +649,22 @@ language.support\support.limits\support.limits.general\chrono.version.pass.cpp
 # We unconditionally define __cpp_lib_addressof_constexpr; test error says it
 # "should not be defined when TEST_HAS_BUILTIN(__builtin_addressof) || TEST_GCC_VER >= 700 is not defined!"
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
+
+# Test should be enabled after LLVM update
+# updated test https://github.com/llvm/llvm-project/commit/0324b46cd873abc4fabe19f4bd468d10398ffd0d#diff-a9be5c3f8e18be99f40fb35f58960f400413a76252d86b53f80d76cb09cb53ef
+# should work
+language.support\support.limits\support.limits.general\variant.version.pass.cpp
+
+# libc++ doesn't implement P2186R2 Removing Garbage Collection Support
+utilities\memory\util.dynamic.safety\get_pointer_safety.pass.cpp
+utilities\memory\util.dynamic.safety\declare_no_pointers.pass.cpp
+utilities\memory\util.dynamic.safety\declare_reachable.pass.cpp
+
+# Clang 12 emits a warning-as-error; this has likely been fixed upstream already:
+# error: temporary whose address is used as value of local variable 'it2' will be destroyed at the end of the full-expression [-Werror,-Wdangling]
+iterators\predef.iterators\reverse.iterators\reverse.iter.ops\reverse.iter.op-=\difference_type.pass.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.ops\reverse.iter.op+=\difference_type.pass.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.ops\reverse.iter.op=\reverse_iterator.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
@@ -703,7 +722,6 @@ numerics\complex.number\complex.transcendentals\asinh.pass.cpp
 numerics\complex.number\complex.transcendentals\atanh.pass.cpp
 numerics\complex.number\complex.transcendentals\cos.pass.cpp
 numerics\complex.number\complex.transcendentals\cosh.pass.cpp
-numerics\complex.number\complex.transcendentals\exp.pass.cpp
 numerics\complex.number\complex.transcendentals\log10.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_complex_complex.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_complex_scalar.pass.cpp
@@ -712,7 +730,6 @@ numerics\complex.number\complex.transcendentals\sin.pass.cpp
 numerics\complex.number\complex.transcendentals\sinh.pass.cpp
 numerics\complex.number\complex.transcendentals\tanh.pass.cpp
 numerics\complex.number\complex.value.ops\norm.pass.cpp
-numerics\complex.number\complex.value.ops\polar.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 localization\locale.categories\category.ctype\facet.ctype.special\facet.ctype.char.statics\classic_table.pass.cpp
@@ -767,8 +784,6 @@ numerics\rand\rand.adapt\rand.adapt.disc\ctor_result_type.pass.cpp
 numerics\rand\rand.adapt\rand.adapt.disc\ctor_sseq.pass.cpp
 numerics\rand\rand.adapt\rand.adapt.ibits\ctor_result_type.pass.cpp
 numerics\rand\rand.adapt\rand.adapt.ibits\ctor_sseq.pass.cpp
-numerics\rand\rand.eng\rand.eng.mers\ctor_result_type.pass.cpp
-numerics\rand\rand.eng\rand.eng.mers\ctor_sseq.pass.cpp
 numerics\rand\rand.eng\rand.eng.sub\ctor_result_type.pass.cpp
 numerics\rand\rand.eng\rand.eng.sub\ctor_sseq.pass.cpp
 
@@ -783,12 +798,6 @@ thread\futures\futures.promise\set_rvalue.pass.cpp
 # Possible STL bugs in pair and tuple.
 utilities\tuple\tuple.tuple\tuple.cnstr\PR23256_constrain_UTypes_ctor.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\PR31384.pass.cpp
-
-# Likely STL bugs in mersenne_twister; also fails at runtime
-# random(1186,26):  error: constexpr variable '_WMSK' must be initialized by a constant expression
-#    static constexpr _Ty _WMSK = ~((~_Ty(0) << (_Wx - 1)) << 1);
-#                         ^       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-numerics\rand\rand.eng\rand.eng.mers\ctor_sseq_all_zero.pass.cpp
 
 # Bugs/questionable choices in codecvt<char(16|32)_t, char, mbstate_t>, which we probably will not fix since
 # (1) they are deprecated, and (2) we don't want to break existing users.

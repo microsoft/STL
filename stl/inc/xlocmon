@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT money_base
 struct money_base : locale::facet { // ultimate base class for moneypunct
     enum { // constants for different format codes
         symbol = '$',
@@ -37,7 +36,6 @@ struct money_base : locale::facet { // ultimate base class for moneypunct
     money_base(size_t _Refs = 0) : locale::facet(_Refs) {}
 };
 
-// CLASS TEMPLATE _Mpunct
 template <class _Elem>
 class _Mpunct : public money_base { // common base class for moneypunct<_Elem, false/true>
 public:
@@ -103,7 +101,7 @@ protected:
         _END_LOCINFO()
     }
 
-    virtual __CLR_OR_THIS_CALL ~_Mpunct() noexcept {
+    __CLR_OR_THIS_CALL ~_Mpunct() noexcept override {
         _Tidy();
     }
 
@@ -244,7 +242,6 @@ private:
     _Locinfo::_Cvtvec _Cvt; // conversion information
 };
 
-// CLASS TEMPLATE moneypunct
 template <class _Elem, bool _Intl = false>
 class moneypunct : public _Mpunct<_Elem> { // facet for defining monetary punctuation text
 public:
@@ -271,7 +268,7 @@ public:
 protected:
     moneypunct(const char* _Locname, size_t _Refs = 0) : _Mpunct<_Elem>(_Locname, _Refs, _Intl) {}
 
-    virtual __CLR_OR_THIS_CALL ~moneypunct() noexcept {}
+    __CLR_OR_THIS_CALL ~moneypunct() noexcept override {}
 };
 
 #ifdef __clang__
@@ -279,11 +276,9 @@ protected:
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
 #endif // __clang__
 
-// STATIC moneypunct::intl OBJECT
 template <class _Elem, bool _Intl>
 _PGLOBAL const bool moneypunct<_Elem, _Intl>::intl = _Intl;
 
-// STATIC moneypunct::id OBJECT
 template <class _Elem, bool _Intl>
 __PURE_APPDOMAIN_GLOBAL locale::id moneypunct<_Elem, _Intl>::id;
 
@@ -291,7 +286,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id moneypunct<_Elem, _Intl>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS TEMPLATE moneypunct_byname
 template <class _Elem, bool _Intl = false>
 class moneypunct_byname : public moneypunct<_Elem, _Intl> { // moneypunct for named locale
 public:
@@ -304,10 +298,9 @@ public:
         : moneypunct<_Elem, _Intl>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~moneypunct_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~moneypunct_byname() noexcept override {}
 };
 
-// CLASS TEMPLATE money_get
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class money_get : public locale::facet { // facet for converting text to encoded monetary amounts
     using _Mypunct0 = moneypunct<_Elem, false>;
@@ -353,7 +346,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~money_get() noexcept {}
+    __CLR_OR_THIS_CALL ~money_get() noexcept override {}
 
     void _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
@@ -367,7 +360,7 @@ protected:
             _State |= ios_base::eofbit;
         }
 
-        if (_Str.size() == 0) {
+        if (_Str.empty()) {
             _State |= ios_base::failbit; // _Getmfld failed
         } else { // convert to long double
             const char* _Eb = _Str.c_str();
@@ -483,7 +476,7 @@ private:
                     int _Fracdigseen        = 0;
                     int _Fracdigits         = _Ppunct_fac->frac_digits();
                     const string _Grouping  = _Ppunct_fac->grouping();
-                    const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Ppunct_fac->thousands_sep();
+                    const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Ppunct_fac->thousands_sep();
 
                     if (_Kseparator == _Elem{} || CHAR_MAX <= static_cast<unsigned char>(*_Grouping.c_str())) {
                         for (; _First != _Last && (_Idx = _Find_elem(_Atoms, *_First)) < 10; ++_First) {
@@ -547,7 +540,7 @@ private:
                         }
                     }
 
-                    if (_Val.size() == 0) {
+                    if (_Val.empty()) {
                         _Bad = true; // fail if no elements parsed
                     } else {
                         for (; _Fracdigseen < _Fracdigits; ++_Fracdigseen) {
@@ -600,7 +593,6 @@ private:
     }
 };
 
-// STATIC money_get::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -613,7 +605,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id money_get<_Elem, _InIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS TEMPLATE money_put
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class money_put : public locale::facet { // facet for converting encoded monetary amounts to text
     using _Mypunct0 = moneypunct<_Elem, false>;
@@ -659,7 +650,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~money_put() noexcept {}
+    __CLR_OR_THIS_CALL ~money_put() noexcept override {}
 
     void _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
@@ -878,7 +869,6 @@ private:
     }
 };
 
-// STATIC money_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"

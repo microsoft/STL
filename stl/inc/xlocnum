@@ -22,8 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-// TEXT-TO-NUMERIC CONVERSION FUNCTIONS
-
 _EXTERN_C_UNLESS_PURE
 
 extern _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _Stofx(
@@ -45,7 +43,6 @@ _END_EXTERN_C_UNLESS_PURE
 
 _STD_BEGIN
 
-// FUNCTION _Stodx_v2
 inline double _Stodx_v2(const char* _Str, char** _Endptr, int _Pten, int* _Perr) { // convert string to double
     int& _Errno_ref = errno; // Nonzero cost, pay it once
     const int _Orig = _Errno_ref;
@@ -62,7 +59,6 @@ inline double _Stodx_v2(const char* _Str, char** _Endptr, int _Pten, int* _Perr)
     return _Val;
 }
 
-// FUNCTION _Stofx_v2
 inline float _Stofx_v2(const char* _Str, char** _Endptr, int _Pten, int* _Perr) { // convert string to float
     int& _Errno_ref = errno; // Nonzero cost, pay it once
     const int _Orig = _Errno_ref;
@@ -79,7 +75,6 @@ inline float _Stofx_v2(const char* _Str, char** _Endptr, int _Pten, int* _Perr) 
     return _Val;
 }
 
-// FUNCTION TEMPLATE _Find_elem
 template <class _Elem, size_t _Base_size>
 size_t _Find_elem(const _Elem (&_Base)[_Base_size],
     const _Elem _Ch) { // lookup _Ch in array storing NUL-terminated string _Base
@@ -100,7 +95,6 @@ inline wchar_t* _Maklocwcs(const wchar_t* _Ptr) { // copy NTWCS to allocated sto
     return _Ptrdest;
 }
 
-// CLASS TEMPLATE numpunct
 template <class _Elem>
 class numpunct : public locale::facet { // facet for defining numeric punctuation text
 private:
@@ -158,7 +152,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~numpunct() noexcept {
+    __CLR_OR_THIS_CALL ~numpunct() noexcept override {
         _Tidy();
     }
 
@@ -236,7 +230,6 @@ private:
     const _Elem* _Truename; // name for true, "true" for "C" locale
 };
 
-// CLASS TEMPLATE numpunct_byname
 template <class _Elem>
 class numpunct_byname : public numpunct<_Elem> { // numpunct for named locale
 public:
@@ -249,10 +242,9 @@ public:
         : numpunct<_Elem>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~numpunct_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~numpunct_byname() noexcept override {}
 };
 
-// STATIC numpunct::id OBJECT
 #if !defined(_CRTBLD) || defined(CRTDLL2) || !defined(_DLL) || defined(_M_CEE_PURE) // TRANSITION, VSO-578955
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -267,7 +259,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id numpunct<_Elem>::id;
 #endif // __clang__
 #endif // !defined(_CRTBLD) || defined(CRTDLL2) || !defined(_DLL) || defined(_M_CEE_PURE)
 
-// CLASS TEMPLATE num_get
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class num_get : public locale::facet { // facet for converting text to encoded numbers
 public:
@@ -286,7 +277,7 @@ public:
     __PURE_APPDOMAIN_GLOBAL static locale::id id; // unique facet id
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~num_get() noexcept {}
+    __CLR_OR_THIS_CALL ~num_get() noexcept override {}
 
     void _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
@@ -665,7 +656,7 @@ private:
         const locale& _Loc) const { // get integer field from [_First, _Last) into _Ac
         const auto& _Punct_fac  = _STD use_facet<numpunct<_Elem>>(_Loc);
         const string _Grouping  = _Punct_fac.grouping();
-        const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Punct_fac.thousands_sep();
+        const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Punct_fac.thousands_sep();
 
         constexpr int _Numget_signoff = 22;
         constexpr int _Numget_xoff    = 24;
@@ -821,7 +812,7 @@ private:
                 }
             }
         } else { // grouping specified, gather digits and group sizes
-            const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Punct_fac.thousands_sep();
+            const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Punct_fac.thousands_sep();
             string _Groups(1, '\0');
             size_t _Group = 0;
 
@@ -1012,7 +1003,7 @@ private:
                 }
             }
         } else { // grouping specified, gather digits and group sizes
-            const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Punct_fac.thousands_sep();
+            const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Punct_fac.thousands_sep();
             string _Groups(1, '\0');
             size_t _Group = 0;
 
@@ -1133,7 +1124,6 @@ private:
 #undef _ENABLE_V2_BEHAVIOR
 };
 
-// STATIC num_get::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -1146,7 +1136,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id num_get<_Elem, _InIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// STRUCT TEMPLATE _Hex_float_precision
 template <class _Ty>
 struct _Hex_float_precision;
 
@@ -1162,7 +1151,6 @@ struct _Hex_float_precision<long double> {
     static constexpr int value = ((LDBL_MANT_DIG - 1) + 3) / 4;
 };
 
-// FUNCTION TEMPLATE _Float_put_desired_precision
 template <class _Ty>
 int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fmtflags _Float_flags) {
     const bool _Is_hex = _Float_flags == (ios_base::fixed | ios_base::scientific);
@@ -1185,7 +1173,6 @@ int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fm
     }
 }
 
-// CLASS TEMPLATE num_put
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class num_put : public locale::facet { // facet for converting encoded numbers to text
 public:
@@ -1204,7 +1191,7 @@ public:
     __PURE_APPDOMAIN_GLOBAL static locale::id id; // unique facet id
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~num_put() noexcept {}
+    __CLR_OR_THIS_CALL ~num_put() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo&) {} // initialize from _Locinfo object
 
@@ -1606,7 +1593,6 @@ private:
     }
 };
 
-// STATIC num_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"

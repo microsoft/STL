@@ -1769,7 +1769,6 @@ int run_test()
   static_assert(!std::is_assignable<std::variant<int, int>, int>::value, "");
   static_assert(!std::is_assignable<std::variant<long, long long>, int>::value, "");
 #if _HAS_CXX20
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
   static_assert(std::is_assignable<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
 
   static_assert(std::is_assignable<std::variant<std::string, float>, int>::value
@@ -1779,7 +1778,6 @@ int run_test()
   static_assert(!std::is_assignable<std::variant<std::string, bool>, int>::value, "");
 
   static_assert(!std::is_assignable<std::variant<int, bool>, decltype("meow")>::value, "");
-#endif // !__EDG__
   static_assert(!std::is_assignable<std::variant<int, const bool>, decltype("meow")>::value, "");
   static_assert(!std::is_assignable<std::variant<int, const volatile bool>, decltype("meow")>::value, "");
 
@@ -3053,7 +3051,6 @@ void test_T_assignment_sfinae() {
     static_assert(!std::is_assignable<V, int>::value, "no matching operator=");
   }
 #if _HAS_CXX20
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
   {
     using V = std::variant<std::string, float>;
     static_assert(std::is_assignable<V, int>::value == VariantAllowsNarrowingConversions,
@@ -3066,12 +3063,13 @@ void test_T_assignment_sfinae() {
     struct X {
       operator void*();
     };
+#ifndef __EDG__ // TRANSITION, VSO-1327220
     static_assert(!std::is_assignable<V, X>::value,
                   "no boolean conversion in operator=");
+#endif // !__EDG__
     static_assert(std::is_assignable<V, std::false_type>::value,
                   "no converted to bool in operator=");
   }
-#endif // !__EDG__
 #endif // _HAS_CXX20
   {
     struct X {};
@@ -3111,7 +3109,6 @@ void test_T_assignment_basic() {
     assert(std::get<1>(v) == 43);
   }
 #if _HAS_CXX20
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
 #ifndef TEST_VARIANT_ALLOWS_NARROWING_CONVERSIONS
   {
     std::variant<unsigned, long> v;
@@ -3123,7 +3120,6 @@ void test_T_assignment_basic() {
     assert(std::get<0>(v) == 43);
   }
 #endif
-#endif // !__EDG__
   {
     std::variant<std::string, bool> v = true;
     v = "bar";
@@ -3277,7 +3273,6 @@ int run_test()
   static_assert(!std::is_constructible<std::variant<int, int>, int>::value, "");
   static_assert(!std::is_constructible<std::variant<long, long long>, int>::value, "");
 #if _HAS_CXX20
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
   static_assert(std::is_constructible<std::variant<char>, int>::value == VariantAllowsNarrowingConversions, "");
 
   static_assert(std::is_constructible<std::variant<std::string, float>, int>::value
@@ -3289,7 +3284,6 @@ int run_test()
   static_assert(!std::is_constructible<std::variant<int, bool>, decltype("meow")>::value, "");
   static_assert(!std::is_constructible<std::variant<int, const bool>, decltype("meow")>::value, "");
   static_assert(!std::is_constructible<std::variant<int, const volatile bool>, decltype("meow")>::value, "");
-#endif // !__EDG__
   static_assert(std::is_constructible<std::variant<bool>, std::true_type>::value, "");
   static_assert(!std::is_constructible<std::variant<bool>, std::unique_ptr<char> >::value, "");
 #ifndef TEST_PERMISSIVE
@@ -4581,7 +4575,6 @@ void test_T_ctor_sfinae() {
                   "no matching constructor");
   }
 #if _HAS_CXX20
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
   {
     using V = std::variant<std::string, float>;
     static_assert(std::is_constructible<V, int>::value == VariantAllowsNarrowingConversions,
@@ -4594,12 +4587,13 @@ void test_T_ctor_sfinae() {
     struct X {
       operator void*();
     };
+#ifndef __EDG__ // TRANSITION, VSO-1327220
     static_assert(!std::is_constructible<V, X>::value,
                   "no boolean conversion in constructor");
+#endif // !__EDG__
     static_assert(std::is_constructible<V, std::false_type>::value,
                   "no converted to bool in constructor");
   }
-#endif // !__EDG__
 #endif // _HAS_CXX20
   {
     struct X {};
@@ -4645,7 +4639,6 @@ void test_T_ctor_basic() {
     static_assert(std::get<1>(v) == 42, "");
   }
 #if _HAS_CXX20
-#ifndef __EDG__ // TRANSITION, DevCom-1337958
 #ifndef TEST_VARIANT_ALLOWS_NARROWING_CONVERSIONS
   {
     constexpr std::variant<unsigned, long> v(42);
@@ -4653,7 +4646,6 @@ void test_T_ctor_basic() {
     static_assert(std::get<1>(v) == 42, "");
   }
 #endif
-#endif // !__EDG__
   {
     std::variant<std::string, bool const> v = "meow";
     assert(v.index() == 0);
@@ -6398,7 +6390,7 @@ int run_test() {
 #include <utility>
 #include <variant>
 
-
+// Include llvm-project/libcxx/test/support headers:
 #include <test_macros.h>
 #include <type_id.h>
 #include <variant_test_helpers.h>
@@ -6452,10 +6444,8 @@ namespace msvc {
     namespace big_variant {
 #ifdef __EDG__
         constexpr std::size_t big = 20;
-#elif defined(__clang__)
-        constexpr std::size_t big = 256; // Clang supports more, but avoid the test timing out.
-#else // C1XX
-        constexpr std::size_t big = 120;
+#else // C1XX and Clang
+        constexpr std::size_t big = 64;
 #endif // tune value of "big" to a bit less than the largest variant the front-end can handle
         constexpr std::size_t n = 16;
 

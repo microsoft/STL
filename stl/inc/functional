@@ -29,16 +29,21 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT TEMPLATE plus
-// defined in <xstddef>
+#if _HAS_CXX23
+template <class _Result_type, class _Callable, class... _Types,
+    enable_if_t<is_invocable_r_v<_Result_type, _Callable, _Types...>, int> = 0>
+_NODISCARD constexpr _Result_type invoke_r(_Callable&& _Obj, _Types&&... _Args) noexcept(
+    is_nothrow_invocable_r_v<_Result_type, _Callable, _Types...>) {
+    if constexpr (is_void_v<_Result_type>) {
+        (void) _STD invoke(static_cast<_Callable&&>(_Obj), static_cast<_Types&&>(_Args)...);
+    } else {
+        return _STD invoke(static_cast<_Callable&&>(_Obj), static_cast<_Types&&>(_Args)...);
+    }
+}
+#endif // _HAS_CXX23
 
-// STRUCT TEMPLATE minus
-// defined in <xstddef>
+// plus, minus, and multiplies are defined in <xstddef>
 
-// STRUCT TEMPLATE multiplies
-// defined in <xstddef>
-
-// STRUCT TEMPLATE divides
 template <class _Ty = void>
 struct divides {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -50,7 +55,6 @@ struct divides {
     }
 };
 
-// STRUCT TEMPLATE modulus
 template <class _Ty = void>
 struct modulus {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -62,7 +66,6 @@ struct modulus {
     }
 };
 
-// STRUCT TEMPLATE negate
 template <class _Ty = void>
 struct negate {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
@@ -73,25 +76,8 @@ struct negate {
     }
 };
 
-// STRUCT TEMPLATE equal_to
-// defined in <xstddef>
+// equal_to, not_equal_to, greater, less, greater_equal, and less_equal are defined in <xstddef>
 
-// STRUCT TEMPLATE not_equal_to
-// defined in <xstddef>
-
-// STRUCT TEMPLATE greater
-// defined in <xstddef>
-
-// STRUCT TEMPLATE less
-// defined in <xstddef>
-
-// STRUCT TEMPLATE greater_equal
-// defined in <xstddef>
-
-// STRUCT TEMPLATE less_equal
-// defined in <xstddef>
-
-// STRUCT TEMPLATE logical_and
 template <class _Ty = void>
 struct logical_and {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -103,7 +89,6 @@ struct logical_and {
     }
 };
 
-// STRUCT TEMPLATE logical_or
 template <class _Ty = void>
 struct logical_or {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -115,7 +100,6 @@ struct logical_or {
     }
 };
 
-// STRUCT TEMPLATE logical_not
 template <class _Ty = void>
 struct logical_not {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
@@ -126,7 +110,6 @@ struct logical_not {
     }
 };
 
-// STRUCT TEMPLATE bit_and
 template <class _Ty = void>
 struct bit_and {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -138,7 +121,6 @@ struct bit_and {
     }
 };
 
-// STRUCT TEMPLATE bit_or
 template <class _Ty = void>
 struct bit_or {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -150,7 +132,6 @@ struct bit_or {
     }
 };
 
-// STRUCT TEMPLATE bit_xor
 template <class _Ty = void>
 struct bit_xor {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -162,7 +143,6 @@ struct bit_xor {
     }
 };
 
-// STRUCT TEMPLATE bit_not
 template <class _Ty = void>
 struct bit_not {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
@@ -173,16 +153,8 @@ struct bit_not {
     }
 };
 
-// STRUCT TEMPLATE SPECIALIZATION plus
-// defined in <xstddef>
+// void specializations of plus, minus, and multiplies are defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION minus
-// defined in <xstddef>
-
-// STRUCT TEMPLATE SPECIALIZATION multiplies
-// defined in <xstddef>
-
-// STRUCT TEMPLATE SPECIALIZATION divides
 template <>
 struct divides<void> {
     template <class _Ty1, class _Ty2>
@@ -194,7 +166,6 @@ struct divides<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION modulus
 template <>
 struct modulus<void> {
     template <class _Ty1, class _Ty2>
@@ -206,7 +177,6 @@ struct modulus<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION negate
 template <>
 struct negate<void> {
     template <class _Ty>
@@ -217,25 +187,8 @@ struct negate<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION equal_to
-// defined in <xstddef>
+// void specializations of equal_to, not_equal_to, greater, less, greater_equal, and less_equal are defined in <xstddef>
 
-// STRUCT TEMPLATE SPECIALIZATION not_equal_to
-// defined in <xstddef>
-
-// STRUCT TEMPLATE SPECIALIZATION greater
-// defined in <xstddef>
-
-// STRUCT TEMPLATE SPECIALIZATION less
-// defined in <xstddef>
-
-// STRUCT TEMPLATE SPECIALIZATION greater_equal
-// defined in <xstddef>
-
-// STRUCT TEMPLATE SPECIALIZATION less_equal
-// defined in <xstddef>
-
-// STRUCT TEMPLATE SPECIALIZATION logical_and
 template <>
 struct logical_and<void> {
     template <class _Ty1, class _Ty2>
@@ -247,7 +200,6 @@ struct logical_and<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION logical_or
 template <>
 struct logical_or<void> {
     template <class _Ty1, class _Ty2>
@@ -259,7 +211,6 @@ struct logical_or<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION logical_not
 template <>
 struct logical_not<void> {
     template <class _Ty>
@@ -270,7 +221,6 @@ struct logical_not<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION bit_and
 template <>
 struct bit_and<void> {
     template <class _Ty1, class _Ty2>
@@ -282,7 +232,6 @@ struct bit_and<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION bit_or
 template <>
 struct bit_or<void> {
     template <class _Ty1, class _Ty2>
@@ -294,7 +243,6 @@ struct bit_or<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION bit_xor
 template <>
 struct bit_xor<void> {
     template <class _Ty1, class _Ty2>
@@ -306,7 +254,6 @@ struct bit_xor<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION bit_not
 template <>
 struct bit_not<void> {
     template <class _Ty>
@@ -319,7 +266,6 @@ struct bit_not<void> {
 
 #if _HAS_DEPRECATED_NEGATORS
 _STL_DISABLE_DEPRECATED_WARNING
-// CLASS TEMPLATE unary_negate
 template <class _Fn>
 class _CXX17_DEPRECATE_NEGATORS unary_negate {
 public:
@@ -336,13 +282,11 @@ private:
     _Fn _Functor;
 };
 
-// FUNCTION TEMPLATE not1
 template <class _Fn>
 _CXX17_DEPRECATE_NEGATORS _NODISCARD constexpr unary_negate<_Fn> not1(const _Fn& _Func) {
     return unary_negate<_Fn>(_Func);
 }
 
-// CLASS TEMPLATE binary_negate
 template <class _Fn>
 class _CXX17_DEPRECATE_NEGATORS binary_negate {
 public:
@@ -360,7 +304,6 @@ private:
     _Fn _Functor;
 };
 
-// FUNCTION TEMPLATE not2
 template <class _Fn>
 _CXX17_DEPRECATE_NEGATORS _NODISCARD constexpr binary_negate<_Fn> not2(const _Fn& _Func) {
     return binary_negate<_Fn>(_Func);
@@ -370,7 +313,6 @@ _STL_RESTORE_DEPRECATED_WARNING
 
 #if _HAS_AUTO_PTR_ETC
 _STL_DISABLE_DEPRECATED_WARNING
-// CLASS TEMPLATE binder1st
 template <class _Fn>
 class binder1st : public unary_function<typename _Fn::second_argument_type,
                       typename _Fn::result_type> { // functor adapter _Func(stored, right)
@@ -394,14 +336,12 @@ protected:
     typename _Fn::first_argument_type value; // the left operand
 };
 
-// FUNCTION TEMPLATE bind1st
 template <class _Fn, class _Ty>
 _NODISCARD binder1st<_Fn> bind1st(const _Fn& _Func, const _Ty& _Left) {
     typename _Fn::first_argument_type _Val(_Left);
     return binder1st<_Fn>(_Func, _Val);
 }
 
-// CLASS TEMPLATE binder2nd
 template <class _Fn>
 class binder2nd : public unary_function<typename _Fn::first_argument_type,
                       typename _Fn::result_type> { // functor adapter _Func(left, stored)
@@ -425,7 +365,6 @@ protected:
     typename _Fn::second_argument_type value; // the right operand
 };
 
-// FUNCTION TEMPLATE bind2nd
 template <class _Fn, class _Ty>
 _NODISCARD binder2nd<_Fn> bind2nd(const _Fn& _Func, const _Ty& _Right) {
     typename _Fn::second_argument_type _Val(_Right);
@@ -433,7 +372,6 @@ _NODISCARD binder2nd<_Fn> bind2nd(const _Fn& _Func, const _Ty& _Right) {
 }
 _STL_RESTORE_DEPRECATED_WARNING
 
-// CLASS TEMPLATE pointer_to_unary_function
 template <class _Arg, class _Result, class _Fn = _Result (*)(_Arg)>
 class pointer_to_unary_function : public unary_function<_Arg, _Result> { // functor adapter (*pfunc)(left)
 public:
@@ -447,7 +385,6 @@ protected:
     _Fn _Pfun; // the function pointer
 };
 
-// CLASS TEMPLATE pointer_to_binary_function
 template <class _Arg1, class _Arg2, class _Result, class _Fn = _Result (*)(_Arg1, _Arg2)>
 class pointer_to_binary_function
     : public binary_function<_Arg1, _Arg2, _Result> { // functor adapter (*pfunc)(left, right)
@@ -462,7 +399,6 @@ protected:
     _Fn _Pfun; // the function pointer
 };
 
-// FUNCTION TEMPLATE ptr_fun
 #define _PTR_FUN(CALL_OPT, X1, X2, X3)                                                                      \
     template <class _Arg, class _Result>                                                                    \
     _NODISCARD pointer_to_unary_function<_Arg, _Result, _Result(CALL_OPT*)(_Arg)> ptr_fun(                  \
@@ -478,7 +414,6 @@ protected:
 _NON_MEMBER_CALL(_PTR_FUN, X1, X2, X3)
 #undef _PTR_FUN
 
-// CLASS TEMPLATE mem_fun_t
 template <class _Result, class _Ty>
 class mem_fun_t : public unary_function<_Ty*, _Result> { // functor adapter (*p->*pfunc)(), non-const *pfunc
 public:
@@ -492,7 +427,6 @@ private:
     _Result (_Ty::*_Pmemfun)(); // the member function pointer
 };
 
-// CLASS TEMPLATE mem_fun1_t
 template <class _Result, class _Ty, class _Arg>
 class mem_fun1_t : public binary_function<_Ty*, _Arg, _Result> { // functor adapter (*p->*pfunc)(val), non-const *pfunc
 public:
@@ -506,7 +440,6 @@ private:
     _Result (_Ty::*_Pmemfun)(_Arg); // the member function pointer
 };
 
-// CLASS TEMPLATE const_mem_fun_t
 template <class _Result, class _Ty>
 class const_mem_fun_t : public unary_function<const _Ty*, _Result> { // functor adapter (*p->*pfunc)(), const *pfunc
 public:
@@ -520,7 +453,6 @@ private:
     _Result (_Ty::*_Pmemfun)() const; // the member function pointer
 };
 
-// CLASS TEMPLATE const_mem_fun1_t
 template <class _Result, class _Ty, class _Arg>
 class const_mem_fun1_t
     : public binary_function<const _Ty*, _Arg, _Result> { // functor adapter (*p->*pfunc)(val), const *pfunc
@@ -535,7 +467,6 @@ private:
     _Result (_Ty::*_Pmemfun)(_Arg) const; // the member function pointer
 };
 
-// FUNCTION TEMPLATE mem_fun
 template <class _Result, class _Ty>
 _NODISCARD mem_fun_t<_Result, _Ty> mem_fun(_Result (_Ty::*_Pm)()) {
     return mem_fun_t<_Result, _Ty>(_Pm);
@@ -556,7 +487,6 @@ _NODISCARD const_mem_fun1_t<_Result, _Ty, _Arg> mem_fun(_Result (_Ty::*_Pm)(_Arg
     return const_mem_fun1_t<_Result, _Ty, _Arg>(_Pm);
 }
 
-// CLASS TEMPLATE mem_fun_ref_t
 template <class _Result, class _Ty>
 class mem_fun_ref_t : public unary_function<_Ty, _Result> { // functor adapter (*left.*pfunc)(), non-const *pfunc
 public:
@@ -570,7 +500,6 @@ private:
     _Result (_Ty::*_Pmemfun)(); // the member function pointer
 };
 
-// CLASS TEMPLATE mem_fun1_ref_t
 template <class _Result, class _Ty, class _Arg>
 class mem_fun1_ref_t
     : public binary_function<_Ty, _Arg, _Result> { // functor adapter (*left.*pfunc)(val), non-const *pfunc
@@ -585,7 +514,6 @@ private:
     _Result (_Ty::*_Pmemfun)(_Arg); // the member function pointer
 };
 
-// CLASS TEMPLATE const_mem_fun_ref_t
 template <class _Result, class _Ty>
 class const_mem_fun_ref_t : public unary_function<_Ty, _Result> { // functor adapter (*left.*pfunc)(), const *pfunc
 public:
@@ -599,7 +527,6 @@ private:
     _Result (_Ty::*_Pmemfun)() const; // the member function pointer
 };
 
-// CLASS TEMPLATE const_mem_fun1_ref_t
 template <class _Result, class _Ty, class _Arg>
 class const_mem_fun1_ref_t
     : public binary_function<_Ty, _Arg, _Result> { // functor adapter (*left.*pfunc)(val), const *pfunc
@@ -614,7 +541,6 @@ private:
     _Result (_Ty::*_Pmemfun)(_Arg) const; // the member function pointer
 };
 
-// FUNCTION TEMPLATE mem_fun_ref
 template <class _Result, class _Ty>
 _NODISCARD mem_fun_ref_t<_Result, _Ty> mem_fun_ref(_Result (_Ty::*_Pm)()) {
     return mem_fun_ref_t<_Result, _Ty>(_Pm);
@@ -636,7 +562,6 @@ _NODISCARD const_mem_fun1_ref_t<_Result, _Ty, _Arg> mem_fun_ref(_Result (_Ty::*_
 }
 #endif // _HAS_AUTO_PTR_ETC
 
-// FUNCTION TEMPLATE mem_fn
 template <class _Memptr>
 class _Mem_fn : public _Weak_types<_Memptr> {
 private:
@@ -659,7 +584,6 @@ _NODISCARD _CONSTEXPR20 _Mem_fn<_Rx _Ty::*> mem_fn(_Rx _Ty::*_Pm) noexcept {
 }
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE not_fn
 struct _Not_fn_tag {
     explicit _Not_fn_tag() = default;
 };
@@ -715,14 +639,11 @@ _NODISCARD _CONSTEXPR20 _Not_fn<decay_t<_Callable>> not_fn(_Callable&& _Obj) noe
 }
 #endif // _HAS_CXX17
 
-// IMPLEMENT function
-
-// CLASS bad_function_call
 class bad_function_call : public exception { // exception thrown when an empty std::function is called
 public:
     bad_function_call() noexcept {}
 
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
         return "bad function call";
     }
@@ -734,7 +655,6 @@ struct _Unforced { // tag to distinguish bind() from bind<R>()
     explicit _Unforced() = default;
 };
 
-// STRUCT TEMPLATE _Invoker_ret
 // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
 template <class _Rx, bool = is_void_v<_Rx>>
 struct _Invoker_ret { // selected for _Rx being cv void
@@ -764,7 +684,6 @@ struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
     }
 };
 
-// FUNCTION TEMPLATE _Test_callable
 template <class _Fty>
 class function;
 
@@ -781,7 +700,6 @@ bool _Test_callable(const _Ty& _Arg) noexcept { // determine whether std::functi
     }
 }
 
-// CLASS TEMPLATE _Func_base
 template <class _Rx, class... _Types>
 class __declspec(novtable) _Func_base { // abstract base for implementation types
 public:
@@ -806,7 +724,6 @@ private:
     virtual const void* _Get() const noexcept = 0;
 };
 
-// ALIAS TEMPLATE _Is_large
 constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Impl> // determine whether _Impl must be dynamically allocated
@@ -814,7 +731,6 @@ _INLINE_VAR constexpr bool _Is_large = sizeof(_Impl) > _Space_size || alignof(_I
                                     || !_Impl::_Nothrow_move::value;
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-// CLASS TEMPLATE _Func_impl
 template <class _Callable, class _Alloc, class _Rx, class... _Types>
 class _Func_impl final : public _Func_base<_Rx, _Types...> {
     // derived class for specific implementation types that use allocators
@@ -831,7 +747,7 @@ public:
     // dtor non-virtual due to _Delete_this()
 
 private:
-    virtual _Mybase* _Copy(void* _Where) const override {
+    _Mybase* _Copy(void* _Where) const override {
         auto& _Myax = _Mypair._Get_first();
         if constexpr (_Is_large<_Func_impl>) {
             _Myalty _Rebound(_Myax);
@@ -846,7 +762,7 @@ private:
         }
     }
 
-    virtual _Mybase* _Move(void* _Where) noexcept override {
+    _Mybase* _Move(void* _Where) noexcept override {
         if constexpr (_Is_large<_Func_impl>) {
             return nullptr;
         } else {
@@ -856,11 +772,11 @@ private:
         }
     }
 
-    virtual _Rx _Do_call(_Types&&... _Args) override { // call wrapped function
+    _Rx _Do_call(_Types&&... _Args) override { // call wrapped function
         return _Invoker_ret<_Rx>::_Call(_Mypair._Myval2, _STD forward<_Types>(_Args)...);
     }
 
-    virtual const type_info& _Target_type() const noexcept override {
+    const type_info& _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
         return typeid(_Callable);
 #else // _HAS_STATIC_RTTI
@@ -868,11 +784,11 @@ private:
 #endif // _HAS_STATIC_RTTI
     }
 
-    virtual const void* _Get() const noexcept override {
+    const void* _Get() const noexcept override {
         return _STD addressof(_Mypair._Myval2);
     }
 
-    virtual void _Delete_this(bool _Deallocate) noexcept override { // destroy self
+    void _Delete_this(bool _Deallocate) noexcept override { // destroy self
         _Myalty _Al(_Mypair._Get_first());
         _Destroy_in_place(*this);
         if (_Deallocate) {
@@ -884,7 +800,6 @@ private:
 };
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
-// CLASS TEMPLATE _Func_impl_no_alloc
 template <class _Callable, class _Rx, class... _Types>
 class _Func_impl_no_alloc final : public _Func_base<_Rx, _Types...> {
     // derived class for specific implementation types that don't use allocators
@@ -898,7 +813,7 @@ public:
     // dtor non-virtual due to _Delete_this()
 
 private:
-    virtual _Mybase* _Copy(void* _Where) const override {
+    _Mybase* _Copy(void* _Where) const override {
         if constexpr (_Is_large<_Func_impl_no_alloc>) {
             (void) _Where; // TRANSITION, DevCom-1004719
             return _Global_new<_Func_impl_no_alloc>(_Callee);
@@ -907,7 +822,7 @@ private:
         }
     }
 
-    virtual _Mybase* _Move(void* _Where) noexcept override {
+    _Mybase* _Move(void* _Where) noexcept override {
         if constexpr (_Is_large<_Func_impl_no_alloc>) {
             (void) _Where; // TRANSITION, DevCom-1004719
             return nullptr;
@@ -916,11 +831,11 @@ private:
         }
     }
 
-    virtual _Rx _Do_call(_Types&&... _Args) override { // call wrapped function
+    _Rx _Do_call(_Types&&... _Args) override { // call wrapped function
         return _Invoker_ret<_Rx>::_Call(_Callee, _STD forward<_Types>(_Args)...);
     }
 
-    virtual const type_info& _Target_type() const noexcept override {
+    const type_info& _Target_type() const noexcept override {
 #if _HAS_STATIC_RTTI
         return typeid(_Callable);
 #else // _HAS_STATIC_RTTI
@@ -928,11 +843,11 @@ private:
 #endif // _HAS_STATIC_RTTI
     }
 
-    virtual const void* _Get() const noexcept override {
+    const void* _Get() const noexcept override {
         return _STD addressof(_Callee);
     }
 
-    virtual void _Delete_this(bool _Dealloc) noexcept override { // destroy self
+    void _Delete_this(bool _Dealloc) noexcept override { // destroy self
         this->~_Func_impl_no_alloc();
         if (_Dealloc) {
             _Deallocate<alignof(_Func_impl_no_alloc)>(this, sizeof(_Func_impl_no_alloc));
@@ -948,7 +863,6 @@ private:
 #define _USE_FUNCTION_INT_0_SFINAE 1
 #endif // __CUDACC__
 
-// CLASS TEMPLATE _Func_class
 template <class _Ret, class... _Types>
 class _Func_class : public _Arg_types<_Types...> {
 public:
@@ -1093,7 +1007,6 @@ private:
     }
 };
 
-// STRUCT TEMPLATE _Get_function_impl
 template <class _Tx>
 struct _Get_function_impl {
     static_assert(_Always_false<_Tx>, "std::function does not accept non-function types as template arguments.");
@@ -1119,7 +1032,6 @@ _NON_MEMBER_CALL(_GET_FUNCTION_IMPL_NOEXCEPT, X1, X2, X3)
 #undef _GET_FUNCTION_IMPL_NOEXCEPT
 #endif // __cpp_noexcept_function_type
 
-// CLASS TEMPLATE function
 template <class _Fty>
 class function : public _Get_function_impl<_Fty>::type { // wrapper for callable objects
 private:
@@ -1259,7 +1171,6 @@ public:
 _NON_MEMBER_CALL(_FUNCTION_POINTER_DEDUCTION_GUIDE, X1, X2, X3)
 #undef _FUNCTION_POINTER_DEDUCTION_GUIDE
 
-// STRUCT TEMPLATE _Deduce_signature
 template <class _Fx, class = void>
 struct _Deduce_signature {}; // can't deduce signature when &_Fx::operator() is missing, inaccessible, or ambiguous
 
@@ -1298,7 +1209,6 @@ _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
 }
 #endif // !_HAS_CXX20
 
-// PLACEHOLDERS
 template <int _Nx>
 struct _Ph { // placeholder
     static_assert(_Nx > 0, "invalid placeholder index");
@@ -1322,11 +1232,9 @@ struct is_placeholder<const volatile _Tx> : is_placeholder<_Tx>::type {}; // ign
 template <class _Ty>
 _INLINE_VAR constexpr int is_placeholder_v = is_placeholder<_Ty>::value;
 
-// CLASS TEMPLATE _Binder FORWARD DECLARATION
 template <class _Ret, class _Fx, class... _Types>
 class _Binder;
 
-// STRUCT TEMPLATE is_bind_expression
 template <class _Tx>
 struct is_bind_expression : false_type {}; // _Tx is not a bind expression
 
@@ -1345,7 +1253,6 @@ struct is_bind_expression<const volatile _Tx> : is_bind_expression<_Tx>::type {}
 template <class _Ty>
 _INLINE_VAR constexpr bool is_bind_expression_v = is_bind_expression<_Ty>::value;
 
-// FUNCTION TEMPLATE _Fix_arg
 template <class _Cv_TiD, bool = _Is_specialization_v<remove_cv_t<_Cv_TiD>, reference_wrapper>,
     bool = is_bind_expression_v<_Cv_TiD>, int = is_placeholder_v<_Cv_TiD>>
 struct _Select_fixer;
@@ -1404,7 +1311,6 @@ constexpr auto _Fix_arg(_Cv_TiD& _Tid, _Untuple&& _Ut) noexcept(
     return _Select_fixer<_Cv_TiD>::_Fix(_Tid, _STD move(_Ut));
 }
 
-// FUNCTION TEMPLATE _Call_binder
 template <class _Ret, size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class _Untuple>
 _CONSTEXPR20 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_FD& _Obj, _Cv_tuple_TiD& _Tpl,
     _Untuple&& _Ut) noexcept(noexcept(_Invoker_ret<_Ret>::_Call(_Obj,
@@ -1414,7 +1320,6 @@ _CONSTEXPR20 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_F
     return _Invoker_ret<_Ret>::_Call(_Obj, _Fix_arg(_STD get<_Ix>(_Tpl), _STD move(_Ut))...);
 }
 
-// CLASS TEMPLATE _Binder
 template <class _Ret>
 struct _Forced_result_type { // used by bind<R>()
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;
@@ -1461,19 +1366,16 @@ public:
 #undef _CALL_BINDER
 };
 
-// FUNCTION TEMPLATE bind (implicit return type)
 template <class _Fx, class... _Types>
 _NODISCARD _CONSTEXPR20 _Binder<_Unforced, _Fx, _Types...> bind(_Fx&& _Func, _Types&&... _Args) {
     return _Binder<_Unforced, _Fx, _Types...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
 }
 
-// FUNCTION TEMPLATE bind (explicit return type)
 template <class _Ret, class _Fx, class... _Types>
 _NODISCARD _CONSTEXPR20 _Binder<_Ret, _Fx, _Types...> bind(_Fx&& _Func, _Types&&... _Args) {
     return _Binder<_Ret, _Fx, _Types...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
 }
 
-// PLACEHOLDER ARGUMENTS
 namespace placeholders {
     _INLINE_VAR constexpr _Ph<1> _1{};
     _INLINE_VAR constexpr _Ph<2> _2{};
@@ -1498,7 +1400,6 @@ namespace placeholders {
 } // namespace placeholders
 
 #if _HAS_CXX20
-// FUNCTION TEMPLATE _Call_front_binder
 template <size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class... _Unbound>
 constexpr auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl,
     _Unbound&&... _Unbargs) noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj),
@@ -1509,7 +1410,6 @@ constexpr auto _Call_front_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tup
         _STD forward<_Unbound>(_Unbargs)...);
 }
 
-// CLASS TEMPLATE _Front_binder
 template <class _Fx, class... _Types>
 class _Front_binder { // wrap bound callable object and arguments
 private:
@@ -1529,16 +1429,16 @@ public:
     template <class... _Unbound>
     constexpr auto operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
         _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
-        -> decltype(
-            _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
+        -> decltype(_Call_front_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
         return _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
     constexpr auto operator()(_Unbound&&... _Unbargs) const& noexcept(noexcept(
         _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
-        -> decltype(
-            _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
+        -> decltype(_Call_front_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
         return _Call_front_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
     }
 
@@ -1561,7 +1461,6 @@ public:
     }
 };
 
-// FUNCTION TEMPLATE bind_front
 template <class _Fx, class... _Types>
 _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
     static_assert(is_constructible_v<decay_t<_Fx>, _Fx>,
@@ -1578,13 +1477,11 @@ _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
 #endif // _HAS_CXX20
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
-// STRUCT TEMPLATE uses_allocator
 template <class _Fty, class _Alloc>
 struct uses_allocator<function<_Fty>, _Alloc> : true_type {}; // true_type if container allocator enabled
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
 #if _HAS_CXX17
-// HETEROGENEOUS MEMORY BLOCK UTILITIES
 inline void _Add_alloc_size(size_t& _Size, const size_t _Size_added, const size_t _Alignment) {
     // moves _Size up to account for storing an object of size _Size_added with alignment _Alignment in a memory buffer
     // assumes that the memory buffer will be allocated for the "worst" alignment used in the resulting buffer
@@ -1626,14 +1523,12 @@ _Ty* _Decode_aligned_block(void*& _Base, const size_t _Count) {
     return static_cast<_Ty*>(_Decode_aligned_block(_Base, sizeof(_Ty) * _Count, alignof(_Ty)));
 }
 
-// STRUCT _Global_delete
 struct _Global_delete {
     void operator()(void* const _Ptr) const {
         ::operator delete(_Ptr);
     }
 };
 
-// CLASS TEMPLATE default_searcher
 template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
 _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
     _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq, forward_iterator_tag, forward_iterator_tag) {
@@ -1709,7 +1604,6 @@ private:
 };
 
 
-// STRUCT TEMPLATE _Boyer_moore_hash_delta_1_table
 template <class _RanItPat, class _Hash_ty, class _Pred_eq>
 struct _Boyer_moore_hash_delta_1_table { // stores the Boyer-Moore delta_1 table using a hash table
     using _Value_t = _Iter_value_t<_RanItPat>;
@@ -1746,7 +1640,6 @@ private:
 };
 
 
-// STRUCT TEMPLATE _Boyer_moore_flat_delta_1_table
 template <class _RanItPat, _Iter_diff_t<_RanItPat> _Limit>
 struct _Boyer_moore_flat_delta_1_table { // stores the Boyer-Moore delta_1 table using a plain array lookup
     using _Value_t = _Iter_value_t<_RanItPat>;
@@ -1782,7 +1675,6 @@ private:
 };
 
 
-// FUNCTION TEMPLATE _Build_boyer_moore_delta_2_table
 template <class _RanItPat, class _Pred_eq>
 void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, const _RanItPat _Pat_first,
     const _Iter_diff_t<_RanItPat> _Pat_size, _Pred_eq& _Eq) {
@@ -1796,7 +1688,7 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
         return;
     }
 
-    if ((numeric_limits<_Diff>::max)() - _Pat_size < _Pat_size) {
+    if ((numeric_limits<_Diff>::max) () - _Pat_size < _Pat_size) {
         _Xlength_error("Boyer-Moore pattern is too long");
     }
 
@@ -1812,7 +1704,7 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
     for (size_t _Jx = _Mx; _Jx > 0; --_Jx, --_Tx) {
         _Fx[_Jx - 1] = _Tx;
         while (_Tx <= _Mx && !_Eq(_Pat_first[_Jx - 1], _Pat_first[_Tx - 1])) {
-            _Shifts[_Tx - 1] = (_STD min)(_Shifts[_Tx - 1], static_cast<_Diff>(_Mx - _Jx));
+            _Shifts[_Tx - 1] = (_STD min) (_Shifts[_Tx - 1], static_cast<_Diff>(_Mx - _Jx));
             _Tx              = _Fx[_Tx - 1];
         }
     }
@@ -1832,7 +1724,7 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
     size_t _Qx1 = 1;
     while (_Qx < _Mx) {
         for (size_t _Kx = _Qx1; _Kx <= _Qx; ++_Kx) {
-            _Shifts[_Kx - 1] = (_STD min)(_Shifts[_Kx - 1], static_cast<_Diff>(_Mx + _Qx - _Kx));
+            _Shifts[_Kx - 1] = (_STD min) (_Shifts[_Kx - 1], static_cast<_Diff>(_Mx + _Qx - _Kx));
         }
         _Qx1 = _Qx + 1;
 
@@ -1844,7 +1736,6 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
 }
 
 
-// FUNCTION TEMPLATE _Boyer_moore_search
 template <class _Delta1_t, class _RanItHaystack>
 pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
     const _Delta1_t& _Delta1, typename _Delta1_t::_Diff* _Delta2, _RanItHaystack _First, _RanItHaystack _Last) {
@@ -1877,7 +1768,7 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
                 --_Idx;
                 --_UFirst;
             } while (_Eq(*_UFirst, _UPat_first[_Idx]));
-            _Shift = (_STD max)(_Delta1._Lookup(*_UFirst), _Delta2[_Idx]);
+            _Shift = (_STD max) (_Delta1._Lookup(*_UFirst), _Delta2[_Idx]);
         }
     }
 
@@ -1887,7 +1778,6 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
 }
 
 
-// FUNCTION TEMPLATE _Boyer_moore_horspool_search
 template <class _Delta1_t, class _RanItHaystack>
 pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_horspool_search(
     const _Delta1_t& _Delta1, _RanItHaystack _First, _RanItHaystack _Last) {
@@ -1926,7 +1816,6 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_horspool_search(
 }
 
 
-// STRUCT AND ALIAS TEMPLATES _Boyer_moore_traits
 template <class _RanItPat, class _Hash_ty, class _Pred_eq, class _Delta1_t>
 struct _Single_delta1_type_boyer_moore_traits {
     using _Diff = _Iter_diff_t<_RanItPat>;
@@ -2133,7 +2022,6 @@ using _Boyer_moore_traits =
         _Boyer_moore_traits_general_mode<_RanItPat, _Hash_ty, _Pred_eq>>;
 
 
-// CLASS TEMPLATE boyer_moore_searcher
 template <class _RanItPat, class _Hash_ty = hash<_Iter_value_t<_RanItPat>>, class _Pred_eq = equal_to<>>
 class boyer_moore_searcher {
 public:
@@ -2173,7 +2061,6 @@ private:
 };
 
 
-// CLASS TEMPLATE boyer_moore_horspool_searcher
 template <class _RanItPat, class _Hash_ty = hash<_Iter_value_t<_RanItPat>>, class _Pred_eq = equal_to<>>
 class boyer_moore_horspool_searcher { // equivalent to Boyer-Moore without the second table
 public:
@@ -2215,7 +2102,6 @@ private:
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // STRUCT ranges::not_equal_to
     struct not_equal_to {
         // clang-format off
         template <class _Ty1, class _Ty2>
@@ -2229,7 +2115,6 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    // STRUCT ranges::greater_equal
     struct greater_equal {
         // clang-format off
         template <class _Ty1, class _Ty2>
@@ -2243,7 +2128,6 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    // STRUCT ranges::less_equal
     struct less_equal {
         // clang-format off
         template <class _Ty1, class _Ty2>

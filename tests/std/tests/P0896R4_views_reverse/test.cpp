@@ -26,7 +26,7 @@ template <ranges::bidirectional_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::common_range, ranges::reverse_view, ranges::sized_range, ranges::begin, ranges::end, ranges::size,
         ranges::iterator_t, ranges::range_size_t, ranges::random_access_range, ranges::prev,
-        ranges::enable_borrowed_range;
+        ranges::enable_borrowed_range, ranges::borrowed_range;
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
 
     using V = views::all_t<Rng>;
@@ -35,6 +35,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     static_assert(ranges::bidirectional_range<R>);
     static_assert(random_access_range<R> == random_access_range<Rng>);
     static_assert(!ranges::contiguous_range<R>);
+    static_assert(borrowed_range<R> == borrowed_range<V>);
 
     // Validate range adapter object
     // ...with lvalue argument
@@ -306,7 +307,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 struct instantiator {
     template <ranges::bidirectional_range R>
     static constexpr void call() {
-        R r{};
+        R r{span<const int, 0>{}};
         test_one(r, span<const int, 0>{});
     }
 };
@@ -354,13 +355,6 @@ int main() {
         static constexpr int reversed_prefix[] = {4, 3};
         assert(ranges::equal(
             views::reverse(ranges::subrange{counted_iterator{lst.begin(), 2}, default_sentinel}), reversed_prefix));
-    }
-
-    // Validate a non-view borrowed range
-    {
-        constexpr span s{some_ints};
-        static_assert(test_one(s, reversed_ints));
-        test_one(s, reversed_ints);
     }
 
     // Get full instantiation coverage

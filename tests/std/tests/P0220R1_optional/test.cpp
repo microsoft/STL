@@ -4596,7 +4596,14 @@ int run_test()
         typedef X T;
         static_assert(!std::is_trivially_destructible<T>::value, "");
         static_assert(!std::is_trivially_destructible<optional<T>>::value, "");
+
+#if TEST_STD_VER > 17 && !defined(__clang__) // TRANSITION, LLVM-48286
+        // P2231R1 Completing constexpr In optional And variant
+        static_assert(std::is_literal_type<optional<T>>::value, "");
+#else // ^^^ after P2231R1 / before P2231R1 vvv
         static_assert(!std::is_literal_type<optional<T>>::value, "");
+#endif // ^^^ before P2231R1 ^^^
+
         {
             X x;
             optional<X> opt{x};
@@ -5495,17 +5502,13 @@ constexpr int test()
     {
         optional<X> opt(in_place, 2);
         Y y(3);
-#ifndef __EDG__ // TRANSITION, VSO-1268140
         assert(std::move(opt).value_or(y) == 2);
         assert(*opt == 0);
-#endif // ^^^ no workaround ^^^
     }
     {
         optional<X> opt(in_place, 2);
-#ifndef __EDG__ // TRANSITION, VSO-1268140
         assert(std::move(opt).value_or(Y(3)) == 2);
         assert(*opt == 0);
-#endif // ^^^ no workaround ^^^
     }
     {
         optional<X> opt;
@@ -7418,6 +7421,7 @@ namespace msvc {
 
         void run_test() {
             Test t;
+            (void) t;
         }
     } // namespace vso614907
 } // namespace msvc

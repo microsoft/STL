@@ -189,13 +189,79 @@ bool test_operator_arrow() {
     assert(*countedIter == P(0, 1));
     assert(countedIter->first == 0);
     assert(countedIter->second == 1);
-    static_assert(is_same_v<decltype(countedIter.operator->()), P*>);
+    static_assert(is_same_v<decltype(countedIter.operator->()), counted_iterator<P*> const&>);
 
     return true;
+}
+
+// common_iterator supports "copyable but not equality_comparable" iterators, which combination test::iterator does not
+// provide (I don't think this is a combination of properties that any real iterator will ever exhibit). Whip up
+// something so we can test the iterator_category metaprogramming.
+// clang-format off
+template <class T>
+concept no_iterator_traits = !requires { typename iterator_traits<T>::iterator_concept; }
+    && !requires { typename iterator_traits<T>::iterator_category; }
+    && !requires { typename iterator_traits<T>::value_type; }
+    && !requires { typename iterator_traits<T>::difference_type; }
+    && !requires { typename iterator_traits<T>::pointer; }
+    && !requires { typename iterator_traits<T>::reference; };
+// clang-format on
+
+struct input_copy_but_no_eq {
+    using value_type      = int;
+    using difference_type = int;
+
+    input_copy_but_no_eq() = delete;
+
+    int operator*() const;
+    input_copy_but_no_eq& operator++();
+    void operator++(int);
+
+    bool operator==(default_sentinel_t) const;
+};
+STATIC_ASSERT(input_iterator<input_copy_but_no_eq>);
+STATIC_ASSERT(no_iterator_traits<input_copy_but_no_eq>);
+STATIC_ASSERT(sentinel_for<default_sentinel_t, input_copy_but_no_eq>);
+using ICID = iterator_traits<common_iterator<input_copy_but_no_eq, default_sentinel_t>>;
+STATIC_ASSERT(same_as<typename ICID::iterator_category, input_iterator_tag>);
+
+struct poor_sentinel {
+    template <weakly_incrementable Winc>
+    [[nodiscard]] constexpr bool operator==(const Winc&) const noexcept {
+        return true;
+    }
+
+    template <weakly_incrementable Winc>
+    [[nodiscard]] constexpr iter_difference_t<Winc> operator-(const Winc&) const noexcept {
+        return 0;
+    }
+
+    template <weakly_incrementable Winc>
+    [[nodiscard]] friend constexpr iter_difference_t<Winc> operator-(const Winc&, const poor_sentinel&) noexcept {
+        return 0;
+    }
+};
+
+void test_gh_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
+    {
+        int x = 42;
+        common_iterator<int*, unreachable_sentinel_t> it1{&x};
+        common_iterator<const int*, unreachable_sentinel_t> it2{&x};
+        assert(it1 == it2);
+    }
+
+    {
+        int i = 1729;
+        common_iterator<int*, poor_sentinel> it1{&i};
+        common_iterator<const int*, poor_sentinel> it2{&i};
+        assert(it1 - it2 == 0);
+    }
 }
 
 int main() {
     with_writable_iterators<instantiator, P>::call();
 
     test_operator_arrow();
+
+    test_gh_2065();
 }

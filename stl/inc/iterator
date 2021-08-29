@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE back_insert_iterator
 template <class _Container>
 class back_insert_iterator { // wrap pushes to back of container as output iterator
 public:
@@ -32,9 +31,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-
-    constexpr back_insert_iterator() noexcept = default;
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
@@ -64,17 +61,15 @@ public:
     }
 
 protected:
-    _Container* container = nullptr;
+    _Container* container;
 };
 
-// FUNCTION TEMPLATE back_inserter
 template <class _Container>
 _NODISCARD _CONSTEXPR20 back_insert_iterator<_Container> back_inserter(_Container& _Cont) noexcept /* strengthened */ {
     // return a back_insert_iterator
     return back_insert_iterator<_Container>(_Cont);
 }
 
-// CLASS TEMPLATE front_insert_iterator
 template <class _Container>
 class front_insert_iterator { // wrap pushes to front of container as output iterator
 public:
@@ -87,9 +82,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-
-    constexpr front_insert_iterator() noexcept = default;
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+#else
     using difference_type = void;
 #endif // __cpp_lib_concepts
 
@@ -119,16 +112,14 @@ public:
     }
 
 protected:
-    _Container* container = nullptr;
+    _Container* container;
 };
 
-// FUNCTION TEMPLATE front_inserter
 template <class _Container>
 _NODISCARD _CONSTEXPR20 front_insert_iterator<_Container> front_inserter(_Container& _Cont) {
     return front_insert_iterator<_Container>(_Cont);
 }
 
-// CLASS TEMPLATE insert_iterator
 template <class _Container>
 class insert_iterator { // wrap inserts into container as output iterator
 public:
@@ -138,17 +129,16 @@ public:
     using reference         = void;
 
     using container_type = _Container;
-
 #ifdef __cpp_lib_concepts
     using difference_type = ptrdiff_t;
-
-    insert_iterator() = default;
-#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    using _Wrapped_iter   = ranges::iterator_t<_Container>;
+#else // ^^^ implementing Ranges // no Ranges vvv
     using difference_type = void;
+    using _Wrapped_iter   = typename _Container::iterator;
 #endif // __cpp_lib_concepts
 
-    _CONSTEXPR20 insert_iterator(_Container& _Cont, typename _Container::iterator _Where)
-        : container(_STD addressof(_Cont)), iter(_Where) {}
+    _CONSTEXPR20 insert_iterator(_Container& _Cont, _Wrapped_iter _Where)
+        : container(_STD addressof(_Cont)), iter(_STD move(_Where)) {}
 
     _CONSTEXPR20 insert_iterator& operator=(const typename _Container::value_type& _Val) {
         // insert into container and increment stored iterator
@@ -176,18 +166,16 @@ public:
     }
 
 protected:
-    _Container* container = nullptr;
-    typename _Container::iterator iter{};
+    _Container* container;
+    _Wrapped_iter iter;
 };
 
-// FUNCTION TEMPLATE inserter
 template <class _Container>
 _NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
     return insert_iterator<_Container>(_Cont, _Where);
 }
 
 #ifdef __cpp_lib_concepts
-// CLASS TEMPLATE move_sentinel
 template <semiregular _Se>
 class move_sentinel {
 public:
@@ -225,7 +213,6 @@ private:
 };
 #endif // __cpp_lib_concepts
 
-// CLASS TEMPLATE istream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>, class _Diff = ptrdiff_t>
 class istream_iterator {
 public:
@@ -310,7 +297,6 @@ _NODISCARD bool operator!=(const istream_iterator<_Ty, _Elem, _Traits, _Diff>& _
 }
 #endif // !_HAS_CXX20
 
-// CLASS TEMPLATE ostream_iterator
 template <class _Ty, class _Elem = char, class _Traits = char_traits<_Elem>>
 class ostream_iterator {
 public:
@@ -326,10 +312,6 @@ public:
     using char_type    = _Elem;
     using traits_type  = _Traits;
     using ostream_type = basic_ostream<_Elem, _Traits>;
-
-#ifdef __cpp_lib_concepts
-    constexpr ostream_iterator() noexcept = default;
-#endif // __cpp_lib_concepts
 
     ostream_iterator(ostream_type& _Ostr, const _Elem* const _Delim = nullptr) noexcept /* strengthened */
         : _Mydelim(_Delim), _Myostr(_STD addressof(_Ostr)) {}
@@ -356,11 +338,10 @@ public:
     }
 
 private:
-    const _Elem* _Mydelim = nullptr; // pointer to delimiter string (NB: not freed)
-    ostream_type* _Myostr = nullptr; // pointer to output stream
+    const _Elem* _Mydelim; // pointer to delimiter string (NB: not freed)
+    ostream_type* _Myostr; // pointer to output stream
 };
 
-// CLASS TEMPLATE istreambuf_iterator
 template <class _Elem, class _Traits>
 class istreambuf_iterator {
 public:
@@ -498,7 +479,6 @@ _NODISCARD bool operator!=(
 }
 #endif // !_HAS_CXX20
 
-// CLASS TEMPLATE ostreambuf_iterator
 template <class _Elem, class _Traits>
 class ostreambuf_iterator {
 public:
@@ -515,10 +495,6 @@ public:
     using traits_type    = _Traits;
     using streambuf_type = basic_streambuf<_Elem, _Traits>;
     using ostream_type   = basic_ostream<_Elem, _Traits>;
-
-#ifdef __cpp_lib_concepts
-    constexpr ostreambuf_iterator() noexcept = default;
-#endif // __cpp_lib_concepts
 
     ostreambuf_iterator(streambuf_type* _Sb) noexcept : _Strbuf(_Sb) {}
 
@@ -549,12 +525,11 @@ public:
     }
 
 private:
-    bool _Failed            = false; // true if any stores have failed
-    streambuf_type* _Strbuf = nullptr;
+    bool _Failed = false; // true if any stores have failed
+    streambuf_type* _Strbuf;
 };
 
 #ifdef __cpp_lib_concepts
-// CLASS TEMPLATE common_iterator
 enum class _Variantish_state : unsigned char { _Nothing, _Holds_iter, _Holds_sentinel };
 
 struct _Common_iterator_construct_tag {
@@ -566,7 +541,7 @@ class _Variantish {
 public:
     constexpr explicit _Variantish(_Common_iterator_construct_tag) noexcept : _Contains{_Variantish_state::_Nothing} {}
 
-    constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_It>)
+    constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_It>) requires default_initializable<_It>
         : _Iterator{}, _Contains{_Variantish_state::_Holds_iter} {}
 
     template <class... _Types>
@@ -849,7 +824,9 @@ private:
     };
 
 public:
-    constexpr common_iterator() = default;
+    // clang-format off
+    constexpr common_iterator() requires default_initializable<_Iter> = default;
+    // clang-format on
 
     constexpr common_iterator(_Iter _Right) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Val{in_place_type<_Iter>, _STD move(_Right)} {}
@@ -864,7 +841,7 @@ public:
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
     constexpr common_iterator(const common_iterator<_OIter, _OSe>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _OIter&>&& is_nothrow_constructible_v<_Se, const _OSe&>) // strengthened
-        : _Val{_Right._Val} {}
+        : _Val{_Right._Get_val()} {}
 
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
@@ -874,7 +851,7 @@ public:
             && is_nothrow_assignable_v<_Iter&, const _OIter&>
             && is_nothrow_assignable_v<_Se&, const _OSe&>) /* strengthened */ {
         // clang-format on
-        _Val = _Right._Val;
+        _Val = _Right._Get_val();
         return *this;
     }
 
@@ -942,25 +919,26 @@ public:
         requires sentinel_for<_Se, _OIter>
     _NODISCARD friend bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
+        auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
-            _Left._Val._Contains != _Variantish_state::_Nothing && _Right._Val._Contains != _Variantish_state::_Nothing,
+            _Left._Val._Contains != _Variantish_state::_Nothing && _Right_val._Contains != _Variantish_state::_Nothing,
             "common_iterators can only be compared if both hold a value");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         if (_Left._Val._Contains == _Variantish_state::_Holds_iter) {
-            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
+            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
                 if constexpr (equality_comparable_with<_Iter, _OIter>) {
-                    return _Left._Val._Iterator == _Right._Val._Iterator;
+                    return _Left._Val._Iterator == _Right_val._Iterator;
                 } else {
                     return true;
                 }
             } else {
-                return _Left._Val._Iterator == _Right._Val._Sentinel;
+                return _Left._Val._Iterator == _Right_val._Sentinel;
             }
         } else {
-            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
-                return _Left._Val._Sentinel == _Right._Val._Iterator;
+            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
+                return _Left._Val._Sentinel == _Right_val._Iterator;
             } else {
                 return true;
             }
@@ -973,21 +951,22 @@ public:
     _NODISCARD friend iter_difference_t<_OIter> operator-(
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
+        auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(
-            _Left._Val._Contains != _Variantish_state::_Nothing && _Right._Val._Contains != _Variantish_state::_Nothing,
+            _Left._Val._Contains != _Variantish_state::_Nothing && _Right_val._Contains != _Variantish_state::_Nothing,
             "Cannot take difference of valueless common_iterators");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
         if (_Left._Val._Contains == _Variantish_state::_Holds_iter) {
-            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
-                return _Left._Val._Iterator - _Right._Val._Iterator;
+            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
+                return _Left._Val._Iterator - _Right_val._Iterator;
             } else {
-                return _Left._Val._Iterator - _Right._Val._Sentinel;
+                return _Left._Val._Iterator - _Right_val._Sentinel;
             }
         } else {
-            if (_Right._Val._Contains == _Variantish_state::_Holds_iter) {
-                return _Left._Val._Sentinel - _Right._Val._Iterator;
+            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
+                return _Left._Val._Sentinel - _Right_val._Iterator;
             } else {
                 return 0;
             }
@@ -1005,22 +984,24 @@ public:
 
     template <indirectly_swappable<_Iter> _OIter, class _OSe>
     friend void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) noexcept(
-        noexcept(_RANGES iter_swap(_Left._Val._Iterator, _Right._Val._Iterator))) {
+        noexcept(_RANGES iter_swap(_Left._Val._Iterator, _Right._Get_val()._Iterator))) {
+        auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Left._Val._Contains == _Variantish_state::_Holds_iter
-                        && _Right._Val._Contains == _Variantish_state::_Holds_iter,
+                        && _Right_val._Contains == _Variantish_state::_Holds_iter,
             "can only iter_swap common_iterators if both hold iterators");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return _RANGES iter_swap(_Left._Val._Iterator, _Right._Val._Iterator);
+        return _RANGES iter_swap(_Left._Val._Iterator, _Right_val._Iterator);
+    }
+
+    _NODISCARD _Variantish<_Iter, _Se>& _Get_val() noexcept {
+        return _Val;
+    }
+    _NODISCARD const _Variantish<_Iter, _Se>& _Get_val() const noexcept {
+        return _Val;
     }
 
 private:
-    // clang-format off
-    template <input_or_output_iterator _OIter, sentinel_for<_OIter> _OSe>
-        requires (!same_as<_OIter, _OSe> && copyable<_OIter>)
-    friend class common_iterator;
-    // clang-format on
-
     _Variantish<_Iter, _Se> _Val;
 };
 
@@ -1039,25 +1020,57 @@ struct _Common_iterator_pointer_type<_Iter> {
     using pointer = decltype(_STD declval<_Iter&>().operator->());
 };
 
-template <input_iterator _Iter, class _Se>
-struct iterator_traits<common_iterator<_Iter, _Se>> {
-    using iterator_concept = conditional_t<forward_iterator<_Iter>, forward_iterator_tag, input_iterator_tag>;
-    using iterator_category =
-        conditional_t<derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>, forward_iterator_tag, input_iterator_tag>;
-    using value_type      = iter_value_t<_Iter>;
-    using difference_type = iter_difference_t<_Iter>;
-    using pointer         = typename _Common_iterator_pointer_type<_Iter>::pointer;
-    using reference       = iter_reference_t<_Iter>;
+template <class _Iter>
+concept _Has_forward_category = requires {
+    typename _Iter_cat_t<_Iter>;
+    requires derived_from<_Iter_cat_t<_Iter>, forward_iterator_tag>;
 };
 
-// CLASS TEMPLATE counted_iterator
+template <input_iterator _Iter, class _Se>
+struct iterator_traits<common_iterator<_Iter, _Se>> {
+    using iterator_concept  = conditional_t<forward_iterator<_Iter>, forward_iterator_tag, input_iterator_tag>;
+    using iterator_category = conditional_t<_Has_forward_category<_Iter>, forward_iterator_tag, input_iterator_tag>;
+    using value_type        = iter_value_t<_Iter>;
+    using difference_type   = iter_difference_t<_Iter>;
+    using pointer           = typename _Common_iterator_pointer_type<_Iter>::pointer;
+    using reference         = iter_reference_t<_Iter>;
+};
+
+template <class _Iter>
+struct _Counted_iterator_value_type_base {};
+
+template <indirectly_readable _Iter>
+struct _Counted_iterator_value_type_base<_Iter> {
+    using value_type = iter_value_t<_Iter>;
+};
+
+template <class _Iter>
+struct _Counted_iterator_category_base : _Counted_iterator_value_type_base<_Iter> {};
+
+template <_Has_member_iterator_category _Iter>
+struct _Counted_iterator_category_base<_Iter> : _Counted_iterator_value_type_base<_Iter> {
+    using iterator_category = typename _Iter::iterator_category;
+};
+
+template <class _Iter>
+struct _Counted_iterator_concept_base : _Counted_iterator_category_base<_Iter> {};
+
+template <_Has_member_iterator_concept _Iter>
+struct _Counted_iterator_concept_base<_Iter> : _Counted_iterator_category_base<_Iter> {
+    using iterator_concept = typename _Iter::iterator_concept;
+};
+
 template <input_or_output_iterator _Iter>
-class counted_iterator {
+class counted_iterator : public _Counted_iterator_concept_base<_Iter> {
 public:
-    using iterator_type = _Iter;
+    using iterator_type   = _Iter;
+    using difference_type = iter_difference_t<_Iter>;
 
     // [counted.iter.const]
-    constexpr counted_iterator() = default;
+    // clang-format off
+    constexpr counted_iterator() requires default_initializable<_Iter> = default;
+    // clang-format on
+
     constexpr counted_iterator(_Iter _Right, const iter_difference_t<_Iter> _Diff) noexcept(
         is_nothrow_move_constructible_v<_Iter>) // strengthened
         : _Current(_STD move(_Right)), _Length(_Diff) {
@@ -1112,8 +1125,12 @@ public:
         return *_Current;
     }
 
-    _NODISCARD constexpr decltype(auto) operator[](const iter_difference_t<_Iter> _Diff) const
-        requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr auto operator->() const noexcept requires contiguous_iterator<_Iter> {
+        return _STD to_address(_Current);
+    }
+
+    _NODISCARD constexpr decltype(auto) operator[](
+        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Diff < _Length, "counted_iterator index out of range");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -1168,8 +1185,8 @@ public:
         return _Tmp;
     }
 
-    _NODISCARD constexpr counted_iterator operator+(const iter_difference_t<_Iter> _Diff) const
-        requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr counted_iterator operator+(
+        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
         return counted_iterator{_Current + _Diff, static_cast<iter_difference_t<_Iter>>(_Length - _Diff)};
     }
 
@@ -1188,8 +1205,8 @@ public:
         return *this;
     }
 
-    _NODISCARD constexpr counted_iterator operator-(const iter_difference_t<_Iter> _Diff) const
-        requires random_access_iterator<_Iter> {
+    _NODISCARD constexpr counted_iterator operator-(
+        const iter_difference_t<_Iter> _Diff) const requires random_access_iterator<_Iter> {
         return counted_iterator{_Current - _Diff, static_cast<iter_difference_t<_Iter>>(_Length + _Diff)};
     }
 
@@ -1336,25 +1353,12 @@ private:
     iter_difference_t<_Iter> _Length = 0;
 };
 
-template <class _Iter>
-struct incrementable_traits<counted_iterator<_Iter>> {
-    using difference_type = iter_difference_t<_Iter>;
-};
-
+// clang-format off
 template <input_iterator _Iter>
+    requires (!_Is_from_primary<iterator_traits<_Iter>>)
 struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
-    using pointer = void;
-};
-
-template <contiguous_iterator _Iter>
-struct pointer_traits<counted_iterator<_Iter>> { // TRANSITION, address LWG-3408 and include this
-    using pointer         = counted_iterator<_Iter>;
-    using element_type    = remove_reference_t<iter_reference_t<_Iter>>;
-    using difference_type = iter_difference_t<_Iter>;
-
-    _NODISCARD static constexpr element_type* to_address(const pointer _It) noexcept {
-        return _STD to_address(_It.base());
-    }
+    // clang-format on
+    using pointer = conditional_t<contiguous_iterator<_Iter>, add_pointer_t<iter_reference_t<_Iter>>, void>;
 };
 #endif // __cpp_lib_concepts
 
@@ -1364,7 +1368,6 @@ _STDEXT_BEGIN
 using _STD iterator_traits;
 using _STD size_t;
 
-// CLASS TEMPLATE checked_array_iterator
 template <class _Ptr>
 class checked_array_iterator { // wrap a pointer with checking
     static_assert(_STD is_pointer_v<_Ptr>, "checked_array_iterator requires pointers");
@@ -1567,7 +1570,6 @@ _NODISCARD constexpr checked_array_iterator<_Ptr> make_checked_array_iterator(
     return checked_array_iterator<_Ptr>(_Array, _Size, _Index);
 }
 
-// CLASS TEMPLATE unchecked_array_iterator
 template <class _Ptr>
 class unchecked_array_iterator { // wrap a pointer without checking, to silence warnings
     static_assert(_STD is_pointer_v<_Ptr>, "unchecked_array_iterator requires pointers");

@@ -771,7 +771,6 @@ namespace test_subrange {
     STATIC_ASSERT(!CanSubrange<std::unreachable_sentinel_t, int*, subrange_kind::unsized>);
     STATIC_ASSERT(CanSubrange<int*, std::unreachable_sentinel_t, subrange_kind::sized>);
 
-    // clang-format off
     template <class R>
     concept HasMemberEmpty = requires(std::remove_reference_t<R> const r) {
         { r.empty() } -> same_as<bool>;
@@ -781,7 +780,6 @@ namespace test_subrange {
     concept HasMemberSize = requires(std::remove_reference_t<R> const r) {
         { r.size() } -> std::integral;
     };
-    // clang-format on
 
     // Validate default template arguments: second defaults to first, and third defaults to subrange_kind::sized iff
     // sized_sentinel_for<second, first>.
@@ -815,7 +813,7 @@ namespace test_subrange {
         using size_type = std::make_unsigned_t<std::iter_difference_t<I>>;
 
         // Validate SMFs
-        STATIC_ASSERT(default_initializable<Subrange>);
+        STATIC_ASSERT(default_initializable<Subrange> == default_initializable<I>);
         STATIC_ASSERT(movable<Subrange>);
         STATIC_ASSERT(!copyable<I> || copyable<Subrange>);
 
@@ -1065,12 +1063,11 @@ namespace test_subrange {
     struct with_converting_iterators {
         template <bool IsConst>
         struct iterator {
-            using iterator_concept  = input_iterator_tag;
-            using iterator_category = void; // TRANSITION, LWG-3289
-            using value_type        = int;
-            using difference_type   = int;
-            using pointer           = void;
-            using reference         = int;
+            using iterator_concept = input_iterator_tag;
+            using value_type       = int;
+            using difference_type  = int;
+            using pointer          = void;
+            using reference        = int;
 
             iterator() = default;
             iterator(iterator<!IsConst>) requires IsConst;

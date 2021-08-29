@@ -145,12 +145,12 @@ public:
 
     _NODISCARD id get_id() const noexcept;
 
-    _NODISCARD static unsigned int hardware_concurrency() noexcept {
-        return _Thrd_hardware_concurrency();
+    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ { // return Win32 HANDLE as void *
+        return _Thr._Hnd;
     }
 
-    _NODISCARD native_handle_type native_handle() { // return Win32 HANDLE as void *
-        return _Thr._Hnd;
+    _NODISCARD static unsigned int hardware_concurrency() noexcept {
+        return _Thrd_hardware_concurrency();
     }
 
 private:
@@ -163,7 +163,7 @@ _NODISCARD auto _To_absolute_time(const chrono::duration<_Rep, _Period>& _Rel_ti
     const auto _Now                      = chrono::steady_clock::now();
     decltype(_Now + _Rel_time) _Abs_time = _Now; // return common type
     if (_Rel_time > _Zero) {
-        constexpr auto _Forever = (chrono::steady_clock::time_point::max)();
+        constexpr auto _Forever = (chrono::steady_clock::time_point::max) ();
         if (_Abs_time < _Forever - _Rel_time) {
             _Abs_time += _Rel_time;
         } else {
@@ -276,7 +276,6 @@ basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _I
     return _Str << _Id._Id;
 }
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <>
 struct hash<thread::id> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef thread::id _ARGUMENT_TYPE_NAME;
@@ -342,6 +341,10 @@ public:
 
     _NODISCARD id get_id() const noexcept {
         return _Impl.get_id();
+    }
+
+    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ {
+        return _Impl.native_handle();
     }
 
     _NODISCARD stop_source get_stop_source() noexcept {

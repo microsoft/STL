@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE basic_streambuf
 template <class _Elem, class _Traits>
 class basic_streambuf { // control read/write buffers
 protected:
@@ -358,12 +357,12 @@ protected:
     virtual pos_type __CLR_OR_THIS_CALL seekoff(
         off_type, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out) {
         // change position by offset, according to way and mode
-        return streampos(-1);
+        return pos_type(off_type(-1));
     }
 
     virtual pos_type __CLR_OR_THIS_CALL seekpos(pos_type, ios_base::openmode = ios_base::in | ios_base::out) {
         // change to specified position, according to mode
-        return streampos(-1);
+        return pos_type(off_type(-1));
     }
 
     virtual basic_streambuf* __CLR_OR_THIS_CALL setbuf(_Elem*, streamsize) {
