@@ -10,7 +10,7 @@ bool shouldThrow(const char* const regexString) {
     try {
         regex regex{regexString, regex_constants::ECMAScript};
         return false;
-    } catch (regex_error& e) {
+    } catch (const regex_error& e) {
         return e.code() == regex_constants::error_backref;
     }
 }
