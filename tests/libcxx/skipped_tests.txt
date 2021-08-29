@@ -700,7 +700,6 @@ re\re.alg\re.alg.search\extended.pass.cpp
 re\re.alg\re.alg.search\no_update_pos.pass.cpp
 re\re.badexp\regex_error.pass.cpp
 re\re.const\re.synopt\syntax_option_type.pass.cpp
-re\re.grammar\excessive_brace_count.pass.cpp
 re\re.regex\re.regex.construct\bad_backref.pass.cpp
 re\re.regex\re.regex.construct\bad_escape.pass.cpp
 re\re.regex\re.regex.construct\bad_range.pass.cpp
