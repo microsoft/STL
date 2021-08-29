@@ -1254,7 +1254,8 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
         } else if ((_ArgT < 1) && (_ArgT >= -1)) {
             _Calc = _ArgA + (_ArgT * _ArgB) - (_ArgT * _ArgA);
         } else if ((_ArgT > 1) || (_ArgT < -1)) {
-            _Calc = _ArgT * static_cast<_Ty>((_ArgA / _ArgT) + (_ArgB - _ArgA));
+            _Ty _Xyzabc = (_ArgA / _ArgT) + (_ArgB - _ArgA);
+            _Calc       = _ArgT;
         }
 
         // exact at _ArgT == 0, monotonic except near _ArgT == 1, bounded, determinate, and consistent:
