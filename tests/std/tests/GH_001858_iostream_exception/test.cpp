@@ -9,19 +9,21 @@
 
 using namespace std;
 
+struct test_exception {};
+
 template <class CharT>
 class throwing_buffer : public basic_streambuf<CharT> {
 public:
     streampos seekoff(streamoff, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out) override {
-        throw 42;
+        throw test_exception{};
     }
 
     streampos seekpos(streampos, ios_base::openmode = ios_base::in | ios_base::out) override {
-        throw 42;
+        throw test_exception{};
     }
 
     int sync() override {
-        throw 42;
+        throw test_exception{};
     }
 
     basic_streambuf<CharT>* to_buf() {
@@ -49,7 +51,7 @@ void test_istream_exceptions() {
             assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
-        } catch (...) {
+        } catch (const test_exception&) {
             // Expected case
         }
     }
@@ -70,7 +72,7 @@ void test_istream_exceptions() {
             assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
-        } catch (...) {
+        } catch (const test_exception&) {
             // Expected case
         }
     }
@@ -91,7 +93,7 @@ void test_istream_exceptions() {
             assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
-        } catch (...) {
+        } catch (const test_exception&) {
             // Expected case
         }
     }
@@ -112,7 +114,7 @@ void test_istream_exceptions() {
             assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
-        } catch (...) {
+        } catch (const test_exception&) {
             // Expected case
         }
     }
@@ -138,7 +140,7 @@ void test_ostream_exceptions() {
             assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
-        } catch (...) {
+        } catch (const test_exception&) {
             // Expected case
         }
     }
@@ -159,7 +161,7 @@ void test_ostream_exceptions() {
             assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
-        } catch (...) {
+        } catch (const test_exception&) {
             // Expected case
         }
     }
@@ -180,7 +182,7 @@ void test_ostream_exceptions() {
             assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
-        } catch (...) {
+        } catch (const test_exception&) {
             // Expected case
         }
     }
@@ -201,7 +203,7 @@ void test_ostream_exceptions() {
             assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
-        } catch (...) {
+        } catch (const test_exception&) {
             // Expected case
         }
     }
