@@ -331,80 +331,80 @@ bool run_unicode_test_data_utf32() {
 }
 
 constexpr bool test_unicode_properties() {
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0xB)
-           == _Grapheme_Break_Property_Values::_Control_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0xC)
-           == _Grapheme_Break_Property_Values::_Control_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0xB)
+           == _Grapheme_Break_property_values::_Control_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0xC)
+           == _Grapheme_Break_property_values::_Control_value);
     assert(
-        _Grapheme_Break_Property_Data._Get_property_for_codepoint(0xA) == _Grapheme_Break_Property_Values::_LF_value);
+        _Grapheme_Break_property_data._Get_property_for_codepoint(0xA) == _Grapheme_Break_property_values::_LF_value);
     assert(
-        _Grapheme_Break_Property_Data._Get_property_for_codepoint(0xD) == _Grapheme_Break_Property_Values::_CR_value);
+        _Grapheme_Break_property_data._Get_property_for_codepoint(0xD) == _Grapheme_Break_property_values::_CR_value);
 
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x7F)
-           == _Grapheme_Break_Property_Values::_Control_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x80)
-           == _Grapheme_Break_Property_Values::_Control_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x9F)
-           == _Grapheme_Break_Property_Values::_Control_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x300)
-           == _Grapheme_Break_Property_Values::_Extend_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x08D4)
-           == _Grapheme_Break_Property_Values::_Extend_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0xE01EF)
-           == _Grapheme_Break_Property_Values::_Extend_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x1F1E6)
-           == _Grapheme_Break_Property_Values::_Regional_Indicator_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x1F1FF)
-           == _Grapheme_Break_Property_Values::_Regional_Indicator_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x0903)
-           == _Grapheme_Break_Property_Values::_SpacingMark_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x1934)
-           == _Grapheme_Break_Property_Values::_SpacingMark_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x1D16D)
-           == _Grapheme_Break_Property_Values::_SpacingMark_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x7F)
+           == _Grapheme_Break_property_values::_Control_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x80)
+           == _Grapheme_Break_property_values::_Control_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x9F)
+           == _Grapheme_Break_property_values::_Control_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x300)
+           == _Grapheme_Break_property_values::_Extend_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x08D4)
+           == _Grapheme_Break_property_values::_Extend_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0xE01EF)
+           == _Grapheme_Break_property_values::_Extend_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x1F1E6)
+           == _Grapheme_Break_property_values::_Regional_Indicator_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x1F1FF)
+           == _Grapheme_Break_property_values::_Regional_Indicator_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x0903)
+           == _Grapheme_Break_property_values::_SpacingMark_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x1934)
+           == _Grapheme_Break_property_values::_SpacingMark_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x1D16D)
+           == _Grapheme_Break_property_values::_SpacingMark_value);
     assert(
-        _Grapheme_Break_Property_Data._Get_property_for_codepoint(0x1100) == _Grapheme_Break_Property_Values::_L_value);
+        _Grapheme_Break_property_data._Get_property_for_codepoint(0x1100) == _Grapheme_Break_property_values::_L_value);
     assert(
-        _Grapheme_Break_Property_Data._Get_property_for_codepoint(0xA97C) == _Grapheme_Break_Property_Values::_L_value);
+        _Grapheme_Break_property_data._Get_property_for_codepoint(0xA97C) == _Grapheme_Break_property_values::_L_value);
     assert(
-        _Grapheme_Break_Property_Data._Get_property_for_codepoint(0x1160) == _Grapheme_Break_Property_Values::_V_value);
+        _Grapheme_Break_property_data._Get_property_for_codepoint(0x1160) == _Grapheme_Break_property_values::_V_value);
     assert(
-        _Grapheme_Break_Property_Data._Get_property_for_codepoint(0xD7C6) == _Grapheme_Break_Property_Values::_V_value);
+        _Grapheme_Break_property_data._Get_property_for_codepoint(0xD7C6) == _Grapheme_Break_property_values::_V_value);
     assert(
-        _Grapheme_Break_Property_Data._Get_property_for_codepoint(0x11A8) == _Grapheme_Break_Property_Values::_T_value);
+        _Grapheme_Break_property_data._Get_property_for_codepoint(0x11A8) == _Grapheme_Break_property_values::_T_value);
     assert(
-        _Grapheme_Break_Property_Data._Get_property_for_codepoint(0xD7FB) == _Grapheme_Break_Property_Values::_T_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0xAC00)
-           == _Grapheme_Break_Property_Values::_LV_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0xD788)
-           == _Grapheme_Break_Property_Values::_LV_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0xAC01)
-           == _Grapheme_Break_Property_Values::_LVT_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0xD7A3)
-           == _Grapheme_Break_Property_Values::_LVT_value);
-    assert(_Grapheme_Break_Property_Data._Get_property_for_codepoint(0x200D)
-           == _Grapheme_Break_Property_Values::_ZWJ_value);
+        _Grapheme_Break_property_data._Get_property_for_codepoint(0xD7FB) == _Grapheme_Break_property_values::_T_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0xAC00)
+           == _Grapheme_Break_property_values::_LV_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0xD788)
+           == _Grapheme_Break_property_values::_LV_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0xAC01)
+           == _Grapheme_Break_property_values::_LVT_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0xD7A3)
+           == _Grapheme_Break_property_values::_LVT_value);
+    assert(_Grapheme_Break_property_data._Get_property_for_codepoint(0x200D)
+           == _Grapheme_Break_property_values::_ZWJ_value);
     assert(
-        _Grapheme_Break_Property_Data._Get_property_for_codepoint(0x7E) == _Grapheme_Break_Property_Values::_No_value);
+        _Grapheme_Break_property_data._Get_property_for_codepoint(0x7E) == _Grapheme_Break_property_values::_No_value);
     assert(
-        _Grapheme_Break_Property_Data._Get_property_for_codepoint(0xA0) == _Grapheme_Break_Property_Values::_No_value);
+        _Grapheme_Break_property_data._Get_property_for_codepoint(0xA0) == _Grapheme_Break_property_values::_No_value);
 
 
     // emoji-data
-    assert(_Extended_Pictographic_Property_Data._Get_property_for_codepoint(0x2194)
-           == _Extended_Pictographic_Property_Values::_Extended_Pictographic_value);
+    assert(_Extended_Pictographic_property_data._Get_property_for_codepoint(0x2194)
+           == _Extended_Pictographic_property_values::_Extended_Pictographic_value);
 
     // emoji_component, not extended_pictographic
-    assert(_Extended_Pictographic_Property_Data._Get_property_for_codepoint(0x23)
-           == _Extended_Pictographic_Property_Values::_No_value);
+    assert(_Extended_Pictographic_property_data._Get_property_for_codepoint(0x23)
+           == _Extended_Pictographic_property_values::_No_value);
     return true;
 }
 
 template <typename CharT, size_t N_enc, size_t N_dec>
 constexpr void test_utf_decode_helper(const CharT (&encoded)[N_enc], const char32_t (&decoded)[N_dec]) {
     static_assert(_Is_any_of_v<CharT, char, wchar_t>);
-    assert(ranges::equal(_Unicode_codepoint_iterator(encoded, encoded + N_enc), _Unicode_codepoint_end_iterator{},
-        decoded, decoded + N_dec));
+    assert(ranges::equal(_Unicode_codepoint_iterator(encoded, encoded + N_enc), _Unicode_codepoint_sentinel{}, decoded,
+        decoded + N_dec));
 }
 
 constexpr bool test_utf8_decode() {
@@ -440,7 +440,7 @@ int main() {
     static_assert(test_utf16_decode());
 
     static_assert(forward_iterator<_Unicode_codepoint_iterator<char>>);
-    static_assert(sentinel_for<_Unicode_codepoint_end_iterator, _Unicode_codepoint_iterator<char>>);
+    static_assert(sentinel_for<_Unicode_codepoint_sentinel, _Unicode_codepoint_iterator<char>>);
     static_assert(forward_iterator<_Grapheme_break_property_iterator<char>>);
     return 0;
 }
