@@ -166,7 +166,7 @@ concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
 template <class _ValueEnum, size_t _NumRanges>
 struct _Unicode_property_data {
     uint32_t _Lower_bounds[_NumRanges];
-    uint16_t _Props_And_Size[_NumRanges];
+    uint16_t _Props_and_size[_NumRanges];
     _NODISCARD constexpr _ValueEnum _Get_property_for_codepoint(const uint32_t _Code_point) const noexcept {
         ptrdiff_t _Upper_idx = _STD upper_bound(_Lower_bounds, _STD end(_Lower_bounds), _Code_point) - _Lower_bounds;
         if (_Upper_idx == 0) {
@@ -174,7 +174,7 @@ struct _Unicode_property_data {
         }
         --_Upper_idx;
         uint32_t _Lower_bound = _Lower_bounds[_Upper_idx];
-        uint16_t _Data        = _Props_And_Size[_Upper_idx];
+        uint16_t _Data        = _Props_and_size[_Upper_idx];
         uint16_t _Size        = static_cast<uint16_t>(_Data & 0x0FFF);
         _ValueEnum _Prop      = static_cast<_ValueEnum>((_Data & 0xF000) >> 12);
         _STL_INTERNAL_CHECK(_Code_point >= _Lower_bound);
@@ -764,8 +764,8 @@ public:
     constexpr _Grapheme_break_property_iterator() = default;
 
     constexpr _Grapheme_break_property_iterator& operator++() noexcept {
-        auto _Left_gbp     = _Grapheme_Break_Property_Data._Get_property_for_codepoint(*_WrappedIter);
-        auto _Left_ExtPic  = _Extended_Pictographic_Property_Data._Get_property_for_codepoint(*_WrappedIter);
+        auto _Left_gbp     = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
+        auto _Left_ExtPic  = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
         auto _Right_gbp    = _Grapheme_Break_property_values::_No_value;
         auto _Right_ExtPic = _Extended_Pictographic_property_values::_No_value;
         for (;; _Left_gbp = _Right_gbp, _Left_ExtPic = _Right_ExtPic) {
@@ -773,8 +773,8 @@ public:
             if (_WrappedIter == _Unicode_codepoint_sentinel{}) {
                 return *this; // GB2 Any % eot
             }
-            _Right_gbp    = _Grapheme_Break_Property_Data._Get_property_for_codepoint(*_WrappedIter);
-            _Right_ExtPic = _Extended_Pictographic_Property_Data._Get_property_for_codepoint(*_WrappedIter);
+            _Right_gbp    = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
+            _Right_ExtPic = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
             // match GB11 now, so that we're sure to update it for every character, not just ones where
             // the GB11 rule is considered
             bool _GB11_Match = _GB11_rx._Match(_Left_gbp, _Left_ExtPic);
