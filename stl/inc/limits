@@ -979,7 +979,7 @@ public:
 
     static constexpr int digits         = LDBL_MANT_DIG;
     static constexpr int digits10       = LDBL_DIG;
-    static constexpr int max_digits10   = 17;
+    static constexpr int max_digits10   = 2 + LDBL_MANT_DIG * 301L / 1000;
     static constexpr int max_exponent   = LDBL_MAX_EXP;
     static constexpr int max_exponent10 = LDBL_MAX_10_EXP;
     static constexpr int min_exponent   = LDBL_MIN_EXP;
