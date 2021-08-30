@@ -41,14 +41,14 @@ def parsePropertyLine(inputLine: str) -> Optional[PropertyRange]:
 
 PROP_VALUE_ENUMERATOR_TEMPLATE = "_{}_value"
 PROP_VALUE_ENUM_TEMPLATE = """
-enum class _{prop_name}_Property_Values : uint8_t {{
+enum class _{prop_name}_property_values : uint8_t {{
     {enumerators},
     _No_value = 255
 }};
 """
 
 DATA_ARRAY_TEMPLATE = """
-inline constexpr _Unicode_Property_Data<_{prop_name}_Property_Values, {size}> _{prop_name}_Property_Data{{
+inline constexpr _Unicode_property_data<_{prop_name}_property_values, {size}> _{prop_name}_property_data{{
     {{{lower_bounds}}},
     {{{props_and_size}}}
 }};
