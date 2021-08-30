@@ -662,7 +662,7 @@ public:
     constexpr _Unicode_codepoint_iterator& operator++() noexcept {
         _First = _Next;
         if (_First != _Last) {
-            _Next = _STD _Decode_utf(_First, _Last, _Val);
+            _Next = _Decode_utf(_First, _Last, _Val);
         }
 
         return *this;
