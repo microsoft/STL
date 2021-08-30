@@ -45,7 +45,8 @@ void test_istream_exceptions() {
         is.exceptions(ios_base::badbit);
 
         try {
-            assert(is.sync() == -1);
+            is.sync();
+            assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
         } catch (...) {
@@ -66,6 +67,7 @@ void test_istream_exceptions() {
 
         try {
             is.seekg(0);
+            assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
         } catch (...) {
@@ -86,6 +88,7 @@ void test_istream_exceptions() {
 
         try {
             is.seekg(0, ios_base::beg);
+            assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
         } catch (...) {
@@ -105,7 +108,8 @@ void test_istream_exceptions() {
         is.exceptions(ios_base::badbit);
 
         try {
-            assert(is.tellg() == -1);
+            is.tellg();
+            assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
         } catch (...) {
@@ -131,6 +135,7 @@ void test_ostream_exceptions() {
 
         try {
             os.flush();
+            assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
         } catch (...) {
@@ -192,7 +197,7 @@ void test_ostream_exceptions() {
         os.exceptions(ios_base::badbit);
 
         try {
-            assert(os.tellp() == -1);
+            os.tellp();
             assert(false);
         } catch (const ios_base::failure&) {
             assert(false);
