@@ -544,7 +544,7 @@ constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_
     // all UTF text is at least one byte
     // the zero extended values of the "prefix" bytes for
     // a multi-byte sequence are the lowest numeric value (in two's complement)
-    // that a any leading byte could have for a code unit of that size, so
+    // that any leading byte could have for a code unit of that size, so
     // we just sum the comparisions to get the number of trailing bytes
     int _Num_bytes;
     if (_Val <= 0x7F) {
@@ -634,7 +634,7 @@ constexpr const char32_t* _Decode_utf(const char32_t* _First, const char32_t* _L
     return _First + 1;
 }
 
-class _Unicode_codepoint_end_iterator {};
+class _Unicode_codepoint_sentinel {};
 
 template <typename _CharT>
 class _Unicode_codepoint_iterator {
@@ -680,14 +680,14 @@ public:
         return _First;
     }
 
-    constexpr bool operator==(_Unicode_codepoint_end_iterator) const noexcept {
+    constexpr bool operator==(_Unicode_codepoint_sentinel) const noexcept {
         if (_First == _Last) {
             return true;
         }
         return false;
     }
     constexpr bool operator==(const _Unicode_codepoint_iterator& _Other) const {
-        return (_First == _Other._First) && (_Last == _Other._Last);
+        return _First == _Other._First && _Last == _Other._Last;
     }
 };
 
@@ -743,7 +743,7 @@ class _Grapheme_break_property_iterator {
 
     constexpr friend bool operator==(
         const _Grapheme_break_property_iterator& _Lhs, _Grapheme_break_property_sentinel) noexcept {
-        return _Lhs._WrappedIter == _Unicode_codepoint_end_iterator{};
+        return _Lhs._WrappedIter == _Unicode_codepoint_sentinel{};
     }
     constexpr friend bool operator==(
         const _Grapheme_break_property_iterator& _Lhs, const _Grapheme_break_property_iterator& _Rhs) noexcept {
@@ -768,7 +768,7 @@ public:
         auto _Right_ExtPic = _Extended_Pictographic_Property_Values::_No_value;
         for (;; _Left_gbp = _Right_gbp, _Left_ExtPic = _Right_ExtPic) {
             ++_WrappedIter;
-            if (_WrappedIter == _Unicode_codepoint_end_iterator{}) {
+            if (_WrappedIter == _Unicode_codepoint_sentinel{}) {
                 return *this; // GB2 Any % eot
             }
             _Right_gbp    = _Grapheme_Break_Property_Data._Get_property_for_codepoint(*_WrappedIter);
