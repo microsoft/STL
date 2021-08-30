@@ -573,7 +573,7 @@ constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_
     case 0xE0:
         // we know _First[1] is in range because we just checked above,
         // and a leader of 0xe0 implies _Num_bytes == 3
-        if (static_cast<unsigned char>(_First[1]) < 0xa0) {
+        if (static_cast<unsigned char>(_First[1]) < 0xA0) {
             // note, we just increment forward one byte,
             // even though _Num_bytes would imply the next
             // code-point starts at _First + 2, this is because
@@ -595,7 +595,7 @@ constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_
         }
         break;
     case 0xF4:
-        if (static_cast<unsigned char>(_First[1]) > 0x8f) {
+        if (static_cast<unsigned char>(_First[1]) > 0x8F) {
             _Val = 0xFFFD;
             return _First + 1;
         }
