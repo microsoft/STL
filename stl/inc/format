@@ -604,7 +604,7 @@ constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_
 
     // mask out the "value bits" in the leading byte,
     // for one byte codepoints there is no leader,
-    // two byte codepoints have the same nubmer of value
+    // two byte codepoints have the same number of value
     // bits as trailing bytes (including the leading zero)
     switch (_Num_bytes) {
     case 3:
