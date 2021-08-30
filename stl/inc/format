@@ -701,6 +701,7 @@ public:
 // Note state 3 is never explicitly transitioned to, since it's the "accept" state, we just
 // transition back to state 1 and return true.
 class _GB11_LeftHand_regex {
+private:
     enum { _Start, _ExtPic } _State = _Start;
 
 public:
