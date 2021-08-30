@@ -580,7 +580,7 @@ constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_
         if (static_cast<unsigned char>(_First[1]) < 0xA0) {
             // note, we just increment forward one byte,
             // even though _Num_bytes would imply the next
-            // code-point starts at _First + 2, this is because
+            // codepoint starts at _First + 2, this is because
             // we don't consume trailing bytes of ill-formed subsequences
             _Val = 0xFFFD;
             return _First + 1;
