@@ -665,7 +665,7 @@ public:
             _Next = _STD _Decode_utf(_First, _Last, _Val);
         }
 
-        return *(this);
+        return *this;
     }
     constexpr _Unicode_codepoint_iterator operator++(int) noexcept {
         auto _Old = *this;
