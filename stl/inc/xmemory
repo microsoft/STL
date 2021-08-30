@@ -949,19 +949,15 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _L
 }
 
 template <class _Size_type>
-_NODISCARD constexpr _Size_type _Convert_size(const size_t _Len) noexcept {
+_NODISCARD constexpr _Size_type _Convert_size(const size_t _Len) noexcept(is_same_v<_Size_type, size_t>) {
     // convert size_t to _Size_type, avoiding truncation
-    if (_Len > (numeric_limits<_Size_type>::max) ()) {
-        _Xlength_error("size_t too long for _Size_type");
+    if constexpr (!is_same_v<_Size_type, size_t>) {
+        if (_Len > (numeric_limits<_Size_type>::max) ()) {
+            _Xlength_error("size_t too long for _Size_type");
+        }
     }
 
     return static_cast<_Size_type>(_Len);
-}
-
-template <>
-_NODISCARD constexpr size_t _Convert_size<size_t>(const size_t _Len) noexcept {
-    // convert size_t to size_t, unchanged
-    return _Len;
 }
 
 template <class _Alloc>
@@ -1495,29 +1491,27 @@ _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _In
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <class _It>
-    concept _No_throw_input_iterator = input_iterator<_It>
-        && is_lvalue_reference_v<iter_reference_t<_It>>
+    concept _No_throw_input_iterator = input_iterator<_It> //
+        && is_lvalue_reference_v<iter_reference_t<_It>> //
         && same_as<remove_cvref_t<iter_reference_t<_It>>, iter_value_t<_It>>;
 
     template <class _Se, class _It>
     concept _No_throw_sentinel_for = sentinel_for<_Se, _It>;
 
     template <class _It>
-    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It>
-        && forward_iterator<_It>
+    concept _No_throw_forward_iterator = _No_throw_input_iterator<_It> //
+        && forward_iterator<_It> //
         && _No_throw_sentinel_for<_It, _It>;
 
     template <class _Rng>
-    concept _No_throw_input_range = range<_Rng>
-        && _No_throw_input_iterator<iterator_t<_Rng>>
+    concept _No_throw_input_range = range<_Rng> //
+        && _No_throw_input_iterator<iterator_t<_Rng>> //
         && _No_throw_sentinel_for<sentinel_t<_Rng>, iterator_t<_Rng>>;
 
     template <class _Rng>
-    concept _No_throw_forward_range = _No_throw_input_range<_Rng>
+    concept _No_throw_forward_range = _No_throw_input_range<_Rng> //
         && _No_throw_forward_iterator<iterator_t<_Rng>>;
-    // clang-format on
 
     template <class _InIt, class _OutIt>
     in_out_result<_InIt, _OutIt> _Copy_memcpy_count(_InIt _IFirst, _OutIt _OFirst, const size_t _Count) noexcept {
@@ -1602,34 +1596,34 @@ namespace ranges {
     // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, _No_throw_forward_iterator _Out,
         _No_throw_sentinel_for<_Out> _OSe>
-        requires constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>
+        requires (constructible_from<iter_value_t<_Out>, iter_rvalue_reference_t<_It>>)
     uninitialized_move_result<_It, _Out> _Uninitialized_move_unchecked(
-            _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
-            // clang-format on
-            constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
-            constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-            if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
-                          && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
-                if constexpr (_Is_sized1 && _Is_sized2) {
-                    return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
-                        _RANGES next(_OFirst, _STD move(_OLast)));
-                } else if constexpr (_Is_sized1) {
-                    return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
-                } else if constexpr (_Is_sized2) {
-                    return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
-                } else {
-                    _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
-                }
+        _It _IFirst, _Se _ILast, _Out _OFirst, _OSe _OLast) {
+        // clang-format on
+        constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
+        constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
+        if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+                      && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+            if constexpr (_Is_sized1 && _Is_sized2) {
+                return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
+                    _RANGES next(_OFirst, _STD move(_OLast)));
+            } else if constexpr (_Is_sized1) {
+                return _Copy_memcpy_distance(_IFirst, _OFirst, _IFirst, _RANGES next(_IFirst, _STD move(_ILast)));
+            } else if constexpr (_Is_sized2) {
+                return _Copy_memcpy_distance(_IFirst, _OFirst, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
             } else {
-                _Uninitialized_backout _Backout{_STD move(_OFirst)};
-
-                for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
-                    _Backout._Emplace_back(_RANGES iter_move(_IFirst));
-                }
-
-                return {_STD move(_IFirst), _Backout._Release()};
+                _STL_ASSERT(false, "Tried to uninitialized_move two ranges with unreachable sentinels");
             }
+        } else {
+            _Uninitialized_backout _Backout{_STD move(_OFirst)};
+
+            for (; _IFirst != _ILast && _Backout._Last != _OLast; ++_IFirst) {
+                _Backout._Emplace_back(_RANGES iter_move(_IFirst));
+            }
+
+            return {_STD move(_IFirst), _Backout._Release()};
         }
+    }
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -1922,7 +1916,7 @@ struct _In_place_key_extract_map<_Key, pair<_First, _Second>> {
 #pragma warning(disable : 4624) // '%s': destructor was implicitly defined as deleted
 template <class _Ty>
 struct _Wrap {
-    _Ty _Value; // workaround for "T^ is not allowed in a union"
+    _Ty _Value; // workaround for VSO-586813 "T^ is not allowed in a union"
 };
 #pragma warning(pop)
 
@@ -1945,7 +1939,7 @@ struct _Alloc_temporary2 {
     _NODISCARD _CONSTEXPR20 const value_type& _Get_value() const noexcept {
         return _Storage._Value;
     }
-#else // ^^^ workaround for "T^ is not allowed in a union" ^^^ / vvv no workaround vvv
+#else // ^^^ workaround for VSO-586813 "T^ is not allowed in a union" ^^^ / vvv no workaround vvv
     union {
         value_type _Value;
     };
