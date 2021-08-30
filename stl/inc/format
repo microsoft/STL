@@ -681,10 +681,7 @@ public:
     }
 
     constexpr bool operator==(_Unicode_codepoint_sentinel) const noexcept {
-        if (_First == _Last) {
-            return true;
-        }
-        return false;
+        return _First == _Last;
     }
     constexpr bool operator==(const _Unicode_codepoint_iterator& _Other) const {
         return _First == _Other._First && _Last == _Other._Last;
