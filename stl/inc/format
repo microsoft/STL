@@ -514,11 +514,13 @@ constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wchar_t* _Last
             _Val = 0xFFFD;
             return _Last;
         }
+
         if (_First[1] < 0xDC00 || _First[1] > 0xDFFF) {
             // unpaired high surrogate
             _Val = 0xFFFD;
             return _First + 1;
         }
+
         _Val = (_Val - 0xD800) << 10;
         _Val += _First[1] - 0xDC00;
         _Val += 0x10000;
@@ -528,6 +530,7 @@ constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wchar_t* _Last
         _Val = 0xFFFD;
         return _First + 1;
     }
+
     return _First + 1;
 }
 
@@ -560,6 +563,7 @@ constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_
         _Val = 0xFFFD;
         return _First + 1;
     }
+
     if (_Num_bytes > 0 && _First + 1 > _Last) {
         // we got a multibyte sequence and the next byte is off the end, we need
         // to check just the next byte here since we need to look for overlong sequences.
