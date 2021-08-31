@@ -10,7 +10,7 @@
 #include <future>
 #endif // _M_CEE
 
-#include <test_windows.hpp>
+#include <Windows.h>
 
 using namespace std;
 

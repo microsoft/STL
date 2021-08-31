@@ -1562,7 +1562,6 @@ struct badsized_range : Base { // size() launches the missiles.
     badsized_range(badsized_range&&) = default;
     badsized_range& operator=(badsized_range&&) = default;
 
-    // clang-format off
     [[noreturn]] int size() const {
         static_assert(always_false<Base>);
     }
@@ -1570,7 +1569,6 @@ struct badsized_range : Base { // size() launches the missiles.
     [[noreturn]] friend int size(const badsized_range&) {
         static_assert(always_false<Base>);
     }
-    // clang-format on
 };
 
 using mutable_badsized_range      = badsized_range<mutable_sized_range>;

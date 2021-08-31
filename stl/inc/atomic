@@ -287,20 +287,9 @@ _NODISCARD _Integral _Atomic_reinterpret_as(const _Ty& _Source) noexcept {
 }
 
 inline void _Load_barrier(const memory_order _Order) noexcept { // implement memory barrier for atomic load functions
-    switch (_Order) {
-    case memory_order_relaxed:
-        // no barrier
-        break;
-    default:
-    case memory_order_release:
-    case memory_order_acq_rel:
-        _INVALID_MEMORY_ORDER;
-        // [[fallthrough]];
-    case memory_order_consume:
-    case memory_order_acquire:
-    case memory_order_seq_cst:
+    _Check_load_memory_order(_Order);
+    if (_Order != memory_order_relaxed) {
         _Compiler_or_memory_barrier();
-        break;
     }
 }
 
@@ -2148,7 +2137,7 @@ using _Choose_atomic_base_t = typename _Select<is_floating_point_v<_TVal>>::temp
 #else // ^^^ _HAS_CXX20 // !_HAS_CXX20 vvv
 template <class _TVal, class _Ty = _TVal>
 using _Choose_atomic_base_t = _Choose_atomic_base2_t<_TVal, _Ty>;
-#endif //_HAS_CXX20
+#endif // _HAS_CXX20
 
 template <class _Ty>
 struct atomic : _Choose_atomic_base_t<_Ty> { // atomic value
@@ -2156,12 +2145,10 @@ private:
     using _Base = _Choose_atomic_base_t<_Ty>;
 
 public:
-    // clang-format off
-    static_assert(is_trivially_copyable_v<_Ty> && is_copy_constructible_v<_Ty> && is_move_constructible_v<_Ty>
-        && is_copy_assignable_v<_Ty> && is_move_assignable_v<_Ty>,
+    static_assert(is_trivially_copyable_v<_Ty> && is_copy_constructible_v<_Ty> && is_move_constructible_v<_Ty> //
+                      && is_copy_assignable_v<_Ty> && is_move_assignable_v<_Ty>,
         "atomic<T> requires T to be trivially copyable, copy constructible, move constructible, copy assignable, "
         "and move assignable.");
-    // clang-format on
 
     using value_type = _Ty;
 

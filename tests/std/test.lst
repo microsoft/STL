@@ -179,6 +179,7 @@ tests\GH_001850_clog_tied_to_cout
 tests\GH_001914_cached_position
 tests\GH_002039_byte_is_not_trivially_swappable
 tests\GH_002058_debug_iterator_race
+tests\GH_002120_streambuf_seekpos_and_seekoff
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0019R8_atomic_ref
@@ -406,6 +407,7 @@ tests\P0898R3_concepts
 tests\P0898R3_identity
 tests\P0912R5_coroutine
 tests\P0919R3_heterogeneous_unordered_lookup
+tests\P0943R6_stdatomic_h
 tests\P0966R1_string_reserve_should_not_shrink
 tests\P0980R1_constexpr_strings
 tests\P1004R2_constexpr_vector
@@ -424,12 +426,16 @@ tests\P1135R6_semaphore
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1208R6_source_location
 tests\P1423R3_char8_t_remediation
+tests\P1425R4_queue_stack_constructors
 tests\P1502R1_standard_library_header_units
+tests\P1518R2_stop_overconstraining_allocators
 tests\P1614R2_spaceship
 tests\P1645R1_constexpr_numeric
 tests\P1682R3_to_underlying
 tests\P1951R1_default_arguments_pair_forward_ctor
+tests\P2136R3_invoke_r
 tests\P2162R2_std_visit_for_derived_classes_from_variant
+tests\P2231R1_complete_constexpr_optional_variant
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions
 tests\VSO_0000000_c_math_functions
