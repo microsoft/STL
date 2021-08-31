@@ -316,13 +316,13 @@ const test_case_data test_data[] = {{{U'\x20', U'\x20'}, {0, 1, 2}}, {{U'\x20', 
 // End of generated data - DO NOT EDIT manually!
 
 bool run_unicode_test_data_utf32() {
-    for (size_t test_idx = 0; test_idx < size(test_data); ++test_idx) {
-        _Grapheme_break_property_iterator<char32_t> iter(test_data[test_idx].code_points.data(),
-            test_data[test_idx].code_points.data() + test_data[test_idx].code_points.size());
+    for (const auto& test_case : test_data) {
+        _Grapheme_break_property_iterator<char32_t> iter(
+            test_case.code_points.data(), test_case.code_points.data() + test_case.code_points.size());
         size_t i = 0;
         while (iter != _Grapheme_break_property_sentinel{}) {
-            assert(i < test_data[test_idx].breaks.size());
-            assert(*iter == test_data[test_idx].code_points[test_data[test_idx].breaks[i]]);
+            assert(i < test_case.breaks.size());
+            assert(*iter == test_case.code_points[test_case.breaks[i]]);
             ++iter;
             ++i;
         }
