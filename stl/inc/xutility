@@ -278,15 +278,15 @@ struct contiguous_iterator_tag : random_access_iterator_tag {};
 template <class _Ty>
 using _With_reference = _Ty&;
 
-// clang-format off
 template <class _Ty>
-concept _Can_reference = requires { typename _With_reference<_Ty>; };
+concept _Can_reference = requires {
+    typename _With_reference<_Ty>;
+};
 
 template <class _Ty>
 concept _Dereferenceable = requires(_Ty& __t) {
     { *__t } -> _Can_reference;
 };
-// clang-format on
 
 template <class _Ty>
 concept _Has_member_iterator_concept = requires {
@@ -345,12 +345,12 @@ struct incrementable_traits<_Ty> {
     using difference_type = typename _Ty::difference_type;
 };
 
-// clang-format off
 template <class _Ty>
 concept _Can_difference = requires(const _Ty& __a, const _Ty& __b) {
     { __a - __b } -> integral;
 };
 
+// clang-format off
 template <class _Ty>
     requires (!_Has_member_difference_type<_Ty> && _Can_difference<_Ty>)
 struct incrementable_traits<_Ty> {
@@ -423,11 +423,9 @@ using iter_reference_t = decltype(*_STD declval<_Ty&>());
 template <class>
 struct _Iterator_traits_base {};
 
-// clang-format off
 template <class _It>
-concept _Has_iter_types = _Has_member_difference_type<_It> && _Has_member_value_type<_It> && _Has_member_reference<_It>
-    && _Has_member_iterator_category<_It>;
-// clang-format on
+concept _Has_iter_types = _Has_member_difference_type<_It> && _Has_member_value_type<_It> //
+    && _Has_member_reference<_It> && _Has_member_iterator_category<_It>;
 
 template <bool _Has_member_typedef>
 struct _Old_iter_traits_pointer {
@@ -571,14 +569,12 @@ struct _Iter_traits_category3<false> {
     using _Apply = forward_iterator_tag;
 };
 
-// clang-format off
 template <class _It>
 concept _Cpp17_bidi_delta = requires(_It __i) {
     { --__i } -> same_as<_It&>;
     { __i-- } -> convertible_to<const _It&>;
     requires same_as<decltype(*__i--), iter_reference_t<_It>>;
 };
-// clang-format on
 
 template <bool _Is_forward>
 struct _Iter_traits_category2 {
@@ -746,10 +742,8 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 template <class _Ty>
 concept _Integer_like = _Is_nonbool_integral<remove_cv_t<_Ty>>;
 
-// clang-format off
 template <class _Ty>
 concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
-// clang-format on
 
 template <class _Ty>
 using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
@@ -971,20 +965,22 @@ struct incrementable_traits<projected<_It, _Proj>> {
     using difference_type = iter_difference_t<_It>;
 };
 
-// clang-format off
 template <class _In, class _Out>
 concept indirectly_movable = indirectly_readable<_In> && indirectly_writable<_Out, iter_rvalue_reference_t<_In>>;
 
+// clang-format off
 template <class _In, class _Out>
 concept indirectly_movable_storable = indirectly_movable<_In, _Out>
     && indirectly_writable<_Out, iter_value_t<_In>>
     && movable<iter_value_t<_In>>
     && constructible_from<iter_value_t<_In>, iter_rvalue_reference_t<_In>>
     && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In> >;
+// clang-format on
 
 template <class _In, class _Out>
 concept indirectly_copyable = indirectly_readable<_In> && indirectly_writable<_Out, iter_reference_t<_In>>;
 
+// clang-format off
 template <class _In, class _Out>
 concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
     && indirectly_writable<_Out, iter_value_t<_In>&>
@@ -1104,10 +1100,10 @@ concept mergeable = input_iterator<_It1> && input_iterator<_It2>
     && indirectly_copyable<_It1, _Out>
     && indirectly_copyable<_It2, _Out>
     && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
+// clang-format on
 
 template <class _It, class _Pr = ranges::less, class _Proj = identity>
 concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
-// clang-format on
 
 template <class _Iter>
 using _Iter_ref_t = iter_reference_t<_Iter>;
@@ -1280,10 +1276,10 @@ struct _Distance_unknown {
 };
 
 template <class _Diff>
-_INLINE_VAR constexpr auto _Max_possible_v = _Diff{static_cast<make_unsigned_t<_Diff>>(-1) >> 1};
+_INLINE_VAR constexpr _Diff _Max_possible_v{static_cast<make_unsigned_t<_Diff>>(-1) >> 1};
 
 template <class _Diff>
-_INLINE_VAR constexpr auto _Min_possible_v = _Diff{-_Max_possible_v<_Diff> - 1};
+_INLINE_VAR constexpr _Diff _Min_possible_v{-_Max_possible_v<_Diff> - 1};
 
 template <class _Iter, class = void>
 _INLINE_VAR constexpr bool _Offset_verifiable_v = false;
@@ -1985,7 +1981,6 @@ namespace ranges {
         template <class _Ty>
         void begin(const _Ty&) = delete;
 
-        // clang-format off
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
             { _Fake_decay_copy(__t.begin()) } -> input_or_output_iterator;
@@ -1995,7 +1990,6 @@ namespace ranges {
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
             { _Fake_decay_copy(begin(__t)) } -> input_or_output_iterator;
         };
-        // clang-format on
 
         class _Cpo {
         private:
@@ -2051,7 +2045,6 @@ namespace ranges {
     using iterator_t = decltype(_RANGES begin(_STD declval<_Ty&>()));
 
     namespace _Unchecked_begin {
-        // clang-format off
         template <class _Ty>
         concept _Has_member = requires(_Ty& __t) {
             { __t._Unchecked_begin() } -> input_or_output_iterator;
@@ -2061,7 +2054,6 @@ namespace ranges {
         concept _Can_begin = requires(_Ty& __t) {
             _Get_unwrapped(_RANGES begin(__t));
         };
-        // clang-format on
 
         class _Cpo {
         private:
@@ -2113,7 +2105,6 @@ namespace ranges {
         template <class _Ty>
         void end(const _Ty&) = delete;
 
-        // clang-format off
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
             { _Fake_decay_copy(__t.end()) } -> sentinel_for<iterator_t<_Ty>>;
@@ -2123,7 +2114,6 @@ namespace ranges {
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
             { _Fake_decay_copy(end(__t)) } -> sentinel_for<iterator_t<_Ty>>;
         };
-        // clang-format on
 
         class _Cpo {
         private:
@@ -2183,7 +2173,6 @@ namespace ranges {
     }
 
     namespace _Unchecked_end {
-        // clang-format off
         template <class _Ty>
         concept _Has_member = _Unchecked_begin::_Has_member<_Ty> && requires(_Ty& __t) {
             __t._Unchecked_begin(); // required explicitly for better diagnostics
@@ -2194,7 +2183,6 @@ namespace ranges {
         concept _Can_end = requires(_Ty& __t) {
             _Get_unwrapped(_RANGES end(__t));
         };
-        // clang-format on
 
         class _Cpo {
         private:
@@ -2246,10 +2234,8 @@ namespace ranges {
         _RANGES end(__r);
     };
 
-    // clang-format off
     template <class _Rng>
     concept borrowed_range = range<_Rng> && _Should_range_access<_Rng>;
-    // clang-format on
 
     template <range _Rng>
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
@@ -2302,7 +2288,6 @@ namespace ranges {
         template <class _Ty>
         void rbegin(const _Ty&) = delete;
 
-        // clang-format off
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
             { _Fake_decay_copy(__t.rbegin()) } -> input_or_output_iterator;
@@ -2318,7 +2303,6 @@ namespace ranges {
             { _RANGES begin(__t) } -> bidirectional_iterator;
             { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
         };
-        // clang-format on
 
         class _Cpo {
         private:
@@ -2372,7 +2356,6 @@ namespace ranges {
         template <class _Ty>
         void rend(const _Ty&) = delete;
 
-        // clang-format off
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
             { _Fake_decay_copy(__t.rend()) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
@@ -2388,7 +2371,6 @@ namespace ranges {
             { _RANGES begin(__t) } -> bidirectional_iterator;
             { _RANGES end(__t) } -> same_as<decltype(_RANGES begin(__t))>;
         };
-        // clang-format on
 
         class _Cpo {
         private:
@@ -2476,7 +2458,6 @@ namespace ranges {
         template <class _Ty>
         void size(const _Ty&) = delete;
 
-        // clang-format off
         template <class _Ty, class _UnCV>
         concept _Has_member = !disable_sized_range<_UnCV> && requires(_Ty __t) {
             { _Fake_decay_copy(__t.size()) } -> _Integer_like;
@@ -2492,7 +2473,6 @@ namespace ranges {
             { _RANGES begin(__t) } -> forward_iterator;
             { _RANGES end(__t) } -> sized_sentinel_for<decltype(_RANGES begin(__t))>;
         };
-        // clang-format on
 
         class _Cpo {
         private:
@@ -2554,7 +2534,6 @@ namespace ranges {
     }
 
     namespace _Empty {
-        // clang-format off
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
             static_cast<bool>(__t.empty());
@@ -2570,7 +2549,6 @@ namespace ranges {
             { _RANGES begin(__t) } -> forward_iterator;
             _RANGES end(__t);
         };
-        // clang-format on
 
         class _Cpo {
         private:
@@ -2623,7 +2601,6 @@ namespace ranges {
     }
 
     namespace _Data {
-        // clang-format off
         template <class _Ty>
         concept _Points_to_object = is_pointer_v<_Ty> && is_object_v<remove_pointer_t<_Ty>>;
 
@@ -2636,7 +2613,6 @@ namespace ranges {
         concept _Has_contiguous_iterator = requires(_Ty __t) {
             { _RANGES begin(__t) } -> contiguous_iterator;
         };
-        // clang-format on
 
         class _Cpo {
         private:
@@ -2695,12 +2671,10 @@ namespace ranges {
         inline constexpr _Cdata_fn cdata;
     }
 
-    // clang-format off
     template <class _Rng>
     concept sized_range = range<_Rng> && requires(_Rng& __r) {
         _RANGES size(__r);
     };
-    // clang-format on
 
     template <sized_range _Rng>
     using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
@@ -2711,7 +2685,6 @@ namespace ranges {
     inline constexpr bool enable_view = derived_from<_Ty, view_base>;
 
 #ifdef __cpp_lib_ranges // TRANSITION, GH-1814
-    // clang-format off
     template <class _Ty>
     concept view = range<_Ty> && movable<_Ty> && enable_view<_Ty>;
 #endif // TRANSITION, GH-1814
@@ -2735,7 +2708,6 @@ namespace ranges {
     concept contiguous_range = range<_Rng> && contiguous_iterator<iterator_t<_Rng>> && requires(_Rng& __r) {
         { _RANGES data(__r) } -> same_as<add_pointer_t<range_reference_t<_Rng>>>;
     };
-    // clang-format on
 
     class _Not_quite_object {
     public:
@@ -3033,14 +3005,15 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    // clang-format off
     template <class _Rng>
-    concept common_range = range<_Rng>
-        && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
+    concept common_range = range<_Rng> && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
 
     template <class _Ty>
-    concept _Can_empty = requires(_Ty __t) { _RANGES empty(__t); };
+    concept _Can_empty = requires(_Ty __t) {
+        _RANGES empty(__t);
+    };
 
+    // clang-format off
     template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
     class view_interface : public view_base {

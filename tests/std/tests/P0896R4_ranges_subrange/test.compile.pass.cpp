@@ -771,7 +771,6 @@ namespace test_subrange {
     STATIC_ASSERT(!CanSubrange<std::unreachable_sentinel_t, int*, subrange_kind::unsized>);
     STATIC_ASSERT(CanSubrange<int*, std::unreachable_sentinel_t, subrange_kind::sized>);
 
-    // clang-format off
     template <class R>
     concept HasMemberEmpty = requires(std::remove_reference_t<R> const r) {
         { r.empty() } -> same_as<bool>;
@@ -781,7 +780,6 @@ namespace test_subrange {
     concept HasMemberSize = requires(std::remove_reference_t<R> const r) {
         { r.size() } -> std::integral;
     };
-    // clang-format on
 
     // Validate default template arguments: second defaults to first, and third defaults to subrange_kind::sized iff
     // sized_sentinel_for<second, first>.
