@@ -3914,7 +3914,7 @@ namespace ranges {
                 : _Last(_RANGES end(_Parent._Range)) {}
 
             _NODISCARD friend constexpr bool operator==(const _Iterator& _It, const _Sentinel& _Se) noexcept(
-                noexcept(_Se._Equal(_It))) /* strengthened*/ {
+                noexcept(_Se._Equal(_It))) /* strengthened */ {
                 return _Se._Equal(_It);
             }
         };
