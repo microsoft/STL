@@ -3951,7 +3951,7 @@ namespace ranges {
         // clang-format on
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
-            requires copy_constructible<_Vw> {
+            requires copyable<_Vw> {
             return _Range;
         }
         _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
