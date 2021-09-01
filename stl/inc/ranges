@@ -3940,7 +3940,7 @@ namespace ranges {
             : _Range(_STD move(_Range_)), _Pattern(_STD move(_Pattern_)) {}
 
         // clang-format off
-        template <input_range _Rng>
+        template <forward_range _Rng>
             requires constructible_from<_Vw, views::all_t<_Rng>>
                 && constructible_from<_Pat, single_view<range_value_t<_Rng>>>
         constexpr split_view(_Rng&& _Range_, range_value_t<_Rng> _Elem)
