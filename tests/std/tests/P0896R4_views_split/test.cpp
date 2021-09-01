@@ -7,6 +7,7 @@
 #include <ranges>
 #include <span>
 #include <string_view>
+#include <system_error>
 #include <type_traits>
 #include <utility>
 
@@ -304,8 +305,9 @@ constexpr bool instantiation_test() {
     if (!is_constant_evaluated()) { // test the from_chars example
         auto ip    = "1.2.3.4"sv;
         auto parts = ip | views::split('.') | views::transform([](span<const char> s) {
-            int i;
-            from_chars(s.data(), s.data() + s.size(), i);
+            int i             = 0;
+            const auto result = from_chars(s.data(), s.data() + s.size(), i);
+            assert(result.ec == errc{});
             return i;
         });
 
