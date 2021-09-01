@@ -209,6 +209,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
         STATIC_ASSERT(same_as<decltype(sc), const ranges::sentinel_t<const R>>);
         assert((as_const(r).begin() == sc) == is_empty);
     }
+
     if constexpr (!ranges::common_range<const R>) {
         STATIC_ASSERT(same_as<ranges::sentinel_t<R>, default_sentinel_t>);
     }
