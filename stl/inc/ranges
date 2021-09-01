@@ -3650,11 +3650,11 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Outer_iter<_Const>>) // strengthened
                 : _It{_STD move(_It_)} {}
 
-            constexpr const iterator_t<_BaseTy>& base() const& noexcept /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_BaseTy>& base() const& noexcept /* strengthened */ {
                 return _It._Get_current();
             }
 
-            constexpr iterator_t<_BaseTy> base() && noexcept(
+            _NODISCARD constexpr iterator_t<_BaseTy> base() && noexcept(
                 is_nothrow_move_constructible_v<iterator_t<_BaseTy>>) /* strengthened */ {
                 return _STD move(_It._Get_current());
             }
