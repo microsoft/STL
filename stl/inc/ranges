@@ -3947,7 +3947,7 @@ namespace ranges {
             noexcept(is_nothrow_constructible_v<_Vw, views::all_t<_Rng>>
                 && is_nothrow_constructible_v<_Pat, single_view<range_value_t<_Rng>>>
                 && is_nothrow_move_constructible_v<range_value_t<_Rng>>) // strengthened
-            : _Range(views::all(_STD forward<_Rng>(_Range_))), _Pattern(single_view{_STD move(_Elem)}) {}
+            : _Range(views::all(_STD forward<_Rng>(_Range_))), _Pattern(views::single(_STD move(_Elem))) {}
         // clang-format on
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
