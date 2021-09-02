@@ -1665,9 +1665,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand/>
   </Type>
 
-
-  <!-- VC 2015 -->
-  <Type Name="std::recursive_mutex">
+  <Type Name="std::mutex">
+      <AlternativeType Name="std::recursive_mutex&lt;*&gt;"/>
       <DisplayString Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) == 0">unlocked</DisplayString>
       <DisplayString Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) != 0">locked</DisplayString>
       <DisplayString Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) == 0">unlocked</DisplayString>
@@ -1680,6 +1679,28 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <Type Name="std::timed_mutex">
+    <AlternativeType Name="std::recursive_timed_mutex"/>
+    <DisplayString>{_My_mutex}</DisplayString>
+    <Expand>
+      <Item Name="[locking_thread_id]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44) != 0">*(long *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 40)</Item>
+      <Item Name="[locking_thread_id]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76) != 0">*(long *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 72)</Item>
+      <Item Name="[ownership_levels]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44) != 0">*(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44)</Item>
+      <Item Name="[ownership_levels]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76) != 0">*(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76)</Item>
+      <Item Name="[My owner]" Optional="true">_My_owner</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::lock_guard&lt;*&gt;">
+    <DisplayString>{_My_mutex}</DisplayString>
+  </Type>
+
+  <Type Name="std::unique_lock&lt;*&gt;">
+    <DisplayString>{*_Pmtx}</DisplayString>
+    <Expand>
+      <Item Name="owns">_Owns</Item>
+    </Expand>
+  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::_Associated_state&lt;*&gt;">
