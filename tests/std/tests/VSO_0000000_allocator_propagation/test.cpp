@@ -1653,7 +1653,7 @@ int main() {
     test_sequence<deque>();
     test_sequence<list>();
     test_sequence<vector>();
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, VSO-1273365 && VSO-1520773
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, VSO-1273365 && DevCom-1520773
     static_assert(test_sequence<vector>());
 #endif // _HAS_CXX20
 
