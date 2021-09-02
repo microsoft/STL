@@ -933,7 +933,7 @@ public:
                                   && move_constructible<iter_value_t<_Iter>>) ) {
             return _Val._Iterator++;
         } else {
-            auto _Tmp = _Postfix_proxy{*_Val._Iterator};
+            _Postfix_proxy _Tmp{*_Val._Iterator};
             ++_Val._Iterator;
             return _Tmp;
         }
