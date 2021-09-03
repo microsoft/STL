@@ -2428,7 +2428,7 @@ _NODISCARD _OutputIt _Fmt_write(
             }
             break;
         default:
-            __assume(false);
+            _STL_UNREACHABLE;
         }
     }
 

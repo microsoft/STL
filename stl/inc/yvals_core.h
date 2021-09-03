@@ -1458,5 +1458,11 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _NOEXCEPT_FNPTR
 #endif // __cpp_noexcept_function_type
 
+#ifdef __clang__
+#define _STL_UNREACHABLE __builtin_unreachable()
+#else // ^^^ clang ^^^ / vvv other vvv
+#define _STL_UNREACHABLE __assume(false)
+#endif // __clang__
+
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
