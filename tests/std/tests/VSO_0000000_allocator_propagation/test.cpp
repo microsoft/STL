@@ -143,7 +143,7 @@ _CONSTEXPR20 void test_sequence_copy_alloc_ctor(const size_t id1, const size_t i
     assert(dst.get_allocator().id() == id2);
 }
 
-template <template <class, class> class Sequence, typename Alloc>
+template <template <class, class> class Sequence, class Alloc>
 _CONSTEXPR20 void test_sequence_copy_assign(const size_t id1, const size_t id2, const size_t id3) {
     Sequence<int, Alloc> src({10, 20, 30}, Alloc(id1));
     Sequence<int, Alloc> dst({0, 0, 0}, Alloc(id2));
@@ -232,7 +232,7 @@ _CONSTEXPR20 void test_sequence_move_alloc_ctor(const size_t id1, const size_t i
     assert(dst.get_allocator().id() == id2);
 }
 
-template <template <class, class> class Sequence, typename Alloc>
+template <template <class, class> class Sequence, class Alloc>
 _CONSTEXPR20 void test_sequence_move_assign(const size_t id1, const size_t id2, const size_t id3) {
     Sequence<int, Alloc> src({10, 20, 30}, Alloc(id1));
     Sequence<int, Alloc> dst({0, 0, 0}, Alloc(id2));
@@ -268,7 +268,7 @@ _CONSTEXPR20 void test_sequence_move_assign(const size_t id1, const size_t id2, 
     assert(dst.get_allocator().id() == id3);
 }
 
-template <template <class, class> class Sequence, typename Alloc>
+template <template <class, class> class Sequence, class Alloc>
 _CONSTEXPR20 void test_sequence_swap(const size_t id1, const size_t id2) {
     Sequence<int, Alloc> src({10, 20, 30}, Alloc(id1));
     Sequence<int, Alloc> dst({40, 50, 60}, Alloc(id2));
@@ -1024,22 +1024,22 @@ void test_vb() {
 
 using PCII = pair<const int, int>;
 
-template <class K, typename V, typename C, typename A>
+template <class K, class V, class C, class A>
 auto GetIter(map<K, V, C, A>& c) {
     return prev(c.end());
 }
 
-template <class K, typename V, typename C, typename A>
+template <class K, class V, class C, class A>
 auto GetIter(multimap<K, V, C, A>& c) {
     return prev(c.end());
 }
 
-template <class K, typename V, typename H, typename P, typename A>
+template <class K, class V, class H, class P, class A>
 auto GetIter(unordered_map<K, V, H, P, A>& c) {
     return c.begin();
 }
 
-template <class K, typename V, typename H, typename P, typename A>
+template <class K, class V, class H, class P, class A>
 auto GetIter(unordered_multimap<K, V, H, P, A>& c) {
     return c.begin();
 }
@@ -1097,7 +1097,7 @@ void test_map_copy_alloc_ctor(const size_t id1, const size_t id2) {
     assert(dst.get_allocator().id() == id2);
 }
 
-template <template <class> class Map, typename Alloc>
+template <template <class> class Map, class Alloc>
 void test_map_copy_assign(const size_t id1, const size_t id2, const size_t id3) {
 
     typename Map<Alloc>::type src({{10, 100}, {20, 200}, {30, 300}}, Alloc(id1));
@@ -1189,7 +1189,7 @@ void test_map_move_alloc_ctor(const size_t id1, const size_t id2) {
     assert(dst.get_allocator().id() == id2);
 }
 
-template <template <class> class Map, typename Alloc>
+template <template <class> class Map, class Alloc>
 void test_map_move_assign(const size_t id1, const size_t id2, const size_t id3) {
 
     typename Map<Alloc>::type src({{10, 100}, {20, 200}, {30, 300}}, Alloc(id1));
@@ -1226,7 +1226,7 @@ void test_map_move_assign(const size_t id1, const size_t id2, const size_t id3) 
     assert(dst.get_allocator().id() == id3);
 }
 
-template <template <class> class Map, typename Alloc>
+template <template <class> class Map, class Alloc>
 void test_map_swap(const size_t id1, const size_t id2) {
 
     typename Map<Alloc>::type src({{10, 100}, {20, 200}, {30, 300}}, Alloc(id1));
@@ -1306,22 +1306,22 @@ struct UnorderedMultimap {
 };
 
 
-template <class K, typename C, typename A>
+template <class K, class C, class A>
 auto GetIter(set<K, C, A>& c) {
     return prev(c.end());
 }
 
-template <class K, typename C, typename A>
+template <class K, class C, class A>
 auto GetIter(multiset<K, C, A>& c) {
     return prev(c.end());
 }
 
-template <class K, typename H, typename P, typename A>
+template <class K, class H, class P, class A>
 auto GetIter(unordered_set<K, H, P, A>& c) {
     return c.begin();
 }
 
-template <class K, typename H, typename P, typename A>
+template <class K, class H, class P, class A>
 auto GetIter(unordered_multiset<K, H, P, A>& c) {
     return c.begin();
 }
@@ -1379,7 +1379,7 @@ void test_set_copy_alloc_ctor(const size_t id1, const size_t id2) {
     assert(dst.get_allocator().id() == id2);
 }
 
-template <template <class> class Set, typename Alloc>
+template <template <class> class Set, class Alloc>
 void test_set_copy_assign(const size_t id1, const size_t id2, const size_t id3) {
 
     typename Set<Alloc>::type src({10, 20, 30}, Alloc(id1));
@@ -1471,7 +1471,7 @@ void test_set_move_alloc_ctor(const size_t id1, const size_t id2) {
     assert(dst.get_allocator().id() == id2);
 }
 
-template <template <class> class Set, typename Alloc>
+template <template <class> class Set, class Alloc>
 void test_set_move_assign(const size_t id1, const size_t id2, const size_t id3) {
 
     typename Set<Alloc>::type src({10, 20, 30}, Alloc(id1));
@@ -1508,7 +1508,7 @@ void test_set_move_assign(const size_t id1, const size_t id2, const size_t id3) 
     assert(dst.get_allocator().id() == id3);
 }
 
-template <template <class> class Set, typename Alloc>
+template <template <class> class Set, class Alloc>
 void test_set_swap(const size_t id1, const size_t id2) {
 
     typename Set<Alloc>::type src({10, 20, 30}, Alloc(id1));
@@ -1655,7 +1655,7 @@ int main() {
     test_sequence<vector>();
 #if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, VSO-1273365 && DevCom-1520773
     static_assert(test_sequence<vector>());
-#endif // _HAS_CXX20
+#endif // _HAS_CXX20 && !defined(__EDG__)
 
     test_flist();
     test_string();
