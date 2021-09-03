@@ -3921,7 +3921,7 @@ struct _Trivial_cat {
 
     static constexpr bool _Same_size_and_compatible =
         sizeof(_Source) == sizeof(_Dest)
-        // If _UDest is bool _USource also needs to be bool
+        // If _UDest is bool, _USource also needs to be bool
         // Conversion from non-bool => non-bool | bool => bool | bool => non-bool is fine.
         // Conversion from non-bool => bool is not fine.
         && is_same_v<bool, _USource> >= is_same_v<bool, _UDest> //
