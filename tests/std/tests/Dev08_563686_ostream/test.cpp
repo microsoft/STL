@@ -29,7 +29,7 @@
 #include <sstream>
 #include <stdlib.h>
 
-#include <test_windows.hpp>
+#include <Windows.h>
 
 int main() {
     // Track CRT blocks
