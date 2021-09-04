@@ -10,9 +10,9 @@ using namespace std::chrono;
 using namespace std::filesystem;
 #endif
 
-#include <test_windows.hpp>
-
 #if _HAS_CXX20
+#include <Windows.h>
+
 [[nodiscard]] sys_time<milliseconds> get_system_time() noexcept {
     SYSTEMTIME st;
     GetSystemTime(&st);
@@ -35,6 +35,7 @@ void test_clock_now() {
 
 int main() {
 #if _HAS_CXX20
+    test_clock_now<system_clock>();
     test_clock_now<utc_clock>();
     test_clock_now<tai_clock>();
     test_clock_now<gps_clock>();
