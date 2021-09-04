@@ -96,7 +96,6 @@ public:
     }
 #endif // !_HAS_CXX20
 
-
 #ifdef __cpp_lib_concepts
     _NODISCARD strong_ordering operator<=>(const error_category& _Right) const noexcept {
         return compare_three_way{}(_Addr, _Right._Addr);
@@ -180,7 +179,6 @@ public:
     _NODISCARD friend bool operator==(const error_code& _Left, const error_condition& _Right) noexcept {
         return _System_error_equal(_Left, _Right);
     }
-
 
 #ifdef __cpp_lib_concepts
     _NODISCARD friend strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
@@ -267,7 +265,6 @@ public:
         return _Left.category() == _Right.category() && _Left.value() == _Right.value();
     }
 
-
 #ifdef __cpp_lib_concepts
     _NODISCARD friend strong_ordering operator<=>(
         const error_condition& _Left, const error_condition& _Right) noexcept {
@@ -320,7 +317,6 @@ _NODISCARD inline bool operator==(const error_code& _Left, const error_condition
 _NODISCARD inline bool operator==(const error_condition& _Left, const error_condition& _Right) noexcept {
     return _Left.category() == _Right.category() && _Left.value() == _Right.value();
 }
-
 
 #ifdef __cpp_lib_concepts
 _NODISCARD inline strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
