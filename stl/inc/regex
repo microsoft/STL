@@ -1696,8 +1696,8 @@ private:
     void _Expect(_Meta_type, regex_constants::error_type);
 
     // parsing
-    int _Do_digits(int _Base, int _Count);
-    bool _DecimalDigits();
+    int _Do_digits(int _Base, int _Count, regex_constants::error_type);
+    bool _DecimalDigits(regex_constants::error_type);
     void _HexDigits(int);
     bool _OctalDigits();
     void _Do_ex_class(_Meta_type);
@@ -3905,15 +3905,15 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Expect(_Meta_type _St, regex_constants:
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(int _Base, int _Count) { // translate digits to numeric value
+int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
+    int _Base, int _Count, regex_constants::error_type _ErrorType) { // translate digits to numeric value
     int _Chv;
     _Val = 0;
     while (_Count != 0 && (_Chv = _Traits.value(_Char, _Base)) != -1) { // append next digit
-        --_Count;
         if (_Val > ((INT_MAX - _Chv) / _Base)) {
-            _Val = INT_MAX;
-            return _Count;
+            _Error(_ErrorType);
         }
+        --_Count;
         _Val *= _Base;
         _Val += _Chv;
         _Next();
@@ -3922,20 +3922,21 @@ int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(int _Base, int _Count) { // tr
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
-bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits() { // check for decimal value
-    return _Do_digits(10, INT_MAX) != INT_MAX;
+bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits(
+    regex_constants::error_type _ErrorType) { // check for decimal value
+    return _Do_digits(10, INT_MAX, _ErrorType) != INT_MAX;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_HexDigits(int _Count) { // check for _Count hex digits
-    if (_Do_digits(16, _Count) != 0) {
+    if (_Do_digits(16, _Count, regex_constants::error_escape) != 0) {
         _Error(regex_constants::error_escape);
     }
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser<_FwdIt, _Elem, _RxTraits>::_OctalDigits() { // check for up to 3 octal digits
-    return _Do_digits(8, 3) != 3;
+    return _Do_digits(8, 3, regex_constants::error_escape) != 3;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>
@@ -4005,7 +4006,7 @@ _Prs_ret _Parser<_FwdIt, _Elem, _RxTraits>::_ClassEscape(bool _Addit) { // check
         return _Prs_chr;
     } else if ((_L_flags & _L_esc_wsd) && _CharacterClassEscape(_Addit)) {
         return _Prs_set;
-    } else if (_DecimalDigits()) { // check for invalid value
+    } else if (_DecimalDigits(regex_constants::error_escape)) { // check for invalid value
         if (_Val != 0) {
             _Error(regex_constants::error_escape);
         }
@@ -4291,7 +4292,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape() { // check for valid 
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 void _Parser<_FwdIt, _Elem, _RxTraits>::_AtomEscape() { // check for valid atom escape
-    if ((_L_flags & _L_bckr) && _DecimalDigits()) { // check for valid back reference
+    if ((_L_flags & _L_bckr) && _DecimalDigits(regex_constants::error_backref)) { // check for valid back reference
         if (_Val == 0) { // handle \0
             if (!(_L_flags & _L_bzr_chr)) {
                 _Error(regex_constants::error_escape);
@@ -4323,7 +4324,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
             _Max = 1;
         } else if (_Mchar == _Meta_lbr) { // check for valid bracketed value
             _Next();
-            if (!_DecimalDigits()) {
+            if (!_DecimalDigits(regex_constants::error_badbrace)) {
                 _Error(regex_constants::error_badbrace);
             }
 
@@ -4333,7 +4334,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Quantifier() { // check for quantifier 
             } else { // check for decimal constant following comma
                 _Next();
                 if (_Mchar != _Meta_rbr) {
-                    if (!_DecimalDigits()) {
+                    if (!_DecimalDigits(regex_constants::error_badbrace)) {
                         _Error(regex_constants::error_badbrace);
                     }
 
