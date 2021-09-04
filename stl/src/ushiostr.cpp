@@ -6,6 +6,14 @@
 #ifdef _NATIVE_WCHAR_T_DEFINED
 #include <fstream>
 
+_STD_BEGIN
+
+using ushistream = basic_istream<unsigned short, char_traits<unsigned short>>;
+using ushostream = basic_ostream<unsigned short, char_traits<unsigned short>>;
+using ushfilebuf = basic_filebuf<unsigned short, char_traits<unsigned short>>;
+
+_STD_END
+
 #define wistream    ushistream
 #define wostream    ushostream
 #define wfilebuf    ushfilebuf
