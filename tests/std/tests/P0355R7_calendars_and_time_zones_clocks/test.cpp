@@ -446,10 +446,12 @@ void test() {
         test_utc_clock_to_sys<seconds>(leap);
         test_utc_clock_to_sys<milliseconds>(leap);
         test_utc_clock_to_sys<duration<double>>(leap);
+        test_utc_clock_from_sys(leap, offset);
+#if 0 // TRANSITION: file_clock does not use STL leap second list for clock conversions
         test_file_clock_from_utc<seconds>(leap);
         test_file_clock_from_utc<milliseconds>(leap);
-        test_utc_clock_from_sys(leap, offset);
         test_file_clock_to_utc(leap, offset);
+#endif
         offset += leap.value();
         assert(leap._Elapsed() == offset);
     }
@@ -473,10 +475,12 @@ void test() {
         test_utc_clock_to_sys<seconds>(leap);
         test_utc_clock_to_sys<milliseconds>(leap);
         test_utc_clock_to_sys<duration<double>>(leap);
+        test_utc_clock_from_sys(leap, offset);
+#if 0 // TRANSITION: file_clock does not use STL leap second list for clock conversions
         test_file_clock_from_utc<seconds>(leap);
         test_file_clock_from_utc<milliseconds>(leap);
-        test_utc_clock_from_sys(leap, offset);
         test_file_clock_to_utc(leap, offset);
+#endif
         offset += leap.value();
         assert(leap._Elapsed() == offset);
     }

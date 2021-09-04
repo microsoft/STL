@@ -105,6 +105,8 @@ _NODISCARD static _Utc_to_file_time_result _Utc_components_to_file_time(
     const __std_utc_components_1s& _Utc_time) noexcept {
     using enum __std_utc_to_file_time_errc;
 
+    // https://docs.microsoft.com/en-us/windows/win32/api/timezoneapi/nf-timezoneapi-systemtimetofiletime
+    // The wDayOfWeek member of the SYSTEMTIME structure is ignored.
     SYSTEMTIME _St{
         .wYear         = static_cast<WORD>(_Utc_time._Year),
         .wMonth        = static_cast<WORD>(_Utc_time._Month),

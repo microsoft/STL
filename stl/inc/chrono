@@ -698,6 +698,21 @@ namespace chrono {
         _Duration _Sub_sec;
     };
 
+    // get the last representable value before the time point
+    template <class _Duration, class _Clock>
+    _NODISCARD static constexpr time_point<_Clock, _Duration> _Prev_time_point(
+        const time_point<_Clock, _Duration>& _Time) noexcept(is_arithmetic_v<typename _Duration::rep>) {
+        using _Rep = typename _Duration::rep;
+        if constexpr (treat_as_floating_point_v<_Rep>) {
+            // TRANSITION, GH-1909
+            const _Rep _Val      = _Time.time_since_epoch().count();
+            const _Rep _Prev_val = _STD nextafter(_Val, numeric_limits<_Rep>::lowest());
+            return time_point<_Clock, _Duration>{_Duration{_Prev_val}};
+        } else {
+            return _Time - _Duration{1};
+        }
+    }
+
     struct system_clock { // wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime
         using rep                       = long long;
         using period                    = ratio<1, 10'000'000>; // 100 nanoseconds
@@ -720,18 +735,9 @@ namespace chrono {
 
             if (_Utc._Whole_sec._Second < 60) {
                 return _Sys_secs + _Utc._Sub_sec;
-            }
-
-            // positive leap second
-            using _Common_rep = typename _Common::rep;
-            if constexpr (treat_as_floating_point_v<_Common_rep>) {
-                // TRANSITION, GH-1909
-                const _Common_rep _After_leap_sec = _Sys_secs.time_since_epoch().count();
-                const _Common_rep _Before_leap_sec =
-                    _STD nextafter(_After_leap_sec, -numeric_limits<_Common_rep>::infinity());
-                return _Sys_time{_Common{_Before_leap_sec}};
             } else {
-                return _Sys_secs - _Common{1};
+                _STL_INTERNAL_CHECK(_Utc._Whole_sec._Second == 60);
+                return _CHRONO _Prev_time_point<_Common>(_Sys_secs);
             }
         }
 
@@ -3313,28 +3319,18 @@ namespace chrono {
         using time_point                = _CHRONO time_point<utc_clock>;
         static constexpr bool is_steady = system_clock::is_steady;
 
-        _NODISCARD static time_point now() {
-            return from_sys(system_clock::now());
-        }
+        _NODISCARD static time_point now();
 
         template <class _Duration>
         _NODISCARD static sys_time<common_type_t<_Duration, seconds>> to_sys(const utc_time<_Duration>& _Utc_time) {
             using _CommonType = common_type_t<_Duration, seconds>;
             const auto _Lsi{_CHRONO get_leap_second_info(_Utc_time)};
-            _CommonType _Ticks;
             if (_Lsi.is_leap_second) {
-                const auto _Leap_sec_minus_one = _CHRONO floor<seconds>(_Utc_time.time_since_epoch()) - _Lsi.elapsed;
-                if constexpr (is_integral_v<typename _Duration::rep>) {
-                    constexpr auto _Delta{seconds{1} - _CommonType{1}};
-                    _Ticks = _Leap_sec_minus_one + _Delta;
-                } else {
-                    const auto _Leap_sec_begin = _CHRONO ceil<_CommonType>(_Leap_sec_minus_one + seconds{1});
-                    _Ticks = _CommonType{_STD nextafter(_Leap_sec_begin.count(), typename _CommonType::rep{0})};
-                }
+                return _CHRONO _Prev_time_point(sys_time<_CommonType>{
+                    _CHRONO floor<seconds>(_Utc_time.time_since_epoch()) - (_Lsi.elapsed - seconds{1})});
             } else {
-                _Ticks = _Utc_time.time_since_epoch() - _Lsi.elapsed;
+                return sys_time<_CommonType>{_Utc_time.time_since_epoch() - _Lsi.elapsed};
             }
-            return sys_time<_CommonType>{_Ticks};
         }
 
         template <class _Duration>
@@ -3348,11 +3344,50 @@ namespace chrono {
 
         template <class _Duration>
         _NODISCARD static _Utc_components<common_type_t<_Duration, seconds>> _To_utc_components(
-            const utc_time<_Duration>& _Utc_time) noexcept; // FIXME
+            const utc_time<_Duration>& _Utc_time) noexcept {
+            const utc_seconds _Utc_secs = _CHRONO floor<seconds>(_Utc_time);
+            const auto _Lsi             = _CHRONO get_leap_second_info(_Utc_secs);
+            const sys_seconds _Sys_secs{_Utc_secs.time_since_epoch() - _Lsi.elapsed};
+            _Utc_components<common_type_t<_Duration, seconds>> _Utc = {
+                ._Whole_sec = _CHRONO _Civil_from_sys_seconds(_Sys_secs),
+                ._Sub_sec   = _Utc_time - _Utc_secs,
+            };
+
+            if (_Lsi.is_leap_second) {
+                ++_Utc._Whole_sec._Second;
+            }
+
+            return _Utc;
+        }
 
         template <class _Duration>
         _NODISCARD static utc_time<common_type_t<_Duration, seconds>> _From_utc_components(
-            const _Utc_components<_Duration>& _Utc) noexcept; // FIXME
+            const _Utc_components<_Duration>& _Utc) noexcept {
+            using _Common               = common_type_t<_Duration, seconds>;
+            const auto& _Tzdb           = _CHRONO get_tzdb();
+            const auto& _Ls_vector      = _Tzdb.leap_seconds;
+            const sys_seconds _Sys_secs = _Sys_seconds_from_civil(_Utc._Whole_sec);
+
+            // Check for the next leap second
+            _STL_INTERNAL_CHECK(_Utc._Whole_sec._Second < 61);
+            const sys_seconds _Sys_next_min = _Sys_secs - seconds{_Utc._Whole_sec._Second} + minutes{1};
+            const auto _Next_leap           = _STD lower_bound(_Ls_vector.begin(), _Ls_vector.end(), _Sys_next_min);
+
+            // number of seconds of this minute
+            const seconds _Secs_of_this_min = _Next_leap != _Ls_vector.end() && _Next_leap->date() == _Sys_next_min
+                                                ? minutes{1} + _Next_leap->value()
+                                                : minutes{1};
+
+            // utc_time - sys_time at the beginning of this minute
+            const seconds _Offset =
+                _Next_leap == _Ls_vector.begin() ? seconds::zero() : _STD _Prev_iter(_Next_leap)->_Elapsed();
+
+            if (seconds(_Utc._Whole_sec._Second) < _Secs_of_this_min) {
+                return utc_time<_Common>{_Sys_secs.time_since_epoch() + _Offset + _Utc._Sub_sec};
+            } else {
+                return _CHRONO _Prev_time_point(utc_time<_Common>{_Sys_next_min.time_since_epoch() + _Offset});
+            }
+        }
     };
 
     // [time.clock.tai]
@@ -3465,41 +3500,23 @@ namespace filesystem {
         template <class _Duration>
         _NODISCARD static chrono::utc_time<common_type_t<_Duration, chrono::seconds>> to_utc(
             const chrono::file_time<_Duration>& _File_time) {
-            using namespace chrono;
-            using _CommonType = common_type_t<_Duration, seconds>;
-            const auto _Ticks = _File_time.time_since_epoch()
-                              - _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment});
-
-            if (_Ticks < _Cutoff.time_since_epoch()) {
-                return utc_clock::from_sys(sys_time<_CommonType>{_Ticks});
-            } else {
-                return utc_time<_CommonType>{_Ticks + _Skipped_filetime_leap_seconds};
-            }
+            return chrono::utc_clock::_From_utc_components(_To_utc_components(_File_time));
         }
 
         template <class _Duration>
         _NODISCARD static chrono::file_time<common_type_t<_Duration, chrono::seconds>> from_utc(
             const chrono::utc_time<_Duration>& _Utc_time) {
-            using namespace chrono;
-            file_time<common_type_t<_Duration, seconds>> _File_time{
-                _CHRONO duration_cast<seconds>(duration{__std_fs_file_time_epoch_adjustment})};
-
-            if (_Utc_time < utc_seconds{_Cutoff.time_since_epoch()} + _Skipped_filetime_leap_seconds) {
-                _File_time += utc_clock::to_sys(_Utc_time).time_since_epoch();
-            } else {
-                _File_time += _Utc_time.time_since_epoch() - _Skipped_filetime_leap_seconds;
-            }
-
-            return _File_time;
+            return _From_utc_components(chrono::utc_clock::_To_utc_components(_Utc_time));
         }
 
         template <class _Duration>
         _NODISCARD static chrono::_Utc_components<common_type_t<_Duration, chrono::seconds>> _To_utc_components(
             const chrono::file_time<_Duration>& _File_time) noexcept {
             using namespace chrono;
+            using _Common            = common_type_t<_Duration, chrono::seconds>;
             const auto _File_seconds = _CHRONO floor<seconds>(_File_time);
 
-            _Utc_components<duration> _Utc;
+            _Utc_components<_Common> _Utc;
             const __std_file_time_to_utc_errc _Ec =
                 __std_file_seconds_to_utc_components(_File_seconds.time_since_epoch().count(), &_Utc._Whole_sec);
             _Utc._Sub_sec = _File_time - _File_seconds;
@@ -3522,19 +3539,11 @@ namespace filesystem {
             long long _File_seconds;
             const __std_utc_to_file_time_errc _Ec =
                 __std_utc_components_to_file_seconds(&_Utc._Whole_sec, &_File_seconds);
+            _STL_INTERNAL_CHECK(_Ec != __std_utc_to_file_time_errc::_Unknown_smear);
 
             if (_Ec == __std_utc_to_file_time_errc::_Nonexistent) {
                 // unrepresentable second 60, deleted second 59, or nonexistent second 60
-                using _Common_rep = typename _Common::rep;
-                if constexpr (treat_as_floating_point_v<_Common_rep>) {
-                    // TRANSITION, GH-1909
-                    const _Common_rep _Next_representable = _Common{seconds{_File_seconds}}.count();
-                    const _Common_rep _Prev_representable =
-                        _STD nextafter(_Next_representable, -numeric_limits<_Common_rep>::infinity());
-                    return file_time<_Common>{_Common{_Prev_representable}};
-                } else {
-                    return file_time<_Common>{seconds{_File_seconds} - _Common{1}};
-                }
+                return _CHRONO _Prev_time_point(file_time<_Common>{seconds{_File_seconds}});
             }
 
             if (_Ec != __std_utc_to_file_time_errc::_Invalid_parameter) {
@@ -3551,6 +3560,10 @@ namespace filesystem {
 
 namespace chrono {
 #if _HAS_CXX20
+    _NODISCARD inline utc_clock::time_point utc_clock::now() {
+        return file_clock::to_utc(file_clock::now());
+    }
+
     // [time.clock.conv]
 
     template <class _DestClock, class _SourceClock>
