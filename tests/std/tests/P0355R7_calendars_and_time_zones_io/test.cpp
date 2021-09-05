@@ -901,7 +901,7 @@ void parse_whitespace() {
     fail_parse("", "%n", time);
 }
 
-void insert_leap_second(const sys_days& date, const seconds& value) {
+tzdb copy_tzdb(const ptrdiff_t max_count) {
     const auto& my_tzdb = get_tzdb_list().front();
     vector<time_zone> zones;
     vector<time_zone_link> links;
@@ -910,11 +910,18 @@ void insert_leap_second(const sys_days& date, const seconds& value) {
     transform(my_tzdb.links.begin(), my_tzdb.links.end(), back_inserter(links), [](const auto& link) {
         return time_zone_link{link.name(), link.target()};
     });
+    vector<leap_second> leap_seconds(my_tzdb.leap_seconds.begin(),
+        my_tzdb.leap_seconds.begin() + min(max_count, static_cast<ptrdiff_t>(my_tzdb.leap_seconds.size())));
+    const bool all_ls_positive =
+        all_of(leap_seconds.cbegin(), leap_seconds.cend(), [](const leap_second& ls) { return ls.value() > 0s; });
 
-    auto leap_vec = my_tzdb.leap_seconds;
-    leap_vec.emplace_back(date, value == 1s, leap_vec.back()._Elapsed());
-    get_tzdb_list()._Emplace_front(
-        tzdb{my_tzdb.version, move(zones), move(links), move(leap_vec), my_tzdb._All_ls_positive && (value == 1s)});
+    return {my_tzdb.version, move(zones), move(links), move(leap_seconds), all_ls_positive};
+}
+
+void insert_leap_second(tzdb& my_tzdb, const sys_days& date, const seconds& value) {
+    const bool is_positive = value > 0s;
+    my_tzdb.leap_seconds.emplace_back(date, is_positive, my_tzdb.leap_seconds.back()._Elapsed());
+    my_tzdb._All_ls_positive = my_tzdb._All_ls_positive && is_positive;
 }
 
 void test_gh_1952() {
@@ -930,9 +937,11 @@ void test_gh_1952() {
     test_parse(time_str, fmt, sys_parsed);
     assert(sys_parsed == clock_cast<system_clock>(utc_ref));
 
+#if 0 // FIXME: file_clock IO
     file_time<microseconds> file_parsed;
     test_parse(time_str, fmt, file_parsed);
     assert(file_parsed == clock_cast<file_clock>(utc_ref));
+#endif
 
     local_time<microseconds> local_parsed;
     test_parse(time_str, fmt, local_parsed);
@@ -1048,8 +1057,12 @@ void parse_timepoints() {
 
     // Historical leap seconds don't allow complete testing, because they've all been positive and there haven't been
     // any since 2016 (as of 2021).
-    insert_leap_second(1d / January / 2020y, -1s);
-    insert_leap_second(1d / January / 2022y, 1s);
+    {
+        tzdb my_tzdb = copy_tzdb(27);
+        insert_leap_second(my_tzdb, 1d / January / 2020y, -1s);
+        insert_leap_second(my_tzdb, 1d / January / 2022y, 1s);
+        get_tzdb_list()._Emplace_front(move(my_tzdb));
+    }
 
     utc_seconds ut_ref = utc_clock::from_sys(sys_days{1d / July / 1972y}) - 1s; // leap second insertion
     test_parse("june 30 23:59:60 1972", "%c", ut);
@@ -1071,7 +1084,9 @@ void parse_timepoints() {
     ref = sys_days{1d / January / 2020y} - 1s; // negative leap second, UTC time doesn't exist
     fail_parse("dec 31 23:59:59 2019", "%c", ut);
     fail_parse("dec 31 23:59:59 2019", "%c", st);
+#if 0 // TRANSITION: file_clock does not use STL leap second list for clock conversions
     fail_parse("dec 31 23:59:59 2019", "%c", ft);
+#endif
 
     test_parse("dec 31 23:59:59 2019", "%c", lt); // Not UTC, might be valid depending on the time zone.
     assert(lt.time_since_epoch() == ref.time_since_epoch());
@@ -1106,8 +1121,10 @@ void parse_timepoints() {
     ut_ref = utc_clock::from_sys(sys_days{1d / January / 2022y}) - 1s; // leap second insertion
     test_parse("dec 31 23:59:60 2021", "%c", ut);
     assert(ut == ut_ref);
+#if 0 // TRANSITION: file_clock does not use STL leap second list for clock conversions
     test_parse("dec 31 23:59:60 2021", "%c", ft);
     assert(ft == clock_cast<file_clock>(ut_ref));
+#endif
 
 
     // GH-1606: reads too many leading zeros
