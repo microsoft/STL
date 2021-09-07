@@ -434,6 +434,30 @@ constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain
     return _Ptr;
 }
 
+extern "C" {
+void __sanitizer_annotate_contiguous_container(
+    const void* _First, const void* _End, const void* _Old_last, const void* _New_last) noexcept;
+extern const bool _Asan_vector_should_annotate;
+}
+
+#if defined(__SANITIZE_ADDRESS__) || defined(_ANNOTATE_VECTOR)
+#pragma comment(lib, "stl_asan")
+#endif // defined(__SANITIZE_ADDRESS__) || defined(_ANNOTATE_VECTOR)
+
+#pragma comment(linker, \
+    "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
+
+template <class _Vec, class = void>
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment =
+    disjunction_v<bool_constant<alignof(typename _Vec::value_type) >= 8>,
+        is_same<typename _Vec::allocator_type, allocator<typename _Vec::value_type>>>;
+
+template <class _Vec>
+_INLINE_VAR constexpr bool
+    _Has_minimum_allocation_alignment<_Vec, void_t<decltype(_Vec::allocator_type::_Minimum_allocation_alignment)>> =
+        _Vec::allocator_type::_Minimum_allocation_alignment >= 8;
+
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
@@ -458,6 +482,110 @@ public:
     using difference_type = typename _Alty_traits::difference_type;
 
 private:
+    class _NODISCARD _Asan_annotater {
+    public:
+        _Asan_annotater(const _Asan_annotater&) = delete;
+        _Asan_annotater& operator=(const _Asan_annotater&) = delete;
+
+        explicit constexpr _Asan_annotater(vector* _Myvec_, difference_type _Count_) noexcept
+            : _Myvec(_Myvec_), _Count(_Count_) {
+            _STL_INTERNAL_CHECK(_Myvec != nullptr);
+            auto& _My_data = _Myvec->_Mypair._Myval2;
+            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Mylast + _Count);
+        }
+
+        _CONSTEXPR20 ~_Asan_annotater() {
+            if (!_Myvec) { // Success case with no previous allocation
+                return;
+            }
+
+            // Sets the annotated memory back to previous case
+            auto& _My_data = _Myvec->_Mypair._Myval2;
+            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast + _Count, _My_data._Mylast);
+        }
+
+        _CONSTEXPR20 void _Release() noexcept {
+            _Myvec = nullptr;
+        }
+
+        static _CONSTEXPR20 void _Create_annotation(const vector& _Myvec_) noexcept {
+            // Annotates the valid range with shadow memory
+            auto& _My_data = _Myvec_._Mypair._Myval2;
+            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Myend, _My_data._Mylast);
+        }
+
+        static _CONSTEXPR20 void _Clear_annotation(const vector& _Myvec_) noexcept {
+            // Removes annotation of the range with shadow memory
+            auto& _My_data = _Myvec_._Mypair._Myval2;
+            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myend);
+        }
+
+        static _CONSTEXPR20 void _Change_annotation(const vector& _Myvec_, const difference_type _Count) noexcept {
+            // Extends / shrinks the annotated range by _Count
+            auto& _My_data = _Myvec_._Mypair._Myval2;
+            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Mylast + _Count);
+        }
+
+    private:
+        static const void* _Get_aligned_first(const void* _First, const void* _End) noexcept {
+            const char* _CFirst    = reinterpret_cast<const char*>(_First);
+            const char* _CEnd      = reinterpret_cast<const char*>(_End);
+            const size_t _Capacity = static_cast<size_t>(_CEnd - _CFirst);
+
+            if (_Capacity >= 8) {
+                // We are guaranteed to have sufficient space to find an aligned address.
+                return reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(_CFirst) + 7) & ~7);
+            }
+
+            uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_CFirst) & 7;
+            if (_Alignment_offset) {
+                _Alignment_offset = 8 - _Alignment_offset;
+            }
+
+            if (_Capacity > _Alignment_offset) {
+                return _CFirst + _Alignment_offset;
+            }
+
+            return nullptr;
+        }
+
+        static _CONSTEXPR20 void _Apply_annotation(
+            pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
+#if _HAS_CXX20
+            if (_STD is_constant_evaluated()) {
+                return;
+            }
+#endif // _HAS_CXX20
+
+            if (!_Asan_vector_should_annotate) {
+                return;
+            }
+
+            const char* _First    = reinterpret_cast<const char*>(_Unfancy(_First_));
+            const char* _End      = reinterpret_cast<const char*>(_Unfancy(_End_));
+            const char* _Old_last = reinterpret_cast<const char*>(_Unfancy(_Old_last_));
+            const char* _New_last = reinterpret_cast<const char*>(_Unfancy(_New_last_));
+            if constexpr (_Has_minimum_allocation_alignment<vector>) {
+                __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+            } else {
+                const void* _Aligned_first = _Get_aligned_first(_First, _End);
+                if (!_Aligned_first) {
+                    // There is no aligned address within the underlying buffer. Nothing to do
+                    return;
+                } else {
+                    const void* _Aligned_old_last = _Old_last < _Aligned_first ? _Aligned_first : _Old_last;
+                    const void* _Aligned_new_last = _New_last < _Aligned_first ? _Aligned_first : _New_last;
+                    const void* _Aligned_end      = _End < _Aligned_first ? _Aligned_first : _End;
+                    __sanitizer_annotate_contiguous_container(
+                        _Aligned_first, _Aligned_end, _Aligned_old_last, _Aligned_new_last);
+                }
+            }
+        }
+
+        vector* _Myvec;
+        difference_type _Count;
+    };
+
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer, _Ty&, const _Ty&>>>;
 
@@ -500,9 +628,11 @@ public:
             _Tidy_guard<vector> _Guard{this};
 
             for (; _UFirst != _ULast; ++_UFirst) {
-                emplace_back(*_UFirst); // performance note: emplace_back()'s strong guarantee is unnecessary here
+                // performance note: except for one-at-back, emplace_back()'s strong guarantee is unnecessary here.
+                _Emplace_one_at_back(*_UFirst);
             }
 
+            // _Emplace_one_at_back already handles asan
             _Guard._Target = nullptr;
             _Proxy._Release();
         }
@@ -553,6 +683,8 @@ public:
                     _Tidy_guard<vector> _Guard{this};
                     _My_data._Mylast =
                         _Uninitialized_move(_Right_data._Myfirst, _Right_data._Mylast, _My_data._Myfirst, _Al);
+
+                    _Asan_annotater::_Create_annotation(*this);
                     _Guard._Target = nullptr;
                 }
                 _Proxy._Release();
@@ -604,47 +736,38 @@ public:
 
 private:
     template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) _Emplace_back_with_unused_capacity(_Valty&&... _Val) {
+    _CONSTEXPR20 _Ty& _Emplace_one_at_back(_Valty&&... _Val) {
         // insert by perfectly forwarding into element at end, provide strong guarantee
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
-        _STL_INTERNAL_CHECK(_Mylast != _My_data._Myend); // check that we have unused capacity
-        _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
-        _Orphan_range(_Mylast, _Mylast);
-        _Ty& _Result = *_Mylast;
-        ++_Mylast;
-#if _HAS_CXX17
-        return _Result;
-#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
-        (void) _Result;
-#endif // _HAS_CXX17
-    }
 
-public:
-    template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) emplace_back(_Valty&&... _Val) {
-        // insert by perfectly forwarding into element at end, provide strong guarantee
-        auto& _My_data   = _Mypair._Myval2;
-        pointer& _Mylast = _My_data._Mylast;
         if (_Mylast != _My_data._Myend) {
             return _Emplace_back_with_unused_capacity(_STD forward<_Valty>(_Val)...);
         }
 
-        _Ty& _Result = *_Emplace_reallocate(_Mylast, _STD forward<_Valty>(_Val)...);
-#if _HAS_CXX17
+        return *_Emplace_reallocate(_Mylast, _STD forward<_Valty>(_Val)...);
+    }
+
+    template <class... _Valty>
+    _CONSTEXPR20 _Ty& _Emplace_back_with_unused_capacity(_Valty&&... _Val) {
+        // insert by perfectly forwarding into element at end, provide strong guarantee
+        auto& _My_data   = _Mypair._Myval2;
+        pointer& _Mylast = _My_data._Mylast;
+        _STL_INTERNAL_CHECK(_Mylast != _My_data._Myend); // check that we have unused capacity
+        if constexpr (is_nothrow_constructible_v<_Ty, _Valty...>) {
+            _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(1));
+            _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
+        } else {
+            _Asan_annotater _Annotator{this, static_cast<difference_type>(1)};
+            _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
+            _Annotator._Release();
+        }
+
+        _Orphan_range(_Mylast, _Mylast);
+        _Ty& _Result = *_Mylast;
+        ++_Mylast;
+
         return _Result;
-#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
-        (void) _Result;
-#endif // _HAS_CXX17
-    }
-
-    _CONSTEXPR20 void push_back(const _Ty& _Val) { // insert element at end, provide strong guarantee
-        emplace_back(_Val);
-    }
-
-    _CONSTEXPR20 void push_back(_Ty&& _Val) {
-        // insert by moving into element at end, provide strong guarantee
-        emplace_back(_STD move(_Val));
     }
 
     template <class... _Valty>
@@ -696,6 +819,27 @@ public:
         return _Newvec + _Whereoff;
     }
 
+public:
+    template <class... _Valty>
+    _CONSTEXPR20 decltype(auto) emplace_back(_Valty&&... _Val) {
+        // insert by perfectly forwarding into element at end, provide strong guarantee
+        _Ty& _Result = _Emplace_one_at_back(_STD forward<_Valty>(_Val)...);
+#if _HAS_CXX17
+        return _Result;
+#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
+        (void) _Result;
+#endif // _HAS_CXX17
+    }
+
+    _CONSTEXPR20 void push_back(const _Ty& _Val) { // insert element at end, provide strong guarantee
+        emplace_back(_Val);
+    }
+
+    _CONSTEXPR20 void push_back(_Ty&& _Val) {
+        // insert by moving into element at end, provide strong guarantee
+        emplace_back(_STD move(_Val));
+    }
+
     template <class... _Valty>
     _CONSTEXPR20 iterator emplace(const_iterator _Where, _Valty&&... _Val) {
         // insert by perfectly forwarding _Val at _Where
@@ -716,8 +860,11 @@ public:
                 _Alloc_temporary2<_Alty> _Obj(_Al, _STD forward<_Valty>(_Val)...); // handle aliasing
                 // after constructing _Obj, provide basic guarantee
                 _Orphan_range(_Whereptr, _Oldlast);
+                _Asan_annotater _Annotator{this, static_cast<difference_type>(1)};
                 _Alty_traits::construct(_Al, _Unfancy(_Oldlast), _STD move(_Oldlast[-1]));
+                _Annotator._Release();
                 ++_My_data._Mylast;
+
                 _Move_backward_unchecked(_Whereptr, _Oldlast - 1, _Oldlast);
                 *_Whereptr = _STD move(_Obj._Get_value());
             }
@@ -799,6 +946,7 @@ public:
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
             _Orphan_range(_Whereptr, _Oldlast);
 
+            _Asan_annotater _Annotator{this, static_cast<difference_type>(_Count)};
             if (_Count > _Affected_elements) { // new stuff spills off end
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Count - _Affected_elements, _Tmp, _Al);
                 _Mylast = _Uninitialized_move(_Whereptr, _Oldlast, _Mylast, _Al);
@@ -808,6 +956,7 @@ public:
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
                 _STD fill(_Whereptr, _Whereptr + _Count, _Tmp);
             }
+            _Annotator._Release();
         }
 
         return _Make_iterator_offset(_Whereoff);
@@ -829,10 +978,10 @@ private:
 
         // For one-at-back, provide strong guarantee.
         // Otherwise, provide basic guarantee (despite N4659 26.3.11.5 [vector.modifiers]/1).
-        // Performance note: except for one-at-back, emplace_back()'s strong guarantee is unnecessary here.
+        // Performance note: except for one-at-back, _Emplace_one_at_back()'s strong guarantee is unnecessary here.
 
         for (; _First != _Last; ++_First) {
-            emplace_back(*_First);
+            _Emplace_one_at_back(*_First);
         }
 
         _Orphan_range(_Myfirst + _Whereoff, _Myfirst + _Oldsize);
@@ -898,6 +1047,7 @@ private:
 
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
 
+            _Asan_annotater _Annotator{this, static_cast<difference_type>(_Count)};
             if (_Count < _Affected_elements) { // some affected elements must be assigned
                 _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
@@ -950,6 +1100,7 @@ private:
             }
 
             _Orphan_range(_Whereptr, _Oldlast);
+            _Annotator._Release();
         }
     }
 
@@ -986,18 +1137,33 @@ public:
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) { // reallocate
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Newsize, _Val, _Al);
+            if constexpr (is_nothrow_copy_constructible_v<_Ty>) {
+                _Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Newsize, _Val, _Al);
+                _Asan_annotater::_Create_annotation(*this);
+            } else {
+                _Asan_annotater _Annotator{this, static_cast<difference_type>(_Newsize)};
+                _Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Newsize, _Val, _Al);
+                _Annotator._Release();
+            }
             return;
         }
 
         const auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
         if (_Newsize > _Oldsize) {
             _STD fill(_Myfirst, _Mylast, _Val);
-            _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
+            if constexpr (is_nothrow_copy_constructible_v<_Ty>) {
+                _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(_Newsize - _Oldsize));
+                _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
+            } else {
+                _Asan_annotater _Annotator{this, static_cast<difference_type>(_Newsize - _Oldsize)};
+                _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
+                _Annotator._Release();
+            }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _STD fill(_Myfirst, _Newlast, _Val);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
     }
@@ -1013,7 +1179,6 @@ private:
         _My_data._Orphan_all();
 
         pointer _Next = _Myfirst;
-
         for (; _First != _Last && _Next != _Mylast; ++_First, (void) ++_Next) {
             *_Next = *_First;
         }
@@ -1025,11 +1190,13 @@ private:
 
         // Trim.
         _Destroy_range(_Next, _Mylast, _Getal());
+        _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(_Next - _Mylast));
         _Mylast = _Next;
 
         // Append.
         for (; _First != _Last; ++_First) {
-            emplace_back(*_First); // performance note: emplace_back()'s strong guarantee is unnecessary here
+            // performance note: _Emplace_one_at_back()'s strong guarantee is unnecessary here
+            _Emplace_one_at_back(*_First);
         }
     }
 
@@ -1047,7 +1214,14 @@ private:
         const auto _Oldcapacity = static_cast<size_type>(_Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_copy(_First, _Last, _My_data._Myfirst, _Al);
+            if constexpr (is_nothrow_copy_constructible_v<_Ty>) {
+                _Mylast = _Uninitialized_copy(_First, _Last, _My_data._Myfirst, _Al);
+                _Asan_annotater::_Create_annotation(*this);
+            } else {
+                _Asan_annotater _Annotator{this, static_cast<difference_type>(_Newsize)};
+                _Mylast = _Uninitialized_copy(_First, _Last, _My_data._Myfirst, _Al);
+                _Annotator._Release();
+            }
             return;
         }
 
@@ -1056,11 +1230,20 @@ private:
             // performance note: traversing [_First, _Mid) twice
             const _Iter _Mid = _STD next(_First, static_cast<difference_type>(_Oldsize));
             _Copy_unchecked(_First, _Mid, _Myfirst);
-            _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
+
+            if constexpr (is_nothrow_copy_constructible_v<_Ty>) {
+                _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(_Newsize - _Oldsize));
+                _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
+            } else {
+                _Asan_annotater _Annotator{this, static_cast<difference_type>(_Newsize - _Oldsize)};
+                _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
+                _Annotator._Release();
+            }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Copy_unchecked(_First, _Last, _Myfirst);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
     }
@@ -1151,6 +1334,7 @@ private:
     template <class _Ty2>
     _CONSTEXPR20 void _Resize(const size_type _Newsize, const _Ty2& _Val) {
         // trim or append elements, provide strong guarantee
+
         auto& _Al           = _Getal();
         auto& _My_data      = _Mypair._Myval2;
         pointer& _Myfirst   = _My_data._Myfirst;
@@ -1160,6 +1344,7 @@ private:
             const pointer _Newlast = _Myfirst + _Newsize;
             _Orphan_range(_Newlast, _Mylast);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
             return;
         }
@@ -1171,6 +1356,7 @@ private:
                 return;
             }
 
+            _Asan_annotater _Annotator{this, static_cast<difference_type>(_Newsize - _Oldsize)};
             const pointer _Oldlast = _Mylast;
             if constexpr (is_same_v<_Ty2, _Ty>) {
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Newsize - _Oldsize, _Val, _Al);
@@ -1178,6 +1364,7 @@ private:
                 _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty2, _Value_init_tag>);
                 _Mylast = _Uninitialized_value_construct_n(_Oldlast, _Newsize - _Oldsize, _Al);
             }
+            _Annotator._Release();
             _Orphan_range(_Oldlast, _Oldlast);
         }
 
@@ -1260,6 +1447,7 @@ private:
         const size_type _Newcapacity = _Calculate_growth(_Newsize);
 
         if (_Myfirst) { // destroy and deallocate old array
+            _Asan_annotater::_Clear_annotation(*this);
             _Destroy_range(_Myfirst, _Mylast, _Al);
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
@@ -1306,6 +1494,7 @@ public:
 
         _Orphan_range(_Mylast - 1, _Mylast);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
+        _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(-1));
         --_Mylast;
     }
 
@@ -1324,6 +1513,7 @@ public:
         _Orphan_range(_Whereptr, _Mylast);
         _Move_unchecked(_Whereptr + 1, _Mylast, _Whereptr);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
+        _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(-1));
         --_Mylast;
         return iterator(_Whereptr, _STD addressof(_My_data));
     }
@@ -1346,6 +1536,7 @@ public:
 
             const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
             _Destroy_range(_Newlast, _Mylast, _Getal());
+            _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(_Newlast - _Mylast));
             _Mylast = _Newlast;
         }
 
@@ -1359,6 +1550,7 @@ public:
 
         _My_data._Orphan_all();
         _Destroy_range(_Myfirst, _Mylast, _Getal());
+        _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(_Myfirst - _Mylast));
         _Mylast = _Myfirst;
     }
 
@@ -1607,6 +1799,7 @@ private:
         _My_data._Orphan_all();
 
         if (_Myfirst) { // destroy and deallocate old array
+            _Asan_annotater::_Clear_annotation(*this);
             _Destroy_range(_Myfirst, _Mylast, _Al);
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
         }
@@ -1614,6 +1807,7 @@ private:
         _Myfirst = _Newvec;
         _Mylast  = _Newvec + _Newsize;
         _Myend   = _Newvec + _Newcapacity;
+        _Asan_annotater::_Create_annotation(*this);
     }
 
     _CONSTEXPR20 void _Tidy() noexcept { // free all storage
@@ -1626,6 +1820,7 @@ private:
         _My_data._Orphan_all();
 
         if (_Myfirst) { // destroy and deallocate old array
+            _Asan_annotater::_Clear_annotation(*this);
             _Destroy_range(_Myfirst, _Mylast, _Al);
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
@@ -1658,6 +1853,8 @@ private:
             } else {
                 static_assert(_Always_false<_Ty>, "Should be unreachable");
             }
+
+            _Asan_annotater::_Create_annotation(*this);
             _Guard._Target = nullptr;
         }
 
@@ -1677,11 +1874,17 @@ private:
         pointer& _Mylast  = _My_data._Mylast;
 
         _My_data._Orphan_all();
-        _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_move(_First, _Last, _My_data._Myfirst, _Al);
+            if constexpr (is_nothrow_move_constructible_v<_Ty>) {
+                _Mylast = _Uninitialized_move(_First, _Last, _My_data._Myfirst, _Al);
+                _Asan_annotater::_Create_annotation(*this);
+            } else {
+                _Asan_annotater _Annotator{this, static_cast<difference_type>(_Newsize)};
+                _Mylast = _Uninitialized_move(_First, _Last, _My_data._Myfirst, _Al);
+                _Annotator._Release();
+            }
             return;
         }
 
@@ -1689,11 +1892,20 @@ private:
         if (_Newsize > _Oldsize) {
             const pointer _Mid = _First + _Oldsize;
             _Move_unchecked(_First, _Mid, _Myfirst);
-            _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+
+            if constexpr (is_nothrow_move_constructible_v<_Ty>) {
+                _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(_Newsize - _Oldsize));
+                _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+            } else {
+                _Asan_annotater _Annotator{this, static_cast<difference_type>(_Newsize - _Oldsize)};
+                _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+                _Annotator._Release();
+            }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Move_unchecked(_First, _Last, _Myfirst);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _Asan_annotater::_Change_annotation(*this, static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
     }

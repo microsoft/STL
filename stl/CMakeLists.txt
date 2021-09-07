@@ -249,6 +249,7 @@ endforeach()
 
 # Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib.
 set(IMPLIB_SOURCES
+    ${CMAKE_CURRENT_LIST_DIR}/src/asan_noop.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/filesystem.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/format.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/locale0_implib.cpp
@@ -385,6 +386,10 @@ set(SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/xwstold.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xwstopfx.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xwstoxfl.cpp
+)
+
+set(ASAN_SOURCES
+    ${CMAKE_CURRENT_LIST_DIR}/src/asan.cpp
 )
 
 set(EHA_SOURCES
@@ -548,3 +553,5 @@ add_stl_statics("1" "_ITERATOR_DEBUG_LEVEL=1" "${VCLIBS_RELEASE_OPTIONS}")
 add_stl_statics("d" "_DEBUG;_ITERATOR_DEBUG_LEVEL=2" "${VCLIBS_DEBUG_OPTIONS}")
 add_stl_statics("d1" "_DEBUG;_ITERATOR_DEBUG_LEVEL=1" "${VCLIBS_DEBUG_OPTIONS}")
 add_stl_statics("d0" "_DEBUG;_ITERATOR_DEBUG_LEVEL=0" "${VCLIBS_DEBUG_OPTIONS}")
+
+add_library(stl_asan STATIC ${ASAN_SOURCES})
