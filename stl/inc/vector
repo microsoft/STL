@@ -570,13 +570,27 @@ public:
             return *this;
         }
 
-        if (_Getal() == _Right._Getal()) {
-            _Tidy();
-            _Pocma(_Getal(), _Right._Getal());
-            _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
-        } else if constexpr (!is_same_v<_Choose_pocma<_Alty>, _Equal_allocators>) {
-            _Move_assign_unequal_alloc(_Right);
+        _Alty& _Al       = _Getal();
+        _Alty& _Right_al = _Right._Getal();
+        if constexpr (is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
+            if (_Al != _Right_al) {
+                _Move_assign_unequal_alloc(_Right);
+                return *this;
+            }
         }
+
+        _Tidy();
+#if _ITERATOR_DEBUG_LEVEL != 0
+        if constexpr (is_same_v<_Choose_pocma<_Alty>, _Propagate_allocators>) {
+            if (_Al != _Right_al) {
+                // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
+                _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
+            }
+        }
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+        _Pocma(_Al, _Right_al);
+        _Mypair._Myval2._Take_contents(_Right._Mypair._Myval2);
         return *this;
     }
 
@@ -1668,55 +1682,45 @@ private:
         _Proxy._Release();
     }
 
-    _CONSTEXPR20 void _Move_assign_unequal_alloc(vector& _Right) noexcept(
-        !is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
+    _CONSTEXPR20 void _Move_assign_unequal_alloc(vector& _Right) {
         auto& _Al         = _Getal();
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
-        if constexpr (is_same_v<_Choose_pocma<_Alty>, _Propagate_allocators>) {
-            _Tidy();
-#if _ITERATOR_DEBUG_LEVEL != 0
-            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
-            _My_data._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-            _Pocma(_Al, _Right._Getal());
-            _My_data._Take_contents(_Right_data);
+
+        const pointer _First = _Right_data._Myfirst;
+        const pointer _Last  = _Right_data._Mylast;
+        const auto _Newsize  = static_cast<size_type>(_Last - _First);
+
+        pointer& _Myfirst = _My_data._Myfirst;
+        pointer& _Mylast  = _My_data._Mylast;
+
+        _My_data._Orphan_all();
+
+        const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
+        if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Trivially_copyable>,
+                          _Uses_default_construct<_Alty, _Ty*, _Ty>, _Uses_default_destroy<_Alty, _Ty*>>) {
+            if (_Newsize > _Oldcapacity) {
+                _Clear_and_reserve_geometric(_Newsize);
+            }
+
+            _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
         } else {
-            const pointer _First = _Right_data._Myfirst;
-            const pointer _Last  = _Right_data._Mylast;
-            const auto _Newsize  = static_cast<size_type>(_Last - _First);
+            auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
 
-            pointer& _Myfirst = _My_data._Myfirst;
-            pointer& _Mylast  = _My_data._Mylast;
-
-            _My_data._Orphan_all();
-
-            const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
-            if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<_Ty*, _Ty*>::_Trivially_copyable>,
-                              _Uses_default_construct<_Alty, _Ty*, _Ty>, _Uses_default_destroy<_Alty, _Ty*>>) {
-                if (_Newsize > _Oldcapacity) {
+            if (_Newsize > _Oldsize) {
+                if (_Newsize > _Oldcapacity) { // reallocate
                     _Clear_and_reserve_geometric(_Newsize);
+                    _Oldsize = 0;
                 }
 
-                _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
+                const pointer _Mid = _First + _Oldsize;
+                _Move_unchecked(_First, _Mid, _Myfirst);
+                _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
             } else {
-                auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
-
-                if (_Newsize > _Oldsize) {
-                    if (_Newsize > _Oldcapacity) { // reallocate
-                        _Clear_and_reserve_geometric(_Newsize);
-                        _Oldsize = 0;
-                    }
-
-                    const pointer _Mid = _First + _Oldsize;
-                    _Move_unchecked(_First, _Mid, _Myfirst);
-                    _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
-                } else {
-                    const pointer _Newlast = _Myfirst + _Newsize;
-                    _Move_unchecked(_First, _Last, _Myfirst);
-                    _Destroy_range(_Newlast, _Mylast, _Al);
-                    _Mylast = _Newlast;
-                }
+                const pointer _Newlast = _Myfirst + _Newsize;
+                _Move_unchecked(_First, _Last, _Myfirst);
+                _Destroy_range(_Newlast, _Mylast, _Al);
+                _Mylast = _Newlast;
             }
         }
     }
