@@ -176,10 +176,6 @@ public:
     }
 
     __CLR_OR_THIS_CALL ~basic_filebuf() noexcept override {
-        if (_Myfile) {
-            _Reset_back(); // revert from _Mychar buffer
-        }
-
         if (_Closef) {
             close();
         }
@@ -382,6 +378,8 @@ public:
     basic_filebuf* close() {
         basic_filebuf* _Ans;
         if (_Myfile) { // put any homing sequence and close file
+            _Reset_back(); // revert from _Mychar buffer
+
             _Ans = this;
             if (!_Endwrite()) {
                 _Ans = nullptr;

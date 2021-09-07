@@ -155,6 +155,7 @@ tests\Dev11_1140665_unique_ptr_array_conversions
 tests\Dev11_1150223_shared_mutex
 tests\Dev11_1158803_regex_thread_safety
 tests\Dev11_1180290_filesystem_error_code
+tests\GH_000342_filebuf_close
 tests\GH_000457_system_error_message
 tests\GH_000545_include_compare
 tests\GH_000625_vector_bool_optimization
