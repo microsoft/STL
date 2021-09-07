@@ -1702,6 +1702,30 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
+  <Type Name="std::scoped_lock&lt;*&gt;">
+    <DisplayString>{_MyMutex}</DisplayString>
+  </Type>
+
+  <Type Name="std::scoped_lock&lt;*,*&gt;">
+    <DisplayString>{_MyMutexes}</DisplayString>
+  </Type>
+
+  <Type Name="std::defer_lock_t">
+    <DisplayString>defer lock</DisplayString>
+  </Type>
+
+  <Type Name="std::try_to_lock_t">
+    <DisplayString>try to lock</DisplayString>
+  </Type>
+
+  <Type Name="std::adopt_lock_t">
+    <DisplayString>adopt lock</DisplayString>
+  </Type>
+
+  <Type Name="std::once_flag">
+    <DisplayString>{(int)_Opaque}</DisplayString>
+  </Type>
+
   <!-- VC 2015 -->
   <Type Name="std::_Associated_state&lt;*&gt;">
       <Expand>
