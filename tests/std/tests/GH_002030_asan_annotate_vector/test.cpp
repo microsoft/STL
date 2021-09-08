@@ -104,6 +104,7 @@ bool verify_vector(vector<T, Alloc>& vec) {
     return __sanitizer_verify_contiguous_container(aligned_start, mid, vec.data() + vec.capacity()) != 0;
 }
 
+// Note: This class does not satisfy all the allocator requirements but is sufficient for this test.
 template <class T, class Pocma, class Stateless>
 struct custom_test_allocator {
     using value_type                             = T;

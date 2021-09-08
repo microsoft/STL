@@ -129,7 +129,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #endif // _ITERATOR_DEBUG_LEVEL
 
-#ifdef __cplusplus
 #ifndef _ALLOW_MSC_VER_MISMATCH
 #pragma detect_mismatch("_MSC_VER", "1900")
 #endif // _ALLOW_MSC_VER_MISMATCH
@@ -149,7 +148,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma detect_mismatch("RuntimeLibrary", "MDd_DynamicDebug")
 #endif // defined(_DLL) etc.
 #endif // _ALLOW_RUNTIME_LIBRARY_MISMATCH
-#endif // __cplusplus
 
 #ifndef _CONTAINER_DEBUG_LEVEL
 #if _ITERATOR_DEBUG_LEVEL == 0
@@ -342,7 +340,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #error _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 requires 64-bit.
 #endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 && !defined(_WIN64)
 
-#ifdef __cplusplus
 _STD_BEGIN
 enum _Uninitialized { // tag for suppressing initialization
     _Noinit
@@ -516,7 +513,6 @@ private:
 #define _THROW(x) x._Raise()
 #endif // _HAS_EXCEPTIONS
 _STD_END
-#endif // __cplusplus
 
 #ifndef _RELIABILITY_CONTRACT
 #define _RELIABILITY_CONTRACT
