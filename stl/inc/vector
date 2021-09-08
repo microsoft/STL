@@ -986,7 +986,7 @@ public:
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) { // reallocate
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_fill_n(_My_data._Myfirst, _Newsize, _Val, _Al);
+            _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
             return;
         }
 
@@ -1047,7 +1047,7 @@ private:
         const auto _Oldcapacity = static_cast<size_type>(_Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_copy(_First, _Last, _My_data._Myfirst, _Al);
+            _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
             return;
         }
 
@@ -1677,11 +1677,10 @@ private:
         pointer& _Mylast  = _My_data._Mylast;
 
         _My_data._Orphan_all();
-        _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_move(_First, _Last, _My_data._Myfirst, _Al);
+            _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
             return;
         }
 

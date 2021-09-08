@@ -33,7 +33,6 @@ _CONSTEXPR20 void assert_is_permutation(const Container& cont, initializer_list<
     assert(is_permutation(cont.begin(), cont.end(), il.begin(), il.end()));
 }
 
-
 template <class T, class POCCA, class POCMA, class POCS, class EQUAL>
 class MyAlloc {
 private:
