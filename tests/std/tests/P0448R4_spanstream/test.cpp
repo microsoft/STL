@@ -15,31 +15,19 @@
 using namespace std;
 
 template <class CharT>
-constexpr auto get_input_array() {
-    if constexpr (is_same_v<CharT, char>) {
-        return "1 2 3 4 5";
-    } else {
-        return L"1 2 3 4 5";
-    }
-}
+inline constexpr auto input_ptr = "1 2 3 4 5";
+template <>
+inline constexpr auto input_ptr<wchar_t> = L"1 2 3 4 5";
 
 template <class CharT>
-constexpr auto get_input_view() {
-    if constexpr (is_same_v<CharT, char>) {
-        return "1 2 3 4 5"sv;
-    } else {
-        return L"1 2 3 4 5"sv;
-    }
-}
+inline constexpr auto input_view = "1 2 3 4 5"sv;
+template <>
+inline constexpr auto input_view<wchar_t> = L"1 2 3 4 5"sv;
 
 template <class CharT>
-constexpr auto get_input_std_array() {
-    if constexpr (is_same_v<CharT, char>) {
-        return array{'1', ' ', '2', ' ', '3', ' ', '4', ' ', '5'};
-    } else {
-        return array{L'1', L' ', L'2', L' ', L'3', L' ', L'4', L' ', L'5'};
-    }
-}
+inline constexpr array input_std_array{'1', ' ', '2', ' ', '3', ' ', '4', ' ', '5'};
+template <>
+inline constexpr array input_std_array<wchar_t>{L'1', L' ', L'2', L' ', L'3', L' ', L'4', L' ', L'5'};
 
 template <class Spanbuf>
 class basic_test_buf : public Spanbuf {
@@ -628,8 +616,8 @@ void test_ispanstream() {
         assert(static_cast<test_buf*>(span_mode_constructed.rdbuf())->epptr() == end(buffer));
 
 #ifdef __cpp_lib_concepts
-        auto input_range = get_input_view<CharT>();
-        basic_ispanstream<CharT> range_constructed{get_input_view<CharT>()};
+        auto input_range = input_view<CharT>;
+        basic_ispanstream<CharT> range_constructed{input_view<CharT>};
         assert(range_constructed.span().data() == input_range.data());
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->eback() == input_range.data());
         assert(static_cast<test_buf*>(range_constructed.rdbuf())->gptr() == input_range.data());
@@ -656,8 +644,8 @@ void test_ispanstream() {
         assert(is.span().size() == size(other_buffer));
 
 #ifdef __cpp_lib_concepts
-        auto input_range = get_input_view<CharT>();
-        is.span(get_input_view<CharT>());
+        auto input_range = input_view<CharT>;
+        is.span(input_view<CharT>);
         assert(is.span().data() == input_range.data());
         assert(is.span().size() == input_range.size());
 
@@ -730,7 +718,7 @@ void test_ispanstream() {
     // rdbuf already tested above
 
     { // read from stream
-        basic_ispanstream<CharT> is{span<const CharT>{get_input_array<CharT>(), 9}};
+        basic_ispanstream<CharT> is{span<const CharT>{input_ptr<CharT>, 9}};
         int read = 0;
         for (int expected = 1; expected <= 5; ++expected) {
             assert(is.good());
@@ -980,7 +968,7 @@ void test_spanstream() {
     // rdbuf already tested above
 
     { // read from stream
-        auto arr = get_input_std_array<CharT>();
+        auto arr = input_std_array<CharT>;
         basic_spanstream<CharT> s{span<CharT>{arr.data(), 9}};
         int read = 0;
         for (int expected = 1; expected <= 5; ++expected) {
