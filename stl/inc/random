@@ -3011,7 +3011,7 @@ private:
                 _LogSx = _STD log(_Sx) + static_cast<_Ty>(_ExpMax) * (_Ln2 * 2);
             }
 
-            const auto _Fx = _Ty{_STD sqrt(_Ty{-2} * _LogSx / _Sx)};
+            const _Ty _Fx{_STD sqrt(_Ty{-2} * _LogSx / _Sx)};
             if (_Keep) { // save second value for next call
                 _Xx2   = _Fx * _Vx2;
                 _Valid = true;
