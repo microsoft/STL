@@ -1153,16 +1153,18 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
 _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
+#if _HAS_POPCNT_INTRINSICS || _HAS_NEON_INTRINSICS
 #if _HAS_CXX20
     if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
     {
 #if _HAS_POPCNT_INTRINSICS
         return _Checked_x86_x64_popcount(_Val);
-#elif _HAS_NEON_INTRINSICS // ^^^  X86_x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
+#elif _HAS_NEON_INTRINSICS // ^^^  x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
         return _Arm64_popcount(_Val);
 #endif // ^^^ ARM64 intrinsics available ^^^
     }
+#endif // ^^^ any intrinsics available ^^^
     return _Popcount_fallback(_Val);
 }
 
