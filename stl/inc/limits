@@ -1160,7 +1160,7 @@ _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
     {
 #if _HAS_POPCNT_INTRINSICS
         return _Checked_x86_x64_popcount(_Val);
-#elif _HAS_NEON_INTRINSICS // ^^^  x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
+#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
         return _Arm64_popcount(_Val);
 #endif // ^^^ ARM64 intrinsics available ^^^
     }
