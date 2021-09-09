@@ -2025,23 +2025,22 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::basic_format_arg&lt;*&gt;">
-    <DisplayString>Active state: {_Active_state}</DisplayString>
-    <Expand>
-      <Item Name="No state">_No_state</Item>
-      <Item Name="Int">_Int_state</Item>
-      <Item Name="UInt state">_UInt_state</Item>
-      <Item Name="Long long state">_Long_long_state</Item>
-      <Item Name="ULong_long_state">_ULong_long_state</Item>
-      <Item Name="Bool state">_Bool_state</Item>
-      <Item Name="Char state">_Char_state</Item>
-      <Item Name="Float state">_Float_state</Item>
-      <Item Name="Double state">_Double_state</Item>
-      <Item Name="Long double state">_Long_double_state</Item>
-      <Item Name="Pointer state">_Pointer_state</Item>
-      <Item Name="CString state">_CString_state</Item>
-      <Item Name="String state">_String_state</Item>
-      <Item Name="Custom state">_Custom_state</Item>
-    </Expand>
+    <Intrinsic Name="index" Expression="(int)_Active_state"/>
+    <DisplayString Condition="_Active_state == 0">No state: {_No_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 1">Int state: {_Int_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 2">UInt state: {_UInt_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 3">Long long state: {_Long_long_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 4">ULong long state: {_ULong_long_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 5">Bool state: {_Bool_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 6">Char state: {_Char_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 7">Float state: {_Float_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 8">Double state: {_Double_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 9">Long double state: {_Long_double_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 10">Pointer state: {_Pointer_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 11">CString state: {_CString_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 12">String state: {_String_state}</DisplayString>
+    <DisplayString Condition="_Active_state == 13">Custom state: {_Custom_state}</DisplayString>
+    <DisplayString Condition="_Active_state >= 14">Active state: {_Active_state}</DisplayString>
   </Type>
 
   <Type Name="std::basic_format_context&lt;*&gt;">
