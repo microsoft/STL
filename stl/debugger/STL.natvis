@@ -1666,7 +1666,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::mutex">
-      <AlternativeType Name="std::recursive_mutex&lt;*&gt;"/>
+      <AlternativeType Name="std::recursive_mutex"/>
       <DisplayString Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) == 0">unlocked</DisplayString>
       <DisplayString Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 44) != 0">locked</DisplayString>
       <DisplayString Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;_Mtx_storage) + 76) == 0">unlocked</DisplayString>
@@ -1998,6 +1998,62 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString Condition="_Value == 1">greater</DisplayString>
     <DisplayString Condition="_Value == -128">unordered</DisplayString>
     <Expand/>
+  </Type>
+
+  <Type Name="std::formatter&lt;*,*&gt;">
+    <DisplayString>{_Specs._Dynamic_width_index}, {_Specs._Dynamic_precision_index}</DisplayString>
+    <Expand>
+      <Item Name="Width index">_Specs._Dynamic_width_index</Item>
+      <Item Name="Precision index">_Specs._Dynamic_precision_index</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::basic_format_parse_context&lt;*&gt;">
+    <DisplayString>{_Format_string}</DisplayString>
+    <Expand>
+      <Item Name="Arguments">_Num_args</Item>
+      <Item Name="Next arg id">_Next_arg_id</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::basic_format_args&lt;*&gt;">
+    <DisplayString>Num args:{_Num_args}</DisplayString>
+    <Expand>
+      <Item Name="Index">_Index_array->_Index</Item>
+      <Item Name="Type">_Index_array->_Type_</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::basic_format_arg&lt;*&gt;">
+    <DisplayString>Active state: {_Active_state}</DisplayString>
+    <Expand>
+      <Item Name="No state">_No_state</Item>
+      <Item Name="Int">_Int_state</Item>
+      <Item Name="UInt state">_UInt_state</Item>
+      <Item Name="Long long state">_Long_long_state</Item>
+      <Item Name="ULong_long_state">_ULong_long_state</Item>
+      <Item Name="Bool state">_Bool_state</Item>
+      <Item Name="Char state">_Char_state</Item>
+      <Item Name="Float state">_Float_state</Item>
+      <Item Name="Double state">_Double_state</Item>
+      <Item Name="Long double state">_Long_double_state</Item>
+      <Item Name="Pointer state">_Pointer_state</Item>
+      <Item Name="CString state">_CString_state</Item>
+      <Item Name="String state">_String_state</Item>
+      <Item Name="Custom state">_Custom_state</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::basic_format_context&lt;*&gt;">
+    <DisplayString>{_Args}</DisplayString>
+    <Expand>
+      <Item Name="Iterator">_OutputIt</Item>
+      <Item Name="Loc">_Loc</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::format_error">
+    <DisplayString>{what()}</DisplayString>
   </Type>
 
 </AutoVisualizer>
