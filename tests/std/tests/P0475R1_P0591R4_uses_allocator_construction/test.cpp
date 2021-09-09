@@ -185,8 +185,9 @@ struct MoveOnlyType {
 };
 
 void test_LWG3527() { // COMPILE-ONLY
-    std::allocator<MoveOnlyType> alloc;
-    auto p                  = pair<MoveOnlyType&&, MoveOnlyType&&>{MoveOnlyType{}, MoveOnlyType{}};
+    allocator<MoveOnlyType> alloc;
+    MoveOnlyType obj;
+    pair<MoveOnlyType&&, MoveOnlyType&&> p{move(obj), move(obj)};
     [[maybe_unused]] auto t = uses_allocator_construction_args<pair<MoveOnlyType&&, MoveOnlyType&&>>(alloc, move(p));
 }
 
