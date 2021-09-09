@@ -2025,7 +2025,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::basic_format_arg&lt;*&gt;">
-    <Intrinsic Name="index" Expression="(int)_Active_state"/>
     <DisplayString Condition="_Active_state == 0">No state: {_No_state}</DisplayString>
     <DisplayString Condition="_Active_state == 1">Int state: {_Int_state}</DisplayString>
     <DisplayString Condition="_Active_state == 2">UInt state: {_UInt_state}</DisplayString>
@@ -2051,7 +2050,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::format_error">
+  <Type Name="std::exception">
     <DisplayString>{what()}</DisplayString>
   </Type>
 
