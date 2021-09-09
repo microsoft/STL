@@ -444,9 +444,11 @@ extern const bool _Asan_vector_should_annotate;
     "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
 
-#if defined(__SANITIZE_ADDRESS__) || defined(_ANNOTATE_VECTOR)
+#ifdef __SANITIZE_ADDRESS__
 #pragma comment(lib, "stl_asan")
+#endif // __SANITIZE_ADDRESS__
 
+#if defined(__SANITIZE_ADDRESS__) || defined(_ANNOTATE_VECTOR)
 template <class _Vec, class = void>
 _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment =
     disjunction_v<bool_constant<alignof(typename _Vec::value_type) >= 8>,
