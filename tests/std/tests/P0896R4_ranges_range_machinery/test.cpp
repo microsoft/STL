@@ -1886,6 +1886,48 @@ namespace unwrapped_begin_end {
     }
 } // namespace unwrapped_begin_end
 
+namespace closure {
+    // Verify that range adaptor closure capture with the proper value category
+
+    enum class path { none, lvalue, const_lvalue, rvalue, const_rvalue };
+
+    template <path allowed>
+    struct arg {
+        constexpr arg(arg&) {
+            static_assert(allowed == path::lvalue);
+        }
+        constexpr arg(const arg&) {
+            static_assert(allowed == path::const_lvalue);
+        }
+        constexpr arg(arg&&) {
+            static_assert(allowed == path::rvalue);
+        }
+        constexpr arg(const arg&&) {
+            static_assert(allowed == path::const_rvalue);
+        }
+
+    private:
+        friend void test();
+        arg() = default;
+    };
+
+    void test() {
+        using std::as_const, std::move, std::views::filter;
+
+        arg<path::lvalue> l;
+        (void) filter(l);
+
+        arg<path::const_lvalue> cl;
+        (void) filter(as_const(cl));
+
+        arg<path::rvalue> r;
+        (void) filter(move(r));
+
+        arg<path::const_rvalue> cr;
+        (void) filter(move(as_const(cr)));
+    }
+} // namespace closure
+
 int main() {
     // Validate conditional constexpr
     STATIC_ASSERT(test_array_ish<std::initializer_list<int>>());
@@ -1903,4 +1945,6 @@ int main() {
 
     STATIC_ASSERT(unwrapped_begin_end::test());
     unwrapped_begin_end::test();
+
+    closure::test();
 }
