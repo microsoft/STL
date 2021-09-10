@@ -2681,8 +2681,21 @@ namespace ranges {
 
     struct view_base {};
 
+    template <template <class...> class _Template, class... _Args>
+    void _Derived_from_specialization_impl(const _Template<_Args...>&);
+
+    template <class _Ty, template <class...> class _Template>
+    concept _Derived_from_specialization_of = requires(const _Ty& _Obj) {
+        _Derived_from_specialization_impl<_Template>(_Obj);
+    };
+
+    template <class _Derived>
+        requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
+    class view_interface;
+
     template <class _Ty>
-    inline constexpr bool enable_view = derived_from<_Ty, view_base>;
+    inline constexpr bool enable_view =
+        derived_from<_Ty, view_base> || _Derived_from_specialization_of<_Ty, view_interface>;
 
 #ifdef __cpp_lib_ranges // TRANSITION, GH-1814
     template <class _Ty>
@@ -3016,7 +3029,7 @@ namespace ranges {
     // clang-format off
     template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
-    class view_interface : public view_base {
+    class view_interface {
     private:
         _NODISCARD constexpr _Derived& _Cast() noexcept {
             static_assert(derived_from<_Derived, view_interface>,

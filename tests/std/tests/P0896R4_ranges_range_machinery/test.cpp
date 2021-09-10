@@ -1578,6 +1578,7 @@ using immutable_badsized_range    = badsized_range<immutable_sized_range>;
 template <class T>
 constexpr bool ranges::disable_sized_range<badsized_range<T>> = true;
 
+// "strange" in that const-ness affects the iterator type
 struct strange_view {
     strange_view()               = default;
     strange_view(strange_view&&) = default;
@@ -1591,7 +1592,15 @@ struct strange_view {
 };
 
 struct strange_view2 : strange_view, ranges::view_base {};
-struct strange_view3 : strange_view2 {};
+struct strange_view3 : strange_view2 {}; // not truly a view since enable_view<strange_view3> is false (see below)
+struct strange_view4 : strange_view, ranges::view_interface<strange_view4> {};
+struct strange_view5 : strange_view4, ranges::view_interface<strange_view5> {
+    // not truly a view since enable_view<strange_view5> is false due to multiple inheritance from view_interface
+};
+
+// Verify that specializations of view_interface do not inherit from view_base
+STATIC_ASSERT(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<strange_view4>>);
+STATIC_ASSERT(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<strange_view5>>);
 
 template <>
 inline constexpr bool ranges::enable_view<strange_view> = true;
@@ -1620,6 +1629,7 @@ namespace exhaustive_size_and_view_test {
 
     using I  = int*;
     using CI = int const*;
+    using D  = std::ptrdiff_t;
     using S  = std::size_t;
     using UC = unsigned char;
 
@@ -1682,6 +1692,23 @@ namespace exhaustive_size_and_view_test {
     STATIC_ASSERT(test<strange_view3&, false, I, S>());
     STATIC_ASSERT(test<strange_view3 const, false, CI, S>());
     STATIC_ASSERT(test<strange_view3 const&, false, CI, S>());
+
+    STATIC_ASSERT(test<strange_view4, true, I, D>());
+    STATIC_ASSERT(test<strange_view4&, false, I, D>());
+    STATIC_ASSERT(test<strange_view4 const, false, CI, D>());
+    STATIC_ASSERT(test<strange_view4 const&, false, CI, D>());
+
+    template <class = void>
+    constexpr bool strict_test_case() {
+        if constexpr (!is_permissive) {
+            STATIC_ASSERT(test<strange_view5, false, I, S>());
+        }
+        return true;
+    }
+    STATIC_ASSERT(strict_test_case());
+    STATIC_ASSERT(test<strange_view5&, false, I, S>());
+    STATIC_ASSERT(test<strange_view5 const, false, CI, S>());
+    STATIC_ASSERT(test<strange_view5 const&, false, CI, S>());
 } // namespace exhaustive_size_and_view_test
 
 // Validate output_range
