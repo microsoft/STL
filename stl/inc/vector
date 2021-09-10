@@ -893,7 +893,6 @@ public:
                 _Alty_traits::construct(_Al, _Unfancy(_Oldlast), _STD move(_Oldlast[-1]));
                 _ASAN_VECTOR_RELEASE;
                 ++_My_data._Mylast;
-
                 _Move_backward_unchecked(_Whereptr, _Oldlast - 1, _Oldlast);
                 *_Whereptr = _STD move(_Obj._Get_value());
             }
@@ -926,7 +925,6 @@ public:
         _STL_VERIFY(_Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _Oldfirst && _Oldlast >= _Whereptr,
             "vector insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
-
 
         const auto _Whereoff        = static_cast<size_type>(_Whereptr - _Oldfirst);
         const auto _Unused_capacity = static_cast<size_type>(_My_data._Myend - _Oldlast);
@@ -1032,7 +1030,6 @@ private:
         const pointer _Oldfirst     = _My_data._Myfirst;
         const pointer _Oldlast      = _Mylast;
         const auto _Unused_capacity = static_cast<size_type>(_My_data._Myend - _Oldlast);
-
 
         if (_Count == 0) { // nothing to do, avoid invalidating iterators
         } else if (_Count > _Unused_capacity) { // reallocate
@@ -1883,7 +1880,6 @@ private:
             } else {
                 static_assert(_Always_false<_Ty>, "Should be unreachable");
             }
-
             _ASAN_VECTOR_CREATE(*this);
             _Guard._Target = nullptr;
         }
