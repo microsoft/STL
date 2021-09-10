@@ -29,9 +29,9 @@ using namespace std;
 
 template <bool ExpectedConstructible, bool ExpectedAssignable, class IterCat>
 void assert_iter_cat() {
-    STATIC_ASSERT(IterCat::_Trivially_constructible == ExpectedConstructible);
-    STATIC_ASSERT(IterCat::_Trivially_assignable == ExpectedAssignable);
-    STATIC_ASSERT(IterCat::_Trivially_constructible_and_assignable == (ExpectedConstructible && ExpectedAssignable));
+    STATIC_ASSERT(IterCat::_Bitcopy_constructible == ExpectedConstructible);
+    STATIC_ASSERT(IterCat::_Bitcopy_assignable == ExpectedAssignable);
+    STATIC_ASSERT(IterCat::_Bitcopy_constructible_and_assignable == (ExpectedConstructible && ExpectedAssignable));
 }
 
 template <bool ExpectedCopyConstructible, bool ExpectedMoveConstructible, bool ExpectedCopyAssignable,
