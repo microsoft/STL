@@ -1683,11 +1683,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <AlternativeType Name="std::recursive_timed_mutex"/>
     <DisplayString>{_My_mutex}</DisplayString>
     <Expand>
-      <Item Name="[locking_thread_id]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44) != 0">*(long *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 40)</Item>
-      <Item Name="[locking_thread_id]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76) != 0">*(long *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 72)</Item>
-      <Item Name="[ownership_levels]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44) != 0">*(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44)</Item>
-      <Item Name="[ownership_levels]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76) != 0">*(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76)</Item>
-      <Item Name="[My owner]" Optional="true">_My_owner</Item>
+      <Item Name="[internal_locking_thread_id]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44) != 0">*(long *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 40)</Item>
+      <Item Name="[internal_locking_thread_id]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76) != 0">*(long *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 72)</Item>
+      <Item Name="[internal_ownership_levels]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44) != 0">*(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44)</Item>
+      <Item Name="[internal_ownership_levels]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76) != 0">*(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76)</Item>
+      <Item Name="[locking_thread_id]" Optional="true">_My_owner</Item>
+      <Item Name="[ownership_levels]" Optional="true">_My_locked</Item>
     </Expand>
   </Type>
 
