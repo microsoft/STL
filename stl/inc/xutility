@@ -3946,8 +3946,6 @@ struct _Trivial_cat {
 
     static constexpr bool _Bitcopy_assignable =
         _Same_size_and_compatible && is_trivially_assignable_v<_DestRef, _SourceRef>;
-
-    static constexpr bool _Bitcopy_constructible_and_assignable = _Bitcopy_constructible && _Bitcopy_assignable;
 };
 
 template <class _Source, class _Dest, class _SourceRef, class _DestRef>
@@ -3957,14 +3955,11 @@ struct _Trivial_cat<_Source*, _Dest*, _SourceRef, _DestRef> {
 
     static constexpr bool _Bitcopy_assignable =
         _Is_pointer_address_convertible<_Source, _Dest> && is_trivially_assignable_v<_DestRef, _SourceRef>;
-
-    static constexpr bool _Bitcopy_constructible_and_assignable = _Bitcopy_constructible && _Bitcopy_assignable;
 };
 
 struct _False_trivial_cat {
     static constexpr bool _Bitcopy_constructible                = false;
     static constexpr bool _Bitcopy_assignable                   = false;
-    static constexpr bool _Bitcopy_constructible_and_assignable = false;
 };
 
 template <class _SourceIt, class _DestIt,
