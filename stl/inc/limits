@@ -15,6 +15,18 @@
 #include <isa_availability.h>
 #include <xstddef>
 
+// TRANSITION, GH-2129, move down to _Arm64_popcount
+#if defined(_M_ARM64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+    && !defined(__INTEL_COMPILER) && !defined(__clang__) // TRANSITION, LLVM-51488
+#define _HAS_NEON_INTRINSICS 1
+#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#define _HAS_NEON_INTRINSICS 0
+#endif // ^^^ intrinsics unavailable ^^^
+
+#if _HAS_NEON_INTRINSICS
+#include <arm64_neon.h> // TRANSITION, GH-2129
+#endif
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -1115,6 +1127,13 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
 }
 #endif // _HAS_POPCNT_INTRINSICS
 
+#if _HAS_NEON_INTRINSICS
+_NODISCARD inline int _Arm64_popcount(const unsigned long long _Val) noexcept {
+    const __n64 _Temp = neon_cnt(__uint64ToN64_v(_Val));
+    return neon_addv8(_Temp).n8_i8[0];
+}
+#endif // _HAS_NEON_INTRINSICS
+
 template <class _Ty>
 constexpr bool _Is_standard_unsigned_integer =
     _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
@@ -1134,18 +1153,23 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
 _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
-#if _HAS_POPCNT_INTRINSICS
+#if _HAS_POPCNT_INTRINSICS || _HAS_NEON_INTRINSICS
 #if _HAS_CXX20
     if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
     {
+#if _HAS_POPCNT_INTRINSICS
         return _Checked_x86_x64_popcount(_Val);
+#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
+        return _Arm64_popcount(_Val);
+#endif // ^^^ ARM64 intrinsics available ^^^
     }
-#endif // _HAS_POPCNT_INTRINSICS
+#endif // ^^^ any intrinsics available ^^^
     return _Popcount_fallback(_Val);
 }
 
 #undef _HAS_POPCNT_INTRINSICS
+#undef _HAS_NEON_INTRINSICS
 
 _STD_END
 #pragma pop_macro("new")
