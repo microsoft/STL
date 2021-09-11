@@ -2140,10 +2140,10 @@ template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_spe
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
-    //     _STD forward_as_tuple(_STD move(_Pair).first), _STD forward_as_tuple(_STD move(_Pair).second));
+    //     _STD forward_as_tuple(_STD get<0>(_STD move(_Pair)), _STD forward_as_tuple(_STD get<1>(_STD move(_Pair)));
     return _STD make_tuple(piecewise_construct,
-        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD move(_Pair).first),
-        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD move(_Pair).second));
+        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD get<0>(_STD move(_Pair))),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD get<1>(_STD move(_Pair))));
 }
 
 template <class _Ty, class _Alloc, class... _Types>
