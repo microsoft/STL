@@ -107,6 +107,7 @@ STATIC_ASSERT(test_cpo(ranges::views::filter));
 STATIC_ASSERT(test_cpo(ranges::views::iota));
 STATIC_ASSERT(test_cpo(ranges::views::join));
 STATIC_ASSERT(test_cpo(ranges::views::keys));
+STATIC_ASSERT(test_cpo(ranges::views::lazy_split));
 STATIC_ASSERT(test_cpo(ranges::views::reverse));
 STATIC_ASSERT(test_cpo(ranges::views::single));
 STATIC_ASSERT(test_cpo(ranges::views::split));
@@ -1561,7 +1562,6 @@ struct badsized_range : Base { // size() launches the missiles.
     badsized_range(badsized_range&&) = default;
     badsized_range& operator=(badsized_range&&) = default;
 
-    // clang-format off
     [[noreturn]] int size() const {
         static_assert(always_false<Base>);
     }
@@ -1569,7 +1569,6 @@ struct badsized_range : Base { // size() launches the missiles.
     [[noreturn]] friend int size(const badsized_range&) {
         static_assert(always_false<Base>);
     }
-    // clang-format on
 };
 
 using mutable_badsized_range      = badsized_range<mutable_sized_range>;

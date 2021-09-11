@@ -6,6 +6,16 @@
 #pragma once
 #ifndef _STDATOMIC_H_
 #define _STDATOMIC_H_
+
+#if defined(RC_INVOKED) || defined(Q_MOC_RUN) || defined(__midl)
+// do nothing, see _STL_COMPILER_PREPROCESSOR in yvals_core.h
+#else // ^^^ non-compiler tools / C and C++ compilers vvv
+// provide a specific error message for C compilers, before the general error message in yvals_core.h
+#ifndef __cplusplus
+#error <stdatomic.h> is not yet supported when compiling as C, but this is planned for a future release.
+#endif // __cplusplus
+#endif // ^^^ C and C++ compilers ^^^
+
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
@@ -31,7 +41,6 @@ using _Std_atomic = _STD atomic<_Ty>;
 
 #define _Atomic(T) _Std_atomic<T>
 
-// clang-format off
 using _STD memory_order;
 using _STD memory_order_relaxed;
 using _STD memory_order_consume;
@@ -119,7 +128,6 @@ using _STD atomic_flag_clear_explicit;
 
 using _STD atomic_thread_fence;
 using _STD atomic_signal_fence;
-// clang-format on
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

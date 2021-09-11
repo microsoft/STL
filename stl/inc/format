@@ -2372,24 +2372,43 @@ _NODISCARD _OutputIt _Fmt_write(
     auto _Separators       = 0;
     string _Groups;
 
-    if ((_Specs._Alt || _Specs._Localized) && _Is_finite) {
-        for (auto _It = _Buffer_start; _It < _Result.ptr; ++_It) {
-            if (*_It == '.') {
-                _Radix_point = _It;
-            } else if (*_It == _Exponent) {
-                _Exponent_start = _It;
+    if (_Is_finite) {
+        if (_Specs._Alt || _Specs._Localized) {
+            for (auto _It = _Buffer_start; _It < _Result.ptr; ++_It) {
+                if (*_It == '.') {
+                    _Radix_point = _It;
+                } else if (*_It == _Exponent) {
+                    _Exponent_start = _It;
+                }
             }
-        }
-        _Integral_end = (_STD min) (_Radix_point, _Exponent_start);
+            _Integral_end = (_STD min) (_Radix_point, _Exponent_start);
 
-        if (_Specs._Alt) {
-            if (_Radix_point == _Result.ptr) {
+            if (_Specs._Alt && _Radix_point == _Result.ptr) {
                 // TRANSITION, decimal point may be wider
                 ++_Width;
                 _Append_decimal = true;
             }
 
-            if (_Specs._Type == 'g' || _Specs._Type == 'G') {
+            if (_Specs._Localized) {
+                _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
+                _Separators = _Count_separators(_Integral_end - _Buffer_start, _Groups);
+            }
+        }
+
+        switch (_Format) {
+        case chars_format::hex:
+        case chars_format::scientific:
+            if (_Extra_precision != 0) {
+                while (*_Exponent_start != _Exponent) { // Trailing zeroes are in front of the exponent
+                    --_Exponent_start;
+                }
+            }
+            [[fallthrough]];
+        case chars_format::fixed:
+            _Zeroes_to_append = _Extra_precision;
+            break;
+        case chars_format::general:
+            if (_Specs._Alt) {
                 auto _Digits = static_cast<int>(_Exponent_start - _Buffer_start);
 
                 if (!_Append_decimal) {
@@ -2409,16 +2428,10 @@ _NODISCARD _OutputIt _Fmt_write(
                     }
                 }
             }
+            break;
+        default:
+            _STL_UNREACHABLE;
         }
-
-        if (_Specs._Localized) {
-            _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
-            _Separators = _Count_separators(_Integral_end - _Buffer_start, _Groups);
-        }
-    }
-
-    if (_Is_finite && (_Specs._Type == 'f' || _Specs._Type == 'F')) {
-        _Zeroes_to_append = _Extra_precision;
     }
 
     _Width += _Zeroes_to_append;
@@ -2446,9 +2459,7 @@ _NODISCARD _OutputIt _Fmt_write(
             }
         }
 
-        _Out          = _RANGES _Copy_unchecked(_Buffer_start, _Exponent_start, _STD move(_Out)).out;
-        _Buffer_start = _Exponent_start;
-
+        _Out = _RANGES _Copy_unchecked(_Buffer_start, _Exponent_start, _STD move(_Out)).out;
         if (_Specs._Alt && _Append_decimal) {
             *_Out++ = '.';
         }
@@ -2457,7 +2468,7 @@ _NODISCARD _OutputIt _Fmt_write(
             *_Out++ = '0';
         }
 
-        return _RANGES _Copy_unchecked(_Buffer_start, _Result.ptr, _STD move(_Out)).out;
+        return _RANGES _Copy_unchecked(_Exponent_start, _Result.ptr, _STD move(_Out)).out;
     };
 
     if (_Write_leading_zeroes) {
@@ -2495,15 +2506,14 @@ _NODISCARD _OutputIt _Fmt_write(
         _THROW(format_error("const void* cannot be localized"));
     }
 
-    // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
-    // Add 3 to the bit width so we always round up on the division.
-    // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
-    // Add 2 for the 0x prefix.
-    auto _Width = 2 + static_cast<int>(_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4;
-
-    // Since the bit width of 0 is 0, special case it instead of complicating the math even more.
-    if (_Value == nullptr) {
-        _Width = 3;
+    // Since the bit width of 0 is 0x0, special-case it instead of complicating the math even more.
+    int _Width = 3;
+    if (_Value != nullptr) {
+        // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
+        // Add 3 to the bit width so we always round up on the division.
+        // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
+        // Add 2 for the 0x prefix.
+        _Width = static_cast<int>(2 + (_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4);
     }
 
     return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,
