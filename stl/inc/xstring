@@ -1275,7 +1275,7 @@ public:
 #if _HAS_CXX23
     // clang-format off
     template <class _Range>
-        requires (!same_as<remove_cvref_t<_Range>, basic_string_view> // per LWG issue filed on 2021-08-16
+        requires (!same_as<remove_cvref_t<_Range>, basic_string_view> // per LWG-3581
             && _RANGES contiguous_range<_Range>
             && _RANGES sized_range<_Range>
             && same_as<_RANGES range_value_t<_Range>, _Elem>

@@ -65,6 +65,7 @@ class CustomTestFormat(STLTestFormat):
             'shared_mutex',
             'source_location',
             'span',
+            'spanstream',
             'sstream',
             'stack',
             'stdexcept',
