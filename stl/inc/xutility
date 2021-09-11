@@ -3958,8 +3958,8 @@ struct _Trivial_cat<_Source*, _Dest*, _SourceRef, _DestRef> {
 };
 
 struct _False_trivial_cat {
-    static constexpr bool _Bitcopy_constructible                = false;
-    static constexpr bool _Bitcopy_assignable                   = false;
+    static constexpr bool _Bitcopy_constructible = false;
+    static constexpr bool _Bitcopy_assignable    = false;
 };
 
 template <class _SourceIt, class _DestIt,
