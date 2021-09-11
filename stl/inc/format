@@ -944,7 +944,7 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
 }
 
 template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
-void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
+constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
     auto _First = _Format_str.data();
     auto _Last  = _First + _Format_str.size();
     const _Fmt_codec<_CharT> _Codec;
@@ -2650,6 +2650,21 @@ struct _Arg_formatter {
     }
 };
 
+// set of format parsing actions that
+// only checks for validity
+template <class _CharT>
+struct _Format_checker {
+    basic_format_parse_context<_CharT> _Parse_context;
+    constexpr _Format_checker(basic_string_view<_CharT> _Fmt, const size_t _Num_args) noexcept
+        : _Parse_context(_Fmt, _Num_args) {}
+    constexpr void _On_text(const _CharT*, const _CharT*) {}
+    constexpr void _On_replacement_field(const size_t, const _CharT*) {}
+    constexpr const _CharT* _On_format_specs(const size_t, const _CharT* _First, const _CharT* _Last) {
+        _Parse_context.advance_to(_Parse_context.begin() + (_First - &*_Parse_context.begin()));
+        return _Last;
+    }
+};
+
 // The top level set of parsing "actions".
 template <class _CharT>
 struct _Format_handler {
@@ -2798,7 +2813,9 @@ struct _Basic_format_string {
     basic_string_view<_CharT> _Str;
 
     template <convertible_to<basic_string_view<_CharT>> _Ty>
-    consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {}
+    consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
+        _Parse_format_string(_Str, _Format_checker<_CharT>{_Str, sizeof...(_Args)});
+    }
 };
 
 template <class... _Args>
