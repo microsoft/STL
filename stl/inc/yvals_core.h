@@ -270,6 +270,7 @@
 
 // _HAS_CXX23 directly controls:
 // P0401R6 Providing Size Feedback In The Allocator Interface
+// P0448R4 <spanstream>
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
@@ -1381,6 +1382,7 @@
 #define __cpp_lib_out_ptr 202106L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_spanstream      202106L
 #define __cpp_lib_stdatomic_h     202011L
 #define __cpp_lib_string_contains 202011L
 #define __cpp_lib_to_underlying   202102L
