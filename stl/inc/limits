@@ -1188,7 +1188,7 @@ _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
 }
 
 template <typename _Fn>
-auto _SelectPopCountImpl(_Fn _Callback) {
+auto _Select_popcount_impl(_Fn _Callback) {
 #if _HAS_POPCNT_INTRINSICS
 #ifndef __AVX__
     const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
