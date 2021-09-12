@@ -1043,6 +1043,13 @@ struct _Popcount_fallback_t {
         // Extract highest byte
         return static_cast<int>(_Val >> (_Digits - 8));
     }
+
+#if defined(_M_IX86) || defined(_M_ARM)
+    template <>
+    _NODISCARD constexpr int operator()<unsigned long long>(unsigned long long _Val) noexcept {
+        return operator()(static_cast<unsigned long>(_Val)) + operator()(static_cast<unsigned long>(_Val >> 32));
+    }
+#endif
 };
 
 #if defined(_M_IX86) || defined(_M_X64)
@@ -1104,6 +1111,7 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #define _HAS_POPCNT_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
+#if _HAS_POPCNT_INTRINSICS
 struct _Unhecked_x86_x64_popcount_t {
     template <class _Ty>
     _NODISCARD int operator()(const _Ty _Val) noexcept {
@@ -1122,7 +1130,6 @@ struct _Unhecked_x86_x64_popcount_t {
     }
 };
 
-#if _HAS_POPCNT_INTRINSICS
 struct _Checked_x86_x64_popcount_t {
     template <class _Ty>
     _NODISCARD int operator()(const _Ty _Val) noexcept {
