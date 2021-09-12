@@ -1139,12 +1139,10 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
 #endif // _HAS_POPCNT_INTRINSICS
 
 #if _HAS_NEON_INTRINSICS
-struct _Arm64_popcount_t {
-    _NODISCARD inline int operator()(const unsigned long long _Val) noexcept {
-        const __n64 _Temp = neon_cnt(__uint64ToN64_v(_Val));
-        return neon_addv8(_Temp).n8_i8[0];
-    }
-};
+_NODISCARD inline int _Arm64_popcount(const unsigned long long _Val) noexcept {
+    const __n64 _Temp = neon_cnt(__uint64ToN64_v(_Val));
+    return neon_addv8(_Temp).n8_i8[0];
+}
 #endif // _HAS_NEON_INTRINSICS
 
 template <class _Ty>
