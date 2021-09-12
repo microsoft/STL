@@ -509,10 +509,8 @@ struct iterator_instantiator {
             assert(ranges::iter_move(i0) == add8(mutable_ints[0])); // NB: moving from int leaves it unchanged
             STATIC_ASSERT(NOEXCEPT_IDL0(ranges::iter_move(i0)));
 
-            if constexpr (forward_iterator<Iter>) {
-                // LWG-3520 forbids iter_swap for transform_view::iterator
-                STATIC_ASSERT(!CanIterSwap<decltype(i0)>);
-            }
+            // LWG-3520 forbids iter_swap for transform_view::iterator
+            STATIC_ASSERT(!CanIterSwap<decltype(i0)>);
         }
 
         { // Validate increments
