@@ -1046,7 +1046,8 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
 #if defined(_M_IX86) || defined(_M_ARM)
 template <>
 _NODISCARD constexpr int _Popcount_fallback<unsigned long long>(unsigned long long _Val) noexcept {
-    return operator()(static_cast<unsigned long>(_Val)) + operator()(static_cast<unsigned long>(_Val >> 32));
+    return _Popcount_fallback(static_cast<unsigned long>(_Val))
+         + _Popcount_fallback(static_cast<unsigned long>(_Val >> 32));
 }
 #endif
 
