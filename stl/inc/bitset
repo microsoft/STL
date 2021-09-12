@@ -9,8 +9,8 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <iosfwd>
-#include <xstring>
 #include <limits>
+#include <xstring>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -345,7 +345,6 @@ public:
 
             return _Val;
         });
-
     }
 
     _NODISCARD constexpr size_t size() const noexcept {
