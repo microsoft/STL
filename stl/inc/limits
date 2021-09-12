@@ -1187,7 +1187,7 @@ _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
     return _Popcount_fallback_t{}(_Val);
 }
 
-template<typename _Fn>
+template <typename _Fn>
 auto _SelectPopCountImpl(_Fn _Callback) {
 #if _HAS_POPCNT_INTRINSICS
 #ifndef __AVX__
@@ -1197,7 +1197,7 @@ auto _SelectPopCountImpl(_Fn _Callback) {
     }
 #endif // !defined(__AVX__)
     return _Callback(_Unhecked_x86_x64_popcount_t{});
-#elif _HAS_NEON_INTRINSICS  // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
+#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
     return _Callback(_Arm64_popcount_t{});
 #else // ^^^ ARM64 intrinsics available ^^^
     return _Callback(_Popcount_fallback_t{});
