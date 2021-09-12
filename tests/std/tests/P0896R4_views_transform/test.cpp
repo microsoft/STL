@@ -777,10 +777,10 @@ int main() {
     }
 
     { // Validate that iter_swap works when result of transformation is a lvalue reference
-        char out[] = "hello";
-        auto v     = ranges::transform_view{out, [](char& i) -> char& { return i; }};
-        auto i1    = v.begin();
-        auto i2    = v.begin() + 1;
+        char base[] = "hello";
+        auto v      = ranges::transform_view{base, [](char& c) -> char& { return c; }};
+        auto i1     = v.begin();
+        auto i2     = v.begin() + 1;
 
         assert(*i1 == 'h');
         assert(*i2 == 'e');
