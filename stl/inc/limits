@@ -1029,19 +1029,21 @@ _NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
 
 // Implementation of popcount without using specialized CPU instructions.
 // Used at compile time and when said instructions are not supported.
-template <class _Ty>
-_NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
-    constexpr int _Digits = numeric_limits<_Ty>::digits;
-    // we static_cast these bit patterns in order to truncate them to the correct size
-    _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
-    _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
-                            + ((_Val >> 2) & static_cast<_Ty>(0x3333'3333'3333'3333ull)));
-    _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F'0F0F'0F0F'0F0Full));
-    // Multiply by one in each byte, so that it will have the sum of all source bytes in the highest byte
-    _Val = static_cast<_Ty>(_Val * static_cast<_Ty>(0x0101'0101'0101'0101ull));
-    // Extract highest byte
-    return static_cast<int>(_Val >> (_Digits - 8));
-}
+struct _Popcount_fallback_t {
+    template <class _Ty>
+    _NODISCARD constexpr int operator()(_Ty _Val) noexcept {
+        constexpr int _Digits = numeric_limits<_Ty>::digits;
+        // we static_cast these bit patterns in order to truncate them to the correct size
+        _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
+        _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
+                                + ((_Val >> 2) & static_cast<_Ty>(0x3333'3333'3333'3333ull)));
+        _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F'0F0F'0F0F'0F0Full));
+        // Multiply by one in each byte, so that it will have the sum of all source bytes in the highest byte
+        _Val = static_cast<_Ty>(_Val * static_cast<_Ty>(0x0101'0101'0101'0101ull));
+        // Extract highest byte
+        return static_cast<int>(_Val >> (_Digits - 8));
+    }
+};
 
 #if defined(_M_IX86) || defined(_M_X64)
 extern "C" {
@@ -1102,36 +1104,46 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #define _HAS_POPCNT_INTRINSICS 0
 #endif // ^^^ intrinsics unavailable ^^^
 
-#if _HAS_POPCNT_INTRINSICS
-template <class _Ty>
-_NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
-    constexpr int _Digits = numeric_limits<_Ty>::digits;
-#ifndef __AVX__
-    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
-    if (!_Definitely_have_popcnt) {
-        return _Popcount_fallback(_Val);
-    }
-#endif // !defined(__AVX__)
-
-    if constexpr (_Digits <= 16) {
-        return static_cast<int>(__popcnt16(_Val));
-    } else if constexpr (_Digits == 32) {
-        return static_cast<int>(__popcnt(_Val));
-    } else {
+struct _Unhecked_x86_x64_popcount_t {
+    template <class _Ty>
+    _NODISCARD int operator()(const _Ty _Val) noexcept {
+        constexpr int _Digits = numeric_limits<_Ty>::digits;
+        if constexpr (_Digits <= 16) {
+            return static_cast<int>(__popcnt16(_Val));
+        } else if constexpr (_Digits == 32) {
+            return static_cast<int>(__popcnt(_Val));
+        } else {
 #ifdef _M_IX86
-        return static_cast<int>(__popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val)));
+            return static_cast<int>(__popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val)));
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
-        return static_cast<int>(__popcnt64(_Val));
+            return static_cast<int>(__popcnt64(_Val));
 #endif // _M_IX86
+        }
     }
-}
+};
+
+#if _HAS_POPCNT_INTRINSICS
+struct _Checked_x86_x64_popcount_t {
+    template <class _Ty>
+    _NODISCARD int operator()(const _Ty _Val) noexcept {
+#ifndef __AVX__
+        const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+        if (!_Definitely_have_popcnt) {
+            return _Popcount_fallback_t{}(_Val);
+        }
+#endif // !defined(__AVX__)
+        return _Unhecked_x86_x64_popcount_t{}(_Val);
+    }
+};
 #endif // _HAS_POPCNT_INTRINSICS
 
 #if _HAS_NEON_INTRINSICS
-_NODISCARD inline int _Arm64_popcount(const unsigned long long _Val) noexcept {
-    const __n64 _Temp = neon_cnt(__uint64ToN64_v(_Val));
-    return neon_addv8(_Temp).n8_i8[0];
-}
+struct _Arm64_popcount_t {
+    _NODISCARD inline int operator()(const unsigned long long _Val) noexcept {
+        const __n64 _Temp = neon_cnt(__uint64ToN64_v(_Val));
+        return neon_addv8(_Temp).n8_i8[0];
+    }
+};
 #endif // _HAS_NEON_INTRINSICS
 
 template <class _Ty>
@@ -1159,13 +1171,30 @@ _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
 #endif // _HAS_CXX20
     {
 #if _HAS_POPCNT_INTRINSICS
-        return _Checked_x86_x64_popcount(_Val);
+        return _Checked_x86_x64_popcount_t{}(_Val);
 #elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
-        return _Arm64_popcount(_Val);
+        return _Arm64_popcount_t{}(_Val);
 #endif // ^^^ ARM64 intrinsics available ^^^
     }
 #endif // ^^^ any intrinsics available ^^^
-    return _Popcount_fallback(_Val);
+    return _Popcount_fallback_t{}(_Val);
+}
+
+template<typename _Fn>
+auto _SelectPopCountImpl(_Fn _Callback) {
+#if _HAS_POPCNT_INTRINSICS
+#ifndef __AVX__
+    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+    if (!_Definitely_have_popcnt) {
+        return _Callback(_Popcount_fallback_t{});
+    }
+#endif // !defined(__AVX__)
+    return _Callback(_Unhecked_x86_x64_popcount_t{});
+#elif _HAS_NEON_INTRINSICS  // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
+    return _Callback(_Arm64_popcount_t{});
+#else // ^^^ ARM64 intrinsics available ^^^
+    return _Callback(_Popcount_fallback_t{});
+#endif
 }
 
 #undef _HAS_POPCNT_INTRINSICS
