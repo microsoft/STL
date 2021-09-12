@@ -509,7 +509,6 @@ struct iterator_instantiator {
             assert(ranges::iter_move(i0) == add8(mutable_ints[0])); // NB: moving from int leaves it unchanged
             STATIC_ASSERT(NOEXCEPT_IDL0(ranges::iter_move(i0)));
 
-            // LWG-3520 forbids iter_swap for transform_view::iterator
             STATIC_ASSERT(!CanIterSwap<decltype(i0)>);
         }
 
@@ -775,5 +774,20 @@ int main() {
         };
 
         (void) views::transform(Fn{})(span<int>{});
+    }
+
+    { // Validate that iter_swap works when result of transformation is a lvalue reference
+        char out[] = "hello";
+        auto v     = ranges::transform_view{out, [](char& i) -> char& { return i; }};
+        auto i1    = v.begin();
+        auto i2    = v.begin() + 1;
+
+        assert(*i1 == 'h');
+        assert(*i2 == 'e');
+
+        ranges::iter_swap(i1, i2);
+
+        assert(*i1 == 'e');
+        assert(*i2 == 'h');
     }
 }
