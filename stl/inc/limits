@@ -1112,7 +1112,7 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 
 #if _HAS_POPCNT_INTRINSICS
 template <class _Ty>
-_NODISCARD int _Unhecked_x86_x64_popcount(const _Ty _Val) noexcept {
+_NODISCARD int _Unchecked_x86_x64_popcount(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     if constexpr (_Digits <= 16) {
         return static_cast<int>(__popcnt16(_Val));
@@ -1135,7 +1135,7 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
         return _Popcount_fallback(_Val);
     }
 #endif // !defined(__AVX__)
-    return _Unhecked_x86_x64_popcount(_Val);
+    return _Unchecked_x86_x64_popcount(_Val);
 }
 #endif // _HAS_POPCNT_INTRINSICS
 
@@ -1190,7 +1190,7 @@ auto _Select_popcount_impl(_Fn _Callback) {
         return _Callback([](_Ty _Val) { return _Popcount_fallback(_Val); });
     }
 #endif // !defined(__AVX__)
-    return _Callback([](_Ty _Val) { return _Unhecked_x86_x64_popcount(_Val); });
+    return _Callback([](_Ty _Val) { return _Unchecked_x86_x64_popcount(_Val); });
 #elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
     return _Callback([](_Ty _Val) { return _Arm64_popcount(_Val); });
 #else // ^^^ ARM64 intrinsics available ^^^ / vvv no intrinsics available vvv
