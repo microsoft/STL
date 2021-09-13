@@ -337,7 +337,7 @@ public:
     }
 
     _NODISCARD size_t count() const noexcept { // count number of set bits
-        return _Select_popcount_impl([this](auto _Popcount_impl) {
+        return _Select_popcount_impl<_Ty>([this](auto _Popcount_impl) {
             size_t _Val = 0;
             for (size_t _Wpos = 0; _Wpos <= _Words; ++_Wpos) {
                 _Val += _Popcount_impl(_Array[_Wpos]);
