@@ -446,6 +446,7 @@ extern const bool _Asan_vector_should_annotate;
 
 #ifdef __SANITIZE_ADDRESS__
 #pragma comment(lib, "stl_asan")
+#pragma detect_mismatch("annotate_vector", "1")
 #endif // __SANITIZE_ADDRESS__
 
 #if defined(__SANITIZE_ADDRESS__) || defined(_ANNOTATE_VECTOR)
@@ -458,7 +459,9 @@ template <class _Vec>
 _INLINE_VAR constexpr bool
     _Has_minimum_allocation_alignment<_Vec, void_t<decltype(_Vec::allocator_type::_Minimum_allocation_alignment)>> =
         _Vec::allocator_type::_Minimum_allocation_alignment >= 8;
-#endif // __SANITIZE_ADDRESS__ || _ANNOTATE_VECTOR
+#else // ^^^ __SANITIZE_ADDRESS__ || _ANNOTATE_VECTOR ^^^ // vvv !__SANITIZE_ADDRESS__ && !_ANNOTATE_VECTOR vvv
+#pragma detect_mismatch("annotate_vector", "0")
+#endif
 
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
