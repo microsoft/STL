@@ -1179,21 +1179,27 @@ _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
 }
 
 template <class _Ty, class _Fn>
-decltype(auto) _Select_popcount_impl(_Fn _Callback) {
+_CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
     // TRANSITION, DevCom-1527995: Lambdas in this function ensure inlining
+#if _HAS_POPCNT_INTRINSICS || _HAS_NEON_INTRINSICS
+#if _HAS_CXX20
+    if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+    {
 #if _HAS_POPCNT_INTRINSICS
 #ifndef __AVX__
-    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
-    if (!_Definitely_have_popcnt) {
-        return _Callback([](_Ty _Val) { return _Popcount_fallback(_Val); });
-    }
+        const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+        if (!_Definitely_have_popcnt) {
+            return _Callback([](_Ty _Val) { return _Popcount_fallback(_Val); });
+        }
 #endif // !defined(__AVX__)
-    return _Callback([](_Ty _Val) { return _Unchecked_x86_x64_popcount(_Val); });
+        return _Callback([](_Ty _Val) { return _Unchecked_x86_x64_popcount(_Val); });
 #elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
-    return _Callback([](_Ty _Val) { return _Arm64_popcount(_Val); });
-#else // ^^^ ARM64 intrinsics available ^^^ / vvv no intrinsics available vvv
+        return _Callback([](_Ty _Val) { return _Arm64_popcount(_Val); });
+#endif // ^^^ ARM64 intrinsics available ^^^
+    }
+#endif // ^^^ any intrinsics available ^^^
     return _Callback([](_Ty _Val) { return _Popcount_fallback(_Val); });
-#endif // ^^^ no intrinsics available ^^^
 }
 
 #undef _HAS_POPCNT_INTRINSICS
