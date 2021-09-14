@@ -3159,7 +3159,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
     }
 
     return _Select_popcount_impl<_Vbase>([&](auto _Popcount_impl) -> _Iter_diff_t<_VbIt> {
-            const auto _FirstVal       = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
+        const auto _FirstVal       = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
         _Iter_diff_t<_VbIt> _Count = _Popcount_impl(_FirstVal);
         ++_VbFirst;
 
