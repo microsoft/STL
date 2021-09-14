@@ -739,9 +739,10 @@ const daily_table = [
     { date: '2021-09-06', merged: 43.79, pr: 51, cxx20: 2, cxx23: 4, lwg: 7, issue: 374, bug: 120, avg_age: 116.56, avg_wait: 103.93, sum_age: 198.15, sum_wait: 176.67, },
     { date: '2021-09-07', merged: 41.99, pr: 53, cxx20: 2, cxx23: 4, lwg: 7, issue: 375, bug: 120, avg_age: 113.14, avg_wait: 100.76, sum_age: 199.89, sum_wait: 178.00, },
     { date: '2021-09-08', merged: 40.84, pr: 54, cxx20: 2, cxx23: 4, lwg: 7, issue: 375, bug: 120, avg_age: 112.04, avg_wait: 96.56, sum_age: 201.68, sum_wait: 173.81, },
-    { date: '2021-09-09', merged: 39.69, pr: 56, cxx20: 2, cxx23: 4, lwg: 7, issue: 376, bug: 120, avg_age: 109.02, avg_wait: 94.09, sum_age: 203.51, sum_wait: 175.64, },
-    { date: '2021-09-10', merged: 46.54, pr: 50, cxx20: 2, cxx23: 3, lwg: 6, issue: 371, bug: 118, avg_age: 120.10, avg_wait: 105.01, sum_age: 200.16, sum_wait: 175.02, },
-    { date: '2021-09-11', merged: 45.39, pr: 50, cxx20: 2, cxx23: 3, lwg: 6, issue: 371, bug: 118, avg_age: 121.10, avg_wait: 106.01, sum_age: 201.83, sum_wait: 176.69, },
-    { date: '2021-09-12', merged: 44.22, pr: 51, cxx20: 2, cxx23: 3, lwg: 6, issue: 371, bug: 118, avg_age: 119.17, avg_wait: 104.62, sum_age: 202.59, sum_wait: 177.86, },
+    { date: '2021-09-09', merged: 39.69, pr: 56, cxx20: 2, cxx23: 4, lwg: 7, issue: 376, bug: 121, avg_age: 109.02, avg_wait: 94.09, sum_age: 203.51, sum_wait: 175.64, },
+    { date: '2021-09-10', merged: 46.54, pr: 50, cxx20: 2, cxx23: 3, lwg: 6, issue: 371, bug: 119, avg_age: 120.10, avg_wait: 105.01, sum_age: 200.16, sum_wait: 175.02, },
+    { date: '2021-09-11', merged: 45.39, pr: 50, cxx20: 2, cxx23: 3, lwg: 6, issue: 371, bug: 119, avg_age: 121.10, avg_wait: 106.01, sum_age: 201.83, sum_wait: 176.69, },
+    { date: '2021-09-12', merged: 44.22, pr: 51, cxx20: 2, cxx23: 3, lwg: 6, issue: 371, bug: 119, avg_age: 119.17, avg_wait: 104.62, sum_age: 202.59, sum_wait: 177.86, },
+    { date: '2021-09-13', merged: 43.04, pr: 52, cxx20: 2, cxx23: 3, lwg: 6, issue: 371, bug: 119, avg_age: 117.86, avg_wait: 103.57, sum_age: 204.30, sum_wait: 179.53, },
 ];
 // Generated file - DO NOT EDIT manually!
