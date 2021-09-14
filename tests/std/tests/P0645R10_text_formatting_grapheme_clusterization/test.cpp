@@ -415,6 +415,7 @@ constexpr bool test_utf8_decode() {
     test_utf_decode_helper("\xF4\x91\x92\x93\xFF\x41\x80\xBF\x42",
         {0xFFFd, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0xFFFD, 0xFFFD, 0x42, 0x0});
     test_utf_decode_helper("\xE1\x80\xE2\xF0\x91\x92\xF1\xBF\x41", {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0x0});
+    test_utf_decode_helper("\xCE\xA9", {0x03A9, 0x0});
     return true;
 }
 
