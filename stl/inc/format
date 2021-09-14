@@ -2650,11 +2650,29 @@ struct _Arg_formatter {
     }
 };
 
+
+// special compile time version of _Parse_format_specs, this one is parameterized on
+// the type of the argument associated with the format specifier, since we don't really
+// care about avoiding code bloat for code that never runs at runtime, and also because
+// we'd like to avoid actually erasing the argument types and forming the basic_format_args
+// structure at compile time.
+template <typename _Ty, typename _ParseContext>
+constexpr typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
+    auto _Fn =
+}
+
 // set of format parsing actions that
 // only checks for validity
-template <class _CharT>
+template <class _CharT, typename... _Args>
 struct _Format_checker {
-    basic_format_parse_context<_CharT> _Parse_context;
+    using _Pc        = basic_format_parse_context<_CharT>;
+    using _ParseFunc = typename _Pc::iterator (*)(_Pc&);
+
+    constexpr size_t _Num_args = sizeof...(Args);
+    _Pc _Parse_context;
+    _ParseFunc _Parse_funcs[_Num_args > 0 ? _Num_args : 1];
+
+
     constexpr _Format_checker(basic_string_view<_CharT> _Fmt, const size_t _Num_args) noexcept
         : _Parse_context(_Fmt, _Num_args) {}
     constexpr void _On_text(const _CharT*, const _CharT*) {}
@@ -2727,7 +2745,7 @@ template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
     using _Pc = basic_format_parse_context<_CharT>;
 
-    typename _Pc::iterator parse(_Pc& _ParseCtx) {
+    constexpr typename _Pc::iterator parse(_Pc& _ParseCtx) {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
         const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
         if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
