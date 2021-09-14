@@ -3159,24 +3159,24 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
     }
 
     return _Select_popcount_impl<_Vbase>(
-        [&_Last,&_Val,  _VbFirst, _VbLast, _FirstSourceMask](auto _Popcount_impl) mutable -> _Iter_diff_t<_VbIt> {
-        const auto _FirstVal       = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
-        _Iter_diff_t<_VbIt> _Count = _Popcount_impl(_FirstVal);
-        ++_VbFirst;
+        [&_Last, &_Val, _VbFirst, _VbLast, _FirstSourceMask](auto _Popcount_impl) mutable -> _Iter_diff_t<_VbIt> {
+            const auto _FirstVal       = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
+            _Iter_diff_t<_VbIt> _Count = _Popcount_impl(_FirstVal);
+            ++_VbFirst;
 
-        for (; _VbFirst != _VbLast; ++_VbFirst) {
-            const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
-            _Count += _Popcount_impl(_SelectVal);
-        }
+            for (; _VbFirst != _VbLast; ++_VbFirst) {
+                const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
+                _Count += _Popcount_impl(_SelectVal);
+            }
 
-        if (_Last._Myoff != 0) {
-            const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
-            const auto _LastVal        = (_Val ? *_VbFirst : ~*_VbFirst) & _LastSourceMask;
-            _Count += _Popcount_impl(_LastVal);
-        }
+            if (_Last._Myoff != 0) {
+                const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+                const auto _LastVal        = (_Val ? *_VbFirst : ~*_VbFirst) & _LastSourceMask;
+                _Count += _Popcount_impl(_LastVal);
+            }
 
-        return _Count;
-    });
+            return _Count;
+        });
 }
 _STD_END
 
