@@ -44,6 +44,28 @@ void test_case_devcom_776568() {
     assert(it == c.end());
 }
 
+template <template <class...> class Container>
+void test_case_gh_1118() {
+    Container<CheckSelfMoveAssign> c;
+    c.emplace_back(1);
+    c.emplace_back(2);
+    c.emplace_back(3);
+
+    const auto after = c.begin() + 2;
+    auto it          = c.erase(c.begin() + 1, c.begin() + 1);
+    assert(after->i == 3); // asserts that the iterator was not invalidated by iterator debugging
+    assert(it == c.begin() + 1);
+
+    // asserts that no elements were self-move-assigned:
+    it = c.begin();
+    for (int idx = 1; idx <= 3; ++idx) {
+        assert(it->i == idx);
+        ++it;
+    }
+
+    assert(it == c.end());
+}
+
 int main() {
     {
         vector<int> v(1, 1729);
@@ -200,4 +222,7 @@ int main() {
 
     test_case_devcom_776568<vector>();
     test_case_devcom_776568<deque>();
+
+    test_case_gh_1118<vector>();
+    test_case_gh_1118<deque>();
 }

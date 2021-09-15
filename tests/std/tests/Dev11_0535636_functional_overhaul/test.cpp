@@ -685,7 +685,7 @@ STATIC_ASSERT(is_same_v<result_of_t<const Purr()>, long>);
 STATIC_ASSERT(is_same_v<result_of_t<const Purr&()>, short>);
 STATIC_ASSERT(is_same_v<result_of_t<const Purr && ()>, long>);
 
-// Also test references to functions, DDB#198033.
+// Also test references to functions, DDB-198033.
 using FuncRef = int (&)(float, double);
 STATIC_ASSERT(is_same_v<result_of_t<FuncRef(float, double)>, int>);
 
@@ -724,7 +724,7 @@ int cube_noexcept(int n) noexcept {
 }
 
 
-// Test DevDiv#391117 "<functional> reference_wrapper: reference_wrapper doesn't compile with pure virtual function call
+// Test DevDiv-391117 "<functional> reference_wrapper: reference_wrapper doesn't compile with pure virtual function call
 // operators".
 struct BaseMeow {
     BaseMeow() {}
@@ -751,7 +751,7 @@ void test_dev11_391117() {
 }
 
 
-// Test DevDiv#535636 "<functional> reference_wrapper: reference_wrapper<int (int)>::get() doesn't compile".
+// Test DevDiv-535636 "<functional> reference_wrapper: reference_wrapper<int (int)>::get() doesn't compile".
 void test_dev11_535636() {
     reference_wrapper<int(int)> rw(triple);
 
@@ -767,7 +767,7 @@ void test_dev11_535636() {
 }
 
 
-// Test DevDiv#794227 "<functional> reference_wrapper: ambiguous access of result_type - functional, xrefwrap".
+// Test DevDiv-794227 "<functional> reference_wrapper: ambiguous access of result_type - functional, xrefwrap".
 template <typename Arg, typename Result>
 struct UnaryFunction {
     typedef Arg argument_type;
@@ -806,7 +806,7 @@ void test_dev11_794227() {
 }
 
 
-// Test DevDiv#868374 "<functional> reference_wrapper: Cannot assign a std::reference_wrapper object to another
+// Test DevDiv-868374 "<functional> reference_wrapper: Cannot assign a std::reference_wrapper object to another
 // std::reference_wrapper object [libcxx]".
 void test_dev11_868374() {
     reference_wrapper<int(int)> rw(triple);
@@ -927,7 +927,7 @@ struct Thing {
 
 class UnaryBinary {
 public:
-    // Originally for testing Dev10#539137
+    // Originally for testing Dev10-539137
     // "reference_wrapper: Doesn't handle classes that derive from both unary_function and binary_function".
     // The typedefs are tested elsewhere here (see SameResults and DifferentResults).
 
@@ -980,11 +980,9 @@ void test_reference_wrapper_invocation() {
 
     assert(i == 10);
 
-#ifndef __EDG__ // TRANSITION, DevCom-939485
     const auto noexcept_lambda     = []() noexcept {};
     const auto noexcept_lambda_ref = ref(noexcept_lambda);
     STATIC_ASSERT(noexcept(noexcept_lambda_ref())); // strengthened
-#endif // __EDG__
 
     reference_wrapper<int(int)> rw_fxn(quadruple);
     assert(rw_fxn(9) == 36);
@@ -1055,12 +1053,18 @@ constexpr bool test_invoke_constexpr() {
     auto p = &thing;
 
     assert(&invoke(&Thing::m_x, *p) == &p->m_x);
-    // assert(&invoke(&Thing::m_x, ref(*sp)) == &sp->m_x); TRANSITION, P1065R2
+#if _HAS_CXX20
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1419425 "constexpr PMD emits bogus error C2131"
+    assert(&invoke(&Thing::m_x, ref(*p)) == &p->m_x);
+#endif // ^^^ no workaround ^^^
+#endif // _HAS_CXX20
     assert(&invoke(&Thing::m_x, p) == &p->m_x);
 
 #ifndef _M_CEE // TRANSITION, DevCom-939490
     assert(invoke(&Thing::sum, *p, 3) == 1023);
-    // assert(invoke(&Thing::sum, ref(*sp), 4) == 1024); TRANSITION, P1065R2
+#if _HAS_CXX20
+    assert(invoke(&Thing::sum, ref(*p), 4) == 1024);
+#endif // _HAS_CXX20
     assert(invoke(&Thing::sum, p, 5) == 1025);
 #endif // _M_CEE
 
@@ -1096,28 +1100,32 @@ void test_invoke() {
     assert(invoke(&Thing::sum, sp, 6) == 1026);
     STATIC_ASSERT(!noexcept(invoke(&Thing::sum, sp, 6) == 1026));
 
-#if _HAS_CXX17
+    constexpr bool noexcept_is_in_the_type_system =
+#ifdef __cpp_noexcept_function_type
+        true
+#else
+        false
+#endif // __cpp_noexcept_function_type
+        ;
+
     assert(invoke(&Thing::sum_noexcept, *sp, 3) == 1023);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, *sp, 3) == 1023));
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, *sp, 3) == 1023) == noexcept_is_in_the_type_system);
     assert(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024));
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, ref(*sp), 4) == 1024) == noexcept_is_in_the_type_system);
     assert(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025));
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp.get(), 5) == 1025) == noexcept_is_in_the_type_system);
     assert(invoke(&Thing::sum_noexcept, sp, 6) == 1026);
-    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp, 6) == 1026));
-#endif // _HAS_CXX17
+    STATIC_ASSERT(noexcept(invoke(&Thing::sum_noexcept, sp, 6) == 1026) == noexcept_is_in_the_type_system);
 
     assert(invoke(square, 6) == 36);
     STATIC_ASSERT(!noexcept(invoke(square, 6) == 36));
     assert(invoke(&cube, 7) == 343);
     STATIC_ASSERT(!noexcept(invoke(&cube, 7) == 343));
 
-#if _HAS_CXX17
     assert(invoke(square_noexcept, 6) == 36);
-    STATIC_ASSERT(noexcept(invoke(square_noexcept, 6) == 36));
+    STATIC_ASSERT(noexcept(invoke(square_noexcept, 6) == 36) == noexcept_is_in_the_type_system);
     assert(invoke(&cube_noexcept, 7) == 343);
-    STATIC_ASSERT(noexcept(invoke(&cube_noexcept, 7) == 343));
-#endif // _HAS_CXX17
+    STATIC_ASSERT(noexcept(invoke(&cube_noexcept, 7) == 343) == noexcept_is_in_the_type_system);
 }
 
 
@@ -1285,7 +1293,7 @@ STATIC_ASSERT(TestRWTypes<Empty, None, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<int, None, None, None, None>::value);
 STATIC_ASSERT(TestRWTypes<int X::*, None, None, None, None>::value);
 
-// Test DevDiv#864867 "<functional> reference_wrapper: reference_wrapper should handle functors that are both unary and
+// Test DevDiv-864867 "<functional> reference_wrapper: reference_wrapper should handle functors that are both unary and
 // binary [libs-conformance]".
 struct SameResults : UnaryFunction<int, bool>, BinaryFunction<short, long, bool> {
 
@@ -1465,7 +1473,7 @@ void test_function() {
     // std::functions.
 
 
-    // Test DevDiv#759096 "<functional> function: std::function construction copies its target instead of moving".
+    // Test DevDiv-759096 "<functional> function: std::function construction copies its target instead of moving".
     {
         CopyMoveCounter<1> cmc0;
         CopyMoveCounter<1> cmc1(cmc0);
@@ -1663,7 +1671,7 @@ void test_function() {
     }
 
 
-    // Test DevDiv#1010027 "<functional> function: std::function with return type void does not ignore return type on
+    // Test DevDiv-1010027 "<functional> function: std::function with return type void does not ignore return type on
     // assignment".
     {
         string s("ChooseAMovieTitle");
@@ -1712,8 +1720,8 @@ void test_function() {
     }
 
 
-    // Test DevDiv#294051 "<functional> function: std::function has lost the ability to invoke PMFs/PMDs on various
-    // things". Test DevDiv#789899 "<functional> function: std::function does not work for member functions".
+    // Test DevDiv-294051 "<functional> function: std::function has lost the ability to invoke PMFs/PMDs on various
+    // things". Test DevDiv-789899 "<functional> function: std::function does not work for member functions".
     {
         struct Y {
             int m_n;
@@ -1862,7 +1870,7 @@ void test_function() {
 
 // Test bind(), user-reported bugs.
 void test_bind() {
-    // Test DDB#176058 "TR1: result_of doesn't accept result_type typedefs for references" (title is now bogus).
+    // Test DDB-176058 "TR1: result_of doesn't accept result_type typedefs for references" (title is now bogus).
     {
         struct PassThru {
             int& operator()(int& obj) const {
@@ -1880,9 +1888,9 @@ void test_bind() {
     }
 
 
-    // Test DevDiv#343411 "<functional> bind: bind() and std::function don't work with rvalue references".
-    // Test DevDiv#410033 "<functional>: bind() doesn't work with rvalue reference signatures".
-    // Test DevDiv#862588 "<functional> bind: std::bind doesn't forward unbound arguments".
+    // Test DevDiv-343411 "<functional> bind: bind() and std::function don't work with rvalue references".
+    // Test DevDiv-410033 "<functional>: bind() doesn't work with rvalue reference signatures".
+    // Test DevDiv-862588 "<functional> bind: std::bind doesn't forward unbound arguments".
     {
 #ifndef _M_CEE_PURE
 
@@ -1921,8 +1929,8 @@ void test_bind() {
 }
 
 
-// Test DevDiv#487679 "<functional> bind: MSVS 2012 C++ std::bind illegal indirection compiler error".
-// Test DevDiv#617421 "<functional> bind: Bind failing to compile with a vector of functions".
+// Test DevDiv-487679 "<functional> bind: MSVS 2012 C++ std::bind illegal indirection compiler error".
+// Test DevDiv-617421 "<functional> bind: Bind failing to compile with a vector of functions".
 {
     struct BaseFunctor {
         int operator()(int n) const {
@@ -1940,7 +1948,7 @@ void test_bind() {
 }
 
 
-// Test DevDiv#505570 "<functional> bind: Can't bind a pointer to a data member using a pointer, smart pointer or
+// Test DevDiv-505570 "<functional> bind: Can't bind a pointer to a data member using a pointer, smart pointer or
 // iterator to the object".
 {
     struct Object {
@@ -1964,7 +1972,7 @@ void test_bind() {
 }
 
 
-// Test DevDiv#535246 "<functional> bind: Cannot call const forwarding call wrapper result of std::bind".
+// Test DevDiv-535246 "<functional> bind: Cannot call const forwarding call wrapper result of std::bind".
 {
     const auto cb = bind(&quadruple, 11);
 
@@ -2213,7 +2221,7 @@ _CONSTEXPR20 bool test_more_bind() {
 }
 
 
-// Test DevDiv#1160769 "<functional>: bind()'s cv-overloaded function call operators are triggering Expression SFINAE
+// Test DevDiv-1160769 "<functional>: bind()'s cv-overloaded function call operators are triggering Expression SFINAE
 // problems".
 struct Test1160769 {
     void method(const int&) {}

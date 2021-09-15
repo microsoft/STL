@@ -25,7 +25,7 @@
 #include <utility>
 #include <valarray>
 #include <vector>
-//
+
 #include <range_algorithm_support.hpp>
 
 // Note that many tests herein assume:
@@ -34,42 +34,10 @@ STATIC_ASSERT(std::same_as<std::make_unsigned_t<std::ptrdiff_t>, std::size_t>);
 template <class T>
 concept Decayed = std::same_as<std::decay_t<T>, T>;
 
-// clang-format off
 template <class R>
-concept CanBegin = requires(R&& r) { ranges::begin(std::forward<R>(r)); };
-template <class R>
-concept CanEnd = requires(R&& r) { ranges::end(std::forward<R>(r)); };
-
-template <class R>
-concept CanCBegin = requires(R&& r) { ranges::cbegin(std::forward<R>(r)); };
-template <class R>
-concept CanCEnd = requires(R&& r) {ranges::cend(std::forward<R>(r)); };
-
-template <class R>
-concept CanRBegin = requires(R&& r) { ranges::rbegin(std::forward<R>(r)); };
-template <class R>
-concept CanREnd = requires(R&& r) { ranges::rend(std::forward<R>(r)); };
-
-template <class R>
-concept CanCRBegin = requires(R&& r) { ranges::crbegin(std::forward<R>(r)); };
-template <class R>
-concept CanCREnd = requires(R&& r) { ranges::crend(std::forward<R>(r)); };
-
-template <class R>
-concept CanEmpty = requires(R&& r) { ranges::empty(std::forward<R>(r)); };
-
-template <class R>
-concept CanSize = requires(R&& r) { ranges::size(std::forward<R>(r)); };
-
-template <class R>
-concept CanSizeType = requires { typename ranges::range_size_t<R>; };
-
-template <class R>
-concept CanData = requires(R&& r) { ranges::data(std::forward<R>(r)); };
-
-template <class R>
-concept CanCData = requires(R&& r) { ranges::cdata(std::forward<R>(r)); };
-// clang-format on
+concept CanSizeType = requires {
+    typename ranges::range_size_t<R>;
+};
 
 struct invalid_type {};
 
@@ -104,6 +72,14 @@ constexpr bool test_cpo(T const& obj) {
 
     return true;
 }
+
+STATIC_ASSERT(test_cpo(std::strong_order));
+STATIC_ASSERT(test_cpo(std::weak_order));
+STATIC_ASSERT(test_cpo(std::partial_order));
+STATIC_ASSERT(test_cpo(std::compare_strong_order_fallback));
+STATIC_ASSERT(test_cpo(std::compare_weak_order_fallback));
+STATIC_ASSERT(test_cpo(std::compare_partial_order_fallback));
+
 STATIC_ASSERT(test_cpo(ranges::swap));
 STATIC_ASSERT(test_cpo(ranges::iter_swap));
 STATIC_ASSERT(test_cpo(ranges::iter_move));
@@ -116,9 +92,29 @@ STATIC_ASSERT(test_cpo(ranges::rend));
 STATIC_ASSERT(test_cpo(ranges::crbegin));
 STATIC_ASSERT(test_cpo(ranges::crend));
 STATIC_ASSERT(test_cpo(ranges::size));
+STATIC_ASSERT(test_cpo(ranges::ssize));
 STATIC_ASSERT(test_cpo(ranges::empty));
 STATIC_ASSERT(test_cpo(ranges::data));
 STATIC_ASSERT(test_cpo(ranges::cdata));
+
+STATIC_ASSERT(test_cpo(ranges::views::all));
+STATIC_ASSERT(test_cpo(ranges::views::common));
+STATIC_ASSERT(test_cpo(ranges::views::counted));
+STATIC_ASSERT(test_cpo(ranges::views::drop));
+STATIC_ASSERT(test_cpo(ranges::views::drop_while));
+STATIC_ASSERT(test_cpo(ranges::views::elements<42>));
+STATIC_ASSERT(test_cpo(ranges::views::filter));
+STATIC_ASSERT(test_cpo(ranges::views::iota));
+STATIC_ASSERT(test_cpo(ranges::views::join));
+STATIC_ASSERT(test_cpo(ranges::views::keys));
+STATIC_ASSERT(test_cpo(ranges::views::lazy_split));
+STATIC_ASSERT(test_cpo(ranges::views::reverse));
+STATIC_ASSERT(test_cpo(ranges::views::single));
+STATIC_ASSERT(test_cpo(ranges::views::split));
+STATIC_ASSERT(test_cpo(ranges::views::take));
+STATIC_ASSERT(test_cpo(ranges::views::take_while));
+STATIC_ASSERT(test_cpo(ranges::views::transform));
+STATIC_ASSERT(test_cpo(ranges::views::values));
 
 void test_cpo_ambiguity() {
     using namespace std::ranges;
@@ -136,6 +132,7 @@ void test_cpo_ambiguity() {
     (void) crbegin(vri);
     (void) crend(vri);
     (void) size(vri);
+    (void) ssize(vri);
     (void) empty(vri);
     (void) data(vri);
     (void) cdata(vri);
@@ -315,15 +312,19 @@ constexpr bool test_empty() {
 
 template <class Range, class Size = invalid_type>
 constexpr bool test_size() {
-    // Validate ranges::size and ranges::sized_range
+    // Validate ranges::size, ranges::sized_range, and ranges::ssize
     STATIC_ASSERT(!is_valid<Size> || std::integral<Size>);
 
     STATIC_ASSERT(CanSize<Range> == is_valid<Size>);
+    STATIC_ASSERT(CanSSize<Range> == is_valid<Size>);
     STATIC_ASSERT(CanSizeType<Range> == is_valid<Size>);
     STATIC_ASSERT(ranges::sized_range<Range> == is_valid<Size>);
     if constexpr (is_valid<Size>) {
         STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Range>())), Size>);
         STATIC_ASSERT(std::same_as<ranges::range_size_t<Range>, Size>);
+
+        using SignedSize = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
+        STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Range>())), SignedSize>);
 
         STATIC_ASSERT(CanEmpty<Range>);
     }
@@ -1501,10 +1502,8 @@ namespace borrowed_range_testing {
     STATIC_ASSERT(test_borrowed_range<std::span<int>, std::span<int>::iterator>());
     STATIC_ASSERT(test_borrowed_range<std::span<int, 42>, std::span<int, 42>::iterator>());
     STATIC_ASSERT(test_borrowed_range<ranges::subrange<int*, int*>, int*>());
-#if 0 // TRANSITION, future
     STATIC_ASSERT(test_borrowed_range<ranges::ref_view<int[42]>, int*>());
-    STATIC_ASSERT(test_borrowed_range<ranges::iota_view<int, int>, ...>());
-#endif // TRANSITION, future
+    STATIC_ASSERT(test_borrowed_range<ranges::iota_view<int, int>, ranges::iterator_t<ranges::iota_view<int, int>>>());
 
     struct simple_borrowed_range {
         int* begin() const {
@@ -1563,7 +1562,6 @@ struct badsized_range : Base { // size() launches the missiles.
     badsized_range(badsized_range&&) = default;
     badsized_range& operator=(badsized_range&&) = default;
 
-    // clang-format off
     [[noreturn]] int size() const {
         static_assert(always_false<Base>);
     }
@@ -1571,7 +1569,6 @@ struct badsized_range : Base { // size() launches the missiles.
     [[noreturn]] friend int size(const badsized_range&) {
         static_assert(always_false<Base>);
     }
-    // clang-format on
 };
 
 using mutable_badsized_range      = badsized_range<mutable_sized_range>;
@@ -1612,6 +1609,9 @@ namespace exhaustive_size_and_view_test {
         STATIC_ASSERT(ranges::sized_range<Rng> == is_valid<Size>);
         if constexpr (is_valid<Size>) {
             STATIC_ASSERT(std::same_as<decltype(ranges::size(std::declval<Rng>())), Size>);
+
+            using SignedSize = std::common_type_t<std::ptrdiff_t, std::make_signed_t<Size>>;
+            STATIC_ASSERT(std::same_as<decltype(ranges::ssize(std::declval<Rng>())), SignedSize>);
         }
 
         STATIC_ASSERT(ranges::view<Rng> == IsView);
@@ -1888,10 +1888,8 @@ namespace unwrapped_begin_end {
 
 int main() {
     // Validate conditional constexpr
-#ifdef __clang__ // TRANSITION, VSO-977008
     STATIC_ASSERT(test_array_ish<std::initializer_list<int>>());
     STATIC_ASSERT(test_array_ish<std::initializer_list<int const>>());
-#endif // TRANSITION, VSO-977008
     STATIC_ASSERT(test_array_ish<int[3]>());
     STATIC_ASSERT(test_array_ish<int const[3]>());
 

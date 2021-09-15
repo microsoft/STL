@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT time_base
 struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
     enum dateorder { // constants for different orders of date components
         no_order,
@@ -32,10 +31,9 @@ struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_g
 
     __CLR_OR_THIS_CALL time_base(size_t _Refs = 0) : locale::facet(_Refs) {}
 
-    __CLR_OR_THIS_CALL ~time_base() noexcept {}
+    __CLR_OR_THIS_CALL ~time_base() noexcept override {}
 };
 
-// CLASS TEMPLATE time_get
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_get : public time_base { // facet for converting text to encoded times
 private:
@@ -93,37 +91,38 @@ public:
         _State = ios_base::goodbit;
 
         for (; _Fmtfirst != _Fmtlast; ++_Fmtfirst) {
-            if (_Ctype_fac.narrow(*_Fmtfirst) != '%') { // match literal element
+            if (_State != ios_base::goodbit) {
+                // N4878 [locale.time.get.members]/8.2
+                // _State is fail, eof, or bad. Do not proceed to the next fields. Return with current _State.
+                break;
+            } else if (_First == _Last) {
+                // N4878 [locale.time.get.members]/8.3
+                _State = ios_base::eofbit | ios_base::failbit;
+                break;
+            } else if (_Ctype_fac.narrow(*_Fmtfirst) != '%') { // match literal element
                 if (_Ctype_fac.is(_Ctype::space, *_Fmtfirst)) {
                     while (_First != _Last && _Ctype_fac.is(_Ctype::space, *_First)) {
                         ++_First;
                     }
-                } else if (*_First != *_Fmtfirst) { // bad literal match
+                } else if (_Ctype_fac.tolower(*_First) != _Ctype_fac.tolower(*_Fmtfirst)) { // bad literal match
                     _State |= ios_base::failbit;
                     break;
                 } else {
                     ++_First;
                 }
-            } else if (++_Fmtfirst == _Fmtlast) { // treat trailing % as literal match
-                if (*_First != _Fmtfirst[-1]) {
-                    _State |= ios_base::failbit;
-                } else {
-                    ++_First;
-                }
+            } else if (++_Fmtfirst == _Fmtlast) {
+                // N4878 [locale.time.get.members]/8.4: "If the number of elements in the range [fmt, fmtend) is not
+                // sufficient to unambiguously determine whether the conversion specification is complete and valid,
+                // the function evaluates err = ios_base::failbit."
+                _State = ios_base::failbit;
                 break;
             } else { // get specifier after %
                 char _Specifier = _Ctype_fac.narrow(*_Fmtfirst);
                 char _Modifier  = '\0';
-                _Elem _Percent  = _Fmtfirst[-1];
 
                 if (_Specifier == 'E' || _Specifier == 'O' || _Specifier == 'Q' || _Specifier == '#') {
-                    if (++_Fmtfirst == _Fmtlast) { // no specifier, treat %[E0Q#] as literal match
-                        if (*_First != _Percent || ++_First == _Last || _Ctype_fac.narrow(*_First) != _Specifier) {
-                            _State |= ios_base::failbit;
-                        } else {
-                            ++_First;
-                        }
-
+                    if (++_Fmtfirst == _Fmtlast) { // no specifier
+                        _State = ios_base::failbit;
                         break;
                     } else { // save both qualifier and specifier
                         _Modifier  = _Specifier;
@@ -133,10 +132,6 @@ public:
 
                 _First = do_get(_First, _Last, _Iosbase, _State, _Pt, _Specifier, _Modifier); // convert a single field
             }
-        }
-
-        if (_First == _Last) {
-            _State |= ios_base::eofbit;
         }
 
         return _First;
@@ -162,7 +157,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_get() noexcept {
+    __CLR_OR_THIS_CALL ~time_get() noexcept override {
         _Tidy();
     }
 
@@ -218,7 +213,7 @@ protected:
         if (_State != ios_base::goodbit || _Ctype_fac.narrow(*_First) != ':') {
             _State |= ios_base::failbit; // min field is bad
         } else {
-            _State |= _Getint(++_First, _Last, 0, 59, _Pt->tm_sec, _Ctype_fac);
+            _State |= _Getint(++_First, _Last, 0, 60, _Pt->tm_sec, _Ctype_fac);
         }
 
         return _First;
@@ -321,7 +316,7 @@ protected:
 
     virtual _InIt __CLR_OR_THIS_CALL do_get_weekday(_InIt _First, _InIt _Last, ios_base&, ios_base::iostate& _State,
         tm* _Pt) const { // get weekday from [_First, _Last) into _Pt
-        int _Num = _Getloctxt(_First, _Last, 0, _Days);
+        int _Num = _Getloctxt(_First, _Last, 0, _Days, _Case_sensitive::_Nope);
         if (_Num < 0) {
             _State |= ios_base::failbit;
         } else {
@@ -333,7 +328,7 @@ protected:
 
     virtual _InIt __CLR_OR_THIS_CALL do_get_monthname(_InIt _First, _InIt _Last, ios_base&, ios_base::iostate& _State,
         tm* _Pt) const { // get month from [_First, _Last) into _Pt
-        int _Num = _Getloctxt(_First, _Last, 0, _Months);
+        int _Num = _Getloctxt(_First, _Last, 0, _Months, _Case_sensitive::_Nope);
 
         if (_Num < 0) {
             _State |= ios_base::failbit;
@@ -439,7 +434,7 @@ protected:
             break;
 
         case 'p':
-            _Ans = _Getloctxt(_First, _Last, 0, ":AM:am:PM:pm");
+            _Ans = _Getloctxt(_First, _Last, 0, ":AM:am:PM:pm", _Case_sensitive::_Nope);
             if (_Ans < 0) {
                 _State |= ios_base::failbit;
             } else if (1 < _Ans) {
@@ -534,11 +529,21 @@ protected:
 private:
     ios_base::iostate __CLRCALL_OR_CDECL _Getint(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int& _Val,
         const _Ctype& _Ctype_fac) const { // get integer in range [_Lo, _Hi] from [_First, _Last)
-        char _Ac[_MAX_INT_DIG], *_Ep;
+        _STL_INTERNAL_CHECK(0 <= _Hi && _Hi <= 9999);
+        const int _Hi_digits = (_Hi <= 9 ? 1 : _Hi <= 99 ? 2 : _Hi <= 999 ? 3 : 4);
+        char _Ac[_MAX_INT_DIG];
+        char* _Ep;
         char* _Ptr = _Ac;
         char _Ch;
 
-        if (_First != _Last) {
+        int _Digits_seen = 0;
+
+        while (_First != _Last && _Digits_seen < _Hi_digits && _Ctype_fac.is(ctype_base::space, *_First)) {
+            ++_First;
+            ++_Digits_seen;
+        }
+
+        if (_First != _Last && _Digits_seen < _Hi_digits) {
             if ((_Ch = _Ctype_fac.narrow(*_First)) == '+') { // copy plus sign
                 *_Ptr++ = '+';
                 ++_First;
@@ -548,26 +553,25 @@ private:
             }
         }
 
-        bool _Seendigit = false;
-
-        for (; _First != _Last && _Ctype_fac.narrow(*_First) == '0'; ++_First) { // strip leading zeros
-            _Seendigit = true;
+        for (; _First != _Last && _Digits_seen < _Hi_digits && _Ctype_fac.narrow(*_First) == '0';
+             ++_First) { // strip leading zeros
+            ++_Digits_seen;
         }
 
-        if (_Seendigit) {
+        if (_Digits_seen > 0) {
             *_Ptr++ = '0'; // replace one or more with single zero
         }
 
         for (char* const _Pe = &_Ac[_MAX_INT_DIG - 1];
-             _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9';
-             _Seendigit = true, (void) ++_First) { // copy digits
+             _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _Digits_seen < _Hi_digits;
+             ++_Digits_seen, (void) ++_First) { // copy digits
             *_Ptr = _Ch;
             if (_Ptr < _Pe) {
                 ++_Ptr; // drop trailing digits if already too large
             }
         }
 
-        if (!_Seendigit) {
+        if (_Digits_seen == 0) {
             _Ptr = _Ac;
         }
 
@@ -602,7 +606,6 @@ private:
     _Locinfo::_Cvtvec _Cvt; // conversion information
 };
 
-// STATIC time_get::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -615,7 +618,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_get<_Elem, _InIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS TEMPLATE time_get_byname
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_get_byname : public time_get<_Elem, _InIt> { // time_get for named locale
 public:
@@ -628,10 +630,9 @@ public:
         : time_get<_Elem, _InIt>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_get_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~time_get_byname() noexcept override {}
 };
 
-// CLASS TEMPLATE time_put
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put : public locale::facet { // facet for converting encoded times to text
 public:
@@ -703,13 +704,13 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put() noexcept override {}
 
     void __CLR_OR_THIS_CALL _Init(const _Locinfo& _Lobj) { // initialize from _Lobj
         _Tnames = _Lobj._Gettnames();
     }
 
-    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base&, _Elem, const tm* _Pt, char _Specifier,
+    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem, const tm* _Pt, char _Specifier,
         char _Modifier = '\0') const { // put formatted time from _Pt to _Dest for [_Fmtfirst, _Fmtlast)
         char _Fmt[5] = "!%x\0"; // '!' for nonzero count, null for modifier
         size_t _Count;
@@ -723,10 +724,16 @@ protected:
             _Fmt[3] = _Specifier;
         }
 
+        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
-            if (0 < (_Count = _Strftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr()))) {
+            _Count = _Strftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
+            if (0 < _Count) {
                 break;
+            } else if (_Errno_ref == EINVAL) {
+                _Iosbase.setstate(ios_base::badbit);
+                return _Dest;
             }
         }
 
@@ -737,7 +744,6 @@ private:
     _Locinfo::_Timevec _Tnames; // locale-specific stuff for _Strftime
 };
 
-// STATIC time_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -750,7 +756,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<_Elem, _OutIt>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS time_put<wchar_t>
 template <class _OutIt>
 class _CRTIMP2_PURE_IMPORT time_put<wchar_t, _OutIt>
     : public locale::facet { // facet for converting encoded times to wchar_t text
@@ -822,7 +827,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put() noexcept override {}
 
     __CLR_OR_THIS_CALL time_put(const char* _Locname, size_t _Refs = 0) : locale::facet(_Refs) {
         _BEGIN_LOCINFO(_Lobj(_Locname))
@@ -834,7 +839,7 @@ protected:
         _Tnames = _Lobj._W_Gettnames();
     }
 
-    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base&, _Elem, const tm* _Pt, char _Specifier,
+    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem, const tm* _Pt, char _Specifier,
         char _Modifier = '\0') const { // put formatted time from _Pt to _Dest for [_Fmtfirst, _Fmtlast)
         wchar_t _Fmt[5] = L"!%x\0"; // ! for nonzero count, null for modifier
         size_t _Count;
@@ -848,10 +853,16 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
+        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
-            if (0 < (_Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr()))) {
+            _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
+            if (0 < _Count) {
                 break;
+            } else if (_Errno_ref == EINVAL) {
+                _Iosbase.setstate(ios_base::badbit);
+                return _Dest;
             }
         }
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
@@ -861,7 +872,6 @@ private:
     _Locinfo::_Timevec _Tnames; // locale-specific stuff for _Wcsftime
 };
 
-// STATIC time_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -875,7 +885,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<wchar_t, _OutIt>::id;
 #endif // __clang__
 
 #if defined(_CRTBLD)
-// CLASS time_put<unsigned short>
 
 template <class _OutIt>
 class _CRTIMP2_PURE_IMPORT time_put<unsigned short, _OutIt>
@@ -947,7 +956,7 @@ public:
     }
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put() noexcept override {}
 
     __CLR_OR_THIS_CALL time_put(const char* _Locname, size_t _Refs = 0) : locale::facet(_Refs) {
         _BEGIN_LOCINFO(_Lobj(_Locname))
@@ -959,7 +968,7 @@ protected:
         _Tnames = _Lobj._W_Gettnames();
     }
 
-    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base&, _Elem, const tm* _Pt, char _Specifier,
+    virtual _OutIt __CLR_OR_THIS_CALL do_put(_OutIt _Dest, ios_base& _Iosbase, _Elem, const tm* _Pt, char _Specifier,
         char _Modifier = '\0') const { // put formatted time from _Pt to _Dest for [_Fmtfirst, _Fmtlast)
         wchar_t _Fmt[5] = L"!%x\0"; // ! for nonzero count, null for modifier
         size_t _Count;
@@ -973,10 +982,16 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
+        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
-            if (0 < (_Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr()))) {
+            _Count = _Wcsftime(&_Str[0], _Str.size(), _Fmt, _Pt, _Tnames._Getptr());
+            if (0 < _Count) {
                 break;
+            } else if (_Errno_ref == EINVAL) {
+                _Iosbase.setstate(ios_base::badbit);
+                return _Dest;
             }
         }
 
@@ -987,7 +1002,6 @@ private:
     _Locinfo::_Timevec _Tnames; // locale-specific stuff for _Wcsftime
 };
 
-// STATIC time_put::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -1001,7 +1015,6 @@ __PURE_APPDOMAIN_GLOBAL locale::id time_put<unsigned short, _OutIt>::id;
 #endif // __clang__
 #endif // defined(_CRTBLD)
 
-// CLASS TEMPLATE time_put_byname
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put_byname : public time_put<_Elem, _OutIt> { // time_put for named locale
 public:
@@ -1014,7 +1027,7 @@ public:
         : time_put<_Elem, _OutIt>(_Str.c_str(), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~time_put_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~time_put_byname() noexcept override {}
 };
 
 #if defined(_DLL_CPPLIB)

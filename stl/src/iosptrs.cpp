@@ -16,23 +16,19 @@ _STD_BEGIN
 #pragma init_seg(compiler)
 _PGLOBAL static std::_Init_locks initlocks;
 
-// OBJECT DECLARATIONS
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT istream* _Ptr_cin  = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream* _Ptr_cout = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream* _Ptr_cerr = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream* _Ptr_clog = nullptr;
 
-// WIDE OBJECTS
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wistream* _Ptr_wcin  = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcout = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcerr = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wclog = nullptr;
 _STD_END
 
-// FINALIZATION CODE
 constexpr int _Nats = 10; // fclose, xgetloc, locks, facet free, etc.
 
-// static data
 __PURE_APPDOMAIN_GLOBAL static void(__cdecl* atfuns_cdecl[_Nats])() = {};
 __PURE_APPDOMAIN_GLOBAL static size_t atcount_cdecl                 = _Nats;
 _MRTIMP2 void __cdecl _Atexit(void(__cdecl* pf)()) { // add to wrapup list

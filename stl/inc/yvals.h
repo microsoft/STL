@@ -31,7 +31,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #define __PURE_APPDOMAIN_GLOBAL
 #endif
 
-// CURRENT DLL NAMES
 #ifndef _CRT_MSVCP_CURRENT
 #ifdef _CRT_WINDOWS
 // Windows
@@ -130,7 +129,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #endif // _ITERATOR_DEBUG_LEVEL
 
-#ifdef __cplusplus
 #ifndef _ALLOW_MSC_VER_MISMATCH
 #pragma detect_mismatch("_MSC_VER", "1900")
 #endif // _ALLOW_MSC_VER_MISMATCH
@@ -150,7 +148,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma detect_mismatch("RuntimeLibrary", "MDd_DynamicDebug")
 #endif // defined(_DLL) etc.
 #endif // _ALLOW_RUNTIME_LIBRARY_MISMATCH
-#endif // __cplusplus
 
 #ifndef _CONTAINER_DEBUG_LEVEL
 #if _ITERATOR_DEBUG_LEVEL == 0
@@ -164,10 +161,18 @@ _STL_DISABLE_CLANG_WARNINGS
 #error _ITERATOR_DEBUG_LEVEL != 0 must imply _CONTAINER_DEBUG_LEVEL == 1.
 #endif // _ITERATOR_DEBUG_LEVEL != 0 && _CONTAINER_DEBUG_LEVEL == 0
 
-#define _STL_REPORT_ERROR(mesg)              \
-    do {                                     \
-        _RPTF0(_CRT_ASSERT, mesg);           \
-        _CRT_SECURE_INVALID_PARAMETER(mesg); \
+#ifndef _STL_CRT_SECURE_INVALID_PARAMETER
+#ifdef _DEBUG // avoid emitting unused long strings for function names; see GH-1956
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
+#else // _DEBUG
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
+#endif // _DEBUG
+#endif // _STL_CRT_SECURE_INVALID_PARAMETER
+
+#define _STL_REPORT_ERROR(mesg)                  \
+    do {                                         \
+        _RPTF0(_CRT_ASSERT, mesg);               \
+        _STL_CRT_SECURE_INVALID_PARAMETER(mesg); \
     } while (false)
 
 #ifdef __clang__
@@ -207,6 +212,21 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _STL_INTERNAL_CHECK(...) _Analysis_assume_(__VA_ARGS__)
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
+
+#ifndef _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
+#ifdef _DEBUG
+#define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 1
+#else // ^^^ _DEBUG ^^^ // vvv !_DEBUG vvv
+#define _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK 0
+#endif // _DEBUG
+#endif // _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
+
+#if _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
+#define _ATOMIC_REF_CHECK_ALIGNMENT(cond, mesg) _STL_VERIFY(cond, mesg)
+#else
+#define _ATOMIC_REF_CHECK_ALIGNMENT(cond, mesg) _Analysis_assume_(cond)
+#endif
+
 
 #include <use_ansi.h>
 
@@ -292,27 +312,39 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif
 #endif // _CRTDATA2_IMPORT
 
-// INTEGER PROPERTIES
+// integer properties
 #define _MAX_EXP_DIG    8 // for parsing numerics
 #define _MAX_INT_DIG    32
 #define _MAX_SIG_DIG_V1 36 // TRANSITION, ABI
 #define _MAX_SIG_DIG_V2 768
 
-// MULTITHREAD PROPERTIES
-// LOCK MACROS
 #define _LOCK_LOCALE         0
 #define _LOCK_MALLOC         1
 #define _LOCK_STREAM         2
 #define _LOCK_DEBUG          3
 #define _LOCK_AT_THREAD_EXIT 4
 
-#ifdef __cplusplus
+#ifndef _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B
+#if _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WINBLUE && defined(_WIN64)
+#define _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B 1
+#else // ^^^ modern 64-bit // less modern or 32-bit vvv
+#define _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B 0
+#endif // _STL_WIN32_WINNT >= _STL_WIN32_WINNT_WINBLUE && defined(_WIN64)
+#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B
+
+#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 && defined(_M_ARM64)
+#error ARM64 requires _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B to be 1.
+#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 0 && defined(_M_ARM64)
+
+#if _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 && !defined(_WIN64)
+#error _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 requires 64-bit.
+#endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 && !defined(_WIN64)
+
 _STD_BEGIN
 enum _Uninitialized { // tag for suppressing initialization
     _Noinit
 };
 
-// CLASS _Lockit
 class _CRTIMP2_PURE_IMPORT _Lockit { // lock while object in existence -- MUST NEST
 public:
 #ifdef _M_CEE_PURE
@@ -444,7 +476,6 @@ private:
     static void __cdecl _Init_locks_dtor(_Init_locks*) noexcept;
 };
 
-// EXCEPTION MACROS
 #if _HAS_EXCEPTIONS
 #define _TRY_BEGIN try {
 #define _CATCH(x) \
@@ -482,7 +513,6 @@ private:
 #define _THROW(x) x._Raise()
 #endif // _HAS_EXCEPTIONS
 _STD_END
-#endif // __cplusplus
 
 #ifndef _RELIABILITY_CONTRACT
 #define _RELIABILITY_CONTRACT

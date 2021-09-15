@@ -3,13 +3,13 @@
 
 // Compare two strings using the locale LC_COLLATE information.
 
+#include <__msvc_xlocinfo_types.hpp>
+#include <cerrno>
+#include <clocale>
 #include <crtdbg.h>
-#include <errno.h>
-#include <locale.h>
+#include <cstdlib>
+#include <cstring>
 #include <malloc.h>
-#include <stdlib.h>
-#include <string.h>
-#include <xlocinfo.h> // for _Collvec, _Strcoll
 
 #include "awint.hpp"
 

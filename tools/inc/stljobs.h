@@ -123,6 +123,16 @@ inline handle<invalid_handle_value_policy> create_file(LPCWSTR lpFileName, DWORD
     return result;
 }
 
+inline handle<null_handle_policy> create_event(
+    LPSECURITY_ATTRIBUTES lpEventAttributes, BOOL bManualReset, BOOL bInitialState, LPCWSTR lpName) {
+    handle<null_handle_policy> result{CreateEventW(lpEventAttributes, bManualReset, bInitialState, lpName)};
+    if (!result) {
+        api_failure("CreateEventW");
+    }
+
+    return result;
+}
+
 inline handle<invalid_handle_value_policy> create_named_pipe(LPCWSTR lpName, DWORD dwOpenMode, DWORD dwPipeMode,
     DWORD nMaxInstances, DWORD nOutBufferSize, DWORD nInBufferSize, DWORD nDefaultTimeOut,
     LPSECURITY_ATTRIBUTES lpSecurityAttributes) {
@@ -305,6 +315,9 @@ struct output_collecting_pipe {
         writeHandle = create_file(pipeNameBuffer, GENERIC_WRITE | FILE_READ_ATTRIBUTES, 0, &inheritSa, OPEN_EXISTING,
             FILE_FLAG_OVERLAPPED, HANDLE{});
 
+        readEvent         = create_event(nullptr, TRUE, FALSE, nullptr);
+        overlapped.hEvent = readEvent.get();
+
         readIo = tp_io{std::move(readHandle), callback, this, nullptr};
 
         start();
@@ -312,7 +325,7 @@ struct output_collecting_pipe {
 
     ~output_collecting_pipe() noexcept {
         if (readIo) {
-            if (running.load()) {
+            if (running.exchange(false)) { // prevent callback() from calling read_some()
                 if (!CancelIoEx(readIo.get_file(), &overlapped)) {
                     api_failure("CancelIoEx"); // slams into noexcept
                 }
@@ -413,6 +426,7 @@ private:
     std::string targetBuffer; // if running, owned by a threadpool thread, otherwise owned by the calling thread
     size_t validTill{};
     handle<invalid_handle_value_policy> writeHandle;
+    handle<null_handle_policy> readEvent;
     tp_io readIo;
     OVERLAPPED overlapped{};
 };
@@ -501,7 +515,7 @@ public:
     thread_proc_attribute_list& operator=(thread_proc_attribute_list&&) = default;
 
     explicit thread_proc_attribute_list(const unsigned long attributeCount) {
-        size_t size;
+        SIZE_T size;
         if (InitializeProcThreadAttributeList(nullptr, attributeCount, 0, &size)) {
             fputs("First call to InitializeProcThreadAttributeList should not succeed.", stderr);
             abort();
@@ -558,19 +572,19 @@ struct subprocess_executive {
 
         // turn on all reasonable corruption detecting mitigations
         unsigned long long mitigations = PROCESS_CREATION_MITIGATION_POLICY_DEP_ENABLE
-                                         | PROCESS_CREATION_MITIGATION_POLICY_SEHOP_ENABLE
-                                         | PROCESS_CREATION_MITIGATION_POLICY_FORCE_RELOCATE_IMAGES_ALWAYS_ON_REQ_RELOCS
-                                         | PROCESS_CREATION_MITIGATION_POLICY_HEAP_TERMINATE_ALWAYS_ON
-                                         | PROCESS_CREATION_MITIGATION_POLICY_BOTTOM_UP_ASLR_ALWAYS_ON
-                                         | PROCESS_CREATION_MITIGATION_POLICY_HIGH_ENTROPY_ASLR_ALWAYS_ON
-                                         | PROCESS_CREATION_MITIGATION_POLICY_STRICT_HANDLE_CHECKS_ALWAYS_ON
-                                         | PROCESS_CREATION_MITIGATION_POLICY_WIN32K_SYSTEM_CALL_DISABLE_ALWAYS_ON
-                                         | PROCESS_CREATION_MITIGATION_POLICY_EXTENSION_POINT_DISABLE_ALWAYS_ON
-                                         | PROCESS_CREATION_MITIGATION_POLICY_CONTROL_FLOW_GUARD_ALWAYS_ON
-                                         | PROCESS_CREATION_MITIGATION_POLICY_PROHIBIT_DYNAMIC_CODE_ALWAYS_ON
-                                         | PROCESS_CREATION_MITIGATION_POLICY_FONT_DISABLE_ALWAYS_ON
-                                         | PROCESS_CREATION_MITIGATION_POLICY_IMAGE_LOAD_NO_REMOTE_ALWAYS_ON
-                                         | PROCESS_CREATION_MITIGATION_POLICY_IMAGE_LOAD_NO_LOW_LABEL_ALWAYS_ON;
+                                       | PROCESS_CREATION_MITIGATION_POLICY_SEHOP_ENABLE
+                                       | PROCESS_CREATION_MITIGATION_POLICY_FORCE_RELOCATE_IMAGES_ALWAYS_ON_REQ_RELOCS
+                                       | PROCESS_CREATION_MITIGATION_POLICY_HEAP_TERMINATE_ALWAYS_ON
+                                       | PROCESS_CREATION_MITIGATION_POLICY_BOTTOM_UP_ASLR_ALWAYS_ON
+                                       | PROCESS_CREATION_MITIGATION_POLICY_HIGH_ENTROPY_ASLR_ALWAYS_ON
+                                       | PROCESS_CREATION_MITIGATION_POLICY_STRICT_HANDLE_CHECKS_ALWAYS_ON
+                                       | PROCESS_CREATION_MITIGATION_POLICY_WIN32K_SYSTEM_CALL_DISABLE_ALWAYS_ON
+                                       | PROCESS_CREATION_MITIGATION_POLICY_EXTENSION_POINT_DISABLE_ALWAYS_ON
+                                       | PROCESS_CREATION_MITIGATION_POLICY_CONTROL_FLOW_GUARD_ALWAYS_ON
+                                       | PROCESS_CREATION_MITIGATION_POLICY_PROHIBIT_DYNAMIC_CODE_ALWAYS_ON
+                                       | PROCESS_CREATION_MITIGATION_POLICY_FONT_DISABLE_ALWAYS_ON
+                                       | PROCESS_CREATION_MITIGATION_POLICY_IMAGE_LOAD_NO_REMOTE_ALWAYS_ON
+                                       | PROCESS_CREATION_MITIGATION_POLICY_IMAGE_LOAD_NO_LOW_LABEL_ALWAYS_ON;
         procAttributeList.update_attribute(PROC_THREAD_ATTRIBUTE_MITIGATION_POLICY, &mitigations, sizeof(mitigations));
 
         STARTUPINFOEXW startupInfo{};

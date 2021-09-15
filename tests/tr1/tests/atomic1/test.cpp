@@ -197,7 +197,7 @@ public:
 private:
     static void do_it() { // repeatedly exchange values
         for (unsigned long i = 0; i < iterations; ++i)
-            val0.exchange((Ty)(i + 1));
+            val0.exchange((Ty) (i + 1));
     }
     static STD atomic<Ty> val0;
 };
@@ -278,10 +278,10 @@ private:
         inc_dec(3);
     }
     static void do_it2() { // increment/decrement by max() - 5
-        inc_dec(std::numeric_limits<Ty>::max() - 5);
+        inc_dec(STD numeric_limits<Ty>::max() - 5);
     }
     static void do_it3() { // increment/decrement by max() - 7
-        inc_dec(std::numeric_limits<Ty>::max() - 7);
+        inc_dec(STD numeric_limits<Ty>::max() - 7);
     }
     static void inc_dec(Ty value) { // increment/decrement by value
         unsigned long limit = iterations;

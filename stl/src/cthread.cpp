@@ -3,11 +3,11 @@
 
 // thread functions
 
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <process.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <xthreads.h>
 
 #include <Windows.h>
@@ -33,7 +33,7 @@ namespace {
         *b.started = 1;
         _Cnd_signal(*b.cond);
         _Mtx_unlock(*b.mtx);
-        const unsigned int res = (b.func)(b.data);
+        const unsigned int res = b.func(b.data);
         _Cnd_do_broadcast_at_thread_exit();
         return res;
     }
@@ -48,8 +48,8 @@ _CRTIMP2_PURE void _Thrd_exit(int res) { // terminate execution of calling threa
 
 // TRANSITION, ABI: _Thrd_start() is preserved for binary compatibility
 _CRTIMP2_PURE int _Thrd_start(_Thrd_t* thr, _Thrd_callback_t func, void* b) { // start a thread
-    thr->_Hnd = reinterpret_cast<HANDLE>(_beginthreadex(0, 0, func, b, 0, &thr->_Id));
-    return thr->_Hnd == 0 ? _Thrd_error : _Thrd_success;
+    thr->_Hnd = reinterpret_cast<HANDLE>(_beginthreadex(nullptr, 0, func, b, 0, &thr->_Id));
+    return thr->_Hnd == nullptr ? _Thrd_error : _Thrd_success;
 }
 
 int _Thrd_join(_Thrd_t thr, int* code) { // return exit code when thread terminates

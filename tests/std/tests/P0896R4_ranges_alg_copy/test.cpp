@@ -15,10 +15,9 @@ using namespace std;
 STATIC_ASSERT(same_as<ranges::copy_result<int, double>, ranges::in_out_result<int, double>>);
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::copy(borrowed<false>{}, static_cast<int*>(nullptr))),
-    ranges::copy_result<ranges::dangling, int*>>);
 STATIC_ASSERT(
-    same_as<decltype(ranges::copy(borrowed<true>{}, static_cast<int*>(nullptr))), ranges::copy_result<int*, int*>>);
+    same_as<decltype(ranges::copy(borrowed<false>{}, nullptr_to<int>)), ranges::copy_result<ranges::dangling, int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::copy(borrowed<true>{}, nullptr_to<int>)), ranges::copy_result<int*, int*>>);
 
 struct instantiator {
     static constexpr int input[3] = {13, 42, 1729};

@@ -5,10 +5,10 @@
 
 #include <yvals.h>
 
-#include <ctype.h>
-#include <locale.h>
-#include <stddef.h>
-#include <xlocinfo.h>
+#include <__msvc_xlocinfo_types.hpp>
+#include <cctype>
+#include <clocale>
+#include <cstddef>
 
 #include "awint.hpp"
 

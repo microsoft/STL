@@ -76,11 +76,15 @@ int main() {
     smoke_test();
 }
 
+#ifndef _PREFAST_ // TRANSITION, GH-1030
 struct instantiator {
     template <class Fwd1, class Fwd2>
-    static void call(Fwd1&& fwd1 = {}, Fwd2&& fwd2 = {}) {
+    static void call() {
         if constexpr (!is_permissive) { // These fail to compile in C1XX's permissive mode due to VSO-566808
             using ranges::iterator_t;
+
+            Fwd1 fwd1{std::span<const int, 0>{}};
+            Fwd2 fwd2{std::span<const int, 0>{}};
 
             (void) ranges::find_end(fwd1, fwd2);
             (void) ranges::find_end(ranges::begin(fwd1), ranges::end(fwd1), ranges::begin(fwd2), ranges::end(fwd2));
@@ -107,3 +111,4 @@ struct instantiator {
 };
 
 template void test_fwd_fwd<instantiator, const int, const int>();
+#endif // TRANSITION, GH-1030

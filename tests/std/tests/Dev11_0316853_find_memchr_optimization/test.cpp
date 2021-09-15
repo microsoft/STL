@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// DevDiv#316853 "<algorithm>: find()'s memchr() optimization is incorrect"
-// DevDiv#468500 "<algorithm>: find()'s memchr() optimization is insufficiently aggressive"
+// DevDiv-316853 "<algorithm>: find()'s memchr() optimization is incorrect"
+// DevDiv-468500 "<algorithm>: find()'s memchr() optimization is insufficiently aggressive"
 
 #pragma warning(disable : 4389) // signed/unsigned mismatch
 #pragma warning(disable : 4805) // '==': unsafe mix of type '_Ty' and type 'const _Ty' in operation
@@ -30,7 +30,7 @@ bool operator==(int x, const Cat& c) {
 }
 
 int main() {
-    { // DevDiv#316853 "<algorithm>: find()'s memchr() optimization is incorrect"
+    { // DevDiv-316853 "<algorithm>: find()'s memchr() optimization is incorrect"
         vector<signed char> v;
         v.push_back(22);
         v.push_back(33);
@@ -344,5 +344,12 @@ int main() {
         assert(find(begin(sc), end(sc), 0xFFFFFFFFFFFFFF80ULL) == begin(sc));
         assert(find(begin(sc), end(sc), 0xFFFFFFFFFFFFFF7FULL) == end(sc));
         assert(find(begin(sc), end(sc), 0xFFFFFFFFFFFFFF00ULL) == end(sc));
+    }
+
+    { // Test bools
+        const bool arr[]{true, true, true, false, true, false};
+        assert(find(begin(arr), end(arr), false) == begin(arr) + 3);
+        assert(find(begin(arr), end(arr), true) == begin(arr));
+        assert(find(begin(arr), end(arr), 2) == end(arr));
     }
 }

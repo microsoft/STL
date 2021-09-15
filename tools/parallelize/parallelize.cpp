@@ -158,8 +158,7 @@ extern "C" int wmain(int argc, wchar_t* argv[]) {
             L".hpp"sv,
         };
 
-        // TRANSITION, P0202R3, use constexpr is_sorted()
-        assert(std::is_sorted(accepted_extensions.begin(), accepted_extensions.end()));
+        static_assert(std::is_sorted(accepted_extensions.begin(), accepted_extensions.end()));
 
         if (argc < 3) {
             puts("Usage: parallelize.exe commandPrefix pathRoot0 [... pathRootN]\n"

@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// FUNCTION TEMPLATE _Scoped_outermost
 template <class _Alloc, class = void>
 struct _Scoped_outermost_helper { // gets the outermost allocator
     static decltype(auto) _Fn(_Alloc& _Al) { // gets the outermost allocator
@@ -41,15 +40,12 @@ decltype(auto) _Scoped_outermost(_Alloc& _Al) { // gets the outermost allocator
     return _Scoped_outermost_helper<_Alloc>::_Fn(_Al);
 }
 
-// ALIAS TEMPLATE _Scoped_outermost_t
 template <class _Alloc>
 using _Scoped_outermost_t = remove_reference_t<decltype(_Scoped_outermost(_STD declval<_Alloc&>()))>;
 
-// ALIAS TEMPLATE _Scoped_outermost_traits
 template <class _Alloc>
 using _Scoped_outermost_traits = allocator_traits<_Scoped_outermost_t<_Alloc>>;
 
-// CLASS TEMPLATE _Scoped_base
 template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor;
 
@@ -125,7 +121,6 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
     }
 };
 
-// CLASS TEMPLATE scoped_allocator_adaptor
 template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor : public _Scoped_base<_Outer, _Inner...> { // nest of allocators
     using _Mybase       = _Scoped_base<_Outer, _Inner...>;
@@ -230,7 +225,16 @@ public:
 
     template <class _Ty, class... _Types>
     void construct(_Ty* _Ptr, _Types&&... _Args) { // construct with varying allocator styles
+#if _HAS_CXX20
+        _STD apply(
+            [_Ptr, this](auto&&... _New_args) {
+                _Scoped_outermost_traits<scoped_allocator_adaptor>::construct(
+                    _Scoped_outermost(*this), _Ptr, _STD forward<decltype(_New_args)>(_New_args)...);
+            },
+            _STD uses_allocator_construction_args<_Ty>(inner_allocator(), _STD forward<_Types>(_Args)...));
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
         _Uses_allocator_construct(_Ptr, _Scoped_outermost(*this), inner_allocator(), _STD forward<_Types>(_Args)...);
+#endif // ^^^ !_HAS_CXX20 ^^^
     }
 
     template <class _Ty>
@@ -248,23 +252,23 @@ scoped_allocator_adaptor(_Outer, _Inner...) -> scoped_allocator_adaptor<_Outer, 
 
 template <class _Outer1, class _Outer2, class _Inner1, class... _Inner>
 _NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1, _Inner1, _Inner...>& _Left,
-    const scoped_allocator_adaptor<_Outer2, _Inner1, _Inner...>&
-        _Right) noexcept { // compare scoped_allocator_adaptors for equality
+    const scoped_allocator_adaptor<_Outer2, _Inner1, _Inner...>& _Right) noexcept {
     return _Left.outer_allocator() == _Right.outer_allocator() && _Left.inner_allocator() == _Right.inner_allocator();
 }
 
 template <class _Outer1, class _Outer2>
-_NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1>& _Left,
-    const scoped_allocator_adaptor<_Outer2>& _Right) noexcept { // compare scoped_allocator_adaptors for equality
+_NODISCARD bool operator==(
+    const scoped_allocator_adaptor<_Outer1>& _Left, const scoped_allocator_adaptor<_Outer2>& _Right) noexcept {
     return _Left.outer_allocator() == _Right.outer_allocator();
 }
 
+#if !_HAS_CXX20
 template <class _Outer1, class _Outer2, class... _Inner>
 _NODISCARD bool operator!=(const scoped_allocator_adaptor<_Outer1, _Inner...>& _Left,
-    const scoped_allocator_adaptor<_Outer2, _Inner...>&
-        _Right) noexcept { // compare scoped_allocator_adaptors for equality
+    const scoped_allocator_adaptor<_Outer2, _Inner...>& _Right) noexcept {
     return !(_Left == _Right);
 }
+#endif // !_HAS_CXX20
 
 _STD_END
 #pragma pop_macro("new")

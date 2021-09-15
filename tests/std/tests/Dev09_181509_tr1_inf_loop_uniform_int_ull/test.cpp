@@ -28,7 +28,7 @@ void microtest() {
 using fp_t = void (*)();
 template <typename URNG>
 void add_tests(vector<fp_t>& tests) {
-    // Test DevDiv#83370 "uniform_int_distribution isn't uniform".
+    // Test DevDiv-83370 "uniform_int_distribution isn't uniform".
     tests.insert(
         tests.end(), {
                          microtest<URNG, int16_t, INT16_MIN, INT16_MAX>,
@@ -55,7 +55,7 @@ void add_tests(vector<fp_t>& tests) {
                          microtest<URNG, uint32_t, 2, UINT32_MAX - 3>,
                          microtest<URNG, int64_t, INT64_MIN, INT64_MAX>,
                          microtest<URNG, int64_t, INT64_MIN + 2, INT64_MAX - 3>,
-                         microtest<URNG, uint64_t, 0, UINT64_MAX>, // Test DDB#181509 "TR1 VC9 SP1: Infinite loop in
+                         microtest<URNG, uint64_t, 0, UINT64_MAX>, // Test DDB-181509 "TR1 VC9 SP1: Infinite loop in
                                                                    // uniform_int<unsigned long long>::_Eval()".
                          microtest<URNG, uint64_t, 2, UINT64_MAX - 3>,
 
