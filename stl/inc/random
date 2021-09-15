@@ -422,18 +422,14 @@ public:
         _Prev = _Temp;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO-568006
-    _NODISCARD
-#endif // TRANSITION, VSO-568006
-    friend bool operator==(const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
+    _NODISCARD_FRIEND bool operator==(
+        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
     /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO-568006
-    _NODISCARD
-#endif // TRANSITION, VSO-568006
-    friend bool operator!=(const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
+    _NODISCARD_FRIEND bool operator!=(
+        const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
     /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
@@ -515,18 +511,12 @@ public:
         _Prev = _Temp;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO-568006
-    _NODISCARD
-#endif // TRANSITION, VSO-568006
-    friend bool operator==(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
+    _NODISCARD_FRIEND bool operator==(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
     /* strengthened */ {
         return _Lhs._Prev == _Rhs._Prev;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO-568006
-    _NODISCARD
-#endif // TRANSITION, VSO-568006
-    friend bool operator!=(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
+    _NODISCARD_FRIEND bool operator!=(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
     /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
