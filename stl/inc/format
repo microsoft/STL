@@ -213,7 +213,7 @@ struct _Unicode_property_data {
 // Codepoint ranges may not overlap, and, within one property, a codepoint may only appear once. Furthermore the
 // codepoint lower bounds appear in sorted (ascending) order.
 
-
+// vvv Generated code - DO NOT EDIT manually! vvv
 enum class _Grapheme_Break_property_values : uint8_t {
     _CR_value,
     _Control_value,
@@ -500,6 +500,7 @@ inline constexpr _Unicode_property_data<_Extended_Pictographic_property_values, 
             0x6, 0x1, 0x2, 0x8, 0x1, 0x1, 0x3, 0x17, 0x19, 0x70, 0x4, 0x1, 0x3, 0x3, 0x5, 0x3, 0x4, 0x9, 0x6, 0x13, 0x7,
             0x7, 0x9, 0x3, 0xd, 0x7, 0x29, 0x3fe}};
 
+// ^^^ Generated code - DO NOT EDIT manually! ^^^
 
 // _Decode_utf decodes UTF-8 or UTF-16 encoded unsigned char or wchar_t strings respectively
 constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wchar_t* _Last, char32_t& _Val) noexcept {
