@@ -169,28 +169,27 @@ struct _Unicode_property_data {
     uint16_t _Props_and_size[_NumRanges];
     _NODISCARD constexpr _ValueEnum _Get_property_for_codepoint(const uint32_t _Code_point) const noexcept {
         ptrdiff_t _Upper_idx = _STD upper_bound(_Lower_bounds, _STD end(_Lower_bounds), _Code_point) - _Lower_bounds;
+        constexpr auto _No_value_constant = static_cast<_ValueEnum>((numeric_limits<uint8_t>::max) ());
         if (_Upper_idx == 0) {
-            return static_cast<_ValueEnum>((numeric_limits<uint8_t>::max) ());
+            return _No_value_constant;
         }
         --_Upper_idx;
-        uint32_t _Lower_bound = _Lower_bounds[_Upper_idx];
-        uint16_t _Data        = _Props_and_size[_Upper_idx];
-        uint16_t _Size        = static_cast<uint16_t>(_Data & 0x0FFF);
-        _ValueEnum _Prop      = static_cast<_ValueEnum>((_Data & 0xF000) >> 12);
+        const uint32_t _Lower_bound = _Lower_bounds[_Upper_idx];
+        const uint16_t _Data        = _Props_and_size[_Upper_idx];
+        const uint16_t _Size        = static_cast<uint16_t>(_Data & 0x0FFF);
+        const _ValueEnum _Prop      = static_cast<_ValueEnum>((_Data & 0xF000) >> 12);
         _STL_INTERNAL_CHECK(_Code_point >= _Lower_bound);
         if (_Code_point < _Lower_bound + _Size) {
             return _Prop;
         }
-        return static_cast<_ValueEnum>((numeric_limits<uint8_t>::max) ());
+        return _No_value_constant;
     }
 };
 
-// the following static data tables are generated from the unicode character database version 13.0.0
-// _Grapheme_Break_Property_Codepoint_Lower_Bounds and _Grapheme_Break_Property_Props_And_Range come from
-// ucd/auxiliary/GraphemeBreakProperty.txt
+// The following static data tables are generated from the unicode character database version 13.0.0.
+// _Grapheme_Break_property_data comes from ucd/auxiliary/GraphemeBreakProperty.txt.
 //
-// _Extended_Pictographic_Codepoint_Lower_Bounds and _Extended_Pictographic_Props_And_Range come from
-// ucd/emoji/emoji-data.txt
+// _Extended_Pictographic_property_data comes from ucd/emoji/emoji-data.txt.
 //
 // The enums containing the values for the properties are also generated, in order to ensure they match
 // up correctly with how we're parsing them.
@@ -201,7 +200,7 @@ struct _Unicode_property_data {
 // The data format is a set of arrays for each character property. The first is an array of uint32_t encoding
 // the lower bound of each range of codepoints that has the given property. The second is an array of uint16_t encoding
 // both the range size and property value as follows:
-// 16               12                 8                 0
+// 16               12                                   0
 // +-----------------------------------------------------+
 // | property_value  |              range_size           |
 // +-----------------------------------------------------+
@@ -211,8 +210,8 @@ struct _Unicode_property_data {
 // Note that the Extended_Pictographic property only has one value, and we encode it as zero in the most significant 4
 // bits, so the most significant 4 bits of _Extended_Pictographic_Props_And_Range are "unused", in some sense.
 //
-// Code point ranges may not overlap, and, within one property, a codepoint may only appear once. Further the codepoint
-// lower bounds appear in sorted (ascending) order.
+// Codepoint ranges may not overlap, and, within one property, a codepoint may only appear once. Furthermore the
+// codepoint lower bounds appear in sorted (ascending) order.
 
 
 enum class _Grapheme_Break_property_values : uint8_t {
@@ -510,7 +509,7 @@ constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wchar_t* _Last
         return _First + 1;
     } else if (_Val <= 0xDBFF) {
         //  0xD800 <= _Val <= 0xDBFF: High surrogate
-        if (_First + 1 >= _Last) {
+        if (_First + 1 == _Last) {
             _Val = 0xFFFD;
             return _Last;
         }
@@ -538,17 +537,17 @@ constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_
     _STL_INTERNAL_CHECK(_First < _Last);
     // decode a UTF-8 value starting at _First and not exceeding _Last, returning
     // one past the end of the character decoded. Any invalid codepoints will result in
-    // _Val == U+FFFD and _Decode_utf8 will return one past the
+    // _Val == U+FFFD and _Decode_utf will return one past the
     // maximal subpart of the ill-formed subsequence. So, most invalid UTF-8 will result in
     // one U+FFFD for each byte of invalid data. Truncated but otherwise valid UTF-8 may
     // result in one U+FFFD for more than one input byte.
     _Val = static_cast<char32_t>(static_cast<unsigned char>(*_First));
 
-    // all UTF text is at least one byte
+    // all UTF-8 text is at least one byte
     // the zero extended values of the "prefix" bytes for
     // a multi-byte sequence are the lowest numeric value (in two's complement)
     // that any leading byte could have for a code unit of that size, so
-    // we just sum the comparisions to get the number of trailing bytes
+    // we just sum the comparisons to get the number of trailing bytes
     int _Num_bytes;
     if (_Val <= 0x7F) {
         return _First + 1;

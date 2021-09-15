@@ -416,6 +416,17 @@ constexpr bool test_utf8_decode() {
         {0xFFFd, 0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0xFFFD, 0xFFFD, 0x42, 0x0});
     test_utf_decode_helper("\xE1\x80\xE2\xF0\x91\x92\xF1\xBF\x41", {0xFFFD, 0xFFFD, 0xFFFD, 0xFFFD, 0x41, 0x0});
     test_utf_decode_helper("\xCE\xA9", {0x03A9, 0x0});
+    test_utf_decode_helper("\x7F", {0x7F, 0x0});
+    test_utf_decode_helper("\xC2\xA2", {0xA2, 0x0});
+    test_utf_decode_helper("\xD4\x84", {0x0504, 0x0});
+    test_utf_decode_helper("\xDF\xA0", {0x7E0, 0x0});
+    test_utf_decode_helper("\xE0\xA4\x93", {0x0913, 0x0});
+    test_utf_decode_helper("\xE1\xBC\x80", {0x1F00, 0x0});
+    test_utf_decode_helper("\xEF\xA0\x93", {0xF813, 0x0});
+    test_utf_decode_helper("\xF3\xBA\xBE\x8F", {0xFAF8F, 0x0});
+    test_utf_decode_helper("\xFF\xBA", {0xFFFD, 0xFFFD, 0x0});
+    test_utf_decode_helper("\xEF", {0xFFFD, 0x0});
+    test_utf_decode_helper("\xE0\x91", {0xFFFD, 0xFFFD, 0x0});
     return true;
 }
 
