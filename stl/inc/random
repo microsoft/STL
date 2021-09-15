@@ -428,11 +428,13 @@ public:
         return _Lhs._Prev == _Rhs._Prev;
     }
 
+#if !_HAS_CXX20
     _NODISCARD_FRIEND bool operator!=(
         const linear_congruential_engine& _Lhs, const linear_congruential_engine& _Rhs) noexcept
     /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
+#endif // !_HAS_CXX20
 
     template <class _Elem, class _Traits>
     friend basic_istream<_Elem, _Traits>& operator>>(
@@ -516,10 +518,12 @@ public:
         return _Lhs._Prev == _Rhs._Prev;
     }
 
+#if !_HAS_CXX20
     _NODISCARD_FRIEND bool operator!=(const linear_congruential& _Lhs, const linear_congruential& _Rhs) noexcept
     /* strengthened */ {
         return _Lhs._Prev != _Rhs._Prev;
     }
+#endif // !_HAS_CXX20
 
     template <class _Elem, class _Traits>
     friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, linear_congruential& _Eng) {
@@ -654,6 +658,30 @@ public:
         }
     }
 
+    _NODISCARD_FRIEND bool operator==(const _Swc_base& _Left, const _Swc_base& _Right) {
+        return _Left._Equals(_Right);
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const _Swc_base& _Left, const _Swc_base& _Right) {
+        return !_Left._Equals(_Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(
+        basic_istream<_Elem, _Traits>& _Istr, _Swc_base& _Eng) { // read state from _Istr
+        _Wrap_istream<_Elem, _Traits, typename _Swc_Traits::_Seed_t> _Gen(_Istr);
+        _Eng.seed(_Gen, true);
+        return _Istr;
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const _Swc_base& _Eng) { // write state to _Ostr
+        return _Eng._Write(_Ostr);
+    }
+
     bool _Equals(const _Swc_base& _Right) const {
         return _Mybase::_Equals(_Right) && _Carry == _Right._Carry;
     }
@@ -707,32 +735,6 @@ protected:
 
     typename _Swc_Traits::_Cy_t _Carry;
 };
-
-template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-_NODISCARD bool operator==(
-    const _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>& _Left, const _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>& _Right) {
-    return _Left._Equals(_Right);
-}
-
-template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-_NODISCARD bool operator!=(
-    const _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>& _Left, const _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>& _Right) {
-    return !_Left._Equals(_Right);
-}
-
-template <class _Elem, class _Traits, class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-basic_istream<_Elem, _Traits>& operator>>(
-    basic_istream<_Elem, _Traits>& _Istr, _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>& _Eng) { // read state from _Istr
-    _Wrap_istream<_Elem, _Traits, typename _Swc_Traits::_Seed_t> _Gen(_Istr);
-    _Eng.seed(_Gen, true);
-    return _Istr;
-}
-
-template <class _Elem, class _Traits, class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-basic_ostream<_Elem, _Traits>& operator<<(
-    basic_ostream<_Elem, _Traits>& _Ostr, const _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>& _Eng) { // write state to _Ostr
-    return _Eng._Write(_Ostr);
-}
 
 template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
 const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::short_lag;
@@ -1047,6 +1049,30 @@ public:
         this->_Idx = _Nx;
     }
 
+    _NODISCARD_FRIEND bool operator==(const mersenne_twister& _Left, const mersenne_twister& _Right) {
+        return _Left._Equals(_Right);
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const mersenne_twister& _Left, const mersenne_twister& _Right) {
+        return !_Left._Equals(_Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _S_Traits>
+    friend basic_istream<_Elem, _S_Traits>& operator>>(basic_istream<_Elem, _S_Traits>& _Istr,
+        mersenne_twister& _Eng) { // read state from _Istr
+        _Wrap_istream<_Elem, _S_Traits, _Ty> _Gen(_Istr);
+        _Eng.seed(_Gen);
+        return _Istr;
+    }
+
+    template <class _Elem, class _S_Traits>
+    friend basic_ostream<_Elem, _S_Traits>& operator<<(basic_ostream<_Elem, _S_Traits>& _Ostr,
+        const mersenne_twister& _Eng) { // write state to _Ostr
+        return _Eng._Write(_Ostr);
+    }
+
     template <class _Elem, class _S_Traits>
     basic_ostream<_Elem, _S_Traits>& _Write(basic_ostream<_Elem, _S_Traits>& _Ostr) const { // write state to _Ostr
         _Ostr << this->_At(0);
@@ -1145,34 +1171,6 @@ protected:
     static constexpr int _One_mod_n = 1 % _Nx; // either 0 or 1
     static constexpr int _M_mod_n   = _Mx % _Nx;
 };
-
-template <class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx, _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
-_NODISCARD bool operator==(const mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx>& _Left,
-    const mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx>& _Right) {
-    return _Left._Equals(_Right);
-}
-
-template <class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx, _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
-_NODISCARD bool operator!=(const mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx>& _Left,
-    const mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx>& _Right) {
-    return !_Left._Equals(_Right);
-}
-
-template <class _Elem, class _S_Traits, class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx,
-    _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
-basic_istream<_Elem, _S_Traits>& operator>>(basic_istream<_Elem, _S_Traits>& _Istr,
-    mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx>& _Eng) { // read state from _Istr
-    _Wrap_istream<_Elem, _S_Traits, _Ty> _Gen(_Istr);
-    _Eng.seed(_Gen);
-    return _Istr;
-}
-
-template <class _Elem, class _S_Traits, class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx,
-    _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
-basic_ostream<_Elem, _S_Traits>& operator<<(basic_ostream<_Elem, _S_Traits>& _Ostr,
-    const mersenne_twister<_Ty, _Wx, _Nx, _Mx, _Rx, _Px, _Ux, _Sx, _Bx, _Tx, _Cx, _Lx>& _Eng) { // write state to _Ostr
-    return _Eng._Write(_Ostr);
-}
 
 template <class _Ty, size_t _Wx, size_t _Nx, size_t _Mx, size_t _Rx, _Ty _Px, size_t _Ux, _Ty _Dx, size_t _Sx, _Ty _Bx,
     size_t _Tx, _Ty _Cx, size_t _Lx, _Ty _Fx>
@@ -1322,6 +1320,28 @@ public:
         }
     }
 
+    _NODISCARD_FRIEND bool operator==(const discard_block& _Left, const discard_block& _Right) {
+        return _Left._Equals(_Right);
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const discard_block& _Left, const discard_block& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(
+        basic_istream<_Elem, _Traits>& _Istr, discard_block& _Eng) { // read state from _Istr
+        return _Eng._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(
+        basic_ostream<_Elem, _Traits>& _Ostr, const discard_block& _Eng) { // write state to _Ostr
+        return _Eng._Write(_Ostr);
+    }
+
     bool _Equals(const discard_block& _Right) const {
         return _Eng == _Right._Eng && _Nx == _Right._Nx;
     }
@@ -1346,30 +1366,6 @@ const int discard_block<_Engine, _Px, _Rx>::block_size;
 
 template <class _Engine, int _Px, int _Rx>
 const int discard_block<_Engine, _Px, _Rx>::used_block;
-
-template <class _Engine, int _Px, int _Rx>
-_NODISCARD bool operator==(
-    const discard_block<_Engine, _Px, _Rx>& _Left, const discard_block<_Engine, _Px, _Rx>& _Right) {
-    return _Left._Equals(_Right);
-}
-
-template <class _Engine, int _Px, int _Rx>
-_NODISCARD bool operator!=(
-    const discard_block<_Engine, _Px, _Rx>& _Left, const discard_block<_Engine, _Px, _Rx>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Engine, int _Px, int _Rx>
-basic_istream<_Elem, _Traits>& operator>>(
-    basic_istream<_Elem, _Traits>& _Istr, discard_block<_Engine, _Px, _Rx>& _Eng) { // read state from _Istr
-    return _Eng._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Engine, int _Px, int _Rx>
-basic_ostream<_Elem, _Traits>& operator<<(
-    basic_ostream<_Elem, _Traits>& _Ostr, const discard_block<_Engine, _Px, _Rx>& _Eng) { // write state to _Ostr
-    return _Eng._Write(_Ostr);
-}
 
 template <class _Engine, size_t _Px, size_t _Rx>
 class discard_block_engine : public discard_block<_Engine, _Px, _Rx> { // discard_block_engine compound engine
@@ -1492,6 +1488,28 @@ public:
         }
     }
 
+    _NODISCARD_FRIEND bool operator==(const independent_bits_engine& _Left, const independent_bits_engine& _Right) {
+        return _Left.base() == _Right.base();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const independent_bits_engine& _Left, const independent_bits_engine& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        independent_bits_engine& _Eng) { // read state from _Istr
+        return _Eng._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const independent_bits_engine& _Eng) { // write state to _Ostr
+        return _Eng._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         return _Istr >> _Eng;
@@ -1537,30 +1555,6 @@ private:
     _Eres _Yx0; // max value for smaller packing word
     _Eres _Yx1; // max value for larger packing word
 };
-
-template <class _Engine, size_t _Wx, class _UIntType>
-_NODISCARD bool operator==(const independent_bits_engine<_Engine, _Wx, _UIntType>& _Left,
-    const independent_bits_engine<_Engine, _Wx, _UIntType>& _Right) {
-    return _Left.base() == _Right.base();
-}
-
-template <class _Engine, size_t _Wx, class _UIntType>
-_NODISCARD bool operator!=(const independent_bits_engine<_Engine, _Wx, _UIntType>& _Left,
-    const independent_bits_engine<_Engine, _Wx, _UIntType>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Engine, size_t _Wx, class _UIntType>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    independent_bits_engine<_Engine, _Wx, _UIntType>& _Eng) { // read state from _Istr
-    return _Eng._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Engine, size_t _Wx, class _UIntType>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const independent_bits_engine<_Engine, _Wx, _UIntType>& _Eng) { // write state to _Ostr
-    return _Eng._Write(_Ostr);
-}
 
 template <class _Engine, size_t _Kx>
 class shuffle_order_engine { // shuffle_order_engine compound engine
@@ -1635,6 +1629,28 @@ public:
         }
     }
 
+    _NODISCARD_FRIEND bool operator==(const shuffle_order_engine& _Left, const shuffle_order_engine& _Right) {
+        return _Left.base() == _Right.base();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const shuffle_order_engine& _Left, const shuffle_order_engine& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(
+        basic_istream<_Elem, _Traits>& _Istr, shuffle_order_engine& _Eng) { // read state from _Istr
+        return _Eng._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(
+        basic_ostream<_Elem, _Traits>& _Ostr, const shuffle_order_engine& _Eng) { // write state to _Ostr
+        return _Eng._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Istr >> _Eng;
@@ -1672,30 +1688,6 @@ private:
     double _Scale;
 };
 
-template <class _Engine, size_t _Kx>
-_NODISCARD bool operator==(
-    const shuffle_order_engine<_Engine, _Kx>& _Left, const shuffle_order_engine<_Engine, _Kx>& _Right) {
-    return _Left.base() == _Right.base();
-}
-
-template <class _Engine, size_t _Kx>
-_NODISCARD bool operator!=(
-    const shuffle_order_engine<_Engine, _Kx>& _Left, const shuffle_order_engine<_Engine, _Kx>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Engine, size_t _Kx>
-basic_istream<_Elem, _Traits>& operator>>(
-    basic_istream<_Elem, _Traits>& _Istr, shuffle_order_engine<_Engine, _Kx>& _Eng) { // read state from _Istr
-    return _Eng._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Engine, size_t _Kx>
-basic_ostream<_Elem, _Traits>& operator<<(
-    basic_ostream<_Elem, _Traits>& _Ostr, const shuffle_order_engine<_Engine, _Kx>& _Eng) { // write state to _Ostr
-    return _Eng._Write(_Ostr);
-}
-
 template <class _Ty = int>
 class uniform_int { // uniform integer distribution
 public:
@@ -1712,13 +1704,15 @@ public:
             _Init(_Min0, _Max0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Min == _Right._Min && _Max == _Right._Max;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Min == _Right._Min && _Left._Max == _Right._Max;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD result_type a() const {
             return _Min;
@@ -1786,6 +1780,18 @@ public:
     }
 
     template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        uniform_int& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const uniform_int& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
+    template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Min0;
         _Ty _Max0;
@@ -1837,18 +1843,6 @@ private:
     param_type _Par;
 };
 
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    uniform_int<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const uniform_int<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = int>
 class uniform_int_distribution : public uniform_int<_Ty> { // uniform integer distribution
 public:
@@ -1874,17 +1868,17 @@ public:
     explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max) ()) : _Mybase(_Min0, _Max0) {}
 
     explicit uniform_int_distribution(const param_type& _Par0) : _Mybase(_Par0) {}
+
+    _NODISCARD_FRIEND bool operator==(const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const uniform_int_distribution& _Left, const uniform_int_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
 };
-
-template <class _Ty>
-_NODISCARD bool operator==(const uniform_int_distribution<_Ty>& _Left, const uniform_int_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const uniform_int_distribution<_Ty>& _Left, const uniform_int_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
 
 class bernoulli_distribution { // class for bernoulli distribution
 public:
@@ -1901,13 +1895,15 @@ public:
             _Init(_Px0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Px == _Right._Px;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Px == _Right._Px;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD double p() const {
             return _Px;
@@ -1960,6 +1956,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        bernoulli_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const bernoulli_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         double _Px0;
@@ -1982,26 +2000,6 @@ private:
 
     param_type _Par;
 };
-
-_NODISCARD inline bool operator==(const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-_NODISCARD inline bool operator!=(const bernoulli_distribution& _Left, const bernoulli_distribution& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    bernoulli_distribution& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const bernoulli_distribution& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
 
 
 // Returns smallest _Flt such that static_cast<_Ty>(_Result) > _Val.
@@ -2061,13 +2059,15 @@ public:
             _Init(_Px0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Px == _Right._Px;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Px == _Right._Px;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty1 p() const {
             return _Px;
@@ -2121,6 +2121,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const geometric_distribution& _Left, const geometric_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const geometric_distribution& _Left, const geometric_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        geometric_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const geometric_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty1 _Px0;
@@ -2151,28 +2173,6 @@ private:
 
     param_type _Par;
 };
-
-template <class _Ty>
-_NODISCARD bool operator==(const geometric_distribution<_Ty>& _Left, const geometric_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const geometric_distribution<_Ty>& _Left, const geometric_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    geometric_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const geometric_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
 
 template <class _Ty = int>
 class _Small_poisson_distribution { // poisson distribution with small mean
@@ -2220,13 +2220,15 @@ public:
             _Init(_Mean0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Mean == _Right._Mean;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Mean == _Right._Mean;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty1 mean() const {
             return _Mean;
@@ -2287,6 +2289,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const poisson_distribution& _Left, const poisson_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const poisson_distribution& _Left, const poisson_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        poisson_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const poisson_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty1 _Mean0;
@@ -2334,28 +2358,6 @@ private:
     param_type _Par;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(const poisson_distribution<_Ty>& _Left, const poisson_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const poisson_distribution<_Ty>& _Left, const poisson_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    poisson_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const poisson_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = int>
 class binomial_distribution { // binomial distribution
 public:
@@ -2376,13 +2378,15 @@ public:
             _Init(_Tx0, _Px0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Tx == _Right._Tx && _Px == _Right._Px;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Tx == _Right._Tx && _Left._Px == _Right._Px;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty t() const {
             return _Tx;
@@ -2458,6 +2462,28 @@ public:
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) const {
         return _Eval(_Eng, _Par0);
+    }
+
+    _NODISCARD_FRIEND bool operator==(const binomial_distribution& _Left, const binomial_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const binomial_distribution& _Left, const binomial_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        binomial_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const binomial_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
     }
 
     template <class _Elem, class _Traits>
@@ -2540,28 +2566,6 @@ private:
     param_type _Par;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(const binomial_distribution<_Ty>& _Left, const binomial_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const binomial_distribution<_Ty>& _Left, const binomial_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    binomial_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const binomial_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = double>
 class uniform_real { // uniform real distribution
 public:
@@ -2578,13 +2582,15 @@ public:
             _Init(_Min0, _Max0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Min == _Right._Min && _Max == _Right._Max;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Min == _Right._Min && _Left._Max == _Right._Max;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD result_type a() const {
             return _Min;
@@ -2648,6 +2654,18 @@ public:
     }
 
     template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        uniform_real& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const uniform_real& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
+    template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Min0;
         _Ty _Max0;
@@ -2673,18 +2691,6 @@ private:
     param_type _Par;
 };
 
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    uniform_real<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const uniform_real<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = double>
 class uniform_real_distribution : public uniform_real<_Ty> { // uniform real distribution
 public:
@@ -2709,17 +2715,17 @@ public:
     explicit uniform_real_distribution(_Ty _Min0, _Ty _Max0 = _Ty{1}) : _Mybase(_Min0, _Max0) {}
 
     explicit uniform_real_distribution(const param_type& _Par0) : _Mybase(_Par0) {}
+
+    _NODISCARD_FRIEND bool operator==(const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const uniform_real_distribution& _Left, const uniform_real_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
 };
-
-template <class _Ty>
-_NODISCARD bool operator==(const uniform_real_distribution<_Ty>& _Left, const uniform_real_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const uniform_real_distribution<_Ty>& _Left, const uniform_real_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
 
 template <class _Ty = double>
 class exponential_distribution { // exponential distribution
@@ -2739,13 +2745,15 @@ public:
             _Init(_Lambda0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Lambda == _Right._Lambda;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Lambda == _Right._Lambda;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty lambda() const {
             return _Lambda;
@@ -2797,6 +2805,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const exponential_distribution& _Left, const exponential_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const exponential_distribution& _Left, const exponential_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        exponential_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const exponential_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Lambda0;
@@ -2820,28 +2850,6 @@ private:
     param_type _Par;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(const exponential_distribution<_Ty>& _Left, const exponential_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const exponential_distribution<_Ty>& _Left, const exponential_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    exponential_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const exponential_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = double>
 class normal_distribution { // normal distribution
 public:
@@ -2860,13 +2868,15 @@ public:
             _Init(_Mean0, _Sigma0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Mean == _Right._Mean && _Sigma == _Right._Sigma;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Mean == _Right._Mean && _Left._Sigma == _Right._Sigma;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty mean() const {
             return _Mean;
@@ -2938,6 +2948,28 @@ public:
     _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) {
         reset();
         return _Eval(_Eng, _Par0, false);
+    }
+
+    _NODISCARD_FRIEND bool operator==(const normal_distribution& _Left, const normal_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const normal_distribution& _Left, const normal_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        normal_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const normal_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
     }
 
     template <class _Elem, class _Traits>
@@ -3016,28 +3048,6 @@ private:
     _Ty _Xx2;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(const normal_distribution<_Ty>& _Left, const normal_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const normal_distribution<_Ty>& _Left, const normal_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    normal_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const normal_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = double>
 class gamma_distribution { // gamma distribution
 public:
@@ -3056,13 +3066,15 @@ public:
             _Init(_Alpha0, _Beta0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Alpha == _Right._Alpha && _Beta == _Right._Beta;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Alpha == _Right._Alpha && _Left._Beta == _Right._Beta;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty alpha() const {
             return _Alpha;
@@ -3128,6 +3140,28 @@ public:
     template <class _Engine>
     _NODISCARD result_type operator()(_Engine& _Eng, const param_type& _Par0) const {
         return _Eval(_Eng, _Par0);
+    }
+
+    _NODISCARD_FRIEND bool operator==(const gamma_distribution& _Left, const gamma_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const gamma_distribution& _Left, const gamma_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        gamma_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const gamma_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
     }
 
     template <class _Elem, class _Traits>
@@ -3211,28 +3245,6 @@ private:
     param_type _Par;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(const gamma_distribution<_Ty>& _Left, const gamma_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const gamma_distribution<_Ty>& _Left, const gamma_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    gamma_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const gamma_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = double>
 class weibull_distribution { // weibull distribution
 public:
@@ -3251,13 +3263,15 @@ public:
             _Init(_Ax0, _Bx0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Ax == _Right._Ax && _Bx == _Right._Bx;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Ax == _Right._Ax && _Left._Bx == _Right._Bx;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty a() const {
             return _Ax;
@@ -3320,6 +3334,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const weibull_distribution& _Left, const weibull_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const weibull_distribution& _Left, const weibull_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        weibull_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const weibull_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Ax0;
@@ -3347,28 +3383,6 @@ private:
     param_type _Par;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(const weibull_distribution<_Ty>& _Left, const weibull_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const weibull_distribution<_Ty>& _Left, const weibull_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    weibull_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const weibull_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = double>
 class extreme_value_distribution { // extreme value distribution
 public:
@@ -3387,13 +3401,15 @@ public:
             _Init(_Ax0, _Bx0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Ax == _Right._Ax && _Bx == _Right._Bx;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Ax == _Right._Ax && _Left._Bx == _Right._Bx;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty a() const {
             return _Ax;
@@ -3455,6 +3471,30 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(
+        const extreme_value_distribution& _Left, const extreme_value_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(
+        const extreme_value_distribution& _Left, const extreme_value_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        extreme_value_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const extreme_value_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Ax0;
@@ -3482,30 +3522,6 @@ private:
     param_type _Par;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(
-    const extreme_value_distribution<_Ty>& _Left, const extreme_value_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(
-    const extreme_value_distribution<_Ty>& _Left, const extreme_value_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    extreme_value_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const extreme_value_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = double>
 class lognormal_distribution { // lognormal_distribution
 public:
@@ -3524,13 +3540,15 @@ public:
             _Init(_Mx0, _Sx0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Mx == _Right._Mx && _Sx == _Right._Sx;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Mx == _Right._Mx && _Left._Sx == _Right._Sx;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty m() const {
             return _Mx;
@@ -3592,6 +3610,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const lognormal_distribution& _Left, const lognormal_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const lognormal_distribution& _Left, const lognormal_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        lognormal_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const lognormal_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Mx0;
@@ -3619,28 +3659,6 @@ private:
     param_type _Par;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(const lognormal_distribution<_Ty>& _Left, const lognormal_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const lognormal_distribution<_Ty>& _Left, const lognormal_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    lognormal_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const lognormal_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = double>
 class chi_squared_distribution { // chi squared distribution
 public:
@@ -3659,13 +3677,15 @@ public:
             _Init(_Nx0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Nx == _Right._Nx;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Nx == _Right._Nx;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty n() const {
             return _Nx;
@@ -3717,6 +3737,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const chi_squared_distribution& _Left, const chi_squared_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const chi_squared_distribution& _Left, const chi_squared_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        chi_squared_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const chi_squared_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Nx0;
@@ -3740,28 +3782,6 @@ private:
     param_type _Par;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(const chi_squared_distribution<_Ty>& _Left, const chi_squared_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const chi_squared_distribution<_Ty>& _Left, const chi_squared_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    chi_squared_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const chi_squared_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = double>
 class cauchy_distribution { // Cauchy distribution
 public:
@@ -3780,13 +3800,15 @@ public:
             _Init(_Ax0, _Bx0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Ax == _Right._Ax && _Bx == _Right._Bx;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Ax == _Right._Ax && _Left._Bx == _Right._Bx;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty a() const {
             return _Ax;
@@ -3848,6 +3870,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const cauchy_distribution& _Left, const cauchy_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const cauchy_distribution& _Left, const cauchy_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        cauchy_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const cauchy_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Ax0;
@@ -3874,28 +3918,6 @@ private:
 
     param_type _Par;
 };
-
-template <class _Ty>
-_NODISCARD bool operator==(const cauchy_distribution<_Ty>& _Left, const cauchy_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const cauchy_distribution<_Ty>& _Left, const cauchy_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    cauchy_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const cauchy_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
 
 template <class _Ty = double>
 class _Beta_distribution { // beta distribution
@@ -3974,13 +3996,15 @@ public:
             _Init(_Mx0, _Nx0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Mx == _Right._Mx && _Nx == _Right._Nx;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Mx == _Right._Mx && _Left._Nx == _Right._Nx;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty m() const {
             return _Mx;
@@ -4043,6 +4067,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const fisher_f_distribution& _Left, const fisher_f_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        fisher_f_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const fisher_f_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Mx0;
@@ -4081,28 +4127,6 @@ private:
     param_type _Par;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(const fisher_f_distribution<_Ty>& _Left, const fisher_f_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const fisher_f_distribution<_Ty>& _Left, const fisher_f_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    fisher_f_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const fisher_f_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = double>
 class student_t_distribution { // student_t distribution
 public:
@@ -4121,13 +4145,15 @@ public:
             _Init(_Nx0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Nx == _Right._Nx;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Nx == _Right._Nx;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty n() const {
             return _Nx;
@@ -4179,6 +4205,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const student_t_distribution& _Left, const student_t_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const student_t_distribution& _Left, const student_t_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        student_t_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const student_t_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Nx0;
@@ -4217,28 +4265,6 @@ private:
     param_type _Par;
 };
 
-template <class _Ty>
-_NODISCARD bool operator==(const student_t_distribution<_Ty>& _Left, const student_t_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const student_t_distribution<_Ty>& _Left, const student_t_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    student_t_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const student_t_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
-
 template <class _Ty = int>
 class negative_binomial_distribution { // negative binomial distribution
 public:
@@ -4257,13 +4283,15 @@ public:
             _Init(_Kx0, _Px0);
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Kx == _Right._Kx && _Px == _Right._Px;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Kx == _Right._Kx && _Left._Px == _Right._Px;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Ty k() const {
             return _Kx;
@@ -4328,6 +4356,30 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(
+        const negative_binomial_distribution& _Left, const negative_binomial_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(
+        const negative_binomial_distribution& _Left, const negative_binomial_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        negative_binomial_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const negative_binomial_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Ty _Kx0;
@@ -4359,30 +4411,6 @@ private:
 
     param_type _Par;
 };
-
-template <class _Ty>
-_NODISCARD bool operator==(
-    const negative_binomial_distribution<_Ty>& _Left, const negative_binomial_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(
-    const negative_binomial_distribution<_Ty>& _Left, const negative_binomial_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    negative_binomial_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const negative_binomial_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
 
 template <class _Ty = int>
 class discrete_distribution { // discrete integer distribution
@@ -4427,13 +4455,15 @@ public:
             _Init();
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return _Pvec == _Right._Pvec;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return _Left._Pvec == _Right._Pvec;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD _Myvec probabilities() const {
             return _Pvec;
@@ -4517,6 +4547,28 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(const discrete_distribution& _Left, const discrete_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(const discrete_distribution& _Left, const discrete_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        discrete_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr, _Dist._Par);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const discrete_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr, _Dist._Par);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr,
         param_type& _Par0) { // read state from _Istr
@@ -4557,28 +4609,6 @@ private:
 public:
     param_type _Par;
 };
-
-template <class _Ty>
-_NODISCARD bool operator==(const discrete_distribution<_Ty>& _Left, const discrete_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(const discrete_distribution<_Ty>& _Left, const discrete_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    discrete_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr, _Dist._Par);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const discrete_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr, _Dist._Par);
-}
 
 template <class _Ty = double>
 class piecewise_constant_distribution
@@ -4636,13 +4666,16 @@ public:
             }
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return static_cast<const _Mypbase&>(*this) == static_cast<const _Mypbase&>(_Right) && _Bvec == _Right._Bvec;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return static_cast<const _Mypbase&>(_Left) == static_cast<const _Mypbase&>(_Right)
+                && _Left._Bvec == _Right._Bvec;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD vector<_Ty> intervals() const {
             return _Bvec;
@@ -4714,6 +4747,30 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(
+        const piecewise_constant_distribution& _Left, const piecewise_constant_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(
+        const piecewise_constant_distribution& _Left, const piecewise_constant_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        piecewise_constant_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const piecewise_constant_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr) { // read state from _Istr
         _Mybase::_Read(_Istr, _Par);
@@ -4747,30 +4804,6 @@ public:
 
     param_type _Par;
 };
-
-template <class _Ty>
-_NODISCARD bool operator==(
-    const piecewise_constant_distribution<_Ty>& _Left, const piecewise_constant_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(
-    const piecewise_constant_distribution<_Ty>& _Left, const piecewise_constant_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    piecewise_constant_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const piecewise_constant_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
 
 template <class _Ty = double>
 class piecewise_linear_distribution
@@ -4836,13 +4869,16 @@ public:
             _Init();
         }
 
-        _NODISCARD bool operator==(const param_type& _Right) const {
-            return static_cast<const _Mypbase&>(*this) == static_cast<const _Mypbase&>(_Right) && _Bvec == _Right._Bvec;
+        _NODISCARD_FRIEND bool operator==(const param_type& _Left, const param_type& _Right) {
+            return static_cast<const _Mypbase&>(_Left) == static_cast<const _Mypbase&>(_Right)
+                && _Left._Bvec == _Right._Bvec;
         }
 
-        _NODISCARD bool operator!=(const param_type& _Right) const {
-            return !(*this == _Right);
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(const param_type& _Left, const param_type& _Right) {
+            return !(_Left == _Right);
         }
+#endif // !_HAS_CXX20
 
         _NODISCARD vector<_Ty> intervals() const {
             return _Bvec;
@@ -4944,6 +4980,30 @@ public:
         return _Eval(_Eng, _Par0);
     }
 
+    _NODISCARD_FRIEND bool operator==(
+        const piecewise_linear_distribution& _Left, const piecewise_linear_distribution& _Right) {
+        return _Left.param() == _Right.param();
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD_FRIEND bool operator!=(
+        const piecewise_linear_distribution& _Left, const piecewise_linear_distribution& _Right) {
+        return !(_Left == _Right);
+    }
+#endif // !_HAS_CXX20
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
+        piecewise_linear_distribution& _Dist) { // read state from _Istr
+        return _Dist._Read(_Istr, _Dist._Par);
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
+        const piecewise_linear_distribution& _Dist) { // write state to _Ostr
+        return _Dist._Write(_Ostr);
+    }
+
     template <class _Elem, class _Traits>
     basic_istream<_Elem, _Traits>& _Read(basic_istream<_Elem, _Traits>& _Istr,
         param_type& _Par0) { // read state from _Istr
@@ -4995,30 +5055,6 @@ public:
 
     param_type _Par;
 };
-
-template <class _Ty>
-_NODISCARD bool operator==(
-    const piecewise_linear_distribution<_Ty>& _Left, const piecewise_linear_distribution<_Ty>& _Right) {
-    return _Left.param() == _Right.param();
-}
-
-template <class _Ty>
-_NODISCARD bool operator!=(
-    const piecewise_linear_distribution<_Ty>& _Left, const piecewise_linear_distribution<_Ty>& _Right) {
-    return !(_Left == _Right);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    piecewise_linear_distribution<_Ty>& _Dist) { // read state from _Istr
-    return _Dist._Read(_Istr, _Dist._Par);
-}
-
-template <class _Elem, class _Traits, class _Ty>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const piecewise_linear_distribution<_Ty>& _Dist) { // write state to _Ostr
-    return _Dist._Write(_Ostr);
-}
 
 using minstd_rand0 = linear_congruential_engine<unsigned int, 16807, 0, 2147483647>;
 using minstd_rand  = linear_congruential_engine<unsigned int, 48271, 0, 2147483647>;
