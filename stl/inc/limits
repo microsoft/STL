@@ -1034,6 +1034,8 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
 #if defined(_M_IX86) || defined(_M_ARM)
     if constexpr (_Digits == 64) {
+        // 64-bit bit operation on architectures without 64-bit registers are less efficient,
+        // hence we split value so that it fits registers
         return _Popcount_fallback(static_cast<unsigned long>(_Val))
              + _Popcount_fallback(static_cast<unsigned long>(_Val >> 32));
     }
