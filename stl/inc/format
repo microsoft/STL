@@ -2658,7 +2658,10 @@ struct _Arg_formatter {
 // structure at compile time.
 template <typename _Ty, typename _ParseContext>
 constexpr typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
-    auto _Fn =
+    using _CharT     = typename _ParseContext::char_type;
+    using _Context   = basic_format_context<_Fmt_it, _CharT>;
+    using _ArgTraits = _Format_arg_traits<_Context>;
+    formatter<typename _ArgTraits::_Storage_type, _CharT>{}.parse(_Pc);
 }
 
 // set of format parsing actions that
@@ -2668,18 +2671,18 @@ struct _Format_checker {
     using _Pc        = basic_format_parse_context<_CharT>;
     using _ParseFunc = typename _Pc::iterator (*)(_Pc&);
 
-    constexpr size_t _Num_args = sizeof...(Args);
+    static constexpr size_t _Num_args = sizeof...(_Args);
     _Pc _Parse_context;
     _ParseFunc _Parse_funcs[_Num_args > 0 ? _Num_args : 1];
 
 
     constexpr _Format_checker(basic_string_view<_CharT> _Fmt, const size_t _Num_args) noexcept
-        : _Parse_context(_Fmt, _Num_args) {}
+        : _Parse_context(_Fmt, _Num_args), _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _Pc>...} {}
     constexpr void _On_text(const _CharT*, const _CharT*) {}
     constexpr void _On_replacement_field(const size_t, const _CharT*) {}
-    constexpr const _CharT* _On_format_specs(const size_t, const _CharT* _First, const _CharT* _Last) {
-        _Parse_context.advance_to(_Parse_context.begin() + (_First - &*_Parse_context.begin()));
-        return _Last;
+    constexpr const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT*) {
+        _Parse_context.advance_to(_Parse_context.begin() + (_First - _Parse_context.begin()._Unwrapped()));
+        return _Id < _Num_args ? _Parse_funcs[_Id](_Parse_context)._Unwrapped() : _First;
     }
 };
 
