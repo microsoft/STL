@@ -107,6 +107,7 @@ STATIC_ASSERT(test_cpo(ranges::views::filter));
 STATIC_ASSERT(test_cpo(ranges::views::iota));
 STATIC_ASSERT(test_cpo(ranges::views::join));
 STATIC_ASSERT(test_cpo(ranges::views::keys));
+STATIC_ASSERT(test_cpo(ranges::views::lazy_split));
 STATIC_ASSERT(test_cpo(ranges::views::reverse));
 STATIC_ASSERT(test_cpo(ranges::views::single));
 STATIC_ASSERT(test_cpo(ranges::views::split));

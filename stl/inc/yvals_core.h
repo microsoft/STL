@@ -252,6 +252,7 @@
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
+// P2210R2 Superior String Splitting
 // P2231R1 Completing constexpr In optional And variant
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
 // P2325R3 Views Should Not Be Required To Be Default Constructible
@@ -269,6 +270,7 @@
 
 // _HAS_CXX23 directly controls:
 // P0401R6 Providing Size Feedback In The Allocator Interface
+// P0448R4 <spanstream>
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
@@ -571,7 +573,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202108L
+#define _MSVC_STL_UPDATE  202109L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1387,6 +1389,7 @@
 #define __cpp_lib_out_ptr 202106L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_spanstream      202106L
 #define __cpp_lib_stdatomic_h     202011L
 #define __cpp_lib_string_contains 202011L
 #define __cpp_lib_to_underlying   202102L
@@ -1463,6 +1466,12 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #else
 #define _NOEXCEPT_FNPTR
 #endif // __cpp_noexcept_function_type
+
+#ifdef __clang__
+#define _STL_UNREACHABLE __builtin_unreachable()
+#else // ^^^ clang ^^^ / vvv other vvv
+#define _STL_UNREACHABLE __assume(false)
+#endif // __clang__
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

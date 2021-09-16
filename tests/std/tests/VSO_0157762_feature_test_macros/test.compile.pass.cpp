@@ -1502,6 +1502,20 @@ STATIC_ASSERT(__cpp_lib_span == 202002L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_spanstream
+#error __cpp_lib_spanstream is not defined
+#elif __cpp_lib_spanstream != 202106L
+#error __cpp_lib_spanstream is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_spanstream == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_spanstream
+#error __cpp_lib_spanstream is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_ssize
 #error __cpp_lib_ssize is not defined
