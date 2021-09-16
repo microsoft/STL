@@ -696,6 +696,7 @@ namespace ranges {
     _NODISCARD static constexpr bool _Equal_count(
         _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
         // clang-format on
+        _STL_INTERNAL_CHECK(_Count >= 0);
         if constexpr (_Equal_memcmp_is_safe<_It1, _It2, _Pr> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
             if (!_STD is_constant_evaluated()) {
                 return _Memcmp_count(_First1, _First2, static_cast<size_t>(_Count)) == 0;
@@ -2218,7 +2219,6 @@ namespace ranges {
     inline constexpr _Search_n_fn search_n{_Not_quite_object::_Construct_tag{}};
 
 #if _HAS_CXX23
-    // VARIABLE ranges::starts_with
     class _Starts_with_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2235,21 +2235,25 @@ namespace ranges {
 
             if constexpr (same_as<_Se2, unreachable_sentinel_t>) {
                 return false;
-            } else if constexpr (_Sized_or_unreachable_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
-                const iter_difference_t<_It2> _Count2 = _Last2 - _First2;
+            }
+
+            auto _UFirst1      = _Get_unwrapped(_STD move(_First1));
+            auto _ULast1       = _Get_unwrapped(_STD move(_Last1));
+            auto _UFirst2      = _Get_unwrapped(_STD move(_First2));
+            const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
+            if constexpr (_Sized_or_unreachable_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
+                const iter_difference_t<_It2> _Count2 = _ULast2 - _UFirst2;
                 if constexpr (sized_sentinel_for<_Se1, _It1>) {
-                    if (_Count2 > _Last1 - _First1) {
+                    if (_Count2 > _ULast1 - _UFirst1) {
                         return false;
                     }
                 }
 
-                return _RANGES _Equal_count(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_First2)),
+                return _RANGES _Equal_count(_STD move(_UFirst1), _STD move(_UFirst2),
                     static_cast<iter_difference_t<_It1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             } else {
-                const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
-                const auto _Result = _RANGES _Mismatch_4(_Get_unwrapped(_STD move(_First1)),
-                    _Get_unwrapped(_STD move(_Last1)), _Get_unwrapped(_STD move(_First2)), _ULast2, _Pass_fn(_Pred),
-                    _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                const auto _Result = _RANGES _Mismatch_4(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
+                    _ULast2, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Result.in2 == _ULast2;
             }
         }
@@ -2263,7 +2267,9 @@ namespace ranges {
             // clang-format on
             if constexpr (same_as<sentinel_t<_Rng2>, unreachable_sentinel_t>) {
                 return false;
-            } else if constexpr (_Sized_or_infinite_range<_Rng1> && sized_range<_Rng2>) {
+            }
+
+            if constexpr (_Sized_or_infinite_range<_Rng1> && sized_range<_Rng2>) {
                 const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
                 if constexpr (sized_range<_Rng1>) {
                     if (_Count2 > _RANGES distance(_Range1)) {
@@ -2285,7 +2291,6 @@ namespace ranges {
 
     inline constexpr _Starts_with_fn starts_with{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::ends_with
     class _Ends_with_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2302,30 +2307,36 @@ namespace ranges {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
 
-            if constexpr (same_as<_Se1, unreachable_sentinel_t> || same_as<_Se2, unreachable_sentinel_t>) {
+            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
+            auto _ULast1  = _Get_unwrapped(_STD move(_Last1));
+            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
+            auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
+            if constexpr (same_as<_Se1, unreachable_sentinel_t> && same_as<_Se2, unreachable_sentinel_t>) {
+                return _Equal_4(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2), _STD move(_ULast2),
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else if constexpr (same_as<_Se1, unreachable_sentinel_t> || same_as<_Se2, unreachable_sentinel_t>) {
                 return false;
             } else {
                 iter_difference_t<_It1> _Count1;
-                if constexpr (sized_sentinel_for<_Se1, _It1>) {
-                    _Count1 = _Last1 - _First1;
+                if constexpr (sized_sentinel_for<_Se1, _It1>) { // TRANSITION, LWG-3392
+                    _Count1 = _ULast1 - _UFirst1;
                 } else {
-                    _Count1 = _RANGES distance(_First1, _Last1);
+                    _Count1 = _RANGES distance(_UFirst1, _ULast1);
                 }
 
                 iter_difference_t<_It2> _Count2;
-                if constexpr (sized_sentinel_for<_Se2, _It2>) {
-                    _Count2 = _Last2 - _First2;
+                if constexpr (sized_sentinel_for<_Se2, _It2>) { // TRANSITION, LWG-3392
+                    _Count2 = _ULast2 - _UFirst2;
                 } else {
-                    _Count2 = _RANGES distance(_First2, _Last2);
+                    _Count2 = _RANGES distance(_UFirst2, _ULast2);
                 }
 
                 if (_Count2 > _Count1) {
                     return false;
                 }
 
-                auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
-                _RANGES advance(_UFirst1, (_Count1 - _Count2));
-                return _RANGES _Equal_count(_STD move(_UFirst1), _Get_unwrapped(_STD move(_First2)),
+                _RANGES advance(_UFirst1, static_cast<iter_difference_t<_It1>>(_Count1 - _Count2));
+                return _RANGES _Equal_count(_STD move(_UFirst1), _STD move(_UFirst2),
                     static_cast<iter_difference_t<_It1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             }
         }
@@ -2339,7 +2350,11 @@ namespace ranges {
                 _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             // clang-format on
             if constexpr (same_as<sentinel_t<_Rng1>, unreachable_sentinel_t> //
-                          || same_as<sentinel_t<_Rng2>, unreachable_sentinel_t>) {
+                          && same_as<sentinel_t<_Rng2>, unreachable_sentinel_t>)
+                return _Equal_4(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2), _Pass_fn(_Pred),
+                    _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            else if constexpr (same_as<sentinel_t<_Rng1>, unreachable_sentinel_t> //
+                               || same_as<sentinel_t<_Rng2>, unreachable_sentinel_t>) {
                 return false;
             } else {
                 const range_difference_t<_Rng1> _Count1 = _RANGES distance(_Range1);
@@ -2349,7 +2364,7 @@ namespace ranges {
                 }
 
                 auto _UFirst1 = _Ubegin(_Range1);
-                _RANGES advance(_UFirst1, (_Count1 - _Count2));
+                _RANGES advance(_UFirst1, static_cast<range_difference_t<_Rng1>>(_Count1 - _Count2));
                 return _RANGES _Equal_count(_STD move(_UFirst1), _Ubegin(_Range2),
                     static_cast<range_difference_t<_Rng1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1),
                     _Pass_fn(_Proj2));
