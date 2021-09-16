@@ -797,6 +797,50 @@ void test_float_specs() {
             [](auto ch) { return ch == charT{'0'}; }));
     }
 
+    // Test type specifiers together with precision beyond _Max_precision
+    if constexpr (is_same_v<charT, char>) {
+        charT buffer[2048];
+
+        string_view expected{buffer, to_chars(begin(buffer), end(buffer), value, chars_format::general, 2000).ptr};
+        assert(format("{:.2000}", value) == expected);
+
+        expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::hex, 2000).ptr};
+        assert(format("{:.2000a}", value) == expected);
+
+        expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::scientific, 2000).ptr};
+        assert(format("{:.2000e}", value) == expected);
+
+        expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::fixed, 2000).ptr};
+        assert(format("{:.2000f}", value) == expected);
+
+        expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::general, 2000).ptr};
+        assert(format("{:.2000g}", value) == expected);
+
+        // Ensure that we behave correctly regarding natural numbers that do not need a decimal point
+        expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::general, 2000).ptr};
+        assert(format("{:.2000}", 1.0) == expected);
+
+        expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::hex, 2000).ptr};
+        assert(format("{:.2000a}", 1.0) == expected);
+
+        expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::scientific, 2000).ptr};
+        assert(format("{:.2000e}", 1.0) == expected);
+
+        expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::fixed, 2000).ptr};
+        assert(format("{:.2000f}", 1.0) == expected);
+
+        expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::general, 2000).ptr};
+        assert(format("{:.2000g}", 1.0) == expected);
+
+        // Ensure that we behave correctly regarding natural numbers that do not need a decimal point but we require it
+        // via #
+        assert(format("{:#}", 1.0) == string("1."));
+        assert(format("{:#a}", 1.0) == string("1.p+0"));
+        assert(format("{:#e}", 1.0) == string("1.000000e+00"));
+        assert(format("{:#f}", 1.0) == string("1.000000"));
+        assert(format("{:#g}", 1.0) == string("1.00000"));
+    }
+
     // Leading zero
     assert(format(STR("{:06}"), Float{0}) == STR("000000"));
     assert(format(STR("{:06}"), Float{1.2}) == STR("0001.2"));
