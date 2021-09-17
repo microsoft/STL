@@ -1380,14 +1380,14 @@
 #define __cpp_lib_is_scoped_enum 202011L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_out_ptr 202106L
+#define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_starts_ends_with 202106L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_ranges_starts_ends_with 202106L
-#define __cpp_lib_spanstream              202106L
-#define __cpp_lib_stdatomic_h             202011L
-#define __cpp_lib_string_contains         202011L
-#define __cpp_lib_to_underlying           202102L
+#define __cpp_lib_spanstream      202106L
+#define __cpp_lib_stdatomic_h     202011L
+#define __cpp_lib_string_contains 202011L
+#define __cpp_lib_to_underlying   202102L
 #endif // _HAS_CXX23
 
 #define __cpp_lib_experimental_erase_if   201411L
