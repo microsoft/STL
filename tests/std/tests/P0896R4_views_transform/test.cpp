@@ -776,7 +776,7 @@ int main() {
         (void) views::transform(Fn{})(span<int>{});
     }
 
-    { // Validate that iter_swap works when result of transformation is a lvalue reference
+    { // Validate that iter_swap works when result of transformation is an lvalue reference
         char base[] = "hello";
         auto v      = ranges::transform_view{base, [](char& c) -> char& { return c; }};
         auto i1     = v.begin();
