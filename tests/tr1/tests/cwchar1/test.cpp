@@ -13,7 +13,6 @@
 
 #pragma warning(disable : 4793) // function compiled as native
 
-#define NO_TMPNAM_TESTS 1
 #undef tmpnam
 #define tmpnam(x) _tempnam(".", "")
 
@@ -141,17 +140,10 @@ void test_cpp() { // test C++ header
 
         CHECK(wmacs[1] < wmacs[0]);
 
-#if NO_TMPNAM_TESTS
         char *tname, *tn;
         assert((tn = CSTD tmpnam((char*) nullptr)) != nullptr);
         tname = (char*) CSTD malloc(CSTD strlen(tn) + 1);
         CSTD strcpy(tname, tn);
-
-#else // NO_TMPNAM_TESTS
-        char tname[L_tmpnam], *tn;
-        CHECK_PTR(CSTD tmpnam(tname), tname);
-        assert(CSTD strlen(tname) < L_tmpnam);
-#endif // NO_TMPNAM_TESTS
 
         assert((tn = CSTD tmpnam((char*) nullptr)) != nullptr);
         CHECK(CSTD strcmp(tn, tname) != 0);
