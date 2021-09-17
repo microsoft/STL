@@ -679,7 +679,7 @@ public:
     template <class _Elem, class _Traits>
     friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
         const _Swc_base& _Eng) { // write state to _Ostr
-        static_cast<const _Swc_base::_Traits&>(_Eng)._Write(_Ostr, _Eng, _Eng._Carry);
+        _Swc_base::_Traits::_Write(_Ostr, _Eng, _Eng._Carry);
         return _Ostr;
     }
 
