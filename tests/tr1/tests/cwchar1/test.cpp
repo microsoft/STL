@@ -13,8 +13,6 @@
 
 #pragma warning(disable : 4793) // function compiled as native
 
-#undef tmpnam
-#define tmpnam(x) _tempnam(".", "")
 
 #undef clearerr // tested in stdio2.c
 #undef feof
@@ -100,7 +98,7 @@ void test_cpp() { // test C++ header
         int in1;
         long off;
 
-        assert((tn = CSTD tmpnam((char*) nullptr)) != nullptr);
+        assert((tn = CSTD _tempnam(".", "")) != nullptr);
         assert((pf = CSTD fopen(tn, "w+")) != nullptr);
         CHECK_INT(STDx fwide(pf, 0), 0);
         CHECK_INT(STDx fwprintf(pf, L"123\n"), 4);
@@ -141,11 +139,11 @@ void test_cpp() { // test C++ header
         CHECK(wmacs[1] < wmacs[0]);
 
         char *tname, *tn;
-        assert((tn = CSTD tmpnam((char*) nullptr)) != nullptr);
+        assert((tn = CSTD _tempnam(".", "")) != nullptr);
         tname = (char*) CSTD malloc(CSTD strlen(tn) + 1);
         CSTD strcpy(tname, tn);
 
-        assert((tn = CSTD tmpnam((char*) nullptr)) != nullptr);
+        assert((tn = CSTD _tempnam(".", "")) != nullptr);
         CHECK(CSTD strcmp(tn, tname) != 0);
         assert((pf = CSTD fopen(tname, "w")) != nullptr);
         CHECK_INT(STDx fgetwc(pf), wintval);

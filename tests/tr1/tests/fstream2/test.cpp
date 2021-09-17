@@ -9,11 +9,8 @@
 #include <fstream>
 #include <wchar.h>
 
-#undef tmpnam
-#define tmpnam(x) _tempnam(".", "")
-
 void test_main() { // test basic workings of wide fstream definitions
-    const char* tn = CSTD tmpnam(0);
+    const char* tn = CSTD _tempnam(".", "");
 
     assert(tn != nullptr);
 
