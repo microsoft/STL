@@ -1407,11 +1407,11 @@ public:
         return const_reverse_iterator(end());
     }
 
-    _NODISCARD_PURE_METHOD _CONSTEXPR20 reverse_iterator rend() noexcept {
+    _NODISCARD_ACCESSOR_METHOD _CONSTEXPR20 reverse_iterator rend() noexcept {
         return reverse_iterator(begin());
     }
 
-    _NODISCARD_ACCESSOR_METHOD _CONSTEXPR20 const_reverse_iterator rend() const noexcept {
+    _NODISCARD_PURE_METHOD _CONSTEXPR20 const_reverse_iterator rend() const noexcept {
         return const_reverse_iterator(begin());
     }
 
@@ -1477,7 +1477,8 @@ public:
         return _My_data._Myfirst[_Pos];
     }
 
-    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 const _Ty& operator[](const size_type _Pos) const noexcept /* strengthened */ {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 const _Ty& operator[](const size_type _Pos) const noexcept
+    /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(
@@ -1777,7 +1778,8 @@ using _Vbase         = unsigned int; // word type for vector<bool> representatio
 constexpr int _VBITS = 8 * sizeof(_Vbase); // at least CHAR_BITS bits per word
 
 template <class _Ty, class _Alloc>
-_NODISCARD_PURE_OPERATOR _CONSTEXPR20 bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
+_NODISCARD_PURE_OPERATOR _CONSTEXPR20 bool operator==(
+    const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if (_Left.size() != _Right.size()) {
         return false;
     }

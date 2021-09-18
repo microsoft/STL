@@ -425,7 +425,7 @@
 #define _NODISCARD_CTOR
 #define _NODISCARD_CTOR_MSG(_Msg)
 #elif __has_cpp_attribute(nodiscard) >= 201907L
-#define _NODISCARD_CTOR _NODISCARD
+#define _NODISCARD_CTOR           _NODISCARD
 #define _NODISCARD_CTOR_MSG(_Msg) _NODISCARD_MSG(_Msg)
 #else
 #define _NODISCARD_CTOR
@@ -448,7 +448,7 @@
     _NODISCARD_MSG("This operator is pure obeserver, i.e. has no side effects; it is not useful to call this " \
                    "operator and discard the return value")
 
-#define _NODISCARD_ACCESSOR_FUNCTION                                                                                 \
+#define _NODISCARD_ACCESSOR_FUNCTION                                                                                  \
     _NODISCARD_MSG("This function returns a value that provides access to the passed object and has no side effects " \
                    "otherwise; it is not useful to call this function and discard the return value")
 
@@ -476,16 +476,15 @@
 #define _NODISCARD_BARRIER_TOKEN \
     _NODISCARD_MSG("The token from 'arrive' should not be discarded; it should be passed to 'wait'")
 
-#define _NODISCARD_TRY_WAIT                                                                                        \
+#define _NODISCARD_TRY_WAIT                                                                                            \
     _NODISCARD_MSG("This method returns the state of the synchronization object and does not do anything else; it is " \
                    "not useful to call this method and discard the return value")
-
 
 #define _NODISCARD_MODIFY_STATE                                                                                       \
     _NODISCARD_MSG("This method returns whether the operation succeeds in modifying the state of the object or not. " \
                    "It is dangerous to ignore the return value")
 
-#define _NODISCARD_MODIFY_STATE_FUNCTION                                                                                      \
+#define _NODISCARD_MODIFY_STATE_FUNCTION                                                                        \
     _NODISCARD_MSG("This function returns whether the operation succeeds in modifying the state of the passed " \
                    "objects or not. It is dangerous to ignore the return value")
 
@@ -508,7 +507,6 @@
 #define _NODISCARD_CTOR_PURE \
     _NODISCARD_CTOR_MSG(     \
         "Construction of the object hass no side effects; it is not useful to construct an object just to discard it")
-
 
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
 // that certain type trait specializations have the standard-mandated semantics
