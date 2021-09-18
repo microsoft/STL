@@ -414,13 +414,101 @@
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
 
+// TRANSITION, This should go to vcruntime.h
+#if _HAS_NODISCARD
+#define _NODISCARD_MSG(_Msg) [[nodiscard(_Msg)]]
+#else // ^^^ CAN HAZ [[nodiscard]] / NO CAN HAZ [[nodiscard]] vvv
+#define _NODISCARD_MSG(_Msg)
+#endif // _HAS_NODISCARD
+
 #ifndef __has_cpp_attribute
 #define _NODISCARD_CTOR
+#define _NODISCARD_CTOR_MSG(_Msg)
 #elif __has_cpp_attribute(nodiscard) >= 201907L
 #define _NODISCARD_CTOR _NODISCARD
+#define _NODISCARD_CTOR_MSG(_Msg) _NODISCARD_MSG(_Msg)
 #else
 #define _NODISCARD_CTOR
+#define _NODISCARD_CTOR_MSG(_Msg)
 #endif
+
+#define _NODISCARD_PURE_ALGORITHM                                                                                   \
+    _NODISCARD_MSG("This algorithm  is not intended to have side effects; it is not useful to call this algorithm " \
+                   "and discard the return value")
+
+#define _NODISCARD_PURE_FUNCTION                                                                                  \
+    _NODISCARD_MSG("This function is pure, i.e. has no side effects; it is not useful to call this function and " \
+                   "discard the return value")
+
+#define _NODISCARD_PURE_METHOD                                                                                      \
+    _NODISCARD_MSG("This method is pure obeserver, i.e. has no side effects; it is not useful to call this method " \
+                   "and discard the return value")
+
+#define _NODISCARD_PURE_OPERATOR                                                                               \
+    _NODISCARD_MSG("This operator is pure obeserver, i.e. has no side effects; it is not useful to call this " \
+                   "operator and discard the return value")
+
+#define _NODISCARD_ACCESSOR_FUNCTION                                                                                 \
+    _NODISCARD_MSG("This function returns a value that provides access to the passed object and has no side effects " \
+                   "otherwise; it is not useful to call this function and discard the return value")
+
+#define _NODISCARD_ACCESSOR_METHOD                                                                                   \
+    _NODISCARD_MSG("This method returns an object that can access the state of the current object and has no other " \
+                   "side effects; it is not useful to call this method and discard the return value")
+
+#define _NODISCARD_ACCESSOR_OPERATOR                                                                                   \
+    _NODISCARD_MSG("This operator provides an access to the state of the current object via the return value and has " \
+                   "no other side effects; it is not useful to call this operator and discard the return value")
+
+#define _NODISCARD_REMOVE_ALGORITHM                                                                                    \
+    _NODISCARD_MSG("The remove, remove_if, and unique algorithms returns the iterator past the last removed element. " \
+                   "Normally you need to use the result to call container's erase method afterwards to erase "         \
+                   "elements. In C++20 you can also use erase and erase_if functions to replace these two steps.")
+
+#define _NODISCARD_EMPTY_METHOD                                                                                      \
+    _NODISCARD_MSG("This method checks whether the container is empty. Use 'clear()' method if you intend to clear " \
+                   "the container.")
+
+#define _NODISCARD_EMPTY_METHOD_ARRAY \
+    _NODISCARD_MSG(                   \
+        "This method checks whether the array is empty. There's no way to clear an array, as its size is fixed.")
+
+#define _NODISCARD_BARRIER_TOKEN \
+    _NODISCARD_MSG("The token from 'arrive' should not be discarded; it should be passed to 'wait'")
+
+#define _NODISCARD_TRY_WAIT                                                                                        \
+    _NODISCARD_MSG("This method returns the state of the synchronization object and does not do anything else; it is " \
+                   "not useful to call this method and discard the return value")
+
+
+#define _NODISCARD_MODIFY_STATE                                                                                       \
+    _NODISCARD_MSG("This method returns whether the operation succeeds in modifying the state of the object or not. " \
+                   "It is dangerous to ignore the return value")
+
+#define _NODISCARD_MODIFY_STATE_FUNCTION                                                                                      \
+    _NODISCARD_MSG("This function returns whether the operation succeeds in modifying the state of the passed " \
+                   "objects or not. It is dangerous to ignore the return value")
+
+#define _NODISCARD_LOCK                                                                                             \
+    _NODISCARD_CTOR_MSG(                                                                                            \
+        "A lock should be saved in a varible to protect the scope. (If the intetion is to protect the rest of the " \
+        "current statement, using comma operator, please use cast to void to suppress this warning).")
+
+#define _NODISCARD_CTOR_LOCK                                                                                        \
+    _NODISCARD_CTOR_MSG(                                                                                            \
+        "A lock should be saved in a varible to protect the scope. (If the intetion is to protect the rest of the " \
+        "current statement, using comma operator, please use cast to void to suppress this warning).")
+
+#define _NODISCARD_CTOR_THREAD \
+    _NODISCARD_CTOR_MSG("Thread is not joined or detached, terminate will be called at the end of the statement")
+
+#define _NODISCARD_CTOR_JTHREAD \
+    _NODISCARD_CTOR_MSG("Thread is implicitly joined at the end of the statement, is this an intention?")
+
+#define _NODISCARD_CTOR_PURE \
+    _NODISCARD_CTOR_MSG(     \
+        "Construction of the object hass no side effects; it is not useful to construct an object just to discard it")
+
 
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
 // that certain type trait specializations have the standard-mandated semantics

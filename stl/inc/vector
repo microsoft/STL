@@ -45,7 +45,7 @@ public:
     // TRANSITION, DevCom-1331017
     _CONSTEXPR20 _Vector_const_iterator& operator=(const _Vector_const_iterator&) noexcept = default;
 
-    _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(_Ptr, "can't dereference value-initialized vector iterator");
@@ -56,7 +56,7 @@ public:
         return *_Ptr;
     }
 
-    _NODISCARD _CONSTEXPR20 pointer operator->() const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 pointer operator->() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(_Ptr, "can't dereference value-initialized vector iterator");
@@ -123,7 +123,7 @@ public:
         return *this;
     }
 
-    _NODISCARD _CONSTEXPR20 _Vector_const_iterator operator+(const difference_type _Off) const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 _Vector_const_iterator operator+(const difference_type _Off) const noexcept {
         _Vector_const_iterator _Tmp = *this;
         _Tmp += _Off;
         return _Tmp;
@@ -133,50 +133,52 @@ public:
         return *this += -_Off;
     }
 
-    _NODISCARD _CONSTEXPR20 _Vector_const_iterator operator-(const difference_type _Off) const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 _Vector_const_iterator operator-(const difference_type _Off) const noexcept {
         _Vector_const_iterator _Tmp = *this;
         _Tmp -= _Off;
         return _Tmp;
     }
 
-    _NODISCARD _CONSTEXPR20 difference_type operator-(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 difference_type operator-(
+        const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Ptr - _Right._Ptr;
     }
 
-    _NODISCARD _CONSTEXPR20 reference operator[](const difference_type _Off) const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 reference operator[](const difference_type _Off) const noexcept {
         return *(*this + _Off);
     }
 
-    _NODISCARD _CONSTEXPR20 bool operator==(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 bool operator==(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Ptr == _Right._Ptr;
     }
 
 #if _HAS_CXX20
-    _NODISCARD constexpr strong_ordering operator<=>(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD_PURE_OPERATOR constexpr strong_ordering operator<=>(
+        const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Unfancy(_Ptr) <=> _Unfancy(_Right._Ptr);
     }
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
-    _NODISCARD bool operator!=(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD_PURE_OPERATOR bool operator!=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
     }
 
-    _NODISCARD bool operator<(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD_PURE_OPERATOR bool operator<(const _Vector_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Ptr < _Right._Ptr;
     }
 
-    _NODISCARD bool operator>(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD_PURE_OPERATOR bool operator>(const _Vector_const_iterator& _Right) const noexcept {
         return _Right < *this;
     }
 
-    _NODISCARD bool operator<=(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD_PURE_OPERATOR bool operator<=(const _Vector_const_iterator& _Right) const noexcept {
         return !(_Right < *this);
     }
 
-    _NODISCARD bool operator>=(const _Vector_const_iterator& _Right) const noexcept {
+    _NODISCARD_PURE_OPERATOR bool operator>=(const _Vector_const_iterator& _Right) const noexcept {
         return !(*this < _Right);
     }
 #endif // !_HAS_CXX20
@@ -212,7 +214,7 @@ public:
 };
 
 template <class _Myvec>
-_NODISCARD _CONSTEXPR20 _Vector_const_iterator<_Myvec> operator+(
+_NODISCARD_PURE_OPERATOR _CONSTEXPR20 _Vector_const_iterator<_Myvec> operator+(
     typename _Vector_const_iterator<_Myvec>::difference_type _Off, _Vector_const_iterator<_Myvec> _Next) noexcept {
     _Next += _Off;
     return _Next;
@@ -225,7 +227,7 @@ struct pointer_traits<_Vector_const_iterator<_Myvec>> {
     using element_type    = const typename pointer::value_type;
     using difference_type = typename pointer::difference_type;
 
-    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+    _NODISCARD_PURE_METHOD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         // A value-initialized iterator is in the domain of to_address. An invalidated end iterator for a vector with
         // capacity() of 0 is not. This function cannot distinguish those two cases, so it incorrectly does not diagnose
@@ -264,11 +266,11 @@ public:
     // TRANSITION, DevCom-1331017
     _CONSTEXPR20 _Vector_iterator& operator=(const _Vector_iterator&) noexcept = default;
 
-    _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
     }
 
-    _NODISCARD _CONSTEXPR20 pointer operator->() const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 pointer operator->() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
         _STL_VERIFY(this->_Ptr, "can't dereference value-initialized vector iterator");
@@ -306,7 +308,7 @@ public:
         return *this;
     }
 
-    _NODISCARD _CONSTEXPR20 _Vector_iterator operator+(const difference_type _Off) const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 _Vector_iterator operator+(const difference_type _Off) const noexcept {
         _Vector_iterator _Tmp = *this;
         _Tmp += _Off;
         return _Tmp;
@@ -319,13 +321,13 @@ public:
 
     using _Mybase::operator-;
 
-    _NODISCARD _CONSTEXPR20 _Vector_iterator operator-(const difference_type _Off) const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 _Vector_iterator operator-(const difference_type _Off) const noexcept {
         _Vector_iterator _Tmp = *this;
         _Tmp -= _Off;
         return _Tmp;
     }
 
-    _NODISCARD _CONSTEXPR20 reference operator[](const difference_type _Off) const noexcept {
+    _NODISCARD_PURE_OPERATOR _CONSTEXPR20 reference operator[](const difference_type _Off) const noexcept {
         return const_cast<reference>(_Mybase::operator[](_Off));
     }
 
@@ -337,7 +339,7 @@ public:
 };
 
 template <class _Myvec>
-_NODISCARD _CONSTEXPR20 _Vector_iterator<_Myvec> operator+(
+_NODISCARD_PURE_OPERATOR _CONSTEXPR20 _Vector_iterator<_Myvec> operator+(
     typename _Vector_iterator<_Myvec>::difference_type _Off, _Vector_iterator<_Myvec> _Next) noexcept {
     _Next += _Off;
     return _Next;
@@ -350,7 +352,7 @@ struct pointer_traits<_Vector_iterator<_Myvec>> {
     using element_type    = typename pointer::value_type;
     using difference_type = typename pointer::difference_type;
 
-    _NODISCARD static constexpr element_type* to_address(const pointer _Iter) noexcept {
+    _NODISCARD_PURE_METHOD static constexpr element_type* to_address(const pointer _Iter) noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         // A value-initialized iterator is in the domain of to_address. An invalidated end iterator for a vector with
         // capacity() of 0 is not. This function cannot distinguish those two cases, so it incorrectly does not diagnose
@@ -1373,7 +1375,7 @@ public:
         return _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
     }
 
-    _NODISCARD _CONSTEXPR20 const _Ty* data() const noexcept {
+    _NODISCARD_PURE_METHOD _CONSTEXPR20 const _Ty* data() const noexcept {
         return _Unfancy_maybe_null(_Mypair._Myval2._Myfirst);
     }
 
