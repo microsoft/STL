@@ -415,13 +415,14 @@
 // [[nodiscard]] attributes on STL functions
 
 // TRANSITION, This should go to vcruntime.h
-#if _HAS_NODISCARD
-#ifdef __CUDACC__ // TRANSITION, CUDA 10.1 version does not support [[nodiscard("message")]]
-#define _NODISCARD_MSG(_Msg) [[nodiscard]]
-#else // ^^^ TRANSITION, __CUDACC__ ^^^ / vvv !__CUDACC__ vvv
+#ifndef __has_cpp_attribute
+#define _NODISCARD_MSG(_Msg)
+#elif __has_cpp_attribute(nodiscard) >= 201907L \
+    && !defined(__CUDACC__) // TRANSITION, CUDA 10.1 version does not support [[nodiscard("message")]]
 #define _NODISCARD_MSG(_Msg) [[nodiscard(_Msg)]]
-#endif // ^^^!__CUDACC__ ^^^
-#else // ^^^ CAN HAZ [[nodiscard("message")]] / NO CAN HAZ [[nodiscard("message")]] vvv
+#elif __has_cpp_attribute(nodiscard) >= 201603L
+#define _NODISCARD_MSG(_Msg) [[nodiscard]]
+#else
 #define _NODISCARD_MSG(_Msg)
 #endif // _HAS_NODISCARD
 
