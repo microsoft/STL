@@ -433,7 +433,7 @@
 #endif
 
 #define _NODISCARD_PURE_ALGORITHM                                                                                   \
-    _NODISCARD_MSG("This algorithm  is not intended to have side effects; it is not useful to call this algorithm " \
+    _NODISCARD_MSG("This algorithm is not intended to have side effects; it is not useful to call this algorithm "  \
                    "and discard the return value")
 
 #define _NODISCARD_PURE_FUNCTION                                                                                  \
@@ -460,10 +460,11 @@
     _NODISCARD_MSG("This operator provides an access to the state of the current object via the return value and has " \
                    "no other side effects; it is not useful to call this operator and discard the return value")
 
-#define _NODISCARD_REMOVE_ALGORITHM                                                                                    \
-    _NODISCARD_MSG("The remove, remove_if, and unique algorithms returns the iterator past the last removed element. " \
-                   "Normally you need to use the result to call container's erase method afterwards to erase "         \
-                   "elements. In C++20 you can also use erase and erase_if functions to replace these two steps.")
+#define _NODISCARD_REMOVE_ALGORITHM                                                                              \
+    _NODISCARD_MSG(                                                                                              \
+        "The 'remove', 'remove_if', and 'unique' algorithms return the iterator past the last removed element. " \
+        "Normally you need to use the result to call container's erase method afterwards to erase elements. "    \
+        "In C++ 20 you can also use erase and erase_if functions to replace these two steps.")
 
 #define _NODISCARD_EMPTY_METHOD                                                                                      \
     _NODISCARD_MSG("This method checks whether the container is empty. Use 'clear()' method if you intend to clear " \
@@ -474,7 +475,7 @@
         "This method checks whether the array is empty. There's no way to clear an array, as its size is fixed.")
 
 #define _NODISCARD_BARRIER_TOKEN \
-    _NODISCARD_MSG("The token from 'arrive' should not be discarded; it should be passed to 'wait'")
+    _NODISCARD_MSG("The token from 'arrive()' should not be discarded; it should be passed to 'wait()'")
 
 #define _NODISCARD_TRY_WAIT                                                                                            \
     _NODISCARD_MSG("This method returns the state of the synchronization object and does not do anything else; it is " \
@@ -506,7 +507,7 @@
 
 #define _NODISCARD_CTOR_PURE \
     _NODISCARD_CTOR_MSG(     \
-        "Construction of the object hass no side effects; it is not useful to construct an object just to discard it")
+        "Construction of the object has no side effects; it is not useful to construct an object just to discard it")
 
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
 // that certain type trait specializations have the standard-mandated semantics
