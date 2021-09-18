@@ -5,12 +5,14 @@
 #define TEST_NAME "<fstream>, part 2"
 
 #include "tdefs.h"
+#include "temp_file_name.h"
 #include <assert.h>
 #include <fstream>
 #include <wchar.h>
 
 void test_main() { // test basic workings of wide fstream definitions
-    const char* tn = CSTD _tempnam(".", "");
+    const auto temp_name = temp_file_name();
+    const char* tn       = temp_name.c_str();
 
     assert(tn != nullptr);
 
