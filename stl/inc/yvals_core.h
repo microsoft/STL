@@ -416,8 +416,12 @@
 
 // TRANSITION, This should go to vcruntime.h
 #if _HAS_NODISCARD
+#ifdef __CUDACC__ // TRANSITION, CUDA 10.1 version does not support [[nodiscard("message")]]
+#define _NODISCARD_MSG(_Msg) [[nodiscard]]
+#else // ^^^ TRANSITION, __CUDACC__ ^^^ / vvv !__CUDACC__ vvv
 #define _NODISCARD_MSG(_Msg) [[nodiscard(_Msg)]]
-#else // ^^^ CAN HAZ [[nodiscard]] / NO CAN HAZ [[nodiscard]] vvv
+#endif // ^^^!__CUDACC__ ^^^
+#else // ^^^ CAN HAZ [[nodiscard("message")]] / NO CAN HAZ [[nodiscard("message")]] vvv
 #define _NODISCARD_MSG(_Msg)
 #endif // _HAS_NODISCARD
 
