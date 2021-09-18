@@ -465,10 +465,10 @@
     _NODISCARD_MSG("This operator provides an access to the state of the current object via the return value and has " \
                    "no other side effects; it is not useful to call this operator and discard the return value")
 
-#define _NODISCARD_REMOVE_ALGORITHM                                                                              \
-    _NODISCARD_MSG(                                                                                              \
-        "The 'remove', 'remove_if', and 'unique' algorithms return the iterator past the last removed element. " \
-        "Normally you need to use the result to call container's erase method afterwards to erase elements. "    \
+#define _NODISCARD_REMOVE_ALGORITHM                                                                                  \
+    _NODISCARD_MSG(                                                                                                  \
+        "The 'remove', 'remove_if', and 'unique' algorithms return the iterator past the last non-removed element. " \
+        "Normally you need to use the result to call container's erase method afterwards to erase elements. "        \
         "In C++ 20 you can also use erase and erase_if functions to replace these two steps.")
 
 #define _NODISCARD_EMPTY_METHOD                                                                                      \
