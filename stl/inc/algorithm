@@ -508,7 +508,8 @@ namespace ranges {
 
         template <input_range _Rng, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
-        _NODISCARD_PURE_ALGORITHM constexpr range_difference_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
+        _NODISCARD_PURE_ALGORITHM constexpr range_difference_t<_Rng> operator()(
+            _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
             return _Count_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _Pass_fn(_Proj));
         }
         // clang-format on
@@ -749,8 +750,8 @@ namespace ranges {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD_PURE_ALGORITHM constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
-            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD_PURE_ALGORITHM constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Pr _Pred = {},_Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
@@ -2085,8 +2086,8 @@ namespace ranges {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pr = ranges::equal_to,
             class _Pj = identity>
             requires indirectly_comparable<_It, const _Ty*, _Pr, _Pj>
-        _NODISCARD_PURE_ALGORITHM constexpr subrange<_It> operator()(_It _First, _Se _Last, const iter_difference_t<_It> _Count,
-            const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD_PURE_ALGORITHM constexpr subrange<_It> operator()(_It _First, _Se _Last, 
+            const iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
 
             if (_Count <= 0) {
@@ -2110,8 +2111,8 @@ namespace ranges {
 
         template <forward_range _Rng, class _Ty, class _Pr = ranges::equal_to, class _Pj = identity>
             requires indirectly_comparable<iterator_t<_Rng>, const _Ty*, _Pr, _Pj>
-        _NODISCARD_PURE_ALGORITHM constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, const range_difference_t<_Rng> _Count,
-            const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD_PURE_ALGORITHM constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, 
+            const range_difference_t<_Rng> _Count, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _First = _RANGES begin(_Range);
 
             if (_Count <= 0) {
@@ -2450,8 +2451,8 @@ namespace ranges {
         template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD_PURE_ALGORITHM constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
-            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD_PURE_ALGORITHM constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
+            _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UFirst1 = _Get_unwrapped(_First1);
@@ -2557,8 +2558,8 @@ namespace ranges {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD_PURE_ALGORITHM constexpr _It1 operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
-            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD_PURE_ALGORITHM constexpr _It1 operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
 
@@ -3440,7 +3441,8 @@ _NODISCARD_REMOVE_ALGORITHM _FwdIt remove(
     _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
 
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD_REMOVE_ALGORITHM _FwdIt remove_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
+_NODISCARD_REMOVE_ALGORITHM _FwdIt remove_if(
+    _ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
@@ -3452,7 +3454,8 @@ namespace ranges {
         // clang-format off
         template <permutable _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
-        _NODISCARD_REMOVE_ALGORITHM constexpr subrange<_It> operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
+        _NODISCARD_REMOVE_ALGORITHM constexpr subrange<_It> operator()(
+            _It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Remove_unchecked(
                 _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Val, _Pass_fn(_Proj));
@@ -3517,7 +3520,8 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires permutable<iterator_t<_Rng>>
-        _NODISCARD_REMOVE_ALGORITHM constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
+        _NODISCARD_REMOVE_ALGORITHM constexpr borrowed_subrange_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred, _Pj _Proj = {}) const {
             auto _UResult = _Remove_if_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
@@ -3741,7 +3745,8 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_equivalence_relation<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
             requires permutable<iterator_t<_Rng>>
-        _NODISCARD_REMOVE_ALGORITHM constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD_REMOVE_ALGORITHM constexpr borrowed_subrange_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UResult = _Unique_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
 
             return _Rewrap_subrange<borrowed_subrange_t<_Rng>>(_Range, _STD move(_UResult));
@@ -9409,7 +9414,8 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-        _NODISCARD_PURE_ALGORITHM constexpr range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD_PURE_ALGORITHM constexpr range_value_t<_Rng> operator()(
+            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
