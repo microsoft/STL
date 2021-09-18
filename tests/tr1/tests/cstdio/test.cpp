@@ -5,6 +5,7 @@
 #define TEST_NAMEX "<cstdio>"
 
 #include "tdefs.h"
+#include "temp_file_name.h"
 #include <assert.h>
 #include <cstdio>
 #include <errno.h>
@@ -91,7 +92,8 @@ void test_cpp() { // test C++ header
         int in1;
         long off;
 
-        assert((tn = STDx tmpnam((char*) nullptr)) != nullptr);
+        const auto temp_name = temp_file_name();
+        assert((tn = temp_name.c_str()) != nullptr);
         assert((pf = STDx fopen(tn, "w+")) != nullptr);
 
         STDx setbuf(pf, (char*) nullptr);
@@ -126,13 +128,15 @@ void test_cpp() { // test C++ header
     { // test character I/O
         const char* tmpbuff;
         char tname[L_tmpnam];
-        char tmpbuf[L_tmpnam];
+        const char* tmpbuf;
         STDx FILE* pf;
         char tn[100] = {0};
 
-        assert(STDx tmpnam(tmpbuf) == tmpbuf);
+        const auto temp_name1 = temp_file_name();
+        assert((tmpbuf = temp_name1.c_str()) != nullptr);
         CHECK(CSTD strlen(tmpbuf) < L_tmpnam);
-        assert((tmpbuff = STDx tmpnam((char*) nullptr)) != nullptr);
+        const auto temp_name2 = temp_file_name();
+        assert((tmpbuff = temp_name2.c_str()) != nullptr);
 
         CSTD strcpy_s(tn, sizeof(tn), tmpbuff);
         CSTD strcpy_s(tname, sizeof(tname), tmpbuf);
