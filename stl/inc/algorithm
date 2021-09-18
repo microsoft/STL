@@ -2537,13 +2537,12 @@ _NODISCARD_PURE_ALGORITHM _CONSTEXPR20 _FwdIt1 find_first_of(const _FwdIt1 _Firs
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD_PURE_ALGORITHM _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _Last1,
-    const _FwdIt2 _First2,
-    const _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
+    const _FwdIt2 _First2, const _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD_PURE_ALGORITHM _FwdIt1 find_first_of(
-    _ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
-    const _FwdIt2 _Last2) noexcept /* terminates */ { // look for one of [_First2, _Last2) that matches element
+    _ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2) noexcept
+/* terminates */ { // look for one of [_First2, _Last2) that matches element
     return _STD find_first_of(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
@@ -8327,8 +8326,7 @@ namespace ranges {
             class _Pj1 = identity, class _Pj2 = identity,
             indirect_strict_weak_order<projected<_It1, _Pj1>, projected<_It2, _Pj2>> _Pr = ranges::less>
         _NODISCARD_PURE_ALGORITHM constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
-            _Pr _Pred = {},
-            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             return _Includes_unchecked(_Get_unwrapped(_STD move(_First1)), _Get_unwrapped(_STD move(_Last1)),
@@ -9438,8 +9436,8 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 template <class _Ty, class _Pr>
-_NODISCARD_PURE_ALGORITHM constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
-    noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
+_NODISCARD_PURE_ALGORITHM constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const _Ty& _Right,
+    _Pr _Pred) noexcept(noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
     // return pair(leftmost/smaller, rightmost/larger) of _Left and _Right
     if (_DEBUG_LT_PRED(_Pred, _Right, _Left)) {
         return {_Right, _Left};
@@ -9972,8 +9970,7 @@ namespace ranges {
             class _Pj1 = identity, class _Pj2 = identity,
             indirect_strict_weak_order<projected<_It1, _Pj1>, projected<_It2, _Pj2>> _Pr = ranges::less>
         _NODISCARD_PURE_ALGORITHM constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
-            _Pr _Pred = {},
-            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
 

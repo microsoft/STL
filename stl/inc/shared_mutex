@@ -107,7 +107,8 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_MODIFY_STATE bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
+    _NODISCARD_MODIFY_STATE bool try_lock_for(
+        const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
 
