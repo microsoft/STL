@@ -488,14 +488,14 @@
     _NODISCARD_MSG("This function returns whether the operation succeeds in modifying the state of the passed " \
                    "objects or not. It is dangerous to ignore the return value")
 
-#define _NODISCARD_LOCK                                                                                             \
-    _NODISCARD_MSG(                                                                                                 \
-        "A lock should be saved in a varible to protect the scope. (If the intetion is to protect the rest of the " \
+#define _NODISCARD_LOCK                                                                                              \
+    _NODISCARD_MSG(                                                                                                  \
+        "A lock should be saved in a variable to protect the scope. (If the intetion is to protect the rest of the " \
         "current statement, using comma operator, please use cast to void to suppress this warning).")
 
-#define _NODISCARD_CTOR_LOCK                                                                                        \
-    _NODISCARD_CTOR_MSG(                                                                                            \
-        "A lock should be saved in a varible to protect the scope. (If the intetion is to protect the rest of the " \
+#define _NODISCARD_CTOR_LOCK                                                                                         \
+    _NODISCARD_CTOR_MSG(                                                                                             \
+        "A lock should be saved in a variable to protect the scope. (If the intetion is to protect the rest of the " \
         "current statement, using comma operator, please use cast to void to suppress this warning).")
 
 #define _NODISCARD_CTOR_THREAD \
