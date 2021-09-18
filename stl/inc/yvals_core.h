@@ -437,8 +437,8 @@
 #define _NODISCARD_CTOR_MSG(_Msg)
 #endif
 
-#define _NODISCARD_PURE_ALGORITHM                                                                                   \
-    _NODISCARD_MSG("This algorithm is not intended to have side effects; it is not useful to call this algorithm "  \
+#define _NODISCARD_PURE_ALGORITHM                                                                                  \
+    _NODISCARD_MSG("This algorithm is not intended to have side effects; it is not useful to call this algorithm " \
                    "and discard the return value")
 
 #define _NODISCARD_PURE_FUNCTION                                                                                  \
