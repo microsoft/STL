@@ -30,22 +30,22 @@ template <class _To, class _From,
     enable_if_t<conjunction_v<bool_constant<sizeof(_To) == sizeof(_From)>, is_trivially_copyable<_To>,
                     is_trivially_copyable<_From>>,
         int> = 0>
-_NODISCARD constexpr _To bit_cast(const _From& _Val) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr _To bit_cast(const _From& _Val) noexcept {
     return __builtin_bit_cast(_To, _Val);
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr int countl_zero(_Ty _Val) noexcept;
+_NODISCARD_PURE_FUNCTION constexpr int countl_zero(_Ty _Val) noexcept;
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr bool has_single_bit(const _Ty _Val) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr bool has_single_bit(const _Ty _Val) noexcept {
     return _Val != 0 && (_Val & (_Val - 1)) == 0;
 }
 
 inline void _Precondition_violation_in_bit_ceil() noexcept {}
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
+_NODISCARD_PURE_FUNCTION constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
     if (_Val <= 1u) {
         return _Ty{1};
     }
@@ -73,7 +73,7 @@ _NODISCARD constexpr _Ty bit_ceil(const _Ty _Val) noexcept /* strengthened */ {
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty bit_floor(const _Ty _Val) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr _Ty bit_floor(const _Ty _Val) noexcept {
     if (_Val == 0) {
         return 0;
     }
@@ -82,15 +82,15 @@ _NODISCARD constexpr _Ty bit_floor(const _Ty _Val) noexcept {
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty bit_width(const _Ty _Val) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr _Ty bit_width(const _Ty _Val) noexcept {
     return static_cast<_Ty>(numeric_limits<_Ty>::digits - _STD countl_zero(_Val));
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty rotr(_Ty _Val, int _Rotation) noexcept;
+_NODISCARD_PURE_FUNCTION constexpr _Ty rotr(_Ty _Val, int _Rotation) noexcept;
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty rotl(const _Ty _Val, const int _Rotation) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr _Ty rotl(const _Ty _Val, const int _Rotation) noexcept {
     constexpr auto _Digits = numeric_limits<_Ty>::digits;
     const auto _Remainder  = _Rotation % _Digits;
     if (_Remainder > 0) {
@@ -104,7 +104,7 @@ _NODISCARD constexpr _Ty rotl(const _Ty _Val, const int _Rotation) noexcept {
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
-_NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
     constexpr auto _Digits = numeric_limits<_Ty>::digits;
     const auto _Remainder  = _Rotation % _Digits;
     if (_Remainder > 0) {
@@ -234,7 +234,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
 #endif // defined(_M_ARM) || defined(_M_ARM64)
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
-_NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr int countl_zero(const _Ty _Val) noexcept {
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
     if (!_STD is_constant_evaluated()) {
         return _Checked_x86_x64_countl_zero(_Val);
@@ -249,22 +249,22 @@ _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr int countl_one(const _Ty _Val) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr int countl_one(const _Ty _Val) noexcept {
     return _STD countl_zero(static_cast<_Ty>(~_Val));
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr int countr_zero(const _Ty _Val) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr int countr_zero(const _Ty _Val) noexcept {
     return _Countr_zero(_Val);
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
-_NODISCARD constexpr int countr_one(const _Ty _Val) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr int countr_one(const _Ty _Val) noexcept {
     return _Countr_zero(static_cast<_Ty>(~_Val));
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
+_NODISCARD_PURE_FUNCTION constexpr int popcount(const _Ty _Val) noexcept {
     return _Popcount(_Val);
 }
 

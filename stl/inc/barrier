@@ -88,11 +88,11 @@ public:
     barrier(const barrier&) = delete;
     barrier& operator=(const barrier&) = delete;
 
-    _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
+    _NODISCARD_PURE_METHOD static constexpr ptrdiff_t(max)() noexcept {
         return _Barrier_max;
     }
 
-    _NODISCARD arrival_token arrive(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
+    _NODISCARD_BARRIER_TOKEN arrival_token arrive(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
         // Shifting before precondition check, so that exceeding max() will trigger precondition check too
         _Update <<= _Barrier_value_shift;
         _STL_VERIFY(_Update > 0, "Precondition: update > 0 (N4861 [thread.barrier.class]/12)");

@@ -33,7 +33,7 @@ _STD_BEGIN
 
 class bad_any_cast : public bad_cast { // thrown by failed any_cast
 public:
-    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD_PURE_METHOD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad any_cast";
     }
 };
@@ -225,11 +225,11 @@ public:
     }
 
     // Observers [any.observers]
-    _NODISCARD bool has_value() const noexcept {
+    _NODISCARD_PURE_METHOD bool has_value() const noexcept {
         return _Storage._TypeData != 0;
     }
 
-    _NODISCARD const type_info& type() const noexcept {
+    _NODISCARD_PURE_METHOD const type_info& type() const noexcept {
         // if *this contains a value of type T, return typeid(T); otherwise typeid(void)
         const type_info* const _Info = _TypeInfo();
         if (_Info) {
@@ -358,17 +358,18 @@ inline void swap(any& _Left, any& _Right) noexcept {
 }
 
 template <class _ValueType, class... _Types>
-_NODISCARD any make_any(_Types&&... _Args) { // construct an any containing a _ValueType initialized with _Args...
+_NODISCARD_PURE_FUNCTION any make_any(
+    _Types&&... _Args) { // construct an any containing a _ValueType initialized with _Args...
     return any{in_place_type<_ValueType>, _STD forward<_Types>(_Args)...};
 }
 template <class _ValueType, class _Elem, class... _Types>
-_NODISCARD any make_any(initializer_list<_Elem> _Ilist, _Types&&... _Args) {
+_NODISCARD_PURE_FUNCTION any make_any(initializer_list<_Elem> _Ilist, _Types&&... _Args) {
     // construct an any containing a _ValueType initialized with _Ilist and _Args...
     return any{in_place_type<_ValueType>, _Ilist, _STD forward<_Types>(_Args)...};
 }
 
 template <class _ValueType>
-_NODISCARD const _ValueType* any_cast(const any* const _Any) noexcept {
+_NODISCARD_PURE_FUNCTION const _ValueType* any_cast(const any* const _Any) noexcept {
     // retrieve a pointer to the _ValueType contained in _Any, or null
     static_assert(!is_void_v<_ValueType>, "std::any cannot contain void.");
 
@@ -383,7 +384,7 @@ _NODISCARD const _ValueType* any_cast(const any* const _Any) noexcept {
     }
 }
 template <class _ValueType>
-_NODISCARD _ValueType* any_cast(any* const _Any) noexcept {
+_NODISCARD_PURE_FUNCTION _ValueType* any_cast(any* const _Any) noexcept {
     // retrieve a pointer to the _ValueType contained in _Any, or null
     static_assert(!is_void_v<_ValueType>, "std::any cannot contain void.");
 
@@ -399,7 +400,7 @@ _NODISCARD _ValueType* any_cast(any* const _Any) noexcept {
 }
 
 template <class _Ty>
-_NODISCARD remove_cv_t<_Ty> any_cast(const any& _Any) {
+_NODISCARD_PURE_FUNCTION remove_cv_t<_Ty> any_cast(const any& _Any) {
     static_assert(is_constructible_v<remove_cv_t<_Ty>, const _Remove_cvref_t<_Ty>&>,
         "any_cast<T>(const any&) requires remove_cv_t<T> to be constructible from "
         "const remove_cv_t<remove_reference_t<T>>&");
@@ -412,7 +413,7 @@ _NODISCARD remove_cv_t<_Ty> any_cast(const any& _Any) {
     return static_cast<remove_cv_t<_Ty>>(*_Ptr);
 }
 template <class _Ty>
-_NODISCARD remove_cv_t<_Ty> any_cast(any& _Any) {
+_NODISCARD_PURE_FUNCTION remove_cv_t<_Ty> any_cast(any& _Any) {
     static_assert(is_constructible_v<remove_cv_t<_Ty>, _Remove_cvref_t<_Ty>&>,
         "any_cast<T>(any&) requires remove_cv_t<T> to be constructible from remove_cv_t<remove_reference_t<T>>&");
 
@@ -424,7 +425,7 @@ _NODISCARD remove_cv_t<_Ty> any_cast(any& _Any) {
     return static_cast<remove_cv_t<_Ty>>(*_Ptr);
 }
 template <class _Ty>
-_NODISCARD remove_cv_t<_Ty> any_cast(any&& _Any) {
+_NODISCARD_PURE_FUNCTION remove_cv_t<_Ty> any_cast(any&& _Any) {
     static_assert(is_constructible_v<remove_cv_t<_Ty>, _Remove_cvref_t<_Ty>>,
         "any_cast<T>(any&&) requires remove_cv_t<T> to be constructible from remove_cv_t<remove_reference_t<T>>");
 
