@@ -424,7 +424,7 @@
 #define _NODISCARD_MSG(_Msg) [[nodiscard]]
 #else
 #define _NODISCARD_MSG(_Msg)
-#endif // _HAS_NODISCARD
+#endif
 
 #ifndef __has_cpp_attribute
 #define _NODISCARD_CTOR
