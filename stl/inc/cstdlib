@@ -20,15 +20,15 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 // <stdlib.h> has abs(long) and abs(long long)
-_NODISCARD _Check_return_ inline double abs(_In_ double _Xx) noexcept /* strengthened */ {
+_NODISCARD_PURE_FN _Check_return_ inline double abs(_In_ double _Xx) noexcept /* strengthened */ {
     return _CSTD fabs(_Xx);
 }
 
-_NODISCARD _Check_return_ inline float abs(_In_ float _Xx) noexcept /* strengthened */ {
+_NODISCARD_PURE_FN _Check_return_ inline float abs(_In_ float _Xx) noexcept /* strengthened */ {
     return _CSTD fabsf(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double abs(_In_ long double _Xx) noexcept /* strengthened */ {
+_NODISCARD_PURE_FN _Check_return_ inline long double abs(_In_ long double _Xx) noexcept /* strengthened */ {
     return _CSTD fabsl(_Xx);
 }
 
