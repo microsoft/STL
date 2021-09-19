@@ -384,7 +384,7 @@ _NODISCARD_PURE_FN const _ValueType* any_cast(const any* const _Any) noexcept {
     }
 }
 template <class _ValueType>
-_NODISCARD_PURE_FN _ValueType* any_cast(any* const _Any) noexcept {
+_NODISCARD_ACESS_FN _ValueType* any_cast(any* const _Any) noexcept {
     // retrieve a pointer to the _ValueType contained in _Any, or null
     static_assert(!is_void_v<_ValueType>, "std::any cannot contain void.");
 
@@ -413,7 +413,7 @@ _NODISCARD_PURE_FN remove_cv_t<_Ty> any_cast(const any& _Any) {
     return static_cast<remove_cv_t<_Ty>>(*_Ptr);
 }
 template <class _Ty>
-_NODISCARD_PURE_FN remove_cv_t<_Ty> any_cast(any& _Any) {
+_NODISCARD_ACESS_FN remove_cv_t<_Ty> any_cast(any& _Any) {
     static_assert(is_constructible_v<remove_cv_t<_Ty>, _Remove_cvref_t<_Ty>&>,
         "any_cast<T>(any&) requires remove_cv_t<T> to be constructible from remove_cv_t<remove_reference_t<T>>&");
 
@@ -425,7 +425,7 @@ _NODISCARD_PURE_FN remove_cv_t<_Ty> any_cast(any& _Any) {
     return static_cast<remove_cv_t<_Ty>>(*_Ptr);
 }
 template <class _Ty>
-_NODISCARD_PURE_FN remove_cv_t<_Ty> any_cast(any&& _Any) {
+_NODISCARD_ACESS_FN remove_cv_t<_Ty> any_cast(any&& _Any) {
     static_assert(is_constructible_v<remove_cv_t<_Ty>, _Remove_cvref_t<_Ty>>,
         "any_cast<T>(any&&) requires remove_cv_t<T> to be constructible from remove_cv_t<remove_reference_t<T>>");
 
