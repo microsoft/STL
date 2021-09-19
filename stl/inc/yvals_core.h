@@ -501,6 +501,14 @@
     _NODISCARD_MSG("This function returns whether the operation succeeds in modifying the state of the passed " \
                    "objects or not. It is dangerous to ignore the return value")
 
+#define _NODISCARD_PTR_ALLOC_FN                                                                                     \
+    _NODISCARD_MSG("This function constructs an object wrapped by a pointer, and has no other side effects; it is " \
+                   "not useful to call this function and discard the return value")
+
+#define _NODISCARD_ASSUME_ALIGNED                                                                                     \
+    _NODISCARD_MSG("Implementation might take advantage of alignment assumption only if the object is accesssed via " \
+                   "the returned pointer")
+
 #ifdef _NODISCARD_LOCK_SUPPRESS
 
 #define _NODISCARD_LOCK

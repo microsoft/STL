@@ -883,7 +883,7 @@ public:
 
     explicit raw_storage_iterator(_OutIt _First) : _Next(_First) {}
 
-    _NODISCARD raw_storage_iterator& operator*() { // pretend to return designated value
+    _NODISCARD_ACCESS_OP raw_storage_iterator& operator*() { // pretend to return designated value
         return *this;
     }
 
@@ -908,7 +908,7 @@ public:
         return _Ans;
     }
 
-    _NODISCARD _OutIt base() const {
+    _NODISCARD_PURE_MTHD _OutIt base() const {
         return _Next;
     }
 
@@ -982,7 +982,7 @@ public:
         delete _Myptr;
     }
 
-    _NODISCARD _Ty& operator*() const noexcept {
+    _NODISCARD_PURE_OP _Ty& operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Myptr, "auto_ptr not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
@@ -990,7 +990,7 @@ public:
         return *get();
     }
 
-    _NODISCARD _Ty* operator->() const noexcept {
+    _NODISCARD_PURE_OP _Ty* operator->() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Myptr, "auto_ptr not dereferenceable");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
@@ -998,7 +998,7 @@ public:
         return get();
     }
 
-    _NODISCARD _Ty* get() const noexcept {
+    _NODISCARD_PURE_MTHD _Ty* get() const noexcept {
         return _Myptr;
     }
 
@@ -1032,7 +1032,7 @@ class bad_weak_ptr : public exception { // exception type for invalid use of exp
 public:
     bad_weak_ptr() noexcept {}
 
-    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD_PURE_MTHD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
         return "bad_weak_ptr";
     }
@@ -1242,12 +1242,13 @@ class _Ptr_base { // base class for shared_ptr and weak_ptr
 public:
     using element_type = remove_extent_t<_Ty>;
 
-    _NODISCARD long use_count() const noexcept {
+    _NODISCARD_PURE_MTHD long use_count() const noexcept {
         return _Rep ? _Rep->_Use_count() : 0;
     }
 
     template <class _Ty2>
-    _NODISCARD bool owner_before(const _Ptr_base<_Ty2>& _Right) const noexcept { // compare addresses of manager objects
+    _NODISCARD_PURE_MTHD bool owner_before(
+        const _Ptr_base<_Ty2>& _Right) const noexcept { // compare addresses of manager objects
         return _Rep < _Right._Rep;
     }
 
@@ -1255,7 +1256,7 @@ public:
     _Ptr_base& operator=(const _Ptr_base&) = delete;
 
 protected:
-    _NODISCARD element_type* get() const noexcept {
+    _NODISCARD_PURE_MTHD element_type* get() const noexcept {
         return _Ptr;
     }
 
@@ -1673,22 +1674,22 @@ public:
     using _Mybase::get;
 
     template <class _Ty2 = _Ty, enable_if_t<!disjunction_v<is_array<_Ty2>, is_void<_Ty2>>, int> = 0>
-    _NODISCARD _Ty2& operator*() const noexcept {
+    _NODISCARD_PURE_OP _Ty2& operator*() const noexcept {
         return *get();
     }
 
     template <class _Ty2 = _Ty, enable_if_t<!is_array_v<_Ty2>, int> = 0>
-    _NODISCARD _Ty2* operator->() const noexcept {
+    _NODISCARD_PURE_OP _Ty2* operator->() const noexcept {
         return get();
     }
 
     template <class _Ty2 = _Ty, class _Elem = element_type, enable_if_t<is_array_v<_Ty2>, int> = 0>
-    _NODISCARD _Elem& operator[](ptrdiff_t _Idx) const noexcept /* strengthened */ {
+    _NODISCARD_PURE_OP _Elem& operator[](ptrdiff_t _Idx) const noexcept /* strengthened */ {
         return get()[_Idx];
     }
 
 #if _HAS_DEPRECATED_SHARED_PTR_UNIQUE
-    _CXX17_DEPRECATE_SHARED_PTR_UNIQUE _NODISCARD bool unique() const noexcept {
+    _CXX17_DEPRECATE_SHARED_PTR_UNIQUE _NODISCARD_PURE_MTHD bool unique() const noexcept {
         // return true if no other shared_ptr object owns this resource
         return this->use_count() == 1;
     }
@@ -1788,105 +1789,105 @@ shared_ptr(unique_ptr<_Ty, _Dx>) -> shared_ptr<_Ty>;
 #endif // _HAS_CXX17
 
 template <class _Ty1, class _Ty2>
-_NODISCARD bool operator==(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator==(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() == _Right.get();
 }
 
 #if _HAS_CXX20
 template <class _Ty1, class _Ty2>
-_NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
+_NODISCARD_PURE_OP strong_ordering operator<=>(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() <=> _Right.get();
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty1, class _Ty2>
-_NODISCARD bool operator!=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator!=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() != _Right.get();
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD bool operator<(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator<(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() < _Right.get();
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD bool operator>=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator>=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() >= _Right.get();
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD bool operator>(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator>(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() > _Right.get();
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD bool operator<=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator<=(const shared_ptr<_Ty1>& _Left, const shared_ptr<_Ty2>& _Right) noexcept {
     return _Left.get() <= _Right.get();
 }
 #endif // ^^^ !_HAS_CXX20 ^^^
 
 template <class _Ty>
-_NODISCARD bool operator==(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
+_NODISCARD_PURE_OP bool operator==(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
     return _Left.get() == nullptr;
 }
 
 #if _HAS_CXX20
 template <class _Ty>
-_NODISCARD strong_ordering operator<=>(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
+_NODISCARD_PURE_OP strong_ordering operator<=>(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
     return _Left.get() <=> static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr);
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 template <class _Ty>
-_NODISCARD bool operator==(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator==(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
     return nullptr == _Right.get();
 }
 
 template <class _Ty>
-_NODISCARD bool operator!=(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
+_NODISCARD_PURE_OP bool operator!=(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
     return _Left.get() != nullptr;
 }
 
 template <class _Ty>
-_NODISCARD bool operator!=(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator!=(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
     return nullptr != _Right.get();
 }
 
 template <class _Ty>
-_NODISCARD bool operator<(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
+_NODISCARD_PURE_OP bool operator<(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
     return _Left.get() < static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr);
 }
 
 template <class _Ty>
-_NODISCARD bool operator<(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator<(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
     return static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr) < _Right.get();
 }
 
 template <class _Ty>
-_NODISCARD bool operator>=(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
+_NODISCARD_PURE_OP bool operator>=(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
     return _Left.get() >= static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr);
 }
 
 template <class _Ty>
-_NODISCARD bool operator>=(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator>=(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
     return static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr) >= _Right.get();
 }
 
 template <class _Ty>
-_NODISCARD bool operator>(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
+_NODISCARD_PURE_OP bool operator>(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
     return _Left.get() > static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr);
 }
 
 template <class _Ty>
-_NODISCARD bool operator>(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator>(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
     return static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr) > _Right.get();
 }
 
 template <class _Ty>
-_NODISCARD bool operator<=(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
+_NODISCARD_PURE_OP bool operator<=(const shared_ptr<_Ty>& _Left, nullptr_t) noexcept {
     return _Left.get() <= static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr);
 }
 
 template <class _Ty>
-_NODISCARD bool operator<=(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator<=(nullptr_t, const shared_ptr<_Ty>& _Right) noexcept {
     return static_cast<typename shared_ptr<_Ty>::element_type*>(nullptr) <= _Right.get();
 }
 #endif // ^^^ !_HAS_CXX20 ^^^
@@ -1903,42 +1904,42 @@ void swap(shared_ptr<_Ty>& _Left, shared_ptr<_Ty>& _Right) noexcept {
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD shared_ptr<_Ty1> static_pointer_cast(const shared_ptr<_Ty2>& _Other) noexcept {
+_NODISCARD_PURE_FN shared_ptr<_Ty1> static_pointer_cast(const shared_ptr<_Ty2>& _Other) noexcept {
     // static_cast for shared_ptr that properly respects the reference count control block
     const auto _Ptr = static_cast<typename shared_ptr<_Ty1>::element_type*>(_Other.get());
     return shared_ptr<_Ty1>(_Other, _Ptr);
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD shared_ptr<_Ty1> static_pointer_cast(shared_ptr<_Ty2>&& _Other) noexcept {
+_NODISCARD_ACCESS_FN shared_ptr<_Ty1> static_pointer_cast(shared_ptr<_Ty2>&& _Other) noexcept {
     // static_cast for shared_ptr that properly respects the reference count control block
     const auto _Ptr = static_cast<typename shared_ptr<_Ty1>::element_type*>(_Other.get());
     return shared_ptr<_Ty1>(_STD move(_Other), _Ptr);
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD shared_ptr<_Ty1> const_pointer_cast(const shared_ptr<_Ty2>& _Other) noexcept {
+_NODISCARD_PURE_FN shared_ptr<_Ty1> const_pointer_cast(const shared_ptr<_Ty2>& _Other) noexcept {
     // const_cast for shared_ptr that properly respects the reference count control block
     const auto _Ptr = const_cast<typename shared_ptr<_Ty1>::element_type*>(_Other.get());
     return shared_ptr<_Ty1>(_Other, _Ptr);
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD shared_ptr<_Ty1> const_pointer_cast(shared_ptr<_Ty2>&& _Other) noexcept {
+_NODISCARD_ACCESS_FN shared_ptr<_Ty1> const_pointer_cast(shared_ptr<_Ty2>&& _Other) noexcept {
     // const_cast for shared_ptr that properly respects the reference count control block
     const auto _Ptr = const_cast<typename shared_ptr<_Ty1>::element_type*>(_Other.get());
     return shared_ptr<_Ty1>(_STD move(_Other), _Ptr);
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD shared_ptr<_Ty1> reinterpret_pointer_cast(const shared_ptr<_Ty2>& _Other) noexcept {
+_NODISCARD_PURE_FN shared_ptr<_Ty1> reinterpret_pointer_cast(const shared_ptr<_Ty2>& _Other) noexcept {
     // reinterpret_cast for shared_ptr that properly respects the reference count control block
     const auto _Ptr = reinterpret_cast<typename shared_ptr<_Ty1>::element_type*>(_Other.get());
     return shared_ptr<_Ty1>(_Other, _Ptr);
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD shared_ptr<_Ty1> reinterpret_pointer_cast(shared_ptr<_Ty2>&& _Other) noexcept {
+_NODISCARD_ACCESS_FN shared_ptr<_Ty1> reinterpret_pointer_cast(shared_ptr<_Ty2>&& _Other) noexcept {
     // reinterpret_cast for shared_ptr that properly respects the reference count control block
     const auto _Ptr = reinterpret_cast<typename shared_ptr<_Ty1>::element_type*>(_Other.get());
     return shared_ptr<_Ty1>(_STD move(_Other), _Ptr);
@@ -1946,7 +1947,7 @@ _NODISCARD shared_ptr<_Ty1> reinterpret_pointer_cast(shared_ptr<_Ty2>&& _Other) 
 
 #ifdef _CPPRTTI
 template <class _Ty1, class _Ty2>
-_NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(const shared_ptr<_Ty2>& _Other) noexcept {
+_NODISCARD_PURE_FN shared_ptr<_Ty1> dynamic_pointer_cast(const shared_ptr<_Ty2>& _Other) noexcept {
     // dynamic_cast for shared_ptr that properly respects the reference count control block
     const auto _Ptr = dynamic_cast<typename shared_ptr<_Ty1>::element_type*>(_Other.get());
 
@@ -1958,7 +1959,7 @@ _NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(const shared_ptr<_Ty2>& _Other)
 }
 
 template <class _Ty1, class _Ty2>
-_NODISCARD shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&& _Other) noexcept {
+_NODISCARD_ACCESS_FN shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&& _Other) noexcept {
     // dynamic_cast for shared_ptr that properly respects the reference count control block
     const auto _Ptr = dynamic_cast<typename shared_ptr<_Ty1>::element_type*>(_Other.get());
 
@@ -1977,7 +1978,7 @@ shared_ptr<_Ty1> dynamic_pointer_cast(shared_ptr<_Ty2>&&) noexcept = delete; // 
 
 #if _HAS_STATIC_RTTI
 template <class _Dx, class _Ty>
-_NODISCARD _Dx* get_deleter(const shared_ptr<_Ty>& _Sx) noexcept {
+_NODISCARD_PURE_FN _Dx* get_deleter(const shared_ptr<_Ty>& _Sx) noexcept {
     // return pointer to shared_ptr's deleter object if its type is _Dx
     if (_Sx._Rep) {
         return static_cast<_Dx*>(_Sx._Rep->_Get_deleter(typeid(_Dx)));
@@ -2756,18 +2757,18 @@ _NODISCARD shared_ptr<_Ty> _Make_shared_unbounded_array(const size_t _Count, con
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
+_NODISCARD_PTR_ALLOC_FN enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const size_t _Count) {
     return _Make_shared_unbounded_array<_Ty>(_Count);
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
+_NODISCARD_PTR_ALLOC_FN enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
     const size_t _Count, const remove_extent_t<_Ty>& _Val) {
     return _Make_shared_unbounded_array<_Ty>(_Count, _Val);
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
+_NODISCARD_PTR_ALLOC_FN enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
     // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>();
     shared_ptr<_Ty> _Ret;
@@ -2776,7 +2777,8 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared() {
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(const remove_extent_t<_Ty>& _Val) {
+_NODISCARD_PTR_ALLOC_FN enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(
+    const remove_extent_t<_Ty>& _Val) {
     // make a shared_ptr to a bounded array
     const auto _Rx = new _Ref_count_bounded_array<_Ty>(_Val);
     shared_ptr<_Ty> _Ret;
@@ -2785,7 +2787,7 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(con
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite() {
+_NODISCARD_PTR_ALLOC_FN enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite() {
     shared_ptr<_Ty> _Ret;
     if constexpr (is_array_v<_Ty>) {
         // make a shared_ptr to a bounded array
@@ -2800,13 +2802,14 @@ _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_
 }
 
 template <class _Ty>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite(const size_t _Count) {
+_NODISCARD_PTR_ALLOC_FN enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite(
+    const size_t _Count) {
     return _Make_shared_unbounded_array<_Ty>(_Count, _For_overwrite_tag{});
 }
 #endif // _HAS_CXX20
 
 template <class _Ty, class _Alloc, class... _Types>
-_NODISCARD
+_NODISCARD_PTR_ALLOC_FN
 #if _HAS_CXX20
     enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
 #else // _HAS_CXX20
@@ -2867,19 +2870,19 @@ _NODISCARD shared_ptr<_Ty> _Allocate_shared_unbounded_array(
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+_NODISCARD_PTR_ALLOC_FN enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const size_t _Count) {
     return _Allocate_shared_unbounded_array<_Ty>(_Al, _Count);
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+_NODISCARD_PTR_ALLOC_FN enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const size_t _Count, const remove_extent_t<_Ty>& _Val) {
     return _Allocate_shared_unbounded_array<_Ty>(_Al, _Count, _Val);
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(const _Alloc& _Al) {
+_NODISCARD_PTR_ALLOC_FN enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(const _Alloc& _Al) {
     // make a shared_ptr to a bounded array
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
     using _Alblock = _Rebind_alloc_t<_Alloc, _Refc>;
@@ -2894,7 +2897,7 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
+_NODISCARD_PTR_ALLOC_FN enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared(
     const _Alloc& _Al, const remove_extent_t<_Ty>& _Val) {
     // make a shared_ptr to a bounded array
     using _Refc    = _Ref_count_bounded_array_alloc<remove_cv_t<_Ty>, _Alloc>;
@@ -2910,7 +2913,8 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(const _Alloc& _Al) {
+_NODISCARD_PTR_ALLOC_FN enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(
+    const _Alloc& _Al) {
     shared_ptr<_Ty> _Ret;
     if constexpr (is_array_v<_Ty>) {
         // make a shared_ptr to a bounded array
@@ -2938,7 +2942,7 @@ _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_sha
 }
 
 template <class _Ty, class _Alloc>
-_NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(
+_NODISCARD_PTR_ALLOC_FN enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(
     const _Alloc& _Al, const size_t _Count) {
     return _Allocate_shared_unbounded_array<_Ty>(_Al, _Count, _For_overwrite_tag{});
 }
@@ -3012,11 +3016,11 @@ public:
         this->_Swap(_Other);
     }
 
-    _NODISCARD bool expired() const noexcept {
+    _NODISCARD_PURE_MTHD bool expired() const noexcept {
         return this->use_count() == 0;
     }
 
-    _NODISCARD shared_ptr<_Ty> lock() const noexcept { // convert to shared_ptr
+    _NODISCARD_PURE_MTHD shared_ptr<_Ty> lock() const noexcept { // convert to shared_ptr
         shared_ptr<_Ty> _Ret;
         (void) _Ret._Construct_from_weak(*this);
         return _Ret;
@@ -3038,19 +3042,19 @@ class enable_shared_from_this { // provide member functions that create shared_p
 public:
     using _Esft_type = enable_shared_from_this;
 
-    _NODISCARD shared_ptr<_Ty> shared_from_this() {
+    _NODISCARD_ACCESS_MTHD shared_ptr<_Ty> shared_from_this() {
         return shared_ptr<_Ty>(_Wptr);
     }
 
-    _NODISCARD shared_ptr<const _Ty> shared_from_this() const {
+    _NODISCARD_PURE_MTHD shared_ptr<const _Ty> shared_from_this() const {
         return shared_ptr<const _Ty>(_Wptr);
     }
 
-    _NODISCARD weak_ptr<_Ty> weak_from_this() noexcept {
+    _NODISCARD_ACCESS_MTHD weak_ptr<_Ty> weak_from_this() noexcept {
         return _Wptr;
     }
 
-    _NODISCARD weak_ptr<const _Ty> weak_from_this() const noexcept {
+    _NODISCARD_PURE_MTHD weak_ptr<const _Ty> weak_from_this() const noexcept {
         return _Wptr;
     }
 
@@ -3196,23 +3200,23 @@ public:
         }
     }
 
-    _NODISCARD _Dx& get_deleter() noexcept {
+    _NODISCARD_ACCESS_MTHD _Dx& get_deleter() noexcept {
         return _Mypair._Get_first();
     }
 
-    _NODISCARD const _Dx& get_deleter() const noexcept {
+    _NODISCARD_PURE_MTHD const _Dx& get_deleter() const noexcept {
         return _Mypair._Get_first();
     }
 
-    _NODISCARD add_lvalue_reference_t<_Ty> operator*() const noexcept /* strengthened */ {
+    _NODISCARD_PURE_OP add_lvalue_reference_t<_Ty> operator*() const noexcept /* strengthened */ {
         return *_Mypair._Myval2;
     }
 
-    _NODISCARD pointer operator->() const noexcept {
+    _NODISCARD_PURE_OP pointer operator->() const noexcept {
         return _Mypair._Myval2;
     }
 
-    _NODISCARD pointer get() const noexcept {
+    _NODISCARD_PURE_MTHD pointer get() const noexcept {
         return _Mypair._Myval2;
     }
 
@@ -3331,19 +3335,19 @@ public:
         }
     }
 
-    _NODISCARD _Dx& get_deleter() noexcept {
+    _NODISCARD_ACCESS_MTHD _Dx& get_deleter() noexcept {
         return _Mypair._Get_first();
     }
 
-    _NODISCARD const _Dx& get_deleter() const noexcept {
+    _NODISCARD_PURE_MTHD const _Dx& get_deleter() const noexcept {
         return _Mypair._Get_first();
     }
 
-    _NODISCARD _Ty& operator[](size_t _Idx) const noexcept /* strengthened */ {
+    _NODISCARD_PURE_OP _Ty& operator[](size_t _Idx) const noexcept /* strengthened */ {
         return _Mypair._Myval2[_Idx];
     }
 
-    _NODISCARD pointer get() const noexcept {
+    _NODISCARD_PURE_MTHD pointer get() const noexcept {
         return _Mypair._Myval2;
     }
 
@@ -3375,12 +3379,12 @@ private:
 
 
 template <class _Ty, class... _Types, enable_if_t<!is_array_v<_Ty>, int> = 0>
-_NODISCARD unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
+_NODISCARD_PTR_ALLOC_FN unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
     return unique_ptr<_Ty>(new _Ty(_STD forward<_Types>(_Args)...));
 }
 
 template <class _Ty, enable_if_t<is_array_v<_Ty> && extent_v<_Ty> == 0, int> = 0>
-_NODISCARD unique_ptr<_Ty> make_unique(const size_t _Size) { // make a unique_ptr
+_NODISCARD_PTR_ALLOC_FN unique_ptr<_Ty> make_unique(const size_t _Size) { // make a unique_ptr
     using _Elem = remove_extent_t<_Ty>;
     return unique_ptr<_Ty>(new _Elem[_Size]());
 }
@@ -3390,12 +3394,12 @@ void make_unique(_Types&&...) = delete;
 
 #if _HAS_CXX20
 template <class _Ty, enable_if_t<!is_array_v<_Ty>, int> = 0>
-_NODISCARD unique_ptr<_Ty> make_unique_for_overwrite() { // make a unique_ptr with default initialization
+_NODISCARD_PTR_ALLOC_FN unique_ptr<_Ty> make_unique_for_overwrite() { // make a unique_ptr with default initialization
     return unique_ptr<_Ty>(new _Ty);
 }
 
 template <class _Ty, enable_if_t<is_unbounded_array_v<_Ty>, int> = 0>
-_NODISCARD unique_ptr<_Ty> make_unique_for_overwrite(
+_NODISCARD_PTR_ALLOC_FN unique_ptr<_Ty> make_unique_for_overwrite(
     const size_t _Size) { // make a unique_ptr with default initialization
     using _Elem = remove_extent_t<_Ty>;
     return unique_ptr<_Ty>(new _Elem[_Size]);
@@ -3411,19 +3415,19 @@ void swap(unique_ptr<_Ty, _Dx>& _Left, unique_ptr<_Ty, _Dx>& _Right) noexcept {
 }
 
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
-_NODISCARD bool operator==(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
+_NODISCARD_PURE_OP bool operator==(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     return _Left.get() == _Right.get();
 }
 
 #if !_HAS_CXX20
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
-_NODISCARD bool operator!=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
+_NODISCARD_PURE_OP bool operator!=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     return !(_Left == _Right);
 }
 #endif // !_HAS_CXX20
 
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
-_NODISCARD bool operator<(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
+_NODISCARD_PURE_OP bool operator<(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     using _Ptr1   = typename unique_ptr<_Ty1, _Dx1>::pointer;
     using _Ptr2   = typename unique_ptr<_Ty2, _Dx2>::pointer;
     using _Common = common_type_t<_Ptr1, _Ptr2>;
@@ -3431,17 +3435,17 @@ _NODISCARD bool operator<(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<
 }
 
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
-_NODISCARD bool operator>=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
+_NODISCARD_PURE_OP bool operator>=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     return !(_Left < _Right);
 }
 
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
-_NODISCARD bool operator>(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
+_NODISCARD_PURE_OP bool operator>(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     return _Right < _Left;
 }
 
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
-_NODISCARD bool operator<=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
+_NODISCARD_PURE_OP bool operator<=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     return !(_Right < _Left);
 }
 
@@ -3450,7 +3454,7 @@ _NODISCARD bool operator<=(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
     requires three_way_comparable_with<typename unique_ptr<_Ty1, _Dx1>::pointer,
         typename unique_ptr<_Ty2, _Dx2>::pointer>
-_NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer,
+_NODISCARD_PURE_OP compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer,
         typename unique_ptr<_Ty2, _Dx2>::pointer>
     operator<=>(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     // clang-format on
@@ -3459,66 +3463,66 @@ _NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer,
 #endif // __cpp_lib_concepts
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator==(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
+_NODISCARD_PURE_OP bool operator==(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
     return !_Left;
 }
 
 #if !_HAS_CXX20
 template <class _Ty, class _Dx>
-_NODISCARD bool operator==(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator==(nullptr_t, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
     return !_Right;
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator!=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) noexcept {
+_NODISCARD_PURE_OP bool operator!=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) noexcept {
     return !(_Left == _Right);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator!=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
+_NODISCARD_PURE_OP bool operator!=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) noexcept {
     return !(_Left == _Right);
 }
 #endif // !_HAS_CXX20
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
+_NODISCARD_PURE_OP bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
     return less<_Ptr>{}(_Left.get(), _Right);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator<(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
+_NODISCARD_PURE_OP bool operator<(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
     return less<_Ptr>{}(_Left, _Right.get());
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator>=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
+_NODISCARD_PURE_OP bool operator>=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
     return !(_Left < _Right);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator>=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
+_NODISCARD_PURE_OP bool operator>=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     return !(_Left < _Right);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator>(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
+_NODISCARD_PURE_OP bool operator>(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
     return _Right < _Left;
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator>(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
+_NODISCARD_PURE_OP bool operator>(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     return _Right < _Left;
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator<=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
+_NODISCARD_PURE_OP bool operator<=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
     return !(_Right < _Left);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
+_NODISCARD_PURE_OP bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     return !(_Right < _Left);
 }
 
@@ -3526,7 +3530,7 @@ _NODISCARD bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) 
 // clang-format off
 template <class _Ty, class _Dx>
     requires three_way_comparable<typename unique_ptr<_Ty, _Dx>::pointer>
-_NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>::pointer> operator<=>(
+_NODISCARD_PURE_OP compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>::pointer> operator<=>(
     const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
     // clang-format on
     return _Left.get() <=> static_cast<typename unique_ptr<_Ty, _Dx>::pointer>(nullptr);
@@ -3575,15 +3579,15 @@ struct owner_less<shared_ptr<_Ty>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
-    _NODISCARD bool operator()(const shared_ptr<_Ty>& _Left, const shared_ptr<_Ty>& _Right) const noexcept {
+    _NODISCARD_PURE_OP bool operator()(const shared_ptr<_Ty>& _Left, const shared_ptr<_Ty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
 
-    _NODISCARD bool operator()(const shared_ptr<_Ty>& _Left, const weak_ptr<_Ty>& _Right) const noexcept {
+    _NODISCARD_PURE_OP bool operator()(const shared_ptr<_Ty>& _Left, const weak_ptr<_Ty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
 
-    _NODISCARD bool operator()(const weak_ptr<_Ty>& _Left, const shared_ptr<_Ty>& _Right) const noexcept {
+    _NODISCARD_PURE_OP bool operator()(const weak_ptr<_Ty>& _Left, const shared_ptr<_Ty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
 };
@@ -3594,15 +3598,15 @@ struct owner_less<weak_ptr<_Ty>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef weak_ptr<_Ty> _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
-    _NODISCARD bool operator()(const weak_ptr<_Ty>& _Left, const weak_ptr<_Ty>& _Right) const noexcept {
+    _NODISCARD_PURE_OP bool operator()(const weak_ptr<_Ty>& _Left, const weak_ptr<_Ty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
 
-    _NODISCARD bool operator()(const weak_ptr<_Ty>& _Left, const shared_ptr<_Ty>& _Right) const noexcept {
+    _NODISCARD_PURE_OP bool operator()(const weak_ptr<_Ty>& _Left, const shared_ptr<_Ty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
 
-    _NODISCARD bool operator()(const shared_ptr<_Ty>& _Left, const weak_ptr<_Ty>& _Right) const noexcept {
+    _NODISCARD_PURE_OP bool operator()(const shared_ptr<_Ty>& _Left, const weak_ptr<_Ty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
 };
@@ -3610,22 +3614,22 @@ struct owner_less<weak_ptr<_Ty>> {
 template <>
 struct owner_less<void> {
     template <class _Ty, class _Uty>
-    _NODISCARD bool operator()(const shared_ptr<_Ty>& _Left, const shared_ptr<_Uty>& _Right) const noexcept {
+    _NODISCARD_PURE_OP bool operator()(const shared_ptr<_Ty>& _Left, const shared_ptr<_Uty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
 
     template <class _Ty, class _Uty>
-    _NODISCARD bool operator()(const shared_ptr<_Ty>& _Left, const weak_ptr<_Uty>& _Right) const noexcept {
+    _NODISCARD_PURE_OP bool operator()(const shared_ptr<_Ty>& _Left, const weak_ptr<_Uty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
 
     template <class _Ty, class _Uty>
-    _NODISCARD bool operator()(const weak_ptr<_Ty>& _Left, const shared_ptr<_Uty>& _Right) const noexcept {
+    _NODISCARD_PURE_OP bool operator()(const weak_ptr<_Ty>& _Left, const shared_ptr<_Uty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
 
     template <class _Ty, class _Uty>
-    _NODISCARD bool operator()(const weak_ptr<_Ty>& _Left, const weak_ptr<_Uty>& _Right) const noexcept {
+    _NODISCARD_PURE_OP bool operator()(const weak_ptr<_Ty>& _Left, const weak_ptr<_Uty>& _Right) const noexcept {
         return _Left.owner_before(_Right);
     }
 
@@ -3646,7 +3650,7 @@ struct hash<shared_ptr<_Ty>> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef shared_ptr<_Ty> _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
-    _NODISCARD size_t operator()(const shared_ptr<_Ty>& _Keyval) const noexcept {
+    _NODISCARD_PURE_OP size_t operator()(const shared_ptr<_Ty>& _Keyval) const noexcept {
         return hash<typename shared_ptr<_Ty>::element_type*>()(_Keyval.get());
     }
 };
@@ -3670,7 +3674,7 @@ inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noe
 
 #if _HAS_CXX20
 template <size_t _Nx, class _Ty>
-_NODISCARD constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcept /* strengthened */ {
+_NODISCARD_ASSUME_ALIGNED constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcept /* strengthened */ {
     if (_STD is_constant_evaluated()) {
         return _Ptr;
     } else {
@@ -3696,13 +3700,13 @@ struct _Shared_ptr_spin_lock { // class to manage a spin lock for shared_ptr ato
 };
 
 template <class _Ty>
-_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT _NODISCARD bool atomic_is_lock_free(const shared_ptr<_Ty>*) {
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT _NODISCARD_PURE_FN bool atomic_is_lock_free(const shared_ptr<_Ty>*) {
     // return true if atomic operations on shared_ptr<_Ty> are lock-free
     return false;
 }
 
 template <class _Ty>
-_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT _NODISCARD shared_ptr<_Ty> atomic_load_explicit(
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT _NODISCARD_PURE_FN shared_ptr<_Ty> atomic_load_explicit(
     const shared_ptr<_Ty>* _Ptr, memory_order) {
     // load *_Ptr atomically
     _Shared_ptr_spin_lock _Lock;
@@ -3711,7 +3715,7 @@ _CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT _NODISCARD shared_ptr<_Ty> atomic
 }
 
 template <class _Ty>
-_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT _NODISCARD shared_ptr<_Ty> atomic_load(
+_CXX20_DEPRECATE_OLD_SHARED_PTR_ATOMIC_SUPPORT _NODISCARD_PURE_FN shared_ptr<_Ty> atomic_load(
     const shared_ptr<_Ty>* _Ptr) { // load *_Ptr atomically
     return _STD atomic_load_explicit(_Ptr, memory_order_seq_cst);
 }
@@ -3827,7 +3831,7 @@ public:
 
     static constexpr bool is_always_lock_free = false;
 
-    _NODISCARD bool is_lock_free() const noexcept {
+    _NODISCARD_PURE_MTHD bool is_lock_free() const noexcept {
         return false;
     }
 
@@ -3841,7 +3845,7 @@ public:
         _Value._Rep = _Rep;
     }
 
-    _NODISCARD shared_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
+    _NODISCARD_PURE_MTHD shared_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         shared_ptr<_Ty> _Result;
         const auto _Rep = this->_Repptr._Lock_and_load();
@@ -3944,7 +3948,7 @@ public:
 
     static constexpr bool is_always_lock_free = false;
 
-    _NODISCARD bool is_lock_free() const noexcept {
+    _NODISCARD_PURE_MTHD bool is_lock_free() const noexcept {
         return false;
     }
 
@@ -3958,7 +3962,7 @@ public:
         _Value._Rep = _Rep;
     }
 
-    _NODISCARD weak_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
+    _NODISCARD_PURE_MTHD weak_ptr<_Ty> load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         _Check_load_memory_order(_Order);
         weak_ptr<_Ty> _Result;
         const auto _Rep = this->_Repptr._Lock_and_load();
@@ -4158,7 +4162,7 @@ private:
 };
 
 template <class _Pointer = void, class _SmartPtr, class... _ArgsT>
-_NODISCARD auto out_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
+_NODISCARD_ACCESS_FN auto out_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
     if constexpr (is_void_v<_Pointer>) {
         return out_ptr_t<_SmartPtr, _Pointer_of<_SmartPtr>, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
     } else {
@@ -4238,7 +4242,7 @@ private:
 };
 
 template <class _Pointer = void, class _SmartPtr, class... _ArgsT>
-_NODISCARD auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
+_NODISCARD_ACCESS_FN auto inout_ptr(_SmartPtr& _Smart_ptr, _ArgsT&&... _Args) {
     if constexpr (is_void_v<_Pointer>) {
         return inout_ptr_t<_SmartPtr, _Pointer_of<_SmartPtr>, _ArgsT&&...>(_Smart_ptr, _STD forward<_ArgsT>(_Args)...);
     } else {
