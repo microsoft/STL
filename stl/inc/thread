@@ -114,7 +114,7 @@ public:
         _STD swap(_Thr, _Other._Thr);
     }
 
-    _NODISCARD_PURE_METHOD bool joinable() const noexcept {
+    _NODISCARD_PURE_MTHD bool joinable() const noexcept {
         return _Thr._Id != 0;
     }
 
@@ -143,14 +143,14 @@ public:
         _Thr = {};
     }
 
-    _NODISCARD_PURE_METHOD id get_id() const noexcept;
+    _NODISCARD_PURE_MTHD id get_id() const noexcept;
 
-    _NODISCARD_PURE_METHOD native_handle_type native_handle() noexcept
+    _NODISCARD_PURE_MTHD native_handle_type native_handle() noexcept
     /* strengthened */ { // return Win32 HANDLE as void *
         return _Thr._Hnd;
     }
 
-    _NODISCARD_PURE_METHOD static unsigned int hardware_concurrency() noexcept {
+    _NODISCARD_PURE_MTHD static unsigned int hardware_concurrency() noexcept {
         return _Thrd_hardware_concurrency();
     }
 
@@ -175,7 +175,7 @@ _NODISCARD auto _To_absolute_time(const chrono::duration<_Rep, _Period>& _Rel_ti
 }
 
 namespace this_thread {
-    _NODISCARD_PURE_FUNCTION thread::id get_id() noexcept;
+    _NODISCARD_PURE_FN thread::id get_id() noexcept;
 
     inline void yield() noexcept {
         _Thrd_yield();
@@ -230,11 +230,11 @@ private:
     friend hash<thread::id>;
 };
 
-_NODISCARD_PURE_METHOD inline thread::id thread::get_id() const noexcept {
+_NODISCARD_PURE_MTHD inline thread::id thread::get_id() const noexcept {
     return _Thr._Id;
 }
 
-_NODISCARD_PURE_FUNCTION inline thread::id this_thread::get_id() noexcept {
+_NODISCARD_PURE_FN inline thread::id this_thread::get_id() noexcept {
     return _Thrd_id();
 }
 
@@ -242,32 +242,32 @@ inline void swap(thread& _Left, thread& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-_NODISCARD_PURE_OPERATOR inline bool operator==(thread::id _Left, thread::id _Right) noexcept {
+_NODISCARD_PURE_OP inline bool operator==(thread::id _Left, thread::id _Right) noexcept {
     return _Left._Id == _Right._Id;
 }
 
 #if _HAS_CXX20
-_NODISCARD_PURE_OPERATOR inline strong_ordering operator<=>(thread::id _Left, thread::id _Right) noexcept {
+_NODISCARD_PURE_OP inline strong_ordering operator<=>(thread::id _Left, thread::id _Right) noexcept {
     return _Left._Id <=> _Right._Id;
 }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-_NODISCARD_PURE_OPERATOR inline bool operator!=(thread::id _Left, thread::id _Right) noexcept {
+_NODISCARD_PURE_OP inline bool operator!=(thread::id _Left, thread::id _Right) noexcept {
     return !(_Left == _Right);
 }
 
-_NODISCARD_PURE_OPERATOR inline bool operator<(thread::id _Left, thread::id _Right) noexcept {
+_NODISCARD_PURE_OP inline bool operator<(thread::id _Left, thread::id _Right) noexcept {
     return _Left._Id < _Right._Id;
 }
 
-_NODISCARD_PURE_OPERATOR inline bool operator<=(thread::id _Left, thread::id _Right) noexcept {
+_NODISCARD_PURE_OP inline bool operator<=(thread::id _Left, thread::id _Right) noexcept {
     return !(_Right < _Left);
 }
 
-_NODISCARD_PURE_OPERATOR inline bool operator>(thread::id _Left, thread::id _Right) noexcept {
+_NODISCARD_PURE_OP inline bool operator>(thread::id _Left, thread::id _Right) noexcept {
     return _Right < _Left;
 }
 
-_NODISCARD_PURE_OPERATOR inline bool operator>=(thread::id _Left, thread::id _Right) noexcept {
+_NODISCARD_PURE_OP inline bool operator>=(thread::id _Left, thread::id _Right) noexcept {
     return !(_Left < _Right);
 }
 #endif // !_HAS_CXX20
@@ -282,7 +282,7 @@ struct hash<thread::id> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef thread::id _ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
 
-    _NODISCARD_PURE_METHOD size_t operator()(const thread::id _Keyval) const noexcept {
+    _NODISCARD_PURE_MTHD size_t operator()(const thread::id _Keyval) const noexcept {
         return _Hash_representation(_Keyval._Id);
     }
 };
@@ -328,7 +328,7 @@ public:
         _Ssource.swap(_Other._Ssource);
     }
 
-    _NODISCARD_PURE_METHOD bool joinable() const noexcept {
+    _NODISCARD_PURE_MTHD bool joinable() const noexcept {
         return _Impl.joinable();
     }
 
@@ -340,19 +340,19 @@ public:
         _Impl.detach();
     }
 
-    _NODISCARD_PURE_METHOD id get_id() const noexcept {
+    _NODISCARD_PURE_MTHD id get_id() const noexcept {
         return _Impl.get_id();
     }
 
-    _NODISCARD_PURE_METHOD native_handle_type native_handle() noexcept /* strengthened */ {
+    _NODISCARD_PURE_MTHD native_handle_type native_handle() noexcept /* strengthened */ {
         return _Impl.native_handle();
     }
 
-    _NODISCARD_ACCESSOR_METHOD stop_source get_stop_source() noexcept {
+    _NODISCARD_ACCESS_MTHD stop_source get_stop_source() noexcept {
         return _Ssource;
     }
 
-    _NODISCARD_PURE_METHOD stop_token get_stop_token() const noexcept {
+    _NODISCARD_PURE_MTHD stop_token get_stop_token() const noexcept {
         return _Ssource.get_token();
     }
 
@@ -364,7 +364,7 @@ public:
         _Lhs.swap(_Rhs);
     }
 
-    _NODISCARD_PURE_METHOD static unsigned int hardware_concurrency() noexcept {
+    _NODISCARD_PURE_MTHD static unsigned int hardware_concurrency() noexcept {
         return thread::hardware_concurrency();
     }
 

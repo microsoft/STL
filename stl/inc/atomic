@@ -500,7 +500,7 @@ struct _Atomic_storage {
         _Storage = _Value;
     }
 
-    _NODISCARD_PURE_METHOD _TVal load(const memory_order _Order = memory_order_seq_cst) const noexcept {
+    _NODISCARD_PURE_MTHD _TVal load(const memory_order _Order = memory_order_seq_cst) const noexcept {
         // load with sequential consistency
         _Check_load_memory_order(_Order);
         _Guard _Lock{_Spinlock};
@@ -661,14 +661,14 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         }
     }
 
-    _NODISCARD_PURE_METHOD _TVal load() const noexcept { // load with sequential consistency
+    _NODISCARD_PURE_MTHD _TVal load() const noexcept { // load with sequential consistency
         const auto _Mem = _Atomic_address_as<char>(_Storage);
         char _As_bytes  = __iso_volatile_load8(_Mem);
         _Compiler_or_memory_barrier();
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
-    _NODISCARD_PURE_METHOD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
+    _NODISCARD_PURE_MTHD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<char>(_Storage);
         char _As_bytes  = __iso_volatile_load8(_Mem);
         _Load_barrier(_Order);
@@ -782,14 +782,14 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         }
     }
 
-    _NODISCARD_PURE_METHOD _TVal load() const noexcept { // load with sequential consistency
+    _NODISCARD_PURE_MTHD _TVal load() const noexcept { // load with sequential consistency
         const auto _Mem = _Atomic_address_as<short>(_Storage);
         short _As_bytes = __iso_volatile_load16(_Mem);
         _Compiler_or_memory_barrier();
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
-    _NODISCARD_PURE_METHOD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
+    _NODISCARD_PURE_MTHD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<short>(_Storage);
         short _As_bytes = __iso_volatile_load16(_Mem);
         _Load_barrier(_Order);
@@ -900,14 +900,14 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         }
     }
 
-    _NODISCARD_PURE_METHOD _TVal load() const noexcept { // load with sequential consistency
+    _NODISCARD_PURE_MTHD _TVal load() const noexcept { // load with sequential consistency
         const auto _Mem = _Atomic_address_as<int>(_Storage);
         auto _As_bytes  = __iso_volatile_load32(_Mem);
         _Compiler_or_memory_barrier();
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
-    _NODISCARD_PURE_METHOD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
+    _NODISCARD_PURE_MTHD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<int>(_Storage);
         auto _As_bytes  = __iso_volatile_load32(_Mem);
         _Load_barrier(_Order);
@@ -1024,7 +1024,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         }
     }
 
-    _NODISCARD_PURE_METHOD _TVal load() const noexcept { // load with sequential consistency
+    _NODISCARD_PURE_MTHD _TVal load() const noexcept { // load with sequential consistency
         const auto _Mem = _Atomic_address_as<long long>(_Storage);
         long long _As_bytes;
 #ifdef _M_ARM
@@ -1037,7 +1037,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
-    _NODISCARD_PURE_METHOD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
+    _NODISCARD_PURE_MTHD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
         const auto _Mem = _Atomic_address_as<long long>(_Storage);
 #ifdef _M_ARM
         long long _As_bytes = __ldrexd(_Mem);
@@ -1140,14 +1140,14 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
         (void) exchange(_Value, _Order);
     }
 
-    _NODISCARD_PURE_METHOD _TVal load() const noexcept { // load with sequential consistency
+    _NODISCARD_PURE_MTHD _TVal load() const noexcept { // load with sequential consistency
         long long* const _Storage_ptr = const_cast<long long*>(_Atomic_address_as<const long long>(_Storage));
         _Int128 _Result{}; // atomic CAS 0 with 0
         (void) _STD_COMPARE_EXCHANGE_128(_Storage_ptr, 0, 0, &_Result._Low);
         return reinterpret_cast<_TVal&>(_Result);
     }
 
-    _NODISCARD_PURE_METHOD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
+    _NODISCARD_PURE_MTHD _TVal load(const memory_order _Order) const noexcept { // load with given memory order
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         long long* const _Storage_ptr = const_cast<long long*>(_Atomic_address_as<const long long>(_Storage));
         _Int128 _Result{}; // atomic CAS 0 with 0
@@ -2168,14 +2168,14 @@ public:
 #endif // _HAS_CXX17
 
 #if 1 // TRANSITION, ABI
-    _NODISCARD_PURE_METHOD bool is_lock_free() const volatile noexcept {
+    _NODISCARD_PURE_MTHD bool is_lock_free() const volatile noexcept {
         constexpr bool _Result = sizeof(_Ty) <= 8 && (sizeof(_Ty) & sizeof(_Ty) - 1) == 0;
         return _Result;
     }
 
 #else // ^^^ don't break ABI / break ABI vvv
 
-    _NODISCARD_PURE_METHOD bool is_lock_free() const volatile noexcept {
+    _NODISCARD_PURE_MTHD bool is_lock_free() const volatile noexcept {
 #if _ATOMIC_HAS_DCAS
         return sizeof(_Ty) <= 2 * sizeof(void*);
 #else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
@@ -2184,7 +2184,7 @@ public:
     }
 #endif // TRANSITION, ABI
 
-    _NODISCARD_PURE_METHOD bool is_lock_free() const noexcept {
+    _NODISCARD_PURE_MTHD bool is_lock_free() const noexcept {
         return static_cast<const volatile atomic*>(this)->is_lock_free();
     }
 
@@ -2216,12 +2216,12 @@ public:
     }
 
     using _Base::load;
-    _NODISCARD_PURE_METHOD _Ty load() const volatile noexcept {
+    _NODISCARD_PURE_MTHD _Ty load() const volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<const atomic*>(this)->_Base::load();
     }
 
-    _NODISCARD_PURE_METHOD _Ty load(const memory_order _Order) const volatile noexcept {
+    _NODISCARD_PURE_MTHD _Ty load(const memory_order _Order) const volatile noexcept {
         static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
         return const_cast<const atomic*>(this)->_Base::load(_Order);
     }
@@ -2351,7 +2351,7 @@ public:
 
     static constexpr size_t required_alignment = _Is_potentially_lock_free ? sizeof(_Ty) : alignof(_Ty);
 
-    _NODISCARD_PURE_METHOD bool is_lock_free() const noexcept {
+    _NODISCARD_PURE_MTHD bool is_lock_free() const noexcept {
 #if _ATOMIC_HAS_DCAS
         return is_always_lock_free;
 #else // ^^^ _ATOMIC_HAS_DCAS / !_ATOMIC_HAS_DCAS vvv
@@ -2432,12 +2432,12 @@ private:
 #endif // _HAS_CXX20
 
 template <class _Ty>
-_NODISCARD_PURE_FUNCTION bool atomic_is_lock_free(const volatile atomic<_Ty>* _Mem) noexcept {
+_NODISCARD_PURE_FN bool atomic_is_lock_free(const volatile atomic<_Ty>* _Mem) noexcept {
     return _Mem->is_lock_free();
 }
 
 template <class _Ty>
-_NODISCARD_PURE_FUNCTION bool atomic_is_lock_free(const atomic<_Ty>* _Mem) noexcept {
+_NODISCARD_PURE_FN bool atomic_is_lock_free(const atomic<_Ty>* _Mem) noexcept {
     return _Mem->is_lock_free();
 }
 
@@ -2478,25 +2478,25 @@ _CXX20_DEPRECATE_ATOMIC_INIT void atomic_init(
 }
 
 template <class _Ty>
-_NODISCARD_PURE_FUNCTION _Ty atomic_load(const volatile atomic<_Ty>* const _Mem) noexcept {
+_NODISCARD_PURE_FN _Ty atomic_load(const volatile atomic<_Ty>* const _Mem) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->load();
 }
 
 template <class _Ty>
-_NODISCARD_PURE_FUNCTION _Ty atomic_load(const atomic<_Ty>* const _Mem) noexcept {
+_NODISCARD_PURE_FN _Ty atomic_load(const atomic<_Ty>* const _Mem) noexcept {
     return _Mem->load();
 }
 
 template <class _Ty>
-_NODISCARD_PURE_FUNCTION _Ty atomic_load_explicit(
+_NODISCARD_PURE_FN _Ty atomic_load_explicit(
     const volatile atomic<_Ty>* const _Mem, const memory_order _Order) noexcept {
     static_assert(_Deprecate_non_lock_free_volatile<_Ty>, "Never fails");
     return _Mem->load(_Order);
 }
 
 template <class _Ty>
-_NODISCARD_PURE_FUNCTION _Ty atomic_load_explicit(const atomic<_Ty>* const _Mem, const memory_order _Order) noexcept {
+_NODISCARD_PURE_FN _Ty atomic_load_explicit(const atomic<_Ty>* const _Mem, const memory_order _Order) noexcept {
     return _Mem->load(_Order);
 }
 
@@ -2808,11 +2808,11 @@ using atomic_unsigned_lock_free = atomic_uintptr_t;
     {}
 struct atomic_flag { // flag with test-and-set semantics
 #if _HAS_CXX20
-    _NODISCARD_PURE_METHOD bool test(const memory_order _Order = memory_order_seq_cst) const noexcept {
+    _NODISCARD_PURE_MTHD bool test(const memory_order _Order = memory_order_seq_cst) const noexcept {
         return _Storage.load(_Order) != 0;
     }
 
-    _NODISCARD_PURE_METHOD bool test(const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
+    _NODISCARD_PURE_MTHD bool test(const memory_order _Order = memory_order_seq_cst) const volatile noexcept {
         return _Storage.load(_Order) != 0;
     }
 #endif // _HAS_CXX20
@@ -2870,20 +2870,20 @@ struct atomic_flag { // flag with test-and-set semantics
 
 
 #if _HAS_CXX20
-_NODISCARD_PURE_METHOD inline bool atomic_flag_test(const volatile atomic_flag* const _Flag) noexcept {
+_NODISCARD_PURE_MTHD inline bool atomic_flag_test(const volatile atomic_flag* const _Flag) noexcept {
     return _Flag->test();
 }
 
-_NODISCARD_PURE_METHOD inline bool atomic_flag_test(const atomic_flag* const _Flag) noexcept {
+_NODISCARD_PURE_MTHD inline bool atomic_flag_test(const atomic_flag* const _Flag) noexcept {
     return _Flag->test();
 }
 
-_NODISCARD_PURE_METHOD inline bool atomic_flag_test_explicit(
+_NODISCARD_PURE_MTHD inline bool atomic_flag_test_explicit(
     const volatile atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test(_Order);
 }
 
-_NODISCARD_PURE_METHOD inline bool atomic_flag_test_explicit(
+_NODISCARD_PURE_MTHD inline bool atomic_flag_test_explicit(
     const atomic_flag* const _Flag, const memory_order _Order) noexcept {
     return _Flag->test(_Order);
 }

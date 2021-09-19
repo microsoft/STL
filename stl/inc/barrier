@@ -88,7 +88,7 @@ public:
     barrier(const barrier&) = delete;
     barrier& operator=(const barrier&) = delete;
 
-    _NODISCARD_PURE_METHOD static constexpr ptrdiff_t(max)() noexcept {
+    _NODISCARD_PURE_MTHD static constexpr ptrdiff_t(max)() noexcept {
         return _Barrier_max;
     }
 

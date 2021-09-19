@@ -50,7 +50,7 @@ public:
         _Check_C_return(_Mtx_lock(_Mymtx()));
     }
 
-    _NODISCARD_MODIFY_STATE bool try_lock() {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock() {
         const auto _Res = _Mtx_trylock(_Mymtx());
         switch (_Res) {
         case _Thrd_success:
@@ -68,7 +68,7 @@ public:
 
     using native_handle_type = void*;
 
-    _NODISCARD_ACCESSOR_METHOD native_handle_type native_handle() {
+    _NODISCARD_ACCESS_MTHD native_handle_type native_handle() {
         return _Mtx_getconcrtcs(_Mymtx());
     }
 
@@ -96,7 +96,7 @@ class recursive_mutex : public _Mutex_base { // class for recursive mutual exclu
 public:
     recursive_mutex() : _Mutex_base(_Mtx_recursive) {}
 
-    _NODISCARD_MODIFY_STATE bool try_lock() noexcept {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept {
         return _Mutex_base::try_lock();
     }
 
@@ -195,21 +195,21 @@ public:
         _Owns = true;
     }
 
-    _NODISCARD_MODIFY_STATE bool try_lock() {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock() {
         _Validate();
         _Owns = _Pmtx->try_lock();
         return _Owns;
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_MODIFY_STATE bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_for(const chrono::duration<_Rep, _Period>& _Rel_time) {
         _Validate();
         _Owns = _Pmtx->try_lock_for(_Rel_time);
         return _Owns;
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_MODIFY_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
@@ -218,7 +218,7 @@ public:
         return _Owns;
     }
 
-    _NODISCARD_MODIFY_STATE bool try_lock_until(const xtime* _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const xtime* _Abs_time) {
         _Validate();
         _Owns = _Pmtx->try_lock_until(_Abs_time);
         return _Owns;
@@ -245,7 +245,7 @@ public:
         return _Res;
     }
 
-    _NODISCARD_PURE_METHOD bool owns_lock() const noexcept {
+    _NODISCARD_PURE_MTHD bool owns_lock() const noexcept {
         return _Owns;
     }
 
@@ -253,7 +253,7 @@ public:
         return _Owns;
     }
 
-    _NODISCARD_PURE_METHOD _Mutex* mutex() const noexcept {
+    _NODISCARD_PURE_MTHD _Mutex* mutex() const noexcept {
         return _Pmtx;
     }
 
@@ -347,7 +347,7 @@ int _Try_lock1(_Lock0& _Lk0, _Lock1& _Lk1) {
 }
 
 template <class _Lock0, class _Lock1, class... _LockN>
-_NODISCARD_MODIFY_STATE_FUNCTION int try_lock(
+_NODISCARD_TRY_CHANGE_STATE_FN int try_lock(
     _Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // try to lock multiple locks
     return _Try_lock1(_Lk0, _Lk1, _LkN...);
 }
@@ -683,7 +683,7 @@ public:
         return _Wait_until1(_Lck, _Abs_time, _Pred);
     }
 
-    _NODISCARD_ACCESSOR_METHOD native_handle_type native_handle() {
+    _NODISCARD_ACCESS_MTHD native_handle_type native_handle() {
         return _Mycnd();
     }
 
@@ -758,7 +758,7 @@ public:
         _My_locked = UINT_MAX;
     }
 
-    _NODISCARD_MODIFY_STATE bool try_lock() noexcept { // try to lock the mutex
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept { // try to lock the mutex
         lock_guard<mutex> _Lock(_My_mutex);
         if (_My_locked != 0) {
             return false;
@@ -778,7 +778,7 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_MODIFY_STATE bool try_lock_for(
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_for(
         const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
@@ -795,7 +795,7 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_MODIFY_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock the mutex with timeout
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
@@ -803,7 +803,7 @@ public:
         return _Try_lock_until(_Abs_time);
     }
 
-    _NODISCARD_MODIFY_STATE bool try_lock_until(const xtime* _Abs_time) { // try to lock the mutex with timeout
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const xtime* _Abs_time) { // try to lock the mutex with timeout
         return _Try_lock_until(_Abs_time);
     }
 
@@ -841,7 +841,7 @@ public:
         }
     }
 
-    _NODISCARD_MODIFY_STATE bool try_lock() noexcept { // try to lock the mutex
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock() noexcept { // try to lock the mutex
         const thread::id _Tid = this_thread::get_id();
 
         lock_guard<mutex> _Lock(_My_mutex);
@@ -881,7 +881,7 @@ public:
     }
 
     template <class _Rep, class _Period>
-    _NODISCARD_MODIFY_STATE bool try_lock_for(
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_for(
         const chrono::duration<_Rep, _Period>& _Rel_time) { // try to lock for duration
         return try_lock_until(_To_absolute_time(_Rel_time));
     }
@@ -910,7 +910,7 @@ public:
     }
 
     template <class _Clock, class _Duration>
-    _NODISCARD_MODIFY_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
         // try to lock the mutex with timeout
 #if _HAS_CXX20
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
@@ -918,7 +918,7 @@ public:
         return _Try_lock_until(_Abs_time);
     }
 
-    _NODISCARD_MODIFY_STATE bool try_lock_until(const xtime* _Abs_time) { // try to lock the mutex with timeout
+    _NODISCARD_TRY_CHANGE_STATE bool try_lock_until(const xtime* _Abs_time) { // try to lock the mutex with timeout
         return _Try_lock_until(_Abs_time);
     }
 

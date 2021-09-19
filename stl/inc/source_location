@@ -23,7 +23,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 struct source_location {
-    _NODISCARD_PURE_METHOD static consteval source_location current(const uint_least32_t _Line_ = __builtin_LINE(),
+    _NODISCARD_PURE_MTHD static consteval source_location current(const uint_least32_t _Line_ = __builtin_LINE(),
         const uint_least32_t _Column_ = __builtin_COLUMN(), const char* const _File_ = __builtin_FILE(),
         const char* const _Function_ = __builtin_FUNCTION()) noexcept {
         source_location _Result;
@@ -36,16 +36,16 @@ struct source_location {
 
     _NODISCARD_CTOR_PURE constexpr source_location() noexcept = default;
 
-    _NODISCARD_PURE_METHOD constexpr uint_least32_t line() const noexcept {
+    _NODISCARD_PURE_MTHD constexpr uint_least32_t line() const noexcept {
         return _Line;
     }
-    _NODISCARD_PURE_METHOD constexpr uint_least32_t column() const noexcept {
+    _NODISCARD_PURE_MTHD constexpr uint_least32_t column() const noexcept {
         return _Column;
     }
-    _NODISCARD_PURE_METHOD constexpr const char* file_name() const noexcept {
+    _NODISCARD_PURE_MTHD constexpr const char* file_name() const noexcept {
         return _File;
     }
-    _NODISCARD_PURE_METHOD constexpr const char* function_name() const noexcept {
+    _NODISCARD_PURE_MTHD constexpr const char* function_name() const noexcept {
         return _Function;
     }
 
