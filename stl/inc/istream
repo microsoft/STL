@@ -359,8 +359,8 @@ public:
         return get(_Str, _Count, _Myios::widen('\n'));
     }
 
-    basic_istream& __CLR_OR_THIS_CALL get(
-        _Elem* _Str, streamsize _Count, _Elem _Delim) { // get up to _Count characters into NTCS, stop before _Delim
+    basic_istream& __CLR_OR_THIS_CALL get(_Elem* _Str, streamsize _Count, _Elem _Delim) {
+        // get up to _Count characters into NTCS, stop before _Delim
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -401,8 +401,8 @@ public:
         return get(_Strbuf, _Myios::widen('\n'));
     }
 
-    basic_istream& __CLR_OR_THIS_CALL get(
-        _Mysb& _Strbuf, _Elem _Delim) { // extract up to delimiter and insert into stream buffer
+    basic_istream& __CLR_OR_THIS_CALL get(_Mysb& _Strbuf, _Elem _Delim) {
+        // extract up to delimiter and insert into stream buffer
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -437,13 +437,13 @@ public:
         return *this;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL getline(
-        _Elem* _Str, streamsize _Count) { // get up to _Count characters into NTCS, discard newline
+    basic_istream& __CLR_OR_THIS_CALL getline(_Elem* _Str, streamsize _Count) {
+        // get up to _Count characters into NTCS, discard newline
         return getline(_Str, _Count, _Myios::widen('\n'));
     }
 
-    basic_istream& __CLR_OR_THIS_CALL getline(
-        _Elem* _Str, streamsize _Count, _Elem _Delim) { // get up to _Count characters into NTCS, discard _Delim
+    basic_istream& __CLR_OR_THIS_CALL getline(_Elem* _Str, streamsize _Count, _Elem _Delim) {
+        // get up to _Count characters into NTCS, discard _Delim
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -478,8 +478,8 @@ public:
         return *this;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL ignore(streamsize _Count = 1,
-        int_type _Metadelim = _Traits::eof()) { // ignore up to _Count characters, discarding delimiter
+    basic_istream& __CLR_OR_THIS_CALL ignore(streamsize _Count = 1, int_type _Metadelim = _Traits::eof()) {
+        // ignore up to _Count characters, discarding delimiter
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -528,8 +528,8 @@ public:
         return *this;
     }
 
-    streamsize __CLR_OR_THIS_CALL readsome(_Elem* _Str,
-        streamsize _Count) { // read up to _Count characters into buffer, without blocking
+    streamsize __CLR_OR_THIS_CALL readsome(_Elem* _Str, streamsize _Count) {
+        // read up to _Count characters into buffer, without blocking
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -617,11 +617,17 @@ public:
             return -1;
         }
 
-        bool _Sync_failed = true; // sync fails if an exception is thrown
-        _TRY_IO_BEGIN
-        _Sync_failed = _Rdbuf->pubsync() == -1;
-        _CATCH_IO_END
-        if (_Sync_failed) {
+        ios_base::iostate _State = ios_base::goodbit;
+        _TRY_BEGIN
+        if (_Rdbuf->pubsync() == -1) {
+            _State |= ios_base::badbit;
+        }
+        _CATCH_ALL
+        _Myios::setstate(ios_base::badbit, true);
+        return -1;
+        _CATCH_END
+
+        if (_State & ios_base::badbit) {
             _Myios::setstate(ios_base::badbit);
             return -1;
         }
@@ -635,24 +641,34 @@ public:
         _Myios::clear(_Oldstate & ~ios_base::eofbit);
         const sentry _Ok(*this, true);
 
-        if (!this->fail() && static_cast<off_type>(_Myios::rdbuf()->pubseekpos(_Pos, ios_base::in)) == -1) {
-            _Myios::setstate(_State | ios_base::failbit);
+        if (!this->fail()) {
+            _TRY_IO_BEGIN
+            if (static_cast<off_type>(_Myios::rdbuf()->pubseekpos(_Pos, ios_base::in)) == -1) {
+                _State |= ios_base::failbit;
+            }
+            _CATCH_IO_END
         }
 
+        _Myios::setstate(_State);
         return *this;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL seekg(
-        off_type _Off, ios_base::seekdir _Way) { // change input stream position by _Off, according to _Way
+    basic_istream& __CLR_OR_THIS_CALL seekg(off_type _Off, ios_base::seekdir _Way) {
+        // change input stream position by _Off, according to _Way
         ios_base::iostate _State    = ios_base::goodbit;
         ios_base::iostate _Oldstate = _Myios::rdstate();
         _Myios::clear(_Oldstate & ~ios_base::eofbit);
         const sentry _Ok(*this, true);
 
-        if (!this->fail() && static_cast<off_type>(_Myios::rdbuf()->pubseekoff(_Off, _Way, ios_base::in)) == -1) {
-            _Myios::setstate(_State | ios_base::failbit);
+        if (!this->fail()) {
+            _TRY_IO_BEGIN
+            if (static_cast<off_type>(_Myios::rdbuf()->pubseekoff(_Off, _Way, ios_base::in)) == -1) {
+                _State |= ios_base::failbit;
+            }
+            _CATCH_IO_END
         }
 
+        _Myios::setstate(_State);
         return *this;
     }
 
@@ -660,10 +676,12 @@ public:
         const sentry _Ok(*this, true);
 
         if (!this->fail()) {
+            _TRY_IO_BEGIN
             return _Myios::rdbuf()->pubseekoff(0, ios_base::cur, ios_base::in);
-        } else {
-            return pos_type(-1);
+            _CATCH_IO_END
         }
+
+        return pos_type(-1);
     }
 
 private:
@@ -861,14 +879,14 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, 
 }
 
 template <class _Traits>
-basic_istream<char, _Traits>& operator>>(
-    basic_istream<char, _Traits>& _Istr, signed char& _Ch) { // extract a signed char
+basic_istream<char, _Traits>& operator>>(basic_istream<char, _Traits>& _Istr, signed char& _Ch) {
+    // extract a signed char
     return _Istr >> reinterpret_cast<char&>(_Ch);
 }
 
 template <class _Traits>
-basic_istream<char, _Traits>& operator>>(
-    basic_istream<char, _Traits>& _Istr, unsigned char& _Ch) { // extract an unsigned char
+basic_istream<char, _Traits>& operator>>(basic_istream<char, _Traits>& _Istr, unsigned char& _Ch) {
+    // extract an unsigned char
     return _Istr >> reinterpret_cast<char&>(_Ch);
 }
 
