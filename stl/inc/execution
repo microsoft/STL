@@ -1983,7 +1983,7 @@ struct _Static_partitioned_equal2 {
 };
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
-_NODISCARD_PURE_ALG_NODISCARD bool equal(
+_NODISCARD_PURE_ALG bool equal(
     _ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, _Pr _Pred) noexcept
 /* terminates */ {
     // compare [_First1, _Last1) to [_First2, ...)
