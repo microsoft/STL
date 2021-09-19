@@ -15,7 +15,8 @@ If you're a programmer who just wants to use the STL, you **don't** need this re
 and select the "Desktop development with C++" workload.
 
 If you want to participate in the STL's development, welcome! You can report issues, comment on pull requests, and learn
-about what we're working on. You can also submit pull requests to fix bugs or add features (see below).
+about what we're working on. You can also submit pull requests to fix bugs or add features. See [CONTRIBUTING.md][]) for 
+more information.
 
 Finally, you can take our code and use it in other apps and libraries (according to the terms of our license, like
 everything else).
@@ -426,6 +427,8 @@ When you submit a pull request, a CLA bot will automatically determine whether y
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
 provided by the bot. You will only need to do this once across all repos using our CLA.
 
+See [CONTRIBUTING.md][] for more information.
+
 # Code Of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct][]. For more information see the
@@ -442,6 +445,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [CMake]: https://cmake.org/download
 [Code of Conduct FAQ]: https://opensource.microsoft.com/codeofconduct/faq/
 [Compiler Explorer]: https://godbolt.org
+[CONTRIBUTING.md]: CONTRIBUTING.md
 [Developer Community]: https://aka.ms/feedback/report?space=62
 [Discord server]: https://discord.gg/XWanNww
 [How To Build With A Native Tools Command Prompt]: #how-to-build-with-a-native-tools-command-prompt
