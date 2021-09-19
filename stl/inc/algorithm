@@ -3671,7 +3671,7 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 template <class _FwdIt, class _Pr>
-_NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
+_NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred with previous
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -3696,20 +3696,20 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _P
 }
 
 template <class _FwdIt>
-_NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last) { // remove each matching previous
+_NODISCARD_UNIQUE_ALG _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last) { // remove each matching previous
     return _STD unique(_First, _Last, equal_to<>{});
 }
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD_REMOVE_ALG _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
+_NODISCARD_UNIQUE_ALG _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // remove each satisfying _Pred with previous
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD unique(_First, _Last, _Pass_fn(_Pred));
 }
 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD_REMOVE_ALG _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
+_NODISCARD_UNIQUE_ALG _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // remove each matching previous
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD unique(_First, _Last);
@@ -3724,7 +3724,7 @@ namespace ranges {
 
         template <permutable _It, sentinel_for<_It> _Se, class _Pj = identity,
             indirect_equivalence_relation<projected<_It, _Pj>> _Pr = ranges::equal_to>
-        _NODISCARD_REMOVE_ALG constexpr subrange<_It> operator()(
+        _NODISCARD_UNIQUE_ALG constexpr subrange<_It> operator()(
             _It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
             auto _UResult = _Unique_unchecked(
@@ -3737,7 +3737,7 @@ namespace ranges {
         template <forward_range _Rng, class _Pj = identity,
             indirect_equivalence_relation<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::equal_to>
             requires permutable<iterator_t<_Rng>>
-        _NODISCARD_REMOVE_ALG constexpr borrowed_subrange_t<_Rng> operator()(
+        _NODISCARD_UNIQUE_ALG constexpr borrowed_subrange_t<_Rng> operator()(
             _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UResult = _Unique_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
 

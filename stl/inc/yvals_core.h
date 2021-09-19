@@ -465,11 +465,16 @@
     _NODISCARD_MSG("This operator provides an access to the state of the current object via the return value and has " \
                    "no other side effects; it is not useful to call this operator and discard the return value")
 
-#define _NODISCARD_REMOVE_ALG                                                                                        \
-    _NODISCARD_MSG(                                                                                                  \
-        "The 'remove', 'remove_if', and 'unique' algorithms return the iterator past the last non-removed element. " \
-        "Normally you need to use the result to call container's 'erase' method afterwards to erase elements. "      \
+#define _NODISCARD_REMOVE_ALG                                                                                   \
+    _NODISCARD_MSG(                                                                                             \
+        "The 'remove' and 'remove_if' algorithms return the iterator past the last non-removed element. "       \
+        "Normally you need to use the result to call container's 'erase' method afterwards to erase elements. " \
         "In C++ 20 you can also use 'erase' and 'erase_if' functions to replace the two steps")
+
+#define _NODISCARD_UNIQUE_ALG                                                             \
+    _NODISCARD_MSG(                                                                       \
+        "The 'unique' algorithms return the iterator past the last non-removed element. " \
+        "Normally you need to use the result to call container's 'erase' method afterwards to erase elements"
 
 #define _NODISCARD_EMPTY_MTHD                                                                                   \
     _NODISCARD_MSG("This method returns a bool value whether the container is empty and has no other effects. " \
@@ -506,13 +511,13 @@
 #define _NODISCARD_LOCK                                                                                               \
     _NODISCARD_MSG(                                                                                                   \
         "A lock should be saved in a variable to protect the scope. (If the intention is to protect the rest of the " \
-        "current statement, using comma operator, please use cast to void to suppress this warning. "                 \
+        "current expression, using comma operator, please use cast to void to suppress this warning. "                \
         "Alternatively, define _NODISCARD_LOCK_SUPPRESS.)")
 
 #define _NODISCARD_CTOR_LOCK                                                                                          \
     _NODISCARD_CTOR_MSG(                                                                                              \
         "A lock should be saved in a variable to protect the scope. (If the intention is to protect the rest of the " \
-        "current statement, using comma operator, please use cast to void to suppress this warning)"                  \
+        "current expression, using comma operator, please use cast to void to suppress this warning)"                 \
         "Alternatively, define _NODISCARD_LOCK_SUPPRESS.)")
 
 #endif // ^^^ !defined(_NODISCARD_LOCK_SUPPRESS) ^^^
