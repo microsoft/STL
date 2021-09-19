@@ -15,7 +15,7 @@ If you're a programmer who just wants to use the STL, you **don't** need this re
 and select the "Desktop development with C++" workload.
 
 If you want to participate in the STL's development, welcome! You can report issues, comment on pull requests, and learn
-about what we're working on. You can also submit pull requests to fix bugs or add features. See [CONTRIBUTING.md][]) for 
+about what we're working on. You can also submit pull requests to fix bugs or add features. See [CONTRIBUTING.md][]) for
 more information.
 
 Finally, you can take our code and use it in other apps and libraries (according to the terms of our license, like
