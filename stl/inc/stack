@@ -124,9 +124,7 @@ template <class _Container, enable_if_t<!_Is_allocator<_Container>::value, int> 
 stack(_Container) -> stack<typename _Container::value_type, _Container>;
 
 template <class _Container, class _Alloc,
-    enable_if_t<
-        conjunction_v<negation<_Is_allocator<_Container>>, _Is_allocator<_Alloc>, uses_allocator<_Container, _Alloc>>,
-        int> = 0>
+    enable_if_t<conjunction_v<negation<_Is_allocator<_Container>>, uses_allocator<_Container, _Alloc>>, int> = 0>
 stack(_Container, _Alloc) -> stack<typename _Container::value_type, _Container>;
 #endif // _HAS_CXX17
 

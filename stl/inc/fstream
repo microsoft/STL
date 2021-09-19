@@ -436,8 +436,9 @@ protected:
         const _Elem _Ch = _Traits::to_char_type(_Meta);
         const _Elem* _Src;
         char* _Dest;
-        switch (_Pcvt->out(_State, &_Ch, &_Ch + 1, _Src, _Str, _Str + _Codecvt_temp_buf,
-            _Dest)) { // test result of converting one element
+
+        // test result of converting one element
+        switch (_Pcvt->out(_State, &_Ch, &_Ch + 1, _Src, _Str, _Str + _Codecvt_temp_buf, _Dest)) {
         case codecvt_base::partial:
         case codecvt_base::ok:
             { // converted something, try to put it out
@@ -526,8 +527,9 @@ protected:
 
             _Elem _Ch;
             _Elem* _Dest;
-            switch (_Pcvt->in(_State, _Str.data(), _Str.data() + _Str.size(), _Src, &_Ch, &_Ch + 1,
-                _Dest)) { // test result of converting one element
+
+            // test result of converting one element
+            switch (_Pcvt->in(_State, _Str.data(), _Str.data() + _Str.size(), _Src, &_Ch, &_Ch + 1, _Dest)) {
             case codecvt_base::partial:
             case codecvt_base::ok:
                 if (_Dest != &_Ch) { // got an element, put back excess and deliver it

@@ -176,9 +176,11 @@ tests\GH_001530_binomial_accuracy
 tests\GH_001541_case_sensitive_boolalpha
 tests\GH_001638_dllexport_derived_classes
 tests\GH_001850_clog_tied_to_cout
+tests\GH_001858_iostream_exception
 tests\GH_001914_cached_position
 tests\GH_002039_byte_is_not_trivially_swappable
 tests\GH_002058_debug_iterator_race
+tests\GH_002120_streambuf_seekpos_and_seekoff
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\P0019R8_atomic_ref
@@ -250,6 +252,8 @@ tests\P0414R2_shared_ptr_for_arrays
 tests\P0415R1_constexpr_complex
 tests\P0426R1_constexpr_char_traits
 tests\P0433R2_deduction_guides
+tests\P0448R4_iosfwd
+tests\P0448R4_spanstream
 tests\P0466R5_layout_compatibility_and_pointer_interconvertibility_traits
 tests\P0475R1_P0591R4_uses_allocator_construction
 tests\P0476R2_bit_cast
@@ -393,6 +397,7 @@ tests\P0896R4_views_filter_death
 tests\P0896R4_views_filter_iterator
 tests\P0896R4_views_iota
 tests\P0896R4_views_join
+tests\P0896R4_views_lazy_split
 tests\P0896R4_views_reverse
 tests\P0896R4_views_single
 tests\P0896R4_views_split
@@ -426,12 +431,14 @@ tests\P1208R6_source_location
 tests\P1423R3_char8_t_remediation
 tests\P1425R4_queue_stack_constructors
 tests\P1502R1_standard_library_header_units
+tests\P1518R2_stop_overconstraining_allocators
 tests\P1614R2_spaceship
 tests\P1645R1_constexpr_numeric
 tests\P1682R3_to_underlying
 tests\P1951R1_default_arguments_pair_forward_ctor
 tests\P2136R3_invoke_r
 tests\P2162R2_std_visit_for_derived_classes_from_variant
+tests\P2231R1_complete_constexpr_optional_variant
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions
 tests\VSO_0000000_c_math_functions
