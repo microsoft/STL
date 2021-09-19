@@ -347,8 +347,7 @@ int _Try_lock1(_Lock0& _Lk0, _Lock1& _Lk1) {
 }
 
 template <class _Lock0, class _Lock1, class... _LockN>
-_NODISCARD_TRY_CHANGE_STATE_FN int try_lock(
-    _Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // try to lock multiple locks
+_NODISCARD_TRY_CHANGE_STATE_FN int try_lock(_Lock0& _Lk0, _Lock1& _Lk1, _LockN&... _LkN) { // try to lock multiple locks
     return _Try_lock1(_Lk0, _Lk1, _LkN...);
 }
 

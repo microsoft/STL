@@ -563,8 +563,7 @@ public:
         return _Elems[_Pos];
     }
 
-    _NODISCARD_PURE_OP constexpr const_reference operator[](
-        _In_range_(0, _Size - 1) size_type _Pos) const noexcept
+    _NODISCARD_PURE_OP constexpr const_reference operator[](_In_range_(0, _Size - 1) size_type _Pos) const noexcept
     /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Pos < _Size, "array subscript out of range");
