@@ -445,8 +445,8 @@
     _NODISCARD_MSG("This function is pure, i.e. has no side effects; it is not useful to call this function and " \
                    "discard the return value")
 
-#define _NODISCARD_PURE_MTHD                                                                                        \
-    _NODISCARD_MSG("This method is pure obeserver, i.e. has no side effects; it is not useful to call this method " \
+#define _NODISCARD_PURE_MTHD                                                                                       \
+    _NODISCARD_MSG("This method is pure observer, i.e. has no side effects; it is not useful to call this method " \
                    "and discard the return value")
 
 #define _NODISCARD_PURE_OP                                                                                     \
@@ -503,22 +503,22 @@
 
 #else // ^^^ defined(_NODISCARD_LOCK_SUPPRESS) ^^^ / vvv !defined(_NODISCARD_LOCK_SUPPRESS) vvv
 
-#define _NODISCARD_LOCK                                                                                              \
-    _NODISCARD_MSG(                                                                                                  \
-        "A lock should be saved in a variable to protect the scope. (If the intetion is to protect the rest of the " \
-        "current statement, using comma operator, please use cast to void to suppress this warning. "                \
+#define _NODISCARD_LOCK                                                                                               \
+    _NODISCARD_MSG(                                                                                                   \
+        "A lock should be saved in a variable to protect the scope. (If the intention is to protect the rest of the " \
+        "current statement, using comma operator, please use cast to void to suppress this warning. "                 \
         "Alternatively, define _NODISCARD_LOCK_SUPPRESS.)")
 
-#define _NODISCARD_CTOR_LOCK                                                                                         \
-    _NODISCARD_CTOR_MSG(                                                                                             \
-        "A lock should be saved in a variable to protect the scope. (If the intetion is to protect the rest of the " \
-        "current statement, using comma operator, please use cast to void to suppress this warning)"                 \
+#define _NODISCARD_CTOR_LOCK                                                                                          \
+    _NODISCARD_CTOR_MSG(                                                                                              \
+        "A lock should be saved in a variable to protect the scope. (If the intention is to protect the rest of the " \
+        "current statement, using comma operator, please use cast to void to suppress this warning)"                  \
         "Alternatively, define _NODISCARD_LOCK_SUPPRESS.)")
 
 #endif // ^^^ !defined(_NODISCARD_LOCK_SUPPRESS) ^^^
 
 #define _NODISCARD_CTOR_THREAD \
-    _NODISCARD_CTOR_MSG("Thread is not joined or detached, terminate will be called at the end of the statement")
+    _NODISCARD_CTOR_MSG("Thread is not joined or detached, 'terminate' will be called at the end of the statement")
 
 #define _NODISCARD_CTOR_JTHREAD \
     _NODISCARD_CTOR_MSG("Thread is implicitly joined at the end of the statement, is this an intention?")
