@@ -512,13 +512,13 @@
     _NODISCARD_MSG(                                                                                                   \
         "A lock should be saved in a variable to protect the scope. (If the intention is to protect the rest of the " \
         "current expression, using comma operator, please use cast to void to suppress this warning. "                \
-        "Alternatively, define _NODISCARD_LOCK_SUPPRESS.)")
+        "Alternatively, define _NODISCARD_LOCK_SUPPRESS)")
 
 #define _NODISCARD_CTOR_LOCK                                                                                          \
     _NODISCARD_CTOR_MSG(                                                                                              \
         "A lock should be saved in a variable to protect the scope. (If the intention is to protect the rest of the " \
-        "current expression, using comma operator, please use cast to void to suppress this warning)"                 \
-        "Alternatively, define _NODISCARD_LOCK_SUPPRESS.)")
+        "current expression, using comma operator, please use cast to void to suppress this warning. "                \
+        "Alternatively, define _NODISCARD_LOCK_SUPPRESS)")
 
 #endif // ^^^ !defined(_NODISCARD_LOCK_SUPPRESS) ^^^
 
