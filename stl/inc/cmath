@@ -75,7 +75,8 @@ _NODISCARD_PURE_FN _Check_return_ inline float ceil(_In_ float _Xx) noexcept /* 
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD_PURE_FN _Check_return_ inline float copysign(_In_ float _Number, _In_ float _Sign) noexcept /* strengthened */ {
+_NODISCARD_PURE_FN _Check_return_ inline float copysign(_In_ float _Number, _In_ float _Sign) noexcept
+/* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __copysignf(_Number, _Sign);
 #elif defined(__clang__)
@@ -131,7 +132,8 @@ _NODISCARD_PURE_FN _Check_return_ inline float floor(_In_ float _Xx) noexcept /*
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD_PURE_FN _Check_return_ inline float fma(_In_ float _Xx, _In_ float _Yx, _In_ float _Zx) noexcept /* strengthened */ {
+_NODISCARD_PURE_FN _Check_return_ inline float fma(_In_ float _Xx, _In_ float _Yx, _In_ float _Zx) noexcept
+/* strengthened */ {
     return _CSTD fmaf(_Xx, _Yx, _Zx);
 }
 
@@ -215,7 +217,8 @@ _NODISCARD_PURE_FN _Check_return_ inline float nextafter(_In_ float _Xx, _In_ fl
     return _CSTD nextafterf(_Xx, _Yx);
 }
 
-_NODISCARD_PURE_FN _Check_return_ inline float nexttoward(_In_ float _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
+_NODISCARD_PURE_FN _Check_return_ inline float nexttoward(_In_ float _Xx, _In_ long double _Yx) noexcept
+/* strengthened */ {
     return _CSTD nexttowardf(_Xx, _Yx);
 }
 
@@ -421,7 +424,8 @@ _NODISCARD_PURE_FN _Check_return_ inline int ilogb(_In_ long double _Xx) noexcep
     return _CSTD ilogbl(_Xx);
 }
 
-_NODISCARD_PURE_FN _Check_return_ inline long double ldexp(_In_ long double _Xx, _In_ int _Yx) noexcept /* strengthened */ {
+_NODISCARD_PURE_FN _Check_return_ inline long double ldexp(_In_ long double _Xx, _In_ int _Yx) noexcept
+/* strengthened */ {
     return _CSTD ldexpl(_Xx, _Yx);
 }
 
@@ -511,11 +515,13 @@ _NODISCARD_PURE_FN _Check_return_ inline long double round(_In_ long double _Xx)
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD_PURE_FN _Check_return_ inline long double scalbln(_In_ long double _Xx, _In_ long _Yx) noexcept /* strengthened */ {
+_NODISCARD_PURE_FN _Check_return_ inline long double scalbln(_In_ long double _Xx, _In_ long _Yx) noexcept
+/* strengthened */ {
     return _CSTD scalblnl(_Xx, _Yx);
 }
 
-_NODISCARD_PURE_FN _Check_return_ inline long double scalbn(_In_ long double _Xx, _In_ int _Yx) noexcept /* strengthened */ {
+_NODISCARD_PURE_FN _Check_return_ inline long double scalbn(_In_ long double _Xx, _In_ int _Yx) noexcept
+/* strengthened */ {
     return _CSTD scalbnl(_Xx, _Yx);
 }
 
@@ -594,7 +600,7 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 
 #define _GENERIC_MATH1_BASE(NAME, RET, FUN)                                  \
     template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0> \
-    _NODISCARD_PURE_FN RET NAME(_Ty _Left) noexcept /* strengthened */ {             \
+    _NODISCARD_PURE_FN RET NAME(_Ty _Left) noexcept /* strengthened */ {     \
         return FUN(static_cast<double>(_Left));                              \
     }
 
@@ -609,19 +615,19 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #define _GENERIC_MATH1I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH1_BASE(FUN, double, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
-#define _GENERIC_MATH1X(FUN, ARG2)                                             \
-    template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>   \
+#define _GENERIC_MATH1X(FUN, ARG2)                                                     \
+    template <class _Ty, _STD enable_if_t<_STD is_integral_v<_Ty>, int> = 0>           \
     _NODISCARD_PURE_FN double FUN(_Ty _Left, ARG2 _Arg2) noexcept /* strengthened */ { \
-        return _CSTD FUN(static_cast<double>(_Left), _Arg2);                   \
+        return _CSTD FUN(static_cast<double>(_Left), _Arg2);                           \
     }
 
-#define _GENERIC_MATH2_BASE(NAME, FUN)                                                                           \
-    template <class _Ty1, class _Ty2,                                                                            \
-        _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0>                     \
-    _NODISCARD_PURE_FN _STD _Common_float_type_t<_Ty1, _Ty2> NAME(                                               \
-        _Ty1 _Left, _Ty2 _Right) noexcept /* strengthened */ {                                                   \
-        using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;                                                   \
-        return FUN(static_cast<_Common>(_Left), static_cast<_Common>(_Right));                                   \
+#define _GENERIC_MATH2_BASE(NAME, FUN)                                                       \
+    template <class _Ty1, class _Ty2,                                                        \
+        _STD enable_if_t<_STD is_arithmetic_v<_Ty1> && _STD is_arithmetic_v<_Ty2>, int> = 0> \
+    _NODISCARD_PURE_FN _STD _Common_float_type_t<_Ty1, _Ty2> NAME(                           \
+        _Ty1 _Left, _Ty2 _Right) noexcept /* strengthened */ {                               \
+        using _Common = _STD _Common_float_type_t<_Ty1, _Ty2>;                               \
+        return FUN(static_cast<_Common>(_Left), static_cast<_Common>(_Right));               \
     }
 
 #define _GENERIC_MATH2(FUN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
@@ -954,11 +960,13 @@ _NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_hypot3f(float, float, floa
 _END_EXTERN_C
 
 _STD_BEGIN
-_NODISCARD_PURE_FN inline double assoc_laguerre(const unsigned int _Degree, const unsigned int _Order, const double _Value) {
+_NODISCARD_PURE_FN inline double assoc_laguerre(
+    const unsigned int _Degree, const unsigned int _Order, const double _Value) {
     return __std_smf_assoc_laguerre(_Degree, _Order, _Value);
 }
 
-_NODISCARD_PURE_FN inline float assoc_laguerref(const unsigned int _Degree, const unsigned int _Order, const float _Value) {
+_NODISCARD_PURE_FN inline float assoc_laguerref(
+    const unsigned int _Degree, const unsigned int _Order, const float _Value) {
     return __std_smf_assoc_laguerref(_Degree, _Order, _Value);
 }
 
@@ -967,11 +975,13 @@ _NODISCARD_PURE_FN inline long double assoc_laguerrel(
     return __std_smf_assoc_laguerre(_Degree, _Order, static_cast<double>(_Value));
 }
 
-_NODISCARD_PURE_FN inline double assoc_legendre(const unsigned int _Degree, const unsigned int _Order, const double _Value) {
+_NODISCARD_PURE_FN inline double assoc_legendre(
+    const unsigned int _Degree, const unsigned int _Order, const double _Value) {
     return __std_smf_assoc_legendre(_Degree, _Order, _Value);
 }
 
-_NODISCARD_PURE_FN inline float assoc_legendref(const unsigned int _Degree, const unsigned int _Order, const float _Value) {
+_NODISCARD_PURE_FN inline float assoc_legendref(
+    const unsigned int _Degree, const unsigned int _Order, const float _Value) {
     return __std_smf_assoc_legendref(_Degree, _Order, _Value);
 }
 
@@ -1108,7 +1118,8 @@ _NODISCARD_PURE_FN inline float ellint_3f(const float _Arg1, const float _Arg2, 
     return __std_smf_ellint_3f(_Arg1, _Arg2, _Arg3);
 }
 
-_NODISCARD_PURE_FN inline long double ellint_3l(const long double _Arg1, const long double _Arg2, const long double _Arg3) {
+_NODISCARD_PURE_FN inline long double ellint_3l(
+    const long double _Arg1, const long double _Arg2, const long double _Arg3) {
     return __std_smf_ellint_3(static_cast<double>(_Arg1), static_cast<double>(_Arg2), static_cast<double>(_Arg3));
 }
 

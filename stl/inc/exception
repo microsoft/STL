@@ -98,7 +98,8 @@ public:
 
     virtual __CLR_OR_THIS_CALL ~exception() noexcept {}
 
-    _NODISCARD_PURE_MTHD virtual const char* __CLR_OR_THIS_CALL what() const noexcept { // return pointer to message string
+    _NODISCARD_PURE_MTHD virtual const char* __CLR_OR_THIS_CALL
+        what() const noexcept { // return pointer to message string
         return _Ptr ? _Ptr : "unknown exception";
     }
 
