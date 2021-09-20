@@ -14,8 +14,6 @@ void test_main() { // test basic workings of wide fstream definitions
     const auto temp_name = temp_file_name();
     const char* tn       = temp_name.c_str();
 
-    assert(tn != nullptr);
-
     // test output file opening
     STD wofstream ofs(tn);
     CHECK(ofs.is_open());

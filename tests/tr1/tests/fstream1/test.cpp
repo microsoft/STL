@@ -14,8 +14,6 @@ void test_main() { // test basic workings of char fstream definitions
     const auto temp_name = temp_file_name();
     const char* tn       = temp_name.c_str();
 
-    assert(tn != nullptr);
-
     STD string tn_str(tn);
 
     // test output file opening

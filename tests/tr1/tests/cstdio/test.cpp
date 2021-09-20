@@ -93,7 +93,7 @@ void test_cpp() { // test C++ header
         long off;
 
         const auto temp_name = temp_file_name();
-        assert((tn = temp_name.c_str()) != nullptr);
+        tn                   = temp_name.c_str();
         assert((pf = STDx fopen(tn, "w+")) != nullptr);
 
         STDx setbuf(pf, (char*) nullptr);
@@ -133,10 +133,10 @@ void test_cpp() { // test C++ header
         char tn[100] = {0};
 
         const auto temp_name1 = temp_file_name();
-        assert((tmpbuf = temp_name1.c_str()) != nullptr);
+        tmpbuf                = temp_name1.c_str();
         CHECK(CSTD strlen(tmpbuf) < L_tmpnam);
         const auto temp_name2 = temp_file_name();
-        assert((tmpbuff = temp_name2.c_str()) != nullptr);
+        tmpbuff               = temp_name2.c_str();
 
         CSTD strcpy_s(tn, sizeof(tn), tmpbuff);
         CSTD strcpy_s(tname, sizeof(tname), tmpbuf);

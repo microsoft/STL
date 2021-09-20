@@ -100,7 +100,7 @@ void test_cpp() { // test C++ header
         long off;
 
         const auto temp_name = temp_file_name();
-        assert((tn = temp_name.c_str()) != nullptr);
+        tn                   = temp_name.c_str();
         assert((pf = CSTD fopen(tn, "w+")) != nullptr);
         CHECK_INT(STDx fwide(pf, 0), 0);
         CHECK_INT(STDx fwprintf(pf, L"123\n"), 4);
@@ -143,12 +143,12 @@ void test_cpp() { // test C++ header
         char* tname;
         const char* tn;
         const auto temp_name1 = temp_file_name();
-        assert((tn = temp_name1.c_str()) != nullptr);
-        tname = (char*) CSTD malloc(CSTD strlen(tn) + 1);
+        tn                    = temp_name1.c_str();
+        tname                 = (char*) CSTD malloc(CSTD strlen(tn) + 1);
         CSTD strcpy(tname, tn);
 
         const auto temp_name2 = temp_file_name();
-        assert((tn = temp_name2.c_str()) != nullptr);
+        tn                    = temp_name2.c_str();
         CHECK(CSTD strcmp(tn, tname) != 0);
         assert((pf = CSTD fopen(tname, "w")) != nullptr);
         CHECK_INT(STDx fgetwc(pf), wintval);
