@@ -534,7 +534,8 @@
     _NODISCARD_CTOR_MSG("Thread is not joined or detached, 'terminate' will be called at the end of the statement")
 
 #define _NODISCARD_CTOR_JTHREAD \
-    _NODISCARD_CTOR_MSG("Thread is implicitly joined at the end of the statement, is this an intention?")
+    _NODISCARD_CTOR_MSG("Thread is implicitly joined at the end of the statement, is this an intention? " \
+                        "(You can add '.join()' to avoid this warning if so)")
 
 #define _NODISCARD_CTOR_PURE \
     _NODISCARD_CTOR_MSG(     \
