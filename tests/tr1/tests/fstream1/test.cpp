@@ -11,10 +11,8 @@
 #include <string>
 
 void test_main() { // test basic workings of char fstream definitions
-    const auto temp_name = temp_file_name();
-    const char* tn       = temp_name.c_str();
-
-    STD string tn_str(tn);
+    STD string tn_str = temp_file_name();
+    const char* tn    = tn_str.c_str();
 
     // test output file opening
     STD ofstream ofs(tn);
