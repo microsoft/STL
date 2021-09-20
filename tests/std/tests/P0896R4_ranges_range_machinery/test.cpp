@@ -1887,23 +1887,23 @@ namespace unwrapped_begin_end {
 } // namespace unwrapped_begin_end
 
 namespace closure {
-    // Verify that range adaptor closure capture with the proper value category
+    // Verify that range adaptor closures capture with the proper value category
 
-    enum class path { none, lvalue, const_lvalue, rvalue, const_rvalue };
+    enum class GLValueKind { lvalue, const_lvalue, xvalue, const_xvalue };
 
-    template <path allowed>
+    template <GLValueKind Allowed>
     struct arg {
         constexpr arg(arg&) {
-            static_assert(allowed == path::lvalue);
+            static_assert(Allowed == GLValueKind::lvalue);
         }
         constexpr arg(const arg&) {
-            static_assert(allowed == path::const_lvalue);
+            static_assert(Allowed == GLValueKind::const_lvalue);
         }
         constexpr arg(arg&&) {
-            static_assert(allowed == path::rvalue);
+            static_assert(Allowed == GLValueKind::xvalue);
         }
         constexpr arg(const arg&&) {
-            static_assert(allowed == path::const_rvalue);
+            static_assert(Allowed == GLValueKind::const_xvalue);
         }
 
     private:
@@ -1914,16 +1914,16 @@ namespace closure {
     void test() {
         using std::as_const, std::move, std::views::filter;
 
-        arg<path::lvalue> l;
+        arg<GLValueKind::lvalue> l;
         (void) filter(l);
 
-        arg<path::const_lvalue> cl;
+        arg<GLValueKind::const_lvalue> cl;
         (void) filter(as_const(cl));
 
-        arg<path::rvalue> r;
+        arg<GLValueKind::xvalue> r;
         (void) filter(move(r));
 
-        arg<path::const_rvalue> cr;
+        arg<GLValueKind::const_xvalue> cr;
         (void) filter(move(as_const(cr)));
     }
 } // namespace closure
