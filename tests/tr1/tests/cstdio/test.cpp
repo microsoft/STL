@@ -126,20 +126,17 @@ void test_cpp() { // test C++ header
     }
 
     { // test character I/O
-        const char* tmpbuff;
         char tname[L_tmpnam];
-        const char* tmpbuf;
+        char tn[100];
         STDx FILE* pf;
-        char tn[100] = {0};
 
         const auto temp_name1 = temp_file_name();
-        tmpbuf                = temp_name1.c_str();
-        CHECK(CSTD strlen(tmpbuf) < L_tmpnam);
-        const auto temp_name2 = temp_file_name();
-        tmpbuff               = temp_name2.c_str();
+        CHECK(temp_name1.size() < sizeof(tname));
+        CSTD strcpy_s(tname, sizeof(tname), temp_name1.c_str());
 
-        CSTD strcpy_s(tn, sizeof(tn), tmpbuff);
-        CSTD strcpy_s(tname, sizeof(tname), tmpbuf);
+        const auto temp_name2 = temp_file_name();
+        CHECK(temp_name2.size() < sizeof(tn));
+        CSTD strcpy_s(tn, sizeof(tn), temp_name2.c_str());
 
         CHECK(CSTD strcmp(tn, tname) != 0);
         assert((pf = STDx fopen(tname, "w")) != nullptr);
