@@ -567,7 +567,8 @@ private:
     }
 
 public:
-    _NODISCARD int _Units_in_next_character(const char* const _First, const char* const _Last) const noexcept {
+    _NODISCARD constexpr int _Units_in_next_character(
+        const char* const _First, const char* const _Last) const noexcept {
         // Returns a count of the number of code units that compose the first encoded character in
         // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
         // *_First is not a valid lead byte.
@@ -678,7 +679,8 @@ public:
 };
 
 template <class _CharT, _Parse_align_callbacks<_CharT> _Callbacks_type>
-_NODISCARD const _CharT* _Parse_align(const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
+_NODISCARD constexpr const _CharT* _Parse_align(
+    const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
     // align and fill
     _STL_INTERNAL_CHECK(_First != _Last && *_First != '}');
     auto _Parsed_align = _Fmt_align::_None;
@@ -2658,10 +2660,12 @@ struct _Arg_formatter {
 // structure at compile time.
 template <typename _Ty, typename _ParseContext>
 constexpr typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
-    using _CharT     = typename _ParseContext::char_type;
-    using _Context   = basic_format_context<_Fmt_it, _CharT>;
-    using _ArgTraits = _Format_arg_traits<_Context>;
-    formatter<typename _ArgTraits::_Storage_type, _CharT>{}.parse(_Pc);
+    // using _CharT         = typename _ParseContext::char_type;
+    using _Context       = basic_format_context<_Fmt_it, char>;
+    using _ArgTraits     = _Format_arg_traits<_Context>;
+    using _FormattedType = _ArgTraits::template _Storage_type<_Ty>;
+    auto _Formatter      = formatter<_FormattedType, char>();
+    return _Formatter.parse(_Pc);
 }
 
 // set of format parsing actions that
@@ -2676,7 +2680,7 @@ struct _Format_checker {
     _ParseFunc _Parse_funcs[_Num_args > 0 ? _Num_args : 1];
 
 
-    constexpr _Format_checker(basic_string_view<_CharT> _Fmt, const size_t _Num_args) noexcept
+    explicit constexpr _Format_checker(basic_string_view<_CharT> _Fmt) noexcept
         : _Parse_context(_Fmt, _Num_args), _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _Pc>...} {}
     constexpr void _On_text(const _CharT*, const _CharT*) {}
     constexpr void _On_replacement_field(const size_t, const _CharT*) {}
@@ -2835,7 +2839,7 @@ struct _Basic_format_string {
 
     template <convertible_to<basic_string_view<_CharT>> _Ty>
     consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
-        _Parse_format_string(_Str, _Format_checker<_CharT>{_Str, sizeof...(_Args)});
+        _Parse_format_string(_Str, _Format_checker<_CharT>{_Str});
     }
 };
 
