@@ -511,7 +511,7 @@ void test_algorithms(CopyFn copy_fn) {
 
         copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst), [](const auto& left, const auto& right) {
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst), [](const auto& left, const auto& right) {
             return left.data() == right.data() && left.size() == right.size();
         }));
     }
