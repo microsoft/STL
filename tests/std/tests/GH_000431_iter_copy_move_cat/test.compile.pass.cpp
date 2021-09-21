@@ -6,7 +6,6 @@
 #include <cstddef>
 #include <iterator>
 #include <list>
-#include <memory>
 #include <type_traits>
 #include <vector>
 
@@ -347,7 +346,7 @@ void iter_cat_test_cases() {
     test_iter_cat_for_integrals<false, bool, int>();
     test_iter_cat_for_integrals<false, int, bool>();
 
-    // Don't allow conversions if size differ
+    // Don't allow conversions if sizes differ
     test_iter_cat_for_integrals<false, short, int>();
     test_iter_cat_for_integrals<false, int, short>();
     test_iter_cat_for_integrals<false, long, long long>();

@@ -6,15 +6,10 @@
 #endif // __clang__
 
 #include <algorithm>
-#include <array>
 #include <cassert>
-#include <cstddef>
 #include <functional>
 #include <iterator>
-#include <list>
-#include <string>
 #include <type_traits>
-#include <vector>
 
 #ifdef __cpp_lib_concepts
 #include <compare>
@@ -29,7 +24,7 @@ using namespace std;
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 template <class Int1, class Int2, class PredType, class LexCompareFn>
-void test_algorithms_for_integrals(LexCompareFn lexicographical_compare) {
+void test_algorithms_for_integrals(LexCompareFn lex_compare_fn) {
     Int1 arr1[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
     Int2 arr2[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
     Int2 arr3[10] = {5, 7, 3, 4, 6, 4, 7, 1, 10, 5};
@@ -41,47 +36,47 @@ void test_algorithms_for_integrals(LexCompareFn lexicographical_compare) {
     Int2 arr9[9]  = {5, 7, 3, 4, 6, 4, 7, 1, 10};
     Int2 arr10[9] = {5, 7, 2, 4, 6, 4, 7, 1, 9};
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), less<PredType>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), less<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<PredType>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), less<PredType>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), less<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<PredType>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), less<PredType>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), less<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<PredType>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr5), end(arr5), less<PredType>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr5), end(arr5), greater<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), less<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), greater<PredType>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr6), end(arr6), less<PredType>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr6), end(arr6), greater<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), less<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), greater<PredType>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr7), end(arr7), less<PredType>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr7), end(arr7), greater<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), less<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), greater<PredType>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr8), end(arr8), less<PredType>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr8), end(arr8), greater<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), less<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), greater<PredType>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr9), end(arr9), less<PredType>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr9), end(arr9), greater<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), less<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), greater<PredType>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr10), end(arr10), less<PredType>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr10), end(arr10), greater<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), less<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), greater<PredType>{}));
 }
 
 template <class Int1, class Int2, class LexCompareFn>
-void test_algorithms_for_1byte_integrals(LexCompareFn lexicographical_compare) {
-    test_algorithms_for_integrals<Int1, Int2, void>(lexicographical_compare);
-    test_algorithms_for_integrals<Int1, Int2, char>(lexicographical_compare);
-    test_algorithms_for_integrals<Int1, Int2, signed char>(lexicographical_compare);
-    test_algorithms_for_integrals<Int1, Int2, unsigned char>(lexicographical_compare);
+void test_algorithms_for_1byte_integrals(LexCompareFn lex_compare_fn) {
+    test_algorithms_for_integrals<Int1, Int2, void>(lex_compare_fn);
+    test_algorithms_for_integrals<Int1, Int2, char>(lex_compare_fn);
+    test_algorithms_for_integrals<Int1, Int2, signed char>(lex_compare_fn);
+    test_algorithms_for_integrals<Int1, Int2, unsigned char>(lex_compare_fn);
 #ifdef __cpp_lib_char8_t
-    test_algorithms_for_integrals<Int1, Int2, char8_t>(lexicographical_compare);
+    test_algorithms_for_integrals<Int1, Int2, char8_t>(lex_compare_fn);
 #endif // __cpp_lib_char8_t
 }
 
 template <class Int, class LexCompareFn>
-void test_algorithms_for_signed_integrals(LexCompareFn lexicographical_compare) {
+void test_algorithms_for_signed_integrals(LexCompareFn lex_compare_fn) {
     using UInt = make_unsigned_t<Int>;
 
     Int arr1[10]  = {5, 7, -3, 4, 6, 4, 7, 1, 9, 5};
@@ -90,103 +85,103 @@ void test_algorithms_for_signed_integrals(LexCompareFn lexicographical_compare) 
     UInt arr4[10] = {5, 7, static_cast<UInt>(+3), 4, 6, 4, 7, 1, 9, 5};
 
     // Test signed
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<>{}));
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr1), end(arr1), less<>{}));
-    assert(lexicographical_compare(begin(arr2), end(arr2), begin(arr1), end(arr1), greater<>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr1), end(arr1), less<>{}));
+    assert(lex_compare_fn(begin(arr2), end(arr2), begin(arr1), end(arr1), greater<>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), less<Int>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<Int>{}));
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr1), end(arr1), less<Int>{}));
-    assert(lexicographical_compare(begin(arr2), end(arr2), begin(arr1), end(arr1), greater<Int>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), less<Int>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<Int>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr1), end(arr1), less<Int>{}));
+    assert(lex_compare_fn(begin(arr2), end(arr2), begin(arr1), end(arr1), greater<Int>{}));
 
-    assert(lexicographical_compare(begin(arr3), end(arr3), begin(arr4), end(arr4), less<Int>{}));
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr4), end(arr4), greater<Int>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr3), end(arr3), less<Int>{}));
-    assert(lexicographical_compare(begin(arr4), end(arr4), begin(arr3), end(arr3), greater<Int>{}));
+    assert(lex_compare_fn(begin(arr3), end(arr3), begin(arr4), end(arr4), less<Int>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr4), end(arr4), greater<Int>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr3), end(arr3), less<Int>{}));
+    assert(lex_compare_fn(begin(arr4), end(arr4), begin(arr3), end(arr3), greater<Int>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), less<Int>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<Int>{}));
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr1), end(arr1), less<Int>{}));
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr1), end(arr1), greater<Int>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), less<Int>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<Int>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr1), end(arr1), less<Int>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr1), end(arr1), greater<Int>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), less<Int>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<Int>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr1), end(arr1), less<Int>{}));
-    assert(lexicographical_compare(begin(arr4), end(arr4), begin(arr1), end(arr1), greater<Int>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), less<Int>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<Int>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr1), end(arr1), less<Int>{}));
+    assert(lex_compare_fn(begin(arr4), end(arr4), begin(arr1), end(arr1), greater<Int>{}));
 
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr3), end(arr3), less<Int>{}));
-    assert(lexicographical_compare(begin(arr2), end(arr2), begin(arr3), end(arr3), greater<Int>{}));
-    assert(lexicographical_compare(begin(arr3), end(arr3), begin(arr2), end(arr2), less<Int>{}));
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr2), end(arr2), greater<Int>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr3), end(arr3), less<Int>{}));
+    assert(lex_compare_fn(begin(arr2), end(arr2), begin(arr3), end(arr3), greater<Int>{}));
+    assert(lex_compare_fn(begin(arr3), end(arr3), begin(arr2), end(arr2), less<Int>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr2), end(arr2), greater<Int>{}));
 
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr4), end(arr4), less<Int>{}));
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr4), end(arr4), greater<Int>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr2), end(arr2), less<Int>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr2), end(arr2), greater<Int>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr4), end(arr4), less<Int>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr4), end(arr4), greater<Int>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr2), end(arr2), less<Int>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr2), end(arr2), greater<Int>{}));
 
     // Test unsigned
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr4), end(arr4), less<>{}));
-    assert(lexicographical_compare(begin(arr3), end(arr3), begin(arr4), end(arr4), greater<>{}));
-    assert(lexicographical_compare(begin(arr4), end(arr4), begin(arr3), end(arr3), less<>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr3), end(arr3), greater<>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr4), end(arr4), less<>{}));
+    assert(lex_compare_fn(begin(arr3), end(arr3), begin(arr4), end(arr4), greater<>{}));
+    assert(lex_compare_fn(begin(arr4), end(arr4), begin(arr3), end(arr3), less<>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr3), end(arr3), greater<>{}));
 
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr4), end(arr4), less<UInt>{}));
-    assert(lexicographical_compare(begin(arr3), end(arr3), begin(arr4), end(arr4), greater<UInt>{}));
-    assert(lexicographical_compare(begin(arr4), end(arr4), begin(arr3), end(arr3), less<UInt>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr3), end(arr3), greater<UInt>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr4), end(arr4), less<UInt>{}));
+    assert(lex_compare_fn(begin(arr3), end(arr3), begin(arr4), end(arr4), greater<UInt>{}));
+    assert(lex_compare_fn(begin(arr4), end(arr4), begin(arr3), end(arr3), less<UInt>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr3), end(arr3), greater<UInt>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), less<UInt>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<UInt>{}));
-    assert(lexicographical_compare(begin(arr2), end(arr2), begin(arr1), end(arr1), less<UInt>{}));
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr1), end(arr1), greater<UInt>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), less<UInt>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<UInt>{}));
+    assert(lex_compare_fn(begin(arr2), end(arr2), begin(arr1), end(arr1), less<UInt>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr1), end(arr1), greater<UInt>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), less<UInt>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<UInt>{}));
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr1), end(arr1), less<UInt>{}));
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr1), end(arr1), greater<UInt>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), less<UInt>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<UInt>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr1), end(arr1), less<UInt>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr1), end(arr1), greater<UInt>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), less<UInt>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<UInt>{}));
-    assert(lexicographical_compare(begin(arr4), end(arr4), begin(arr1), end(arr1), less<UInt>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr1), end(arr1), greater<UInt>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), less<UInt>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<UInt>{}));
+    assert(lex_compare_fn(begin(arr4), end(arr4), begin(arr1), end(arr1), less<UInt>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr1), end(arr1), greater<UInt>{}));
 
-    assert(lexicographical_compare(begin(arr2), end(arr2), begin(arr3), end(arr3), less<UInt>{}));
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr3), end(arr3), greater<UInt>{}));
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr2), end(arr2), less<UInt>{}));
-    assert(lexicographical_compare(begin(arr3), end(arr3), begin(arr2), end(arr2), greater<UInt>{}));
+    assert(lex_compare_fn(begin(arr2), end(arr2), begin(arr3), end(arr3), less<UInt>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr3), end(arr3), greater<UInt>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr2), end(arr2), less<UInt>{}));
+    assert(lex_compare_fn(begin(arr3), end(arr3), begin(arr2), end(arr2), greater<UInt>{}));
 
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr4), end(arr4), less<UInt>{}));
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr4), end(arr4), greater<UInt>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr2), end(arr2), less<UInt>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr2), end(arr2), greater<UInt>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr4), end(arr4), less<UInt>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr4), end(arr4), greater<UInt>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr2), end(arr2), less<UInt>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr2), end(arr2), greater<UInt>{}));
 
     // Test comparing signed and unsigned
     constexpr bool promoted = sizeof(Int) < sizeof(int);
 
-    assert(promoted == lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<>{}));
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr1), end(arr1), less<>{}));
-    assert(promoted == lexicographical_compare(begin(arr3), end(arr3), begin(arr1), end(arr1), greater<>{}));
+    assert(promoted == lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr1), end(arr1), less<>{}));
+    assert(promoted == lex_compare_fn(begin(arr3), end(arr3), begin(arr1), end(arr1), greater<>{}));
 
-    assert(promoted == lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), less<>{}));
-    assert(promoted == !lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<>{}));
-    assert(promoted == !lexicographical_compare(begin(arr4), end(arr4), begin(arr1), end(arr1), less<>{}));
-    assert(promoted == lexicographical_compare(begin(arr4), end(arr4), begin(arr1), end(arr1), greater<>{}));
+    assert(promoted == lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), less<>{}));
+    assert(promoted == !lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<>{}));
+    assert(promoted == !lex_compare_fn(begin(arr4), end(arr4), begin(arr1), end(arr1), less<>{}));
+    assert(promoted == lex_compare_fn(begin(arr4), end(arr4), begin(arr1), end(arr1), greater<>{}));
 
-    assert(lexicographical_compare(begin(arr2), end(arr2), begin(arr3), end(arr3), less<>{}));
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr3), end(arr3), greater<>{}));
-    assert(!lexicographical_compare(begin(arr3), end(arr3), begin(arr2), end(arr2), less<>{}));
-    assert(lexicographical_compare(begin(arr3), end(arr3), begin(arr2), end(arr2), greater<>{}));
+    assert(lex_compare_fn(begin(arr2), end(arr2), begin(arr3), end(arr3), less<>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr3), end(arr3), greater<>{}));
+    assert(!lex_compare_fn(begin(arr3), end(arr3), begin(arr2), end(arr2), less<>{}));
+    assert(lex_compare_fn(begin(arr3), end(arr3), begin(arr2), end(arr2), greater<>{}));
 
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr4), end(arr4), less<>{}));
-    assert(!lexicographical_compare(begin(arr2), end(arr2), begin(arr4), end(arr4), greater<>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr2), end(arr2), less<>{}));
-    assert(!lexicographical_compare(begin(arr4), end(arr4), begin(arr2), end(arr2), greater<>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr4), end(arr4), less<>{}));
+    assert(!lex_compare_fn(begin(arr2), end(arr2), begin(arr4), end(arr4), greater<>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr2), end(arr2), less<>{}));
+    assert(!lex_compare_fn(begin(arr4), end(arr4), begin(arr2), end(arr2), greater<>{}));
 }
 
 template <class Bool1, class Bool2, class PredType, class LexCompareFn>
-void test_algorithms_for_bools_helper(LexCompareFn lexicographical_compare) {
+void test_algorithms_for_bools_helper(LexCompareFn lex_compare_fn) {
     Bool1 arr1[5]  = {true, true, false, false, true};
     Bool2 arr2[5]  = {true, true, false, false, true};
     Bool2 arr3[5]  = {true, true, true, false, true};
@@ -198,46 +193,46 @@ void test_algorithms_for_bools_helper(LexCompareFn lexicographical_compare) {
     Bool2 arr9[4]  = {true, true, true, false};
     Bool2 arr10[4] = {true, false, false, false};
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), less<PredType>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), less<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<PredType>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), less<PredType>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), less<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<PredType>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), less<PredType>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), less<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<PredType>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr5), end(arr5), less<PredType>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr5), end(arr5), greater<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), less<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), greater<PredType>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr6), end(arr6), less<PredType>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr6), end(arr6), greater<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), less<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), greater<PredType>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr7), end(arr7), less<PredType>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr7), end(arr7), greater<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), less<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), greater<PredType>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr8), end(arr8), less<PredType>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr8), end(arr8), greater<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), less<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), greater<PredType>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr9), end(arr9), less<PredType>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr9), end(arr9), greater<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), less<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), greater<PredType>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr10), end(arr10), less<PredType>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr10), end(arr10), greater<PredType>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), less<PredType>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), greater<PredType>{}));
 }
 
 template <class Bool1, class Bool2, class LexCompareFn>
-void test_algorithms_for_bools(LexCompareFn lexicographical_compare) {
-    test_algorithms_for_bools_helper<Bool1, Bool2, void>(lexicographical_compare);
-    test_algorithms_for_bools_helper<Bool1, Bool2, bool>(lexicographical_compare);
-    test_algorithms_for_bools_helper<Bool1, Bool2, char>(lexicographical_compare);
-    test_algorithms_for_bools_helper<Bool1, Bool2, unsigned char>(lexicographical_compare);
-    test_algorithms_for_bools_helper<Bool1, Bool2, signed char>(lexicographical_compare);
-    test_algorithms_for_bools_helper<Bool1, Bool2, int>(lexicographical_compare);
+void test_algorithms_for_bools(LexCompareFn lex_compare_fn) {
+    test_algorithms_for_bools_helper<Bool1, Bool2, void>(lex_compare_fn);
+    test_algorithms_for_bools_helper<Bool1, Bool2, bool>(lex_compare_fn);
+    test_algorithms_for_bools_helper<Bool1, Bool2, char>(lex_compare_fn);
+    test_algorithms_for_bools_helper<Bool1, Bool2, unsigned char>(lex_compare_fn);
+    test_algorithms_for_bools_helper<Bool1, Bool2, signed char>(lex_compare_fn);
+    test_algorithms_for_bools_helper<Bool1, Bool2, int>(lex_compare_fn);
 }
 
 template <class Char, class LexCompareFn>
-void test_algorithms_for_bool_and_chars(LexCompareFn lexicographical_compare) {
+void test_algorithms_for_bool_and_chars(LexCompareFn lex_compare_fn) {
     bool arr1[5]  = {true, true, false, false, true};
     Char arr2[5]  = {2, 1, 0, 0, 1};
     Char arr3[5]  = {2, 1, 1, 0, 1};
@@ -249,141 +244,141 @@ void test_algorithms_for_bool_and_chars(LexCompareFn lexicographical_compare) {
     Char arr9[4]  = {2, 1, 1, 0};
     Char arr10[4] = {2, 0, 0, 0};
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), less<bool>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<bool>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), less<bool>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<bool>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), less<bool>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<bool>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), less<bool>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<bool>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), less<bool>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<bool>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), less<bool>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<bool>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr5), end(arr5), less<bool>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr5), end(arr5), greater<bool>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), less<bool>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), greater<bool>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr6), end(arr6), less<bool>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr6), end(arr6), greater<bool>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), less<bool>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), greater<bool>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr7), end(arr7), less<bool>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr7), end(arr7), greater<bool>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), less<bool>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), greater<bool>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr8), end(arr8), less<bool>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr8), end(arr8), greater<bool>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), less<bool>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), greater<bool>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr9), end(arr9), less<bool>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr9), end(arr9), greater<bool>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), less<bool>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), greater<bool>{}));
 
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr10), end(arr10), less<bool>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr10), end(arr10), greater<bool>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), less<bool>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), greater<bool>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), less<Char>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<Char>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), less<Char>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<Char>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), less<Char>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<Char>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr5), end(arr5), less<Char>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr5), end(arr5), greater<Char>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr6), end(arr6), less<Char>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr6), end(arr6), greater<Char>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr7), end(arr7), less<Char>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr7), end(arr7), greater<Char>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr8), end(arr8), less<Char>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr8), end(arr8), greater<Char>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr9), end(arr9), less<Char>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr9), end(arr9), greater<Char>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr10), end(arr10), less<Char>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr10), end(arr10), greater<Char>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), less<Char>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<Char>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), less<Char>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<Char>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), less<Char>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<Char>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), less<Char>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), greater<Char>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), less<Char>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), greater<Char>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), less<Char>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), greater<Char>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), less<Char>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), greater<Char>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), less<Char>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), greater<Char>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), less<Char>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), greater<Char>{}));
 
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr5), end(arr5), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr5), end(arr5), greater<>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr6), end(arr6), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr6), end(arr6), greater<>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr7), end(arr7), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr7), end(arr7), greater<>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr8), end(arr8), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr8), end(arr8), greater<>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr9), end(arr9), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr9), end(arr9), greater<>{}));
-    assert(lexicographical_compare(begin(arr1), end(arr1), begin(arr10), end(arr10), less<>{}));
-    assert(!lexicographical_compare(begin(arr1), end(arr1), begin(arr10), end(arr10), greater<>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), greater<>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), greater<>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), greater<>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), greater<>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), greater<>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), greater<>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), greater<>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), greater<>{}));
+    assert(lex_compare_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), less<>{}));
+    assert(!lex_compare_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), greater<>{}));
 }
 
 template <class LexCompareFn>
-void test_algorithms(LexCompareFn lexicographical_compare) {
+void test_algorithms(LexCompareFn lex_compare_fn) {
     { // Test ints
-        test_algorithms_for_integrals<int, int, void>(lexicographical_compare);
-        test_algorithms_for_integrals<unsigned int, unsigned int, void>(lexicographical_compare);
-        test_algorithms_for_integrals<int, unsigned int, void>(lexicographical_compare);
-        test_algorithms_for_integrals<unsigned int, int, void>(lexicographical_compare);
+        test_algorithms_for_integrals<int, int, void>(lex_compare_fn);
+        test_algorithms_for_integrals<unsigned int, unsigned int, void>(lex_compare_fn);
+        test_algorithms_for_integrals<int, unsigned int, void>(lex_compare_fn);
+        test_algorithms_for_integrals<unsigned int, int, void>(lex_compare_fn);
 
-        test_algorithms_for_integrals<int, int, int>(lexicographical_compare);
-        test_algorithms_for_integrals<unsigned int, unsigned int, int>(lexicographical_compare);
-        test_algorithms_for_integrals<int, unsigned int, int>(lexicographical_compare);
-        test_algorithms_for_integrals<unsigned int, int, int>(lexicographical_compare);
+        test_algorithms_for_integrals<int, int, int>(lex_compare_fn);
+        test_algorithms_for_integrals<unsigned int, unsigned int, int>(lex_compare_fn);
+        test_algorithms_for_integrals<int, unsigned int, int>(lex_compare_fn);
+        test_algorithms_for_integrals<unsigned int, int, int>(lex_compare_fn);
 
-        test_algorithms_for_integrals<int, int, unsigned int>(lexicographical_compare);
-        test_algorithms_for_integrals<unsigned int, unsigned int, unsigned int>(lexicographical_compare);
-        test_algorithms_for_integrals<int, unsigned int, unsigned int>(lexicographical_compare);
-        test_algorithms_for_integrals<unsigned int, int, unsigned int>(lexicographical_compare);
+        test_algorithms_for_integrals<int, int, unsigned int>(lex_compare_fn);
+        test_algorithms_for_integrals<unsigned int, unsigned int, unsigned int>(lex_compare_fn);
+        test_algorithms_for_integrals<int, unsigned int, unsigned int>(lex_compare_fn);
+        test_algorithms_for_integrals<unsigned int, int, unsigned int>(lex_compare_fn);
     }
 
     { // Test chars
-        test_algorithms_for_1byte_integrals<char, char>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<signed char, signed char>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<char, signed char>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<signed char, char>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<unsigned char, unsigned char>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<unsigned char, char>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<char, unsigned char>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<unsigned char, signed char>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<signed char, unsigned char>(lexicographical_compare);
+        test_algorithms_for_1byte_integrals<char, char>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<signed char, signed char>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<char, signed char>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<signed char, char>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<unsigned char, unsigned char>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<unsigned char, char>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<char, unsigned char>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<unsigned char, signed char>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<signed char, unsigned char>(lex_compare_fn);
 #ifdef __cpp_lib_char8_t
-        test_algorithms_for_1byte_integrals<char8_t, char8_t>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<char, char8_t>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<char8_t, char>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<signed char, char8_t>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<char8_t, signed char>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<unsigned char, char8_t>(lexicographical_compare);
-        test_algorithms_for_1byte_integrals<char8_t, unsigned char>(lexicographical_compare);
+        test_algorithms_for_1byte_integrals<char8_t, char8_t>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<char, char8_t>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<char8_t, char>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<signed char, char8_t>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<char8_t, signed char>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<unsigned char, char8_t>(lex_compare_fn);
+        test_algorithms_for_1byte_integrals<char8_t, unsigned char>(lex_compare_fn);
 #endif // __cpp_lib_char8_t
     }
 
     { // Test signedness
-        test_algorithms_for_signed_integrals<int>(lexicographical_compare);
-        test_algorithms_for_signed_integrals<signed char>(lexicographical_compare);
+        test_algorithms_for_signed_integrals<int>(lex_compare_fn);
+        test_algorithms_for_signed_integrals<signed char>(lex_compare_fn);
     }
 
     { // Test bool
-        test_algorithms_for_bools<bool, bool>(lexicographical_compare);
-        test_algorithms_for_bools<char, char>(lexicographical_compare);
-        test_algorithms_for_bools<unsigned char, unsigned char>(lexicographical_compare);
-        test_algorithms_for_bools<signed char, signed char>(lexicographical_compare);
-        test_algorithms_for_bools<char, bool>(lexicographical_compare);
-        test_algorithms_for_bools<bool, char>(lexicographical_compare);
-        test_algorithms_for_bools<unsigned char, bool>(lexicographical_compare);
-        test_algorithms_for_bools<bool, unsigned char>(lexicographical_compare);
-        test_algorithms_for_bools<signed char, bool>(lexicographical_compare);
-        test_algorithms_for_bools<bool, signed char>(lexicographical_compare);
+        test_algorithms_for_bools<bool, bool>(lex_compare_fn);
+        test_algorithms_for_bools<char, char>(lex_compare_fn);
+        test_algorithms_for_bools<unsigned char, unsigned char>(lex_compare_fn);
+        test_algorithms_for_bools<signed char, signed char>(lex_compare_fn);
+        test_algorithms_for_bools<char, bool>(lex_compare_fn);
+        test_algorithms_for_bools<bool, char>(lex_compare_fn);
+        test_algorithms_for_bools<unsigned char, bool>(lex_compare_fn);
+        test_algorithms_for_bools<bool, unsigned char>(lex_compare_fn);
+        test_algorithms_for_bools<signed char, bool>(lex_compare_fn);
+        test_algorithms_for_bools<bool, signed char>(lex_compare_fn);
     }
 
     { // Test comparing bool and char
-        test_algorithms_for_bool_and_chars<char>(lexicographical_compare);
-        test_algorithms_for_bool_and_chars<unsigned char>(lexicographical_compare);
-        test_algorithms_for_bool_and_chars<signed char>(lexicographical_compare);
+        test_algorithms_for_bool_and_chars<char>(lex_compare_fn);
+        test_algorithms_for_bool_and_chars<unsigned char>(lex_compare_fn);
+        test_algorithms_for_bool_and_chars<signed char>(lex_compare_fn);
     }
 }
 
 #ifdef __cpp_lib_concepts
 template <class Int1, class Int2, class LexCompareThreeWayFn, class Comp = compare_three_way>
 void test_three_way_algorithms_for_integrals(
-    LexCompareThreeWayFn lexicographical_compare_three_way, Comp comp = compare_three_way{}) {
+    LexCompareThreeWayFn lex_compare_three_way_fn, Comp comp = compare_three_way{}) {
     Int1 arr1[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
     Int2 arr2[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
     Int2 arr3[10] = {5, 7, 3, 4, 6, 4, 7, 1, 10, 5};
@@ -395,21 +390,21 @@ void test_three_way_algorithms_for_integrals(
     Int2 arr9[9]  = {5, 7, 3, 4, 6, 4, 7, 1, 10};
     Int2 arr10[9] = {5, 7, 2, 4, 6, 4, 7, 1, 9};
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr2), end(arr2), comp) == 0);
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr3), end(arr3), comp) < 0);
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr4), end(arr4), comp) > 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), comp) == 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), comp) < 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), comp) > 0);
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr5), end(arr5), comp) < 0);
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr6), end(arr6), comp) < 0);
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr7), end(arr7), comp) > 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), comp) < 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), comp) < 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), comp) > 0);
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr8), end(arr8), comp) > 0);
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr9), end(arr9), comp) < 0);
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr10), end(arr10), comp) > 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), comp) > 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), comp) < 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), comp) > 0);
 }
 
 template <class Int, class LexCompareThreeWayFn>
-void test_three_way_algorithms_for_signed_integrals(LexCompareThreeWayFn lexicographical_compare_three_way) {
+void test_three_way_algorithms_for_signed_integrals(LexCompareThreeWayFn lex_compare_three_way_fn) {
     using UInt = make_unsigned_t<Int>;
 
     Int arr1[10]  = {5, 7, -3, 4, 6, 4, 7, 1, 9, 5};
@@ -418,12 +413,12 @@ void test_three_way_algorithms_for_signed_integrals(LexCompareThreeWayFn lexicog
     UInt arr4[10] = {5, 7, static_cast<UInt>(+3), 4, 6, 4, 7, 1, 9, 5};
 
     // Test signed
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr2), end(arr2), compare_three_way{}) < 0);
-    assert(lexicographical_compare_three_way(begin(arr2), end(arr2), begin(arr1), end(arr1), compare_three_way{}) > 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), compare_three_way{}) < 0);
+    assert(lex_compare_three_way_fn(begin(arr2), end(arr2), begin(arr1), end(arr1), compare_three_way{}) > 0);
 
     // Test unsigned
-    assert(lexicographical_compare_three_way(begin(arr3), end(arr3), begin(arr4), end(arr4), compare_three_way{}) > 0);
-    assert(lexicographical_compare_three_way(begin(arr4), end(arr4), begin(arr3), end(arr3), compare_three_way{}) < 0);
+    assert(lex_compare_three_way_fn(begin(arr3), end(arr3), begin(arr4), end(arr4), compare_three_way{}) > 0);
+    assert(lex_compare_three_way_fn(begin(arr4), end(arr4), begin(arr3), end(arr3), compare_three_way{}) < 0);
 
     // Test comparing signed and unsigned
     constexpr bool promoted = sizeof(Int) < sizeof(int);
@@ -432,30 +427,26 @@ void test_three_way_algorithms_for_signed_integrals(LexCompareThreeWayFn lexicog
     if constexpr (promoted)
 #endif // __clang__
     {
-        assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr3), end(arr3), compare_three_way{})
+        assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), compare_three_way{})
                == (promoted ? strong_ordering::less : strong_ordering::equal));
-        assert(lexicographical_compare_three_way(begin(arr3), end(arr3), begin(arr1), end(arr1), compare_three_way{})
+        assert(lex_compare_three_way_fn(begin(arr3), end(arr3), begin(arr1), end(arr1), compare_three_way{})
                == (promoted ? strong_ordering::greater : strong_ordering::equal));
 
-        assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr4), end(arr4), compare_three_way{})
+        assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), compare_three_way{})
                == (promoted ? strong_ordering::less : strong_ordering::greater));
-        assert(lexicographical_compare_three_way(begin(arr4), end(arr4), begin(arr1), end(arr1), compare_three_way{})
+        assert(lex_compare_three_way_fn(begin(arr4), end(arr4), begin(arr1), end(arr1), compare_three_way{})
                == (promoted ? strong_ordering::greater : strong_ordering::less));
 
-        assert(
-            lexicographical_compare_three_way(begin(arr2), end(arr2), begin(arr3), end(arr3), compare_three_way{}) < 0);
-        assert(
-            lexicographical_compare_three_way(begin(arr3), end(arr3), begin(arr2), end(arr2), compare_three_way{}) > 0);
+        assert(lex_compare_three_way_fn(begin(arr2), end(arr2), begin(arr3), end(arr3), compare_three_way{}) < 0);
+        assert(lex_compare_three_way_fn(begin(arr3), end(arr3), begin(arr2), end(arr2), compare_three_way{}) > 0);
 
-        assert(lexicographical_compare_three_way(begin(arr2), end(arr2), begin(arr4), end(arr4), compare_three_way{})
-               == 0);
-        assert(lexicographical_compare_three_way(begin(arr4), end(arr4), begin(arr2), end(arr2), compare_three_way{})
-               == 0);
+        assert(lex_compare_three_way_fn(begin(arr2), end(arr2), begin(arr4), end(arr4), compare_three_way{}) == 0);
+        assert(lex_compare_three_way_fn(begin(arr4), end(arr4), begin(arr2), end(arr2), compare_three_way{}) == 0);
     }
 }
 
 template <class LexCompareThreeWayFn>
-void test_three_way_algorithms_for_bools(LexCompareThreeWayFn lexicographical_compare_three_way) {
+void test_three_way_algorithms_for_bools(LexCompareThreeWayFn lex_compare_three_way_fn) {
     bool arr1[5]  = {true, true, false, false, true};
     bool arr2[5]  = {true, true, false, false, true};
     bool arr3[5]  = {true, true, true, false, true};
@@ -467,79 +458,74 @@ void test_three_way_algorithms_for_bools(LexCompareThreeWayFn lexicographical_co
     bool arr9[4]  = {true, true, true, false};
     bool arr10[4] = {true, false, false, false};
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr2), end(arr2), compare_three_way{}) == 0);
-    assert(lexicographical_compare_three_way(begin(arr2), end(arr2), begin(arr1), end(arr1), compare_three_way{}) == 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr2), end(arr2), compare_three_way{}) == 0);
+    assert(lex_compare_three_way_fn(begin(arr2), end(arr2), begin(arr1), end(arr1), compare_three_way{}) == 0);
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr3), end(arr3), compare_three_way{}) < 0);
-    assert(lexicographical_compare_three_way(begin(arr3), end(arr3), begin(arr1), end(arr1), compare_three_way{}) > 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), compare_three_way{}) < 0);
+    assert(lex_compare_three_way_fn(begin(arr3), end(arr3), begin(arr1), end(arr1), compare_three_way{}) > 0);
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr4), end(arr4), compare_three_way{}) > 0);
-    assert(lexicographical_compare_three_way(begin(arr4), end(arr4), begin(arr1), end(arr1), compare_three_way{}) < 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr4), end(arr4), compare_three_way{}) > 0);
+    assert(lex_compare_three_way_fn(begin(arr4), end(arr4), begin(arr1), end(arr1), compare_three_way{}) < 0);
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr5), end(arr5), compare_three_way{}) < 0);
-    assert(lexicographical_compare_three_way(begin(arr5), end(arr5), begin(arr1), end(arr1), compare_three_way{}) > 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr5), end(arr5), compare_three_way{}) < 0);
+    assert(lex_compare_three_way_fn(begin(arr5), end(arr5), begin(arr1), end(arr1), compare_three_way{}) > 0);
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr6), end(arr6), compare_three_way{}) < 0);
-    assert(lexicographical_compare_three_way(begin(arr6), end(arr6), begin(arr1), end(arr1), compare_three_way{}) > 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr6), end(arr6), compare_three_way{}) < 0);
+    assert(lex_compare_three_way_fn(begin(arr6), end(arr6), begin(arr1), end(arr1), compare_three_way{}) > 0);
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr7), end(arr7), compare_three_way{}) > 0);
-    assert(lexicographical_compare_three_way(begin(arr7), end(arr7), begin(arr1), end(arr1), compare_three_way{}) < 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr7), end(arr7), compare_three_way{}) > 0);
+    assert(lex_compare_three_way_fn(begin(arr7), end(arr7), begin(arr1), end(arr1), compare_three_way{}) < 0);
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr8), end(arr8), compare_three_way{}) > 0);
-    assert(lexicographical_compare_three_way(begin(arr8), end(arr8), begin(arr1), end(arr1), compare_three_way{}) < 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr8), end(arr8), compare_three_way{}) > 0);
+    assert(lex_compare_three_way_fn(begin(arr8), end(arr8), begin(arr1), end(arr1), compare_three_way{}) < 0);
 
-    assert(lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr9), end(arr9), compare_three_way{}) < 0);
-    assert(lexicographical_compare_three_way(begin(arr9), end(arr9), begin(arr1), end(arr1), compare_three_way{}) > 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr9), end(arr9), compare_three_way{}) < 0);
+    assert(lex_compare_three_way_fn(begin(arr9), end(arr9), begin(arr1), end(arr1), compare_three_way{}) > 0);
 
-    assert(
-        lexicographical_compare_three_way(begin(arr1), end(arr1), begin(arr10), end(arr10), compare_three_way{}) > 0);
-    assert(
-        lexicographical_compare_three_way(begin(arr10), end(arr10), begin(arr1), end(arr1), compare_three_way{}) < 0);
+    assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr10), end(arr10), compare_three_way{}) > 0);
+    assert(lex_compare_three_way_fn(begin(arr10), end(arr10), begin(arr1), end(arr1), compare_three_way{}) < 0);
 }
 
 template <class LexCompareThreeWayFn>
-void test_three_way_algorithms(LexCompareThreeWayFn lexicographical_compare_three_way) {
+void test_three_way_algorithms(LexCompareThreeWayFn lex_compare_three_way_fn) {
     { // Test ints
-        test_three_way_algorithms_for_integrals<int, int>(lexicographical_compare_three_way, compare_three_way{});
-        test_three_way_algorithms_for_integrals<int, int>(lexicographical_compare_three_way, strong_order);
-        test_three_way_algorithms_for_integrals<int, int>(lexicographical_compare_three_way, weak_order);
-        test_three_way_algorithms_for_integrals<int, int>(lexicographical_compare_three_way, partial_order);
-        test_three_way_algorithms_for_integrals<int, int>(
-            lexicographical_compare_three_way, compare_strong_order_fallback);
-        test_three_way_algorithms_for_integrals<int, int>(
-            lexicographical_compare_three_way, compare_weak_order_fallback);
-        test_three_way_algorithms_for_integrals<int, int>(
-            lexicographical_compare_three_way, compare_partial_order_fallback);
+        test_three_way_algorithms_for_integrals<int, int>(lex_compare_three_way_fn, compare_three_way{});
+        test_three_way_algorithms_for_integrals<int, int>(lex_compare_three_way_fn, strong_order);
+        test_three_way_algorithms_for_integrals<int, int>(lex_compare_three_way_fn, weak_order);
+        test_three_way_algorithms_for_integrals<int, int>(lex_compare_three_way_fn, partial_order);
+        test_three_way_algorithms_for_integrals<int, int>(lex_compare_three_way_fn, compare_strong_order_fallback);
+        test_three_way_algorithms_for_integrals<int, int>(lex_compare_three_way_fn, compare_weak_order_fallback);
+        test_three_way_algorithms_for_integrals<int, int>(lex_compare_three_way_fn, compare_partial_order_fallback);
     }
 
     { // Test chars
-        test_three_way_algorithms_for_integrals<char, char>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<signed char, signed char>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<char, signed char>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<signed char, char>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<unsigned char, unsigned char>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<unsigned char, char>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<char, unsigned char>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<unsigned char, signed char>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<signed char, unsigned char>(lexicographical_compare_three_way);
+        test_three_way_algorithms_for_integrals<char, char>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<signed char, signed char>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<char, signed char>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<signed char, char>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<unsigned char, unsigned char>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<unsigned char, char>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<char, unsigned char>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<unsigned char, signed char>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<signed char, unsigned char>(lex_compare_three_way_fn);
 #ifdef __cpp_lib_char8_t
-        test_three_way_algorithms_for_integrals<char8_t, char8_t>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<char, char8_t>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<char8_t, char>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<signed char, char8_t>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<char8_t, signed char>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<unsigned char, char8_t>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_integrals<char8_t, unsigned char>(lexicographical_compare_three_way);
+        test_three_way_algorithms_for_integrals<char8_t, char8_t>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<char, char8_t>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<char8_t, char>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<signed char, char8_t>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<char8_t, signed char>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<unsigned char, char8_t>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_integrals<char8_t, unsigned char>(lex_compare_three_way_fn);
 #endif // __cpp_lib_char8_t
     }
 
     { // Test signedness
-        test_three_way_algorithms_for_signed_integrals<int>(lexicographical_compare_three_way);
-        test_three_way_algorithms_for_signed_integrals<signed char>(lexicographical_compare_three_way);
+        test_three_way_algorithms_for_signed_integrals<int>(lex_compare_three_way_fn);
+        test_three_way_algorithms_for_signed_integrals<signed char>(lex_compare_three_way_fn);
     }
 
     { // Test bool
-        test_three_way_algorithms_for_bools(lexicographical_compare_three_way);
+        test_three_way_algorithms_for_bools(lex_compare_three_way_fn);
     }
 }
 #endif // __cpp_lib_concepts

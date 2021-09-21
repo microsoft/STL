@@ -112,16 +112,16 @@ STATIC_ASSERT(is_pointer_interconvertible_base_of_v<EmptyBase, StatefulDerived2>
 
 
 template <class CopyFn>
-void test_algorithms(CopyFn copy) {
+void test_algorithms(CopyFn copy_fn) {
 
     { // Test ints
         int src[10]      = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
         int expected[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
         int dst[10]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int => long
@@ -129,9 +129,9 @@ void test_algorithms(CopyFn copy) {
         long expected[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
         long dst[10]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test long => unsigned int
@@ -139,9 +139,9 @@ void test_algorithms(CopyFn copy) {
         unsigned int expected[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
         unsigned int dst[10]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test bool => char
@@ -149,19 +149,19 @@ void test_algorithms(CopyFn copy) {
         char expected[7] = {1, 1, 1, 0, 1, 0, 0};
         char dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test char => bool
-        char src[7]      = {5, 2, 1, 0, -1, 0, 0};
+        char src[7]      = {5, 2, 1, 0, static_cast<char>(-1), 0, 0};
         bool expected[7] = {true, true, true, false, true, false, false};
         bool dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int => bool
@@ -169,9 +169,9 @@ void test_algorithms(CopyFn copy) {
         bool expected[7] = {true, true, true, false, true, false, false};
         bool dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int => short
@@ -179,9 +179,9 @@ void test_algorithms(CopyFn copy) {
         short expected[7] = {5, 2, 1, 0, -1, 0, 0};
         short dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int => unsigned int
@@ -189,9 +189,9 @@ void test_algorithms(CopyFn copy) {
         unsigned int expected[7] = {5, 2, 1, 0, static_cast<unsigned int>(-1), 0, 0};
         unsigned int dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int_enum => int
@@ -199,9 +199,9 @@ void test_algorithms(CopyFn copy) {
         int expected[7] = {5, 2, 1, 0, 7, 0, 0};
         int dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int_enum => unsigned long
@@ -209,9 +209,9 @@ void test_algorithms(CopyFn copy) {
         unsigned long expected[7] = {5, 2, 1, 0, 7, 0, 0};
         unsigned long dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test bool_enum => bool
@@ -219,9 +219,9 @@ void test_algorithms(CopyFn copy) {
         bool expected[7] = {true, true, true, false, true, false, false};
         bool dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test bool_enum => char
@@ -229,9 +229,9 @@ void test_algorithms(CopyFn copy) {
         char expected[7] = {1, 1, 1, 0, 1, 0, 0};
         char dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test char_enum => bool
@@ -239,9 +239,9 @@ void test_algorithms(CopyFn copy) {
         bool expected[7] = {true, true, true, false, true, false, false};
         bool dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test floats
@@ -249,9 +249,9 @@ void test_algorithms(CopyFn copy) {
         float expected[7] = {5.0f, 2.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f};
         float dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test float => int
@@ -259,9 +259,9 @@ void test_algorithms(CopyFn copy) {
         int expected[7] = {5, 2, 1, 0, -1, 0, 0};
         int dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int => float
@@ -269,9 +269,9 @@ void test_algorithms(CopyFn copy) {
         float expected[7] = {5.0f, 2.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f};
         float dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test double => long double
@@ -279,9 +279,9 @@ void test_algorithms(CopyFn copy) {
         long double expected[7] = {5.0L, 2.0L, 1.0L, 0.0L, -1.0L, 0.0L, 0.0L};
         long double dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test long double => double
@@ -289,9 +289,9 @@ void test_algorithms(CopyFn copy) {
         double expected[7] = {5.0, 2.0, 1.0, 0.0, -1.0, 0.0, 0.0};
         double dst[7]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int*
@@ -300,9 +300,9 @@ void test_algorithms(CopyFn copy) {
         int* expected[5] = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
         int* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test void*
@@ -311,9 +311,9 @@ void test_algorithms(CopyFn copy) {
         void* expected[5] = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
         void* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int* => void*
@@ -322,9 +322,20 @@ void test_algorithms(CopyFn copy) {
         void* expected[5] = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
         void* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
+    }
+
+    { // Test int* => const int*
+        int arr[5]{};
+        int* src[5]            = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
+        const int* expected[5] = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
+        const int* dst[5]{};
+
+        copy_fn(begin(src), end(src), begin(dst));
+
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test EmptyBase*
@@ -333,9 +344,9 @@ void test_algorithms(CopyFn copy) {
         EmptyBase* expected[5] = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
         EmptyBase* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test EmptyDerived*
@@ -344,9 +355,9 @@ void test_algorithms(CopyFn copy) {
         EmptyDerived* expected[5] = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
         EmptyDerived* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test EmptyDerived* => EmptyBase*
@@ -355,9 +366,9 @@ void test_algorithms(CopyFn copy) {
         EmptyBase* expected[5] = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
         EmptyBase* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test StatefulDerived* => StatefulBase*
@@ -366,9 +377,9 @@ void test_algorithms(CopyFn copy) {
         StatefulBase* expected[5] = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
         StatefulBase* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test StatefulDerived* => EmptyBase*
@@ -377,9 +388,9 @@ void test_algorithms(CopyFn copy) {
         EmptyBase* expected[5]  = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
         EmptyBase* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test StatefulDerived2* => StatefulBase*
@@ -388,9 +399,9 @@ void test_algorithms(CopyFn copy) {
         StatefulBase* expected[5] = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
         StatefulBase* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test StatefulDerived2* => EmptyBase*
@@ -399,12 +410,12 @@ void test_algorithms(CopyFn copy) {
         EmptyBase* expected[5]   = {&arr[0], &arr[1], nullptr, &arr[3], &arr[4]};
         EmptyBase* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
-    { // Test void(*)(int)
+    { // Test void (*)(int)
         using fn_ptr       = void (*)(int);
         auto lambda1       = [](int) { abort(); };
         auto lambda2       = [](int) { exit(0); };
@@ -412,13 +423,13 @@ void test_algorithms(CopyFn copy) {
         fn_ptr expected[5] = {lambda1, lambda2, nullptr, lambda1, nullptr};
         fn_ptr dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
 #ifndef __clang__
-    if constexpr (is_convertible_v<void (*)(int), void*>) { // Test void(*)(int) => void* (non-standard extension)
+    if constexpr (is_convertible_v<void (*)(int), void*>) { // Test void (*)(int) => void* (non-standard extension)
         using fn_ptr      = void (*)(int);
         fn_ptr lambda1    = [](int) { abort(); };
         fn_ptr lambda2    = [](int) { exit(0); };
@@ -426,9 +437,9 @@ void test_algorithms(CopyFn copy) {
         void* expected[5] = {lambda1, lambda2, nullptr, lambda1, nullptr};
         void* dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 #endif // __clang__
 
@@ -438,9 +449,9 @@ void test_algorithms(CopyFn copy) {
         m_ptr expected[5] = {&StatefulBase::i, &StatefulBase::i, nullptr, &StatefulBase::i, nullptr};
         m_ptr dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int StatefulDerived::*
@@ -449,9 +460,9 @@ void test_algorithms(CopyFn copy) {
         m_ptr expected[5] = {&StatefulDerived::i, &StatefulBase::i, nullptr, &StatefulDerived::i, nullptr};
         m_ptr dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int (StatefulBase::*)()
@@ -460,9 +471,9 @@ void test_algorithms(CopyFn copy) {
         mfn_ptr expected[5] = {&StatefulBase::get_i, &StatefulBase::get_i2, nullptr, &StatefulBase::get_i, nullptr};
         mfn_ptr dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test int (StatefulDerived::*)()
@@ -472,9 +483,9 @@ void test_algorithms(CopyFn copy) {
             &StatefulDerived::get_i, &StatefulBase::get_i2, nullptr, &StatefulDerived::get_i3, nullptr};
         mfn_ptr dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
 #if _HAS_CXX17
@@ -483,9 +494,9 @@ void test_algorithms(CopyFn copy) {
         string_view expected[5] = {"meow"sv, "purr"sv, ""sv, {}, "peppermint"sv};
         string_view dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 #endif // _HAS_CXX17
 
@@ -498,7 +509,7 @@ void test_algorithms(CopyFn copy) {
         span<int> expected[5] = {arr1, arr3, arr2, {}, arr1};
         span<int> dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
         assert(equal(begin(expected), end(expected), begin(dst), [](const auto& left, const auto& right) {
             return left.data() == right.data() && left.size() == right.size();
@@ -511,9 +522,9 @@ void test_algorithms(CopyFn copy) {
         TrivialStruct expected[5] = {{8}, {3}, {6}, {2}, {1}};
         TrivialStruct dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test TriviallyCopyableStruct
@@ -521,9 +532,9 @@ void test_algorithms(CopyFn copy) {
         TriviallyCopyableStruct expected[5] = {{8}, {3}, {6}, {2}, {1}};
         TriviallyCopyableStruct dst[5]{};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test TriviallyMovableStruct
@@ -531,9 +542,9 @@ void test_algorithms(CopyFn copy) {
         TriviallyMovableStruct expected[5] = {{8}, {3}, {6}, {2}, {1}};
         TriviallyMovableStruct dst[5]{};
 
-        copy(make_move_iterator(begin(src)), make_move_iterator(end(src)), begin(dst));
+        copy_fn(make_move_iterator(begin(src)), make_move_iterator(end(src)), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test vector
@@ -541,9 +552,9 @@ void test_algorithms(CopyFn copy) {
         vector<int> expected = {3, 6, 4, 7, 3};
         vector<int> dst      = {0, 0, 0, 0, 0};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test array
@@ -551,9 +562,9 @@ void test_algorithms(CopyFn copy) {
         array<int, 5> expected = {3, 6, 4, 7, 3};
         array<int, 5> dst      = {0, 0, 0, 0, 0};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test copying from vector to array
@@ -561,9 +572,9 @@ void test_algorithms(CopyFn copy) {
         array<int, 5> expected = {3, 6, 4, 7, 3};
         array<int, 5> dst      = {0, 0, 0, 0, 0};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test copying from array to vector
@@ -571,9 +582,9 @@ void test_algorithms(CopyFn copy) {
         vector<int> expected = {3, 6, 4, 7, 3};
         vector<int> dst      = {0, 0, 0, 0, 0};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test list
@@ -581,9 +592,9 @@ void test_algorithms(CopyFn copy) {
         list<int> expected = {3, 6, 4, 7, 3};
         list<int> dst      = {0, 0, 0, 0, 0};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test copying from vector to list
@@ -591,9 +602,9 @@ void test_algorithms(CopyFn copy) {
         list<int> expected = {3, 6, 4, 7, 3};
         list<int> dst      = {0, 0, 0, 0, 0};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test copying from list to vector
@@ -601,9 +612,9 @@ void test_algorithms(CopyFn copy) {
         vector<int> expected = {3, 6, 4, 7, 3};
         vector<int> dst      = {0, 0, 0, 0, 0};
 
-        copy(begin(src), end(src), begin(dst));
+        copy_fn(begin(src), end(src), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test move_iterator
@@ -611,9 +622,9 @@ void test_algorithms(CopyFn copy) {
         int expected[5] = {3, 6, 4, 7, 3};
         int dst[5]{};
 
-        copy(make_move_iterator(begin(src)), make_move_iterator(end(src)), begin(dst));
+        copy_fn(make_move_iterator(begin(src)), make_move_iterator(end(src)), begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test double move_iterator
@@ -621,25 +632,25 @@ void test_algorithms(CopyFn copy) {
         int expected[5] = {3, 6, 4, 7, 3};
         int dst[5]{};
 
-        copy(make_move_iterator(make_move_iterator(begin(src))), make_move_iterator(make_move_iterator(end(src))),
+        copy_fn(make_move_iterator(make_move_iterator(begin(src))), make_move_iterator(make_move_iterator(end(src))),
             begin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 }
 
 template <class CopyFn>
-void test_uninitialized_algorithms(CopyFn copy) {
-    test_algorithms(copy);
+void test_uninitialized_algorithms(CopyFn copy_fn) {
+    test_algorithms(copy_fn);
 
     { // Test const destination
         int src[10]      = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
         int expected[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
         int dst[10]{};
 
-        copy(begin(src), end(src), cbegin(dst));
+        copy_fn(begin(src), end(src), cbegin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test move_iterator with const destination
@@ -647,9 +658,9 @@ void test_uninitialized_algorithms(CopyFn copy) {
         int expected[10] = {5, 7, 3, 4, 6, 4, 7, 1, 9, 5};
         int dst[10]{};
 
-        copy(make_move_iterator(begin(src)), make_move_iterator(end(src)), cbegin(dst));
+        copy_fn(make_move_iterator(begin(src)), make_move_iterator(end(src)), cbegin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 
     { // Test vector with const destination
@@ -657,9 +668,9 @@ void test_uninitialized_algorithms(CopyFn copy) {
         vector<int> expected = {3, 6, 4, 7, 3};
         vector<int> dst      = {0, 0, 0, 0, 0};
 
-        copy(begin(src), end(src), cbegin(dst));
+        copy_fn(begin(src), end(src), cbegin(dst));
 
-        assert(equal(begin(expected), end(expected), begin(dst)));
+        assert(equal(begin(expected), end(expected), begin(dst), end(dst)));
     }
 }
 
