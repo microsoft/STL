@@ -421,12 +421,16 @@ void test_three_way_algorithms_for_signed_integrals(LexCompareThreeWayFn lex_com
     assert(lex_compare_three_way_fn(begin(arr4), end(arr4), begin(arr3), end(arr3), compare_three_way{}) < 0);
 
     // Test comparing signed and unsigned
+
+    // N4892 [expr.spaceship]/4, /4.1:
+    // "If both operands have arithmetic types, or one operand has integral type and the other operand has unscoped
+    // enumeration type, the usual arithmetic conversions (7.4) are applied to the operands. Then:
+    // - If a narrowing conversion (9.4.5) is required, other than from an integral type to a floating-point type,
+    // the program is ill-formed."
+
     constexpr bool promoted = sizeof(Int) < sizeof(int);
 
-#ifdef __clang__ // clang doesn't allow three way comparison between int and unsigned int
-    if constexpr (promoted)
-#endif // __clang__
-    {
+    if constexpr (promoted) {
         assert(lex_compare_three_way_fn(begin(arr1), end(arr1), begin(arr3), end(arr3), compare_three_way{})
                == (promoted ? strong_ordering::less : strong_ordering::equal));
         assert(lex_compare_three_way_fn(begin(arr3), end(arr3), begin(arr1), end(arr1), compare_three_way{})
