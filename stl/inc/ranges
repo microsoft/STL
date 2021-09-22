@@ -780,8 +780,8 @@ namespace ranges {
     template <class _Fn, class... _Types>
     class _Range_closure : public _Pipe::_Base<_Range_closure<_Fn, _Types...>> {
     public:
-        // We assume that _Fn is the type of a customization-point object. That means
-        // 1. The behavior of operator() is independent of cvref qualifers, so we can  use `invocable<_Fn, ` without
+        // We assume that _Fn is the type of a customization point object. That means
+        // 1. The behavior of operator() is independent of cvref qualifiers, so we can use `invocable<_Fn, ` without
         //    loss of generality, and
         // 2. _Fn must be default-constructible and stateless, so we can create instances "on-the-fly" and avoid
         //    storing a copy.
