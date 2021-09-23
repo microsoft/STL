@@ -730,7 +730,7 @@ public:
             }
             return false;
         default:
-            _STL_INTERNAL_CHECK(false, "Invalid GB11 state.");
+            _STL_INTERNAL_CHECK(false);
             return false;
         }
     }
