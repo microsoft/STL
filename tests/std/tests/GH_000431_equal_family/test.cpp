@@ -610,6 +610,7 @@ void test_algorithms(EqualFn equal_fn) {
         assert(equal_fn(begin(arr3), end(arr3), begin(arr5), end(arr5), equal_to<>{}));
     }
 
+#ifndef _M_CEE_PURE // TRANSITION, VSO-1409786
     { // Test member function pointers
         using mfn_ptr    = int (StatefulBase::*)();
         using mfn_ptr2   = int (StatefulDerived::*)();
@@ -658,6 +659,7 @@ void test_algorithms(EqualFn equal_fn) {
         assert(!equal_fn(begin(arr6), end(arr6), begin(arr7), end(arr7), equal_to<>{}));
         assert(!equal_fn(begin(arr6), end(arr6), begin(arr7), end(arr7), equal_to<mfn_ptr2>{}));
     }
+#endif // _M_CEE_PURE
 
     { // Test vector
         vector<int> arr1 = {3, 6, 4, 7, 3};
