@@ -502,7 +502,7 @@ private:
         _Asan_annotator(const _Asan_annotator&) = delete;
         _Asan_annotator& operator=(const _Asan_annotator&) = delete;
 
-        explicit constexpr _Asan_annotator(vector* _Myvec_, size_type _Count_) noexcept
+        constexpr explicit _Asan_annotator(vector* _Myvec_, size_type _Count_) noexcept
             : _Myvec(_Myvec_), _Count(_Count_) {
             _STL_INTERNAL_CHECK(_Myvec != nullptr);
             auto& _My_data = _Myvec->_Mypair._Myval2;
@@ -591,15 +591,15 @@ private:
             } else {
                 const void* _Aligned_first = _Get_aligned_first(_First, _End);
                 if (!_Aligned_first) {
-                    // There is no aligned address within the underlying buffer. Nothing to do
+                    // There is no aligned address within the underlying buffer; nothing to do.
                     return;
-                } else {
-                    const void* _Aligned_old_last = _Old_last < _Aligned_first ? _Aligned_first : _Old_last;
-                    const void* _Aligned_new_last = _New_last < _Aligned_first ? _Aligned_first : _New_last;
-                    const void* _Aligned_end      = _End < _Aligned_first ? _Aligned_first : _End;
-                    __sanitizer_annotate_contiguous_container(
-                        _Aligned_first, _Aligned_end, _Aligned_old_last, _Aligned_new_last);
                 }
+
+                const void* _Aligned_old_last = _Old_last < _Aligned_first ? _Aligned_first : _Old_last;
+                const void* _Aligned_new_last = _New_last < _Aligned_first ? _Aligned_first : _New_last;
+                const void* _Aligned_end      = _End < _Aligned_first ? _Aligned_first : _End;
+                __sanitizer_annotate_contiguous_container(
+                    _Aligned_first, _Aligned_end, _Aligned_old_last, _Aligned_new_last);
             }
         }
 
@@ -607,22 +607,19 @@ private:
         size_type _Count;
     };
 
-#define _ASAN_VECTOR_GUARD(_Count) \
-    _Asan_annotator _Annotator {   \
-        this, _Count               \
-    }
-#define _ASAN_VECTOR_RELEASE        _Annotator._Release()
-#define _ASAN_VECTOR_CREATE         _Asan_annotator::_Create_annotation(*this)
-#define _ASAN_VECTOR_CLEAR          _Asan_annotator::_Clear_annotation(*this)
-#define _ASAN_VECTOR_EXTEND(_Count) _Asan_annotator::_Extend_annotation(*this, _Count)
-#define _ASAN_VECTOR_SHRINK(_Count) _Asan_annotator::_Shrink_annotation(*this, _Count)
+#define _ASAN_VECTOR_GUARD(n)  _Asan_annotator _Annotator(this, (n))
+#define _ASAN_VECTOR_RELEASE   _Annotator._Release()
+#define _ASAN_VECTOR_CREATE    _Asan_annotator::_Create_annotation(*this)
+#define _ASAN_VECTOR_CLEAR     _Asan_annotator::_Clear_annotation(*this)
+#define _ASAN_VECTOR_EXTEND(n) _Asan_annotator::_Extend_annotation(*this, (n))
+#define _ASAN_VECTOR_SHRINK(n) _Asan_annotator::_Shrink_annotation(*this, (n))
 #else // ^^^ _INSERT_VECTOR_ANNOTATION ^^^ // vvv !_INSERT_VECTOR_ANNOTATION vvv
-#define _ASAN_VECTOR_GUARD(_Count)
+#define _ASAN_VECTOR_GUARD(n)
 #define _ASAN_VECTOR_RELEASE
 #define _ASAN_VECTOR_CREATE
 #define _ASAN_VECTOR_CLEAR
-#define _ASAN_VECTOR_EXTEND(_Count)
-#define _ASAN_VECTOR_SHRINK(_Count)
+#define _ASAN_VECTOR_EXTEND(n)
+#define _ASAN_VECTOR_SHRINK(n)
 #endif // !_INSERT_VECTOR_ANNOTATION
 
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
@@ -667,11 +664,10 @@ public:
             _Tidy_guard<vector> _Guard{this};
 
             for (; _UFirst != _ULast; ++_UFirst) {
-                // performance note: except for one-at-back, emplace_back()'s strong guarantee is unnecessary here.
+                // performance note: _Emplace_one_at_back's strong guarantee is unnecessary here.
                 _Emplace_one_at_back(*_UFirst);
             }
 
-            // _Emplace_one_at_back already handles asan
             _Guard._Target = nullptr;
             _Proxy._Release();
         }
@@ -793,9 +789,10 @@ private:
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
         _STL_INTERNAL_CHECK(_Mylast != _My_data._Myend); // check that we have unused capacity
-        if constexpr (is_nothrow_constructible_v<_Ty, _Valty...>) {
+        if constexpr (conjunction_v<is_nothrow_constructible<_Ty, _Valty...>,
+                          _Uses_default_construct<_Alloc, _Ty*, _Valty...>>) {
             _ASAN_VECTOR_EXTEND(1);
-            _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
+            _Construct_in_place(*_Mylast, _STD forward<_Valty>(_Val)...);
         } else {
             _ASAN_VECTOR_GUARD(static_cast<difference_type>(1));
             _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
@@ -890,7 +887,6 @@ public:
             _Where._Getcont() == _STD addressof(_My_data) && _Whereptr >= _My_data._Myfirst && _Oldlast >= _Whereptr,
             "vector emplace iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
-
 
         if (_Oldlast != _My_data._Myend) {
             if (_Whereptr == _Oldlast) { // at back, provide strong guarantee
@@ -1172,11 +1168,14 @@ public:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
+        constexpr bool _Nothrow_construct =
+            conjunction_v<is_nothrow_copy_constructible<_Ty>, _Uses_default_construct<_Alloc, _Ty*, const _Ty&>>;
+
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) { // reallocate
             _Clear_and_reserve_geometric(_Newsize);
-            if constexpr (is_nothrow_copy_constructible_v<_Ty>) {
+            if constexpr (_Nothrow_construct) {
                 _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
                 _ASAN_VECTOR_CREATE;
             } else {
@@ -1190,7 +1189,7 @@ public:
         const auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
         if (_Newsize > _Oldsize) {
             _STD fill(_Myfirst, _Mylast, _Val);
-            if constexpr (is_nothrow_copy_constructible_v<_Ty>) {
+            if constexpr (_Nothrow_construct) {
                 _ASAN_VECTOR_EXTEND(static_cast<size_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
             } else {
@@ -1249,11 +1248,14 @@ private:
         pointer& _Mylast    = _My_data._Mylast;
         pointer& _Myend     = _My_data._Myend;
 
+        constexpr bool _Nothrow_construct = conjunction_v<is_nothrow_constructible<_Ty, _Iter_ref_t<_Iter>>,
+            _Uses_default_construct<_Alloc, _Ty*, _Iter_ref_t<_Iter>>>;
+
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
-            if constexpr (is_nothrow_copy_constructible_v<_Ty>) {
+            if constexpr (_Nothrow_construct) {
                 _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
                 _ASAN_VECTOR_CREATE;
             } else {
@@ -1270,7 +1272,7 @@ private:
             const _Iter _Mid = _STD next(_First, static_cast<difference_type>(_Oldsize));
             _Copy_unchecked(_First, _Mid, _Myfirst);
 
-            if constexpr (is_nothrow_copy_constructible_v<_Ty>) {
+            if constexpr (_Nothrow_construct) {
                 _ASAN_VECTOR_EXTEND(static_cast<size_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
             } else {
@@ -1910,11 +1912,14 @@ private:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
+        constexpr bool _Nothrow_construct =
+            conjunction_v<is_nothrow_move_constructible<_Ty>, _Uses_default_construct<_Alloc, _Ty*, _Ty>>;
+
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
-            if constexpr (is_nothrow_move_constructible_v<_Ty>) {
+            if constexpr (_Nothrow_construct) {
                 _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
                 _ASAN_VECTOR_CREATE;
             } else {
@@ -1930,7 +1935,7 @@ private:
             const pointer _Mid = _First + _Oldsize;
             _Move_unchecked(_First, _Mid, _Myfirst);
 
-            if constexpr (is_nothrow_move_constructible_v<_Ty>) {
+            if constexpr (_Nothrow_construct) {
                 _ASAN_VECTOR_EXTEND(static_cast<size_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
             } else {
