@@ -637,6 +637,7 @@ _NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _La
 
 _NODISCARD constexpr const char32_t* _Decode_utf(
     const char32_t* _First, const char32_t* _Last, char32_t& _Val) noexcept {
+    _STL_INTERNAL_CHECK(_First < _Last);
     (void) _Last;
     _Val = *_First;
     return _First + 1;
@@ -657,13 +658,10 @@ public:
     using value_type       = char32_t;
     using difference_type  = ptrdiff_t;
 
-    constexpr _Unicode_codepoint_iterator(const _CharT* _First_val, const _CharT* _Last_val)
+    constexpr _Unicode_codepoint_iterator(const _CharT* _First_val, const _CharT* _Last_val) noexcept
         : _First(_First_val), _Last(_Last_val) {
         _Next = _Decode_utf(_First, _Last, _Val);
     }
-
-    constexpr _Unicode_codepoint_iterator(const basic_string_view<_CharT>& _Str)
-        : _Unicode_codepoint_iterator(_Str.data(), _Str.data() + _Str.size()) {}
 
     constexpr _Unicode_codepoint_iterator() = default;
 
@@ -692,7 +690,7 @@ public:
     _NODISCARD constexpr bool operator==(_Unicode_codepoint_sentinel) const noexcept {
         return _First == _Last;
     }
-    _NODISCARD constexpr bool operator==(const _Unicode_codepoint_iterator& _Other) const {
+    _NODISCARD constexpr bool operator==(const _Unicode_codepoint_iterator& _Other) const noexcept {
         return _First == _Other._First && _Last == _Other._Last;
     }
 };
@@ -732,7 +730,7 @@ public:
             }
             return false;
         default:
-            _STL_ASSERT(false, "Invalid GB11 state.");
+            _STL_INTERNAL_CHECK(false, "Invalid GB11 state.");
             return false;
         }
     }
@@ -748,11 +746,11 @@ class _Grapheme_break_property_iterator {
     size_t _Num_RIs = 0;
     _GB11_LeftHand_regex _GB11_rx;
 
-    _NODISCARD constexpr friend bool operator==(
+    _NODISCARD friend constexpr bool operator==(
         const _Grapheme_break_property_iterator& _Lhs, _Grapheme_break_property_sentinel) noexcept {
         return _Lhs._WrappedIter == _Unicode_codepoint_sentinel{};
     }
-    _NODISCARD constexpr friend bool operator==(
+    _NODISCARD friend constexpr bool operator==(
         const _Grapheme_break_property_iterator& _Lhs, const _Grapheme_break_property_iterator& _Rhs) noexcept {
         return _Lhs._WrappedIter == _Rhs._WrappedIter && _Lhs._Num_RIs == _Rhs._Num_RIs
             && _Lhs._GB11_rx == _Rhs._GB11_rx;
@@ -832,7 +830,7 @@ public:
                 continue; // GB9b Prepend x
             }
             if (_GB11_Match && _Right_ExtPic == _Extended_Pictographic_property_values::_Extended_Pictographic_value) {
-                continue; // GB11 \p{ExtendedPictographic} Extend* ZWJ x \p{ExtendedPictographc}
+                continue; // GB11 \p{ExtendedPictographic} Extend* ZWJ x \p{ExtendedPictographic}
             }
             if (_Left_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value
                 && _Right_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value && _Num_RIs % 2 != 0) {
@@ -1235,7 +1233,7 @@ public:
         }
     }
     _NODISCARD int _Units_in_next_character(const char* const _First, const char* const _Last) const noexcept {
-        // Returns a count of the number of code units that compose the first encoded character in
+        // Returns the number of code units that compose the first encoded character in
         // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
         // *_First is not a valid lead byte.
         _STL_INTERNAL_CHECK(_First < _Last);
@@ -3129,11 +3127,11 @@ template <typename _CharT>
 class _Measure_string_prefix_iterator_utf {
     _Grapheme_break_property_iterator<_CharT> _WrappedIter;
 
-    constexpr friend bool operator==(
+    friend constexpr bool operator==(
         const _Measure_string_prefix_iterator_utf& _Lhs, const _Measure_string_prefix_iterator_utf& _Rhs) noexcept {
         return _Lhs._WrappedIter == _Rhs._WrappedIter;
     }
-    constexpr friend bool operator==(
+    friend constexpr bool operator==(
         const _Measure_string_prefix_iterator_utf& _Lhs, _Measure_string_prefix_sentinel) noexcept {
         return _Lhs._WrappedIter == _Grapheme_break_property_sentinel{};
     }
@@ -3176,11 +3174,11 @@ class _Measure_string_prefix_iterator_legacy {
     const char* _Last  = nullptr;
     int _Units         = 0;
 
-    _NODISCARD constexpr friend bool operator==(
+    _NODISCARD friend constexpr bool operator==(
         const _Measure_string_prefix_iterator_legacy& _Lhs, _Measure_string_prefix_sentinel) noexcept {
         return _Lhs._First >= _Lhs._Last;
     }
-    _NODISCARD constexpr friend bool operator==(const _Measure_string_prefix_iterator_legacy& _Lhs,
+    _NODISCARD friend constexpr bool operator==(const _Measure_string_prefix_iterator_legacy& _Lhs,
         const _Measure_string_prefix_iterator_legacy& _Rhs) noexcept {
         return _Lhs._First == _Rhs._First && _Lhs._Last == _Rhs._Last;
     }
@@ -3239,10 +3237,10 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     // Returns a pointer past-the-end of the largest prefix of _Value that fits in _Width, or all
     // of _Value if _Width is negative. Updates _Width to the estimated width of that prefix.
     const int _Max_width = _Width;
-    auto _Pos            = _Value.data();
-    const auto _Last     = _Pos + _Value.size();
-    _Measure_string_prefix_iterator<_CharT> _Pfx_iter(_Pos, _Last);
-    int _Estimated_width    = 0; // the estimated width of [_Value.data(), _Pos)
+    const auto _First    = _Value.data();
+    const auto _Last     = _First + _Value.size();
+    _Measure_string_prefix_iterator<_CharT> _Pfx_iter(_First, _Last);
+    int _Estimated_width    = 0; // the estimated width of [_First, _Pfx_iter)
     constexpr auto _Max_int = (numeric_limits<int>::max) ();
 
     while (_Pfx_iter != _Measure_string_prefix_sentinel{}) {
