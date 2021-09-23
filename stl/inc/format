@@ -544,7 +544,7 @@ _NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _La
     // result in one U+FFFD for more than one input byte.
     _Val = static_cast<char32_t>(static_cast<unsigned char>(*_First));
 
-    // all UTF-8 text is at least one byte
+    // all UTF-8 text is at least one-byte
     // the zero extended values of the "prefix" bytes for
     // a multi-byte sequence are the lowest numeric value (in two's complement)
     // that any leading byte could have for a code unit of that size, so
@@ -578,7 +578,7 @@ _NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _La
         // we know _First[1] is in range because we just checked above,
         // and a leader of 0xe0 implies _Num_bytes == 3
         if (static_cast<unsigned char>(_First[1]) < 0xA0) {
-            // note, we just increment forward one byte,
+            // note, we just increment forward one-byte,
             // even though _Num_bytes would imply the next
             // codepoint starts at _First + 2, this is because
             // we don't consume trailing bytes of ill-formed subsequences
@@ -607,8 +607,8 @@ _NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _La
     }
 
     // mask out the "value bits" in the leading byte,
-    // for one byte codepoints there is no leader,
-    // two byte codepoints have the same number of value
+    // for one-byte codepoints there is no leader,
+    // two-byte codepoints have the same number of value
     // bits as trailing bytes (including the leading zero)
     switch (_Num_bytes) {
     case 2:
