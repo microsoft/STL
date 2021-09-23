@@ -473,7 +473,7 @@
 
 #define _NODISCARD_UNIQUE_ALG                                                             \
     _NODISCARD_MSG(                                                                       \
-        "The 'unique' algorithms return the iterator past the last non-removed element. " \
+        "The 'unique' algorithm returns the iterator past the last non-removed element. " \
         "Normally you need to use the result to call container's 'erase' method afterwards to erase elements")
 
 #define _NODISCARD_EMPTY_MTHD                                                                                   \
