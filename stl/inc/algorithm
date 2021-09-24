@@ -994,7 +994,7 @@ namespace ranges {
 
                 for (;;) {
                     _TrimResult _Res = _Trim_reversed(_First1, _Final1, _First2, _Final2, _ProjectedPred);
-                    if (_Res != _TrimResult::_Continue) {
+                    if (_Res != _TrimResult::_KeepTrimming) {
                         if (_Res == _TrimResult::_Break) {
                             break;
                         }
@@ -1002,7 +1002,7 @@ namespace ranges {
                     }
 
                     _Res = _Trim_equal(_First1, _Final1, _First2, _Final2, _ProjectedPred);
-                    if (_Res != _TrimResult::_Continue) {
+                    if (_Res != _TrimResult::_KeepTrimming) {
                         if (_Res == _TrimResult::_Break) {
                             break;
                         }
@@ -1085,7 +1085,7 @@ namespace ranges {
 
                 for (;;) {
                     _TrimResult _Res = _Trim_reversed(_First1, _Final1, _First2, _Final2, _ProjectedPred);
-                    if (_Res != _TrimResult::_Continue) {
+                    if (_Res != _TrimResult::_KeepTrimming) {
                         if (_Res == _TrimResult::_Break) {
                             break;
                         }
@@ -1093,7 +1093,7 @@ namespace ranges {
                     }
 
                     _Res = _Trim_equal(_First1, _Final1, _First2, _Final2, _ProjectedPred);
-                    if (_Res != _TrimResult::_Continue) {
+                    if (_Res != _TrimResult::_KeepTrimming) {
                         if (_Res == _TrimResult::_Break) {
                             break;
                         }

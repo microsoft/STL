@@ -5284,11 +5284,12 @@ _NODISCARD constexpr _Iter_diff_t<_InIt> _Count_pr(_InIt _First, const _InIt _La
     return _Count;
 }
 
-enum class _TrimResult : unsigned char { _Continue, _Break, _ReturnFalse, _ReturnTrue };
+enum class _TrimResult : unsigned char { _KeepTrimming, _Break, _ReturnFalse, _ReturnTrue };
 
 template <class _BidIt1, class _BidIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _TrimResult _Trim_equal(
     _BidIt1& _First1, _BidIt1& _Back1, _BidIt2& _First2, _BidIt2& _Back2, _Pr _Pred) {
+    // advances the iterators trimming matching prefixes and suffixes from [_First1, _Back1] and [_First2, _Back2]
     _STL_INTERNAL_CHECK(_First1 != _Back1);
     _STL_INTERNAL_CHECK(_STD distance(_First1, _Back1) == _STD distance(_First2, _Back2));
     if (_Pred(*_First1, *_First2)) {
@@ -5309,18 +5310,24 @@ _NODISCARD _CONSTEXPR20 _TrimResult _Trim_equal(
         --_Back2;
     }
 
-    while (_Pred(*_Back1, *_Back2)) {
+    for (;;) {
+        if (_First1 == _Back1) {
+            // only one element is left, it can't match because it wasn't trimmed by the first loop
+            return _TrimResult::_ReturnFalse;
+        }
+
+        if (!_Pred(*_Back1, *_Back2)) {
+            return _TrimResult::_KeepTrimming;
+        }
         --_Back1;
         --_Back2;
     }
-
-    // if only one element is left return false, otherwise continue trimming
-    return _First1 == _Back1 ? _TrimResult::_ReturnFalse : _TrimResult::_Continue;
 }
 
 template <class _BidIt1, class _BidIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _TrimResult _Trim_reversed(
     _BidIt1& _First1, _BidIt1& _Back1, _BidIt2& _First2, _BidIt2& _Back2, _Pr _Pred) {
+    // advances the iterators trimming prefix matching suffix from [_First1, _Back1] and [_First2, _Back2]
     _STL_INTERNAL_CHECK(_First1 != _Back1);
     _STL_INTERNAL_CHECK(_STD distance(_First1, _Back1) == _STD distance(_First2, _Back2));
     if (_Pred(*_First1, *_Back2)) {
@@ -5341,13 +5348,18 @@ _NODISCARD _CONSTEXPR20 _TrimResult _Trim_reversed(
         ++_First2;
     }
 
-    while (_Pred(*_Back1, *_First2)) {
+    for (;;) {
+        if (_First1 == _Back1) {
+            // only one element is left, it can't match because it wasn't trimmed by the first loop
+            return _TrimResult::_ReturnFalse;
+        }
+
+        if (!_Pred(*_Back1, *_First2)) {
+            return _TrimResult::_KeepTrimming;
+        }
         --_Back1;
         ++_First2;
     }
-
-    // if only one element is left return false, otherwise continue trimming
-    return _First1 == _Back1 ? _TrimResult::_ReturnFalse : _TrimResult::_Continue;
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
@@ -5368,7 +5380,7 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
 
         for (;;) {
             _TrimResult _Res = _Trim_reversed(_First1, _Last1, _First2, _Last2, _Pred);
-            if (_Res != _TrimResult::_Continue) {
+            if (_Res != _TrimResult::_KeepTrimming) {
                 if (_Res == _TrimResult::_Break) {
                     break;
                 }
@@ -5376,7 +5388,7 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
             }
 
             _Res = _Trim_equal(_First1, _Last1, _First2, _Last2, _Pred);
-            if (_Res != _TrimResult::_Continue) {
+            if (_Res != _TrimResult::_KeepTrimming) {
                 if (_Res == _TrimResult::_Break) {
                     break;
                 }
