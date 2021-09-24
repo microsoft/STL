@@ -2055,4 +2055,36 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString>{what()}</DisplayString>
   </Type>
 
+  <Type Name="std::any">
+    <Intrinsic Name="has_value"   Expression="_Storage._TypeData != 0"/>
+    <Intrinsic Name="_Rep"        Expression="_Storage._TypeData &amp; _Rep_mask"/>
+    <Intrinsic Name="type"        Expression="(const type_info*)(_Storage._TypeData &amp; ~_Rep_mask)"/>
+    <Intrinsic Name="_Is_trivial" Expression="has_value() &amp;&amp; _Rep() == 0"/>
+    <Intrinsic Name="_Is_big"     Expression="has_value() &amp;&amp; _Rep() == 1"/>
+    <Intrinsic Name="_Is_small"   Expression="has_value() &amp;&amp; _Rep() == 2"/>
+    <DisplayString Condition="!has_value()">[empty]</DisplayString>
+    <DisplayString Condition="_Is_trivial() || _Is_small()">[not empty (Small)]</DisplayString>
+    <DisplayString Condition="_Is_big()">[not empty (Large)]</DisplayString>
+    <Expand>
+      <Item Name="[castable_ptr]" Condition="_Is_trivial()">(void*)(&amp;_Storage._TrivialData)</Item>
+      <Item Name="[castable_ptr]" Condition="_Is_small()">(void*)(&amp;_Storage._SmallStorage._Data)</Item>
+      <Item Name="[castable_ptr]" Condition="_Is_big()">(void*)(_Storage._BigStorage._Ptr)</Item>
+      <Synthetic Name="has_value">
+        <DisplayString>{has_value()}</DisplayString>
+      </Synthetic>
+      <Synthetic Name="type" Condition="has_value()">
+        <DisplayString>{type()}</DisplayString>
+      </Synthetic>
+      <Synthetic Name="[representation]" Condition="_Is_trivial()">
+        <DisplayString>(Small/Trivial Object)</DisplayString>
+      </Synthetic>
+      <Synthetic Name="[representation]" Condition="_Is_small()">
+        <DisplayString>(Small Object)</DisplayString>
+      </Synthetic>
+      <Synthetic Name="[representation]" Condition="_Is_big()">
+        <DisplayString>(Dynamic Allocation)</DisplayString>
+      </Synthetic>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>
