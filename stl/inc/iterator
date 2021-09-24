@@ -803,43 +803,24 @@ public:
     _Variantish_state _Contains;
 };
 
-template <class _Iter>
-concept _Postfix_can_reference = input_or_output_iterator<_Iter> && requires(_Iter& __it) {
-    { *__it++ } -> _Can_reference;
-};
-
 // clang-format off
+template <class _Iter>
+concept _Use_postfix_proxy = !requires(_Iter& __it) { { *__it++ } -> _Can_reference; }
+    && indirectly_readable<_Iter> // Per LWG issue submitted but unnumbered as of 2021-09-23
+    && constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>
+    && move_constructible<iter_value_t<_Iter>>;
+
 template <input_or_output_iterator _Iter, sentinel_for<_Iter> _Se>
     requires (!same_as<_Iter, _Se> && copyable<_Iter>)
 class common_iterator {
     // clang-format on
 private:
-    class _Proxy {
-    private:
+    struct _Proxy_base {
         iter_value_t<_Iter> _Keep;
 
-    public:
-        explicit _Proxy(iter_reference_t<_Iter>&& _Right) noexcept(
+        explicit _Proxy_base(iter_reference_t<_Iter>&& _Right) noexcept(
             is_nothrow_constructible_v<iter_value_t<_Iter>, iter_reference_t<_Iter>>) // strengthened
             : _Keep(_STD forward<iter_reference_t<_Iter>>(_Right)) {}
-
-        _NODISCARD const iter_value_t<_Iter>* operator->() const noexcept /* strengthened */ {
-            return _STD addressof(_Keep);
-        }
-    };
-
-    class _Postfix_proxy {
-    private:
-        iter_value_t<_Iter> _Keep;
-
-    public:
-        explicit _Postfix_proxy(iter_reference_t<_Iter>&& _Right) noexcept(
-            is_nothrow_constructible_v<iter_value_t<_Iter>, iter_reference_t<_Iter>>) // strengthened
-            : _Keep(_STD forward<iter_reference_t<_Iter>>(_Right)) {}
-
-        _NODISCARD const iter_value_t<_Iter>& operator*() const noexcept /* strengthened */ {
-            return _Keep;
-        }
     };
 
 public:
@@ -893,20 +874,31 @@ public:
     // clang-format off
     _NODISCARD decltype(auto) operator->() const
         requires indirectly_readable<const _Iter>
-            && (_Has_member_arrow<_Iter> || is_reference_v<iter_reference_t<_Iter>>
+            && (_Has_member_arrow<const _Iter&> || is_reference_v<iter_reference_t<_Iter>>
                 || constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>) {
         // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (is_pointer_v<_Iter> || _Has_member_arrow<_Iter>) {
+        if constexpr (is_pointer_v<_Iter> || _Has_member_arrow<const _Iter&>) {
             return (_Val._Iterator); // NB: () are necessary for decltype(auto)
         } else if constexpr (is_reference_v<iter_reference_t<_Iter>>) {
             auto&& _Tmp = *_Val._Iterator;
             return _STD addressof(_Tmp);
         } else {
-            return _Proxy{*_Val._Iterator};
+            class _Arrow_proxy : private _Proxy_base {
+            public:
+                friend common_iterator;
+
+                using _Proxy_base::_Proxy_base;
+
+                _NODISCARD const iter_value_t<_Iter>* operator->() const noexcept /* strengthened */ {
+                    return _STD addressof(this->_Keep);
+                }
+            };
+
+            return _Arrow_proxy{*_Val._Iterator};
         }
     }
 
@@ -928,14 +920,23 @@ public:
             common_iterator _Tmp = *this;
             ++_Val._Iterator;
             return _Tmp;
-        } else if constexpr (_Postfix_can_reference<_Iter> //
-                             || !(constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>> //
-                                  && move_constructible<iter_value_t<_Iter>>) ) {
-            return _Val._Iterator++;
-        } else {
+        } else if constexpr (_Use_postfix_proxy<_Iter>) {
+            class _Postfix_proxy : private _Proxy_base {
+            public:
+                friend common_iterator;
+
+                using _Proxy_base::_Proxy_base;
+
+                _NODISCARD const iter_value_t<_Iter>& operator*() const noexcept /* strengthened */ {
+                    return this->_Keep;
+                }
+            };
+
             _Postfix_proxy _Tmp{*_Val._Iterator};
             ++_Val._Iterator;
             return _Tmp;
+        } else {
+            return _Val._Iterator++;
         }
     }
 
