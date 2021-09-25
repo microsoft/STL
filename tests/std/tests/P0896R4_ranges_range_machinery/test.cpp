@@ -1886,6 +1886,48 @@ namespace unwrapped_begin_end {
     }
 } // namespace unwrapped_begin_end
 
+namespace closure {
+    // Verify that range adaptor closures capture with the proper value category
+
+    enum class GLValueKind { lvalue, const_lvalue, xvalue, const_xvalue };
+
+    template <GLValueKind Allowed>
+    struct arg {
+        constexpr arg(arg&) {
+            static_assert(Allowed == GLValueKind::lvalue);
+        }
+        constexpr arg(const arg&) {
+            static_assert(Allowed == GLValueKind::const_lvalue);
+        }
+        constexpr arg(arg&&) {
+            static_assert(Allowed == GLValueKind::xvalue);
+        }
+        constexpr arg(const arg&&) {
+            static_assert(Allowed == GLValueKind::const_xvalue);
+        }
+
+    private:
+        friend void test();
+        arg() = default;
+    };
+
+    void test() {
+        using std::as_const, std::move, std::views::filter;
+
+        arg<GLValueKind::lvalue> l;
+        (void) filter(l);
+
+        arg<GLValueKind::const_lvalue> cl;
+        (void) filter(as_const(cl));
+
+        arg<GLValueKind::xvalue> r;
+        (void) filter(move(r));
+
+        arg<GLValueKind::const_xvalue> cr;
+        (void) filter(move(as_const(cr)));
+    }
+} // namespace closure
+
 int main() {
     // Validate conditional constexpr
     STATIC_ASSERT(test_array_ish<std::initializer_list<int>>());
@@ -1903,4 +1945,6 @@ int main() {
 
     STATIC_ASSERT(unwrapped_begin_end::test());
     unwrapped_begin_end::test();
+
+    closure::test();
 }
