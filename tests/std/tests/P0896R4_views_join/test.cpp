@@ -524,7 +524,7 @@ int main() {
 
     { // P2328 range of prvalue array
         static constexpr int result[] = {1, 2, 3, 4, 5};
-        auto ToArray                  = [](const int i) { return array<int, 1>{i + 1}; };
+        constexpr auto ToArray        = [](const int i) { return array<int, 1>{i + 1}; };
         assert(ranges::equal(views::iota(0, 5) | views::transform(ToArray) | views::join, result));
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToArray) | views::join, result));
     }
@@ -562,7 +562,7 @@ int main() {
     }
 
     { // Immovable type
-        auto ToArrayOfImmovable = [](int) { return array<Immovable, 3>{}; };
+        constexpr auto ToArrayOfImmovable = [](int) { return array<Immovable, 3>{}; };
         assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
         static_assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
     }

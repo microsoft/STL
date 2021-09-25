@@ -991,10 +991,8 @@ constexpr bool test() {
         assert(*sp_dyn.begin() == 10);
         assert(*sp_nine.begin() == 10);
 
-#if !(defined(__EDG__) && defined(_M_X64)) // TRANSITION, VSO-1356637
         assert(sp_dyn.end()[-2] == 80);
         assert(sp_nine.end()[-2] == 80);
-#endif // TRANSITION, VSO-1356637
 
         assert(*sp_dyn.rbegin() == 90);
         assert(*sp_nine.rbegin() == 90);

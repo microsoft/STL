@@ -17,6 +17,7 @@
 #include <limits>
 #include <span>
 #include <string_view>
+#include <tuple>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -774,6 +775,72 @@ namespace ranges {
         union {
             _Ty _Val;
         };
+    };
+
+    template <class _Fn, class... _Types>
+    class _Range_closure : public _Pipe::_Base<_Range_closure<_Fn, _Types...>> {
+    public:
+        // We assume that _Fn is the type of a customization point object. That means
+        // 1. The behavior of operator() is independent of cvref qualifiers, so we can use `invocable<_Fn, ` without
+        //    loss of generality, and
+        // 2. _Fn must be default-constructible and stateless, so we can create instances "on-the-fly" and avoid
+        //    storing a copy.
+
+        _STL_INTERNAL_STATIC_ASSERT((same_as<decay_t<_Types>, _Types> && ...));
+        _STL_INTERNAL_STATIC_ASSERT(is_empty_v<_Fn>&& is_default_constructible_v<_Fn>);
+
+        // clang-format off
+        template <class... _UTypes>
+            requires (same_as<decay_t<_UTypes>, _Types> && ...)
+        constexpr explicit _Range_closure(_UTypes&&... _Args) noexcept(
+            conjunction_v<is_nothrow_constructible<_Types, _UTypes>...>)
+            : _Captures(_STD forward<_UTypes>(_Args)...) {}
+        // clang-format on
+
+        void operator()(auto&&) &       = delete;
+        void operator()(auto&&) const&  = delete;
+        void operator()(auto&&) &&      = delete;
+        void operator()(auto&&) const&& = delete;
+
+        using _Indices = index_sequence_for<_Types...>;
+
+        template <class _Ty>
+            requires invocable<_Fn, _Ty, _Types&...>
+        constexpr decltype(auto) operator()(_Ty&& _Arg) & noexcept(
+            noexcept(_Call(*this, _STD forward<_Ty>(_Arg), _Indices{}))) {
+            return _Call(*this, _STD forward<_Ty>(_Arg), _Indices{});
+        }
+
+        template <class _Ty>
+            requires invocable<_Fn, _Ty, const _Types&...>
+        constexpr decltype(auto) operator()(_Ty&& _Arg) const& noexcept(
+            noexcept(_Call(*this, _STD forward<_Ty>(_Arg), _Indices{}))) {
+            return _Call(*this, _STD forward<_Ty>(_Arg), _Indices{});
+        }
+
+        template <class _Ty>
+            requires invocable<_Fn, _Ty, _Types...>
+        constexpr decltype(auto) operator()(_Ty&& _Arg) && noexcept(
+            noexcept(_Call(_STD move(*this), _STD forward<_Ty>(_Arg), _Indices{}))) {
+            return _Call(_STD move(*this), _STD forward<_Ty>(_Arg), _Indices{});
+        }
+
+        template <class _Ty>
+            requires invocable<_Fn, _Ty, const _Types...>
+        constexpr decltype(auto) operator()(_Ty&& _Arg) const&& noexcept(
+            noexcept(_Call(_STD move(*this), _STD forward<_Ty>(_Arg), _Indices{}))) {
+            return _Call(_STD move(*this), _STD forward<_Ty>(_Arg), _Indices{});
+        }
+
+    private:
+        template <class _SelfTy, class _Ty, size_t... _Idx>
+        static constexpr decltype(auto) _Call(_SelfTy&& _Self, _Ty&& _Arg, index_sequence<_Idx...>) noexcept(
+            noexcept(_Fn{}(_STD forward<_Ty>(_Arg), _STD get<_Idx>(_STD forward<_SelfTy>(_Self)._Captures)...))) {
+            _STL_INTERNAL_STATIC_ASSERT(same_as<index_sequence<_Idx...>, _Indices>);
+            return _Fn{}(_STD forward<_Ty>(_Arg), _STD get<_Idx>(_STD forward<_SelfTy>(_Self)._Captures)...);
+        }
+
+        tuple<_Types...> _Captures;
     };
 
     // clang-format off
@@ -1658,41 +1725,24 @@ namespace ranges {
     filter_view(_Rng&&, _Pr) -> filter_view<views::all_t<_Rng>, _Pr>;
 
     namespace views {
-        class _Filter_fn {
-        private:
-            template <class _Pr>
-            struct _Partial : _Pipe::_Base<_Partial<_Pr>> {
-                /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred;
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
-                    noexcept(filter_view(_STD forward<_Rng>(_Range), *_Pred))) requires requires {
-                    filter_view(static_cast<_Rng&&>(_Range), *_Pred);
-                }
-                { return filter_view(_STD forward<_Rng>(_Range), *_Pred); }
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(
-                    noexcept(filter_view(_STD forward<_Rng>(_Range), _STD move(*_Pred)))) requires requires {
-                    filter_view(static_cast<_Rng&&>(_Range), _STD move(*_Pred));
-                }
-                { return filter_view(_STD forward<_Rng>(_Range), _STD move(*_Pred)); }
-            };
-
-        public:
+        struct _Filter_fn {
             // clang-format off
             template <viewable_range _Rng, class _Pr>
-            _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pr _Pred) const noexcept(noexcept(
-                filter_view(_STD forward<_Rng>(_Range), _STD move(_Pred)))) requires requires {
-                filter_view(static_cast<_Rng&&>(_Range), _STD move(_Pred));
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pr&& _Pred) const noexcept(noexcept(
+                filter_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred)))) requires requires {
+                filter_view(static_cast<_Rng&&>(_Range), _STD forward<_Pr>(_Pred));
             } {
                 // clang-format on
-                return filter_view(_STD forward<_Rng>(_Range), _STD move(_Pred));
+                return filter_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred));
             }
 
-            template <_Copy_constructible_object _Pr>
-            _NODISCARD constexpr auto operator()(_Pr _Pred) const noexcept(is_nothrow_move_constructible_v<_Pr>) {
-                return _Partial<_Pr>{._Pred = {in_place, _STD move(_Pred)}};
+            // clang-format off
+            template <class _Pr>
+                requires constructible_from<decay_t<_Pr>, _Pr>
+            _NODISCARD constexpr auto operator()(_Pr&& _Pred) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
+                // clang-format on
+                return _Range_closure<_Filter_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
         };
 
@@ -1988,15 +2038,6 @@ namespace ranges {
                     return *_It;
                 }
             }
-
-            friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) _NOEXCEPT_IDL0(noexcept(
-                _RANGES iter_swap(_Left._Current, _Right._Current))) requires indirectly_swappable<iterator_t<_Base>> {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                _Left._Check_dereference();
-                _Right._Check_dereference();
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-                _RANGES iter_swap(_Left._Current, _Right._Current);
-            }
         };
 
         template <bool _Const>
@@ -2143,28 +2184,7 @@ namespace ranges {
     transform_view(_Rng&&, _Fn) -> transform_view<views::all_t<_Rng>, _Fn>;
 
     namespace views {
-        class _Transform_fn {
-        private:
-            template <class _Fn>
-            struct _Partial : _Pipe::_Base<_Partial<_Fn>> {
-                /* [[no_unique_address]] */ _Copyable_box<_Fn> _Fun;
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
-                    noexcept(transform_view(_STD forward<_Rng>(_Range), *_Fun))) requires requires {
-                    transform_view(static_cast<_Rng&&>(_Range), *_Fun);
-                }
-                { return transform_view(_STD forward<_Rng>(_Range), *_Fun); }
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(
-                    noexcept(transform_view(_STD forward<_Rng>(_Range), _STD move(*_Fun)))) requires requires {
-                    transform_view(static_cast<_Rng&&>(_Range), _STD move(*_Fun));
-                }
-                { return transform_view(_STD forward<_Rng>(_Range), _STD move(*_Fun)); }
-            };
-
-        public:
+        struct _Transform_fn {
             // clang-format off
             template <viewable_range _Rng, class _Fn>
             _NODISCARD constexpr auto operator()(_Rng&& _Range, _Fn _Fun) const noexcept(noexcept(
@@ -2175,9 +2195,13 @@ namespace ranges {
                 return transform_view(_STD forward<_Rng>(_Range), _STD move(_Fun));
             }
 
-            template <_Copy_constructible_object _Fn>
-            _NODISCARD constexpr auto operator()(_Fn _Fun) const noexcept(is_nothrow_move_constructible_v<_Fn>) {
-                return _Partial<_Fn>{._Fun = {in_place, _STD move(_Fun)}};
+            // clang-format off
+            template <class _Fn>
+                requires constructible_from<decay_t<_Fn>, _Fn>
+            _NODISCARD constexpr auto operator()(_Fn&& _Fun) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Fn>, _Fn>) {
+                // clang-format on
+                return _Range_closure<_Transform_fn, decay_t<_Fn>>{_STD forward<_Fn>(_Fun)};
             }
         };
 
@@ -2394,51 +2418,6 @@ namespace ranges {
             template <class _Rng>
             static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
 
-            template <class _Ty>
-            struct _Partial : _Pipe::_Base<_Partial<_Ty>> {
-                _Ty _Length;
-
-                // clang-format off
-                template <viewable_range _Rng>
-                    requires convertible_to<_Ty&, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) &
-                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _Length))) {
-                    // clang-format on
-                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
-                    return _Take_fn{}(_STD forward<_Rng>(_Range), _Length);
-                }
-
-                // clang-format off
-                template <viewable_range _Rng>
-                    requires convertible_to<const _Ty&, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&
-                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _Length))) {
-                    // clang-format on
-                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
-                    return _Take_fn{}(_STD forward<_Rng>(_Range), _Length);
-                }
-
-                // clang-format off
-                template <viewable_range _Rng>
-                    requires convertible_to<_Ty, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) &&
-                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
-                    // clang-format on
-                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
-                    return _Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
-                }
-
-                // clang-format off
-                template <viewable_range _Rng>
-                    requires convertible_to<const _Ty, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&&
-                    noexcept(noexcept(_Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
-                    // clang-format on
-                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
-                    return _Take_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
-                }
-            };
-
         public:
             template <viewable_range _Rng>
             _NODISCARD constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count) const
@@ -2471,9 +2450,13 @@ namespace ranges {
                 }
             }
 
-            template <move_constructible _Ty>
-            _NODISCARD constexpr auto operator()(_Ty _Length) const noexcept {
-                return _Partial<_Ty>{._Length = _STD move(_Length)};
+            // clang-format off
+            template <class _Ty>
+                requires constructible_from<decay_t<_Ty>, _Ty>
+            _NODISCARD constexpr auto operator()(_Ty&& _Length) const
+            noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
+                // clang-format on
+                return _Range_closure<_Take_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Length)};
             }
         };
 
@@ -2627,28 +2610,7 @@ namespace ranges {
     take_while_view(_Rng&&, _Pr) -> take_while_view<views::all_t<_Rng>, _Pr>;
 
     namespace views {
-        class _Take_while_fn {
-        private:
-            template <class _Pr>
-            struct _Partial : _Pipe::_Base<_Partial<_Pr>> {
-                /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred;
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
-                    noexcept(take_while_view(_STD forward<_Rng>(_Range), *_Pred))) requires requires {
-                    take_while_view(static_cast<_Rng&&>(_Range), *_Pred);
-                }
-                { return take_while_view(_STD forward<_Rng>(_Range), *_Pred); }
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(
-                    noexcept(take_while_view(_STD forward<_Rng>(_Range), _STD move(*_Pred)))) requires requires {
-                    take_while_view(static_cast<_Rng&&>(_Range), _STD move(*_Pred));
-                }
-                { return take_while_view(_STD forward<_Rng>(_Range), _STD move(*_Pred)); }
-            };
-
-        public:
+        struct _Take_while_fn {
             template <viewable_range _Rng, class _Pr>
             _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pr _Pred) const
                 noexcept(noexcept(take_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred)))) requires requires {
@@ -2656,9 +2618,13 @@ namespace ranges {
             }
             { return take_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred)); }
 
-            template <_Copy_constructible_object _Pr>
-            _NODISCARD constexpr auto operator()(_Pr _Pred) const noexcept(is_nothrow_move_constructible_v<_Pr>) {
-                return _Partial<_Pr>{._Pred = {in_place, _STD move(_Pred)}};
+            // clang-format off
+            template <class _Pr>
+                requires constructible_from<decay_t<_Pr>, _Pr>
+            _NODISCARD constexpr auto operator()(_Pr&& _Pred) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
+                // clang-format on
+                return _Range_closure<_Take_while_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
         };
 
@@ -2823,51 +2789,6 @@ namespace ranges {
             template <class _Rng>
             static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
 
-            template <class _Ty>
-            struct _Partial : _Pipe::_Base<_Partial<_Ty>> {
-                _Ty _Length;
-
-                // clang-format off
-                template <viewable_range _Rng>
-                    requires convertible_to<_Ty&, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) &
-                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _Length))) {
-                    // clang-format on
-                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
-                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _Length);
-                }
-
-                // clang-format off
-                template <viewable_range _Rng>
-                    requires convertible_to<const _Ty&, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&
-                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _Length))) {
-                    // clang-format on
-                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
-                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _Length);
-                }
-
-                // clang-format off
-                template <viewable_range _Rng>
-                    requires convertible_to<_Ty, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) &&
-                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
-                    // clang-format on
-                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
-                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
-                }
-
-                // clang-format off
-                template <viewable_range _Rng>
-                    requires convertible_to<const _Ty, range_difference_t<_Rng>>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const&&
-                    noexcept(noexcept(_Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length)))) {
-                    // clang-format on
-                    _STL_INTERNAL_STATIC_ASSERT(is_aggregate_v<_Partial>);
-                    return _Drop_fn{}(_STD forward<_Rng>(_Range), _STD move(_Length));
-                }
-            };
-
         public:
             template <viewable_range _Rng>
             _NODISCARD constexpr auto operator()(_Rng&& _Range, range_difference_t<_Rng> _Count) const
@@ -2901,9 +2822,13 @@ namespace ranges {
                 }
             }
 
-            template <move_constructible _Ty>
-            _NODISCARD constexpr auto operator()(_Ty _Length) const noexcept {
-                return _Partial<_Ty>{._Length = _STD move(_Length)};
+            // clang-format off
+            template <class _Ty>
+                requires constructible_from<decay_t<_Ty>, _Ty>
+            _NODISCARD constexpr auto operator()(_Ty&& _Length) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
+                // clang-format on
+                return _Range_closure<_Drop_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Length)};
             }
         };
 
@@ -2974,28 +2899,7 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<drop_while_view<_Rng, _Pr>> = enable_borrowed_range<_Rng>;
 
     namespace views {
-        class _Drop_while_fn {
-        private:
-            template <class _Pr>
-            struct _Partial : _Pipe::_Base<_Partial<_Pr>> {
-                /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred;
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
-                    noexcept(drop_while_view(_STD forward<_Rng>(_Range), *_Pred))) requires requires {
-                    drop_while_view(static_cast<_Rng&&>(_Range), *_Pred);
-                }
-                { return drop_while_view(_STD forward<_Rng>(_Range), *_Pred); }
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(
-                    noexcept(drop_while_view(_STD forward<_Rng>(_Range), _STD move(*_Pred)))) requires requires {
-                    drop_while_view(static_cast<_Rng&&>(_Range), _STD move(*_Pred));
-                }
-                { return drop_while_view(_STD forward<_Rng>(_Range), _STD move(*_Pred)); }
-            };
-
-        public:
+        struct _Drop_while_fn {
             template <viewable_range _Rng, class _Pr>
             _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pr _Pred) const
                 noexcept(noexcept(drop_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred)))) requires requires {
@@ -3003,9 +2907,13 @@ namespace ranges {
             }
             { return drop_while_view(_STD forward<_Rng>(_Range), _STD move(_Pred)); }
 
-            template <_Copy_constructible_object _Pr>
-            _NODISCARD constexpr auto operator()(_Pr _Pred) const noexcept(is_nothrow_move_constructible_v<_Pr>) {
-                return _Partial<_Pr>{._Pred = {in_place, _STD move(_Pred)}};
+            // clang-format off
+            template <class _Pr>
+                requires constructible_from<decay_t<_Pr>, _Pr>
+            _NODISCARD constexpr auto operator()(_Pr&& _Pred) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
+                // clang-format on
+                return _Range_closure<_Drop_while_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
             }
         };
 
@@ -3772,28 +3680,7 @@ namespace ranges {
         -> lazy_split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
 
     namespace views {
-        class _Lazy_split_fn {
-        private:
-            template <class _Delim>
-            struct _Partial : _Pipe::_Base<_Partial<_Delim>> {
-                /* [[no_unique_address]] */ _Delim _Delimiter;
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
-                    noexcept(lazy_split_view(_STD forward<_Rng>(_Range), _Delimiter))) requires requires {
-                    lazy_split_view(static_cast<_Rng&&>(_Range), _Delimiter);
-                }
-                { return lazy_split_view(_STD forward<_Rng>(_Range), _Delimiter); }
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(noexcept(
-                    lazy_split_view(_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)))) requires requires {
-                    lazy_split_view(static_cast<_Rng&&>(_Range), static_cast<_Delim&&>(_Delimiter));
-                }
-                { return lazy_split_view(_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)); }
-            };
-
-        public:
+        struct _Lazy_split_fn {
             // clang-format off
             template <viewable_range _Rng, class _Pat>
             _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pat&& _Pattern) const noexcept(noexcept(
@@ -3806,11 +3693,11 @@ namespace ranges {
 
             // clang-format off
             template <class _Delim>
-                requires is_lvalue_reference_v<_Delim> || move_constructible<_Delim>
+                requires constructible_from<decay_t<_Delim>, _Delim>
             _NODISCARD constexpr auto operator()(_Delim&& _Delimiter) const
-                noexcept(is_lvalue_reference_v<_Delim> || is_nothrow_move_constructible_v<_Delim>) {
+                noexcept(is_nothrow_constructible_v<decay_t<_Delim>, _Delim>) {
                 // clang-format on
-                return _Partial<_Delim>{._Delimiter = _STD forward<_Delim>(_Delimiter)};
+                return _Range_closure<_Lazy_split_fn, decay_t<_Delim>>{_STD forward<_Delim>(_Delimiter)};
             }
         };
 
@@ -3982,28 +3869,7 @@ namespace ranges {
     split_view(_Rng&&, range_value_t<_Rng>) -> split_view<views::all_t<_Rng>, single_view<range_value_t<_Rng>>>;
 
     namespace views {
-        class _Split_fn {
-        private:
-            template <class _Delim>
-            struct _Partial : _Pipe::_Base<_Partial<_Delim>> {
-                /* [[no_unique_address]] */ _Delim _Delimiter;
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) const& noexcept(
-                    noexcept(split_view(_STD forward<_Rng>(_Range), _Delimiter))) requires requires {
-                    split_view(static_cast<_Rng&&>(_Range), _Delimiter);
-                }
-                { return split_view(_STD forward<_Rng>(_Range), _Delimiter); }
-
-                template <viewable_range _Rng>
-                _NODISCARD constexpr auto operator()(_Rng&& _Range) && noexcept(noexcept(
-                    split_view(_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)))) requires requires {
-                    split_view(static_cast<_Rng&&>(_Range), static_cast<_Delim&&>(_Delimiter));
-                }
-                { return split_view(_STD forward<_Rng>(_Range), _STD forward<_Delim>(_Delimiter)); }
-            };
-
-        public:
+        struct _Split_fn {
             // clang-format off
             template <viewable_range _Rng, class _Pat>
             _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pat&& _Pattern) const noexcept(noexcept(
@@ -4016,11 +3882,11 @@ namespace ranges {
 
             // clang-format off
             template <class _Delim>
-                requires is_lvalue_reference_v<_Delim> || move_constructible<_Delim>
+                requires constructible_from<decay_t<_Delim>, _Delim>
             _NODISCARD constexpr auto operator()(_Delim&& _Delimiter) const
-                noexcept(is_lvalue_reference_v<_Delim> || is_nothrow_move_constructible_v<_Delim>) {
+                noexcept(is_nothrow_constructible_v<decay_t<_Delim>, _Delim>) {
                 // clang-format on
-                return _Partial<_Delim>{._Delimiter = _STD forward<_Delim>(_Delimiter)};
+                return _Range_closure<_Split_fn, decay_t<_Delim>>{_STD forward<_Delim>(_Delimiter)};
             }
         };
 
