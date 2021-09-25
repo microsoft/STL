@@ -2038,15 +2038,6 @@ namespace ranges {
                     return *_It;
                 }
             }
-
-            friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) _NOEXCEPT_IDL0(noexcept(
-                _RANGES iter_swap(_Left._Current, _Right._Current))) requires indirectly_swappable<iterator_t<_Base>> {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                _Left._Check_dereference();
-                _Right._Check_dereference();
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-                _RANGES iter_swap(_Left._Current, _Right._Current);
-            }
         };
 
         template <bool _Const>
