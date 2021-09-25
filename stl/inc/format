@@ -743,7 +743,6 @@ class _Grapheme_break_property_iterator {
     using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharT>;
 
     _Wrapped_iter_type _WrappedIter;
-    size_t _Num_RIs = 0;
     _GB11_LeftHand_regex _GB11_rx;
 
     _NODISCARD friend constexpr bool operator==(
@@ -771,6 +770,7 @@ public:
         auto _Left_ExtPic  = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
         auto _Right_gbp    = _Grapheme_Break_property_values::_No_value;
         auto _Right_ExtPic = _Extended_Pictographic_property_values::_No_value;
+        size_t _Num_RIs    = 0;
         for (;; _Left_gbp = _Right_gbp, _Left_ExtPic = _Right_ExtPic) {
             ++_WrappedIter;
             if (_WrappedIter == _Unicode_codepoint_sentinel{}) {
