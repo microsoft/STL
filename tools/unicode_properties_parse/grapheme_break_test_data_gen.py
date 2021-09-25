@@ -5,6 +5,7 @@ from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional, TextIO, Union
 from enum import Enum
+from array import array
 
 
 @dataclass
@@ -52,22 +53,41 @@ def parseBreakTestLine(input: TextIO) -> Optional[BreakTestItem]:
 
 
 cpp_template = """
+template<typename T>
 struct test_case_data {{
-    vector<char32_t> code_points;
+    vector<T> code_points;
     vector<size_t> breaks;
 }};
-const test_case_data test_data[] = {{
-    {}
+
+template<typename T>
+const test_case_data<T> test_data[{0}];
+
+template<>
+const test_case_data<char32_t> test_data<char32_t>[{0}] = {{
+    {1}
+}};
+
+template<>
+const test_case_data<char> test_data<char>[{0}] = {{
+    {2}
 }};
 """
 
 cpp_test_data_line_template = "{{ {{{}}}, {{{}}} }}"
 
 
-def lineToCppDataLine(line: BreakTestItem) -> str:
+def lineToCppDataLineUtf32(line: BreakTestItem) -> str:
     return cpp_test_data_line_template.format(','.join(
         ["U'\\x" + format(x, 'x') + "'" for x in line.code_points]), ','.join(
         [str(x) for x in line.breaks]))
+
+
+def lineToCppDataLineUtf8(line: BreakTestItem) -> str:
+    utf8_rep = str(array('L', line.code_points),
+                   encoding='utf-32').encode('utf-8')
+    return cpp_test_data_line_template.format(','.join(
+        ["static_cast<char>(0x" + format(x, 'x') + ")" for x in utf8_rep]
+    ), ','.join([str(x) for x in line.breaks]))
 
 
 if __name__ == "__main__":
@@ -79,4 +99,5 @@ if __name__ == "__main__":
     while line := parseBreakTestLine(file):
         if len(line.code_points) > 0:
             lines.append(line)
-    print(cpp_template.format(','.join(map(lineToCppDataLine, lines))))
+    print(cpp_template.format(len(lines), ','.join(map(lineToCppDataLineUtf32, lines)),
+          ','.join(map(lineToCppDataLineUtf8, lines))))
