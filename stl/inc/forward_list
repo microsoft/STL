@@ -744,27 +744,22 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL != 0
     }
 
-private:
-    void _Copy_assign(const forward_list& _Right, false_type) {
-        _Pocca(_Getal(), _Right._Getal());
-        _Assign_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
-    }
-
-    void _Copy_assign(const forward_list& _Right, true_type) {
-        if (_Getal() != _Right._Getal()) {
-            _Mypair._Myval2._Orphan_all();
-            clear();
-            _Mypair._Myval2._Reload_proxy(
-                _GET_PROXY_ALLOCATOR(_Alnode, _Getal()), _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal()));
-        }
-
-        _Copy_assign(_Right, _No_propagate_allocators{});
-    }
-
 public:
     forward_list& operator=(const forward_list& _Right) {
         if (this != _STD addressof(_Right)) {
-            _Copy_assign(_Right, _Choose_pocca<_Alnode>{});
+            if constexpr (_Choose_pocca_v<_Alnode>) {
+                if (_Getal() != _Right._Getal()) {
+                    _Mypair._Myval2._Orphan_all();
+                    clear();
+                    _Mypair._Myval2._Reload_proxy(
+                        _GET_PROXY_ALLOCATOR(_Alnode, _Getal()), _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal()));
+                }
+
+                _Copy_assign(_Right, _No_propagate_allocators{});
+            } else {
+                _Pocca(_Getal(), _Right._Getal());
+                _Assign_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
+            }
         }
 
         return *this;

@@ -704,11 +704,12 @@ template <class _Alloc>
 struct allocator_traits : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
                               _Normal_allocator_traits<_Alloc>> {};
 
-// _Choose_pocca returns whether an attempt to propagate allocators is necessary in copy assignment operations.
+// _Choose_pocca_v returns whether an attempt to propagate allocators is necessary in copy assignment operations.
 // Note that even when false_type, callers should call _Pocca as we want to assign allocators even when equal.
 template <class _Alloc>
-using _Choose_pocca = bool_constant<allocator_traits<_Alloc>::propagate_on_container_copy_assignment::value
-                                    && !allocator_traits<_Alloc>::is_always_equal::value>;
+_INLINE_VAR constexpr bool _Choose_pocca_v = allocator_traits<_Alloc>::propagate_on_container_copy_assignment::value
+                                          && !allocator_traits<_Alloc>::is_always_equal::value;
+
 
 struct _Equal_allocators {}; // usually allows contents to be stolen (e.g. with swap)
 using _Propagate_allocators    = true_type; // usually allows the allocator to be propagated, and then contents stolen

@@ -1076,27 +1076,21 @@ public:
         _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
     }
 
-private:
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, false_type) {
-        _Pocca(_Getal(), _Right._Getal());
-        auto& _Right_data = _Right._Mypair._Myval2;
-        assign(_Right_data._Myfirst, _Right_data._Mylast);
-    }
-
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, true_type) {
-        if (_Getal() != _Right._Getal()) {
-            _Tidy();
-            _Mypair._Myval2._Reload_proxy(
-                _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
-        }
-
-        _Copy_assign(_Right, false_type{});
-    }
 
 public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
         if (this != _STD addressof(_Right)) {
-            _Copy_assign(_Right, _Choose_pocca<_Alty>{});
+            if constexpr (_Choose_pocca_v<_Alty>) {
+                if (_Getal() != _Right._Getal()) {
+                    _Tidy();
+                    _Mypair._Myval2._Reload_proxy(
+                        _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
+                }
+            }
+
+            _Pocca(_Getal(), _Right._Getal());
+            auto& _Right_data = _Right._Mypair._Myval2;
+            assign(_Right_data._Myfirst, _Right_data._Mylast);
         }
 
         return *this;
@@ -2568,29 +2562,6 @@ public:
 
     _CONSTEXPR20 ~vector() noexcept {}
 
-private:
-#if _ITERATOR_DEBUG_LEVEL != 0
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, false_type) {
-        this->_Myvec  = _Right._Myvec;
-        this->_Mysize = _Right._Mysize;
-    }
-
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, true_type) {
-        if (this->_Getal() == _Right._Getal()) {
-            _Copy_assign(_Right, false_type{});
-        } else {
-            // reload proxy
-            using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
-            _Alproxy_type _Oldal(this->_Getal());
-            _Alproxy_type _Right_proxy_al(_Right._Getal());
-            _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
-            this->_Myvec  = _Right._Myvec;
-            this->_Mysize = _Right._Mysize;
-            _Proxy._Bind(_Oldal, this);
-        }
-    }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
 public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
         if (this != _STD addressof(_Right)) {
@@ -2599,7 +2570,25 @@ public:
             this->_Mysize = _Right._Mysize;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
             this->_Orphan_all();
-            _Copy_assign(_Right, _Choose_pocca<_Alvbase>{});
+            if constexpr (_Choose_pocca_v<_Alvbase>) {
+                if constexpr (this->_Getal() != _Right._Getal()) {
+                    // reload proxy
+                    using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
+                    _Alproxy_type _Oldal(this->_Getal());
+                    _Alproxy_type _Right_proxy_al(_Right._Getal());
+                    _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
+                    this->_Myvec = _Right._Myvec;
+                    this->_Mysize = _Right._Mysize;
+                    _Proxy._Bind(_Oldal, this);
+                }
+                else {
+                    this->_Myvec = _Right._Myvec;
+                    this->_Mysize = _Right._Mysize;
+                }
+            } else {
+                this->_Myvec = _Right._Myvec;
+                this->_Mysize = _Right._Mysize;
+            }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
         }
 

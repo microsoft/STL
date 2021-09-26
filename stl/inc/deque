@@ -875,23 +875,20 @@ public:
         _Delete_plain_internal(_Proxy_allocator, _STD exchange(_Get_data()._Myproxy, nullptr));
     }
 
-    void _Copy_assign(const deque& _Right, false_type) {
-        _Pocca(_Getal(), _Right._Getal());
-        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
-    }
-
-    void _Copy_assign(const deque& _Right, true_type) {
-        if (_Getal() != _Right._Getal()) {
-            _Tidy();
-            _Get_data()._Reload_proxy(static_cast<_Alproxy_ty>(_Getal()), static_cast<_Alproxy_ty>(_Right._Getal()));
-        }
-
-        _Copy_assign(_Right, false_type{});
-    }
-
     deque& operator=(const deque& _Right) {
         if (this != _STD addressof(_Right)) {
-            _Copy_assign(_Right, _Choose_pocca<_Alty>{});
+            if constexpr (_Choose_pocca_v<_Alty>) {
+                if (_Getal() != _Right._Getal()) {
+                    _Tidy();
+                    _Get_data()._Reload_proxy(
+                        static_cast<_Alproxy_ty>(_Getal()), static_cast<_Alproxy_ty>(_Right._Getal()));
+                }
+
+                _Copy_assign(_Right, false_type{});
+            } else {
+                _Pocca(_Getal(), _Right._Getal());
+                assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
+            }
         }
 
         return *this;

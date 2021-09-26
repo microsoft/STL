@@ -1057,23 +1057,19 @@ private:
         _Proxy._Bind(_Alproxy, _STD addressof(_Mypair._Myval2));
     }
 
-    void _Copy_assign(const list& _Right, false_type) {
-        _Pocca(_Getal(), _Right._Getal());
-        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
-    }
-
-    void _Copy_assign(const list& _Right, true_type) {
-        if (_Getal() != _Right._Getal()) {
-            _Reload_sentinel_and_proxy(_Right);
-        }
-
-        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
-    }
-
 public:
     list& operator=(const list& _Right) {
         if (this != _STD addressof(_Right)) {
-            _Copy_assign(_Right, _Choose_pocca<_Alnode>{});
+            if constexpr (_Choose_pocca_v<_Alnode>) {
+                if (_Getal() != _Right._Getal()) {
+                    _Reload_sentinel_and_proxy(_Right);
+                }
+
+                assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
+            } else {
+                _Pocca(_Getal(), _Right._Getal());
+                assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
+            }
         }
 
         return *this;
