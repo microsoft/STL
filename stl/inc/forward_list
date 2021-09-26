@@ -633,36 +633,31 @@ public:
 public:
     forward_list& operator=(forward_list&& _Right) noexcept(
         _Choose_pocma_v<_Alnode> != _Pocma_values::_No_propagate_allocators) /* strengthened */ {
-        if (this != _STD addressof(_Right)) {
-            constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
-            if constexpr (_Pocma_val == _Pocma_values::_Equal_allocators) {
+        if (this == _STD addressof(_Right)) {
+            return *this;
+        }
+
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
+            if (_Getal() != _Right._Getal()) {
+                _Mypair._Myval2._Orphan_all();
                 clear();
+                _Mypair._Myval2._Reload_proxy(
+                    _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
                 _Pocma(_Getal(), _Right._Getal());
                 _Take_head(_Right);
-            } else if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
-                if (_Getal() == _Right._Getal()) {
-                    clear();
-                    _Pocma(_Getal(), _Right._Getal());
-                    _Take_head(_Right);
-                } else {
-                    _Mypair._Myval2._Orphan_all();
-                    clear();
-                    _Mypair._Myval2._Reload_proxy(
-                        _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
-                    _Pocma(_Getal(), _Right._Getal());
-                    _Take_head(_Right);
-                }
-            } else {
-                if (_Getal() == _Right._Getal()) {
-                    clear();
-                    _Pocma(_Getal(), _Right._Getal());
-                    _Take_head(_Right);
-                } else {
-                    _Assign_unchecked(_STD make_move_iterator(_Right._Unchecked_begin()), _Right._Unchecked_end());
-                }
+                return *this;
+            }
+        } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            if (_Getal() != _Right._Getal()) {
+                _Assign_unchecked(_STD make_move_iterator(_Right._Unchecked_begin()), _Right._Unchecked_end());
+                return *this;
             }
         }
 
+        clear();
+        _Pocma(_Getal(), _Right._Getal());
+        _Take_head(_Right);
         return *this;
     }
 
@@ -744,19 +739,21 @@ public:
 
 public:
     forward_list& operator=(const forward_list& _Right) {
-        if (this != _STD addressof(_Right)) {
-            if constexpr (_Choose_pocca_v<_Alnode>) {
-                if (_Getal() != _Right._Getal()) {
-                    _Mypair._Myval2._Orphan_all();
-                    clear();
-                    _Mypair._Myval2._Reload_proxy(
-                        _GET_PROXY_ALLOCATOR(_Alnode, _Getal()), _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal()));
-                }
-            }
-
-            _Pocca(_Getal(), _Right._Getal());
-            _Assign_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+        if constexpr (_Choose_pocca_v<_Alnode>) {
+            if (_Getal() != _Right._Getal()) {
+                _Mypair._Myval2._Orphan_all();
+                clear();
+                _Mypair._Myval2._Reload_proxy(
+                    _GET_PROXY_ALLOCATOR(_Alnode, _Getal()), _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal()));
+            }
+        }
+
+        _Pocca(_Getal(), _Right._Getal());
+        _Assign_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
 
         return *this;
     }

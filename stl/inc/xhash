@@ -474,85 +474,81 @@ private:
 
 public:
     _Hash& operator=(_Hash&& _Right) { // assign by moving _Right
-        if (this != _STD addressof(_Right)) {
-            constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
-            if constexpr (_Pocma_val == _Pocma_values::_Equal_allocators) {
+        if (this == _STD addressof(_Right)) {
+            return *this;
+        }
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
+            if (_Getal() == _Right._Getal()) {
                 clear();
                 _Traitsobj = _Right._Traitsobj;
                 _Pocma_both(_Right);
                 _Swap_val(_Right);
-            } else if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
-                if (_Getal() == _Right._Getal()) {
-                    clear();
-                    _Traitsobj = _Right._Traitsobj;
-                    _Pocma_both(_Right);
-                    _Swap_val(_Right);
-                } else {
-                    // allocate all the parts necessary to maintain _Hash invariants using _Right's allocator
-                    auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
-                    auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal());
-                    _Container_proxy_ptr<_Alnode> _List_proxy(_Right_alproxy, _Leave_proxy_unbound{});
-                    _Container_proxy_ptr<_Alnode> _Vec_proxy(_Right_alproxy, _Leave_proxy_unbound{});
-                    _List_head_construct_ptr<_Alnode> _Newhead(_Right._Getal());
-                    _Min_buckets_construct_ptr _Buckets(_Right._Vec._Mypair._Get_first());
-
-                    // assign the hash/compare ops; we have no control over whether this throws, and if it does we want
-                    // to do nothing
-                    _Traitsobj = _Right._Traitsobj;
-
-                    // nothrow hereafter
-
-                    // release any state we are currently owning, and propagate the allocators
-                    _List._Tidy();
-                    _Vec._Tidy();
-                    _Pocma_both(_Right);
-
-                    // assign the empty list to _Right._List (except the allocators), and take _Right's _List data
-                    auto& _List_data       = _List._Mypair._Myval2;
-                    auto& _Right_list_data = _Right._List._Mypair._Myval2;
-                    _List_data._Myhead     = _STD exchange(_Right_list_data._Myhead, _Newhead._Release());
-                    _List_data._Mysize     = _STD exchange(_Right_list_data._Mysize, size_type{0});
-                    _List_proxy._Bind(_Alproxy, _STD addressof(_List_data));
-                    _List_data._Swap_proxy_and_iterators(_Right_list_data);
-
-                    // assign the _Min_buckets into _Right's _Vec data and take _Right's _Vec data
-                    auto& _Vec_data       = _Vec._Mypair._Myval2;
-                    auto& _Right_vec_data = _Right._Vec._Mypair._Myval2;
-
-                    const auto _Newfirst = _Buckets._Release(_Right._Unchecked_end());
-                    const auto _Newlast  = _Newfirst + _Min_buckets * 2;
-
-                    _Vec_data._Myfirst = _STD exchange(_Right_vec_data._Myfirst, _Newfirst);
-                    _Vec_data._Mylast  = _STD exchange(_Right_vec_data._Mylast, _Newlast);
-                    _Vec_data._Myend   = _STD exchange(_Right_vec_data._Myend, _Newlast);
-                    _Vec_proxy._Bind(_Alproxy, _STD addressof(_Vec_data));
-                    _Vec_data._Swap_proxy_and_iterators(_Right_vec_data);
-
-                    // give _Right the default _Mask and _Maxidx values and take its former values
-                    _Mask   = _STD exchange(_Right._Mask, _Min_buckets - 1);
-                    _Maxidx = _STD exchange(_Right._Maxidx, _Min_buckets);
-                }
             } else {
-                if (_Getal() == _Right._Getal()) {
-                    clear();
-                    _Traitsobj = _Right._Traitsobj;
-                    _Pocma_both(_Right);
-                    _Swap_val(_Right);
-                } else {
-                    _Clear_guard _Guard{this};
-                    _Traitsobj     = _Right._Traitsobj;
-                    using _Adapter = _Reinterpret_move_iter<typename _Mylist::_Unchecked_iterator, _Mutable_value_type>;
-                    _List.template _Assign_cast<_Mutable_value_type&>(
-                        _Adapter{_Right._List._Unchecked_begin()}, _Adapter{_Right._List._Unchecked_end()});
-                    _Reinsert_with_invalid_vec();
-                    _Guard._Target = nullptr;
-                }
+                // allocate all the parts necessary to maintain _Hash invariants using _Right's allocator
+                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
+                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal());
+                _Container_proxy_ptr<_Alnode> _List_proxy(_Right_alproxy, _Leave_proxy_unbound{});
+                _Container_proxy_ptr<_Alnode> _Vec_proxy(_Right_alproxy, _Leave_proxy_unbound{});
+                _List_head_construct_ptr<_Alnode> _Newhead(_Right._Getal());
+                _Min_buckets_construct_ptr _Buckets(_Right._Vec._Mypair._Get_first());
+
+                // assign the hash/compare ops; we have no control over whether this throws, and if it does we want
+                // to do nothing
+                _Traitsobj = _Right._Traitsobj;
+
+                // nothrow hereafter
+
+                // release any state we are currently owning, and propagate the allocators
+                _List._Tidy();
+                _Vec._Tidy();
+                _Pocma_both(_Right);
+
+                // assign the empty list to _Right._List (except the allocators), and take _Right's _List data
+                auto& _List_data       = _List._Mypair._Myval2;
+                auto& _Right_list_data = _Right._List._Mypair._Myval2;
+                _List_data._Myhead     = _STD exchange(_Right_list_data._Myhead, _Newhead._Release());
+                _List_data._Mysize     = _STD exchange(_Right_list_data._Mysize, size_type{0});
+                _List_proxy._Bind(_Alproxy, _STD addressof(_List_data));
+                _List_data._Swap_proxy_and_iterators(_Right_list_data);
+
+                // assign the _Min_buckets into _Right's _Vec data and take _Right's _Vec data
+                auto& _Vec_data       = _Vec._Mypair._Myval2;
+                auto& _Right_vec_data = _Right._Vec._Mypair._Myval2;
+
+                const auto _Newfirst = _Buckets._Release(_Right._Unchecked_end());
+                const auto _Newlast  = _Newfirst + _Min_buckets * 2;
+
+                _Vec_data._Myfirst = _STD exchange(_Right_vec_data._Myfirst, _Newfirst);
+                _Vec_data._Mylast  = _STD exchange(_Right_vec_data._Mylast, _Newlast);
+                _Vec_data._Myend   = _STD exchange(_Right_vec_data._Myend, _Newlast);
+                _Vec_proxy._Bind(_Alproxy, _STD addressof(_Vec_data));
+                _Vec_data._Swap_proxy_and_iterators(_Right_vec_data);
+
+                // give _Right the default _Mask and _Maxidx values and take its former values
+                _Mask   = _STD exchange(_Right._Mask, _Min_buckets - 1);
+                _Maxidx = _STD exchange(_Right._Maxidx, _Min_buckets);
             }
-#ifdef _ENABLE_STL_INTERNAL_CHECK
-            _Stl_internal_check_container_invariants();
-            _Right._Stl_internal_check_container_invariants();
-#endif // _ENABLE_STL_INTERNAL_CHECK
+        } else {
+            if (_Getal() == _Right._Getal()) {
+                clear();
+                _Traitsobj = _Right._Traitsobj;
+                _Pocma_both(_Right);
+                _Swap_val(_Right);
+            } else {
+                _Clear_guard _Guard{this};
+                _Traitsobj     = _Right._Traitsobj;
+                using _Adapter = _Reinterpret_move_iter<typename _Mylist::_Unchecked_iterator, _Mutable_value_type>;
+                _List.template _Assign_cast<_Mutable_value_type&>(
+                    _Adapter{_Right._List._Unchecked_begin()}, _Adapter{_Right._List._Unchecked_end()});
+                _Reinsert_with_invalid_vec();
+                _Guard._Target = nullptr;
+            }
         }
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+        _Stl_internal_check_container_invariants();
+        _Right._Stl_internal_check_container_invariants();
+#endif // _ENABLE_STL_INTERNAL_CHECK
 
         return *this;
     }
