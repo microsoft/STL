@@ -2580,8 +2580,7 @@ public:
                     this->_Myvec = _Right._Myvec;
                     this->_Mysize = _Right._Mysize;
                     _Proxy._Bind(_Oldal, this);
-                }
-                else {
+                } else {
                     this->_Myvec = _Right._Myvec;
                     this->_Mysize = _Right._Mysize;
                 }
