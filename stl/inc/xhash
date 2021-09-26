@@ -708,35 +708,13 @@ private:
 
 public:
     _Hash& operator=(const _Hash& _Right) {
-        if (this != _STD addressof(_Right)) {
-            if constexpr (_Choose_pocca_v<_Alnode>) {
-                auto& _Al             = _Getal();
-                const auto& _Right_al = _Right._Getal();
-                if (_Al == _Right_al) {
-                    _Clear_guard _Guard{this};
-                    _Traitsobj = _Right._Traitsobj;
-                    _Pocca_both(_Right);
-                    _List.template _Assign_cast<_Mutable_value_type&>(
-                        _Right._List._Unchecked_begin(), _Right._List._Unchecked_end());
-                    _Reinsert_with_invalid_vec();
-                    _Guard._Target = nullptr;
-                } else {
-                    auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
-                    auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
-                    _Container_proxy_ptr<_Alnode> _Vec_proxy(_Right_alproxy, _Leave_proxy_unbound{});
-                    _List._Reload_sentinel_and_proxy(_Right._List);
-                    _Vec._Tidy();
-                    _Pocca_both(_Right);
-                    _Vec_proxy._Bind(_Alproxy, _STD addressof(_Vec._Mypair._Myval2));
-
-                    _Clear_guard _Guard{this};
-                    _Traitsobj = _Right._Traitsobj;
-                    _List.template _Assign_cast<_Mutable_value_type&>(
-                        _Right._List._Unchecked_begin(), _Right._List._Unchecked_end());
-                    _Reinsert_with_invalid_vec();
-                    _Guard._Target = nullptr;
-                }
-            } else {
+        if (this == _STD addressof(_Right)) {
+            return *this;
+        }
+        if constexpr (_Choose_pocca_v<_Alnode>) {
+            auto& _Al             = _Getal();
+            const auto& _Right_al = _Right._Getal();
+            if (_Al == _Right_al) {
                 _Clear_guard _Guard{this};
                 _Traitsobj = _Right._Traitsobj;
                 _Pocca_both(_Right);
@@ -744,12 +722,35 @@ public:
                     _Right._List._Unchecked_begin(), _Right._List._Unchecked_end());
                 _Reinsert_with_invalid_vec();
                 _Guard._Target = nullptr;
+            } else {
+                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
+                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
+                _Container_proxy_ptr<_Alnode> _Vec_proxy(_Right_alproxy, _Leave_proxy_unbound{});
+                _List._Reload_sentinel_and_proxy(_Right._List);
+                _Vec._Tidy();
+                _Pocca_both(_Right);
+                _Vec_proxy._Bind(_Alproxy, _STD addressof(_Vec._Mypair._Myval2));
+
+                _Clear_guard _Guard{this};
+                _Traitsobj = _Right._Traitsobj;
+                _List.template _Assign_cast<_Mutable_value_type&>(
+                    _Right._List._Unchecked_begin(), _Right._List._Unchecked_end());
+                _Reinsert_with_invalid_vec();
+                _Guard._Target = nullptr;
             }
-#ifdef _ENABLE_STL_INTERNAL_CHECK
-            _Stl_internal_check_container_invariants();
-            _Right._Stl_internal_check_container_invariants();
-#endif // _ENABLE_STL_INTERNAL_CHECK
+        } else {
+            _Clear_guard _Guard{this};
+            _Traitsobj = _Right._Traitsobj;
+            _Pocca_both(_Right);
+            _List.template _Assign_cast<_Mutable_value_type&>(
+                _Right._List._Unchecked_begin(), _Right._List._Unchecked_end());
+            _Reinsert_with_invalid_vec();
+            _Guard._Target = nullptr;
         }
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+        _Stl_internal_check_container_invariants();
+        _Right._Stl_internal_check_container_invariants();
+#endif // _ENABLE_STL_INTERNAL_CHECK
 
         return *this;
     }
