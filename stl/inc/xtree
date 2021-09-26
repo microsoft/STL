@@ -963,7 +963,7 @@ public:
                 _Scary->_Swap_proxy_and_iterators(*_Right_scary);
                 return *this;
             }
-        } else {
+        } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
             if (_Getal() != _Right._Getal()) {
                 clear();
                 _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227

@@ -478,7 +478,12 @@ public:
             return *this;
         }
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
-        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
+        if constexpr (_Pocma_val == _Pocma_values::_Equal_allocators) {
+            clear();
+            _Traitsobj = _Right._Traitsobj;
+            _Pocma_both(_Right);
+            _Swap_val(_Right);
+        } else if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
             if (_Getal() == _Right._Getal()) {
                 clear();
                 _Traitsobj = _Right._Traitsobj;
