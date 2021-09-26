@@ -5,7 +5,7 @@
 #include <locale>
 #include <stdio.h>
 
-#include <test_windows.hpp>
+#include <Windows.h>
 
 using namespace std;
 

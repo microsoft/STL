@@ -31,10 +31,7 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
     using Inner                     = range_value_t<Outer>;
     constexpr bool deref_is_glvalue = is_reference_v<range_reference_t<Outer>>;
 
-    // clang-format off
-    constexpr bool can_test = ranges::viewable_range<Outer>
-        && input_range<range_reference_t<Outer>>;
-    // clang-format on
+    constexpr bool can_test = ranges::viewable_range<Outer> && input_range<range_reference_t<Outer>>;
 
     if constexpr (can_test) {
         using V = views::all_t<Outer>;
@@ -527,7 +524,7 @@ int main() {
 
     { // P2328 range of prvalue array
         static constexpr int result[] = {1, 2, 3, 4, 5};
-        auto ToArray                  = [](const int i) { return array<int, 1>{i + 1}; };
+        constexpr auto ToArray        = [](const int i) { return array<int, 1>{i + 1}; };
         assert(ranges::equal(views::iota(0, 5) | views::transform(ToArray) | views::join, result));
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToArray) | views::join, result));
     }
@@ -565,7 +562,7 @@ int main() {
     }
 
     { // Immovable type
-        auto ToArrayOfImmovable = [](int) { return array<Immovable, 3>{}; };
+        constexpr auto ToArrayOfImmovable = [](int) { return array<Immovable, 3>{}; };
         assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
         static_assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
     }
