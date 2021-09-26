@@ -963,7 +963,7 @@ constexpr _Ret _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty&& 
 template <class... _Tuples>
 _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::type tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
     using _Cat1 = _Tuple_cat1<_Tuples...>;
-    return _Tuple_cat<typename _Cat1::type>(typename _Cat1::_Kx_arg_seq(), typename _Cat1::_Ix_arg_seq(),
+    return _Tuple_cat<typename _Cat1::type>(typename _Cat1::_Kx_arg_seq{}, typename _Cat1::_Ix_arg_seq{},
         _STD forward_as_tuple(_STD forward<_Tuples>(_Tpls)...));
 }
 
@@ -981,8 +981,10 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) { // invoke _Obj
 }
 
 template <class _Ty, class _Tuple, size_t... _Indices>
-constexpr _Ty _Make_from_tuple_impl(
-    _Tuple&& _Tpl, index_sequence<_Indices...>) { // construct _Ty from the elements of _Tpl
+constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) {
+    // construct _Ty from the elements of _Tpl
+    static_assert(is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>,
+        "the target type must be constructible from the fields of the argument tuple (N4892 [tuple.apply]/2).");
     return _Ty(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 

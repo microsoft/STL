@@ -656,7 +656,7 @@ private:
         const locale& _Loc) const { // get integer field from [_First, _Last) into _Ac
         const auto& _Punct_fac  = _STD use_facet<numpunct<_Elem>>(_Loc);
         const string _Grouping  = _Punct_fac.grouping();
-        const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Punct_fac.thousands_sep();
+        const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Punct_fac.thousands_sep();
 
         constexpr int _Numget_signoff = 22;
         constexpr int _Numget_xoff    = 24;
@@ -812,7 +812,7 @@ private:
                 }
             }
         } else { // grouping specified, gather digits and group sizes
-            const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Punct_fac.thousands_sep();
+            const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Punct_fac.thousands_sep();
             string _Groups(1, '\0');
             size_t _Group = 0;
 
@@ -1003,7 +1003,7 @@ private:
                 }
             }
         } else { // grouping specified, gather digits and group sizes
-            const _Elem _Kseparator = _Grouping.size() == 0 ? _Elem{} : _Punct_fac.thousands_sep();
+            const _Elem _Kseparator = _Grouping.empty() ? _Elem{} : _Punct_fac.thousands_sep();
             string _Groups(1, '\0');
             size_t _Group = 0;
 
