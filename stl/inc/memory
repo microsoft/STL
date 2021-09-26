@@ -78,7 +78,8 @@ namespace ranges {
 
             constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
             constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+            if constexpr (_Iter_copy_cat<_It, _Out>::_Bitcopy_constructible
+                          && _Sized_or_unreachable_sentinel_for<_Se, _It> //
                           && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (_Is_sized1 && _Is_sized2) {
                     return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
@@ -116,7 +117,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-    if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial) {
+    if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_constructible) {
         _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -155,7 +156,8 @@ namespace ranges {
             auto _IFirst = _Get_unwrapped_n(_STD move(_First1), _Count);
             auto _OFirst = _Get_unwrapped(_STD move(_First2));
             auto _OLast  = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+            if constexpr (_Iter_copy_cat<_It, _Out>::_Bitcopy_constructible
+                          && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (sized_sentinel_for<_OSe, _Out>) {
                     auto _UResult = _Copy_memcpy_common(
                         _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
@@ -250,7 +252,7 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-    if constexpr (_Ptr_move_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial) {
+    if constexpr (_Iter_move_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_constructible) {
         _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
         _UFirst += _Count;
     } else {
@@ -293,7 +295,8 @@ namespace ranges {
             auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+            if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible
+                          && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (sized_sentinel_for<_OSe, _Out>) {
                     auto _UResult = _Copy_memcpy_common(
                         _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
@@ -4097,12 +4100,12 @@ public:
 template <class _Ty>
 struct _Pointer_of_helper {};
 
-// clang-format off
 template <_Has_member_pointer _Ty>
 struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::pointer;
 };
 
+// clang-format off
 template <_Has_member_element_type _Ty>
     requires (!_Has_member_pointer<_Ty>)
 struct _Pointer_of_helper<_Ty> {
