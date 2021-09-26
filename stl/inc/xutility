@@ -2681,8 +2681,21 @@ namespace ranges {
 
     struct view_base {};
 
+    template <template <class...> class _Template, class... _Args>
+    void _Derived_from_specialization_impl(const _Template<_Args...>&);
+
+    template <class _Ty, template <class...> class _Template>
+    concept _Derived_from_specialization_of = requires(const _Ty& _Obj) {
+        _Derived_from_specialization_impl<_Template>(_Obj);
+    };
+
+    template <class _Derived>
+        requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
+    class view_interface;
+
     template <class _Ty>
-    inline constexpr bool enable_view = derived_from<_Ty, view_base>;
+    inline constexpr bool enable_view =
+        derived_from<_Ty, view_base> || _Derived_from_specialization_of<_Ty, view_interface>;
 
 #ifdef __cpp_lib_ranges // TRANSITION, GH-1814
     template <class _Ty>
@@ -3016,7 +3029,7 @@ namespace ranges {
     // clang-format off
     template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
-    class view_interface : public view_base {
+    class view_interface {
     private:
         _NODISCARD constexpr _Derived& _Cast() noexcept {
             static_assert(derived_from<_Derived, view_interface>,
@@ -3904,76 +3917,87 @@ _NODISCARD constexpr auto _To_address(const _Iter& _Val) noexcept {
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
+template <class _Iter>
+_NODISCARD constexpr auto _To_address(const move_iterator<_Iter>& _Val) noexcept {
+    return _To_address(_Val.base());
+}
+
 // _Iterators_are_contiguous<_Iter1, _Iter2> reports whether both iterators are known to be contiguous.
 
 template <class _Iter1, class _Iter2>
 _INLINE_VAR constexpr bool _Iterators_are_contiguous =
     _Iterator_is_contiguous<_Iter1>&& _Iterator_is_contiguous<_Iter2>;
 
-template <class _Source, class _Dest>
-struct _Ptr_cat_helper {
-    using _USource                        = _Unwrap_enum_t<_Source>;
-    using _UDest                          = _Unwrap_enum_t<_Dest>;
-    static constexpr bool _Really_trivial = conjunction_v<
-        bool_constant<sizeof(_USource) == sizeof(_UDest) && is_same_v<bool, _USource> == is_same_v<bool, _UDest>>,
-        is_integral<_USource>, is_integral<_UDest>>;
-    static constexpr bool _Trivially_copyable = _Really_trivial;
-};
-
-template <class _Elem>
-struct _Ptr_cat_helper<_Elem, _Elem> { // determines _Ptr_cat's result when the types are the same
-    static constexpr bool _Really_trivial     = is_trivial_v<_Elem>;
-    static constexpr bool _Trivially_copyable = is_trivially_copyable_v<_Elem>;
-};
-
-template <class _Anything>
-struct _Ptr_cat_helper<_Anything*, const _Anything*> {
-    // determines _Ptr_cat's result when all we do is add const to a pointer
-    static constexpr bool _Really_trivial     = true;
-    static constexpr bool _Trivially_copyable = true;
-};
-
-template <class _Anything>
-struct _Ptr_cat_helper<_Anything*, volatile _Anything*> {
-    // determines _Ptr_cat's result when all we do is add volatile to a pointer
-    static constexpr bool _Really_trivial     = true;
-    static constexpr bool _Trivially_copyable = true;
-};
-
-template <class _Anything>
-struct _Ptr_cat_helper<_Anything*, const volatile _Anything*> {
-    // determines _Ptr_cat's result when all we do is add cv to a pointer
-    static constexpr bool _Really_trivial     = true;
-    static constexpr bool _Trivially_copyable = true;
-};
-
-struct _False_copy_cat {
-    static constexpr bool _Really_trivial     = false;
-    static constexpr bool _Trivially_copyable = false;
-};
-
-// NOTE: pointer is not a contiguous iterator if it points to volatile type
-template <class _Source, class _Dest, bool _Non_contiguous = !_Iterators_are_contiguous<_Source, _Dest>>
-struct _Ptr_move_cat : _False_copy_cat {};
+template <class _Iter>
+_INLINE_VAR constexpr bool _Iterator_is_volatile = is_volatile_v<remove_reference_t<_Iter_ref_t<_Iter>>>;
 
 template <class _Source, class _Dest>
-struct _Ptr_move_cat<_Source, _Dest, false>
-    : conditional_t<is_trivially_assignable_v<_Iter_ref_t<_Dest>, remove_reference_t<_Iter_ref_t<_Source>>>,
-          _Ptr_cat_helper<_Iter_value_t<_Source>, _Iter_value_t<_Dest>>, _False_copy_cat> {};
+_INLINE_VAR constexpr bool _Is_pointer_address_convertible = is_void_v<_Source> || is_void_v<_Dest>
+            // NOTE: is_same_v is required for function pointers to work
+            || is_same_v<remove_cv_t<_Source>, remove_cv_t<_Dest>>
+#ifdef __cpp_lib_is_pointer_interconvertible
+            || is_pointer_interconvertible_base_of_v<_Dest, _Source>
+#endif // __cpp_lib_is_pointer_interconvertible
+        ;
 
-template <class _Source, class _Dest>
-struct _Ptr_move_cat<move_iterator<_Source>, _Dest, true> : _Ptr_move_cat<_Source, _Dest> {};
+template <class _Source, class _Dest, class _SourceRef, class _DestRef>
+struct _Trivial_cat {
+    using _USource = _Unwrap_enum_t<_Source>;
+    using _UDest   = _Unwrap_enum_t<_Dest>;
 
-template <class _Source, class _Dest, bool _Non_contiguous = !_Iterators_are_contiguous<_Source, _Dest>>
-struct _Ptr_copy_cat : _False_copy_cat {};
+    static constexpr bool _Same_size_and_compatible =
+        sizeof(_Source) == sizeof(_Dest)
+        // If _UDest is bool, _USource also needs to be bool
+        // Conversion from non-bool => non-bool | bool => bool | bool => non-bool is fine.
+        // Conversion from non-bool => bool is not fine.
+        && is_same_v<bool, _USource> >= is_same_v<bool, _UDest> //
+        && (is_same_v<_USource, _UDest> || (is_integral_v<_USource> && is_integral_v<_UDest>)
+            || (is_floating_point_v<_USource> && is_floating_point_v<_UDest>) );
 
-template <class _Source, class _Dest>
-struct _Ptr_copy_cat<_Source, _Dest, false>
-    : conditional_t<is_trivially_assignable_v<_Iter_ref_t<_Dest>, _Iter_ref_t<_Source>>,
-          _Ptr_cat_helper<_Iter_value_t<_Source>, _Iter_value_t<_Dest>>, _False_copy_cat> {};
+    static constexpr bool _Bitcopy_constructible =
+        _Same_size_and_compatible && is_trivially_constructible_v<_Dest, _SourceRef>;
 
-template <class _Source, class _Dest>
-struct _Ptr_copy_cat<move_iterator<_Source>, _Dest, true> : _Ptr_move_cat<_Source, _Dest> {};
+    static constexpr bool _Bitcopy_assignable =
+        _Same_size_and_compatible && is_trivially_assignable_v<_DestRef, _SourceRef>;
+};
+
+template <class _Source, class _Dest, class _SourceRef, class _DestRef>
+struct _Trivial_cat<_Source*, _Dest*, _SourceRef, _DestRef> {
+    static constexpr bool _Bitcopy_constructible =
+        _Is_pointer_address_convertible<_Source, _Dest> && is_trivially_constructible_v<_Dest*, _SourceRef>;
+
+    static constexpr bool _Bitcopy_assignable =
+        _Is_pointer_address_convertible<_Source, _Dest> && is_trivially_assignable_v<_DestRef, _SourceRef>;
+};
+
+struct _False_trivial_cat {
+    static constexpr bool _Bitcopy_constructible = false;
+    static constexpr bool _Bitcopy_assignable    = false;
+};
+
+template <class _SourceIt, class _DestIt,
+    bool _Are_contiguous = _Iterators_are_contiguous<_SourceIt, _DestIt> //
+                        && !_Iterator_is_volatile<_SourceIt> && !_Iterator_is_volatile<_DestIt>>
+struct _Iter_move_cat : _Trivial_cat<_Iter_value_t<_SourceIt>, _Iter_value_t<_DestIt>,
+                            remove_reference_t<_Iter_ref_t<_SourceIt>>&&, _Iter_ref_t<_DestIt>> {};
+
+template <class _SourceIt, class _DestIt>
+struct _Iter_move_cat<_SourceIt, _DestIt, false> : _False_trivial_cat {};
+
+template <class _SourceIt, class _DestIt>
+struct _Iter_move_cat<move_iterator<_SourceIt>, _DestIt, false> : _Iter_move_cat<_SourceIt, _DestIt> {};
+
+template <class _SourceIt, class _DestIt,
+    bool _Are_contiguous = _Iterators_are_contiguous<_SourceIt, _DestIt> //
+                        && !_Iterator_is_volatile<_SourceIt> && !_Iterator_is_volatile<_DestIt>>
+struct _Iter_copy_cat
+    : _Trivial_cat<_Iter_value_t<_SourceIt>, _Iter_value_t<_DestIt>, _Iter_ref_t<_SourceIt>, _Iter_ref_t<_DestIt>> {};
+
+template <class _SourceIt, class _DestIt>
+struct _Iter_copy_cat<_SourceIt, _DestIt, false> : _False_trivial_cat {};
+
+template <class _SourceIt, class _DestIt>
+struct _Iter_copy_cat<move_iterator<_SourceIt>, _DestIt, false> : _Iter_move_cat<_SourceIt, _DestIt> {};
 
 template <class _CtgIt, class _OutCtgIt>
 _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
@@ -3992,11 +4016,6 @@ _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     }
 }
 
-template <class _InIt, class _OutIt>
-_OutIt _Copy_memmove(move_iterator<_InIt> _First, move_iterator<_InIt> _Last, _OutIt _Dest) {
-    return _Copy_memmove(_First.base(), _Last.base(), _Dest);
-}
-
 template <class _It, bool _RequiresMutable = false>
 _INLINE_VAR constexpr bool _Is_vb_iterator = false;
 
@@ -4004,7 +4023,7 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
-    if constexpr (_Ptr_copy_cat<_InIt, _OutIt>::_Trivially_copyable) {
+    if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -4070,7 +4089,7 @@ namespace ranges {
         requires indirectly_copyable<_It, _Out>
     _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, _Se _Last, _Out _Result) {
         // clang-format on
-        if constexpr (_Ptr_copy_cat<_It, _Out>::_Trivially_copyable && sized_sentinel_for<_Se, _It>) {
+        if constexpr (_Iter_copy_cat<_It, _Out>::_Bitcopy_assignable && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 auto _Final = _RANGES next(_First, _STD move(_Last));
                 _Result     = _Copy_memmove(_STD move(_First), _Final, _STD move(_Result));
@@ -4123,7 +4142,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
         auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Trivially_copyable) {
+        if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_assignable) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -4189,7 +4208,7 @@ _BidIt2 _Copy_backward_memmove(move_iterator<_BidIt1> _First, move_iterator<_Bid
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // copy [_First, _Last) backwards to [..., _Dest)
-    if constexpr (_Ptr_copy_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
+    if constexpr (_Iter_copy_cat<_BidIt1, _BidIt2>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -4229,7 +4248,7 @@ template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     // note: _Move_unchecked has callers other than the move family
-    if constexpr (_Ptr_move_cat<_InIt, _OutIt>::_Trivially_copyable) {
+    if constexpr (_Iter_move_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -4271,7 +4290,7 @@ template <class _BidIt1, class _BidIt2>
 _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest)
     // note: _Move_backward_unchecked has callers other than the move_backward family
-    if constexpr (_Ptr_move_cat<_BidIt1, _BidIt2>::_Trivially_copyable) {
+    if constexpr (_Iter_move_cat<_BidIt1, _BidIt2>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -4373,8 +4392,12 @@ template <class _Ty>
 _NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
     // checks if scalar type has all bits set to zero
     _STL_INTERNAL_STATIC_ASSERT(is_scalar_v<_Ty> && !is_member_pointer_v<_Ty>);
-    constexpr _Ty _Zero{};
-    return _CSTD memcmp(&_Val, &_Zero, sizeof(_Ty)) == 0;
+    if constexpr (is_same_v<_Ty, nullptr_t>) {
+        return true;
+    } else {
+        constexpr _Ty _Zero{};
+        return _CSTD memcmp(&_Val, &_Zero, sizeof(_Ty)) == 0;
+    }
 }
 
 template <class _FwdIt, class _Ty>
@@ -4504,21 +4527,30 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
+template <class _Ty1, class _Ty2, class = void>
+_INLINE_VAR constexpr bool _Can_compare_with_operator_equal = false;
+
+template <class _Ty1, class _Ty2>
+_INLINE_VAR constexpr bool
+    _Can_compare_with_operator_equal<_Ty1, _Ty2, void_t<decltype(_STD declval<_Ty1&>() == _STD declval<_Ty2&>())>> =
+        true;
+
+template <class _Ty1, class _Ty2>
+_INLINE_VAR constexpr bool _Is_pointer_address_comparable =
+    _Can_compare_with_operator_equal<_Ty1*,
+        _Ty2*> && (_Is_pointer_address_convertible<_Ty1, _Ty2> || _Is_pointer_address_convertible<_Ty2, _Ty1>);
 
 // _Can_memcmp_elements<_Elem1, _Elem2> reports whether `_Elem1 == _Elem2` can be optimized to memcmp.
 // Here, _Elem1 and _Elem2 aren't top-level const, because we remove_const_t before using _Can_memcmp_elements.
 
 // Integral types are eligible for memcmp in very specific cases.
 // * They must be the same size. (`int == long` is eligible; `int == long long` isn't.)
-// * They can't be volatile.
-// * Finally, the usual arithmetic conversions must preserve bit patterns. (This is true for `int == unsigned int`,
+// * The usual arithmetic conversions must preserve bit patterns. (This is true for `int == unsigned int`,
 //   but false for `short == unsigned short`.)
 #pragma warning(push)
 #pragma warning(disable : 4806) // no value of type 'bool' promoted to type 'char' can equal the given constant
 template <class _Elem1, class _Elem2,
-    bool = sizeof(_Elem1) == sizeof(_Elem2) //
-        && is_integral_v<_Elem1> && !is_volatile_v<_Elem1> //
-        && is_integral_v<_Elem2> && !is_volatile_v<_Elem2>>
+    bool = sizeof(_Elem1) == sizeof(_Elem2) && is_integral_v<_Elem1>&& is_integral_v<_Elem2>>
 _INLINE_VAR constexpr bool _Can_memcmp_elements =
     is_same_v<_Elem1, bool> || is_same_v<_Elem2, bool> || static_cast<_Elem1>(-1) == static_cast<_Elem2>(-1);
 #pragma warning(pop)
@@ -4533,49 +4565,45 @@ inline constexpr bool _Can_memcmp_elements<byte, byte, false> = true;
 
 // Pointer elements are eligible for memcmp when they point to the same type, ignoring cv-qualification.
 // This handles pointers to object types, pointers to void, and pointers to function types.
-// Performance note: This doesn't attempt to handle `object* == void*`.
 template <class _Ty1, class _Ty2>
-_INLINE_VAR constexpr bool _Can_memcmp_elements<_Ty1*, _Ty2*, false> = is_same_v<remove_cv_t<_Ty1>, remove_cv_t<_Ty2>>;
+_INLINE_VAR constexpr bool _Can_memcmp_elements<_Ty1*, _Ty2*, false> = _Is_pointer_address_comparable<_Ty1, _Ty2>;
 
 template <class _Elem1, class _Elem2>
 _INLINE_VAR constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> = false;
-
-// _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _Pr> reports whether `_Pr(_Elem1, _Elem2)` returns
-// `_Elem1 == _Elem2` without performing any type conversions that could affect the memcmp optimization.
-// (It isn't concerned with whether the elements are actually eligible.)
-// Again, _Elem1 and _Elem2 aren't top-level const here.
-template <class _Elem1, class _Elem2, class _Pr>
-_INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp = false;
-
-// When all of the types are the same, equal_to<_Elem> is effectively transparent.
-// Performance note: This doesn't attempt to handle equal_to<long>(int, long) or equal_to<const T*>(T*, const T*).
-template <class _Elem>
-_INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp<_Elem, _Elem, equal_to<_Elem>> = true;
-
-// equal_to<> is transparent.
-template <class _Elem1, class _Elem2>
-_INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, equal_to<>> = true;
-
-#ifdef __cpp_lib_concepts
-// ranges::equal_to is also transparent.
-template <class _Elem1, class _Elem2>
-_INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _RANGES equal_to> = true;
-#endif // __cpp_lib_concepts
 
 // _Can_memcmp_elements_with_pred<_Elem1, _Elem2, _Pr> reports whether the memcmp optimization is applicable,
 // given contiguously stored elements. (This avoids having to repeat the metaprogramming that finds the element types.)
 // _Elem1 and _Elem2 aren't top-level const here.
 template <class _Elem1, class _Elem2, class _Pr>
-_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred = _Can_memcmp_elements<_Elem1, _Elem2> //
-    && _Pred_is_consistent_with_memcmp<_Elem1, _Elem2, _Pr>;
+_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred = false;
+
+// With equal_to<_Elem3> we need to make sure that both _Elem1 and _Elem2 are convertible to _Elem3 without changing
+// object representation (we use _Iter_copy_cat for this task) and _Elem3 can be safely memcmp'ed with itself
+template <class _Elem1, class _Elem2, class _Elem3>
+_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, equal_to<_Elem3>> =
+    _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible&& _Iter_copy_cat<_Elem2*,
+        _Elem3*>::_Bitcopy_constructible&& _Can_memcmp_elements<remove_cv_t<_Elem3>, remove_cv_t<_Elem3>>;
+
+// equal_to<> is transparent.
+template <class _Elem1, class _Elem2>
+_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, equal_to<>> =
+    _Can_memcmp_elements<_Elem1, _Elem2>;
+
+#ifdef __cpp_lib_concepts
+// ranges::equal_to is also transparent.
+template <class _Elem1, class _Elem2>
+_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred<_Elem1, _Elem2, _RANGES equal_to> =
+    _Can_memcmp_elements<_Elem1, _Elem2>;
+#endif // __cpp_lib_concepts
 
 // _Equal_memcmp_is_safe<_Iter1, _Iter2, _Pr> reports whether we can activate the memcmp optimization
 // for arbitrary iterators and predicates.
 // It ignores top-level constness on the iterators and on the elements.
 template <class _Iter1, class _Iter2, class _Pr>
-_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper = _Iterators_are_contiguous<_Iter1, _Iter2> //
-    && _Can_memcmp_elements_with_pred<remove_const_t<remove_reference_t<_Iter_ref_t<_Iter1>>>,
-        remove_const_t<remove_reference_t<_Iter_ref_t<_Iter2>>>, _Pr>;
+_INLINE_VAR constexpr bool _Equal_memcmp_is_safe_helper =
+    _Iterators_are_contiguous<_Iter1, _Iter2> //
+    && !_Iterator_is_volatile<_Iter1> && !_Iterator_is_volatile<_Iter2> //
+    && _Can_memcmp_elements_with_pred<_Iter_value_t<_Iter1>, _Iter_value_t<_Iter2>, _Pr>;
 
 template <class _Iter1, class _Iter2, class _Pr>
 _INLINE_VAR constexpr bool _Equal_memcmp_is_safe =
@@ -4828,135 +4856,109 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _Elem1, class _Elem2, class _FTy>
-struct _Lex_compare_check_element_types_helper
-    : bool_constant<
-          conjunction_v<_Is_character<_Elem1>, _Is_character<_Elem2>, _Is_character<_FTy>, is_unsigned<_FTy>>> {
-    // checks the lex_compare element types for memcmp safety for builtin functors (e.g., less<unsigned char>)
-};
-
 template <class _Elem1, class _Elem2>
-struct _Lex_compare_check_element_types_helper<_Elem1, _Elem2, void>
-    : bool_constant<
-          conjunction_v<_Is_character<_Elem1>, _Is_character<_Elem2>, is_unsigned<_Elem1>, is_unsigned<_Elem2>>> {
-    // checks the lex_compare element types for memcmp safety for transparent functors (e.g. less<>)
-};
+_INLINE_VAR constexpr bool _Lex_compare_memcmp_classify_elements = conjunction_v<_Is_character_or_bool<_Elem1>,
+    _Is_character_or_bool<_Elem2>, is_unsigned<_Elem1>, is_unsigned<_Elem2>>;
 
 #ifdef __cpp_lib_byte
 template <>
-struct _Lex_compare_check_element_types_helper<byte, byte, byte> : true_type {
-    // std::byte with builtin functors (e.g. less<byte>) is memcmp safe
-};
-
-template <>
-struct _Lex_compare_check_element_types_helper<byte, byte, void> : true_type {
-    // std::byte with transparent functors (e.g. less<>) is memcmp safe
-};
+inline constexpr bool _Lex_compare_memcmp_classify_elements<byte, byte> = true;
 #endif // __cpp_lib_byte
 
-template <class _Memcmp_pr>
-struct _Lex_compare_optimize {
-    explicit _Lex_compare_optimize() = default;
+template <class _Elem1, class _Elem2, class _Pr>
+struct _Lex_compare_memcmp_classify_pred {
+    using _Pred = void;
+};
 
-    using _Pred = _Memcmp_pr;
-}; // optimization tag for lexicographical_compare
+template <class _Elem1, class _Elem2, class _Elem3>
+struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, less<_Elem3>> {
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem3, _Elem3> //
+                                    && _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible
+                                    && _Iter_copy_cat<_Elem2*, _Elem3*>::_Bitcopy_constructible,
+        less<int>, void>;
+};
 
-template <class _Memcmp_pr, class _Obj1, class _Obj2, class _FTy>
-using _Lex_compare_check_element_types = _Lex_compare_optimize<conditional_t<
-    _Lex_compare_check_element_types_helper<remove_const_t<_Obj1>, remove_const_t<_Obj2>, _FTy>::value, _Memcmp_pr,
-    void>>; // checks the lex_compare element types for memcmp safety
+template <class _Elem1, class _Elem2>
+struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, less<>> {
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>, less<int>, void>;
+};
 
-template <class _InIt1, class _InIt2, class _Pr>
-constexpr auto _Lex_compare_memcmp_classify(const _InIt1&, const _InIt2&, const _Pr&) {
-    // return lex_compare optimization category for arbitrary iterators
-    return _Lex_compare_optimize<void>{};
-}
+template <class _Elem1, class _Elem2, class _Elem3>
+struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, greater<_Elem3>> {
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem3, _Elem3> //
+                                    && _Iter_copy_cat<_Elem1*, _Elem3*>::_Bitcopy_constructible
+                                    && _Iter_copy_cat<_Elem2*, _Elem3*>::_Bitcopy_constructible,
+        greater<int>, void>;
+};
 
-template <class _CtgIt1, class _CtgIt2, class _FTy, enable_if_t<_Iterators_are_contiguous<_CtgIt1, _CtgIt2>, int> = 0>
-constexpr auto _Lex_compare_memcmp_classify(const _CtgIt1&, const _CtgIt2&, const less<_FTy>&) {
-    // return lex_compare optimization category for contiguous iterators and less<_FTy>
-    return _Lex_compare_check_element_types<less<int>, remove_reference_t<_Iter_ref_t<_CtgIt1>>,
-        remove_reference_t<_Iter_ref_t<_CtgIt2>>, _FTy>{};
-}
-
-template <class _CtgIt1, class _CtgIt2, class _FTy, enable_if_t<_Iterators_are_contiguous<_CtgIt1, _CtgIt2>, int> = 0>
-constexpr auto _Lex_compare_memcmp_classify(const _CtgIt1&, const _CtgIt2&, const greater<_FTy>&) {
-    // return lex_compare optimization category for contiguous iterators and greater<_FTy>
-    return _Lex_compare_check_element_types<greater<int>, remove_reference_t<_Iter_ref_t<_CtgIt1>>,
-        remove_reference_t<_Iter_ref_t<_CtgIt2>>, _FTy>{};
-}
+template <class _Elem1, class _Elem2>
+struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, greater<>> {
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>, greater<int>, void>;
+};
 
 #ifdef __cpp_lib_concepts
-template <class _CtgIt1, class _CtgIt2, enable_if_t<_Iterators_are_contiguous<_CtgIt1, _CtgIt2>, int> = 0>
-constexpr auto _Lex_compare_memcmp_classify(const _CtgIt1&, const _CtgIt2&, const _RANGES less&) {
-    // return lex_compare optimization category for contiguous iterators and ranges::less
-    return _Lex_compare_check_element_types<less<int>, remove_reference_t<_Iter_ref_t<_CtgIt1>>,
-        remove_reference_t<_Iter_ref_t<_CtgIt2>>, void>{};
-}
+template <class _Elem1, class _Elem2>
+struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, _RANGES less> {
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>, less<int>, void>;
+};
 
-template <class _CtgIt1, class _CtgIt2, enable_if_t<_Iterators_are_contiguous<_CtgIt1, _CtgIt2>, int> = 0>
-constexpr auto _Lex_compare_memcmp_classify(const _CtgIt1&, const _CtgIt2&, const _RANGES greater&) {
-    // return lex_compare optimization category for contiguous iterators and ranges::greater
-    return _Lex_compare_check_element_types<greater<int>, remove_reference_t<_Iter_ref_t<_CtgIt1>>,
-        remove_reference_t<_Iter_ref_t<_CtgIt2>>, void>{};
-}
+template <class _Elem1, class _Elem2>
+struct _Lex_compare_memcmp_classify_pred<_Elem1, _Elem2, _RANGES greater> {
+    using _Pred = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2>, greater<int>, void>;
+};
 #endif // __cpp_lib_concepts
 
+template <class _It1, class _It2, class _Pr>
+using _Lex_compare_memcmp_classify =
+    conditional_t<_Iterators_are_contiguous<_It1, _It2> && !_Iterator_is_volatile<_It1> && !_Iterator_is_volatile<_It2>,
+        typename _Lex_compare_memcmp_classify_pred<_Iter_value_t<_It1>, _Iter_value_t<_It2>, _Pr>::_Pred, void>;
+
 template <class _InIt1, class _InIt2, class _Pr>
-_NODISCARD constexpr bool _Lex_compare_unchecked(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred, _Lex_compare_optimize<void>) {
-    // order [_First1, _Last1) vs. [_First2, _Last2), no special optimization
-    for (; _First1 != _Last1 && _First2 != _Last2; ++_First1, (void) ++_First2) { // something to compare, do it
-        if (_DEBUG_LT_PRED(_Pred, *_First1, *_First2)) {
+_NODISCARD _CONSTEXPR20 bool lexicographical_compare(
+    const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
+    // order [_First1, _Last1) vs. [_First2, _Last2)
+    _Adl_verify_range(_First1, _Last1);
+    _Adl_verify_range(_First2, _Last2);
+    auto _UFirst1      = _Get_unwrapped(_First1);
+    const auto _ULast1 = _Get_unwrapped(_Last1);
+    auto _UFirst2      = _Get_unwrapped(_First2);
+    const auto _ULast2 = _Get_unwrapped(_Last2);
+
+    using _Memcmp_pred = _Lex_compare_memcmp_classify<decltype(_UFirst1), decltype(_UFirst2), _Pr>;
+    if constexpr (!is_void_v<_Memcmp_pred>) {
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
+            const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
+            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min) (_Num1, _Num2));
+            return _Memcmp_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
+        }
+    }
+
+    for (; _UFirst1 != _ULast1 && _UFirst2 != _ULast2; ++_UFirst1, (void) ++_UFirst2) { // something to compare, do it
+        if (_DEBUG_LT_PRED(_Pred, *_UFirst1, *_UFirst2)) {
             return true;
-        } else if (_Pred(*_First2, *_First1)) {
+        } else if (_Pred(*_UFirst2, *_UFirst1)) {
             return false;
         }
     }
 
-    return _First1 == _Last1 && _First2 != _Last2;
-}
-
-template <class _CtgIt1, class _CtgIt2, class _Pr, class _Memcmp_pr>
-_NODISCARD _CONSTEXPR20 bool _Lex_compare_unchecked(
-    _CtgIt1 _First1, _CtgIt1 _Last1, _CtgIt2 _First2, _CtgIt2 _Last2, _Pr _Pred, _Lex_compare_optimize<_Memcmp_pr>) {
-    // order [_First1, _Last1) vs. [_First2, _Last2) memcmp optimization
-#if _HAS_CXX20
-    if (_STD is_constant_evaluated()) {
-        return _Lex_compare_unchecked(_First1, _Last1, _First2, _Last2, _Pred, _Lex_compare_optimize<void>{});
-    }
-#endif // _HAS_CXX20
-    (void) _Pred;
-    const auto _Num1 = static_cast<size_t>(_Last1 - _First1);
-    const auto _Num2 = static_cast<size_t>(_Last2 - _First2);
-    const int _Ans   = _Memcmp_count(_First1, _First2, (_STD min) (_Num1, _Num2));
-    return _Memcmp_pr{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
-}
-
-template <class _InIt1, class _InIt2, class _Pr>
-_NODISCARD _CONSTEXPR20 bool lexicographical_compare(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
-    // order [_First1, _Last1) vs. [_First2, _Last2)
-    _Adl_verify_range(_First1, _Last1);
-    _Adl_verify_range(_First2, _Last2);
-    const auto _UFirst1 = _Get_unwrapped(_First1);
-    const auto _ULast1  = _Get_unwrapped(_Last1);
-    const auto _UFirst2 = _Get_unwrapped(_First2);
-    const auto _ULast2  = _Get_unwrapped(_Last2);
-    return _Lex_compare_unchecked(
-        _UFirst1, _ULast1, _UFirst2, _ULast2, _Pass_fn(_Pred), _Lex_compare_memcmp_classify(_UFirst1, _UFirst2, _Pred));
+    return _UFirst1 == _ULast1 && _UFirst2 != _ULast2;
 }
 
 template <class _InIt1, class _InIt2>
-_NODISCARD _CONSTEXPR20 bool lexicographical_compare(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
+_NODISCARD _CONSTEXPR20 bool lexicographical_compare(
+    const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2) {
     // order [_First1, _Last1) vs. [_First2, _Last2)
     return _STD lexicographical_compare(_First1, _Last1, _First2, _Last2, less<>{});
 }
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool lexicographical_compare(
-    _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
+_NODISCARD bool lexicographical_compare(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
+    const _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
     // order [_First1, _Last1) vs. [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
@@ -4965,8 +4967,8 @@ _NODISCARD bool lexicographical_compare(
 }
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool lexicographical_compare(
-    _ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) noexcept /* terminates */ {
+_NODISCARD bool lexicographical_compare(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
+    const _FwdIt2 _Last2) noexcept /* terminates */ {
     // order [_First1, _Last1) vs. [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
     _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
@@ -4976,27 +4978,57 @@ _NODISCARD bool lexicographical_compare(
 #endif // _HAS_CXX17
 
 #ifdef __cpp_lib_concepts
+template <class _Elem1, class _Elem2, class _Cmp>
+struct _Lex_compare_three_way_memcmp_classify_comp {
+    using _Comp = void;
+};
+
+template <class _Elem1, class _Elem2>
+struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, compare_three_way> {
+    using _Comp = conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1,
+                                    _Elem2> && three_way_comparable_with<const _Elem1&, const _Elem2&>,
+        compare_three_way, void>;
+};
+
+template <class _Elem1, class _Elem2>
+struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, _Strong_order::_Cpo> {
+    using _Comp =
+        conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2> && _Can_strong_order<_Elem1, _Elem2>,
+            _Strong_order::_Cpo, void>;
+};
+
+template <class _Elem1, class _Elem2>
+struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, _Weak_order::_Cpo> {
+    using _Comp =
+        conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2> && _Can_weak_order<_Elem1, _Elem2>,
+            _Weak_order::_Cpo, void>;
+};
+
+template <class _Elem1, class _Elem2>
+struct _Lex_compare_three_way_memcmp_classify_comp<_Elem1, _Elem2, _Partial_order::_Cpo> {
+    using _Comp =
+        conditional_t<_Lex_compare_memcmp_classify_elements<_Elem1, _Elem2> && _Can_partial_order<_Elem1, _Elem2>,
+            _Partial_order::_Cpo, void>;
+};
+
+template <class _It1, class _It2, class _Cmp>
+using _Lex_compare_three_way_memcmp_classify =
+    conditional_t<_Iterators_are_contiguous<_It1, _It2> && !_Iterator_is_volatile<_It1> && !_Iterator_is_volatile<_It2>,
+        typename _Lex_compare_three_way_memcmp_classify_comp<_Iter_value_t<_It1>, _Iter_value_t<_It2>, _Cmp>::_Comp,
+        void>;
+
 template <class _InIt1, class _InIt2, class _Cmp>
-_NODISCARD constexpr auto lexicographical_compare_three_way(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Cmp _Comp) -> decltype(_Comp(*_First1, *_First2)) {
+_NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1, const _InIt1 _Last1,
+    const _InIt2 _First2, const _InIt2 _Last2, _Cmp _Comp) -> decltype(_Comp(*_First1, *_First2)) {
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     auto _UFirst1      = _Get_unwrapped(_First1);
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped(_First2);
     const auto _ULast2 = _Get_unwrapped(_Last2);
-    using _UIt1        = decltype(_UFirst1);
-    using _UIt2        = decltype(_UFirst2);
-    using _Ty1         = remove_const_t<remove_pointer_t<_UIt1>>;
-    using _Ty2         = remove_const_t<remove_pointer_t<_UIt2>>;
 
-    if constexpr (
-        conjunction_v<is_same<_Cmp, compare_three_way>, bool_constant<_Iterators_are_contiguous<_UIt1, _UIt2>>,
-            disjunction<
-#ifdef __cpp_lib_byte
-                conjunction<is_same<_Ty1, byte>, is_same<_Ty2, byte>>,
-#endif // __cpp_lib_byte
-                conjunction<_Is_character<_Ty1>, is_unsigned<_Ty1>, _Is_character<_Ty2>, is_unsigned<_Ty2>>>>) {
+    using _Memcmp_pred = _Lex_compare_three_way_memcmp_classify<decltype(_UFirst1), decltype(_UFirst2), _Cmp>;
+    if constexpr (!is_void_v<_Memcmp_pred>) {
         if (!_STD is_constant_evaluated()) {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
@@ -5004,7 +5036,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
             if (_Ans == 0) {
                 return _Num1 <=> _Num2;
             } else {
-                return _Ans <=> 0;
+                return _Memcmp_pred{}(_Ans, 0);
             }
         }
     }
@@ -5029,7 +5061,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 
 template <class _InIt1, class _InIt2>
 _NODISCARD constexpr auto lexicographical_compare_three_way(
-    _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2) {
+    const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2) {
     return _STD lexicographical_compare_three_way(_First1, _Last1, _First2, _Last2, compare_three_way{});
 }
 #endif // __cpp_lib_concepts

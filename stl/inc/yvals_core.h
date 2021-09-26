@@ -255,6 +255,7 @@
 // P2210R2 Superior String Splitting
 // P2231R1 Completing constexpr In optional And variant
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
+// P2281R1 Clarifying Range Adaptor Objects
 // P2325R3 Views Should Not Be Required To Be Default Constructible
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
