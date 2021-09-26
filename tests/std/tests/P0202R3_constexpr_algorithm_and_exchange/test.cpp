@@ -114,6 +114,10 @@ struct bidirectional_pointer {
 template <class T>
 struct output_pointer {
     using iterator_category = output_iterator_tag;
+    using reference         = T&;
+    using value_type        = T;
+    using pointer           = T*;
+    using difference_type   = ptrdiff_t;
 
     constexpr explicit output_pointer(T* const ptr_) : ptr(ptr_) {}
 
