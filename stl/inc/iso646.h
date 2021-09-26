@@ -6,8 +6,10 @@
 #pragma once
 #ifndef _ISO646
 #define _ISO646
-#include <yvals_core.h>
-#if _STL_COMPILER_PREPROCESSOR
+
+#if defined(RC_INVOKED) || defined(Q_MOC_RUN) || defined(__midl)
+// do nothing, see _STL_COMPILER_PREPROCESSOR in yvals_core.h
+#else // ^^^ non-compiler tools / C and C++ compilers vvv
 
 #if !defined(__cplusplus) || defined(_MSC_EXTENSIONS)
 #define and &&
@@ -22,5 +24,6 @@
 #define xor ^
 #define xor_eq ^=
 #endif // !defined(__cplusplus) || defined(_MSC_EXTENSIONS)
-#endif // _STL_COMPILER_PREPROCESSOR
+
+#endif // ^^^ C and C++ compilers ^^^
 #endif // _ISO646

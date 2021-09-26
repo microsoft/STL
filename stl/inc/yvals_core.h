@@ -18,6 +18,11 @@
 #endif // _STL_COMPILER_PREPROCESSOR
 
 #if _STL_COMPILER_PREPROCESSOR
+
+#ifndef __cplusplus
+#error STL1003: Unexpected compiler, expected C++ compiler.
+#endif // __cplusplus
+
 // Implemented unconditionally:
 // N3911 void_t
 // N4089 Safe Conversions In unique_ptr<T[]>
@@ -247,8 +252,10 @@
 // P2102R0 Making "Implicit Expression Variations" More Explicit
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
+// P2210R2 Superior String Splitting
 // P2231R1 Completing constexpr In optional And variant
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
+// P2281R1 Clarifying Range Adaptor Objects
 // P2325R3 Views Should Not Be Required To Be Default Constructible
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
@@ -264,6 +271,7 @@
 
 // _HAS_CXX23 directly controls:
 // P0401R6 Providing Size Feedback In The Allocator Interface
+// P0448R4 <spanstream>
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
@@ -375,7 +383,7 @@
 
 // TRANSITION, <vcruntime.h> should define _HAS_CXX23
 #ifndef _HAS_CXX23
-#if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || defined(__cplusplus) && __cplusplus > 202002L)
+#if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || __cplusplus > 202002L)
 #define _HAS_CXX23 1
 #else
 #define _HAS_CXX23 0
@@ -565,7 +573,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202108L
+#define _MSVC_STL_UPDATE  202109L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #ifdef __CUDACC__
@@ -1377,6 +1385,7 @@
 #define __cpp_lib_out_ptr 202106L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_spanstream      202106L
 #define __cpp_lib_stdatomic_h     202011L
 #define __cpp_lib_string_contains 202011L
 #define __cpp_lib_to_underlying   202102L
@@ -1407,17 +1416,10 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STDEXT_END   }
 #define _STDEXT       ::stdext::
 
-#ifdef __cplusplus
 #define _CSTD ::
 
 #define _EXTERN_C     extern "C" {
 #define _END_EXTERN_C }
-#else // ^^^ __cplusplus / !__cplusplus vvv
-#define _CSTD
-
-#define _EXTERN_C
-#define _END_EXTERN_C
-#endif // __cplusplus
 
 #ifdef _M_CEE_PURE
 #define _EXTERN_C_UNLESS_PURE
@@ -1460,6 +1462,12 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #else
 #define _NOEXCEPT_FNPTR
 #endif // __cpp_noexcept_function_type
+
+#ifdef __clang__
+#define _STL_UNREACHABLE __builtin_unreachable()
+#else // ^^^ clang ^^^ / vvv other vvv
+#define _STL_UNREACHABLE __assume(false)
+#endif // __clang__
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
