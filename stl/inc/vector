@@ -2571,7 +2571,7 @@ public:
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
             this->_Orphan_all();
             if constexpr (_Choose_pocca_v<_Alvbase>) {
-                if constexpr (this->_Getal() != _Right._Getal()) {
+                if (this->_Getal() != _Right._Getal()) {
                     // reload proxy
                     using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
                     _Alproxy_type _Oldal(this->_Getal());

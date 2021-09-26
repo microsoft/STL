@@ -884,7 +884,8 @@ public:
                         static_cast<_Alproxy_ty>(_Getal()), static_cast<_Alproxy_ty>(_Right._Getal()));
                 }
 
-                _Copy_assign(_Right, false_type{});
+                _Pocca(_Getal(), _Right._Getal());
+                assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
             } else {
                 _Pocca(_Getal(), _Right._Getal());
                 assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
