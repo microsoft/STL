@@ -1095,7 +1095,10 @@ public:
         if (this != _STD addressof(_Right)) {
             if constexpr (_Choose_pocca_v<_Alnode>) {
                 if (_Getal() == _Right._Getal()) {
-                    _Copy_assign(_Right, false_type{});
+                    clear();
+                    _Getcomp() = _Right._Getcomp();
+                    _Pocca(_Getal(), _Right._Getal());
+                    _Copy(_Right, _Copy_tag{});
                 } else {
                     clear();
                     const auto _Scary = _Get_scary();
