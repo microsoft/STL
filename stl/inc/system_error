@@ -96,7 +96,6 @@ public:
     }
 #endif // !_HAS_CXX20
 
-// TRANSITION, GH-489
 #ifdef __cpp_lib_concepts
     _NODISCARD strong_ordering operator<=>(const error_category& _Right) const noexcept {
         return compare_three_way{}(_Addr, _Right._Addr);
@@ -181,7 +180,6 @@ public:
         return _System_error_equal(_Left, _Right);
     }
 
-// TRANSITION, GH-489
 #ifdef __cpp_lib_concepts
     _NODISCARD friend strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
         if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
@@ -267,7 +265,6 @@ public:
         return _Left.category() == _Right.category() && _Left.value() == _Right.value();
     }
 
-// TRANSITION, GH-489
 #ifdef __cpp_lib_concepts
     _NODISCARD friend strong_ordering operator<=>(
         const error_condition& _Left, const error_condition& _Right) noexcept {
@@ -321,7 +318,6 @@ _NODISCARD inline bool operator==(const error_condition& _Left, const error_cond
     return _Left.category() == _Right.category() && _Left.value() == _Right.value();
 }
 
-// TRANSITION, GH-489
 #ifdef __cpp_lib_concepts
 _NODISCARD inline strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
     if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {

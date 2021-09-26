@@ -95,7 +95,7 @@ _NODISCARD inline int stoi(const string& _Str, size_t* _Idx = nullptr, int _Base
         _Xinvalid_argument("invalid stoi argument");
     }
 
-    if (_Errno_ref == ERANGE || _Ans < INT_MIN || INT_MAX < _Ans) {
+    if (_Errno_ref == ERANGE) {
         _Xout_of_range("stoi argument out of range");
     }
 
@@ -276,7 +276,7 @@ _NODISCARD inline int stoi(const wstring& _Str, size_t* _Idx = nullptr, int _Bas
         _Xinvalid_argument("invalid stoi argument");
     }
 
-    if (_Errno_ref == ERANGE || _Ans < INT_MIN || INT_MAX < _Ans) {
+    if (_Errno_ref == ERANGE) {
         _Xout_of_range("stoi argument out of range");
     }
 
