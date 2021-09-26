@@ -206,7 +206,8 @@ public:
 
     void str(_Mystr&& _Newstr) {
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alloc>;
-        if constexpr (_Pocma_val == _Pocma_values::_Equal_allocators || _Pocma_val == _Pocma_values::_Propagate_allocators) {
+        if constexpr (_Pocma_val == _Pocma_values::_Equal_allocators
+                      || _Pocma_val == _Pocma_values::_Propagate_allocators) {
             _Tidy();
             _Pocma(_Al, _Newstr._Getal());
             _Init_string_inplace(_STD move(_Newstr), _Mystate);

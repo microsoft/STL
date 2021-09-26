@@ -480,13 +480,13 @@ public:
                 clear();
                 _Traitsobj = _Right._Traitsobj;
                 _Pocma_both(_Right);
-                _Swap_val(_Right);            
+                _Swap_val(_Right);
             } else if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
                 if (_Getal() == _Right._Getal()) {
                     clear();
                     _Traitsobj = _Right._Traitsobj;
                     _Pocma_both(_Right);
-                    _Swap_val(_Right);   
+                    _Swap_val(_Right);
                 } else {
                     // allocate all the parts necessary to maintain _Hash invariants using _Right's allocator
                     auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
@@ -537,7 +537,7 @@ public:
                     clear();
                     _Traitsobj = _Right._Traitsobj;
                     _Pocma_both(_Right);
-                    _Swap_val(_Right);  
+                    _Swap_val(_Right);
                 } else {
                     _Clear_guard _Guard{this};
                     _Traitsobj     = _Right._Traitsobj;

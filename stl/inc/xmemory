@@ -711,7 +711,7 @@ _INLINE_VAR constexpr bool _Choose_pocca_v = allocator_traits<_Alloc>::propagate
                                           && !allocator_traits<_Alloc>::is_always_equal::value;
 
 enum class _Pocma_values {
-    _Equal_allocators,// usually allows contents to be stolen (e.g. with swap)
+    _Equal_allocators, // usually allows contents to be stolen (e.g. with swap)
     _Propagate_allocators, // usually allows the allocator to be propagated, and then contents stolen
     _No_propagate_allocators, // usually turns moves into copies
 };
