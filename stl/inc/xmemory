@@ -1473,7 +1473,7 @@ struct _NODISCARD _Uninitialized_backout {
 template <class _InIt, class _NoThrowFwdIt>
 _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
-    if constexpr (_Ptr_move_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
+    if constexpr (_Iter_move_cat<_InIt, _NoThrowFwdIt>::_Bitcopy_constructible) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -1602,7 +1602,8 @@ namespace ranges {
         // clang-format on
         constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
         constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-        if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+        if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible
+                      && _Sized_or_unreachable_sentinel_for<_Se, _It> //
                       && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
             if constexpr (_Is_sized1 && _Is_sized2) {
                 return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
@@ -1669,7 +1670,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
 
-    if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
+    if constexpr (conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
@@ -1692,7 +1693,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 template <class _InIt, class _NoThrowFwdIt>
 _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
-    if constexpr (_Ptr_copy_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
+    if constexpr (_Iter_copy_cat<_InIt, _NoThrowFwdIt>::_Bitcopy_constructible) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -1728,7 +1729,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     using _Ptrval     = typename _Alloc::value_type*;
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (conjunction_v<bool_constant<_Ptr_move_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
+    if constexpr (conjunction_v<bool_constant<_Iter_move_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
@@ -2140,10 +2141,10 @@ template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_spe
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept {
     // equivalent to
     // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
-    //     _STD forward_as_tuple(_STD move(_Pair).first), _STD forward_as_tuple(_STD move(_Pair).second));
+    //     _STD forward_as_tuple(_STD get<0>(_STD move(_Pair)), _STD forward_as_tuple(_STD get<1>(_STD move(_Pair)));
     return _STD make_tuple(piecewise_construct,
-        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD move(_Pair).first),
-        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD move(_Pair).second));
+        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD get<0>(_STD move(_Pair))),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD get<1>(_STD move(_Pair))));
 }
 
 template <class _Ty, class _Alloc, class... _Types>
