@@ -191,10 +191,10 @@ int main() {
         L".vs"sv,
         L".vscode"sv,
         L"__pycache__"sv,
+        L"boost-math"sv,
         L"build"sv,
         L"llvm-project"sv,
         L"out"sv,
-        L"vcpkg"sv,
     };
 
     static constexpr array skipped_extensions{
