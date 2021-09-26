@@ -710,14 +710,19 @@ template <class _Alloc>
 _INLINE_VAR constexpr bool _Choose_pocca_v = allocator_traits<_Alloc>::propagate_on_container_copy_assignment::value
                                           && !allocator_traits<_Alloc>::is_always_equal::value;
 
-
-struct _Equal_allocators {}; // usually allows contents to be stolen (e.g. with swap)
-using _Propagate_allocators    = true_type; // usually allows the allocator to be propagated, and then contents stolen
-using _No_propagate_allocators = false_type; // usually turns moves into copies
+enum class _Pocma_values {
+    _Equal_allocators,// usually allows contents to be stolen (e.g. with swap)
+    _Propagate_allocators, // usually allows the allocator to be propagated, and then contents stolen
+    _No_propagate_allocators, // usually turns moves into copies
+};
 
 template <class _Alloc>
-using _Choose_pocma = conditional_t<allocator_traits<_Alloc>::is_always_equal::value, _Equal_allocators,
-    typename allocator_traits<_Alloc>::propagate_on_container_move_assignment::type>;
+_INLINE_VAR constexpr _Pocma_values
+    _Choose_pocma_v = allocator_traits<_Alloc>::is_always_equal::value
+                        ? _Pocma_values::_Equal_allocators
+                        : (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
+                                ? _Pocma_values::_Propagate_allocators
+                                : _Pocma_values::_No_propagate_allocators);
 
 template <class _Alloc, class _Value_type>
 using _Rebind_alloc_t = typename allocator_traits<_Alloc>::template rebind_alloc<_Value_type>;

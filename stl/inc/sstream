@@ -204,27 +204,22 @@ public:
         _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
     }
 
-    void _Str(_Mystr&& _Newstr, _Equal_allocators) {
-        _Tidy();
-        _Pocma(_Al, _Newstr._Getal());
-        _Init_string_inplace(_STD move(_Newstr), _Mystate);
-    }
-
-    void _Str(_Mystr&& _Newstr, _Propagate_allocators) {
-        _Str(_STD move(_Newstr), _Equal_allocators{});
-    }
-
-    void _Str(_Mystr&& _Newstr, _No_propagate_allocators) {
-        if (_Al == _Newstr._Getal()) {
-            _Str(_STD move(_Newstr), _Equal_allocators{});
-        } else {
-            _Tidy();
-            _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
-        }
-    }
-
     void str(_Mystr&& _Newstr) {
-        _Str(_STD move(_Newstr), _Choose_pocma<_Alloc>{});
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alloc>;
+        if constexpr (_Pocma_val == _Pocma_values::_Equal_allocators || _Pocma_val == _Pocma_values::_Propagate_allocators) {
+            _Tidy();
+            _Pocma(_Al, _Newstr._Getal());
+            _Init_string_inplace(_STD move(_Newstr), _Mystate);
+        } else {
+            if (_Al == _Newstr._Getal()) {
+                _Tidy();
+                _Pocma(_Al, _Newstr._Getal());
+                _Init_string_inplace(_STD move(_Newstr), _Mystate);
+            } else {
+                _Tidy();
+                _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
+            }
+        }
     }
 
     _NODISCARD allocator_type get_allocator() const noexcept {
