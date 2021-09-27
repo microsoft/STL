@@ -27,8 +27,8 @@ template <class _Ty, class _Outer_alloc, class _Inner_alloc, class... _Types,
     enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
 void _Uses_allocator_construct(_Ty* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Types&&... _Args) {
     // uses-allocator construction of *_Ptr by alloc _Outer propagating alloc _Inner, non-pair case
-    if constexpr (uses_allocator<_Ty, _Inner_alloc>::value) {
-        if constexpr (is_constructible<_Ty, allocator_arg_t, _Inner_alloc&, _Types...>::value) {
+    if constexpr (uses_allocator_v<_Ty, _Inner_alloc>) {
+        if constexpr (is_constructible_v<_Ty, allocator_arg_t, _Inner_alloc&, _Types...>) {
             // uses-allocator construction of *_Ptr by alloc _Outer propagating alloc _Inner, allocator_arg_t case
             allocator_traits<_Outer_alloc>::construct(
                 _Outer, _Ptr, allocator_arg, _Inner, _STD forward<_Types>(_Args)...);
