@@ -2659,11 +2659,10 @@ struct _Arg_formatter {
 };
 
 
-// special compile time version of _Parse_format_specs, this one is parameterized on
+// Special compile time version of _Parse_format_specs. This version is parameterized on
 // the type of the argument associated with the format specifier, since we don't really
-// care about avoiding code bloat for code that never runs at runtime, and also because
-// we'd like to avoid actually erasing the argument types and forming the basic_format_args
-// structure at compile time.
+// care about avoiding code bloat for code that never runs at runtime, and we can't form
+// the erased basic_format_args structure at compile time.
 template <typename _Ty, typename _ParseContext>
 constexpr typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
     using _CharT                = typename _ParseContext::char_type;
