@@ -806,7 +806,7 @@ public:
 // clang-format off
 template <class _Iter>
 concept _Use_postfix_proxy = !requires(_Iter& __it) { { *__it++ } -> _Can_reference; }
-    && indirectly_readable<_Iter> // Per LWG issue submitted but unnumbered as of 2021-09-23
+    && indirectly_readable<_Iter> // Per LWG-3601
     && constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>
     && move_constructible<iter_value_t<_Iter>>;
 
@@ -881,7 +881,7 @@ public:
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (is_pointer_v<_Iter> || _Has_member_arrow<const _Iter&>) {
+        if constexpr (_Has_member_arrow<const _Iter&> || is_pointer_v<_Iter>) {
             return (_Val._Iterator); // NB: () are necessary for decltype(auto)
         } else if constexpr (is_reference_v<iter_reference_t<_Iter>>) {
             auto&& _Tmp = *_Val._Iterator;
