@@ -112,7 +112,7 @@ public:
             return *this;
         }
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alloc>;
-        if constexpr (_Pocma_val == _Pocma_values::_No_prorpagate_allocators) {
+        if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
             auto& _Al = _Getal();
             if (_Al != _Right._Getal()) {
                 _Tidy();
