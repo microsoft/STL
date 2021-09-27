@@ -502,41 +502,33 @@ private:
 };
 
 template <class _Traits, class _FwdIt1, class _FwdIt2>
-int _Iter_compare3(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, true_type) {
-    // _Iter_compare for memory buffer ranges
-    return _Traits_compare<_Traits>(
-        _First1, static_cast<size_t>(_Last1 - _First1), _First2, static_cast<size_t>(_Last2 - _First2));
-}
+int _Iter_compare2(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
+    if constexpr (is_pointer<_FwdIt1>::value && is_pointer<_FwdIt2>::value) {
+        // _Iter_compare for memory buffer ranges
+        return _Traits_compare<_Traits>(
+            _First1, static_cast<size_t>(_Last1 - _First1), _First2, static_cast<size_t>(_Last2 - _First2));
+    } else {
+        // _Iter_compare for general ranges
+        const pair<_FwdIt1, _FwdIt2> _Cmp = _STD mismatch(_First1, _Last1, _First2, _Last2, _Char_traits_eq<_Traits>{});
 
-template <class _Traits, class _FwdIt1, class _FwdIt2>
-int _Iter_compare3(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, false_type) {
-    // _Iter_compare for general ranges
-    const pair<_FwdIt1, _FwdIt2> _Cmp = _STD mismatch(_First1, _Last1, _First2, _Last2, _Char_traits_eq<_Traits>{});
+        if (_Cmp.first == _Last1) {
+            if (_Cmp.second == _Last2) {
+                return 0;
+            } else {
+                return -1;
+            }
+        }
 
-    if (_Cmp.first == _Last1) {
         if (_Cmp.second == _Last2) {
-            return 0;
-        } else {
+            return 1;
+        }
+
+        if (_Traits::lt(*_Cmp.first, *_Cmp.second)) {
             return -1;
+        } else {
+            return 1;
         }
     }
-
-    if (_Cmp.second == _Last2) {
-        return 1;
-    }
-
-    if (_Traits::lt(*_Cmp.first, *_Cmp.second)) {
-        return -1;
-    } else {
-        return 1;
-    }
-}
-
-template <class _Traits, class _FwdIt1, class _FwdIt2>
-int _Iter_compare2(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
-    // decide which _Iter_compare implementation to use
-    return _Iter_compare3<_Traits>(
-        _First1, _Last1, _First2, _Last2, bool_constant<conjunction_v<is_pointer<_FwdIt1>, is_pointer<_FwdIt2>>>{});
 }
 
 template <class _Traits, class _FwdIt1, class _FwdIt2>
