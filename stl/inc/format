@@ -217,6 +217,11 @@ public:
         if (_Next_arg_id < 0) {
             _THROW(format_error("Can not switch from manual to automatic indexing"));
         }
+        if (_STD is_constant_evaluated()) {
+            if (static_cast<size_t>(_Next_arg_id) >= _Num_args) {
+                _You_see_this_error_because_arg_id_is_out_of_range();
+            }
+        }
 
         return static_cast<size_t>(_Next_arg_id++);
     }
@@ -538,7 +543,7 @@ private:
         return (_Len >= 4) ? 4 : -1;
     }
 
-    _NODISCARD static int _Estimate_utf8_character_width(const char* const _Ptr, const int _Units) noexcept {
+    _NODISCARD static constexpr int _Estimate_utf8_character_width(const char* const _Ptr, const int _Units) noexcept {
         // Return an estimate for the width of the character composed of _Units code units,
         // whose first code unit is denoted by _Ptr.
         auto _Ch = static_cast<char32_t>(*_Ptr);
@@ -593,7 +598,7 @@ public:
         }
     }
 
-    _NODISCARD const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
+    _NODISCARD constexpr const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
         // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
         // continuation byte) in [_First, _Last).
         if constexpr (_Statically_Utf8) {
@@ -616,7 +621,7 @@ public:
         }
     }
 
-    _NODISCARD int _Estimate_width(const char* const _Ptr, const int _Units) const {
+    _NODISCARD constexpr int _Estimate_width(const char* const _Ptr, const int _Units) const {
         // Return an estimate for the width of the character composed of _Units code units,
         // whose first code unit is denoted by _Ptr.
         if constexpr (_Statically_Utf8) {
@@ -636,7 +641,8 @@ public:
 template <bool _Statically_Utf8>
 class _Fmt_codec<wchar_t, _Statically_Utf8> {
 public:
-    _NODISCARD int _Units_in_next_character(const wchar_t* _First, const wchar_t* const _Last) const noexcept {
+    _NODISCARD constexpr int _Units_in_next_character(
+        const wchar_t* _First, const wchar_t* const _Last) const noexcept {
         // Returns a count of the number of code units that compose the first encoded character in
         // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
         // *_First is an unpaired surrogate.
@@ -657,12 +663,12 @@ public:
         return 2; // surrogate pair
     }
 
-    _NODISCARD const wchar_t* _Find_encoded(
+    _NODISCARD constexpr const wchar_t* _Find_encoded(
         const wchar_t* const _First, const wchar_t* const _Last, const wchar_t _Val) const {
         return _Find_unchecked(_First, _Last, _Val);
     }
 
-    _NODISCARD int _Estimate_width(const wchar_t* const _Ptr, const int _Units) const {
+    _NODISCARD constexpr int _Estimate_width(const wchar_t* const _Ptr, const int _Units) const {
         // Return an estimate for the width of the character composed of _Units code units,
         // whose first code unit is denoted by _Ptr.
         auto _Ch = static_cast<char32_t>(*_Ptr);
@@ -2660,11 +2666,16 @@ struct _Arg_formatter {
 // structure at compile time.
 template <typename _Ty, typename _ParseContext>
 constexpr typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
-    // using _CharT         = typename _ParseContext::char_type;
-    using _Context       = basic_format_context<_Fmt_it, char>;
-    using _ArgTraits     = _Format_arg_traits<_Context>;
-    using _FormattedType = _ArgTraits::template _Storage_type<_Ty>;
-    auto _Formatter      = formatter<_FormattedType, char>();
+    using _CharT                = typename _ParseContext::char_type;
+    using _Context              = basic_format_context<_Fmt_it, _CharT>;
+    using _ArgTraits            = _Format_arg_traits<_Context>;
+    using _FormattedTypeMapping = typename _ArgTraits::template _Storage_type<_Ty>;
+    // If the type is going to use a custom formatter we should just use that,
+    // instead of trying to instantiate a custom formatter for it's erased handle
+    // type
+    using _FormattedType = conditional_t<is_same_v<_FormattedTypeMapping, typename basic_format_arg<_Context>::handle>,
+        _Ty, _FormattedTypeMapping>;
+    auto _Formatter      = formatter<_FormattedType, _CharT>();
     return _Formatter.parse(_Pc);
 }
 
@@ -2839,7 +2850,9 @@ struct _Basic_format_string {
 
     template <convertible_to<basic_string_view<_CharT>> _Ty>
     consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
-        _Parse_format_string(_Str, _Format_checker<_CharT>{_Str});
+        if (_Is_execution_charset_utf8()) {
+            _Parse_format_string(_Str, _Format_checker<_CharT, remove_cvref_t<_Args>...>{_Str});
+        }
     }
 };
 
