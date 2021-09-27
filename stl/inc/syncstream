@@ -108,9 +108,11 @@ public:
 
     basic_syncbuf& operator=(basic_syncbuf&& _Right) { // see LWG-3498 regarding noexcept
         emit();
+
         if (this == _STD addressof(_Right)) {
             return *this;
         }
+
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alloc>;
         if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
             auto& _Al = _Getal();
@@ -135,6 +137,7 @@ public:
                 return *this;
             }
         }
+
         _Tidy();
         _Pocma(_Getal(), _Right._Getal());
         _Swap_except_al(_Right);

@@ -477,6 +477,7 @@ public:
         if (this == _STD addressof(_Right)) {
             return *this;
         }
+
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
         if constexpr (_Pocma_val == _Pocma_values::_Equal_allocators) {
             clear();
@@ -550,6 +551,7 @@ public:
                 _Guard._Target = nullptr;
             }
         }
+
 #ifdef _ENABLE_STL_INTERNAL_CHECK
         _Stl_internal_check_container_invariants();
         _Right._Stl_internal_check_container_invariants();
@@ -716,6 +718,7 @@ public:
         if (this == _STD addressof(_Right)) {
             return *this;
         }
+
         if constexpr (_Choose_pocca_v<_Alnode>) {
             auto& _Al             = _Getal();
             const auto& _Right_al = _Right._Getal();
@@ -752,6 +755,7 @@ public:
             _Reinsert_with_invalid_vec();
             _Guard._Target = nullptr;
         }
+
 #ifdef _ENABLE_STL_INTERNAL_CHECK
         _Stl_internal_check_container_invariants();
         _Right._Stl_internal_check_container_invariants();

@@ -2479,6 +2479,7 @@ public:
         if (this == _STD addressof(_Right)) {
             return *this;
         }
+
 #if _ITERATOR_DEBUG_LEVEL == 0
         this->_Myvec  = _STD move(_Right._Myvec);
         this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
@@ -2560,6 +2561,7 @@ public:
         if (this == _STD addressof(_Right)) {
             return *this;
         }
+
 #if _ITERATOR_DEBUG_LEVEL == 0
         this->_Myvec  = _Right._Myvec;
         this->_Mysize = _Right._Mysize;
