@@ -50,17 +50,16 @@ void _Uses_allocator_construct(_Ty* const _Ptr, _Outer_alloc& _Outer, _Inner_all
 }
 
 template <class _Ty, class _Alloc, class... _Types>
-auto _Uses_allocator_piecewise(true_type, _Alloc& _Al, tuple<_Types...>&& _Tuple) {
-    if constexpr (is_constructible<_Ty, allocator_arg_t, _Alloc&, _Types...>::value) {
-        return _STD tuple_cat(tuple<allocator_arg_t, _Alloc&>(allocator_arg, _Al), _STD move(_Tuple));
+tuple<_Types...>&& _Uses_allocator_piecewise(_Alloc&, tuple<_Types...>&& _Tuple) {
+    if constexpr (uses_allocator_v<_Ty, _Alloc>) {
+        if constexpr (is_constructible<_Ty, allocator_arg_t, _Alloc&, _Types...>::value) {
+            return _STD tuple_cat(tuple<allocator_arg_t, _Alloc&>(allocator_arg, _Al), _STD move(_Tuple));
+        } else {
+            return _STD tuple_cat(_STD move(_Tuple), tuple<_Alloc&>(_Al));
+        }
     } else {
-        return _STD tuple_cat(_STD move(_Tuple), tuple<_Alloc&>(_Al));
+        return _STD move(_Tuple);
     }
-}
-
-template <class, class _Alloc, class... _Types>
-tuple<_Types...>&& _Uses_allocator_piecewise(false_type, _Alloc&, tuple<_Types...>&& _Tuple) {
-    return _STD move(_Tuple);
 }
 
 template <class _Ty1, class _Ty2, class _Outer_alloc, class _Inner_alloc, class... _Types1, class... _Types2>
@@ -68,8 +67,8 @@ void _Uses_allocator_construct_pair(pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& 
     tuple<_Types1...>&& _Val1, tuple<_Types2...>&& _Val2) {
     // uses-allocator construction of pair from _Val1 and _Val2 by alloc _Outer propagating alloc _Inner
     allocator_traits<_Outer_alloc>::construct(_Outer, _Ptr, piecewise_construct,
-        _Uses_allocator_piecewise<_Ty1>(uses_allocator<_Ty1, _Inner_alloc>{}, _Inner, _STD move(_Val1)),
-        _Uses_allocator_piecewise<_Ty2>(uses_allocator<_Ty2, _Inner_alloc>{}, _Inner, _STD move(_Val2)));
+        _Uses_allocator_piecewise<_Ty1>(_Inner, _STD move(_Val1)),
+        _Uses_allocator_piecewise<_Ty2>(_Inner, _STD move(_Val2)));
 }
 
 template <class _Ty1, class _Ty2, class _Outer_alloc, class _Inner_alloc, class... _Types1, class... _Types2>
