@@ -212,7 +212,7 @@ public:
             }
 
             _Unlock_guard<_Lock> _Unlock_outer{_Lck};
-            unique_lock<mutex> _Guard_unlocks_before_locking_outer{std::move(_Guard)};
+            unique_lock<mutex> _Guard_unlocks_before_locking_outer{_STD move(_Guard)};
 
             const auto _Now = _Clock::now();
             if (_Now >= _Abs_time) {
