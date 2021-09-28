@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstddef>
 #include <ios>
 #include <random>
 #include <sstream>
-
+#include <string>
 using namespace std;
 
 void check_state(const string& state_str) {
     // Check word-by-word in case of whitespace differences.
-    constexpr static const char* state_ref[] = {
+    static constexpr const char* state_ref[] = {
         "10880375256626",
         "126660097854724",
         "33643165434010",
@@ -25,7 +26,7 @@ void check_state(const string& state_str) {
         "263777435457028",
         "0",
     };
-    constexpr auto state_size = sizeof(state_ref) / sizeof(state_ref[0]);
+    constexpr auto state_size = size(state_ref);
     stringstream sstr(state_str);
 
     size_t idx = 0;
@@ -36,16 +37,23 @@ void check_state(const string& state_str) {
         ++idx;
     }
 
-    assert(sstr.rdstate() == ios_base::eofbit && idx == state_size);
+    assert(sstr.rdstate() == ios_base::eofbit);
+    assert(idx == state_size);
 }
 
 void check(stringstream& sstr) {
+    // N4892 [tab:rand.req.eng]: "Postconditions: The os.fmtflags and fill character are unchanged."
+    // and "Postconditions: The is.fmtflags are unchanged."
+    const auto old_flags = sstr.flags();
+    const auto old_fill  = sstr.fill();
     ranlux48_base eng1;
     ranlux48_base eng2;
     sstr << eng1;
     check_state(sstr.str());
     sstr >> eng2;
     assert(eng1 == eng2);
+    assert(sstr.flags() == old_flags);
+    assert(sstr.fill() == old_fill);
 }
 
 int main() {

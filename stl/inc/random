@@ -675,8 +675,8 @@ public:
     }
 
     template <class _Elem, class _Traits>
-    basic_ostream<_Elem, _Traits>& _WriteFull(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
-        _Swc_Traits::_WriteFull(_Ostr, *this, _Carry);
+    basic_ostream<_Elem, _Traits>& _Write_full(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
+        _Swc_Traits::_Write_full(_Ostr, *this, _Carry);
         return _Ostr;
     }
 
@@ -832,7 +832,7 @@ struct _Swc_traits { // traits for subtract_with_carry generator
     }
 
     template <class _Elem, class _Traits>
-    static void _WriteFull(
+    static void _Write_full(
         basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Nw>& _Buf, _Cy_t _Cy) { // write state to _Ostr
         for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
             _Ostr << _Buf._At(_Ix) << ' ';
@@ -930,7 +930,7 @@ public:
         basic_ostream<_Elem, _Traits>& _Ostr, const subtract_with_carry_engine& _Eng) {
         const auto _Save_flags = _Ostr.flags(ios_base::dec | ios_base::left);
         const auto _Save_fill  = _Ostr.fill(' ');
-        _Eng._WriteFull(_Ostr);
+        _Eng._Write_full(_Ostr);
         _Ostr.flags(_Save_flags);
         _Ostr.fill(_Save_fill);
         return _Ostr;
@@ -939,9 +939,9 @@ public:
     template <class _Elem, class _Traits>
     friend basic_istream<_Elem, _Traits>& operator>>(
         basic_istream<_Elem, _Traits>& _Istr, subtract_with_carry_engine& _Eng) {
-        constexpr auto _Nx = subtract_with_carry_engine::long_lag;
-        subtract_with_carry_engine::result_type _Buffer[_Nx];
-        typename subtract_with_carry_engine::_Mybase::_Traits::_Cy_t _Carry_buf;
+        constexpr auto _Nx = long_lag;
+        result_type _Buffer[_Nx];
+        typename _Mybase::_Traits::_Cy_t _Carry_buf;
         const auto _Save_flags = _Istr.flags(ios_base::dec | ios_base::skipws);
         for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
             _Istr >> _Buffer[_Ix];
