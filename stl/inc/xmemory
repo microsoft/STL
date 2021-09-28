@@ -853,6 +853,10 @@ public:
         return static_cast<size_t>(-1) / sizeof(_Ty);
     }
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
+
+#ifdef __SANITIZE_ADDRESS__
+    static constexpr size_t _Minimum_allocation_alignment = 8;
+#endif // __SANITIZE_ADDRESS__
 };
 
 template <>
