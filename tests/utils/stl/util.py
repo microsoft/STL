@@ -70,6 +70,16 @@ class ExecuteCommandTimeoutException(Exception):
 kUseCloseFDs = not (platform.system() == 'Windows')
 
 
+def decodeOutput(bytes):
+    # MSVC's output is encoded in the active code page
+    # EDG's (`cl /BE`) output is encoded in UTF-8
+    try:
+        return bytes.decode()
+    except UnicodeError:
+        import locale
+        return bytes.decode(locale.getpreferredencoding(do_setlocale=False))
+
+
 def executeCommand(command, cwd=None, env=None, input=None, timeout=0):
     """
         Execute command ``command`` (list of arguments or string)
@@ -118,8 +128,8 @@ def executeCommand(command, cwd=None, env=None, input=None, timeout=0):
             timerObject.cancel()
 
     # Ensure the resulting output is always of string type.
-    out = out.decode()
-    err = err.decode()
+    out = decodeOutput(out)
+    err = decodeOutput(err)
 
     if hitTimeOut:
         raise ExecuteCommandTimeoutException(

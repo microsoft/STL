@@ -57,11 +57,17 @@ std/language.support/support.limits/support.limits.general/locale.version.pass.c
 std/language.support/support.limits/support.limits.general/ostream.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
 
+# libc++ doesn't yet implement P2231R1, so it expects an old value for `__cpp_lib_optional`
+std/language.support/support.limits/support.limits.general/optional.version.pass.cpp:1 FAIL
+
 # test emits warning C4310: cast truncates constant value
 std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
 
 # libc++ doesn't yet implement P1754R1 or P1964R2, so it expects an old value for `__cpp_lib_concepts`
 std/language.support/support.limits/support.limits.general/concepts.version.pass.cpp FAIL
+
+# Bogus test believes that optional<non_constexpr_destructor> cannot be a literal type
+std/utilities/optional/optional.object/optional.object.dtor/dtor.pass.cpp:0 FAIL
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -275,16 +281,7 @@ std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKI
 
 
 # *** MISSING STL FEATURES ***
-# C++23 P1048R1 "is_scoped_enum"
-std/utilities/meta/meta.unary/meta.unary.prop/is_scoped_enum.pass.cpp FAIL
-
-# C++23 P1679R3 "contains() For basic_string/basic_string_view"
-std/strings/basic.string/string.contains/contains.char.pass.cpp FAIL
-std/strings/basic.string/string.contains/contains.ptr.pass.cpp FAIL
-std/strings/basic.string/string.contains/contains.string_view.pass.cpp FAIL
-std/strings/string.view/string.view.template/contains.char.pass.cpp FAIL
-std/strings/string.view/string.view.template/contains.ptr.pass.cpp FAIL
-std/strings/string.view/string.view.template/contains.string_view.pass.cpp FAIL
+# Nothing here! :-)
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -557,6 +554,11 @@ std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/pow.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
 
+# Assertion failed: c == NaN || c == non_zero_nan
+# Testing input values outside the range of [complex.value.ops]/9
+# libc++ handles those input values differently
+std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
+
 # Assertion failed: std::abs(skew - x_skew) < 0.01
 # Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
 std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
@@ -720,7 +722,6 @@ std/numerics/complex.number/complex.transcendentals/asinh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/atanh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/cos.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/cosh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/exp.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/log10.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/pow_complex_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/pow_complex_scalar.pass.cpp FAIL
@@ -729,7 +730,6 @@ std/numerics/complex.number/complex.transcendentals/sin.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/sinh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/tanh.pass.cpp FAIL
 std/numerics/complex.number/complex.value.ops/norm.pass.cpp FAIL
-std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 std/localization/locale.categories/category.ctype/facet.ctype.special/facet.ctype.char.statics/classic_table.pass.cpp FAIL

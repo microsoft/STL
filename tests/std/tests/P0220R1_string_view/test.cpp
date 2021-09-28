@@ -74,6 +74,19 @@ const evil_conversion_to_string_view_lvalue_only convert_lvalue_only{};
 static_assert(is_trivially_copyable_v<string_view>);
 static_assert(is_trivially_copyable_v<wstring_view>);
 
+// Similar non-standard guarantees
+static_assert(is_trivially_move_constructible_v<string_view>);
+static_assert(is_trivially_copy_constructible_v<string_view>);
+static_assert(is_trivially_move_assignable_v<string_view>);
+static_assert(is_trivially_copy_assignable_v<string_view>);
+static_assert(is_trivially_destructible_v<string_view>);
+
+static_assert(is_trivially_move_constructible_v<wstring_view>);
+static_assert(is_trivially_copy_constructible_v<wstring_view>);
+static_assert(is_trivially_move_assignable_v<wstring_view>);
+static_assert(is_trivially_copy_assignable_v<wstring_view>);
+static_assert(is_trivially_destructible_v<wstring_view>);
+
 // noexcept assertions:
 // (functions that explicitly throw have their throws tested and therefore have no static_asserts)
 static_assert(noexcept(string_view{}), "default constructor not noexcept");
@@ -391,11 +404,7 @@ constexpr bool test_case_iterators() {
     assert(*testIterator == static_cast<CharT>('h'));
     testIterator += 8;
     assert(*testIterator == static_cast<CharT>('r'));
-#if defined(__EDG__) && defined(_M_X64) // TRANSITION, VSO-1356637
-    testIterator -= 4;
-#else // ^^^ workaround / no workaround vvv
     testIterator += -4;
-#endif // ^^^ no workaround ^^^
     assert(*testIterator == static_cast<CharT>('o'));
 
     assert(*(testIterator + 6) == static_cast<CharT>('d'));

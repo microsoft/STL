@@ -38,13 +38,11 @@ _END_EXTERN_C
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
-// COMMON SORT PARAMETERS
 _INLINE_VAR constexpr int _ISORT_MAX = 32; // maximum size for insertion sort
 
 template <class _It>
-_INLINE_VAR constexpr auto _Isort_max = _Iter_diff_t<_It>{_ISORT_MAX};
+_INLINE_VAR constexpr _Iter_diff_t<_It> _Isort_max{_ISORT_MAX};
 
-// STRUCT TEMPLATE _Optimistic_temporary_buffer
 template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
     // convert an iterator difference_type to a ptrdiff_t for use in temporary buffers
@@ -97,7 +95,6 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // STRUCT TEMPLATE in_fun_result
     template <class _In, class _Fun>
     struct in_fun_result {
         /* [[no_unique_address]] */ _In in;
@@ -114,7 +111,6 @@ namespace ranges {
         }
     };
 
-    // STRUCT TEMPLATE in_in_out_result
     template <class _In1, class _In2, class _Out>
     struct in_in_out_result {
         /* [[no_unique_address]] */ _In1 in1;
@@ -133,7 +129,6 @@ namespace ranges {
         }
     };
 
-    // STRUCT TEMPLATE in_out_out_result
     template <class _In, class _Out1, class _Out2>
     struct in_out_out_result {
         /* [[no_unique_address]] */ _In in;
@@ -152,7 +147,6 @@ namespace ranges {
         }
     };
 
-    // STRUCT TEMPLATE min_max_result
     template <class _Ty>
     struct min_max_result {
         /* [[no_unique_address]] */ _Ty min;
@@ -169,7 +163,6 @@ namespace ranges {
         }
     };
 
-    // STRUCT TEMPLATE in_found_result
     template <class _In>
     struct in_found_result {
         /* [[no_unique_address]] */ _In in;
@@ -186,7 +179,6 @@ namespace ranges {
         }
     };
 
-    // FUNCTION TEMPLATE _Rewrap_subrange
     template <class _Result, class _Wrapped, class _Unwrapped>
     _NODISCARD constexpr _Result _Rewrap_subrange(_Wrapped& _Val, subrange<_Unwrapped>&& _UResult) {
         // conditionally computes a wrapped subrange from a wrapped iterator or range and unwrapped subrange
@@ -215,7 +207,6 @@ namespace ranges {
         }
     }
 
-    // FUNCTION TEMPLATE _Get_final_iterator_unwrapped
     template <forward_iterator _Wrapped, sentinel_for<_Wrapped> _Se>
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
         // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]
@@ -261,7 +252,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE for_each
 template <class _InIt, class _Fn>
 _CONSTEXPR20 _Fn for_each(_InIt _First, _InIt _Last, _Fn _Func) { // perform function for each element [_First, _Last)
     _Adl_verify_range(_First, _Last);
@@ -278,7 +268,6 @@ _CONSTEXPR20 _Fn for_each(_InIt _First, _InIt _Last, _Fn _Func) { // perform fun
 template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution_policy_t<_ExPo> = 0>
 void for_each(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept; // terminates
 
-// FUNCTION TEMPLATE for_each_n
 template <class _InIt, class _Diff, class _Fn>
 _CONSTEXPR20 _InIt for_each_n(_InIt _First, const _Diff _Count_raw, _Fn _Func) {
     // perform function for each element [_First, _First + _Count)
@@ -303,11 +292,9 @@ _FwdIt for_each_n(_ExPo&& _Exec, _FwdIt _First, _Diff _Count_raw, _Fn _Func) noe
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE for_each_result
     template <class _In, class _Fun>
     using for_each_result = in_fun_result<_In, _Fun>;
 
-    // VARIABLE ranges::for_each
     class _For_each_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -355,11 +342,9 @@ namespace ranges {
 
     inline constexpr _For_each_fn for_each{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE for_each_n_result
     template <class _In, class _Fun>
     using for_each_n_result = in_fun_result<_In, _Fun>;
 
-    // VARIABLE ranges::for_each_n
     class _For_each_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -387,12 +372,10 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 #if _HAS_CXX17
-// PARALLEL FUNCTION TEMPLATE find_if
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt find_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE find_if_not
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _InIt find_if_not(_InIt _First, const _InIt _Last, _Pr _Pred) {
     // find first element that satisfies !_Pred
@@ -414,7 +397,6 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _FwdIt find_if_not(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE adjacent_find
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt adjacent_find(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find first satisfying _Pred with successor
@@ -452,7 +434,6 @@ _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::adjacent_find
     class _Adjacent_find_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -504,7 +485,6 @@ namespace ranges {
 
     inline constexpr _Adjacent_find_fn adjacent_find{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::count
     class _Count_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -548,7 +528,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE count_if
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count_if(_InIt _First, _InIt _Last, _Pr _Pred) {
     // count elements satisfying _Pred
@@ -573,7 +552,6 @@ _NODISCARD _Iter_diff_t<_FwdIt> count_if(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::count_if
     class _Count_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -615,7 +593,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE mismatch
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(_InIt1 _First1, const _InIt1 _Last1, _InIt2 _First2, _Pr _Pred) {
     // return [_First1, _Last1)/[_First2, ...) mismatch
@@ -713,7 +690,6 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::equal
     class _Equal_fn : private _Not_quite_object {
     private:
         template <class _It1, class _It2, class _Size, class _Pr, class _Pj1, class _Pj2>
@@ -810,7 +786,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE is_permutation
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, ...)
@@ -912,14 +887,11 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _Fw
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // clang-format off
     template <class _It, class _Se>
     concept _Bidi_common = is_same_v<_It, _Se> && bidirectional_iterator<_It>;
     template <class _Rng>
     concept _Bidi_common_range = common_range<_Rng> && bidirectional_iterator<iterator_t<_Rng>>;
-    // clang-format on
 
-    // VARIABLE ranges::is_permutation
     class _Is_permutation_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1144,7 +1116,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE all_of
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool all_of(_InIt _First, _InIt _Last, _Pr _Pred) { // test if all elements satisfy _Pred
     _Adl_verify_range(_First, _Last);
@@ -1166,7 +1137,6 @@ _NODISCARD bool all_of(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::all_of
     class _All_of_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1207,7 +1177,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE any_of
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool any_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if any element satisfies _Pred
@@ -1230,7 +1199,6 @@ _NODISCARD bool any_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _Pr
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::any_of
     class _Any_of_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1271,7 +1239,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE none_of
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool none_of(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if no elements satisfy _Pred
@@ -1294,7 +1261,6 @@ _NODISCARD bool none_of(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Pr _P
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::none_of
     class _None_of_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1333,11 +1299,9 @@ namespace ranges {
 
     inline constexpr _None_of_fn none_of{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE copy_n_result
     template <class _In, class _Out>
     using copy_n_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::copy_n
     class _Copy_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1347,7 +1311,7 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         constexpr copy_n_result<_It, _Out> operator()(_It _First, iter_difference_t<_It> _Count, _Out _Result) const {
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-            if constexpr (_Ptr_copy_cat<decltype(_UFirst), _Out>::_Trivially_copyable) {
+            if constexpr (_Iter_copy_cat<decltype(_UFirst), _Out>::_Bitcopy_assignable) {
                 if (!_STD is_constant_evaluated()) {
                     auto _Final = _UFirst + _Count;
                     _Result = _Copy_memmove(_STD move(_UFirst), _Final, _STD move(_Result));
@@ -1368,11 +1332,9 @@ namespace ranges {
 
     inline constexpr _Copy_n_fn copy_n{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE copy_backward_result
     template <class _In, class _Out>
     using copy_backward_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::copy_backward
     class _Copy_backward_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1403,7 +1365,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE copy_if
 template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) { // copy each satisfying _Pred
     _Adl_verify_range(_First, _Last);
@@ -1434,11 +1395,9 @@ _FwdIt2 copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE copy_if_result
     template <class _In, class _Out>
     using copy_if_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::copy_if
     class _Copy_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1491,17 +1450,15 @@ namespace ranges {
 
     inline constexpr _Copy_if_fn copy_if{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE move_result
     template <class _In, class _Out>
     using move_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::move
     // clang-format off
     template <input_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Out>
         requires indirectly_movable<_It, _Out>
     constexpr move_result<_It, _Out> _Move_unchecked(_It _First, _Se _Last, _Out _Result) {
         // clang-format on
-        if constexpr (_Ptr_move_cat<_It, _Out>::_Trivially_copyable) {
+        if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
                 auto _Final = _RANGES next(_First, _STD move(_Last));
                 _Result     = _Copy_memmove(_STD move(_First), _Final, _STD move(_Result));
@@ -1549,17 +1506,15 @@ namespace ranges {
 
     inline constexpr _Move_fn move{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE move_backward_result
     template <class _In, class _Out>
     using move_backward_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::move_backward
     // clang-format off
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <bidirectional_iterator _It1, bidirectional_iterator _It2>
         requires indirectly_movable<_It1, _It2>
     constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
-        if constexpr (_Ptr_move_cat<_It1, _It2>::_Trivially_copyable) {
+        if constexpr (_Iter_move_cat<_It1, _It2>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
                 return _Copy_backward_memmove(_First, _Last, _Result);
             }
@@ -1603,7 +1558,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE partition_copy
 template <class _InIt, class _OutIt1, class _OutIt2, class _Pr>
 _CONSTEXPR20 pair<_OutIt1, _OutIt2> partition_copy(
     _InIt _First, _InIt _Last, _OutIt1 _Dest_true, _OutIt2 _Dest_false, _Pr _Pred) {
@@ -1642,11 +1596,9 @@ pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _F
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE partition_copy_result
     template <class _In, class _Out1, class _Out2>
     using partition_copy_result = in_out_out_result<_In, _Out1, _Out2>;
 
-    // VARIABLE ranges::partition_copy
     class _Partition_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1712,7 +1664,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE is_partitioned
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_partitioned(const _InIt _First, const _InIt _Last, _Pr _Pred) {
     // test if [_First, _Last) partitioned by _Pred
@@ -1746,7 +1697,6 @@ _NODISCARD bool is_partitioned(_ExPo&&, const _FwdIt _First, const _FwdIt _Last,
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::is_partitioned
     class _Is_partitioned_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1797,7 +1747,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE partition_point
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find beginning of false partition in [_First, _Last)
@@ -1824,7 +1773,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt partition_point(_FwdIt _First, _FwdIt _Last, _Pr 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::partition_point
     class _Partition_point_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -1921,7 +1869,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE _Equal_rev_pred_unchecked
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, ...) to [_First2, _Last2)
@@ -1943,7 +1890,6 @@ _NODISCARD _CONSTEXPR20 bool _Equal_rev_pred_unchecked(_InIt1 _First1, _InIt2 _F
     return true;
 }
 
-// FUNCTION TEMPLATE search
 template <class _FwdItHaystack, class _FwdItPat, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHaystack _Last1, const _FwdItPat _First2,
     const _FwdItPat _Last2, _Pr _Pred) { // find first [_First2, _Last2) satisfying _Pred
@@ -2016,159 +1962,6 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(
     return _Search(_First, _Last).first;
 }
 
-#ifdef __cpp_lib_concepts
-namespace ranges {
-    // FUNCTION TEMPLATE _Equal_rev_pred
-    // clang-format off
-    template <class _It1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-    concept _Equal_rev_pred_can_memcmp = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>
-        && sized_sentinel_for<_Se2, _It2> && _Equal_memcmp_is_safe<_It1, _It2, _Pr>;
-
-    template <input_iterator _It1, input_iterator _It2, sentinel_for<_It2> _Se2, class _Pr, class _Pj1, class _Pj2>
-        requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-    _NODISCARD constexpr pair<bool, _It1> _Equal_rev_pred(
-        _It1 _First1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-        // Returns {true, _First1 + (_Last2 - _First2)} if [_First1, ...) equals [_First2, _Last2), and {false, {}}
-        // otherwise.
-        constexpr bool _Optimize = _Equal_rev_pred_can_memcmp<_It1, _It2, _Se2, _Pr, _Pj1, _Pj2>;
-        if constexpr (_Optimize) {
-            if (!_STD is_constant_evaluated()) {
-                bool _Ans;
-                if constexpr (same_as<_It2, _Se2>) {
-                    _Ans = _Memcmp_ranges(_First2, _Last2, _First1) == 0;
-                } else {
-                    _Ans = _Memcmp_count(_First1, _First2, static_cast<size_t>(_Last2 - _First2)) == 0;
-                }
-
-                if (_Ans) {
-                    _First1 += (_Last2 - _First2);
-                    return {true, _STD move(_First1)};
-                } else {
-                    return {false, _It1{}};
-                }
-            }
-        }
-
-        for (; _First2 != _Last2; ++_First1, (void) ++_First2) {
-            if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
-                return {false, _It1{}};
-            }
-        }
-
-        return {true, _STD move(_First1)};
-    }
-    // clang-format on
-
-    // VARIABLE ranges::search
-    class _Search_fn : private _Not_quite_object {
-    public:
-        using _Not_quite_object::_Not_quite_object;
-
-        // clang-format off
-        template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
-            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
-            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
-            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            _Adl_verify_range(_First1, _Last1);
-            _Adl_verify_range(_First2, _Last2);
-            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
-            auto _ULast1  = _Get_unwrapped(_STD move(_Last1));
-            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
-            auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
-
-            if constexpr (sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
-                const auto _Count1 = _ULast1 - _UFirst1;
-                const auto _Count2 = _ULast2 - _UFirst2;
-                auto _UResult =
-                    _Search_sized(_STD move(_UFirst1), _STD move(_ULast1), _Count1, _STD move(_UFirst2),
-                        _STD move(_ULast2), _Count2, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Rewrap_subrange<subrange<_It1>>(_First1, _STD move(_UResult));
-            } else {
-                auto _UResult = _Search_unsized(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
-                    _STD move(_ULast2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Rewrap_subrange<subrange<_It1>>(_First1, _STD move(_UResult));
-            }
-        }
-
-        template <forward_range _Rng1, forward_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
-            class _Pj2 = identity>
-            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr borrowed_subrange_t<_Rng1> operator()(
-            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
-            if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
-                const auto _Count1 = _RANGES distance(_Range1);
-                const auto _Count2 = _RANGES distance(_Range2);
-                auto _UResult = _Search_sized(_Ubegin(_Range1), _Uend(_Range1), _Count1,
-                    _Ubegin(_Range2), _Uend(_Range2), _Count2,
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
-            } else {
-                auto _UResult = _Search_unsized(_Ubegin(_Range1), _Uend(_Range1),
-                    _Ubegin(_Range2), _Uend(_Range2),
-                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
-                return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
-            }
-        }
-        // clang-format on
-
-    private:
-        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr subrange<_It1> _Search_sized(_It1 _First1, const _Se1 _Last1,
-            iter_difference_t<_It1> _Count1, _It2 _First2, const _Se2 _Last2, const iter_difference_t<_It2> _Count2,
-            _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
-            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
-            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
-            _STL_INTERNAL_CHECK(_RANGES distance(_First1, _Last1) == _Count1);
-            _STL_INTERNAL_CHECK(_RANGES distance(_First2, _Last2) == _Count2);
-
-            for (; _Count1 >= _Count2; ++_First1, (void) --_Count1) {
-                auto [_Match, _Mid1] = _RANGES _Equal_rev_pred(_First1, _First2, _Last2, _Pred, _Proj1, _Proj2);
-                if (_Match) {
-                    return {_STD move(_First1), _STD move(_Mid1)};
-                }
-            }
-
-            _First1 = _Find_last_iterator(_First1, _Last1, _Count1);
-            return {_First1, _First1};
-        }
-
-        template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr subrange<_It1> _Search_unsized(
-            _It1 _First1, const _Se1 _Last1, _It2 _First2, const _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
-            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2>);
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
-            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
-
-            for (;; ++_First1) {
-                auto _Mid1 = _First1;
-                for (auto _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
-                    if (_Mid2 == _Last2) { // match
-                        return {_STD move(_First1), _STD move(_Mid1)};
-                    }
-
-                    if (_Mid1 == _Last1) { // not enough haystack left to find a match
-                        return {_Mid1, _Mid1};
-                    }
-
-                    if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_Mid1), _STD invoke(_Proj2, *_Mid2))) { // mismatch
-                        break;
-                    }
-                }
-            }
-        }
-    };
-
-    inline constexpr _Search_fn search{_Not_quite_object::_Construct_tag{}};
-} // namespace ranges
-#endif // __cpp_lib_concepts
-
-// FUNCTION TEMPLATE search_n
 template <class _FwdIt, class _Diff, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt search_n(
     const _FwdIt _First, _FwdIt _Last, const _Diff _Count_raw, const _Ty& _Val, _Pr _Pred) {
@@ -2263,7 +2056,6 @@ _NODISCARD _FwdIt search_n(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Las
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::search_n
     class _Search_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2425,7 +2217,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE find_end
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2, _Pr _Pred) {
@@ -2528,7 +2319,6 @@ _NODISCARD _FwdIt1 find_end(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _Fwd
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::find_end
     class _Find_end_fn : private _Not_quite_object {
     private:
         template <class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
@@ -2692,7 +2482,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE find_first_of
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt1 find_first_of(
     _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2, _Pr _Pred) {
@@ -2736,7 +2525,6 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _Fw
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::find_first_of
     class _Find_first_of_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2796,11 +2584,9 @@ namespace ranges {
 
     inline constexpr _Find_first_of_fn find_first_of{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE swap_ranges_result
     template <class _In1, class _In2>
     using swap_ranges_result = in_in_result<_In1, _In2>;
 
-    // VARIABLE ranges::swap_ranges
     class _Swap_ranges_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -2893,7 +2679,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE swap_ranges
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
@@ -2914,7 +2699,6 @@ _FwdIt2 swap_ranges(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Dest) noe
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE transform
 template <class _InIt, class _OutIt, class _Fn>
 _CONSTEXPR20 _OutIt transform(const _InIt _First, const _InIt _Last, _OutIt _Dest, _Fn _Func) {
     // transform [_First, _Last) with _Func
@@ -2962,15 +2746,12 @@ _FwdIt3 transform(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, co
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE unary_transform_result
     template <class _In, class _Out>
     using unary_transform_result = in_out_result<_In, _Out>;
 
-    // ALIAS TEMPLATE binary_transform_result
     template <class _In1, class _In2, class _Out>
     using binary_transform_result = in_in_out_result<_In1, _In2, _Out>;
 
-    // VARIABLE ranges::transform
     class _Transform_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3074,7 +2855,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE replace
 template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void replace(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Oldval, const _Ty& _Newval) {
     // replace each matching _Oldval with _Newval
@@ -3096,7 +2876,6 @@ void replace(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::replace
     class _Replace_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3152,7 +2931,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE replace_if
 template <class _FwdIt, class _Pr, class _Ty>
 _CONSTEXPR20 void replace_if(const _FwdIt _First, const _FwdIt _Last, _Pr _Pred, const _Ty& _Val) {
     // replace each satisfying _Pred with _Val
@@ -3173,7 +2951,6 @@ void replace_if(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred, const _Ty
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::replace_if
     class _Replace_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3228,7 +3005,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE replace_copy
 template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Oldval, const _Ty& _Newval) {
     // copy replacing each matching _Oldval with _Newval
@@ -3262,11 +3038,9 @@ _FwdIt2 replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, cons
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE replace_copy_result
     template <class _In, class _Out>
     using replace_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::replace_copy
     class _Replace_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3326,7 +3100,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE replace_copy_if
 template <class _InIt, class _OutIt, class _Pr, class _Ty>
 _CONSTEXPR20 _OutIt replace_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred, const _Ty& _Val) {
     // copy replacing each satisfying _Pred with _Val
@@ -3360,11 +3133,9 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE replace_copy_if_result
     template <class _In, class _Out>
     using replace_copy_if_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::replace_copy_if
     class _Replace_copy_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3421,7 +3192,6 @@ namespace ranges {
 
     inline constexpr _Replace_copy_if_fn replace_copy_if{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::fill
     class _Fill_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3467,7 +3237,6 @@ namespace ranges {
 
     inline constexpr _Fill_fn fill{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::generate
     class _Generate_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3510,7 +3279,6 @@ namespace ranges {
 
     inline constexpr _Generate_fn generate{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::generate_n
     class _Generate_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3537,7 +3305,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE generate
 template <class _FwdIt, class _Fn>
 _CONSTEXPR20 void generate(_FwdIt _First, _FwdIt _Last, _Fn _Func) { // replace [_First, _Last) with _Func()
     _Adl_verify_range(_First, _Last);
@@ -3557,7 +3324,6 @@ void generate(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* termi
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE generate_n
 template <class _OutIt, class _Diff, class _Fn>
 _CONSTEXPR20 _OutIt generate_n(_OutIt _Dest, const _Diff _Count_raw, _Fn _Func) {
     // replace [_Dest, _Dest + _Count) with _Func()
@@ -3586,7 +3352,6 @@ _FwdIt generate_n(_ExPo&&, const _FwdIt _Dest, const _Diff _Count_raw, _Fn _Func
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE remove_copy
 template <class _InIt, class _OutIt, class _Ty>
 _CONSTEXPR20 _OutIt remove_copy(_InIt _First, _InIt _Last, _OutIt _Dest, const _Ty& _Val) {
     // copy omitting each matching _Val
@@ -3616,7 +3381,6 @@ _FwdIt2 remove_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const
 }
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE remove_copy_if
 template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt remove_copy_if(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
     // copy omitting each element satisfying _Pred
@@ -3657,7 +3421,6 @@ _NODISCARD _FwdIt remove_if(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _P
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::remove
     class _Remove_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3711,7 +3474,6 @@ namespace ranges {
 
     inline constexpr _Remove_fn remove{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::remove_if
     class _Remove_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3764,11 +3526,9 @@ namespace ranges {
 
     inline constexpr _Remove_if_fn remove_if{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE remove_copy_result
     template <class _In, class _Out>
     using remove_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::remove_copy
     class _Remove_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3826,11 +3586,9 @@ namespace ranges {
 
     inline constexpr _Remove_copy_fn remove_copy{_Not_quite_object::_Construct_tag{}};
 
-    // ALIAS TEMPLATE remove_copy_if_result
     template <class _In, class _Out>
     using remove_copy_if_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::remove_copy_if
     class _Remove_copy_if_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -3891,7 +3649,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE unique
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt unique(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred with previous
@@ -3940,7 +3697,6 @@ _NODISCARD _FwdIt unique(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* termi
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::unique
     class _Unique_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4005,17 +3761,14 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE unique_copy
-// clang-format off
 #ifdef __cpp_lib_concepts
 template <class _InIt, class _OutIt>
 concept _Can_reread_dest = forward_iterator<_OutIt> && same_as<iter_value_t<_InIt>, iter_value_t<_OutIt>>;
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _InIt, class _OutIt>
-_INLINE_VAR constexpr bool _Can_reread_dest =
-    _Is_fwd_iter_v<_OutIt> && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
+_INLINE_VAR constexpr bool _Can_reread_dest = _Is_fwd_iter_v<_OutIt> //
+    && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
 #endif // __cpp_lib_concepts
-// clang-format on
 
 template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
@@ -4100,20 +3853,17 @@ _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexc
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE unique_copy_result
     template <class _In, class _Out>
     using unique_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::unique_copy
-    // clang-format off
     template <class _It, class _Ty>
     concept _Is_input_with_value_type = input_iterator<_It> && same_as<iter_value_t<_It>, _Ty>;
 
     template <class _It, class _Out>
-    concept _Can_reread_or_store = forward_iterator<_It>
-                                || _Is_input_with_value_type<_Out, iter_value_t<_It>>
-                                || indirectly_copyable_storable<_It, _Out>;
-    // clang-format on
+    concept _Can_reread_or_store = forward_iterator<_It> //
+        || _Is_input_with_value_type<_Out, iter_value_t<_It>> //
+        || indirectly_copyable_storable<_It, _Out>;
+
     class _Unique_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4207,7 +3957,6 @@ namespace ranges {
 
     inline constexpr _Unique_copy_fn unique_copy{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::reverse
     // clang-format off
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <bidirectional_iterator _It>
@@ -4277,7 +4026,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE reverse_copy
 template <class _BidIt, class _OutIt>
 _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     // copy reversing elements in [_First, _Last)
@@ -4336,11 +4084,9 @@ _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE reverse_copy_result
     template <class _In, class _Out>
     using reverse_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::reverse_copy
     class _Reverse_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4426,7 +4172,6 @@ namespace ranges {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::rotate
     template <permutable _It>
     _NODISCARD constexpr subrange<_It> _Reverse_until_mid_unchecked(_It _First, const _It _Mid, _It _Last) {
         // reverse until either _First or _Last hits _Mid
@@ -4535,7 +4280,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE rotate_copy
 template <class _FwdIt, class _OutIt>
 _CONSTEXPR20 _OutIt rotate_copy(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last, _OutIt _Dest) {
     // copy rotating [_First, _Last)
@@ -4561,11 +4305,9 @@ _FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE rotate_copy_result
     template <class _In, class _Out>
     using rotate_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::rotate_copy
     class _Rotate_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4618,7 +4360,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE sample
 template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
 _SampleIt _Sample_reservoir_unchecked(
     _PopIt _First, const _PopIt _Last, const _SampleIt _Dest, const _Diff _Count, _RngFn& _RngFunc) {
@@ -4704,7 +4445,6 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
 }
 
 #ifdef __cpp_lib_concepts
-// CONCEPT uniform_random_bit_generator
 // clang-format off
 template <class _Ty>
 concept uniform_random_bit_generator = invocable<_Ty&>
@@ -4719,7 +4459,6 @@ concept uniform_random_bit_generator = invocable<_Ty&>
 // clang-format on
 
 namespace ranges {
-    // VARIABLE ranges::sample
     class _Sample_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4824,7 +4563,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE shuffle WITH URNG
 template <class _RanIt, class _RngFn>
 void _Random_shuffle1(_RanIt _First, _RanIt _Last, _RngFn& _RngFunc) {
     // shuffle [_First, _Last) using random function _RngFunc
@@ -4856,7 +4594,6 @@ void shuffle(_RanIt _First, _RanIt _Last, _Urng&& _Func) { // shuffle [_First, _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::shuffle
     class _Shuffle_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -4915,14 +4652,12 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 #if _HAS_AUTO_PTR_ETC
-// FUNCTION TEMPLATE random_shuffle WITH RANDOM FN
 template <class _RanIt, class _RngFn>
 void random_shuffle(_RanIt _First, _RanIt _Last, _RngFn&& _RngFunc) {
     // shuffle [_First, _Last) using random function _RngFunc
     _Random_shuffle1(_First, _Last, _RngFunc);
 }
 
-// STRUCT _Rand_urng_from_func
 struct _Rand_urng_from_func { // wrap rand() as a URNG
     using result_type = unsigned int;
 
@@ -4939,7 +4674,6 @@ struct _Rand_urng_from_func { // wrap rand() as a URNG
     }
 };
 
-// FUNCTION TEMPLATE random_shuffle
 template <class _RanIt>
 void random_shuffle(_RanIt _First, _RanIt _Last) { // shuffle [_First, _Last) using rand()
     _Rand_urng_from_func _Func;
@@ -4948,7 +4682,6 @@ void random_shuffle(_RanIt _First, _RanIt _Last) { // shuffle [_First, _Last) us
 #endif // _HAS_AUTO_PTR_ETC
 
 #if _HAS_CXX20
-// FUNCTION TEMPLATE shift_left
 template <class _FwdIt>
 constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) left by _Pos_to_shift
@@ -4988,7 +4721,6 @@ _FwdIt shift_left(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _Po
     return _STD shift_left(_First, _Last, _Pos_to_shift);
 }
 
-// FUNCTION TEMPLATE shift_right
 template <class _FwdIt>
 constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) right by _Pos_to_shift
@@ -5069,7 +4801,6 @@ _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _P
 }
 #endif // _HAS_CXX20
 
-// FUNCTION TEMPLATE partition
 template <class _FwdIt, class _Pr>
 _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // move elements satisfying _Pred to beginning of sequence
@@ -5134,7 +4865,6 @@ _FwdIt partition(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, _Pr _Pred) no
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::partition
     class _Partition_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -5217,7 +4947,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE stable_partition
 template <class _BidIt>
 _BidIt _Buffered_rotate_unchecked(const _BidIt _First, const _BidIt _Mid, const _BidIt _Last,
     const _Iter_diff_t<_BidIt> _Count1, const _Iter_diff_t<_BidIt> _Count2, _Iter_value_t<_BidIt>* const _Temp_ptr,
@@ -5389,7 +5118,6 @@ _BidIt stable_partition(_ExPo&&, _BidIt _First, _BidIt _Last, _Pr _Pred) noexcep
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::stable_partition
     template <bidirectional_iterator _It>
     _It _Buffered_rotate_common(const _It _First, const _It _Mid, const _It _Last, const iter_difference_t<_It> _Count1,
         const iter_difference_t<_It> _Count2, iter_value_t<_It>* const _Temp_ptr, const ptrdiff_t _Capacity) {
@@ -5590,7 +5318,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE push_heap
 template <class _RanIt, class _Ty, class _Pr>
 _CONSTEXPR20 void _Push_heap_by_index(
     _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Top, _Ty&& _Val, _Pr _Pred) {
@@ -5629,7 +5356,6 @@ _CONSTEXPR20 void push_heap(_RanIt _First, _RanIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::push_heap
     // clang-format off
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
@@ -5703,7 +5429,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE pop_heap
 template <class _RanIt, class _Ty, class _Pr>
 _CONSTEXPR20 void _Pop_heap_hole_by_index(
     _RanIt _First, _Iter_diff_t<_RanIt> _Hole, _Iter_diff_t<_RanIt> _Bottom, _Ty&& _Val, _Pr _Pred) {
@@ -5770,7 +5495,6 @@ _CONSTEXPR20 void pop_heap(_RanIt _First, _RanIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::pop_heap
     // clang-format off
     template <random_access_iterator _It, class _Ty, class _Pr, class _Pj1, class _Pj2>
         requires sortable<_It, _Pr, _Pj1> && indirectly_writable<_It, _Ty>
@@ -5875,7 +5599,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE make_heap
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Make_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // make [_First, _Last) into a heap
@@ -5902,7 +5625,6 @@ _CONSTEXPR20 void make_heap(_RanIt _First, _RanIt _Last) { // make [_First, _Las
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::make_heap
     // clang-format off
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
@@ -5957,7 +5679,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATES is_heap AND is_heap_until
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 _RanIt _Is_heap_until_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // find extent of range that is a heap
@@ -6024,7 +5745,6 @@ _NODISCARD bool is_heap(_ExPo&& _Exec, _RanIt _First, _RanIt _Last) noexcept /* 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::is_heap
     template <class _It, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Is_heap_until_unchecked(
         _It _First, const iter_difference_t<_It> _Size, _Pr _Pred, _Pj _Proj) {
@@ -6077,7 +5797,6 @@ namespace ranges {
 
     inline constexpr _Is_heap_fn is_heap{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::is_heap_until
     class _Is_heap_until_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -6108,7 +5827,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE sort_heap
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void _Sort_heap_unchecked(_RanIt _First, _RanIt _Last, _Pr _Pred) {
     // order heap by repeatedly popping
@@ -6138,7 +5856,6 @@ _CONSTEXPR20 void sort_heap(_RanIt _First, _RanIt _Last) { // order heap by repe
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::sort_heap
     // clang-format off
     template <random_access_iterator _It, class _Pr, class _Pj>
         requires sortable<_It, _Pr, _Pj>
@@ -6185,7 +5902,6 @@ namespace ranges {
 
     inline constexpr _Sort_heap_fn sort_heap{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::lower_bound
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Lower_bound_unchecked(
         _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
@@ -6243,7 +5959,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE upper_bound
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element that _Val is before
@@ -6274,7 +5989,6 @@ _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _T
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::upper_bound
     template <class _It, class _Ty, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Upper_bound_unchecked(
         _It _First, iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred, _Pj _Proj) {
@@ -6330,7 +6044,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE equal_range
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find range equivalent to _Val
@@ -6376,7 +6089,6 @@ _NODISCARD _CONSTEXPR20 pair<_FwdIt, _FwdIt> equal_range(_FwdIt _First, _FwdIt _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::equal_range
     class _Equal_range_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -6438,7 +6150,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE binary_search
 template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // test if _Val equivalent to some element
@@ -6457,7 +6168,6 @@ _NODISCARD _CONSTEXPR20 bool binary_search(_FwdIt _First, _FwdIt _Last, const _T
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::binary_search
     class _Binary_search_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -6489,7 +6199,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE merge
 _NODISCARD constexpr _Distance_unknown _Idl_dist_add(_Distance_unknown, _Distance_unknown) {
     return {};
 }
@@ -6581,11 +6290,9 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE merge_result
     template <class _In1, class _In2, class _Out>
     using merge_result = in_in_out_result<_In1, _In2, _Out>;
 
-    // VARIABLE ranges::merge
     class _Merge_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -6664,7 +6371,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE inplace_merge
 // The "usual invariants" for the inplace_merge helpers below are:
 // [_First, _Mid) and [_Mid, _Last) are sorted
 // _Pred(*_Mid, *_First)             note: this means *_Mid is the "lowest" element
@@ -6930,7 +6636,6 @@ void inplace_merge(_ExPo&&, _BidIt _First, _BidIt _Mid, _BidIt _Last) noexcept /
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // FUNCTION TEMPLATE _Is_sorted_until_unchecked
     // clang-format off
     template <forward_iterator _It, sentinel_for<_It> _Se, class _Pr, class _Pj>
         requires indirect_strict_weak_order<_Pr, projected<_It, _Pj>>
@@ -6949,7 +6654,6 @@ namespace ranges {
         return _First;
     }
 
-    // VARIABLE ranges::inplace_merge
     template <bidirectional_iterator _It>
     void _Rotate_one_right(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
@@ -6963,7 +6667,7 @@ namespace ranges {
     void _Rotate_one_left(_It _First, _It _Mid, _It _Last) {
         // exchanges the range [_First, _Mid) with [_Mid, _Last)
         _STL_INTERNAL_CHECK(_RANGES next(_First) == _Mid);
-        auto _Temp   = _RANGES iter_move(_Mid);
+        auto _Temp   = _RANGES iter_move(_First);
         auto _Result = _RANGES _Move_unchecked(_STD move(_Mid), _STD move(_Last), _STD move(_First));
         *_Result.out = _STD move(_Temp);
     }
@@ -7218,7 +6922,7 @@ namespace ranges {
                 "ranges::inplace_merge requires the range [first, middle) to be sorted");
             _STL_VERIFY(_RANGES _Is_sorted_until_unchecked(_Mid, _Last, _Pred, _Proj) == _Last,
                 "ranges::inplace_merge requires the range [middle, last) to be sorted");
-#endif //_ITERATOR_DEBUG_LEVEL == 2
+#endif // _ITERATOR_DEBUG_LEVEL == 2
 
             // Find first element in [_First, _Mid) that is greater than *_Mid
             while (!_STD invoke(_Pred, _STD invoke(_Proj, *_Mid), _STD invoke(_Proj, *_First))) {
@@ -7270,7 +6974,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE sort
 template <class _BidIt, class _Pr>
 _CONSTEXPR20 _BidIt _Insertion_sort_unchecked(const _BidIt _First, const _BidIt _Last, _Pr _Pred) {
     // insertion sort [_First, _Last)
@@ -7606,7 +7309,6 @@ namespace ranges {
         }
     }
 
-    // VARIABLE ranges::sort
     class _Sort_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -7676,7 +7378,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE stable_sort
 template <class _FwdIt, class _Ty, class _Pr>
 _Ty* _Uninitialized_merge_move(_FwdIt _First, const _FwdIt _Mid, const _FwdIt _Last, _Ty* const _Dest, _Pr _Pred) {
     // move merging ranges to uninitialized storage
@@ -7873,7 +7574,6 @@ void stable_sort(_ExPo&& _Exec, _BidIt _First, _BidIt _Last) noexcept /* termina
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::stable_sort
     class _Stable_sort_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8129,7 +7829,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE partial_sort
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void partial_sort(_RanIt _First, _RanIt _Mid, _RanIt _Last, _Pr _Pred) {
     // order [_First, _Last) up to _Mid
@@ -8177,7 +7876,6 @@ void partial_sort(_ExPo&&, _RanIt _First, _RanIt _Mid, _RanIt _Last) noexcept /*
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::partial_sort
     class _Partial_sort_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8255,7 +7953,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE partial_sort_copy
 template <class _InIt, class _RanIt, class _Pr>
 _CONSTEXPR20 _RanIt partial_sort_copy(_InIt _First1, _InIt _Last1, _RanIt _First2, _RanIt _Last2, _Pr _Pred) {
     // copy [_First1, _Last1) into [_First2, _Last2)
@@ -8315,11 +8012,9 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE partial_sort_copy_result
     template <class _In, class _Out>
     using partial_sort_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::partial_sort_copy
     class _Partial_sort_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8410,7 +8105,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE nth_element
 template <class _RanIt, class _Pr>
 _CONSTEXPR20 void nth_element(_RanIt _First, _RanIt _Nth, _RanIt _Last, _Pr _Pred) {
     // order Nth element
@@ -8460,7 +8154,6 @@ void nth_element(_ExPo&&, _RanIt _First, _RanIt _Nth, _RanIt _Last) noexcept /* 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::nth_element
     class _Nth_element_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8535,7 +8228,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE includes
 template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _Pr _Pred) {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
@@ -8567,7 +8259,6 @@ _NODISCARD _CONSTEXPR20 bool includes(_InIt1 _First1, _InIt1 _Last1, _InIt2 _Fir
 }
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE includes
 template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) noexcept
 /* terminates */ {
@@ -8590,7 +8281,6 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::includes
     class _Includes_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8662,7 +8352,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE set_union
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_union(_InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
@@ -8725,11 +8414,9 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE set_union_result
     template <class _In1, class _In2, class _Out>
     using set_union_result = in_in_out_result<_In1, _In2, _Out>;
 
-    // VARIABLE ranges::set_union
     class _Set_union_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8802,7 +8489,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE set_intersection
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_intersection(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
@@ -8853,11 +8539,9 @@ _FwdIt3 set_intersection(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE set_intersection_result
     template <class _In1, class _In2, class _Out>
     using set_intersection_result = in_in_out_result<_In1, _In2, _Out>;
 
-    // VARIABLE ranges::set_intersection
     class _Set_intersection_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -8937,7 +8621,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE set_difference
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
@@ -8989,11 +8672,9 @@ _FwdIt3 set_difference(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE set_difference_result
     template <class _In, class _Out>
     using set_difference_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::set_difference
     class _Set_difference_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9069,7 +8750,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE set_symmetric_difference
 template <class _InIt1, class _InIt2, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt set_symmetric_difference(
     _InIt1 _First1, _InIt1 _Last1, _InIt2 _First2, _InIt2 _Last2, _OutIt _Dest, _Pr _Pred) {
@@ -9135,11 +8815,9 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE set_symmetric_difference_result
     template <class _In1, class _In2, class _Out>
     using set_symmetric_difference_result = in_in_out_result<_In1, _In2, _Out>;
 
-    // VARIABLE ranges::set_symmetric_difference
     class _Set_symmetric_difference_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9223,7 +8901,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE max_element
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
     _FwdIt _Found = _First;
@@ -9267,7 +8944,6 @@ _NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::max_element
     template <class _It, class _Se, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Max_element_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
@@ -9316,7 +8992,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE min_element
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
     _FwdIt _Found = _First;
@@ -9360,7 +9035,6 @@ _NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::min_element
     template <class _It, class _Se, class _Pr, class _Pj>
     _NODISCARD constexpr _It _Min_element_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
@@ -9409,7 +9083,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE minmax_element
 template <class _FwdIt, class _Pr>
 constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find smallest and largest elements
@@ -9482,11 +9155,9 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE minmax_element_result
     template <class _Ty>
     using minmax_element_result = min_max_result<_Ty>;
 
-    // VARIABLE ranges::minmax_element
     template <class _It, class _Se, class _Pr, class _Pj>
     constexpr min_max_result<_It> _Minmax_element_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
@@ -9571,7 +9242,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-// FUNCTION TEMPLATE max (for initializer_list)
 template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/largest
@@ -9587,14 +9257,11 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::max
-    // clang-format off
     template <class _It>
     concept _Prefer_iterator_copies = // When we have a choice, should we copy iterators or copy elements?
-        // pre: input_iterator<_It>
+                                      // pre: input_iterator<_It>
         sizeof(_It) <= 2 * sizeof(iter_value_t<_It>)
         && (is_trivially_copyable_v<_It> || !is_trivially_copyable_v<iter_value_t<_It>>);
-    // clang-format on
 
     class _Max_fn : private _Not_quite_object {
     public:
@@ -9651,7 +9318,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE min (for initializer_list)
 template <class _Ty, class _Pr>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
     // return leftmost/smallest
@@ -9667,7 +9333,6 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::min
     class _Min_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9723,7 +9388,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE minmax
 template <class _Ty, class _Pr>
 _NODISCARD constexpr pair<const _Ty&, const _Ty&> minmax(const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_DEBUG_LT_PRED(_Pred, _Right, _Left))) /* strengthened */ {
@@ -9762,11 +9426,9 @@ _NODISCARD constexpr pair<_Ty, _Ty> minmax(initializer_list<_Ty> _Ilist) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE minmax_result
     template <class _Ty>
     using minmax_result = min_max_result<_Ty>;
 
-    // VARIABLE ranges::minmax
     class _Minmax_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9858,7 +9520,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE next_permutation
 template <class _BidIt, class _Pr>
 _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     // permute and test for pure ascending
@@ -9898,11 +9559,9 @@ _CONSTEXPR20 bool next_permutation(_BidIt _First, _BidIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE next_permutation_result
     template <class _In>
     using next_permutation_result = in_found_result<_In>;
 
-    // VARIABLE ranges::next_permutation
     class _Next_permutation_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -9969,7 +9628,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE prev_permutation
 template <class _BidIt, class _Pr>
 _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last, _Pr _Pred) {
     // reverse permute and test for pure descending
@@ -10009,11 +9667,9 @@ _CONSTEXPR20 bool prev_permutation(_BidIt _First, _BidIt _Last) {
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE prev_permutation_result
     template <class _In>
     using prev_permutation_result = in_found_result<_In>;
 
-    // VARIABLE ranges::prev_permutation
     class _Prev_permutation_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -10080,7 +9736,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATES is_sorted AND is_sorted_until
 template <class _FwdIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt is_sorted_until(const _FwdIt _First, _FwdIt _Last, _Pr _Pred) {
     // find extent of range that is ordered by predicate
@@ -10144,7 +9799,6 @@ _NODISCARD bool is_sorted(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last) noexcept /
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::is_sorted
     class _Is_sorted_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -10170,7 +9824,6 @@ namespace ranges {
 
     inline constexpr _Is_sorted_fn is_sorted{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::is_sorted_until
     class _Is_sorted_until_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -10200,7 +9853,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE clamp
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val, _Pr _Pred) {
     // returns _Val constrained to [_Min_val, _Max_val]
@@ -10230,7 +9882,6 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::clamp
     class _Clamp_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -10257,7 +9908,6 @@ namespace ranges {
 
     inline constexpr _Clamp_fn clamp{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::lexicographical_compare
     class _Lexicographical_compare_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -10294,10 +9944,9 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
 
-            using _Memcmp_classification_pred =
-                typename decltype(_Lex_compare_memcmp_classify(_First1, _First2, _Pred))::_Pred;
-            constexpr bool _Is_sized1 = sized_sentinel_for<_Se1, _It1>;
-            constexpr bool _Is_sized2 = sized_sentinel_for<_Se2, _It2>;
+            using _Memcmp_classification_pred = _Lex_compare_memcmp_classify<_It1, _It2, _Pr>;
+            constexpr bool _Is_sized1         = sized_sentinel_for<_Se1, _It1>;
+            constexpr bool _Is_sized2         = sized_sentinel_for<_Se2, _It2>;
             if constexpr (!is_void_v<_Memcmp_classification_pred> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> //
                           && _Sized_or_unreachable_sentinel_for<_Se2, _It2> //
                           && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {

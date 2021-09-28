@@ -57,11 +57,17 @@ language.support\support.limits\support.limits.general\locale.version.pass.cpp
 language.support\support.limits\support.limits.general\ostream.version.pass.cpp
 language.support\support.limits\support.limits.general\string_view.version.pass.cpp
 
+# libc++ doesn't yet implement P2231R1, so it expects an old value for `__cpp_lib_optional`
+language.support\support.limits\support.limits.general\optional.version.pass.cpp
+
 # test emits warning C4310: cast truncates constant value
 numerics\bit\bitops.rot\rotl.pass.cpp
 
 # libc++ doesn't yet implement P1754R1 or P1964R2, so it expects an old value for `__cpp_lib_concepts`
 language.support\support.limits\support.limits.general\concepts.version.pass.cpp
+
+# Bogus test believes that optional<non_constexpr_destructor> cannot be a literal type
+utilities\optional\optional.object\optional.object.dtor\dtor.pass.cpp
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -275,16 +281,7 @@ utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
 
 
 # *** MISSING STL FEATURES ***
-# C++23 P1048R1 "is_scoped_enum"
-utilities\meta\meta.unary\meta.unary.prop\is_scoped_enum.pass.cpp
-
-# C++23 P1679R3 "contains() For basic_string/basic_string_view"
-strings\basic.string\string.contains\contains.char.pass.cpp
-strings\basic.string\string.contains\contains.ptr.pass.cpp
-strings\basic.string\string.contains\contains.string_view.pass.cpp
-strings\string.view\string.view.template\contains.char.pass.cpp
-strings\string.view\string.view.template\contains.ptr.pass.cpp
-strings\string.view\string.view.template\contains.string_view.pass.cpp
+# Nothing here! :-)
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -557,6 +554,11 @@ numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\pow.pass.cpp
 numerics\complex.number\cmplx.over\proj.pass.cpp
 
+# Assertion failed: c == NaN || c == non_zero_nan
+# Testing input values outside the range of [complex.value.ops]/9
+# libc++ handles those input values differently
+numerics\complex.number\complex.value.ops\polar.pass.cpp
+
 # Assertion failed: std::abs(skew - x_skew) < 0.01
 # Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
 numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
@@ -720,7 +722,6 @@ numerics\complex.number\complex.transcendentals\asinh.pass.cpp
 numerics\complex.number\complex.transcendentals\atanh.pass.cpp
 numerics\complex.number\complex.transcendentals\cos.pass.cpp
 numerics\complex.number\complex.transcendentals\cosh.pass.cpp
-numerics\complex.number\complex.transcendentals\exp.pass.cpp
 numerics\complex.number\complex.transcendentals\log10.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_complex_complex.pass.cpp
 numerics\complex.number\complex.transcendentals\pow_complex_scalar.pass.cpp
@@ -729,7 +730,6 @@ numerics\complex.number\complex.transcendentals\sin.pass.cpp
 numerics\complex.number\complex.transcendentals\sinh.pass.cpp
 numerics\complex.number\complex.transcendentals\tanh.pass.cpp
 numerics\complex.number\complex.value.ops\norm.pass.cpp
-numerics\complex.number\complex.value.ops\polar.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 localization\locale.categories\category.ctype\facet.ctype.special\facet.ctype.char.statics\classic_table.pass.cpp

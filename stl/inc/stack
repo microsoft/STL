@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE stack
 template <class _Ty, class _Container = deque<_Ty>>
 class stack {
 public:
@@ -36,6 +35,12 @@ public:
 
     explicit stack(_Container&& _Cont) noexcept(is_nothrow_move_constructible_v<_Container>) // strengthened
         : c(_STD move(_Cont)) {}
+
+#if _HAS_CXX23
+    template <class _InIt, enable_if_t<_Is_iterator_v<_InIt>, int> = 0>
+    stack(_InIt _First, _InIt _Last) noexcept(is_nothrow_constructible_v<_Container, _InIt, _InIt>) // strengthened
+        : c(_STD move(_First), _STD move(_Last)) {}
+#endif // _HAS_CXX23
 
     template <class _Alloc, enable_if_t<uses_allocator_v<_Container, _Alloc>, int> = 0>
     explicit stack(const _Alloc& _Al) noexcept(is_nothrow_constructible_v<_Container, const _Alloc&>) // strengthened
@@ -56,6 +61,14 @@ public:
     stack(stack&& _Right, const _Alloc& _Al) noexcept(
         is_nothrow_constructible_v<_Container, _Container, const _Alloc&>) // strengthened
         : c(_STD move(_Right.c), _Al) {}
+
+#if _HAS_CXX23
+    template <class _InIt, class _Alloc,
+        enable_if_t<conjunction_v<_Is_iterator<_InIt>, uses_allocator<_Container, _Alloc>>, int> = 0>
+    stack(_InIt _First, _InIt _Last, const _Alloc& _Al) noexcept(
+        is_nothrow_constructible_v<_Container, _InIt, _InIt, const _Alloc&>) // strengthened
+        : c(_STD move(_First), _STD move(_Last), _Al) {}
+#endif // _HAS_CXX23
 
     _NODISCARD bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
         return c.empty();
@@ -111,11 +124,15 @@ template <class _Container, enable_if_t<!_Is_allocator<_Container>::value, int> 
 stack(_Container) -> stack<typename _Container::value_type, _Container>;
 
 template <class _Container, class _Alloc,
-    enable_if_t<
-        conjunction_v<negation<_Is_allocator<_Container>>, _Is_allocator<_Alloc>, uses_allocator<_Container, _Alloc>>,
-        int> = 0>
+    enable_if_t<conjunction_v<negation<_Is_allocator<_Container>>, uses_allocator<_Container, _Alloc>>, int> = 0>
 stack(_Container, _Alloc) -> stack<typename _Container::value_type, _Container>;
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23
+template <class _InIt, class _Alloc = allocator<_Iter_value_t<_InIt>>,
+    enable_if_t<conjunction_v<_Is_iterator<_InIt>, _Is_allocator<_Alloc>>, int> = 0>
+stack(_InIt, _InIt, _Alloc = _Alloc()) -> stack<_Iter_value_t<_InIt>, deque<_Iter_value_t<_InIt>, _Alloc>>;
+#endif // _HAS_CXX23
 
 template <class _Ty, class _Container>
 _NODISCARD bool operator==(const stack<_Ty, _Container>& _Left, const stack<_Ty, _Container>& _Right) {

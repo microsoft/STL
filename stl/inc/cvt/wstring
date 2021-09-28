@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 namespace stdext {
     namespace cvt {
 
-        // CLASS TEMPLATE wstring_convert
         template <class _Codecvt, class _Elem = wchar_t>
         class wstring_convert { // converts between _Elem (wide) and char (byte) strings
             enum { _BUF_INC = 8, _BUF_MAX = 16 };
@@ -106,8 +105,8 @@ namespace stdext {
                     _Elem* _Dest = &_Wbuf[0];
                     _Elem* _Dnext;
 
-                    switch (_Pcvt->in(_State, _First, _Last, _First, _Dest, _Dest + _Wbuf.size(),
-                        _Dnext)) { // test result of converting one or more bytes
+                    // test result of converting one or more bytes
+                    switch (_Pcvt->in(_State, _First, _Last, _First, _Dest, _Dest + _Wbuf.size(), _Dnext)) {
                     case _Codecvt::partial:
                     case _Codecvt::ok:
                         if (_Dest < _Dnext) {
@@ -174,8 +173,8 @@ namespace stdext {
                     char* _Dest = &_Bbuf[0];
                     char* _Dnext;
 
-                    switch (_Pcvt->out(_State, _First, _Last, _First, _Dest, _Dest + _Bbuf.size(),
-                        _Dnext)) { // test result of converting one or more wide chars
+                    // test result of converting one or more wide chars
+                    switch (_Pcvt->out(_State, _First, _Last, _First, _Dest, _Dest + _Bbuf.size(), _Dnext)) {
                     case _Codecvt::partial:
                     case _Codecvt::ok:
                         if (_Dest < _Dnext) {

@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <thread>
 #ifdef _MSC_EXTENSIONS
-#include <test_windows.hpp>
+#include <Windows.h>
 #endif // _MSC_EXTENSIONS
 
 class one_shot {

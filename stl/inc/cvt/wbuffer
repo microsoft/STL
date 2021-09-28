@@ -26,7 +26,6 @@ _STL_DISABLE_CLANG_WARNINGS
 namespace stdext {
     namespace cvt {
 
-        // CLASS TEMPLATE wbuffer_convert
         template <class _Codecvt, class _Elem = wchar_t, class _Traits = _STD char_traits<_Elem>>
         class wbuffer_convert
             : public _STD basic_streambuf<_Elem, _Traits> { // stream buffer associated with a codecvt facet
@@ -71,7 +70,7 @@ namespace stdext {
                 _Loc   = _STD locale(_Loc, _Pcvt);
             }
 
-            virtual ~wbuffer_convert() noexcept {
+            ~wbuffer_convert() noexcept override {
                 while (_Status == _Wrote) { // put any trailing homing shift
                     if (_Str.size() < _STRING_INC) {
                         _Str.assign(_STRING_INC, '\0');
@@ -79,8 +78,9 @@ namespace stdext {
 
                     char* _Buf = &_Str[0];
                     char* _Dest;
-                    switch (
-                        _Pcvt->unshift(_State, _Buf, _Buf + _Str.size(), _Dest)) { // test result of homing conversion
+
+                    // test result of homing conversion
+                    switch (_Pcvt->unshift(_State, _Buf, _Buf + _Str.size(), _Dest)) {
                     case _Codecvt::ok:
                         _Status = _Unused; // homed successfully
 
@@ -128,7 +128,7 @@ namespace stdext {
             wbuffer_convert& operator=(const wbuffer_convert&) = delete;
 
         protected:
-            virtual int_type overflow(int_type _Meta = _Traits::eof()) { // put an element to stream
+            int_type overflow(int_type _Meta = _Traits::eof()) override { // put an element to stream
                 if (_Traits::eq_int_type(_Traits::eof(), _Meta)) {
                     return _Traits::not_eof(_Meta); // EOF, return success code
                 } else if (!_Mystrbuf || 0 < _Nback || (_Status != _Unused && _Status != _Wrote)) {
@@ -144,8 +144,9 @@ namespace stdext {
                         char* _Buf = &_Str[0];
                         const _Elem* _Src;
                         char* _Dest;
-                        switch (_Pcvt->out(_State, &_Ch, &_Ch + 1, _Src, _Buf, _Buf + _Str.size(),
-                            _Dest)) { // test result of converting one element
+
+                        // test result of converting one element
+                        switch (_Pcvt->out(_State, &_Ch, &_Ch + 1, _Src, _Buf, _Buf + _Str.size(), _Dest)) {
                         case _Codecvt::partial:
                         case _Codecvt::ok:
                             { // converted something, try to put it out
@@ -187,7 +188,7 @@ namespace stdext {
                 }
             }
 
-            virtual int_type pbackfail(int_type _Meta = _Traits::eof()) { // put an element back to stream
+            int_type pbackfail(int_type _Meta = _Traits::eof()) override { // put an element back to stream
                 if (sizeof(_Myback) / sizeof(_Myback[0]) <= _Nback || _Status == _Wrote) {
                     return _Traits::eof(); // nowhere to put back
                 } else { // enough room, put it back
@@ -204,7 +205,7 @@ namespace stdext {
                 }
             }
 
-            virtual int_type underflow() { // get an element from stream, but don't point past it
+            int_type underflow() override { // get an element from stream, but don't point past it
                 int_type _Meta;
 
                 if (0 >= _Nback) {
@@ -221,7 +222,7 @@ namespace stdext {
 #pragma warning(push)
 #pragma warning(disable : 6385) // Reading invalid data from 'this->_Myback':
                                 // the readable size is 'X' bytes, but 'Y' bytes may be read.
-            virtual int_type uflow() { // get an element from stream, point past it
+            int_type uflow() override { // get an element from stream, point past it
                 int_type _Meta;
 
                 if (0 >= _Nback) {
@@ -236,15 +237,15 @@ namespace stdext {
             }
 #pragma warning(pop)
 
-            virtual pos_type seekoff(off_type, _STD ios_base::seekdir,
+            pos_type seekoff(off_type, _STD ios_base::seekdir,
                 _STD ios_base::openmode = static_cast<_STD ios_base::openmode>(
-                    _STD ios_base::in | _STD ios_base::out)) { // change position by _Off
+                    _STD ios_base::in | _STD ios_base::out)) override { // change position by _Off
                 return pos_type(-1); // always fail
             }
 
-            virtual pos_type seekpos(pos_type,
+            pos_type seekpos(pos_type,
                 _STD ios_base::openmode = static_cast<_STD ios_base::openmode>(
-                    _STD ios_base::in | _STD ios_base::out)) { // change position to _Pos
+                    _STD ios_base::in | _STD ios_base::out)) override { // change position to _Pos
                 return pos_type(-1); // always fail
             }
 
@@ -253,7 +254,7 @@ namespace stdext {
                 if (_Mystrbuf && _Status != _Wrote) {
                     // got buffer, haven't written, try to compose an element
                     if (_Status != _Eof) {
-                        if (_Str.size() == 0) {
+                        if (_Str.empty()) {
                             _Status = _Need;
                         } else {
                             _Status = _Got;
@@ -275,8 +276,8 @@ namespace stdext {
                             }
                         }
 
-                        switch (_Pcvt->in(_State, _Buf, _Buf + _Str.size(), _Src, &_Ch, &_Ch + 1,
-                            _Dest)) { // test result of converting one element
+                        // test result of converting one element
+                        switch (_Pcvt->in(_State, _Buf, _Buf + _Str.size(), _Src, &_Ch, &_Ch + 1, _Dest)) {
                         case _Codecvt::partial:
                         case _Codecvt::ok:
                             _Str.erase(0, static_cast<size_t>(_Src - _Buf)); // discard any used input

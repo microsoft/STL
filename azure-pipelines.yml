@@ -6,9 +6,8 @@
 variables:
   tmpDir: 'D:\Temp'
   buildOutputLocation: 'D:\build'
-  vcpkgLocation: '$(Build.SourcesDirectory)/vcpkg'
 
-pool: 'StlBuild-2021-07-18'
+pool: 'StlBuild-2021-09-14'
 
 stages:
   - stage: Code_Format
