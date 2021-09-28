@@ -330,12 +330,8 @@ struct char_traits : _Char_traits<_Elem, long> {}; // properties of a string or 
 template <>
 struct char_traits<char16_t> : _WChar_traits<char16_t> {};
 
-using u16streampos = streampos;
-
 template <>
 struct char_traits<char32_t> : _Char_traits<char32_t, unsigned int> {};
-
-using u32streampos = streampos;
 
 template <>
 struct char_traits<wchar_t> : _WChar_traits<wchar_t> {};
@@ -476,10 +472,6 @@ struct char_traits<char> : _Narrow_char_traits<char, int> {}; // properties of a
 #ifdef __cpp_char8_t
 template <>
 struct char_traits<char8_t> : _Narrow_char_traits<char8_t, unsigned int> {};
-
-#ifdef __cpp_lib_char8_t
-using u8streampos = streampos;
-#endif // __cpp_lib_char8_t
 #endif // __cpp_char8_t
 
 template <class _Elem, class _Traits, class _SizeT>
