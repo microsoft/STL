@@ -460,9 +460,7 @@ extern const bool _Asan_vector_should_annotate;
 
 #ifdef _INSERT_VECTOR_ANNOTATION
 template <class _Vec, class = void>
-_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment =
-    disjunction_v<bool_constant<alignof(typename _Vec::value_type) >= 8>,
-        is_same<typename _Vec::allocator_type, allocator<typename _Vec::value_type>>>;
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment = alignof(typename _Vec::value_type) >= 8;
 
 template <class _Vec>
 _INLINE_VAR constexpr bool
