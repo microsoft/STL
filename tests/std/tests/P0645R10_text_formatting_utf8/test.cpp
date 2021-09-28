@@ -22,8 +22,8 @@ void test_multibyte_format_strings() {
 
     {
         try {
-            (void) vformat("{:\x9f\x8f\x88<10}"sv,
-                make_format_args(42)); // Bad fill character encoding: missing lead byte before \x9f
+            // Bad fill character encoding: missing lead byte before \x9f
+            (void) vformat("{:\x9f\x8f\x88<10}"sv, make_format_args(42)); 
             assert(false);
         } catch (const format_error&) {
         }
