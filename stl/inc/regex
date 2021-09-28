@@ -509,7 +509,7 @@ int _Iter_compare2(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _La
             _First1, static_cast<size_t>(_Last1 - _First1), _First2, static_cast<size_t>(_Last2 - _First2));
     } else {
         // _Iter_compare for general ranges
-        const pair<_FwdIt1, _FwdIt2> _Cmp = _STD mismatch(_First1, _Last1, _First2, _Last2, _Char_traits_eq<_Traits>{});
+        const auto _Cmp = _STD mismatch(_First1, _Last1, _First2, _Last2, _Char_traits_eq<_Traits>{});
 
         if (_Cmp.first == _Last1) {
             if (_Cmp.second == _Last2) {
