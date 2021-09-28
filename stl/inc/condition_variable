@@ -214,7 +214,7 @@ public:
             _Unlock_guard<_Lock> _Unlock_outer{_Lck};
             const auto _Now = _Clock::now();
             if (_Now >= _Abs_time) {
-                _Guard.unlock();
+                _Guard.unlock(); // unlock inner mutex before relocking outer mutex
                 break;
             }
 
