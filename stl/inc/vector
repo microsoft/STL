@@ -508,7 +508,8 @@ private:
         }
 
         constexpr explicit _Asan_annotator(vector* _Myvec_) noexcept
-            : _Myvec(_Myvec_), _Target_size(static_cast<size_type>(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst)) {
+            : _Myvec(_Myvec_),
+              _Target_size(static_cast<size_type>(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst)) {
             _STL_INTERNAL_CHECK(_Myvec != nullptr);
         }
 
@@ -604,12 +605,12 @@ private:
         size_type _Target_size;
     };
 
-#define _ASAN_VECTOR_CHANGE(n) _Asan_annotator::_Change_annotation(*this, (n))
-#define _ASAN_VECTOR_CLEAR     _Asan_annotator::_Clear_annotation(*this)
-#define _ASAN_VECTOR_CREATE    _Asan_annotator::_Create_annotation(*this)
-#define _ASAN_VECTOR_GUARD(n)  _Asan_annotator _Annotator(this, (n))
+#define _ASAN_VECTOR_CHANGE(n)    _Asan_annotator::_Change_annotation(*this, (n))
+#define _ASAN_VECTOR_CLEAR        _Asan_annotator::_Clear_annotation(*this)
+#define _ASAN_VECTOR_CREATE       _Asan_annotator::_Create_annotation(*this)
+#define _ASAN_VECTOR_GUARD(n)     _Asan_annotator _Annotator(this, (n))
 #define _ASAN_VECTOR_GUARD_CREATE _Asan_annotator _Annotator(this)
-#define _ASAN_VECTOR_RELEASE   _Annotator._Release()
+#define _ASAN_VECTOR_RELEASE      _Annotator._Release()
 #else // ^^^ _INSERT_VECTOR_ANNOTATION ^^^ // vvv !_INSERT_VECTOR_ANNOTATION vvv
 #define _ASAN_VECTOR_CHANGE(n)
 #define _ASAN_VECTOR_CLEAR
