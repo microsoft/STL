@@ -2773,10 +2773,11 @@ public:
         _Proxy._Release();
     }
 
-    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
+    template <class _Ty, enable_if_t<is_convertible_v<const _Ty&, basic_string_view<_Elem, _Traits>>, int> = 0>
     _CONSTEXPR20 basic_string(
-        const _StringViewIsh& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
-        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, _Roff + _Count) using _Al
+        const _Ty& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        // construct from _Right [_Roff, _Roff + _Count) using _Al
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -4139,7 +4140,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type find(const _StringViewIsh& _Right, const size_type _Off = 0) const {
+    _NODISCARD _CONSTEXPR20 size_type find(const _StringViewIsh& _Right, const size_type _Off = 0) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for _Right beginning at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(_Traits_find<_Traits>(
@@ -4167,8 +4169,7 @@ public:
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type find(const _Elem _Ch, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type find(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for _Ch at or after _Off
         return static_cast<size_type>(
             _Traits_find_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4176,7 +4177,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type rfind(const _StringViewIsh& _Right, const size_type _Off = npos) const {
+    _NODISCARD _CONSTEXPR20 size_type rfind(const _StringViewIsh& _Right, const size_type _Off = npos) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for _Right beginning before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(_Traits_rfind<_Traits>(
@@ -4204,8 +4206,7 @@ public:
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type rfind(const _Elem _Ch, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type rfind(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for _Ch before _Off
         return static_cast<size_type>(
             _Traits_rfind_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4213,7 +4214,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type find_first_of(const _StringViewIsh& _Right, const size_type _Off = 0) const {
+    _NODISCARD _CONSTEXPR20 size_type find_first_of(const _StringViewIsh& _Right, const size_type _Off = 0) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for one of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
@@ -4243,8 +4245,7 @@ public:
             _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type find_first_of(const _Elem _Ch, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type find_first_of(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for _Ch at or after _Off
         return static_cast<size_type>(
             _Traits_find_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4252,7 +4253,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type find_last_of(const _StringViewIsh& _Right, const size_type _Off = npos) const {
+    _NODISCARD _CONSTEXPR20 size_type find_last_of(const _StringViewIsh& _Right, const size_type _Off = npos) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for one of _Right before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
@@ -4281,8 +4283,7 @@ public:
             _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type find_last_of(const _Elem _Ch, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type find_last_of(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for _Ch before _Off
         return static_cast<size_type>(
             _Traits_rfind_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4290,7 +4291,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type find_first_not_of(const _StringViewIsh& _Right, const size_type _Off = 0) const {
+    _NODISCARD _CONSTEXPR20 size_type find_first_not_of(const _StringViewIsh& _Right, const size_type _Off = 0) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for none of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(
@@ -4321,8 +4323,7 @@ public:
             _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type find_first_not_of(const _Elem _Ch, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type find_first_not_of(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for non-_Ch at or after _Off
         return static_cast<size_type>(
             _Traits_find_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4330,8 +4331,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type find_last_not_of(
-        const _StringViewIsh& _Right, const size_type _Off = npos) const {
+    _NODISCARD _CONSTEXPR20 size_type find_last_not_of(const _StringViewIsh& _Right, const size_type _Off = npos) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for none of _Right before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(
@@ -4362,8 +4363,7 @@ public:
             _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type find_last_not_of(const _Elem _Ch, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type find_last_not_of(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for non-_Ch before _Off
         return static_cast<size_type>(
             _Traits_rfind_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4394,7 +4394,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 int compare(const _StringViewIsh& _Right) const {
+    _NODISCARD _CONSTEXPR20 int compare(const _StringViewIsh& _Right) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // compare [0, size()) with _Right
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return _Traits_compare<_Traits>(
