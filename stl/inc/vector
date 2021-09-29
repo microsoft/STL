@@ -507,12 +507,6 @@ private:
             _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myfirst + _Target_size);
         }
 
-        constexpr explicit _Asan_annotator(vector* _Myvec_) noexcept
-            : _Myvec(_Myvec_),
-              _Target_size(static_cast<size_type>(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst)) {
-            _STL_INTERNAL_CHECK(_Myvec != nullptr);
-        }
-
         _CONSTEXPR20 ~_Asan_annotator() {
             if (!_Myvec) { // Operation succeeded, no modification to the shadow memory required.
                 return;
@@ -605,18 +599,16 @@ private:
         size_type _Target_size;
     };
 
-#define _ASAN_VECTOR_CHANGE(n)    _Asan_annotator::_Change_annotation(*this, (n))
-#define _ASAN_VECTOR_CLEAR        _Asan_annotator::_Clear_annotation(*this)
-#define _ASAN_VECTOR_CREATE       _Asan_annotator::_Create_annotation(*this)
-#define _ASAN_VECTOR_GUARD(n)     _Asan_annotator _Annotator(this, (n))
-#define _ASAN_VECTOR_GUARD_CREATE _Asan_annotator _Annotator(this)
-#define _ASAN_VECTOR_RELEASE      _Annotator._Release()
+#define _ASAN_VECTOR_CHANGE(n) _Asan_annotator::_Change_annotation(*this, (n))
+#define _ASAN_VECTOR_CLEAR     _Asan_annotator::_Clear_annotation(*this)
+#define _ASAN_VECTOR_CREATE    _Asan_annotator::_Create_annotation(*this)
+#define _ASAN_VECTOR_GUARD(n)  _Asan_annotator _Annotator(this, (n))
+#define _ASAN_VECTOR_RELEASE   _Annotator._Release()
 #else // ^^^ _INSERT_VECTOR_ANNOTATION ^^^ // vvv !_INSERT_VECTOR_ANNOTATION vvv
 #define _ASAN_VECTOR_CHANGE(n)
 #define _ASAN_VECTOR_CLEAR
 #define _ASAN_VECTOR_CREATE
 #define _ASAN_VECTOR_GUARD(n)
-#define _ASAN_VECTOR_GUARD_CREATE
 #define _ASAN_VECTOR_RELEASE
 #endif // !_INSERT_VECTOR_ANNOTATION
 
@@ -1175,11 +1167,20 @@ public:
             _Clear_and_reserve_geometric(_Newsize);
             if constexpr (_Nothrow_construct) {
                 _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
-                _ASAN_VECTOR_CREATE;
             } else {
-                _ASAN_VECTOR_GUARD_CREATE;
+#ifdef _INSERT_VECTOR_ANNOTATION
+                _TRY_BEGIN
+#endif // _INSERT_VECTOR_ANNOTATION
                 _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
+#ifdef _INSERT_VECTOR_ANNOTATION
+                _CATCH_ALL
+                _ASAN_VECTOR_CREATE;
+                _RERAISE;
+                _CATCH_END
+#endif // _INSERT_VECTOR_ANNOTATION
             }
+
+            _ASAN_VECTOR_CREATE;
             return;
         }
 
@@ -1254,11 +1255,19 @@ private:
             _Clear_and_reserve_geometric(_Newsize);
             if constexpr (_Nothrow_construct) {
                 _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
-                _ASAN_VECTOR_CREATE;
             } else {
-                _ASAN_VECTOR_GUARD_CREATE;
+#ifdef _INSERT_VECTOR_ANNOTATION
+                _TRY_BEGIN
+#endif // _INSERT_VECTOR_ANNOTATION
                 _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
+#ifdef _INSERT_VECTOR_ANNOTATION
+                _CATCH_ALL
+                _ASAN_VECTOR_CREATE;
+                _RERAISE;
+                _CATCH_END
+#endif // _INSERT_VECTOR_ANNOTATION
             }
+            _ASAN_VECTOR_CREATE;
             return;
         }
 
@@ -1917,11 +1926,19 @@ private:
             _Clear_and_reserve_geometric(_Newsize);
             if constexpr (_Nothrow_construct) {
                 _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
-                _ASAN_VECTOR_CREATE;
             } else {
-                _ASAN_VECTOR_GUARD_CREATE;
+#ifdef _INSERT_VECTOR_ANNOTATION
+                _TRY_BEGIN
+#endif // _INSERT_VECTOR_ANNOTATION
                 _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
+#ifdef _INSERT_VECTOR_ANNOTATION
+                _CATCH_ALL
+                _ASAN_VECTOR_CREATE;
+                _RERAISE;
+                _CATCH_END
+#endif // _INSERT_VECTOR_ANNOTATION
             }
+            _ASAN_VECTOR_CREATE;
             return;
         }
 
