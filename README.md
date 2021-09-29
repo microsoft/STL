@@ -70,7 +70,7 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
         3. Sort the remaining lines.
         4. Find the last occurrence of `#`, so you can delete all of the empty lines and comments.
         5. Count the remaining lines.
-* Run `node gather_stats.js` to regenerate `daily_table.js` and `monthly_table.js`.
+* Run `npx tsc && node built/gather_stats.js` to regenerate `daily_table.js` and `monthly_table.js`.
     + This regenerates the files from scratch, but the diff should be small because the data is stable and the process
     is deterministic.
     + It's possible for previous values to change, e.g. if an issue is relabeled, but dramatic changes without

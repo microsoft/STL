@@ -4,6 +4,9 @@
 .vs/
 .vscode/
 
+# Ignore the TypeScript compiler's output.
+/built/
+
 # Ignore installed packages.
 /node_modules/
 
