@@ -12,6 +12,14 @@ using namespace std;
 
 extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end) noexcept;
 
+struct non_trivial_can_throw {
+    non_trivial_can_throw() {}
+};
+
+struct non_trivial_cannot_throw {
+    non_trivial_cannot_throw() noexcept {}
+};
+
 struct throw_on_construction {
     throw_on_construction() {
         throw 0;
@@ -742,6 +750,8 @@ int main() {
     run_allocator_matrix<char>();
     run_allocator_matrix<int>();
     run_allocator_matrix<double>();
+    run_allocator_matrix<non_trivial_can_throw>();
+    run_allocator_matrix<non_trivial_cannot_throw>();
 
     test_push_back_throw();
     test_emplace_back_throw();
