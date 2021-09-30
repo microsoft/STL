@@ -495,19 +495,92 @@ public:
 
 private:
 #ifdef _INSERT_VECTOR_ANNOTATION
-    class _NODISCARD _Asan_annotator {
-    public:
-        _Asan_annotator(const _Asan_annotator&) = delete;
-        _Asan_annotator& operator=(const _Asan_annotator&) = delete;
+    static _CONSTEXPR20 void _Create_annotation(const vector& _Myvec_) noexcept {
+        // Annotates the shadow memory of the valid range
+        auto& _My_data = _Myvec_._Mypair._Myval2;
+        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Myend, _My_data._Mylast);
+    }
 
-        constexpr explicit _Asan_annotator(vector* _Myvec_, size_type _Target_size_) noexcept
+    static _CONSTEXPR20 void _Clear_annotation(const vector& _Myvec_) noexcept {
+        // Removes the shadow memory annotation of the range
+        auto& _My_data = _Myvec_._Mypair._Myval2;
+        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myend);
+    }
+
+    static _CONSTEXPR20 void _Change_annotation(const vector& _Myvec_, const difference_type _Count) noexcept {
+        // Extends /shrinks the annotated range by _Count
+        auto& _My_data = _Myvec_._Mypair._Myval2;
+        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Mylast + _Count);
+    }
+
+    static const void* _Get_aligned_first(const void* _First, const void* _End) noexcept {
+        const char* _CFirst    = reinterpret_cast<const char*>(_First);
+        const char* _CEnd      = reinterpret_cast<const char*>(_End);
+        const size_t _Capacity = static_cast<size_t>(_CEnd - _CFirst);
+
+        if (_Capacity >= 8) {
+            // We are guaranteed to have sufficient space to find an aligned address.
+            return reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(_CFirst) + 7) & ~7);
+        }
+
+        uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_CFirst) & 7;
+        if (_Alignment_offset) {
+            _Alignment_offset = 8 - _Alignment_offset;
+        }
+
+        if (_Capacity > _Alignment_offset) {
+            return _CFirst + _Alignment_offset;
+        }
+
+        return nullptr;
+    }
+
+    static _CONSTEXPR20 void _Apply_annotation(
+        pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            return;
+        }
+#endif // _HAS_CXX20
+
+        if (!_Asan_vector_should_annotate) {
+            return;
+        }
+
+        const char* _First    = reinterpret_cast<const char*>(_Unfancy_maybe_null(_First_));
+        const char* _End      = reinterpret_cast<const char*>(_Unfancy_maybe_null(_End_));
+        const char* _Old_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_Old_last_));
+        const char* _New_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_New_last_));
+        if constexpr (_Has_minimum_allocation_alignment<vector>) {
+            __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+        } else {
+            const void* _Aligned_first = _Get_aligned_first(_First, _End);
+            if (!_Aligned_first) {
+                // There is no aligned address within the underlying buffer; nothing to do.
+                return;
+            }
+
+            const void* _Aligned_old_last = _Old_last < _Aligned_first ? _Aligned_first : _Old_last;
+            const void* _Aligned_new_last = _New_last < _Aligned_first ? _Aligned_first : _New_last;
+            const void* _Aligned_end      = _End < _Aligned_first ? _Aligned_first : _End;
+            __sanitizer_annotate_contiguous_container(
+                _Aligned_first, _Aligned_end, _Aligned_old_last, _Aligned_new_last);
+        }
+    }
+
+    class _NODISCARD _Asan_extend_guard {
+    public:
+        _Asan_extend_guard(const _Asan_extend_guard&) = delete;
+        _Asan_extend_guard& operator=(const _Asan_extend_guard&) = delete;
+
+        constexpr explicit _Asan_extend_guard(vector* _Myvec_, size_type _Target_size_) noexcept
             : _Myvec(_Myvec_), _Target_size(_Target_size_) {
             _STL_INTERNAL_CHECK(_Myvec != nullptr);
             auto& _My_data = _Myvec->_Mypair._Myval2;
             _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myfirst + _Target_size);
         }
 
-        _CONSTEXPR20 ~_Asan_annotator() {
+        _CONSTEXPR20 ~_Asan_extend_guard() {
             if (!_Myvec) { // Operation succeeded, no modification to the shadow memory required.
                 return;
             }
@@ -521,94 +594,36 @@ private:
             _Myvec = nullptr;
         }
 
-        static _CONSTEXPR20 void _Create_annotation(const vector& _Myvec_) noexcept {
-            // Annotates the shadow memory of the valid range
-            auto& _My_data = _Myvec_._Mypair._Myval2;
-            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Myend, _My_data._Mylast);
-        }
-
-        static _CONSTEXPR20 void _Clear_annotation(const vector& _Myvec_) noexcept {
-            // Removes the shadow memory annotation of the range
-            auto& _My_data = _Myvec_._Mypair._Myval2;
-            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myend);
-        }
-
-        static _CONSTEXPR20 void _Change_annotation(const vector& _Myvec_, const difference_type _Count) noexcept {
-            // Extends /shrinks the annotated range by _Count
-            auto& _My_data = _Myvec_._Mypair._Myval2;
-            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Mylast + _Count);
-        }
-
-    private:
-        static const void* _Get_aligned_first(const void* _First, const void* _End) noexcept {
-            const char* _CFirst    = reinterpret_cast<const char*>(_First);
-            const char* _CEnd      = reinterpret_cast<const char*>(_End);
-            const size_t _Capacity = static_cast<size_t>(_CEnd - _CFirst);
-
-            if (_Capacity >= 8) {
-                // We are guaranteed to have sufficient space to find an aligned address.
-                return reinterpret_cast<void*>((reinterpret_cast<uintptr_t>(_CFirst) + 7) & ~7);
-            }
-
-            uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_CFirst) & 7;
-            if (_Alignment_offset) {
-                _Alignment_offset = 8 - _Alignment_offset;
-            }
-
-            if (_Capacity > _Alignment_offset) {
-                return _CFirst + _Alignment_offset;
-            }
-
-            return nullptr;
-        }
-
-        static _CONSTEXPR20 void _Apply_annotation(
-            pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) {
-                return;
-            }
-#endif // _HAS_CXX20
-
-            if (!_Asan_vector_should_annotate) {
-                return;
-            }
-
-            const char* _First    = reinterpret_cast<const char*>(_Unfancy_maybe_null(_First_));
-            const char* _End      = reinterpret_cast<const char*>(_Unfancy_maybe_null(_End_));
-            const char* _Old_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_Old_last_));
-            const char* _New_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_New_last_));
-            if constexpr (_Has_minimum_allocation_alignment<vector>) {
-                __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
-            } else {
-                const void* _Aligned_first = _Get_aligned_first(_First, _End);
-                if (!_Aligned_first) {
-                    // There is no aligned address within the underlying buffer; nothing to do.
-                    return;
-                }
-
-                const void* _Aligned_old_last = _Old_last < _Aligned_first ? _Aligned_first : _Old_last;
-                const void* _Aligned_new_last = _New_last < _Aligned_first ? _Aligned_first : _New_last;
-                const void* _Aligned_end      = _End < _Aligned_first ? _Aligned_first : _End;
-                __sanitizer_annotate_contiguous_container(
-                    _Aligned_first, _Aligned_end, _Aligned_old_last, _Aligned_new_last);
-            }
-        }
-
         vector* _Myvec;
         size_type _Target_size;
     };
 
-#define _ASAN_VECTOR_CHANGE(n) _Asan_annotator::_Change_annotation(*this, (n))
-#define _ASAN_VECTOR_CLEAR     _Asan_annotator::_Clear_annotation(*this)
-#define _ASAN_VECTOR_CREATE    _Asan_annotator::_Create_annotation(*this)
-#define _ASAN_VECTOR_GUARD(n)  _Asan_annotator _Annotator(this, (n))
-#define _ASAN_VECTOR_RELEASE   _Annotator._Release()
+    class _NODISCARD _Asan_create_guard {
+    public:
+        _Asan_create_guard(const _Asan_create_guard&) = delete;
+        _Asan_create_guard& operator=(const _Asan_create_guard&) = delete;
+
+        constexpr explicit _Asan_create_guard(const vector& _Myvec_) noexcept : _Myvec(_Myvec_) {}
+
+        _CONSTEXPR20 ~_Asan_create_guard() {
+            _Create_annotation(_Myvec);
+        }
+
+        const vector& _Myvec;
+    };
+
+#define _ASAN_VECTOR_CHANGE(n)       _Change_annotation(*this, (n))
+#define _ASAN_VECTOR_CLEAR           _Clear_annotation(*this)
+#define _ASAN_VECTOR_CREATE          _Create_annotation(*this)
+#define _ASAN_VECTOR_CREATE_GUARD    _Asan_create_guard _Annotator(*this)
+#define _ASAN_VECTOR_EXTEND_GUARD(n) _Asan_extend_guard _Annotator(this, (n))
+#define _ASAN_VECTOR_RELEASE         _Annotator._Release()
 #else // ^^^ _INSERT_VECTOR_ANNOTATION ^^^ // vvv !_INSERT_VECTOR_ANNOTATION vvv
 #define _ASAN_VECTOR_CHANGE(n)
 #define _ASAN_VECTOR_CLEAR
 #define _ASAN_VECTOR_CREATE
-#define _ASAN_VECTOR_GUARD(n)
+#define _ASAN_VECTOR_CREATE_GUARD
+#define _ASAN_VECTOR_EXTEND_GUARD(n)
 #define _ASAN_VECTOR_RELEASE
 #endif // !_INSERT_VECTOR_ANNOTATION
 
@@ -784,7 +799,7 @@ private:
             _ASAN_VECTOR_CHANGE(1);
             _Construct_in_place(*_Mylast, _STD forward<_Valty>(_Val)...);
         } else {
-            _ASAN_VECTOR_GUARD(static_cast<size_type>(_Mylast - _My_data._Myfirst) + 1);
+            _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Mylast - _My_data._Myfirst) + 1);
             _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
             _ASAN_VECTOR_RELEASE;
         }
@@ -886,7 +901,7 @@ public:
                 _Alloc_temporary2<_Alty> _Obj(_Al, _STD forward<_Valty>(_Val)...); // handle aliasing
                 // after constructing _Obj, provide basic guarantee
                 _Orphan_range(_Whereptr, _Oldlast);
-                _ASAN_VECTOR_GUARD(static_cast<size_type>(_Oldlast - _My_data._Myfirst) + 1);
+                _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _My_data._Myfirst) + 1);
                 _Alty_traits::construct(_Al, _Unfancy(_Oldlast), _STD move(_Oldlast[-1]));
                 _ASAN_VECTOR_RELEASE;
                 ++_My_data._Mylast;
@@ -971,7 +986,7 @@ public:
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
             _Orphan_range(_Whereptr, _Oldlast);
 
-            _ASAN_VECTOR_GUARD(static_cast<size_type>(_Oldlast - _My_data._Myfirst) + _Count);
+            _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _My_data._Myfirst) + _Count);
             if (_Count > _Affected_elements) { // new stuff spills off end
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Count - _Affected_elements, _Tmp, _Al);
                 _Mylast = _Uninitialized_move(_Whereptr, _Oldlast, _Mylast, _Al);
@@ -1072,7 +1087,7 @@ private:
 
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
 
-            _ASAN_VECTOR_GUARD(static_cast<size_type>(_Oldlast - _Oldfirst) + _Count);
+            _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _Oldfirst) + _Count);
             if (_Count < _Affected_elements) { // some affected elements must be assigned
                 _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
@@ -1167,20 +1182,12 @@ public:
             _Clear_and_reserve_geometric(_Newsize);
             if constexpr (_Nothrow_construct) {
                 _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
-            } else {
-#ifdef _INSERT_VECTOR_ANNOTATION
-                _TRY_BEGIN
-#endif // _INSERT_VECTOR_ANNOTATION
-                _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
-#ifdef _INSERT_VECTOR_ANNOTATION
-                _CATCH_ALL
                 _ASAN_VECTOR_CREATE;
-                _RERAISE;
-                _CATCH_END
-#endif // _INSERT_VECTOR_ANNOTATION
+            } else {
+                _ASAN_VECTOR_CREATE_GUARD;
+                _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
             }
 
-            _ASAN_VECTOR_CREATE;
             return;
         }
 
@@ -1191,7 +1198,7 @@ public:
                 _ASAN_VECTOR_CHANGE(static_cast<difference_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
             } else {
-                _ASAN_VECTOR_GUARD(static_cast<difference_type>(_Newsize - _Oldsize));
+                _ASAN_VECTOR_EXTEND_GUARD(static_cast<difference_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
                 _ASAN_VECTOR_RELEASE;
             }
@@ -1255,19 +1262,11 @@ private:
             _Clear_and_reserve_geometric(_Newsize);
             if constexpr (_Nothrow_construct) {
                 _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
-            } else {
-#ifdef _INSERT_VECTOR_ANNOTATION
-                _TRY_BEGIN
-#endif // _INSERT_VECTOR_ANNOTATION
-                _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
-#ifdef _INSERT_VECTOR_ANNOTATION
-                _CATCH_ALL
                 _ASAN_VECTOR_CREATE;
-                _RERAISE;
-                _CATCH_END
-#endif // _INSERT_VECTOR_ANNOTATION
+            } else {
+                _ASAN_VECTOR_CREATE_GUARD;
+                _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
             }
-            _ASAN_VECTOR_CREATE;
             return;
         }
 
@@ -1281,7 +1280,7 @@ private:
                 _ASAN_VECTOR_CHANGE(static_cast<difference_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
             } else {
-                _ASAN_VECTOR_GUARD(static_cast<difference_type>(_Newsize - _Oldsize));
+                _ASAN_VECTOR_EXTEND_GUARD(static_cast<difference_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
                 _ASAN_VECTOR_RELEASE;
             }
@@ -1401,7 +1400,7 @@ private:
                 return;
             }
 
-            _ASAN_VECTOR_GUARD(_Newsize - _Oldsize);
+            _ASAN_VECTOR_EXTEND_GUARD(_Newsize - _Oldsize);
             const pointer _Oldlast = _Mylast;
             if constexpr (is_same_v<_Ty2, _Ty>) {
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Newsize - _Oldsize, _Val, _Al);
@@ -1926,19 +1925,11 @@ private:
             _Clear_and_reserve_geometric(_Newsize);
             if constexpr (_Nothrow_construct) {
                 _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
-            } else {
-#ifdef _INSERT_VECTOR_ANNOTATION
-                _TRY_BEGIN
-#endif // _INSERT_VECTOR_ANNOTATION
-                _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
-#ifdef _INSERT_VECTOR_ANNOTATION
-                _CATCH_ALL
                 _ASAN_VECTOR_CREATE;
-                _RERAISE;
-                _CATCH_END
-#endif // _INSERT_VECTOR_ANNOTATION
+            } else {
+                _ASAN_VECTOR_CREATE_GUARD;
+                _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
             }
-            _ASAN_VECTOR_CREATE;
             return;
         }
 
@@ -1951,7 +1942,7 @@ private:
                 _ASAN_VECTOR_CHANGE(static_cast<difference_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
             } else {
-                _ASAN_VECTOR_GUARD(_Newsize - _Oldsize);
+                _ASAN_VECTOR_EXTEND_GUARD(_Newsize - _Oldsize);
                 _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
                 _ASAN_VECTOR_RELEASE;
             }
