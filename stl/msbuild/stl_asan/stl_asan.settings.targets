@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ClProgramDataBaseFileName>$(OutputLibPdbPath)$(OutputName)$(PdbVerName).pdb</ClProgramDataBaseFileName>
     </PropertyGroup>
 
-    <Import Project="$(MSBuildThisFileDirectory)\stl_asan.files.settings.targets"/>
+    <Import Project="$(MSBuildThisFileDirectory)stl_asan.files.settings.targets"/>
 
     <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>
     <Target Name="GetBaseAddress"/>
