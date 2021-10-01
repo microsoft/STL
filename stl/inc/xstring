@@ -3091,7 +3091,6 @@ public:
 
         _Pocca(_Getal(), _Right._Getal());
         assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
-
         return *this;
     }
 
