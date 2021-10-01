@@ -5829,11 +5829,11 @@ namespace chrono {
     struct _Chrono_formatter {
         _Chrono_formatter() = default;
 
-        explicit _Chrono_formatter(const basic_string_view<_CharT> _Time_zone_abbreviation_)
+        explicit constexpr _Chrono_formatter(const basic_string_view<_CharT> _Time_zone_abbreviation_)
             : _Time_zone_abbreviation{_Time_zone_abbreviation_} {}
 
         template <class _Ty>
-        _NODISCARD auto _Parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+        _NODISCARD constexpr auto _Parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
             _Chrono_specs_setter<_CharT, basic_format_parse_context<_CharT>> _Callback{_Specs, _Parse_ctx};
             const auto _It =
                 _Parse_chrono_format_specs(_Parse_ctx._Unchecked_begin(), _Parse_ctx._Unchecked_end(), _Callback);
@@ -5867,7 +5867,7 @@ namespace chrono {
             return _Res_iter;
         }
 
-        static void _Check_modifier(const char _Type, const char _Modifier) {
+        static constexpr void _Check_modifier(const char _Type, const char _Modifier) {
             if (_Modifier == '\0') {
                 return;
             }
@@ -5879,7 +5879,7 @@ namespace chrono {
                 _Allowed_bit _Allowed;
             };
 
-            static constexpr _Table_entry _Table[] = {
+            constexpr _Table_entry _Table[] = {
                 {'c', _E_mod},
                 {'C', _E_mod},
                 {'d', _O_mod},
@@ -6329,7 +6329,7 @@ namespace chrono {
 
 template <class _Ty, class _CharT>
 struct _Fill_tm_formatter {
-    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+    constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_Ty>(_Parse_ctx);
     }
 
@@ -6420,7 +6420,7 @@ struct formatter<_CHRONO local_info, _CharT> //
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
-    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+    constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO sys_time<_Duration>>(_Parse_ctx);
     }
 
@@ -6435,7 +6435,7 @@ private:
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
-    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+    constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO utc_time<_Duration>>(_Parse_ctx);
     }
 
@@ -6451,7 +6451,7 @@ private:
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO tai_time<_Duration>, _CharT> {
-    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+    constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO tai_time<_Duration>>(_Parse_ctx);
     }
 
@@ -6470,7 +6470,7 @@ private:
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO gps_time<_Duration>, _CharT> {
-    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+    constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO gps_time<_Duration>>(_Parse_ctx);
     }
 
@@ -6489,7 +6489,7 @@ private:
 
 template <class _Duration, class _CharT>
 struct formatter<_CHRONO file_time<_Duration>, _CharT> {
-    auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
+    constexpr auto parse(basic_format_parse_context<_CharT>& _Parse_ctx) {
         return _Impl.template _Parse<_CHRONO file_time<_Duration>>(_Parse_ctx);
     }
 

@@ -2666,7 +2666,7 @@ struct _Arg_formatter {
 template <typename _Ty, typename _ParseContext>
 constexpr typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
     using _CharT                = typename _ParseContext::char_type;
-    using _Context              = basic_format_context<_Fmt_it, _CharT>;
+    using _Context              = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
     using _ArgTraits            = _Format_arg_traits<_Context>;
     using _FormattedTypeMapping = typename _ArgTraits::template _Storage_type<_Ty>;
     // If the type is going to use a custom formatter we should just use that,
