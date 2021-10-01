@@ -3056,10 +3056,7 @@ public:
         if constexpr (_Choose_pocca_v<_Alty>) {
             auto& _Al             = _Getal();
             const auto& _Right_al = _Right._Getal();
-            if (_Al == _Right_al) {
-                _Pocca(_Getal(), _Right._Getal());
-                assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
-            } else {
+            if (_Al != _Right_al) {
                 auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alty, _Al);
                 auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Right_al);
                 _Container_proxy_ptr<_Alty> _New_proxy(_Right_alproxy, _Leave_proxy_unbound{}); // throws
@@ -3088,11 +3085,12 @@ public:
 
                 _Pocca(_Al, _Right_al);
                 _New_proxy._Bind(_Alproxy, _STD addressof(_Mypair._Myval2));
+                return *this;
             }
-        } else {
-            _Pocca(_Getal(), _Right._Getal());
-            assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
+
+        _Pocca(_Getal(), _Right._Getal());
+        assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
 
         return *this;
     }
