@@ -380,7 +380,6 @@
 // * unique_copy
 
 #include <vcruntime.h>
-
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
 #ifndef _STL_WARNING_LEVEL
