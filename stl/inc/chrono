@@ -5648,6 +5648,11 @@ namespace chrono {
             } else {
                 _Write_fractional_seconds<_Fractional_width>(_Os, _Hms.seconds(), _Hms.subseconds());
             }
+        } else if constexpr (is_same_v<_Clock, file_clock>) {
+            const auto _Utc = file_clock::_To_utc_components(_Val);
+            const hh_mm_ss _Hms{_Utc._Sub_sec};
+            constexpr auto _Fractional_width = decltype(_Hms)::fractional_width;
+            _Write_fractional_seconds<_Fractional_width>(_Os, seconds{_Utc._Whole_sec._Second}, _Hms.to_duration());
         } else {
             const auto _Dp = _CHRONO floor<days>(_Val);
             _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
@@ -5742,6 +5747,14 @@ namespace chrono {
             _Tm.tm_sec      = _Hms.tm_sec;
             _Tm.tm_min      = _Hms.tm_min;
             _Tm.tm_hour     = _Hms.tm_hour;
+            return _Tm;
+        } else if constexpr (_Is_specialization_v<_Ty, _Utc_components>) {
+            const year_month_day _Ymd{
+                year{_Val._Whole_sec._Year}, month{_Val._Whole_sec._Month}, day{_Val._Whole_sec._Day}};
+            tm _Tm      = _Fill_tm(_Ymd);
+            _Tm.tm_sec  = _Val._Whole_sec._Second;
+            _Tm.tm_min  = _Val._Whole_sec._Minute;
+            _Tm.tm_hour = _Val._Whole_sec._Hour;
             return _Tm;
         }
 
@@ -6618,9 +6631,8 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
 
     template <class _FormatContext>
     auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
-        const auto _Utc = _CHRONO file_clock::to_utc(_Val);
-        const auto _Sys = _CHRONO utc_clock::to_sys(_Utc);
-        return _Impl._Write(_FormatCtx, _Utc, _Fill_tm(_Sys));
+        const auto _Utc = _CHRONO file_clock::_To_utc_components(_Val);
+        return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Utc));
     }
 
 private:
