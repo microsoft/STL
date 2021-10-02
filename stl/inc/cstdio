@@ -87,6 +87,20 @@ using _CSTD vfscanf;
 using _CSTD vscanf;
 using _CSTD vsscanf;
 
+#if defined _CRT_DISABLE_PERFCRIT_LOCKS && !defined _DLL
+using _CSTD _fclose_nolock;
+using _CSTD _fflush_nolock;
+using _CSTD _fgetc_nolock;
+using _CSTD _fputc_nolock;
+using _CSTD _fread_nolock;
+using _CSTD _fseek_nolock;
+using _CSTD _ftell_nolock;
+using _CSTD _fwrite_nolock;
+using _CSTD _getc_nolock;
+using _CSTD _putc_nolock;
+using _CSTD _ungetc_nolock;
+#endif // defined _CRT_DISABLE_PERFCRIT_LOCKS && !defined _DLL
+
 #pragma warning(pop)
 _STD_END
 
