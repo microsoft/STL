@@ -217,7 +217,7 @@ void empty_braces_helper(
 
     basic_ostringstream<CharT> stream;
     stream << val;
-    assert(((stream.str() == expected) || ... || (stream.str() == alternatives)));
+    assert(stream.str() == result);
     assert(stream);
 }
 
