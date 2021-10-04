@@ -16,7 +16,7 @@ static_assert(byteswap(static_cast<long>(0x1234ABCD)) == static_cast<long>(0xCDA
 static_assert(byteswap(static_cast<unsigned long>(0x1234ABCD)) == static_cast<unsigned long>(0xCDAB3412));
 static_assert(byteswap(static_cast<long long>(0x1234567890ABCDEF)) == static_cast<long long>(0xEFCDAB9078563412));
 static_assert(byteswap(static_cast<unsigned long long>(0x1234567890ABCDEF))
-       == static_cast<unsigned long long>(0xEFCDAB9078563412));
+              == static_cast<unsigned long long>(0xEFCDAB9078563412));
 
 int main() {
     assert(byteswap('\x13') == '\x13');
