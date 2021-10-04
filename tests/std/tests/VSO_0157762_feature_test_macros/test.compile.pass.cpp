@@ -344,6 +344,10 @@ STATIC_ASSERT(__cpp_lib_byte == 201603L);
 #else
 STATIC_ASSERT(__cpp_lib_byteswap == 202110L);
 #endif
+#else
+#ifdef __cpp_lib_byteswap
+#error __cpp_lib_byteswap is defined
+#endif
 #endif
 
 #if _HAS_CXX20 && defined(__cpp_char8_t)
