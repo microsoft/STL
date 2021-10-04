@@ -233,6 +233,32 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
 }
 #endif // defined(_M_ARM) || defined(_M_ARM64)
 
+constexpr unsigned short _Byteswap_ushort(unsigned short _Val) {
+    if (_STD is_constant_evaluated()) {
+        return static_cast<unsigned short>((_Val << 8u) | (_Val >> 8u));
+    } else {
+        return _byteswap_ushort(_Val);
+    }
+}
+
+constexpr unsigned long _Byteswap_ulong(unsigned long _Val) {
+    if (_STD is_constant_evaluated()) {
+        return (_Val << 24u) | ((_Val << 8u) & 0x00FF0000ul) | ((_Val >> 8u) & 0x0000FF00ul) | (_Val >> 24u);
+    } else {
+        return _byteswap_ulong(_Val);
+    }
+}
+
+constexpr unsigned long long _Byteswap_uint64(unsigned long long _Val) {
+    if (_STD is_constant_evaluated()) {
+        return (_Val << 56) | ((_Val << 40) & 0x00FF'0000'0000'0000ull) | ((_Val << 24) & 0x0000'FF00'0000'0000ull)
+             | ((_Val << 8) & 0x0000'00FF'0000'0000ull) | ((_Val >> 8) & 0x0000'0000'FF00'0000ull)
+             | ((_Val >> 24) & 0x0000'0000'00FF'0000ull) | ((_Val >> 40) & 0x0000'0000'0000'FF00ull) | (_Val >> 56);
+    } else {
+        return _byteswap_uint64(_Val);
+    }
+}
+
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
 _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
@@ -274,11 +300,11 @@ _NODISCARD constexpr _Ty byteswap(const _Ty _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
         return _Val;
     } else if constexpr (sizeof(_Ty) == 2) {
-        return static_cast<_Ty>(_byteswap_ushort(static_cast<unsigned short>(_Val)));
+        return static_cast<_Ty>(_Byteswap_ushort(static_cast<unsigned short>(_Val)));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return static_cast<_Ty>(_byteswap_ulong(static_cast<unsigned long>(_Val)));
+        return static_cast<_Ty>(_Byteswap_ulong(static_cast<unsigned long>(_Val)));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return static_cast<_Ty>(_byteswap_uint64(static_cast<unsigned long long>(_Val)));
+        return static_cast<_Ty>(_Byteswap_uint64(static_cast<unsigned long long>(_Val)));
     } else {
         static_assert(_Always_false<_Ty>, "Unexpected integer size");
     }

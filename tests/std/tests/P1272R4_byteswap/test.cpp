@@ -6,6 +6,18 @@
 
 using namespace std;
 
+
+static_assert(byteswap('\x13') == '\x13');
+static_assert(byteswap(static_cast<signed char>('\x13')) == static_cast<signed char>('\x13'));
+static_assert(byteswap(static_cast<unsigned char>('\x13')) == static_cast<unsigned char>('\x13'));
+static_assert(byteswap(static_cast<short>(0xAC34)) == static_cast<short>(0x34AC));
+static_assert(byteswap(static_cast<unsigned short>(0xAC34)) == static_cast<unsigned short>(0x34AC));
+static_assert(byteswap(static_cast<long>(0x1234ABCD)) == static_cast<long>(0xCDAB3412));
+static_assert(byteswap(static_cast<unsigned long>(0x1234ABCD)) == static_cast<unsigned long>(0xCDAB3412));
+static_assert(byteswap(static_cast<long long>(0x1234567890ABCDEF)) == static_cast<long long>(0xEFCDAB9078563412));
+static_assert(byteswap(static_cast<unsigned long long>(0x1234567890ABCDEF))
+       == static_cast<unsigned long long>(0xEFCDAB9078563412));
+
 int main() {
     assert(byteswap('\x13') == '\x13');
     assert(byteswap(static_cast<signed char>('\x13')) == static_cast<signed char>('\x13'));
