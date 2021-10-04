@@ -6,7 +6,6 @@
 
 using namespace std;
 
-
 static_assert(byteswap('\x13') == '\x13');
 static_assert(byteswap(static_cast<signed char>('\x13')) == static_cast<signed char>('\x13'));
 static_assert(byteswap(static_cast<unsigned char>('\x13')) == static_cast<unsigned char>('\x13'));
