@@ -268,6 +268,23 @@ _NODISCARD constexpr int popcount(const _Ty _Val) noexcept {
     return _Popcount(_Val);
 }
 
+#if _HAS_CXX23
+template <class _Ty, enable_if_t<is_integral_v<_Ty>, int> = 0>
+_NODISCARD constexpr _Ty byteswap(const _Ty _Val) noexcept {
+    if constexpr (sizeof(_Ty) == 1) {
+        return _Val;
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return static_cast<_Ty>(_byteswap_ushort(static_cast<unsigned short>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return static_cast<_Ty>(_byteswap_ulong(static_cast<unsigned long>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return static_cast<_Ty>(_byteswap_uint64(static_cast<unsigned long long>(_Val)));
+    } else {
+        static_assert(_Always_false<_Ty>, "Unexpected integer size");
+    }
+}
+#endif
+
 enum class endian { little = 0, big = 1, native = little };
 
 _STD_END
