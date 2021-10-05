@@ -1023,6 +1023,50 @@ constexpr bool test_interface() {
         assert(equalRanges(resized, "Helaaa"sv));
     }
 
+#if _HAS_CXX23
+    { // resize_and_overwrite
+        constexpr basic_string_view hello  = get_view_input<CharType>().substr(0, 5);
+        constexpr basic_string_view dog    = get_dog<CharType>();
+        constexpr basic_string_view kitten = get_cat<CharType>();
+
+        str s;
+        s.resize_and_overwrite(5, [=](CharType* p, size_t n) {
+            assert(n == 5);
+            hello.copy(p, 5);
+            return 5u;
+        });
+
+        assert(s == hello);
+        assert(s.size() == 5);
+        assert(s.capacity() >= 5);
+        assert(s[5] == 0);
+
+        s.resize_and_overwrite(8, [=](CharType* p, size_t n) {
+            assert(n == 8);
+            assert(equal(hello.begin(), hello.end(), p, p + 5));
+            dog.copy(p, 3);
+            return 3u;
+        });
+
+        assert(s == dog);
+        assert(s.size() == 3);
+        assert(s.capacity() >= 3);
+        assert(s[3] == 0);
+
+        s.resize_and_overwrite(6, [=](CharType* p, size_t n) {
+            assert(n == 6);
+            assert(equal(dog.begin(), dog.end(), p, p + 3));
+            kitten.copy(p, 6);
+            return 6u;
+        });
+
+        assert(s == kitten);
+        assert(s.size() == 6);
+        assert(s.capacity() >= 6);
+        assert(s[6] == 0);
+    }
+#endif // _HAS_CXX23
+
     { // swap
         constexpr basic_string_view<CharType> expected_first  = get_dog<CharType>();
         constexpr basic_string_view<CharType> expected_second = get_cat<CharType>();

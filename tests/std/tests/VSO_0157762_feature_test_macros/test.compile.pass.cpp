@@ -1558,6 +1558,20 @@ STATIC_ASSERT(__cpp_lib_string_contains == 202011L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_string_resize_and_overwrite
+#error __cpp_lib_string_resize_and_overwrite is not defined
+#elif __cpp_lib_string_resize_and_overwrite != 202110L
+#error __cpp_lib_string_resize_and_overwrite is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_string_resize_and_overwrite == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_string_resize_and_overwrite
+#error __cpp_lib_string_resize_and_overwrite is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_string_udls
 #error __cpp_lib_string_udls is not defined
 #elif __cpp_lib_string_udls != 201304L
