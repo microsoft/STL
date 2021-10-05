@@ -15,7 +15,7 @@ This allows to:
  * Extend the STL implementation without altering the DLL export surface;
  * Efficiently and conveniently export variables and constants.
 
-The caveats of this technic are:
+The caveats of this technique are:
  * Sort of defeat the purpose of /MD or /MDd options by making part of the STL implementation
    embedded into the resulting binaries, rather than stay in the STL DLL;
  * Due to the duplication in each binary that links to the import library,
