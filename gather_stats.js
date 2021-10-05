@@ -420,7 +420,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
         const row = rows[i];
         str += '    { ';
         str += `date: '${row.date.toISODate()}', `;
-        str += `merged: ${Number.parseFloat(row.merged).toFixed(2)}, `;
+        str += `merged: ${row.merged.toFixed(2)}, `;
 
         for (const key of ['pr', 'cxx20', 'cxx23', 'lwg', 'issue', 'bug']) {
             if (should_emit_data_point(rows, i, key)) {
@@ -430,10 +430,10 @@ function write_daily_table(script_start, all_prs, all_issues) {
             }
         }
 
-        str += `avg_age: ${Number.parseFloat(row.avg_age).toFixed(2)}, `;
-        str += `avg_wait: ${Number.parseFloat(row.avg_wait).toFixed(2)}, `;
-        str += `sum_age: ${Number.parseFloat(row.sum_age).toFixed(2)}, `;
-        str += `sum_wait: ${Number.parseFloat(row.sum_wait).toFixed(2)}, `;
+        str += `avg_age: ${row.avg_age.toFixed(2)}, `;
+        str += `avg_wait: ${row.avg_wait.toFixed(2)}, `;
+        str += `sum_age: ${row.sum_age.toFixed(2)}, `;
+        str += `sum_wait: ${row.sum_wait.toFixed(2)}, `;
         str += '},\n';
     }
 
@@ -491,7 +491,7 @@ async function async_main() {
             console.log(`Remaining: ${rate_limit.remaining}/${rate_limit.limit} points`);
         }
 
-        console.log(`Time: ${Number.parseFloat(script_finish.diff(script_start).as('seconds')).toFixed(3)}s`);
+        console.log(`Time: ${script_finish.diff(script_start).as('seconds').toFixed(3)}s`);
     } catch (error) {
         console.log(`ERROR: ${error.message}`);
     }
