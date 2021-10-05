@@ -235,7 +235,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
 
 _NODISCARD constexpr unsigned short _Byteswap_ushort(const unsigned short _Val) noexcept {
     if (_STD is_constant_evaluated()) {
-        return static_cast<unsigned short>((_Val << 8u) | (_Val >> 8u));
+        return static_cast<unsigned short>((_Val << 8) | (_Val >> 8));
     } else {
         return _byteswap_ushort(_Val);
     }
@@ -243,7 +243,7 @@ _NODISCARD constexpr unsigned short _Byteswap_ushort(const unsigned short _Val) 
 
 _NODISCARD constexpr unsigned long _Byteswap_ulong(const unsigned long _Val) noexcept {
     if (_STD is_constant_evaluated()) {
-        return (_Val << 24u) | ((_Val << 8u) & 0x00FF0000ul) | ((_Val >> 8u) & 0x0000FF00ul) | (_Val >> 24u);
+        return (_Val << 24) | ((_Val << 8) & 0x00FF'0000) | ((_Val >> 8) & 0x0000'FF00) | (_Val >> 24);
     } else {
         return _byteswap_ulong(_Val);
     }
@@ -251,9 +251,9 @@ _NODISCARD constexpr unsigned long _Byteswap_ulong(const unsigned long _Val) noe
 
 _NODISCARD constexpr unsigned long long _Byteswap_uint64(const unsigned long long _Val) noexcept {
     if (_STD is_constant_evaluated()) {
-        return (_Val << 56) | ((_Val << 40) & 0x00FF'0000'0000'0000ull) | ((_Val << 24) & 0x0000'FF00'0000'0000ull)
-             | ((_Val << 8) & 0x0000'00FF'0000'0000ull) | ((_Val >> 8) & 0x0000'0000'FF00'0000ull)
-             | ((_Val >> 24) & 0x0000'0000'00FF'0000ull) | ((_Val >> 40) & 0x0000'0000'0000'FF00ull) | (_Val >> 56);
+        return (_Val << 56) | ((_Val << 40) & 0x00FF'0000'0000'0000) | ((_Val << 24) & 0x0000'FF00'0000'0000)
+             | ((_Val << 8) & 0x0000'00FF'0000'0000) | ((_Val >> 8) & 0x0000'0000'FF00'0000)
+             | ((_Val >> 24) & 0x0000'0000'00FF'0000) | ((_Val >> 40) & 0x0000'0000'0000'FF00) | (_Val >> 56);
     } else {
         return _byteswap_uint64(_Val);
     }
