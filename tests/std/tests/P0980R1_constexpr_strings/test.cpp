@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <exception>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -1064,6 +1065,40 @@ constexpr bool test_interface() {
         assert(s.size() == 6);
         assert(s.capacity() >= 6);
         assert(s[6] == 0);
+
+        if (!_STD is_constant_evaluated()) {
+            // The Standard says that throwing from passed functor is undefined behavior, but we provide this
+            // non-Standard guarantee
+            try {
+                s.resize_and_overwrite(10, [=](CharType* p, size_t n) -> size_t {
+                    assert(n == 10);
+                    assert(equal(kitten.begin(), kitten.end(), p, p + 6));
+                    throw exception();
+                });
+                assert(false);
+            } catch (...) {
+            }
+
+            assert(s == kitten);
+            assert(s.size() == 6);
+            assert(s.capacity() >= 10);
+            assert(s[6] == 0);
+
+            try {
+                s.resize_and_overwrite(3, [=](CharType* p, size_t n) -> size_t {
+                    assert(n == 3);
+                    assert(equal(kitten.begin(), kitten.begin() + 3, p, p + 3));
+                    throw exception();
+                });
+                assert(false);
+            } catch (...) {
+            }
+
+            assert(s == kitten);
+            assert(s.size() == 6);
+            assert(s.capacity() >= 10);
+            assert(s[6] == 0);
+        }
     }
 #endif // _HAS_CXX23
 

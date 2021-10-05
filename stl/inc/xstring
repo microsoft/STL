@@ -3985,13 +3985,17 @@ public:
     constexpr void resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _Newsize, _Operation _Op) {
         if (_Mypair._Myval2._Myres < _Newsize) {
             _Reallocate_grow_by(
-                _Newsize - size(),
-                [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Oldsize,
-                    const size_type _Newsize) { _Traits::copy(_New_ptr, _Old_ptr, (_STD min) (_Oldsize, _Newsize)); },
-                _Newsize);
+                _Newsize - size(), [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Oldsize) {
+                    _Traits::copy(_New_ptr, _Old_ptr, _Oldsize + 1);
+                });
         }
 
-        _Eos(_STD move(_Op)(data(), _Newsize));
+        const auto _Resultsize = _STD move(_Op)(data(), _Newsize);
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Resultsize >= 0, "the returned size can't be smaller than 0");
+        _STL_VERIFY(_Resultsize <= _Newsize, "the returned size can't be greater than passed size");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _Eos(_Resultsize);
     }
 #endif // _HAS_CXX23
 
