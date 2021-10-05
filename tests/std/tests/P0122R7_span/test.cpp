@@ -79,8 +79,8 @@ static_assert(ranges::enable_borrowed_range<span<int>>);
 static_assert(ranges::enable_borrowed_range<span<int, 3>>);
 #endif // __cpp_lib_concepts
 
-// We provide non-standard guarantees that span and its iterator types are trivially copyable;
-// P2251 may eventually standardize that guarantee for span itself.
+// Since P2251R1 span is guaranteed to be trivially copyable;
+// We provide non-standard guarantees that also its iterator types are trivially copyable.
 static_assert(is_trivially_copyable_v<span<int>>);
 static_assert(is_trivially_copyable_v<span<int>::iterator>);
 static_assert(is_trivially_copyable_v<span<int, 3>>);
