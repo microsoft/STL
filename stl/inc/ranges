@@ -34,7 +34,10 @@ namespace ranges {
     template <class _Rng>
     concept viewable_range = range<_Rng>
         && ((view<remove_cvref_t<_Rng>> && constructible_from<remove_cvref_t<_Rng>, _Rng>)
-            || (!view<remove_cvref_t<_Rng>> && borrowed_range<_Rng>));
+            || (!view<remove_cvref_t<_Rng>>
+                && (is_lvalue_reference_v<_Rng>
+                    || (movable<remove_reference_t<_Rng>>
+                        && !_Is_specialization_v<remove_cvref_t<_Rng>, initializer_list>))));
 
     template <class _Rng>
     concept _Simple_view = view<_Rng> && range<const _Rng>
@@ -469,7 +472,7 @@ namespace ranges {
         }
 
     private:
-        /* [[no_unique_address]] */ _Ty _Val = _Ty();
+        /* [[no_unique_address]] */ _Ty _Val{};
     };
 
     template <movable _Ty>
@@ -1379,11 +1382,9 @@ namespace ranges {
         return basic_istream_view<_Ty, _Elem, _Traits>{_Stream};
     }
 
-    // clang-format off
     template <range _Rng>
         requires is_object_v<_Rng>
     class ref_view : public view_interface<ref_view<_Rng>> {
-        // clang-format on
     private:
         _Rng* _Range;
 
@@ -1435,6 +1436,87 @@ namespace ranges {
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<ref_view<_Rng>> = true;
 
+    // clang-format off
+    template <range _Rng>
+        requires (movable<_Rng> && !_Is_specialization_v<remove_cvref_t<_Rng>, initializer_list>)
+    class owning_view : public view_interface<owning_view<_Rng>> {
+        // clang-format on
+    private:
+        _Rng _Range{};
+
+    public:
+        // clang-format off
+        owning_view() requires default_initializable<_Rng> = default;
+        // clang-format on
+
+        constexpr owning_view(_Rng&& _Range_) noexcept(is_nothrow_move_constructible_v<_Rng>) // strengthened
+            : _Range(_STD move(_Range_)) {}
+
+        owning_view(owning_view&&) = default;
+        owning_view& operator=(owning_view&&) = default;
+
+        _NODISCARD constexpr _Rng& base() & noexcept {
+            return _Range;
+        }
+        _NODISCARD constexpr const _Rng& base() const& noexcept {
+            return _Range;
+        }
+        _NODISCARD constexpr _Rng&& base() && noexcept {
+            return _STD move(_Range);
+        }
+        _NODISCARD constexpr const _Rng&& base() const&& noexcept {
+            return _STD move(_Range);
+        }
+
+        _NODISCARD constexpr iterator_t<_Rng> begin() noexcept(noexcept(_RANGES begin(_Range))) /* strengthened */ {
+            return _RANGES begin(_Range);
+        }
+
+        _NODISCARD constexpr sentinel_t<_Rng> end() noexcept(noexcept(_RANGES end(_Range))) /* strengthened */ {
+            return _RANGES end(_Range);
+        }
+
+        _NODISCARD constexpr auto begin() const
+            noexcept(noexcept(_RANGES begin(_Range))) /* strengthened */ requires range<const _Rng> {
+            return _RANGES begin(_Range);
+        }
+
+        _NODISCARD constexpr auto end() const
+            noexcept(noexcept(_RANGES end(_Range))) /* strengthened */ requires range<const _Rng> {
+            return _RANGES end(_Range);
+        }
+
+        _NODISCARD constexpr bool empty() noexcept(noexcept(_RANGES empty(_Range))) /* strengthened */
+            requires _Can_empty<_Rng> {
+            return _RANGES empty(_Range);
+        }
+        _NODISCARD constexpr bool empty() const noexcept(noexcept(_RANGES empty(_Range))) /* strengthened */
+            requires _Can_empty<const _Rng> {
+            return _RANGES empty(_Range);
+        }
+
+        _NODISCARD constexpr auto size() noexcept(noexcept(_RANGES size(_Range))) /* strengthened */
+            requires sized_range<_Rng> {
+            return _RANGES size(_Range);
+        }
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES size(_Range))) /* strengthened */
+            requires sized_range<const _Rng> {
+            return _RANGES size(_Range);
+        }
+
+        _NODISCARD constexpr auto data() noexcept(noexcept(_RANGES data(_Range))) /* strengthened */
+            requires contiguous_range<_Rng> {
+            return _RANGES data(_Range);
+        }
+        _NODISCARD constexpr auto data() const noexcept(noexcept(_RANGES data(_Range))) /* strengthened */
+            requires contiguous_range<const _Rng> {
+            return _RANGES data(_Range);
+        }
+    };
+
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<owning_view<_Rng>> = enable_borrowed_range<_Rng>;
+
     namespace views {
         template <class _Rng>
         concept _Can_ref_view = requires(_Rng&& __r) {
@@ -1442,13 +1524,13 @@ namespace ranges {
         };
 
         template <class _Rng>
-        concept _Can_subrange = requires(_Rng&& __r) {
-            subrange{static_cast<_Rng&&>(__r)};
+        concept _Pwnable = requires(_Rng&& __r) {
+            owning_view{static_cast<_Rng&&>(__r)};
         };
 
         class _All_fn : public _Pipe::_Base<_All_fn> {
         private:
-            enum class _St { _None, _View, _Ref, _Subrange };
+            enum class _St { _None, _View, _Ref, _Pwn };
 
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
@@ -1458,8 +1540,8 @@ namespace ranges {
                     }
                 } else if constexpr (_Can_ref_view<_Rng>) {
                     return {_St::_Ref, noexcept(ref_view{_STD declval<_Rng>()})};
-                } else if constexpr (_Can_subrange<_Rng>) {
-                    return {_St::_Subrange, noexcept(subrange{_STD declval<_Rng>()})};
+                } else if constexpr (_Pwnable<_Rng>) {
+                    return {_St::_Pwn, noexcept(owning_view{_STD declval<_Rng>()})};
                 }
 
                 return {_St::_None};
@@ -1480,8 +1562,8 @@ namespace ranges {
                     return _STD forward<_Rng>(_Range);
                 } else if constexpr (_Strat == _St::_Ref) {
                     return ref_view{_STD forward<_Rng>(_Range)};
-                } else if constexpr (_Strat == _St::_Subrange) {
-                    return subrange{_STD forward<_Rng>(_Range)};
+                } else if constexpr (_Strat == _St::_Pwn) {
+                    return owning_view{_STD forward<_Rng>(_Range)};
                 } else {
                     static_assert(_Always_false<_Rng>, "Should be unreachable");
                 }
@@ -3513,8 +3595,8 @@ namespace ranges {
                 const auto _Pat_end = _RANGES end(_It._Parent->_Pattern);
                 auto _Last          = _RANGES end(_It._Parent->_Range);
                 if constexpr (_Tiny_range<_Pat>) {
-                    const auto& _Cur = _It._Get_current(); // Intentionally a reference. Since _Pat is tiny, this could
-                                                           // be a move-only iterator type.
+                    const auto& _Cur = _It._Get_current(); // Intentionally a reference. Since _Pat is tiny, this
+                                                           // could be a move-only iterator type.
                     if (_Cur == _Last) {
                         return true;
                     }
