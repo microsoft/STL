@@ -233,6 +233,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
 }
 #endif // defined(_M_ARM) || defined(_M_ARM64)
 
+#if _HAS_CXX23
 _NODISCARD constexpr unsigned short _Byteswap_ushort(const unsigned short _Val) noexcept {
     if (_STD is_constant_evaluated()) {
         return static_cast<unsigned short>((_Val << 8) | (_Val >> 8));
@@ -258,6 +259,7 @@ _NODISCARD constexpr unsigned long long _Byteswap_uint64(const unsigned long lon
         return _byteswap_uint64(_Val);
     }
 }
+#endif // _HAS_CXX23
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
 _NODISCARD constexpr int countl_zero(const _Ty _Val) noexcept {
