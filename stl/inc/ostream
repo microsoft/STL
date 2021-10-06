@@ -454,12 +454,12 @@ public:
         return *this;
     }
 
-#if _HAS_CXX20 // P1147R1 "Printing volatile Pointers"
+#if _HAS_CXX23 // P1147R1 "Printing volatile Pointers"
     template <class = void> // TRANSITION, ABI
     basic_ostream& operator<<(const volatile void* _Val) {
         return *this << (const_cast<const void*>(_Val));
     }
-#endif // _HAS_CXX20
+#endif // _HAS_CXX23
 
 #if _HAS_CXX17 // LWG-2221 "No formatted output operator for nullptr"
     template <class = void> // TRANSITION, ABI
