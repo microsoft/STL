@@ -147,9 +147,9 @@ class seed_seq { // standard sequence of seed values
 public:
     using result_type = unsigned int;
 
-    seed_seq() {}
+    seed_seq() noexcept {}
 
-    template <class _Ty>
+    template <class _Ty, enable_if_t<is_integral_v<_Ty>, int> = 0>
     seed_seq(initializer_list<_Ty> _Ilist) {
         _Construct(_Ilist.begin(), _Ilist.end());
     }
