@@ -147,15 +147,15 @@ void test_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t
     basic_stringstream<CharT> sstr{str};
     if (abbrev) {
         if (offset) {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev, *offset);
+            sstr >> parse(fmt, p, *abbrev, *offset);
         } else {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev);
+            sstr >> parse(fmt, p, *abbrev);
         }
     } else {
         if (offset) {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *offset);
+            sstr >> parse(fmt, p, *offset);
         } else {
-            sstr >> parse(basic_string<CharT>{fmt}, p);
+            sstr >> parse(fmt, p);
         }
     }
 
