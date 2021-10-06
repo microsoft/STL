@@ -207,6 +207,7 @@
 // P1115R3 erase()/erase_if() Return size_type
 // P1123R0 Atomic Compare-And-Exchange With Padding Bits For atomic_ref
 // P1135R6 The C++20 Synchronization Library
+// P1147R1 Printing volatile Pointers
 // P1207R4 Movability Of Single-Pass Iterators
 // P1208R6 <source_location>
 // P1209R0 erase_if(), erase()
@@ -275,7 +276,6 @@
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
-// P1147R1 Printing volatile Pointers
 // P1425R4 Iterator Pair Constructors For stack And queue
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
