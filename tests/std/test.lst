@@ -432,6 +432,7 @@ tests\P1135R6_atomic_wait_vista
 tests\P1135R6_barrier
 tests\P1135R6_latch
 tests\P1135R6_semaphore
+tests\P1147R1_printing_volotile_pointers
 tests\P1165R1_consistently_propagating_stateful_allocators
 tests\P1208R6_source_location
 tests\P1423R3_char8_t_remediation
