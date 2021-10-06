@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
-#include <iostream>
+#include <cstddef>
 #include <sstream>
 
 using namespace std;
@@ -23,8 +23,8 @@ void test(size_t value) {
     int* p0          = reinterpret_cast<int*>(value);
     volatile int* p1 = reinterpret_cast<volatile int*>(p0);
 
-    string expected = getExpected(p0);
-    string actual   = getActual(p1);
+    const string expected = getExpected(p0);
+    const string actual   = getActual(p1);
 
     assert(expected == actual);
 }
