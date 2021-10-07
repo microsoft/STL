@@ -5141,6 +5141,7 @@ namespace chrono {
         _Time_parse_iomanip_c_str(const _CharT* _Fmt_, _Parsable& _Tp_,
             basic_string<_CharT, _Traits, _Alloc>* _Abbrev_ = nullptr, minutes* _Offset_ = nullptr)
             : _Fmt{_Fmt_}, _Tp{_Tp_}, _Abbrev{_Abbrev_}, _Offset{_Offset_} {}
+
         _Time_parse_iomanip_c_str(_Time_parse_iomanip_c_str&&) = delete;
 
         const _CharT* _Fmt;
@@ -5154,6 +5155,7 @@ namespace chrono {
         _Time_parse_iomanip(const basic_string<_CharT, _Traits, _Alloc>& _Fmt_, _Parsable& _Tp_,
             basic_string<_CharT, _Traits, _Alloc>* _Abbrev_ = nullptr, minutes* _Offset_ = nullptr)
             : _Fmt{_Fmt_}, _Tp{_Tp_}, _Abbrev{_Abbrev_}, _Offset{_Offset_} {}
+
         _Time_parse_iomanip(_Time_parse_iomanip&&) = delete;
 
         const basic_string<_CharT, _Traits, _Alloc>& _Fmt;
