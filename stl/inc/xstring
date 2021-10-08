@@ -1938,8 +1938,10 @@ public:
         this->_Adopt(_Pstring);
     }
 
-    // TRANSITION, DevCom-1331017
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1331017
+    _CONSTEXPR20 _String_const_iterator(const _String_const_iterator&) noexcept = default;
     _CONSTEXPR20 _String_const_iterator& operator=(const _String_const_iterator&) noexcept = default;
+#endif // TRANSITION, DevCom-1331017
 
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
@@ -2177,8 +2179,11 @@ public:
 
     using _Mybase::_Mybase;
 
-    // TRANSITION, DevCom-1331017
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1331017
+    _CONSTEXPR20 _String_iterator() noexcept                        = default;
+    _CONSTEXPR20 _String_iterator(const _String_iterator&) noexcept = default;
     _CONSTEXPR20 _String_iterator& operator=(const _String_iterator&) noexcept = default;
+#endif // TRANSITION, DevCom-1331017
 
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
