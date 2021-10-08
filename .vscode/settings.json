@@ -12,7 +12,7 @@
     "files.exclude": {
         "llvm-project": true,
         "stl/msbuild": true,
-        "vcpkg": true
+        "boost-math": true
     },
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
