@@ -66,6 +66,7 @@
 // P1164R1 Making create_directory() Intuitive
 // P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
+// P2251R1 Require span And basic_string_view To Be Trivially Copyable
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -283,7 +284,6 @@
 // P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
-// P2251R1 Require span And basic_string_view To Be Trivially Copyable
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
