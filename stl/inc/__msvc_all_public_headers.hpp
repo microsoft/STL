@@ -13,9 +13,11 @@
 #pragma warning(1 : 4668) // 'MEOW' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 
 // All STL headers should protect themselves from macroized new.
+#if !(defined(__CUDACC__) && defined(__clang__))
 #pragma push_macro("new")
 #undef new
 #define new WILL NOT COMPILE
+#endif // !(defined( __CUDACC__ ) && defined(__clang__))
 
 // VSO-768746: mbctype.h macroizes _MS, _MP, _M1, and _M2. Include it first for test coverage.
 #ifndef _MSVC_TESTING_NVCC
@@ -232,7 +234,9 @@
 #endif // _M_CEE_PURE
 #endif // _MSVC_TESTING_NVCC
 
+#if !(defined(__CUDACC__) && defined(__clang__))
 #pragma pop_macro("new")
+#endif // !(defined(__CUDACC__) && defined(__clang__))
 
 #pragma warning(pop)
 
