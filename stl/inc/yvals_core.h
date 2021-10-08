@@ -66,6 +66,7 @@
 // P1164R1 Making create_directory() Intuitive
 // P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
+// P2401R0 Conditional noexcept For exchange()
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
