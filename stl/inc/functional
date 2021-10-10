@@ -1266,7 +1266,7 @@ void __stdcall _Function_destroy_large(uintptr_t* _Self) noexcept {
 }
 
 template <size_t _Size>
-void __stdcall _Function_move_memcpy(uintptr_t* _Self, uintptr_t* _Src) {
+void __stdcall _Function_move_memcpy(uintptr_t* _Self, uintptr_t* _Src) noexcept {
     _CSTD memcpy(_Self, _Src, _Size);
 }
 

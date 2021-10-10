@@ -74,12 +74,6 @@ void test_impl() {
         test_function_t f2 = std::move(f1);
 
         assert(f2(23, x) == 38);
-
-        try {
-            f1(24, x);
-            abort();
-        } catch (std::bad_function_call&) {
-        }
     }
     assert(counter::inst == 0);
 }
