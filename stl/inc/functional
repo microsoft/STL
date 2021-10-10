@@ -1228,7 +1228,7 @@ struct _Move_only_function_impl {
 };
 
 template <class _Rx, class... Args>
-[[noreturn]] _Rx _Function_throw_bad_call(uintptr_t*, Args...) {
+[[noreturn]] _Rx __stdcall _Function_throw_bad_call(uintptr_t*, Args...) {
     _Xbad_function_call();
 }
 
