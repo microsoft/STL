@@ -1215,7 +1215,7 @@ _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
 }
 #endif // !_HAS_CXX20
 
-#ifdef _HAS_CXX23
+#if _HAS_CXX23
 template <class _Rx, class... Args>
 struct _Move_only_function_impl {
     using _Invoke_t  = _Rx (*)(uintptr_t* _Self, Args...);
