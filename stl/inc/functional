@@ -28,6 +28,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+_EXTERN_C
+void __stdcall __std_function_noop_move(uintptr_t*, uintptr_t*) noexcept;
+void __stdcall __std_function_noop_destroy(uintptr_t*) noexcept;
+void __stdcall __std_function_move_large(uintptr_t* _Self, uintptr_t* _Src) noexcept;
+_END_EXTERN_C
+
 _STD_BEGIN
 #if _HAS_CXX23
 template <class _Result_type, class _Callable, class... _Types,
@@ -1208,6 +1214,168 @@ _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
     return static_cast<bool>(_Other);
 }
 #endif // !_HAS_CXX20
+
+#ifdef _HAS_CXX23
+template <class _Rx, class... Args>
+struct _Move_only_function_impl {
+    using _Invoke_t  = _Rx (*)(uintptr_t* _Self, Args...);
+    using _Move_t    = void (*)(uintptr_t* _Self, uintptr_t* _Src) _NOEXCEPT_FNPTR;
+    using _Destroy_t = void (*)(uintptr_t* _Self) _NOEXCEPT_FNPTR;
+
+    _Invoke_t _Invoke;
+    _Move_t _Move;
+    _Destroy_t _Destroy;
+};
+
+template <class _Rx, class... Args>
+[[noreturn]] _Rx _Function_throw_bad_call(uintptr_t*, Args...) {
+    _Xbad_function_call();
+}
+
+template <class _Rx, class... Args>
+inline constexpr _Move_only_function_impl<_Rx, Args...> _Null_move_only_function = {
+    _Function_throw_bad_call<_Rx, Args...>,
+    __std_function_noop_move,
+    __std_function_noop_destroy,
+};
+
+template <class _Fn, class _Rx, class... _Types>
+_Rx _Function_invoke_small(uintptr_t* _Self, _Types... _Args) {
+    return reinterpret_cast<_Fn&>(*_Self)(_STD forward<_Types>(_Args)...);
+}
+
+template <class _Fn, class _Rx, class... _Types>
+_Rx _Function_invoke_large(uintptr_t* _Self, _Types... _Args) {
+    return (*reinterpret_cast<_Fn*>(*_Self)) (_STD forward<_Types>(_Args)...);
+}
+
+template <class _Fn>
+void _Function_move_small(uintptr_t* _Self, uintptr_t* _Src) noexcept {
+    new (reinterpret_cast<void*>(_Self)) _Fn(_STD move(*reinterpret_cast<_Fn*>(_Src)));
+    reinterpret_cast<_Fn&>(*_Src).~_Fn();
+}
+
+template <class _Fn>
+void _Function_destroy_small(uintptr_t* _Self) noexcept {
+    reinterpret_cast<_Fn&>(*_Self).~_Fn();
+}
+
+template <class _Fn>
+void _Function_destroy_large(uintptr_t* _Self) noexcept {
+    delete reinterpret_cast<_Fn*>(*_Self);
+}
+
+template <class _Rx, class... _Types>
+class _Move_only_function_base {
+public:
+    _Move_only_function_base() noexcept = default; // leaves fields uninitialized
+
+    _Move_only_function_base(_Move_only_function_base&& _Other) noexcept : _Impl(_Other._Impl) {
+        _Impl->_Move(_Data, _Other._Data);
+        _Other._Impl = &_Null_move_only_function<_Rx, _Types...>;
+    }
+
+    void _Construct_with_null() noexcept {
+        _Impl = &_Null_move_only_function<_Rx, _Types...>;
+    }
+
+    template <class _Fn>
+    void _Construct_with_fn(_Fn&& _Callable) {
+        _Impl = _Create_impl_ptr<_Fn>();
+        if constexpr (_Large_function_engaged<_Fn>()) {
+            reinterpret_cast<void*&>(_Data[0]) = new _Fn(_STD move(_Callable));
+        } else {
+            new (reinterpret_cast<void*>(_Data)) _Fn(_STD move(_Callable));
+        }
+    }
+
+    ~_Move_only_function_base() {
+        _Impl->_Destroy(_Data);
+    }
+
+    using _Impl_t = _Move_only_function_impl<_Rx, _Types...>;
+
+    alignas(max_align_t) uintptr_t _Data[4];
+    const _Impl_t* _Impl;
+
+    template <class _Fn>
+    static constexpr bool _Large_function_engaged() noexcept {
+        return sizeof(_Fn) > sizeof(_Data) || !is_nothrow_move_constructible_v<_Fn> || alignof(_Fn) > alignof(max_align_t);
+    }
+
+    template <class _Fn>
+    static constexpr _Impl_t _Create_impl() noexcept {
+        _Impl_t _Impl{};
+        if constexpr (_Large_function_engaged<_Fn>()) {
+            _Impl._Invoke  = _Function_invoke_large<_Fn, _Rx, _Types...>;
+            _Impl._Move    = __std_function_move_large;
+            _Impl._Destroy = _Function_destroy_large<_Fn>;
+        } else {
+            _Impl._Invoke  = _Function_invoke_small<_Fn, _Rx, _Types...>;
+            _Impl._Move    = _Function_move_small<_Fn>;
+            _Impl._Destroy = _Function_destroy_small<_Fn>;
+        }
+        return _Impl;
+    }
+
+    template <class _Fn>
+    static const _Impl_t* _Create_impl_ptr() noexcept {
+        static constexpr _Impl_t _Impl = _Create_impl<_Fn>();
+        return &_Impl;
+    }
+};
+
+template <class _Fn>
+class _Move_only_function_call {
+    static_assert(_Always_false<_Tx>, "std::move_only_function only accepts functions as template argument (with possibly const/ref/noexcept qualifiers).");
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...)> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    _Rx operator()(_Types... _Args) {
+        return this->_Impl->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+#ifdef __cpp_noexcept_function_type
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...) noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    _Rx operator()(_Types... _Args) noexcept {
+        return this->_Impl->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+#endif
+
+template <class _Fx>
+class move_only_function : private _Move_only_function_call<_Fx> {
+private:
+    using _Call = _Move_only_function_call<_Fx>;
+
+public:
+    using typename _Call::result_type;
+
+    move_only_function() noexcept {
+        this->_Construct_with_null();
+    }
+    move_only_function(nullptr_t) noexcept {
+        this->_Construct_with_null();
+    }
+    move_only_function(move_only_function&&) noexcept = default;
+
+    template <class _Fn>
+    move_only_function(_Fn&& _Callable) {
+        this->_Construct_with_fn(_STD forward<_Fn>(_Callable));
+    }
+
+    using _Call::operator();
+};
+#endif
 
 template <int _Nx>
 struct _Ph { // placeholder

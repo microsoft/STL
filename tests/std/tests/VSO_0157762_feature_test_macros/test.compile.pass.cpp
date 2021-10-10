@@ -1164,6 +1164,20 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_move_only_function
+#error __cpp_lib_move_only_function is not defined
+#elif __cpp_lib_move_only_function != 202110L
+#error __cpp_lib_move_only_function is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_move_only_function == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_move_only_function
+#error __cpp_lib_move_only_function is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_node_extract
 #error __cpp_lib_node_extract is not defined
