@@ -1300,7 +1300,8 @@ public:
 
     template <class _Fn>
     static constexpr bool _Large_function_engaged() noexcept {
-        return sizeof(_Fn) > sizeof(_Data) || !is_nothrow_move_constructible_v<_Fn> || alignof(_Fn) > alignof(max_align_t);
+        return sizeof(_Fn) > sizeof(_Data)
+            || !is_nothrow_move_constructible_v<_Fn> || alignof(_Fn) > alignof(max_align_t);
     }
 
     template <class _Fn>
@@ -1327,7 +1328,8 @@ public:
 
 template <class _Fn>
 class _Move_only_function_call {
-    static_assert(_Always_false<_Tx>, "std::move_only_function only accepts functions as template argument (with possibly const/ref/noexcept qualifiers).");
+    static_assert(_Always_false<_Tx>, "std::move_only_function only accepts functions as template argument (with "
+                                      "possibly const/ref/noexcept qualifiers).");
 };
 
 template <class _Rx, class... _Types>

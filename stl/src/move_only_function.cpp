@@ -18,5 +18,4 @@ void __stdcall __std_function_noop_destroy(uintptr_t*) noexcept {}
 void __stdcall __std_function_move_large(uintptr_t* _Self, uintptr_t* _Src) {
     *_Self = *_Src;
 }
-
 }
