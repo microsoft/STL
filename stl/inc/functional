@@ -1229,7 +1229,7 @@ struct _Move_only_function_impl {
 
 template <class _Rx, class... Args>
 [[noreturn]] _Rx __stdcall _Function_no_callable(uintptr_t*, Args...) {
-    abort0();
+    _CSTD abort();
 }
 
 template <class _Rx, class... Args>
