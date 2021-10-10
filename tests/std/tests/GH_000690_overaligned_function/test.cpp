@@ -44,7 +44,7 @@ struct not_overaligned_t {
 static_assert(alignof(overaligned_t) > alignof(std::max_align_t), "overaligned_t is not overaligned");
 
 template <class function_t>
-void test(){
+void test() {
     struct functions_t {
         function_t first{overaligned_t{}};
         char smallest_pad;
