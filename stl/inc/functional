@@ -1310,7 +1310,7 @@ public:
     }
 
     static constexpr size_t _Round_up_size(size_t _Size) {
-        return size_t{_Size + sizeof(uintptr_t) - 1} & ~size_t{sizeof(uintptr_t)};
+        return size_t{_Size + sizeof(uintptr_t) - 1} & ~size_t{sizeof(uintptr_t) - 1};
     }
 
     template <class _Fn>
