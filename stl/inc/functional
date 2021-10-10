@@ -1228,13 +1228,13 @@ struct _Move_only_function_impl {
 };
 
 template <class _Rx, class... Args>
-[[noreturn]] _Rx __stdcall _Function_throw_bad_call(uintptr_t*, Args...) {
-    _Xbad_function_call();
+[[noreturn]] _Rx __stdcall _Function_no_callable(uintptr_t*, Args...) {
+    abort0();
 }
 
 template <class _Rx, class... Args>
 inline constexpr _Move_only_function_impl<_Rx, Args...> _Null_move_only_function = {
-    _Function_throw_bad_call<_Rx, Args...>,
+    _Function_no_callable<_Rx, Args...>,
     __std_function_noop_move,
     __std_function_noop_destroy,
 };
@@ -1265,7 +1265,7 @@ void __stdcall _Function_destroy_large(uintptr_t* _Self) noexcept {
     delete reinterpret_cast<_Fn*>(*_Self);
 }
 
-template<size_t _Size>
+template <size_t _Size>
 void __stdcall _Function_move_memcpy(uintptr_t* _Self, uintptr_t* _Src) {
     _CSTD memcpy(_Self, _Src, _Size);
 }
@@ -1321,14 +1321,14 @@ public:
             _Impl._Move    = __std_function_move_large;
             _Impl._Destroy = _Function_destroy_large<_Fn>;
         } else {
-            _Impl._Invoke  = _Function_invoke_small<_Fn, _Rx, _Types...>;
-            
+            _Impl._Invoke = _Function_invoke_small<_Fn, _Rx, _Types...>;
+
             if constexpr (is_trivially_copyable_v<_Fn> && is_trivially_destructible_v<_Fn>) {
                 _Impl._Move = _Function_move_memcpy<_Round_up_size(sizeof(_Fn))>;
             } else {
                 _Impl._Move = _Function_move_small<_Fn>;
             }
-            
+
             if constexpr (is_trivially_destructible_v<_Fn>) {
                 _Impl._Destroy = __std_function_noop_destroy;
             } else {
