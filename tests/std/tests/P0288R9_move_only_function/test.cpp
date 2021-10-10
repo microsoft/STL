@@ -63,7 +63,7 @@ struct large_callable : small_callable {
 
 using test_function_t = move_only_function<int(int, pass_this_by_ref&)>;
 
-template<class F>
+template <class F>
 void test_impl() {
     {
         pass_this_by_ref x{63};
