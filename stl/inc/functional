@@ -1309,7 +1309,7 @@ public:
             || !is_nothrow_move_constructible_v<_Fn> || alignof(_Fn) > alignof(max_align_t);
     }
 
-    static constexpr _Round_up_size(size_t _Size) {
+    static constexpr size_t _Round_up_size(size_t _Size) {
         return size_t{_Size + sizeof(uintptr_t) - 1} & ~size_t{sizeof(uintptr_t)};
     }
 
