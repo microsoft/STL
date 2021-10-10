@@ -1328,7 +1328,7 @@ public:
 
 template <class _Fn>
 class _Move_only_function_call {
-    static_assert(_Always_false<_Tx>, "std::move_only_function only accepts functions as template argument (with "
+    static_assert(_Always_false<_Fn>, "std::move_only_function only accepts functions as template argument (with "
                                       "possibly const/ref/noexcept qualifiers).");
 };
 
