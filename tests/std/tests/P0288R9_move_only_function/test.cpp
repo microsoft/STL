@@ -47,7 +47,7 @@ struct small_callable : counter {
         return 38;
     }
 
-    void* operator new(size_t) = delete;
+    void* operator new(size_t)  = delete;
     void operator delete(void*) = delete;
 
     small_callable() = default;
