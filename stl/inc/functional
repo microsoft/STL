@@ -1350,7 +1350,7 @@ public:
     }
 
     bool _Is_null() const noexcept {
-        return _Data._Impl == &_Null_move_only_function<_Rx, _Types...>
+        return _Data._Impl == &_Null_move_only_function<_Rx, _Types...>;
     }
 
     template <class _Fn>
@@ -1455,8 +1455,8 @@ public:
 
     using _Call::operator();
 
-    friend bool operator==(const move_only_function&, nullptr_t) noexcept {
-        return this->_Is_null();
+    friend bool operator==(const move_only_function& mf, nullptr_t) noexcept {
+        return mf._Is_null();
     }
 };
 #endif
