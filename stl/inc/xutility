@@ -3862,7 +3862,7 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter> operator+(
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
-        { _Right.base() + _Off } -> same_as<_Iter>; // LWG-3293
+        { _Right.base() + _Off } -> same_as<_Iter>;
     }
 // clang-format on
 #endif // __cpp_lib_concepts

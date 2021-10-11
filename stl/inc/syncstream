@@ -56,7 +56,7 @@ protected:
         _Swap(_Right);
     }
 
-    void _Swap(_Basic_syncbuf_impl& _Right) { // see LWG-3498 regarding noexcept
+    void _Swap(_Basic_syncbuf_impl& _Right) {
         _Mysb::swap(_Right);
         _STD swap(_Emit_on_sync, _Right._Emit_on_sync);
         _STD swap(_Sync_recorded, _Right._Sync_recorded);
@@ -106,7 +106,7 @@ public:
         _Tidy();
     }
 
-    basic_syncbuf& operator=(basic_syncbuf&& _Right) { // see LWG-3498 regarding noexcept
+    basic_syncbuf& operator=(basic_syncbuf&& _Right) {
         emit();
         if (this != _STD addressof(_Right)) {
             _Move_assign(_STD move(_Right), _Choose_pocma<_Alloc>{});
@@ -114,7 +114,7 @@ public:
         return *this;
     }
 
-    void swap(basic_syncbuf& _Right) { // see LWG-3498 regarding noexcept
+    void swap(basic_syncbuf& _Right) {
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
             _Swap_except_al(_Right);
@@ -221,19 +221,19 @@ private:
         }
     }
 
-    void _Move_assign(basic_syncbuf&& _Right, _Equal_allocators) { // see LWG-3498 regarding noexcept
+    void _Move_assign(basic_syncbuf&& _Right, _Equal_allocators) {
         _Tidy();
         _Pocma(_Getal(), _Right._Getal());
         _Swap_except_al(_Right);
     }
 
-    void _Move_assign(basic_syncbuf&& _Right, _Propagate_allocators) { // see LWG-3498 regarding noexcept
+    void _Move_assign(basic_syncbuf&& _Right, _Propagate_allocators) {
         _Tidy();
         _Pocma(_Getal(), _Right._Getal());
         _Swap_except_al(_Right);
     }
 
-    void _Move_assign(basic_syncbuf&& _Right, _No_propagate_allocators) { // see LWG-3498 regarding noexcept
+    void _Move_assign(basic_syncbuf&& _Right, _No_propagate_allocators) {
         auto& _Al = _Getal();
         if (_Al == _Right._Getal()) {
             _Move_assign(_STD move(_Right), _Equal_allocators{});
@@ -258,7 +258,7 @@ private:
         }
     }
 
-    void _Swap_except_al(basic_syncbuf& _Right) { // see LWG-3498 regarding noexcept
+    void _Swap_except_al(basic_syncbuf& _Right) {
         _Mybase::_Swap(_Right);
         _STD swap(_Wrapped, _Right._Wrapped);
         _STD swap(_Get_mutex(), _Right._Get_mutex());
@@ -313,7 +313,7 @@ private:
 
 template <class _Elem, class _Traits, class _Alloc>
 void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left,
-    basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) { // see LWG-3498 regarding noexcept
+    basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) { // LWG-3616
     _Left.swap(_Right);
 }
 
