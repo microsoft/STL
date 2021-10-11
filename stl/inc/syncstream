@@ -312,8 +312,7 @@ private:
 };
 
 template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left,
-    basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) { // LWG-3616
+void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) { // LWG-3616
     _Left.swap(_Right);
 }
 
