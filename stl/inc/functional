@@ -1215,7 +1215,6 @@ union alignas(max_align_t) _Move_only_function_data {
     const void* _Impl;
     char _Data; // For aliasing
 
-
     template <class _Fn>
     static constexpr size_t _Buf_offset() noexcept {
         if constexpr (alignof(_Fn) <= sizeof(_Impl)) {
@@ -1310,7 +1309,9 @@ void _Function_destroy_small(_Move_only_function_data& _Self) noexcept {
 
 template <class _Fn>
 void _Function_destroy_large(_Move_only_function_data& _Self) noexcept {
-    delete _Self._Large_fn_ptr<_Fn>();
+    _Fn* _Pfn = _Self._Large_fn_ptr<_Fn>();
+    _Pfn->~_Fn();
+    _Deallocate<alignof(_Fn)>(_Pfn, sizeof(_Fn));
 }
 
 template <size_t _Size>
@@ -1339,7 +1340,7 @@ public:
     void _Construct_with_fn(_Fn&& _Callable) {
         _Data._Impl = _Create_impl_ptr<_Fn>();
         if constexpr (_Large_function_engaged<_Fn>()) {
-            _Data._Set_large_fn_ptr(new _Fn(_STD move(_Callable)));
+            _Data._Set_large_fn_ptr(_Global_new<_Fn>(_STD move(_Callable)));
         } else {
             ::new (_Data._Buf_ptr<_Fn>()) _Fn(_STD move(_Callable));
         }
