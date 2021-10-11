@@ -1256,9 +1256,9 @@ struct _Move_only_function_impl { // per-callable-type structure acting as a vir
     // (RTTI saving may be significant as with lambdas and binds there may be a lot of distinct callable types)
 
     // Calls target
-    using _Invoke_t  = _Rx (*)(_Move_only_function_data&, Args...);
+    using _Invoke_t = _Rx (*)(_Move_only_function_data&, Args...);
     // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable")
-    using _Move_t    = void (*)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
+    using _Move_t = void (*)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
     // destroys data (not resetting its "vtable")
     using _Destroy_t = void (*)(_Move_only_function_data&) _NOEXCEPT_FNPTR;
 
