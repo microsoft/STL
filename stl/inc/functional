@@ -28,12 +28,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-_EXTERN_C
-void __stdcall __std_function_noop_move(uintptr_t*, uintptr_t*) noexcept;
-void __stdcall __std_function_noop_destroy(uintptr_t*) noexcept;
-void __stdcall __std_function_move_large(uintptr_t* _Self, uintptr_t* _Src) noexcept;
-_END_EXTERN_C
-
 _STD_BEGIN
 #if _HAS_CXX23
 template <class _Result_type, class _Callable, class... _Types,
@@ -1216,11 +1210,51 @@ _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX23
+union alignas(max_align_t) _Move_only_function_data {
+    void* _Pointers[_Small_object_num_ptrs];
+    const void* _Impl;
+    char _Data; // For aliasing
+
+
+    template <class _Fn>
+    static constexpr size_t _Buf_offset() noexcept {
+        if constexpr (alignof(_Fn) <= sizeof(_Impl)) {
+            return sizeof(_Impl); // Data immediately after impl
+        } else {
+            return alignof(_Fn); // Pad to next alignment
+        }
+    }
+
+    template <class _Fn>
+    static constexpr size_t _Buf_size() noexcept {
+        return sizeof(_Pointers) - _Buf_offset<_Fn>();
+    }
+
+    template <class _Fn>
+    constexpr void* _Buf_ptr() {
+        return &_Data + _Buf_offset<_Fn>();
+    }
+
+    template <class _Fn>
+    _Fn* _Small_fn_ptr() {
+        return static_cast<_Fn*>(_Buf_ptr<_Fn>());
+    }
+
+    template <class _Fn>
+    _Fn* _Large_fn_ptr() {
+        return static_cast<_Fn*>(_Pointers[1]);
+    }
+
+    void _Set_large_fn_ptr(void* _Value) {
+        _Pointers[1] = _Value;
+    }
+};
+
 template <class _Rx, class... Args>
 struct _Move_only_function_impl {
-    using _Invoke_t  = _Rx(__stdcall*)(uintptr_t* _Self, Args...);
-    using _Move_t    = void(__stdcall*)(uintptr_t* _Self, uintptr_t* _Src) _NOEXCEPT_FNPTR;
-    using _Destroy_t = void(__stdcall*)(uintptr_t* _Self) _NOEXCEPT_FNPTR;
+    using _Invoke_t  = _Rx (*)(_Move_only_function_data&, Args...);
+    using _Move_t    = void (*)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
+    using _Destroy_t = void (*)(_Move_only_function_data&) _NOEXCEPT_FNPTR;
 
     _Invoke_t _Invoke;
     _Move_t _Move;
@@ -1228,89 +1262,99 @@ struct _Move_only_function_impl {
 };
 
 template <class _Rx, class... Args>
-[[noreturn]] _Rx __stdcall _Function_no_callable(uintptr_t*, Args...) {
+[[noreturn]] _Rx _Function_no_callable(_Move_only_function_data&, Args...) {
     _CSTD abort();
 }
+
+constexpr void _Function_noop_move(_Move_only_function_data&, _Move_only_function_data&) noexcept {}
+constexpr void _Function_noop_destroy(_Move_only_function_data&) noexcept {}
 
 template <class _Rx, class... Args>
 inline constexpr _Move_only_function_impl<_Rx, Args...> _Null_move_only_function = {
     _Function_no_callable<_Rx, Args...>,
-    __std_function_noop_move,
-    __std_function_noop_destroy,
+    _Function_noop_move,
+    _Function_noop_destroy,
 };
 
 template <class _Fn, class _Rx, class... _Types>
-_Rx __stdcall _Function_invoke_small(uintptr_t* _Self, _Types... _Args) {
-    return reinterpret_cast<_Fn&>(*_Self)(_STD forward<_Types>(_Args)...);
+_Rx _Function_invoke_small(_Move_only_function_data& _Self, _Types... _Args) {
+    return (*_Self._Small_fn_ptr<_Fn>()) (_STD forward<_Types>(_Args)...);
 }
 
 template <class _Fn, class _Rx, class... _Types>
-_Rx __stdcall _Function_invoke_large(uintptr_t* _Self, _Types... _Args) {
-    return (*reinterpret_cast<_Fn*>(*_Self)) (_STD forward<_Types>(_Args)...);
+_Rx _Function_invoke_large(_Move_only_function_data& _Self, _Types... _Args) {
+    return (*_Self._Large_fn_ptr<_Fn>()) (_STD forward<_Types>(_Args)...);
 }
 
 template <class _Fn>
-void __stdcall _Function_move_small(uintptr_t* _Self, uintptr_t* _Src) noexcept {
-    new (reinterpret_cast<void*>(_Self)) _Fn(_STD move(*reinterpret_cast<_Fn*>(_Src)));
-    reinterpret_cast<_Fn&>(*_Src).~_Fn();
+void _Function_move_small(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
+    ::new (_Self._Buf_ptr<_Fn>()) _Fn(_STD move(*_Src._Small_fn_ptr<_Fn>()));
+    _Src._Small_fn_ptr<_Fn>()->~_Fn();
+    _Self._Impl = _Src._Impl;
+}
+
+inline void _Function_move_large(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
+    _CSTD memcpy(&_Self._Data, &_Src._Data, 2 * sizeof(void*)); // Copy Impl* and indirect data
 }
 
 template <class _Fn>
-void __stdcall _Function_destroy_small(uintptr_t* _Self) noexcept {
-    reinterpret_cast<_Fn&>(*_Self).~_Fn();
+void _Function_destroy_small(_Move_only_function_data& _Self) noexcept {
+    _Self._Small_fn_ptr<_Fn>()->~_Fn();
 }
 
 template <class _Fn>
-void __stdcall _Function_destroy_large(uintptr_t* _Self) noexcept {
-    delete reinterpret_cast<_Fn*>(*_Self);
+void _Function_destroy_large(_Move_only_function_data& _Self) noexcept {
+    delete _Self._Large_fn_ptr<_Fn>();
 }
 
 template <size_t _Size>
-void __stdcall _Function_move_memcpy(uintptr_t* _Self, uintptr_t* _Src) noexcept {
-    _CSTD memcpy(_Self, _Src, _Size);
+void _Function_move_memcpy(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
+    _CSTD memcpy(&_Self._Data, &_Src._Data, _Size);
 }
 
 template <class _Rx, class... _Types>
 class _Move_only_function_base {
 public:
+    using _Impl_t = _Move_only_function_impl<_Rx, _Types...>;
+    _Move_only_function_data _Data;
+
     _Move_only_function_base() noexcept = default; // leaves fields uninitialized
 
-    _Move_only_function_base(_Move_only_function_base&& _Other) noexcept : _Impl(_Other._Impl) {
-        _Impl->_Move(_Data, _Other._Data);
-        _Other._Impl = &_Null_move_only_function<_Rx, _Types...>;
+    _Move_only_function_base(_Move_only_function_base&& _Other) noexcept {
+        _Other._Get_impl()->_Move(_Data, _Other._Data);
+        _Other._Data._Impl = &_Null_move_only_function<_Rx, _Types...>;
     }
 
     void _Construct_with_null() noexcept {
-        _Impl = &_Null_move_only_function<_Rx, _Types...>;
+        _Data._Impl = &_Null_move_only_function<_Rx, _Types...>;
     }
 
     template <class _Fn>
     void _Construct_with_fn(_Fn&& _Callable) {
-        _Impl = _Create_impl_ptr<_Fn>();
+        _Data._Impl = _Create_impl_ptr<_Fn>();
         if constexpr (_Large_function_engaged<_Fn>()) {
-            reinterpret_cast<void*&>(_Data[0]) = new _Fn(_STD move(_Callable));
+            _Data._Set_large_fn_ptr(new _Fn(_STD move(_Callable)));
         } else {
-            new (reinterpret_cast<void*>(_Data)) _Fn(_STD move(_Callable));
+            ::new (_Data._Buf_ptr<_Fn>()) _Fn(_STD move(_Callable));
         }
     }
 
     ~_Move_only_function_base() {
-        _Impl->_Destroy(_Data);
+        _Get_impl()->_Destroy(_Data);
     }
-
-    using _Impl_t = _Move_only_function_impl<_Rx, _Types...>;
-
-    alignas(max_align_t) uintptr_t _Data[4];
-    const _Impl_t* _Impl;
 
     template <class _Fn>
     static constexpr bool _Large_function_engaged() noexcept {
-        return sizeof(_Fn) > sizeof(_Data)
+        return sizeof(_Fn) > _Move_only_function_data::_Buf_size<_Fn>()
             || !is_nothrow_move_constructible_v<_Fn> || alignof(_Fn) > alignof(max_align_t);
     }
 
     static constexpr size_t _Round_up_size(size_t _Size) {
-        return size_t{_Size + sizeof(uintptr_t) - 1} & ~size_t{sizeof(uintptr_t) - 1};
+        return size_t{_Size + sizeof(void*) - 1} & ~size_t{sizeof(void*) - 1};
+    }
+
+    const _Impl_t* _Get_impl() const {
+        return static_cast<const _Impl_t*>(_Data._Impl);
     }
 
     template <class _Fn>
@@ -1318,19 +1362,20 @@ public:
         _Impl_t _Impl{};
         if constexpr (_Large_function_engaged<_Fn>()) {
             _Impl._Invoke  = _Function_invoke_large<_Fn, _Rx, _Types...>;
-            _Impl._Move    = __std_function_move_large;
+            _Impl._Move    = _Function_move_large;
             _Impl._Destroy = _Function_destroy_large<_Fn>;
         } else {
             _Impl._Invoke = _Function_invoke_small<_Fn, _Rx, _Types...>;
 
             if constexpr (is_trivially_copyable_v<_Fn> && is_trivially_destructible_v<_Fn>) {
-                _Impl._Move = _Function_move_memcpy<_Round_up_size(sizeof(_Fn))>;
+                _Impl._Move =
+                    _Function_move_memcpy<_Move_only_function_data::_Buf_offset<_Fn>() + _Round_up_size(sizeof(_Fn))>;
             } else {
                 _Impl._Move = _Function_move_small<_Fn>;
             }
 
             if constexpr (is_trivially_destructible_v<_Fn>) {
-                _Impl._Destroy = __std_function_noop_destroy;
+                _Impl._Destroy = _Function_noop_destroy;
             } else {
                 _Impl._Destroy = _Function_destroy_small<_Fn>;
             }
@@ -1357,7 +1402,7 @@ public:
     using result_type = _Rx;
 
     _Rx operator()(_Types... _Args) {
-        return this->_Impl->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 
@@ -1368,7 +1413,7 @@ public:
     using result_type = _Rx;
 
     _Rx operator()(_Types... _Args) noexcept {
-        return this->_Impl->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
 #endif
