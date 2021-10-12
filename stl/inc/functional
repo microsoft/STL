@@ -1351,7 +1351,7 @@ _NODISCARD void* _Function_new_large(_Fn&& _Callable) {
         _Guard._Ptr = ::operator new (sizeof(_Fn), align_val_t{alignof(_Fn)});
     }
     ::new (_Guard._Ptr) _Fn(_STD move(_Callable));
-    return exchange(_Guard._Ptr, nullptr);
+    return _STD exchange(_Guard._Ptr, nullptr);
 }
 
 template <class _Rx, class... _Types>
