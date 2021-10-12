@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <array>
 #include <cassert>
-#include <concepts>
 #include <ranges>
 #include <span>
 #include <utility>
@@ -14,8 +12,8 @@
 using namespace std;
 
 // Validate dangling story
-STATIC_ASSERT(same_as<decltype(ranges::find_end(borrowed<false>{}, array<int, 42>{})), ranges::dangling>);
-STATIC_ASSERT(same_as<decltype(ranges::find_end(borrowed<true>{}, array<int, 42>{})), ranges::subrange<int*>>);
+STATIC_ASSERT(same_as<decltype(ranges::find_end(borrowed<false>{}, span<const int>{})), ranges::dangling>);
+STATIC_ASSERT(same_as<decltype(ranges::find_end(borrowed<true>{}, span<const int>{})), ranges::subrange<int*>>);
 
 struct instantiator {
     static constexpr pair<int, int> pairs[] = {{0, 42}, {1, 42}, {0, 42}, {1, 42}, {0, 42}};
@@ -28,14 +26,15 @@ struct instantiator {
     static constexpr void test() {
         using ranges::find_end, ranges::begin, ranges::end, ranges::iterator_t, ranges::next, ranges::subrange;
 
+        constexpr bool sized_result = sized_sentinel_for<iterator_t<Fwd1>, iterator_t<Fwd1>>;
+
         {
             // Validate range overload [found case]
             Fwd1 haystack{pairs};
             Fwd2 needle{good_needle};
             const same_as<subrange<iterator_t<Fwd1>>> auto result = find_end(haystack, needle, pred, get_first);
-            STATIC_ASSERT(
-                CanMemberSize<subrange<iterator_t<Fwd1>>> == sized_sentinel_for<iterator_t<Fwd1>, iterator_t<Fwd1>>);
-            if constexpr (CanMemberSize<subrange<iterator_t<Fwd1>>>) {
+            STATIC_ASSERT(CanMemberSize<subrange<iterator_t<Fwd1>>> == sized_result);
+            if constexpr (sized_result) {
                 assert(result.size() == 2);
             }
             assert(result.begin() == next(begin(haystack), 2));
@@ -46,8 +45,6 @@ struct instantiator {
             // Validate range overload [not found case]
             Fwd1 haystack{pairs};
             Fwd2 needle{bad_needle};
-            STATIC_ASSERT(
-                CanMemberSize<subrange<iterator_t<Fwd1>>> == sized_sentinel_for<iterator_t<Fwd1>, iterator_t<Fwd1>>);
             const same_as<subrange<iterator_t<Fwd1>>> auto result = find_end(haystack, needle, pred, get_first);
             assert(result.empty());
             assert(result.begin() == end(haystack));
@@ -60,9 +57,7 @@ struct instantiator {
             Fwd2 needle{good_needle};
             const same_as<subrange<iterator_t<Fwd1>>> auto result =
                 find_end(begin(haystack), end(haystack), begin(needle), end(needle), pred, get_first);
-            STATIC_ASSERT(
-                CanMemberSize<subrange<iterator_t<Fwd1>>> == sized_sentinel_for<iterator_t<Fwd1>, iterator_t<Fwd1>>);
-            if constexpr (CanMemberSize<subrange<iterator_t<Fwd1>>>) {
+            if constexpr (sized_result) {
                 assert(result.size() == 2);
             }
             assert(result.begin() == next(begin(haystack), 2));
