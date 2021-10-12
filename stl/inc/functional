@@ -1216,7 +1216,7 @@ union alignas(max_align_t) _Move_only_function_data {
     char _Data; // For aliasing
 
     template <class _Fn>
-    static constexpr size_t _Buf_offset() noexcept {
+    [[nodiscard]] static constexpr size_t _Buf_offset() noexcept {
         if constexpr (alignof(_Fn) <= sizeof(_Impl)) {
             return sizeof(_Impl); // Data immediately after impl
         } else {
@@ -1225,34 +1225,35 @@ union alignas(max_align_t) _Move_only_function_data {
     }
 
     template <class _Fn>
-    static constexpr size_t _Buf_size() noexcept {
+    [[nodiscard]] static constexpr size_t _Buf_size() noexcept {
         return sizeof(_Pointers) - _Buf_offset<_Fn>();
     }
 
     template <class _Fn>
-    constexpr void* _Buf_ptr() {
+    [[nodiscard]] constexpr void* _Buf_ptr() noexcept {
         return &_Data + _Buf_offset<_Fn>();
     }
 
     template <class _Fn>
-    _Fn* _Small_fn_ptr() {
+    [[nodiscard]] _Fn* _Small_fn_ptr() noexcept {
         return static_cast<_Fn*>(_Buf_ptr<_Fn>());
     }
 
     template <class _Fn>
-    _Fn* _Large_fn_ptr() {
+    [[nodiscard]] _Fn* _Large_fn_ptr() noexcept {
         return static_cast<_Fn*>(_Pointers[1]);
     }
 
-    void _Set_large_fn_ptr(void* _Value) {
+    void _Set_large_fn_ptr(void* const _Value) noexcept {
         _Pointers[1] = _Value;
     }
 };
 
 template <class _Rx, class... Args>
 struct _Move_only_function_impl { // per-callable-type structure acting as a virtual function table
-    // using vtable emulations gives more flexibility for optimizations  and eliminates the need for RTTI
-    // (RTTI saving may be significant as with lambdas and binds there may be a lot of distinct callable types)
+    // using vtable emulations gives more flexibility for optimizations and reduces the need for RTTIs
+    // (RTTI saving may be significant as with lambdas and binds there may be a lot of distinct callable types,
+    //  we don't have distinct wrapper class type for each callable type, only distinct functions when needed)
 
     // Calls target
     _Rx (*_Invoke)(_Move_only_function_data&, Args...);
@@ -1263,12 +1264,12 @@ struct _Move_only_function_impl { // per-callable-type structure acting as a vir
 };
 
 template <class _Rx, class... Args>
-[[noreturn]] _Rx _Function_no_callable(_Move_only_function_data&, Args...) {
+[[noreturn]] _Rx _Function_no_callable(_Move_only_function_data&, Args...) noexcept {
     _CSTD abort(); // We are not std::function to throw bad_function_call
 }
 
-constexpr void _Function_noop_move(_Move_only_function_data&, _Move_only_function_data&) noexcept {}
-constexpr void _Function_noop_destroy(_Move_only_function_data&) noexcept {}
+inline void _Function_noop_move(_Move_only_function_data&, _Move_only_function_data&) noexcept {}
+inline void _Function_noop_destroy(_Move_only_function_data&) noexcept {}
 
 template <class _Rx, class... Args>
 inline constexpr _Move_only_function_impl<_Rx, Args...> _Null_move_only_function = {
@@ -1278,12 +1279,12 @@ inline constexpr _Move_only_function_impl<_Rx, Args...> _Null_move_only_function
 };
 
 template <class _Fn, class _Rx, class... _Types>
-_Rx _Function_invoke_small(_Move_only_function_data& _Self, _Types... _Args) {
+[[nodiscard]] _Rx _Function_invoke_small(_Move_only_function_data& _Self, _Types... _Args) {
     return (*_Self._Small_fn_ptr<_Fn>()) (_STD forward<_Types>(_Args)...);
 }
 
 template <class _Fn, class _Rx, class... _Types>
-_Rx _Function_invoke_large(_Move_only_function_data& _Self, _Types... _Args) {
+[[nodiscard]] _Rx _Function_invoke_large(_Move_only_function_data& _Self, _Types... _Args) {
     return (*_Self._Large_fn_ptr<_Fn>()) (_STD forward<_Types>(_Args)...);
 }
 
@@ -1328,7 +1329,7 @@ void _Function_move_memcpy(_Move_only_function_data& _Self, _Move_only_function_
 }
 
 template <class _Fn>
-void* _Function_new_large(_Fn&& _Callable) {
+[[nodiscard]] void* _Function_new_large(_Fn&& _Callable) {
     struct [[nodiscard]] _Guard_type {
         void* _Ptr;
 
@@ -1347,7 +1348,7 @@ void* _Function_new_large(_Fn&& _Callable) {
     if constexpr (alignof(_Fn) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         _Guard._Ptr = ::operator new(sizeof(_Fn));
     } else {
-        _Guard._Ptr = ::operator new(sizeof(_Fn), align_val_t{alignof(_Fn)});
+        _Guard._Ptr = ::operator new (sizeof(_Fn), align_val_t{alignof(_Fn)});
     }
     ::new (_Guard._Ptr) _Fn(_STD move(_Callable));
     return exchange(_Guard._Ptr, nullptr);
@@ -1384,12 +1385,12 @@ public:
         _Get_impl()->_Destroy(_Data);
     }
 
-    bool _Is_null() const noexcept {
+    [[nodiscard]] bool _Is_null() const noexcept {
         return _Data._Impl == &_Null_move_only_function<_Rx, _Types...>;
     }
 
     template <class _Fn>
-    static constexpr bool _Large_function_engaged() noexcept {
+    [[nodiscard]] static constexpr bool _Large_function_engaged() noexcept {
         return sizeof(_Fn) > _Move_only_function_data::_Buf_size<_Fn>()
             || !is_nothrow_move_constructible_v<_Fn> || alignof(_Fn) > alignof(max_align_t);
     }
@@ -1398,12 +1399,12 @@ public:
         return size_t{_Size + sizeof(void*) - 1} & ~size_t{sizeof(void*) - 1};
     }
 
-    const _Impl_t* _Get_impl() const noexcept {
+    [[nodiscard]] const _Impl_t* _Get_impl() const noexcept {
         return static_cast<const _Impl_t*>(_Data._Impl);
     }
 
     template <class _Fn>
-    static constexpr _Impl_t _Create_impl() noexcept {
+    [[nodiscard]] static constexpr _Impl_t _Create_impl() noexcept {
         _Impl_t _Impl{};
         if constexpr (_Large_function_engaged<_Fn>()) {
             _Impl._Invoke = _Function_invoke_large<_Fn, _Rx, _Types...>;
@@ -1438,7 +1439,7 @@ public:
     }
 
     template <class _Fn>
-    static const _Impl_t* _Create_impl_ptr() noexcept {
+    [[nodiscard]] static const _Impl_t* _Create_impl_ptr() noexcept {
         static constexpr _Impl_t _Impl = _Create_impl<_Fn>();
         return &_Impl;
     }
@@ -1493,13 +1494,13 @@ public:
         this->_Construct_with_fn(_STD forward<_Fn>(_Callable));
     }
 
-    explicit operator bool() const noexcept {
+    [[nodiscard]] explicit operator bool() const noexcept {
         return !this->_Is_null();
     }
 
     using _Call::operator();
 
-    friend bool operator==(const move_only_function& _This, nullptr_t) noexcept {
+    [[nodiscard]] friend bool operator==(const move_only_function& _This, nullptr_t) noexcept {
         return _This._Is_null();
     }
 };
