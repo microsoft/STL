@@ -1249,42 +1249,42 @@ union alignas(max_align_t) _Move_only_function_data {
     }
 };
 
-template <class _Rx, class... Args>
+template <class _Rx, class... _Types>
 struct _Move_only_function_impl { // per-callable-type structure acting as a virtual function table
     // using vtable emulations gives more flexibility for optimizations and reduces the need for RTTIs
     // (RTTI saving may be significant as with lambdas and binds there may be a lot of distinct callable types,
     //  we don't have distinct wrapper class type for each callable type, only distinct functions when needed)
 
     // Calls target
-    _Rx (*_Invoke)(_Move_only_function_data&, Args...);
+    _Rx (*_Invoke)(_Move_only_function_data&, _Types&&...);
     // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable")
     void (*_Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
     // destroys data (not resetting its "vtable")
     void (*_Destroy)(_Move_only_function_data&) _NOEXCEPT_FNPTR;
 };
 
-template <class _Rx, class... Args>
-[[noreturn]] _Rx _Function_no_callable(_Move_only_function_data&, Args...) noexcept {
+template <class _Rx, class... _Types>
+[[noreturn]] _Rx _Function_no_callable(_Move_only_function_data&, _Types&&...) noexcept {
     _CSTD abort(); // We are not std::function to throw bad_function_call
 }
 
 inline void _Function_noop_move(_Move_only_function_data&, _Move_only_function_data&) noexcept {}
 inline void _Function_noop_destroy(_Move_only_function_data&) noexcept {}
 
-template <class _Rx, class... Args>
-inline constexpr _Move_only_function_impl<_Rx, Args...> _Null_move_only_function = {
-    _Function_no_callable<_Rx, Args...>,
+template <class _Rx, class... _Types>
+inline constexpr _Move_only_function_impl<_Rx, _Types...> _Null_move_only_function = {
+    _Function_no_callable<_Rx, _Types...>,
     _Function_noop_move,
     _Function_noop_destroy,
 };
 
 template <class _Fn, class _Rx, class... _Types>
-_NODISCARD _Rx _Function_invoke_small(_Move_only_function_data& _Self, _Types... _Args) {
+_NODISCARD _Rx _Function_invoke_small(_Move_only_function_data& _Self, _Types&&... _Args) {
     return (*_Self._Small_fn_ptr<_Fn>()) (_STD forward<_Types>(_Args)...);
 }
 
 template <class _Fn, class _Rx, class... _Types>
-_NODISCARD _Rx _Function_invoke_large(_Move_only_function_data& _Self, _Types... _Args) {
+_NODISCARD _Rx _Function_invoke_large(_Move_only_function_data& _Self, _Types&&... _Args) {
     return (*_Self._Large_fn_ptr<_Fn>()) (_STD forward<_Types>(_Args)...);
 }
 
@@ -1456,7 +1456,7 @@ class _Move_only_function_call<_Rx(_Types...)> : public _Move_only_function_base
 public:
     using result_type = _Rx;
 
-    _Rx operator()(_Types... _Args) {
+    _Rx operator()(_Types&&... _Args) {
         return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1467,7 +1467,7 @@ class _Move_only_function_call<_Rx(_Types...) noexcept> : public _Move_only_func
 public:
     using result_type = _Rx;
 
-    _Rx operator()(_Types... _Args) noexcept {
+    _Rx operator()(_Types&&... _Args) noexcept {
         return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
