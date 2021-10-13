@@ -20,25 +20,31 @@ struct pass_this_by_ref {
 
 struct counter {
     static int inst;
+    static int copies;
+    static int moves;
 
     counter() {
-        inst++;
+        ++inst;
     }
 
     counter(const counter&) {
-        inst++;
+        ++inst;
+        ++copies;
     }
 
     counter(counter&&) noexcept {
-        inst++;
+        ++inst;
+        ++moves;
     }
 
     ~counter() {
-        inst--;
+        --inst;
     }
 };
 
 int counter::inst = 0;
+int counter::copies = 0;
+int counter::moves = 0;
 
 struct small_callable : counter {
     int operator()(int a, pass_this_by_ref& b) {
@@ -52,9 +58,7 @@ struct small_callable : counter {
 
     small_callable() = default;
 
-    small_callable(const small_callable&) {
-        abort();
-    }
+    small_callable(const small_callable&) = default;
 
     small_callable(small_callable&&) noexcept = default;
 };
@@ -72,12 +76,15 @@ struct odd_cc_callable : counter {
 
     odd_cc_callable() = default;
 
-    odd_cc_callable(const odd_cc_callable&) {
-        abort();
-    }
-
+    odd_cc_callable(const odd_cc_callable&) = default;
     odd_cc_callable(odd_cc_callable&&) noexcept = default;
 };
+
+int __fastcall plain_callable(int a, pass_this_by_ref& b) {
+    assert(a == 23);
+    assert(b.v == 63);
+    return 38;
+}
 
 using test_function_t = move_only_function<int(int, pass_this_by_ref&)>;
 
@@ -86,28 +93,52 @@ void test_impl(Args... args) {
     {
         pass_this_by_ref x{63};
 
-        test_function_t f1(F{args...});
-        assert(f1(23, x) == 38);
+        test_function_t constructed_directly(F{args...});
 
-        assert(f1);
-        assert(f1 != nullptr);
+        assert(constructed_directly(23, x) == 38);
 
-        test_function_t f2 = std::move(f1);
+        assert(constructed_directly);
+        assert(constructed_directly != nullptr);
 
-        assert(f2(23, x) == 38);
+        test_function_t move_constructed = std::move(constructed_directly);
 
-        assert(!f1);
-        assert(f1 == nullptr);
+        assert(move_constructed(23, x) == 38);
+
+        assert(!constructed_directly);
+        assert(constructed_directly == nullptr);
+
+        if constexpr (is_class_v<F>) {
+            assert(counter::copies == 0);
+        }
+
+        F v{args...};
+        test_function_t constructed_lvalue(v);
+        if constexpr (is_class_v<F>) {
+            assert(counter::copies == 1);
+            counter::copies = 0;
+        }
     }
-    test_function_t f3;
-    assert(!f3);
-    assert(f3 == nullptr);
 
-    assert(counter::inst == 0);
+    if constexpr (is_class_v<F>) {
+        assert(counter::inst == 0);
+    }
+}
+
+void test_empty() {
+    test_function_t emtpty;
+    assert(!emtpty);
+    assert(emtpty == nullptr);
+
+    test_function_t emtpty_moved = std::move(emtpty);
+    assert(!emtpty_moved);
+    assert(emtpty_moved == nullptr);
+    assert(!emtpty_moved);
+    assert(emtpty_moved == nullptr);
 }
 
 int main() {
     test_impl<small_callable>();
     test_impl<large_callable>();
     test_impl<odd_cc_callable>();
+    test_impl<decltype(&plain_callable)>(plain_callable);
 }

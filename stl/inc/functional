@@ -1281,20 +1281,20 @@ inline constexpr _Move_only_function_impl<_Rx, _Types...> _Null_move_only_functi
     _Function_empty_destroy,
 };
 
-template <class _Fn, class _Rx, class... _Types>
+template <class _Vt, class _Rx, class... _Types>
 _NODISCARD _Rx _Function_invoke_small(_Move_only_function_data& _Self, _Types&&... _Args) {
-    return (*_Self._Small_fn_ptr<_Fn>()) (_STD forward<_Types>(_Args)...);
+    return _Invoker_ret<_Rx>::_Call(*_Self._Small_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
 }
 
-template <class _Fn, class _Rx, class... _Types>
+template <class _Vt, class _Rx, class... _Types>
 _NODISCARD _Rx _Function_invoke_large(_Move_only_function_data& _Self, _Types&&... _Args) {
-    return (*_Self._Large_fn_ptr<_Fn>()) (_STD forward<_Types>(_Args)...);
+    return _Invoker_ret<_Rx>::_Call(*_Self._Large_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
 }
 
-template <class _Fn>
+template <class _Vt>
 void _Function_move_small(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
-    ::new (_Self._Buf_ptr<_Fn>()) _Fn(_STD move(*_Src._Small_fn_ptr<_Fn>()));
-    _Src._Small_fn_ptr<_Fn>()->~_Fn();
+    ::new (_Self._Buf_ptr<_Vt>()) _Vt(_STD move(*_Src._Small_fn_ptr<_Vt>()));
+    _Src._Small_fn_ptr<_Vt>()->~_Vt();
     _Self._Impl = _Src._Impl;
 }
 
@@ -1302,9 +1302,9 @@ inline void _Function_move_large(_Move_only_function_data& _Self, _Move_only_fun
     _CSTD memcpy(&_Self._Data, &_Src._Data, 2 * sizeof(void*)); // Copy Impl* and indirect data
 }
 
-template <class _Fn>
+template <class _Vt>
 void _Function_destroy_small(_Move_only_function_data& _Self) noexcept {
-    _Self._Small_fn_ptr<_Fn>()->~_Fn();
+    _Self._Small_fn_ptr<_Vt>()->~_Vt();
 }
 
 inline void _Function_deallocate_large_default_aligned(_Move_only_function_data& _Self) noexcept {
@@ -1316,13 +1316,13 @@ void _Function_deallocate_large_overaligned(_Move_only_function_data& _Self) noe
     ::operator delete (_Self._Large_fn_ptr<void>(), align_val_t{_Align});
 }
 
-template <class _Fn>
+template <class _Vt>
 void _Function_destroy_large(_Move_only_function_data& _Self) noexcept {
-    _Self._Large_fn_ptr<_Fn>()->~_Fn();
-    if constexpr (alignof(_Fn) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+    _Self._Large_fn_ptr<_Vt>()->~_Vt();
+    if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         _Function_deallocate_large_default_aligned(_Self);
     } else {
-        _Function_deallocate_large_overaligned<alignof(_Fn)>(_Self);
+        _Function_deallocate_large_overaligned<alignof(_Vt)>(_Self);
     }
 }
 
@@ -1331,29 +1331,29 @@ void _Function_move_memcpy(_Move_only_function_data& _Self, _Move_only_function_
     _CSTD memcpy(&_Self._Data, &_Src._Data, _Size); // Copy Impl* and functor data
 }
 
-template <class _Fn>
-_NODISCARD void* _Function_new_large(_Fn&& _Callable) {
+template <class _Vt, class... _Types>
+_NODISCARD void* _Function_new_large(_Types&&... _Args) {
     struct _NODISCARD _Guard_type {
         void* _Ptr;
 
         ~_Guard_type() {
             if (_Ptr) {
-                if constexpr (alignof(_Fn) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+                if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                     ::operator delete(_Ptr);
                 } else {
-                    ::operator delete (_Ptr, align_val_t{alignof(_Fn)});
+                    ::operator delete (_Ptr, align_val_t{alignof(_Vt)});
                 }
             }
         }
     };
 
     _Guard_type _Guard;
-    if constexpr (alignof(_Fn) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        _Guard._Ptr = ::operator new(sizeof(_Fn));
+    if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+        _Guard._Ptr = ::operator new(sizeof(_Vt));
     } else {
-        _Guard._Ptr = ::operator new (sizeof(_Fn), align_val_t{alignof(_Fn)});
+        _Guard._Ptr = ::operator new (sizeof(_Vt), align_val_t{alignof(_Vt)});
     }
-    ::new (_Guard._Ptr) _Fn(_STD move(_Callable));
+    ::new (_Guard._Ptr) _Vt(_STD forward<_Types>(_Args)...);
     return _STD exchange(_Guard._Ptr, nullptr);
 }
 
@@ -1374,13 +1374,13 @@ public:
         _Data._Impl = &_Null_move_only_function<_Rx, _Types...>;
     }
 
-    template <class _Fn>
-    void _Construct_with_fn(_Fn&& _Callable) {
-        _Data._Impl = _Create_impl_ptr<_Fn>();
-        if constexpr (_Large_function_engaged<_Fn>()) {
-            _Data._Set_large_fn_ptr(_Function_new_large<_Fn>(_STD move(_Callable)));
+    template <class _Vt, class... _Types>
+    void _Construct_with_fn(_Types&&... _Args) {
+        _Data._Impl = _Create_impl_ptr<_Vt>();
+        if constexpr (_Large_function_engaged<_Vt>()) {
+            _Data._Set_large_fn_ptr(_Function_new_large<_Vt>(_STD forward<_Types>(_Args)...));
         } else {
-            ::new (_Data._Buf_ptr<_Fn>()) _Fn(_STD move(_Callable));
+            ::new (_Data._Buf_ptr<_Vt>()) _Vt(_STD forward<_Types>(_Args)...);
         }
     }
 
@@ -1392,10 +1392,10 @@ public:
         return _Data._Impl == &_Null_move_only_function<_Rx, _Types...>;
     }
 
-    template <class _Fn>
+    template <class _Vt>
     _NODISCARD static constexpr bool _Large_function_engaged() noexcept {
-        return sizeof(_Fn) > _Move_only_function_data::_Buf_size<_Fn>()
-            || !is_nothrow_move_constructible_v<_Fn> || alignof(_Fn) > alignof(max_align_t);
+        return sizeof(_Vt) > _Move_only_function_data::_Buf_size<_Vt>()
+            || !is_nothrow_move_constructible_v<_Vt> || alignof(_Vt) > alignof(max_align_t);
     }
 
     static constexpr size_t _Round_up_size(size_t _Size) noexcept {
@@ -1406,44 +1406,44 @@ public:
         return static_cast<const _Impl_t*>(_Data._Impl);
     }
 
-    template <class _Fn>
+    template <class _Vt>
     _NODISCARD static constexpr _Impl_t _Create_impl() noexcept {
         _Impl_t _Impl{};
-        if constexpr (_Large_function_engaged<_Fn>()) {
-            _Impl._Invoke = _Function_invoke_large<_Fn, _Rx, _Types...>;
+        if constexpr (_Large_function_engaged<_Vt>()) {
+            _Impl._Invoke = _Function_invoke_large<_Vt, _Rx, _Types...>;
             _Impl._Move   = _Function_move_large;
 
-            if constexpr (is_trivially_destructible_v<_Fn>) {
-                if constexpr (alignof(_Fn) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
+            if constexpr (is_trivially_destructible_v<_Vt>) {
+                if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                     _Impl._Destroy = _Function_deallocate_large_default_aligned;
                 } else {
-                    _Impl._Destroy = _Function_deallocate_large_overaligned<alignof(_Fn)>;
+                    _Impl._Destroy = _Function_deallocate_large_overaligned<alignof(_Vt)>;
                 }
             } else {
-                _Impl._Destroy = _Function_destroy_large<_Fn>;
+                _Impl._Destroy = _Function_destroy_large<_Vt>;
             }
         } else {
-            _Impl._Invoke = _Function_invoke_small<_Fn, _Rx, _Types...>;
+            _Impl._Invoke = _Function_invoke_small<_Vt, _Rx, _Types...>;
 
-            if constexpr (is_trivially_copyable_v<_Fn> && is_trivially_destructible_v<_Fn>) {
+            if constexpr (is_trivially_copyable_v<_Vt> && is_trivially_destructible_v<_Vt>) {
                 _Impl._Move =
-                    _Function_move_memcpy<_Move_only_function_data::_Buf_offset<_Fn>() + _Round_up_size(sizeof(_Fn))>;
+                    _Function_move_memcpy<_Move_only_function_data::_Buf_offset<_Vt>() + _Round_up_size(sizeof(_Vt))>;
             } else {
-                _Impl._Move = _Function_move_small<_Fn>;
+                _Impl._Move = _Function_move_small<_Vt>;
             }
 
-            if constexpr (is_trivially_destructible_v<_Fn>) {
+            if constexpr (is_trivially_destructible_v<_Vt>) {
                 _Impl._Destroy = _Function_empty_destroy;
             } else {
-                _Impl._Destroy = _Function_destroy_small<_Fn>;
+                _Impl._Destroy = _Function_destroy_small<_Vt>;
             }
         }
         return _Impl;
     }
 
-    template <class _Fn>
+    template <class _Vt>
     _NODISCARD static const _Impl_t* _Create_impl_ptr() noexcept {
-        static constexpr _Impl_t _Impl = _Create_impl<_Fn>();
+        static constexpr _Impl_t _Impl = _Create_impl<_Vt>();
         return &_Impl;
     }
 };
@@ -1495,13 +1495,16 @@ public:
     template <class _Fn>
     move_only_function(_Fn&& _Callable) {
         using _Vt = decay_t<_Fn>;
+        static_assert(is_constructible_v<_Vt, _Fn>);
+
         if constexpr (is_member_function_pointer_v<_Vt> || is_member_object_pointer_v<_Vt> || is_pointer_v<_Vt>) {
             if (_Callable == nullptr) {
                 this->_Construct_with_null();
                 return;
             }
         }
-        this->_Construct_with_fn(_STD forward<_Fn>(_Callable));
+
+        this->_Construct_with_fn<_Vt>(_STD forward<_Fn>(_Callable));
     }
 
     _NODISCARD explicit operator bool() const noexcept {
