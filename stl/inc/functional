@@ -1268,14 +1268,17 @@ template <class _Rx, class... _Types>
     _CSTD abort(); // We are not std::function to throw bad_function_call
 }
 
-inline void _Function_noop_move(_Move_only_function_data&, _Move_only_function_data&) noexcept {}
-inline void _Function_noop_destroy(_Move_only_function_data&) noexcept {}
+inline void _Function_empty_move(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
+    _Self._Impl = _Src._Impl; // Function data is empty, still need to copy "vtable"
+}
+
+inline void _Function_empty_destroy(_Move_only_function_data&) noexcept {}
 
 template <class _Rx, class... _Types>
 inline constexpr _Move_only_function_impl<_Rx, _Types...> _Null_move_only_function = {
     _Function_no_callable<_Rx, _Types...>,
-    _Function_noop_move,
-    _Function_noop_destroy,
+    _Function_empty_move,
+    _Function_empty_destroy,
 };
 
 template <class _Fn, class _Rx, class... _Types>
@@ -1430,7 +1433,7 @@ public:
             }
 
             if constexpr (is_trivially_destructible_v<_Fn>) {
-                _Impl._Destroy = _Function_noop_destroy;
+                _Impl._Destroy = _Function_empty_destroy;
             } else {
                 _Impl._Destroy = _Function_destroy_small<_Fn>;
             }
