@@ -46,7 +46,7 @@ struct instantiator {
                 owning_view<R> value_constructed{R{input}};
                 STATIC_ASSERT(is_nothrow_constructible_v<owning_view<R>, R> == is_nothrow_move_constructible_v<R>);
 
-                auto move_constructed = move(value_constructed);
+                owning_view<R> move_constructed = move(value_constructed);
                 if constexpr (forward_range<R>) {
                     assert(move_constructed.begin().peek() == begin(input));
                 }

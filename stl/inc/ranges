@@ -1436,9 +1436,12 @@ namespace ranges {
     template <class _Rng>
     inline constexpr bool enable_borrowed_range<ref_view<_Rng>> = true;
 
+    template <class _Ty>
+    inline constexpr bool _Is_initializer_list = _Is_specialization_v<_Ty, initializer_list>;
+
     // clang-format off
     template <range _Rng>
-        requires (movable<_Rng> && !_Is_specialization_v<remove_cvref_t<_Rng>, initializer_list>)
+        requires (movable<_Rng> && !_Is_initializer_list<_Rng>)
     class owning_view : public view_interface<owning_view<_Rng>> {
         // clang-format on
     private:
@@ -1524,13 +1527,13 @@ namespace ranges {
         };
 
         template <class _Rng>
-        concept _Pwnable = requires(_Rng&& __r) {
+        concept _Ownable = requires(_Rng&& __r) {
             owning_view{static_cast<_Rng&&>(__r)};
         };
 
         class _All_fn : public _Pipe::_Base<_All_fn> {
         private:
-            enum class _St { _None, _View, _Ref, _Pwn };
+            enum class _St { _None, _View, _Ref, _Own };
 
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
@@ -1540,8 +1543,8 @@ namespace ranges {
                     }
                 } else if constexpr (_Can_ref_view<_Rng>) {
                     return {_St::_Ref, noexcept(ref_view{_STD declval<_Rng>()})};
-                } else if constexpr (_Pwnable<_Rng>) {
-                    return {_St::_Pwn, noexcept(owning_view{_STD declval<_Rng>()})};
+                } else if constexpr (_Ownable<_Rng>) {
+                    return {_St::_Own, noexcept(owning_view{_STD declval<_Rng>()})};
                 }
 
                 return {_St::_None};
@@ -1562,7 +1565,7 @@ namespace ranges {
                     return _STD forward<_Rng>(_Range);
                 } else if constexpr (_Strat == _St::_Ref) {
                     return ref_view{_STD forward<_Rng>(_Range)};
-                } else if constexpr (_Strat == _St::_Pwn) {
+                } else if constexpr (_Strat == _St::_Own) {
                     return owning_view{_STD forward<_Rng>(_Range)};
                 } else {
                     static_assert(_Always_false<_Rng>, "Should be unreachable");
@@ -3595,8 +3598,8 @@ namespace ranges {
                 const auto _Pat_end = _RANGES end(_It._Parent->_Pattern);
                 auto _Last          = _RANGES end(_It._Parent->_Range);
                 if constexpr (_Tiny_range<_Pat>) {
-                    const auto& _Cur = _It._Get_current(); // Intentionally a reference. Since _Pat is tiny, this
-                                                           // could be a move-only iterator type.
+                    const auto& _Cur = _It._Get_current(); // Intentionally a reference. Since _Pat is tiny, this could
+                                                           // be a move-only iterator type.
                     if (_Cur == _Last) {
                         return true;
                     }
