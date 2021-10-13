@@ -42,9 +42,9 @@ struct counter {
     }
 };
 
-int counter::inst = 0;
+int counter::inst   = 0;
 int counter::copies = 0;
-int counter::moves = 0;
+int counter::moves  = 0;
 
 struct small_callable : counter {
     int operator()(int a, pass_this_by_ref& b) {
@@ -76,7 +76,7 @@ struct odd_cc_callable : counter {
 
     odd_cc_callable() = default;
 
-    odd_cc_callable(const odd_cc_callable&) = default;
+    odd_cc_callable(const odd_cc_callable&)     = default;
     odd_cc_callable(odd_cc_callable&&) noexcept = default;
 };
 
