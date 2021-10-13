@@ -1494,6 +1494,13 @@ public:
 
     template <class _Fn>
     move_only_function(_Fn&& _Callable) {
+        using _Vt = decay_t<_Fn>;
+        if constexpr (is_member_function_pointer_v<_Vt> || is_member_object_pointer_v<_Vt> || is_pointer_v<_Vt>) {
+            if (_Callable == nullptr) {
+                this->_Construct_with_null();
+                return;
+            }
+        }
         this->_Construct_with_fn(_STD forward<_Fn>(_Callable));
     }
 
