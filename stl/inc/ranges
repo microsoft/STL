@@ -39,8 +39,7 @@ namespace ranges {
         && ((view<remove_cvref_t<_Rng>> && constructible_from<remove_cvref_t<_Rng>, _Rng>)
             || (!view<remove_cvref_t<_Rng>>
                 && (is_lvalue_reference_v<_Rng>
-                    || (movable<remove_reference_t<_Rng>>
-                        && !_Is_initializer_list<_Rng>))));
+                    || (movable<remove_reference_t<_Rng>> && !_Is_initializer_list<_Rng>))));
 
     template <class _Rng>
     concept _Simple_view = view<_Rng> && range<const _Rng>
