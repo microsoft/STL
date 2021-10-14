@@ -1259,7 +1259,7 @@ struct _Move_only_function_impl { // per-callable-type structure acting as a vir
     _Rx (*_Invoke)(_Move_only_function_data&, _Types&&...);
     // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable")
     void (*_Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
-    // destroys data (not resetting its "vtable")
+    // Destroys data (not resetting its "vtable")
     void (*_Destroy)(_Move_only_function_data&) _NOEXCEPT_FNPTR;
 };
 
@@ -1268,17 +1268,11 @@ template <class _Rx, class... _Types>
     _CSTD abort(); // We are not std::function to throw bad_function_call
 }
 
-inline void _Function_empty_move(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
-    _Self._Impl = _Src._Impl; // Function data is empty, still need to copy "vtable"
-}
-
-inline void _Function_empty_destroy(_Move_only_function_data&) noexcept {}
-
 template <class _Rx, class... _Types>
 inline constexpr _Move_only_function_impl<_Rx, _Types...> _Null_move_only_function = {
     _Function_no_callable<_Rx, _Types...>,
-    _Function_empty_move,
-    _Function_empty_destroy,
+    nullptr,
+    nullptr,
 };
 
 template <class _Vt, class _VtInvQuals, class _Rx, class... _Types>
@@ -1333,11 +1327,12 @@ void _Function_move_memcpy(_Move_only_function_data& _Self, _Move_only_function_
 
 template <class _Vt>
 constexpr size_t _Function_small_copy_size() noexcept {
-    // We copy Impl* and and functor data at once.
-    // Also is sometimes more efficient to memcpy whole pointers than byte remainings.
-    return _Move_only_function_data::_Buf_offset<_Vt>() + // Impl* and possible padding
-               size_t{sizeof(_Vt) + sizeof(void*) - 1}
-         & ~size_t{sizeof(void*) - 1}; // size rounded up to pointer
+    // We copy Impl* and and functor data at once
+    constexpr size_t _Impl_ptr_and_padding = _Move_only_function_data::_Buf_offset<_Vt>();
+    // Sometimes more efficient to memcpy whole pointers than byte remainings
+    constexpr size_t _Round_up_ptr = size_t{sizeof(_Vt) + sizeof(void*) - 1} & ~size_t{sizeof(void*) - 1};
+
+    return _Impl_ptr_and_padding + _Round_up_ptr;
 }
 
 template <class _Vt, class... _Types>
@@ -1375,11 +1370,16 @@ public:
     _Move_only_function_base() noexcept = default; // leaves fields uninitialized
 
     _Move_only_function_base(_Move_only_function_base&& _Other) noexcept {
-        _Other._Get_impl()->_Move(_Data, _Other._Data);
-        _Other._Data._Impl = &_Null_move_only_function<_Rx, _Types...>;
+        this->_Move(_Data, _Other._Data);
+        _Other._Reset_to_null();
     }
 
     void _Construct_with_null() noexcept {
+        _Data._Impl = &_Null_move_only_function<_Rx, _Types...>;
+        _Data._Set_large_fn_ptr(nullptr); // initialize, since we'll be copying it
+    }
+
+    void _Reset_to_null() noexcept {
         _Data._Impl = &_Null_move_only_function<_Rx, _Types...>;
     }
 
@@ -1394,26 +1394,39 @@ public:
     }
 
     ~_Move_only_function_base() {
-        _Get_impl()->_Destroy(_Data);
+        _Destroy(_Data);
+    }
+
+    static void _Destroy(_Move_only_function_data& _Data) {
+        const auto* _Impl = static_cast<const _Impl_t*>(_Data._Impl);
+        if (_Impl->_Destroy) {
+            _Impl->_Destroy(_Data);
+        }
+    }
+
+    static void _Move(_Move_only_function_data& _Data, _Move_only_function_data& _Src) {
+        const auto* _Impl = static_cast<const _Impl_t*>(_Src._Impl);
+        if (!_Impl->_Move) {
+            _Function_move_large(_Data, _Src);
+        } else {
+            _Impl->_Move(_Data, _Src);
+        }
     }
 
     void _Move_assign(_Move_only_function_base&& _Other) {
         // GH-2278 - not implementing using swap as Standard asks for
 
-        _Get_impl()->_Destroy(_Data);
-        _Other._Get_impl()->_Move(_Data, _Other._Data);
-        _Other._Data._Impl = &_Null_move_only_function<_Rx, _Types...>;
+        _Destroy(_Data);
+        _Move(_Data, _Other._Data);
+        _Other._Reset_to_null();
     }
 
     void _Swap(_Move_only_function_base& _Other) {
-        const auto* _This_impl = _Get_impl();
-        const auto* _That_impl = _Other._Get_impl();
-
         _Move_only_function_data _Tmp;
 
-        _This_impl->_Move(_Tmp, _Data);
-        _That_impl->_Move(_Data, _Other._Data);
-        _This_impl->_Move(_Other._Data, _Tmp);
+        _Move(_Tmp, _Data);
+        _Move(_Data, _Other._Data);
+        _Move(_Other._Data, _Tmp);
     }
 
     _NODISCARD bool _Is_null() const noexcept {
@@ -1426,7 +1439,6 @@ public:
             || !is_nothrow_move_constructible_v<_Vt> || alignof(_Vt) > alignof(max_align_t);
     }
 
-
     _NODISCARD const _Impl_t* _Get_impl() const noexcept {
         return static_cast<const _Impl_t*>(_Data._Impl);
     }
@@ -1436,7 +1448,7 @@ public:
         _Impl_t _Impl{};
         if constexpr (_Large_function_engaged<_Vt>()) {
             _Impl._Invoke = _Function_invoke_large<_Vt, _VtInvQuals, _Rx, _Types...>;
-            _Impl._Move   = _Function_move_large;
+            _Impl._Move   = nullptr;
 
             if constexpr (is_trivially_destructible_v<_Vt>) {
                 if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
@@ -1451,13 +1463,17 @@ public:
             _Impl._Invoke = _Function_invoke_small<_Vt, _VtInvQuals, _Rx, _Types...>;
 
             if constexpr (is_trivially_copyable_v<_Vt> && is_trivially_destructible_v<_Vt>) {
-                _Impl._Move = _Function_move_memcpy<_Function_small_copy_size<_Vt>()>;
+                if constexpr (_Function_small_copy_size<_Vt>() > sizeof(void*) * 2) {
+                    _Impl._Move = _Function_move_memcpy<_Function_small_copy_size<_Vt>()>;
+                } else {
+                    _Impl._Move = nullptr;
+                }
             } else {
                 _Impl._Move = _Function_move_small<_Vt>;
             }
 
             if constexpr (is_trivially_destructible_v<_Vt>) {
-                _Impl._Destroy = _Function_empty_destroy;
+                _Impl._Destroy = nullptr;
             } else {
                 _Impl._Destroy = _Function_destroy_small<_Vt>;
             }
@@ -1744,8 +1760,8 @@ public:
     }
 
     move_only_function& operator=(nullptr_t) noexcept {
-        this->_Get_impl()->_Destroy();
-        this->_Construct_with_null();
+        _Destroy(this->_Data);
+        this->Reset_to_null();
     }
 
     move_only_function& operator=(move_only_function&& _Other) {
