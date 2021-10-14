@@ -1544,7 +1544,7 @@ public:
         move_only_function(_STD move(_Other)).swap(*this);
         return *this;
     }
-    
+
     move_only_function& operator=(nullptr_t) noexcept {
         this->_Get_impl()->_Destroy();
         this->_Construct_with_null();
@@ -1561,7 +1561,7 @@ public:
     }
 
     using _Call::operator();
-    
+
     void swap(move_only_function&) noexcept {
         _CSTD abort();
     }
