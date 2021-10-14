@@ -1480,7 +1480,7 @@ public:
 template <class _Fx>
 class move_only_function : private _Move_only_function_call<_Fx> {
 private:
-    using _Call = _Move_only_function_call<_Fx>; 
+    using _Call = _Move_only_function_call<_Fx>;
 
     template <class _Fn>
     static constexpr bool _Enable_one_arg_constructor() {
@@ -1527,15 +1527,16 @@ public:
     template <class _Fn, class... _CTypes, enable_if_t<_Enable_in_place_constructor<_Fn>(), int> = 0>
     move_only_function(in_place_type_t<_Fn>, _CTypes&&... _Args) {
         using _Vt = decay_t<_Fn>;
-        static_assert(is_same_v<_Vt,_Fn>);
+        static_assert(is_same_v<_Vt, _Fn>);
 
         this->template _Construct_with_fn<_Vt, _Vt&>(_STD forward<_CTypes>(_Args)...);
     }
 
-    template <class _Fn, class _Ux, class... _CTypes, enable_if_t<_Enable_in_place_list_constructor<_Fn, _Ux>(), int> = 0>
+    template <class _Fn, class _Ux, class... _CTypes,
+        enable_if_t<_Enable_in_place_list_constructor<_Fn, _Ux>(), int> = 0>
     move_only_function(in_place_type_t<_Fn>, initializer_list<_Ux> _Li, _CTypes&&... _Args) {
         using _Vt = decay_t<_Fn>;
-        static_assert(is_same_v<_Vt,_Fn>);
+        static_assert(is_same_v<_Vt, _Fn>);
 
         this->template _Construct_with_fn<_Vt, _Vt&>(_Li, _STD forward<_CTypes>(_Args)...);
     }
