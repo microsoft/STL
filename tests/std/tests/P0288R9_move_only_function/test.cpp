@@ -117,6 +117,15 @@ void test_impl(Args... args) {
             assert(counter::copies == 1);
             counter::copies = 0;
         }
+
+        if constexpr (is_class_v<F>) {
+            counter::copies = 0;
+            counter::moves = 0;
+        }
+        test_function_t constructed_in_place(in_place_type<F>, args...);
+        assert(constructed_in_place(23, x) == 38);
+        assert(counter::copies == 0);
+        assert(counter::moves == 0);
     }
 
     if constexpr (is_class_v<F>) {
@@ -141,4 +150,5 @@ int main() {
     test_impl<large_callable>();
     test_impl<odd_cc_callable>();
     test_impl<decltype(&plain_callable)>(plain_callable);
+    test_empty();
 }

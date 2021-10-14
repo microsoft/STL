@@ -1281,14 +1281,14 @@ inline constexpr _Move_only_function_impl<_Rx, _Types...> _Null_move_only_functi
     _Function_empty_destroy,
 };
 
-template <class _Vt, class _Rx, class... _Types>
+template <class _Vt, class _VtInvQuals, class _Rx, class... _Types>
 _NODISCARD _Rx _Function_invoke_small(_Move_only_function_data& _Self, _Types&&... _Args) {
-    return _Invoker_ret<_Rx>::_Call(*_Self._Small_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
+    return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
 }
 
-template <class _Vt, class _Rx, class... _Types>
+template <class _Vt, class _VtInvQuals, class _Rx, class... _Types>
 _NODISCARD _Rx _Function_invoke_large(_Move_only_function_data& _Self, _Types&&... _Args) {
-    return _Invoker_ret<_Rx>::_Call(*_Self._Large_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
+    return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
 }
 
 template <class _Vt>
@@ -1374,13 +1374,13 @@ public:
         _Data._Impl = &_Null_move_only_function<_Rx, _Types...>;
     }
 
-    template <class _Vt, class... _Types>
-    void _Construct_with_fn(_Types&&... _Args) {
-        _Data._Impl = _Create_impl_ptr<_Vt>();
+    template <class _Vt, class _VtInvQuals, class... _CTypes>
+    void _Construct_with_fn(_CTypes&&... _Args) {
+        _Data._Impl = _Create_impl_ptr<_Vt, _VtInvQuals>();
         if constexpr (_Large_function_engaged<_Vt>()) {
-            _Data._Set_large_fn_ptr(_Function_new_large<_Vt>(_STD forward<_Types>(_Args)...));
+            _Data._Set_large_fn_ptr(_Function_new_large<_Vt>(_STD forward<_CTypes>(_Args)...));
         } else {
-            ::new (_Data._Buf_ptr<_Vt>()) _Vt(_STD forward<_Types>(_Args)...);
+            ::new (_Data._Buf_ptr<_Vt>()) _Vt(_STD forward<_CTypes>(_Args)...);
         }
     }
 
@@ -1406,11 +1406,12 @@ public:
         return static_cast<const _Impl_t*>(_Data._Impl);
     }
 
-    template <class _Vt>
+    template <class _Vt, class _VtInvQuals>
     _NODISCARD static constexpr _Impl_t _Create_impl() noexcept {
+
         _Impl_t _Impl{};
         if constexpr (_Large_function_engaged<_Vt>()) {
-            _Impl._Invoke = _Function_invoke_large<_Vt, _Rx, _Types...>;
+            _Impl._Invoke = _Function_invoke_large<_Vt, _VtInvQuals, _Rx, _Types...>;
             _Impl._Move   = _Function_move_large;
 
             if constexpr (is_trivially_destructible_v<_Vt>) {
@@ -1423,7 +1424,7 @@ public:
                 _Impl._Destroy = _Function_destroy_large<_Vt>;
             }
         } else {
-            _Impl._Invoke = _Function_invoke_small<_Vt, _Rx, _Types...>;
+            _Impl._Invoke = _Function_invoke_small<_Vt, _VtInvQuals, _Rx, _Types...>;
 
             if constexpr (is_trivially_copyable_v<_Vt> && is_trivially_destructible_v<_Vt>) {
                 _Impl._Move =
@@ -1441,9 +1442,9 @@ public:
         return _Impl;
     }
 
-    template <class _Vt>
+    template <class _Vt, class _VtInvQuals>
     _NODISCARD static const _Impl_t* _Create_impl_ptr() noexcept {
-        static constexpr _Impl_t _Impl = _Create_impl<_Vt>();
+        static constexpr _Impl_t _Impl = _Create_impl<_Vt, _VtInvQuals>();
         return &_Impl;
     }
 };
@@ -1479,7 +1480,23 @@ public:
 template <class _Fx>
 class move_only_function : private _Move_only_function_call<_Fx> {
 private:
-    using _Call = _Move_only_function_call<_Fx>;
+    using _Call = _Move_only_function_call<_Fx>; 
+
+    template <class _Fn>
+    static constexpr bool _Enable_one_arg_constructor() {
+        return !is_same_v<_Remove_cvref_t<_Fn>, move_only_function> && //
+               !_Is_specialization_v<_Remove_cvref_t<_Fn>, in_place_type_t>;
+    }
+
+    template <class _Fn, class... _CTypes>
+    static constexpr bool _Enable_in_place_constructor() {
+        return is_constructible_v<decay_t<_Fn>, _CTypes...>;
+    }
+
+    template <class _Fn, class _Ux, class... _CTypes>
+    static constexpr bool _Enable_in_place_list_constructor() {
+        return is_constructible_v<decay_t<_Fn>, initializer_list<_Ux>, _CTypes...>;
+    }
 
 public:
     using typename _Call::result_type;
@@ -1492,7 +1509,7 @@ public:
     }
     move_only_function(move_only_function&&) noexcept = default;
 
-    template <class _Fn>
+    template <class _Fn, enable_if_t<_Enable_one_arg_constructor<_Fn>(), int> = 0>
     move_only_function(_Fn&& _Callable) {
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>);
@@ -1504,7 +1521,23 @@ public:
             }
         }
 
-        this->_Construct_with_fn<_Vt>(_STD forward<_Fn>(_Callable));
+        this->template _Construct_with_fn<_Vt, _Vt&>(_STD forward<_Fn>(_Callable));
+    }
+
+    template <class _Fn, class... _CTypes, enable_if_t<_Enable_in_place_constructor<_Fn>(), int> = 0>
+    move_only_function(in_place_type_t<_Fn>, _CTypes&&... _Args) {
+        using _Vt = decay_t<_Fn>;
+        static_assert(is_same_v<_Vt,_Fn>);
+
+        this->template _Construct_with_fn<_Vt, _Vt&>(_STD forward<_CTypes>(_Args)...);
+    }
+
+    template <class _Fn, class _Ux, class... _CTypes, enable_if_t<_Enable_in_place_list_constructor<_Fn, _Ux>(), int> = 0>
+    move_only_function(in_place_type_t<_Fn>, initializer_list<_Ux> _Li, _CTypes&&... _Args) {
+        using _Vt = decay_t<_Fn>;
+        static_assert(is_same_v<_Vt,_Fn>);
+
+        this->template _Construct_with_fn<_Vt, _Vt&>(_Li, _STD forward<_CTypes>(_Args)...);
     }
 
     _NODISCARD explicit operator bool() const noexcept {
