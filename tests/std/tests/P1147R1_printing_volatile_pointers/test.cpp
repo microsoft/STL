@@ -8,7 +8,7 @@
 using namespace std;
 
 template <typename T>
-std::string getTextValue(T* ptr) {
+string getTextValue(T* ptr) {
     ostringstream out;
     out << ptr;
     return out.str();
