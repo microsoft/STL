@@ -1408,7 +1408,6 @@ public:
 
     template <class _Vt, class _VtInvQuals>
     _NODISCARD static constexpr _Impl_t _Create_impl() noexcept {
-
         _Impl_t _Impl{};
         if constexpr (_Large_function_engaged<_Vt>()) {
             _Impl._Invoke = _Function_invoke_large<_Vt, _VtInvQuals, _Rx, _Types...>;
@@ -1525,7 +1524,7 @@ public:
     }
 
     template <class _Fn, class... _CTypes, enable_if_t<_Enable_in_place_constructor<_Fn>(), int> = 0>
-    move_only_function(in_place_type_t<_Fn>, _CTypes&&... _Args) {
+    explicit move_only_function(in_place_type_t<_Fn>, _CTypes&&... _Args) {
         using _Vt = decay_t<_Fn>;
         static_assert(is_same_v<_Vt, _Fn>);
 
@@ -1534,11 +1533,27 @@ public:
 
     template <class _Fn, class _Ux, class... _CTypes,
         enable_if_t<_Enable_in_place_list_constructor<_Fn, _Ux>(), int> = 0>
-    move_only_function(in_place_type_t<_Fn>, initializer_list<_Ux> _Li, _CTypes&&... _Args) {
+    explicit move_only_function(in_place_type_t<_Fn>, initializer_list<_Ux> _Li, _CTypes&&... _Args) {
         using _Vt = decay_t<_Fn>;
         static_assert(is_same_v<_Vt, _Fn>);
 
         this->template _Construct_with_fn<_Vt, _Vt&>(_Li, _STD forward<_CTypes>(_Args)...);
+    }
+
+    move_only_function& operator=(move_only_function&& _Other) {
+        move_only_function(_STD move(_Other)).swap(*this);
+        return *this;
+    }
+    
+    move_only_function& operator=(nullptr_t) noexcept {
+        this->_Get_impl()->_Destroy();
+        this->_Construct_with_null();
+    }
+
+    template <class _Fn>
+    move_only_function& operator=(_Fn&& _Callable) {
+        move_only_function(_STD forward(_Callable)).swap(*this);
+        return *this;
     }
 
     _NODISCARD explicit operator bool() const noexcept {
@@ -1546,6 +1561,14 @@ public:
     }
 
     using _Call::operator();
+    
+    void swap(move_only_function&) noexcept {
+        _CSTD abort();
+    }
+
+    friend void swap(move_only_function& _Fn1, move_only_function& _Fn2) noexcept {
+        _Fn1.swap(_Fn2);
+    }
 
     _NODISCARD friend bool operator==(const move_only_function& _This, nullptr_t) noexcept {
         return _This._Is_null();
