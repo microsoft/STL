@@ -72,7 +72,7 @@ struct instantiator {
 
             basic_borrowed_range wrapped_haystack2{haystack};
             basic_borrowed_range wrapped_wrong_needle{wrong_needle};
-            const same_as<bool> auto no_match = starts_with(begin(wrapped_haystack), end(wrapped_haystack),
+            const same_as<bool> auto no_match = starts_with(begin(wrapped_haystack2), end(wrapped_haystack2),
                 begin(wrapped_wrong_needle), end(wrapped_wrong_needle), equal_to{}, get_first, get_second);
             assert(!no_match);
 
@@ -92,7 +92,7 @@ struct instantiator {
             basic_borrowed_range wrapped_short_haystack{short_haystack};
             basic_borrowed_range wrapped_needle2{needle};
             const same_as<bool> auto unreachable_needle =
-                starts_with(begin(wrapped_short_haystack), end(wrapped_short_haystack), begin(wrapped_needle),
+                starts_with(begin(wrapped_short_haystack), end(wrapped_short_haystack), begin(wrapped_needle2),
                     unreachable_sentinel, equal_to{}, get_first, get_second);
             assert(!unreachable_needle);
         }
