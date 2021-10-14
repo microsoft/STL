@@ -1694,7 +1694,7 @@ private:
         _Call::template _Is_callable_from<decay_t<_Fn>>;
 
     template <class _Fn, class _Ux, class... _CTypes>
-    static constexpr bool _Enable_in_place_list_constructor = 
+    static constexpr bool _Enable_in_place_list_constructor =
         is_constructible_v<decay_t<_Fn>, initializer_list<_Ux>, _CTypes...> &&
         _Call::template _Is_callable_from<decay_t<_Fn>>;
     // clang-format on
