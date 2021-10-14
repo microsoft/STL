@@ -1483,7 +1483,95 @@ class _Move_only_function_call<_Rx(_Types...)> : public _Move_only_function_base
 public:
     using result_type = _Rx;
 
+    template <class _Vt>
+    using _VtInvQuals = _Vt&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from =
+        is_invocable_r_v<_Rx, _Vt, _Types...>&& is_invocable_r_v<_Rx, _Vt&, _Types...>;
+
     _Rx operator()(_Types&&... _Args) {
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...)&> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    template <class _Vt>
+    using _VtInvQuals = _Vt&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt&, _Types...>;
+
+    _Rx operator()(_Types&&... _Args) & {
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...) &&> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    template <class _Vt>
+    using _VtInvQuals = _Vt&&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt&&, _Types...>;
+
+    _Rx operator()(_Types&&... _Args) && {
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...) const> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    template <class _Vt>
+    using _VtInvQuals = _Vt const&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from =
+        is_invocable_r_v<_Rx, _Vt const, _Types...>&& is_invocable_r_v<_Rx, _Vt const&, _Types...>;
+
+    _Rx operator()(_Types&&... _Args) const {
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...) const&> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    template <class _Vt>
+    using _VtInvQuals = _Vt const&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt const&, _Types...>;
+
+    _Rx operator()(_Types&&... _Args) const& {
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...) const&&> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    template <class _Vt>
+    using _VtInvQuals = _Vt const&&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt const&&, _Types...>;
+
+    _Rx operator()(_Types&&... _Args) const&& {
         return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1494,7 +1582,95 @@ class _Move_only_function_call<_Rx(_Types...) noexcept> : public _Move_only_func
 public:
     using result_type = _Rx;
 
+    template <class _Vt>
+    using _VtInvQuals = _Vt&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from =
+        is_nothrow_invocable_r_v<_Rx, _Vt, _Types...>&& is_nothrow_invocable_r_v<_Rx, _Vt&, _Types...>;
+
     _Rx operator()(_Types&&... _Args) noexcept {
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...)& noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    template <class _Vt>
+    using _VtInvQuals = _Vt&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt&, _Types...>;
+
+    _Rx operator()(_Types&&... _Args) & noexcept {
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...)&& noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    template <class _Vt>
+    using _VtInvQuals = _Vt&&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt&&, _Types...>;
+
+    _Rx operator()(_Types&&... _Args) && noexcept {
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...) const noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    template <class _Vt>
+    using _VtInvQuals = _Vt const&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from =
+        is_nothrow_invocable_r_v<_Rx, _Vt const, _Types...>&& is_nothrow_invocable_r_v<_Rx, _Vt const&, _Types...>;
+
+    _Rx operator()(_Types&&... _Args) const noexcept {
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...) const& noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    template <class _Vt>
+    using _VtInvQuals = _Vt const&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt const&, _Types...>;
+
+    _Rx operator()(_Types&&... _Args) const& noexcept {
+        return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
+    }
+};
+
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...) const&& noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+public:
+    using result_type = _Rx;
+
+    template <class _Vt>
+    using _VtInvQuals = _Vt const&&;
+
+    template <class _Vt>
+    static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt const&&, _Types...>;
+
+    _Rx operator()(_Types&&... _Args) const&& noexcept {
         return this->_Get_impl()->_Invoke(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1505,22 +1681,23 @@ class move_only_function : private _Move_only_function_call<_Fx> {
 private:
     using _Call = _Move_only_function_call<_Fx>;
 
+    // clang-format off
     template <class _Fn>
-    static constexpr bool _Enable_one_arg_constructor() {
-        return !is_same_v<_Remove_cvref_t<_Fn>, move_only_function> && //
-               !_Is_specialization_v<_Remove_cvref_t<_Fn>, in_place_type_t>;
-    }
+    static constexpr bool _Enable_one_arg_constructor =
+        !is_same_v<_Remove_cvref_t<_Fn>, move_only_function> &&
+        !_Is_specialization_v<_Remove_cvref_t<_Fn>, in_place_type_t> &&
+        _Call::template _Is_callable_from<decay_t<_Fn>>;
 
     template <class _Fn, class... _CTypes>
-    static constexpr bool _Enable_in_place_constructor() {
-        return is_constructible_v<decay_t<_Fn>, _CTypes...>;
-    }
+    static constexpr bool _Enable_in_place_constructor =
+        is_constructible_v<decay_t<_Fn>, _CTypes...> &&
+        _Call::template _Is_callable_from<decay_t<_Fn>>;
 
     template <class _Fn, class _Ux, class... _CTypes>
-    static constexpr bool _Enable_in_place_list_constructor() {
-        return is_constructible_v<decay_t<_Fn>, initializer_list<_Ux>, _CTypes...>;
-    }
-
+    static constexpr bool _Enable_in_place_list_constructor = 
+        is_constructible_v<decay_t<_Fn>, initializer_list<_Ux>, _CTypes...> &&
+        _Call::template _Is_callable_from<decay_t<_Fn>>;
+    // clang-format on
 public:
     using typename _Call::result_type;
 
@@ -1532,7 +1709,7 @@ public:
     }
     move_only_function(move_only_function&&) noexcept = default;
 
-    template <class _Fn, enable_if_t<_Enable_one_arg_constructor<_Fn>(), int> = 0>
+    template <class _Fn, enable_if_t<_Enable_one_arg_constructor<_Fn>, int> = 0>
     move_only_function(_Fn&& _Callable) {
         using _Vt = decay_t<_Fn>;
         static_assert(is_constructible_v<_Vt, _Fn>);
@@ -1544,24 +1721,26 @@ public:
             }
         }
 
-        this->template _Construct_with_fn<_Vt, _Vt&>(_STD forward<_Fn>(_Callable));
+        using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
+        this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_Fn>(_Callable));
     }
 
-    template <class _Fn, class... _CTypes, enable_if_t<_Enable_in_place_constructor<_Fn>(), int> = 0>
+    template <class _Fn, class... _CTypes, enable_if_t<_Enable_in_place_constructor<_Fn>, int> = 0>
     explicit move_only_function(in_place_type_t<_Fn>, _CTypes&&... _Args) {
         using _Vt = decay_t<_Fn>;
         static_assert(is_same_v<_Vt, _Fn>);
 
-        this->template _Construct_with_fn<_Vt, _Vt&>(_STD forward<_CTypes>(_Args)...);
+        using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
+        this->template _Construct_with_fn<_Vt, _VtInvQuals>(_STD forward<_CTypes>(_Args)...);
     }
 
-    template <class _Fn, class _Ux, class... _CTypes,
-        enable_if_t<_Enable_in_place_list_constructor<_Fn, _Ux>(), int> = 0>
+    template <class _Fn, class _Ux, class... _CTypes, enable_if_t<_Enable_in_place_list_constructor<_Fn, _Ux>, int> = 0>
     explicit move_only_function(in_place_type_t<_Fn>, initializer_list<_Ux> _Li, _CTypes&&... _Args) {
         using _Vt = decay_t<_Fn>;
         static_assert(is_same_v<_Vt, _Fn>);
 
-        this->template _Construct_with_fn<_Vt, _Vt&>(_Li, _STD forward<_CTypes>(_Args)...);
+        using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
+        this->template _Construct_with_fn<_Vt, _VtInvQuals>(_Li, _STD forward<_CTypes>(_Args)...);
     }
 
     move_only_function& operator=(nullptr_t) noexcept {
