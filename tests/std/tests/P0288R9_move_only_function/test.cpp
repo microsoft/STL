@@ -120,7 +120,7 @@ void test_impl(Args... args) {
 
         if constexpr (is_class_v<F>) {
             counter::copies = 0;
-            counter::moves = 0;
+            counter::moves  = 0;
         }
         test_function_t constructed_in_place(in_place_type<F>, args...);
         assert(constructed_in_place(23, x) == 38);
