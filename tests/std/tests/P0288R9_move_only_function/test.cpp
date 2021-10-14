@@ -177,6 +177,8 @@ void test_assign() {
         assert(f2(23, x) == 38);
         f1 = large_callable{};
         assert(f1(23, x) == 39);
+        f1 = std::move(f1);
+        assert(f1(23, x) == 39);
     }
 
     {
@@ -185,6 +187,8 @@ void test_assign() {
         f2 = std::move(f1);
         assert(f2(23, x) == 39);
         f1 = small_callable{};
+        assert(f1(23, x) == 38);
+        f1 = std::move(f1);
         assert(f1(23, x) == 38);
     }
 

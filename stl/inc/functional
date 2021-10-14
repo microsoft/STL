@@ -1571,7 +1571,9 @@ public:
 
     move_only_function& operator=(move_only_function&& _Other) {
         // GH-2278 - not implementing using swap as Standard asks for
-        this->_Move_assign(_STD move(_Other));
+        if (this != &_Other) {
+            this->_Move_assign(_STD move(_Other));
+        }
         return *this;
     }
 
