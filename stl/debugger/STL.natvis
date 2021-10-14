@@ -1932,6 +1932,32 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
+  <Type Name="std::ranges::view_interface&lt;*&gt;">
+    <DisplayString>{{ size={size()} }}</DisplayString>
+    <Expand>
+      <Item Optional="true" Name="empty">empty()</Item>
+      <Item Optional="true" Name="front">front()</Item>
+      <Item Optional="true" Name="back">back()</Item>
+      <Item Optional="true" Name="data">data()</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::ranges::dangling">
+    <DisplayString>dangling</DisplayString>
+  </Type>
+
+  <Type Name="std::ranges::common_view&lt;*&gt;">
+    <DisplayString>{_Base}</DisplayString>
+  </Type>
+
+  <Type Name="std::ranges::istream_view&lt;*&gt;">
+    <AlternativeType Name="std::ranges::basic_istream_view&lt;*&gt;"/>
+    <DisplayString>{_Stream}</DisplayString>
+    <Expand>
+      <Item Name="Val">_Val</Item>
+    </Expand>
+  </Type>
+
   <Type Name="std::ranges::_Ioterator&lt;*&gt;">
     <SmartPointer Usage="Minimal">&amp;_Current,na</SmartPointer>
     <Expand>
@@ -1946,10 +1972,26 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::ranges::ref_view&lt;*&gt;">
-    <DisplayString>{*_Range}</DisplayString>
+  <Type Name="std::ranges::take_while_view&lt;*&gt;">
+    <AlternativeType Name="std::ranges::drop_while_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::drop_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::join_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::transform_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::split_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::lazy_split_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::reverse_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::elements_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::keys_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::values_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::take_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::ref_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::filter_view&lt;*&gt;"/>
+    <DisplayString>{_Range}</DisplayString>
     <Expand>
-      <ExpandedItem>*_Range</ExpandedItem>
+      <Item Optional="true" Name="Pred">_Pred</Item>
+      <Item Optional="true" Name="Count">_Count</Item>
+      <Item Optional="true" Name="Fun">_Fun</Item>
+      <Item Optional="true" Name="Pattern">_Pattern</Item>
     </Expand>
   </Type>
 
