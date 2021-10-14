@@ -404,11 +404,7 @@ constexpr bool test_case_iterators() {
     assert(*testIterator == static_cast<CharT>('h'));
     testIterator += 8;
     assert(*testIterator == static_cast<CharT>('r'));
-#if defined(__EDG__) && defined(_M_X64) // TRANSITION, VSO-1356637
-    testIterator -= 4;
-#else // ^^^ workaround / no workaround vvv
     testIterator += -4;
-#endif // ^^^ no workaround ^^^
     assert(*testIterator == static_cast<CharT>('o'));
 
     assert(*(testIterator + 6) == static_cast<CharT>('d'));

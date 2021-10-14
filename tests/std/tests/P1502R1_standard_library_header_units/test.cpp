@@ -576,12 +576,14 @@ int main() {
         assert(lcg() == 1043618065); // N4868 [rand.predef]/1
     }
 
+#ifndef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1409853 (internal compiler assertion, doesn't affect public releases)
     {
         puts("Testing <ranges>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
         assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
         static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
     }
+#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <ratio>.");
@@ -709,7 +711,7 @@ int main() {
             assert(read == expected);
         }
 
-#if 0 // TRANSITION, DevCom-1511903
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1511903
         const char const_buffer[] = "1 2 3 4 5";
         basic_ispanstream<char> is_const_buffer{span<const char>{const_buffer}};
         read = 0;
