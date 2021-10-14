@@ -167,6 +167,12 @@ void test_construct_impl(int expect, Args... args) {
     }
 }
 
+#ifdef __clang__
+// deliberate self-move as a test case
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-move"
+#endif
+
 void test_assign() {
     pass_this_by_ref x{63};
 
@@ -210,6 +216,10 @@ void test_assign() {
         assert(f1(23, x) == 41);
     }
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 void test_swap() {
     pass_this_by_ref x{63};
