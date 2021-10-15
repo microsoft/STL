@@ -2237,10 +2237,12 @@ namespace ranges {
             auto _ULast1       = _Get_unwrapped(_STD move(_Last1));
             auto _UFirst2      = _Get_unwrapped(_STD move(_First2));
             const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (sized_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
+            if constexpr (_Sized_or_unreachable_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
                 const iter_difference_t<_It2> _Count2 = _ULast2 - _UFirst2;
-                if (_Count2 > _ULast1 - _UFirst1) {
-                    return false;
+                if constexpr (sized_sentinel_for<_Se1, _It1>) {
+                    if (_Count2 > _ULast1 - _UFirst1) {
+                        return false;
+                    }
                 }
 
                 return _RANGES _Equal_count(_STD move(_UFirst1), _STD move(_UFirst2),
@@ -2259,10 +2261,12 @@ namespace ranges {
         _NODISCARD constexpr bool operator()(
                 _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             // clang-format on
-            if constexpr (sized_range<_Rng1> && sized_range<_Rng2>) {
+            if constexpr (_Sized_or_infinite_range<_Rng1> && sized_range<_Rng2>) {
                 const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
-                if (_Count2 > _RANGES distance(_Range1)) {
-                    return false;
+                if constexpr (sized_range<_Rng1>) {
+                    if (_Count2 > _RANGES distance(_Range1)) {
+                        return false;
+                    }
                 }
 
                 return _RANGES _Equal_count(_Ubegin(_Range1), _Ubegin(_Range2),
