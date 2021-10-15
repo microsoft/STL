@@ -1312,12 +1312,12 @@ inline void _Function_deallocate_large_overaligned(_Move_only_function_data& _Se
 
 template <class _Vt>
 inline void _Function_destroy_large(_Move_only_function_data& _Self) noexcept {
-    const auto* _Pfn = _Self._Large_fn_ptr<_Vt>();
+    auto* _Pfn = _Self._Large_fn_ptr<_Vt>();
     _Pfn->~_Vt();
     if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        ::operator delete(_Pfn);
+        ::operator delete(static_cast<void*>(_Pfn));
     } else {
-        ::operator delete (_Pfn, align_val_t{alignof(_Vt)});
+        ::operator delete (static_cast<void*>(_Pfn), align_val_t{alignof(_Vt)});
     }
 }
 
