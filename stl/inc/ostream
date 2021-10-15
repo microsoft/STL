@@ -457,7 +457,7 @@ public:
 #if _HAS_CXX23
     template <class = void> // TRANSITION, ABI
     basic_ostream& operator<<(const volatile void* _Val) {
-        return *this << (const_cast<const void*>(_Val));
+        return *this << const_cast<const void*>(_Val);
     }
 #endif // _HAS_CXX23
 
