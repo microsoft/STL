@@ -1244,30 +1244,9 @@ union alignas(max_align_t) _Move_only_function_data {
 };
 
 template <class _Rx, class... _Types>
-struct _Move_only_function_impl { // per-callable-type structure acting as a virtual function table
-    // using vtable emulations gives more flexibility for optimizations and reduces the need for RTTIs
-    // (RTTI saving may be significant as with lambdas and binds there may be a lot of distinct callable types,
-    //  we don't have distinct wrapper class type for each callable type, only distinct functions when needed)
-
-    // Calls target
-    _Rx (*_Invoke)(_Move_only_function_data&, _Types&&...);
-    // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable")
-    void (*_Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
-    // Destroys data (not resetting its "vtable")
-    void (*_Destroy)(_Move_only_function_data&) _NOEXCEPT_FNPTR;
-};
-
-template <class _Rx, class... _Types>
 [[noreturn]] _Rx _Function_no_callable(_Move_only_function_data&, _Types&&...) noexcept {
     _CSTD abort(); // We are not std::function to throw bad_function_call
 }
-
-template <class _Rx, class... _Types>
-inline constexpr _Move_only_function_impl<_Rx, _Types...> _Null_move_only_function = {
-    _Function_no_callable<_Rx, _Types...>,
-    nullptr,
-    nullptr,
-};
 
 template <class _Vt, class _VtInvQuals, class _Rx, class... _Types>
 _NODISCARD inline _Rx _Function_invoke_small(_Move_only_function_data& _Self, _Types&&... _Args) {
@@ -1325,8 +1304,8 @@ inline constexpr size_t _Function_small_copy_size = // We copy Impl* and and fun
     _Move_only_function_data::_Buf_offset<_Vt> + // Impl* plus possible alignment
     (size_t{sizeof(_Vt) + sizeof(void*) - 1} & ~size_t{sizeof(void*) - 1}); // size in whole pointers
 
-template <class _Vt, class... _Types>
-_NODISCARD void* _Function_new_large(_Types&&... _Args) {
+template <class _Vt, class... _CTypes>
+inline _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
     struct _NODISCARD _Guard_type {
         void* _Ptr;
 
@@ -1354,7 +1333,25 @@ _NODISCARD void* _Function_new_large(_Types&&... _Args) {
 template <class _Rx, class... _Types>
 class _Move_only_function_base {
 public:
-    using _Impl_t = _Move_only_function_impl<_Rx, _Types...>;
+    struct _Impl_t { // per-callable-type structure acting as a virtual function table
+        // using vtable emulations gives more flexibility for optimizations and reduces the need for RTTIs
+        // (RTTI saving may be significant as with lambdas and binds there may be a lot of distinct callable types,
+        //  we don't have distinct wrapper class type for each callable type, only distinct functions when needed)
+
+        // Calls target
+        _Rx (*_Invoke)(_Move_only_function_data&, _Types&&...);
+        // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable")
+        void (*_Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
+        // Destroys data (not resetting its "vtable")
+        void (*_Destroy)(_Move_only_function_data&) _NOEXCEPT_FNPTR;
+    };
+
+    static constexpr _Impl_t _Null_move_only_function = {
+        _Function_no_callable<_Rx, _Types...>,
+        nullptr,
+        nullptr,
+    };
+
     _Move_only_function_data _Data;
 
     _Move_only_function_base() noexcept = default; // leaves fields uninitialized
@@ -1365,12 +1362,12 @@ public:
     }
 
     void _Construct_with_null() noexcept {
-        _Data._Impl = &_Null_move_only_function<_Rx, _Types...>;
+        _Data._Impl = &_Null_move_only_function;
         _Data._Set_large_fn_ptr(nullptr); // initialize, since we'll be copying it
     }
 
     void _Reset_to_null() noexcept {
-        _Data._Impl = &_Null_move_only_function<_Rx, _Types...>;
+        _Data._Impl = &_Null_move_only_function;
     }
 
     template <class _Vt, class _VtInvQuals, class... _CTypes>
@@ -1420,7 +1417,7 @@ public:
     }
 
     _NODISCARD bool _Is_null() const noexcept {
-        return _Data._Impl == &_Null_move_only_function<_Rx, _Types...>;
+        return _Data._Impl == &_Null_move_only_function;
     }
 
     template <class _Vt>
