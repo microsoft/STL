@@ -1326,7 +1326,7 @@ inline _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
     } else {
         _Guard._Ptr = ::operator new (sizeof(_Vt), align_val_t{alignof(_Vt)});
     }
-    ::new (_Guard._Ptr) _Vt(_STD forward<_Types>(_Args)...);
+    ::new (_Guard._Ptr) _Vt(_STD forward<_CTypes>(_Args)...);
     return _STD exchange(_Guard._Ptr, nullptr);
 }
 
