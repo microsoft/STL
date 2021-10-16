@@ -570,9 +570,10 @@ public:
             return *this;
         }
 
-        _Alty& _Al       = _Getal();
-        _Alty& _Right_al = _Right._Getal();
-        if constexpr (_Choose_pocma_v<_Alty> == _Pocma_values::_No_propagate_allocators) {
+        _Alty& _Al                = _Getal();
+        _Alty& _Right_al          = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alty>;
+        if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
             if (_Al != _Right_al) {
                 _Move_assign_unequal_alloc(_Right);
                 return *this;
@@ -581,7 +582,7 @@ public:
 
         _Tidy();
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (_Choose_pocma_v<_Alty> == _Pocma_values::_Propagate_allocators) {
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
             if (_Al != _Right_al) {
                 // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
                 _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
@@ -1076,22 +1077,22 @@ public:
         _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
     }
 
-
 public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
 
+        auto& _Al       = _Getal();
+        auto& _Right_al = _Right._Getal();
         if constexpr (_Choose_pocca_v<_Alty>) {
-            if (_Getal() != _Right._Getal()) {
+            if (_Al != _Right_al) {
                 _Tidy();
-                _Mypair._Myval2._Reload_proxy(
-                    _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
+                _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
             }
         }
 
-        _Pocca(_Getal(), _Right._Getal());
+        _Pocca(_Al, _Right_al);
         auto& _Right_data = _Right._Mypair._Myval2;
         assign(_Right_data._Myfirst, _Right_data._Mylast);
 
@@ -2485,13 +2486,15 @@ public:
         this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
         this->_Orphan_all();
+        auto& _Al = this->_Getal();
+        auto& _Right_al = _Right._Getal();
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alvbase>;
         if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
             using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
-            if (this->_Getal() != _Right._Getal()) { // reload proxy
+            if (_Al != _Right_al) { // reload proxy
                 // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
-                _Alproxy_type _Oldal(this->_Getal());
-                _Alproxy_type _Right_proxy_al(_Right._Getal());
+                _Alproxy_type _Oldal(_Al);
+                _Alproxy_type _Right_proxy_al(_Right_al);
                 _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
                 this->_Myvec = _STD move(_Right._Myvec);
                 this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
@@ -2507,7 +2510,7 @@ public:
                 _Right._Mysize = 0;
             }
 
-            if (this->_Getal() == _Right._Getal()) {
+            if (_Al == _Right_al) {
                 this->_Swap_proxy_and_iterators(_Right);
             }
             return *this;
@@ -2567,12 +2570,14 @@ public:
         this->_Mysize = _Right._Mysize;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
         this->_Orphan_all();
+        auto& _Al = this->_Getal();
+        auto& _Right_al = _Right._Getal();
         if constexpr (_Choose_pocca_v<_Alvbase>) {
-            if (this->_Getal() != _Right._Getal()) {
+            if (_Al != _Right_al) {
                 // reload proxy
                 using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
-                _Alproxy_type _Oldal(this->_Getal());
-                _Alproxy_type _Right_proxy_al(_Right._Getal());
+                _Alproxy_type _Oldal(_Al);
+                _Alproxy_type _Right_proxy_al(_Right_al);
                 _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
                 this->_Myvec = _Right._Myvec;
                 this->_Mysize = _Right._Mysize;

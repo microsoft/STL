@@ -472,31 +472,43 @@ private:
         }
     };
 
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+    struct _NODISCARD _Check_container_invariants_guard {
+        const _Hash& _Target;
+
+        explicit _Check_container_invariants_guard(const _Hash& _Target_) : _Target(_Target_) {}
+
+        _Check_container_invariants_guard(const _Check_container_invariants_guard&) = delete;
+        _Check_container_invariants_guard& operator=(const _Check_container_invariants_guard&) = delete;
+
+        ~_Check_container_invariants_guard() {
+            _Target._Stl_internal_check_container_invariants();
+        }
+    };
+#endif // _ENABLE_STL_INTERNAL_CHECK
+
 public:
     _Hash& operator=(_Hash&& _Right) { // assign by moving _Right
         if (this == _STD addressof(_Right)) {
             return *this;
         }
 
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+        _Check_container_invariants_guard _Check_self{*this};
+        _Check_container_invariants_guard _Check_right{_Right};
+#endif // _ENABLE_STL_INTERNAL_CHECK
+
+        auto& _Al                 = _Getal();
+        auto& _Right_al           = _Right._Getal();
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
-        if constexpr (_Pocma_val == _Pocma_values::_Equal_allocators) {
-            clear();
-            _Traitsobj = _Right._Traitsobj;
-            _Pocma_both(_Right);
-            _Swap_val(_Right);
-        } else if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
-            if (_Getal() == _Right._Getal()) {
-                clear();
-                _Traitsobj = _Right._Traitsobj;
-                _Pocma_both(_Right);
-                _Swap_val(_Right);
-            } else {
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
+            if (_Al != _Right_al) {
                 // allocate all the parts necessary to maintain _Hash invariants using _Right's allocator
-                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
-                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal());
+                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
+                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
                 _Container_proxy_ptr<_Alnode> _List_proxy(_Right_alproxy, _Leave_proxy_unbound{});
                 _Container_proxy_ptr<_Alnode> _Vec_proxy(_Right_alproxy, _Leave_proxy_unbound{});
-                _List_head_construct_ptr<_Alnode> _Newhead(_Right._Getal());
+                _List_head_construct_ptr<_Alnode> _Newhead(_Right_al);
                 _Min_buckets_construct_ptr _Buckets(_Right._Vec._Mypair._Get_first());
 
                 // assign the hash/compare ops; we have no control over whether this throws, and if it does we want
@@ -534,14 +546,11 @@ public:
                 // give _Right the default _Mask and _Maxidx values and take its former values
                 _Mask   = _STD exchange(_Right._Mask, _Min_buckets - 1);
                 _Maxidx = _STD exchange(_Right._Maxidx, _Min_buckets);
+
+                return *this;
             }
-        } else {
-            if (_Getal() == _Right._Getal()) {
-                clear();
-                _Traitsobj = _Right._Traitsobj;
-                _Pocma_both(_Right);
-                _Swap_val(_Right);
-            } else {
+        } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            if (_Al != _Right_al) {
                 _Clear_guard _Guard{this};
                 _Traitsobj     = _Right._Traitsobj;
                 using _Adapter = _Reinterpret_move_iter<typename _Mylist::_Unchecked_iterator, _Mutable_value_type>;
@@ -549,13 +558,15 @@ public:
                     _Adapter{_Right._List._Unchecked_begin()}, _Adapter{_Right._List._Unchecked_end()});
                 _Reinsert_with_invalid_vec();
                 _Guard._Target = nullptr;
+
+                return *this;
             }
         }
 
-#ifdef _ENABLE_STL_INTERNAL_CHECK
-        _Stl_internal_check_container_invariants();
-        _Right._Stl_internal_check_container_invariants();
-#endif // _ENABLE_STL_INTERNAL_CHECK
+        clear();
+        _Traitsobj = _Right._Traitsobj;
+        _Pocma_both(_Right);
+        _Swap_val(_Right);
 
         return *this;
     }
@@ -719,18 +730,15 @@ public:
             return *this;
         }
 
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+        _Check_container_invariants_guard _Check_self{*this};
+        _Check_container_invariants_guard _Check_right{_Right};
+#endif // _ENABLE_STL_INTERNAL_CHECK
+
         if constexpr (_Choose_pocca_v<_Alnode>) {
             auto& _Al             = _Getal();
             const auto& _Right_al = _Right._Getal();
-            if (_Al == _Right_al) {
-                _Clear_guard _Guard{this};
-                _Traitsobj = _Right._Traitsobj;
-                _Pocca_both(_Right);
-                _List.template _Assign_cast<_Mutable_value_type&>(
-                    _Right._List._Unchecked_begin(), _Right._List._Unchecked_end());
-                _Reinsert_with_invalid_vec();
-                _Guard._Target = nullptr;
-            } else {
+            if (_Al != _Right_al) {
                 auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
                 auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
                 _Container_proxy_ptr<_Alnode> _Vec_proxy(_Right_alproxy, _Leave_proxy_unbound{});
@@ -745,21 +753,18 @@ public:
                     _Right._List._Unchecked_begin(), _Right._List._Unchecked_end());
                 _Reinsert_with_invalid_vec();
                 _Guard._Target = nullptr;
+
+                return *this;
             }
-        } else {
-            _Clear_guard _Guard{this};
-            _Traitsobj = _Right._Traitsobj;
-            _Pocca_both(_Right);
-            _List.template _Assign_cast<_Mutable_value_type&>(
-                _Right._List._Unchecked_begin(), _Right._List._Unchecked_end());
-            _Reinsert_with_invalid_vec();
-            _Guard._Target = nullptr;
         }
 
-#ifdef _ENABLE_STL_INTERNAL_CHECK
-        _Stl_internal_check_container_invariants();
-        _Right._Stl_internal_check_container_invariants();
-#endif // _ENABLE_STL_INTERNAL_CHECK
+        _Clear_guard _Guard{this};
+        _Traitsobj = _Right._Traitsobj;
+        _Pocca_both(_Right);
+        _List.template _Assign_cast<_Mutable_value_type&>(
+            _Right._List._Unchecked_begin(), _Right._List._Unchecked_end());
+        _Reinsert_with_invalid_vec();
+        _Guard._Target = nullptr;
 
         return *this;
     }

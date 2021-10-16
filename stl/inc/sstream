@@ -205,9 +205,10 @@ public:
     }
 
     void str(_Mystr&& _Newstr) {
+        auto& _Newstr_al          = _Newstr._Getal();
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alloc>;
         if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
-            if (_Al != _Newstr._Getal()) {
+            if (_Al != _Newstr_al) {
                 _Tidy();
                 _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
                 return;
@@ -215,7 +216,7 @@ public:
         }
 
         _Tidy();
-        _Pocma(_Al, _Newstr._Getal());
+        _Pocma(_Al, _Newstr_al);
         _Init_string_inplace(_STD move(_Newstr), _Mystate);
     }
 

@@ -943,20 +943,22 @@ public:
             return *this;
         }
 
+        auto& _Al                 = _Getal();
+        auto& _Right_al           = _Right._Getal();
         constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
         if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
-            if (_Getal() != _Right._Getal()) {
+            if (_Al != _Right_al) {
                 clear();
                 _Getcomp()            = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
-                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
-                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal());
+                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
+                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
                 _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
                 const auto _Scary       = _Get_scary();
                 const auto _Right_scary = _Right._Get_scary();
-                const auto _Newhead     = _STD exchange(_Right_scary->_Myhead, _Node::_Buyheadnode(_Right._Getal()));
+                const auto _Newhead     = _STD exchange(_Right_scary->_Myhead, _Node::_Buyheadnode(_Right_al));
                 const auto _Newsize     = _STD exchange(_Right_scary->_Mysize, size_type{0});
-                _Scary->_Erase_head(_Getal());
-                _Pocma(_Getal(), _Right._Getal());
+                _Scary->_Erase_head(_Al);
+                _Pocma(_Al, _Right_al);
                 _Scary->_Myhead = _Newhead;
                 _Scary->_Mysize = _Newsize;
                 _Proxy._Bind(_Alproxy, _Scary);
@@ -964,7 +966,7 @@ public:
                 return *this;
             }
         } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
-            if (_Getal() != _Right._Getal()) {
+            if (_Al != _Right_al) {
                 clear();
                 _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
                 _Copy(_Right, _Move_tag{});
@@ -974,7 +976,7 @@ public:
 
         clear();
         _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
-        _Pocma(_Getal(), _Right._Getal());
+        _Pocma(_Al, _Right_al);
         _Swap_val_excluding_comp(_Right);
 
         return *this;
@@ -1091,14 +1093,14 @@ public:
             return *this;
         }
 
+        auto& _Al       = _Getal();
+        auto& _Right_al = _Right._Getal();
         if constexpr (_Choose_pocca_v<_Alnode>) {
-            if (_Getal() != _Right._Getal()) {
+            if (_Al != _Right_al) {
                 clear();
                 const auto _Scary = _Get_scary();
                 _Scary->_Orphan_all();
-                auto& _Al             = _Getal();
                 auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
-                const auto& _Right_al = _Right._Getal();
                 auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
                 _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
                 auto _Right_al_non_const = _Right_al;
@@ -1115,7 +1117,7 @@ public:
 
         clear();
         _Getcomp() = _Right._Getcomp();
-        _Pocca(_Getal(), _Right._Getal());
+        _Pocca(_Al, _Right_al);
         _Copy(_Right, _Copy_tag{});
 
         return *this;
