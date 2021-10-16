@@ -1305,7 +1305,7 @@ inline constexpr size_t _Function_small_copy_size = // We copy Impl* and and fun
     (size_t{sizeof(_Vt) + sizeof(void*) - 1} & ~size_t{sizeof(void*) - 1}); // size in whole pointers
 
 template <class _Vt, class... _CTypes>
-inline _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
+_NODISCARD inline void* _Function_new_large(_CTypes&&... _Args) {
     struct _NODISCARD _Guard_type {
         void* _Ptr;
 
