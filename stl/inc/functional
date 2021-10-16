@@ -1287,7 +1287,7 @@ inline void _Function_move_small(_Move_only_function_data& _Self, _Move_only_fun
 }
 
 inline void _Function_move_large(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
-    _CSTD memcpy(&_Self._Data, &_Src._Data, 2*sizeof(void*)); // Copy Impl* and functor data
+    _CSTD memcpy(&_Self._Data, &_Src._Data, 2 * sizeof(void*)); // Copy Impl* and functor data
 }
 
 template <class _Vt>
