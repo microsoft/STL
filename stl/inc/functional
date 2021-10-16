@@ -1401,10 +1401,29 @@ public:
     }
 
     void _Move_assign(_Move_only_function_base&& _Other) {
-        // GH-2278 - not implementing using swap as Standard asks for
+        // As specified in P0288R9, we excepted to first move the new target, then finally destroy the old target.
+        // It is more efficient to do the reverse - this way no temporary store for old target used.
+        // In some cases when some operations are trivial, it can be optimized,
+        // as the order change is unobservable, and everything is noexcept here.
+        const auto* _That_impl_move    = static_cast<const _Impl_t*>(_Other._Data._Impl)->_Move;
+        const auto* _This_impl_destroy = static_cast<const _Impl_t*>(_Data._Impl)->_Destroy;
 
-        _Destroy(_Data);
-        _Move(_Data, _Other._Data);
+        if (!_That_impl_move) {
+            // Move is trivial, destroy first if needed
+            if (_This_impl_destroy) {
+                _This_impl_destroy(_Data);
+            }
+            _Function_move_large(_Data, _Other._Data);
+        } else if (!_This_impl_destroy) {
+            // Destroy is trivial, just move
+            _That_impl_move(_Data, _Other._Data);
+        } else {
+            // General case involving a temporary
+            _Move_only_function_data _Tmp;
+            _Move(_Tmp, _Data);
+            _That_impl_move(_Data, _Other._Data);
+            _This_impl_destroy(_Tmp);
+        }
         _Other._Reset_to_null();
     }
 
@@ -1751,7 +1770,6 @@ public:
     }
 
     move_only_function& operator=(move_only_function&& _Other) {
-        // GH-2278 - not implementing using swap as Standard asks for
         if (this != _STD addressof(_Other)) {
             this->_Move_assign(_STD move(_Other));
         }
@@ -1760,7 +1778,6 @@ public:
 
     template <class _Fn>
     move_only_function& operator=(_Fn&& _Callable) {
-        // GH-2278 - not implementing using swap as Standard asks for
         this->_Move_assign(move_only_function(_STD forward<_Fn>(_Callable)));
         return *this;
     }
