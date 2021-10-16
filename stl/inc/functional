@@ -1452,7 +1452,7 @@ public:
             _Impl._Invoke = _Function_invoke_small<_Vt, _VtInvQuals, _Rx, _Types...>;
 
             if constexpr (is_trivially_copyable_v<_Vt> && is_trivially_destructible_v<_Vt>) {
-                if constexpr ((_Function_small_copy_size<_V>) > sizeof(void*) * 2) {
+                if constexpr ((_Function_small_copy_size<_Vt>) > sizeof(void*) * 2) {
                     _Impl._Move = _Function_move_memcpy<_Function_small_copy_size<_Vt>>;
                 } else {
                     _Impl._Move = nullptr;
