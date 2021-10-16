@@ -75,6 +75,8 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
     is deterministic.
     + It's possible for previous values to change, e.g. if an issue is relabeled, but dramatic changes without
     corresponding generator changes should be investigated.
+    + Automated updates (controlled by `.github/workflows/update-status-chart.yml` in the main repo)
+    will regenerate these files, so you generally don't need to manually update them in PRs.
 * Open `index.html` to preview your changes locally.
     + If you've changed how the Status Chart uses Chart.js, open F12 Developer Tools, click on the Console tab, and
     refresh the page to verify that no warnings/errors are displayed.
