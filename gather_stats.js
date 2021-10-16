@@ -166,7 +166,7 @@ function warn_if_pagination_needed(outer_nodes, field, message) {
     const total_count = max[field].totalCount;
 
     if (retrieved < total_count) {
-        console.log(message(retrieved, total_count, max.number));
+        console.log(message(retrieved, total_count, max.id));
     }
 }
 
@@ -218,12 +218,12 @@ function transform_pr_nodes(pr_nodes) {
     warn_if_pagination_needed(
         pr_nodes,
         'labels',
-        (retrieved, total, number) => `WARNING: Retrieved ${retrieved}/${total} labels for PR #${number}.`
+        (retrieved, total, id) => `WARNING: Retrieved ${retrieved}/${total} labels for PR #${id}.`
     );
     warn_if_pagination_needed(
         pr_nodes,
         'reviews',
-        (retrieved, total, number) => `WARNING: Retrieved ${retrieved}/${total} reviews for PR #${number}.`
+        (retrieved, total, id) => `WARNING: Retrieved ${retrieved}/${total} reviews for PR #${id}.`
     );
 
     const { maintainers, contributors } = read_usernames();
@@ -246,7 +246,7 @@ function transform_pr_nodes(pr_nodes) {
 
                     if (!is_maintainer && !contributors.has(username)) {
                         contributors.add(username); // Assume that unknown users are contributors.
-                        console.log(`WARNING: Unknown user "${username}" reviewed PR #${pr_node.number}.`);
+                        console.log(`WARNING: Unknown user "${username}" reviewed PR #${pr_node.id}.`);
                     }
 
                     return is_maintainer;
@@ -254,7 +254,7 @@ function transform_pr_nodes(pr_nodes) {
                 .map(review_node => DateTime.fromISO(review_node.submittedAt));
 
             return {
-                number: pr_node.number,
+                id: pr_node.id,
                 opened: DateTime.fromISO(pr_node.createdAt),
                 closed: DateTime.fromISO(pr_node.closedAt ?? '2100-01-01'),
                 merged: DateTime.fromISO(pr_node.mergedAt ?? '2100-01-01'),
@@ -279,12 +279,12 @@ function transform_issue_nodes(issue_nodes) {
     warn_if_pagination_needed(
         issue_nodes,
         'labels',
-        (retrieved, total, number) => `WARNING: Retrieved ${retrieved}/${total} labels for issue #${number}.`
+        (retrieved, total, id) => `WARNING: Retrieved ${retrieved}/${total} labels for issue #${id}.`
     );
     return issue_nodes.map(node => {
         const labels = node.labels.nodes.map(label => label.name);
         return {
-            number: node.number,
+            id: node.id,
             opened: DateTime.fromISO(node.createdAt),
             closed: DateTime.fromISO(node.closedAt ?? '2100-01-01'),
             labeled_cxx20: labels.includes('cxx20'),
