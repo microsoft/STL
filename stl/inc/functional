@@ -1410,7 +1410,7 @@ public:
 
     static void _Move(_Move_only_function_data& _Data, _Move_only_function_data& _Src) {
         const auto* _Impl = static_cast<const _Impl_t*>(_Src._Impl);
-        _Function_move_large(_Data, _Src);
+        _Impl->Move(_Data, _Src);
     }
 
     void _Move_assign(_Move_only_function_base&& _Other) {
