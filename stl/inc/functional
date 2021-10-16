@@ -1405,8 +1405,8 @@ public:
         // It is more efficient to do the reverse - this way no temporary store for old target used.
         // In some cases when some operations are trivial, it can be optimized,
         // as the order change is unobservable, and everything is noexcept here.
-        const auto* _That_impl_move    = static_cast<const _Impl_t*>(_Other._Data._Impl)->_Move;
-        const auto* _This_impl_destroy = static_cast<const _Impl_t*>(_Data._Impl)->_Destroy;
+        auto* _That_impl_move    = static_cast<const _Impl_t*>(_Other._Data._Impl)->_Move;
+        auto* _This_impl_destroy = static_cast<const _Impl_t*>(_Data._Impl)->_Destroy;
 
         if (!_That_impl_move) {
             // Move is trivial, destroy first if needed
