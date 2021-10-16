@@ -60,6 +60,9 @@ GitHub's GraphQL API requires authentication:
 
 * Run `npm update` to check for updated dependencies. If it finds any, it'll download and locally install them, and
 it'll update `package.json` and `package-lock.json` accordingly. `git add` and `git commit` those changes.
+    + `npm update` won't install new major versions. To do that, run
+    `npm install [package1]@latest [package2]@latest [...]` for all of the packages listed
+    as `dependencies` in `package.json` (e.g. `@octokit/graphql@latest dotenv@latest`).
 * Update `weekly_table.js` by adding a new row.
     + We update it every Friday, although nothing bad will happen if we skip a week or update it on a different day.
     + `vso` is the number of Active work items under the STL's Area Path.
