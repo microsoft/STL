@@ -23,9 +23,9 @@ struct derived : virtual base1, virtual base2, base3 {};
 
 int main() {
     shared_ptr<derived> d(new derived);
-    weak_ptr<derived> wd(d);
 
     for (int i = 0; i < 10; ++i) {
+        weak_ptr<derived> wd(d);
         atomic<bool> work{true};
         thread thd([&] {
             d.reset();
