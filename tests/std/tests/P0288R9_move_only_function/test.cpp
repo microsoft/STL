@@ -64,7 +64,7 @@ struct small_callable : counter {
 };
 
 struct large_callable : counter {
-    char data[large_function_size];
+    char data[large_function_size] = {};
 
     int operator()(int a, pass_this_by_ref& b) {
         assert(a == 23);
@@ -96,7 +96,7 @@ struct odd_cc_callable : counter {
 };
 
 struct large_implicit_ptr_callable : counter {
-    char data[large_function_size];
+    char data[large_function_size] = {};
 
     using pfn = int (*)(int a, pass_this_by_ref& b);
 
@@ -134,12 +134,9 @@ void test_construct_impl(int expect, Args... args) {
         assert(constructed_directly);
         assert(constructed_directly != nullptr);
 
-        test_function_t move_constructed = std::move(constructed_directly);
+        test_function_t move_constructed = move(constructed_directly);
 
         assert(move_constructed(23, x) == expect);
-
-        assert(!constructed_directly);
-        assert(constructed_directly == nullptr);
 
         if constexpr (is_class_v<F>) {
             assert(counter::copies == 0);
@@ -175,7 +172,7 @@ void test_assign() {
     {
         test_function_t f1{small_callable{}};
         test_function_t f2{large_callable{}};
-        f2 = std::move(f1);
+        f2 = move(f1);
         assert(f2(23, x) == 38);
         f1 = large_callable{};
         assert(f1(23, x) == 39);
@@ -184,7 +181,7 @@ void test_assign() {
     {
         test_function_t f1{large_callable{}};
         test_function_t f2{small_callable{}};
-        f2 = std::move(f1);
+        f2 = move(f1);
         assert(f2(23, x) == 39);
         f1 = small_callable{};
         assert(f1(23, x) == 38);
@@ -193,7 +190,7 @@ void test_assign() {
     {
         test_function_t f1{small_callable{}};
         test_function_t f2{odd_cc_callable{}};
-        f2 = std::move(f1);
+        f2 = move(f1);
         assert(f2(23, x) == 38);
         f1 = odd_cc_callable{};
         assert(f1(23, x) == 40);
@@ -202,7 +199,7 @@ void test_assign() {
     {
         test_function_t f1{large_callable{}};
         test_function_t f2{large_implicit_ptr_callable{}};
-        f2 = std::move(f1);
+        f2 = move(f1);
         assert(f2(23, x) == 39);
         f1 = large_implicit_ptr_callable{};
         assert(f1(23, x) == 41);
@@ -215,9 +212,11 @@ void test_assign() {
     {
         test_function_t f1{small_callable{}};
         test_function_t f2{large_callable{}};
-        f1 = std::move(f1); // deliberate self-move as a test case
+        f1 = move(f1); // deliberate self-move as a test case
+#pragma warning(suppress: 26800) // use a moved-from object
         assert(f1(23, x) == 38);
-        f2 = std::move(f2); // deliberate self-move as a test case
+        f2 = move(f2); // deliberate self-move as a test case
+#pragma warning(suppress : 26800) // use a moved-from object
         assert(f2(23, x) == 39);
     }
 #ifdef __clang__
@@ -231,23 +230,15 @@ void test_swap() {
     {
         test_function_t f1{small_callable{}};
         test_function_t f2{large_callable{}};
-        std::swap(f1, f2);
+        swap(f1, f2);
         assert(f2(23, x) == 38);
         assert(f1(23, x) == 39);
     }
 
     {
-        test_function_t f1{large_callable{}};
-        test_function_t f2{small_callable{}};
-        f2.swap(f1);
-        assert(f2(23, x) == 39);
-        assert(f1(23, x) == 38);
-    }
-
-    {
         test_function_t f1{small_callable{}};
         test_function_t f2{odd_cc_callable{}};
-        swap(f1, f2);
+        f1.swap(f2);
         assert(f2(23, x) == 38);
         assert(f1(23, x) == 40);
     }
@@ -255,23 +246,32 @@ void test_swap() {
     {
         test_function_t f1{large_callable{}};
         test_function_t f2{large_implicit_ptr_callable{}};
-        swap(f1, f2);
+        f2.swap(f1);
         assert(f2(23, x) == 39);
         assert(f1(23, x) == 41);
+    }
+
+    {
+        test_function_t f1{small_callable{}};
+        test_function_t f2{large_callable{}};
+        swap(f1, f1);
+        f2.swap(f2);
+        assert(f1(23, x) == 38);
+        assert(f2(23, x) == 39);
     }
 }
 
 void test_empty() {
-    test_function_t emtpty;
-    assert(!emtpty);
-    assert(emtpty == nullptr);
-    assert(nullptr == emtpty);
+    test_function_t empty;
+    assert(!empty);
+    assert(empty == nullptr);
+    assert(nullptr == empty);
 
-    test_function_t emtpty_moved = std::move(emtpty);
-    assert(!emtpty_moved);
-    assert(emtpty_moved == nullptr);
-    assert(!emtpty_moved);
-    assert(emtpty_moved == nullptr);
+    test_function_t empty_moved = move(empty);
+    assert(!empty_moved);
+    assert(empty_moved == nullptr);
+    assert(!empty_moved);
+    assert(empty_moved == nullptr);
 }
 
 void test_ptr() {
@@ -287,9 +287,9 @@ void test_ptr() {
         }
     };
 
-    std::move_only_function<int(s_t*, int)> mem_fun_ptr(&s_t::f);
-    std::move_only_function<int(s_t*)> mem_ptr(&s_t::j);
-    std::move_only_function<int(int)> fun_ptr(&s_t::g);
+    move_only_function<int(s_t*, int)> mem_fun_ptr(&s_t::f);
+    move_only_function<int(s_t*)> mem_ptr(&s_t::j);
+    move_only_function<int(int)> fun_ptr(&s_t::g);
 
     s_t s;
     assert(mem_fun_ptr);
@@ -299,9 +299,9 @@ void test_ptr() {
     assert(fun_ptr);
     assert(fun_ptr(34) == 31);
 
-    std::move_only_function<int(s_t*, int)> mem_fun_ptr_n(static_cast<decltype(&s_t::f)>(nullptr));
-    std::move_only_function<int(s_t*)> mem_ptr_n(static_cast<decltype(&s_t::j)>(nullptr));
-    std::move_only_function<int(int)> fun_ptr_n(static_cast<decltype(&s_t::g)>(nullptr));
+    move_only_function<int(s_t*, int)> mem_fun_ptr_n(static_cast<decltype(&s_t::f)>(nullptr));
+    move_only_function<int(s_t*)> mem_ptr_n(static_cast<decltype(&s_t::j)>(nullptr));
+    move_only_function<int(int)> fun_ptr_n(static_cast<decltype(&s_t::g)>(nullptr));
 
     assert(!mem_fun_ptr_n);
     assert(!mem_ptr_n);
@@ -316,18 +316,21 @@ struct test_noexcept_t {
 };
 
 void test_noexcept() {
-    using f_x  = std::move_only_function<int()>;
-    using f_nx = std::move_only_function<int() noexcept>;
+    using f_x  = move_only_function<int()>;
+    using f_nx = move_only_function<int() noexcept>;
 
-    static_assert(std::is_constructible_v<f_x, test_noexcept_t<false>>);
+    static_assert(!noexcept(declval<f_x>()()));
+    static_assert(noexcept(declval<f_nx>()()));
+
+    static_assert(is_constructible_v<f_x, test_noexcept_t<false>>);
     assert(f_x(test_noexcept_t<false>{})() == 888);
 
-    static_assert(std::is_constructible_v<f_x, test_noexcept_t<true>>);
+    static_assert(is_constructible_v<f_x, test_noexcept_t<true>>);
     assert(f_x(test_noexcept_t<true>{})() == 888);
 
-    static_assert(!std::is_constructible_v<f_nx, test_noexcept_t<false>>);
+    static_assert(!is_constructible_v<f_nx, test_noexcept_t<false>>);
 
-    static_assert(std::is_constructible_v<f_nx, test_noexcept_t<true>>);
+    static_assert(is_constructible_v<f_nx, test_noexcept_t<true>>);
     assert(f_nx(test_noexcept_t<true>{})() == 888);
 }
 
@@ -346,19 +349,24 @@ struct test_const_t<true> {
 };
 
 void test_const() {
-    using f_c  = std::move_only_function<int() const>;
-    using f_nc = std::move_only_function<int()>;
+    using f_c  = move_only_function<int() const>;
+    using f_nc = move_only_function<int()>;
 
-    static_assert(std::is_constructible_v<f_nc, test_const_t<false>>);
-    assert(f_nc(test_const_t<false>{})() == 456);
+    static_assert(is_constructible_v<f_nc, test_const_t<false>>);
+    f_nc f1(test_const_t<false>{});
+    assert(f1() == 456);
 
-    static_assert(std::is_constructible_v<f_nc, test_const_t<true>>);
-    assert(f_nc(test_const_t<true>{})() == 456);
+    static_assert(is_constructible_v<f_nc, test_const_t<true>>);
+    f_nc f2(test_const_t<true>{});
+    assert(f2() == 456);
 
-    static_assert(!std::is_constructible_v<f_c, test_const_t<false>>);
+    static_assert(!is_constructible_v<f_c, test_const_t<false>>);
 
-    static_assert(std::is_constructible_v<f_c, test_const_t<true>>);
-    assert(f_c(test_const_t<true>{})() == 456);
+    static_assert(is_constructible_v<f_c, test_const_t<true>>);
+    f_c f3(test_const_t<true>{});
+    assert(f3() == 456);
+    const f_c f4(test_const_t<true>{});
+    assert(f4() == 456);
 }
 
 int main() {
