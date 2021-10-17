@@ -108,7 +108,8 @@ void test_notify_all_notifies_all(UnderlyingType old_value, const UnderlyingType
 template <class UnderlyingType>
 void test_notify_all_notifies_all_ptr(UnderlyingType old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration) {
-    test_notify_all_notifies_all_impl<std::atomic, UnderlyingType>(old_value, new_value, waiting_duration);
+    // increased waiting_duration because timing assumption might not hold for atomic smart pointers
+    test_notify_all_notifies_all_impl<std::atomic, UnderlyingType>(old_value, new_value, 3 * waiting_duration);
 }
 
 
