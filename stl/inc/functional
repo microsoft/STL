@@ -1302,7 +1302,7 @@ inline void _Function_move_memcpy(_Move_only_function_data& _Self, _Move_only_fu
 }
 
 template <class _Vt>
-inline constexpr size_t _Function_small_copy_size = // We copy Impl* and and functor data at once
+inline constexpr size_t _Function_small_copy_size = // We copy Impl* and the functor data at once
     _Move_only_function_data::_Buf_offset<_Vt> + // Impl* plus possible alignment
     (size_t{sizeof(_Vt) + sizeof(void*) - 1} & ~size_t{sizeof(void*) - 1}); // size in whole pointers
 
@@ -1769,7 +1769,7 @@ public:
     }
 
     move_only_function& operator=(nullptr_t) noexcept {
-        _Destroy(this->_Data);
+        this->_Destroy(this->_Data);
         this->Reset_to_null();
     }
 
