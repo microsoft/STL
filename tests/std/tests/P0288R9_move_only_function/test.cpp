@@ -213,7 +213,7 @@ void test_assign() {
         test_function_t f1{small_callable{}};
         test_function_t f2{large_callable{}};
         f1 = move(f1); // deliberate self-move as a test case
-#pragma warning(suppress: 26800) // use a moved-from object
+#pragma warning(suppress : 26800) // use a moved-from object
         assert(f1(23, x) == 38);
         f2 = move(f2); // deliberate self-move as a test case
 #pragma warning(suppress : 26800) // use a moved-from object

@@ -1727,9 +1727,11 @@ public:
     move_only_function() noexcept {
         this->_Construct_with_null();
     }
+
     move_only_function(nullptr_t) noexcept {
         this->_Construct_with_null();
     }
+
     move_only_function(move_only_function&&) noexcept = default;
 
     template <class _Fn, enable_if_t<_Enable_one_arg_constructor<_Fn>, int> = 0>
