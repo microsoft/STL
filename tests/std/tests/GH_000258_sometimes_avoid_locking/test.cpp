@@ -24,8 +24,8 @@ struct derived : virtual base1, virtual base2, base3 {};
 int main() {
     for (int i = 0; i < 10; ++i) {
         // not make_shared -- with make_shared the test would not catch errors
-        shared_ptr<derived> d(new derived);
-        weak_ptr<derived> wd(d);
+        shared_ptr<derived> d{new derived{}};
+        weak_ptr<derived> wd{d};
         atomic<bool> work{true};
         thread thd([&] {
             d.reset();
@@ -33,11 +33,20 @@ int main() {
             work = false;
         });
 
-        while (work) {
-            // likely to crash if optimized for the case we shouldn't
-            weak_ptr<base1> wb1(wd);
-            weak_ptr<base2> wb2(wd);
-            weak_ptr<base3> wb3(wd);
+        if ((i % 2) == 0) {
+            while (work) {
+                // likely to crash if optimized for a case we shouldn't
+                weak_ptr<base1> wb1{wd};
+                weak_ptr<base2> wb2{wd};
+                weak_ptr<base3> wb3{wd};
+            }
+        } else {
+            while (work) {
+                // likely to crash if optimized for a case we shouldn't
+                weak_ptr<base1> wb1{weak_ptr<derived>{wd}};
+                weak_ptr<base2> wb2{weak_ptr<derived>{wd}};
+                weak_ptr<base3> wb3{weak_ptr<derived>{wd}};
+            }
         }
 
         thd.join();
