@@ -2975,7 +2975,7 @@ public:
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept {
         if constexpr (_Is_virtual_inheritance<_Ty2>(0)) {
-            this->_Weakly_convert_lvalue_avoiding_expired_conversions(_STD move(_Other));
+            this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other);
         } else {
             this->_Weakly_construct_from(_Other);
         }
