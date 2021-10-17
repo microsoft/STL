@@ -1347,8 +1347,13 @@ protected:
         }
     }
 
+    template <class _Ty2, class = decltype((_Ty2*)((_Ty*)0))>
+    void _Weakly_convert_lvalue_avoiding_expired_conversions(const _Ptr_base<_Ty2>& _Other, int) noexcept {
+        _Weakly_construct_from(_Other);
+    }
+
     template <class _Ty2>
-    void _Weakly_convert_lvalue_avoiding_expired_conversions(const _Ptr_base<_Ty2>& _Other) noexcept {
+    void _Weakly_convert_lvalue_avoiding_expired_conversions(const _Ptr_base<_Ty2>& _Other, ...) noexcept {
         // implement weak_ptr's copy converting ctor
         if (_Other._Rep) {
             _Rep = _Other._Rep; // always share ownership
@@ -2963,7 +2968,7 @@ public:
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept {
-        this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other);
+        this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other, 0);
     }
 
     weak_ptr(weak_ptr&& _Other) noexcept {
@@ -2972,7 +2977,7 @@ public:
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept {
-        this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other));
+        this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other), 0);
     }
 
     ~weak_ptr() noexcept {
