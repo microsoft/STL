@@ -1229,12 +1229,14 @@ union alignas(max_align_t) _Move_only_function_data {
     }
 
     template <class _Fn>
-    _NODISCARD _Fn* _Small_fn_ptr() noexcept {
-        return static_cast<_Fn*>(_Buf_ptr<_Fn>());
+    _NODISCARD _Fn* _Small_fn_ptr() const noexcept {
+        // cast away const to avoid complication of const propagation to here;
+        // const correctness is still enforced by _Move_only_function_call specializations.
+        return static_cast<_Fn*>(const_cast<_Move_only_function_data*>(this)->_Buf_ptr<_Fn>());
     }
 
     template <class _Fn>
-    _NODISCARD _Fn* _Large_fn_ptr() noexcept {
+    _NODISCARD _Fn* _Large_fn_ptr() const noexcept {
         return static_cast<_Fn*>(_Pointers[1]);
     }
 
@@ -1244,17 +1246,17 @@ union alignas(max_align_t) _Move_only_function_data {
 };
 
 template <class _Rx, class... _Types>
-[[noreturn]] _Rx _Function_no_callable(_Move_only_function_data&, _Types&&...) noexcept {
+[[noreturn]] _Rx _Function_no_callable(const _Move_only_function_data&, _Types&&...) noexcept {
     _CSTD abort(); // We are not std::function to throw bad_function_call
 }
 
 template <class _Vt, class _VtInvQuals, class _Rx, class... _Types>
-_NODISCARD inline _Rx _Function_invoke_small(_Move_only_function_data& _Self, _Types&&... _Args) {
+_NODISCARD inline _Rx _Function_invoke_small(const _Move_only_function_data& _Self, _Types&&... _Args) {
     return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
 }
 
 template <class _Vt, class _VtInvQuals, class _Rx, class... _Types>
-_NODISCARD inline _Rx _Function_invoke_large(_Move_only_function_data& _Self, _Types&&... _Args) {
+_NODISCARD inline _Rx _Function_invoke_large(const _Move_only_function_data& _Self, _Types&&... _Args) {
     return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
 }
 
@@ -1339,7 +1341,7 @@ public:
         //  we don't have distinct wrapper class type for each callable type, only distinct functions when needed)
 
         // Calls target
-        _Rx (*_Invoke)(_Move_only_function_data&, _Types&&...);
+        _Rx (*_Invoke)(const _Move_only_function_data&, _Types&&...);
         // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable")
         void (*_Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
         // Destroys data (not resetting its "vtable")
