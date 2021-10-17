@@ -15,6 +15,18 @@
 #include <isa_availability.h>
 #include <xstddef>
 
+// TRANSITION, GH-2129, move down to _Arm64_popcount
+#if defined(_M_ARM64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+    && !defined(__INTEL_COMPILER) && !defined(__clang__) // TRANSITION, LLVM-51488
+#define _HAS_NEON_INTRINSICS 1
+#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#define _HAS_NEON_INTRINSICS 0
+#endif // ^^^ intrinsics unavailable ^^^
+
+#if _HAS_NEON_INTRINSICS
+#include <arm64_neon.h> // TRANSITION, GH-2129
+#endif
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -23,14 +35,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// ENUM float_denorm_style
 enum float_denorm_style { // constants for different IEEE float denormalization styles
     denorm_indeterminate = -1,
     denorm_absent        = 0,
     denorm_present       = 1
 };
 
-// ENUM float_round_style
 enum float_round_style { // constants for different IEEE rounding styles
     round_indeterminate       = -1,
     round_toward_zero         = 0,
@@ -39,7 +49,6 @@ enum float_round_style { // constants for different IEEE rounding styles
     round_toward_neg_infinity = 3
 };
 
-// STRUCT _Num_base
 struct _Num_base { // base for all types, with common defaults
     static constexpr float_denorm_style has_denorm = denorm_absent;
     static constexpr bool has_denorm_loss          = false;
@@ -66,7 +75,6 @@ struct _Num_base { // base for all types, with common defaults
     static constexpr int radix                     = 0;
 };
 
-// CLASS TEMPLATE numeric_limits
 template <class _Ty>
 class numeric_limits : public _Num_base { // numeric limits for arbitrary type _Ty (say little or nothing)
 public:
@@ -116,7 +124,6 @@ class numeric_limits<volatile _Ty> : public numeric_limits<_Ty> {}; // numeric l
 template <class _Ty>
 class numeric_limits<const volatile _Ty> : public numeric_limits<_Ty> {}; // numeric limits for const volatile types
 
-// STRUCT _Num_int_base
 struct _Num_int_base : _Num_base { // base for integer types
     static constexpr bool is_bounded     = true;
     static constexpr bool is_exact       = true;
@@ -125,7 +132,6 @@ struct _Num_int_base : _Num_base { // base for integer types
     static constexpr int radix           = 2;
 };
 
-// STRUCT _Num_float_base
 struct _Num_float_base : _Num_base { // base for floating-point types
     static constexpr float_denorm_style has_denorm = denorm_present;
     static constexpr bool has_infinity             = true;
@@ -139,7 +145,6 @@ struct _Num_float_base : _Num_base { // base for floating-point types
     static constexpr int radix                     = FLT_RADIX;
 };
 
-// CLASS numeric_limits<bool>
 template <>
 class numeric_limits<bool> : public _Num_int_base {
 public:
@@ -152,7 +157,7 @@ public:
     }
 
     _NODISCARD static constexpr bool lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr bool epsilon() noexcept {
@@ -182,7 +187,6 @@ public:
     static constexpr int digits = 1;
 };
 
-// CLASS numeric_limits<char>
 template <>
 class numeric_limits<char> : public _Num_int_base {
 public:
@@ -195,7 +199,7 @@ public:
     }
 
     _NODISCARD static constexpr char lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr char epsilon() noexcept {
@@ -228,7 +232,6 @@ public:
     static constexpr int digits10   = 2;
 };
 
-// CLASS numeric_limits<signed char>
 template <>
 class numeric_limits<signed char> : public _Num_int_base {
 public:
@@ -241,7 +244,7 @@ public:
     }
 
     _NODISCARD static constexpr signed char lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr signed char epsilon() noexcept {
@@ -273,7 +276,6 @@ public:
     static constexpr int digits10   = 2;
 };
 
-// CLASS numeric_limits<unsigned char>
 template <>
 class numeric_limits<unsigned char> : public _Num_int_base {
 public:
@@ -286,7 +288,7 @@ public:
     }
 
     _NODISCARD static constexpr unsigned char lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr unsigned char epsilon() noexcept {
@@ -319,7 +321,6 @@ public:
 };
 
 #ifdef __cpp_char8_t
-// CLASS numeric_limits<char8_t>
 template <>
 class numeric_limits<char8_t> : public _Num_int_base {
 public:
@@ -365,7 +366,6 @@ public:
 };
 #endif // __cpp_char8_t
 
-// CLASS numeric_limits<char16_t>
 template <>
 class numeric_limits<char16_t> : public _Num_int_base {
 public:
@@ -378,7 +378,7 @@ public:
     }
 
     _NODISCARD static constexpr char16_t lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr char16_t epsilon() noexcept {
@@ -410,7 +410,6 @@ public:
     static constexpr int digits10   = 4;
 };
 
-// CLASS numeric_limits<char32_t>
 template <>
 class numeric_limits<char32_t> : public _Num_int_base {
 public:
@@ -423,7 +422,7 @@ public:
     }
 
     _NODISCARD static constexpr char32_t lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr char32_t epsilon() noexcept {
@@ -455,7 +454,6 @@ public:
     static constexpr int digits10   = 9;
 };
 
-// CLASS numeric_limits<wchar_t>
 template <>
 class numeric_limits<wchar_t> : public _Num_int_base {
 public:
@@ -468,7 +466,7 @@ public:
     }
 
     _NODISCARD static constexpr wchar_t lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr wchar_t epsilon() noexcept {
@@ -500,7 +498,6 @@ public:
     static constexpr int digits10   = 4;
 };
 
-// CLASS numeric_limits<short>
 template <>
 class numeric_limits<short> : public _Num_int_base {
 public:
@@ -513,7 +510,7 @@ public:
     }
 
     _NODISCARD static constexpr short lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr short epsilon() noexcept {
@@ -545,7 +542,6 @@ public:
     static constexpr int digits10   = 4;
 };
 
-// CLASS numeric_limits<int>
 template <>
 class numeric_limits<int> : public _Num_int_base {
 public:
@@ -558,7 +554,7 @@ public:
     }
 
     _NODISCARD static constexpr int lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr int epsilon() noexcept {
@@ -590,7 +586,6 @@ public:
     static constexpr int digits10   = 9;
 };
 
-// CLASS numeric_limits<long>
 template <>
 class numeric_limits<long> : public _Num_int_base {
 public:
@@ -603,7 +598,7 @@ public:
     }
 
     _NODISCARD static constexpr long lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr long epsilon() noexcept {
@@ -636,7 +631,6 @@ public:
     static constexpr int digits10   = 9;
 };
 
-// CLASS numeric_limits<long long>
 template <>
 class numeric_limits<long long> : public _Num_int_base {
 public:
@@ -649,7 +643,7 @@ public:
     }
 
     _NODISCARD static constexpr long long lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr long long epsilon() noexcept {
@@ -682,7 +676,6 @@ public:
 };
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
-// CLASS numeric_limits<unsigned short>
 template <>
 class numeric_limits<unsigned short> : public _Num_int_base {
 public:
@@ -695,7 +688,7 @@ public:
     }
 
     _NODISCARD static constexpr unsigned short lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr unsigned short epsilon() noexcept {
@@ -728,7 +721,6 @@ public:
 };
 #endif // _NATIVE_WCHAR_T_DEFINED
 
-// CLASS numeric_limits<unsigned int>
 template <>
 class numeric_limits<unsigned int> : public _Num_int_base {
 public:
@@ -741,7 +733,7 @@ public:
     }
 
     _NODISCARD static constexpr unsigned int lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr unsigned int epsilon() noexcept {
@@ -773,7 +765,6 @@ public:
     static constexpr int digits10   = 9;
 };
 
-// CLASS numeric_limits<unsigned long>
 template <>
 class numeric_limits<unsigned long> : public _Num_int_base {
 public:
@@ -786,7 +777,7 @@ public:
     }
 
     _NODISCARD static constexpr unsigned long lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr unsigned long epsilon() noexcept {
@@ -819,7 +810,6 @@ public:
     static constexpr int digits10   = 9;
 };
 
-// CLASS numeric_limits<unsigned long long>
 template <>
 class numeric_limits<unsigned long long> : public _Num_int_base {
 public:
@@ -832,7 +822,7 @@ public:
     }
 
     _NODISCARD static constexpr unsigned long long lowest() noexcept {
-        return (min)();
+        return (min) ();
     }
 
     _NODISCARD static constexpr unsigned long long epsilon() noexcept {
@@ -864,7 +854,6 @@ public:
     static constexpr int digits10   = 19;
 };
 
-// CLASS numeric_limits<float>
 template <>
 class numeric_limits<float> : public _Num_float_base {
 public:
@@ -877,7 +866,7 @@ public:
     }
 
     _NODISCARD static constexpr float lowest() noexcept {
-        return -(max)();
+        return -(max) ();
     }
 
     _NODISCARD static constexpr float epsilon() noexcept {
@@ -913,7 +902,6 @@ public:
     static constexpr int min_exponent10 = FLT_MIN_10_EXP;
 };
 
-// CLASS numeric_limits<double>
 template <>
 class numeric_limits<double> : public _Num_float_base {
 public:
@@ -926,7 +914,7 @@ public:
     }
 
     _NODISCARD static constexpr double lowest() noexcept {
-        return -(max)();
+        return -(max) ();
     }
 
     _NODISCARD static constexpr double epsilon() noexcept {
@@ -962,7 +950,6 @@ public:
     static constexpr int min_exponent10 = DBL_MIN_10_EXP;
 };
 
-// CLASS numeric_limits<long double>
 template <>
 class numeric_limits<long double> : public _Num_float_base {
 public:
@@ -975,7 +962,7 @@ public:
     }
 
     _NODISCARD static constexpr long double lowest() noexcept {
-        return -(max)();
+        return -(max) ();
     }
 
     _NODISCARD static constexpr long double epsilon() noexcept {
@@ -1004,7 +991,7 @@ public:
 
     static constexpr int digits         = LDBL_MANT_DIG;
     static constexpr int digits10       = LDBL_DIG;
-    static constexpr int max_digits10   = 17;
+    static constexpr int max_digits10   = 2 + LDBL_MANT_DIG * 301L / 1000;
     static constexpr int max_exponent   = LDBL_MAX_EXP;
     static constexpr int max_exponent10 = LDBL_MAX_10_EXP;
     static constexpr int min_exponent   = LDBL_MIN_EXP;
@@ -1040,6 +1027,28 @@ _NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
     return _Digits - _Countl_zero_fallback(static_cast<_Ty>(static_cast<_Ty>(~_Val) & static_cast<_Ty>(_Val - 1)));
 }
 
+// Implementation of popcount without using specialized CPU instructions.
+// Used at compile time and when said instructions are not supported.
+template <class _Ty>
+_NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+#if defined(_M_IX86) || defined(_M_ARM)
+    if constexpr (_Digits == 64) {
+        return _Popcount_fallback(static_cast<unsigned long>(_Val))
+             + _Popcount_fallback(static_cast<unsigned long>(_Val >> 32));
+    }
+#endif // defined(_M_IX86) || defined(_M_ARM)
+    // we static_cast these bit patterns in order to truncate them to the correct size
+    _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
+    _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
+                            + ((_Val >> 2) & static_cast<_Ty>(0x3333'3333'3333'3333ull)));
+    _Val = static_cast<_Ty>((_Val + (_Val >> 4)) & static_cast<_Ty>(0x0F0F'0F0F'0F0F'0F0Full));
+    // Multiply by one in each byte, so that it will have the sum of all source bytes in the highest byte
+    _Val = static_cast<_Ty>(_Val * static_cast<_Ty>(0x0101'0101'0101'0101ull));
+    // Extract highest byte
+    return static_cast<int>(_Val >> (_Digits - 8));
+}
+
 #if defined(_M_IX86) || defined(_M_X64)
 extern "C" {
 extern int __isa_available;
@@ -1055,16 +1064,21 @@ extern int __isa_available;
 template <class _Ty>
 _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
-    constexpr _Ty _Max    = (numeric_limits<_Ty>::max)();
+    constexpr _Ty _Max    = (numeric_limits<_Ty>::max) ();
 
 #ifndef __AVX2__
-    const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
-    if (!_Definitely_have_tzcnt && _Val == 0) {
-        return _Digits;
+    // Because the widening done below will always give a non-0 value, checking for tzcnt
+    // is not required for 8-bit and 16-bit since the only difference in behavior between
+    // bsf and tzcnt is when the value is 0.
+    if constexpr (_Digits > 16) {
+        const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
+        if (!_Definitely_have_tzcnt && _Val == 0) {
+            return _Digits;
+        }
     }
 #endif // __AVX2__
 
-    if _CONSTEXPR_IF (_Digits <= 32) {
+    if constexpr (_Digits <= 32) {
         // Intended widening to int. This operation means that a narrow 0 will widen
         // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
         // of the wider type.
@@ -1087,6 +1101,49 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #undef _TZCNT_U64
 #endif // defined(_M_IX86) || defined(_M_X64)
 
+#if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+    && !defined(__INTEL_COMPILER)
+#define _HAS_POPCNT_INTRINSICS 1
+#else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
+#define _HAS_POPCNT_INTRINSICS 0
+#endif // ^^^ intrinsics unavailable ^^^
+
+#if _HAS_POPCNT_INTRINSICS
+template <class _Ty>
+_NODISCARD int _Unchecked_x86_x64_popcount(const _Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+    if constexpr (_Digits <= 16) {
+        return static_cast<int>(__popcnt16(_Val));
+    } else if constexpr (_Digits == 32) {
+        return static_cast<int>(__popcnt(_Val));
+    } else {
+#ifdef _M_IX86
+        return static_cast<int>(__popcnt(_Val >> 32) + __popcnt(static_cast<unsigned int>(_Val)));
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+        return static_cast<int>(__popcnt64(_Val));
+#endif // _M_IX86
+    }
+}
+
+template <class _Ty>
+_NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
+#ifndef __AVX__
+    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+    if (!_Definitely_have_popcnt) {
+        return _Popcount_fallback(_Val);
+    }
+#endif // !defined(__AVX__)
+    return _Unchecked_x86_x64_popcount(_Val);
+}
+#endif // _HAS_POPCNT_INTRINSICS
+
+#if _HAS_NEON_INTRINSICS
+_NODISCARD inline int _Arm64_popcount(const unsigned long long _Val) noexcept {
+    const __n64 _Temp = neon_cnt(__uint64ToN64_v(_Val));
+    return neon_addv8(_Temp).n8_i8[0];
+}
+#endif // _HAS_NEON_INTRINSICS
+
 template <class _Ty>
 constexpr bool _Is_standard_unsigned_integer =
     _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
@@ -1094,15 +1151,53 @@ constexpr bool _Is_standard_unsigned_integer =
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 #if defined(_M_IX86) || defined(_M_X64)
-#ifdef __cpp_lib_is_constant_evaluated
+#if _HAS_CXX20
     if (!_STD is_constant_evaluated()) {
         return _Checked_x86_x64_countr_zero(_Val);
     }
-#endif // defined(__cpp_lib_is_constant_evaluated)
+#endif // _HAS_CXX20
 #endif // defined(_M_IX86) || defined(_M_X64)
     // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
     return _Countr_zero_fallback(_Val);
 }
+
+template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
+_NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
+#if _HAS_POPCNT_INTRINSICS || _HAS_NEON_INTRINSICS
+#if _HAS_CXX20
+    if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+    {
+#if _HAS_POPCNT_INTRINSICS
+        return _Checked_x86_x64_popcount(_Val);
+#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
+        return _Arm64_popcount(_Val);
+#endif // ^^^ ARM64 intrinsics available ^^^
+    }
+#endif // ^^^ any intrinsics available ^^^
+    return _Popcount_fallback(_Val);
+}
+
+template <class _Ty, class _Fn>
+decltype(auto) _Select_popcount_impl(_Fn _Callback) {
+    // TRANSITION, DevCom-1527995: Lambdas in this function ensure inlining
+#if _HAS_POPCNT_INTRINSICS
+#ifndef __AVX__
+    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+    if (!_Definitely_have_popcnt) {
+        return _Callback([](_Ty _Val) { return _Popcount_fallback(_Val); });
+    }
+#endif // !defined(__AVX__)
+    return _Callback([](_Ty _Val) { return _Unchecked_x86_x64_popcount(_Val); });
+#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
+    return _Callback([](_Ty _Val) { return _Arm64_popcount(_Val); });
+#else // ^^^ ARM64 intrinsics available ^^^ / vvv no intrinsics available vvv
+    return _Callback([](_Ty _Val) { return _Popcount_fallback(_Val); });
+#endif // ^^^ no intrinsics available ^^^
+}
+
+#undef _HAS_POPCNT_INTRINSICS
+#undef _HAS_NEON_INTRINSICS
 
 _STD_END
 #pragma pop_macro("new")

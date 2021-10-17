@@ -1,0 +1,48 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: hostArch
+  type: string
+  default: amd64
+- name: targetPlatform
+  type: string
+- name: vsDevCmdArch
+  type: string
+- name: buildOutputLocationVar
+  type: string
+  default: buildOutputLocation
+- name: numShards
+  type: number
+  default: 8
+jobs:
+- job: '${{ parameters.targetPlatform }}'
+  variables:
+    fixedFlags: '--timeout=240;--shuffle'
+    parallelismFlag: '-j$(testParallelism)'
+    xmlOutputFlag: '--xunit-xml-output=$(${{ parameters.buildOutputLocationVar }})/test-results.xml'
+    shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
+    litFlags: '$(fixedFlags);$(parallelismFlag);$(xmlOutputFlag);$(shardFlags)'
+  strategy:
+    parallel: ${{ parameters.numShards }}
+  timeoutInMinutes: 360
+  steps:
+  - script: |
+      if exist "$(tmpDir)" (rmdir /S /Q $(tmpDir))
+      mkdir $(tmpDir)
+    displayName: 'Setup TMP Directory'
+
+  - template: checkout-sources.yml
+  - template: cmake-configure-build.yml
+    parameters:
+      targetPlatform: ${{ parameters.targetPlatform }}
+      hostArch: ${{ parameters.hostArch }}
+      targetArch: ${{ parameters.vsDevCmdArch }}
+      cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
+  - template: run-tests.yml
+    parameters:
+      hostArch: ${{ parameters.hostArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      targetArch: ${{ parameters.vsDevCmdArch }}
+      displayName: 'Build Tests'
+      publishArtifact: false # disabled due to GH-1653

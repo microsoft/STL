@@ -126,10 +126,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::filter(move(as_const(rng)), is_even)), F>);
-        STATIC_ASSERT(noexcept(views::filter(as_const(rng), is_even)) == is_noexcept);
+        STATIC_ASSERT(noexcept(views::filter(move(as_const(rng)), is_even)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | filter_even), F>);
-        STATIC_ASSERT(noexcept(as_const(rng) | filter_even) == is_noexcept);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | filter_even) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -149,9 +149,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<F> auto r = filter_view{forward<Rng>(rng), is_even};
     assert(ranges::equal(r, expected));
     if constexpr (forward_range<V>) {
@@ -263,9 +260,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate filter_view::base() && (NB: do this last since it leaves r moved-from)
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     if (forward_range<V>) { // intentionally not if constexpr
         same_as<V> auto b2 = move(r).base();
         STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
@@ -353,13 +347,6 @@ int main() {
         test_one(lst, only_even_ints);
     }
 
-    // Validate a non-view borrowed range
-    {
-        constexpr span s{some_ints};
-        STATIC_ASSERT(test_one(s, only_even_ints));
-        test_one(s, only_even_ints);
-    }
-
     // filter/reverse interaction test
     {
         auto fr_pipe = views::filter(is_even) | views::reverse;
@@ -380,4 +367,27 @@ int main() {
 
     STATIC_ASSERT((instantiation_test(), true));
     instantiation_test();
+
+    { // Validate **non-standard guarantee** that predicates are moved into the range adaptor closure, and into the view
+      // object from an rvalue closure
+        struct Fn {
+            Fn()     = default;
+            Fn(Fn&&) = default;
+            Fn(const Fn&) {
+                assert(false);
+            }
+            Fn& operator=(Fn&&) = default;
+
+            Fn& operator=(const Fn&) {
+                assert(false);
+                return *this;
+            }
+
+            bool operator()(int) const {
+                return true;
+            }
+        };
+
+        (void) views::filter(Fn{})(span<int>{});
+    }
 }

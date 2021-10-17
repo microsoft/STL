@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #pragma vtordisp(push, 2) // compiler bug workaround
 
-// CLASS TEMPLATE basic_istream
 template <class _Elem, class _Traits>
 class basic_istream : virtual public basic_ios<_Elem, _Traits> { // control extractions from a stream buffer
 public:
@@ -69,13 +68,12 @@ public:
     __CLR_OR_THIS_CALL basic_istream(const basic_istream&) = delete;
     basic_istream& __CLR_OR_THIS_CALL operator=(const basic_istream&) = delete;
 
-    virtual __CLR_OR_THIS_CALL ~basic_istream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_istream() noexcept override {}
 
     using int_type = typename _Traits::int_type;
     using pos_type = typename _Traits::pos_type;
     using off_type = typename _Traits::off_type;
 
-    // CLASS TEMPLATE sentry
     class _Sentry_base {
     public:
         __CLR_OR_THIS_CALL _Sentry_base(basic_istream& _Istr) : _Myistr(_Istr) {
@@ -206,6 +204,13 @@ private:
         return *this;
     }
 
+    template <class = void>
+    void _Increment_gcount() {
+        if (_Chcount != (numeric_limits<streamsize>::max) ()) {
+            ++_Chcount;
+        }
+    }
+
 public:
     basic_istream& __CLR_OR_THIS_CALL operator>>(bool& _Val) { // extract a boolean
         return _Common_extract_with_num_get(_Val);
@@ -312,7 +317,7 @@ public:
                 break;
                 _CATCH_END
 
-                ++_Chcount;
+                _Increment_gcount();
             }
             _CATCH_IO_END
         }
@@ -341,7 +346,7 @@ public:
                 _State |= ios_base::eofbit | ios_base::failbit; // end of file
             } else { // got a character, count it
                 _Myios::rdbuf()->sbumpc();
-                ++_Chcount;
+                _Chcount = 1;
             }
             _CATCH_IO_END
         }
@@ -354,8 +359,8 @@ public:
         return get(_Str, _Count, _Myios::widen('\n'));
     }
 
-    basic_istream& __CLR_OR_THIS_CALL get(
-        _Elem* _Str, streamsize _Count, _Elem _Delim) { // get up to _Count characters into NTCS, stop before _Delim
+    basic_istream& __CLR_OR_THIS_CALL get(_Elem* _Str, streamsize _Count, _Elem _Delim) {
+        // get up to _Count characters into NTCS, stop before _Delim
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -372,7 +377,7 @@ public:
                     break; // got a delimiter, quit
                 } else { // got a character, add it to string
                     *_Str++ = _Traits::to_char_type(_Meta);
-                    ++_Chcount;
+                    _Increment_gcount();
                 }
             }
             _CATCH_IO_END
@@ -396,8 +401,8 @@ public:
         return get(_Strbuf, _Myios::widen('\n'));
     }
 
-    basic_istream& __CLR_OR_THIS_CALL get(
-        _Mysb& _Strbuf, _Elem _Delim) { // extract up to delimiter and insert into stream buffer
+    basic_istream& __CLR_OR_THIS_CALL get(_Mysb& _Strbuf, _Elem _Delim) {
+        // extract up to delimiter and insert into stream buffer
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -419,7 +424,7 @@ public:
                     _CATCH_ALL
                     break;
                     _CATCH_END
-                    ++_Chcount;
+                    _Increment_gcount();
                 }
             }
             _CATCH_IO_END
@@ -432,13 +437,13 @@ public:
         return *this;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL getline(
-        _Elem* _Str, streamsize _Count) { // get up to _Count characters into NTCS, discard newline
+    basic_istream& __CLR_OR_THIS_CALL getline(_Elem* _Str, streamsize _Count) {
+        // get up to _Count characters into NTCS, discard newline
         return getline(_Str, _Count, _Myios::widen('\n'));
     }
 
-    basic_istream& __CLR_OR_THIS_CALL getline(
-        _Elem* _Str, streamsize _Count, _Elem _Delim) { // get up to _Count characters into NTCS, discard _Delim
+    basic_istream& __CLR_OR_THIS_CALL getline(_Elem* _Str, streamsize _Count, _Elem _Delim) {
+        // get up to _Count characters into NTCS, discard _Delim
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -454,7 +459,7 @@ public:
                     _State |= ios_base::eofbit;
                     break;
                 } else if (_Meta == _Metadelim) { // got a delimiter, discard it and quit
-                    ++_Chcount;
+                    _Increment_gcount();
                     _Myios::rdbuf()->sbumpc();
                     break;
                 } else if (--_Count <= 0) { // buffer full, quit
@@ -462,7 +467,7 @@ public:
                     break;
                 } else { // got a character, add it to string
                     *_Str++ = _Traits::to_char_type(_Meta);
-                    ++_Chcount;
+                    _Increment_gcount();
                 }
             }
             _CATCH_IO_END
@@ -473,8 +478,8 @@ public:
         return *this;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL ignore(streamsize _Count = 1,
-        int_type _Metadelim = _Traits::eof()) { // ignore up to _Count characters, discarding delimiter
+    basic_istream& __CLR_OR_THIS_CALL ignore(streamsize _Count = 1, int_type _Metadelim = _Traits::eof()) {
+        // ignore up to _Count characters, discarding delimiter
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -483,14 +488,14 @@ public:
             _TRY_IO_BEGIN
             for (;;) { // get a metacharacter if more room in buffer
                 int_type _Meta;
-                if (_Count != (numeric_limits<streamsize>::max)() && --_Count < 0) {
+                if (_Count != (numeric_limits<streamsize>::max) () && --_Count < 0) {
                     break; // buffer full, quit
                 } else if (_Traits::eq_int_type(_Traits::eof(),
                                _Meta = _Myios::rdbuf()->sbumpc())) { // end of file, quit
                     _State |= ios_base::eofbit;
                     break;
                 } else { // got a character, count it
-                    ++_Chcount;
+                    _Increment_gcount();
                     if (_Meta == _Metadelim) {
                         break; // got a delimiter, quit
                     }
@@ -511,7 +516,8 @@ public:
         if (_Ok && 0 < _Count) { // state okay, use facet to extract
             _TRY_IO_BEGIN
             const streamsize _Num = _Myios::rdbuf()->sgetn(_Str, _Count);
-            _Chcount += _Num;
+            _Chcount              = _Num;
+
             if (_Num != _Count) {
                 _State |= ios_base::eofbit | ios_base::failbit; // short read
             }
@@ -522,8 +528,8 @@ public:
         return *this;
     }
 
-    streamsize __CLR_OR_THIS_CALL readsome(_Elem* _Str,
-        streamsize _Count) { // read up to _Count characters into buffer, without blocking
+    streamsize __CLR_OR_THIS_CALL readsome(_Elem* _Str, streamsize _Count) {
+        // read up to _Count characters into buffer, without blocking
         ios_base::iostate _State = ios_base::goodbit;
         _Chcount                 = 0;
         const sentry _Ok(*this, true);
@@ -611,11 +617,17 @@ public:
             return -1;
         }
 
-        bool _Sync_failed = true; // sync fails if an exception is thrown
-        _TRY_IO_BEGIN
-        _Sync_failed = _Rdbuf->pubsync() == -1;
-        _CATCH_IO_END
-        if (_Sync_failed) {
+        ios_base::iostate _State = ios_base::goodbit;
+        _TRY_BEGIN
+        if (_Rdbuf->pubsync() == -1) {
+            _State |= ios_base::badbit;
+        }
+        _CATCH_ALL
+        _Myios::setstate(ios_base::badbit, true);
+        return -1;
+        _CATCH_END
+
+        if (_State & ios_base::badbit) {
             _Myios::setstate(ios_base::badbit);
             return -1;
         }
@@ -629,24 +641,34 @@ public:
         _Myios::clear(_Oldstate & ~ios_base::eofbit);
         const sentry _Ok(*this, true);
 
-        if (!this->fail() && static_cast<off_type>(_Myios::rdbuf()->pubseekpos(_Pos, ios_base::in)) == -1) {
-            _Myios::setstate(_State | ios_base::failbit);
+        if (!this->fail()) {
+            _TRY_IO_BEGIN
+            if (static_cast<off_type>(_Myios::rdbuf()->pubseekpos(_Pos, ios_base::in)) == -1) {
+                _State |= ios_base::failbit;
+            }
+            _CATCH_IO_END
         }
 
+        _Myios::setstate(_State);
         return *this;
     }
 
-    basic_istream& __CLR_OR_THIS_CALL seekg(
-        off_type _Off, ios_base::seekdir _Way) { // change input stream position by _Off, according to _Way
+    basic_istream& __CLR_OR_THIS_CALL seekg(off_type _Off, ios_base::seekdir _Way) {
+        // change input stream position by _Off, according to _Way
         ios_base::iostate _State    = ios_base::goodbit;
         ios_base::iostate _Oldstate = _Myios::rdstate();
         _Myios::clear(_Oldstate & ~ios_base::eofbit);
         const sentry _Ok(*this, true);
 
-        if (!this->fail() && static_cast<off_type>(_Myios::rdbuf()->pubseekoff(_Off, _Way, ios_base::in)) == -1) {
-            _Myios::setstate(_State | ios_base::failbit);
+        if (!this->fail()) {
+            _TRY_IO_BEGIN
+            if (static_cast<off_type>(_Myios::rdbuf()->pubseekoff(_Off, _Way, ios_base::in)) == -1) {
+                _State |= ios_base::failbit;
+            }
+            _CATCH_IO_END
         }
 
+        _Myios::setstate(_State);
         return *this;
     }
 
@@ -654,10 +676,12 @@ public:
         const sentry _Ok(*this, true);
 
         if (!this->fail()) {
+            _TRY_IO_BEGIN
             return _Myios::rdbuf()->pubseekoff(0, ios_base::cur, ios_base::in);
-        } else {
-            return pos_type(-1);
+            _CATCH_IO_END
         }
+
+        return pos_type(-1);
     }
 
 private:
@@ -697,7 +721,6 @@ template class _CRTIMP2_PURE_IMPORT basic_istream<unsigned short, char_traits<un
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
 
-// CLASS TEMPLATE basic_iostream
 template <class _Elem, class _Traits>
 class basic_iostream : public basic_istream<_Elem, _Traits>,
                        public basic_ostream<_Elem, _Traits> { // control insertions and extractions from a stream buffer
@@ -735,7 +758,7 @@ public:
     __CLR_OR_THIS_CALL basic_iostream(const basic_iostream&) = delete;
     basic_iostream& __CLR_OR_THIS_CALL operator=(const basic_iostream&) = delete;
 
-    virtual __CLR_OR_THIS_CALL ~basic_iostream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_iostream() noexcept override {}
 };
 
 #if defined(_DLL_CPPLIB)
@@ -749,8 +772,6 @@ template class _CRTIMP2_PURE_IMPORT basic_iostream<wchar_t, char_traits<wchar_t>
 template class _CRTIMP2_PURE_IMPORT basic_iostream<unsigned short, char_traits<unsigned short>>;
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
-
-// EXTRACTORS
 
 template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& _Istream_extract_into_buffer(
@@ -858,14 +879,14 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, 
 }
 
 template <class _Traits>
-basic_istream<char, _Traits>& operator>>(
-    basic_istream<char, _Traits>& _Istr, signed char& _Ch) { // extract a signed char
+basic_istream<char, _Traits>& operator>>(basic_istream<char, _Traits>& _Istr, signed char& _Ch) {
+    // extract a signed char
     return _Istr >> reinterpret_cast<char&>(_Ch);
 }
 
 template <class _Traits>
-basic_istream<char, _Traits>& operator>>(
-    basic_istream<char, _Traits>& _Istr, unsigned char& _Ch) { // extract an unsigned char
+basic_istream<char, _Traits>& operator>>(basic_istream<char, _Traits>& _Istr, unsigned char& _Ch) {
+    // extract an unsigned char
     return _Istr >> reinterpret_cast<char&>(_Ch);
 }
 
@@ -882,7 +903,6 @@ _Istr&& operator>>(_Istr&& _Is, _Ty&& _Val) { // extract from rvalue stream
     return _STD move(_Is);
 }
 
-// MANIPULATORS
 template <class _Elem, class _Traits>
 basic_istream<_Elem, _Traits>& __CLRCALL_OR_CDECL ws(basic_istream<_Elem, _Traits>& _Istr) { // consume whitespace
     const typename basic_istream<_Elem, _Traits>::sentry _Ok(_Istr, true);

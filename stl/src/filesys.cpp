@@ -34,10 +34,9 @@ static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_s
 }
 
 _FS_DLL void __CLRCALL_PURE_OR_CDECL _Close_dir(void* _Handle) { // close a directory
-    FindClose((HANDLE) _Handle);
+    FindClose(_Handle);
 }
 
-// DIRECTORY FUNCTIONS
 static wchar_t* _Strcpy(wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t* _Src) { // copy an NTCTS
     ::wcscpy_s(_Dest, _MAX_FILESYS_NAME, _Src);
     return _Dest;
@@ -62,7 +61,7 @@ _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
     WIN32_FIND_DATAW _Dentry;
 
     for (;;) {
-        if (FindNextFileW((HANDLE) _Handle, &_Dentry) == 0) { // fail
+        if (FindNextFileW(_Handle, &_Dentry) == 0) { // fail
             _Ftype = file_type::unknown;
             return _Strcpy(_Dest, L"");
         }
@@ -189,7 +188,6 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Remove_dir(const wchar_t* _Fname) { // rem
     return _wrmdir(_Fname) != -1;
 }
 
-// FILE STATUS FUNCTIONS
 _FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t* _Fname, perms* _Pmode) { // get file status
     WIN32_FILE_ATTRIBUTE_DATA _Data;
 
@@ -282,7 +280,7 @@ _FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t* _Fname) 
 
     // success, convert time
     unsigned long long _Wtime = static_cast<unsigned long long>(_Data.ftLastWriteTime.dwHighDateTime) << 32
-                                | _Data.ftLastWriteTime.dwLowDateTime;
+                              | _Data.ftLastWriteTime.dwLowDateTime;
     return static_cast<int64_t>(_Wtime - _Win_ticks_from_epoch);
 }
 
@@ -354,9 +352,9 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
         return 0;
     } else { // test existing files for equivalence
         return _Info1.VolumeSerialNumber != _Info2.VolumeSerialNumber
-                       || memcmp(&_Info1.FileId, &_Info2.FileId, sizeof(_Info1.FileId)) != 0
-                   ? 0
-                   : 1;
+                    || memcmp(&_Info1.FileId, &_Info2.FileId, sizeof(_Info1.FileId)) != 0
+                 ? 0
+                 : 1;
     }
 #else // _CRT_APP
     BY_HANDLE_FILE_INFORMATION _Info1 = {0};
@@ -382,15 +380,14 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
         return 0;
     } else { // test existing files for equivalence
         return _Info1.dwVolumeSerialNumber != _Info2.dwVolumeSerialNumber
-                       || _Info1.nFileIndexHigh != _Info2.nFileIndexHigh || _Info1.nFileIndexLow != _Info2.nFileIndexLow
-                   ? 0
-                   : 1;
+                    || _Info1.nFileIndexHigh != _Info2.nFileIndexHigh || _Info1.nFileIndexLow != _Info2.nFileIndexLow
+                 ? 0
+                 : 1;
     }
 #endif // _CRT_APP
 }
 
 
-// FILE LINKAGE FUNCTIONS
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t* _Fname2) {
     // link _Fname2 to _Fname1
 #ifdef _CRT_APP

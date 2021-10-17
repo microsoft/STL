@@ -191,10 +191,10 @@ int main() {
         L".vs"sv,
         L".vscode"sv,
         L"__pycache__"sv,
+        L"boost-math"sv,
         L"build"sv,
         L"llvm-project"sv,
         L"out"sv,
-        L"vcpkg"sv,
     };
 
     static constexpr array skipped_extensions{
@@ -247,8 +247,8 @@ int main() {
         }
 
         const TabPolicy tab_policy = binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)
-                                         ? TabPolicy::Allowed
-                                         : TabPolicy::Forbidden;
+                                       ? TabPolicy::Allowed
+                                       : TabPolicy::Forbidden;
 
         scan_file(filepath, tab_policy, buffer);
     }

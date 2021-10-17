@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
+#include <limits>
 #include <memory>
+#include <span>
 #include <stddef.h>
 #include <string.h>
 #include <string>
@@ -89,10 +91,8 @@ static_assert(can_construct_at<const volatile int, int&>);
 
 struct X {};
 
-#ifndef __EDG__ // TRANSITION, VSO-1075296
 static_assert(!can_construct_at<int, X>);
 static_assert(!can_construct_at<X, int>);
-#endif // __EDG__
 
 // note that indestructible isn't constructible but is construct_at-ible:
 struct indestructible {
@@ -122,12 +122,10 @@ static_assert(!can_construct_at<string, X>);
 
 // The following static_asserts test our strengthening of noexcept
 
-#ifndef __EDG__ // TRANSITION, VSO-1075296
 static_assert(construct_at_noexcept<int, int>());
 static_assert(construct_at_noexcept<const int, int>());
 static_assert(construct_at_noexcept<volatile int, int>());
 static_assert(construct_at_noexcept<const volatile int, int>());
-#endif // __EDG__
 
 static_assert(!construct_at_noexcept<string, const char (&)[6]>());
 static_assert(!construct_at_noexcept<const string, const char (&)[6]>());
@@ -143,7 +141,6 @@ static_assert(destroy_at_noexcept<volatile string>());
 static_assert(destroy_at_noexcept<const volatile int>());
 static_assert(destroy_at_noexcept<const volatile string>());
 
-#if _HAS_CXX20
 static_assert(destroy_at_noexcept<int[42]>());
 static_assert(destroy_at_noexcept<string[42]>());
 static_assert(destroy_at_noexcept<const int[42]>());
@@ -152,16 +149,13 @@ static_assert(destroy_at_noexcept<volatile int[42]>());
 static_assert(destroy_at_noexcept<volatile string[42]>());
 static_assert(destroy_at_noexcept<const volatile int[42]>());
 static_assert(destroy_at_noexcept<const volatile string[42]>());
-#endif // _HAS_CXX20
 
 struct throwing_dtor {
     ~throwing_dtor() noexcept(false) {}
 };
 
 static_assert(destroy_at_noexcept<throwing_dtor>());
-#if _HAS_CXX20
 static_assert(destroy_at_noexcept<throwing_dtor[42]>());
-#endif // _HAS_CXX20
 
 #ifdef __cpp_lib_concepts
 static_assert(!can_ranges_destroy_at<throwing_dtor>);
@@ -205,7 +199,6 @@ void test_array(const T& val) {
     constexpr int N = 42;
     (void) val;
 
-#if _HAS_CXX20
     alignas(T) unsigned char storage[sizeof(T) * N];
     using U        = conditional_t<is_scalar_v<T>, const volatile T, T>;
     const auto ptr = reinterpret_cast<U*>(storage);
@@ -227,10 +220,8 @@ void test_array(const T& val) {
     ranges::destroy_at(reinterpret_cast<T(*)[N]>(const_cast<T*>(ptr)));
 #endif // TRANSITION, VSO-1049320
 #endif // __cpp_lib_concepts
-#endif // _HAS_CXX20
 }
 
-#if _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
 template <class T>
 struct storage_for {
     union {
@@ -248,9 +239,11 @@ constexpr void test_compiletime() {
         assert(s.object == 42);
         destroy_at(&s.object);
 
+#ifdef __cpp_lib_concepts
         ranges::construct_at(&s.object, 1729);
         assert(s.object == 1729);
         ranges::destroy_at(&s.object);
+#endif // __cpp_lib_concepts
     }
 
     struct nontrivial {
@@ -266,13 +259,269 @@ constexpr void test_compiletime() {
         assert(s.object.x == 42);
         destroy_at(&s.object);
 
+#ifdef __cpp_lib_concepts
         ranges::construct_at(&s.object, 1729);
         assert(s.object.x == 1729);
         ranges::destroy_at(&s.object);
+#endif // __cpp_lib_concepts
     }
 }
 static_assert((test_compiletime(), true));
-#endif // _HAS_CXX20 && defined(__cpp_constexpr_dynamic_alloc)
+
+template <class T>
+struct A {
+    T value;
+
+    constexpr A() noexcept = default;
+    constexpr ~A()         = default;
+};
+
+template <class T>
+struct nontrivial_A {
+    T value;
+
+    constexpr nontrivial_A(T in = T{}) noexcept : value(in) {}
+    constexpr ~nontrivial_A() {}
+};
+
+constexpr void test_compiletime_destroy_variants() {
+    {
+        allocator<A<int>> alloc{};
+        A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; ++i) {
+            construct_at(a + i);
+        }
+        destroy(a, a + 10);
+        alloc.deallocate(a, 10);
+    }
+    {
+        allocator<nontrivial_A<int>> alloc{};
+        nontrivial_A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; ++i) {
+            construct_at(a + i);
+        }
+        destroy(a, a + 10);
+        alloc.deallocate(a, 10);
+    }
+#ifdef __cpp_lib_concepts
+    {
+        allocator<A<int>> alloc{};
+        A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; ++i) {
+            ranges::construct_at(a + i);
+        }
+        ranges::destroy(a, a + 10);
+        alloc.deallocate(a, 10);
+    }
+    {
+        allocator<nontrivial_A<int>> alloc{};
+        nontrivial_A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; ++i) {
+            ranges::construct_at(a + i);
+        }
+        ranges::destroy(a, a + 10);
+        alloc.deallocate(a, 10);
+    }
+    {
+        allocator<A<int>> alloc{};
+        A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; ++i) {
+            ranges::construct_at(a + i);
+        }
+        span s{a, 10};
+        ranges::destroy(s);
+        alloc.deallocate(a, 10);
+    }
+    {
+        allocator<nontrivial_A<int>> alloc{};
+        nontrivial_A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; ++i) {
+            ranges::construct_at(a + i);
+        }
+        span s{a, 10};
+        ranges::destroy(s);
+        alloc.deallocate(a, 10);
+    }
+#endif // __cpp_lib_concepts
+    {
+        allocator<A<int>> alloc{};
+        A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; ++i) {
+            construct_at(a + i);
+        }
+        destroy_n(a, 10);
+        alloc.deallocate(a, 10);
+    }
+    {
+        allocator<nontrivial_A<int>> alloc{};
+        nontrivial_A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; ++i) {
+            construct_at(a + i);
+        }
+        destroy_n(a, 10);
+        alloc.deallocate(a, 10);
+    }
+#ifdef __cpp_lib_concepts
+    {
+        allocator<A<int>> alloc{};
+        A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; ++i) {
+            ranges::construct_at(a + i);
+        }
+        ranges::destroy_n(a, 10);
+        alloc.deallocate(a, 10);
+    }
+    {
+        allocator<nontrivial_A<int>> alloc{};
+        nontrivial_A<int>* a = alloc.allocate(10);
+        for (int i = 0; i < 10; ++i) {
+            ranges::construct_at(a + i);
+        }
+        ranges::destroy_n(a, 10);
+        alloc.deallocate(a, 10);
+    }
+#endif // __cpp_lib_concepts
+}
+static_assert((test_compiletime_destroy_variants(), true));
+
+template <class T, bool Construct = false, bool Destroy = false>
+struct Alloc {
+    using value_type = T;
+    using size_type  = size_t;
+
+    template <class U>
+    struct rebind {
+        using other = Alloc<U, Construct, Destroy>;
+    };
+
+    constexpr Alloc(int id_) noexcept : id(id_) {}
+
+    template <class U>
+    constexpr Alloc(const Alloc<U, Construct, Destroy>& al) noexcept : id(al.id) {}
+
+    constexpr value_type* allocate(size_t n) {
+        assert(n == 10);
+        return allocator<T>{}.allocate(n);
+    }
+
+    constexpr void deallocate(value_type* ptr, size_t n) {
+        assert(n == 10);
+        allocator<T>{}.deallocate(ptr, n);
+    }
+
+    constexpr void construct(value_type* ptr, value_type n) requires Construct {
+        construct_at(ptr, n);
+    }
+
+    constexpr void destroy(value_type* ptr) requires Destroy {
+        destroy_at(ptr);
+    }
+
+    constexpr Alloc select_on_container_copy_construction() const noexcept {
+        return Alloc{id + 1};
+    }
+
+    constexpr size_type max_size() const noexcept {
+        return numeric_limits<size_type>::max() / sizeof(value_type);
+    }
+
+    template <class U>
+    constexpr bool operator==(const Alloc<U, Construct, Destroy>&) const noexcept {
+        return true;
+    }
+
+    int id;
+};
+
+constexpr void test_compiletime_allocator_traits() {
+    {
+        storage_for<A<int>> a;
+        Alloc<A<int>> alloc{10};
+        assert(alloc.id == 10);
+
+        auto result = allocator_traits<Alloc<A<int>>>::allocate(alloc, 10);
+        assert(result != nullptr);
+        allocator_traits<Alloc<A<int>>>::deallocate(alloc, result, 10);
+
+        allocator_traits<Alloc<A<int>>>::construct(alloc, &a.object);
+        assert(a.object.value == 0);
+        allocator_traits<Alloc<A<int>>>::destroy(alloc, &a.object);
+
+        assert(allocator_traits<Alloc<A<int>>>::select_on_container_copy_construction(alloc).id == 11);
+
+        assert(allocator_traits<Alloc<A<int>>>::max_size(alloc)
+               == numeric_limits<Alloc<A<int>>::size_type>::max() / sizeof(Alloc<A<int>>::value_type));
+    }
+    {
+        storage_for<nontrivial_A<int>> a;
+        Alloc<nontrivial_A<int>> alloc{10};
+        assert(alloc.id == 10);
+
+        auto result = allocator_traits<Alloc<nontrivial_A<int>>>::allocate(alloc, 10);
+        assert(result != nullptr);
+        allocator_traits<Alloc<nontrivial_A<int>>>::deallocate(alloc, result, 10);
+
+        allocator_traits<Alloc<nontrivial_A<int>>>::construct(alloc, &a.object, 10);
+        assert(a.object.value == 10);
+        allocator_traits<Alloc<nontrivial_A<int>>>::destroy(alloc, &a.object);
+
+        assert(allocator_traits<Alloc<nontrivial_A<int>>>::select_on_container_copy_construction(alloc).id == 11);
+
+        assert(allocator_traits<Alloc<nontrivial_A<int>>>::max_size(alloc)
+               == numeric_limits<Alloc<nontrivial_A<int>>::size_type>::max()
+                      / sizeof(Alloc<nontrivial_A<int>>::value_type));
+    }
+    {
+        storage_for<nontrivial_A<int>> a;
+        Alloc<nontrivial_A<int>, true> alloc{10};
+
+        allocator_traits<Alloc<nontrivial_A<int>, true>>::construct(alloc, &a.object, 10);
+        assert(a.object.value == 10);
+        allocator_traits<Alloc<nontrivial_A<int>, true>>::destroy(alloc, &a.object);
+    }
+    {
+        storage_for<nontrivial_A<int>> a;
+        Alloc<nontrivial_A<int>, false, true> alloc{10};
+
+        allocator_traits<Alloc<nontrivial_A<int>, false, true>>::construct(alloc, &a.object, 10);
+        assert(a.object.value == 10);
+        allocator_traits<Alloc<nontrivial_A<int>, false, true>>::destroy(alloc, &a.object);
+    }
+    {
+        storage_for<nontrivial_A<int>> a;
+        Alloc<nontrivial_A<int>, true, true> alloc{10};
+
+        allocator_traits<Alloc<nontrivial_A<int>, true, true>>::construct(alloc, &a.object, 10);
+        assert(a.object.value == 10);
+        allocator_traits<Alloc<nontrivial_A<int>, true, true>>::destroy(alloc, &a.object);
+    }
+}
+static_assert((test_compiletime_allocator_traits(), true));
+
+constexpr void test_compiletime_allocator() {
+    {
+        auto result = allocator<A<int>>{}.allocate(10);
+        allocator<A<int>>{}.deallocate(result, 10);
+    }
+    {
+        auto result = allocator<nontrivial_A<int>>{}.allocate(10);
+        allocator<nontrivial_A<int>>{}.deallocate(result, 10);
+    }
+}
+static_assert((test_compiletime_allocator(), true));
+
+constexpr void test_compiletime_operators() {
+    {
+        allocator<int> allocatorA{};
+        allocator<float> allocatorB{};
+        constexpr auto allocatorC = allocatorA;
+
+        static_assert(allocatorA == allocatorB);
+        static_assert(!(allocatorA != allocatorB));
+        static_assert(allocatorA == allocatorC);
+    }
+}
+static_assert((test_compiletime_operators(), true));
 
 int main() {
     test_runtime(1234);

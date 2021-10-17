@@ -134,10 +134,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::transform(move(as_const(rng)), add8)), TV>);
-        STATIC_ASSERT(noexcept(views::transform(as_const(rng), add8)) == is_noexcept);
+        STATIC_ASSERT(noexcept(views::transform(move(as_const(rng)), add8)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | transform_incr), TV>);
-        STATIC_ASSERT(noexcept(as_const(rng) | transform_incr) == is_noexcept);
+        STATIC_ASSERT(noexcept(move(as_const(rng)) | transform_incr) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
@@ -159,9 +159,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     const bool is_empty = ranges::empty(expected);
 
     // Validate deduction guide
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     same_as<TV> auto r = transform_view{forward<Rng>(rng), add8};
     using R            = decltype(r);
     STATIC_ASSERT(ranges::view<R>);
@@ -244,17 +241,27 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(CanMemberEnd<R>);
     STATIC_ASSERT(CanEnd<const R&> == (range<const V> && const_invocable));
     if (!is_empty) {
-        same_as<sentinel_t<R>> auto i = r.end();
-        static_assert(is_same_v<sentinel_t<R>, iterator_t<R>> == common_range<V>);
+        same_as<sentinel_t<R>> auto s = r.end();
+        STATIC_ASSERT(is_same_v<sentinel_t<R>, iterator_t<R>> == common_range<V>);
         if constexpr (bidirectional_range<R> && common_range<R>) {
-            assert(*prev(i) == *prev(end(expected)));
+            assert(*prev(s) == *prev(end(expected)));
         }
 
         if constexpr (CanEnd<const R&>) {
-            same_as<sentinel_t<const R>> auto i2 = as_const(r).end();
-            static_assert(is_same_v<sentinel_t<const R>, iterator_t<const R>> == common_range<const V>);
+            same_as<sentinel_t<const R>> auto sc = as_const(r).end();
+            STATIC_ASSERT(is_same_v<sentinel_t<const R>, iterator_t<const R>> == common_range<const V>);
             if constexpr (bidirectional_range<const R> && common_range<const R>) {
-                assert(*prev(i2) == *prev(end(expected)));
+                assert(*prev(sc) == *prev(end(expected)));
+            }
+
+            if (forward_range<V>) { // intentionally not if constexpr
+                // Compare with const / non-const iterators
+                const same_as<iterator_t<R>> auto i        = r.begin();
+                const same_as<iterator_t<const R>> auto ic = as_const(r).begin();
+                assert(s != i);
+                assert(s != ic);
+                assert(sc != i);
+                assert(sc != ic);
             }
         }
     }
@@ -314,9 +321,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate transform_view::base() && (NB: do this last since it leaves r moved-from)
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1159442
-    (void) 42;
-#endif // TRANSITION, DevCom-1159442
     if (forward_range<V>) { // intentionally not if constexpr
         same_as<V> auto b2 = move(r).base();
         STATIC_ASSERT(noexcept(move(r).base()) == is_nothrow_move_constructible_v<V>);
@@ -425,16 +429,18 @@ struct iterator_instantiator {
                 conditional_t<bidirectional_iterator<Iter>, bidirectional_iterator_tag,
                     conditional_t<forward_iterator<Iter>, forward_iterator_tag, input_iterator_tag>>>>);
 
-        using C = typename iterator_traits<Iter>::iterator_category;
-        STATIC_ASSERT(is_same_v<typename I::iterator_category,
-            conditional_t<is_lvalue_reference_v<invoke_result_t<decltype((add8)), iter_reference_t<Iter>>>,
-                conditional_t<derived_from<C, contiguous_iterator_tag>, random_access_iterator_tag, C>,
-                input_iterator_tag>>);
+        STATIC_ASSERT(_Has_member_iterator_category<I> == forward_iterator<Iter>);
+        if constexpr (forward_iterator<Iter>) {
+            STATIC_ASSERT(is_same_v<typename I::iterator_category, input_iterator_tag>);
+        }
 
         { // Validate iterator special member functions and base
-            I defaultConstructed{};
-            assert(std::move(defaultConstructed).base().peek() == nullptr);
-            STATIC_ASSERT(is_nothrow_default_constructible_v<I>);
+            STATIC_ASSERT(default_initializable<I> == default_initializable<Iter>);
+            if constexpr (default_initializable<Iter>) {
+                I defaultConstructed{};
+                assert(move(defaultConstructed).base().peek() == nullptr);
+                STATIC_ASSERT(is_nothrow_default_constructible_v<I>);
+            }
 
             auto r0 = make_view();
             I valueConstructed{r0, Iter{mutable_ints}};
@@ -445,11 +451,16 @@ struct iterator_instantiator {
                 assert(copyConstructed == valueConstructed);
                 STATIC_ASSERT(is_nothrow_copy_constructible_v<I>);
 
-                defaultConstructed = copyConstructed;
-                assert(defaultConstructed == valueConstructed);
+                auto r1 = make_view();
+                I copyAssigned{r1, Iter{mutable_ints + 8}};
+                copyAssigned = copyConstructed;
+                assert(copyAssigned == valueConstructed);
                 STATIC_ASSERT(is_nothrow_copy_assignable_v<I>);
+                STATIC_ASSERT(same_as<const Iter&, decltype(as_const(copyConstructed).base())>);
             }
-            assert(std::move(valueConstructed).base().peek() == mutable_ints);
+            assert(as_const(valueConstructed).base().peek() == mutable_ints);
+            assert(move(valueConstructed).base().peek() == mutable_ints);
+            STATIC_ASSERT(same_as<Iter, decltype(move(valueConstructed).base())>);
 
             if constexpr (forward_iterator<Iter>) {
                 auto r1      = make_view();
@@ -498,23 +509,14 @@ struct iterator_instantiator {
             assert(ranges::iter_move(i0) == add8(mutable_ints[0])); // NB: moving from int leaves it unchanged
             STATIC_ASSERT(NOEXCEPT_IDL0(ranges::iter_move(i0)));
 
-            if constexpr (forward_iterator<Iter>) {
-                auto i1 = ranges::next(i0);
-                ranges::iter_swap(i0, i1);
-                assert(mutable_ints[0] == 1);
-                assert(mutable_ints[1] == 0);
-                ranges::iter_swap(i1, i0);
-                assert(mutable_ints[0] == 0);
-                assert(mutable_ints[1] == 1);
-                STATIC_ASSERT(NOEXCEPT_IDL0(ranges::iter_swap(i0, i1)));
-            }
+            STATIC_ASSERT(!CanIterSwap<decltype(i0)>);
         }
 
         { // Validate increments
             auto r0 = make_view();
             auto i0 = r0.begin();
             assert(&++i0 == &i0);
-            assert(std::move(i0).base().peek() == mutable_ints + 1);
+            assert(move(i0).base().peek() == mutable_ints + 1);
             STATIC_ASSERT(noexcept(++i0));
 
             auto r1 = make_view();
@@ -524,7 +526,7 @@ struct iterator_instantiator {
             } else {
                 i1++;
             }
-            assert(std::move(i1).base().peek() == mutable_ints + 1);
+            assert(move(i1).base().peek() == mutable_ints + 1);
             STATIC_ASSERT(noexcept(i0++));
         }
 
@@ -580,26 +582,54 @@ struct iterator_instantiator {
             const auto first = r.begin();
             const auto last  = r.end();
 
+            const auto const_first = ranges::iterator_t<const R>{first};
+            const auto const_last  = ranges::sentinel_t<const R>{last};
+
             assert(first == first);
             assert(I{} == I{});
             STATIC_ASSERT(noexcept(first == first));
+
+            assert(first == const_first);
+            STATIC_ASSERT(noexcept(first == const_first));
+            assert(const_first == first);
+            STATIC_ASSERT(noexcept(const_first == first));
 
             assert(!(first == last));
             STATIC_ASSERT(noexcept(first == last));
             assert(!(last == first));
             STATIC_ASSERT(noexcept(last == first));
 
+            assert(!(const_first == last));
+            STATIC_ASSERT(noexcept(const_first == last));
+            assert(!(last == const_first));
+            STATIC_ASSERT(noexcept(last == const_first));
+
+            assert(!(first == const_last));
+            STATIC_ASSERT(noexcept(first == const_last));
+            assert(!(const_last == first));
+            STATIC_ASSERT(noexcept(const_last == first));
+
             assert(!(first != first));
             assert(!(I{} != I{}));
             STATIC_ASSERT(noexcept(first != first));
 
             if constexpr (forward_iterator<Iter>) {
-                const auto final = ranges::next(first, last);
+                const auto final       = ranges::next(first, last);
+                const auto const_final = ranges::next(const_first, const_last);
                 assert(!(first == final));
                 assert(first != final);
 
                 assert(last == final);
                 assert(final == last);
+
+                assert(const_last == final);
+                assert(final == const_last);
+
+                assert(last == const_final);
+                assert(const_final == last);
+
+                assert(const_last == const_final);
+                assert(const_final == const_last);
 
                 assert(!(last != final));
                 assert(!(final != last));
@@ -617,6 +647,21 @@ struct iterator_instantiator {
                     assert(first - last == -ranges::ssize(mutable_ints));
                     STATIC_ASSERT(noexcept(last - first));
                     STATIC_ASSERT(noexcept(first - last));
+
+                    assert(last - const_first == ranges::ssize(mutable_ints));
+                    assert(const_first - last == -ranges::ssize(mutable_ints));
+                    STATIC_ASSERT(noexcept(last - const_first));
+                    STATIC_ASSERT(noexcept(const_first - last));
+
+                    assert(const_last - first == ranges::ssize(mutable_ints));
+                    assert(first - const_last == -ranges::ssize(mutable_ints));
+                    STATIC_ASSERT(noexcept(const_last - first));
+                    STATIC_ASSERT(noexcept(first - const_last));
+
+                    assert(const_last - const_first == ranges::ssize(mutable_ints));
+                    assert(const_first - const_last == -ranges::ssize(mutable_ints));
+                    STATIC_ASSERT(noexcept(const_last - const_first));
+                    STATIC_ASSERT(noexcept(const_first - const_last));
                 }
 
                 if constexpr (random_access_iterator<Iter>) { // Validate relational operators
@@ -705,12 +750,44 @@ int main() {
         instantiation_test();
     }
 
-    { // Validate a non-view borrowed range
-        constexpr span s{some_ints};
-        STATIC_ASSERT(test_one(s, transformed_ints));
-        test_one(s, transformed_ints);
-    }
-
     STATIC_ASSERT((iterator_instantiation_test(), true));
     iterator_instantiation_test();
+
+    { // Validate **non-standard guarantee** that predicates are moved into the range adaptor closure, and into the view
+      // object from an rvalue closure
+        struct Fn {
+            Fn()     = default;
+            Fn(Fn&&) = default;
+            Fn(const Fn&) {
+                assert(false);
+            }
+            Fn& operator=(Fn&&) = default;
+
+            Fn& operator=(const Fn&) {
+                assert(false);
+                return *this;
+            }
+
+            bool operator()(int) const {
+                return true;
+            }
+        };
+
+        (void) views::transform(Fn{})(span<int>{});
+    }
+
+    { // Validate that iter_swap works when result of transformation is an lvalue reference
+        char base[] = "hello";
+        auto v      = ranges::transform_view{base, [](char& c) -> char& { return c; }};
+        auto i1     = v.begin();
+        auto i2     = v.begin() + 1;
+
+        assert(*i1 == 'h');
+        assert(*i2 == 'e');
+
+        ranges::iter_swap(i1, i2);
+
+        assert(*i1 == 'e');
+        assert(*i2 == 'h');
+    }
 }

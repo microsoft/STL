@@ -3,12 +3,14 @@
 
 // Convert multibyte char to wide char.
 
+#include <yvals.h>
+
+#include <__msvc_xlocinfo_types.hpp>
 #include <cctype>
 #include <cerrno>
 #include <climits> // for INT_MAX
 #include <crtdbg.h>
 #include <internal_shared.h>
-#include <xlocinfo.h> // for _Cvtvec, _Mbrtowc
 
 _EXTERN_C_UNLESS_PURE
 

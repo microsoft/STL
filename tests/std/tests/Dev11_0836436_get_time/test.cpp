@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
+#include <cstdio>
+#include <cstdlib>
 #include <iomanip>
 #include <ios>
 #include <locale>
@@ -103,6 +105,8 @@ void test_990695();
 void test_locale_russian();
 void test_locale_german();
 void test_locale_chinese();
+void test_invalid_argument();
+void test_buffer_resizing();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -146,6 +150,8 @@ int main() {
     test_locale_russian();
     test_locale_german();
     test_locale_chinese();
+    test_invalid_argument();
+    test_buffer_resizing();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -243,6 +249,78 @@ void test_990695() {
         }
 
         {
+            istringstream iss("20200609");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 5);
+            assert(t.tm_mday == 9);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("20201213");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 11);
+            assert(t.tm_mday == 13);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020112");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 10);
+            assert(t.tm_mday == 2);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020061125");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 5);
+            assert(t.tm_mday == 11);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020120625119");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y12%m25%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 5);
+            assert(t.tm_mday == 11);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020092Text");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(t.tm_mon == 8);
+            assert(t.tm_mday == 2);
+            assert(t.tm_year == 120);
+        }
+
+        {
             istringstream iss("sep 31 2014");
             ios_base::iostate err = Bit;
             tm t{};
@@ -291,6 +369,79 @@ void test_990695() {
         }
 
         {
+            istringstream iss("20200609");
+            tm t = {};
+            const string fmt("%Y%m%d");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(t.tm_mon == 5);
+            assert(t.tm_mday == 9);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020112");
+            tm t = {};
+            const string fmt("%Y%m%d");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(t.tm_mon == 10);
+            assert(t.tm_mday == 2);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020061125");
+            tm t = {};
+            const string fmt("%Y%m%d");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(t.tm_mon == 5);
+            assert(t.tm_mday == 11);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020124");
+            tm t = {};
+            const string fmt("%Y%d%m");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(t.tm_mon == 3);
+            assert(t.tm_mday == 12);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("2020104Text");
+            tm t = {};
+            const string fmt("%Y%d%m");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(t.tm_mon == 3);
+            assert(t.tm_mday == 10);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            istringstream iss("202000000000000923");
+            tm t = {};
+            const string fmt("%Y%m%d");
+            iss >> get_time(&t, fmt.c_str());
+            assert(iss.fail());
+        }
+
+        {
+            istringstream iss("202000000000000923");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(err == ios_base::failbit);
+        }
+
+        {
             // This case should fail
             istringstream iss("2011-D-18");
             ios_base::iostate err = Bit;
@@ -308,6 +459,104 @@ void test_990695() {
             const string fmt("%Y-%b-%d");
             iss >> get_time(&t, fmt.c_str());
             assert(iss.fail());
+        }
+
+        {
+            // GH-1071 should not fail when format is longer than the stream
+            istringstream iss("2020");
+            ios_base::iostate err = Bit;
+            tm t{};
+            const string fmt("%Y%m%d");
+            use_facet<time_get<char>>(iss.getloc())
+                .get(Iter(iss.rdbuf()), Iter(), iss, err, &t, fmt.c_str(), fmt.c_str() + fmt.size());
+            assert(err == ios_base::eofbit);
+            assert(t.tm_mon == 0);
+            assert(t.tm_mday == 0);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            // GH-1071 should not fail when format is longer than the stream
+            istringstream iss("2020-sep");
+            tm t = {};
+            const string fmt("%Y-%b-%d");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(iss.eof());
+            assert(t.tm_mon == 8);
+            assert(t.tm_mday == 0);
+            assert(t.tm_year == 120);
+        }
+
+        {
+            // GH-1071 should not fail when format is longer than the stream
+            istringstream iss("Current time is 3:8");
+            tm t = {};
+            const string fmt("Current time is %H:%M:%S");
+            iss >> get_time(&t, fmt.c_str());
+            assert(!iss.fail());
+            assert(iss.eof());
+            assert(t.tm_hour == 3);
+            assert(t.tm_min == 8);
+            assert(t.tm_sec == 0);
+        }
+
+        {
+            // Should fail if EOF while not parsing specifier (N4878 [locale.time.get.members]/8.3).
+            tm t{};
+            istringstream iss("4");
+            iss >> get_time(&t, "42");
+            assert(iss.rdstate() == (ios_base::eofbit | ios_base::failbit));
+        }
+
+        {
+            // Trailing % should not be treated as a literal (N4878 [locale.time.get.members]/8.4).
+            tm t{};
+            istringstream iss("%");
+            iss >> get_time(&t, "%");
+            assert(iss.fail());
+        }
+
+        {
+            // % with modifier but no specifier is also incomplete.
+            tm t{};
+            istringstream iss("%E");
+            iss >> get_time(&t, "%E");
+            assert(iss.fail());
+        }
+
+        {
+            // Literal match is case-insensitive (N4878 [locale.time.get.members]/8.6).
+            tm t{};
+            istringstream iss("aBc");
+            iss >> get_time(&t, "AbC");
+            assert(iss);
+        }
+
+        {
+            // GH-1606: reads too many leading zeros
+            istringstream iss("19700405T000006");
+            tm t{};
+            iss >> get_time(&t, "%Y%m%dT%H%M%S");
+            assert(iss);
+
+            printf("Expected hour 0, min 0, sec 6\n");
+            printf("     Got hour %d, min %d, sec %d\n", t.tm_hour, t.tm_min, t.tm_sec);
+
+            assert(t.tm_year == 70);
+            assert(t.tm_mon == 3);
+            assert(t.tm_mday == 5);
+            assert(t.tm_hour == 0);
+            assert(t.tm_min == 0);
+            assert(t.tm_sec == 6);
+        }
+
+        {
+            // strptime specification: "leading zeros are permitted but not required"
+            tm t{};
+            istringstream{" 7 4"} >> get_time(&t, "%m%d");
+            assert(t.tm_mon == 6);
+            assert(t.tm_mday == 4);
         }
     }
 }
@@ -516,4 +765,59 @@ void test_locale_chinese() {
     // December in Chinese (expanded and abbreviated)
     assert(read_date_locale(L"2020-\x5341\x4e8c\x6708-31", "zh-CN") == make_tuple(31, 11, 120));
     assert(read_date_locale(L"2020-\x0031\x0032\x6708-31", "zh-CN") == make_tuple(31, 11, 120));
+}
+
+void test_invalid_parameter_handler(const wchar_t* const expression, const wchar_t* const function,
+    const wchar_t* const file, const unsigned int line, const uintptr_t reserved) {
+    (void) expression;
+    (void) reserved;
+
+    static int num_called = 0;
+    if (++num_called > 10) {
+        wprintf(
+            L"Test Failed: Invalid parameter handler was called over 10 times by %s in %s:%u\n", function, file, line);
+        exit(1);
+    }
+}
+
+void test_invalid_argument() {
+#ifndef _M_CEE_PURE
+    _set_invalid_parameter_handler(test_invalid_parameter_handler);
+
+    time_t t = time(nullptr);
+    tm currentTime;
+    localtime_s(&currentTime, &t);
+
+    {
+        wstringstream wss;
+        wss << put_time(&currentTime, L"%Y-%m-%d-%H-%M-%s");
+        assert(wss.rdstate() == ios_base::badbit);
+    }
+
+    {
+        stringstream ss;
+        ss << put_time(&currentTime, "%Y-%m-%d-%H-%M-%s");
+        assert(ss.rdstate() == ios_base::badbit);
+    }
+#endif // _M_CEE_PURE
+}
+
+void test_buffer_resizing() {
+    time_t t = time(nullptr);
+    tm currentTime;
+    localtime_s(&currentTime, &t);
+
+    {
+        wstringstream wss;
+        wss.imbue(locale("ja-JP"));
+        wss << put_time(&currentTime, L"%c");
+        assert(wss.rdstate() == ios_base::goodbit);
+    }
+
+    {
+        stringstream ss;
+        ss.imbue(locale("ja-JP"));
+        ss << put_time(&currentTime, "%c");
+        assert(ss.rdstate() == ios_base::goodbit);
+    }
 }

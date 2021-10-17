@@ -22,7 +22,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-// FUNCTION TEMPLATE _Uses_allocator_construct
+#if !_HAS_CXX20
 template <class _Ty, class _Outer_alloc, class _Inner_alloc, class... _Types>
 void _Uses_allocator_construct2(
     true_type, _Ty* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Types&&... _Args) {
@@ -133,11 +133,10 @@ void _Uses_allocator_construct(
     _Uses_allocator_construct_pair(_Ptr, _Outer, _Inner, _STD forward_as_tuple(_STD forward<_Uty>(_Pair.first)),
         _STD forward_as_tuple(_STD forward<_Vty>(_Pair.second)));
 }
+#endif // !_HAS_CXX20
 
 #if _HAS_CXX17
 namespace pmr {
-
-    // CLASS memory_resource
     class __declspec(novtable) memory_resource {
     public:
         virtual ~memory_resource() noexcept = default;
@@ -169,11 +168,12 @@ namespace pmr {
         return &_Left == &_Right || _Left.is_equal(_Right);
     }
 
+#if !_HAS_CXX20
     _NODISCARD inline bool operator!=(const memory_resource& _Left, const memory_resource& _Right) noexcept {
         return !(_Left == _Right);
     }
+#endif // !_HAS_CXX20
 
-    // FUNCTION get_default_resource
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Aligned_get_default_resource() noexcept;
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_get_default_resource() noexcept;
 
@@ -185,7 +185,6 @@ namespace pmr {
 #endif // __cpp_aligned_new
     }
 
-    // CLASS TEMPLATE polymorphic_allocator
 #if _HAS_CXX20 && defined(__cpp_lib_byte)
     template <class _Ty = byte>
 #else
@@ -270,8 +269,17 @@ namespace pmr {
         template <class _Uty, class... _Types>
         void construct(_Uty* const _Ptr, _Types&&... _Args) {
             // propagate allocator *this if uses_allocator_v<_Uty, polymorphic_allocator>
+#if _HAS_CXX20
+            _STD uninitialized_construct_using_allocator(_Ptr, *this, _STD forward<_Types>(_Args)...);
+#else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
             allocator<char> _Al{};
             _Uses_allocator_construct(_Ptr, _Al, *this, _STD forward<_Types>(_Args)...);
+#endif // ^^^ !_HAS_CXX20 ^^^
+        }
+
+        template <class _Uty>
+        _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY void destroy(_Uty* const _Ptr) noexcept /* strengthened */ {
+            _Destroy_in_place(*_Ptr);
         }
 
         _NODISCARD polymorphic_allocator select_on_container_copy_construction() const noexcept /* strengthened */ {
@@ -295,13 +303,21 @@ namespace pmr {
         return *_Left.resource() == *_Right.resource();
     }
 
+#if !_HAS_CXX20
     template <class _Ty1, class _Ty2>
     _NODISCARD bool operator!=(
         const polymorphic_allocator<_Ty1>& _Left, const polymorphic_allocator<_Ty2>& _Right) noexcept {
         return !(_Left == _Right);
     }
+#endif // !_HAS_CXX20
 
 } // namespace pmr
+
+template <class _Ty, class _Ptr>
+struct _Has_no_alloc_destroy<pmr::polymorphic_allocator<_Ty>, _Ptr, void> : true_type {
+    // polymorphic_allocator technically _does_ have a destroy member, but it's equivalent to the
+    // default implementation in allocator_traits so we can optimize it away.
+};
 
 #endif // _HAS_CXX17
 

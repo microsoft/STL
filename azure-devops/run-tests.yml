@@ -1,0 +1,48 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: buildOutputLocationVar
+  type: string
+  default: buildOutputLocation
+- name: targetPlatform
+  type: string
+- name: hostArch
+  type: string
+- name: targetArch
+  type: string
+- name: displayName
+  type: string
+  default: 'Run Tests'
+- name: publishArtifact
+  type: boolean
+  default: false
+steps:
+- task: CmdLine@2
+  displayName: ${{ parameters.displayName }}
+  timeoutInMinutes: 120
+  condition: succeeded()
+  inputs:
+    workingDirectory: $(${{ parameters.buildOutputLocationVar }})
+    script: |
+      call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+      -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+      ctest -V
+  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+- task: PublishTestResults@2
+  displayName: 'Publish Tests'
+  timeoutInMinutes: 10
+  condition: succeededOrFailed()
+  inputs:
+    searchFolder: $(${{ parameters.buildOutputLocationVar }})
+    testResultsFormat: JUnit
+    testResultsFiles: '**/test-results.xml'
+    testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'
+- publish: $(${{ parameters.buildOutPutLocationVar }})/out
+  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-libs-$(System.JobId)'
+  condition: ${{ parameters.publishArtifact }}
+  displayName: 'Publish Libs and Headers Artifact'
+- publish: $(${{ parameters.buildOutPutLocationVar }})/tests
+  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-tests-$(System.JobId)'
+  condition: ${{ parameters.publishArtifact }}
+  displayName: 'Publish Tests Artifact'

@@ -50,54 +50,101 @@ Function Get-TempFilePath {
   return Join-Path $tempPath $tempName
 }
 
+<#
+.SYNOPSIS
+Downloads and extracts a ZIP file to a newly created temporary subdirectory.
+
+.DESCRIPTION
+DownloadAndExtractZip returns a path containing the extracted contents.
+
+.PARAMETER Url
+The URL of the ZIP file to download.
+#>
+Function DownloadAndExtractZip {
+  Param(
+    [String]$Url
+  )
+
+  if ([String]::IsNullOrWhiteSpace($Url)) {
+    throw 'Missing Url'
+  }
+
+  $ZipPath = Get-TempFilePath -Extension 'zip'
+  & curl.exe -L -o $ZipPath -s -S $Url
+  $TempSubdirPath = Get-TempFilePath -Extension 'dir'
+  Expand-Archive -Path $ZipPath -DestinationPath $TempSubdirPath -Force
+
+  return $TempSubdirPath
+}
+
 $TranscriptPath = 'C:\provision-image-transcript.txt'
 
 if ([string]::IsNullOrEmpty($AdminUserPassword)) {
-  Start-Transcript -Path $TranscriptPath
+  Start-Transcript -Path $TranscriptPath -UseMinimalHeader
 } else {
   Write-Host 'AdminUser password supplied; switching to AdminUser.'
-  $PsExecPath = Get-TempFilePath -Extension 'exe'
-  Write-Host "Downloading psexec to: $PsExecPath"
-  & curl.exe -L -o $PsExecPath -s -S https://live.sysinternals.com/PsExec64.exe
+
+  # https://docs.microsoft.com/en-us/sysinternals/downloads/psexec
+  $PsToolsZipUrl = 'https://download.sysinternals.com/files/PSTools.zip'
+  Write-Host "Downloading: $PsToolsZipUrl"
+  $ExtractedPsToolsPath = DownloadAndExtractZip -Url $PsToolsZipUrl
+  $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
+
+  # https://github.com/PowerShell/PowerShell/releases/latest
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.1.4/PowerShell-7.1.4-win-x64.zip'
+  Write-Host "Downloading: $PowerShellZipUrl"
+  $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
+  $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
+
   $PsExecArgs = @(
     '-u',
     'AdminUser',
     '-p',
-    $AdminUserPassword,
+    'AdminUserPassword_REDACTED',
     '-accepteula',
+    '-i',
     '-h',
-    'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe',
+    $PwshPath,
     '-ExecutionPolicy',
     'Unrestricted',
     '-File',
     $PSCommandPath
   )
-
   Write-Host "Executing: $PsExecPath $PsExecArgs"
+  $PsExecArgs[3] = $AdminUserPassword
 
   $proc = Start-Process -FilePath $PsExecPath -ArgumentList $PsExecArgs -Wait -PassThru
   Write-Host 'Reading transcript...'
   Get-Content -Path $TranscriptPath
   Write-Host 'Cleaning up...'
-  Remove-Item $PsExecPath
+  Remove-Item -Recurse -Path $ExtractedPsToolsPath
+  Remove-Item -Recurse -Path $ExtractedPowerShellPath
   exit $proc.ExitCode
 }
 
 $Workloads = @(
+  'Microsoft.VisualStudio.Component.VC.ASAN',
   'Microsoft.VisualStudio.Component.VC.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.CMake.Project',
   'Microsoft.VisualStudio.Component.VC.CoreIde',
   'Microsoft.VisualStudio.Component.VC.Llvm.Clang',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.ARM.Spectre',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
   'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
+  # TRANSITION, LLVM-51128 (Clang 12 targeting ARM64 is incompatible with WinSDK 10.0.20348.0)
   'Microsoft.VisualStudio.Component.Windows10SDK.19041'
 )
 
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
-$VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.8.5/python-3.8.5-amd64.exe'
+$VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.9.7/python-3.9.7-amd64.exe'
+
+# https://docs.microsoft.com/en-us/windows-hardware/drivers/download-the-wdk
+$WindowsDriverKitUrl = 'https://go.microsoft.com/fwlink/?linkid=2128854'
 
 $CudaUrl = `
   'https://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_426.00_win10.exe'
@@ -225,6 +272,36 @@ Function InstallPython {
 
 <#
 .SYNOPSIS
+Installs the Windows Driver Kit.
+
+.DESCRIPTION
+InstallWindowsDriverKit installs the Windows Driver Kit from the supplied URL.
+
+.PARAMETER Url
+The URL of the Windows Driver Kit installer.
+#>
+Function InstallWindowsDriverKit {
+  Param(
+    [String]$Url
+  )
+
+  Write-Host 'Downloading the Windows Driver Kit...'
+  [string]$installerPath = Get-TempFilePath -Extension 'exe'
+  curl.exe -L -o $installerPath -s -S $Url
+  Write-Host 'Installing the Windows Driver Kit...'
+  $proc = Start-Process -FilePath cmd.exe -ArgumentList `
+  @('/c', 'start', '/wait', $installerPath, '/quiet', '/features', '+') -Wait -PassThru
+  $exitCode = $proc.ExitCode
+  if ($exitCode -eq 0) {
+    Write-Host 'Installation successful!'
+  }
+  else {
+    Write-Error "Installation failed! Exited with $exitCode."
+  }
+}
+
+<#
+.SYNOPSIS
 Installs NVIDIA's CUDA Toolkit.
 
 .DESCRIPTION
@@ -279,7 +356,7 @@ Function PipInstall {
 
   try {
     Write-Host "Installing or upgrading $Package..."
-    python.exe -m pip install --upgrade $Package
+    python.exe -m pip install --progress-bar off --upgrade $Package
     Write-Host "Done installing or upgrading $Package."
   }
   catch {
@@ -300,6 +377,7 @@ Add-MpPreference -ExclusionProcess python.exe
 
 InstallPython $PythonUrl
 InstallVisualStudio -Workloads $Workloads -BootstrapperUrl $VisualStudioBootstrapperUrl
+InstallWindowsDriverKit $WindowsDriverKitUrl
 InstallCuda -Url $CudaUrl -Features $CudaFeatures
 
 Write-Host 'Updating PATH...'
@@ -321,3 +399,9 @@ Write-Host 'Finished updating PATH!'
 
 PipInstall pip
 PipInstall psutil
+
+# https://docs.microsoft.com/en-us/windows-hardware/drivers/devtest/bcdedit--set#verification-settings
+Write-Host 'Enabling test-signed kernel-mode drivers...'
+bcdedit /set testsigning on
+
+Write-Host 'Done!'

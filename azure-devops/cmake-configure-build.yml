@@ -1,0 +1,47 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: hostArch
+  type: string
+- name: targetArch
+  type: string
+- name: targetPlatform
+  type: string
+- name: buildOutputLocationVar
+  type: string
+  default: buildOutputLocation
+- name: cmakeAdditionalFlags
+  type: string
+  default: ''
+steps:
+- task: PowerShell@2
+  displayName: 'Get Test Parallelism'
+  timeoutInMinutes: 1
+  inputs:
+    targetType: inline
+    script: |
+      $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
+      Write-Host "##vso[task.setvariable variable=testParallelism;]$testParallelism"
+- script: |
+    if exist "$(${{ parameters.buildOutputLocationVar }})" (
+      rmdir /S /Q "$(${{ parameters.buildOutputLocationVar }})"
+    )
+    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
+    -DCMAKE_CXX_COMPILER=cl ^
+    -DCMAKE_BUILD_TYPE=Release ^
+    -DLIT_FLAGS=$(litFlags) ^
+    -DCMAKE_CXX_FLAGS=/analyze:autolog- ^
+    -S $(Build.SourcesDirectory) -B $(${{ parameters.buildOutputLocationVar }})
+  displayName: 'Configure the STL'
+  timeoutInMinutes: 2
+  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+- script: |
+    call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+    -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
+    cmake --build $(${{ parameters.buildOutputLocationVar }})
+  displayName: 'Build the STL'
+  timeoutInMinutes: 10
+  env: { TMP: $(tmpDir), TEMP: $(tmpDir) }

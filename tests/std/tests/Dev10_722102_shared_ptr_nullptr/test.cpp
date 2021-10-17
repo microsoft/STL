@@ -4,12 +4,12 @@
 //  Dev10-722102 "STL: Get nullptr overloads"
 // DevDiv-520681 "Faulty implementation of shared_ptr(nullptr_t) constructor"
 
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
+#include <cstdlib>
 #include <functional>
 #include <memory>
 #include <new>
-#include <stddef.h>
-#include <stdlib.h>
 #include <type_traits>
 #include <utility>
 
@@ -159,10 +159,42 @@ namespace unique_ptr_ {
 
     template <class T>
     struct fancy_pointer {
-        T* ptr_;
+        T* ptr_{nullptr};
 
         fancy_pointer() = default;
+
         explicit fancy_pointer(secret_tag, T* ptr) : ptr_{ptr} {}
+
+        fancy_pointer(nullptr_t) {}
+
+        fancy_pointer& operator=(nullptr_t) {
+            ptr_ = nullptr;
+            return *this;
+        }
+
+        friend bool operator==(const fancy_pointer& left, const fancy_pointer& right) {
+            return left.ptr_ == right.ptr_;
+        }
+
+        friend bool operator!=(const fancy_pointer& left, const fancy_pointer& right) {
+            return left.ptr_ != right.ptr_;
+        }
+
+        friend bool operator==(const fancy_pointer& left, nullptr_t) {
+            return left.ptr_ == nullptr;
+        }
+
+        friend bool operator!=(const fancy_pointer& left, nullptr_t) {
+            return left.ptr_ != nullptr;
+        }
+
+        friend bool operator==(nullptr_t, const fancy_pointer& right) {
+            return nullptr == right.ptr_;
+        }
+
+        friend bool operator!=(nullptr_t, const fancy_pointer& right) {
+            return nullptr != right.ptr_;
+        }
 
         operator T*() const {
             return ptr_;
@@ -179,6 +211,14 @@ namespace unique_ptr_ {
             assert(*ptr.ptr_ == 42);
             *ptr.ptr_ = 13;
         }
+
+        // Also test LWG-3548 "shared_ptr construction from unique_ptr should move (not copy) the deleter".
+        fancy_deleter()                = default;
+        fancy_deleter(fancy_deleter&&) = default;
+
+        fancy_deleter(const fancy_deleter&) = delete;
+        fancy_deleter& operator=(fancy_deleter&&) = delete;
+        fancy_deleter& operator=(const fancy_deleter&) = delete;
     };
 
     template <class>

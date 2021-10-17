@@ -1,0 +1,42 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+parameters:
+- name: targetPlatform
+  type: string
+- name: vsDevCmdArch
+  type: string
+- name: buildOutputLocationVar
+  type: string
+  default: buildOutputLocation
+- name: numShards
+  type: number
+  default: 8
+jobs:
+- job: '${{ parameters.targetPlatform }}'
+  variables:
+    fixedFlags: '--timeout=240;--shuffle'
+    parallelismFlag: '-j$(testParallelism)'
+    xmlOutputFlag: '--xunit-xml-output=$(${{ parameters.buildOutputLocationVar }})/test-results.xml'
+    shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
+    litFlags: '$(fixedFlags);$(parallelismFlag);$(xmlOutputFlag);$(shardFlags)'
+  strategy:
+    parallel: ${{ parameters.numShards }}
+  timeoutInMinutes: 360
+  steps:
+  - script: |
+      if exist "$(tmpDir)" (rmdir /S /Q $(tmpDir))
+      mkdir $(tmpDir)
+    displayName: 'Setup TMP Directory'
+
+  - template: checkout-sources.yml
+  - template: cmake-configure-build.yml
+    parameters:
+      targetPlatform: ${{ parameters.targetPlatform }}
+      targetArch: ${{ parameters.vsDevCmdArch }}
+      hostArch: ${{ parameters.vsDevCmdArch }}
+  - template: run-tests.yml
+    parameters:
+      hostArch: ${{ parameters.vsDevCmdArch }}
+      targetPlatform: ${{ parameters.targetPlatform }}
+      targetArch: ${{ parameters.vsDevCmdArch }}

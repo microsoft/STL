@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <ranges>
-#include <span>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -95,7 +94,7 @@ constexpr bool test_one(Rng&& rng) {
 
         static_assert(same_as<decltype(move(rng) | pipeline), V>);
         static_assert(noexcept(move(rng) | pipeline) == is_noexcept);
-    } else if constexpr (ranges::enable_borrowed_range<Rng>) {
+    } else if constexpr (ranges::enable_borrowed_range<remove_cvref_t<Rng>>) {
         using S                    = decltype(ranges::subrange{declval<Rng>()});
         constexpr bool is_noexcept = noexcept(S{declval<Rng>()});
 
@@ -121,17 +120,17 @@ constexpr bool test_one(Rng&& rng) {
 
         static_assert(same_as<views::all_t<const remove_cvref_t<Rng>>, V>);
         static_assert(same_as<decltype(views::all(move(as_const(rng)))), V>);
-        static_assert(noexcept(views::all(as_const(rng))) == is_noexcept);
+        static_assert(noexcept(views::all(move(as_const(rng)))) == is_noexcept);
 
         static_assert(same_as<decltype(move(as_const(rng)) | views::all), V>);
-        static_assert(noexcept(as_const(rng) | views::all) == is_noexcept);
+        static_assert(noexcept(move(as_const(rng)) | views::all) == is_noexcept);
 
         static_assert(same_as<decltype(move(as_const(rng)) | views::all | views::all | views::all), V>);
         static_assert(noexcept(move(as_const(rng)) | views::all | views::all | views::all) == is_noexcept);
 
         static_assert(same_as<decltype(move(as_const(rng)) | pipeline), V>);
         static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
-    } else if constexpr (!is_view && ranges::enable_borrowed_range<const remove_cvref_t<Rng>>) {
+    } else if constexpr (!is_view && ranges::enable_borrowed_range<remove_cvref_t<Rng>>) {
         using S                    = decltype(ranges::subrange{declval<const remove_cvref_t<Rng>>()});
         constexpr bool is_noexcept = noexcept(S{declval<const remove_cvref_t<Rng>>()});
 
@@ -207,12 +206,5 @@ int main() {
         string str{"Hello, World!"};
         test_one(str);
         assert(ranges::equal(views::all(str), str));
-    }
-
-    // Validate a non-view borrowed range
-    {
-        constexpr span s{some_ints};
-        static_assert(test_one(s));
-        test_one(s);
     }
 }

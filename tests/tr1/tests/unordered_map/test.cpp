@@ -232,7 +232,7 @@ void test_unordered_map() { // test unordered_map
         CHECK_INT(v10.size(), 3);
         CHECK_INT(v10.count('a'), 1);
 
-        v10.reserve((Mycont::size_type)(static_cast<float>(nbuckets) * v10.max_load_factor() + 0.5));
+        v10.reserve((Mycont::size_type) (static_cast<float>(nbuckets) * v10.max_load_factor() + 0.5));
         CHECK_INT(v10.size(), 3);
         CHECK_INT(v10.count('a'), 1);
     }
@@ -347,7 +347,7 @@ void test_unordered_map() { // test unordered_map
     }
 
     {
-        STD initializer_list<Myval> init(xarr, xarr + 3);
+        STD initializer_list<Myval> init{xarr[0], xarr[1], xarr[2]};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11.find('a')->second, 1);
@@ -635,7 +635,7 @@ void test_unordered_multimap() { // test unordered_multimap
     }
 
     {
-        STD initializer_list<Myval> init(xarr, xarr + 3);
+        STD initializer_list<Myval> init{xarr[0], xarr[1], xarr[2]};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11.find('a')->second, 1);

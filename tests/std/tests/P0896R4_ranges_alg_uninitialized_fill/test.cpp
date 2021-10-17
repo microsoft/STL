@@ -100,6 +100,23 @@ struct instantiator {
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
         }
+
+        { // Validate int is properly converted to bool
+            bool output[] = {false, true, false};
+            uninitialized_fill(output, 5);
+            for (const bool& elem : output) {
+                assert(elem == true);
+            }
+        }
+
+        { // Validate zero-ing
+            int output[] = {13, 42, 1367};
+            auto result  = uninitialized_fill(output, 0);
+            for (const auto& elem : output) {
+                assert(elem == 0);
+            }
+            assert(result == ranges::end(output));
+        }
     }
 };
 
@@ -124,6 +141,20 @@ struct throwing_test {
     }
 };
 
+struct memset_test {
+    static constexpr unsigned char expected[] = {42, 42, 42};
+
+    static void call() {
+        { // Validate only range overload
+            unsigned char input[3];
+
+            const auto result = ranges::uninitialized_fill(input, static_cast<unsigned char>(42));
+            assert(result == end(input));
+            assert(ranges::equal(input, expected));
+        }
+    }
+};
+
 using test_range = test::range<test::fwd, int_wrapper, test::Sized::no, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, test::ProxyRef::no>;
 
@@ -133,4 +164,5 @@ int main() {
 
     instantiator::call<test_range>();
     throwing_test::call<test_range>();
+    memset_test::call();
 }

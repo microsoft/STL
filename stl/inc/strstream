@@ -22,7 +22,6 @@ _STD_BEGIN
 _CXX17_DEPRECATE_STRSTREAM typedef int _Header_strstream;
 using _Hdr_strstream = _Header_strstream;
 
-// CLASS strstreambuf
 class strstreambuf : public streambuf { // stream buffer associated with static or allocated character array
 public:
     using _Mysb = streambuf;
@@ -100,7 +99,7 @@ public:
         }
     }
 
-    virtual __CLR_OR_THIS_CALL ~strstreambuf() noexcept {
+    __CLR_OR_THIS_CALL ~strstreambuf() noexcept override {
         _Tidy();
     }
 
@@ -142,7 +141,7 @@ public:
     }
 
 protected:
-    virtual int __CLR_OR_THIS_CALL overflow(int _Meta = EOF) override { // try to extend write area
+    int __CLR_OR_THIS_CALL overflow(int _Meta = EOF) override { // try to extend write area
         if (_Meta == EOF) {
             return 0; // nothing to write
         }
@@ -188,12 +187,12 @@ protected:
         return static_cast<unsigned char>(*_Pninc() = static_cast<char>(_Meta));
     }
 
-    virtual int __CLR_OR_THIS_CALL pbackfail(int _Meta = EOF) override { // try to putback a character
+    int __CLR_OR_THIS_CALL pbackfail(int _Meta = EOF) override { // try to putback a character
         const auto _Old_gptr = gptr();
         if (_Old_gptr && eback() < _Old_gptr) { // if the input sequence has a putback position available
             if (_Meta == EOF) {
                 _Meta = 0; // a value other than EOF
-            } else if (!(_Strmode & _Constant)) { // non constant, overwrite no matter what
+            } else if (!(_Strmode & _Constant)) { // non-constant, overwrite no matter what
                 _Old_gptr[-1] = static_cast<char>(_Meta);
             } else if (_Old_gptr[-1] != static_cast<char>(_Meta)) { // constant, unequal, can't put it back
                 return EOF;
@@ -206,7 +205,7 @@ protected:
         return EOF;
     }
 
-    virtual int __CLR_OR_THIS_CALL underflow() override { // read if read position available
+    int __CLR_OR_THIS_CALL underflow() override { // read if read position available
         const auto _Old_gptr = gptr();
         if (!_Old_gptr) {
             return EOF; // no read buffer
@@ -234,7 +233,7 @@ protected:
         return EOF;
     }
 
-    virtual streampos __CLR_OR_THIS_CALL seekoff(
+    streampos __CLR_OR_THIS_CALL seekoff(
         streamoff _Off, ios_base::seekdir _Way, ios_base::openmode _Which = ios_base::in | ios_base::out) override {
         // seek by specified offset
         if (pptr() && _Seekhigh < pptr()) { // TRANSITION, ABI: appears unused, maintained for ABI compat
@@ -251,7 +250,7 @@ protected:
         const auto _Seeklow  = eback();
         const auto _Seekdist = _Seekhigh - _Seeklow;
 
-        // [depr.strstreambuf.virtuals]/15 effectively says check that the result will be in range
+        // N4727 [depr.strstreambuf.virtuals]/15 effectively says check that the result will be in range
         // [_Seeklow, _Seekhigh]; but we want to calculate this without potential integer overflow
         switch (_Way) {
         case ios_base::beg:
@@ -270,34 +269,35 @@ protected:
 
             _Off += _Seekdist;
             break;
-        case ios_base::cur: {
-            constexpr auto _Both = ios_base::in | ios_base::out;
-            if ((_Which & _Both)
-                == _Both) { // prohibited by N4727 [depr.strstreambuf.virtuals] Table 137 "seekoff positioning"
-                return pos_type(off_type(-1));
+        case ios_base::cur:
+            {
+                constexpr auto _Both = ios_base::in | ios_base::out;
+                if ((_Which & _Both)
+                    == _Both) { // prohibited by N4727 [depr.strstreambuf.virtuals] Table 137 "seekoff positioning"
+                    return pos_type(off_type(-1));
+                }
+
+                off_type _Oldoff;
+                off_type _Oldleft;
+                if (_Which & ios_base::in) {
+                    _Oldoff  = gptr() - eback();
+                    _Oldleft = _Seekhigh - gptr();
+                } else if (_Which & ios_base::out) {
+                    _Oldoff  = pptr() - pbase();
+                    _Oldleft = _Seekhigh - pptr();
+                } else {
+                    return pos_type(off_type(-1));
+                }
+
+                if (_Off < -_Oldoff // runs off beginning
+                    || _Off > _Oldleft) { // runs off end
+                    return pos_type(off_type(-1));
+                }
+
+                _Off += _Oldoff;
             }
 
-            off_type _Oldoff;
-            off_type _Oldleft;
-            if (_Which & ios_base::in) {
-                _Oldoff  = gptr() - eback();
-                _Oldleft = _Seekhigh - gptr();
-            } else if (_Which & ios_base::out) {
-                _Oldoff  = pptr() - pbase();
-                _Oldleft = _Seekhigh - pptr();
-            } else {
-                return pos_type(off_type(-1));
-            }
-
-            if (_Off < -_Oldoff // runs off beginning
-                || _Off > _Oldleft) { // runs off end
-                return pos_type(off_type(-1));
-            }
-
-            _Off += _Oldoff;
-        }
-
-        break;
+            break;
         default:
             return pos_type(off_type(-1));
         }
@@ -313,7 +313,7 @@ protected:
         return pos_type(_Off);
     }
 
-    virtual pos_type __CLR_OR_THIS_CALL seekpos(
+    pos_type __CLR_OR_THIS_CALL seekpos(
         pos_type _Sp, ios_base::openmode _Which = ios_base::in | ios_base::out) override {
         // seek to memorized position
         if (pptr() && _Seekhigh < pptr()) { // TRANSITION, ABI: appears unused, maintained for ABI compat
@@ -419,12 +419,10 @@ private:
     void(__CLRCALL_OR_CDECL* _Pfree)(void*); // the pointer to free function
 };
 
-// strstreambuf OPERATORS
 inline void swap(strstreambuf& _Left, strstreambuf& _Right) {
     _Left.swap(_Right);
 }
 
-// CLASS istrstream
 class istrstream : public istream { // input stream associated with a character array
 public:
     using _Mybase = istream;
@@ -470,7 +468,7 @@ public:
         }
     }
 
-    virtual __CLR_OR_THIS_CALL ~istrstream() noexcept {}
+    __CLR_OR_THIS_CALL ~istrstream() noexcept override {}
 
     _NODISCARD _Mysb* __CLR_OR_THIS_CALL rdbuf() const {
         return const_cast<_Mysb*>(&_Strbuffer);
@@ -484,12 +482,10 @@ private:
     _Mysb _Strbuffer; // the string buffer
 };
 
-// istrstream OPERATORS
 inline void swap(istrstream& _Left, istrstream& _Right) {
     _Left.swap(_Right);
 }
 
-// CLASS ostrstream
 class ostrstream : public ostream { // output stream associated with a character array
 public:
     using _Mybase = ostream;
@@ -526,7 +522,7 @@ public:
         }
     }
 
-    virtual __CLR_OR_THIS_CALL ~ostrstream() noexcept {}
+    __CLR_OR_THIS_CALL ~ostrstream() noexcept override {}
 
     _NODISCARD _Mysb* __CLR_OR_THIS_CALL rdbuf() const {
         return const_cast<_Mysb*>(&_Strbuffer);
@@ -548,12 +544,10 @@ private:
     _Mysb _Strbuffer; // the string buffer
 };
 
-// ostrstream OPERATORS
 inline void swap(ostrstream& _Left, ostrstream& _Right) {
     _Left.swap(_Right);
 }
 
-// CLASS strstream
 class strstream : public iostream { // input/output stream associated with character array buffer
 public:
     using _Mybase = iostream;
@@ -595,7 +589,7 @@ public:
         }
     }
 
-    virtual __CLR_OR_THIS_CALL ~strstream() noexcept {}
+    __CLR_OR_THIS_CALL ~strstream() noexcept override {}
 
     _NODISCARD _Mysb* __CLR_OR_THIS_CALL rdbuf() const {
         return const_cast<_Mysb*>(&_Strbuffer);
@@ -617,7 +611,6 @@ private:
     _Mysb _Strbuffer; // the string buffer
 };
 
-// strstream OPERATORS
 inline void swap(strstream& _Left, strstream& _Right) {
     _Left.swap(_Right);
 }

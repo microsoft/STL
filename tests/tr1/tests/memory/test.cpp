@@ -5,6 +5,7 @@
 #define TEST_NAME "<memory>"
 
 #define _HAS_AUTO_PTR_ETC                    1
+#define _HAS_DEPRECATED_ALLOCATOR_MEMBERS    1
 #define _HAS_DEPRECATED_RAW_STORAGE_ITERATOR 1
 #define _HAS_DEPRECATED_TEMPORARY_BUFFER     1
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
@@ -198,6 +199,7 @@ void test_autoptr() { // test auto_ptr
     CHECK_INT(cnt, 0);
 }
 
+#if _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 void test_gc() { // test garbage collection control
     char x;
     STD declare_reachable(&x);
@@ -208,11 +210,14 @@ void test_gc() { // test garbage collection control
           || (int) STD get_pointer_safety() == (int) STD pointer_safety::preferred
           || (int) STD get_pointer_safety() == (int) STD pointer_safety::strict);
 }
+#endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
 void test_main() { // test basic properties of memory definitions
     test_alloc();
     test_uninit();
     test_tempbuf();
     test_autoptr();
+#if _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
     test_gc();
+#endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 }

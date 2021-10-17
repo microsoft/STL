@@ -8,7 +8,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-// clang-format off
 _STD_BEGIN
 // TRANSITION, ABI: _Rng_abort() is preserved for binary compatibility
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Rng_abort(_In_z_ const char* _Msg) {
@@ -18,4 +17,3 @@ _STD_BEGIN
     _CSTD abort();
 }
 _STD_END
-// clang-format on

@@ -7,6 +7,7 @@
 #include <concepts>
 #include <numeric>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -71,13 +72,13 @@ struct instantiator {
             assert(equal(input, expected_even));
         }
         { // Validate iterator + sentinel overload, empty range
-            R wrapped_input{};
+            R wrapped_input{span<nontrivial_int, 0>{}};
             auto result = reverse(wrapped_input.begin(), wrapped_input.end());
             STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
         }
         { // Validate range overload, empty range
-            R wrapped_input{};
+            R wrapped_input{span<nontrivial_int, 0>{}};
             auto result = reverse(wrapped_input);
             STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
@@ -136,13 +137,13 @@ struct test_vector {
         }
 
         { // Validate iterator + sentinel overload, vectorizable empty
-            R wrapped_input{};
+            R wrapped_input{span<ranges::range_value_t<R>, 0>{}};
             auto result = reverse(wrapped_input.begin(), wrapped_input.end());
             STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
         }
         { // Validate range overload, vectorizable empty
-            R wrapped_input{};
+            R wrapped_input{span<ranges::range_value_t<R>, 0>{}};
             auto result = reverse(wrapped_input);
             STATIC_ASSERT(same_as<decltype(result), iterator_t<R>>);
             assert(result == wrapped_input.end());
@@ -151,33 +152,21 @@ struct test_vector {
 };
 
 int main() {
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_bidi<instantiator, nontrivial_int>(), true));
-#endif // TRANSITION, VSO-938163
     test_bidi<instantiator, nontrivial_int>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_contiguous<test_vector, bytes<1>>(), true));
-#endif // TRANSITION, VSO-938163
     test_contiguous<test_vector, bytes<1>>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_contiguous<test_vector, bytes<2>>(), true));
-#endif // TRANSITION, VSO-938163
     test_contiguous<test_vector, bytes<2>>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_contiguous<test_vector, bytes<4>>(), true));
-#endif // TRANSITION, VSO-938163
     test_contiguous<test_vector, bytes<4>>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_contiguous<test_vector, bytes<8>>(), true));
-#endif // TRANSITION, VSO-938163
     test_contiguous<test_vector, bytes<8>>();
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-938163
     STATIC_ASSERT((test_contiguous<test_vector, bytes<3>>(), true));
-#endif // TRANSITION, VSO-938163
     test_contiguous<test_vector, bytes<3>>();
 }

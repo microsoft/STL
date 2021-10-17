@@ -14,7 +14,16 @@
                 "type": "git",
                 "git": {
                     "repositoryUrl": "https://github.com/microsoft/STL.git",
-                    "commitHash": "81d88bd8e40b2b229776a9602c8bf5f49c128a9b"
+                    "commitHash": "1866b848f0175c3361a916680a4318e7f0cc5482"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "git",
+                "git": {
+                    "repositoryUrl": "https://github.com/fmtlib/fmt",
+                    "commitHash": "273d8865e31659f69528623754c1742b2819ad26"
                 }
             }
         },
