@@ -1371,8 +1371,14 @@ protected:
         }
     }
 
+    template <class _Ty2,
+        int = sizeof((_Ty2*) _STD declval<_Ty*>())> // subsitution fails for virutal inheritance
+    void _Weakly_convert_rvalue_avoiding_expired_conversions(_Ptr_base<_Ty2>&& _Other, int) noexcept {
+        _Move_construct_from(_STD move(_Other));
+    }
+
     template <class _Ty2>
-    void _Weakly_convert_rvalue_avoiding_expired_conversions(_Ptr_base<_Ty2>&& _Other) noexcept {
+    void _Weakly_convert_rvalue_avoiding_expired_conversions(_Ptr_base<_Ty2>&& _Other, ...) noexcept {
         // implement weak_ptr's move converting ctor
         _Rep        = _Other._Rep; // always transfer ownership
         _Other._Rep = nullptr;
