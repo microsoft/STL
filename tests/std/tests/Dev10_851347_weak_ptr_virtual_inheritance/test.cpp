@@ -62,22 +62,6 @@ void test_owner_equal() {
     assert(!owner_equal(wp_expired, wp_expired_different));
 }
 
-struct A {
-    int a{10};
-};
-
-struct B : virtual A {
-    int b{20};
-};
-
-struct C : virtual A {
-    int c{30};
-};
-
-struct D : B, C {
-    int d{40};
-};
-
 void test_gh_000258_sometimes_avoid_locking() {
     struct base1 {
         int i = 0;
@@ -124,9 +108,25 @@ void test_gh_000258_sometimes_avoid_locking() {
     }
 }
 
+struct A {
+    int a{10};
+};
+
+struct B : virtual A {
+    int b{20};
+};
+
+struct C : virtual A {
+    int c{30};
+};
+
+struct D : B, C {
+    int d{40};
+};
 
 int main() {
     test_owner_equal();
+    test_gh_000258_sometimes_avoid_locking();
 
     shared_ptr<D> spd(new D);
 
@@ -158,6 +158,4 @@ int main() {
     wpa4 = move(wpd_two);
     assert(wpa4.expired());
     assert(owner_equal(wpa4, wpd_zero));
-
-    test_gh_000258_sometimes_avoid_locking();
 }
