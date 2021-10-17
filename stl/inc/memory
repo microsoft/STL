@@ -1347,14 +1347,8 @@ protected:
         }
     }
 
-    template <class _Ty2,
-        int = sizeof((_Ty2*) _STD declval<_Ty*>())> // subsitution fails for virutal inheritance
-    void _Weakly_convert_lvalue_avoiding_expired_conversions(const _Ptr_base<_Ty2>& _Other, int) noexcept {
-        _Weakly_construct_from(_Other);
-    }
-
     template <class _Ty2>
-    void _Weakly_convert_lvalue_avoiding_expired_conversions(const _Ptr_base<_Ty2>& _Other, ...) noexcept {
+    void _Weakly_convert_lvalue_avoiding_expired_conversions(const _Ptr_base<_Ty2>& _Other) noexcept {
         // implement weak_ptr's copy converting ctor
         if (_Other._Rep) {
             _Rep = _Other._Rep; // always share ownership
@@ -1371,14 +1365,8 @@ protected:
         }
     }
 
-    template <class _Ty2,
-        int = sizeof((_Ty2*) _STD declval<_Ty*>())> // subsitution fails for virutal inheritance
-    void _Weakly_convert_rvalue_avoiding_expired_conversions(_Ptr_base<_Ty2>&& _Other, int) noexcept {
-        _Move_construct_from(_STD move(_Other));
-    }
-
     template <class _Ty2>
-    void _Weakly_convert_rvalue_avoiding_expired_conversions(_Ptr_base<_Ty2>&& _Other, ...) noexcept {
+    void _Weakly_convert_rvalue_avoiding_expired_conversions(_Ptr_base<_Ty2>&& _Other) noexcept {
         // implement weak_ptr's move converting ctor
         _Rep        = _Other._Rep; // always transfer ownership
         _Other._Rep = nullptr;
@@ -2961,6 +2949,17 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shar
 
 template <class _Ty>
 class weak_ptr : public _Ptr_base<_Ty> { // class for pointer to reference counted resource
+private:
+    template <class _Ty2, int = sizeof((_Ty2*) _STD declval<_Ty*>())> // Substitution fails for virtual inheritance
+    static constexpr bool _Is_virtual_inheritance(int) noexcept {
+        return false;
+    }
+
+    template <class _Ty2>
+    static constexpr bool _Is_virtual_inheritance(...) noexcept {
+        return true;
+    }
+
 public:
     constexpr weak_ptr() noexcept {}
 
@@ -2975,7 +2974,11 @@ public:
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept {
-        this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other, 0);
+        if constexpr (_Is_virtual_inheritance<_Ty2>(0)) {
+            this->_Weakly_convert_lvalue_avoiding_expired_conversions(_STD move(_Other));
+        } else {
+            this->_Weakly_construct_from(_Other);
+        }
     }
 
     weak_ptr(weak_ptr&& _Other) noexcept {
@@ -2984,7 +2987,11 @@ public:
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept {
-        this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other), 0);
+        if constexpr (_Is_virtual_inheritance<_Ty2>(0)) {
+            this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other));
+        } else {
+            this->_Move_construct_from(_STD move(_Other));
+        }
     }
 
     ~weak_ptr() noexcept {
