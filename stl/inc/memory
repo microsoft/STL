@@ -1347,7 +1347,7 @@ protected:
         }
     }
 
-    template <class _Ty2, class = decltype((_Ty2*)((_Ty*)0))>
+    template <class _Ty2, class = decltype((_Ty2*) static_cast<_Ty*>(nullptr))>
     void _Weakly_convert_lvalue_avoiding_expired_conversions(const _Ptr_base<_Ty2>& _Other, int) noexcept {
         _Weakly_construct_from(_Other);
     }

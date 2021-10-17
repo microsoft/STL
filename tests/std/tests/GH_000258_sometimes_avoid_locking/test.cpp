@@ -26,14 +26,15 @@ int main() {
     weak_ptr<derived> wd(d);
 
     for (int i = 0; i < 10; ++i) {
-        std::atomic<bool> work{true};
-        std::thread thd([&] {
+        atomic<bool> work{true};
+        thread thd([&] {
             d.reset();
-            this_thread::yield();
+            this_thread::yield(); // make crash on incorrect optimization even more likely
             work = false;
         });
 
         while (work) {
+            // likely to crash if optimized for the case we shouldn't
             weak_ptr<base1> wb1(wd);
             weak_ptr<base2> wb2(wd);
             weak_ptr<base3> wb3(wd);
