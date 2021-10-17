@@ -158,20 +158,16 @@ void test_construct_impl(int expect, Args... args) {
         }
         test_function_t constructed_in_place(in_place_type<F>, args...);
         assert(constructed_in_place(23, x) == expect);
-        assert(counter::copies == 0);
-        assert(counter::moves == 0);
+        if constexpr (is_class_v<F>) {
+            assert(counter::copies == 0);
+            assert(counter::moves == 0);
+        }
     }
 
     if constexpr (is_class_v<F>) {
         assert(counter::inst == 0);
     }
 }
-
-#ifdef __clang__
-// deliberate self-move as a test case
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wself-move"
-#endif
 
 void test_assign() {
     pass_this_by_ref x{63};
@@ -183,8 +179,6 @@ void test_assign() {
         assert(f2(23, x) == 38);
         f1 = large_callable{};
         assert(f1(23, x) == 39);
-        f1 = std::move(f1);
-        assert(f1(23, x) == 39);
     }
 
     {
@@ -193,8 +187,6 @@ void test_assign() {
         f2 = std::move(f1);
         assert(f2(23, x) == 39);
         f1 = small_callable{};
-        assert(f1(23, x) == 38);
-        f1 = std::move(f1);
         assert(f1(23, x) == 38);
     }
 
@@ -215,11 +207,23 @@ void test_assign() {
         f1 = large_implicit_ptr_callable{};
         assert(f1(23, x) == 41);
     }
-}
 
 #ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wself-move"
+#endif // __clang__
+    {
+        test_function_t f1{small_callable{}};
+        test_function_t f2{large_callable{}};
+        f1 = std::move(f1); // deliberate self-move as a test case
+        assert(f1(23, x) == 38);
+        f2 = std::move(f2); // deliberate self-move as a test case
+        assert(f2(23, x) == 39);
+    }
+#ifdef __clang__
 #pragma clang diagnostic pop
-#endif
+#endif // __clang__
+}
 
 void test_swap() {
     pass_this_by_ref x{63};
@@ -257,7 +261,6 @@ void test_swap() {
     }
 }
 
-
 void test_empty() {
     test_function_t emtpty;
     assert(!emtpty);
@@ -271,6 +274,93 @@ void test_empty() {
     assert(emtpty_moved == nullptr);
 }
 
+void test_ptr() {
+    struct s_t {
+        int f(int p) {
+            return p + 2;
+        }
+
+        int j = 6;
+
+        static int g(int z) {
+            return z - 3;
+        }
+    };
+
+    std::move_only_function<int(s_t*, int)> mem_fun_ptr(&s_t::f);
+    std::move_only_function<int(s_t*)> mem_ptr(&s_t::j);
+    std::move_only_function<int(int)> fun_ptr(&s_t::g);
+
+    s_t s;
+    assert(mem_fun_ptr);
+    assert(mem_fun_ptr(&s, 3) == 5);
+    assert(mem_ptr);
+    assert(mem_ptr(&s) == 6);
+    assert(fun_ptr);
+    assert(fun_ptr(34) == 31);
+
+    std::move_only_function<int(s_t*, int)> mem_fun_ptr_n(static_cast<decltype(&s_t::f)>(nullptr));
+    std::move_only_function<int(s_t*)> mem_ptr_n(static_cast<decltype(&s_t::j)>(nullptr));
+    std::move_only_function<int(int)> fun_ptr_n(static_cast<decltype(&s_t::g)>(nullptr));
+
+    assert(!mem_fun_ptr_n);
+    assert(!mem_ptr_n);
+    assert(!fun_ptr_n);
+}
+
+template <bool Nx>
+struct test_noexcept_t {
+    int operator()() noexcept(Nx) {
+        return 888;
+    }
+};
+
+void test_noexcept() {
+    using f_x  = std::move_only_function<int()>;
+    using f_nx = std::move_only_function<int() noexcept>;
+
+    static_assert(std::is_constructible_v<f_x, test_noexcept_t<false>>);
+    assert(f_x(test_noexcept_t<false>{})() == 888);
+
+    static_assert(std::is_constructible_v<f_x, test_noexcept_t<true>>);
+    assert(f_x(test_noexcept_t<true>{})() == 888);
+
+    static_assert(!std::is_constructible_v<f_nx, test_noexcept_t<false>>);
+
+    static_assert(std::is_constructible_v<f_nx, test_noexcept_t<true>>);
+    assert(f_nx(test_noexcept_t<true>{})() == 888);
+}
+
+template <bool>
+struct test_const_t {
+    int operator()() {
+        return 456;
+    }
+};
+
+template <>
+struct test_const_t<true> {
+    int operator()() const {
+        return 456;
+    }
+};
+
+void test_const() {
+    using f_c  = std::move_only_function<int() const>;
+    using f_nc = std::move_only_function<int()>;
+
+    static_assert(std::is_constructible_v<f_nc, test_const_t<false>>);
+    assert(f_nc(test_const_t<false>{})() == 456);
+
+    static_assert(std::is_constructible_v<f_nc, test_const_t<true>>);
+    assert(f_nc(test_const_t<true>{})() == 456);
+
+    static_assert(!std::is_constructible_v<f_c, test_const_t<false>>);
+
+    static_assert(std::is_constructible_v<f_c, test_const_t<true>>);
+    assert(f_c(test_const_t<true>{})() == 456);
+}
+
 int main() {
     test_construct_impl<small_callable>(38);
     test_construct_impl<large_callable>(39);
@@ -279,5 +369,8 @@ int main() {
     test_construct_impl<decltype(&plain_callable)>(42, plain_callable);
     test_assign();
     test_swap();
+    test_ptr();
+    test_noexcept();
+    test_const();
     test_empty();
 }
