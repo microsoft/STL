@@ -22,10 +22,10 @@ struct base3 {
 struct derived : virtual base1, virtual base2, base3 {};
 
 int main() {
-    // not make_shared -- with make_shared the test would not catch errors
-    shared_ptr<derived> d(new derived);
 
     for (int i = 0; i < 10; ++i) {
+        // not make_shared -- with make_shared the test would not catch errors
+        shared_ptr<derived> d(new derived);
         weak_ptr<derived> wd(d);
         atomic<bool> work{true};
         thread thd([&] {
