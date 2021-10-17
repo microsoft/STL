@@ -4,8 +4,8 @@
 #include <assert.h>
 #include <atomic>
 #include <memory>
-#include <utility>
 #include <thread>
+#include <utility>
 using namespace std;
 
 // Also test GH-1102 "<memory>: weak_ptr conversions don't preserve control blocks for expired objects"
@@ -98,11 +98,11 @@ void test_gh_000258_sometimes_avoid_locking() {
         shared_ptr<derived> d{new derived{}};
         weak_ptr<derived> wd{d};
         atomic<bool> work{true};
-        thread thd([&] {
+        thread thd{[&] {
             d.reset();
             this_thread::yield(); // make crash on incorrect optimization even more likely
             work = false;
-        });
+        }};
 
         if ((i % 2) == 0) {
             while (work) {
