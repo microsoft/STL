@@ -320,7 +320,11 @@ void test_noexcept() {
     using f_nx = move_only_function<int() noexcept>;
 
     static_assert(!noexcept(declval<f_x>()()));
+#ifdef __cpp_noexcept_function_type
     static_assert(noexcept(declval<f_nx>()()));
+#else // ^^^ defined(__cpp_noexcept_function_type) ^^^ / vvv !defined(__cpp_noexcept_function_type) vvv
+    static_assert(!noexcept(declval<f_nx>()()));
+#endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
     static_assert(is_constructible_v<f_x, test_noexcept_t<false>>);
     assert(f_x(test_noexcept_t<false>{})() == 888);
@@ -328,7 +332,12 @@ void test_noexcept() {
     static_assert(is_constructible_v<f_x, test_noexcept_t<true>>);
     assert(f_x(test_noexcept_t<true>{})() == 888);
 
+#ifdef __cpp_noexcept_function_type
     static_assert(!is_constructible_v<f_nx, test_noexcept_t<false>>);
+#else // ^^^ defined(__cpp_noexcept_function_type) ^^^ / vvv !defined(__cpp_noexcept_function_type) vvv
+    static_assert(is_constructible_v<f_nx, test_noexcept_t<false>>);
+    assert(f_nx(test_noexcept_t<false>{})() == 888);
+#endif // ^^^ !defined(__cpp_noexcept_function_type) ^^^
 
     static_assert(is_constructible_v<f_nx, test_noexcept_t<true>>);
     assert(f_nx(test_noexcept_t<true>{})() == 888);
