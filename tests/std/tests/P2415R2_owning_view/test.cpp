@@ -3,10 +3,10 @@
 
 #include <algorithm>
 #include <cassert>
-#include <concepts>
 #include <memory>
 #include <ranges>
 #include <span>
+#include <type_traits>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -43,10 +43,10 @@ struct instantiator {
                     [[maybe_unused]] owning_view<R> default_constructed;
                 }
 
-                owning_view<R> value_constructed{R{input}};
+                owning_view<R> converted{R{input}};
                 STATIC_ASSERT(is_nothrow_constructible_v<owning_view<R>, R> == is_nothrow_move_constructible_v<R>);
 
-                owning_view<R> move_constructed = move(value_constructed);
+                owning_view<R> move_constructed = move(converted);
                 if constexpr (forward_range<R>) {
                     assert(move_constructed.begin().peek() == begin(input));
                 }

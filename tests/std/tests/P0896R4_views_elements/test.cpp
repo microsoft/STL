@@ -131,8 +131,6 @@ constexpr bool test_one(Rng&& rng) {
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
-    } else if constexpr (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) {
-        STATIC_ASSERT(always_false<Rng>); // FIXME
     }
 
     // Validate concepts are properly modeled

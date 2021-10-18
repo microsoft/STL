@@ -114,10 +114,9 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
         static_assert(ranges::view<R>);
         static_assert(input_range<R> == input_range<Inner>);
         static_assert(forward_range<R> == (deref_is_glvalue && forward_range<Outer> && forward_range<Inner>) );
-        // clang-format off
-        static_assert(bidirectional_range<R> ==
-            (deref_is_glvalue && bidirectional_range<Outer> && bidirectional_range<Inner> && common_range<Inner>));
-        // clang-format on
+        static_assert(
+            bidirectional_range<R> == //
+            (deref_is_glvalue && bidirectional_range<Outer> && bidirectional_range<Inner> && common_range<Inner>) );
         static_assert(!ranges::random_access_range<R>);
         static_assert(!ranges::contiguous_range<R>);
 

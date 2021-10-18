@@ -88,7 +88,7 @@ using pipeline_t = mapped_t<mapped_t<mapped_t<mapped_t<Rng>>>>;
 
 template <class Rng>
 concept CanViewDrop = requires(Rng&& r) {
-    views::drop(std::forward<Rng>(r), 42);
+    views::drop(forward<Rng>(r), 42);
 };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
@@ -156,7 +156,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(CanViewDrop<remove_reference_t<Rng>> == is_view || movable<remove_reference_t<Rng>>);
+    STATIC_ASSERT(CanViewDrop<remove_reference_t<Rng>> == (is_view || movable<remove_reference_t<Rng>>) );
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V> && !is_subrange<V>;
         STATIC_ASSERT(same_as<decltype(views::drop(move(rng), 4)), M>);

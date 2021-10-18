@@ -140,8 +140,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         static_assert(same_as<decltype(move(as_const(rng)) | pipeline), R>);
         static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
-    } else if constexpr (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) {
-        static_assert(always_false<Rng>); // FIXME
     }
 
     // Validate deduction guide
