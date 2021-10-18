@@ -2950,7 +2950,8 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shar
 template <class _Ty>
 class weak_ptr : public _Ptr_base<_Ty> { // class for pointer to reference counted resource
 private:
-    template <class _Ty2, int = sizeof((_Ty2*) _STD declval<_Ty*>())> // Substitution fails for virtual inheritance
+    template <class _Ty2,
+        int = sizeof(static_cast<_Ty2*>(_STD declval<_Ty*>()))> // Substitution fails for virtual inheritance
     static constexpr bool _Is_virtual_inheritance(int) noexcept {
         return false;
     }
