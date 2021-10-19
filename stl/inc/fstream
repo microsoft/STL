@@ -176,6 +176,10 @@ public:
     }
 
     __CLR_OR_THIS_CALL ~basic_filebuf() noexcept override {
+        if (_Myfile) {
+            _Reset_back(); // revert from _Mychar buffer
+        }
+
         if (_Closef) {
             close();
         }
