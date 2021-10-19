@@ -5,6 +5,7 @@
 #include <cassert>
 #include <functional>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -21,9 +22,10 @@ concept testable_sentinel = ranges::input_range<T>
 // clang-format on
 
 struct instantiator {
-    static constexpr pair<int, int> haystack[]       = {{0, 42}, {2, 42}, {4, 42}};
+    static constexpr pair<int, int> haystack[]       = {{0, 42}, {1, 42}, {2, 42}, {4, 42}};
     static constexpr pair<int, int> short_haystack[] = {{4, 42}};
-    static constexpr pair<long, long> needle[]       = {{13, 2}, {13, 4}};
+    static constexpr pair<long, long> long_needle[]  = {{13, 1}, {13, 2}, {13, 4}};
+    static constexpr pair<long, long> short_needle[] = {{13, 2}, {13, 4}};
     static constexpr pair<long, long> wrong_needle[] = {{13, 2}, {13, 3}};
 
     template <testable_range In1, testable_range In2>
@@ -31,7 +33,13 @@ struct instantiator {
         using ranges::ends_with, ranges::equal_to;
 
         {
-            const same_as<bool> auto match = ends_with(In1{haystack}, In2{needle}, equal_to{}, get_first, get_second);
+            const same_as<bool> auto match =
+                ends_with(In1{haystack}, In2{long_needle}, equal_to{}, get_first, get_second);
+            assert(match);
+        }
+        {
+            const same_as<bool> auto match =
+                ends_with(In1{haystack}, In2{short_needle}, equal_to{}, get_first, get_second);
             assert(match);
         }
         {
@@ -41,8 +49,13 @@ struct instantiator {
         }
         {
             const same_as<bool> auto match =
-                ends_with(In1{short_haystack}, In2{needle}, equal_to{}, get_first, get_second);
+                ends_with(In1{short_haystack}, In2{short_needle}, equal_to{}, get_first, get_second);
             assert(!match);
+        }
+        {
+            const same_as<bool> auto match =
+                ends_with(In1{haystack}, In2{span<pair<long, long>, 0>{}}, equal_to{}, get_first, get_second);
+            assert(match);
         }
     }
 
@@ -52,12 +65,18 @@ struct instantiator {
 
         {
             In1 h{haystack};
-            In2 n{needle};
+            In2 n{long_needle};
             const same_as<bool> auto match =
                 ends_with(begin(h), end(h), begin(n), end(n), equal_to{}, get_first, get_second);
             assert(match);
         }
-
+        {
+            In1 h{haystack};
+            In2 n{short_needle};
+            const same_as<bool> auto match =
+                ends_with(begin(h), end(h), begin(n), end(n), equal_to{}, get_first, get_second);
+            assert(match);
+        }
         {
             In1 h{haystack};
             In2 n{wrong_needle};
@@ -65,13 +84,19 @@ struct instantiator {
                 ends_with(begin(h), end(h), begin(n), end(n), equal_to{}, get_first, get_second);
             assert(!match);
         }
-
         {
             In1 h{short_haystack};
-            In2 n{needle};
+            In2 n{short_needle};
             const same_as<bool> auto match =
                 ends_with(begin(h), end(h), begin(n), end(n), equal_to{}, get_first, get_second);
             assert(!match);
+        }
+        {
+            In1 h{haystack};
+            In2 n{span<pair<long, long>, 0>{}};
+            const same_as<bool> auto match =
+                ends_with(begin(h), end(h), begin(n), end(n), equal_to{}, get_first, get_second);
+            assert(match);
         }
     }
 

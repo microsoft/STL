@@ -693,7 +693,7 @@ namespace ranges {
     // clang-format off
     template <input_iterator _It1, input_iterator _It2, integral _Size, class _Pr, class _Pj1, class _Pj2>
         requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-    _NODISCARD static constexpr bool _Equal_count(
+    _NODISCARD constexpr bool _Equal_count(
         _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
         // clang-format on
         _STL_INTERNAL_CHECK(_Count >= 0);
@@ -2307,11 +2307,11 @@ namespace ranges {
             auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
             auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
 
-            auto _Count1 = _Distance_helper(_UFirst1, _ULast1);
-            auto _Count2 = _Distance_helper(_UFirst2, _ULast2);
+            const auto _Count1 = _Distance_helper(_UFirst1, _ULast1);
+            const auto _Count2 = _Distance_helper(_UFirst2, _ULast2);
 
-            return _Ends_with_impl(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_Count1), _STD move(_UFirst2),
-                _STD move(_ULast2), _STD move(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            return _Ends_with_impl(_STD move(_UFirst1), _STD move(_ULast1), _Count1, _STD move(_UFirst2),
+                _STD move(_ULast2), _Count2, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
         }
 
         // clang-format off
@@ -2323,11 +2323,11 @@ namespace ranges {
         _NODISCARD constexpr bool operator()(
                 _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             // clang-format on
-            auto _Count1 = _Distance_helper(_Range1);
-            auto _Count2 = _Distance_helper(_Range2);
+            const auto _Count1 = _Distance_helper(_Range1);
+            const auto _Count2 = _Distance_helper(_Range2);
 
-            return _Ends_with_impl(_Ubegin(_Range1), _Uend(_Range1), _STD move(_Count1), _Ubegin(_Range2),
-                _Uend(_Range2), _STD move(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            return _Ends_with_impl(_Ubegin(_Range1), _Uend(_Range1), _Count1, _Ubegin(_Range2), _Uend(_Range2), _Count2,
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
         }
 
     private:
@@ -2381,8 +2381,8 @@ namespace ranges {
         template <class _It1, class _Se1, class _Diff1, class _It2, class _Pr, class _Pj1, class _Pj2>
         [[nodiscard]] static constexpr bool _Ends_with_sized_needle(_It1 _First1, _Se1 _Last1, _Diff1 _Count1,
             _It2 _First2, iter_difference_t<_It2> _Count2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
-            _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Diff1, iter_difference_t<_It1>, _Not_a_difference>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1> && sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1> || same_as<_Diff1, iter_difference_t<_It1>>);
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
 
@@ -2429,6 +2429,45 @@ namespace ranges {
                 static_cast<iter_difference_t<_It1>>(_Count2), _Pred, _Proj1, _Proj2);
         }
 
+        template <class _It1, class _Se1, class _Diff1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        [[nodiscard]] static constexpr bool _Ends_with_unsized_needle(
+            _It1 _First1, _Se1 _Last1, _Diff1 _Count1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1> && sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1> || same_as<_Diff1, iter_difference_t<_It1>>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2> && sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
+            constexpr bool _Sized1 = !same_as<_Diff1, _Not_a_difference>;
+
+            iter_difference_t<_It2> _Count2 = 0;
+
+            if constexpr (_Sized1) {
+                for (auto _Mid2 = _First2; _Mid2 != _Last2; ++_Mid2, (void) ++_Count2) {
+                    if (_Count2 == _Count1) { // distance(_First1, _Last1) < distance(_First2, _Last2)
+                        return false;
+                    }
+                }
+
+                _RANGES advance(_First1, static_cast<iter_difference_t<_It1>>(_Count1 - _Count2));
+            } else { // first range isn't sized, so must be forward
+                auto _Mid1 = _First1;
+                for (auto _Mid2 = _First2; _Mid2 != _Last2; ++_Mid1, (void) ++_Mid2, ++_Count2) {
+                    if (_Mid1 == _Last1) { // distance(_First1, _Last1) < distance(_First2, _Last2)
+                        return false;
+                    }
+                }
+
+                // distance(_First1, _Mid1) == distance(_First2, _Last2) == _Count2
+                while (_Mid1 != _Last1) {
+                    ++_First1;
+                    ++_Mid1;
+                }
+            }
+
+            return _RANGES _Equal_count(_STD move(_First1), _STD move(_First2),
+                static_cast<iter_difference_t<_It1>>(_Count2), _Pred, _Proj1, _Proj2);
+        }
+
         template <class _It1, class _Se1, class _Diff1, class _It2, class _Se2, class _Diff2, class _Pr, class _Pj1,
             class _Pj2>
         [[nodiscard]] static constexpr bool _Ends_with_impl(_It1 _First1, _Se1 _Last1, _Diff1 _Count1, _It2 _First2,
@@ -2439,9 +2478,10 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Diff2, iter_difference_t<_It2>, _Not_a_difference>);
             _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
 
-            constexpr bool _Sized2         = !same_as<_Diff2, _Not_a_difference>;
-            constexpr bool _Both_sized     = !same_as<_Diff1, _Not_a_difference> && _Sized2;
-            constexpr bool _Both_bi_common = _Bidi_common<_It1, _Se1> && _Bidi_common<_It2, _Se2>;
+            constexpr bool _Sized1           = !same_as<_Diff1, _Not_a_difference>;
+            constexpr bool _Sized2           = !same_as<_Diff2, _Not_a_difference>;
+            constexpr bool _Both_sized       = _Sized1 && _Sized2;
+            constexpr bool _Both_bidi_common = _Bidi_common<_It1, _Se1> && _Bidi_common<_It2, _Se2>;
 
             if constexpr (_Both_sized) {
                 if (_Count2 > _Count1) {
@@ -2455,7 +2495,7 @@ namespace ranges {
                 }
             }
 
-            if constexpr (_Both_bi_common && !(random_access_iterator<_It1> && _Both_sized)) {
+            if constexpr (_Both_bidi_common && !(random_access_iterator<_It1> && _Both_sized)) {
                 if constexpr (_Both_sized) {
                     return _Match_backwards(unreachable_sentinel, _STD move(_Last1), _STD move(_First2),
                         _STD move(_Last2), _Pred, _Proj1, _Proj2);
@@ -2464,36 +2504,11 @@ namespace ranges {
                         _STD move(_Last2), _Pred, _Proj1, _Proj2);
                 }
             } else if constexpr (_Sized2) {
-                return _Ends_with_sized_needle(_STD move(_First1), _STD move(_Last1), _STD move(_Count1),
-                    _STD move(_First2), _STD move(_Count2), _Pred, _Proj1, _Proj2);
+                return _Ends_with_sized_needle(
+                    _STD move(_First1), _STD move(_Last1), _Count1, _STD move(_First2), _Count2, _Pred, _Proj1, _Proj2);
             } else {
-                iter_difference_t<_It2> _Count;
-
-                if constexpr (forward_iterator<_It1>) {
-                    auto _Mid1 = _First1;
-                    auto _Mid2 = _First2;
-                    _Count     = 0;
-                    for (; _Mid2 != _Last2; ++_Mid1, (void) ++_Mid2, ++_Count) {
-                        if (_Mid1 == _Last1) { // distance(_First1, _Last1) < distance(_First2, _Last2)
-                            return false;
-                        }
-                    }
-
-                    // distance(_First1, _Mid1) == distance(_First2, _Last2) == _Count
-                    while (_Mid1 != _Last1) {
-                        ++_First1;
-                        ++_Mid1;
-                    }
-                } else {
-                    _Count = _RANGES distance(_First2, _Last2);
-                    if (_Count > _Count1) {
-                        return false; // distance(_First1, _Last1) < distance(_First2, _Last2)
-                    }
-                    _RANGES advance(_First1, static_cast<iter_difference_t<_It1>>(_Count1 - _Count));
-                }
-
-                return _RANGES _Equal_count(_STD move(_First1), _STD move(_First2),
-                    static_cast<iter_difference_t<_It1>>(_Count), _Pred, _Proj1, _Proj2);
+                return _Ends_with_unsized_needle(_STD move(_First1), _STD move(_Last1), _Count1, _STD move(_First2),
+                    _STD move(_Last2), _Pred, _Proj1, _Proj2);
             }
         }
     };

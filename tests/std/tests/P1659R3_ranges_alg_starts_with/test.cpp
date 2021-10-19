@@ -19,7 +19,7 @@ struct instantiator {
 
     template <ranges::input_range In1, ranges::input_range In2>
     static constexpr void test() {
-        using ranges::begin, ranges::end, ranges::starts_with;
+        using ranges::begin, ranges::end, ranges::equal_to, ranges::starts_with;
 
         // Validate range overload
         {
