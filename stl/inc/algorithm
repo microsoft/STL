@@ -2334,7 +2334,7 @@ namespace ranges {
         struct _Not_a_difference {};
 
         template <class _It, class _Se>
-        [[nodiscard]] static constexpr auto _Distance_helper(const _It& _First, const _Se& _Last) {
+        _NODISCARD static constexpr auto _Distance_helper(const _It& _First, const _Se& _Last) {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             if constexpr (sized_sentinel_for<_Se, _It>) {
                 return _Last - _First;
@@ -2344,7 +2344,7 @@ namespace ranges {
         }
 
         template <class _Rng>
-        [[nodiscard]] static constexpr auto _Distance_helper(_Rng&& _Range) {
+        _NODISCARD static constexpr auto _Distance_helper(_Rng&& _Range) {
             _STL_INTERNAL_STATIC_ASSERT(range<_Rng>);
             if constexpr (sized_range<_Rng>) {
                 return _RANGES distance(_Range);
@@ -2354,7 +2354,7 @@ namespace ranges {
         }
 
         template <class _Ty, class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
-        [[nodiscard]] static constexpr bool _Match_backwards(
+        _NODISCARD static constexpr bool _Match_backwards(
             const _Ty _First1, _It1 _Last1, const _It2 _First2, _It2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             _STL_INTERNAL_STATIC_ASSERT(same_as<_Ty, _It1> || same_as<_Ty, unreachable_sentinel_t>);
             _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It1>);
@@ -2379,7 +2379,7 @@ namespace ranges {
         }
 
         template <class _It1, class _Se1, class _Diff1, class _It2, class _Pr, class _Pj1, class _Pj2>
-        [[nodiscard]] static constexpr bool _Ends_with_sized_needle(_It1 _First1, _Se1 _Last1, _Diff1 _Count1,
+        _NODISCARD static constexpr bool _Ends_with_sized_needle(_It1 _First1, _Se1 _Last1, _Diff1 _Count1,
             _It2 _First2, iter_difference_t<_It2> _Count2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1> && sentinel_for<_Se1, _It1>);
             _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1> || same_as<_Diff1, iter_difference_t<_It1>>);
@@ -2430,7 +2430,7 @@ namespace ranges {
         }
 
         template <class _It1, class _Se1, class _Diff1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
-        [[nodiscard]] static constexpr bool _Ends_with_unsized_needle(
+        _NODISCARD static constexpr bool _Ends_with_unsized_needle(
             _It1 _First1, _Se1 _Last1, _Diff1 _Count1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1> && sentinel_for<_Se1, _It1>);
             _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1> || same_as<_Diff1, iter_difference_t<_It1>>);
@@ -2470,7 +2470,7 @@ namespace ranges {
 
         template <class _It1, class _Se1, class _Diff1, class _It2, class _Se2, class _Diff2, class _Pr, class _Pj1,
             class _Pj2>
-        [[nodiscard]] static constexpr bool _Ends_with_impl(_It1 _First1, _Se1 _Last1, _Diff1 _Count1, _It2 _First2,
+        _NODISCARD static constexpr bool _Ends_with_impl(_It1 _First1, _Se1 _Last1, _Diff1 _Count1, _It2 _First2,
             _Se2 _Last2, _Diff2 _Count2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
             _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Diff1, iter_difference_t<_It1>, _Not_a_difference>);
