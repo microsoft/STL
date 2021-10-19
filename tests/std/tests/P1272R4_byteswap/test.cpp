@@ -26,7 +26,6 @@ constexpr bool test_byteswap_all_types() {
     assert(test_byteswap<unsigned short>(0xAC34, 0x34AC));
     assert(test_byteswap<char16_t>(0xAC34, 0x34AC));
     assert(test_byteswap<wchar_t>(0xAC34, 0x34AC));
-    assert(test_byteswap<__wchar_t>(0xAC34, 0x34AC));
 
     assert(test_byteswap<int>(0x1234ABCD, 0xCDAB3412));
     assert(test_byteswap<unsigned int>(0x1234ABCD, 0xCDAB3412));

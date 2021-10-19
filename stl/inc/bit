@@ -311,7 +311,7 @@ _NODISCARD constexpr _Ty byteswap(const _Ty _Val) noexcept {
         static_assert(_Always_false<_Ty>, "Unexpected integer size");
     }
 }
-#endif
+#endif // _HAS_CXX23
 
 enum class endian { little = 0, big = 1, native = little };
 
