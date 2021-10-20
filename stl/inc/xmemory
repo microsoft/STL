@@ -563,7 +563,6 @@ struct _Normal_allocator_traits { // defines traits for allocators
     template <class _Ty, class... _Types>
     static _CONSTEXPR20 void construct(_Alloc& _Al, _Ty* _Ptr, _Types&&... _Args) {
         if constexpr (_Uses_default_construct<_Alloc, _Ty*, _Types...>::value) {
-            (void) _Al; // TRANSITION, DevCom-1004719
 #if _HAS_CXX20
             _STD construct_at(_Ptr, _STD forward<_Types>(_Args)...);
 #else // _HAS_CXX20
