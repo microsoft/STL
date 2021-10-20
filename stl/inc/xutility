@@ -5088,34 +5088,35 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
         return true;
     }
 #ifdef __cpp_lib_byte
-    if constexpr (is_same_v<_Ty, byte>) {
+    else if constexpr (is_same_v<_Ty, byte>) {
         return true;
     }
 #endif // __cpp_lib_byte
-
-    using _Elem = _Iter_value_t<_InIt>;
-    if constexpr (is_same_v<_Elem, bool>) {
-        return _Val == true || _Val == false;
-    } else if constexpr (is_signed_v<_Elem>) {
-        if (is_signed_v<_Ty>) {
-            // signed _Elem, signed _Ty
-            return SCHAR_MIN <= _Val && _Val <= SCHAR_MAX;
-        } else {
-            if constexpr (-1 == static_cast<_Ty>(-1)) {
-                // signed _Elem, unsigned _Ty, -1 == static_cast<_Ty>(-1)
-                return _Val <= SCHAR_MAX || static_cast<_Ty>(SCHAR_MIN) <= _Val;
+    else {
+        using _Elem = _Iter_value_t<_InIt>;
+        if constexpr (is_same_v<_Elem, bool>) {
+            return _Val == true || _Val == false;
+        } else if constexpr (is_signed_v<_Elem>) {
+            if (is_signed_v<_Ty>) {
+                // signed _Elem, signed _Ty
+                return SCHAR_MIN <= _Val && _Val <= SCHAR_MAX;
             } else {
-                // signed _Elem, unsigned _Ty, -1 != static_cast<_Ty>(-1)
-                return _Val <= SCHAR_MAX;
+                if constexpr (-1 == static_cast<_Ty>(-1)) {
+                    // signed _Elem, unsigned _Ty, -1 == static_cast<_Ty>(-1)
+                    return _Val <= SCHAR_MAX || static_cast<_Ty>(SCHAR_MIN) <= _Val;
+                } else {
+                    // signed _Elem, unsigned _Ty, -1 != static_cast<_Ty>(-1)
+                    return _Val <= SCHAR_MAX;
+                }
             }
-        }
-    } else {
-        if (is_signed_v<_Ty>) {
-            // unsigned _Elem, signed _Ty
-            return 0 <= _Val && _Val <= UCHAR_MAX;
         } else {
-            // unsigned _Elem, unsigned _Ty
-            return _Val <= UCHAR_MAX;
+            if (is_signed_v<_Ty>) {
+                // unsigned _Elem, signed _Ty
+                return 0 <= _Val && _Val <= UCHAR_MAX;
+            } else {
+                // unsigned _Elem, unsigned _Ty
+                return _Val <= UCHAR_MAX;
+            }
         }
     }
 }
