@@ -451,6 +451,7 @@ tests\P1951R1_default_arguments_pair_forward_ctor
 tests\P2136R3_invoke_r
 tests\P2162R2_std_visit_for_derived_classes_from_variant
 tests\P2231R1_complete_constexpr_optional_variant
+tests\P2401R0_conditional_noexcept_for_exchange
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions
 tests\VSO_0000000_c_math_functions
@@ -483,7 +484,6 @@ tests\VSO_0000000_oss_workarounds
 tests\VSO_0000000_path_stream_parameter
 tests\VSO_0000000_regex_interface
 tests\VSO_0000000_regex_use
-tests\VSO_0000000_strengthened_noexcept
 tests\VSO_0000000_string_view_idl
 tests\VSO_0000000_type_traits
 tests\VSO_0000000_vector_algorithms
