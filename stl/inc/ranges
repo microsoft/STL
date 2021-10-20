@@ -1328,7 +1328,8 @@ namespace ranges {
             _Iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 // Per LWG-3489
-                _STL_VERIFY(!_Parent->_Stream_at_end(), "cannot increment istream_view iterator at end of stream");
+                _STL_VERIFY(
+                    !_Parent->_Stream_at_end(), "cannot increment basic_istream_view iterator at end of stream");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 *_Parent->_Stream >> _Parent->_Val;
                 return *this;
@@ -1341,7 +1342,8 @@ namespace ranges {
             _NODISCARD _Ty& operator*() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 // Per LWG-3489
-                _STL_VERIFY(!_Parent->_Stream_at_end(), "cannot dereference istream_view iterator at end of stream");
+                _STL_VERIFY(
+                    !_Parent->_Stream_at_end(), "cannot dereference basic_istream_view iterator at end of stream");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 return _Parent->_Val;
             }
@@ -1373,11 +1375,28 @@ namespace ranges {
         }
     };
 
-    template <class _Ty, class _Elem, class _Traits>
-    _NODISCARD basic_istream_view<_Ty, _Elem, _Traits> istream_view(basic_istream<_Elem, _Traits>& _Stream) noexcept(
-        is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {
-        return basic_istream_view<_Ty, _Elem, _Traits>{_Stream};
-    }
+    template <class _Ty>
+    using istream_view = basic_istream_view<_Ty, char>;
+    template <class _Ty>
+    using wistream_view = basic_istream_view<_Ty, wchar_t>;
+
+    namespace views {
+        template <class _Ty>
+        struct _Istream_fn {
+            // clang-format off
+            template <class _StreamTy>
+                requires derived_from<_StreamTy,
+                    basic_istream<typename _StreamTy::char_type, typename _StreamTy::traits_type>>
+            _NODISCARD constexpr auto operator()(_StreamTy& _Stream) const
+                noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {
+                // clang-format on
+                return basic_istream_view<_Ty, typename _StreamTy::char_type, typename _StreamTy::traits_type>(_Stream);
+            }
+        };
+
+        template <class _Ty>
+        inline constexpr _Istream_fn<_Ty> istream;
+    } // namespace views
 
     // clang-format off
     template <range _Rng>
@@ -3257,9 +3276,8 @@ namespace ranges {
         // clang-format off
         _NODISCARD constexpr auto end() const
             requires input_range<const _Vw> && is_reference_v<_InnerRng<true>> {
-            if constexpr (forward_range<const _Vw> && is_reference_v<_InnerRng<true>>
-                    && forward_range<_InnerRng<true>> && common_range<const _Vw>
-                    && common_range<_InnerRng<true>>) {
+            if constexpr (forward_range<const _Vw> && forward_range<_InnerRng<true>>
+                    && common_range<const _Vw> && common_range<_InnerRng<true>>) {
                 // clang-format on
                 return _Iterator<true>{*this, _RANGES end(_Range)};
             } else {
