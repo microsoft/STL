@@ -108,9 +108,40 @@ public:
 
     basic_syncbuf& operator=(basic_syncbuf&& _Right) { // see LWG-3498 regarding noexcept
         emit();
-        if (this != _STD addressof(_Right)) {
-            _Move_assign(_STD move(_Right), _Choose_pocma<_Alloc>{});
+
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+        auto& _Al                 = _Getal();
+        auto& _Right_al           = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alloc>;
+        if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            if (_Al != _Right_al) {
+                _Tidy();
+
+                const _Size_type _Right_buf_size  = _Right._Get_buffer_size();
+                const _Size_type _Right_data_size = _Right._Get_data_size();
+
+                _Elem* const _New_ptr = _Unfancy(_Al.allocate(_Right_buf_size));
+                _Traits::copy(_New_ptr, _Right.pbase(), _Right_data_size);
+
+                streambuf_type::setp(_New_ptr, _New_ptr + _Right_data_size, _New_ptr + _Right_buf_size);
+                _STD swap(streambuf_type::_Plocale, _Right._Plocale);
+
+                _STD swap(_Mybase::_Emit_on_sync, _Right._Emit_on_sync);
+                _STD swap(_Mybase::_Sync_recorded, _Right._Sync_recorded);
+                _STD swap(_Wrapped, _Right._Wrapped);
+                _STD swap(_Get_mutex(), _Right._Get_mutex());
+
+                _Right._Tidy();
+                return *this;
+            }
+        }
+
+        _Tidy();
+        _Pocma(_Al, _Right_al);
+        _Swap_except_al(_Right);
         return *this;
     }
 
@@ -218,43 +249,6 @@ private:
             __std_release_shared_mutex_for_instance(_Wrapped);
             _Wrapped     = nullptr;
             _Get_mutex() = nullptr;
-        }
-    }
-
-    void _Move_assign(basic_syncbuf&& _Right, _Equal_allocators) { // see LWG-3498 regarding noexcept
-        _Tidy();
-        _Pocma(_Getal(), _Right._Getal());
-        _Swap_except_al(_Right);
-    }
-
-    void _Move_assign(basic_syncbuf&& _Right, _Propagate_allocators) { // see LWG-3498 regarding noexcept
-        _Tidy();
-        _Pocma(_Getal(), _Right._Getal());
-        _Swap_except_al(_Right);
-    }
-
-    void _Move_assign(basic_syncbuf&& _Right, _No_propagate_allocators) { // see LWG-3498 regarding noexcept
-        auto& _Al = _Getal();
-        if (_Al == _Right._Getal()) {
-            _Move_assign(_STD move(_Right), _Equal_allocators{});
-        } else {
-            _Tidy();
-
-            const _Size_type _Right_buf_size  = _Right._Get_buffer_size();
-            const _Size_type _Right_data_size = _Right._Get_data_size();
-
-            _Elem* const _New_ptr = _Unfancy(_Al.allocate(_Right_buf_size));
-            _Traits::copy(_New_ptr, _Right.pbase(), _Right_data_size);
-
-            streambuf_type::setp(_New_ptr, _New_ptr + _Right_data_size, _New_ptr + _Right_buf_size);
-            _STD swap(streambuf_type::_Plocale, _Right._Plocale);
-
-            _STD swap(_Mybase::_Emit_on_sync, _Right._Emit_on_sync);
-            _STD swap(_Mybase::_Sync_recorded, _Right._Sync_recorded);
-            _STD swap(_Wrapped, _Right._Wrapped);
-            _STD swap(_Get_mutex(), _Right._Get_mutex());
-
-            _Right._Tidy();
         }
     }
 
