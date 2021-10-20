@@ -4716,7 +4716,6 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
         _Rng_from_urng<_Iter_diff_t<_PopIt>, remove_reference_t<_Urng>> _RngFunc(_Func);
         if constexpr (_Is_fwd_iter_v<_PopIt>) {
             // source is forward: use selection sampling (stable)
-            // pre: _Count > 0
             using _PopDiff       = _Iter_diff_t<_PopIt>;
             using _CT            = common_type_t<_Diff, _PopDiff>;
             const auto _Pop_size = _STD distance(_First, _Last);
@@ -4728,7 +4727,6 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
                 _Sample_selection_unchecked(_First, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
         } else {
             // source is input: use reservoir sampling (unstable)
-            // pre: _Count > 0
             _Seek_wrapped(
                 _Dest, _Sample_reservoir_unchecked(_First, _Last, _Get_unwrapped_unverified(_Dest), _Count, _RngFunc));
         }
