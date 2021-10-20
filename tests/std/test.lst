@@ -161,6 +161,7 @@ tests\GH_000431_equal_memcmp_is_safe
 tests\GH_000431_iter_copy_move_cat
 tests\GH_000431_lex_compare_family
 tests\GH_000431_lex_compare_memcmp_classify
+tests\GH_000442_random_subtract_with_carry_engine_io
 tests\GH_000457_system_error_message
 tests\GH_000545_include_compare
 tests\GH_000625_vector_bool_optimization
@@ -440,6 +441,8 @@ tests\P1502R1_standard_library_header_units
 tests\P1518R2_stop_overconstraining_allocators
 tests\P1614R2_spaceship
 tests\P1645R1_constexpr_numeric
+tests\P1659R3_ranges_alg_ends_with
+tests\P1659R3_ranges_alg_starts_with
 tests\P1682R3_to_underlying
 tests\P1951R1_default_arguments_pair_forward_ctor
 tests\P2136R3_invoke_r
