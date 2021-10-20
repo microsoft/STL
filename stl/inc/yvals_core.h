@@ -276,7 +276,9 @@
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
+// P1272R4 byteswap()
 // P1425R4 Iterator Pair Constructors For stack And queue
+// P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
@@ -381,20 +383,6 @@
 // * unique_copy
 
 #include <vcruntime.h>
-
-// TRANSITION, <vcruntime.h> should define _HAS_CXX23
-#ifndef _HAS_CXX23
-#if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || __cplusplus > 202002L)
-#define _HAS_CXX23 1
-#else
-#define _HAS_CXX23 0
-#endif
-#endif // _HAS_CXX23
-
-#if _HAS_CXX23 && !_HAS_CXX20
-#error _HAS_CXX23 must imply _HAS_CXX20.
-#endif
-
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
 #ifndef _STL_WARNING_LEVEL
@@ -1377,11 +1365,13 @@
 #define __cpp_lib_allocate_at_least 202106L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_byteswap       202110L
 #define __cpp_lib_invoke_r       202106L
 #define __cpp_lib_is_scoped_enum 202011L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_out_ptr 202106L
+#define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_starts_ends_with 202106L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream      202106L
