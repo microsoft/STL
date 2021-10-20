@@ -381,20 +381,6 @@
 // * unique_copy
 
 #include <vcruntime.h>
-
-// TRANSITION, <vcruntime.h> should define _HAS_CXX23
-#ifndef _HAS_CXX23
-#if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || __cplusplus > 202002L)
-#define _HAS_CXX23 1
-#else
-#define _HAS_CXX23 0
-#endif
-#endif // _HAS_CXX23
-
-#if _HAS_CXX23 && !_HAS_CXX20
-#error _HAS_CXX23 must imply _HAS_CXX20.
-#endif
-
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
 #ifndef _STL_WARNING_LEVEL
