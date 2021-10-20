@@ -4705,31 +4705,6 @@ _SampleIt _Sample_selection_unchecked(
     return _Dest;
 }
 
-template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
-_SampleIt _Sample1(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _RngFn& _RngFunc, input_iterator_tag) {
-    // source is input: use reservoir sampling (unstable)
-    // pre: _Count > 0
-    _Seek_wrapped(
-        _Dest, _Sample_reservoir_unchecked(_First, _Last, _Get_unwrapped_unverified(_Dest), _Count, _RngFunc));
-    return _Dest;
-}
-
-template <class _PopIt, class _SampleIt, class _Diff, class _RngFn>
-_SampleIt _Sample1(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _RngFn& _RngFunc, forward_iterator_tag) {
-    // source is forward: use selection sampling (stable)
-    // pre: _Count > 0
-    using _PopDiff       = _Iter_diff_t<_PopIt>;
-    using _CT            = common_type_t<_Diff, _PopDiff>;
-    const auto _Pop_size = _STD distance(_First, _Last);
-    if (static_cast<_CT>(_Count) > static_cast<_CT>(_Pop_size)) {
-        _Count = static_cast<_Diff>(_Pop_size); // narrowing OK because _Count is getting smaller
-    }
-
-    _Seek_wrapped(
-        _Dest, _Sample_selection_unchecked(_First, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
-    return _Dest;
-}
-
 template <class _PopIt, class _SampleIt, class _Diff, class _Urng>
 _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
     _Urng&& _Func) { // randomly select _Count elements from [_First, _Last) into _Dest
@@ -4739,7 +4714,24 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
     _Adl_verify_range(_First, _Last);
     if (0 < _Count) {
         _Rng_from_urng<_Iter_diff_t<_PopIt>, remove_reference_t<_Urng>> _RngFunc(_Func);
-        _Dest = _Sample1(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Dest, _Count, _RngFunc, _Iter_cat_t<_PopIt>{});
+        if constexpr (_Is_random_iter_v<_PopIt>) {
+            // source is input: use reservoir sampling (unstable)
+            // pre: _Count > 0
+            _Seek_wrapped(
+                _Dest, _Sample_reservoir_unchecked(_First, _Last, _Get_unwrapped_unverified(_Dest), _Count, _RngFunc));
+        } else {
+            // source is forward: use selection sampling (stable)
+            // pre: _Count > 0
+            using _PopDiff       = _Iter_diff_t<_PopIt>;
+            using _CT            = common_type_t<_Diff, _PopDiff>;
+            const auto _Pop_size = _STD distance(_First, _Last);
+            if (static_cast<_CT>(_Count) > static_cast<_CT>(_Pop_size)) {
+                _Count = static_cast<_Diff>(_Pop_size); // narrowing OK because _Count is getting smaller
+            }
+
+            _Seek_wrapped(_Dest,
+                _Sample_selection_unchecked(_First, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
+        }
     }
 
     return _Dest;
