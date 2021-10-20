@@ -1,15 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-'use strict';
+import * as fs from 'fs';
 
-const fs = require('fs');
-
-const cliProgress = require('cli-progress');
-const dotenv = require('dotenv');
-const { DateTime, Duration, Settings } = require('luxon');
-const { graphql } = require('@octokit/graphql');
-const yargs = require('yargs/yargs');
+import * as cliProgress from 'cli-progress';
+import * as dotenv from 'dotenv';
+import { DateTime, Duration, Settings } from 'luxon';
+import { graphql } from '@octokit/graphql';
+import * as yargs from 'yargs';
 
 Settings.defaultZone = 'America/Los_Angeles';
 
@@ -23,7 +21,7 @@ if (process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN === undefined) {
     }
 
     if (process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN === undefined) {
-        throw 'Missing SECRET_GITHUB_PERSONAL_ACCESS_TOKEN key in .env file.';
+        throw new Error('Missing SECRET_GITHUB_PERSONAL_ACCESS_TOKEN key in .env file.');
     }
 }
 
@@ -48,7 +46,45 @@ const argv = yargs(process.argv.slice(2))
             return true;
         }
     })
-    .strict().argv;
+    .strict()
+    .parseSync();
+
+type RawLabelNode = {
+    name: string;
+};
+
+type RawLabels = {
+    totalCount: number;
+    nodes: RawLabelNode[];
+};
+
+type RawReviewNode = {
+    author: {
+        login: string;
+    };
+    submittedAt: string;
+};
+
+type RawReviews = {
+    totalCount: number;
+    nodes: RawReviewNode[];
+};
+
+type RawPRNode = {
+    id: number;
+    createdAt: string;
+    closedAt: string;
+    mergedAt: string;
+    labels: RawLabels;
+    reviews: RawReviews;
+};
+
+type RawIssueNode = {
+    id: number;
+    createdAt: string;
+    closedAt: string;
+    labels: RawLabels;
+};
 
 async function retrieve_nodes_from_network() {
     const progress = {
@@ -61,8 +97,8 @@ async function retrieve_nodes_from_network() {
             },
             cliProgress.Presets.shades_classic
         ),
-        pr_bar: null,
-        issue_bar: null,
+        pr_bar: null as null | cliProgress.SingleBar,
+        issue_bar: null as null | cliProgress.SingleBar,
     };
 
     try {
@@ -71,9 +107,9 @@ async function retrieve_nodes_from_network() {
         });
 
         const rate_limit = {
-            spent: null,
-            remaining: null,
-            limit: null,
+            spent: null as null | number,
+            remaining: null as null | number,
+            limit: null as null | number,
         };
 
         {
@@ -94,15 +130,15 @@ async function retrieve_nodes_from_network() {
             progress.issue_bar = progress.multi_bar.create(total_issues, 0, { name: 'issues received' });
         }
 
-        let pr_nodes = [];
-        let issue_nodes = [];
+        let pr_nodes: RawPRNode[] = [];
+        let issue_nodes: RawIssueNode[] = [];
 
         const variables = {
             query: fs.readFileSync('./query_prs_and_issues.graphql', 'utf8'),
             want_prs: true,
-            pr_cursor: null,
+            pr_cursor: null as null | string,
             want_issues: true,
-            issue_cursor: null,
+            issue_cursor: null as null | string,
         };
 
         while (variables.want_prs || variables.want_issues) {
@@ -149,7 +185,13 @@ async function retrieve_nodes() {
     return graphql_result;
 }
 
-function warn_if_pagination_needed(outer_nodes, field, message) {
+type PaginationWarningMessage = (retrieved: number, total: number, id: number) => string;
+
+function warn_if_pagination_needed<RawNode extends RawPRNode | RawIssueNode>(
+    outer_nodes: RawNode[],
+    get_field: (node: RawNode) => RawLabels | RawReviews,
+    message: PaginationWarningMessage
+) {
     if (outer_nodes.length === 0) {
         return;
     }
@@ -157,20 +199,20 @@ function warn_if_pagination_needed(outer_nodes, field, message) {
     let max = outer_nodes[0];
 
     for (const node of outer_nodes) {
-        if (node[field].totalCount > max[field].totalCount) {
+        if (get_field(node).totalCount > get_field(max).totalCount) {
             max = node;
         }
     }
 
-    const retrieved = max[field].nodes.length;
-    const total_count = max[field].totalCount;
+    const retrieved = get_field(max).nodes.length;
+    const total_count = get_field(max).totalCount;
 
     if (retrieved < total_count) {
-        console.log(message(retrieved, total_count, max.number));
+        console.log(message(retrieved, total_count, max.id));
     }
 }
 
-function read_trimmed_lines(filename) {
+function read_trimmed_lines(filename: string) {
     // Excludes empty lines and comments beginning with '#'.
     return fs
         .readFileSync(filename, 'utf8')
@@ -179,7 +221,9 @@ function read_trimmed_lines(filename) {
         .filter(line => line.length > 0 && line[0] !== '#');
 }
 
-function warn_about_duplicates(array, message) {
+type DuplicateWarningMessage = (username: string) => string;
+
+function warn_about_duplicates(array: string[], message: DuplicateWarningMessage) {
     const uniques = new Set();
     const duplicates = new Set();
 
@@ -197,15 +241,15 @@ function read_usernames() {
     const maintainer_list = read_trimmed_lines('./usernames_maintainers.txt');
     const contributor_list = read_trimmed_lines('./usernames_contributors.txt');
 
-    warn_about_duplicates(maintainer_list, username => `WARNING: Duplicate maintainer "${username}".`);
-    warn_about_duplicates(contributor_list, username => `WARNING: Duplicate contributor "${username}".`);
+    warn_about_duplicates(maintainer_list, (username: string) => `WARNING: Duplicate maintainer "${username}".`);
+    warn_about_duplicates(contributor_list, (username: string) => `WARNING: Duplicate contributor "${username}".`);
 
     const maintainer_set = new Set(maintainer_list);
     const contributor_set = new Set(contributor_list);
 
     warn_about_duplicates(
         [...maintainer_set, ...contributor_set],
-        username => `WARNING: Maintainer "${username}" is also listed as a contributor.`
+        (username: string) => `WARNING: Maintainer "${username}" is also listed as a contributor.`
     );
 
     return {
@@ -214,16 +258,26 @@ function read_usernames() {
     };
 }
 
-function transform_pr_nodes(pr_nodes) {
+type CookedPRNode = {
+    id: number;
+    opened: DateTime;
+    closed: DateTime;
+    merged: DateTime;
+    reviews: DateTime[];
+};
+
+function transform_pr_nodes(pr_nodes: RawPRNode[]): CookedPRNode[] {
     warn_if_pagination_needed(
         pr_nodes,
-        'labels',
-        (retrieved, total, number) => `WARNING: Retrieved ${retrieved}/${total} labels for PR #${number}.`
+        (node: RawPRNode) => node.labels,
+        (retrieved: number, total: number, id: number) =>
+            `WARNING: Retrieved ${retrieved}/${total} labels for PR #${id}.`
     );
     warn_if_pagination_needed(
         pr_nodes,
-        'reviews',
-        (retrieved, total, number) => `WARNING: Retrieved ${retrieved}/${total} reviews for PR #${number}.`
+        (node: RawPRNode) => node.reviews,
+        (retrieved: number, total: number, id: number) =>
+            `WARNING: Retrieved ${retrieved}/${total} reviews for PR #${id}.`
     );
 
     const { maintainers, contributors } = read_usernames();
@@ -246,7 +300,7 @@ function transform_pr_nodes(pr_nodes) {
 
                     if (!is_maintainer && !contributors.has(username)) {
                         contributors.add(username); // Assume that unknown users are contributors.
-                        console.log(`WARNING: Unknown user "${username}" reviewed PR #${pr_node.number}.`);
+                        console.log(`WARNING: Unknown user "${username}" reviewed PR #${pr_node.id}.`);
                     }
 
                     return is_maintainer;
@@ -254,7 +308,7 @@ function transform_pr_nodes(pr_nodes) {
                 .map(review_node => DateTime.fromISO(review_node.submittedAt));
 
             return {
-                number: pr_node.number,
+                id: pr_node.id,
                 opened: DateTime.fromISO(pr_node.createdAt),
                 closed: DateTime.fromISO(pr_node.closedAt ?? '2100-01-01'),
                 merged: DateTime.fromISO(pr_node.mergedAt ?? '2100-01-01'),
@@ -263,7 +317,7 @@ function transform_pr_nodes(pr_nodes) {
         });
 }
 
-function calculate_wait(when, opened, reviews) {
+function calculate_wait(when: DateTime, opened: DateTime, reviews: DateTime[]) {
     let latest_feedback = opened;
 
     for (const review of reviews) {
@@ -275,16 +329,27 @@ function calculate_wait(when, opened, reviews) {
     return when.diff(latest_feedback);
 }
 
-function transform_issue_nodes(issue_nodes) {
+type CookedIssueNode = {
+    id: number;
+    opened: DateTime;
+    closed: DateTime;
+    labeled_cxx20: boolean;
+    labeled_cxx23: boolean;
+    labeled_lwg: boolean;
+    labeled_bug: boolean;
+};
+
+function transform_issue_nodes(issue_nodes: RawIssueNode[]): CookedIssueNode[] {
     warn_if_pagination_needed(
         issue_nodes,
-        'labels',
-        (retrieved, total, number) => `WARNING: Retrieved ${retrieved}/${total} labels for issue #${number}.`
+        (node: RawIssueNode) => node.labels,
+        (retrieved: number, total: number, id: number) =>
+            `WARNING: Retrieved ${retrieved}/${total} labels for issue #${id}.`
     );
     return issue_nodes.map(node => {
         const labels = node.labels.nodes.map(label => label.name);
         return {
-            number: node.number,
+            id: node.id,
             opened: DateTime.fromISO(node.createdAt),
             closed: DateTime.fromISO(node.closedAt ?? '2100-01-01'),
             labeled_cxx20: labels.includes('cxx20'),
@@ -295,7 +360,7 @@ function transform_issue_nodes(issue_nodes) {
     });
 }
 
-function calculate_sliding_window(when, merged) {
+function calculate_sliding_window(when: DateTime, merged: DateTime) {
     // A sliding window of 30 days would be simple, but would result in a noisy line as PRs abruptly leave the window.
     // To reduce such noise, this function applies smoothing between 20 and 40 days.
     // (A range of 25 to 35 days would also work; the important thing is for the integral of this function to be 30,
@@ -314,7 +379,7 @@ function calculate_sliding_window(when, merged) {
     }
 }
 
-function write_generated_file(filename, table_str) {
+function write_generated_file(filename: string, table_str: string) {
     const generated_file_warning_comment = '// Generated file - DO NOT EDIT manually!\n';
 
     let str = '// Copyright (c) Microsoft Corporation.\n';
@@ -327,12 +392,27 @@ function write_generated_file(filename, table_str) {
     fs.writeFileSync(filename, str);
 }
 
-function should_emit_data_point(rows, i, key) {
+type Row = {
+    date: DateTime;
+    merged: number;
+    pr: number;
+    cxx20: number;
+    cxx23: number;
+    lwg: number;
+    issue: number;
+    bug: number;
+    avg_age: number;
+    avg_wait: number;
+    sum_age: number;
+    sum_wait: number;
+};
+
+function should_emit_data_point(rows: Row[], i: number, key: keyof Row) {
     return rows[i - 1]?.[key] > 0 || rows[i][key] > 0 || rows[i + 1]?.[key] > 0;
 }
 
-function write_daily_table(script_start, all_prs, all_issues) {
-    const rows = [];
+function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_issues: CookedIssueNode[]) {
+    const rows: Row[] = [];
 
     const progress_bar = new cliProgress.SingleBar(
         {
@@ -422,7 +502,8 @@ function write_daily_table(script_start, all_prs, all_issues) {
         str += `date: '${row.date.toISODate()}', `;
         str += `merged: ${row.merged.toFixed(2)}, `;
 
-        for (const key of ['pr', 'cxx20', 'cxx23', 'lwg', 'issue', 'bug']) {
+        const keys: (keyof Row)[] = ['pr', 'cxx20', 'cxx23', 'lwg', 'issue', 'bug'];
+        for (const key of keys) {
             if (should_emit_data_point(rows, i, key)) {
                 str += `${key}: ${row[key]}, `;
             } else {
@@ -442,7 +523,7 @@ function write_daily_table(script_start, all_prs, all_issues) {
     write_generated_file('./daily_table.js', str);
 }
 
-function write_monthly_table(script_start, all_prs) {
+function write_monthly_table(script_start: DateTime, all_prs: CookedPRNode[]) {
     const monthly_merges = new Map();
 
     for (const pr of all_prs) {
@@ -493,7 +574,11 @@ async function async_main() {
 
         console.log(`Time: ${script_finish.diff(script_start).as('seconds').toFixed(3)}s`);
     } catch (error) {
-        console.log(`ERROR: ${error.message}`);
+        if (error instanceof Error) {
+            console.log(`ERROR: ${error.message}`);
+        } else {
+            console.log(`UNKNOWN ERROR: ${error}`);
+        }
     }
 }
 

@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "module": "CommonJS",
+        "outDir": "./built",
+        "target": "ES2020",
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+        "exactOptionalPropertyTypes": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+    },
+    "include": [
+        "./src/**/*"
+    ]
+}
