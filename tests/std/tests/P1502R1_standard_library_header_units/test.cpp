@@ -576,14 +576,12 @@ int main() {
         assert(lcg() == 1043618065); // N4868 [rand.predef]/1
     }
 
-#ifndef MSVC_INTERNAL_TESTING // TRANSITION, VSO-1409853 (internal compiler assertion, doesn't affect public releases)
     {
         puts("Testing <ranges>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
         assert(ranges::distance(views::filter(arr, [](int x) { return x == 0; })) == 4);
         static_assert(ranges::distance(views::filter(arr, [](int x) { return x != 0; })) == 5);
     }
-#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <ratio>.");
