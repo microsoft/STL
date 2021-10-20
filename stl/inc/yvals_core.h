@@ -276,6 +276,7 @@
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
 // P1425R4 Iterator Pair Constructors For stack And queue
+// P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
@@ -1380,7 +1381,8 @@
 #define __cpp_lib_is_scoped_enum 202011L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_out_ptr 202106L
+#define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_starts_ends_with 202106L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream      202106L
