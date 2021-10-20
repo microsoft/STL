@@ -872,7 +872,7 @@ public:
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    enum class _Copy_or_move_t {
+    enum class _Strategy : bool {
         _Copy,
         _Move,
     };
@@ -894,7 +894,7 @@ public:
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
         _Tree_head_scoped_ptr<_Alnode, _Scary_val> _Sentinel(_Getal(), *_Scary);
-        _Copy<_Copy_or_move_t::_Copy>(_Right);
+        _Copy<_Strategy::_Copy>(_Right);
         _Sentinel._Release();
         _Proxy._Release();
     }
@@ -913,7 +913,7 @@ private:
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
         _Tree_head_scoped_ptr<_Alnode, _Scary_val> _Sentinel(_Getal(), *_Scary);
-        _Copy<_Copy_or_move_t::_Move>(_Right);
+        _Copy<_Strategy::_Move>(_Right);
         _Sentinel._Release();
         _Proxy._Release();
     }
@@ -966,7 +966,7 @@ public:
             if (_Al != _Right_al) {
                 clear();
                 _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
-                _Copy<_Copy_or_move_t::_Move>(_Right);
+                _Copy<_Strategy::_Move>(_Right);
                 return *this;
             }
         }
@@ -1107,7 +1107,7 @@ public:
                 _Scary->_Myhead = _Newhead;
                 _Proxy._Bind(_Alproxy, _Scary);
                 _Getcomp() = _Right._Getcomp();
-                _Copy<_Copy_or_move_t::_Copy>(_Right);
+                _Copy<_Strategy::_Copy>(_Right);
                 return *this;
             }
         }
@@ -1115,7 +1115,7 @@ public:
         clear();
         _Getcomp() = _Right._Getcomp();
         _Pocca(_Al, _Right_al);
-        _Copy<_Copy_or_move_t::_Copy>(_Right);
+        _Copy<_Strategy::_Copy>(_Right);
 
         return *this;
     }
@@ -1607,11 +1607,11 @@ protected:
         }
     }
 
-    template <_Copy_or_move_t _Copy_or_move_v>
+    template <_Strategy _Strat>
     void _Copy(const _Tree& _Right) { // copy or move entire tree from _Right
         const auto _Scary        = _Get_scary();
         const auto _Right_scary  = _Right._Get_scary();
-        _Scary->_Myhead->_Parent = _Copy_nodes<_Copy_or_move_v>(_Right_scary->_Myhead->_Parent, _Scary->_Myhead);
+        _Scary->_Myhead->_Parent = _Copy_nodes<_Strat>(_Right_scary->_Myhead->_Parent, _Scary->_Myhead);
         _Scary->_Mysize          = _Right_scary->_Mysize;
         if (!_Scary->_Myhead->_Parent->_Isnil) { // nonempty tree, look for new smallest and largest
             _Scary->_Myhead->_Left  = _Scary_val::_Min(_Scary->_Myhead->_Parent);
@@ -1622,9 +1622,9 @@ protected:
         }
     }
 
-    template <_Copy_or_move_t _Copy_or_move_v, class _Ty>
+    template <_Strategy _Strat, class _Ty>
     _Nodeptr _Copy_or_move(_Ty& _Val) {
-        if constexpr (_Copy_or_move_v == _Copy_or_move_t::_Copy) {
+        if constexpr (_Strat == _Strategy::_Copy) {
             return _Buynode(_Val);
         } else {
             if constexpr (_Is_set) {
@@ -1635,14 +1635,14 @@ protected:
         }
     }
 
-    template <_Copy_or_move_t _Copy_or_move_v>
+    template <_Strategy _Strat>
     _Nodeptr _Copy_nodes(_Nodeptr _Rootnode, _Nodeptr _Wherenode) {
         // copy entire subtree, recursively
         const auto _Scary = _Get_scary();
         _Nodeptr _Newroot = _Scary->_Myhead; // point at nil node
 
         if (!_Rootnode->_Isnil) { // copy or move a node, then any subtrees
-            _Nodeptr _Pnode = _Copy_or_move<_Copy_or_move_v>(_Rootnode->_Myval);
+            _Nodeptr _Pnode = _Copy_or_move<_Strat>(_Rootnode->_Myval);
             _Pnode->_Parent = _Wherenode;
             _Pnode->_Color  = _Rootnode->_Color;
             if (_Newroot->_Isnil) {
@@ -1650,8 +1650,8 @@ protected:
             }
 
             _TRY_BEGIN
-            _Pnode->_Left  = _Copy_nodes<_Copy_or_move_v>(_Rootnode->_Left, _Pnode);
-            _Pnode->_Right = _Copy_nodes<_Copy_or_move_v>(_Rootnode->_Right, _Pnode);
+            _Pnode->_Left  = _Copy_nodes<_Strat>(_Rootnode->_Left, _Pnode);
+            _Pnode->_Right = _Copy_nodes<_Strat>(_Rootnode->_Right, _Pnode);
             _CATCH_ALL
             _Scary->_Erase_tree_and_orphan(_Getal(), _Newroot); // subtree copy failed, bail out
             _RERAISE;
