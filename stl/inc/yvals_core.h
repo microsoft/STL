@@ -275,6 +275,7 @@
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
+// P1272R4 byteswap()
 // P1425R4 Iterator Pair Constructors For stack And queue
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
@@ -1363,6 +1364,7 @@
 #define __cpp_lib_allocate_at_least 202106L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_byteswap       202110L
 #define __cpp_lib_invoke_r       202106L
 #define __cpp_lib_is_scoped_enum 202011L
 
