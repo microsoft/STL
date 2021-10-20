@@ -1622,7 +1622,7 @@ protected:
         }
     }
 
-    template <_Copy_or_move_t _Copy_or_move_v>
+    template <_Copy_or_move_t _Copy_or_move_v, class _Ty>
     _Nodeptr _Copy_or_move(_Ty& _Val) {
         if constexpr (_Copy_or_move_v == _Copy_or_move_t::_Copy) {
             return _Buynode(_Val);
@@ -1642,7 +1642,7 @@ protected:
         _Nodeptr _Newroot = _Scary->_Myhead; // point at nil node
 
         if (!_Rootnode->_Isnil) { // copy or move a node, then any subtrees
-            _Nodeptr _Pnode = _Copy_or_move<_Copy_or_move_v>(_Rootnode->_Myval, _Is_set);
+            _Nodeptr _Pnode = _Copy_or_move<_Copy_or_move_v>(_Rootnode->_Myval);
             _Pnode->_Parent = _Wherenode;
             _Pnode->_Color  = _Rootnode->_Color;
             if (_Newroot->_Isnil) {
@@ -1650,8 +1650,8 @@ protected:
             }
 
             _TRY_BEGIN
-            _Pnode->_Left  = _Copy_nodes(_Rootnode->_Left, _Pnode);
-            _Pnode->_Right = _Copy_nodes(_Rootnode->_Right, _Pnode);
+            _Pnode->_Left  = _Copy_nodes<_Copy_or_move_v>(_Rootnode->_Left, _Pnode);
+            _Pnode->_Right = _Copy_nodes<_Copy_or_move_v>(_Rootnode->_Right, _Pnode);
             _CATCH_ALL
             _Scary->_Erase_tree_and_orphan(_Getal(), _Newroot); // subtree copy failed, bail out
             _RERAISE;
