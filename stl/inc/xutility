@@ -5110,7 +5110,7 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
                 }
             }
         } else {
-            if (is_signed_v<_Ty>) {
+            if constexpr (is_signed_v<_Ty>) {
                 // unsigned _Elem, signed _Ty
                 return 0 <= _Val && _Val <= UCHAR_MAX;
             } else {
