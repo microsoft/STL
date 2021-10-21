@@ -8,6 +8,7 @@
 #include <ranges>
 #include <span>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -51,7 +52,31 @@ struct instantiator {
     }
 };
 
+constexpr void test_1559808() {
+    // Regression test for DevCom-1559808, a bad interaction between constexpr vector and the use of structured bindings
+    // in the implemenation of ranges::sort.
+
+    auto collatz = [](int n) {
+        vector<int> vec = {n};
+        while (n != 1) {
+            if (n % 2 == 0) {
+                n /= 2;
+            } else {
+                n = n * 3 + 1;
+            }
+            vec.push_back(n);
+        }
+        ranges::sort(vec);
+        return vec.back();
+    };
+
+    assert(collatz(27) == 9232);
+}
+
 int main() {
     STATIC_ASSERT((test_random<instantiator, P>(), true));
     test_random<instantiator, P>();
+
+    STATIC_ASSERT((test_1559808(), true));
+    test_1559808();
 }
