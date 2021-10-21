@@ -336,6 +336,20 @@ STATIC_ASSERT(__cpp_lib_byte == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_byteswap
+#error __cpp_lib_byteswap is not defined
+#elif __cpp_lib_byteswap != 202110L
+#error __cpp_lib_byteswap is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_byteswap == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_byteswap
+#error __cpp_lib_byteswap is defined
+#endif
+#endif
+
 #if _HAS_CXX20 && defined(__cpp_char8_t)
 #ifndef __cpp_lib_char8_t
 #error __cpp_lib_char8_t is not defined
@@ -1308,6 +1322,20 @@ STATIC_ASSERT(__cpp_lib_ranges == 202106L);
 #endif
 #endif
 
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#ifndef __cpp_lib_ranges_starts_ends_with
+#error __cpp_lib_ranges_starts_ends_with is not defined
+#elif __cpp_lib_ranges_starts_ends_with != 202106L
+#error __cpp_lib_ranges_starts_ends_with is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_starts_ends_with == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_starts_ends_with
+#error __cpp_lib_ranges_starts_ends_with is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_raw_memory_algorithms
 #error __cpp_lib_raw_memory_algorithms is not defined
@@ -1499,6 +1527,20 @@ STATIC_ASSERT(__cpp_lib_span == 202002L);
 #else
 #ifdef __cpp_lib_span
 #error __cpp_lib_span is defined
+#endif
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_spanstream
+#error __cpp_lib_spanstream is not defined
+#elif __cpp_lib_spanstream != 202106L
+#error __cpp_lib_spanstream is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_spanstream == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_spanstream
+#error __cpp_lib_spanstream is defined
 #endif
 #endif
 

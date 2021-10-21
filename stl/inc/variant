@@ -27,12 +27,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#ifdef __clang__
-#define _STL_UNREACHABLE __builtin_unreachable()
-#else // ^^^ clang ^^^ / vvv other vvv
-#define _STL_UNREACHABLE __assume(false)
-#endif // __clang__
-
 _STD_BEGIN
 
 template <class...>
@@ -760,7 +754,6 @@ struct _Variant_construct_visitor { // visitor that constructs the same alternat
         disjunction_v<bool_constant<_Idx == variant_npos>, is_nothrow_constructible<remove_reference_t<_Ty>, _Ty>>) {
         // initialize _Idx-th item in _Self from _Source
         _STL_INTERNAL_CHECK(_Self.valueless_by_exception());
-        (void) _Source; // TRANSITION, DevCom-1004719
         if constexpr (_Idx != variant_npos) {
             _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, static_cast<_Ty&&>(_Source._Val));
             _Self._Set_index(_Idx);
@@ -783,7 +776,6 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
                 is_nothrow_constructible<_Remove_cvref_t<_Ty>, _Ty>>>) {
         // assign the _Idx-th alternative of _Self from _Source
         if constexpr (_Idx == variant_npos) { // assign from valueless _Source
-            (void) _Source; // TRANSITION, DevCom-1004719
             _Self._Reset();
         } else {
             if (_Self._Which == _Idx) { // same alternative: assign directly
@@ -1355,7 +1347,6 @@ struct _Variant_relop_visitor2 { // evaluate _Op with the contained value of two
         if constexpr (_Idx != variant_npos) {
             return _Op{}(_Variant_raw_get<_Idx>(_Left), _Right._Val);
         } else { // return whatever _Op returns for equal values
-            (void) _Right; // TRANSITION, DevCom-1004719
             return _Op{}(0, 0);
         }
     }
@@ -1481,7 +1472,6 @@ struct _Variant_dispatcher<index_sequence<_Is...>> {
     template <class _Ret, class _Callable, class... _Types, bool _Any_valueless = ((_Is == 0) || ...)>
     _NODISCARD static constexpr _Ret _Dispatch2(_Callable&& _Obj, _Types&&... _Args) {
         if constexpr (_Any_valueless) {
-            (void) _Obj; // TRANSITION, DevCom-1004719
             ((void) _Args, ...); // TRANSITION, DevCom-1004719
             _Throw_bad_variant_access();
         }
@@ -1761,7 +1751,6 @@ _STD_END
 #undef _STL_STAMP64
 #undef _STL_STAMP16
 #undef _STL_STAMP4
-#undef _STL_UNREACHABLE
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

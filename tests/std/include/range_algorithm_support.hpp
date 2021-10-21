@@ -1449,3 +1449,8 @@ template <class R>
 concept CanBool = requires(R&& r) {
     std::forward<R>(r) ? true : false;
 };
+
+template <class I>
+concept CanIterSwap = requires(I&& i1, I&& i2) {
+    ranges::iter_swap(std::forward<I>(i1), std::forward<I>(i2));
+};
