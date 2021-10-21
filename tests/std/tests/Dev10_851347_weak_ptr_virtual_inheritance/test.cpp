@@ -93,7 +93,7 @@ void test_gh_000258_sometimes_avoid_locking() {
                 // likely to crash if optimized for a case we shouldn't
                 weak_ptr<base1> wb1{wd};
                 weak_ptr<base2> wb2{wd};
-                weak_ptr<base3> wb3{wd};
+                weak_ptr<const base3> wb3{wd};
             }
         } else {
             while (work) {
