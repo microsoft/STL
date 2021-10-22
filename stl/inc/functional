@@ -1511,7 +1511,7 @@ public:
     static constexpr bool _Is_callable_from =
         is_invocable_r_v<_Rx, _Vt, _Types...>&& is_invocable_r_v<_Rx, _Vt&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) {
+    _Rx operator()(_Types... _Args) {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1527,7 +1527,7 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) & {
+    _Rx operator()(_Types... _Args) & {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1543,7 +1543,7 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt&&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) && {
+    _Rx operator()(_Types... _Args) && {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1560,7 +1560,7 @@ public:
     static constexpr bool _Is_callable_from =
         is_invocable_r_v<_Rx, _Vt const, _Types...>&& is_invocable_r_v<_Rx, _Vt const&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) const {
+    _Rx operator()(_Types... _Args) const {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1576,7 +1576,7 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt const&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) const& {
+    _Rx operator()(_Types... _Args) const& {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1592,7 +1592,7 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt const&&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) const&& {
+    _Rx operator()(_Types... _Args) const&& {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1610,7 +1610,7 @@ public:
     static constexpr bool _Is_callable_from =
         is_nothrow_invocable_r_v<_Rx, _Vt, _Types...>&& is_nothrow_invocable_r_v<_Rx, _Vt&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) noexcept {
+    _Rx operator()(_Types... _Args) noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1626,7 +1626,7 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) & noexcept {
+    _Rx operator()(_Types... _Args) & noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1642,7 +1642,7 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt&&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) && noexcept {
+    _Rx operator()(_Types... _Args) && noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1659,7 +1659,7 @@ public:
     static constexpr bool _Is_callable_from =
         is_nothrow_invocable_r_v<_Rx, _Vt const, _Types...>&& is_nothrow_invocable_r_v<_Rx, _Vt const&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) const noexcept {
+    _Rx operator()(_Types... _Args) const noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1675,7 +1675,7 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt const&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) const& noexcept {
+    _Rx operator()(_Types... _Args) const& noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
@@ -1691,7 +1691,7 @@ public:
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt const&&, _Types...>;
 
-    _Rx operator()(_Types&&... _Args) const&& noexcept {
+    _Rx operator()(_Types... _Args) const&& noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }
 };
