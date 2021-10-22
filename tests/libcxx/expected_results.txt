@@ -69,6 +69,9 @@ std/language.support/support.limits/support.limits.general/concepts.version.pass
 # Bogus test believes that optional<non_constexpr_destructor> cannot be a literal type
 std/utilities/optional/optional.object/optional.object.dtor/dtor.pass.cpp:0 FAIL
 
+# Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
+std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -347,13 +350,6 @@ std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 # GH-1295 <array>: array<const T, 0> allows fill() and swap()
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
-
-# GH-942 <array>: std::array<T,0> doesn't compile - when type is not default constructible
-std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
-std/containers/sequences/array/array.cons/initialization.pass.cpp FAIL
-std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
-std/containers/sequences/array/array.data/data.pass.cpp FAIL
-std/containers/sequences/array/iterators.pass.cpp FAIL
 
 # GH-1006 <algorithm>: debug checks for predicates are observable
 std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
