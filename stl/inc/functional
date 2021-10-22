@@ -1779,7 +1779,7 @@ public:
         return *this;
     }
 
-    template <class _Fn>
+    template <class _Fn, enable_if_t<is_constructible_v<move_only_function, _Fn>, int> = 0>
     move_only_function& operator=(_Fn&& _Callable) {
         this->_Move_assign(move_only_function(_STD forward<_Fn>(_Callable)));
         return *this;
