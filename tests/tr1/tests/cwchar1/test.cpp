@@ -5,6 +5,7 @@
 #define TEST_NAMEX "<cwchar>, part 1"
 
 #include "tdefs.h"
+#include "temp_file_name.h"
 #include <assert.h>
 #include <cwchar>
 #include <stdarg.h>
@@ -13,9 +14,6 @@
 
 #pragma warning(disable : 4793) // function compiled as native
 
-#define NO_TMPNAM_TESTS 1
-#undef tmpnam
-#define tmpnam(x) _tempnam(".", "")
 
 #undef clearerr // tested in stdio2.c
 #undef feof
@@ -101,7 +99,8 @@ void test_cpp() { // test C++ header
         int in1;
         long off;
 
-        assert((tn = CSTD tmpnam((char*) nullptr)) != nullptr);
+        const auto temp_name = temp_file_name();
+        tn                   = temp_name.c_str();
         assert((pf = CSTD fopen(tn, "w+")) != nullptr);
         CHECK_INT(STDx fwide(pf, 0), 0);
         CHECK_INT(STDx fwprintf(pf, L"123\n"), 4);
@@ -141,19 +140,15 @@ void test_cpp() { // test C++ header
 
         CHECK(wmacs[1] < wmacs[0]);
 
-#if NO_TMPNAM_TESTS
-        char *tname, *tn;
-        assert((tn = CSTD tmpnam((char*) nullptr)) != nullptr);
-        tname = (char*) CSTD malloc(CSTD strlen(tn) + 1);
+        char* tname;
+        const char* tn;
+        const auto temp_name1 = temp_file_name();
+        tn                    = temp_name1.c_str();
+        tname                 = (char*) CSTD malloc(CSTD strlen(tn) + 1);
         CSTD strcpy(tname, tn);
 
-#else // NO_TMPNAM_TESTS
-        char tname[L_tmpnam], *tn;
-        CHECK_PTR(CSTD tmpnam(tname), tname);
-        assert(CSTD strlen(tname) < L_tmpnam);
-#endif // NO_TMPNAM_TESTS
-
-        assert((tn = CSTD tmpnam((char*) nullptr)) != nullptr);
+        const auto temp_name2 = temp_file_name();
+        tn                    = temp_name2.c_str();
         CHECK(CSTD strcmp(tn, tname) != 0);
         assert((pf = CSTD fopen(tname, "w")) != nullptr);
         CHECK_INT(STDx fgetwc(pf), wintval);

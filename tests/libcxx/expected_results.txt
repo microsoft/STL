@@ -779,19 +779,6 @@ std/input.output/iostream.format/ext.manip/get_money.pass.cpp FAIL
 std/input.output/iostream.format/ext.manip/put_money.pass.cpp FAIL
 std/input.output/iostreams.base/ios/basic.ios.members/copyfmt.pass.cpp FAIL
 
-# Not yet analyzed, likely STL bugs. Assertion failed: os.str() == a
-std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_sseq.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_sseq.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/ctor_sseq.pass.cpp FAIL
-
-# Not yet analyzed, likely STL bugs. Assertion failed: e1 == e2
-std/numerics/rand/rand.adapt/rand.adapt.disc/io.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/io.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/io.pass.cpp FAIL
-
 # Likely STL bug: Looks like we shouldn't be using assignment.
 std/thread/futures/futures.promise/set_rvalue.pass.cpp FAIL
 
