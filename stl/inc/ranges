@@ -1333,7 +1333,8 @@ namespace ranges {
             _Iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 // Per LWG-3489
-                _STL_VERIFY(!_Parent->_Stream_at_end(), "cannot increment istream_view iterator at end of stream");
+                _STL_VERIFY(
+                    !_Parent->_Stream_at_end(), "cannot increment basic_istream_view iterator at end of stream");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 *_Parent->_Stream >> _Parent->_Val;
                 return *this;
@@ -1346,7 +1347,8 @@ namespace ranges {
             _NODISCARD _Ty& operator*() const noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 // Per LWG-3489
-                _STL_VERIFY(!_Parent->_Stream_at_end(), "cannot dereference istream_view iterator at end of stream");
+                _STL_VERIFY(
+                    !_Parent->_Stream_at_end(), "cannot dereference basic_istream_view iterator at end of stream");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 return _Parent->_Val;
             }
@@ -1357,7 +1359,7 @@ namespace ranges {
         };
 
         basic_istream<_Elem, _Traits>* _Stream;
-        _Ty _Val = _Ty{}; // Per LWG issue submitted but unnumbered as of 2021-06-15
+        _Ty _Val = _Ty{};
 
     public:
         constexpr explicit basic_istream_view(basic_istream<_Elem, _Traits>& _Stream_) noexcept(
@@ -1378,11 +1380,28 @@ namespace ranges {
         }
     };
 
-    template <class _Ty, class _Elem, class _Traits>
-    _NODISCARD basic_istream_view<_Ty, _Elem, _Traits> istream_view(basic_istream<_Elem, _Traits>& _Stream) noexcept(
-        is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {
-        return basic_istream_view<_Ty, _Elem, _Traits>{_Stream};
-    }
+    template <class _Ty>
+    using istream_view = basic_istream_view<_Ty, char>;
+    template <class _Ty>
+    using wistream_view = basic_istream_view<_Ty, wchar_t>;
+
+    namespace views {
+        template <class _Ty>
+        struct _Istream_fn {
+            // clang-format off
+            template <class _StreamTy>
+                requires derived_from<_StreamTy,
+                    basic_istream<typename _StreamTy::char_type, typename _StreamTy::traits_type>>
+            _NODISCARD constexpr auto operator()(_StreamTy& _Stream) const
+                noexcept(is_nothrow_default_constructible_v<_Ty>) /* strengthened */ {
+                // clang-format on
+                return basic_istream_view<_Ty, typename _StreamTy::char_type, typename _StreamTy::traits_type>(_Stream);
+            }
+        };
+
+        template <class _Ty>
+        inline constexpr _Istream_fn<_Ty> istream;
+    } // namespace views
 
     template <range _Rng>
         requires is_object_v<_Rng>
@@ -2518,7 +2537,6 @@ namespace ranges {
                     _Count            = (_STD min) (_RANGES distance(_Range), _Count);
                     const auto _First = _RANGES begin(_Range);
 
-                    // The following are all per the proposed resolution of LWG-3407
                     if constexpr (_Strat == _St::_Reconstruct_span) {
                         return span(_First, _First + _Count);
                     } else if constexpr (_Strat == _St::_Reconstruct_string_view) {
@@ -2888,7 +2906,6 @@ namespace ranges {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
                     _Count = (_STD min) (_RANGES distance(_Range), _Count);
 
-                    // The following are all per the proposed resolution of LWG-3407
                     if constexpr (_Strat == _St::_Reconstruct_span) {
                         return span(_Ubegin(_Range) + _Count, _Uend(_Range));
                     } else if constexpr (_Strat == _St::_Reconstruct_subrange) {
@@ -3048,7 +3065,7 @@ namespace ranges {
         template <forward_range _Outer, forward_range _Inner>
         struct _Category_base<_Outer, _Inner, true> {
             using iterator_category =
-                conditional_t<common_range<_Inner> // per LWG-3535
+                conditional_t<common_range<_Inner> //
                                   && derived_from<_Iter_cat_t<iterator_t<_Outer>>, bidirectional_iterator_tag> //
                                   && derived_from<_Iter_cat_t<iterator_t<_Inner>>, bidirectional_iterator_tag>,
                     bidirectional_iterator_tag,
@@ -3075,7 +3092,7 @@ namespace ranges {
             static constexpr bool _Deref_is_glvalue = is_reference_v<_InnerRng<_Const>>;
 
             /* [[no_unique_address]] */ _OuterIter _Outer{};
-            /* [[no_unique_address]] */ _Defaultabox<_InnerIter> _Inner{}; // per LWG issue unfiled as of 2021-06-14
+            /* [[no_unique_address]] */ _Defaultabox<_InnerIter> _Inner{}; // per LWG-3569
             _Parent_t* _Parent{};
 
             constexpr auto&& _Update_inner() {
@@ -3120,7 +3137,6 @@ namespace ranges {
 
         public:
             // clang-format off
-            // Per LWG issue unnumbered as of 2021-03-16
             using iterator_concept = conditional_t<_Deref_is_glvalue
                 && bidirectional_range<_Base> && bidirectional_range<_InnerRng<_Const>>
                 && common_range<_InnerRng<_Const>>, bidirectional_iterator_tag,
@@ -3341,9 +3357,8 @@ namespace ranges {
         // clang-format off
         _NODISCARD constexpr auto end() const
             requires input_range<const _Vw> && is_reference_v<_InnerRng<true>> {
-            if constexpr (forward_range<const _Vw> && is_reference_v<_InnerRng<true>>
-                    && forward_range<_InnerRng<true>> && common_range<const _Vw>
-                    && common_range<_InnerRng<true>>) {
+            if constexpr (forward_range<const _Vw> && forward_range<_InnerRng<true>>
+                    && common_range<const _Vw> && common_range<_InnerRng<true>>) {
                 // clang-format on
                 return _Iterator<true>{*this, _RANGES end(_Range)};
             } else {

@@ -22,12 +22,12 @@ $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
 $Location = 'westus2'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
-$VMSize = 'Standard_D32ds_v4'
+$VMSize = 'Standard_D32as_v4'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
 $ImagePublisher = 'MicrosoftWindowsDesktop'
-$ImageOffer = 'Windows-10'
-$ImageSku = '21h1-ent-g2'
+$ImageOffer = 'windows-11'
+$ImageSku = 'win11-21h2-ent'
 
 $ProgressActivity = 'Creating Scale Set'
 $TotalProgress = 14
