@@ -2952,7 +2952,7 @@ class weak_ptr : public _Ptr_base<_Ty> { // class for pointer to reference count
 public:
     // When a constructor is converting from weak_ptr<_Ty2> to weak_ptr<_Ty>, the below type trait intentionally asks
     // whether it would be possible to static_cast from _Ty* to const _Ty2*; see N4901 [expr.static.cast]/11.
-    
+
     // Primary template, the value is used when the substitution fails.
     template <class _Ty2, class = const _Ty2*>
     static constexpr bool _Must_avoid_expired_conversions_from = true;
