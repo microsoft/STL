@@ -1,4 +1,3 @@
-// memory standard header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -2949,14 +2948,19 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shar
 
 template <class _Ty>
 class weak_ptr : public _Ptr_base<_Ty> { // class for pointer to reference counted resource
-private:
-    template <class _Ty2, class = const _Ty2*>
-    static constexpr bool _Is_virtual_base_cast = true;
-
-    template <class _Ty2>
-    static constexpr bool _Is_virtual_base_cast<_Ty2, decltype(static_cast<const _Ty2*>(_STD declval<_Ty*>()))> = false;
-
 public:
+    // When a constructor is converting from weak_ptr<_Ty2> to weak_ptr<_Ty>, the below type trait intentionally asks
+    // whether it would be possible to static_cast from _Ty* to const _Ty2*; see N4901 [expr.static.cast]/11.
+    
+    // Primary template, the value is used when the substitution fails.
+    template <class _Ty2, class = const _Ty2*>
+    static constexpr bool _Must_avoid_expired_conversions_from = true;
+
+    // Template specialization, the value is used when the substitution succeeds.
+    template <class _Ty2>
+    static constexpr bool
+        _Must_avoid_expired_conversions_from<_Ty2, decltype(static_cast<const _Ty2*>(_STD declval<_Ty*>()))> = false;
+
     constexpr weak_ptr() noexcept {}
 
     weak_ptr(const weak_ptr& _Other) noexcept {
@@ -2970,7 +2974,7 @@ public:
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept {
-        if constexpr (_Is_virtual_base_cast<_Ty2>) {
+        if constexpr (_Must_avoid_expired_conversions_from<_Ty2>) {
             this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other);
         } else {
             this->_Weakly_construct_from(_Other);
@@ -2983,7 +2987,7 @@ public:
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept {
-        if constexpr (_Is_virtual_base_cast<_Ty2>) {
+        if constexpr (_Must_avoid_expired_conversions_from<_Ty2>) {
             this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other));
         } else {
             this->_Move_construct_from(_STD move(_Other));

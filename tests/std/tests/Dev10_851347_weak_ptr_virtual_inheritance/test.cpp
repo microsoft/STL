@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <assert.h>
-#include <atomic>
 #include <memory>
-#include <thread>
 #include <utility>
+#ifndef _M_CEE_PURE // in /clr:pure we miss runtime coverage of weak_ptr converting constructor
+#include <atomic>
+#include <thread>
+#endif // _M_CEE_PURE
+
 using namespace std;
 
 // Also test GH-1102 "<memory>: weak_ptr conversions don't preserve control blocks for expired objects"
@@ -77,6 +80,28 @@ void test_gh_000258_sometimes_avoid_locking() {
 
     struct derived : virtual base1, virtual base2, base3 {};
 
+    static_assert(weak_ptr<base1>::_Must_avoid_expired_conversions_from<derived>, "Should avoid expired");
+    static_assert(weak_ptr<base2>::_Must_avoid_expired_conversions_from<derived>, "Should avoid expired");
+    static_assert(weak_ptr<const base1>::_Must_avoid_expired_conversions_from<derived>, "Should avoid expired");
+    static_assert(weak_ptr<const base2>::_Must_avoid_expired_conversions_from<derived>, "Should avoid expired");
+    static_assert(weak_ptr<const base1>::_Must_avoid_expired_conversions_from<const derived>, "Should avoid expired");
+    static_assert(weak_ptr<const base2>::_Must_avoid_expired_conversions_from<const derived>, "Should avoid expired");
+
+    static_assert(!weak_ptr<base3>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
+    static_assert(!weak_ptr<const base3>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
+    static_assert(!weak_ptr<const base3>::_Must_avoid_expired_conversions_from<const derived>, "Should optimize");
+    static_assert(!weak_ptr<derived>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
+    static_assert(!weak_ptr<int>::_Must_avoid_expired_conversions_from<int>, "Should optimize");
+
+#ifndef __EDG__ // Missed optimization for EDG; whatever, it is not runtime behavior
+    static_assert(!weak_ptr<const derived>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
+    static_assert(!weak_ptr<const derived>::_Must_avoid_expired_conversions_from<const derived>, "Should optimize");
+    static_assert(!weak_ptr<const int>::_Must_avoid_expired_conversions_from<int>, "Should optimize");
+    static_assert(!weak_ptr<const int>::_Must_avoid_expired_conversions_from<const int>, "Should optimize");
+#endif // __EDG__
+
+
+#ifndef _M_CEE_PURE // in /clr:pure we miss runtime coverage of weak_ptr converting constructor
     for (int i = 0; i < 10; ++i) {
         // not make_shared -- with make_shared the test would not catch errors
         shared_ptr<derived> d{new derived{}};
@@ -106,6 +131,7 @@ void test_gh_000258_sometimes_avoid_locking() {
 
         thd.join();
     }
+#endif // _M_CEE_PURE
 }
 
 struct A {
