@@ -936,51 +936,48 @@ public:
         _Swap_val_excluding_comp(_Right);
     }
 
-private:
-    void _Move_assign(_Tree& _Right, _Equal_allocators) noexcept(is_nothrow_move_assignable_v<key_compare>) {
+public:
+    _Tree& operator=(_Tree&& _Right) noexcept(
+        _Choose_pocma_v<_Alnode> == _Pocma_values::_Equal_allocators && is_nothrow_move_assignable_v<key_compare>) {
+        if (this == _STD addressof(_Right)) {
+            return *this;
+        }
+
+        auto& _Al                 = _Getal();
+        auto& _Right_al           = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
+            if (_Al != _Right_al) {
+                clear();
+                _Getcomp()            = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
+                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
+                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
+                _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
+                const auto _Scary       = _Get_scary();
+                const auto _Right_scary = _Right._Get_scary();
+                const auto _Newhead     = _STD exchange(_Right_scary->_Myhead, _Node::_Buyheadnode(_Right_al));
+                const auto _Newsize     = _STD exchange(_Right_scary->_Mysize, size_type{0});
+                _Scary->_Erase_head(_Al);
+                _Pocma(_Al, _Right_al);
+                _Scary->_Myhead = _Newhead;
+                _Scary->_Mysize = _Newsize;
+                _Proxy._Bind(_Alproxy, _Scary);
+                _Scary->_Swap_proxy_and_iterators(*_Right_scary);
+                return *this;
+            }
+        } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            if (_Al != _Right_al) {
+                clear();
+                _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
+                _Copy(_Right, _Move_tag{});
+                return *this;
+            }
+        }
+
         clear();
         _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
-        _Pocma(_Getal(), _Right._Getal());
+        _Pocma(_Al, _Right_al);
         _Swap_val_excluding_comp(_Right);
-    }
-
-    void _Move_assign(_Tree& _Right, _Propagate_allocators) {
-        if (_Getal() == _Right._Getal()) {
-            _Move_assign(_Right, _Equal_allocators{});
-        } else {
-            clear();
-            _Getcomp()            = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
-            auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
-            auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right._Getal());
-            _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
-            const auto _Scary       = _Get_scary();
-            const auto _Right_scary = _Right._Get_scary();
-            const auto _Newhead     = _STD exchange(_Right_scary->_Myhead, _Node::_Buyheadnode(_Right._Getal()));
-            const auto _Newsize     = _STD exchange(_Right_scary->_Mysize, size_type{0});
-            _Scary->_Erase_head(_Getal());
-            _Pocma(_Getal(), _Right._Getal());
-            _Scary->_Myhead = _Newhead;
-            _Scary->_Mysize = _Newsize;
-            _Proxy._Bind(_Alproxy, _Scary);
-            _Scary->_Swap_proxy_and_iterators(*_Right_scary);
-        }
-    }
-
-    void _Move_assign(_Tree& _Right, _No_propagate_allocators) {
-        if (_Getal() == _Right._Getal()) {
-            _Move_assign(_Right, _Equal_allocators{});
-        } else {
-            clear();
-            _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
-            _Copy(_Right, _Move_tag{});
-        }
-    }
-
-public:
-    _Tree& operator=(_Tree&& _Right) noexcept(noexcept(_Move_assign(_Right, _Choose_pocma<_Alnode>{}))) {
-        if (this != _STD addressof(_Right)) {
-            _Move_assign(_Right, _Choose_pocma<_Alnode>{});
-        }
 
         return *this;
     }
@@ -1090,42 +1087,38 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL != 0
     }
 
-private:
-    void _Copy_assign(const _Tree& _Right, false_type) {
-        clear();
-        _Getcomp() = _Right._Getcomp();
-        _Pocca(_Getal(), _Right._Getal());
-        _Copy(_Right, _Copy_tag{});
-    }
-
-    void _Copy_assign(const _Tree& _Right, true_type) {
-        if (_Getal() == _Right._Getal()) {
-            _Copy_assign(_Right, false_type{});
-        } else {
-            clear();
-            const auto _Scary = _Get_scary();
-            _Scary->_Orphan_all();
-            auto& _Al             = _Getal();
-            auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
-            const auto& _Right_al = _Right._Getal();
-            auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
-            _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
-            auto _Right_al_non_const = _Right_al;
-            auto _Newhead            = _Node::_Buyheadnode(_Right_al_non_const);
-            _Node::_Freenode0(_Al, _Scary->_Myhead);
-            _Pocca(_Al, _Right_al);
-            _Scary->_Myhead = _Newhead;
-            _Proxy._Bind(_Alproxy, _Scary);
-            _Getcomp() = _Right._Getcomp();
-            _Copy(_Right, _Copy_tag{});
-        }
-    }
-
 public:
     _Tree& operator=(const _Tree& _Right) {
-        if (this != _STD addressof(_Right)) {
-            _Copy_assign(_Right, _Choose_pocca<_Alnode>{});
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+        auto& _Al       = _Getal();
+        auto& _Right_al = _Right._Getal();
+        if constexpr (_Choose_pocca_v<_Alnode>) {
+            if (_Al != _Right_al) {
+                clear();
+                const auto _Scary = _Get_scary();
+                _Scary->_Orphan_all();
+                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
+                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
+                _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
+                auto _Right_al_non_const = _Right_al;
+                auto _Newhead            = _Node::_Buyheadnode(_Right_al_non_const);
+                _Node::_Freenode0(_Al, _Scary->_Myhead);
+                _Pocca(_Al, _Right_al);
+                _Scary->_Myhead = _Newhead;
+                _Proxy._Bind(_Alproxy, _Scary);
+                _Getcomp() = _Right._Getcomp();
+                _Copy(_Right, _Copy_tag{});
+                return *this;
+            }
+        }
+
+        clear();
+        _Getcomp() = _Right._Getcomp();
+        _Pocca(_Al, _Right_al);
+        _Copy(_Right, _Copy_tag{});
 
         return *this;
     }
