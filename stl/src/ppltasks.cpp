@@ -235,7 +235,7 @@ namespace Concurrency {
             } else {
                 ComCallData callData;
                 ZeroMemory(&callData, sizeof(callData));
-                callData.pUserDefined = reinterpret_cast<void*>(&_Func);
+                callData.pUserDefined = &_Func;
 
                 HRESULT hresult = static_cast<IContextCallback*>(_M_context._M_pContextCallback)
                                       ->ContextCallback(&_PPLTaskContextCallbackBridge, &callData,

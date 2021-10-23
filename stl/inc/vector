@@ -565,14 +565,15 @@ public:
     }
 
     _CONSTEXPR20 vector& operator=(vector&& _Right) noexcept(
-        !is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
+        _Choose_pocma_v<_Alty> != _Pocma_values::_No_propagate_allocators) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
 
-        _Alty& _Al       = _Getal();
-        _Alty& _Right_al = _Right._Getal();
-        if constexpr (is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
+        _Alty& _Al                = _Getal();
+        _Alty& _Right_al          = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alty>;
+        if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
             if (_Al != _Right_al) {
                 _Move_assign_unequal_alloc(_Right);
                 return *this;
@@ -581,7 +582,7 @@ public:
 
         _Tidy();
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (is_same_v<_Choose_pocma<_Alty>, _Propagate_allocators>) {
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
             if (_Al != _Right_al) {
                 // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
                 _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
@@ -1076,28 +1077,24 @@ public:
         _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
     }
 
-private:
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, false_type) {
-        _Pocca(_Getal(), _Right._Getal());
-        auto& _Right_data = _Right._Mypair._Myval2;
-        assign(_Right_data._Myfirst, _Right_data._Mylast);
-    }
-
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, true_type) {
-        if (_Getal() != _Right._Getal()) {
-            _Tidy();
-            _Mypair._Myval2._Reload_proxy(
-                _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
-        }
-
-        _Copy_assign(_Right, false_type{});
-    }
-
 public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
-        if (this != _STD addressof(_Right)) {
-            _Copy_assign(_Right, _Choose_pocca<_Alty>{});
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+        auto& _Al       = _Getal();
+        auto& _Right_al = _Right._Getal();
+        if constexpr (_Choose_pocca_v<_Alty>) {
+            if (_Al != _Right_al) {
+                _Tidy();
+                _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
+            }
+        }
+
+        _Pocca(_Al, _Right_al);
+        auto& _Right_data = _Right._Mypair._Myval2;
+        assign(_Right_data._Myfirst, _Right_data._Mylast);
 
         return *this;
     }
@@ -2479,58 +2476,52 @@ public:
         this->_Swap_proxy_and_iterators(_Right);
     }
 
-private:
-#if _ITERATOR_DEBUG_LEVEL != 0
-    _CONSTEXPR20 void _Move_assign(vector& _Right, _Equal_allocators) noexcept {
-        this->_Myvec  = _STD move(_Right._Myvec);
-        this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
-        this->_Swap_proxy_and_iterators(_Right);
-    }
-
-    _CONSTEXPR20 void _Move_assign(vector& _Right, _Propagate_allocators) noexcept {
-        using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
-        if (this->_Getal() != _Right._Getal()) { // reload proxy
-            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
-            _Alproxy_type _Oldal(this->_Getal());
-            _Alproxy_type _Right_proxy_al(_Right._Getal());
-            _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
-            this->_Myvec  = _STD move(_Right._Myvec);
-            this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
-            _Proxy._Bind(_Oldal, this);
-            this->_Swap_proxy_and_iterators(_Right);
-            return;
-        }
-
-        this->_Myvec  = _STD move(_Right._Myvec);
-        this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
-        this->_Swap_proxy_and_iterators(_Right);
-    }
-
-    _CONSTEXPR20 void _Move_assign(vector& _Right, _No_propagate_allocators) {
-        this->_Myvec  = _STD move(_Right._Myvec);
-        this->_Mysize = _Right._Mysize;
-        if (_Right._Myvec.empty()) {
-            // we took _Right's buffer, so zero out size
-            _Right._Mysize = 0;
-        }
-
-        if (this->_Getal() == _Right._Getal()) {
-            this->_Swap_proxy_and_iterators(_Right);
-        }
-    }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
 public:
     _CONSTEXPR20 vector& operator=(vector&& _Right) noexcept(is_nothrow_move_assignable_v<_Mybase>) {
-        if (this != _STD addressof(_Right)) {
-#if _ITERATOR_DEBUG_LEVEL == 0
-            this->_Myvec  = _STD move(_Right._Myvec);
-            this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
-            this->_Orphan_all();
-            _Move_assign(_Right, _Choose_pocma<_Alvbase>{});
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+#if _ITERATOR_DEBUG_LEVEL == 0
+        this->_Myvec  = _STD move(_Right._Myvec);
+        this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+        this->_Orphan_all();
+        auto& _Al = this->_Getal();
+        auto& _Right_al = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alvbase>;
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
+            using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
+            if (_Al != _Right_al) { // reload proxy
+                // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
+                _Alproxy_type _Oldal(_Al);
+                _Alproxy_type _Right_proxy_al(_Right_al);
+                _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
+                this->_Myvec = _STD move(_Right._Myvec);
+                this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
+                _Proxy._Bind(_Oldal, this);
+                this->_Swap_proxy_and_iterators(_Right);
+                return *this;
+            }
+        } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            this->_Myvec = _STD move(_Right._Myvec);
+            this->_Mysize = _Right._Mysize;
+            if (_Right._Myvec.empty()) {
+                // we took _Right's buffer, so zero out size
+                _Right._Mysize = 0;
+            }
+
+            if (_Al == _Right_al) {
+                this->_Swap_proxy_and_iterators(_Right);
+            }
+            return *this;
+        }
+
+        this->_Myvec = _STD move(_Right._Myvec);
+        this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
+        this->_Swap_proxy_and_iterators(_Right);
+
+#endif // _ITERATOR_DEBUG_LEVEL == 0
         return *this;
     }
 
@@ -2569,40 +2560,36 @@ public:
 
     _CONSTEXPR20 ~vector() noexcept {}
 
-private:
-#if _ITERATOR_DEBUG_LEVEL != 0
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, false_type) {
-        this->_Myvec  = _Right._Myvec;
-        this->_Mysize = _Right._Mysize;
-    }
-
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, true_type) {
-        if (this->_Getal() == _Right._Getal()) {
-            _Copy_assign(_Right, false_type{});
-        } else {
-            // reload proxy
-            using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
-            _Alproxy_type _Oldal(this->_Getal());
-            _Alproxy_type _Right_proxy_al(_Right._Getal());
-            _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
-            this->_Myvec  = _Right._Myvec;
-            this->_Mysize = _Right._Mysize;
-            _Proxy._Bind(_Oldal, this);
-        }
-    }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
 public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
-        if (this != _STD addressof(_Right)) {
-#if _ITERATOR_DEBUG_LEVEL == 0
-            this->_Myvec  = _Right._Myvec;
-            this->_Mysize = _Right._Mysize;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
-            this->_Orphan_all();
-            _Copy_assign(_Right, _Choose_pocca<_Alvbase>{});
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+#if _ITERATOR_DEBUG_LEVEL == 0
+        this->_Myvec  = _Right._Myvec;
+        this->_Mysize = _Right._Mysize;
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+        this->_Orphan_all();
+        auto& _Al = this->_Getal();
+        auto& _Right_al = _Right._Getal();
+        if constexpr (_Choose_pocca_v<_Alvbase>) {
+            if (_Al != _Right_al) {
+                // reload proxy
+                using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
+                _Alproxy_type _Oldal(_Al);
+                _Alproxy_type _Right_proxy_al(_Right_al);
+                _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
+                this->_Myvec = _Right._Myvec;
+                this->_Mysize = _Right._Mysize;
+                _Proxy._Bind(_Oldal, this);
+                return *this;
+            }
+        }
+
+        this->_Myvec = _Right._Myvec;
+        this->_Mysize = _Right._Mysize;
+#endif // _ITERATOR_DEBUG_LEVEL == 0
 
         return *this;
     }
@@ -3041,8 +3028,8 @@ _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutabl
 template <class _Alloc>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_const_iterator<_Alloc>, false> = true;
 
-template <class _VbIt, class _Ty>
-_CONSTEXPR20 void _Fill_vbool(_VbIt _First, _VbIt _Last, const _Ty& _Val) {
+template <class _VbIt>
+_CONSTEXPR20 void _Fill_vbool(_VbIt _First, const _VbIt _Last, const bool _Val) noexcept {
     // Set [_First, _Last) to _Val
     if (_First == _Last) {
         return;
@@ -3091,8 +3078,8 @@ _CONSTEXPR20 void _Fill_vbool(_VbIt _First, _VbIt _Last, const _Ty& _Val) {
     }
 }
 
-template <class _VbIt, class _Ty>
-_NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const _Ty& _Val) {
+template <class _VbIt>
+_NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const bool _Val) noexcept {
     // Find _Val in [_First, _Last)
     if (_First == _Last) {
         return _First;
@@ -3140,8 +3127,8 @@ _NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const
     return _Last;
 }
 
-template <class _VbIt, class _Ty>
-_NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _VbIt _Last, const _Ty& _Val) {
+template <class _VbIt>
+_NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _VbIt _Last, const bool _Val) noexcept {
     if (_First == _Last) {
         return 0;
     }
@@ -3159,22 +3146,25 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
         return _Popcount(_SelectVal);
     }
 
-    const auto _FirstVal       = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
-    _Iter_diff_t<_VbIt> _Count = _Popcount(_FirstVal);
-    ++_VbFirst;
+    return _Select_popcount_impl<_Vbase>(
+        [_Last, _Val, _VbFirst, _VbLast, _FirstSourceMask](auto _Popcount_impl) mutable noexcept {
+            const auto _FirstVal       = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
+            _Iter_diff_t<_VbIt> _Count = _Popcount_impl(_FirstVal);
+            ++_VbFirst;
 
-    for (; _VbFirst != _VbLast; ++_VbFirst) {
-        const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
-        _Count += _Popcount(_SelectVal);
-    }
+            for (; _VbFirst != _VbLast; ++_VbFirst) {
+                const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
+                _Count += _Popcount_impl(_SelectVal);
+            }
 
-    if (_Last._Myoff != 0) {
-        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
-        const auto _LastVal        = (_Val ? *_VbFirst : ~*_VbFirst) & _LastSourceMask;
-        _Count += _Popcount(_LastVal);
-    }
+            if (_Last._Myoff != 0) {
+                const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+                const auto _LastVal        = (_Val ? *_VbFirst : ~*_VbFirst) & _LastSourceMask;
+                _Count += _Popcount_impl(_LastVal);
+            }
 
-    return _Count;
+            return _Count;
+        });
 }
 _STD_END
 

@@ -9,6 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <iosfwd>
+#include <limits>
 #include <xstring>
 
 #pragma pack(push, _CRT_PACKING)
@@ -336,30 +337,14 @@ public:
     }
 
     _NODISCARD size_t count() const noexcept { // count number of set bits
-        const char* const _Bitsperbyte = "\0\1\1\2\1\2\2\3\1\2\2\3\2\3\3\4"
-                                         "\1\2\2\3\2\3\3\4\2\3\3\4\3\4\4\5"
-                                         "\1\2\2\3\2\3\3\4\2\3\3\4\3\4\4\5"
-                                         "\2\3\3\4\3\4\4\5\3\4\4\5\4\5\5\6"
-                                         "\1\2\2\3\2\3\3\4\2\3\3\4\3\4\4\5"
-                                         "\2\3\3\4\3\4\4\5\3\4\4\5\4\5\5\6"
-                                         "\2\3\3\4\3\4\4\5\3\4\4\5\4\5\5\6"
-                                         "\3\4\4\5\4\5\5\6\4\5\5\6\5\6\6\7"
-                                         "\1\2\2\3\2\3\3\4\2\3\3\4\3\4\4\5"
-                                         "\2\3\3\4\3\4\4\5\3\4\4\5\4\5\5\6"
-                                         "\2\3\3\4\3\4\4\5\3\4\4\5\4\5\5\6"
-                                         "\3\4\4\5\4\5\5\6\4\5\5\6\5\6\6\7"
-                                         "\2\3\3\4\3\4\4\5\3\4\4\5\4\5\5\6"
-                                         "\3\4\4\5\4\5\5\6\4\5\5\6\5\6\6\7"
-                                         "\3\4\4\5\4\5\5\6\4\5\5\6\5\6\6\7"
-                                         "\4\5\5\6\5\6\6\7\5\6\6\7\6\7\7\x8";
-        const unsigned char* _Ptr       = &reinterpret_cast<const unsigned char&>(_Array);
-        const unsigned char* const _End = _Ptr + sizeof(_Array);
-        size_t _Val                     = 0;
-        for (; _Ptr != _End; ++_Ptr) {
-            _Val += _Bitsperbyte[*_Ptr];
-        }
+        return _Select_popcount_impl<_Ty>([this](auto _Popcount_impl) {
+            size_t _Val = 0;
+            for (size_t _Wpos = 0; _Wpos <= _Words; ++_Wpos) {
+                _Val += _Popcount_impl(_Array[_Wpos]);
+            }
 
-        return _Val;
+            return _Val;
+        });
     }
 
     _NODISCARD constexpr size_t size() const noexcept {

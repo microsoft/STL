@@ -19,10 +19,15 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ">=16.0.0"
-      - name: Run gather_stats.js
+      - name: Install Packages
         run: |
           npm ci
-          SECRET_GITHUB_PERSONAL_ACCESS_TOKEN="${{ github.token }}" node gather_stats.js
+      - name: Compile gather_stats.ts
+        run: |
+          npx tsc
+      - name: Run gather_stats.js
+        run: |
+          SECRET_GITHUB_PERSONAL_ACCESS_TOKEN="${{ github.token }}" node built/gather_stats.js
       - name: Commit Changes
         run: |
           git config user.name "github-actions[bot]"
