@@ -1820,7 +1820,7 @@ struct _Vbase_compare_three_way {
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
         }
 
-        const int _Bit_index = _Countr_zero(_Differing_bits); // number of least significant bits that match
+        const int _Bit_index = _Countr_zero<true>(_Differing_bits); // number of least significant bits that match
         _STL_INTERNAL_CHECK(_Bit_index < _VBITS); // because we return early for equality
 
         const _Vbase _Mask = _Vbase{1} << _Bit_index; // selects the least significant bit that differs

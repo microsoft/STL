@@ -1063,7 +1063,7 @@ extern int __isa_available;
 #endif // __clang__
 }
 
-template <class _Ty>
+template <bool _Assume_non_zero, class _Ty>
 _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     constexpr _Ty _Max    = (numeric_limits<_Ty>::max) ();
@@ -1072,7 +1072,7 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
     // Because the widening done below will always give a non-0 value, checking for tzcnt
     // is not required for 8-bit and 16-bit since the only difference in behavior between
     // bsf and tzcnt is when the value is 0.
-    if constexpr (_Digits > 16) {
+    if constexpr (_Digits > 16 && !_Assume_non_zero) {
         const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
         if (!_Definitely_have_tzcnt && _Val == 0) {
             return _Digits;
@@ -1090,9 +1090,9 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
         const unsigned int _High = _Val >> 32;
         const unsigned int _Low  = static_cast<unsigned int>(_Val);
         if (_Low == 0) {
-            return 32 + _Checked_x86_x64_countr_zero(_High);
+            return 32 + _Checked_x86_x64_countr_zero<_Assume_non_zero>(_High);
         } else {
-            return _Checked_x86_x64_countr_zero(_Low);
+            return _Checked_x86_x64_countr_zero<true>(_Low);
         }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(_TZCNT_U64(_Val));
@@ -1150,12 +1150,12 @@ template <class _Ty>
 constexpr bool _Is_standard_unsigned_integer =
     _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
 
-template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
+template <bool _Assume_non_zero = false, class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 #if defined(_M_IX86) || defined(_M_X64)
 #if _HAS_CXX20
     if (!_STD is_constant_evaluated()) {
-        return _Checked_x86_x64_countr_zero(_Val);
+        return _Checked_x86_x64_countr_zero<_Assume_non_zero>(_Val);
     }
 #endif // _HAS_CXX20
 #endif // defined(_M_IX86) || defined(_M_X64)
