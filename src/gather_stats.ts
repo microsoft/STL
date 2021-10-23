@@ -58,10 +58,12 @@ type RawLabels = {
     nodes: RawLabelNode[];
 };
 
+type RawAuthor = {
+    login: string;
+};
+
 type RawReviewNode = {
-    author: {
-        login: string;
-    };
+    author: RawAuthor | null;
     submittedAt: string;
 };
 
@@ -73,8 +75,8 @@ type RawReviews = {
 type RawPRNode = {
     id: number;
     createdAt: string;
-    closedAt: string;
-    mergedAt: string;
+    closedAt: string | null;
+    mergedAt: string | null;
     labels: RawLabels;
     reviews: RawReviews;
 };
@@ -82,8 +84,20 @@ type RawPRNode = {
 type RawIssueNode = {
     id: number;
     createdAt: string;
-    closedAt: string;
+    closedAt: string | null;
     labels: RawLabels;
+};
+
+type RateLimit = {
+    spent: number;
+    remaining: number;
+    limit: number;
+};
+
+type RawNodes = {
+    pr_nodes: RawPRNode[];
+    issue_nodes: RawIssueNode[];
+    rate_limit: RateLimit;
 };
 
 async function retrieve_nodes_from_network() {
@@ -106,11 +120,8 @@ async function retrieve_nodes_from_network() {
             headers: { authorization: `token ${process.env.SECRET_GITHUB_PERSONAL_ACCESS_TOKEN}` },
         });
 
-        const rate_limit = {
-            spent: null as null | number,
-            remaining: null as null | number,
-            limit: null as null | number,
-        };
+        let spent: number;
+        let limit: number;
 
         {
             const query_total_counts = fs.readFileSync('./query_total_counts.graphql', 'utf8');
@@ -123,8 +134,8 @@ async function retrieve_nodes_from_network() {
                 },
             } = await authorized_graphql(query_total_counts);
 
-            rate_limit.spent = rateLimit.cost;
-            rate_limit.limit = rateLimit.limit;
+            spent = rateLimit.cost;
+            limit = rateLimit.limit;
 
             progress.pr_bar = progress.multi_bar.create(total_prs, 0, { name: 'PRs received' });
             progress.issue_bar = progress.multi_bar.create(total_issues, 0, { name: 'issues received' });
@@ -132,6 +143,7 @@ async function retrieve_nodes_from_network() {
 
         let pr_nodes: RawPRNode[] = [];
         let issue_nodes: RawIssueNode[] = [];
+        let remaining: number;
 
         const variables = {
             query: fs.readFileSync('./query_prs_and_issues.graphql', 'utf8'),
@@ -141,14 +153,14 @@ async function retrieve_nodes_from_network() {
             issue_cursor: null as null | string,
         };
 
-        while (variables.want_prs || variables.want_issues) {
+        do {
             const {
                 rateLimit,
                 repository: { pullRequests, issues },
             } = await authorized_graphql(variables);
 
-            rate_limit.spent += rateLimit.cost;
-            rate_limit.remaining = rateLimit.remaining;
+            spent += rateLimit.cost;
+            remaining = rateLimit.remaining;
 
             if (variables.want_prs) {
                 variables.want_prs = pullRequests.pageInfo.hasNextPage;
@@ -163,9 +175,14 @@ async function retrieve_nodes_from_network() {
                 issue_nodes = issue_nodes.concat(issues.nodes);
                 progress.issue_bar.update(issue_nodes.length);
             }
-        }
+        } while (variables.want_prs || variables.want_issues);
 
-        return { pr_nodes: pr_nodes, issue_nodes: issue_nodes, rate_limit: rate_limit };
+        const ret: RawNodes = {
+            pr_nodes: pr_nodes,
+            issue_nodes: issue_nodes,
+            rate_limit: { spent: spent, remaining: remaining, limit: limit },
+        };
+        return ret;
     } finally {
         progress.multi_bar.stop();
     }
@@ -173,7 +190,7 @@ async function retrieve_nodes_from_network() {
 
 async function retrieve_nodes() {
     if (argv['load-file']) {
-        return JSON.parse(fs.readFileSync(argv['load-file'], 'utf8'));
+        return JSON.parse(fs.readFileSync(argv['load-file'], 'utf8')) as RawNodes;
     }
 
     const graphql_result = await retrieve_nodes_from_network();
@@ -224,8 +241,8 @@ function read_trimmed_lines(filename: string) {
 type DuplicateWarningMessage = (username: string) => string;
 
 function warn_about_duplicates(array: string[], message: DuplicateWarningMessage) {
-    const uniques = new Set();
-    const duplicates = new Set();
+    const uniques = new Set<string>();
+    const duplicates = new Set<string>();
 
     for (const elem of array) {
         if (!uniques.has(elem)) {
@@ -266,7 +283,7 @@ type CookedPRNode = {
     reviews: DateTime[];
 };
 
-function transform_pr_nodes(pr_nodes: RawPRNode[]): CookedPRNode[] {
+function transform_pr_nodes(pr_nodes: RawPRNode[]) {
     warn_if_pagination_needed(
         pr_nodes,
         (node: RawPRNode) => node.labels,
@@ -307,13 +324,14 @@ function transform_pr_nodes(pr_nodes: RawPRNode[]): CookedPRNode[] {
                 })
                 .map(review_node => DateTime.fromISO(review_node.submittedAt));
 
-            return {
+            const ret: CookedPRNode = {
                 id: pr_node.id,
                 opened: DateTime.fromISO(pr_node.createdAt),
                 closed: DateTime.fromISO(pr_node.closedAt ?? '2100-01-01'),
                 merged: DateTime.fromISO(pr_node.mergedAt ?? '2100-01-01'),
                 reviews: maintainer_reviews,
             };
+            return ret;
         });
 }
 
@@ -339,7 +357,7 @@ type CookedIssueNode = {
     labeled_bug: boolean;
 };
 
-function transform_issue_nodes(issue_nodes: RawIssueNode[]): CookedIssueNode[] {
+function transform_issue_nodes(issue_nodes: RawIssueNode[]) {
     warn_if_pagination_needed(
         issue_nodes,
         (node: RawIssueNode) => node.labels,
@@ -348,7 +366,7 @@ function transform_issue_nodes(issue_nodes: RawIssueNode[]): CookedIssueNode[] {
     );
     return issue_nodes.map(node => {
         const labels = node.labels.nodes.map(label => label.name);
-        return {
+        const ret: CookedIssueNode = {
             id: node.id,
             opened: DateTime.fromISO(node.createdAt),
             closed: DateTime.fromISO(node.closedAt ?? '2100-01-01'),
@@ -357,6 +375,7 @@ function transform_issue_nodes(issue_nodes: RawIssueNode[]): CookedIssueNode[] {
             labeled_lwg: labels.includes('LWG') && !labels.includes('vNext') && !labels.includes('blocked'),
             labeled_bug: labels.includes('bug'),
         };
+        return ret;
     });
 }
 
@@ -524,7 +543,7 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
 }
 
 function write_monthly_table(script_start: DateTime, all_prs: CookedPRNode[]) {
-    const monthly_merges = new Map();
+    const monthly_merges = new Map<string, number>();
 
     for (const pr of all_prs) {
         const year_month = pr.merged.toFormat('yyyy-MM');
