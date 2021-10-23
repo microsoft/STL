@@ -690,30 +690,37 @@ _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    class _Equal_fn : private _Not_quite_object {
-    private:
-        template <class _It1, class _It2, class _Size, class _Pr, class _Pj1, class _Pj2>
-        _NODISCARD static constexpr bool _Equal_count(
-            _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
-            if constexpr (_Equal_memcmp_is_safe<_It1, _It2,
-                              _Pr> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
-                if (!_STD is_constant_evaluated()) {
-                    return _Memcmp_count(_First1, _First2, static_cast<size_t>(_Count)) == 0;
-                }
+    // clang-format off
+    template <input_iterator _It1, input_iterator _It2, integral _Size, class _Pr, class _Pj1, class _Pj2>
+        requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+    _NODISCARD constexpr bool _Equal_count(
+        _It1 _First1, _It2 _First2, _Size _Count, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+        // clang-format on
+        _STL_INTERNAL_CHECK(_Count >= 0);
+        if constexpr (_Equal_memcmp_is_safe<_It1, _It2, _Pr> && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {
+            if (!_STD is_constant_evaluated()) {
+                return _Memcmp_count(_First1, _First2, static_cast<size_t>(_Count)) == 0;
             }
-
-            for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
-                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
+        for (; _Count != 0; ++_First1, (void) ++_First2, --_Count) {
+            if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_First1), _STD invoke(_Proj2, *_First2))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    class _Equal_fn : private _Not_quite_object {
+    private:
         template <class _It1, class _Se1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
         _NODISCARD static constexpr bool _Equal_4(
             _It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
             for (;;) {
                 if (_First1 == _Last1) {
                     return _First2 == _Last2;
@@ -1311,7 +1318,7 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
         constexpr copy_n_result<_It, _Out> operator()(_It _First, iter_difference_t<_It> _Count, _Out _Result) const {
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
-            if constexpr (_Ptr_copy_cat<decltype(_UFirst), _Out>::_Trivially_copyable) {
+            if constexpr (_Iter_copy_cat<decltype(_UFirst), _Out>::_Bitcopy_assignable) {
                 if (!_STD is_constant_evaluated()) {
                     auto _Final = _UFirst + _Count;
                     _Result = _Copy_memmove(_STD move(_UFirst), _Final, _STD move(_Result));
@@ -1458,7 +1465,7 @@ namespace ranges {
         requires indirectly_movable<_It, _Out>
     constexpr move_result<_It, _Out> _Move_unchecked(_It _First, _Se _Last, _Out _Result) {
         // clang-format on
-        if constexpr (_Ptr_move_cat<_It, _Out>::_Trivially_copyable) {
+        if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
                 auto _Final = _RANGES next(_First, _STD move(_Last));
                 _Result     = _Copy_memmove(_STD move(_First), _Final, _STD move(_Result));
@@ -1514,7 +1521,7 @@ namespace ranges {
     template <bidirectional_iterator _It1, bidirectional_iterator _It2>
         requires indirectly_movable<_It1, _It2>
     constexpr _It2 _Move_backward_common(const _It1 _First, _It1 _Last, _It2 _Result) {
-        if constexpr (_Ptr_move_cat<_It1, _It2>::_Trivially_copyable) {
+        if constexpr (_Iter_move_cat<_It1, _It2>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
                 return _Copy_backward_memmove(_First, _Last, _Result);
             }
@@ -2214,6 +2221,300 @@ namespace ranges {
     };
 
     inline constexpr _Search_n_fn search_n{_Not_quite_object::_Construct_tag{}};
+
+#if _HAS_CXX23
+    class _Starts_with_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+
+            auto _UFirst1      = _Get_unwrapped(_STD move(_First1));
+            auto _ULast1       = _Get_unwrapped(_STD move(_Last1));
+            auto _UFirst2      = _Get_unwrapped(_STD move(_First2));
+            const auto _ULast2 = _Get_unwrapped(_STD move(_Last2));
+            if constexpr (_Sized_or_unreachable_sentinel_for<_Se1, _It1> && sized_sentinel_for<_Se2, _It2>) {
+                const iter_difference_t<_It2> _Count2 = _ULast2 - _UFirst2;
+                if constexpr (sized_sentinel_for<_Se1, _It1>) {
+                    if (_Count2 > _ULast1 - _UFirst1) {
+                        return false;
+                    }
+                }
+
+                return _RANGES _Equal_count(_STD move(_UFirst1), _STD move(_UFirst2),
+                    static_cast<iter_difference_t<_It1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            } else {
+                const auto _Result = _RANGES _Mismatch_4(_STD move(_UFirst1), _STD move(_ULast1), _STD move(_UFirst2),
+                    _ULast2, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                return _Result.in2 == _ULast2;
+            }
+        }
+
+        // clang-format off
+        template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(
+                _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            if constexpr (_Sized_or_infinite_range<_Rng1> && sized_range<_Rng2>) {
+                const range_difference_t<_Rng2> _Count2 = _RANGES distance(_Range2);
+                if constexpr (sized_range<_Rng1>) {
+                    if (_Count2 > _RANGES distance(_Range1)) {
+                        return false;
+                    }
+                }
+
+                return _RANGES _Equal_count(_Ubegin(_Range1), _Ubegin(_Range2),
+                    static_cast<range_difference_t<_Rng1>>(_Count2), _Pass_fn(_Pred), _Pass_fn(_Proj1),
+                    _Pass_fn(_Proj2));
+            } else {
+                const auto _ULast2 = _Uend(_Range2);
+                const auto _Result = _RANGES _Mismatch_4(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _ULast2,
+                    _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                return _Result.in2 == _ULast2;
+            }
+        }
+    };
+
+    inline constexpr _Starts_with_fn starts_with{_Not_quite_object::_Construct_tag{}};
+
+    class _Ends_with_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires (forward_iterator<_It1> || sized_sentinel_for<_Se1, _It1>)
+                  && (forward_iterator<_It2> || sized_sentinel_for<_Se2, _It2>)
+                  && indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First1, _Last1);
+            _Adl_verify_range(_First2, _Last2);
+            auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
+            auto _ULast1  = _Get_unwrapped(_STD move(_Last1));
+            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
+            auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
+
+            const auto _Count1 = _Distance_helper(_UFirst1, _ULast1);
+            const auto _Count2 = _Distance_helper(_UFirst2, _ULast2);
+
+            return _Ends_with_impl(_STD move(_UFirst1), _STD move(_ULast1), _Count1, _STD move(_UFirst2),
+                _STD move(_ULast2), _Count2, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+        }
+
+        // clang-format off
+        template <input_range _Rng1, input_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires (forward_range<_Rng1> || sized_range<_Rng1>)
+                  && (forward_range<_Rng2> || sized_range<_Rng2>)
+                  && indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(
+                _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            const auto _Count1 = _Distance_helper(_Range1);
+            const auto _Count2 = _Distance_helper(_Range2);
+
+            return _Ends_with_impl(_Ubegin(_Range1), _Uend(_Range1), _Count1, _Ubegin(_Range2), _Uend(_Range2), _Count2,
+                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+        }
+
+    private:
+        struct _Not_a_difference {};
+
+        template <class _It, class _Se>
+        _NODISCARD static constexpr auto _Distance_helper(const _It& _First, const _Se& _Last) {
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            if constexpr (sized_sentinel_for<_Se, _It>) {
+                return _Last - _First;
+            } else {
+                return _Not_a_difference{};
+            }
+        }
+
+        template <class _Rng>
+        _NODISCARD static constexpr auto _Distance_helper(_Rng&& _Range) {
+            _STL_INTERNAL_STATIC_ASSERT(range<_Rng>);
+            if constexpr (sized_range<_Rng>) {
+                return _RANGES distance(_Range);
+            } else {
+                return _Not_a_difference{};
+            }
+        }
+
+        template <class _Ty, class _It1, class _It2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Match_backwards(
+            const _Ty _First1, _It1 _Last1, const _It2 _First2, _It2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(same_as<_Ty, _It1> || same_as<_Ty, unreachable_sentinel_t>);
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It1>);
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
+            for (;;) {
+                if (_First2 == _Last2) { // needle exhausted - match
+                    return true;
+                }
+
+                if (_First1 == _Last1) { // haystack exhausted - no match
+                    return false;
+                }
+
+                --_Last1;
+                --_Last2;
+                if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_Last1), _STD invoke(_Proj2, *_Last2))) {
+                    return false; // non-equal elements - no match
+                }
+            }
+        }
+
+        template <class _It1, class _Se1, class _Diff1, class _It2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Ends_with_sized_needle(_It1 _First1, _Se1 _Last1, _Diff1 _Count1,
+            _It2 _First2, iter_difference_t<_It2> _Count2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1> && sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1> || same_as<_Diff1, iter_difference_t<_It1>>);
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
+            constexpr bool _Sized1 = !same_as<_Diff1, _Not_a_difference>;
+
+            if constexpr (random_access_iterator<_It1> && _Sized1) {
+                _First1 += static_cast<iter_difference_t<_It1>>(_Count1 - _Count2);
+            } else if constexpr (_Bidi_common<_It1, _Se1>) {
+                if constexpr (_Sized1) {
+                    if ((_Count1 >> 1) >= _Count2) { // beginning of potential match is closer to _Last1
+                        _RANGES advance(_Last1, static_cast<iter_difference_t<_It1>>(-_Count2));
+                        _First1 = _STD move(_Last1);
+                    } else { // beginning of potential match is closer to _First1
+                        _RANGES advance(_First1, static_cast<iter_difference_t<_It1>>(_Count1 - _Count2));
+                    }
+                } else { // Only second range is sized
+                    if (_RANGES advance(_Last1, static_cast<iter_difference_t<_It1>>(-_Count2), _First1) != 0) {
+                        // distance(_First1, _Last1) < _Count2
+                        return false;
+                    }
+                    _First1 = _STD move(_Last1);
+                }
+            } else if constexpr (forward_iterator<_It1>) {
+                auto _Mid1  = _First1;
+                auto _Count = _Count2;
+                do {
+                    if (_Mid1 == _Last1) { // distance(_First1, _Last1) < _Count2
+                        return false;
+                    }
+
+                    ++_Mid1;
+                } while (--_Count != 0);
+
+                // At this point, distance(_First1, _Mid1) == _Count2
+                while (_Mid1 != _Last1) {
+                    ++_First1;
+                    ++_Mid1;
+                }
+            } else {
+                _RANGES advance(_First1, static_cast<iter_difference_t<_It1>>(_Count1 - _Count2));
+            }
+
+            return _RANGES _Equal_count(_STD move(_First1), _STD move(_First2),
+                static_cast<iter_difference_t<_It1>>(_Count2), _Pred, _Proj1, _Proj2);
+        }
+
+        template <class _It1, class _Se1, class _Diff1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
+        _NODISCARD static constexpr bool _Ends_with_unsized_needle(
+            _It1 _First1, _Se1 _Last1, _Diff1 _Count1, _It2 _First2, _Se2 _Last2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(input_iterator<_It1> && sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It1> || same_as<_Diff1, iter_difference_t<_It1>>);
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It2> && sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
+            constexpr bool _Sized1 = !same_as<_Diff1, _Not_a_difference>;
+
+            iter_difference_t<_It2> _Count2 = 0;
+
+            if constexpr (_Sized1) {
+                for (auto _Mid2 = _First2; _Mid2 != _Last2; ++_Mid2, (void) ++_Count2) {
+                    if (_Count2 == _Count1) { // distance(_First1, _Last1) < distance(_First2, _Last2)
+                        return false;
+                    }
+                }
+
+                _RANGES advance(_First1, static_cast<iter_difference_t<_It1>>(_Count1 - _Count2));
+            } else { // first range isn't sized, so must be forward
+                auto _Mid1 = _First1;
+                for (auto _Mid2 = _First2; _Mid2 != _Last2; ++_Mid1, (void) ++_Mid2, ++_Count2) {
+                    if (_Mid1 == _Last1) { // distance(_First1, _Last1) < distance(_First2, _Last2)
+                        return false;
+                    }
+                }
+
+                // distance(_First1, _Mid1) == distance(_First2, _Last2) == _Count2
+                while (_Mid1 != _Last1) {
+                    ++_First1;
+                    ++_Mid1;
+                }
+            }
+
+            return _RANGES _Equal_count(_STD move(_First1), _STD move(_First2),
+                static_cast<iter_difference_t<_It1>>(_Count2), _Pred, _Proj1, _Proj2);
+        }
+
+        template <class _It1, class _Se1, class _Diff1, class _It2, class _Se2, class _Diff2, class _Pr, class _Pj1,
+            class _Pj2>
+        _NODISCARD static constexpr bool _Ends_with_impl(_It1 _First1, _Se1 _Last1, _Diff1 _Count1, _It2 _First2,
+            _Se2 _Last2, _Diff2 _Count2, _Pr _Pred, _Pj1 _Proj1, _Pj2 _Proj2) {
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se1, _It1>);
+            _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Diff1, iter_difference_t<_It1>, _Not_a_difference>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
+            _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Diff2, iter_difference_t<_It2>, _Not_a_difference>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>);
+
+            constexpr bool _Sized1           = !same_as<_Diff1, _Not_a_difference>;
+            constexpr bool _Sized2           = !same_as<_Diff2, _Not_a_difference>;
+            constexpr bool _Both_sized       = _Sized1 && _Sized2;
+            constexpr bool _Both_bidi_common = _Bidi_common<_It1, _Se1> && _Bidi_common<_It2, _Se2>;
+
+            if constexpr (_Both_sized) {
+                if (_Count2 > _Count1) {
+                    return false;
+                }
+            }
+
+            if constexpr (_Sized2) {
+                if (_Count2 == 0) {
+                    return true;
+                }
+            }
+
+            if constexpr (_Both_bidi_common && !(random_access_iterator<_It1> && _Both_sized)) {
+                if constexpr (_Both_sized) {
+                    return _Match_backwards(unreachable_sentinel, _STD move(_Last1), _STD move(_First2),
+                        _STD move(_Last2), _Pred, _Proj1, _Proj2);
+                } else {
+                    return _Match_backwards(_STD move(_First1), _STD move(_Last1), _STD move(_First2),
+                        _STD move(_Last2), _Pred, _Proj1, _Proj2);
+                }
+            } else if constexpr (_Sized2) {
+                return _Ends_with_sized_needle(
+                    _STD move(_First1), _STD move(_Last1), _Count1, _STD move(_First2), _Count2, _Pred, _Proj1, _Proj2);
+            } else {
+                return _Ends_with_unsized_needle(_STD move(_First1), _STD move(_Last1), _Count1, _STD move(_First2),
+                    _STD move(_Last2), _Pred, _Proj1, _Proj2);
+            }
+        }
+    };
+
+    inline constexpr _Ends_with_fn ends_with{_Not_quite_object::_Construct_tag{}};
+#endif // _HAS_CXX23
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -9944,10 +10245,9 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se2, _It2>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>);
 
-            using _Memcmp_classification_pred =
-                typename decltype(_Lex_compare_memcmp_classify(_First1, _First2, _Pred))::_Pred;
-            constexpr bool _Is_sized1 = sized_sentinel_for<_Se1, _It1>;
-            constexpr bool _Is_sized2 = sized_sentinel_for<_Se2, _It2>;
+            using _Memcmp_classification_pred = _Lex_compare_memcmp_classify<_It1, _It2, _Pr>;
+            constexpr bool _Is_sized1         = sized_sentinel_for<_Se1, _It1>;
+            constexpr bool _Is_sized2         = sized_sentinel_for<_Se2, _It2>;
             if constexpr (!is_void_v<_Memcmp_classification_pred> && _Sized_or_unreachable_sentinel_for<_Se1, _It1> //
                           && _Sized_or_unreachable_sentinel_for<_Se2, _It2> //
                           && same_as<_Pj1, identity> && same_as<_Pj2, identity>) {

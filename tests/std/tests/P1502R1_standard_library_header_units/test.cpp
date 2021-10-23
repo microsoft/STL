@@ -709,7 +709,7 @@ int main() {
             assert(read == expected);
         }
 
-#if 0 // TRANSITION, DevCom-1511903
+#ifdef MSVC_INTERNAL_TESTING // TRANSITION, DevCom-1511903
         const char const_buffer[] = "1 2 3 4 5";
         basic_ispanstream<char> is_const_buffer{span<const char>{const_buffer}};
         read = 0;
