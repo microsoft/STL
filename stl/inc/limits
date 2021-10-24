@@ -1051,6 +1051,11 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
     return static_cast<int>(_Val >> (_Digits - 8));
 }
 
+enum class _Countr_zero_assumption {
+    _No_assmuption,
+    _Non_zero_input,
+};
+
 #if defined(_M_IX86) || defined(_M_X64)
 extern "C" {
 extern int __isa_available;
@@ -1062,11 +1067,6 @@ extern int __isa_available;
 #define _TZCNT_U64 _tzcnt_u64
 #endif // __clang__
 }
-
-enum class _Countr_zero_assumption {
-    _No_assmuption,
-    _Non_zero_input,
-};
 
 template <_Countr_zero_assumption _Assumption, class _Ty>
 _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
