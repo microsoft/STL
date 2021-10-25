@@ -615,6 +615,8 @@ template <class _First, class... _Rest>
 array(_First, _Rest...) -> array<typename _Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
 #endif // _HAS_CXX17
 
+struct _Empty_array_element {};
+
 template <class _Ty>
 class array<_Ty, 0> {
 public:
@@ -783,7 +785,7 @@ public:
         _Xout_of_range("invalid array<T, 0> subscript");
     }
 
-    conditional_t<is_default_constructible_v<_Ty>, _Ty, char> _Elems[1];
+    conditional_t<_Is_implicitly_default_constructible<_Ty>::value, _Ty, _Empty_array_element> _Elems[1];
 };
 
 template <class _Ty, size_t _Size, enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value, int> = 0>
