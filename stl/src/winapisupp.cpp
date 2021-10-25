@@ -384,6 +384,17 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
+extern "C" DWORD __cdecl __crtGetTempPath2W(
+    _In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer) {
+    // use GetTempPath2 if it is available (only on Windows 11+)...
+    IFDYNAMICGETCACHEDFUNCTION(GetTempPath2W) {
+        return pfGetTempPath2W(BufferLength, Buffer);
+    }
+
+    // ...otherwise use GetTempPathW.
+    return GetTempPathW(BufferLength, Buffer);
+}
+
 
 // Helper to load all necessary Win32 API function pointers
 
@@ -404,6 +415,8 @@ static int __cdecl initialize_pointers() {
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
     STOREFUNCTIONPOINTER(hKernel32, GetSystemTimePreciseAsFileTime);
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+
+    STOREFUNCTIONPOINTER(hKernel32, GetTempPath2W);
 
     return 0;
 }

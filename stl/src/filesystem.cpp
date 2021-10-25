@@ -19,6 +19,8 @@
 #include <Windows.h>
 #include <winioctl.h>
 
+#include "awint.hpp"
+
 // We have several switches that do not have case statements for every possible enum value.
 // Hence, disabling this warning.
 #pragma warning(disable : 4061) // enumerator '__std_win_error::_Success' in switch of enum
@@ -763,11 +765,11 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
 [[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
     __stdcall __std_fs_get_temp_path(_Out_writes_z_(__std_fs_temp_path_max) wchar_t* const _Target) noexcept {
-    // calls GetTempPathW
+    // calls GetTempPath2W
     // If getting the path failed, returns 0 size; otherwise, returns the size of the
     // expected directory. If the path could be resolved to an existing directory,
     // returns __std_win_error::_Success; otherwise, returns __std_win_error::_Max.
-    const auto _Size = GetTempPathW(__std_fs_temp_path_max, _Target);
+    const auto _Size = __crtGetTempPath2W(__std_fs_temp_path_max, _Target);
     if (_Size == 0) {
         return {0, __std_win_error{GetLastError()}};
     }

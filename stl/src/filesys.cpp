@@ -162,7 +162,7 @@ _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(wchar_t (&_Dest)[_MAX_FILE
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME]) {
     // get temp directory
     wchar_t _Dentry[MAX_PATH];
-    return _Strcpy(_Dest, GetTempPathW(MAX_PATH, _Dentry) != 0 ? _Dentry : L".");
+    return _Strcpy(_Dest, __crtGetTempPath2W(MAX_PATH, _Dentry) == 0 ? L"." : _Dentry);
 }
 
 
