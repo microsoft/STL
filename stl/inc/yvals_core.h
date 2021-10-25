@@ -274,6 +274,7 @@
 // _HAS_CXX23 directly controls:
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0448R4 <spanstream>
+// P0798R8 Monadic Operations For optional
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1132R7 out_ptr(), inout_ptr()
@@ -1372,6 +1373,7 @@
 #define __cpp_lib_is_scoped_enum 202011L
 
 #ifdef __cpp_lib_concepts
+#define __cpp_lib_monadic_optional        202110L
 #define __cpp_lib_out_ptr                 202106L
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #endif // __cpp_lib_concepts

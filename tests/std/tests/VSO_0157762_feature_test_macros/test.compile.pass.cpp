@@ -1178,6 +1178,20 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_monadic_optional
+#error __cpp_lib_monadic_optional is not defined
+#elif __cpp_lib_monadic_optional != 202110L
+#error __cpp_lib_monadic_optional is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_monadic_optional == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_monadic_optional
+#error __cpp_lib_monadic_optional is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_node_extract
 #error __cpp_lib_node_extract is not defined
