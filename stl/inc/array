@@ -785,7 +785,9 @@ public:
         _Xout_of_range("invalid array<T, 0> subscript");
     }
 
-    conditional_t<_Is_implicitly_default_constructible<_Ty>::value, _Ty, _Empty_array_element> _Elems[1];
+    conditional_t<disjunction_v<is_default_constructible<_Ty>, _Is_implicitly_default_constructible<_Ty>>, _Ty,
+        _Empty_array_element>
+        _Elems[1];
 };
 
 template <class _Ty, size_t _Size, enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value, int> = 0>
