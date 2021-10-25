@@ -475,8 +475,8 @@ public:
         using _Uty = invoke_result_t<_Fn, _Ty&>;
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
-            "optional<T>::and_then(F) requires the return type of F to be a specialization of optional (N4901 "
-            "[optional.monadic]/2).");
+            "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
+            "(N4901 [optional.monadic]/2).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), this->_Value);
@@ -490,8 +490,8 @@ public:
         using _Uty = invoke_result_t<_Fn, const _Ty&>;
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
-            "optional<T>::and_then(F) requires the return type of F to be a specialization of optional (N4901 "
-            "[optional.monadic]/2).");
+            "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
+            "(N4901 [optional.monadic]/2).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), this->_Value);
@@ -505,8 +505,8 @@ public:
         using _Uty = invoke_result_t<_Fn, _Ty&&>;
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
-            "optional<T>::and_then(F) requires the return type of F to be a specialization of optional (N4901 "
-            "[optional.monadic]/5).");
+            "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
+            "(N4901 [optional.monadic]/5).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Value));
@@ -520,8 +520,8 @@ public:
         using _Uty = invoke_result_t<_Fn, const _Ty&&>;
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
-            "optional<T>::and_then(F) requires the return type of F to be a specialization of optional (N4901 "
-            "[optional.monadic]/5).");
+            "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
+            "(N4901 [optional.monadic]/5).");
 
         if (this->_Has_value) {
             return _STD invoke(_STD forward<_Fn>(_Func), _STD move(this->_Value));
