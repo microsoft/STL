@@ -8,6 +8,7 @@
 #include <ranges>
 #include <span>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -71,9 +72,29 @@ constexpr void smoke_test() {
     }
 }
 
+constexpr void test_1559808() {
+    // Regression test for DevCom-1559808, an interaction between vector and the
+    // use of structured bindings in the constexpr evaluator.
+
+    std::vector<int> haystack(33, 42), needle(8, 42); // No particular significance to any numbers in this function
+    using size_type = std::vector<int>::size_type;
+
+    auto result = ranges::find_end(haystack, needle);
+    assert(static_cast<size_type>(result.begin() - haystack.begin()) == haystack.size() - needle.size());
+    assert(result.end() == haystack.end());
+
+    needle.assign(6, 1729);
+    result = ranges::find_end(haystack, needle);
+    assert(result.begin() == haystack.end());
+    assert(result.end() == haystack.end());
+}
+
 int main() {
     STATIC_ASSERT((smoke_test(), true));
     smoke_test();
+
+    STATIC_ASSERT((test_1559808(), true));
+    test_1559808();
 }
 
 #ifndef _PREFAST_ // TRANSITION, GH-1030
