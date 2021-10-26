@@ -292,6 +292,11 @@ public:
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            return _Primary_char_traits::assign(_Left, _Right);
+        }
+#endif // __cpp_lib_is_constant_evaluated
         _Left = _Right;
     }
 
@@ -431,6 +436,11 @@ public:
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
+#ifdef __cpp_lib_is_constant_evaluated
+        if (_STD is_constant_evaluated()) {
+            return _Primary_char_traits::assign(_Left, _Right);
+        }
+#endif // __cpp_lib_is_constant_evaluated
         _Left = _Right;
     }
 
@@ -2449,7 +2459,7 @@ private:
     static constexpr size_t _Memcpy_val_size   = sizeof(_Scary_val) - _Memcpy_val_offset;
 
     template <class _Iter>
-    using _Is_elem_cptr = bool_constant<_Is_any_of_v<_Iter, const _Elem* const, _Elem* const, const _Elem*, _Elem*>>;
+    static constexpr bool _Is_elem_cptr = _Is_any_of_v<_Iter, const _Elem* const, _Elem* const, const _Elem*, _Elem*>;
 
 #if _HAS_CXX17
     template <class _StringViewIsh>
@@ -2783,10 +2793,7 @@ public:
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Tidy_init();
     }
-#endif // _HAS_CXX20
 
-public:
-#if _HAS_CXX20
     _NODISCARD bool _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
         // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_string_engaged()
         _Tidy_deallocate();
@@ -2845,9 +2852,6 @@ public:
                 // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
                 _Mypair._Myval2._Orphan_all();
                 _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
-                _Pocma(_Al, _Right_al);
-                _Take_contents(_Right);
-                return *this;
             }
         } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
             if (_Al != _Right_al) {
@@ -2859,7 +2863,6 @@ public:
         _Tidy_deallocate();
         _Pocma(_Al, _Right_al);
         _Take_contents(_Right);
-
         return *this;
     }
 
@@ -2870,7 +2873,7 @@ public:
 
 private:
     void _Memcpy_val_from(const basic_string& _Right) noexcept {
-        _STL_INTERNAL_CHECK(_Can_memcpy_val); // TRANSITION, if constexpr
+        _STL_INTERNAL_CHECK(_Can_memcpy_val);
         const auto _My_data_mem =
             reinterpret_cast<unsigned char*>(_STD addressof(_Mypair._Myval2)) + _Memcpy_val_offset;
         const auto _Right_data_mem =
@@ -3057,11 +3060,10 @@ public:
                     const auto _New_size     = _Right._Mypair._Myval2._Mysize;
                     const auto _New_capacity = _Calculate_growth(_New_size, 0, _Right.max_size());
                     auto _Right_al_non_const = _Right_al;
-                    const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity); // throws
+                    const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity + 1); // throws
 
 #if _HAS_CXX20
-                    if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to
-                                                        // avoid UB
+                    if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
                         _Traits::assign(_Unfancy(_New_ptr), _New_size + 1, _Elem());
                     }
 #endif // _HAS_CXX20
@@ -3211,7 +3213,7 @@ public:
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
         const auto _ULast  = _Get_unwrapped(_Last);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
+        if constexpr (_Is_elem_cptr<decltype(_UFirst)>) {
             return append(_UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
         } else {
             const basic_string _Right(_UFirst, _ULast, get_allocator());
@@ -3295,7 +3297,7 @@ public:
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
         const auto _ULast  = _Get_unwrapped(_Last);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
+        if constexpr (_Is_elem_cptr<decltype(_UFirst)>) {
             return assign(_UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
         } else {
             basic_string _Right(_UFirst, _ULast, get_allocator());
@@ -3447,7 +3449,7 @@ public:
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
         const auto _ULast  = _Get_unwrapped(_Last);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
+        if constexpr (_Is_elem_cptr<decltype(_UFirst)>) {
             insert(_Off, _UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
         } else {
             const basic_string _Right(_UFirst, _ULast, get_allocator());
@@ -3712,7 +3714,7 @@ public:
         _Adl_verify_range(_First2, _Last2);
         const auto _UFirst2 = _Get_unwrapped(_First2);
         const auto _ULast2  = _Get_unwrapped(_Last2);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst2)>::value) {
+        if constexpr (_Is_elem_cptr<decltype(_UFirst2)>) {
             return replace(_Off, _Length, _UFirst2, _Convert_size<size_type>(static_cast<size_t>(_ULast2 - _UFirst2)));
         } else {
             const basic_string _Right(_UFirst2, _ULast2, get_allocator());
@@ -4110,13 +4112,11 @@ public:
                 _Right._Mypair._Myval2._Orphan_all();
             }
 
-            if (_My_large || _Right_large) {
-                _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
-            }
+            _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        }
 
-        _Swap_data(_Right);
+            _Swap_data(_Right);
+        }
     }
 
 #if _HAS_CXX17
