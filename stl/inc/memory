@@ -2960,7 +2960,8 @@ public:
     // Template specialization, the value is used when the substitution succeeds.
     template <class _Ty2>
     static constexpr bool
-        _Must_avoid_expired_conversions_from<_Ty2, decltype(static_cast<const _Ty2*>(_STD declval<_Ty*>()))> = false;
+        _Must_avoid_expired_conversions_from<_Ty2, decltype(static_cast<const _Ty2*>(static_cast<_Ty*>(nullptr)))> =
+            false;
 
     constexpr weak_ptr() noexcept {}
 
