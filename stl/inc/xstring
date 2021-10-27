@@ -2459,7 +2459,7 @@ private:
     static constexpr size_t _Memcpy_val_size   = sizeof(_Scary_val) - _Memcpy_val_offset;
 
     template <class _Iter>
-    static constexpr bool _Is_elem_cptr = _Is_any_of_v<_Iter, const _Elem* const, _Elem* const, const _Elem*, _Elem*>;
+    static constexpr bool _Is_elem_cptr_v = _Is_any_of_v<_Iter, const _Elem* const, _Elem* const, const _Elem*, _Elem*>;
 
 #if _HAS_CXX17
     template <class _StringViewIsh>
@@ -3213,7 +3213,7 @@ public:
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
         const auto _ULast  = _Get_unwrapped(_Last);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst)>) {
+        if constexpr (_Is_elem_cptr_v<decltype(_UFirst)>) {
             return append(_UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
         } else {
             const basic_string _Right(_UFirst, _ULast, get_allocator());
@@ -3297,7 +3297,7 @@ public:
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
         const auto _ULast  = _Get_unwrapped(_Last);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst)>) {
+        if constexpr (_Is_elem_cptr_v<decltype(_UFirst)>) {
             return assign(_UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
         } else {
             basic_string _Right(_UFirst, _ULast, get_allocator());
@@ -3449,7 +3449,7 @@ public:
         _Adl_verify_range(_First, _Last);
         const auto _UFirst = _Get_unwrapped(_First);
         const auto _ULast  = _Get_unwrapped(_Last);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst)>) {
+        if constexpr (_Is_elem_cptr_v<decltype(_UFirst)>) {
             insert(_Off, _UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
         } else {
             const basic_string _Right(_UFirst, _ULast, get_allocator());
@@ -3714,7 +3714,7 @@ public:
         _Adl_verify_range(_First2, _Last2);
         const auto _UFirst2 = _Get_unwrapped(_First2);
         const auto _ULast2  = _Get_unwrapped(_Last2);
-        if constexpr (_Is_elem_cptr<decltype(_UFirst2)>) {
+        if constexpr (_Is_elem_cptr_v<decltype(_UFirst2)>) {
             return replace(_Off, _Length, _UFirst2, _Convert_size<size_type>(static_cast<size_t>(_ULast2 - _UFirst2)));
         } else {
             const basic_string _Right(_UFirst2, _ULast2, get_allocator());
