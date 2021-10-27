@@ -5165,7 +5165,7 @@ namespace chrono {
     };
 
     template <class _CharT, class _Traits, class _Parsable, class... _Rest>
-    using _Has_from_stream = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
+    using _Has_from_stream = void_t<decltype(from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
         _STD declval<const _CharT*>(), _STD declval<_Parsable&>(), _STD declval<_Rest>()...))>;
 
     template <class _CharT, class _Parsable, class = _Has_from_stream<_CharT, char_traits<_CharT>, _Parsable>>
