@@ -91,10 +91,10 @@ void test_gh_000258_sometimes_avoid_locking() {
     static_assert(!weak_ptr<const base3>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
     static_assert(!weak_ptr<const base3>::_Must_avoid_expired_conversions_from<const derived>, "Should optimize");
     static_assert(!weak_ptr<derived>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
-    static_assert(!weak_ptr<int>::_Must_avoid_expired_conversions_from<int>, "Should optimize");
-
     static_assert(!weak_ptr<const derived>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
     static_assert(!weak_ptr<const derived>::_Must_avoid_expired_conversions_from<const derived>, "Should optimize");
+
+    static_assert(!weak_ptr<int>::_Must_avoid_expired_conversions_from<int>, "Should optimize");
     static_assert(!weak_ptr<const int>::_Must_avoid_expired_conversions_from<int>, "Should optimize");
     static_assert(!weak_ptr<const int>::_Must_avoid_expired_conversions_from<const int>, "Should optimize");
 
