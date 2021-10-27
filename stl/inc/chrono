@@ -5221,13 +5221,15 @@ namespace chrono {
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
     basic_istream<_CharT, _Traits>& operator>>(
         basic_istream<_CharT, _Traits>& _Is, _Time_parse_iomanip_c_str<_CharT, _Traits, _Alloc, _Parsable>&& _Tpi) {
-        return _CHRONO from_stream(_Is, _Tpi._Fmt, _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset);
+        from_stream(_Is, _Tpi._Fmt, _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset); // intentional ADL
+        return _Is;
     }
 
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
     basic_istream<_CharT, _Traits>& operator>>(
         basic_istream<_CharT, _Traits>& _Is, _Time_parse_iomanip<_CharT, _Traits, _Alloc, _Parsable>&& _Tpi) {
-        return _CHRONO from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset);
+        from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset); // intentional ADL
+        return _Is;
     }
 
 #endif // _HAS_CXX20
