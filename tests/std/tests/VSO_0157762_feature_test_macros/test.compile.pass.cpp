@@ -336,6 +336,20 @@ STATIC_ASSERT(__cpp_lib_byte == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_byteswap
+#error __cpp_lib_byteswap is not defined
+#elif __cpp_lib_byteswap != 202110L
+#error __cpp_lib_byteswap is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_byteswap == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_byteswap
+#error __cpp_lib_byteswap is defined
+#endif
+#endif
+
 #if _HAS_CXX20 && defined(__cpp_char8_t)
 #ifndef __cpp_lib_char8_t
 #error __cpp_lib_char8_t is not defined
@@ -1291,6 +1305,20 @@ STATIC_ASSERT(__cpp_lib_ranges == 202106L);
 #else
 #ifdef __cpp_lib_ranges
 #error __cpp_lib_ranges is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#ifndef __cpp_lib_ranges_starts_ends_with
+#error __cpp_lib_ranges_starts_ends_with is not defined
+#elif __cpp_lib_ranges_starts_ends_with != 202106L
+#error __cpp_lib_ranges_starts_ends_with is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_starts_ends_with == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_starts_ends_with
+#error __cpp_lib_ranges_starts_ends_with is defined
 #endif
 #endif
 
