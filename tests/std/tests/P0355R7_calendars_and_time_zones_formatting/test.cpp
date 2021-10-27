@@ -888,23 +888,25 @@ void test_information_classes() {
             "second: (begin: 2021-03-14 10:00:00, end: 2021-11-07 09:00:00, "
             "offset: -25200s, save: 60min, abbrev: GMT-7)"));
 
-    assert(format(STR("{:%z %Ez %Oz %Z}"), sys1) == STR("+1000 +10:00 +10:00 AEST")
-           || format(STR("{:%z %Ez %Oz %Z}"), sys1) == STR("+1000 +10:00 +10:00 GMT+10"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), sys2) == STR("+1100 +11:00 +11:00 AEDT")
-           || format(STR("{:%z %Ez %Oz %Z}"), sys2) == STR("+1100 +11:00 +11:00 GMT+11"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), sys3) == STR("-0800 -08:00 -08:00 PST")
-           || format(STR("{:%z %Ez %Oz %Z}"), sys3) == STR("-0800 -08:00 -08:00 GMT-8"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), sys4) == STR("-0700 -07:00 -07:00 PDT")
-           || format(STR("{:%z %Ez %Oz %Z}"), sys4) == STR("-0700 -07:00 -07:00 GMT-7"));
+    const auto sys1_str = format(STR("{:%z %Ez %Oz %Z}"), sys1);
+    const auto sys2_str = format(STR("{:%z %Ez %Oz %Z}"), sys2);
+    const auto sys3_str = format(STR("{:%z %Ez %Oz %Z}"), sys3);
+    const auto sys4_str = format(STR("{:%z %Ez %Oz %Z}"), sys4);
 
-    assert(format(STR("{:%z %Ez %Oz %Z}"), loc1) == STR("+1000 +10:00 +10:00 AEST")
-           || format(STR("{:%z %Ez %Oz %Z}"), loc1) == STR("+1000 +10:00 +10:00 GMT+10"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), loc2) == STR("+1100 +11:00 +11:00 AEDT")
-           || format(STR("{:%z %Ez %Oz %Z}"), loc2) == STR("+1100 +11:00 +11:00 GMT+11"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), loc3) == STR("-0800 -08:00 -08:00 PST")
-           || format(STR("{:%z %Ez %Oz %Z}"), loc3) == STR("-0800 -08:00 -08:00 GMT-8"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), loc4) == STR("-0700 -07:00 -07:00 PDT")
-           || format(STR("{:%z %Ez %Oz %Z}"), loc4) == STR("-0700 -07:00 -07:00 GMT-7"));
+    const auto loc1_str = format(STR("{:%z %Ez %Oz %Z}"), loc1);
+    const auto loc2_str = format(STR("{:%z %Ez %Oz %Z}"), loc2);
+    const auto loc3_str = format(STR("{:%z %Ez %Oz %Z}"), loc3);
+    const auto loc4_str = format(STR("{:%z %Ez %Oz %Z}"), loc4);
+
+    assert(sys1_str == STR("+1000 +10:00 +10:00 AEST") || sys1_str == STR("+1000 +10:00 +10:00 GMT+10"));
+    assert(sys2_str == STR("+1100 +11:00 +11:00 AEDT") || sys2_str == STR("+1100 +11:00 +11:00 GMT+11"));
+    assert(sys3_str == STR("-0800 -08:00 -08:00 PST") || sys3_str == STR("-0800 -08:00 -08:00 GMT-8"));
+    assert(sys4_str == STR("-0700 -07:00 -07:00 PDT") || sys4_str == STR("-0700 -07:00 -07:00 GMT-7"));
+
+    assert(loc1_str == STR("+1000 +10:00 +10:00 AEST") || loc1_str == STR("+1000 +10:00 +10:00 GMT+10"));
+    assert(loc2_str == STR("+1100 +11:00 +11:00 AEDT") || loc2_str == STR("+1100 +11:00 +11:00 GMT+11"));
+    assert(loc3_str == STR("-0800 -08:00 -08:00 PST") || loc3_str == STR("-0800 -08:00 -08:00 GMT-8"));
+    assert(loc4_str == STR("-0700 -07:00 -07:00 PDT") || loc4_str == STR("-0700 -07:00 -07:00 GMT-7"));
 
     throw_helper(STR("{:%z}"), ambiguous1);
     throw_helper(STR("{:%z}"), ambiguous2);
