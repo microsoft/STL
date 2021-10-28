@@ -127,7 +127,7 @@ void test_duration_output() {
 
 
 template <class CharT, class CStringOrStdString, class Parsable>
-void test_parse(const CharT* str, CStringOrStdString fmt, Parsable& p,
+void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
@@ -161,7 +161,7 @@ void test_parse(const CharT* str, CStringOrStdString fmt, Parsable& p,
 }
 
 template <class CharT, class CStringOrStdString, class Parsable>
-void fail_parse(const CharT* str, CStringOrStdString fmt, Parsable& p,
+void fail_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
@@ -1171,7 +1171,7 @@ void parse_timepoints() {
 }
 
 template <class CharT, class CStringOrStdString>
-void test_wchar_and_lwg_3554() {
+void test_io_manipulator() {
     seconds time;
     test_parse(WIDEN(CharT, "12"), CStringOrStdString{WIDEN(CharT, "%S")}, time);
     assert(time == 12s);
@@ -1215,9 +1215,10 @@ void test_parse() {
     parse_other_week_date();
     parse_whitespace();
     parse_timepoints();
-    test_wchar_and_lwg_3554<wchar_t, const wchar_t*>();
-    test_wchar_and_lwg_3554<char, string>();
-    test_wchar_and_lwg_3554<wchar_t, wstring>();
+    test_io_manipulator<char, const char*>();
+    test_io_manipulator<wchar_t, const wchar_t*>();
+    test_io_manipulator<char, string>();
+    test_io_manipulator<wchar_t, wstring>();
 }
 
 void test() {
