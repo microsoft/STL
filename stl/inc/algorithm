@@ -824,66 +824,59 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _Fw
 }
 
 template <class _FwdIt1, class _FwdIt2, class _Pr>
-_CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
-    forward_iterator_tag, forward_iterator_tag) {
-    // test if [_First1, _Last1) == permuted [_First2, _Last2), arbitrary iterators
-    for (;; ++_First1, (void) ++_First2) { // trim matching prefix
-        if (_First1 == _Last1) {
-            return _First2 == _Last2;
-        }
-
-        if (_First2 == _Last2) {
-            return false;
-        }
-
-        if (!_Pred(*_First1, *_First2)) { // found first inequality, check match counts in suffix
-            break;
-        }
-    }
-
-    auto _Next1 = _First1;
-    auto _Next2 = _First2;
-    for (;; ++_Next1, (void) ++_Next2) { // check for same lengths
-        if (_Next1 == _Last1) {
-            if (_Next2 == _Last2) {
-                return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
-            }
-
-            return false; // sequence 1 is shorter than sequence 2, not a permutation
-        }
-
-        if (_Next2 == _Last2) {
-            return false; // sequence 1 is longer than sequence 2, not a permutation
-        }
-    }
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Pr>
-_CONSTEXPR20 bool _Is_permutation_unchecked(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred,
-    random_access_iterator_tag, random_access_iterator_tag) {
-    // test if [_First1, _Last1) == permuted [_First2, _Last2), random-access iterators
-    if (_Last1 - _First1 != _Last2 - _First2) {
-        return false;
-    }
-
-    for (; _First1 != _Last1; ++_First1, (void) ++_First2) { // trim matching prefix
-        if (!_Pred(*_First1, *_First2)) {
-            // found first inequality, check match counts in suffix
-            return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
-        }
-    }
-
-    return true;
-}
-
-template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_permutation(
     _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2)
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
-    return _Is_permutation_unchecked(_Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2),
-        _Get_unwrapped(_Last2), _Pass_fn(_Pred), _Iter_cat_t<_FwdIt1>{}, _Iter_cat_t<_FwdIt2>{});
+    if constexpr (_Is_random_iter_v<_FwdIt1> && _Is_random_iter_v<_FwdIt2>) {
+        // test if [_First1, _Last1) == permuted [_First2, _Last2), random-access iterators
+        if (_Last1 - _First1 != _Last2 - _First2) {
+            return false;
+        }
+
+        for (; _First1 != _Last1; ++_First1, (void) ++_First2) { // trim matching prefix
+            if (!_Pred(*_First1, *_First2)) {
+                // found first inequality, check match counts in suffix
+                return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
+            }
+        }
+
+        return true;
+    } else if constexpr (_Is_fwd_iter_v<_FwdIt1> && _Is_fwd_iter_v<_FwdIt2>) {
+        // test if [_First1, _Last1) == permuted [_First2, _Last2), arbitrary iterators
+        for (;; ++_First1, (void) ++_First2) { // trim matching prefix
+            if (_First1 == _Last1) {
+                return _First2 == _Last2;
+            }
+
+            if (_First2 == _Last2) {
+                return false;
+            }
+
+            if (!_Pred(*_First1, *_First2)) { // found first inequality, check match counts in suffix
+                break;
+            }
+        }
+
+        auto _Next1 = _First1;
+        auto _Next2 = _First2;
+        for (;; ++_Next1, (void) ++_Next2) { // check for same lengths
+            if (_Next1 == _Last1) {
+                if (_Next2 == _Last2) {
+                    return _Check_match_counts(_First1, _Last1, _First2, _Last2, _Pred);
+                }
+
+                return false; // sequence 1 is shorter than sequence 2, not a permutation
+            }
+
+            if (_Next2 == _Last2) {
+                return false; // sequence 1 is longer than sequence 2, not a permutation
+            }
+        }
+    } else {
+        static_assert(_Always_false<_FwdIt1>, "Iterators should be at least forward iterators");
+    }
 }
 
 template <class _FwdIt1, class _FwdIt2>
@@ -4725,10 +4718,12 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
 
             _Seek_wrapped(_Dest,
                 _Sample_selection_unchecked(_First, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
-        } else {
+        } else if constexpr (_Is_input_iter_v<_PopIt>) {
             // source is input: use reservoir sampling (unstable)
             _Seek_wrapped(
                 _Dest, _Sample_reservoir_unchecked(_First, _Last, _Get_unwrapped_unverified(_Dest), _Count, _RngFunc));
+        } else {
+            static_assert(_Always_false<_PopIt>, "Source iterators must be at least input iterators");
         }
     }
 
