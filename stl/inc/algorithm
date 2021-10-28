@@ -831,8 +831,8 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(
     _Adl_verify_range(_First2, _Last2);
     auto _UFirst1 = _Get_unwrapped(_First1);
     auto _UFirst2 = _Get_unwrapped(_First2);
-    auto _ULast1 = _Get_unwrapped(_Last1);
-    auto _ULast2 = _Get_unwrapped(_Last2);
+    auto _ULast1  = _Get_unwrapped(_Last1);
+    auto _ULast2  = _Get_unwrapped(_Last2);
     if constexpr (_Is_random_iter_v<_FwdIt1> && _Is_random_iter_v<_FwdIt2>) {
         // test if [_UFirst1, _ULast1) == permuted [_UFirst2, _ULast2), random-access iterators
         if (_ULast1 - _UFirst1 != _ULast2 - _UFirst2) {
