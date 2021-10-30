@@ -35,11 +35,7 @@ class condition_variable_any;
 
 class _Mutex_base { // base class for all mutex types
 public:
-    constexpr _Mutex_base(int _Flags = 0) noexcept {
-        _Mtx_storage._Count     = 0;
-        _Mtx_storage._Type      = _Flags | _Mtx_try;
-        _Mtx_storage._Thread_id = -1;
-    }
+    constexpr _Mutex_base(int _Flags = 0) noexcept : _Mtx_storage(_Flags | _Mtx_try) {}
 
     ~_Mutex_base() noexcept {}
 

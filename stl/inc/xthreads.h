@@ -135,15 +135,13 @@ inline int _Check_C_return(int _Res) { // throw exception on failure
 }
 _STD_END
 
-#if defined(_M_IX86) || defined(_M_ARM)
-_INLINE_VAR constexpr size_t _Stl_critical_section_size      = 36;
-_INLINE_VAR constexpr size_t _Stl_critical_section_alignment = 4;
-#elif defined(_M_X64) || defined(_M_ARM64)
+#ifdef _WIN64
 _INLINE_VAR constexpr size_t _Stl_critical_section_size      = 64;
 _INLINE_VAR constexpr size_t _Stl_critical_section_alignment = 8;
-#else
-#error Unknown architecture
-#endif
+#else // ^^^ 64-bit OS ^^^ / vvv 32-bit OS vvv
+_INLINE_VAR constexpr size_t _Stl_critical_section_size      = 36;
+_INLINE_VAR constexpr size_t _Stl_critical_section_alignment = 4;
+#endif // ^^^32  - bit OS ^^^
 
 
 // Corresponds to internal Concurrency::details::stl_critical_section with changes to expose it in headers
@@ -190,16 +188,23 @@ private:
 
 // Corresponds to internal _Mtx_internal_imp_t with changes to expose it in headers and make its construction constexpr
 struct _Mtx_internal_imp_2_t {
+    struct alignas(_Stl_critical_section_alignment) _Align_t {
+        char _Pad[_Stl_critical_section_alignment];
+    };
+
     int _Type;
-    union alignas(_Stl_critical_section_alignment) _Cs_t {
+    union _Cs_t {
         _Stl_critical_section_interface_win7 _Cs_win7;
         char _Data[_Stl_critical_section_size];
+        _Align_t _Align;
 
         constexpr _Cs_t() : _Cs_win7() {}
         ~_Cs_t() {}
     } _Cs;
-    long _Thread_id;
-    int _Count;
+    long _Thread_id = -1;
+    int _Count      = 0;
+
+    constexpr _Mtx_internal_imp_2_t(int _Type_) : _Type(_Type_) {}
 };
 
 #pragma pop_macro("new")
