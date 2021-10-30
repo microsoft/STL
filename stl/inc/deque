@@ -1379,6 +1379,8 @@ private:
 
                 _Mid = begin() + static_cast<difference_type>(_Count);
                 _STD fill(_Mid, _Mid + static_cast<difference_type>(_Off), _Val); // fill in rest of values
+
+                _Guard._Container = nullptr;
             } else { // insert not longer than prefix
                 for (_Num = _Count; 0 < _Num; --_Num) {
                     push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push part of prefix
@@ -1390,6 +1392,8 @@ private:
                     _Mid); // copy rest of prefix
                 _STD fill(begin() + static_cast<difference_type>(_Off), _Mid + static_cast<difference_type>(_Off),
                     _Tmp._Get_value()); // fill in values
+
+                _Guard._Container = nullptr;
             }
         } else { // closer to back
             _Restore_old_size_guard<false> _Guard{this, _Oldsize};
