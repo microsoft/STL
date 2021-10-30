@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstring>
 #include <deque>
 #include <stdexcept>
 
@@ -61,7 +62,7 @@ void test_deque() {
     try {
         bomb::countdown = 3;
         dq.insert(dq.end() - 2, begin(more_data), end(more_data));
-        abort();
+        assert(false, "Should have thrown an exception");
     } catch (runtime_error& ex) {
         check_exception(ex);
         check(dq);
@@ -70,7 +71,7 @@ void test_deque() {
     try {
         bomb::countdown = 3;
         dq.insert(dq.begin() + 2, begin(more_data), end(more_data));
-        abort();
+        assert(false, "Should have thrown an exception");
     } catch (runtime_error& ex) {
         check_exception(ex);
         check(dq);
@@ -79,7 +80,7 @@ void test_deque() {
     try {
         bomb::countdown = 3;
         dq.insert(dq.end() - 2, 6, 10);
-        abort();
+        assert(false, "Should have thrown an exception");
     } catch (runtime_error& ex) {
         check_exception(ex);
         check(dq);
@@ -88,7 +89,7 @@ void test_deque() {
     try {
         bomb::countdown = 3;
         dq.insert(dq.begin() + 2, 6, 11);
-        abort();
+        assert(false, "Should have thrown an exception");
     } catch (runtime_error& ex) {
         check_exception(ex);
         check(dq);
