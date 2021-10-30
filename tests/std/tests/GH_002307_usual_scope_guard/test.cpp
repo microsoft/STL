@@ -71,8 +71,7 @@ void test_deque() {
     }
 
     try {
-        bomb::countdown    = 3;
-        const int data_x[] = {10, 11, 12, 13, 14};
+        bomb::countdown = 3;
         dq.insert(dq.begin() + 2, begin(more_data), end(more_data));
         abort();
     } catch (runtime_error& ex) {
