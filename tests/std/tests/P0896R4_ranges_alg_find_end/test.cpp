@@ -72,11 +72,12 @@ constexpr void smoke_test() {
     }
 }
 
-constexpr void test_1559808() {
+constexpr void test_devcom_1559808() {
     // Regression test for DevCom-1559808, an interaction between vector and the
     // use of structured bindings in the constexpr evaluator.
 
-    std::vector<int> haystack(33, 42), needle(8, 42); // No particular significance to any numbers in this function
+    std::vector<int> haystack(33, 42); // No particular significance to any numbers in this function
+    std::vector<int> needle(8, 42);
     using size_type = std::vector<int>::size_type;
 
     auto result = ranges::find_end(haystack, needle);
@@ -93,8 +94,8 @@ int main() {
     STATIC_ASSERT((smoke_test(), true));
     smoke_test();
 
-    STATIC_ASSERT((test_1559808(), true));
-    test_1559808();
+    STATIC_ASSERT((test_devcom_1559808(), true));
+    test_devcom_1559808();
 }
 
 #ifndef _PREFAST_ // TRANSITION, GH-1030

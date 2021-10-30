@@ -169,11 +169,12 @@ constexpr bool run_tests() {
     return true;
 }
 
-constexpr void test_1559808() {
+constexpr void test_devcom_1559808() {
     // Regression test for DevCom-1559808, an interaction between vector and the
     // use of structured bindings in the constexpr evaluator.
 
-    std::vector<int> haystack(33, 42), needle(8, 42); // No particular significance to any numbers in this function
+    vector<int> haystack(33, 42); // No particular significance to any numbers in this function
+    vector<int> needle(8, 42);
 
     auto result = ranges::search(haystack, needle);
     assert(result.begin() == haystack.begin());
@@ -189,7 +190,7 @@ int main() {
     STATIC_ASSERT(run_tests());
     run_tests();
 
-    STATIC_ASSERT((test_1559808(), true));
-    test_1559808();
+    STATIC_ASSERT((test_devcom_1559808(), true));
+    test_devcom_1559808();
 }
 #endif // TEST_EVERYTHING

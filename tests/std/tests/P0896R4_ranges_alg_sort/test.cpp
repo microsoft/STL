@@ -52,7 +52,7 @@ struct instantiator {
     }
 };
 
-constexpr void test_1559808() {
+constexpr void test_devcom_1559808() {
     // Regression test for DevCom-1559808, a bad interaction between constexpr vector and the use of structured bindings
     // in the implementation of ranges::sort.
 
@@ -65,6 +65,6 @@ int main() {
     STATIC_ASSERT((test_random<instantiator, P>(), true));
     test_random<instantiator, P>();
 
-    STATIC_ASSERT((test_1559808(), true));
-    test_1559808();
+    STATIC_ASSERT((test_devcom_1559808(), true));
+    test_devcom_1559808();
 }
