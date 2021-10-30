@@ -40,10 +40,10 @@ _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
 #endif // _WIN64
 #else // _CRT_WINDOWS
 #ifdef _WIN64
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_size      = 80;
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_alignment = 8;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 72;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 8;
+_INLINE_VAR constexpr size_t _Mtx_internal_imp_size          = 80;
+_INLINE_VAR constexpr size_t _Mtx_internal_imp_alignment     = 8;
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_size          = 72;
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment     = 8;
 #else // _WIN64
 _INLINE_VAR constexpr size_t _Mtx_internal_imp_size      = 48;
 _INLINE_VAR constexpr size_t _Mtx_internal_imp_alignment = 4;
@@ -134,6 +134,74 @@ inline int _Check_C_return(int _Res) { // throw exception on failure
     return _Res;
 }
 _STD_END
+
+#if defined(_M_IX86) || defined(_M_ARM)
+_INLINE_VAR constexpr size_t _Stl_critical_section_size      = 36;
+_INLINE_VAR constexpr size_t _Stl_critical_section_alignment = 4;
+#elif defined(_M_X64) || defined(_M_ARM64)
+_INLINE_VAR constexpr size_t _Stl_critical_section_size      = 64;
+_INLINE_VAR constexpr size_t _Stl_critical_section_alignment = 8;
+#else
+#error Unknown architecture
+#endif
+
+
+// Corresponds to internal Concurrency::details::stl_critical_section with changes to expose it in headers
+class __declspec(novtable) _Stl_critical_section_interface {
+public:
+    virtual void __cdecl _Lock()                     = 0;
+    virtual bool __cdecl _Try_lock()                 = 0;
+    virtual bool __cdecl _Try_lock_for(unsigned int) = 0;
+    virtual void __cdecl _Unlock()                   = 0;
+    virtual void __cdecl _Destroy()                  = 0;
+};
+
+// Corresponds to internal Concurrency::details::stl_critical_section_win7 with changes to expose it in headers
+// and make its construction constexpr
+class _Stl_critical_section_interface_win7 final : public _Stl_critical_section_interface {
+public:
+    constexpr _Stl_critical_section_interface_win7() noexcept = default;
+
+    _Stl_critical_section_interface_win7(const _Stl_critical_section_interface_win7&) = delete;
+    _Stl_critical_section_interface_win7& operator=(const _Stl_critical_section_interface_win7&) = delete;
+
+    void _Destroy() override {}
+
+    void _Lock() override {
+        _Smtx_lock_exclusive(&_Mtx);
+    }
+
+    bool _Try_lock() override {
+        return _Smtx_try_lock_exclusive(&_Mtx) != 0;
+    }
+
+    bool _Try_lock_for(unsigned int) override {
+        // STL will call try_lock_for once again if this call will not succeed
+        return _Stl_critical_section_interface_win7::_Try_lock();
+    }
+
+    void _Unlock() override {
+        _Smtx_unlock_exclusive(&_Mtx);
+    }
+
+private:
+    _Smtx_t _Mtx = {};
+};
+
+// Corresponds to internal _Mtx_internal_imp_t with changes to expose it in headers and make its construction constexpr
+struct _Mtx_internal_imp_2_t {
+    int _Type;
+    union alignas(_Stl_critical_section_alignment) _Cs_t {
+        _Stl_critical_section_interface_win7 _Cs_win7;
+        char _Data[_Stl_critical_section_size];
+
+        constexpr _Cs_t() : _Cs_win7() {}
+        ~_Cs_t() {}
+    } _Cs;
+    long _Thread_id;
+    int _Count;
+};
+
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
