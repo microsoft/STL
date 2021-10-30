@@ -188,6 +188,7 @@ tests\GH_001914_cached_position
 tests\GH_002039_byte_is_not_trivially_swappable
 tests\GH_002058_debug_iterator_race
 tests\GH_002120_streambuf_seekpos_and_seekoff
+tests\GH_002307_usual_scope_guard
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3422_seed_seq_ctors
