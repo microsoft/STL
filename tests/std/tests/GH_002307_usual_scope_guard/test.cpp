@@ -42,49 +42,63 @@ struct bomb {
 
 int bomb::countdown = 0;
 
+constexpr int init_data[] = {1, 2, 3, 4, 5, 6, 7};
+constexpr int more_data[] = {10, 11, 12, 13, 14};
 
-int main() {
-    const int data[] = {1, 2, 3, 4, 5, 6, 7};
+
+template <class Container>
+void check(Container& c) {
+    assert(equal(c.begin(), c.end(), init_data));
+}
+
+void check_exception(runtime_error& ex) {
+    assert(strcmp(ex.what(), "BOOM") == 0);
+}
+
+void test_deque() {
 
     bomb::countdown = 8;
 
-    deque<bomb> dq(begin(data), end(data));
+    deque<bomb> dq(begin(init_data), end(init_data));
+
+    try {
+        bomb::countdown = 3;
+        dq.insert(dq.end() - 2, begin(more_data), end(more_data));
+        abort();
+    } catch (runtime_error& ex) {
+        check_exception(ex);
+        check(dq);
+    }
 
     try {
         bomb::countdown    = 3;
         const int data_x[] = {10, 11, 12, 13, 14};
-        dq.insert(dq.end() - 2, begin(data_x), end(data_x));
+        dq.insert(dq.begin() + 2, begin(more_data), end(more_data));
         abort();
-    } catch (runtime_error&) {
+    } catch (runtime_error& ex) {
+        check_exception(ex);
+        check(dq);
     }
-
-    assert(equal(dq.begin(), dq.end(), data));
-
-    try {
-        bomb::countdown    = 3;
-        const int data_x[] = {10, 11, 12, 13, 14};
-        dq.insert(dq.begin() + 2, begin(data_x), end(data_x));
-        abort();
-    } catch (runtime_error&) {
-    }
-
-    assert(equal(dq.begin(), dq.end(), data));
 
     try {
         bomb::countdown = 3;
         dq.insert(dq.end() - 2, 6, 10);
         abort();
-    } catch (runtime_error&) {
+    } catch (runtime_error& ex) {
+        check_exception(ex);
+        check(dq);
     }
-
-    assert(equal(dq.begin(), dq.end(), data));
 
     try {
         bomb::countdown = 3;
         dq.insert(dq.begin() + 2, 6, 11);
         abort();
-    } catch (runtime_error&) {
+    } catch (runtime_error& ex) {
+        check_exception(ex);
+        check(dq);
     }
+}
 
-    assert(equal(dq.begin(), dq.end(), data));
+int main() {
+    test_deque();
 }
