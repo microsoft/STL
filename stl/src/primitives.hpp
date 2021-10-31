@@ -193,45 +193,11 @@ namespace Concurrency {
         }
 
         inline void create_stl_critical_section(stl_critical_section_interface* p) {
-#ifdef _CRT_WINDOWS
             new (p) stl_critical_section_win7;
-#else
-            switch (__stl_sync_api_impl_mode) {
-            case __stl_sync_api_modes_enum::normal:
-            case __stl_sync_api_modes_enum::win7:
-                if (are_win7_sync_apis_available()) {
-                    new (p) stl_critical_section_win7;
-                    return;
-                }
-                // fall through
-            case __stl_sync_api_modes_enum::vista:
-                new (p) stl_critical_section_vista;
-                return;
-            default:
-                abort();
-            }
-#endif // _CRT_WINDOWS
         }
 
         inline void create_stl_condition_variable(stl_condition_variable_interface* p) {
-#ifdef _CRT_WINDOWS
             new (p) stl_condition_variable_win7;
-#else
-            switch (__stl_sync_api_impl_mode) {
-            case __stl_sync_api_modes_enum::normal:
-            case __stl_sync_api_modes_enum::win7:
-                if (are_win7_sync_apis_available()) {
-                    new (p) stl_condition_variable_win7;
-                    return;
-                }
-                // fall through
-            case __stl_sync_api_modes_enum::vista:
-                new (p) stl_condition_variable_vista;
-                return;
-            default:
-                abort();
-            }
-#endif // _CRT_WINDOWS
         }
 
 #if defined _CRT_WINDOWS
