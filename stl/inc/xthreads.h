@@ -143,63 +143,60 @@ _INLINE_VAR constexpr size_t _Stl_critical_section_size      = 36;
 _INLINE_VAR constexpr size_t _Stl_critical_section_alignment = 4;
 #endif // ^^^32  - bit OS ^^^
 
-
-// Corresponds to internal Concurrency::details::stl_critical_section with changes to expose it in headers
-class __declspec(novtable) _Stl_critical_section_interface {
-public:
-    virtual void __cdecl _Lock()                     = 0;
-    virtual bool __cdecl _Try_lock()                 = 0;
-    virtual bool __cdecl _Try_lock_for(unsigned int) = 0;
-    virtual void __cdecl _Unlock()                   = 0;
-    virtual void __cdecl _Destroy()                  = 0;
-};
-
-// Corresponds to internal Concurrency::details::stl_critical_section_win7 with changes to expose it in headers
-// and make its construction constexpr
-class _Stl_critical_section_interface_win7 final : public _Stl_critical_section_interface {
-public:
-    constexpr _Stl_critical_section_interface_win7() noexcept = default;
-
-    _Stl_critical_section_interface_win7(const _Stl_critical_section_interface_win7&) = delete;
-    _Stl_critical_section_interface_win7& operator=(const _Stl_critical_section_interface_win7&) = delete;
-
-    void _Destroy() override {}
-
-    void _Lock() override {
-        _Smtx_lock_exclusive(&_Mtx);
+struct alignas(_Stl_critical_section_alignment) _Data_win7_t {
+    static void __fastcall _Destroy_impl(_Data_win7_t*) {}
+    static void __fastcall _Lock_impl(_Data_win7_t* _Data) {
+        _Smtx_lock_exclusive(&_Data->_Mtx);
     }
 
-    bool _Try_lock() override {
-        return _Smtx_try_lock_exclusive(&_Mtx) != 0;
+    static bool __fastcall _Try_lock_impl(_Data_win7_t* _Data) {
+        return _Smtx_try_lock_exclusive(&_Data->_Mtx) != 0;
     }
 
-    bool _Try_lock_for(unsigned int) override {
+#ifdef _M_IX86
+    static bool __fastcall _Try_lock_for_impl(_Data_win7_t* _Data, unsigned int, unsigned int) {
         // STL will call try_lock_for once again if this call will not succeed
-        return _Stl_critical_section_interface_win7::_Try_lock();
+        return _Data_win7_t::_Try_lock_impl(_Data);
+    }
+#else // ^^^ x86 ^^^ / vvv not x86 vvv
+    static bool __fastcall _Try_lock_for_impl(_Data_win7_t* _Data, unsigned int) {
+        // STL will call try_lock_for once again if this call will not succeed
+        return _Data_win7_t::_Try_lock_impl(_Data);
+    }
+#endif // ^^^ not x86
+
+    static void __fastcall _Unlock_impl(_Data_win7_t* _Data) {
+        _Smtx_unlock_exclusive(&_Data->_Mtx);
     }
 
-    void _Unlock() override {
-        _Smtx_unlock_exclusive(&_Mtx);
-    }
+    struct _VTable {
+        void(__fastcall* _Destroy)(_Data_win7_t*)  = _Destroy_impl;
+        void(__fastcall* _Lock)(_Data_win7_t*)     = _Lock_impl;
+        bool(__fastcall* _Try_lock)(_Data_win7_t*) = _Try_lock_impl;
+#ifdef _M_IX86
+        bool(__fastcall* _Try_lock_for)(_Data_win7_t*, unsigned int, unsigned int) = _Try_lock_for_impl;
+#else // ^^^ x86 ^^^ / vvv not x86 vvv
+        bool(__fastcall* _Try_lock_for)(_Data_win7_t*, unsigned int) = _Try_lock_for_impl;
+#endif // ^^^ not x86
+        void(__fastcall* _Unlock)(_Data_win7_t*) = _Unlock_impl;
+    };
 
-private:
-    _Smtx_t _Mtx = {};
+    static constexpr _VTable _Vtbl{};
+
+    const _VTable* _VPtr = &_Vtbl;
+    _Smtx_t _Mtx         = {};
 };
 
 // Corresponds to internal _Mtx_internal_imp_t with changes to expose it in headers and make its construction constexpr
 struct _Mtx_internal_imp_2_t {
-    struct alignas(_Stl_critical_section_alignment) _Align_t {
-        char _Pad[_Stl_critical_section_alignment];
-    };
-
     int _Type;
-    union _Cs_t {
-        _Stl_critical_section_interface_win7 _Cs_win7;
-        char _Data[_Stl_critical_section_size];
-        _Align_t _Align;
 
-        constexpr _Cs_t() : _Cs_win7() {}
-        ~_Cs_t() {}
+    union alignas(_Stl_critical_section_alignment) _Data_t {
+        char _Data[_Stl_critical_section_size];
+        _Data_win7_t _Data_win7;
+
+        constexpr _Data_t() : _Data_win7() {}
+        ~_Data_t() {}
     } _Cs;
     long _Thread_id = -1;
     int _Count      = 0;
