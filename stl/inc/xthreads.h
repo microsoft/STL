@@ -146,7 +146,6 @@ _INLINE_VAR constexpr size_t _Stl_critical_section_alignment = 4;
 // Corresponds to internal _Mtx_internal_imp_t with changes to expose it in headers and make its construction constexpr
 struct _Mtx_internal_imp_2_t {
     struct alignas(_Stl_critical_section_alignment) _Data_win7_t {
-        static void __fastcall _Destroy_impl(_Data_win7_t*) {}
         static void __fastcall _Lock_impl(_Data_win7_t* _Data) {
             _Smtx_lock_exclusive(&_Data->_Mtx);
         }
@@ -166,13 +165,13 @@ struct _Mtx_internal_imp_2_t {
             return _Data_win7_t::_Try_lock_impl(_Data);
         }
 #endif // ^^^ not x86
-
         static void __fastcall _Unlock_impl(_Data_win7_t* _Data) {
             _Smtx_unlock_exclusive(&_Data->_Mtx);
         }
 
+        static void __fastcall _Destroy_impl(_Data_win7_t*) {}
+
         struct _VTable {
-            void(__fastcall* _Destroy)(_Data_win7_t*);
             void(__fastcall* _Lock)(_Data_win7_t*);
             bool(__fastcall* _Try_lock)(_Data_win7_t*);
 #ifdef _M_IX86
@@ -181,9 +180,10 @@ struct _Mtx_internal_imp_2_t {
             bool(__fastcall* _Try_lock_for)(_Data_win7_t*, unsigned int);
 #endif // ^^^ not x86
             void(__fastcall* _Unlock)(_Data_win7_t*);
+            void(__fastcall* _Destroy)(_Data_win7_t*);
         };
 
-        static constexpr _VTable _Vtbl{_Destroy_impl, _Lock_impl, _Try_lock_impl, _Try_lock_for_impl, _Unlock_impl};
+        static constexpr _VTable _Vtbl{_Lock_impl, _Try_lock_impl, _Try_lock_for_impl, _Unlock_impl, _Destroy_impl};
 
         const _VTable* _VPtr = &_Vtbl;
         _Smtx_t _Mtx         = {};
