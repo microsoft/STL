@@ -170,18 +170,18 @@ struct alignas(_Stl_critical_section_alignment) _Data_win7_t {
     }
 
     struct _VTable {
-        void(__fastcall* _Destroy)(_Data_win7_t*)  = _Destroy_impl;
-        void(__fastcall* _Lock)(_Data_win7_t*)     = _Lock_impl;
-        bool(__fastcall* _Try_lock)(_Data_win7_t*) = _Try_lock_impl;
+        void(__fastcall* _Destroy)(_Data_win7_t*);
+        void(__fastcall* _Lock)(_Data_win7_t*);
+        bool(__fastcall* _Try_lock)(_Data_win7_t*);
 #ifdef _M_IX86
-        bool(__fastcall* _Try_lock_for)(_Data_win7_t*, unsigned int, unsigned int) = _Try_lock_for_impl;
+        bool(__fastcall* _Try_lock_for)(_Data_win7_t*, unsigned int, unsigned int);
 #else // ^^^ x86 ^^^ / vvv not x86 vvv
-        bool(__fastcall* _Try_lock_for)(_Data_win7_t*, unsigned int) = _Try_lock_for_impl;
+        bool(__fastcall* _Try_lock_for)(_Data_win7_t*, unsigned int);
 #endif // ^^^ not x86
-        void(__fastcall* _Unlock)(_Data_win7_t*) = _Unlock_impl;
+        void(__fastcall* _Unlock)(_Data_win7_t*);
     };
 
-    static constexpr _VTable _Vtbl{};
+    static constexpr _VTable _Vtbl{_Destroy_impl, _Lock_impl, _Try_lock_impl, _Try_lock_for_impl, _Unlock_impl};
 
     const _VTable* _VPtr = &_Vtbl;
     _Smtx_t _Mtx         = {};
