@@ -125,7 +125,7 @@ namespace Concurrency {
             }
 
             bool try_lock() override {
-                return __crtTryAcquireSRWLockExclusive(&m_srw_lock) != 0;
+                return TryAcquireSRWLockExclusive(&m_srw_lock) != 0;
             }
 
             bool try_lock_for(unsigned int) override {
