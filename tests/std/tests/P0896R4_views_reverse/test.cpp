@@ -317,6 +317,13 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
     IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
 
+void test_gh2312() {
+    using X = ranges::iota_view<int, int>;
+    ranges::reverse_view<X> view;
+    static_assert( same_as<decltype(view | views::reverse), X>);
+    static_assert(!same_as<decltype(view | views::reverse), ranges::reverse_view<X>>);
+}
+
 int main() {
     static constexpr int some_ints[]     = {0, 1, 2};
     static constexpr int reversed_ints[] = {2, 1, 0};
