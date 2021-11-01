@@ -471,7 +471,7 @@ public:
 
 #if _HAS_CXX23
     template <class _Fn>
-    _NODISCARD constexpr auto and_then(_Fn&& _Func) & {
+    constexpr auto and_then(_Fn&& _Func) & {
         using _Uty = invoke_result_t<_Fn, _Ty&>;
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
@@ -486,7 +486,7 @@ public:
     }
 
     template <class _Fn>
-    _NODISCARD constexpr auto and_then(_Fn&& _Func) const& {
+    constexpr auto and_then(_Fn&& _Func) const& {
         using _Uty = invoke_result_t<_Fn, const _Ty&>;
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
@@ -501,8 +501,8 @@ public:
     }
 
     template <class _Fn>
-    _NODISCARD constexpr auto and_then(_Fn&& _Func) && {
-        using _Uty = invoke_result_t<_Fn, _Ty&&>;
+    constexpr auto and_then(_Fn&& _Func) && {
+        using _Uty = invoke_result_t<_Fn, _Ty>;
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
             "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
@@ -516,8 +516,8 @@ public:
     }
 
     template <class _Fn>
-    _NODISCARD constexpr auto and_then(_Fn&& _Func) const&& {
-        using _Uty = invoke_result_t<_Fn, const _Ty&&>;
+    constexpr auto and_then(_Fn&& _Func) const&& {
+        using _Uty = invoke_result_t<_Fn, const _Ty>;
 
         static_assert(_Is_specialization_v<remove_cvref_t<_Uty>, optional>,
             "optional<T>::and_then(F) requires the return type of F to be a specialization of optional "
@@ -531,10 +531,10 @@ public:
     }
 
     template <class _Fn>
-    _NODISCARD constexpr auto transform(_Fn&& _Func) & {
+    constexpr auto transform(_Fn&& _Func) & {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty&>>;
 
-        static_assert(!_Is_any_of_v<remove_cv_t<_Uty>, nullopt_t, in_place_t>,
+        static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
             "(N4901 [optional.monadic]/8).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
@@ -542,17 +542,17 @@ public:
             "(N4901 [optional.monadic]/8).");
 
         if (this->_Has_value) {
-            return optional<_Uty>(_Construct_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), this->_Value);
+            return optional<_Uty>{_Construct_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), this->_Value};
         } else {
             return optional<_Uty>{};
         }
     }
 
     template <class _Fn>
-    _NODISCARD constexpr auto transform(_Fn&& _Func) const& {
+    constexpr auto transform(_Fn&& _Func) const& {
         using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty&>>;
 
-        static_assert(!_Is_any_of_v<remove_cv_t<_Uty>, nullopt_t, in_place_t>,
+        static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
             "(N4901 [optional.monadic]/8).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
@@ -560,17 +560,17 @@ public:
             "(N4901 [optional.monadic]/8).");
 
         if (this->_Has_value) {
-            return optional<_Uty>(_Construct_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), this->_Value);
+            return optional<_Uty>{_Construct_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), this->_Value};
         } else {
             return optional<_Uty>{};
         }
     }
 
     template <class _Fn>
-    _NODISCARD constexpr auto transform(_Fn&& _Func) && {
-        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty&&>>;
+    constexpr auto transform(_Fn&& _Func) && {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, _Ty>>;
 
-        static_assert(!_Is_any_of_v<remove_cv_t<_Uty>, nullopt_t, in_place_t>,
+        static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
             "(N4901 [optional.monadic]/11).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
@@ -578,18 +578,18 @@ public:
             "(N4901 [optional.monadic]/11).");
 
         if (this->_Has_value) {
-            return optional<_Uty>(
-                _Construct_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(this->_Value));
+            return optional<_Uty>{
+                _Construct_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(this->_Value)};
         } else {
             return optional<_Uty>{};
         }
     }
 
     template <class _Fn>
-    _NODISCARD constexpr auto transform(_Fn&& _Func) const&& {
-        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty&&>>;
+    constexpr auto transform(_Fn&& _Func) const&& {
+        using _Uty = remove_cv_t<invoke_result_t<_Fn, const _Ty>>;
 
-        static_assert(!_Is_any_of_v<remove_cv_t<_Uty>, nullopt_t, in_place_t>,
+        static_assert(!_Is_any_of_v<_Uty, nullopt_t, in_place_t>,
             "optional<T>::transform(F) requires the return type of F to be a type other than nullopt_t or in_place_t "
             "(N4901 [optional.monadic]/11).");
         static_assert(is_object_v<_Uty> && !is_array_v<_Uty>,
@@ -597,19 +597,19 @@ public:
             "(N4901 [optional.monadic]/11).");
 
         if (this->_Has_value) {
-            return optional<_Uty>(
-                _Construct_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(this->_Value));
+            return optional<_Uty>{
+                _Construct_from_invoke_result_tag{}, _STD forward<_Fn>(_Func), _STD move(this->_Value)};
         } else {
             return optional<_Uty>{};
         }
     }
 
-#if __cpp_lib_concepts
+#ifdef __cpp_lib_concepts
     template <invocable<> _Fn>
         requires(copy_constructible<_Ty>)
-    _NODISCARD constexpr optional or_else(_Fn&& _Func) const& {
+    constexpr optional or_else(_Fn&& _Func) const& {
         static_assert(is_same_v<remove_cvref_t<invoke_result_t<_Fn>>, optional>,
-            "optional<T>::or_else(F) requires F to return a optional<T> (N4901 [optional.monadic]/14).");
+            "optional<T>::or_else(F) requires F to return an optional<T> (N4901 [optional.monadic]/14).");
 
         if (this->_Has_value) {
             return *this;
@@ -620,9 +620,9 @@ public:
 
     template <invocable<> _Fn>
         requires(move_constructible<_Ty>)
-    _NODISCARD constexpr optional or_else(_Fn&& _Func) && {
+    constexpr optional or_else(_Fn&& _Func) && {
         static_assert(is_same_v<remove_cvref_t<invoke_result_t<_Fn>>, optional>,
-            "optional<T>::or_else(F) requires F to return a optional<T> (N4901 [optional.monadic]/14).");
+            "optional<T>::or_else(F) requires F to return an optional<T> (N4901 [optional.monadic]/17).");
 
         if (this->_Has_value) {
             return _STD move(*this);

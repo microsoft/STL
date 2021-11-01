@@ -9,14 +9,21 @@
 using namespace std;
 
 struct Immovable {
-    constexpr Immovable(int x) : value(x) {}
+    constexpr Immovable(int x) : v(x) {}
     Immovable(const Immovable&) = delete;
     Immovable(Immovable&&)      = delete;
     Immovable& operator=(const Immovable&) = delete;
     Immovable& operator=(Immovable&&) = delete;
     constexpr ~Immovable() {}
 
-    int value;
+    int v;
+};
+
+struct Thingy {
+    optional<int> x;
+    constexpr int member_func() const {
+        return 22;
+    }
 };
 
 template <class T>
@@ -24,82 +31,78 @@ struct fn {
     template <class U>
     constexpr auto operator()(U&&) & {
         static_assert(is_same_v<T, U&&>);
-        return optional<int>{48};
-    }
-
-    constexpr auto operator()() && {
-        return optional<long>{49};
+        return optional<int>{33};
     }
 
     template <class U>
-    constexpr auto operator()(U&& u) && {
+    constexpr auto operator()(U&&) && {
         static_assert(is_same_v<T, U&&>);
-        return Immovable{u + 2};
+        return Immovable{44};
+    }
+
+    constexpr auto operator()() && {
+        return optional<Thingy>{Thingy{55}};
     }
 };
 
 template <class Optional>
-constexpr void test_impl(Optional&& nonempty, Optional&& empty) {
+constexpr void test_impl(Optional&& nonempty, Optional&& empty_optional) {
     using U = decltype(forward<Optional>(nonempty).value());
     {
         fn<U> f{};
         decltype(auto) result = forward<Optional>(nonempty).and_then(f);
         static_assert(is_same_v<decltype(result), optional<int>>);
-        assert(result == 48);
+        assert(result == 33);
     }
     {
         fn<U> f{};
-        decltype(auto) result = forward<Optional>(empty).and_then(f);
+        decltype(auto) result = forward<Optional>(empty_optional).and_then(f);
         assert(!result);
     }
     {
-        decltype(auto) result = forward<Optional>(nonempty).transform([](auto&&) { return 43; });
+        decltype(auto) result = forward<Optional>(nonempty).and_then(&Thingy::x);
         static_assert(is_same_v<decltype(result), optional<int>>);
-        assert(result.value() == 43);
+        assert(result == 11);
+    }
+    {
+        decltype(auto) result = forward<Optional>(nonempty).transform([](auto&&) { return 66; });
+        static_assert(is_same_v<decltype(result), optional<int>>);
+        assert(result.value() == 66);
     }
     {
         decltype(auto) result = forward<Optional>(nonempty).transform(fn<U>{});
         static_assert(is_same_v<decltype(result), optional<Immovable>>);
-        assert(result.value().value == *nonempty + 2);
+        assert(result.value().v == 44);
     }
     {
-        decltype(auto) result = forward<Optional>(empty).transform(fn<U>{});
+        decltype(auto) result = forward<Optional>(empty_optional).transform(fn<U>{});
         assert(!result);
+    }
+    {
+        decltype(auto) result = forward<Optional>(nonempty).transform(&Thingy::member_func);
+        static_assert(is_same_v<decltype(result), optional<int>>);
+        assert(result == 22);
     }
 #ifdef __cpp_lib_concepts
     {
         decltype(auto) result = forward<Optional>(nonempty).or_else(fn<U>{});
-        static_assert(is_same_v<decltype(result), optional<long>>);
-        assert(result == nonempty);
+        static_assert(is_same_v<decltype(result), optional<Thingy>>);
+        assert(result.value().x == 11);
     }
     {
-        decltype(auto) result = forward<Optional>(empty).or_else(fn<U>{});
-        assert(result == 49);
+        decltype(auto) result = forward<Optional>(empty_optional).or_else(fn<U>{});
+        assert(result.value().x == 55);
     }
-#endif
+#endif // __cpp_lib_concepts
 }
 
 constexpr bool test() {
-    {
-        optional<long> nonempty = 42;
-        optional<long> empty;
-        test_impl(nonempty, empty);
-    }
-    {
-        const optional<long> nonempty = 420;
-        const optional<long> empty;
-        test_impl(nonempty, empty);
-    }
-    {
-        optional<long> nonempty = 4200;
-        optional<long> empty;
-        test_impl(move(nonempty), move(empty));
-    }
-    {
-        const optional<long> nonempty = 42000;
-        const optional<long> empty;
-        test_impl(move(nonempty), move(empty));
-    }
+    optional<Thingy> nonempty{Thingy{11}};
+    optional<Thingy> empty_optional;
+    test_impl(nonempty, empty_optional);
+    test_impl(as_const(nonempty), as_const(empty_optional));
+    test_impl(move(as_const(nonempty)), move(as_const(empty_optional)));
+    test_impl(move(nonempty), move(empty_optional));
     return true;
 }
 
