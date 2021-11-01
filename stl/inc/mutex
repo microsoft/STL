@@ -95,11 +95,7 @@ private:
 
 class mutex : public _Mutex_base { // class for mutual exclusion
 public:
-#ifdef __CUDACC__ // TRANSITION, CUDA
-    mutex() noexcept : _Mutex_base() {}
-#else // ^^^ TRANSITION, CUDA ^^^ / vvv not CUDA vvv
-    constexpr mutex() noexcept : _Mutex_base() {}
-#endif // ^^^ not CUDA ^^^
+    mutex() noexcept = default; // Implied constexpr if _Mutex_base default constructor is constexpr
 
     mutex(const mutex&) = delete;
     mutex& operator=(const mutex&) = delete;
