@@ -320,8 +320,7 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
 void test_gh2312() {
     using X = ranges::iota_view<int, int>;
     ranges::reverse_view<X> view;
-    static_assert( same_as<decltype(view | views::reverse), X>);
-    static_assert(!same_as<decltype(view | views::reverse), ranges::reverse_view<X>>);
+    static_assert(same_as<decltype(view | views::reverse), X>);
 }
 
 int main() {
