@@ -49,11 +49,6 @@ struct _Mtx_internal_imp_t { // ConcRT mutex
         return reinterpret_cast<Concurrency::details::stl_critical_section_interface*>(&cs);
     }
 };
-static_assert(Concurrency::details::stl_critical_section_max_size == _Stl_critical_section_size,
-    "Incorrect stl_critical_section_max_size");
-
-static_assert(Concurrency::details::stl_critical_section_max_alignment == _Stl_critical_section_alignment,
-    "Incorrect stl_critical_section_max_alignment");
 
 static_assert(sizeof(_Mtx_internal_imp_t) <= _Mtx_internal_imp_size, "incorrect _Mtx_internal_imp_size");
 static_assert(alignof(_Mtx_internal_imp_t) <= _Mtx_internal_imp_alignment, "incorrect _Mtx_internal_imp_alignment");

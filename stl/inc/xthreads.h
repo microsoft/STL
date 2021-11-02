@@ -40,10 +40,10 @@ _INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 4;
 #endif // _WIN64
 #else // _CRT_WINDOWS
 #ifdef _WIN64
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_size          = 80;
-_INLINE_VAR constexpr size_t _Mtx_internal_imp_alignment     = 8;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_size          = 72;
-_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment     = 8;
+_INLINE_VAR constexpr size_t _Mtx_internal_imp_size      = 80;
+_INLINE_VAR constexpr size_t _Mtx_internal_imp_alignment = 8;
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_size      = 72;
+_INLINE_VAR constexpr size_t _Cnd_internal_imp_alignment = 8;
 #else // _WIN64
 _INLINE_VAR constexpr size_t _Mtx_internal_imp_size      = 48;
 _INLINE_VAR constexpr size_t _Mtx_internal_imp_alignment = 4;
@@ -135,14 +135,6 @@ inline int _Check_C_return(int _Res) { // throw exception on failure
 }
 _STD_END
 
-#ifdef _WIN64
-_INLINE_VAR constexpr size_t _Stl_critical_section_size      = 64;
-_INLINE_VAR constexpr size_t _Stl_critical_section_alignment = 8;
-#else // ^^^ 64-bit OS ^^^ / vvv 32-bit OS vvv
-_INLINE_VAR constexpr size_t _Stl_critical_section_size      = 36;
-_INLINE_VAR constexpr size_t _Stl_critical_section_alignment = 4;
-#endif // ^^^32  - bit OS ^^^
-
 class __declspec(novtable) _Stl_critical_section_interface {
 public:
     virtual void __thiscall _Lock()                     = 0;
@@ -151,7 +143,6 @@ public:
     virtual void __thiscall _Unlock()                   = 0;
     virtual void __thiscall _Destroy()                  = 0;
 };
-
 
 class __declspec(novtable) _Stl_critical_section_constexpr final : public _Stl_critical_section_interface {
 public:
