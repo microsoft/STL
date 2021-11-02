@@ -337,10 +337,9 @@ extern "C" BOOL __cdecl __crtQueueUserWorkItem(_In_ LPTHREAD_START_ROUTINE, _In_
 
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
-
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(_Inout_ PSRWLOCK const pLock) {
-    DYNAMICGETCACHEDFUNCTION(PFNTRYACQUIRESRWLOCKEXCLUSIVE, TryAcquireSRWLockExclusive, pfTryAcquireSRWLockExclusive);
-    return pfTryAcquireSRWLockExclusive(pLock);
+    return TryAcquireSRWLockExclusive(pLock);
     // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
 }
 
