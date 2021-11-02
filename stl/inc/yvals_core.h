@@ -1262,7 +1262,7 @@
 #define __cpp_lib_erase_if                202002L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
-#define __cpp_lib_format 202110L
+#define __cpp_lib_format 201907L
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L

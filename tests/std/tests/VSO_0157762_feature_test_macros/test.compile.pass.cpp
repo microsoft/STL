@@ -725,10 +725,10 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_format
 #error __cpp_lib_format is not defined
-#elif __cpp_lib_format != 202110L
+#elif __cpp_lib_format != 201907L
 #error __cpp_lib_format is not 201907L
 #else
-STATIC_ASSERT(__cpp_lib_format == 202110L);
+STATIC_ASSERT(__cpp_lib_format == 201907L);
 #endif
 #else
 #ifdef __cpp_lib_format
