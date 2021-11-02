@@ -144,7 +144,7 @@ public:
     virtual void __thiscall _Destroy()                  = 0;
 };
 
-class __declspec(novtable) _Stl_critical_section_constexpr final : public _Stl_critical_section_interface {
+class _Stl_critical_section_constexpr final : public _Stl_critical_section_interface {
 public:
     void __thiscall _Lock() override {
         _Smtx_lock_exclusive(&_Mtx);
