@@ -5232,7 +5232,7 @@ struct _Chrono_spec {
 };
 
 template <class _CharT>
-struct _Chrono_format_specs2 {
+struct _Chrono_format_specs {
     int _Width                   = 0;
     int _Precision               = -1;
     int _Dynamic_width_index     = -1;
@@ -5246,11 +5246,11 @@ struct _Chrono_format_specs2 {
     vector<_Chrono_spec<_CharT>> _Chrono_specs_list;
 };
 
-// Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs2 with the parsed data
+// Model of _Chrono_parse_spec_callbacks that fills a _Chrono_format_specs with the parsed data
 template <class _CharT, class _ParseContext>
 class _Chrono_specs_setter {
 public:
-    constexpr explicit _Chrono_specs_setter(_Chrono_format_specs2<_CharT>& _Specs_, _ParseContext& _Parse_ctx_)
+    constexpr explicit _Chrono_specs_setter(_Chrono_format_specs<_CharT>& _Specs_, _ParseContext& _Parse_ctx_)
         : _Specs(_Specs_), _Parse_ctx(_Parse_ctx_) {}
 
     // same as _Specs_setter
@@ -5319,7 +5319,7 @@ public:
     }
 
 private:
-    _Chrono_format_specs2<_CharT>& _Specs;
+    _Chrono_format_specs<_CharT>& _Specs;
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
@@ -5629,7 +5629,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_day& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}/{:L}"), _Val.month(), _Val.day());
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}/{}"), _Val.month(), _Val.day());
     }
 
     template <class _CharT, class _Traits>
@@ -5651,7 +5651,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}/{:L}"), _Val.year(), _Val.month());
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{:L}"), _Val.year(), _Val.month());
     }
 
     template <class _CharT, class _Traits>
@@ -5663,19 +5663,19 @@ namespace chrono {
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_day_last& _Val) {
         return _Os << _STD format(
-                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}/{:L}"), _Val.year(), _Val.month_day_last());
+                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{:L}"), _Val.year(), _Val.month_day_last());
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_weekday& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}/{:L}/{:L}"), _Val.year(), _Val.month(),
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{:L}/{:L}"), _Val.year(), _Val.month(),
                    _Val.weekday_indexed());
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(
         basic_ostream<_CharT, _Traits>& _Os, const year_month_weekday_last& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}/{:L}/{:L}"), _Val.year(), _Val.month(),
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{:L}/{:L}"), _Val.year(), _Val.month(),
                    _Val.weekday_last());
     }
 
@@ -5730,9 +5730,7 @@ namespace chrono {
         requires (!treat_as_floating_point_v<typename _Duration::rep> && _Duration{1} < days{1})
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_time<_Duration>& _Val) {
         // clang-format on
-        const auto _Dp = _CHRONO floor<days>(_Val);
-        return _Os << _STD format(
-                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L} {:L}"), year_month_day{_Dp}, hh_mm_ss{_Val - _Dp});
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T}"), _Val);
     }
 
     template <class _CharT, class _Traits>
@@ -6277,7 +6275,7 @@ namespace chrono {
             return _Fmt_str;
         }
 
-        _Chrono_format_specs2<_CharT> _Specs{};
+        _Chrono_format_specs<_CharT> _Specs{};
         basic_string_view<_CharT> _Time_zone_abbreviation{};
     };
 } // namespace chrono
