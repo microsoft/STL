@@ -230,6 +230,21 @@ static_assert(alignof(WIN32_FIND_DATAW) == alignof(__std_fs_find_data));
         return __std_win_error::_Success;
     }
 
+#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
+    // If the above call failed, we might be on pre Windows 7 / Windows Server 2008 R2, which doesn't support
+    // FindExInfoBasic; try again with FindExInfoStandard if we got an invalid parameter error.
+    const __std_win_error _Last_error{GetLastError()};
+    if (_Last_error != __std_win_error::_Not_supported && _Last_error != __std_win_error::_Invalid_parameter) {
+        return _Last_error;
+    }
+
+    *_Handle = __std_fs_dir_handle{reinterpret_cast<intptr_t>(
+        FindFirstFileExW(_Path_spec, FindExInfoStandard, _Results, FindExSearchNameMatch, nullptr, 0))};
+    if (*_Handle != __std_fs_dir_handle::_Invalid) {
+        return __std_win_error::_Success;
+    }
+#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
+
     return __std_win_error{GetLastError()};
 }
 

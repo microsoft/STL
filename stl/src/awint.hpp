@@ -16,6 +16,16 @@ _CRT_BEGIN_C_HEADER
 _CRTIMP2 BOOL __cdecl __crtIsPackagedApp();
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 
+#if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN7
+
+#define __crtTryAcquireSRWLockExclusive(pLock) TryAcquireSRWLockExclusive(pLock)
+
+#else // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN7
+
+BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(_Inout_ PSRWLOCK);
+
+#endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN7
+
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 
 #define __crtGetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime) \

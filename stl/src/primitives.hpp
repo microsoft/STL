@@ -176,6 +176,17 @@ namespace Concurrency {
             CONDITION_VARIABLE m_condition_variable;
         };
 
+        inline bool are_win7_sync_apis_available() {
+#if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN7
+            return true;
+#else
+            // TryAcquireSRWLockExclusive ONLY available on Windows 7+
+            DYNAMICGETCACHEDFUNCTION(
+                PFNTRYACQUIRESRWLOCKEXCLUSIVE, TryAcquireSRWLockExclusive, pfTryAcquireSRWLockExclusive);
+            return pfTryAcquireSRWLockExclusive != nullptr;
+#endif
+        }
+
         inline void create_stl_critical_section(stl_critical_section_interface* p) {
             new (p) stl_critical_section_win7;
         }
@@ -192,9 +203,9 @@ namespace Concurrency {
 #elif defined _STL_CONCRT_SUPPORT
 
 #ifdef _WIN64
-        const size_t sizeof_stl_critical_section_concrt    = 64;
-        const size_t sizeof_stl_condition_variable_concrt  = 72;
-        const size_t alignof_stl_critical_section_concrt   = 8;
+        const size_t sizeof_stl_critical_section_concrt = 64;
+        const size_t sizeof_stl_condition_variable_concrt = 72;
+        const size_t alignof_stl_critical_section_concrt = 8;
         const size_t alignof_stl_condition_variable_concrt = 8;
 #else // ^^^ 64-bit / 32-bit vvv
         const size_t sizeof_stl_critical_section_concrt    = 36;
