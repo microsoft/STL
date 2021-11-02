@@ -41,7 +41,7 @@ public:
         _Mutex_base(int _Flags = 0) noexcept {
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
-            ::new (static_cast<void*>(&_Mtx_storage)) _Stl_critical_section_constexpr{};
+            construct_at(static_cast<_Stl_critical_section_constexpr*>(static_cast<void*>(&_Mtx_storage)));
         } else
 #endif // _HAS_CXX20
         {
