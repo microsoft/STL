@@ -135,6 +135,8 @@ inline int _Check_C_return(int _Res) { // throw exception on failure
 }
 _STD_END
 
+struct _Constexpr_mutex_new_tag_t {};
+
 class __declspec(novtable) _Stl_critical_section_interface {
 public:
     virtual void __thiscall _Lock()                     = 0;
@@ -164,6 +166,10 @@ public:
     }
 
     void __thiscall _Destroy() override {}
+
+    constexpr void* operator new(size_t, void* p, _Constexpr_mutex_new_tag_t) noexcept {
+        return p;
+    }
 
 private:
     _Smtx_t _Mtx;
