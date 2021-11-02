@@ -143,65 +143,41 @@ _INLINE_VAR constexpr size_t _Stl_critical_section_size      = 36;
 _INLINE_VAR constexpr size_t _Stl_critical_section_alignment = 4;
 #endif // ^^^32  - bit OS ^^^
 
-// Corresponds to internal _Mtx_internal_imp_t with changes to expose it in headers and make its construction constexpr
-struct _Mtx_internal_imp_2_t {
-    struct alignas(_Stl_critical_section_alignment) _Data_win7_t {
-        static void __fastcall _Lock_impl(_Data_win7_t* _Data) {
-            _Smtx_lock_exclusive(&_Data->_Mtx);
-        }
-
-        static bool __fastcall _Try_lock_impl(_Data_win7_t* _Data) {
-            return _Smtx_try_lock_exclusive(&_Data->_Mtx) != 0;
-        }
-
-#ifdef _M_IX86
-        static bool __fastcall _Try_lock_for_impl(_Data_win7_t* _Data, unsigned int, unsigned int) {
-            // STL will call try_lock_for once again if this call will not succeed
-            return _Data_win7_t::_Try_lock_impl(_Data);
-        }
-#else // ^^^ x86 ^^^ / vvv not x86 vvv
-        static bool __fastcall _Try_lock_for_impl(_Data_win7_t* _Data, unsigned int) {
-            // STL will call try_lock_for once again if this call will not succeed
-            return _Data_win7_t::_Try_lock_impl(_Data);
-        }
-#endif // ^^^ not x86
-        static void __fastcall _Unlock_impl(_Data_win7_t* _Data) {
-            _Smtx_unlock_exclusive(&_Data->_Mtx);
-        }
-
-        static void __fastcall _Destroy_impl(_Data_win7_t*) {}
-
-        struct _VTable {
-            void(__fastcall* _Lock)(_Data_win7_t*);
-            bool(__fastcall* _Try_lock)(_Data_win7_t*);
-#ifdef _M_IX86
-            bool(__fastcall* _Try_lock_for)(_Data_win7_t*, unsigned int, unsigned int);
-#else // ^^^ x86 ^^^ / vvv not x86 vvv
-            bool(__fastcall* _Try_lock_for)(_Data_win7_t*, unsigned int);
-#endif // ^^^ not x86
-            void(__fastcall* _Unlock)(_Data_win7_t*);
-            void(__fastcall* _Destroy)(_Data_win7_t*);
-        };
-
-        static constexpr _VTable _Vtbl{_Lock_impl, _Try_lock_impl, _Try_lock_for_impl, _Unlock_impl, _Destroy_impl};
-
-        const _VTable* _VPtr = &_Vtbl;
-        _Smtx_t _Mtx         = {};
-    };
-
-    int _Type;
-    union alignas(_Stl_critical_section_alignment) _Data_t {
-        char _Data[_Stl_critical_section_size];
-        _Data_win7_t _Data_win7;
-
-        constexpr _Data_t() : _Data_win7() {}
-        ~_Data_t() {}
-    } _Cs;
-    long _Thread_id = -1;
-    int _Count      = 0;
-
-    constexpr _Mtx_internal_imp_2_t(int _Type_) : _Type(_Type_) {}
+class __declspec(novtable) _Stl_critical_section_interface {
+public:
+    virtual void __thiscall _Lock()                     = 0;
+    virtual bool __thiscall _Try_lock()                 = 0;
+    virtual bool __thiscall _Try_lock_for(unsigned int) = 0;
+    virtual void __thiscall _Unlock()                   = 0;
+    virtual void __thiscall _Destroy()                  = 0;
 };
+
+
+class __declspec(novtable) _Stl_critical_section_constexpr final : public _Stl_critical_section_interface {
+public:
+    void __thiscall _Lock() override {
+        _Smtx_lock_exclusive(&_Mtx);
+    }
+
+    bool __thiscall _Try_lock() override {
+        return _Smtx_try_lock_exclusive(&_Mtx) != 0;
+    }
+
+    bool __thiscall _Try_lock_for(unsigned int) override {
+        // STL will call try_lock_for once again if this call will not succeed
+        return _Stl_critical_section_constexpr::_Try_lock();
+    }
+
+    void __thiscall _Unlock() override {
+        _Smtx_unlock_exclusive(&_Mtx);
+    }
+
+    void __thiscall _Destroy() override {}
+
+private:
+    _Smtx_t _Mtx;
+};
+
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

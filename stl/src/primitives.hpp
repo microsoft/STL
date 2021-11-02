@@ -6,6 +6,7 @@
 #include <cstdlib> // for __max
 #include <exception>
 #include <new>
+#include <xthreads.h>
 
 #include "awint.hpp"
 
@@ -15,14 +16,8 @@ extern __stl_sync_api_modes_enum __stl_sync_api_impl_mode;
 
 namespace Concurrency {
     namespace details {
-        class __declspec(novtable) stl_critical_section_interface {
-        public:
-            virtual void lock()                     = 0;
-            virtual bool try_lock()                 = 0;
-            virtual bool try_lock_for(unsigned int) = 0;
-            virtual void unlock()                   = 0;
-            virtual void destroy()                  = 0;
-        };
+        using stl_critical_section_interface = ::_Stl_critical_section_interface;
+
 
         class __declspec(novtable) stl_condition_variable_interface {
         public:
@@ -43,29 +38,30 @@ namespace Concurrency {
             stl_critical_section_vista& operator=(const stl_critical_section_vista&) = delete;
             ~stl_critical_section_vista()                                            = delete;
 
-            void destroy() override {
-                DeleteCriticalSection(&_M_critical_section);
-            }
 
-            void lock() override {
+            void _Lock() override {
                 EnterCriticalSection(&_M_critical_section);
             }
 
-            bool try_lock() override {
+            bool _Try_lock() override {
                 return TryEnterCriticalSection(&_M_critical_section) != 0;
             }
 
-            bool try_lock_for(unsigned int) override {
+            bool _Try_lock_for(unsigned int) override {
                 // STL will call try_lock_for once again if this call will not succeed
-                return stl_critical_section_vista::try_lock();
+                return stl_critical_section_vista::_Try_lock();
             }
 
-            void unlock() override {
+            void _Unlock() override {
                 LeaveCriticalSection(&_M_critical_section);
             }
 
             LPCRITICAL_SECTION native_handle() {
                 return &_M_critical_section;
+            }
+
+            void _Destroy() override {
+                DeleteCriticalSection(&_M_critical_section);
             }
 
         private:
@@ -118,22 +114,22 @@ namespace Concurrency {
             stl_critical_section_win7(const stl_critical_section_win7&) = delete;
             stl_critical_section_win7& operator=(const stl_critical_section_win7&) = delete;
 
-            void destroy() override {}
+            void _Destroy() override {}
 
-            void lock() override {
+            void _Lock() override {
                 AcquireSRWLockExclusive(&m_srw_lock);
             }
 
-            bool try_lock() override {
+            bool _Try_lock() override {
                 return TryAcquireSRWLockExclusive(&m_srw_lock) != 0;
             }
 
-            bool try_lock_for(unsigned int) override {
+            bool _Try_lock_for(unsigned int) override {
                 // STL will call try_lock_for once again if this call will not succeed
-                return stl_critical_section_win7::try_lock();
+                return stl_critical_section_win7::_Try_lock();
             }
 
-            void unlock() override {
+            void _Unlock() override {
                 ReleaseSRWLockExclusive(&m_srw_lock);
             }
 

@@ -67,7 +67,7 @@ void _Mtx_init_in_situ(_Mtx_t mtx, int type) { // initialize mutex in situ
 
 void _Mtx_destroy_in_situ(_Mtx_t mtx) { // destroy mutex in situ
     _THREAD_ASSERT(mtx->count == 0, "mutex destroyed while busy");
-    mtx->_get_cs()->destroy();
+    mtx->_get_cs()->_Destroy();
 }
 
 int _Mtx_init(_Mtx_t* mtx, int type) { // initialize mutex
@@ -95,7 +95,7 @@ void _Mtx_destroy(_Mtx_t mtx) { // destroy mutex
 static int mtx_do_lock(_Mtx_t mtx, const xtime* target) { // lock mutex
     if ((mtx->type & ~_Mtx_recursive) == _Mtx_plain) { // set the lock
         if (mtx->thread_id != static_cast<long>(GetCurrentThreadId())) { // not current thread, do lock
-            mtx->_get_cs()->lock();
+            mtx->_get_cs()->_Lock();
             mtx->thread_id = static_cast<long>(GetCurrentThreadId());
         }
         ++mtx->count;
@@ -105,7 +105,7 @@ static int mtx_do_lock(_Mtx_t mtx, const xtime* target) { // lock mutex
         int res = WAIT_TIMEOUT;
         if (target == nullptr) { // no target --> plain wait (i.e. infinite timeout)
             if (mtx->thread_id != static_cast<long>(GetCurrentThreadId())) {
-                mtx->_get_cs()->lock();
+                mtx->_get_cs()->_Lock();
             }
 
             res = WAIT_OBJECT_0;
@@ -113,7 +113,7 @@ static int mtx_do_lock(_Mtx_t mtx, const xtime* target) { // lock mutex
         } else if (target->sec < 0 || target->sec == 0 && target->nsec <= 0) {
             // target time <= 0 --> plain trylock or timed wait for time that has passed; try to lock with 0 timeout
             if (mtx->thread_id != static_cast<long>(GetCurrentThreadId())) { // not this thread, lock it
-                if (mtx->_get_cs()->try_lock()) {
+                if (mtx->_get_cs()->_Try_lock()) {
                     res = WAIT_OBJECT_0;
                 } else {
                     res = WAIT_TIMEOUT;
@@ -127,7 +127,7 @@ static int mtx_do_lock(_Mtx_t mtx, const xtime* target) { // lock mutex
             xtime_get(&now, TIME_UTC);
             while (now.sec < target->sec || now.sec == target->sec && now.nsec < target->nsec) { // time has not expired
                 if (mtx->thread_id == static_cast<long>(GetCurrentThreadId())
-                    || mtx->_get_cs()->try_lock_for(_Xtime_diff_to_millis2(target, &now))) { // stop waiting
+                    || mtx->_get_cs()->_Try_lock_for(_Xtime_diff_to_millis2(target, &now))) { // stop waiting
                     res = WAIT_OBJECT_0;
                     break;
                 } else {
@@ -172,7 +172,7 @@ int _Mtx_unlock(_Mtx_t mtx) { // unlock mutex
 
     if (--mtx->count == 0) { // leave critical section
         mtx->thread_id = -1;
-        mtx->_get_cs()->unlock();
+        mtx->_get_cs()->_Unlock();
     }
     return _Thrd_success; // TRANSITION, ABI: always returns _Thrd_success
 }

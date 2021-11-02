@@ -35,19 +35,22 @@ class condition_variable_any;
 
 class _Mutex_base { // base class for all mutex types
 public:
-#ifdef __CUDACC__ // TRANSITION, CUDA
-    _Mutex_base(int _Flags = 0) noexcept : _Mtx_storage(_Flags | _Mtx_try) {
-        _Mtx_init_in_situ(_Mymtx(), _Flags | _Mtx_try);
-    }
-#else // ^^^ TRANSITION, CUDA ^^^ / vvv not CUDA vvv
-    constexpr _Mutex_base(int _Flags = 0) noexcept : _Mtx_storage(_Flags | _Mtx_try) {
-        if (!__builtin_is_constant_evaluated()) {
-            // If mutex is created in runtime, it may outlive the module it is allocated in;
-            // Use usual in-place construction.
+#if _HAS_CXX20
+    constexpr
+#endif // _HAS_CXX20
+        _Mutex_base(int _Flags = 0) noexcept {
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            ::new (static_cast<void*>(&_Mtx_storage)) _Stl_critical_section_constexpr{};
+        } else
+#endif // _HAS_CXX20
+        {
+            // C++20: For /MD, if mutex is created in runtime, it may outlive the module it is allocated in;
+            // Use usual construction from the STL DLL.
+            // Pre-C++20: Always use construction from the STL DLL.
             _Mtx_init_in_situ(_Mymtx(), _Flags | _Mtx_try);
         }
     }
-#endif // ^^^ not CUDA ^^^
 
     ~_Mutex_base() noexcept {
         _Mtx_destroy_in_situ(_Mymtx());
@@ -86,7 +89,7 @@ private:
     friend condition_variable;
     friend condition_variable_any;
 
-    _Mtx_internal_imp_2_t _Mtx_storage;
+    aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
 
     _Mtx_t _Mymtx() noexcept { // get pointer to _Mtx_internal_imp_t inside _Mtx_storage
         return reinterpret_cast<_Mtx_t>(&_Mtx_storage);
