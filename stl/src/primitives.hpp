@@ -38,6 +38,9 @@ namespace Concurrency {
             stl_critical_section_vista& operator=(const stl_critical_section_vista&) = delete;
             ~stl_critical_section_vista()                                            = delete;
 
+            void _Destroy() override {
+                DeleteCriticalSection(&_M_critical_section);
+            }
 
             void _Lock() override {
                 EnterCriticalSection(&_M_critical_section);
@@ -58,10 +61,6 @@ namespace Concurrency {
 
             LPCRITICAL_SECTION native_handle() {
                 return &_M_critical_section;
-            }
-
-            void _Destroy() override {
-                DeleteCriticalSection(&_M_critical_section);
             }
 
         private:

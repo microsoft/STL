@@ -169,7 +169,6 @@ private:
     _Smtx_t _Mtx;
 };
 
-
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
