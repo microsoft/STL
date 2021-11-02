@@ -66,6 +66,7 @@ void test_owner_equal() {
 }
 
 void test_gh_000258_sometimes_avoid_locking() {
+#ifndef _M_CEE_PURE
     struct base1 {
         int i = 0;
     };
@@ -98,7 +99,6 @@ void test_gh_000258_sometimes_avoid_locking() {
     static_assert(!weak_ptr<const int>::_Must_avoid_expired_conversions_from<int>, "Should optimize");
     static_assert(!weak_ptr<const int>::_Must_avoid_expired_conversions_from<const int>, "Should optimize");
 
-#ifndef _M_CEE_PURE // in /clr:pure we miss runtime coverage of weak_ptr converting constructor
     for (int i = 0; i < 10; ++i) {
         // not make_shared -- with make_shared the test would not catch errors
         shared_ptr<derived> d{new derived{}};
