@@ -35,6 +35,13 @@ struct basic_custom_formattable_type {
     string_view string_content;
 };
 
+struct move_only_custom_formattable_type {
+    string_view string_content;
+    move_only_custom_formattable_type(string_view val) : string_content(val) {}
+    move_only_custom_formattable_type(const move_only_custom_formattable_type&) = delete;
+    move_only_custom_formattable_type(move_only_custom_formattable_type&&)      = default;
+};
+
 template <>
 struct std::formatter<basic_custom_formattable_type, char> {
     basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
@@ -44,6 +51,20 @@ struct std::formatter<basic_custom_formattable_type, char> {
         return parse_ctx.end();
     }
     format_context::iterator format(const basic_custom_formattable_type& val, format_context& ctx) {
+        ctx.advance_to(copy(val.string_content.begin(), val.string_content.end(), ctx.out()));
+        return ctx.out();
+    }
+};
+
+template <>
+struct std::formatter<move_only_custom_formattable_type, char> {
+    basic_format_parse_context<char>::iterator parse(basic_format_parse_context<char>& parse_ctx) {
+        if (parse_ctx.begin() != parse_ctx.end()) {
+            throw format_error{"only empty specs please"};
+        }
+        return parse_ctx.end();
+    }
+    format_context::iterator format(move_only_custom_formattable_type& val, format_context& ctx) {
         ctx.advance_to(copy(val.string_content.begin(), val.string_content.end(), ctx.out()));
         return ctx.out();
     }
@@ -141,6 +162,7 @@ void test_mixed_custom_formattable_type() {
 
 int main() {
     assert(format("{}", basic_custom_formattable_type{"f"}) == "f"s);
+    assert(format("{}", move_only_custom_formattable_type{"f"}) == "f"s);
     test_custom_formattable_type<char>();
     test_custom_formattable_type<wchar_t>();
     test_mixed_custom_formattable_type<char>();
