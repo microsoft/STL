@@ -156,6 +156,8 @@ bool test_parse_chrono_format_specs() {
     view_typ s6(STR("%H%"));
     view_typ s7(STR("%H%}"));
     view_typ s8(STR("%nB%tC%%D"));
+    view_typ s9(STR("L"));
+    view_typ s10(STR("L%F"));
 
     vector<chrono_spec> v0{{._Modifier = 'O', ._Type = 'e'}};
     test_parse_helper(parse_chrono_format_specs_fn, s0, false, s0.size(), {.expected_chrono_specs = v0});
@@ -192,6 +194,15 @@ bool test_parse_chrono_format_specs() {
     vector<chrono_spec> v{{._Type = 'H'}}; // we don't throw a format_error until we parse the %H
     test_parse_helper(parse_chrono_format_specs_fn, s6, true, view_typ::npos, {.expected_chrono_specs = v});
     test_parse_helper(parse_chrono_format_specs_fn, s7, true, view_typ::npos, {.expected_chrono_specs = v});
+
+    vector<chrono_spec> v_empty{};
+    test_parse_helper(parse_chrono_format_specs_fn, s9, false, view_typ::npos,
+        {.expected_localized = true, .expected_chrono_specs = v_empty});
+
+    vector<chrono_spec> v6{{._Type = 'F'}};
+    test_parse_helper(parse_chrono_format_specs_fn, s10, false, view_typ::npos,
+        {.expected_localized = true, .expected_chrono_specs = v6});
+
 
     return true;
 }
@@ -914,7 +925,7 @@ void test_locale() {
     assert(format(loc, STR("{:L%S}"), 42ms) == STR("00,042"));
 
     auto stream = [=](auto value) {
-        std::basic_ostringstream<CharT> os;
+        basic_ostringstream<CharT> os;
         os.imbue(loc);
         os << value;
         return os.str();
