@@ -1289,8 +1289,6 @@ struct _Format_arg_traits {
             return bool{};
         } else if constexpr (is_same_v<_Ty, _Char_type>) {
             return _Char_type{};
-        } else if constexpr (is_same_v<_Ty, char> && is_same_v<_Char_type, wchar_t>) {
-            return _Char_type{};
         } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(int)) {
             return int{};
         } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int)) {
