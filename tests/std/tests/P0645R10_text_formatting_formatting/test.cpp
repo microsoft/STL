@@ -1344,14 +1344,6 @@ void test_slow_append_path() {
     assert(str == hello_world);
 }
 
-
-template <class charT>
-void test_oddball_types_p2418r2() {
-    int i      = 3;
-    int& i_ref = i;
-    assert(format(STR("{}"), i_ref) == STR("3"));
-}
-
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1421,9 +1413,6 @@ void test() {
 
     test_slow_append_path<char>();
     test_slow_append_path<wchar_t>();
-
-    test_oddball_types_p2418r2<char>();
-    test_oddball_types_p2418r2<wchar_t>();
 }
 
 int main() {
