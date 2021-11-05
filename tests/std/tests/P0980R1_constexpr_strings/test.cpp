@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-#include <exception>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -1026,9 +1025,10 @@ constexpr bool test_interface() {
 
 #if _HAS_CXX23
     { // resize_and_overwrite
-        constexpr basic_string_view hello  = get_view_input<CharType>().substr(0, 5);
-        constexpr basic_string_view dog    = get_dog<CharType>();
-        constexpr basic_string_view kitten = get_cat<CharType>();
+        constexpr basic_string_view hello_fluffy_kittens = get_view_input<CharType>();
+        constexpr basic_string_view hello                = hello_fluffy_kittens.substr(0, 5);
+        constexpr basic_string_view dog                  = get_dog<CharType>();
+        constexpr basic_string_view kitten               = get_cat<CharType>();
 
         str s;
         s.resize_and_overwrite(5, [=](CharType* p, size_t n) {
@@ -1066,39 +1066,62 @@ constexpr bool test_interface() {
         assert(s.capacity() >= 6);
         assert(s[6] == 0);
 
-        if (!_STD is_constant_evaluated()) {
-            // The Standard says that throwing from passed functor is undefined behavior, but we provide this
-            // non-Standard guarantee
-            try {
-                s.resize_and_overwrite(10, [=](CharType* p, size_t n) -> size_t {
-                    assert(n == 10);
-                    assert(equal(kitten.begin(), kitten.end(), p, p + 6));
-                    throw exception();
-                });
-                assert(false);
-            } catch (...) {
-            }
+        s.resize_and_overwrite(0, [=](CharType*, size_t n) {
+            assert(n == 0);
+            return 0u;
+        });
 
-            assert(s == kitten);
-            assert(s.size() == 6);
-            assert(s.capacity() >= 10);
-            assert(s[6] == 0);
+        assert(s.size() == 0);
+        assert(s[0] == 0);
 
-            try {
-                s.resize_and_overwrite(3, [=](CharType* p, size_t n) -> size_t {
-                    assert(n == 3);
-                    assert(equal(kitten.begin(), kitten.begin() + 3, p, p + 3));
-                    throw exception();
-                });
-                assert(false);
-            } catch (...) {
-            }
+        s = dog;
 
-            assert(s == kitten);
-            assert(s.size() == 6);
-            assert(s.capacity() >= 10);
-            assert(s[6] == 0);
-        }
+        s.resize_and_overwrite(6, [=](CharType* p, size_t n) {
+            assert(n == 6);
+            assert(equal(dog.begin(), dog.end(), p, p + 3));
+            return 0u;
+        });
+
+        assert(s.size() == 0);
+        assert(s[0] == 0);
+
+        s = kitten;
+
+        s.resize_and_overwrite(3, [=](CharType* p, size_t n) {
+            assert(n == 3);
+            assert(equal(kitten.begin(), kitten.begin() + 3, p, p + 3));
+            dog.copy(p, 3);
+            return 3u;
+        });
+
+        assert(s == dog);
+        assert(s.size() == 3);
+        assert(s.capacity() >= 3);
+        assert(s[3] == 0);
+
+        s.resize_and_overwrite(20, [=](CharType* p, size_t n) {
+            assert(n == 20);
+            assert(equal(dog.begin(), dog.end(), p, p + 3));
+            hello_fluffy_kittens.copy(p, 20);
+            return 20u;
+        });
+
+        assert(s == hello_fluffy_kittens);
+        assert(s.size() == 20);
+        assert(s.capacity() >= 20);
+        assert(s[20] == 0);
+
+        s.resize_and_overwrite(3, [=](CharType* p, size_t n) {
+            assert(n == 3);
+            assert(equal(hello_fluffy_kittens.begin(), hello_fluffy_kittens.begin() + 3, p, p + 3));
+            dog.copy(p, 3);
+            return 3u;
+        });
+
+        assert(s == dog);
+        assert(s.size() == 3);
+        assert(s.capacity() >= 3);
+        assert(s[3] == 0);
     }
 #endif // _HAS_CXX23
 
