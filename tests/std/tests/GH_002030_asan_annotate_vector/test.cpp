@@ -4,8 +4,11 @@
 // REQUIRES: asan, x64 || x86
 
 #include <cassert>
+#include <cstddef>
+#include <iterator>
 #include <memory>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 using namespace std;
@@ -37,7 +40,10 @@ struct throw_on_construction {
 };
 
 struct throw_on_copy {
-    throw_on_copy() = default;
+    throw_on_copy()        = default;
+    throw_on_copy& operator=(const throw_on_copy&) {
+        throw 0;
+    }
     throw_on_copy(const throw_on_copy&) {
         throw 0;
     }
@@ -98,9 +104,9 @@ public:
 
 template <class T, class Alloc>
 bool verify_vector(vector<T, Alloc>& vec) {
-    size_t buffer_size  = vec.capacity() * sizeof(T);
+    size_t buffer_bytes = vec.capacity() * sizeof(T);
     void* buffer        = vec.data();
-    void* aligned_start = align(8, 1, buffer, buffer_size);
+    void* aligned_start = align(8, 1, buffer, buffer_bytes);
 
     if (!aligned_start) {
         return true;
@@ -133,7 +139,7 @@ constexpr bool operator!=(
 }
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
-struct aligned_allocator : public custom_test_allocator<T, Pocma, Stateless> {
+struct aligned_allocator : custom_test_allocator<T, Pocma, Stateless> {
     static constexpr size_t _Minimum_allocation_alignment = 8;
 
     aligned_allocator() = default;
@@ -150,7 +156,7 @@ struct aligned_allocator : public custom_test_allocator<T, Pocma, Stateless> {
 };
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
-struct explicit_allocator : public custom_test_allocator<T, Pocma, Stateless> {
+struct explicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
     static constexpr size_t _Minimum_allocation_alignment = alignof(T);
 
     explicit_allocator() = default;
@@ -168,7 +174,7 @@ struct explicit_allocator : public custom_test_allocator<T, Pocma, Stateless> {
 };
 
 template <class T, class Pocma = true_type, class Stateless = true_type>
-struct implicit_allocator : public custom_test_allocator<T, Pocma, Stateless> {
+struct implicit_allocator : custom_test_allocator<T, Pocma, Stateless> {
     implicit_allocator() = default;
     template <class U>
     constexpr implicit_allocator(const implicit_allocator<U, Pocma, Stateless>&) noexcept {}
@@ -411,7 +417,7 @@ void test_push_back_throw() {
         throw_on_construction t(false);
         try {
             v.push_back(t);
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -422,7 +428,7 @@ void test_push_back_throw() {
         throw_on_construction t(false);
         try {
             v.push_back(t);
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -433,7 +439,7 @@ void test_push_back_throw() {
 
         try {
             v.push_back(throw_on_construction(false));
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -443,7 +449,7 @@ void test_push_back_throw() {
 
         try {
             v.push_back(throw_on_construction(false));
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -457,7 +463,7 @@ void test_emplace_back_throw() {
 
         try {
             v.emplace_back(true);
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -467,7 +473,7 @@ void test_emplace_back_throw() {
 
         try {
             v.emplace_back(true);
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -484,7 +490,7 @@ void test_insert_range_throw() {
 
         try {
             v.insert(v.begin(), {throw_on_construction(false), throw_on_construction(false)});
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -499,7 +505,7 @@ void test_insert_range_throw() {
 
         try {
             v.insert(v.begin(), {throw_on_construction(false), throw_on_construction(false)});
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -512,7 +518,7 @@ void test_insert_range_throw() {
 
         try {
             v.insert(v.end(), {throw_on_construction(false), throw_on_construction(false)});
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -523,7 +529,7 @@ void test_insert_range_throw() {
 
         try {
             v.insert(v.end(), {throw_on_construction(false), throw_on_construction(false)});
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -540,7 +546,7 @@ void test_insert_throw() {
 
         try {
             v.insert(v.begin(), throw_on_construction(false));
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -555,7 +561,7 @@ void test_insert_throw() {
 
         try {
             v.insert(v.begin(), throw_on_construction(false));
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -568,7 +574,7 @@ void test_insert_throw() {
 
         try {
             v.insert(v.end(), throw_on_construction(false));
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -579,7 +585,7 @@ void test_insert_throw() {
 
         try {
             v.insert(v.end(), throw_on_construction(false));
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -596,7 +602,7 @@ void test_emplace_throw() {
 
         try {
             v.emplace(v.begin(), false);
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -611,7 +617,7 @@ void test_emplace_throw() {
 
         try {
             v.emplace(v.begin(), true);
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -624,7 +630,7 @@ void test_emplace_throw() {
 
         try {
             v.emplace(v.end(), true);
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -635,7 +641,7 @@ void test_emplace_throw() {
 
         try {
             v.emplace(v.end(), true);
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -651,7 +657,7 @@ void test_resize_throw() {
 
         try {
             v.resize(2);
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -665,7 +671,7 @@ void test_resize_throw() {
 
         try {
             v.resize(2);
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -679,7 +685,7 @@ void test_resize_throw() {
 
         try {
             v.resize(2, throw_on_copy());
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -693,7 +699,7 @@ void test_resize_throw() {
 
         try {
             v.resize(2, throw_on_copy());
-            assert(0);
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
@@ -702,14 +708,112 @@ void test_resize_throw() {
 
 void test_insert_n_throw() {
     {
+        vector<throw_on_construction> v;
+
+        v.reserve(2);
+        v.emplace_back(false);
+
+        try {
+            v.insert(v.begin(), 2, throw_on_construction(false));
+            assert(false);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(2);
+        v.emplace_back(false);
+
+        try {
+            v.insert(v.end(), 2, throw_on_construction(false));
+            assert(false);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(1);
+        v.emplace_back(false);
+
+        try {
+            v.insert(v.begin(), 2, throw_on_construction(false));
+            assert(false);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_construction> v;
+
+        v.reserve(1);
+        v.emplace_back(false);
+
+        try {
+            v.insert(v.end(), 2, throw_on_construction(false));
+            assert(false);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_copy> v;
+
+        v.reserve(2);
+        v.push_back(throw_on_copy());
+
+        try {
+            v.insert(v.begin(), 2, throw_on_copy());
+            assert(false);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_copy> v;
+
+        v.reserve(2);
+        v.push_back(throw_on_copy());
+
+        try {
+            v.insert(v.end(), 2, throw_on_copy());
+            assert(false);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
         vector<throw_on_copy> v;
 
         v.reserve(1);
         v.push_back(throw_on_copy());
 
         try {
-            v.resize(2, throw_on_copy());
-            assert(0);
+            v.insert(v.begin(), 2, throw_on_copy());
+            assert(false);
+        } catch (int) {
+            assert(verify_vector(v));
+        }
+    }
+
+    {
+        vector<throw_on_copy> v;
+
+        v.reserve(1);
+        v.push_back(throw_on_copy());
+
+        try {
+            v.insert(v.end(), 2, throw_on_copy());
+            assert(false);
         } catch (int) {
             assert(verify_vector(v));
         }
