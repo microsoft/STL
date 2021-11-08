@@ -4,7 +4,7 @@ This branch generates the STL's [Status Chart][].
 
 # Getting Started: Repo
 
-1. Install [Node.js][] 16.0.0 or newer.
+1. Install [Node.js][] 17.0.1 or newer.
     + You can accept all of the installer's default options.
 2. Open a new Command Prompt.
     + You can run `node --version` to verify that Node.js was successfully installed.
