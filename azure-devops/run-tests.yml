@@ -25,9 +25,7 @@ steps:
   inputs:
     workingDirectory: $(${{ parameters.buildOutputLocationVar }})
     script: |
-      :: vvv TRANSITION, VSO-1416950 vvv
       set VSCMD_SKIP_SENDTELEMETRY=1
-      :: ^^^ workaround ^^^
       call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
       -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
       ctest -V

@@ -27,9 +27,7 @@ steps:
     if exist "$(${{ parameters.buildOutputLocationVar }})" (
       rmdir /S /Q "$(${{ parameters.buildOutputLocationVar }})"
     )
-    :: vvv TRANSITION, VSO-1416950 vvv
     set VSCMD_SKIP_SENDTELEMETRY=1
-    :: ^^^ workaround ^^^
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
@@ -42,9 +40,7 @@ steps:
   timeoutInMinutes: 2
   env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 - script: |
-    :: vvv TRANSITION, VSO-1416950 vvv
     set VSCMD_SKIP_SENDTELEMETRY=1
-    :: ^^^ workaround ^^^
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake --build $(${{ parameters.buildOutputLocationVar }})
