@@ -4,8 +4,8 @@
 # Build STL targeting x86, x64, arm, arm64
 
 variables:
-  tmpDir: 'D:\Temp'
-  buildOutputLocation: 'D:\build'
+  tmpDir: 'C:\stl_temp'
+  buildOutputLocation: 'C:\stl_build'
 
 pool: 'StlBuild-2021-11-08'
 
@@ -17,7 +17,7 @@ stages:
         timeoutInMinutes: 90
         displayName: 'Validation'
         variables:
-          buildOutputLocation: 'D:\tools'
+          buildOutputLocation: 'C:\stl_tools'
         steps:
           - script: |
               if exist "$(tmpDir)" (
