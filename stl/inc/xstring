@@ -1929,9 +1929,6 @@ public:
         this->_Adopt(_Pstring);
     }
 
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _String_const_iterator& operator=(const _String_const_iterator&) noexcept = default;
-
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot dereference value-initialized string iterator");
@@ -2167,9 +2164,6 @@ public:
     using reference         = value_type&;
 
     using _Mybase::_Mybase;
-
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _String_iterator& operator=(const _String_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());

@@ -58,7 +58,7 @@ std/language.support/support.limits/support.limits.general/ostream.version.pass.
 std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
 
 # libc++ doesn't yet implement P2231R1, so it expects an old value for `__cpp_lib_optional`
-std/language.support/support.limits/support.limits.general/optional.version.pass.cpp:1 FAIL
+std/language.support/support.limits/support.limits.general/optional.version.pass.cpp FAIL
 
 # test emits warning C4310: cast truncates constant value
 std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
