@@ -32,6 +32,9 @@ stages:
               if exist "$(buildOutputLocation)" (
                 rmdir /S /Q "$(buildOutputLocation)"
               )
+              :: vvv TRANSITION, VSO-1416950 vvv
+              set VSCMD_SKIP_SENDTELEMETRY=1
+              :: ^^^ workaround ^^^
               call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
               -host_arch=amd64 -arch=amd64 -no_logo
               cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
