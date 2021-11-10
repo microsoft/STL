@@ -1,6 +1,5 @@
 :: Copyright (c) Microsoft Corporation.
 :: SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-set VSCMD_SKIP_SENDTELEMETRY=1
 call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
 -host_arch=amd64 -arch=amd64 -no_logo
 "%1" "clang-format.exe -style=file -i" ^

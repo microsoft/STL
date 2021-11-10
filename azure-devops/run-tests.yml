@@ -25,7 +25,6 @@ steps:
   inputs:
     workingDirectory: $(${{ parameters.buildOutputLocationVar }})
     script: |
-      set VSCMD_SKIP_SENDTELEMETRY=1
       call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
       -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
       ctest -V
