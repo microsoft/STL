@@ -361,8 +361,12 @@ $Env:PATH="$($currentSystemPath)"
 
 Write-Host 'Finished updating PATH!'
 
+Write-Host 'Running PipInstall...'
+
 PipInstall pip
 PipInstall psutil
+
+Write-Host 'Finished running PipInstall!'
 
 Write-Host 'Setting other environment variables...'
 
