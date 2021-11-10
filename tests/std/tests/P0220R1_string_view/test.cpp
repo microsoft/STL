@@ -69,11 +69,11 @@ const evil_conversion_to_string_view_lvalue_only convert_lvalue_only{};
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// Since P2251R1 basic_string_view is guaranteed to be trivially copyable.
+// N4901 [string.view.template.general]/4
 static_assert(is_trivially_copyable_v<string_view>);
 static_assert(is_trivially_copyable_v<wstring_view>);
 
-// Similar non-standard guarantees
+// Implied by N4901 [class.prop]/1
 static_assert(is_trivially_move_constructible_v<string_view>);
 static_assert(is_trivially_copy_constructible_v<string_view>);
 static_assert(is_trivially_move_assignable_v<string_view>);
