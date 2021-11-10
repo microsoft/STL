@@ -2882,8 +2882,11 @@ _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt,
     return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_wformat_args(_Args...));
 }
 
+#if defined(_MSC_VER) and !defined(__clang__) // TRANSITION, Devcom-XXXX
+#else // // ^^^ workaround / right code vvv
 template <int = 0>
-_NODISCARD string vformat(const string_view _Fmt, const format_args _Args) {
+#endif // defined (_MSC_VER) and !defined(__clang__)
+_NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
