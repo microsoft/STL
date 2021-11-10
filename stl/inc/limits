@@ -1091,10 +1091,14 @@ _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
 template <class _Ty>
 _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
+    constexpr _Ty _Max    = (numeric_limits<_Ty>::max) ();
 
     unsigned long _Result;
     if constexpr (_Digits <= 32) {
-        if (!_BitScanForward(&_Result, _Val)) {
+        // Intended widening to int. This operation means that a narrow 0 will widen
+        // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
+        // of the wider type.
+        if (!_BitScanForward(&_Result, static_cast<unsigned int>(~_Max | _Val))) {
             return _Digits;
         }
     } else {
