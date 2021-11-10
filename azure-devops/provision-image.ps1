@@ -349,17 +349,15 @@ InstallCuda -Url $CudaUrl -Features $CudaFeatures
 Write-Host 'Updating PATH...'
 
 # Step 1: Read the system path, which was just updated by installing Python.
-$environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
+$currentSystemPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
 
 # Step 2: Update the local path (for this running script), so PipInstall can run python.exe.
 # Additional directories can be added here (e.g. if we extracted a zip file
 # or installed something that didn't update the system path).
-$Env:PATH="$($environmentKey.Path)"
+$Env:PATH="$($currentSystemPath)"
 
 # Step 3: Update the system path, permanently recording any additional directories that were added in the previous step.
-Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
-  -Name Path `
-  -Value "$Env:PATH"
+[Environment]::SetEnvironmentVariable("Path", "$Env:PATH", "Machine")
 
 Write-Host 'Finished updating PATH!'
 
