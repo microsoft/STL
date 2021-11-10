@@ -1078,9 +1078,9 @@ _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
         const auto _Low = static_cast<unsigned int>(_Val);
         if (_Low == 0) {
             const unsigned int _High = _Val >> 32;
-            return 32 + _TZCNT_U32(_High);
+            return static_cast<int>(32 + _TZCNT_U32(_High));
         } else {
-            return _TZCNT_U32(_Low);
+            return static_cast<int>(_TZCNT_U32(_Low));
         }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(_TZCNT_U64(_Val));
@@ -1105,7 +1105,7 @@ _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
 #ifdef _M_IX86
         const auto _Low = static_cast<unsigned int>(_Val);
         if (_BitScanForward(&_Result, _Low)) {
-            return _Result;
+            return static_cast<int>(_Result);
         }
 
         const unsigned int _High = _Val >> 32;
