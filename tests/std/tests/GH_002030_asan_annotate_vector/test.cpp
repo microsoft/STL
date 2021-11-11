@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <iostream>
 #include <iterator>
 #include <memory>
 #include <type_traits>
@@ -13,7 +14,10 @@
 
 using namespace std;
 
-extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end) noexcept;
+extern "C" {
+void* __sanitizer_contiguous_container_find_bad_address(const void* beg, const void* mid, const void* end) noexcept;
+void __asan_describe_address(void*) noexcept;
+}
 
 struct non_trivial_can_throw {
     non_trivial_can_throw() {}
@@ -37,17 +41,24 @@ struct throw_on_construction {
     throw_on_construction(const throw_on_construction&) {
         throw 0;
     }
+
+    [[noreturn]] throw_on_construction& operator=(const throw_on_construction&) {
+        throw 0;
+    }
 };
 
 struct throw_on_copy {
-    throw_on_copy()        = default;
-    throw_on_copy& operator=(const throw_on_copy&) {
-        throw 0;
-    }
+    throw_on_copy() = default;
+
     throw_on_copy(const throw_on_copy&) {
         throw 0;
     }
+
     throw_on_copy(throw_on_copy&&) {}
+
+    throw_on_copy& operator=(const throw_on_copy&) {
+        throw 0;
+    }
 };
 
 template <class T, int N>
@@ -115,7 +126,25 @@ bool verify_vector(vector<T, Alloc>& vec) {
     void* mid = vec.data() + vec.size();
     mid       = mid > aligned_start ? mid : aligned_start;
 
-    return __sanitizer_verify_contiguous_container(aligned_start, mid, vec.data() + vec.capacity()) != 0;
+    void* bad_address =
+        __sanitizer_contiguous_container_find_bad_address(aligned_start, mid, vec.data() + vec.capacity());
+    if (bad_address == nullptr) {
+        return true;
+    }
+
+    if (bad_address < mid) {
+        cout << bad_address << " was marked as poisoned when it should not be." << endl;
+    } else if (bad_address >= mid) {
+        cout << bad_address << " was not marked as poisoned when it should be." << endl;
+    }
+    cout << "Vector State:" << endl;
+    cout << "  begin:         " << buffer << endl;
+    cout << "  aligned begin: " << aligned_start << endl;
+    cout << "  last:          " << reinterpret_cast<void*>(vec.data() + vec.size()) << endl;
+    cout << "  end:           " << reinterpret_cast<void*>(vec.data() + vec.capacity()) << endl;
+    __asan_describe_address(bad_address);
+
+    return false;
 }
 
 // Note: This class does not satisfy all the allocator requirements but is sufficient for this test.
@@ -857,6 +886,8 @@ int main() {
     run_allocator_matrix<non_trivial_can_throw>();
     run_allocator_matrix<non_trivial_cannot_throw>();
 
+// TRANSITION, LLVM-35365
+#ifndef __clang__
     test_push_back_throw();
     test_emplace_back_throw();
     test_insert_range_throw();
@@ -864,4 +895,5 @@ int main() {
     test_emplace_throw();
     test_resize_throw();
     test_insert_n_throw();
+#endif // !__clang__
 }

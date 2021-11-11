@@ -448,7 +448,12 @@ extern const bool _Asan_vector_should_annotate;
 #if defined(__SANITIZE_ADDRESS__)
 #define _ACTIVATE_VECTOR_ANNOTATION
 #define _INSERT_VECTOR_ANNOTATION
-#elif defined(_ANNOTATE_VECTOR) // ^^^ __SANITIZE_ADDRESS__ ^^^ // vvv _ANNOTATE_VECTOR vvv
+#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ ^^^ // vvv __clang__ vvv
+#if __has_feature(address_sanitizer)
+#define _ACTIVATE_VECTOR_ANNOTATION
+#define _INSERT_VECTOR_ANNOTATION
+#endif // __has_feature(address_sanitizer)
+#elif defined(_ANNOTATE_VECTOR) // ^^^ __clang__ ^^^ // vvv _ANNOTATE_VECTOR vvv
 #define _INSERT_VECTOR_ANNOTATION
 #endif // _ANNOTATE_VECTOR
 #endif // !_M_CEE_PURE && !_DISABLE_VECTOR_ANNOTATION
@@ -607,7 +612,7 @@ private:
         constexpr explicit _Asan_create_guard(const vector& _Myvec_) noexcept : _Myvec(_Myvec_) {}
 
         _CONSTEXPR20 ~_Asan_create_guard() {
-            _Create_annotation(_Myvec);
+            _Myvec._Create_annotation();
         }
 
         const vector& _Myvec;
