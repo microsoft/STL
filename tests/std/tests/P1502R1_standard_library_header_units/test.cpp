@@ -303,7 +303,8 @@ int main() {
 
     {
         puts("Testing <format>.");
-        assert(format("{} {}", "testing", "format") == "testing format");
+        assert(format("{} {}", 1729, "kittens") == "1729 kittens");
+        assert(format(L"{} {}", 1729, L"kittens") == L"1729 kittens");
     }
 
     {
