@@ -42,27 +42,27 @@ int main() {
 
     assert(_Countr_zero_bsf(static_cast<unsigned char>(0x00)) == 8);
     assert(_Countr_zero_bsf(static_cast<unsigned char>(0x13)) == 0);
-    assert(_Countr_zero_bsf(static_cast<unsigned char>(0x82)) == 1);
+    assert(_Countr_zero_bsf(static_cast<unsigned char>(0x80)) == 7);
     assert(_Countr_zero_bsf(static_cast<unsigned char>(0xF8)) == 3);
 
     assert(_Countr_zero_bsf(static_cast<unsigned short>(0x0000)) == 16);
     assert(_Countr_zero_bsf(static_cast<unsigned short>(0x0013)) == 0);
-    assert(_Countr_zero_bsf(static_cast<unsigned short>(0x8002)) == 1);
+    assert(_Countr_zero_bsf(static_cast<unsigned short>(0x8000)) == 15);
     assert(_Countr_zero_bsf(static_cast<unsigned short>(0xF008)) == 3);
 
     assert(_Countr_zero_bsf(static_cast<unsigned int>(0x0000'0000)) == 32);
     assert(_Countr_zero_bsf(static_cast<unsigned int>(0x0000'0013)) == 0);
-    assert(_Countr_zero_bsf(static_cast<unsigned int>(0x8000'0002)) == 1);
+    assert(_Countr_zero_bsf(static_cast<unsigned int>(0x8000'0000)) == 31);
     assert(_Countr_zero_bsf(static_cast<unsigned int>(0xF000'0008)) == 3);
 
     assert(_Countr_zero_bsf(static_cast<unsigned long>(0x0000'0000)) == 32);
     assert(_Countr_zero_bsf(static_cast<unsigned long>(0x0000'0013)) == 0);
-    assert(_Countr_zero_bsf(static_cast<unsigned long>(0x8000'0002)) == 1);
+    assert(_Countr_zero_bsf(static_cast<unsigned long>(0x8000'0000)) == 31);
     assert(_Countr_zero_bsf(static_cast<unsigned long>(0xF000'0008)) == 3);
 
     assert(_Countr_zero_bsf(static_cast<unsigned long long>(0x0000'0000'0000'0000)) == 64);
     assert(_Countr_zero_bsf(static_cast<unsigned long long>(0x0000'0000'0000'0013)) == 0);
-    assert(_Countr_zero_bsf(static_cast<unsigned long long>(0x8000'0000'0000'0002)) == 1);
+    assert(_Countr_zero_bsf(static_cast<unsigned long long>(0x8000'0000'0000'0000)) == 63);
     assert(_Countr_zero_bsf(static_cast<unsigned long long>(0xF000'0000'0000'0008)) == 3);
 #endif // ^^^ defined(_M_IX86) || defined(_M_X64) ^^^
 }

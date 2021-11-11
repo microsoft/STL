@@ -1111,6 +1111,8 @@ _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
         const unsigned int _High = _Val >> 32;
         if (!_BitScanForward(&_Result, _High)) {
             return _Digits;
+        } else {
+            return static_cast<int>(_Result + 32);
         }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         if (!_BitScanForward64(&_Result, _Val)) {
