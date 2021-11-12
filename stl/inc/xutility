@@ -1395,6 +1395,36 @@ struct _Unwrap_enum<_Elem, false> { // passthrough non-enum type
 template <class _Elem>
 using _Unwrap_enum_t = typename _Unwrap_enum<_Elem>::type;
 
+#if _ITERATOR_DEBUG_LEVEL < 2
+#define _DEBUG_ORDER_UNWRAPPED(first, last, pred)
+#define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred)
+
+#else // _ITERATOR_DEBUG_LEVEL < 2
+#define _DEBUG_ORDER_UNWRAPPED(first, last, pred) _Debug_order_unchecked(first, last, pred)
+#define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred) \
+    _Debug_order_set_unchecked<otherIter>(first, last, pred)
+
+template <class _InIt, class _Sentinel, class _Pr>
+constexpr void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
+    // test if range is ordered by predicate
+    if constexpr (_Is_fwd_iter_v<_InIt>) {
+        if (_First != _Last) {
+            for (auto _Next = _First; ++_Next != _Last; _First = _Next) {
+                _STL_VERIFY(!static_cast<bool>(_Pred(*_Next, *_First)), "sequence not ordered");
+            }
+        }
+    }
+}
+
+template <class _OtherIt, class _InIt, class _Pr>
+constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
+    // test if range is ordered by predicate
+    if constexpr (is_same_v<_Iter_value_t<_OtherIt>, _Iter_value_t<_InIt>> && _Is_fwd_iter_v<_InIt>) {
+        _Debug_order_unchecked(_First, _Last, _Pred);
+    }
+}
+#endif // _ITERATOR_DEBUG_LEVEL < 2
+
 // from <iterator>
 template <class _InIt, class _Diff>
 _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by offset
