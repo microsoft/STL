@@ -997,7 +997,7 @@ namespace ranges {
 
                 const _TrimResult _Res = _Trim_completely(_First1, _Final1, _First2, _Final2, _ProjectedPred);
 
-                if (_Res != _TrimResult::_Break) {
+                if (_Res != _TrimResult::_HaveWorkAfterTrimming) {
                     return _Res == _TrimResult::_ReturnTrue;
                 }
 
@@ -1086,7 +1086,7 @@ namespace ranges {
 
                 const _TrimResult _Res = _Trim_completely(_First1, _Final1, _First2, _Final2, _ProjectedPred);
 
-                if (_Res != _TrimResult::_Break) {
+                if (_Res != _TrimResult::_HaveWorkAfterTrimming) {
                     return _Res == _TrimResult::_ReturnTrue;
                 }
 
