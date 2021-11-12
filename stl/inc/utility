@@ -27,37 +27,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-#if _ITERATOR_DEBUG_LEVEL < 2
-#define _DEBUG_LT_PRED(pred, x, y) static_cast<bool>(pred(x, y))
-#else // _ITERATOR_DEBUG_LEVEL < 2
-#define _DEBUG_LT_PRED(pred, x, y) _Debug_lt_pred(pred, x, y)
-
-template <class _Pr, class _Ty1, class _Ty2,
-    enable_if_t<is_same_v<_Remove_cvref_t<_Ty1>, _Remove_cvref_t<_Ty2>>, int> = 0>
-constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept(
-    noexcept(_Pred(_Left, _Right)) && noexcept(_Pred(_Right, _Left))) {
-    // test if _Pred(_Left, _Right) and _Pred is strict weak ordering, when the arguments are the cv-same-type
-    const auto _Result = static_cast<bool>(_Pred(_Left, _Right));
-    if (_Result) {
-        _STL_VERIFY(!_Pred(_Right, _Left), "invalid comparator");
-    }
-
-    return _Result;
-}
-
-template <class _Pr, class _Ty1, class _Ty2,
-    enable_if_t<!is_same_v<_Remove_cvref_t<_Ty1>, _Remove_cvref_t<_Ty2>>, int> = 0>
-constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept(noexcept(_Pred(_Left, _Right))) {
-    // test if _Pred(_Left, _Right); no debug checks as the types differ
-    return static_cast<bool>(_Pred(_Left, _Right));
-}
-#endif // _ITERATOR_DEBUG_LEVEL < 2
-
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(max) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Left, _Right))) /* strengthened */ {
     // return larger of _Left and _Right
-    return _DEBUG_LT_PRED(_Pred, _Left, _Right) ? _Right : _Left;
+    return _Pred(_Left, _Right) ? _Right : _Left;
 }
 
 #pragma warning(push)
@@ -80,7 +54,7 @@ template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(min) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Right, _Left))) /* strengthened */ {
     // return smaller of _Left and _Right
-    return _DEBUG_LT_PRED(_Pred, _Right, _Left) ? _Right : _Left;
+    return _Pred(_Right, _Left) ? _Right : _Left;
 }
 
 #pragma warning(push)
