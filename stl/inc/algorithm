@@ -10167,7 +10167,7 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 #ifdef _M_FP_FAST
                       || is_floating_point_v<_Ty>
 #endif //  _M_FP_FAST
-                      ) &&(is_same_v<remove_cvref_t<_Pr>, less<>> || is_same_v<remove_cvref_t<_Pr>, less<_Ty>>) ) {
+                      ) &&(is_same_v<_Remove_cvref_t<_Pr>, less<>> || is_same_v<_Remove_cvref_t<_Pr>, less<_Ty>>) ) {
         // Avoid short-circuit evaluation to promote cmov generation; see GH-2334
         return (_STD min) ((_STD max) (_Val, _Min_val), _Max_val);
     } else {
