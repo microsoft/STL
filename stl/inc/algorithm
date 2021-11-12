@@ -10177,7 +10177,6 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 
 template <class _Ty>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val) {
-
     if constexpr (is_integral_v<_Ty> || is_pointer_v<_Ty>) {
         // Avoid short-circuit evaluation to promote cmov generation; see GH-2334
         return (_STD min) ((_STD max) (_Val, _Min_val), _Max_val);
