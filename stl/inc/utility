@@ -57,7 +57,7 @@ template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(max) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Left, _Right))) /* strengthened */ {
     // return larger of _Left and _Right
-    return _Pred(_Left, _Right) ? _Right : _Left;
+    return _DEBUG_LT_PRED(_Pred, _Left, _Right) ? _Right : _Left;
 }
 
 #pragma warning(push)
@@ -80,7 +80,7 @@ template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(min) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Right, _Left))) /* strengthened */ {
     // return smaller of _Left and _Right
-    return _Pred(_Right, _Left) ? _Right : _Left;
+    return _DEBUG_LT_PRED(_Pred, _Right, _Left) ? _Right : _Left;
 }
 
 #pragma warning(push)
