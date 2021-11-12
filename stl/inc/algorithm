@@ -10164,9 +10164,7 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-    return (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) ? _Max_val
-         : (_DEBUG_LT_PRED(_Pred, _Val, _Min_val)) ? _Min_val
-                                                   : _Val;
+    return _STD min(_STD max(_Val, _Min_val, _Pred), _Max_val, _Pred);
 }
 
 template <class _Ty>

@@ -1395,58 +1395,6 @@ struct _Unwrap_enum<_Elem, false> { // passthrough non-enum type
 template <class _Elem>
 using _Unwrap_enum_t = typename _Unwrap_enum<_Elem>::type;
 
-#if _ITERATOR_DEBUG_LEVEL < 2
-#define _DEBUG_LT_PRED(pred, x, y) static_cast<bool>(pred(x, y))
-#define _DEBUG_ORDER_UNWRAPPED(first, last, pred)
-#define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred)
-
-#else // _ITERATOR_DEBUG_LEVEL < 2
-#define _DEBUG_LT_PRED(pred, x, y)                _Debug_lt_pred(pred, x, y)
-#define _DEBUG_ORDER_UNWRAPPED(first, last, pred) _Debug_order_unchecked(first, last, pred)
-#define _DEBUG_ORDER_SET_UNWRAPPED(otherIter, first, last, pred) \
-    _Debug_order_set_unchecked<otherIter>(first, last, pred)
-
-template <class _Pr, class _Ty1, class _Ty2,
-    enable_if_t<is_same_v<_Remove_cvref_t<_Ty1>, _Remove_cvref_t<_Ty2>>, int> = 0>
-constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept(
-    noexcept(_Pred(_Left, _Right)) && noexcept(_Pred(_Right, _Left))) {
-    // test if _Pred(_Left, _Right) and _Pred is strict weak ordering, when the arguments are the cv-same-type
-    const auto _Result = static_cast<bool>(_Pred(_Left, _Right));
-    if (_Result) {
-        _STL_VERIFY(!_Pred(_Right, _Left), "invalid comparator");
-    }
-
-    return _Result;
-}
-
-template <class _Pr, class _Ty1, class _Ty2,
-    enable_if_t<!is_same_v<_Remove_cvref_t<_Ty1>, _Remove_cvref_t<_Ty2>>, int> = 0>
-constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept(noexcept(_Pred(_Left, _Right))) {
-    // test if _Pred(_Left, _Right); no debug checks as the types differ
-    return static_cast<bool>(_Pred(_Left, _Right));
-}
-
-template <class _InIt, class _Sentinel, class _Pr>
-constexpr void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
-    // test if range is ordered by predicate
-    if constexpr (_Is_fwd_iter_v<_InIt>) {
-        if (_First != _Last) {
-            for (auto _Next = _First; ++_Next != _Last; _First = _Next) {
-                _STL_VERIFY(!static_cast<bool>(_Pred(*_Next, *_First)), "sequence not ordered");
-            }
-        }
-    }
-}
-
-template <class _OtherIt, class _InIt, class _Pr>
-constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
-    // test if range is ordered by predicate
-    if constexpr (is_same_v<_Iter_value_t<_OtherIt>, _Iter_value_t<_InIt>> && _Is_fwd_iter_v<_InIt>) {
-        _Debug_order_unchecked(_First, _Last, _Pred);
-    }
-}
-#endif // _ITERATOR_DEBUG_LEVEL < 2
-
 // from <iterator>
 template <class _InIt, class _Diff>
 _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by offset
