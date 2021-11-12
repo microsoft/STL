@@ -10177,7 +10177,11 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 
 template <class _Ty>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val) {
-    if constexpr (is_integral_v<_Ty> || is_pointer_v<_Ty>) {
+    if constexpr (is_integral_v<_Ty> || is_enum_v<_Ty> || is_pointer_v<_Ty>
+#ifdef _M_FP_FAST
+                  || is_floating_point_v<_Ty>
+#endif //  _M_FP_FAST
+    ) {
         // Avoid short-circuit evaluation to promote cmov generation; see GH-2334
         return (_STD min) ((_STD max) (_Val, _Min_val), _Max_val);
     } else {
