@@ -10163,14 +10163,28 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
         return _Val;
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
-    auto _Tmp = _DEBUG_LT_PRED(_Pred, _Val, _Min_val) ? _Val : _Min_val;
-    return _DEBUG_LT_PRED(_Pred, _Max_val, _Tmp) ? _Max_val : _Tmp;
+
+    if (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) {
+        return _Max_val;
+    }
+
+    if (_DEBUG_LT_PRED(_Pred, _Val, _Min_val)) {
+        return _Min_val;
+    }
+
+    return _Val;
 }
 
 template <class _Ty>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val) {
-    // returns _Val constrained to [_Min_val, _Max_val]
-    return _STD clamp(_Val, _Min_val, _Max_val, less{});
+
+    if constexpr (is_integral_v<_Ty> || is_pointer_v<_Ty>) {
+        // Avoid short-circuit evaluation to promote cmov generation; see GH-2334
+        return (_STD min) ((_STD max) (_Val, _Min_val), _Max_val);
+    } else {
+        // returns _Val constrained to [_Min_val, _Max_val]
+        return _STD clamp(_Val, _Min_val, _Max_val, less{});
+    }
 }
 
 #ifdef __cpp_lib_concepts
