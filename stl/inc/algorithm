@@ -10157,37 +10157,37 @@ namespace ranges {
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val, _Pr _Pred) {
     // returns _Val constrained to [_Min_val, _Max_val]
+    if constexpr ((is_integral_v<_Ty> || is_enum_v<_Ty> || is_pointer_v<_Ty>
+#ifdef _M_FP_FAST
+                      || is_floating_point_v<_Ty>
+#endif //  _M_FP_FAST
+                      ) &&(is_same_v<remove_cvref_t<_Pr>, less<>> || is_same_v<remove_cvref_t<_Pr>, less<_Ty>>) ) {
+        // Avoid short-circuit evaluation to promote cmov generation; see GH-2334
+        return (_STD min) ((_STD max) (_Val, _Min_val), _Max_val);
+    } else {
 #if _ITERATOR_DEBUG_LEVEL == 2
-    if (_DEBUG_LT_PRED(_Pred, _Max_val, _Min_val)) {
-        _STL_REPORT_ERROR("invalid bounds arguments passed to std::clamp");
-        return _Val;
-    }
+        if (_DEBUG_LT_PRED(_Pred, _Max_val, _Min_val)) {
+            _STL_REPORT_ERROR("invalid bounds arguments passed to std::clamp");
+            return _Val;
+        }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-    if (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) {
-        return _Max_val;
-    }
+        if (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) {
+            return _Max_val;
+        }
 
-    if (_DEBUG_LT_PRED(_Pred, _Val, _Min_val)) {
-        return _Min_val;
-    }
+        if (_DEBUG_LT_PRED(_Pred, _Val, _Min_val)) {
+            return _Min_val;
+        }
 
-    return _Val;
+        return _Val;
+    }
 }
 
 template <class _Ty>
 _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, const _Ty& _Max_val) {
-    if constexpr (is_integral_v<_Ty> || is_enum_v<_Ty> || is_pointer_v<_Ty>
-#ifdef _M_FP_FAST
-                  || is_floating_point_v<_Ty>
-#endif //  _M_FP_FAST
-    ) {
-        // Avoid short-circuit evaluation to promote cmov generation; see GH-2334
-        return (_STD min) ((_STD max) (_Val, _Min_val), _Max_val);
-    } else {
-        // returns _Val constrained to [_Min_val, _Max_val]
-        return _STD clamp(_Val, _Min_val, _Max_val, less{});
-    }
+    // returns _Val constrained to [_Min_val, _Max_val]
+    return _STD clamp(_Val, _Min_val, _Max_val, less{});
 }
 
 #ifdef __cpp_lib_concepts
