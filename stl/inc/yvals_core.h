@@ -1333,7 +1333,7 @@
 #define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
+#if _HAS_CXX20
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
 #define __cpp_lib_variant  202106L // P2231R1 Completing constexpr In optional And variant
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
