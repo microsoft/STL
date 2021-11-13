@@ -4251,24 +4251,24 @@ namespace ranges {
 
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                if constexpr (bidirectional_range<_Rng>) {
-                    if constexpr (_Is_specialization_v<_Rng, reverse_view>) {
-                        if constexpr (_Can_extract_base<_Rng>) {
-                            return {_St::_Base, noexcept(_STD declval<_Rng>().base())};
-                        }
-                    } else if constexpr (_Reversed_subrange<remove_cvref_t<_Rng>> == 0) {
-                        using _It = decltype(_STD declval<_Rng&>().begin().base());
-                        return {_St::_Subrange_unsized,
-                            noexcept(subrange<_It, _It, subrange_kind::unsized>{
-                                _STD declval<_Rng&>().end().base(), _STD declval<_Rng&>().begin().base()})};
-                    } else if constexpr (_Reversed_subrange<remove_cvref_t<_Rng>> == 1) {
-                        using _It = decltype(_STD declval<_Rng&>().begin().base());
-                        return {_St::_Subrange_sized,
-                            noexcept(subrange<_It, _It, subrange_kind::sized>{_STD declval<_Rng&>().end().base(),
-                                _STD declval<_Rng&>().begin().base(), _STD declval<_Rng&>().size()})};
-                    } else if constexpr (_Can_reverse<_Rng>) {
-                        return {_St::_Reverse, noexcept(reverse_view{_STD declval<_Rng>()})};
+                using _Ty = remove_cvref_t<_Rng>;
+
+                if constexpr (_Is_specialization_v<_Ty, reverse_view>) {
+                    if constexpr (_Can_extract_base<_Rng>) {
+                        return {_St::_Base, noexcept(_STD declval<_Rng>().base())};
                     }
+                } else if constexpr (_Reversed_subrange<_Ty> == 0) {
+                    using _It = decltype(_STD declval<_Rng&>().begin().base());
+                    return {_St::_Subrange_unsized,
+                        noexcept(subrange<_It, _It, subrange_kind::unsized>{
+                            _STD declval<_Rng&>().end().base(), _STD declval<_Rng&>().begin().base()})};
+                } else if constexpr (_Reversed_subrange<_Ty> == 1) {
+                    using _It = decltype(_STD declval<_Rng&>().begin().base());
+                    return {_St::_Subrange_sized,
+                        noexcept(subrange<_It, _It, subrange_kind::sized>{_STD declval<_Rng&>().end().base(),
+                            _STD declval<_Rng&>().begin().base(), _STD declval<_Rng&>().size()})};
+                } else if constexpr (_Can_reverse<_Rng>) {
+                    return {_St::_Reverse, noexcept(reverse_view{_STD declval<_Rng>()})};
                 }
 
                 return {_St::_None};

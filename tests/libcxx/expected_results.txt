@@ -58,7 +58,7 @@ std/language.support/support.limits/support.limits.general/ostream.version.pass.
 std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
 
 # libc++ doesn't yet implement P2231R1, so it expects an old value for `__cpp_lib_optional`
-std/language.support/support.limits/support.limits.general/optional.version.pass.cpp:1 FAIL
+std/language.support/support.limits/support.limits.general/optional.version.pass.cpp FAIL
 
 # test emits warning C4310: cast truncates constant value
 std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
@@ -309,11 +309,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 # DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
-
-# VSO-1168723 "Implicit copy assignment incorrectly not constexpr when subobject has explicit constexpr copy constructor"
-std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp:0 FAIL
-std/utilities/utility/pairs/pairs.pair/assign_rv_pair.pass.cpp:0 FAIL
-std/utilities/utility/pairs/pairs.pair/assign_rv_pair_U_V.pass.cpp:0 FAIL
 
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL

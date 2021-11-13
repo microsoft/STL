@@ -119,6 +119,8 @@
 //     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
 // P1518R2 Stop Overconstraining Allocators In Container Deduction Guides
 // P2162R2 Inheriting From variant
+// P2251R1 Require span And basic_string_view To Be Trivially Copyable
+//     (basic_string_view always provides this behavior)
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -255,11 +257,14 @@
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P2210R2 Superior String Splitting
 // P2231R1 Completing constexpr In optional And variant
+// P2251R1 Require span And basic_string_view To Be Trivially Copyable
+//     (span always provides this behavior)
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
 // P2281R1 Clarifying Range Adaptor Objects
 // P2325R3 Views Should Not Be Required To Be Default Constructible
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
+// P2372R3 Fixing Locale Handling In chrono Formatters
 // P2415R2 What Is A view?
 // P2432R1 Fix istream_view
 // P????R? directory_entry::clear_cache()
@@ -277,6 +282,7 @@
 // P0448R4 <spanstream>
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
+// P1072R10 basic_string::resize_and_overwrite
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
 // P1272R4 byteswap()
@@ -1334,7 +1340,7 @@
 #define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
+#if _HAS_CXX20
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
 #define __cpp_lib_variant  202106L // P2231R1 Completing constexpr In optional And variant
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
@@ -1377,10 +1383,11 @@
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_spanstream      202106L
-#define __cpp_lib_stdatomic_h     202011L
-#define __cpp_lib_string_contains 202011L
-#define __cpp_lib_to_underlying   202102L
+#define __cpp_lib_spanstream                  202106L
+#define __cpp_lib_stdatomic_h                 202011L
+#define __cpp_lib_string_contains             202011L
+#define __cpp_lib_string_resize_and_overwrite 202110L
+#define __cpp_lib_to_underlying               202102L
 #endif // _HAS_CXX23
 
 #define __cpp_lib_experimental_erase_if   201411L
