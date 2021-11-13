@@ -10165,11 +10165,12 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
 #if defined(_M_FP_FAST) && defined(_M_X64)
-#define _CLAMP_OPT_FP , is_floating_point_v<_Ty>
+    using _Clamp_opt_fp = is_floating_point<_Ty>;
 #else // ^^^ /fp:fast ^^^ / vvv not /fp:fast vvv
-#define _CLAMP_OPT_FP
+    using _Clamp_opt_fp = false_type;
+    // false_type
 #endif //  ^^^ not /fp:fast ^^^
-    if constexpr (conjunction_v<disjunction<is_integral<_Ty>, is_enum<_Ty>, is_pointer<_Ty> _CLAMP_OPT_FP>,
+    if constexpr (conjunction_v<disjunction<is_integral<_Ty>, is_enum<_Ty>, is_pointer<_Ty>, _Clamp_opt_fp>,
                       disjunction<is_same<_Pr, less<>>, is_same<_Pr, less<_Ty>>>>) {
         // Avoid early return to promote branchless code generation; see GH-2334
         const _Ty& _Tmp = _Val < _Min_val ? _Min_val : _Val;
@@ -10186,7 +10187,6 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 
         return _Val;
     }
-#undef _CLAMP_OPT_FP
 }
 
 template <class _Ty>
