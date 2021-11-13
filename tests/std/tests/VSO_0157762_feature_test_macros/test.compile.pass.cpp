@@ -1297,10 +1297,10 @@ STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202106L
-#error __cpp_lib_ranges is not 202106L
+#elif __cpp_lib_ranges != 202110L
+#error __cpp_lib_ranges is not 202110L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202106L);
+STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 #else
 #ifdef __cpp_lib_ranges

@@ -265,6 +265,7 @@
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P2372R3 Fixing Locale Handling In chrono Formatters
+// P2415R2 What Is A view?
 // P2432R1 Fix istream_view
 // P????R? directory_entry::clear_cache()
 
@@ -1298,7 +1299,7 @@
 #define __cpp_lib_polymorphic_allocator   201902L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
-#define __cpp_lib_ranges 202106L
+#define __cpp_lib_ranges 202110L
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
