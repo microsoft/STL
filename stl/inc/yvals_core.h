@@ -119,6 +119,8 @@
 //     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
 // P1518R2 Stop Overconstraining Allocators In Container Deduction Guides
 // P2162R2 Inheriting From variant
+// P2251R1 Require span And basic_string_view To Be Trivially Copyable
+//     (basic_string_view always provides this behavior)
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -255,6 +257,8 @@
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P2210R2 Superior String Splitting
 // P2231R1 Completing constexpr In optional And variant
+// P2251R1 Require span And basic_string_view To Be Trivially Copyable
+//     (span always provides this behavior)
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
 // P2281R1 Clarifying Range Adaptor Objects
 // P2325R3 Views Should Not Be Required To Be Default Constructible
