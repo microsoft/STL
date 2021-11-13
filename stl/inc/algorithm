@@ -10163,14 +10163,19 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
         return _Val;
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
-    if constexpr ((is_integral_v<_Ty> || is_enum_v<_Ty> || is_pointer_v<_Ty>
-#ifdef _M_FP_FAST
-                      || is_floating_point_v<_Ty>
-#endif //  _M_FP_FAST
-                      ) &&(is_same_v<_Remove_cvref_t<_Pr>, less<>> || is_same_v<_Remove_cvref_t<_Pr>, less<_Ty>>) ) {
-        // Avoid short-circuit evaluation to promote cmov generation; see GH-2334
-        return (_STD min) ((_STD max) (_Val, _Min_val), _Max_val);
+
+#if defined(_M_FP_FAST) && defined(_M_X64)
+#define _CLAMP_OPT_FP , is_floating_point_v<_Ty>
+#else // ^^^ /fp:fast ^^^ / vvv not /fp:fast vvv
+#define _CLAMP_OPT_FP
+#endif //  ^^^ not /fp:fast ^^^
+    if constexpr (conjunction_v<disjunction<is_integral<_Ty>, is_enum<_Ty>, is_pointer<_Ty> _CLAMP_OPT_FP>,
+                      disjunction<is_same<_Pr, less<>>, is_same<_Pr, less<_Ty>>>>) {
+        // Avoid early return during evaluation to promote branchless code generation; see GH-2334
+        const _Ty& _Tmp = _Val < _Min_val ? _Min_val : _Val;
+        return _Max_val < _Tmp ? _Max_val : _Tmp;
     } else {
+
         if (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) {
             return _Max_val;
         }
@@ -10181,6 +10186,7 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 
         return _Val;
     }
+#undef _CLAMP_OPT_FP
 }
 
 template <class _Ty>
