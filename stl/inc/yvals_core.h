@@ -261,6 +261,7 @@
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P2432R1 Fix istream_view
+// P2418R2 add support for std::generator-like types to std::format
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:

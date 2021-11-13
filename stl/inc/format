@@ -1336,7 +1336,7 @@ struct _Format_arg_traits {
     // clang-format on
 
     template <class _Ty>
-    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty&&>()));
+    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty>()));
 
     template <class _Ty>
     static constexpr size_t _Storage_size = sizeof(_Storage_type<remove_cvref_t<_Ty>>);
@@ -2872,22 +2872,22 @@ _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const string_view _Fmt, const _Types&... _Args) {
+_OutputIt format_to(_OutputIt _Out, const string_view _Fmt, _Types&&... _Args) {
     return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_format_args(_Args...));
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const wstring_view _Fmt, const _Types&... _Args) {
+_OutputIt format_to(_OutputIt _Out, const wstring_view _Fmt, _Types&&... _Args) {
     return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_wformat_args(_Args...));
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, _Types&&... _Args) {
     return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_format_args(_Args...));
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, _Types&&... _Args) {
     return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_wformat_args(_Args...));
 }
 

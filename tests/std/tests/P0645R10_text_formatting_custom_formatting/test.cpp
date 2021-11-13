@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <format>
 #include <limits>
+#include <locale>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -37,7 +39,7 @@ struct basic_custom_formattable_type {
 
 struct move_only_custom_formattable_type {
     string_view string_content;
-    move_only_custom_formattable_type(string_view val) : string_content(val) {}
+    explicit move_only_custom_formattable_type(string_view val) : string_content(val) {}
     move_only_custom_formattable_type(const move_only_custom_formattable_type&) = delete;
     move_only_custom_formattable_type(move_only_custom_formattable_type&&)      = default;
 };
@@ -160,9 +162,44 @@ void test_mixed_custom_formattable_type() {
     test_numeric_mixed_args_custom_formattable_type<double, charT>();
 }
 
+template <class charT>
+void test_basic_custom_formatting() {}
+
 int main() {
+    string str;
+
     assert(format("{}", basic_custom_formattable_type{"f"}) == "f"s);
+    assert(format(locale{}, "{}", basic_custom_formattable_type{"f"}) == "f"s);
+    format_to(back_insert_iterator(str), "{}", basic_custom_formattable_type{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to(back_insert_iterator(str), locale{}, "{}", basic_custom_formattable_type{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to_n(back_insert_iterator(str), 5, "{}", basic_custom_formattable_type{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to_n(back_insert_iterator(str), 5, locale{}, "{}", basic_custom_formattable_type{"f"});
+    assert(str == "f");
+    str.clear();
+
+
     assert(format("{}", move_only_custom_formattable_type{"f"}) == "f"s);
+    assert(format(locale{}, "{}", move_only_custom_formattable_type{"f"}) == "f"s);
+    format_to(back_insert_iterator(str), "{}", move_only_custom_formattable_type{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to(back_insert_iterator(str), locale{}, "{}", move_only_custom_formattable_type{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to_n(back_insert_iterator(str), 5, "{}", move_only_custom_formattable_type{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to_n(back_insert_iterator(str), 5, locale{}, "{}", move_only_custom_formattable_type{"f"});
+    assert(str == "f");
+    str.clear();
+
+
     test_custom_formattable_type<char>();
     test_custom_formattable_type<wchar_t>();
     test_mixed_custom_formattable_type<char>();
