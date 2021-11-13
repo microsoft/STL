@@ -6,6 +6,7 @@
 #include <ranges>
 #include <span>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -93,6 +94,24 @@ constexpr bool memcmp_test() {
     return true;
 }
 
+constexpr void test_devcom_1559808() {
+    // Regression test for DevCom-1559808, an interaction between vector and the
+    // use of structured bindings in the constexpr evaluator.
+
+    std::vector<int> haystack(33, 42); // No particular significance to any numbers in this function
+    std::vector<int> needle(8, 42);
+    using size_type = std::vector<int>::size_type;
+
+    auto result = ranges::find_end(haystack, needle);
+    assert(static_cast<size_type>(result.begin() - haystack.begin()) == haystack.size() - needle.size());
+    assert(result.end() == haystack.end());
+
+    needle.assign(6, 1729);
+    result = ranges::find_end(haystack, needle);
+    assert(result.begin() == haystack.end());
+    assert(result.end() == haystack.end());
+}
+
 int main() {
 #ifndef _PREFAST_ // TRANSITION, GH-1030
     test_fwd_fwd<instantiator, const pair<int, int>, const int>();
@@ -100,4 +119,7 @@ int main() {
 
     STATIC_ASSERT(memcmp_test());
     memcmp_test();
+
+    STATIC_ASSERT((test_devcom_1559808(), true));
+    test_devcom_1559808();
 }

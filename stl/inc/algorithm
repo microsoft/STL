@@ -179,34 +179,6 @@ namespace ranges {
         }
     };
 
-    template <class _Result, class _Wrapped, class _Unwrapped>
-    _NODISCARD constexpr _Result _Rewrap_subrange(_Wrapped& _Val, subrange<_Unwrapped>&& _UResult) {
-        // conditionally computes a wrapped subrange from a wrapped iterator or range and unwrapped subrange
-        if constexpr (is_same_v<_Result, dangling>) {
-            return dangling{};
-        } else if constexpr (is_same_v<_Result, subrange<_Unwrapped>>) {
-            return _STD move(_UResult);
-        } else if constexpr (range<_Wrapped>) {
-            _STL_INTERNAL_STATIC_ASSERT(forward_range<_Wrapped>);
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped, _Unwrapped_t<iterator_t<_Wrapped>>>);
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<iterator_t<_Wrapped>>>);
-
-            auto _First = _RANGES begin(_Val);
-            auto _Last  = _First;
-            _First._Seek_to(_UResult.begin());
-            _Last._Seek_to(_UResult.end());
-            return _Result{_STD move(_First), _STD move(_Last)};
-        } else {
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped, _Unwrapped_t<_Wrapped>>);
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<_Wrapped>>);
-
-            auto _Last = _Val;
-            _Val._Seek_to(_UResult.begin());
-            _Last._Seek_to(_UResult.end());
-            return _Result{_STD move(_Val), _STD move(_Last)};
-        }
-    }
-
     template <forward_iterator _Wrapped, sentinel_for<_Wrapped> _Se>
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
         // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]
@@ -7708,7 +7680,13 @@ namespace ranges {
                 }
 
                 // divide and conquer by quicksort
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
                 auto [_Mid_first, _Mid_last] = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+#else // ^^^ no workaround // workaround vvv
+                auto _Mid       = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+                auto _Mid_first = _Mid.begin();
+                auto _Mid_last  = _Mid.end();
+#endif // TRANSITION, DevCom-1559808
 
                 _Ideal = (_Ideal >> 1) + (_Ideal >> 2); // allow 1.5 log2(N) divisions
 

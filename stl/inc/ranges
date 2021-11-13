@@ -3861,7 +3861,13 @@ namespace ranges {
                     return *this;
                 }
 
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
                 auto [_Begin, _End] = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
+#else // ^^^ no workaround / workaround vvv
+                auto _Match = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
+                auto _Begin = _Match.begin();
+                auto _End = _Match.end();
+#endif // TRANSITION, DevCom-1559808
                 if (_Begin != _Last && _RANGES empty(_Parent->_Pattern)) {
                     ++_Begin;
                     ++_End;
@@ -3907,7 +3913,13 @@ namespace ranges {
 
         constexpr subrange<iterator_t<_Vw>> _Find_next(iterator_t<_Vw> _It) {
             const auto _Last    = _RANGES end(_Range);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
             auto [_Begin, _End] = _RANGES search(subrange{_It, _Last}, _Pattern);
+#else // ^^^ no workaround / workaround vvv
+            auto _Match = _RANGES search(subrange{_It, _Last}, _Pattern);
+            auto _Begin = _Match.begin();
+            auto _End = _Match.end();
+#endif // TRANSITION, DevCom-1559808
             if (_Begin != _Last && _RANGES empty(_Pattern)) {
                 ++_Begin;
                 ++_End;

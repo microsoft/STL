@@ -10,6 +10,7 @@
 #include <system_error>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 using namespace std;
@@ -307,7 +308,32 @@ constexpr bool instantiation_test() {
     return true;
 }
 
+constexpr bool test_devcom_1559808() {
+    // Regression test for DevCom-1559808, an interaction between vector and the
+    // use of structured bindings in the constexpr evaluator.
+
+    vector<char> letters{'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 't', 'e', 's', 't'};
+    auto r = views::split(letters, ' ');
+    auto i = r.begin();
+    assert(*(*i).begin() == 'T');
+    ++i;
+    assert(*(*i).begin() == 'i');
+    ++i;
+    assert(*(*i).begin() == 'a');
+    ++i;
+    assert(*(*i).begin() == 't');
+    ++i;
+    assert(i == r.end());
+
+    return true;
+}
+
 int main() {
     STATIC_ASSERT(instantiation_test());
     instantiation_test();
+
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1516290
+    STATIC_ASSERT(test_devcom_1559808());
+#endif // TRANSITION, DevCom-1516290
+    test_devcom_1559808();
 }
