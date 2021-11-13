@@ -222,15 +222,17 @@ void throw_helper(const CharT* fmt, const Args&... vals) {
 }
 
 template <class Arg, class CharT>
-void empty_braces_helper(const Arg& val, const CharT* const expected) {
+void empty_braces_helper(
+    const Arg& val, const CharT* const expected, const same_as<const CharT*> auto... alternatives) {
     // N4885 [time.format]/6: "If the chrono-specs is omitted, the chrono object is formatted
     // as if by streaming it to std::ostringstream os and copying os.str() through the output iterator
     // of the context with additional padding and adjustments as specified by the format specifiers."
-    assert(format(STR("{}"), val) == expected);
+    const auto result = format(STR("{}"), val);
+    assert(((result == expected) || ... || (result == alternatives)));
 
     basic_ostringstream<CharT> stream;
     stream << val;
-    assert(stream.str() == expected);
+    assert(stream.str() == result);
     assert(stream);
 }
 
@@ -748,10 +750,15 @@ void test_exception_classes() {
         }
 
         assert(s
-               == "2016-03-13 02:30:00 is in a gap between\n"
-                  "2016-03-13 02:00:00 EST and\n"
-                  "2016-03-13 03:00:00 EDT which are both equivalent to\n"
-                  "2016-03-13 07:00:00 UTC");
+                   == "2016-03-13 02:30:00 is in a gap between\n"
+                      "2016-03-13 02:00:00 EST and\n"
+                      "2016-03-13 03:00:00 EDT which are both equivalent to\n"
+                      "2016-03-13 07:00:00 UTC"
+               || s
+                      == "2016-03-13 02:30:00 is in a gap between\n"
+                         "2016-03-13 02:00:00 GMT-5 and\n"
+                         "2016-03-13 03:00:00 GMT-4 which are both equivalent to\n"
+                         "2016-03-13 07:00:00 UTC");
     }
 
     { // N4885 [time.zone.exception.ambig]/4
@@ -764,9 +771,13 @@ void test_exception_classes() {
         }
 
         assert(s
-               == "2016-11-06 01:30:00 is ambiguous. It could be\n"
-                  "2016-11-06 01:30:00 EDT == 2016-11-06 05:30:00 UTC or\n"
-                  "2016-11-06 01:30:00 EST == 2016-11-06 06:30:00 UTC");
+                   == "2016-11-06 01:30:00 is ambiguous. It could be\n"
+                      "2016-11-06 01:30:00 EDT == 2016-11-06 05:30:00 UTC or\n"
+                      "2016-11-06 01:30:00 EST == 2016-11-06 06:30:00 UTC"
+               || s
+                      == "2016-11-06 01:30:00 is ambiguous. It could be\n"
+                         "2016-11-06 01:30:00 GMT-4 == 2016-11-06 05:30:00 UTC or\n"
+                         "2016-11-06 01:30:00 GMT-5 == 2016-11-06 06:30:00 UTC");
     }
 }
 
@@ -799,56 +810,118 @@ void test_information_classes() {
     // N4885 [time.zone.info.sys]/7: "Effects: Streams out the sys_info object r in an unspecified format."
     // N4885 [time.zone.info.local]/3: "Effects: Streams out the local_info object r in an unspecified format."
 
-    empty_braces_helper(sys1, STR("begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
-                                  "offset: 36000s, save: 0min, abbrev: GMT+10"));
-    empty_braces_helper(sys2, STR("begin: 2020-10-03 16:00:00, end: 2021-04-03 16:00:00, "
-                                  "offset: 39600s, save: 60min, abbrev: GMT+11"));
-    empty_braces_helper(sys3, STR("begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
-                                  "offset: -28800s, save: 0min, abbrev: PST"));
-    empty_braces_helper(sys4, STR("begin: 2021-03-14 10:00:00, end: 2021-11-07 09:00:00, "
-                                  "offset: -25200s, save: 60min, abbrev: PDT"));
-    empty_braces_helper(loc1, STR("result: unique, "
-                                  "first: (begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
-                                  "offset: 36000s, save: 0min, abbrev: GMT+10)"));
-    empty_braces_helper(loc2, STR("result: unique, "
-                                  "first: (begin: 2020-10-03 16:00:00, end: 2021-04-03 16:00:00, "
-                                  "offset: 39600s, save: 60min, abbrev: GMT+11)"));
-    empty_braces_helper(loc3, STR("result: unique, "
-                                  "first: (begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
-                                  "offset: -28800s, save: 0min, abbrev: PST)"));
-    empty_braces_helper(loc4, STR("result: unique, "
-                                  "first: (begin: 2021-03-14 10:00:00, end: 2021-11-07 09:00:00, "
-                                  "offset: -25200s, save: 60min, abbrev: PDT)"));
-    empty_braces_helper(ambiguous1, STR("result: ambiguous, "
-                                        "first: (begin: 2019-10-05 16:00:00, end: 2020-04-04 16:00:00, "
-                                        "offset: 39600s, save: 60min, abbrev: GMT+11), "
-                                        "second: (begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
-                                        "offset: 36000s, save: 0min, abbrev: GMT+10)"));
-    empty_braces_helper(ambiguous2, STR("result: ambiguous, "
-                                        "first: (begin: 2020-03-08 10:00:00, end: 2020-11-01 09:00:00, "
-                                        "offset: -25200s, save: 60min, abbrev: PDT), "
-                                        "second: (begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
-                                        "offset: -28800s, save: 0min, abbrev: PST)"));
-    empty_braces_helper(nonexistent1, STR("result: nonexistent, "
-                                          "first: (begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
-                                          "offset: 36000s, save: 0min, abbrev: GMT+10), "
-                                          "second: (begin: 2020-10-03 16:00:00, end: 2021-04-03 16:00:00, "
-                                          "offset: 39600s, save: 60min, abbrev: GMT+11)"));
-    empty_braces_helper(nonexistent2, STR("result: nonexistent, "
-                                          "first: (begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
-                                          "offset: -28800s, save: 0min, abbrev: PST), "
-                                          "second: (begin: 2021-03-14 10:00:00, end: 2021-11-07 09:00:00, "
-                                          "offset: -25200s, save: 60min, abbrev: PDT)"));
+    empty_braces_helper(sys1,
+        STR("begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
+            "offset: 36000s, save: 0min, abbrev: AEST"),
+        STR("begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
+            "offset: 36000s, save: 0min, abbrev: GMT+10"));
+    empty_braces_helper(sys2,
+        STR("begin: 2020-10-03 16:00:00, end: 2021-04-03 16:00:00, "
+            "offset: 39600s, save: 60min, abbrev: AEDT"),
+        STR("begin: 2020-10-03 16:00:00, end: 2021-04-03 16:00:00, "
+            "offset: 39600s, save: 60min, abbrev: GMT+11"));
+    empty_braces_helper(sys3,
+        STR("begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
+            "offset: -28800s, save: 0min, abbrev: PST"),
+        STR("begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
+            "offset: -28800s, save: 0min, abbrev: GMT-8"));
+    empty_braces_helper(sys4,
+        STR("begin: 2021-03-14 10:00:00, end: 2021-11-07 09:00:00, "
+            "offset: -25200s, save: 60min, abbrev: PDT"),
+        STR("begin: 2021-03-14 10:00:00, end: 2021-11-07 09:00:00, "
+            "offset: -25200s, save: 60min, abbrev: GMT-7"));
+    empty_braces_helper(loc1,
+        STR("result: unique, "
+            "first: (begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
+            "offset: 36000s, save: 0min, abbrev: AEST)"),
+        STR("result: unique, "
+            "first: (begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
+            "offset: 36000s, save: 0min, abbrev: GMT+10)"));
+    empty_braces_helper(loc2,
+        STR("result: unique, "
+            "first: (begin: 2020-10-03 16:00:00, end: 2021-04-03 16:00:00, "
+            "offset: 39600s, save: 60min, abbrev: AEDT)"),
+        STR("result: unique, "
+            "first: (begin: 2020-10-03 16:00:00, end: 2021-04-03 16:00:00, "
+            "offset: 39600s, save: 60min, abbrev: GMT+11)"));
+    empty_braces_helper(loc3,
+        STR("result: unique, "
+            "first: (begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
+            "offset: -28800s, save: 0min, abbrev: PST)"),
+        STR("result: unique, "
+            "first: (begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
+            "offset: -28800s, save: 0min, abbrev: GMT-8)"));
+    empty_braces_helper(loc4,
+        STR("result: unique, "
+            "first: (begin: 2021-03-14 10:00:00, end: 2021-11-07 09:00:00, "
+            "offset: -25200s, save: 60min, abbrev: PDT)"),
+        STR("result: unique, "
+            "first: (begin: 2021-03-14 10:00:00, end: 2021-11-07 09:00:00, "
+            "offset: -25200s, save: 60min, abbrev: GMT-7)"));
+    empty_braces_helper(ambiguous1,
+        STR("result: ambiguous, "
+            "first: (begin: 2019-10-05 16:00:00, end: 2020-04-04 16:00:00, "
+            "offset: 39600s, save: 60min, abbrev: AEDT), "
+            "second: (begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
+            "offset: 36000s, save: 0min, abbrev: AEST)"),
+        STR("result: ambiguous, "
+            "first: (begin: 2019-10-05 16:00:00, end: 2020-04-04 16:00:00, "
+            "offset: 39600s, save: 60min, abbrev: GMT+11), "
+            "second: (begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
+            "offset: 36000s, save: 0min, abbrev: GMT+10)"));
+    empty_braces_helper(ambiguous2,
+        STR("result: ambiguous, "
+            "first: (begin: 2020-03-08 10:00:00, end: 2020-11-01 09:00:00, "
+            "offset: -25200s, save: 60min, abbrev: PDT), "
+            "second: (begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
+            "offset: -28800s, save: 0min, abbrev: PST)"),
+        STR("result: ambiguous, "
+            "first: (begin: 2020-03-08 10:00:00, end: 2020-11-01 09:00:00, "
+            "offset: -25200s, save: 60min, abbrev: GMT-7), "
+            "second: (begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
+            "offset: -28800s, save: 0min, abbrev: GMT-8)"));
+    empty_braces_helper(nonexistent1,
+        STR("result: nonexistent, "
+            "first: (begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
+            "offset: 36000s, save: 0min, abbrev: AEST), "
+            "second: (begin: 2020-10-03 16:00:00, end: 2021-04-03 16:00:00, "
+            "offset: 39600s, save: 60min, abbrev: AEDT)"),
+        STR("result: nonexistent, "
+            "first: (begin: 2020-04-04 16:00:00, end: 2020-10-03 16:00:00, "
+            "offset: 36000s, save: 0min, abbrev: GMT+10), "
+            "second: (begin: 2020-10-03 16:00:00, end: 2021-04-03 16:00:00, "
+            "offset: 39600s, save: 60min, abbrev: GMT+11)"));
+    empty_braces_helper(nonexistent2,
+        STR("result: nonexistent, "
+            "first: (begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
+            "offset: -28800s, save: 0min, abbrev: PST), "
+            "second: (begin: 2021-03-14 10:00:00, end: 2021-11-07 09:00:00, "
+            "offset: -25200s, save: 60min, abbrev: PDT)"),
+        STR("result: nonexistent, "
+            "first: (begin: 2020-11-01 09:00:00, end: 2021-03-14 10:00:00, "
+            "offset: -28800s, save: 0min, abbrev: GMT-8), "
+            "second: (begin: 2021-03-14 10:00:00, end: 2021-11-07 09:00:00, "
+            "offset: -25200s, save: 60min, abbrev: GMT-7)"));
 
-    assert(format(STR("{:%z %Ez %Oz %Z}"), sys1) == STR("+1000 +10:00 +10:00 GMT+10"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), sys2) == STR("+1100 +11:00 +11:00 GMT+11"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), sys3) == STR("-0800 -08:00 -08:00 PST"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), sys4) == STR("-0700 -07:00 -07:00 PDT"));
+    const auto sys1_str = format(STR("{:%z %Ez %Oz %Z}"), sys1);
+    const auto sys2_str = format(STR("{:%z %Ez %Oz %Z}"), sys2);
+    const auto sys3_str = format(STR("{:%z %Ez %Oz %Z}"), sys3);
+    const auto sys4_str = format(STR("{:%z %Ez %Oz %Z}"), sys4);
 
-    assert(format(STR("{:%z %Ez %Oz %Z}"), loc1) == STR("+1000 +10:00 +10:00 GMT+10"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), loc2) == STR("+1100 +11:00 +11:00 GMT+11"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), loc3) == STR("-0800 -08:00 -08:00 PST"));
-    assert(format(STR("{:%z %Ez %Oz %Z}"), loc4) == STR("-0700 -07:00 -07:00 PDT"));
+    const auto loc1_str = format(STR("{:%z %Ez %Oz %Z}"), loc1);
+    const auto loc2_str = format(STR("{:%z %Ez %Oz %Z}"), loc2);
+    const auto loc3_str = format(STR("{:%z %Ez %Oz %Z}"), loc3);
+    const auto loc4_str = format(STR("{:%z %Ez %Oz %Z}"), loc4);
+
+    assert(sys1_str == STR("+1000 +10:00 +10:00 AEST") || sys1_str == STR("+1000 +10:00 +10:00 GMT+10"));
+    assert(sys2_str == STR("+1100 +11:00 +11:00 AEDT") || sys2_str == STR("+1100 +11:00 +11:00 GMT+11"));
+    assert(sys3_str == STR("-0800 -08:00 -08:00 PST") || sys3_str == STR("-0800 -08:00 -08:00 GMT-8"));
+    assert(sys4_str == STR("-0700 -07:00 -07:00 PDT") || sys4_str == STR("-0700 -07:00 -07:00 GMT-7"));
+
+    assert(loc1_str == STR("+1000 +10:00 +10:00 AEST") || loc1_str == STR("+1000 +10:00 +10:00 GMT+10"));
+    assert(loc2_str == STR("+1100 +11:00 +11:00 AEDT") || loc2_str == STR("+1100 +11:00 +11:00 GMT+11"));
+    assert(loc3_str == STR("-0800 -08:00 -08:00 PST") || loc3_str == STR("-0800 -08:00 -08:00 GMT-8"));
+    assert(loc4_str == STR("-0700 -07:00 -07:00 PDT") || loc4_str == STR("-0700 -07:00 -07:00 GMT-7"));
 
     throw_helper(STR("{:%z}"), ambiguous1);
     throw_helper(STR("{:%z}"), ambiguous2);
@@ -904,7 +977,7 @@ void test_zoned_time_formatter() {
 
     const zoned_time zt{LA::Tz_name, t};
 
-    empty_braces_helper(zt, STR("2021-04-19 08:16:17 PDT"));
+    empty_braces_helper(zt, STR("2021-04-19 08:16:17 PDT"), STR("2021-04-19 08:16:17 GMT-7"));
 
     assert(format(STR("{:%c, %x, %X}"), zt) == STR("04/19/21 08:16:17, 04/19/21, 08:16:17"));
     assert(format(STR("{:%D %F, %Y %C %y, %b %B %h %m, %d %e, %a %A %u %w}"), zt)
