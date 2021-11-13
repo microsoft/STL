@@ -10168,7 +10168,6 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
     using _Clamp_opt_fp = is_floating_point<_Ty>;
 #else // ^^^ /fp:fast ^^^ / vvv not /fp:fast vvv
     using _Clamp_opt_fp = false_type;
-    // false_type
 #endif //  ^^^ not /fp:fast ^^^
     if constexpr (conjunction_v<disjunction<is_integral<_Ty>, is_enum<_Ty>, is_pointer<_Ty>, _Clamp_opt_fp>,
                       disjunction<is_same<_Pr, less<>>, is_same<_Pr, less<_Ty>>>>) {
