@@ -10171,7 +10171,7 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
 #endif //  ^^^ not /fp:fast ^^^
     if constexpr (conjunction_v<disjunction<is_integral<_Ty>, is_enum<_Ty>, is_pointer<_Ty> _CLAMP_OPT_FP>,
                       disjunction<is_same<_Pr, less<>>, is_same<_Pr, less<_Ty>>>>) {
-        // Avoid early return during evaluation to promote branchless code generation; see GH-2334
+        // Avoid early return to promote branchless code generation; see GH-2334
         const _Ty& _Tmp = _Val < _Min_val ? _Min_val : _Val;
         return _Max_val < _Tmp ? _Max_val : _Tmp;
     } else {
