@@ -10164,7 +10164,7 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-    if constexpr (conjunction_v<disjunction<is_integral<_Ty>, is_floating_point<_Ty>, is_enum<_Ty>, is_pointer<_Ty>>,
+    if constexpr (conjunction_v<disjunction<is_arithmetic<_Ty>, is_enum<_Ty>, is_pointer<_Ty>>,
                       disjunction<is_same<_Pr, less<>>, is_same<_Pr, less<_Ty>>>>) {
         // Avoid early return to promote branchless code generation; see GH-2334
         const _Ty& _Tmp = _Val < _Min_val ? _Min_val : _Val;
