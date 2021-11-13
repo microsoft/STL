@@ -2712,7 +2712,7 @@ namespace ranges {
                 auto _Next2 = _Last2;
                 for (;;) { // test if [_First2, _Last2) is a suffix of [_First1, _Candidate)
                     if (_First2 == _Next2) { // match found
-                        return {_STD move(_First1), _STD move(_Last1)};
+                        return {_STD move(_Next1), _STD move(_Candidate)};
                     }
 
                     if (_First1 == _Next1) {
