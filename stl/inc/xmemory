@@ -146,7 +146,7 @@ inline void _Adjust_manually_vector_aligned(void*& _Ptr, size_t& _Bytes) {
     // adjust parameters from _Allocate_manually_vector_aligned to pass to operator delete
     _Bytes += _Non_user_size;
 
-    const uintptr_t* const _Ptr_user = reinterpret_cast<uintptr_t*>(_Ptr);
+    const uintptr_t* const _Ptr_user = static_cast<uintptr_t*>(_Ptr);
     const uintptr_t _Ptr_container   = _Ptr_user[-1];
 
     // If the following asserts, it likely means that we are performing
@@ -563,7 +563,6 @@ struct _Normal_allocator_traits { // defines traits for allocators
     template <class _Ty, class... _Types>
     static _CONSTEXPR20 void construct(_Alloc& _Al, _Ty* _Ptr, _Types&&... _Args) {
         if constexpr (_Uses_default_construct<_Alloc, _Ty*, _Types...>::value) {
-            (void) _Al; // TRANSITION, DevCom-1004719
 #if _HAS_CXX20
             _STD construct_at(_Ptr, _STD forward<_Types>(_Args)...);
 #else // _HAS_CXX20
@@ -704,19 +703,25 @@ template <class _Alloc>
 struct allocator_traits : conditional_t<_Is_default_allocator<_Alloc>::value, _Default_allocator_traits<_Alloc>,
                               _Normal_allocator_traits<_Alloc>> {};
 
-// _Choose_pocca returns whether an attempt to propagate allocators is necessary in copy assignment operations.
+// _Choose_pocca_v returns whether an attempt to propagate allocators is necessary in copy assignment operations.
 // Note that even when false_type, callers should call _Pocca as we want to assign allocators even when equal.
 template <class _Alloc>
-using _Choose_pocca = bool_constant<allocator_traits<_Alloc>::propagate_on_container_copy_assignment::value
-                                    && !allocator_traits<_Alloc>::is_always_equal::value>;
+_INLINE_VAR constexpr bool _Choose_pocca_v = allocator_traits<_Alloc>::propagate_on_container_copy_assignment::value
+                                          && !allocator_traits<_Alloc>::is_always_equal::value;
 
-struct _Equal_allocators {}; // usually allows contents to be stolen (e.g. with swap)
-using _Propagate_allocators    = true_type; // usually allows the allocator to be propagated, and then contents stolen
-using _No_propagate_allocators = false_type; // usually turns moves into copies
+enum class _Pocma_values {
+    _Equal_allocators, // usually allows contents to be stolen (e.g. with swap)
+    _Propagate_allocators, // usually allows the allocator to be propagated, and then contents stolen
+    _No_propagate_allocators, // usually turns moves into copies
+};
 
 template <class _Alloc>
-using _Choose_pocma = conditional_t<allocator_traits<_Alloc>::is_always_equal::value, _Equal_allocators,
-    typename allocator_traits<_Alloc>::propagate_on_container_move_assignment::type>;
+_INLINE_VAR constexpr _Pocma_values
+    _Choose_pocma_v = allocator_traits<_Alloc>::is_always_equal::value
+                        ? _Pocma_values::_Equal_allocators
+                        : (allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
+                                ? _Pocma_values::_Propagate_allocators
+                                : _Pocma_values::_No_propagate_allocators);
 
 template <class _Alloc, class _Value_type>
 using _Rebind_alloc_t = typename allocator_traits<_Alloc>::template rebind_alloc<_Value_type>;
@@ -830,8 +835,7 @@ public:
     }
 
 #if _HAS_CXX23
-    _NODISCARD constexpr __declspec(allocator) allocation_result<_Ty*> allocate_at_least(
-        _CRT_GUARDOVERFLOW const size_t _Count) {
+    _NODISCARD constexpr allocation_result<_Ty*> allocate_at_least(_CRT_GUARDOVERFLOW const size_t _Count) {
         return {allocate(_Count), _Count};
     }
 #endif // _HAS_CXX23
@@ -1478,7 +1482,7 @@ struct _NODISCARD _Uninitialized_backout {
 template <class _InIt, class _NoThrowFwdIt>
 _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_move_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
-    if constexpr (_Ptr_move_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
+    if constexpr (_Iter_move_cat<_InIt, _NoThrowFwdIt>::_Bitcopy_constructible) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -1607,7 +1611,8 @@ namespace ranges {
         // clang-format on
         constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
         constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-        if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+        if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible
+                      && _Sized_or_unreachable_sentinel_for<_Se, _It> //
                       && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
             if constexpr (_Is_sized1 && _Is_sized2) {
                 return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
@@ -1674,7 +1679,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
 
-    if constexpr (conjunction_v<bool_constant<_Ptr_copy_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
+    if constexpr (conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
@@ -1697,7 +1702,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 template <class _InIt, class _NoThrowFwdIt>
 _CONSTEXPR20 _NoThrowFwdIt _Uninitialized_copy_unchecked(_InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // copy [_First, _Last) to raw [_Dest, ...)
-    if constexpr (_Ptr_copy_cat<_InIt, _NoThrowFwdIt>::_Really_trivial) {
+    if constexpr (_Iter_copy_cat<_InIt, _NoThrowFwdIt>::_Bitcopy_constructible) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -1733,7 +1738,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_move(
     using _Ptrval     = typename _Alloc::value_type*;
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (conjunction_v<bool_constant<_Ptr_move_cat<decltype(_UFirst), _Ptrval>::_Really_trivial>,
+    if constexpr (conjunction_v<bool_constant<_Iter_move_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
                       _Uses_default_construct<_Alloc, _Ptrval, decltype(_STD move(*_UFirst))>>) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())

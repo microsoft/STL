@@ -19,7 +19,7 @@ using namespace std;
 
 template <class Rng>
 concept CanViewJoin = requires(Rng&& r) {
-    views::join(static_cast<Rng&&>(r));
+    views::join(forward<Rng>(r));
 };
 
 template <ranges::input_range Outer, ranges::random_access_range Expected>
@@ -34,97 +34,91 @@ constexpr bool test_one(Outer&& rng, Expected&& expected) {
     constexpr bool can_test = ranges::viewable_range<Outer> && input_range<range_reference_t<Outer>>;
 
     if constexpr (can_test) {
+        constexpr bool is_view = ranges::view<remove_cvref_t<Outer>>;
+
+        // Validate range adapter object
+        // ...with lvalue argument
+        static_assert(CanViewJoin<Outer&> == (!is_view || copy_constructible<remove_cvref_t<Outer>>) );
+        if constexpr (CanViewJoin<Outer&>) {
+            using JV                   = join_view<views::all_t<Outer&>>;
+            constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<remove_cvref_t<Outer>>;
+
+            static_assert(same_as<decltype(views::join(rng)), JV>);
+            static_assert(noexcept(views::join(rng)) == is_noexcept);
+
+            static_assert(same_as<decltype(rng | views::join), JV>);
+            static_assert(noexcept(rng | views::join) == is_noexcept);
+        }
+
+        // ... with const lvalue argument
+        static_assert(
+            CanViewJoin<const remove_reference_t<Outer>&> == (!is_view || copy_constructible<remove_cvref_t<Outer>>) );
+        if constexpr (is_view && copy_constructible<remove_cvref_t<Outer>>) {
+            using JV                   = join_view<views::all_t<const remove_reference_t<Outer>&>>;
+            constexpr bool is_noexcept = is_nothrow_copy_constructible_v<remove_cvref_t<Outer>>;
+
+            static_assert(same_as<decltype(views::join(as_const(rng))), JV>);
+            static_assert(noexcept(views::join(as_const(rng))) == is_noexcept);
+
+            static_assert(same_as<decltype(as_const(rng) | views::join), JV>);
+            static_assert(noexcept(as_const(rng) | views::join) == is_noexcept);
+        } else if constexpr (!is_view) {
+            using JV                   = join_view<ranges::ref_view<const remove_reference_t<Outer>>>;
+            constexpr bool is_noexcept = true;
+
+            static_assert(same_as<decltype(views::join(as_const(rng))), JV>);
+            static_assert(noexcept(views::join(as_const(rng))) == is_noexcept);
+
+            static_assert(same_as<decltype(as_const(rng) | views::join), JV>);
+            static_assert(noexcept(as_const(rng) | views::join) == is_noexcept);
+        }
+
+        // ... with rvalue argument
+        static_assert(CanViewJoin<remove_reference_t<Outer>> == (is_view || movable<remove_reference_t<Outer>>) );
+        if constexpr (is_view) {
+            using JV                   = join_view<views::all_t<remove_reference_t<Outer>>>;
+            constexpr bool is_noexcept = is_nothrow_move_constructible_v<remove_reference_t<Outer>>;
+
+            static_assert(same_as<decltype(views::join(move(rng))), JV>);
+            static_assert(noexcept(views::join(move(rng))) == is_noexcept);
+
+            static_assert(same_as<decltype(move(rng) | views::join), JV>);
+            static_assert(noexcept(move(rng) | views::join) == is_noexcept);
+        } else if constexpr (movable<remove_reference_t<Outer>>) {
+            using JV                   = join_view<ranges::owning_view<remove_reference_t<Outer>>>;
+            constexpr bool is_noexcept = is_nothrow_move_constructible_v<remove_reference_t<Outer>>;
+
+            static_assert(same_as<decltype(views::join(move(rng))), JV>);
+            static_assert(noexcept(views::join(move(rng))) == is_noexcept);
+
+            static_assert(same_as<decltype(move(rng) | views::join), JV>);
+            static_assert(noexcept(move(rng) | views::join) == is_noexcept);
+        }
+
+        // ... with const rvalue argument
+        static_assert(
+            CanViewJoin<const remove_reference_t<Outer>> == (is_view && copy_constructible<remove_cvref_t<Outer>>) );
+        if constexpr (is_view && copy_constructible<remove_cvref_t<Outer>>) {
+            using JV                   = join_view<remove_cvref_t<Outer>>;
+            constexpr bool is_noexcept = is_nothrow_copy_constructible_v<remove_cvref_t<Outer>>;
+
+            static_assert(same_as<decltype(views::join(move(as_const(rng)))), JV>);
+            static_assert(noexcept(views::join(move(as_const(rng)))) == is_noexcept);
+
+            static_assert(same_as<decltype(move(as_const(rng)) | views::join), JV>);
+            static_assert(noexcept(move(as_const(rng)) | views::join) == is_noexcept);
+        }
+
         using V = views::all_t<Outer>;
         using R = join_view<V>;
         static_assert(ranges::view<R>);
         static_assert(input_range<R> == input_range<Inner>);
         static_assert(forward_range<R> == (deref_is_glvalue && forward_range<Outer> && forward_range<Inner>) );
-        // clang-format off
-        static_assert(bidirectional_range<R> ==
-            (deref_is_glvalue && bidirectional_range<Outer> && bidirectional_range<Inner> && common_range<Inner>));
-        // clang-format on
+        static_assert(
+            bidirectional_range<R> == //
+            (deref_is_glvalue && bidirectional_range<Outer> && bidirectional_range<Inner> && common_range<Inner>) );
         static_assert(!ranges::random_access_range<R>);
         static_assert(!ranges::contiguous_range<R>);
-
-        constexpr bool is_view = ranges::view<remove_cvref_t<Outer>>;
-
-        // Validate range adapter object
-        // ...with lvalue argument
-        static_assert(CanViewJoin<Outer&> == (!is_view || copyable<V>) );
-        if constexpr (CanViewJoin<Outer&>) {
-            constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
-
-            static_assert(same_as<decltype(views::join(rng)), R>);
-            static_assert(noexcept(views::join(rng)) == is_noexcept);
-
-            static_assert(same_as<decltype(rng | views::join), R>);
-            static_assert(noexcept(rng | views::join) == is_noexcept);
-        }
-
-        // ... with const lvalue argument
-        static_assert(CanViewJoin<const remove_reference_t<Outer>&> == (!is_view || copyable<V>) );
-        if constexpr (is_view && copyable<V>) {
-            constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
-
-            static_assert(same_as<decltype(views::join(as_const(rng))), R>);
-            static_assert(noexcept(views::join(as_const(rng))) == is_noexcept);
-
-            static_assert(same_as<decltype(as_const(rng) | views::join), R>);
-            static_assert(noexcept(as_const(rng) | views::join) == is_noexcept);
-        } else if constexpr (!is_view) {
-            using RC                   = join_view<views::all_t<const remove_reference_t<Outer>&>>;
-            constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_reference_t<Outer>&>;
-
-            static_assert(same_as<decltype(views::join(as_const(rng))), RC>);
-            static_assert(noexcept(views::join(as_const(rng))) == is_noexcept);
-
-            static_assert(same_as<decltype(as_const(rng) | views::join), RC>);
-            static_assert(noexcept(as_const(rng) | views::join) == is_noexcept);
-        }
-
-        // ... with rvalue argument
-        static_assert(CanViewJoin<remove_reference_t<Outer>> == (is_view || borrowed_range<remove_cvref_t<Outer>>) );
-        if constexpr (is_view) {
-            constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
-            static_assert(same_as<decltype(views::join(move(rng))), R>);
-            static_assert(noexcept(views::join(move(rng))) == is_noexcept);
-
-            static_assert(same_as<decltype(move(rng) | views::join), R>);
-            static_assert(noexcept(move(rng) | views::join) == is_noexcept);
-        } else if constexpr (borrowed_range<remove_cvref_t<Outer>>) {
-            using S                    = decltype(ranges::subrange{move(rng)});
-            using RS                   = join_view<S>;
-            constexpr bool is_noexcept = noexcept(S{move(rng)});
-
-            static_assert(same_as<decltype(views::join(move(rng))), RS>);
-            static_assert(noexcept(views::join(move(rng))) == is_noexcept);
-
-            static_assert(same_as<decltype(move(rng) | views::join), RS>);
-            static_assert(noexcept(move(rng) | views::join) == is_noexcept);
-        }
-
-        // ... with const rvalue argument
-        static_assert(CanViewJoin<const remove_reference_t<Outer>> == (is_view && copyable<V>)
-                      || (!is_view && borrowed_range<remove_cvref_t<Outer>>) );
-        if constexpr (is_view && copyable<V>) {
-            constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
-
-            static_assert(same_as<decltype(views::join(move(as_const(rng)))), R>);
-            static_assert(noexcept(views::join(move(as_const(rng)))) == is_noexcept);
-
-            static_assert(same_as<decltype(move(as_const(rng)) | views::join), R>);
-            static_assert(noexcept(move(as_const(rng)) | views::join) == is_noexcept);
-        } else if constexpr (!is_view && borrowed_range<const remove_cvref_t<Outer>>) {
-            using S                    = decltype(ranges::subrange{as_const(rng)});
-            using RS                   = join_view<S>;
-            constexpr bool is_noexcept = noexcept(S{as_const(rng)});
-
-            static_assert(same_as<decltype(views::join(move(as_const(rng)))), RS>);
-            static_assert(noexcept(views::join(move(as_const(rng)))) == is_noexcept);
-
-            static_assert(same_as<decltype(move(as_const(rng)) | views::join), RS>);
-            static_assert(noexcept(move(as_const(rng)) | views::join) == is_noexcept);
-        }
 
         // Validate deduction guide
         same_as<R> auto r = join_view{forward<Outer>(rng)};
@@ -524,7 +518,7 @@ int main() {
 
     { // P2328 range of prvalue array
         static constexpr int result[] = {1, 2, 3, 4, 5};
-        auto ToArray                  = [](const int i) { return array<int, 1>{i + 1}; };
+        constexpr auto ToArray        = [](const int i) { return array<int, 1>{i + 1}; };
         assert(ranges::equal(views::iota(0, 5) | views::transform(ToArray) | views::join, result));
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToArray) | views::join, result));
     }
@@ -562,7 +556,7 @@ int main() {
     }
 
     { // Immovable type
-        auto ToArrayOfImmovable = [](int) { return array<Immovable, 3>{}; };
+        constexpr auto ToArrayOfImmovable = [](int) { return array<Immovable, 3>{}; };
         assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
         static_assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
     }
