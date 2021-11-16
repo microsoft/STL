@@ -8,7 +8,7 @@ using namespace std::filesystem;
 using namespace std::ranges;
 
 bool is_tiff(const directory_entry& entry) {
-    return entry.is_regular_file() && entry.path().extension().native() == L"tif";
+    return entry.is_regular_file() && entry.path().extension().native() == L"tiff";
 }
 
 void test1(directory_iterator dir) {
