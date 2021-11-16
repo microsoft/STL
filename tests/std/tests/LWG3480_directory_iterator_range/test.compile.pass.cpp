@@ -11,7 +11,7 @@ bool is_tiff(const directory_entry& entry) {
     return entry.is_regular_file() && entry.path().extension().native() == L"tiff";
 }
 
-void test1(directory_iterator dir) {
+void test(directory_iterator dir) {
     [[maybe_unused]] auto tif_files     = dir | views::filter(is_tiff);
     [[maybe_unused]] auto first_5_files = dir | views::take(5);
 }
