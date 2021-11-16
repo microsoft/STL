@@ -4,11 +4,10 @@
 #include <filesystem>
 #include <ranges>
 
-using namespace std;
 using namespace std::filesystem;
 using namespace std::ranges;
 
-bool is_tiff(const std::filesystem::directory_entry& entry) {
+bool is_tiff(const directory_entry& entry) {
     return entry.is_regular_file() && entry.path().extension().native() == L"tif";
 }
 
