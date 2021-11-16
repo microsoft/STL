@@ -4337,6 +4337,20 @@ namespace filesystem {
         return _STD filesystem::copy(_From, _To, copy_options::none);
     }
 } // namespace filesystem
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    template <>
+    inline constexpr bool enable_borrowed_range<filesystem::directory_iterator> = true;
+    template <>
+    inline constexpr bool enable_borrowed_range<filesystem::recursive_directory_iterator> = true;
+    template <>
+    inline constexpr bool enable_view<filesystem::directory_iterator> = true;
+    template <>
+    inline constexpr bool enable_view<filesystem::recursive_directory_iterator> = true;
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 _STD_END
 
 #pragma pop_macro("new")

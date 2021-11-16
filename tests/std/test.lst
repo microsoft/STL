@@ -192,6 +192,7 @@ tests\GH_002120_streambuf_seekpos_and_seekoff
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3422_seed_seq_ctors
+tests\LWG3480_directory_iterator_range
 tests\P0019R8_atomic_ref
 tests\P0024R2_parallel_algorithms_adjacent_difference
 tests\P0024R2_parallel_algorithms_adjacent_find
