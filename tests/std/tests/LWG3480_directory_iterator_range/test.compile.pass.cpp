@@ -14,11 +14,13 @@ bool is_tiff(const directory_entry& entry) {
 void test(directory_iterator dir) {
     [[maybe_unused]] auto tif_files     = dir | views::filter(is_tiff);
     [[maybe_unused]] auto first_5_files = dir | views::take(5);
+    static_assert(borrowed_range<directory_iterator>);
 }
 
 void test_recursive(recursive_directory_iterator dir) {
     [[maybe_unused]] auto tif_files     = dir | views::filter(is_tiff);
     [[maybe_unused]] auto first_5_files = dir | views::take(5);
+    static_assert(borrowed_range<recursive_directory_iterator>);
 }
 
 int main() {} // COMPILE-ONLY
