@@ -18,7 +18,9 @@ The STL repo has many filed issues that track work to be completed.  If you're u
 
 ## Review a pull request
 
-We welcome code reviews from contributors! Reviews from other contributors can often accelerate the reviewing process by helping a PR reach a more finished state before maintainers review the changes.  As a result, such a PR may require fewer maintainer review iterations before reaching a "Ready to Merge" state!  
+We welcome code reviews from contributors! Reviews from other contributors can often accelerate the reviewing process
+by helping a PR reach a more finished state before maintainers review the changes.  As a result, such a PR may require
+fewer maintainer review iterations before reaching a "Ready to Merge" state!  
 To gain insight into our Code Review process, you may want to view:
  * Ongoing reviews in [Pull Requests List](https://github.com/microsoft/STL/pulls)
  * [Advice for Reviewing Pull Requests](https://github.com/microsoft/STL/wiki/Advice-for-Reviewing-Pull-Requests).
