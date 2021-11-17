@@ -11,7 +11,8 @@ provided by the bot. You will only need to do this once across all repos using o
 # Types of Contributions
 
 ## Submit a pull request that aligns with our goals and priorities
-The STL repo has many filed issues that track work to be completed.  If you're unsure of where to start, you may want to start by: 
+The STL repo has many filed issues that track work to be completed.
+If you're unsure of where to start, you may want to start by:
  * Looking for pinned issues
  * Checking issues under the labels `high priority` and `help wanted`
  * New contributors may also look into issues labeled `good first issue`
@@ -20,7 +21,7 @@ The STL repo has many filed issues that track work to be completed.  If you're u
 
 We welcome code reviews from contributors! Reviews from other contributors can often accelerate the reviewing process
 by helping a PR reach a more finished state before maintainers review the changes.  As a result, such a PR may require
-fewer maintainer review iterations before reaching a "Ready to Merge" state!  
+fewer maintainer review iterations before reaching a "Ready to Merge" state!
 To gain insight into our Code Review process, you may want to view:
  * Ongoing reviews in [Pull Requests List](https://github.com/microsoft/STL/pulls)
  * [Advice for Reviewing Pull Requests](https://github.com/microsoft/STL/wiki/Advice-for-Reviewing-Pull-Requests).
@@ -38,7 +39,7 @@ Before submitting a pull request, please ensure that:
   members, adding virtual functions, changing whether a type is an aggregate
   or trivially copyable, etc.).
 
-* Your changes are written from scratch using only acceptable sources: 
+* Your changes are written from scratch using only acceptable sources:
    * this repository
    * the C++ Working Draft (including any cited standards)
    * other WG21 papers (excluding
@@ -46,8 +47,8 @@ Before submitting a pull request, please ensure that:
    * LWG issues as reference material
    * a project listed in NOTICE.txt (please cite the project in the PR description)
   If your changes are derived from any other project, you *must* mention it
-  here, so we can determine whether the license is compatible and whether any other 
-  steps need to be taken
+  here, so we can determine whether the license is compatible and whether any other
+  steps need to be taken.
 
 # Code of Conduct
 
