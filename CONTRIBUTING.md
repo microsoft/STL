@@ -29,7 +29,8 @@ To gain insight into our Code Review process, you may want to view:
 Before submitting a pull request, please ensure that:
 
 * Identifiers in product code changes are properly `_Ugly` as per
-  https://eel.is/c++draft/lex.name#3.1 or there are no product code changes.
+  [[lex.name]/3.1](https://eel.is/c++draft/lex.name#3.1)
+  or there are no product code changes.
 
 * These changes introduce no known ABI breaks (adding members, renaming
   members, adding virtual functions, changing whether a type is an aggregate
