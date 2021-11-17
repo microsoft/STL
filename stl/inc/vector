@@ -42,9 +42,6 @@ public:
         this->_Adopt(_Pvector);
     }
 
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vector_const_iterator& operator=(const _Vector_const_iterator&) noexcept = default;
-
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
@@ -260,9 +257,6 @@ public:
     using reference         = value_type&;
 
     using _Mybase::_Mybase;
-
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vector_iterator& operator=(const _Vector_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
@@ -1942,9 +1936,6 @@ public:
         this->_Adopt(_Mypvbool);
     }
 
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vb_iter_base& operator=(const _Vb_iter_base&) noexcept = default;
-
     _CONSTEXPR20 void _Advance(_Size_type _Off) noexcept {
         _Myoff += _Off;
         _Myptr += _Myoff / _VBITS;
@@ -2044,9 +2035,6 @@ public:
 
     _CONSTEXPR20 _Vb_const_iterator(const _Vbase* _Ptr, const _Container_base* _Mypvbool) noexcept
         : _Mybase(_Ptr, 0, _Mypvbool) {}
-
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vb_const_iterator& operator=(const _Vb_const_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20 const_reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2256,9 +2244,6 @@ public:
 
         return _Reft(*this);
     }
-
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vb_iterator& operator=(const _Vb_iterator&) noexcept = default;
 
     _CONSTEXPR20 _Vb_iterator& operator++() noexcept {
         _Mybase::operator++();

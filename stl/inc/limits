@@ -1069,45 +1069,91 @@ extern int __isa_available;
 }
 
 template <_Countr_zero_assumption _Assumption, class _Ty>
-_NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
+_NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
-    constexpr _Ty _Max    = (numeric_limits<_Ty>::max) ();
 
-#ifndef __AVX2__
-    // Because the widening done below will always give a non-0 value, checking for tzcnt
-    // is not required for 8-bit and 16-bit since the only difference in behavior between
-    // bsf and tzcnt is when the value is 0.
-    if constexpr (_Digits > 16 && _Assumption != _Countr_zero_assumption::_Non_zero_input) {
-        const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
-        if (!_Definitely_have_tzcnt && _Val == 0) {
-            return _Digits;
-        }
-    }
-#endif // __AVX2__
-
-    if constexpr (_Digits <= 32) {
-        if constexpr (_Assumption == _Countr_zero_assumption::_Non_zero_input) {
-            return static_cast<int>(_TZCNT_U32(_Val));
-        } else {
-            // Intended widening to int. This operation means that a narrow 0 will widen
-            // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
-            // of the wider type.
-            return static_cast<int>(_TZCNT_U32(static_cast<unsigned int>(~_Max | _Val)));
-        }
+    if constexpr (_Digits <= 16 && _Assumption == _Countr_zero_assumption::_No_assmuption) {
+        // Intended widening to int. This operation means that a narrow 0 will widen
+        // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
+        // of the wider type.
+        constexpr _Ty _Max = (numeric_limits<_Ty>::max) ();
+        return static_cast<int>(_TZCNT_U32(static_cast<unsigned int>(~_Max | _Val)));
+    } else if constexpr (_Digits <= 32) {
+        return static_cast<int>(_TZCNT_U32(_Val));
     } else {
 #ifdef _M_IX86
-        const unsigned int _High = _Val >> 32;
-        const unsigned int _Low  = static_cast<unsigned int>(_Val);
+        const auto _Low = static_cast<unsigned int>(_Val);
         if (_Low == 0) {
-            return 32 + _Checked_x86_x64_countr_zero<_Assumption>(_High);
+            const unsigned int _High = _Val >> 32;
+            return static_cast<int>(32 + _TZCNT_U32(_High));
         } else {
-            return _Checked_x86_x64_countr_zero<_Countr_zero_assumption::_Non_zero_input>(_Low);
+            return static_cast<int>(_TZCNT_U32(_Low));
         }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(_TZCNT_U64(_Val));
 #endif // _M_IX86
     }
 }
+
+template <_Countr_zero_assumption _Assumption, class _Ty>
+_NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+
+    unsigned long _Result;
+    unsigned char _Bsf_return;
+
+    if constexpr (_Digits <= 16 && _Assumption == _Countr_zero_assumption::_No_assmuption) {
+        // Intended widening to int. This operation means that a narrow 0 will widen
+        // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
+        // of the wider type.
+        constexpr _Ty _Max = (numeric_limits<_Ty>::max) ();
+        _Bsf_return        = _BitScanForward(&_Result, static_cast<unsigned int>(~_Max | _Val));
+    } else if constexpr (_Digits <= 32) {
+        _Bsf_return = _BitScanForward(&_Result, _Val);
+    } else {
+#ifdef _M_IX86
+        const auto _Low = static_cast<unsigned int>(_Val);
+        if (_BitScanForward(&_Result, _Low)) {
+            return static_cast<int>(_Result);
+        }
+
+        const unsigned int _High = _Val >> 32;
+        if (!_BitScanForward(&_Result, _High)) {
+            return _Digits;
+        } else {
+            return static_cast<int>(_Result + 32);
+        }
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+        _Bsf_return = _BitScanForward64(&_Result, _Val);
+#endif // _M_IX86
+    }
+
+    if constexpr (_Digits >= 32 && _Assumption == _Countr_zero_assumption::_No_assmuption) {
+        if (!_Bsf_return) {
+            return _Digits;
+        }
+    } else {
+        _STL_INTERNAL_CHECK(_Bsf_return);
+        (void) _Bsf_return;
+    }
+
+    return static_cast<int>(_Result);
+}
+
+template <_Countr_zero_assumption _Assumption, class _Ty>
+_NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
+#ifdef __AVX2__
+    return _Countr_zero_tzcnt<_Assumption>(_Val);
+#else // __AVX2__
+    const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
+    if (_Definitely_have_tzcnt) {
+        return _Countr_zero_tzcnt<_Assumption>(_Val);
+    } else {
+        return _Countr_zero_bsf<_Assumption>(_Val);
+    }
+#endif // __AVX2__
+}
+
 #undef _TZCNT_U32
 #undef _TZCNT_U64
 #endif // defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
