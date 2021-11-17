@@ -1052,8 +1052,8 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
 }
 
 enum class _Countr_zero_assumption {
-    _No_assmuption,
-    _Non_zero_input,
+    _Possibly_zero,
+    _Nonzero,
 };
 
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
@@ -1072,7 +1072,7 @@ template <_Countr_zero_assumption _Assumption, class _Ty>
 _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
 
-    if constexpr (_Digits <= 16 && _Assumption == _Countr_zero_assumption::_No_assmuption) {
+    if constexpr (_Digits <= 16 && _Assumption == _Countr_zero_assumption::_Possibly_zero) {
         // Intended widening to int. This operation means that a narrow 0 will widen
         // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
         // of the wider type.
@@ -1102,7 +1102,7 @@ _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
     unsigned long _Result;
     unsigned char _Bsf_return;
 
-    if constexpr (_Digits <= 16 && _Assumption == _Countr_zero_assumption::_No_assmuption) {
+    if constexpr (_Digits <= 16 && _Assumption == _Countr_zero_assumption::_Possibly_zero) {
         // Intended widening to int. This operation means that a narrow 0 will widen
         // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
         // of the wider type.
@@ -1128,7 +1128,7 @@ _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
 #endif // _M_IX86
     }
 
-    if constexpr (_Digits >= 32 && _Assumption == _Countr_zero_assumption::_No_assmuption) {
+    if constexpr (_Digits >= 32 && _Assumption == _Countr_zero_assumption::_Possibly_zero) {
         if (!_Bsf_return) {
             return _Digits;
         }
@@ -1205,7 +1205,7 @@ template <class _Ty>
 constexpr bool _Is_standard_unsigned_integer =
     _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
 
-template <_Countr_zero_assumption _Assumption = _Countr_zero_assumption::_No_assmuption, //
+template <_Countr_zero_assumption _Assumption = _Countr_zero_assumption::_Possibly_zero, //
     class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 #if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
@@ -1221,7 +1221,7 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int _Countr_zero_nonzero_input(const _Ty _Val) noexcept {
-    return _Countr_zero<_Countr_zero_assumption::_Non_zero_input>(_Val);
+    return _Countr_zero<_Countr_zero_assumption::_Nonzero>(_Val);
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
