@@ -1794,7 +1794,7 @@ STATIC_ASSERT(!ranges::viewable_range<int() const>);
 
 STATIC_ASSERT(ranges::viewable_range<std::vector<int>&>);
 STATIC_ASSERT(ranges::viewable_range<std::vector<int> const&>);
-STATIC_ASSERT(!ranges::viewable_range<std::vector<int>>);
+STATIC_ASSERT(ranges::viewable_range<std::vector<int>>);
 STATIC_ASSERT(!ranges::viewable_range<std::vector<int> const>);
 STATIC_ASSERT(ranges::viewable_range<std::string_view&>);
 STATIC_ASSERT(ranges::viewable_range<std::string_view const&>);
