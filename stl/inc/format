@@ -2663,14 +2663,14 @@ struct _Arg_formatter {
 // the type of the argument associated with the format specifier, since we don't really
 // care about avoiding code bloat for code that never runs at runtime, and we can't form
 // the erased basic_format_args structure at compile time.
-template <typename _Ty, typename _ParseContext>
+template <class _Ty, class _ParseContext>
 constexpr typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
     using _CharT                = typename _ParseContext::char_type;
     using _Context              = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
     using _ArgTraits            = _Format_arg_traits<_Context>;
     using _FormattedTypeMapping = typename _ArgTraits::template _Storage_type<_Ty>;
     // If the type is going to use a custom formatter we should just use that,
-    // instead of trying to instantiate a custom formatter for it's erased handle
+    // instead of trying to instantiate a custom formatter for its erased handle
     // type
     using _FormattedType = conditional_t<is_same_v<_FormattedTypeMapping, typename basic_format_arg<_Context>::handle>,
         _Ty, _FormattedTypeMapping>;
@@ -2679,17 +2679,17 @@ constexpr typename _ParseContext::iterator _Compile_time_parse_format_specs(_Par
 }
 
 // set of format parsing actions that only checks for validity
-template <class _CharT, typename... _Args>
+template <class _CharT, class... _Args>
 struct _Format_checker {
-    using _Pc        = basic_format_parse_context<_CharT>;
-    using _ParseFunc = typename _Pc::iterator (*)(_Pc&);
+    using _ParseContext = basic_format_parse_context<_CharT>;
+    using _ParseFunc    = typename _ParseContext::iterator (*)(_ParseContext&);
 
     static constexpr size_t _Num_args = sizeof...(_Args);
-    _Pc _Parse_context;
+    _ParseContext _Parse_context;
     _ParseFunc _Parse_funcs[_Num_args > 0 ? _Num_args : 1];
 
-    explicit constexpr _Format_checker(basic_string_view<_CharT> _Fmt) noexcept
-        : _Parse_context(_Fmt, _Num_args), _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _Pc>...} {}
+    constexpr explicit _Format_checker(basic_string_view<_CharT> _Fmt) noexcept
+        : _Parse_context(_Fmt, _Num_args), _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _ParseContext>...} {}
     constexpr void _On_text(const _CharT*, const _CharT*) const noexcept {}
     constexpr void _On_replacement_field(const size_t, const _CharT*) const noexcept {}
     constexpr const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT*) {
@@ -2845,7 +2845,8 @@ template <class _CharT, class... _Args>
 struct _Basic_format_string {
     basic_string_view<_CharT> _Str;
 
-    template <convertible_to<basic_string_view<_CharT>> _Ty>
+    template <class _Ty>
+        requires convertible_to<const _Ty&, basic_string_view<_CharT>>
     consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
         if (_Is_execution_charset_utf8()) {
             _Parse_format_string(_Str, _Format_checker<_CharT, remove_cvref_t<_Args>...>{_Str});

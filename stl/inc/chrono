@@ -5867,39 +5867,39 @@ namespace chrono {
             return _Res_iter;
         }
 
+        enum _Allowed_bit : uint8_t { _E_mod = 1, _O_mod = 2, _EO_mod = _E_mod | _O_mod };
+
+        struct _Table_entry {
+            char _Type;
+            _Allowed_bit _Allowed;
+        };
+
+        static constexpr _Table_entry _Table[] = {
+            {'c', _E_mod},
+            {'C', _E_mod},
+            {'d', _O_mod},
+            {'e', _O_mod},
+            {'H', _O_mod},
+            {'I', _O_mod},
+            {'m', _O_mod},
+            {'M', _O_mod},
+            {'S', _O_mod},
+            {'u', _O_mod},
+            {'U', _O_mod},
+            {'V', _O_mod},
+            {'w', _O_mod},
+            {'W', _O_mod},
+            {'x', _E_mod},
+            {'X', _E_mod},
+            {'y', _EO_mod},
+            {'Y', _E_mod},
+            {'z', _EO_mod},
+        };
+
         static constexpr void _Check_modifier(const char _Type, const char _Modifier) {
             if (_Modifier == '\0') {
                 return;
             }
-
-            enum _Allowed_bit : uint8_t { _E_mod = 1, _O_mod = 2, _EO_mod = _E_mod | _O_mod };
-
-            struct _Table_entry {
-                char _Type;
-                _Allowed_bit _Allowed;
-            };
-
-            constexpr _Table_entry _Table[] = {
-                {'c', _E_mod},
-                {'C', _E_mod},
-                {'d', _O_mod},
-                {'e', _O_mod},
-                {'H', _O_mod},
-                {'I', _O_mod},
-                {'m', _O_mod},
-                {'M', _O_mod},
-                {'S', _O_mod},
-                {'u', _O_mod},
-                {'U', _O_mod},
-                {'V', _O_mod},
-                {'w', _O_mod},
-                {'W', _O_mod},
-                {'x', _E_mod},
-                {'X', _E_mod},
-                {'y', _EO_mod},
-                {'Y', _E_mod},
-                {'z', _EO_mod},
-            };
 
             const _Allowed_bit _Mod = _Modifier == 'E' ? _E_mod : _O_mod;
 
