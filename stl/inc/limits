@@ -1218,11 +1218,6 @@ _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
     return _Countr_zero_fallback(_Val);
 }
 
-template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr int _Countr_zero_nonzero_input(const _Ty _Val) noexcept {
-    return _Countr_zero<_Countr_zero_assumption::_Nonzero>(_Val);
-}
-
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>
 _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
 #if _HAS_POPCNT_INTRINSICS || _HAS_NEON_INTRINSICS
