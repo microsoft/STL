@@ -1133,7 +1133,6 @@ _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
             return _Digits;
         }
     } else {
-        _STL_INTERNAL_CHECK(_Bsf_return);
         (void) _Bsf_return;
     }
 
