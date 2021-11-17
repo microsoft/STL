@@ -1095,7 +1095,7 @@ _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
     }
 }
 
-template <_Countr_zero_assumption _Assumption, class _Ty>
+template <_Countr_zero_assumption _Assumption = _Countr_zero_assumption::_Possibly_zero, class _Ty>
 _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
 
