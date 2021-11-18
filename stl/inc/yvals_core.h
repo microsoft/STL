@@ -256,6 +256,7 @@
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P2210R2 Superior String Splitting
+// P2216R3 std::format improvements
 // P2231R1 Completing constexpr In optional And variant
 // P2251R1 Require span And basic_string_view To Be Trivially Copyable
 //     (span always provides this behavior)
@@ -1269,7 +1270,7 @@
 #define __cpp_lib_erase_if                202002L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
-#define __cpp_lib_format 201907L
+#define __cpp_lib_format 202106L // P2216R3 std::format improvements
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
