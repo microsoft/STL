@@ -1064,9 +1064,6 @@ public:
     }
 
     constexpr void _On_type(const _CharT _Type) {
-        if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
-            _THROW(format_error("Invalid type specification."));
-        }
         _Specs._Type = static_cast<char>(_Type);
     }
 
@@ -1214,12 +1211,18 @@ private:
     }
 };
 
-class _Numeric_specs_checker {
+// Uses _Numeric_specs_checker to check that the type of the argument printed by
+// a replacement field with format specs actually satisfies the requirements for
+// that format spec. If the requirements are met then calls the base class
+// handler method.
+template <class _Handler>
+class _Specs_checker : public _Handler {
 private:
-    _Basic_format_arg_type _Arg_type = _Basic_format_arg_type::_None;
+    _Basic_format_arg_type _Arg_type;
 
 public:
-    constexpr explicit _Numeric_specs_checker(_Basic_format_arg_type _Arg_type_) : _Arg_type(_Arg_type_) {}
+    constexpr explicit _Specs_checker(const _Handler& _Handler_inst, const _Basic_format_arg_type _Arg_type_)
+        : _Handler(_Handler_inst), _Arg_type(_Arg_type_) {}
 
     constexpr void _Require_numeric_argument() const {
         if (!_Is_arithmetic_fmt_type(_Arg_type)) {
@@ -1241,20 +1244,6 @@ public:
             _THROW(format_error("Precision not allowed for this argument type."));
         }
     }
-};
-
-// Uses _Numeric_specs_checker to check that the type of the argument printed by
-// a replacement field with format specs actually satisfies the requirements for
-// that format spec. If the requirements are met then calls the base class
-// handler method.
-template <class _Handler>
-class _Specs_checker : public _Handler {
-private:
-    _Numeric_specs_checker _Numeric_checker;
-
-public:
-    constexpr explicit _Specs_checker(const _Handler& _Handler_inst, const _Basic_format_arg_type _Arg_type_)
-        : _Handler(_Handler_inst), _Numeric_checker(_Arg_type_) {}
 
     // _On_align has no checking, since we don't implement numeric alignments.
 
@@ -1262,20 +1251,98 @@ public:
         // Note that '#' is not valid for CharT or bool unless you
         // pass a numeric presentation type, but we encounter '#' before
         // the presentation type so we can not check that requirement here
-        _Numeric_checker._Require_numeric_argument();
+        _Require_numeric_argument();
         _Handler::_On_hash();
     }
 
     constexpr void _On_zero() {
         // Note 0 is again not valid for CharT or bool unless a numeric
         // presentation type is used.
-        _Numeric_checker._Require_numeric_argument();
+        _Require_numeric_argument();
         _Handler::_On_zero();
     }
 
     constexpr void _On_precision(int _Precision) {
-        _Numeric_checker._Check_precision();
+        _Check_precision();
         _Handler::_On_precision(_Precision);
+    }
+
+    template <class _CharT>
+    constexpr void _On_type(_CharT _Type) {
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
+            _THROW(format_error("Invalid type specification."));
+        }
+        char _Narrow_type = static_cast<char>(_Type);
+        switch (_Arg_type) {
+        case _Basic_format_arg_type::_None:
+            _STL_INTERNAL_CHECK(!"Invalid argument type.");
+            break;
+        case _Basic_format_arg_type::_Bool_type:
+            // note, we don't get a call if there isn't a type, but none is valid for everything.
+            if (_Narrow_type == 's') {
+                break;
+            }
+            [[fallthrough]];
+        case _Basic_format_arg_type::_Char_type:
+        case _Basic_format_arg_type::_Int_type:
+        case _Basic_format_arg_type::_UInt_type:
+        case _Basic_format_arg_type::_Long_long_type:
+        case _Basic_format_arg_type::_ULong_long_type:
+            switch (_Narrow_type) {
+            case 'c':
+            case 'd':
+            case 'B':
+            case 'b':
+            case 'X':
+            case 'x':
+            case 'o':
+                break;
+            default:
+                _THROW(format_error("invalid integral or character specifier"));
+            }
+            break;
+        case _Basic_format_arg_type::_Float_type:
+        case _Basic_format_arg_type::_Double_type:
+        case _Basic_format_arg_type::_Long_double_type:
+            switch (_Narrow_type) {
+            case 'A':
+            case 'a':
+            case 'E':
+            case 'e':
+            case 'F':
+            case 'f':
+            case 'G':
+            case 'g':
+                break;
+            default:
+                _THROW(format_error("invalid floating point type specifier"));
+            }
+            break;
+        case _Basic_format_arg_type::_CString_type:
+        case _Basic_format_arg_type::_String_type:
+            switch (_Narrow_type) {
+            case 's':
+                break;
+            default:
+                _THROW(format_error("invalid string type specifier"));
+            }
+            break;
+        case _Basic_format_arg_type::_Pointer_type:
+            switch (_Narrow_type) {
+            case 'p':
+                break;
+            default:
+                _THROW(format_error("invalid pointer type specifier"));
+            }
+            break;
+        case _Basic_format_arg_type::_Custom_type:
+            // there's no checking we can do here for custom types
+            // (however if a custom type uses a standard formatter
+            // to do its spec parsing it should get the above checks)
+            break;
+        }
+
+        _Handler::_On_type(_Type);
     }
 };
 
@@ -1376,10 +1443,10 @@ private:
     static constexpr size_t _Num_args       = sizeof...(_Args);
     static constexpr size_t _Storage_length = (_Traits::template _Storage_size<_Args> + ...);
 
-    // The actual storage representation: _Num_args offsets into _Storage, followed immediately by the untyped _Storage
-    // which holds copies of the object representations of arguments (with no regard for alignment). These must be
-    // allocated consecutively, since basic_format_args thinks it can store a pointer to _Index_array and use arithmetic
-    // to access the bytes of _Storage.
+    // The actual storage representation: _Num_args offsets into _Storage, followed immediately by the untyped
+    // _Storage which holds copies of the object representations of arguments (with no regard for alignment).
+    // These must be allocated consecutively, since basic_format_args thinks it can store a pointer to
+    // _Index_array and use arithmetic to access the bytes of _Storage.
     _Format_arg_index _Index_array[_Num_args];
     unsigned char _Storage[_Storage_length];
 
@@ -2328,9 +2395,9 @@ _NODISCARD _OutputIt _Fmt_write(
     // Therefore, the min subnormal 2^-1074 consumes 1074 digits of precision (digits after the decimal point).
     // We need 3 more characters for a potential negative sign, the zero integer part, and the decimal point.
     // Therefore, the precision can be clamped to 1074.
-    // The largest number consumes 309 digits before the decimal point. With a precision of 1074, and it being negative,
-    // it would use a buffer of size 1074+309+2.
-    // We need to add an additional number to the max exponent to accommodate the ones place.
+    // The largest number consumes 309 digits before the decimal point. With a precision of 1074, and it being
+    // negative, it would use a buffer of size 1074+309+2. We need to add an additional number to the max
+    // exponent to accommodate the ones place.
     constexpr auto _Max_precision = 1074;
     constexpr auto _Buffer_size   = _Max_precision + DBL_MAX_10_EXP + 3;
     char _Buffer[_Buffer_size];
@@ -2820,8 +2887,8 @@ _FORMAT_SPECIALIZE_FOR(unsigned char, _Basic_format_arg_type::_UInt_type);
 template <>
 struct formatter<wchar_t, wchar_t> : _Formatter_base<wchar_t, wchar_t, _Basic_format_arg_type::_Char_type> {};
 
-// We could use the macro for these specializations, but it's confusing to refer to symbols that are defined inside the
-// macro in the macro's "call".
+// We could use the macro for these specializations, but it's confusing to refer to symbols that are defined
+// inside the macro in the macro's "call".
 template <_Format_supported_charT _CharT>
 struct formatter<_CharT*, _CharT> : _Formatter_base<_CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
 

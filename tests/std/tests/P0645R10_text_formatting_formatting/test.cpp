@@ -686,6 +686,15 @@ void test_float_specs() {
     const Float inf = numeric_limits<Float>::infinity();
     const Float nan = numeric_limits<Float>::quiet_NaN();
 
+    // invalid specs
+    throw_helper(STR("{:b}"), 3.14f);
+    throw_helper(STR("{:B}"), 3.14f);
+    throw_helper(STR("{:c}"), 3.14f);
+    throw_helper(STR("{:d}"), 3.14f);
+    throw_helper(STR("{:o}"), 3.14f);
+    throw_helper(STR("{:x}"), 3.14f);
+    throw_helper(STR("{:X}"), 3.14f);
+
     assert(format(STR("{:}"), Float{0}) == STR("0"));
     assert(format(STR("{:}"), inf) == STR("inf"));
     assert(format(STR("{:}"), nan) == STR("nan"));
