@@ -97,7 +97,7 @@ enum class _Basic_format_arg_type : uint8_t {
 static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must fit in 4-bit bitfield");
 
 _NODISCARD constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type _Ty) {
-    return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_ULong_long_type;
+    return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Char_type;
 }
 _NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
@@ -910,6 +910,11 @@ _NODISCARD constexpr const _CharT* _Parse_format_specs(
     if (*_First != '}') {
         _Callbacks._On_type(*_First);
         ++_First;
+    } else {
+        // call the type callback so it gets a default type, this is required
+        // since _Specs_checker needs to be able to tell that it got a default type
+        // to raise an error for default formatted bools with a sign modifier
+        _Callbacks._On_type(static_cast<_CharT>('\0'));
     }
 
     return _First;
@@ -1211,14 +1216,17 @@ private:
     }
 };
 
-// Uses _Numeric_specs_checker to check that the type of the argument printed by
-// a replacement field with format specs actually satisfies the requirements for
+// Checks that the type of the argument printed by a replacement
+// field with format specs actually satisfies the requirements for
 // that format spec. If the requirements are met then calls the base class
 // handler method.
 template <class _Handler>
 class _Specs_checker : public _Handler {
 private:
     _Basic_format_arg_type _Arg_type;
+    // we'll se this if we get a modifier that requires an integer presentation type
+    // for types that can have either integer or non-integer presentation types (charT or bool)
+    bool _Need_arithmetic_presentation_type = false;
 
 public:
     constexpr explicit _Specs_checker(const _Handler& _Handler_inst, const _Basic_format_arg_type _Arg_type_)
@@ -1230,15 +1238,6 @@ public:
         }
     }
 
-    constexpr void _Check_sign() const {
-        _Require_numeric_argument();
-        if (_Is_integral_fmt_type(_Arg_type) && _Arg_type != _Basic_format_arg_type::_Int_type
-            && _Arg_type != _Basic_format_arg_type::_Long_long_type
-            && _Arg_type != _Basic_format_arg_type::_Char_type) {
-            _THROW(format_error("Format specifier requires signed argument."));
-        }
-    }
-
     constexpr void _Check_precision() const {
         if (_Is_integral_fmt_type(_Arg_type) || _Arg_type == _Basic_format_arg_type::_Pointer_type) {
             _THROW(format_error("Precision not allowed for this argument type."));
@@ -1247,17 +1246,25 @@ public:
 
     // _On_align has no checking, since we don't implement numeric alignments.
 
+    constexpr void _On_localized() {
+        _Require_numeric_argument();
+        _Handler::_On_localized();
+    }
+
     constexpr void _On_hash() {
-        // Note that '#' is not valid for CharT or bool unless you
-        // pass a numeric presentation type, but we encounter '#' before
-        // the presentation type so we can not check that requirement here
+        _Need_arithmetic_presentation_type = true;
         _Require_numeric_argument();
         _Handler::_On_hash();
     }
 
+    constexpr void _On_sign(_Fmt_sign _Sgn) {
+        _Need_arithmetic_presentation_type = true;
+        _Require_numeric_argument();
+        _Handler::_On_sign(_Sgn);
+    }
+
     constexpr void _On_zero() {
-        // Note 0 is again not valid for CharT or bool unless a numeric
-        // presentation type is used.
+        _Need_arithmetic_presentation_type = true;
         _Require_numeric_argument();
         _Handler::_On_zero();
     }
@@ -1267,72 +1274,109 @@ public:
         _Handler::_On_precision(_Precision);
     }
 
+    template <class _Ty>
+    constexpr void _On_dynamic_precision(const _Ty _Val) {
+        _Check_precision();
+        _Handler::_On_dynamic_precision(_Val);
+    }
+
     template <class _CharT>
     constexpr void _On_type(_CharT _Type) {
         if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
             _THROW(format_error("Invalid type specification."));
         }
         char _Narrow_type = static_cast<char>(_Type);
+        enum class _Presentation_type_category { _Default, _Integer, _Floating, _String, _Pointer, _Char_default };
+        auto _Cat = _Presentation_type_category::_Default;
+        switch (_Narrow_type) {
+        case '\0':
+            break;
+        case 's':
+            _Cat = _Presentation_type_category::_String;
+            break;
+        case 'c':
+        case 'd':
+        case 'B':
+        case 'b':
+        case 'X':
+        case 'x':
+        case 'o':
+            _Cat = _Presentation_type_category::_Integer;
+            break;
+        case 'A':
+        case 'a':
+        case 'E':
+        case 'e':
+        case 'F':
+        case 'f':
+        case 'G':
+        case 'g':
+            _Cat = _Presentation_type_category::_Floating;
+            break;
+        case 'p':
+            _Cat = _Presentation_type_category::_Pointer;
+            break;
+        default:
+            _THROW(format_error("Invalid presentation type specifier"));
+        }
+
         switch (_Arg_type) {
         case _Basic_format_arg_type::_None:
             _STL_INTERNAL_CHECK(!"Invalid argument type.");
             break;
         case _Basic_format_arg_type::_Bool_type:
-            // note, we don't get a call if there isn't a type, but none is valid for everything.
-            if (_Narrow_type == 's') {
-                break;
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_String;
             }
-            [[fallthrough]];
+            // note, we don't get a call if there isn't a type, but none is valid for everything.
+            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer) {
+                _THROW(format_error("Invalid presentation type for bool"));
+            }
+            break;
         case _Basic_format_arg_type::_Char_type:
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_Char_default;
+            }
+            if (_Cat != _Presentation_type_category::_Char_default && _Cat != _Presentation_type_category::_Integer) {
+                _THROW(format_error("Invalid presentation type for char"));
+            }
+            break;
         case _Basic_format_arg_type::_Int_type:
         case _Basic_format_arg_type::_UInt_type:
         case _Basic_format_arg_type::_Long_long_type:
         case _Basic_format_arg_type::_ULong_long_type:
-            switch (_Narrow_type) {
-            case 'c':
-            case 'd':
-            case 'B':
-            case 'b':
-            case 'X':
-            case 'x':
-            case 'o':
-                break;
-            default:
-                _THROW(format_error("invalid integral or character specifier"));
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_Integer;
+            }
+            if (_Cat != _Presentation_type_category::_Integer) {
+                _THROW(format_error("Invalid presentation type for integer"));
             }
             break;
         case _Basic_format_arg_type::_Float_type:
         case _Basic_format_arg_type::_Double_type:
         case _Basic_format_arg_type::_Long_double_type:
-            switch (_Narrow_type) {
-            case 'A':
-            case 'a':
-            case 'E':
-            case 'e':
-            case 'F':
-            case 'f':
-            case 'G':
-            case 'g':
-                break;
-            default:
-                _THROW(format_error("invalid floating point type specifier"));
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_Floating;
+            }
+            if (_Cat != _Presentation_type_category::_Floating) {
+                _THROW(format_error("Invalid presentation type for floating point"));
             }
             break;
         case _Basic_format_arg_type::_CString_type:
         case _Basic_format_arg_type::_String_type:
-            switch (_Narrow_type) {
-            case 's':
-                break;
-            default:
-                _THROW(format_error("invalid string type specifier"));
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_String;
+            }
+            if (_Cat != _Presentation_type_category::_String) {
+                _THROW(format_error("Invalid presentation type for string"));
             }
             break;
         case _Basic_format_arg_type::_Pointer_type:
-            switch (_Narrow_type) {
-            case 'p':
-                break;
-            default:
-                _THROW(format_error("invalid pointer type specifier"));
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_Pointer;
+            }
+            if (_Cat != _Presentation_type_category::_Pointer) {
+                _THROW(format_error("Invalid presentation type for pointer"));
             }
             break;
         case _Basic_format_arg_type::_Custom_type:
@@ -1341,7 +1385,10 @@ public:
             // to do its spec parsing it should get the above checks)
             break;
         }
-
+        if (_Need_arithmetic_presentation_type && _Cat != _Presentation_type_category::_Integer
+            && _Cat != _Presentation_type_category::_Floating) {
+            _THROW(format_error("Modifier requires an integer presentation type for bool"));
+        }
         _Handler::_On_type(_Type);
     }
 };
@@ -2177,9 +2224,7 @@ _NODISCARD _OutputIt _Write_integral(
         return _Fmt_write(_STD move(_Out), static_cast<_CharT>(_Value), _Specs, _Locale);
     }
 
-    if (_Specs._Precision != -1) {
-        _THROW(format_error("integral cannot have a precision"));
-    }
+    _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
     if (_Specs._Sgn == _Fmt_sign::_None) {
         _Specs._Sgn = _Fmt_sign::_Minus;
@@ -2189,9 +2234,6 @@ _NODISCARD _OutputIt _Write_integral(
     bool _To_upper = false;
 
     switch (_Specs._Type) {
-    case '\0':
-    case 'd':
-        break;
     case 'B':
         _To_upper = true;
         [[fallthrough]];
@@ -2207,8 +2249,6 @@ _NODISCARD _OutputIt _Write_integral(
     case 'o':
         _Base = 8;
         break;
-    default:
-        _THROW(format_error("invalid integral type"));
     }
 
     // long long -1 representation in binary is 64 bits + sign
@@ -2289,9 +2329,7 @@ _NODISCARD _OutputIt _Fmt_write(
         return _Write_integral(_STD move(_Out), static_cast<unsigned char>(_Value), _Specs, _Locale);
     }
 
-    if (_Specs._Precision != -1) {
-        _THROW(format_error("bool cannot have a precision"));
-    }
+    _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
     if (_Specs._Localized) {
         _Specs._Localized  = false;
@@ -2316,9 +2354,7 @@ _NODISCARD _OutputIt _Fmt_write(
         return _Write_integral(_STD move(_Out), _Value, _Specs, _Locale);
     }
 
-    if (_Specs._Precision != -1) {
-        _THROW(format_error("charT cannot have a precision"));
-    }
+    _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
     // Clear the type so that the string_view writer doesn't fail on 'c'.
     _Specs._Type = '\0';
@@ -2341,8 +2377,6 @@ _NODISCARD _OutputIt _Fmt_write(
     auto _Precision = _Specs._Precision;
 
     switch (_Specs._Type) {
-    case '\0':
-        break;
     case 'A':
         _To_upper = true;
         [[fallthrough]];
@@ -2379,8 +2413,6 @@ _NODISCARD _OutputIt _Fmt_write(
         _Format   = chars_format::general;
         _Exponent = 'e';
         break;
-    default:
-        _THROW(format_error("invalid floating point type"));
     }
 
     // Consider the powers of 2 in decimal:
@@ -2556,29 +2588,12 @@ _NODISCARD _OutputIt _Fmt_write(
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    if (_Specs._Type != '\0' && _Specs._Type != 'p') {
-        _THROW(format_error("invalid const void* type"));
-    }
-
-    if (_Specs._Sgn != _Fmt_sign::_None) {
-        _THROW(format_error("const void* cannot have a sign"));
-    }
-
-    if (_Specs._Alt) {
-        _THROW(format_error("const void* cannot have an alternative representation"));
-    }
-
-    if (_Specs._Precision != -1) {
-        _THROW(format_error("const void* cannot have a precision"));
-    }
-
-    if (_Specs._Leading_zero) {
-        _THROW(format_error("const void* cannot have a leading zero"));
-    }
-
-    if (_Specs._Localized) {
-        _THROW(format_error("const void* cannot be localized"));
-    }
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'p');
+    _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
+    _STL_INTERNAL_CHECK(!_Specs._Alt);
+    _STL_INTERNAL_CHECK(_Specs._Precision == -1);
+    _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
+    _STL_INTERNAL_CHECK(!_Specs._Localized);
 
     // Since the bit width of 0 is 0x0, special-case it instead of complicating the math even more.
     int _Width = 3;
@@ -2647,25 +2662,11 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    if (_Specs._Type != '\0' && _Specs._Type != 's') {
-        _THROW(format_error("invalid string type"));
-    }
-
-    if (_Specs._Sgn != _Fmt_sign::_None) {
-        _THROW(format_error("string cannot have a sign"));
-    }
-
-    if (_Specs._Alt) {
-        _THROW(format_error("string cannot have an alternative representation"));
-    }
-
-    if (_Specs._Leading_zero) {
-        _THROW(format_error("string cannot have a leading zero"));
-    }
-
-    if (_Specs._Localized) {
-        _THROW(format_error("string cannot be localized"));
-    }
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 's');
+    _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
+    _STL_INTERNAL_CHECK(!_Specs._Alt);
+    _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
+    _STL_INTERNAL_CHECK(!_Specs._Localized);
 
     if (_Specs._Precision < 0 && _Specs._Width <= 0) {
         return _Fmt_write(_STD move(_Out), _Value);

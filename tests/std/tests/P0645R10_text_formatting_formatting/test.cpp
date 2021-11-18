@@ -666,6 +666,7 @@ void test_char_specs() {
     // Precision
     throw_helper(STR("{:.5}"), charT{'X'});
 
+
     // Types
     assert(format(STR("{:c}"), charT{'X'}) == STR("X"));
     throw_helper(STR("{:a}"), charT{'X'});
