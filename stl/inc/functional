@@ -1504,7 +1504,7 @@ public:
 
 template <class... _Signature>
 class _Move_only_function_call {
-    static_assert(_Always_false<void_t<_Signature...>>,
+    static_assert((_Always_false<_Signature> || ...),
         "std::move_only_function only accepts function types as template arguments, "
         "with possibly const/ref/noexcept qualifiers.");
 };
