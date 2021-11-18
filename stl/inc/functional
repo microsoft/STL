@@ -1248,49 +1248,54 @@ union alignas(max_align_t) _Move_only_function_data {
 inline constexpr size_t _Minimum_function_size = 2 * sizeof(void*);
 
 template <class _Rx, class... _Types>
-[[noreturn]] _Rx _Function_not_callable(const _Move_only_function_data&, _Types&&...) noexcept {
+[[noreturn]] _Rx __stdcall _Function_not_callable(const _Move_only_function_data&, _Types&&...) noexcept {
     _CSTD abort(); // Unlike std::function, move_only_function doesn't throw bad_function_call
                    // (N4901 [func.wrap.move.inv]/2)
 }
 
 template <class _Vt, class _VtInvQuals, class _Rx, class... _Types>
-_NODISCARD _Rx _Function_invoke_small(const _Move_only_function_data& _Self, _Types&&... _Args) {
+_NODISCARD _Rx __stdcall _Function_invoke_small(const _Move_only_function_data& _Self, _Types&&... _Args) {
     return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
 }
 
 template <class _Vt, class _VtInvQuals, class _Rx, class... _Types>
-_NODISCARD _Rx _Function_invoke_large(const _Move_only_function_data& _Self, _Types&&... _Args) {
+_NODISCARD _Rx __stdcall _Function_invoke_large(const _Move_only_function_data& _Self, _Types&&... _Args) {
     return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
 }
 
 template <class _Vt>
-void _Function_move_small(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
+void __stdcall _Function_move_small(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
     const auto _Src_fn_ptr = _Src._Small_fn_ptr<_Vt>();
     ::new (_Self._Buf_ptr<_Vt>()) _Vt(_STD move(*_Src_fn_ptr));
     _Src_fn_ptr->~_Vt();
     _Self._Impl = _Src._Impl;
 }
 
-inline void _Function_move_large(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
+template <size_t _Size>
+void __stdcall _Function_move_memcpy(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
+    _CSTD memcpy(&_Self._Data, &_Src._Data, _Size); // Copy Impl* and functor data
+}
+
+inline void __stdcall _Function_move_large(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
     _CSTD memcpy(&_Self._Data, &_Src._Data, _Minimum_function_size); // Copy Impl* and functor data
 }
 
 template <class _Vt>
-void _Function_destroy_small(_Move_only_function_data& _Self) noexcept {
+void __stdcall _Function_destroy_small(_Move_only_function_data& _Self) noexcept {
     _Self._Small_fn_ptr<_Vt>()->~_Vt();
 }
 
-inline void _Function_deallocate_large_default_aligned(_Move_only_function_data& _Self) noexcept {
+inline void __stdcall _Function_deallocate_large_default_aligned(_Move_only_function_data& _Self) noexcept {
     ::operator delete(_Self._Large_fn_ptr<void>());
 }
 
 template <size_t _Align>
-void _Function_deallocate_large_overaligned(_Move_only_function_data& _Self) noexcept {
+void __stdcall _Function_deallocate_large_overaligned(_Move_only_function_data& _Self) noexcept {
     ::operator delete (_Self._Large_fn_ptr<void>(), align_val_t{_Align});
 }
 
 template <class _Vt>
-void _Function_destroy_large(_Move_only_function_data& _Self) noexcept {
+void __stdcall _Function_destroy_large(_Move_only_function_data& _Self) noexcept {
     const auto _Pfn = _Self._Large_fn_ptr<_Vt>();
     _Pfn->~_Vt();
     if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
@@ -1298,11 +1303,6 @@ void _Function_destroy_large(_Move_only_function_data& _Self) noexcept {
     } else {
         ::operator delete (static_cast<void*>(_Pfn), align_val_t{alignof(_Vt)});
     }
-}
-
-template <size_t _Size>
-void _Function_move_memcpy(_Move_only_function_data& _Self, _Move_only_function_data& _Src) noexcept {
-    _CSTD memcpy(&_Self._Data, &_Src._Data, _Size); // Copy Impl* and functor data
 }
 
 template <class _Vt>
