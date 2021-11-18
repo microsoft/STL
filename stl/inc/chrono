@@ -5829,7 +5829,7 @@ namespace chrono {
     struct _Chrono_formatter {
         _Chrono_formatter() = default;
 
-        explicit constexpr _Chrono_formatter(const basic_string_view<_CharT> _Time_zone_abbreviation_)
+        constexpr explicit _Chrono_formatter(const basic_string_view<_CharT> _Time_zone_abbreviation_)
             : _Time_zone_abbreviation{_Time_zone_abbreviation_} {}
 
         template <class _Ty>
