@@ -1715,8 +1715,8 @@ private:
     // clang-format off
     template <class _Fn>
     static constexpr bool _Enable_one_arg_constructor =
-        !is_same_v<_Remove_cvref_t<_Fn>, move_only_function>
-        && !_Is_specialization_v<_Remove_cvref_t<_Fn>, in_place_type_t>
+        !is_same_v<remove_cvref_t<_Fn>, move_only_function>
+        && !_Is_specialization_v<remove_cvref_t<_Fn>, in_place_type_t>
         && _Call::template _Is_callable_from<decay_t<_Fn>>;
 
     template <class _Fn, class... _CTypes>
