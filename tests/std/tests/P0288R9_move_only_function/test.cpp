@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <cstdlib>
 #include <functional>
+#include <type_traits>
+#include <utility>
 
 using namespace std;
 
@@ -262,16 +265,16 @@ void test_swap() {
 }
 
 void test_empty() {
-    test_function_t empty;
-    assert(!empty);
-    assert(empty == nullptr);
-    assert(nullptr == empty);
+    test_function_t no_callable;
+    assert(!no_callable);
+    assert(no_callable == nullptr);
+    assert(nullptr == no_callable);
 
-    test_function_t empty_moved = move(empty);
-    assert(!empty_moved);
-    assert(empty_moved == nullptr);
-    assert(!empty_moved);
-    assert(empty_moved == nullptr);
+    test_function_t no_callable_moved = move(no_callable);
+    assert(!no_callable);
+    assert(no_callable == nullptr);
+    assert(!no_callable_moved);
+    assert(no_callable_moved == nullptr);
 }
 
 void test_ptr() {
