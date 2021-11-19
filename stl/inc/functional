@@ -1356,6 +1356,7 @@ public:
     };
 
     // Noexcept specialization
+    // TRANSITION, DevCom-1208330: use noexcept(_Noexcept) instead
     template <>
     struct _Impl_t_x<true> {
         // Calls target
