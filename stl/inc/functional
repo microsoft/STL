@@ -1243,8 +1243,8 @@ union alignas(max_align_t) _Move_only_function_data {
     }
 };
 
-// Size of large funtion. Treat empty function as if has this size.
-// Treat small function as if has this size too if fits and trivially copyable.
+// Size of a large function. Treat an empty function as if it has this size.
+// Treat a small function as if it has this size too if it fits and is trivially copyable.
 inline constexpr size_t _Minimum_function_size = 2 * sizeof(void*);
 
 template <class _Rx, class... _Types>
