@@ -402,6 +402,12 @@ void test_const() {
     assert(f4() == 456);
 }
 
+static_assert(is_same_v<move_only_function<void()>::result_type, void>);
+static_assert(is_same_v<move_only_function<int(char*, char*, char*) &&>::result_type, int>);
+static_assert(is_same_v<move_only_function<int (*(int) )(char*)>::result_type, int (*)(char*)>);
+static_assert(is_same_v<move_only_function<move_only_function<short(long&)>(long long&) const>::result_type,
+    move_only_function<short(long&)>>);
+
 int main() {
     test_construct_impl<small_callable>(38);
     test_construct_impl<large_callable>(39);
