@@ -445,6 +445,37 @@ void test_const() {
     assert(f4() == 456);
 }
 
+
+void test_qual() {
+    move_only_function<int(int)> f1([](auto i) { return i + 1; });
+    assert(f1(1) == 2);
+    move_only_function<int(int)&> f2([](auto i) { return i + 1; });
+    assert(f2(2) == 3);
+    move_only_function<int(int) &&> f3([](auto i) { return i + 1; });
+    assert(std::move(f3)(3) == 4);
+
+    move_only_function<int(int) const> f1c([](auto i) { return i + 1; });
+    assert(f1c(4) == 5);
+    move_only_function<int(int) const&> f2c([](auto i) { return i + 1; });
+    assert(f2c(5) == 6);
+    move_only_function<int(int) const&&> f3c([](auto i) { return i + 1; });
+    assert(std::move(f3c)(6) == 7);
+
+    move_only_function<int(int) noexcept> f1_nx([](auto i) noexcept { return i + 1; });
+    assert(f1_nx(1) == 2);
+    move_only_function<int(int)& noexcept> f2_nx([](auto i) noexcept { return i + 1; });
+    assert(f2_nx(2) == 3);
+    move_only_function<int(int)&& noexcept> f3_nx([](auto i) noexcept { return i + 1; });
+    assert(std::move(f3_nx)(3) == 4);
+
+    move_only_function<int(int) const noexcept> f1c_nx([](auto i) noexcept { return i + 1; });
+    assert(f1c_nx(4) == 5);
+    move_only_function<int(int) const& noexcept> f2c_nx([](auto i) noexcept { return i + 1; });
+    assert(f2c_nx(5) == 6);
+    move_only_function<int(int) const&& noexcept> f3c_nx([](auto i) noexcept { return i + 1; });
+    assert(std::move(f3c_nx)(6) == 7);
+}
+
 static_assert(is_same_v<move_only_function<void()>::result_type, void>);
 static_assert(is_same_v<move_only_function<short(long&) &>::result_type, short>);
 static_assert(is_same_v<move_only_function<int(char*) &&>::result_type, int>);
@@ -471,7 +502,9 @@ int main() {
     test_swap();
     test_ptr();
     test_inner();
+    test_inplace_list();
     test_noexcept();
     test_const();
+    test_qual();
     test_empty();
 }
