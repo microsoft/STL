@@ -1255,13 +1255,13 @@ template <class _Rx, class... _Types>
 
 template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
 _NODISCARD _Rx __stdcall _Function_inv_small(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
-    return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(
+    return _Invoker_ret<_Rx>::_Call(
         static_cast<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
 }
 
 template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
 _NODISCARD _Rx __stdcall _Function_inv_large(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
-    return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(
+    return _Invoker_ret<_Rx>::_Call(
         static_cast<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
 }
 
