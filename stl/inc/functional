@@ -1591,7 +1591,7 @@ int main() {
         }
     }
 }
-#endif
+#endif // 0
 
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...)> : public _Move_only_function_base<_Rx, false, _Types...> {
