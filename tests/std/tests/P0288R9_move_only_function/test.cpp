@@ -225,6 +225,27 @@ void test_assign() {
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif // __clang__
+
+    {
+        test_function_t f1{small_callable{}};
+        test_function_t f2{large_callable{}};
+        test_function_t f3{small_callable{}};
+        test_function_t f4{large_callable{}};
+        test_function_t f5{nullptr};
+        assert(f1);
+        assert(f2);
+        assert(f3);
+        assert(f4);
+        assert(!f5);
+        f1 = nullptr;
+        f2 = nullptr;
+        f3 = test_function_t{nullptr};
+        f4 = test_function_t{nullptr};
+        assert(!f1);
+        assert(!f2);
+        assert(!f3);
+        assert(!f4);
+    }
 }
 
 void test_swap() {

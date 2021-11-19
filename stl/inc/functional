@@ -1851,8 +1851,8 @@ public:
     }
 
     move_only_function& operator=(nullptr_t) noexcept {
-        this->_Destroy(this->_Data);
-        this->Reset_to_null();
+        this->_Checked_destroy(this->_Data);
+        this->_Reset_to_null();
         return *this;
     }
 
