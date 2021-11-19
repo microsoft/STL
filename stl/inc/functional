@@ -1512,6 +1512,69 @@ class _Move_only_function_call {
         "Unlike std::function, std::move_only_function does not define class template argument deduction guides.");
 };
 
+// A script to generate the specializations below.
+// Avoiding C++ preprocessor for better IDE navigation and debugging experience.
+#if 0
+#include <format>
+#include <iostream>
+#include <string>
+
+int main() {
+	constexpr char inst[] = R"--(
+	template <class _Rx, class... _Types>
+	class _Move_only_function_call<_Rx(_Types...) {0} {1} {3}> : public _Move_only_function_base<_Rx, _Types...> {{
+	public:
+		using result_type = _Rx;
+
+		template <class _Vt>
+		using _VtInvQuals = {0} _Vt {2};
+
+		static constexpr bool _Noexcept = {4};
+
+		template <class _Vt>
+		static constexpr bool _Is_callable_from = {5};
+
+		_Rx operator()(_Types... _Args) {0} {1} {3} {{
+			return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
+		}}
+	}};
+)--";
+
+	const char* ref_str[] = { "", "&", "&&" };
+
+	for (int noex : {0, 1}) {
+		if (noex) {
+			std::cout << "#ifdef __cpp_noexcept_function_type\n";
+		}
+
+		for (const char* cv : { "", "const" }) {
+			for (int ref : {0, 1, 2}) {
+
+				std::string callable;
+				switch (ref)
+				{
+				case 0: callable = std::format("{0}<_Rx, {1} _Vt, _Types...> && {0}<_Rx, {1} _Vt&, _Types...>",
+					noex ? "is_nothrow_invocable_r_v" : "is_invocable_r_v", cv);
+					break;
+				case 1: callable = std::format("{0}<_Rx, {1} _Vt&, _Types...>",
+					noex ? "is_nothrow_invocable_r_v" : "is_invocable_r_v", cv);
+					break;
+				case 2: callable = std::format("{0}<_Rx, {1} _Vt, _Types...>",
+					noex ? "is_nothrow_invocable_r_v" : "is_invocable_r_v", cv);
+					break;
+				}
+
+				std::cout << std::format(inst, cv, ref_str[ref], ref == 2 ? "&&" : "&", noex ? "noexcept" : "", noex ? "true" : "false", callable);
+			}
+		}
+
+		if (noex) {
+			std::cout << "#endif // __cpp_noexcept_function_type\n";
+		}
+	}
+}
+#endif
+
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...)> : public _Move_only_function_base<_Rx, _Types...> {
 public:
@@ -1519,6 +1582,8 @@ public:
 
     template <class _Vt>
     using _VtInvQuals = _Vt&;
+
+    static constexpr bool _Noexcept = false;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
@@ -1537,6 +1602,8 @@ public:
     template <class _Vt>
     using _VtInvQuals = _Vt&;
 
+    static constexpr bool _Noexcept = false;
+
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt&, _Types...>;
 
@@ -1553,8 +1620,10 @@ public:
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
 
+    static constexpr bool _Noexcept = false;
+
     template <class _Vt>
-    static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt&&, _Types...>;
+    static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt, _Types...>;
 
     _Rx operator()(_Types... _Args) && {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1567,11 +1636,13 @@ public:
     using result_type = _Rx;
 
     template <class _Vt>
-    using _VtInvQuals = _Vt const&;
+    using _VtInvQuals = const _Vt&;
+
+    static constexpr bool _Noexcept = false;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
-        is_invocable_r_v<_Rx, _Vt const, _Types...>&& is_invocable_r_v<_Rx, _Vt const&, _Types...>;
+        is_invocable_r_v<_Rx, const _Vt, _Types...>&& is_invocable_r_v<_Rx, const _Vt&, _Types...>;
 
     _Rx operator()(_Types... _Args) const {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1584,10 +1655,12 @@ public:
     using result_type = _Rx;
 
     template <class _Vt>
-    using _VtInvQuals = _Vt const&;
+    using _VtInvQuals = const _Vt&;
+
+    static constexpr bool _Noexcept = false;
 
     template <class _Vt>
-    static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt const&, _Types...>;
+    static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, const _Vt&, _Types...>;
 
     _Rx operator()(_Types... _Args) const& {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1600,10 +1673,12 @@ public:
     using result_type = _Rx;
 
     template <class _Vt>
-    using _VtInvQuals = _Vt const&&;
+    using _VtInvQuals = const _Vt&&;
+
+    static constexpr bool _Noexcept = false;
 
     template <class _Vt>
-    static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt const&&, _Types...>;
+    static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, const _Vt, _Types...>;
 
     _Rx operator()(_Types... _Args) const&& {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1618,6 +1693,8 @@ public:
 
     template <class _Vt>
     using _VtInvQuals = _Vt&;
+
+    static constexpr bool _Noexcept = true;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
@@ -1636,6 +1713,8 @@ public:
     template <class _Vt>
     using _VtInvQuals = _Vt&;
 
+    static constexpr bool _Noexcept = true;
+
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt&, _Types...>;
 
@@ -1652,8 +1731,10 @@ public:
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
 
+    static constexpr bool _Noexcept = true;
+
     template <class _Vt>
-    static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt&&, _Types...>;
+    static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt, _Types...>;
 
     _Rx operator()(_Types... _Args) && noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1666,11 +1747,13 @@ public:
     using result_type = _Rx;
 
     template <class _Vt>
-    using _VtInvQuals = _Vt const&;
+    using _VtInvQuals = const _Vt&;
+
+    static constexpr bool _Noexcept = true;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
-        is_nothrow_invocable_r_v<_Rx, _Vt const, _Types...>&& is_nothrow_invocable_r_v<_Rx, _Vt const&, _Types...>;
+        is_nothrow_invocable_r_v<_Rx, const _Vt, _Types...>&& is_nothrow_invocable_r_v<_Rx, const _Vt&, _Types...>;
 
     _Rx operator()(_Types... _Args) const noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1683,10 +1766,12 @@ public:
     using result_type = _Rx;
 
     template <class _Vt>
-    using _VtInvQuals = _Vt const&;
+    using _VtInvQuals = const _Vt&;
+
+    static constexpr bool _Noexcept = true;
 
     template <class _Vt>
-    static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt const&, _Types...>;
+    static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, const _Vt&, _Types...>;
 
     _Rx operator()(_Types... _Args) const& noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
@@ -1699,10 +1784,12 @@ public:
     using result_type = _Rx;
 
     template <class _Vt>
-    using _VtInvQuals = _Vt const&&;
+    using _VtInvQuals = const _Vt&&;
+
+    static constexpr bool _Noexcept = true;
 
     template <class _Vt>
-    static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt const&&, _Types...>;
+    static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, const _Vt, _Types...>;
 
     _Rx operator()(_Types... _Args) const&& noexcept {
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
