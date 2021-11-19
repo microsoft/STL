@@ -292,6 +292,7 @@ void test_empty() {
     assert(nullptr == no_callable);
 
     test_function_t no_callable_moved = move(no_callable);
+#pragma warning(suppress : 26800) // use a moved-from object
     assert(!no_callable);
     assert(no_callable == nullptr);
     assert(!no_callable_moved);
