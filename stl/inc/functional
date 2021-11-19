@@ -1564,7 +1564,7 @@ int main() {
                     break;
                 }
 
-                std::cout << std::format(inst, cv, ref_str[ref], ref == 2 ? "&&" : "&", 
+                std::cout << std::format(inst, cv, ref_str[ref], ref == 2 ? "&&" : "&",
                     noex ? "noexcept" : "", noex ? "true" : "false", callable);
             }
         }
