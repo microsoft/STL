@@ -1253,13 +1253,13 @@ template <class _Rx, class... _Types>
                    // (N4901 [func.wrap.move.inv]/2)
 }
 
-template <class _Vt, class _VtInvQuals, class _Rx, class... _Types>
-_NODISCARD _Rx __stdcall _Function_invoke_small(const _Move_only_function_data& _Self, _Types&&... _Args) {
+template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
+_NODISCARD _Rx __stdcall _Function_inv_small(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
     return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
 }
 
-template <class _Vt, class _VtInvQuals, class _Rx, class... _Types>
-_NODISCARD _Rx __stdcall _Function_invoke_large(const _Move_only_function_data& _Self, _Types&&... _Args) {
+template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
+_NODISCARD _Rx __stdcall _Function_inv_large(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
     return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>(), _STD forward<_Types>(_Args)...);
 }
 
@@ -1338,7 +1338,7 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
     return _STD exchange(_Guard._Ptr, nullptr);
 }
 
-template <class _Rx, class... _Types>
+template <class _Rx, bool _Noexcept, class... _Types>
 class _Move_only_function_base {
 public:
     struct _Impl_t { // A per-callable-type structure acting as a virtual function table.
@@ -1347,7 +1347,11 @@ public:
         // Here we don't have a distinct wrapper class for each callable type, only distinct functions when needed.)
 
         // Calls target
+#ifdef __cpp_noexcept_function_type
+        _Rx(__stdcall* _Invoke)(const _Move_only_function_data&, _Types&&...) noexcept(_Noexcept);
+#else
         _Rx(__stdcall* _Invoke)(const _Move_only_function_data&, _Types&&...);
+#endif
         // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable")
         void(__stdcall* _Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
         // Destroys data (not resetting its "vtable")
@@ -1461,7 +1465,7 @@ public:
     _NODISCARD static constexpr _Impl_t _Create_impl() noexcept {
         _Impl_t _Impl{};
         if constexpr (_Large_function_engaged<_Vt>) {
-            _Impl._Invoke = _Function_invoke_large<_Vt, _VtInvQuals, _Rx, _Types...>;
+            _Impl._Invoke = _Function_inv_large<_Vt, _VtInvQuals, _Rx, _Noexcept, _Types...>;
             _Impl._Move   = nullptr;
 
             if constexpr (is_trivially_destructible_v<_Vt>) {
@@ -1474,7 +1478,7 @@ public:
                 _Impl._Destroy = _Function_destroy_large<_Vt>;
             }
         } else {
-            _Impl._Invoke = _Function_invoke_small<_Vt, _VtInvQuals, _Rx, _Types...>;
+            _Impl._Invoke = _Function_inv_small<_Vt, _VtInvQuals, _Rx, _Noexcept, _Types...>;
 
             if constexpr (is_trivially_copyable_v<_Vt> && is_trivially_destructible_v<_Vt>) {
                 if constexpr ((_Function_small_copy_size<_Vt>) > _Minimum_function_size) {
@@ -1577,14 +1581,12 @@ int main() {
 #endif
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...)> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...)> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = _Vt&;
-
-    static constexpr bool _Noexcept = false;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
@@ -1596,14 +1598,12 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...)&> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...)&> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = _Vt&;
-
-    static constexpr bool _Noexcept = false;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt&, _Types...>;
@@ -1614,14 +1614,12 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) &&> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) &&> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
-
-    static constexpr bool _Noexcept = false;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, _Vt, _Types...>;
@@ -1632,14 +1630,12 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) const> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
-
-    static constexpr bool _Noexcept = false;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
@@ -1651,14 +1647,12 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const&> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) const&> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
-
-    static constexpr bool _Noexcept = false;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, const _Vt&, _Types...>;
@@ -1669,14 +1663,12 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const&&> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) const&&> : public _Move_only_function_base<_Rx, false, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = const _Vt&&;
-
-    static constexpr bool _Noexcept = false;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_invocable_r_v<_Rx, const _Vt, _Types...>;
@@ -1688,14 +1680,12 @@ public:
 
 #ifdef __cpp_noexcept_function_type
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = _Vt&;
-
-    static constexpr bool _Noexcept = true;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
@@ -1707,14 +1697,12 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...)& noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...)& noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = _Vt&;
-
-    static constexpr bool _Noexcept = true;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt&, _Types...>;
@@ -1725,14 +1713,12 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...)&& noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...)&& noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = _Vt&&;
-
-    static constexpr bool _Noexcept = true;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, _Vt, _Types...>;
@@ -1743,14 +1729,12 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) const noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
-
-    static constexpr bool _Noexcept = true;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from =
@@ -1762,14 +1746,12 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const& noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) const& noexcept> : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = const _Vt&;
-
-    static constexpr bool _Noexcept = true;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, const _Vt&, _Types...>;
@@ -1780,14 +1762,13 @@ public:
 };
 
 template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) const&& noexcept> : public _Move_only_function_base<_Rx, _Types...> {
+class _Move_only_function_call<_Rx(_Types...) const&& noexcept>
+    : public _Move_only_function_base<_Rx, true, _Types...> {
 public:
     using result_type = _Rx;
 
     template <class _Vt>
     using _VtInvQuals = const _Vt&&;
-
-    static constexpr bool _Noexcept = true;
 
     template <class _Vt>
     static constexpr bool _Is_callable_from = is_nothrow_invocable_r_v<_Rx, const _Vt, _Types...>;
