@@ -1507,6 +1507,9 @@ class _Move_only_function_call {
     static_assert((_Always_false<_Signature> || ...),
         "std::move_only_function only accepts function types as template arguments, "
         "with possibly const/ref/noexcept qualifiers.");
+
+    static_assert(sizeof...(_Signature) > 0,
+        "Unlike std::function, std::move_only_function does not define class template argument deduction guides.");
 };
 
 template <class _Rx, class... _Types>
