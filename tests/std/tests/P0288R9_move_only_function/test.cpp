@@ -332,6 +332,49 @@ void test_ptr() {
     assert(!fun_ptr_n);
 }
 
+void test_inner() {
+    move_only_function<int(int, int)> f1(nullptr);
+    move_only_function<short(long, long)> f2 = move(f1);
+    assert(!f2);
+    f2 = move(f1);
+    assert(!f1);
+}
+
+
+void test_inplace_list() {
+    struct in_place_list_constructible {
+        in_place_list_constructible(std::initializer_list<int> li) {
+            int x = 0;
+            for (int i : li) {
+                ++x;
+                assert(x == i);
+            }
+        }
+
+        in_place_list_constructible(std::initializer_list<int> li, const char*) {
+            int x = 0;
+            for (int i : li) {
+                --x;
+                assert(x == i);
+            }
+        }
+
+        in_place_list_constructible(const in_place_list_constructible&) = delete;
+        in_place_list_constructible& operator=(const in_place_list_constructible&) = delete;
+
+        int operator()(int i) {
+            return i - 1;
+        }
+    };
+
+    move_only_function<int(int)> f1(in_place_type<in_place_list_constructible>, {1, 2, 3, 4, 5});
+    assert(f1(5) == 4);
+
+    move_only_function<int(int)> f2(in_place_type<in_place_list_constructible>, {-1, -2, -3, -4, -5}, "fox");
+    assert(f2(8) == 7);
+}
+
+
 template <bool Nx>
 struct test_noexcept_t {
     int operator()() noexcept(Nx) {
@@ -403,10 +446,20 @@ void test_const() {
 }
 
 static_assert(is_same_v<move_only_function<void()>::result_type, void>);
-static_assert(is_same_v<move_only_function<int(char*, char*, char*) &&>::result_type, int>);
-static_assert(is_same_v<move_only_function<int (*(int) )(char*)>::result_type, int (*)(char*)>);
-static_assert(is_same_v<move_only_function<move_only_function<short(long&)>(long long&) const>::result_type,
-    move_only_function<short(long&)>>);
+static_assert(is_same_v<move_only_function<short(long&) &>::result_type, short>);
+static_assert(is_same_v<move_only_function<int(char*) &&>::result_type, int>);
+static_assert(is_same_v<move_only_function<void() const>::result_type, void>);
+static_assert(is_same_v<move_only_function<short(long&) const&>::result_type, short>);
+static_assert(is_same_v<move_only_function<int(char*) const&&>::result_type, int>);
+
+#ifdef __cpp_noexcept_function_type
+static_assert(is_same_v<move_only_function<void() noexcept>::result_type, void>);
+static_assert(is_same_v<move_only_function<short(long&) & noexcept>::result_type, short>);
+static_assert(is_same_v<move_only_function<int(char*) && noexcept>::result_type, int>);
+static_assert(is_same_v<move_only_function<void() const noexcept>::result_type, void>);
+static_assert(is_same_v<move_only_function<short(long&) const& noexcept>::result_type, short>);
+static_assert(is_same_v<move_only_function<int(char*) const&& noexcept>::result_type, int>);
+#endif // ^^^ defined(__cpp_noexcept_function_type) ^^^
 
 int main() {
     test_construct_impl<small_callable>(38);
@@ -417,6 +470,7 @@ int main() {
     test_assign();
     test_swap();
     test_ptr();
+    test_inner();
     test_noexcept();
     test_const();
     test_empty();
