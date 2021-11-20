@@ -334,8 +334,8 @@ void test_ptr() {
 }
 
 void test_inner() {
-    move_only_function<short(int, int)> f1(nullptr);
-    move_only_function<int(long, long)> f2 = move(f1);
+    move_only_function<short(long, long)> f1(nullptr);
+    move_only_function<int(int, int)> f2 = move(f1);
     assert(!f2);
 #pragma warning(suppress : 26800) // use a moved-from object
     f2 = move(f1);
