@@ -1343,33 +1343,29 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
 template <class _Rx, bool _Noexcept, class... _Types>
 class _Move_only_function_base {
 public:
+    // TRANSITION, DevCom-1208330: use noexcept(_Noexcept) instead
     template <bool>
-    struct _Impl_t_x { // A per-callable-type structure acting as a virtual function table.
+    struct _Invoke_t {
+        using _Call = _Rx(__stdcall*)(const _Move_only_function_data&, _Types&&...);
+    };
+
+    template <>
+    struct _Invoke_t<true> {
+        using _Call = _Rx(__stdcall*)(const _Move_only_function_data&, _Types&&...) _NOEXCEPT_FNPTR;
+    };
+
+    struct _Impl_t { // A per-callable-type structure acting as a virtual function table.
         // Using vtable emulations gives more flexibility for optimizations and reduces the amount of RTTI data.
         // (The RTTI savings may be significant as with lambdas and binds there may be many distinct callable types.
         // Here we don't have a distinct wrapper class for each callable type, only distinct functions when needed.)
 
         // Calls target
-        _Rx(__stdcall* _Invoke)(const _Move_only_function_data&, _Types&&...);
+        typename _Invoke_t<_Noexcept>::_Call _Invoke;
         // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable")
         void(__stdcall* _Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
         // Destroys data (not resetting its "vtable")
         void(__stdcall* _Destroy)(_Move_only_function_data&) _NOEXCEPT_FNPTR;
     };
-
-    // Noexcept specialization
-    // TRANSITION, DevCom-1208330: use noexcept(_Noexcept) instead
-    template <>
-    struct _Impl_t_x<true> {
-        // Calls target
-        _Rx(__stdcall* _Invoke)(const _Move_only_function_data&, _Types&&...) _NOEXCEPT_FNPTR;
-        // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable")
-        void(__stdcall* _Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
-        // Destroys data (not resetting its "vtable")
-        void(__stdcall* _Destroy)(_Move_only_function_data&) _NOEXCEPT_FNPTR;
-    };
-
-    using _Impl_t = _Impl_t_x<_Noexcept>;
 
     static constexpr _Impl_t _Null_move_only_function = {
         _Function_not_callable<_Rx, _Types...>,
