@@ -637,7 +637,7 @@ std/language.support/support.limits/support.limits.general/iterator.version.pass
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 std/language.support/support.limits/support.limits.general/chrono.version.pass.cpp FAIL
 
-# Test expects __cpp_lib_format to have the old value 201907L for P0645R10; we define the C++20 value 202106LL for P2216R3.
+# Test expects __cpp_lib_format to have the old value 201907L for P0645R10; we define the C++20 value 202106L for P2216R3.
 std/language.support/support.limits/support.limits.general/format.version.pass.cpp FAIL
 
 # We unconditionally define __cpp_lib_addressof_constexpr; test error says it

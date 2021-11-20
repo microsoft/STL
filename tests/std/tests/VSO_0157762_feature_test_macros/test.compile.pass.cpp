@@ -726,7 +726,7 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #ifndef __cpp_lib_format
 #error __cpp_lib_format is not defined
 #elif __cpp_lib_format != 202106L
-#error __cpp_lib_format is not 201907L
+#error __cpp_lib_format is not 202106L
 #else
 STATIC_ASSERT(__cpp_lib_format == 202106L);
 #endif
