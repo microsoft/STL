@@ -1243,8 +1243,8 @@ union alignas(max_align_t) _Move_only_function_data {
     }
 };
 
-// Size of large funtion. Treat empty function as if has this size.
-// Treat small function as if has this size too if fits and trivially copyable.
+// Size of a large function. Treat an empty function as if it has this size.
+// Treat a small function as if it has this size too if it fits and is trivially copyable.
 inline constexpr size_t _Minimum_function_size = 2 * sizeof(void*);
 
 template <class _Rx, class... _Types>
@@ -1255,13 +1255,13 @@ template <class _Rx, class... _Types>
 
 template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
 _NODISCARD _Rx __stdcall _Function_inv_small(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
-    return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(
+    return _Invoker_ret<_Rx>::_Call(
         static_cast<_VtInvQuals>(*_Self._Small_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
 }
 
 template <class _Vt, class _VtInvQuals, class _Rx, bool _Noex, class... _Types>
 _NODISCARD _Rx __stdcall _Function_inv_large(const _Move_only_function_data& _Self, _Types&&... _Args) noexcept(_Noex) {
-    return _Invoker_ret<_Rx>::template _Call<_VtInvQuals>(
+    return _Invoker_ret<_Rx>::_Call(
         static_cast<_VtInvQuals>(*_Self._Large_fn_ptr<_Vt>()), _STD forward<_Types>(_Args)...);
 }
 
@@ -1533,52 +1533,49 @@ class _Move_only_function_call {
 #include <string>
 
 int main() {
-    constexpr char inst[] = R"--(
-    template <class _Rx, class... _Types>
-    class _Move_only_function_call<_Rx(_Types...) {0} {1} {3}> : public _Move_only_function_base<_Rx, _Types...> {{
-    public:
-        using result_type = _Rx;
+    static constexpr char inst[] = R"(
+template <class _Rx, class... _Types>
+class _Move_only_function_call<_Rx(_Types...) {0} {1} {3}> : public _Move_only_function_base<_Rx, {4}, _Types...> {{
+public:
+    using result_type = _Rx;
 
-        template <class _Vt>
-        using _VtInvQuals = {0} _Vt {2};
+    template <class _Vt>
+    using _VtInvQuals = {0} _Vt {2};
 
-        static constexpr bool _Noexcept = {4};
+    template <class _Vt>
+    static constexpr bool _Is_callable_from = {5};
 
-        template <class _Vt>
-        static constexpr bool _Is_callable_from = {5};
+    _Rx operator()(_Types... _Args) {0} {1} {3} {{
+        return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
+    }}
+}};
+)";
 
-        _Rx operator()(_Types... _Args) {0} {1} {3} {{
-            return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
-        }}
-    }};
-)--";
+    static constexpr const char* ref_str[] = {"", "&", "&&"};
 
-    const char* ref_str[] = { "", "&", "&&" };
-
-    for (int noex : {0, 1}) {
+    for (const bool noex : {false, true}) {
         if (noex) {
             std::cout << "#ifdef __cpp_noexcept_function_type\n";
         }
 
-        for (const char* cv : { "", "const" }) {
-            for (int ref : {0, 1, 2}) {
-
+        for (const auto cv : {"", "const"}) {
+            for (const int ref : {0, 1, 2}) {
+                const auto trait = noex ? "is_nothrow_invocable_r_v" : "is_invocable_r_v";
                 std::string callable;
-                switch (ref)
-                {
-                case 0: callable = std::format("{0}<_Rx, {1} _Vt, _Types...> && {0}<_Rx, {1} _Vt&, _Types...>",
-                    noex ? "is_nothrow_invocable_r_v" : "is_invocable_r_v", cv);
+                switch (ref) {
+                case 0:
+                    callable = std::format("{0}<_Rx, {1} _Vt, _Types...> && {0}<_Rx, {1} _Vt&, _Types...>", trait, cv);
                     break;
-                case 1: callable = std::format("{0}<_Rx, {1} _Vt&, _Types...>",
-                    noex ? "is_nothrow_invocable_r_v" : "is_invocable_r_v", cv);
+                case 1:
+                    callable = std::format("{0}<_Rx, {1} _Vt&, _Types...>", trait, cv);
                     break;
-                case 2: callable = std::format("{0}<_Rx, {1} _Vt, _Types...>",
-                    noex ? "is_nothrow_invocable_r_v" : "is_invocable_r_v", cv);
+                case 2:
+                    callable = std::format("{0}<_Rx, {1} _Vt, _Types...>", trait, cv);
                     break;
                 }
 
-                std::cout << std::format(inst, cv, ref_str[ref], ref == 2 ? "&&" : "&",
-                    noex ? "noexcept" : "", noex ? "true" : "false", callable);
+                std::cout << std::format(inst, cv, ref_str[ref], ref == 2 ? "&&" : "&", noex ? "noexcept" : "",
+                    noex ? "true" : "false", callable);
             }
         }
 
@@ -1587,7 +1584,7 @@ int main() {
         }
     }
 }
-#endif
+#endif // 0
 
 template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...)> : public _Move_only_function_base<_Rx, false, _Types...> {

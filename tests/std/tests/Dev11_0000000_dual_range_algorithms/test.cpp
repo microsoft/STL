@@ -331,6 +331,32 @@ int main() {
         assert(!is_permutation(a.begin(), a.end(), b.begin(), b.end(), equal_to<int>()));
     }
 
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 8, 7, 3, 4, 5, 6, 2, 1, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 1, 7, 3, 5, 4, 6, 2, 8, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 1, 7, 5, 6, 3, 4, 2, 8, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 10, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 1, 7, 3, 5, 11, 4, 6, 2, 8, 0};
+        assert(!is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+
     { // Test that _ITERATOR_DEBUG_ARRAY_OVERLOADS is not needed anymore
         int arr[8] = {};
         assert(mismatch(arr, arr, arr, arr) == make_pair(begin(arr), begin(arr)));

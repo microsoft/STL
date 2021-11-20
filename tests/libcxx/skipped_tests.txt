@@ -69,6 +69,9 @@ language.support\support.limits\support.limits.general\concepts.version.pass.cpp
 # Bogus test believes that optional<non_constexpr_destructor> cannot be a literal type
 utilities\optional\optional.object\optional.object.dtor\dtor.pass.cpp
 
+# Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
+containers\sequences\array\array.cons\implicit_copy.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -310,11 +313,6 @@ utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
 containers\views\span.cons\ptr_len.pass.cpp
 containers\views\span.cons\ptr_ptr.pass.cpp
 
-# VSO-1168723 "Implicit copy assignment incorrectly not constexpr when subobject has explicit constexpr copy constructor"
-utilities\utility\pairs\pairs.pair\assign_pair.pass.cpp
-utilities\utility\pairs\pairs.pair\assign_rv_pair.pass.cpp
-utilities\utility\pairs\pairs.pair\assign_rv_pair_U_V.pass.cpp
-
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort.pass.cpp
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
@@ -347,13 +345,6 @@ input.output\file.streams\fstreams\filebuf.virtuals\underflow.pass.cpp
 # GH-1295 <array>: array<const T, 0> allows fill() and swap()
 containers\sequences\array\array.fill\fill.fail.cpp
 containers\sequences\array\array.swap\swap.fail.cpp
-
-# GH-942 <array>: std::array<T,0> doesn't compile - when type is not default constructible
-containers\sequences\array\array.cons\implicit_copy.pass.cpp
-containers\sequences\array\array.cons\initialization.pass.cpp
-containers\sequences\array\array.data\data_const.pass.cpp
-containers\sequences\array\array.data\data.pass.cpp
-containers\sequences\array\iterators.pass.cpp
 
 # GH-1006 <algorithm>: debug checks for predicates are observable
 algorithms\alg.sorting\alg.merge\inplace_merge_comp.pass.cpp
