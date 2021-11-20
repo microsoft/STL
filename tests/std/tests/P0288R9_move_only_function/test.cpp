@@ -502,11 +502,11 @@ int main() {
     test_construct_impl<decltype(&plain_callable)>(42, plain_callable);
     test_assign();
     test_swap();
+    test_empty();
     test_ptr();
     test_inner();
     test_inplace_list();
     test_noexcept();
     test_const();
     test_qual();
-    test_empty();
 }
