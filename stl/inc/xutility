@@ -3330,12 +3330,12 @@ namespace ranges {
         // clang-format off
         subrange() requires default_initializable<_It> = default;
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, DevCom-1331017
+#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-2326 (originally DevCom-1331017)
         constexpr subrange(const subrange&) = default;
         constexpr subrange(subrange&&)      = default;
         constexpr subrange& operator=(const subrange&) = default;
         constexpr subrange& operator=(subrange&&) = default;
-#endif // TRANSITION
+#endif // ^^^ workaround ^^^
 
         template <_Convertible_to_non_slicing<_It> _It2>
         constexpr subrange(_It2 _First_, _Se _Last_) requires (!_Store_size)
@@ -5348,9 +5348,106 @@ _NODISCARD constexpr _Iter_diff_t<_InIt> _Count_pr(_InIt _First, const _InIt _La
     return _Count;
 }
 
+enum class _TrimResult : unsigned char { _KeepTrimming, _HaveWorkAfterTrimming, _ReturnFalse, _ReturnTrue };
+
+template <class _BidIt1, class _BidIt2, class _Pr>
+_NODISCARD _CONSTEXPR20 _TrimResult _Trim_equal(
+    _BidIt1& _First1, _BidIt1& _Back1, _BidIt2& _First2, _BidIt2& _Back2, _Pr _Pred) {
+    // advances the iterators, trimming matching prefixes then matching suffixes
+    // from [_First1, _Back1] and [_First2, _Back2]
+    _STL_INTERNAL_CHECK(_First1 != _Back1);
+    _STL_INTERNAL_CHECK(_STD distance(_First1, _Back1) == _STD distance(_First2, _Back2));
+    if (_Pred(*_First1, *_First2)) {
+        do {
+            ++_First1;
+            ++_First2;
+            if (_First1 == _Back1) {
+                // only one element is left
+                return _Pred(*_First1, *_First2) ? _TrimResult::_ReturnTrue : _TrimResult::_ReturnFalse;
+            }
+        } while (_Pred(*_First1, *_First2));
+    } else {
+        if (!_Pred(*_Back1, *_Back2)) {
+            // nothing to trim
+            return _TrimResult::_HaveWorkAfterTrimming;
+        }
+        --_Back1;
+        --_Back2;
+    }
+
+    for (;;) {
+        if (_First1 == _Back1) {
+            // only one element is left, it can't match because it wasn't trimmed by the first loop
+            return _TrimResult::_ReturnFalse;
+        }
+
+        if (!_Pred(*_Back1, *_Back2)) {
+            return _TrimResult::_KeepTrimming;
+        }
+        --_Back1;
+        --_Back2;
+    }
+}
+
+template <class _BidIt1, class _BidIt2, class _Pr>
+_NODISCARD _CONSTEXPR20 _TrimResult _Trim_reversed(
+    _BidIt1& _First1, _BidIt1& _Back1, _BidIt2& _First2, _BidIt2& _Back2, _Pr _Pred) {
+    // advances the iterators, trimming each range's prefix that matches the other range's suffix
+    // from [_First1, _Back1] and [_First2, _Back2]
+    _STL_INTERNAL_CHECK(_First1 != _Back1);
+    _STL_INTERNAL_CHECK(_STD distance(_First1, _Back1) == _STD distance(_First2, _Back2));
+    if (_Pred(*_First1, *_Back2)) {
+        do {
+            ++_First1;
+            --_Back2;
+            if (_First1 == _Back1) {
+                // only one element is left
+                return _Pred(*_First1, *_First2) ? _TrimResult::_ReturnTrue : _TrimResult::_ReturnFalse;
+            }
+        } while (_Pred(*_First1, *_Back2));
+    } else {
+        if (!_Pred(*_Back1, *_First2)) {
+            // nothing to trim
+            return _TrimResult::_HaveWorkAfterTrimming;
+        }
+        --_Back1;
+        ++_First2;
+    }
+
+    for (;;) {
+        if (_First1 == _Back1) {
+            // only one element is left, it can't match because it wasn't trimmed by the first loop
+            return _TrimResult::_ReturnFalse;
+        }
+
+        if (!_Pred(*_Back1, *_First2)) {
+            return _TrimResult::_KeepTrimming;
+        }
+        --_Back1;
+        ++_First2;
+    }
+}
+
+template <class _BidIt1, class _BidIt2, class _Pr>
+_NODISCARD _CONSTEXPR20 _TrimResult _Trim_completely(
+    _BidIt1& _First1, _BidIt1& _Back1, _BidIt2& _First2, _BidIt2& _Back2, _Pr _Pred) {
+    // alternates between calling _Trim_reversed and _Trim_equal until no more trimming is possible
+    _TrimResult _Res = _TrimResult::_KeepTrimming;
+
+    for (bool _Check_reversed = true; _Res == _TrimResult::_KeepTrimming; _Check_reversed = !_Check_reversed) {
+        if (_Check_reversed) {
+            _Res = _Trim_reversed(_First1, _Back1, _First2, _Back2, _Pred);
+        } else {
+            _Res = _Trim_equal(_First1, _Back1, _First2, _Back2, _Pred);
+        }
+    }
+
+    return _Res;
+}
+
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
-    const _FwdIt1 _First1, _FwdIt1 _Last1, const _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
+    _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
     // test if [_First1, _Last1) == permuted [_First2, _Last2), after matching prefix removal
     _STL_INTERNAL_CHECK(!_Pred(*_First1, *_First2));
     _STL_INTERNAL_CHECK(_STD distance(_First1, _Last1) == _STD distance(_First2, _Last2));
@@ -5359,6 +5456,17 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
             --_Last1;
             --_Last2;
         } while (_Pred(*_Last1, *_Last2));
+
+        if (_First1 == _Last1) {
+            return false;
+        }
+
+        const _TrimResult _Res = _Trim_completely(_First1, _Last1, _First2, _Last2, _Pred);
+
+        if (_Res != _TrimResult::_HaveWorkAfterTrimming) {
+            return _Res == _TrimResult::_ReturnTrue;
+        }
+
         ++_Last1;
         ++_Last2;
     }
@@ -5520,6 +5628,34 @@ _NODISCARD _CONSTEXPR20 _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
+    template <class _Result, class _Wrapped, class _Unwrapped>
+    _NODISCARD constexpr _Result _Rewrap_subrange(_Wrapped& _Val, subrange<_Unwrapped>&& _UResult) {
+        // conditionally computes a wrapped subrange from a wrapped iterator or range and unwrapped subrange
+        if constexpr (is_same_v<_Result, dangling>) {
+            return dangling{};
+        } else if constexpr (is_same_v<_Result, subrange<_Unwrapped>>) {
+            return _STD move(_UResult);
+        } else if constexpr (range<_Wrapped>) {
+            _STL_INTERNAL_STATIC_ASSERT(forward_range<_Wrapped>);
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped, _Unwrapped_t<iterator_t<_Wrapped>>>);
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<iterator_t<_Wrapped>>>);
+
+            auto _First = _RANGES begin(_Val);
+            auto _Last  = _First;
+            _First._Seek_to(_UResult.begin());
+            _Last._Seek_to(_UResult.end());
+            return _Result{_STD move(_First), _STD move(_Last)};
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped, _Unwrapped_t<_Wrapped>>);
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<_Wrapped>>);
+
+            auto _Last = _Val;
+            _Val._Seek_to(_UResult.begin());
+            _Last._Seek_to(_UResult.end());
+            return _Result{_STD move(_Val), _STD move(_Last)};
+        }
+    }
+
     // concept-constrained for strict enforcement as it is used by several algorithms
     template <input_iterator _It, sentinel_for<_It> _Se, class _Pj, indirect_unary_predicate<projected<_It, _Pj>> _Pr>
     _NODISCARD constexpr _It _Find_if_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
