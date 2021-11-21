@@ -8,6 +8,7 @@
 #include <ranges>
 #include <span>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -51,7 +52,19 @@ struct instantiator {
     }
 };
 
+constexpr void test_devcom_1559808() {
+    // Regression test for DevCom-1559808, a bad interaction between constexpr vector and the use of structured bindings
+    // in the implementation of ranges::sort.
+
+    vector<int> vec(33, 42); // NB: 33 > std::_ISORT_MAX
+    ranges::sort(vec);
+    assert(vec.back() == 42);
+}
+
 int main() {
     STATIC_ASSERT((test_random<instantiator, P>(), true));
     test_random<instantiator, P>();
+
+    STATIC_ASSERT((test_devcom_1559808(), true));
+    test_devcom_1559808();
 }

@@ -815,7 +815,6 @@ public:
 private:
     _Mybase* _Copy(void* _Where) const override {
         if constexpr (_Is_large<_Func_impl_no_alloc>) {
-            (void) _Where; // TRANSITION, DevCom-1004719
             return _Global_new<_Func_impl_no_alloc>(_Callee);
         } else {
             return ::new (_Where) _Func_impl_no_alloc(_Callee);
@@ -824,7 +823,6 @@ private:
 
     _Mybase* _Move(void* _Where) noexcept override {
         if constexpr (_Is_large<_Func_impl_no_alloc>) {
-            (void) _Where; // TRANSITION, DevCom-1004719
             return nullptr;
         } else {
             return ::new (_Where) _Func_impl_no_alloc(_STD move(_Callee));
