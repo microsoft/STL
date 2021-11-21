@@ -179,34 +179,6 @@ namespace ranges {
         }
     };
 
-    template <class _Result, class _Wrapped, class _Unwrapped>
-    _NODISCARD constexpr _Result _Rewrap_subrange(_Wrapped& _Val, subrange<_Unwrapped>&& _UResult) {
-        // conditionally computes a wrapped subrange from a wrapped iterator or range and unwrapped subrange
-        if constexpr (is_same_v<_Result, dangling>) {
-            return dangling{};
-        } else if constexpr (is_same_v<_Result, subrange<_Unwrapped>>) {
-            return _STD move(_UResult);
-        } else if constexpr (range<_Wrapped>) {
-            _STL_INTERNAL_STATIC_ASSERT(forward_range<_Wrapped>);
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped, _Unwrapped_t<iterator_t<_Wrapped>>>);
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<iterator_t<_Wrapped>>>);
-
-            auto _First = _RANGES begin(_Val);
-            auto _Last  = _First;
-            _First._Seek_to(_UResult.begin());
-            _Last._Seek_to(_UResult.end());
-            return _Result{_STD move(_First), _STD move(_Last)};
-        } else {
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped, _Unwrapped_t<_Wrapped>>);
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<_Wrapped>>);
-
-            auto _Last = _Val;
-            _Val._Seek_to(_UResult.begin());
-            _Last._Seek_to(_UResult.end());
-            return _Result{_STD move(_Val), _STD move(_Last)};
-        }
-    }
-
     template <forward_iterator _Wrapped, sentinel_for<_Wrapped> _Se>
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
         // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]
@@ -994,8 +966,6 @@ namespace ranges {
                     --_Final1;
                     --_Final2;
                     if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_Final1), _STD invoke(_Proj2, *_Final2))) { // mismatch
-                        ++_Final1;
-                        ++_Final2;
                         break;
                     }
 
@@ -1004,6 +974,32 @@ namespace ranges {
                     }
                 }
                 // If we get here, _Count > 1, initial elements do not match, and final elements do not match.
+
+                // We've trimmed matching prefixes and matching suffixes.
+                // Now we need to compare each range's prefix to the other range's suffix.
+
+                const auto _ProjectedPred = [&]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) {
+                    return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<_Ty1>(_Left)),
+                        _STD invoke(_Proj2, _STD forward<_Ty2>(_Right)));
+                };
+
+                const _TrimResult _Res = _Trim_completely(_First1, _Final1, _First2, _Final2, _ProjectedPred);
+
+                if (_Res != _TrimResult::_HaveWorkAfterTrimming) {
+                    return _Res == _TrimResult::_ReturnTrue;
+                }
+
+                ++_Final1;
+                ++_Final2;
+                // If we get here, initial elements do not match, final elements do not match, and ranges have length
+                // at least 2 and at most _Count.
+
+                // We've trimmed matching prefixes, matching suffixes,
+                // and each range's prefix matching the other range's suffix. That is, given:
+                // Range 1: [A, ..., B]
+                // Range 2: [X, ..., Y]
+                // we know that A != X, A != Y, B != X, and B != Y.
+                // (A == B and X == Y are possible but irrelevant.)
 
                 return _Match_counts(_STD move(_First1), _STD move(_Final1), _STD move(_First2), _STD move(_Final2),
                     _Pred, _Proj1, _Proj2);
@@ -1062,13 +1058,37 @@ namespace ranges {
                     --_Final2; // since ranges have equal lengths, _Final2 cannot equal _First2
 
                     if (!_STD invoke(_Pred, _STD invoke(_Proj1, *_Final1), _STD invoke(_Proj2, *_Final2))) { // mismatch
-                        ++_Final1;
-                        ++_Final2;
                         break;
                     }
                 }
                 // If we get here, initial elements do not match, final elements do not match, and ranges have length
                 // at least 2.
+
+                // We've trimmed matching prefixes and matching suffixes.
+                // Now we need to compare each range's prefix to the other range's suffix.
+
+                const auto _ProjectedPred = [&]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) {
+                    return _STD invoke(_Pred, _STD invoke(_Proj1, _STD forward<_Ty1>(_Left)),
+                        _STD invoke(_Proj2, _STD forward<_Ty2>(_Right)));
+                };
+
+                const _TrimResult _Res = _Trim_completely(_First1, _Final1, _First2, _Final2, _ProjectedPred);
+
+                if (_Res != _TrimResult::_HaveWorkAfterTrimming) {
+                    return _Res == _TrimResult::_ReturnTrue;
+                }
+
+                ++_Final1;
+                ++_Final2;
+                // If we get here, initial elements do not match, final elements do not match, and ranges have length
+                // at least 2.
+
+                // We've trimmed matching prefixes, matching suffixes,
+                // and each range's prefix matching the other range's suffix. That is, given:
+                // Range 1: [A, ..., B]
+                // Range 2: [X, ..., Y]
+                // we know that A != X, A != Y, B != X, and B != Y.
+                // (A == B and X == Y are possible but irrelevant.)
             }
 
             return _Match_counts(
@@ -2679,7 +2699,7 @@ namespace ranges {
                 auto _Next2 = _Last2;
                 for (;;) { // test if [_First2, _Last2) is a suffix of [_First1, _Candidate)
                     if (_First2 == _Next2) { // match found
-                        return {_STD move(_First1), _STD move(_Last1)};
+                        return {_STD move(_Next1), _STD move(_Candidate)};
                     }
 
                     if (_First1 == _Next1) {
@@ -7688,7 +7708,13 @@ namespace ranges {
                 }
 
                 // divide and conquer by quicksort
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1559808
                 auto [_Mid_first, _Mid_last] = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+#else // ^^^ no workaround // workaround vvv
+                auto _Mid       = _Partition_by_median_guess_common(_First, _Last, _Pred, _Proj);
+                auto _Mid_first = _Mid.begin();
+                auto _Mid_last  = _Mid.end();
+#endif // TRANSITION, DevCom-1559808
 
                 _Ideal = (_Ideal >> 1) + (_Ideal >> 2); // allow 1.5 log2(N) divisions
 

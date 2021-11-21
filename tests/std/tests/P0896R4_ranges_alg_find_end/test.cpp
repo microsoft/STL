@@ -2,113 +2,124 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <array>
 #include <cassert>
-#include <concepts>
 #include <ranges>
 #include <span>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
-constexpr void smoke_test() {
-    using ranges::find_end, ranges::iterator_t, ranges::subrange, std::array, std::same_as;
-    using P = std::pair<int, int>;
+using namespace std;
 
-    // Validate dangling story
-    STATIC_ASSERT(same_as<decltype(find_end(borrowed<false>{}, array<int, 42>{})), ranges::dangling>);
-    STATIC_ASSERT(same_as<decltype(find_end(borrowed<true>{}, array<int, 42>{})), subrange<int*>>);
+// Validate dangling story
+STATIC_ASSERT(same_as<decltype(ranges::find_end(borrowed<false>{}, span<const int>{})), ranges::dangling>);
+STATIC_ASSERT(same_as<decltype(ranges::find_end(borrowed<true>{}, span<const int>{})), ranges::subrange<int*>>);
 
-    const array pairs = {P{0, 42}, P{1, 42}, P{0, 42}, P{1, 42}, P{0, 42}, P{1, 42}, P{0, 42}};
-
-    const auto pred = [](const int x, const int y) { return x == y + 1; };
-
-    const array good_needle = {-1, 0};
-    {
-        // Validate range overload [found case]
-        const auto result = find_end(pairs, good_needle, pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), const subrange<iterator_t<decltype(pairs)>>>);
-        assert(result.size() == 2);
-        assert(result.begin() == pairs.begin() + 4);
-        assert(result.end() == pairs.begin() + 6);
-    }
-    {
-        // Validate iterator + sentinel overload [found case]
-        const auto result =
-            find_end(pairs.begin(), pairs.end(), good_needle.begin(), good_needle.end(), pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), const subrange<iterator_t<decltype(pairs)>>>);
-        assert(result.size() == 2);
-        assert(result.begin() == pairs.begin() + 4);
-        assert(result.end() == pairs.begin() + 6);
-    }
-
-    const array bad_needle = {0, 0};
-    {
-        // Validate range overload [not found case]
-        const auto result = find_end(pairs, bad_needle, pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), const subrange<iterator_t<decltype(pairs)>>>);
-        assert(result.empty());
-        assert(result.begin() == pairs.end());
-        assert(result.end() == pairs.end());
-    }
-    {
-        // Validate range overload [not found case]
-        const auto result = find_end(pairs.begin(), pairs.end(), bad_needle.begin(), bad_needle.end(), pred, get_first);
-        STATIC_ASSERT(same_as<decltype(result), const subrange<iterator_t<decltype(pairs)>>>);
-        assert(result.empty());
-        assert(result.begin() == pairs.end());
-        assert(result.end() == pairs.end());
-    }
-
-    {
-        // Validate the memcmp optimization
-        const int haystack[] = {1, 2, 3, 1, 2, 3, 1, 2, 3};
-        const int needle[]   = {1, 2, 3};
-        const auto result    = find_end(haystack, std::span<const int>{needle});
-        STATIC_ASSERT(same_as<decltype(result), const subrange<const int*>>);
-        assert(result.begin() == haystack + 6);
-        assert(result.end() == haystack + 9);
-    }
-}
-
-int main() {
-    STATIC_ASSERT((smoke_test(), true));
-    smoke_test();
-}
-
-#ifndef _PREFAST_ // TRANSITION, GH-1030
 struct instantiator {
-    template <class Fwd1, class Fwd2>
-    static void call() {
-        if constexpr (!is_permissive) { // These fail to compile in C1XX's permissive mode due to VSO-566808
-            using ranges::iterator_t;
+    static constexpr pair<int, int> pairs[] = {{0, 42}, {1, 42}, {0, 42}, {1, 42}, {0, 42}};
+    static constexpr auto pred              = [](const int x, const int y) { return x == y + 1; };
 
-            Fwd1 fwd1{std::span<const int, 0>{}};
-            Fwd2 fwd2{std::span<const int, 0>{}};
+    static constexpr int good_needle[] = {-1, 0};
+    static constexpr int bad_needle[]  = {0, 0};
 
-            (void) ranges::find_end(fwd1, fwd2);
-            (void) ranges::find_end(ranges::begin(fwd1), ranges::end(fwd1), ranges::begin(fwd2), ranges::end(fwd2));
+    template <ranges::forward_range Fwd1, ranges::forward_range Fwd2>
+    static constexpr void test() {
+        using ranges::find_end, ranges::begin, ranges::end, ranges::iterator_t, ranges::next, ranges::subrange;
 
-            BinaryPredicateFor<iterator_t<Fwd1>, iterator_t<Fwd2>> pred{};
-            (void) ranges::find_end(fwd1, fwd2, pred);
-            (void) ranges::find_end(
-                ranges::begin(fwd1), ranges::end(fwd1), ranges::begin(fwd2), ranges::end(fwd2), pred);
+        constexpr bool sized_result = sized_sentinel_for<iterator_t<Fwd1>, iterator_t<Fwd1>>;
 
-            HalfProjectedBinaryPredicateFor<iterator_t<Fwd2>> halfpred{};
-            ProjectionFor<iterator_t<Fwd1>> halfproj{};
-            (void) ranges::find_end(fwd1, fwd2, halfpred, halfproj);
-            (void) ranges::find_end(
-                ranges::begin(fwd1), ranges::end(fwd1), ranges::begin(fwd2), ranges::end(fwd2), halfpred, halfproj);
-
-            ProjectedBinaryPredicate<0, 1> projpred{};
-            ProjectionFor<iterator_t<Fwd1>, 0> proj1{};
-            ProjectionFor<iterator_t<Fwd2>, 1> proj2{};
-            (void) ranges::find_end(fwd1, fwd2, projpred, proj1, proj2);
-            (void) ranges::find_end(
-                ranges::begin(fwd1), ranges::end(fwd1), ranges::begin(fwd2), ranges::end(fwd2), projpred, proj1, proj2);
+        {
+            // Validate range overload [found case]
+            Fwd1 haystack{pairs};
+            Fwd2 needle{good_needle};
+            const same_as<subrange<iterator_t<Fwd1>>> auto result = find_end(haystack, needle, pred, get_first);
+            STATIC_ASSERT(CanMemberSize<subrange<iterator_t<Fwd1>>> == sized_result);
+            if constexpr (sized_result) {
+                assert(result.size() == 2);
+            }
+            assert(result.begin() == next(begin(haystack), 2));
+            assert(result.end() == next(begin(haystack), 4));
         }
+
+        {
+            // Validate range overload [not found case]
+            Fwd1 haystack{pairs};
+            Fwd2 needle{bad_needle};
+            const same_as<subrange<iterator_t<Fwd1>>> auto result = find_end(haystack, needle, pred, get_first);
+            assert(result.empty());
+            assert(result.begin() == end(haystack));
+            assert(result.end() == end(haystack));
+        }
+
+        {
+            // Validate iterator + sentinel overload [found case]
+            Fwd1 haystack{pairs};
+            Fwd2 needle{good_needle};
+            const same_as<subrange<iterator_t<Fwd1>>> auto result =
+                find_end(begin(haystack), end(haystack), begin(needle), end(needle), pred, get_first);
+            if constexpr (sized_result) {
+                assert(result.size() == 2);
+            }
+            assert(result.begin() == next(begin(haystack), 2));
+            assert(result.end() == next(begin(haystack), 4));
+        }
+
+        {
+            // Validate range overload [not found case]
+            Fwd1 haystack{pairs};
+            Fwd2 needle{bad_needle};
+            const same_as<subrange<iterator_t<Fwd1>>> auto result =
+                find_end(begin(haystack), end(haystack), begin(needle), end(needle), pred, get_first);
+            assert(result.empty());
+            assert(result.begin() == end(haystack));
+            assert(result.end() == end(haystack));
+        }
+    }
+
+    template <ranges::forward_range Fwd1, ranges::forward_range Fwd2>
+    static void call() {
+        test<Fwd1, Fwd2>();
+        STATIC_ASSERT((test<Fwd1, Fwd2>(), true));
     }
 };
 
-template void test_fwd_fwd<instantiator, const int, const int>();
-#endif // TRANSITION, GH-1030
+constexpr bool memcmp_test() {
+    // Validate the memcmp optimization
+    const int haystack[]                                    = {1, 2, 3, 1, 2, 3, 1, 2, 3};
+    const int needle[]                                      = {2, 3, 1};
+    const same_as<ranges::subrange<const int*>> auto result = ranges::find_end(haystack, span<const int>{needle});
+    assert(result.begin() == haystack + 4);
+    assert(result.end() == haystack + 7);
+    return true;
+}
+
+constexpr void test_devcom_1559808() {
+    // Regression test for DevCom-1559808, an interaction between vector and the
+    // use of structured bindings in the constexpr evaluator.
+
+    std::vector<int> haystack(33, 42); // No particular significance to any numbers in this function
+    std::vector<int> needle(8, 42);
+    using size_type = std::vector<int>::size_type;
+
+    auto result = ranges::find_end(haystack, needle);
+    assert(static_cast<size_type>(result.begin() - haystack.begin()) == haystack.size() - needle.size());
+    assert(result.end() == haystack.end());
+
+    needle.assign(6, 1729);
+    result = ranges::find_end(haystack, needle);
+    assert(result.begin() == haystack.end());
+    assert(result.end() == haystack.end());
+}
+
+int main() {
+#ifndef _PREFAST_ // TRANSITION, GH-1030
+    test_fwd_fwd<instantiator, const pair<int, int>, const int>();
+#endif // TRANSITION
+
+    STATIC_ASSERT(memcmp_test());
+    memcmp_test();
+
+    STATIC_ASSERT((test_devcom_1559808(), true));
+    test_devcom_1559808();
+}
