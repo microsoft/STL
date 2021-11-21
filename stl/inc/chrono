@@ -5137,10 +5137,26 @@ namespace chrono {
     }
 
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
+    struct _Time_parse_iomanip_c_str {
+        _Time_parse_iomanip_c_str(const _CharT* _Fmt_, _Parsable& _Tp_,
+            basic_string<_CharT, _Traits, _Alloc>* _Abbrev_ = nullptr, minutes* _Offset_ = nullptr)
+            : _Fmt{_Fmt_}, _Tp{_Tp_}, _Abbrev{_Abbrev_}, _Offset{_Offset_} {}
+
+        _Time_parse_iomanip_c_str(_Time_parse_iomanip_c_str&&) = delete;
+
+        const _CharT* _Fmt;
+        _Parsable& _Tp;
+        basic_string<_CharT, _Traits, _Alloc>* _Abbrev;
+        minutes* _Offset;
+    };
+
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable>
     struct _Time_parse_iomanip {
         _Time_parse_iomanip(const basic_string<_CharT, _Traits, _Alloc>& _Fmt_, _Parsable& _Tp_,
             basic_string<_CharT, _Traits, _Alloc>* _Abbrev_ = nullptr, minutes* _Offset_ = nullptr)
             : _Fmt{_Fmt_}, _Tp{_Tp_}, _Abbrev{_Abbrev_}, _Offset{_Offset_} {}
+
+        _Time_parse_iomanip(_Time_parse_iomanip&&) = delete;
 
         const basic_string<_CharT, _Traits, _Alloc>& _Fmt;
         _Parsable& _Tp;
@@ -5148,34 +5164,57 @@ namespace chrono {
         minutes* _Offset;
     };
 
+    template <class _CharT, class _Traits, class _Parsable, class... _Rest>
+    using _Has_from_stream =
+        decltype(static_cast<void>(from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
+                     _STD declval<const _CharT*>(), _STD declval<_Parsable&>(), _STD declval<_Rest>()...)),
+            0); // intentional ADL
+
+    template <class _CharT, class _Parsable, _Has_from_stream<_CharT, char_traits<_CharT>, _Parsable> = 0>
+    _NODISCARD auto parse(const _CharT* _Fmt, _Parsable& _Tp) {
+        return _Time_parse_iomanip_c_str<_CharT, char_traits<_CharT>, allocator<_CharT>, _Parsable>{_Fmt, _Tp};
+    }
+
     template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
-            _STD declval<const _CharT*>(), _STD declval<_Parsable&>()))>>
+        _Has_from_stream<_CharT, _Traits, _Parsable> = 0>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp) {
         return _Time_parse_iomanip{_Fmt, _Tp};
     }
 
     template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
-            _STD declval<const _CharT*>(), _STD declval<_Parsable&>(),
-            _STD declval<basic_string<_CharT, _Traits, _Alloc>*>()))>>
+        _Has_from_stream<_CharT, _Traits, _Parsable, basic_string<_CharT, _Traits, _Alloc>*> = 0>
+    _NODISCARD auto parse(const _CharT* _Fmt, _Parsable& _Tp, basic_string<_CharT, _Traits, _Alloc>& _Abbrev) {
+        return _Time_parse_iomanip_c_str{_Fmt, _Tp, _STD addressof(_Abbrev)};
+    }
+
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable,
+        _Has_from_stream<_CharT, _Traits, _Parsable, basic_string<_CharT, _Traits, _Alloc>*> = 0>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev) {
         return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev)};
     }
 
+    template <class _CharT, class _Parsable,
+        _Has_from_stream<_CharT, char_traits<_CharT>, _Parsable, basic_string<_CharT>*, minutes*> = 0>
+    _NODISCARD auto parse(const _CharT* _Fmt, _Parsable& _Tp, minutes& _Offset) {
+        return _Time_parse_iomanip_c_str{_Fmt, _Tp, static_cast<basic_string<_CharT>*>(nullptr), &_Offset};
+    }
+
     template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
-            _STD declval<const _CharT*>(), _STD declval<_Parsable&>(),
-            _STD declval<basic_string<_CharT, _Traits, _Alloc>*>(), _STD declval<minutes*>()))>>
+        _Has_from_stream<_CharT, _Traits, _Parsable, basic_string<_CharT, _Traits, _Alloc>*, minutes*> = 0>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp, minutes& _Offset) {
         return _Time_parse_iomanip{_Fmt, _Tp, static_cast<basic_string<_CharT, _Traits, _Alloc>*>(nullptr), &_Offset};
     }
 
     template <class _CharT, class _Traits, class _Alloc, class _Parsable,
-        class = void_t<decltype(_CHRONO from_stream(_STD declval<basic_istream<_CharT, _Traits>&>(),
-            _STD declval<const _CharT*>(), _STD declval<_Parsable&>(),
-            _STD declval<basic_string<_CharT, _Traits, _Alloc>*>(), _STD declval<minutes*>()))>>
+        _Has_from_stream<_CharT, _Traits, _Parsable, basic_string<_CharT, _Traits, _Alloc>*, minutes*> = 0>
+    _NODISCARD auto parse(
+        const _CharT* _Fmt, _Parsable& _Tp, basic_string<_CharT, _Traits, _Alloc>& _Abbrev, minutes& _Offset) {
+        return _Time_parse_iomanip_c_str{_Fmt, _Tp, _STD addressof(_Abbrev), &_Offset};
+    }
+
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable,
+        _Has_from_stream<_CharT, _Traits, _Parsable, basic_string<_CharT, _Traits, _Alloc>*, minutes*> = 0>
     _NODISCARD auto parse(const basic_string<_CharT, _Traits, _Alloc>& _Fmt, _Parsable& _Tp,
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev, minutes& _Offset) {
         return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev), &_Offset};
@@ -5183,8 +5222,16 @@ namespace chrono {
 
     template <class _CharT, class _Traits, class _Alloc, class _Parsable>
     basic_istream<_CharT, _Traits>& operator>>(
-        basic_istream<_CharT, _Traits>& _Is, const _Time_parse_iomanip<_CharT, _Traits, _Alloc, _Parsable>& _Tpi) {
-        return _CHRONO from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset);
+        basic_istream<_CharT, _Traits>& _Is, _Time_parse_iomanip_c_str<_CharT, _Traits, _Alloc, _Parsable>&& _Tpi) {
+        from_stream(_Is, _Tpi._Fmt, _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset); // intentional ADL
+        return _Is;
+    }
+
+    template <class _CharT, class _Traits, class _Alloc, class _Parsable>
+    basic_istream<_CharT, _Traits>& operator>>(
+        basic_istream<_CharT, _Traits>& _Is, _Time_parse_iomanip<_CharT, _Traits, _Alloc, _Parsable>&& _Tpi) {
+        from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset); // intentional ADL
+        return _Is;
     }
 
 #endif // _HAS_CXX20
@@ -5239,6 +5286,7 @@ struct _Chrono_format_specs {
     int _Dynamic_precision_index = -1;
     _Fmt_align _Alignment        = _Fmt_align::_None;
     uint8_t _Fill_length         = 1;
+    bool _Localized              = false;
     // At most one codepoint (so one char32_t or four utf-8 char8_t)
     _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
     // recursive definition in grammar, so could have any number of these
@@ -5292,6 +5340,10 @@ public:
 
     constexpr void _On_dynamic_precision(_Auto_id_tag) {
         _Specs._Dynamic_precision_index = _Verify_dynamic_arg_index_in_range(_Parse_ctx.next_arg_id());
+    }
+
+    constexpr void _On_localized() {
+        _Specs._Localized = true;
     }
 
     constexpr void _On_conversion_spec(char _Modifier, _CharT _Type) {
@@ -5370,6 +5422,14 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
 
     if (*_Begin == '.') {
         _Begin = _Parse_precision(_Begin, _End, _Callbacks);
+        if (_Begin == _End) {
+            return _Begin;
+        }
+    }
+
+    if (*_Begin == 'L') {
+        _Callbacks._On_localized();
+        ++_Begin;
         if (_Begin == _End) {
             return _Begin;
         }
@@ -5582,7 +5642,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month& _Val) {
-        return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%b}"), _Val)
+        return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%b}"), _Val)
                                  : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} is not a valid month"),
                                      static_cast<unsigned int>(_Val)));
     }
@@ -5595,7 +5655,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday& _Val) {
-        return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%a}"), _Val)
+        return _Os << (_Val.ok() ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%a}"), _Val)
                                  : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} is not a valid weekday"),
                                      _Val.c_encoding()));
     }
@@ -5604,40 +5664,41 @@ namespace chrono {
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday_indexed& _Val) {
         const auto _Idx = _Val.index();
         return _Os << (_Idx >= 1 && _Idx <= 5
-                           ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}[{}]"), _Val.weekday(), _Idx)
-                           : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}[{} is not a valid index]"),
+                           ? _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}[{}]"), _Val.weekday(), _Idx)
+                           : _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}[{} is not a valid index]"),
                                _Val.weekday(), _Idx));
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const weekday_last& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}[last]"), _Val.weekday());
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}[last]"), _Val.weekday());
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_day& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.month(), _Val.day());
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}/{}"), _Val.month(), _Val.day());
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_day_last& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/last"), _Val.month());
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}/last"), _Val.month());
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_weekday& _Val) {
         return _Os << _STD format(
-                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.month(), _Val.weekday_indexed());
+                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}/{:L}"), _Val.month(), _Val.weekday_indexed());
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const month_weekday_last& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.month(), _Val.weekday_last());
+        return _Os << _STD format(
+                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L}/{:L}"), _Val.month(), _Val.weekday_last());
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.year(), _Val.month());
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{:L}"), _Val.year(), _Val.month());
     }
 
     template <class _CharT, class _Traits>
@@ -5648,25 +5709,26 @@ namespace chrono {
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_day_last& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}"), _Val.year(), _Val.month_day_last());
+        return _Os << _STD format(
+                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{:L}"), _Val.year(), _Val.month_day_last());
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const year_month_weekday& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}/{}"), _Val.year(), _Val.month(),
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{:L}/{:L}"), _Val.year(), _Val.month(),
                    _Val.weekday_indexed());
     }
 
     template <class _CharT, class _Traits>
     basic_ostream<_CharT, _Traits>& operator<<(
         basic_ostream<_CharT, _Traits>& _Os, const year_month_weekday_last& _Val) {
-        return _Os << _STD format(
-                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{}/{}"), _Val.year(), _Val.month(), _Val.weekday_last());
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{}/{:L}/{:L}"), _Val.year(), _Val.month(),
+                   _Val.weekday_last());
     }
 
     template <class _CharT, class _Traits, class _Duration>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const hh_mm_ss<_Duration>& _Val) {
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%T}"), _Val);
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%T}"), _Val);
     }
 
 #pragma warning(push)
@@ -5715,9 +5777,7 @@ namespace chrono {
         requires (!treat_as_floating_point_v<typename _Duration::rep> && _Duration{1} < days{1})
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const sys_time<_Duration>& _Val) {
         // clang-format on
-        const auto _Dp = _CHRONO floor<days>(_Val);
-        return _Os << _STD format(
-                   _Os.getloc(), _STATICALLY_WIDEN(_CharT, "{} {}"), year_month_day{_Dp}, hh_mm_ss{_Val - _Dp});
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T}"), _Val);
     }
 
     template <class _CharT, class _Traits>
@@ -5727,22 +5787,22 @@ namespace chrono {
 
     template <class _CharT, class _Traits, class _Duration>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const utc_time<_Duration>& _Val) {
-        return _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Val);
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T}"), _Val);
     }
 
     template <class _CharT, class _Traits, class _Duration>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const tai_time<_Duration>& _Val) {
-        return _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Val);
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T}"), _Val);
     }
 
     template <class _CharT, class _Traits, class _Duration>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const gps_time<_Duration>& _Val) {
-        return _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Val);
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T}"), _Val);
     }
 
     template <class _CharT, class _Traits, class _Duration>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const file_time<_Duration>& _Val) {
-        return _Os << _STD format(_STATICALLY_WIDEN(_CharT, "{:%F %T}"), _Val);
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T}"), _Val);
     }
 
     template <class _CharT, class _Traits, class _Duration>
@@ -5755,7 +5815,7 @@ namespace chrono {
         basic_ostream<_CharT, _Traits>& _Os, const _Local_time_format_t<_Duration>& _Val) {
         // Doesn't appear in the Standard, but allowed by N4885 [global.functions]/2.
         // Implements N4885 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:%F %T %Z}"), _Val);
+        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T %Z}"), _Val);
     }
 
     template <class _CharT, class _Traits, class _Duration, class _TimeZonePtr>
@@ -5899,10 +5959,10 @@ namespace chrono {
         _NODISCARD auto _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) {
             basic_ostringstream<_CharT> _Stream;
 
+            _Stream.imbue(_Specs._Localized ? _FormatCtx.locale() : locale::classic());
             if (_Specs._Chrono_specs_list.empty()) {
                 _Stream << _Val; // N4885 [time.format]/6
             } else {
-                _Stream.imbue(_FormatCtx.locale());
                 if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                     if (_Val.is_negative()) {
                         _Stream << _CharT{'-'};
