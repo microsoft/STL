@@ -124,6 +124,20 @@ STATIC_ASSERT(__cpp_lib_assume_aligned == 201811L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_associative_heterogeneous_erasure
+#error __cpp_lib_associative_heterogeneous_erasure is not defined
+#elif __cpp_lib_associative_heterogeneous_erasure != 202106L
+#error __cpp_lib_associative_heterogeneous_erasure is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_associative_heterogeneous_erasure == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_associative_heterogeneous_erasure
+#error __cpp_lib_associative_heterogeneous_erasure is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_atomic_flag_test
 #error __cpp_lib_atomic_flag_test is not defined

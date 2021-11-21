@@ -104,6 +104,8 @@ struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
     // transparency selector for transparent hashed containers
     template <class _Keyty>
     using _Deduce_key = const _Keyty&;
+
+    using _Transparent = void;
 };
 #endif // _HAS_CXX20
 
@@ -1104,6 +1106,29 @@ public:
         }
     }
 
+#if _HAS_CXX23
+    template <class _Kx, class = void_t<typename _Traits::_Transparent>>
+    size_type erase(_Kx&& _Keyval) noexcept(
+        _Nothrow_hash<_Traits, _Kx> //
+        && (!_Multi || _Nothrow_compare<_Traits, key_type, _Kx>) ) /* strengthened */ {
+        const size_t _Hashval = _Traitsobj(_Keyval);
+        if constexpr (_Multi) {
+            const auto _Where = _Equal_range(_Keyval, _Hashval);
+            _Unchecked_erase(_Where._First._Ptr, _Where._Last._Ptr);
+            return _Where._Distance;
+        } else {
+            const auto _Target = _Find_last(_Keyval, _Hashval)._Duplicate;
+            if (_Target) {
+                _Erase_bucket(_Target, _Hashval & _Mask);
+                _List._Unchecked_erase(_Target);
+                return 1;
+            }
+
+            return 0;
+        }
+    }
+#endif // _HAS_CXX23
+
     void clear() noexcept {
         // TRANSITION, ABI:
         // LWG-2550 requires implementations to make clear() O(size()), independent of bucket_count().
@@ -1336,6 +1361,18 @@ public:
         return node_type::_Make(_Ptr, _List._Getal());
     }
 
+#if _HAS_CXX23
+    template <class _Kx, class = void_t<typename _Traits::_Transparent>>
+    node_type extract(_Kx&& _Keyval) {
+        const auto _Ptr = _Extract(_Keyval);
+        if (!_Ptr) {
+            return node_type{};
+        }
+
+        return node_type::_Make(_Ptr, _List._Getal());
+    }
+#endif // _HAS_CXX23
+
     iterator insert(const_iterator _Hint, node_type&& _Handle) {
         if (_Handle.empty()) {
             return end();
@@ -1442,7 +1479,8 @@ protected:
         return _List._Mypair._Myval2._Unlinknode(_Where._Ptr);
     }
 
-    _Nodeptr _Extract(const key_type& _Keyval) {
+    template <class _Kx>
+    _Nodeptr _Extract(_Kx&& _Keyval) {
         const size_t _Hashval = _Traitsobj(_Keyval);
         _Nodeptr _Target;
         if constexpr (_Traits::_Multi) {

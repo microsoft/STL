@@ -1321,13 +1321,23 @@ public:
     }
 
     size_type erase(const key_type& _Keyval) noexcept(noexcept(_Eqrange(_Keyval))) /* strengthened */ {
-        const auto _Where = _Eqrange(_Keyval);
+        return _Erase(_Eqrange(_Keyval));
+    }
+
+    size_type _Erase(const pair<_Nodeptr, _Nodeptr> _Where) noexcept {
         const _Unchecked_const_iterator _First(_Where.first, nullptr);
         const _Unchecked_const_iterator _Last(_Where.second, nullptr);
         const auto _Num = static_cast<size_type>(_STD distance(_First, _Last));
         _Erase_unchecked(_First, _Last);
         return _Num;
     }
+
+#if _HAS_CXX23
+    template <class _Kx, class _Mycomp = key_compare, class = typename _Mycomp::is_transparent>
+    size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Eqrange(_Keyval))) /* strengthened */ {
+        return _Erase(_Eqrange(_Keyval));
+    }
+#endif
 
     void clear() noexcept {
         const auto _Scary = _Get_scary();
@@ -1728,6 +1738,18 @@ public:
 
         return extract(_Where);
     }
+
+#if _HAS_CXX23
+    template <class _Kx, class _Mycomp = key_compare, class = typename _Mycomp::is_transparent>
+    node_type extract(_Kx&& _Keyval) {
+        const const_iterator _Where = find(_Keyval);
+        if (_Where == end()) {
+            return node_type{};
+        }
+
+        return extract(_Where);
+    }
+#endif // _HAS_CXX23
 
     auto insert(node_type&& _Handle) {
         if (_Handle.empty()) {
