@@ -36,7 +36,7 @@ std::exception_ptr GetContinuableException() {
 
 void AssertExceptionRecordOk(const EXCEPTION_POINTERS* const pointers) {
     assert(pointers->ExceptionRecord->ExceptionCode == 1234);
-    assert(pointers->ExceptionRecord->ExceptionFlags == EXCEPTION_NONCONTINUABLE);
+    assert((pointers->ExceptionRecord->ExceptionFlags & EXCEPTION_NONCONTINUABLE) == EXCEPTION_NONCONTINUABLE);
     assert(pointers->ExceptionRecord->ExceptionRecord == nullptr);
     assert(pointers->ExceptionRecord->ExceptionAddress != nullptr);
     assert(pointers->ExceptionRecord->NumberParameters == 2);

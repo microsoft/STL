@@ -898,50 +898,44 @@ public:
         _Swap_val(_Right);
     }
 
-private:
-    void _Move_assign(list& _Right, _Equal_allocators) noexcept {
-        clear();
-        _Pocma(_Getal(), _Right._Getal());
-        _Swap_val(_Right);
-    }
-
-    void _Move_assign(list& _Right, _Propagate_allocators) {
-        auto& _Al       = _Getal();
-        auto& _Right_al = _Right._Getal();
-        if (_Al == _Right_al) {
-            _Move_assign(_Right, _Equal_allocators{});
-        } else {
-            auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
-            auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
-            _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
-            auto& _My_data      = _Mypair._Myval2;
-            auto& _Right_data   = _Right._Mypair._Myval2;
-            const auto _Newhead = _STD exchange(_Right_data._Myhead, _Node::_Buyheadnode(_Right_al));
-            const auto _Newsize = _STD exchange(_Right_data._Mysize, size_type{0});
-            _Tidy();
-            _Pocma(_Al, _Right_al);
-            _My_data._Myhead = _Newhead;
-            _My_data._Mysize = _Newsize;
-            _Proxy._Bind(_Alproxy, _STD addressof(_My_data));
-            _My_data._Swap_proxy_and_iterators(_Right_data);
-        }
-    }
-
-    void _Move_assign(list& _Right, _No_propagate_allocators) {
-        if (_Getal() == _Right._Getal()) {
-            _Move_assign(_Right, _Equal_allocators{});
-        } else {
-            assign(
-                _STD make_move_iterator(_Right._Unchecked_begin()), _STD make_move_iterator(_Right._Unchecked_end()));
-        }
-    }
-
 public:
     list& operator=(list&& _Right) noexcept(
-        noexcept(_Move_assign(_Right, _Choose_pocma<_Alnode>{}))) /* strengthened */ {
-        if (this != _STD addressof(_Right)) {
-            _Move_assign(_Right, _Choose_pocma<_Alnode>{});
+        _Choose_pocma_v<_Alnode> == _Pocma_values::_Equal_allocators) /* strengthened */ {
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+        auto& _Al                 = _Getal();
+        auto& _Right_al           = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alnode>;
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
+            if (_Al != _Right_al) {
+                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alnode, _Al);
+                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Right_al);
+                _Container_proxy_ptr<_Alty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
+                auto& _My_data      = _Mypair._Myval2;
+                auto& _Right_data   = _Right._Mypair._Myval2;
+                const auto _Newhead = _STD exchange(_Right_data._Myhead, _Node::_Buyheadnode(_Right_al));
+                const auto _Newsize = _STD exchange(_Right_data._Mysize, size_type{0});
+                _Tidy();
+                _Pocma(_Al, _Right_al);
+                _My_data._Myhead = _Newhead;
+                _My_data._Mysize = _Newsize;
+                _Proxy._Bind(_Alproxy, _STD addressof(_My_data));
+                _My_data._Swap_proxy_and_iterators(_Right_data);
+                return *this;
+            }
+        } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            if (_Al != _Right_al) {
+                assign(_STD make_move_iterator(_Right._Unchecked_begin()),
+                    _STD make_move_iterator(_Right._Unchecked_end()));
+                return *this;
+            }
+        }
+
+        clear();
+        _Pocma(_Al, _Right_al);
+        _Swap_val(_Right);
 
         return *this;
     }
@@ -1057,25 +1051,23 @@ private:
         _Proxy._Bind(_Alproxy, _STD addressof(_Mypair._Myval2));
     }
 
-    void _Copy_assign(const list& _Right, false_type) {
-        _Pocca(_Getal(), _Right._Getal());
-        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
-    }
-
-    void _Copy_assign(const list& _Right, true_type) {
-        if (_Getal() != _Right._Getal()) {
-            _Reload_sentinel_and_proxy(_Right);
-        }
-
-        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
-    }
-
 public:
     list& operator=(const list& _Right) {
-        if (this != _STD addressof(_Right)) {
-            _Copy_assign(_Right, _Choose_pocca<_Alnode>{});
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
 
+        auto& _Al       = _Getal();
+        auto& _Right_al = _Right._Getal();
+        if constexpr (_Choose_pocca_v<_Alnode>) {
+            if (_Al != _Right_al) {
+                _Reload_sentinel_and_proxy(_Right);
+            }
+        } else {
+            _Pocca(_Al, _Right_al);
+        }
+
+        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
         return *this;
     }
 

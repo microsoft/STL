@@ -722,43 +722,37 @@ public:
         _Take_contents(_Right);
     }
 
-private:
-    void _Move_assign(deque& _Right, _Equal_allocators) noexcept {
-        _Tidy();
-        _Pocma(_Getal(), _Right._Getal());
-        _Take_contents(_Right);
-    }
-
-    void _Move_assign(deque& _Right, _Propagate_allocators) {
-        auto& _Al       = _Getal();
-        auto& _Right_al = _Right._Getal();
-        if (_Al == _Right_al) {
-            _Move_assign(_Right, _Equal_allocators{});
-        } else {
-            _Alproxy_ty _Alproxy(_Al);
-            _Alproxy_ty _Right_alproxy(_Right_al);
-            _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
-            _Tidy();
-            _Pocma(_Al, _Right_al);
-            _Proxy._Bind(_Alproxy, _STD addressof(_Get_data()));
-            _Take_contents(_Right);
-        }
-    }
-
-    void _Move_assign(deque& _Right, _No_propagate_allocators) {
-        if (_Getal() == _Right._Getal()) {
-            _Move_assign(_Right, _Equal_allocators{});
-        } else {
-            assign(
-                _STD make_move_iterator(_Right._Unchecked_begin()), _STD make_move_iterator(_Right._Unchecked_end()));
-        }
-    }
-
 public:
     deque& operator=(deque&& _Right) noexcept(_Alty_traits::is_always_equal::value) {
-        if (this != _STD addressof(_Right)) {
-            _Move_assign(_Right, _Choose_pocma<_Alty>{});
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+        auto& _Al                 = _Getal();
+        auto& _Right_al           = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alty>;
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
+            if (_Al != _Right_al) {
+                _Alproxy_ty _Alproxy(_Al);
+                _Alproxy_ty _Right_alproxy(_Right_al);
+                _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Right_alproxy, _Leave_proxy_unbound{});
+                _Tidy();
+                _Pocma(_Al, _Right_al);
+                _Proxy._Bind(_Alproxy, _STD addressof(_Get_data()));
+                _Take_contents(_Right);
+                return *this;
+            }
+        } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            if (_Al != _Right_al) {
+                assign(_STD make_move_iterator(_Right._Unchecked_begin()),
+                    _STD make_move_iterator(_Right._Unchecked_end()));
+                return *this;
+            }
+        }
+
+        _Tidy();
+        _Pocma(_Al, _Right_al);
+        _Take_contents(_Right);
 
         return *this;
     }
@@ -875,24 +869,22 @@ public:
         _Delete_plain_internal(_Proxy_allocator, _STD exchange(_Get_data()._Myproxy, nullptr));
     }
 
-    void _Copy_assign(const deque& _Right, false_type) {
-        _Pocca(_Getal(), _Right._Getal());
-        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
-    }
-
-    void _Copy_assign(const deque& _Right, true_type) {
-        if (_Getal() != _Right._Getal()) {
-            _Tidy();
-            _Get_data()._Reload_proxy(static_cast<_Alproxy_ty>(_Getal()), static_cast<_Alproxy_ty>(_Right._Getal()));
-        }
-
-        _Copy_assign(_Right, false_type{});
-    }
-
     deque& operator=(const deque& _Right) {
-        if (this != _STD addressof(_Right)) {
-            _Copy_assign(_Right, _Choose_pocca<_Alty>{});
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+        auto& _Al       = _Getal();
+        auto& _Right_al = _Right._Getal();
+        if constexpr (_Choose_pocca_v<_Alty>) {
+            if (_Al != _Right_al) {
+                _Tidy();
+                _Get_data()._Reload_proxy(static_cast<_Alproxy_ty>(_Al), static_cast<_Alproxy_ty>(_Right_al));
+            }
+        }
+
+        _Pocca(_Al, _Right_al);
+        assign(_Right._Unchecked_begin(), _Right._Unchecked_end());
 
         return *this;
     }
