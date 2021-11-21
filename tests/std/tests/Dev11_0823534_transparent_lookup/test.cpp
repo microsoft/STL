@@ -268,8 +268,17 @@ int main() {
         assert(ce.equal_range(7) == make_pair(next(ce.begin(), 6), next(ce.begin(), 9)));
         assert(ce.equal_range(8) == make_pair(next(ce.begin(), 9), next(ce.begin(), 11)));
         assert(ce.equal_range(9) == make_pair(next(ce.begin(), 11), next(ce.begin(), 11)));
+    }
 
 #if _HAS_CXX23
+    {
+        multiset<string, Ke> e(begin(arr), end(arr));
+        set<string, Ke> f(begin(arr), end(arr));
+        multimap<string, int, Ke> g{{"ape", 0}, {"bat", 1}, {"cat", 2}, {"bear", 3}, {"wolf", 4}, {"raven", 5},
+            {"giraffe", 6}, {"panther", 7}, {"unicorn", 8}, {"direwolf", 9}, {"elephant", 10}};
+        map<string, int, Ke> h{{"ape", 0}, {"bat", 1}, {"cat", 2}, {"bear", 3}, {"wolf", 4}, {"raven", 5},
+            {"giraffe", 6}, {"panther", 7}, {"unicorn", 8}, {"direwolf", 9}, {"elephant", 10}};
+
         assert(e.erase(2) == 0);
         assert(e.erase(3) == 3);
         assert(e.erase(4) == 2);
@@ -309,10 +318,8 @@ int main() {
         assert(h.erase(8) == 2);
         assert(h.erase(9) == 0);
         assert(h.empty());
-#endif // _HAS_CXX23
     }
 
-#if _HAS_CXX23
     {
         multiset<string, Ke> i(begin(arr), end(arr));
         set<string, Ke> j(begin(arr), end(arr));

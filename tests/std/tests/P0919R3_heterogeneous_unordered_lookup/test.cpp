@@ -22,7 +22,8 @@ using namespace std;
 
 bool g_prohibit_allocations = false;
 
-struct prohibit_allocations {
+class prohibit_allocations {
+public:
     explicit prohibit_allocations(bool value) : prev(g_prohibit_allocations) {
         g_prohibit_allocations = value;
     }
