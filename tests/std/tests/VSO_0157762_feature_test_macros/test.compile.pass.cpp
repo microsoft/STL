@@ -127,7 +127,7 @@ STATIC_ASSERT(__cpp_lib_assume_aligned == 201811L);
 #if _HAS_CXX23
 #ifndef __cpp_lib_associative_heterogeneous_erasure
 #error __cpp_lib_associative_heterogeneous_erasure is not defined
-#elif __cpp_lib_associative_heterogeneous_erasure != 202106L
+#elif __cpp_lib_associative_heterogeneous_erasure != 202110L
 #error __cpp_lib_associative_heterogeneous_erasure is not 202110L
 #else
 STATIC_ASSERT(__cpp_lib_associative_heterogeneous_erasure == 202110L);
