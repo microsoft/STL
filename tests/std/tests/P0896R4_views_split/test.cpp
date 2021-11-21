@@ -10,13 +10,14 @@
 #include <system_error>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 using namespace std;
 
 template <class Rng, class Delimiter>
 concept CanViewSplit = requires(Rng&& r, Delimiter&& d) {
-    views::split(static_cast<Rng&&>(r), static_cast<Delimiter&&>(d));
+    views::split(forward<Rng>(r), forward<Delimiter>(d));
 };
 
 constexpr auto equal_ranges    = [](auto&& left, auto&& right) { return ranges::equal(left, right); };
@@ -57,7 +58,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
     constexpr bool is_view = ranges::view<remove_cvref_t<Base>>;
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewSplit<Base&, Delimiter&> == (!is_view || copyable<remove_cvref_t<Base>>) );
+    STATIC_ASSERT(CanViewSplit<Base&, Delimiter&> == (!is_view || copy_constructible<remove_cvref_t<Base>>) );
     if constexpr (CanViewSplit<Base&, Delimiter&>) { // Validate lvalue
         constexpr bool is_noexcept =
             (!is_view || is_nothrow_copy_constructible_v<views::all_t<Base&>>) &&is_nothrow_copy_constructible_v<DV>;
@@ -70,9 +71,9 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(
-        CanViewSplit<const remove_reference_t<Base>&, Delimiter&> == (!is_view || copyable<remove_cvref_t<Base>>) );
-    if constexpr (is_view && copyable<remove_cvref_t<Base>>) {
+    STATIC_ASSERT(CanViewSplit<const remove_reference_t<Base>&,
+                      Delimiter&> == (!is_view || copy_constructible<remove_cvref_t<Base>>) );
+    if constexpr (is_view && copy_constructible<remove_cvref_t<Base>>) {
         constexpr bool is_noexcept =
             is_nothrow_copy_constructible_v<remove_cvref_t<Base>> && is_nothrow_copy_constructible_v<DV>;
 
@@ -82,7 +83,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
         STATIC_ASSERT(same_as<decltype(as_const(base) | closure), R>);
         STATIC_ASSERT(noexcept(as_const(base) | closure) == is_noexcept);
     } else if constexpr (!is_view) {
-        using RC                   = ranges::split_view<views::all_t<const remove_reference_t<Base>&>, DV>;
+        using RC                   = ranges::split_view<ranges::ref_view<const remove_reference_t<Base>>, DV>;
         constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_reference_t<Base>&, Delimiter&>;
 
         STATIC_ASSERT(same_as<decltype(views::split(as_const(base), delimiter)), RC>);
@@ -94,7 +95,7 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
     // ... with rvalue argument
     STATIC_ASSERT(
-        CanViewSplit<remove_reference_t<Base>, Delimiter&> == is_view || ranges::borrowed_range<remove_cvref_t<Base>>);
+        CanViewSplit<remove_reference_t<Base>, Delimiter&> == (is_view || movable<remove_reference_t<Base>>) );
     if constexpr (is_view) {
         constexpr bool is_noexcept =
             is_nothrow_move_constructible_v<remove_reference_t<Base>> && is_nothrow_copy_constructible_v<DV>;
@@ -103,11 +104,10 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
 
         STATIC_ASSERT(same_as<decltype(move(base) | closure), R>);
         STATIC_ASSERT(noexcept(move(base) | closure) == is_noexcept);
-    } else if constexpr (ranges::borrowed_range<remove_cvref_t<Base>>) {
-        using S  = decltype(ranges::subrange{declval<remove_reference_t<Base>>()});
-        using RS = ranges::split_view<S, DV>;
+    } else if constexpr (movable<remove_cvref_t<Base>>) {
+        using RS = ranges::split_view<ranges::owning_view<remove_reference_t<Base>>, DV>;
         constexpr bool is_noexcept =
-            noexcept(S{declval<remove_reference_t<Base>>()}) && is_nothrow_copy_constructible_v<DV>;
+            is_nothrow_move_constructible_v<remove_reference_t<Base>> && is_nothrow_copy_constructible_v<DV>;
 
         STATIC_ASSERT(same_as<decltype(views::split(move(base), delimiter)), RS>);
         STATIC_ASSERT(noexcept(views::split(move(base), delimiter)) == is_noexcept);
@@ -117,10 +117,9 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(
-        CanViewSplit<const remove_reference_t<Base>, Delimiter&> == (is_view && copyable<remove_cvref_t<Base>>)
-        || (!is_view && ranges::borrowed_range<remove_cvref_t<Base>>) );
-    if constexpr (is_view && copyable<remove_cvref_t<Base>>) {
+    STATIC_ASSERT(CanViewSplit<const remove_reference_t<Base>,
+                      Delimiter&> == (is_view && copy_constructible<remove_cvref_t<Base>>) );
+    if constexpr (is_view && copy_constructible<remove_cvref_t<Base>>) {
         constexpr bool is_noexcept =
             is_nothrow_copy_constructible_v<remove_cvref_t<Base>> && is_nothrow_copy_constructible_v<DV>;
 
@@ -128,17 +127,6 @@ constexpr void test_one(Base&& base, Delimiter&& delimiter, Expected&& expected)
         STATIC_ASSERT(noexcept(views::split(move(as_const(base)), delimiter)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(base)) | closure), R>);
-        STATIC_ASSERT(noexcept(move(as_const(base)) | closure) == is_noexcept);
-    } else if constexpr (!is_view && ranges::borrowed_range<remove_cvref_t<Base>>) {
-        using S  = decltype(ranges::subrange{declval<const remove_reference_t<Base>>()});
-        using RS = ranges::split_view<S, DV>;
-        constexpr bool is_noexcept =
-            noexcept(S{declval<const remove_reference_t<Base>>()}) && is_nothrow_copy_constructible_v<DV>;
-
-        STATIC_ASSERT(same_as<decltype(views::split(move(as_const(base)), delimiter)), RS>);
-        STATIC_ASSERT(noexcept(views::split(move(as_const(base)), delimiter)) == is_noexcept);
-
-        STATIC_ASSERT(same_as<decltype(move(as_const(base)) | closure), RS>);
         STATIC_ASSERT(noexcept(move(as_const(base)) | closure) == is_noexcept);
     }
 
@@ -320,7 +308,32 @@ constexpr bool instantiation_test() {
     return true;
 }
 
+constexpr bool test_devcom_1559808() {
+    // Regression test for DevCom-1559808, an interaction between vector and the
+    // use of structured bindings in the constexpr evaluator.
+
+    vector<char> letters{'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 'a', ' ', 't', 'e', 's', 't'};
+    auto r = views::split(letters, ' ');
+    auto i = r.begin();
+    assert(*(*i).begin() == 'T');
+    ++i;
+    assert(*(*i).begin() == 'i');
+    ++i;
+    assert(*(*i).begin() == 'a');
+    ++i;
+    assert(*(*i).begin() == 't');
+    ++i;
+    assert(i == r.end());
+
+    return true;
+}
+
 int main() {
     STATIC_ASSERT(instantiation_test());
     instantiation_test();
+
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1516290
+    STATIC_ASSERT(test_devcom_1559808());
+#endif // TRANSITION, DevCom-1516290
+    test_devcom_1559808();
 }
