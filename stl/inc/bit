@@ -298,7 +298,7 @@ _NODISCARD_PURE_FN constexpr int popcount(const _Ty _Val) noexcept {
 
 #if _HAS_CXX23
 template <class _Ty, enable_if_t<is_integral_v<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty byteswap(const _Ty _Val) noexcept {
+_NODISCARD_PURE_FN constexpr _Ty byteswap(const _Ty _Val) noexcept {
     if constexpr (sizeof(_Ty) == 1) {
         return _Val;
     } else if constexpr (sizeof(_Ty) == 2) {
