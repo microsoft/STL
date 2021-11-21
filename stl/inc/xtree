@@ -1324,6 +1324,7 @@ public:
         return _Erase(_Eqrange(_Keyval));
     }
 
+private:
     size_type _Erase(const pair<_Nodeptr, _Nodeptr> _Where) noexcept {
         const _Unchecked_const_iterator _First(_Where.first, nullptr);
         const _Unchecked_const_iterator _Last(_Where.second, nullptr);
@@ -1332,6 +1333,7 @@ public:
         return _Num;
     }
 
+public:
 #if _HAS_CXX23
     template <class _Kx, class _Mycomp = key_compare, class = typename _Mycomp::is_transparent,
         enable_if_t<!is_convertible_v<_Kx&&, iterator> && !is_convertible_v<_Kx&&, const_iterator>, int> = 0>

@@ -1088,7 +1088,16 @@ public:
 
     size_type erase(const key_type& _Keyval) noexcept(
         _Nothrow_hash<_Traits, key_type> //
-        && (!_Multi || _Nothrow_compare<_Traits, key_type, key_type>) ) /* strengthened */ {
+        && (!_Multi || _Nothrow_compare<_Traits, key_type, key_type>) ) /* strengthened */
+    {
+        return _Erase(_Keyval);
+    }
+
+private:
+    template <class _Keytype>
+    size_type _Erase(const _Keytype& _Keyval) noexcept(
+        _Nothrow_hash<_Traits, _Keytype> //
+        && (!_Multi || _Nothrow_compare<_Traits, key_type, _Keytype>) ) /* strengthened */ {
         const size_t _Hashval = _Traitsobj(_Keyval);
         if constexpr (_Multi) {
             const auto _Where = _Equal_range(_Keyval, _Hashval);
@@ -1106,27 +1115,14 @@ public:
         }
     }
 
+public:
 #if _HAS_CXX23
     template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
         enable_if_t<!is_convertible_v<_Kx&&, iterator> && !is_convertible_v<_Kx&&, const_iterator>, int> = 0>
     size_type erase(_Kx&& _Keyval) noexcept(
         _Nothrow_hash<_Traits, _Kx> //
         && (!_Multi || _Nothrow_compare<_Traits, key_type, _Kx>) ) /* strengthened */ {
-        const size_t _Hashval = _Traitsobj(_Keyval);
-        if constexpr (_Multi) {
-            const auto _Where = _Equal_range(_Keyval, _Hashval);
-            _Unchecked_erase(_Where._First._Ptr, _Where._Last._Ptr);
-            return _Where._Distance;
-        } else {
-            const auto _Target = _Find_last(_Keyval, _Hashval)._Duplicate;
-            if (_Target) {
-                _Erase_bucket(_Target, _Hashval & _Mask);
-                _List._Unchecked_erase(_Target);
-                return 1;
-            }
-
-            return 0;
-        }
+        return _Erase(_Keyval);
     }
 #endif // _HAS_CXX23
 
@@ -1482,7 +1478,7 @@ protected:
     }
 
     template <class _Kx>
-    _Nodeptr _Extract(_Kx&& _Keyval) {
+    _Nodeptr _Extract(const _Kx& _Keyval) {
         const size_t _Hashval = _Traitsobj(_Keyval);
         _Nodeptr _Target;
         if constexpr (_Traits::_Multi) {
