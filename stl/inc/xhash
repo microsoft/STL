@@ -1088,8 +1088,7 @@ public:
 
     size_type erase(const key_type& _Keyval) noexcept(
         _Nothrow_hash<_Traits, key_type> //
-        && (!_Multi || _Nothrow_compare<_Traits, key_type, key_type>) ) /* strengthened */
-    {
+        && (!_Multi || _Nothrow_compare<_Traits, key_type, key_type>) ) /* strengthened */ {
         return _Erase(_Keyval);
     }
 
