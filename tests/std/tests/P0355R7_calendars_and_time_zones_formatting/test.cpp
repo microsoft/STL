@@ -1092,10 +1092,10 @@ void test() {
 
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
     test_locale<wchar_t>();
-#ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
     assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
     test_locale<char>();
-#endif // MSVC_INTERNAL_TESTING
+#endif // _MSVC_INTERNAL_TESTING
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
 }
 

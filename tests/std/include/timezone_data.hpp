@@ -157,7 +157,7 @@ namespace LA {
 template <class TestFunction>
 void run_tz_test(TestFunction test_function) {
     try {
-#ifdef MSVC_INTERNAL_TESTING
+#ifdef _MSVC_INTERNAL_TESTING
         try {
             (void) get_tzdb();
         } catch (const system_error& ex) {
@@ -168,7 +168,7 @@ void run_tz_test(TestFunction test_function) {
 
             throw; // Report any other errors.
         }
-#endif // MSVC_INTERNAL_TESTING
+#endif // _MSVC_INTERNAL_TESTING
 
         test_function();
 
