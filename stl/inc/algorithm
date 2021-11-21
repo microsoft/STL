@@ -2331,8 +2331,8 @@ namespace ranges {
             requires (forward_iterator<_It1> || sized_sentinel_for<_Se1, _It1>)
                   && (forward_iterator<_It2> || sized_sentinel_for<_Se2, _It2>)
                   && indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD_PURE_ALG constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
-            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD_PURE_ALG constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, 
+            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
