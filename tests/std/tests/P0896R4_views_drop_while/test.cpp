@@ -29,7 +29,7 @@ using pipeline_t = ranges::drop_while_view<
 
 template <class Rng>
 concept CanViewDropWhile = requires(Rng&& r) {
-    views::drop_while(static_cast<Rng&&>(r), is_less_than<3>);
+    views::drop_while(forward<Rng>(r), is_less_than<3>);
 };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
@@ -54,7 +54,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     constexpr auto closure = views::drop_while(is_less_than<3>);
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewDropWhile<Rng&> == (!is_view || copyable<V>) );
+    STATIC_ASSERT(CanViewDropWhile<Rng&> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewDropWhile<Rng&>) { // Validate lvalue
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
@@ -69,8 +69,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(CanViewDropWhile<const remove_reference_t<Rng>&> == (!is_view || copyable<V>) );
-    if constexpr (is_view && copyable<V>) {
+    STATIC_ASSERT(CanViewDropWhile<const remove_reference_t<Rng>&> == (!is_view || copy_constructible<V>) );
+    if constexpr (is_view && copy_constructible<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::drop_while(as_const(rng), is_less_than<3>)), R>);
@@ -82,9 +82,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(as_const(rng) | pipeline), pipeline_t<const remove_reference_t<Rng>&>>);
         STATIC_ASSERT(noexcept(as_const(rng) | pipeline) == is_noexcept);
     } else if constexpr (!is_view) {
-        using RC = drop_while_view<views::all_t<const remove_reference_t<Rng>&>, Pred>;
-        constexpr bool is_noexcept =
-            is_nothrow_constructible_v<RC, const remove_reference_t<Rng>&, decltype((is_less_than<3>) )>;
+        using RC                   = drop_while_view<ranges::ref_view<const remove_reference_t<Rng>>, Pred>;
+        constexpr bool is_noexcept = true;
 
         STATIC_ASSERT(same_as<decltype(views::drop_while(as_const(rng), is_less_than<3>)), RC>);
         STATIC_ASSERT(noexcept(views::drop_while(as_const(rng), is_less_than<3>)) == is_noexcept);
@@ -97,7 +96,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(CanViewDropWhile<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
+    STATIC_ASSERT(CanViewDropWhile<remove_reference_t<Rng>> == (is_view || movable<remove_reference_t<Rng>>) );
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
         STATIC_ASSERT(same_as<decltype(views::drop_while(move(rng), is_less_than<3>)), R>);
@@ -108,10 +107,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         STATIC_ASSERT(same_as<decltype(move(rng) | pipeline), pipeline_t<remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(rng) | pipeline) == is_noexcept);
-    } else if constexpr (enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{move(rng)});
+    } else if constexpr (movable<remove_reference_t<Rng>>) {
+        using S                    = ranges::owning_view<remove_reference_t<Rng>>;
         using RS                   = drop_while_view<S, Pred>;
-        constexpr bool is_noexcept = noexcept(S{move(rng)});
+        constexpr bool is_noexcept = is_nothrow_move_constructible_v<remove_reference_t<Rng>>;
 
         STATIC_ASSERT(same_as<decltype(views::drop_while(move(rng), is_less_than<3>)), RS>);
         STATIC_ASSERT(noexcept(views::drop_while(move(rng), is_less_than<3>)) == is_noexcept);
@@ -124,28 +123,14 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(CanViewDropWhile<const remove_reference_t<Rng>> == (is_view && copyable<V>)
-                  || (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) );
-    if constexpr (is_view && copyable<V>) {
+    STATIC_ASSERT(CanViewDropWhile<const remove_reference_t<Rng>> == (is_view && copy_constructible<V>) );
+    if constexpr (is_view && copy_constructible<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::drop_while(move(as_const(rng)), is_less_than<3>)), R>);
         STATIC_ASSERT(noexcept(views::drop_while(move(as_const(rng)), is_less_than<3>)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | closure), R>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | closure) == is_noexcept);
-
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
-    } else if constexpr (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{move(as_const(rng))});
-        using RS                   = drop_while_view<S, Pred>;
-        constexpr bool is_noexcept = noexcept(S{move(as_const(rng))});
-
-        STATIC_ASSERT(same_as<decltype(views::drop_while(move(as_const(rng)), is_less_than<3>)), RS>);
-        STATIC_ASSERT(noexcept(views::drop_while(move(as_const(rng)), is_less_than<3>)) == is_noexcept);
-
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | closure), RS>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | closure) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
