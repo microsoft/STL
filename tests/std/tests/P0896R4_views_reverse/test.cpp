@@ -16,7 +16,7 @@ using namespace std;
 
 template <class Rng>
 concept CanViewReverse = requires(Rng&& r) {
-    views::reverse(static_cast<Rng&&>(r));
+    views::reverse(forward<Rng>(r));
 };
 
 // Test a silly precomposed range adaptor pipeline
@@ -39,7 +39,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Validate range adapter object
     // ...with lvalue argument
-    static_assert(CanViewReverse<Rng&> == (!is_view || copyable<V>) );
+    static_assert(CanViewReverse<Rng&> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewReverse<Rng&>) {
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
@@ -60,8 +60,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const lvalue argument
-    static_assert(CanViewReverse<const remove_reference_t<Rng>&> == (!is_view || copyable<V>) );
-    if constexpr (is_view && copyable<V>) {
+    static_assert(CanViewReverse<const remove_reference_t<Rng>&> == (!is_view || copy_constructible<V>) );
+    if constexpr (is_view && copy_constructible<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         static_assert(same_as<decltype(views::reverse(as_const(rng))), R>);
@@ -76,8 +76,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         static_assert(same_as<decltype(as_const(rng) | pipeline), R>);
         static_assert(noexcept(as_const(rng) | pipeline) == is_noexcept);
     } else if constexpr (!is_view) {
-        using RC                   = reverse_view<views::all_t<const remove_reference_t<Rng>&>>;
-        constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_reference_t<Rng>&>;
+        using RC                   = reverse_view<ranges::ref_view<const remove_reference_t<Rng>>>;
+        constexpr bool is_noexcept = true;
 
         static_assert(same_as<decltype(views::reverse(as_const(rng))), RC>);
         static_assert(noexcept(views::reverse(as_const(rng))) == is_noexcept);
@@ -93,7 +93,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with rvalue argument
-    static_assert(CanViewReverse<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
+    static_assert(CanViewReverse<remove_reference_t<Rng>> == (is_view || movable<remove_reference_t<Rng>>) );
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
         static_assert(same_as<decltype(views::reverse(move(rng))), R>);
@@ -107,10 +107,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         static_assert(same_as<decltype(move(rng) | pipeline), R>);
         static_assert(noexcept(move(rng) | pipeline) == is_noexcept);
-    } else if constexpr (enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{declval<Rng>()});
-        using RS                   = reverse_view<S>;
-        constexpr bool is_noexcept = noexcept(S{declval<Rng>()});
+    } else if constexpr (movable<remove_reference_t<Rng>>) {
+        using RS                   = reverse_view<ranges::owning_view<remove_reference_t<Rng>>>;
+        constexpr bool is_noexcept = is_nothrow_move_constructible_v<remove_reference_t<Rng>>;
 
         static_assert(same_as<decltype(views::reverse(move(rng))), RS>);
         static_assert(noexcept(views::reverse(move(rng))) == is_noexcept);
@@ -126,9 +125,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const rvalue argument
-    static_assert(CanViewReverse<const remove_reference_t<Rng>> == (is_view && copyable<V>)
-                  || (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) );
-    if constexpr (is_view && copyable<V>) {
+    static_assert(CanViewReverse<const remove_reference_t<Rng>> == (is_view && copy_constructible<V>) );
+    if constexpr (is_view && copy_constructible<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         static_assert(same_as<decltype(views::reverse(move(as_const(rng)))), R>);
@@ -141,22 +139,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         static_assert(noexcept(move(as_const(rng)) | views::reverse | views::reverse | views::reverse) == is_noexcept);
 
         static_assert(same_as<decltype(move(as_const(rng)) | pipeline), R>);
-        static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
-    } else if constexpr (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{declval<const remove_cvref_t<Rng>>()});
-        using RS                   = reverse_view<S>;
-        constexpr bool is_noexcept = noexcept(S{declval<const remove_cvref_t<Rng>>()});
-
-        static_assert(same_as<decltype(views::reverse(move(as_const(rng)))), RS>);
-        static_assert(noexcept(views::reverse(move(as_const(rng)))) == is_noexcept);
-
-        static_assert(same_as<decltype(move(as_const(rng)) | views::reverse), RS>);
-        static_assert(noexcept(move(as_const(rng)) | views::reverse) == is_noexcept);
-
-        static_assert(same_as<decltype(move(as_const(rng)) | views::reverse | views::reverse | views::reverse), RS>);
-        static_assert(noexcept(move(as_const(rng)) | views::reverse | views::reverse | views::reverse) == is_noexcept);
-
-        static_assert(same_as<decltype(move(as_const(rng)) | pipeline), RS>);
         static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
     }
 
@@ -316,6 +298,12 @@ template <class Category, test::Common IsCommon, bool is_random = derived_from<C
 using move_only_view = test::range<Category, const int, test::Sized{is_random}, test::CanDifference{is_random},
     IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
+
+void test_gh2312() { // COMPILE-ONLY
+    using X = ranges::iota_view<int, int>;
+    ranges::reverse_view<X> view;
+    static_assert(same_as<decltype(view | views::reverse), X>);
+}
 
 int main() {
     static constexpr int some_ints[]     = {0, 1, 2};

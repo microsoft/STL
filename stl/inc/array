@@ -615,6 +615,8 @@ template <class _First, class... _Rest>
 array(_First, _Rest...) -> array<typename _Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
 #endif // _HAS_CXX17
 
+struct _Empty_array_element {};
+
 template <class _Ty>
 class array<_Ty, 0> {
 public:
@@ -728,7 +730,7 @@ public:
         _STL_REPORT_ERROR("array subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD const_reference operator[](size_type) const noexcept /* strengthened */ {
@@ -736,7 +738,7 @@ public:
         _STL_REPORT_ERROR("array subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
@@ -744,7 +746,7 @@ public:
         _STL_REPORT_ERROR("array<T, 0>::front() invalid");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
@@ -752,7 +754,7 @@ public:
         _STL_REPORT_ERROR("array<T, 0>::front() invalid");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD reference back() noexcept /* strengthened */ {
@@ -760,7 +762,7 @@ public:
         _STL_REPORT_ERROR("array<T, 0>::back() invalid");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
@@ -768,7 +770,7 @@ public:
         _STL_REPORT_ERROR("array<T, 0>::back() invalid");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD _CONSTEXPR17 _Ty* data() noexcept {
@@ -783,7 +785,9 @@ public:
         _Xout_of_range("invalid array<T, 0> subscript");
     }
 
-    _Ty _Elems[1];
+    conditional_t<disjunction_v<is_default_constructible<_Ty>, _Is_implicitly_default_constructible<_Ty>>, _Ty,
+        _Empty_array_element>
+        _Elems[1];
 };
 
 template <class _Ty, size_t _Size, enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value, int> = 0>
