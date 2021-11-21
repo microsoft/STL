@@ -240,7 +240,7 @@ public:
                 break;
             }
             _STL_VERIFY(_Prev == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
-                                    "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                                    "possibly caused by memory corruption");
             _Counter.wait(0, memory_order_relaxed);
         }
     }
@@ -249,7 +249,7 @@ public:
         // TRANSITION, GH-1133: should be memory_order_acquire
         unsigned char _Prev = _Counter.exchange(0);
         _STL_VERIFY((_Prev & ~1) == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
-                                       "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                                       "possibly caused by memory corruption");
         return reinterpret_cast<const bool&>(_Prev);
     }
 
@@ -264,7 +264,7 @@ public:
                 return true;
             }
             _STL_VERIFY(_Prev == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
-                                    "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                                    "possibly caused by memory corruption");
             const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
             if (_Remaining_timeout == 0) {
                 return false;
@@ -284,7 +284,7 @@ public:
                 return true;
             }
             _STL_VERIFY(_Prev == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
-                                    "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                                    "possibly caused by memory corruption");
 
             const unsigned long _Remaining_timeout = _Semaphore_remaining_timeout(_Abs_time);
             if (_Remaining_timeout == 0) {

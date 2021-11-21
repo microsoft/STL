@@ -3773,7 +3773,6 @@ namespace filesystem {
             const auto _Create_result = __std_fs_create_directory(_Tmp.c_str());
             _Error                    = _Create_result._Error;
             _Created_last             = _Create_result._Created;
-            _Error                    = _Create_result._Error;
             if (_Error != __std_win_error::_Success && !__std_is_file_not_found(_Error)) {
                 _Most_recent_not_file_not_found = _Error;
             }

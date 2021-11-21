@@ -20,12 +20,13 @@ struct streamable {
     streamable() = default;
     streamable(const int input) : _val(input) {}
 
-    friend istream& operator>>(istream& is, streamable& right) noexcept {
+    template <class CharT, class Traits>
+    friend basic_istream<CharT, Traits>& operator>>(basic_istream<CharT, Traits>& is, streamable& right) noexcept {
         is >> right._val;
         return is;
     }
 
-    friend bool operator==(const streamable& left, const streamable& right) noexcept = default;
+    friend bool operator==(const streamable&, const streamable&) noexcept = default;
 
     int _val = 0;
 };
@@ -73,16 +74,51 @@ void test_one_type() {
     ranges::copy(empty_constructed, input_empty);
     assert(ranges::equal(input_empty, expected_empty));
 
-    istringstream intstream{"0 1 2 3"};
-    T input_value[] = {-1, -1, -1, -1, -1};
-    ranges::copy(basic_istream_view<T, char>{intstream}, input_value);
-    assert(ranges::equal(input_value, expected));
+    { // using ranges::basic_istream_view with wide stream
+        wistringstream wintstream{L"0 1 2 3"};
+        T input_value[] = {-1, -1, -1, -1, -1};
+        ranges::copy(basic_istream_view<T, wchar_t>{wintstream}, input_value);
+        assert(ranges::equal(input_value, expected));
+    }
 
-    istringstream intstream_view{"0 1 2 3"};
-    T input_value_view[] = {-1, -1, -1, -1, -1};
-    ranges::copy(ranges::istream_view<T>(intstream_view), input_value_view);
-    static_assert(noexcept(ranges::istream_view<T>(intstream_view)));
-    assert(ranges::equal(input_value_view, expected));
+    { // using ranges::basic_istream_view with narrow stream
+        istringstream intstream{"0 1 2 3"};
+        T input_value[] = {-1, -1, -1, -1, -1};
+        ranges::copy(basic_istream_view<T, char>{intstream}, input_value);
+        assert(ranges::equal(input_value, expected));
+    }
+
+    { // Using ranges::istream_view
+        istringstream intstream{"0 1 2 3"};
+        T input[] = {-1, -1, -1, -1, -1};
+        ranges::copy(ranges::istream_view<T>(intstream), input);
+        static_assert(noexcept(ranges::istream_view<T>(intstream)));
+        assert(ranges::equal(input, expected));
+    }
+
+    { // Using ranges::wistream_view
+        wistringstream wintstream{L"0 1 2 3"};
+        T input[] = {-1, -1, -1, -1, -1};
+        ranges::copy(ranges::wistream_view<T>(wintstream), input);
+        static_assert(noexcept(ranges::wistream_view<T>(wintstream)));
+        assert(ranges::equal(input, expected));
+    }
+
+    { // Using views::istream with narrow stream
+        istringstream intstream{"0 1 2 3"};
+        T input[] = {-1, -1, -1, -1, -1};
+        ranges::copy(views::istream<T>(intstream), input);
+        static_assert(noexcept(views::istream<T>(intstream)));
+        assert(ranges::equal(input, expected));
+    }
+
+    { // Using views::istream with wide stream
+        wistringstream wintstream{L"0 1 2 3"};
+        T input[] = {-1, -1, -1, -1, -1};
+        ranges::copy(views::istream<T>(wintstream), input);
+        static_assert(noexcept(views::istream<T>(wintstream)));
+        assert(ranges::equal(input, expected));
+    }
 }
 
 istringstream some_stream{"42"};
