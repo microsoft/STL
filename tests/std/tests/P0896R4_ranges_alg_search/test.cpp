@@ -8,6 +8,7 @@
 #include <ranges>
 #include <span>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -168,8 +169,28 @@ constexpr bool run_tests() {
     return true;
 }
 
+constexpr void test_devcom_1559808() {
+    // Regression test for DevCom-1559808, an interaction between vector and the
+    // use of structured bindings in the constexpr evaluator.
+
+    vector<int> haystack(33, 42); // No particular significance to any numbers in this function
+    vector<int> needle(8, 42);
+
+    auto result = ranges::search(haystack, needle);
+    assert(result.begin() == haystack.begin());
+    assert(result.end() == haystack.begin() + ranges::ssize(needle));
+
+    needle.assign(6, 1729);
+    result = ranges::search(haystack, needle);
+    assert(result.begin() == haystack.end());
+    assert(result.end() == haystack.end());
+}
+
 int main() {
     STATIC_ASSERT(run_tests());
     run_tests();
+
+    STATIC_ASSERT((test_devcom_1559808(), true));
+    test_devcom_1559808();
 }
 #endif // TEST_EVERYTHING

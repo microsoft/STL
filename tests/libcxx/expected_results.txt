@@ -58,7 +58,7 @@ std/language.support/support.limits/support.limits.general/ostream.version.pass.
 std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
 
 # libc++ doesn't yet implement P2231R1, so it expects an old value for `__cpp_lib_optional`
-std/language.support/support.limits/support.limits.general/optional.version.pass.cpp:1 FAIL
+std/language.support/support.limits/support.limits.general/optional.version.pass.cpp FAIL
 
 # test emits warning C4310: cast truncates constant value
 std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
@@ -68,6 +68,9 @@ std/language.support/support.limits/support.limits.general/concepts.version.pass
 
 # Bogus test believes that optional<non_constexpr_destructor> cannot be a literal type
 std/utilities/optional/optional.object/optional.object.dtor/dtor.pass.cpp:0 FAIL
+
+# Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
+std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -310,11 +313,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
 
-# VSO-1168723 "Implicit copy assignment incorrectly not constexpr when subobject has explicit constexpr copy constructor"
-std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp:0 FAIL
-std/utilities/utility/pairs/pairs.pair/assign_rv_pair.pass.cpp:0 FAIL
-std/utilities/utility/pairs/pairs.pair/assign_rv_pair_U_V.pass.cpp:0 FAIL
-
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
@@ -347,13 +345,6 @@ std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 # GH-1295 <array>: array<const T, 0> allows fill() and swap()
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
-
-# GH-942 <array>: std::array<T,0> doesn't compile - when type is not default constructible
-std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
-std/containers/sequences/array/array.cons/initialization.pass.cpp FAIL
-std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
-std/containers/sequences/array/array.data/data.pass.cpp FAIL
-std/containers/sequences/array/iterators.pass.cpp FAIL
 
 # GH-1006 <algorithm>: debug checks for predicates are observable
 std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
@@ -778,19 +769,6 @@ std/localization/locales/locale.convenience/conversions/conversions.string/ctor_
 std/input.output/iostream.format/ext.manip/get_money.pass.cpp FAIL
 std/input.output/iostream.format/ext.manip/put_money.pass.cpp FAIL
 std/input.output/iostreams.base/ios/basic.ios.members/copyfmt.pass.cpp FAIL
-
-# Not yet analyzed, likely STL bugs. Assertion failed: os.str() == a
-std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_sseq.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_sseq.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/ctor_sseq.pass.cpp FAIL
-
-# Not yet analyzed, likely STL bugs. Assertion failed: e1 == e2
-std/numerics/rand/rand.adapt/rand.adapt.disc/io.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/io.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/io.pass.cpp FAIL
 
 # Likely STL bug: Looks like we shouldn't be using assignment.
 std/thread/futures/futures.promise/set_rvalue.pass.cpp FAIL

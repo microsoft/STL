@@ -14,7 +14,7 @@ using namespace std;
 
 template <class Rng>
 concept CanViewAll = requires(Rng&& r) {
-    views::all(static_cast<Rng&&>(r));
+    views::all(forward<Rng>(r));
 };
 
 // Test a silly precomposed range adaptor pipeline
@@ -27,8 +27,8 @@ constexpr bool test_one(Rng&& rng) {
 
     using V = conditional_t<is_view, remove_cvref_t<Rng>, ranges::ref_view<remove_reference_t<Rng>>>;
 
-    static_assert(CanViewAll<Rng&> == (!is_view || copyable<V>) );
-    if constexpr (!is_view || copyable<V>) { // Validate lvalue
+    static_assert(CanViewAll<Rng&> == (!is_view || copy_constructible<V>) );
+    if constexpr (!is_view || copy_constructible<V>) { // Validate lvalue
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
         static_assert(same_as<views::all_t<Rng>, V>);
@@ -45,8 +45,8 @@ constexpr bool test_one(Rng&& rng) {
         static_assert(noexcept(rng | pipeline) == is_noexcept);
     }
 
-    static_assert(CanViewAll<const remove_cvref_t<Rng>&> == (!is_view || copyable<V>) );
-    if constexpr (is_view && copyable<V>) {
+    static_assert(CanViewAll<const remove_cvref_t<Rng>&> == (!is_view || copy_constructible<V>) );
+    if constexpr (is_view && copy_constructible<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         static_assert(same_as<views::all_t<const remove_cvref_t<Rng>&>, V>);
@@ -79,10 +79,11 @@ constexpr bool test_one(Rng&& rng) {
     }
 
     // Validate rvalue
-    static_assert(CanViewAll<remove_cvref_t<Rng>> == is_view || ranges::enable_borrowed_range<remove_cvref_t<Rng>>);
+    static_assert(CanViewAll<remove_reference_t<Rng>> == (is_view || movable<remove_reference_t<Rng>>) );
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
-        static_assert(same_as<views::all_t<remove_cvref_t<Rng>>, V>);
+
+        static_assert(same_as<views::all_t<remove_reference_t<Rng>>, V>);
         static_assert(same_as<decltype(views::all(move(rng))), V>);
         static_assert(noexcept(views::all(move(rng))) == is_noexcept);
 
@@ -94,11 +95,11 @@ constexpr bool test_one(Rng&& rng) {
 
         static_assert(same_as<decltype(move(rng) | pipeline), V>);
         static_assert(noexcept(move(rng) | pipeline) == is_noexcept);
-    } else if constexpr (ranges::enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{declval<Rng>()});
-        constexpr bool is_noexcept = noexcept(S{declval<Rng>()});
+    } else if constexpr (movable<remove_reference_t<Rng>>) {
+        using S                    = ranges::owning_view<remove_reference_t<Rng>>;
+        constexpr bool is_noexcept = is_nothrow_move_constructible_v<remove_reference_t<Rng>>;
 
-        static_assert(same_as<views::all_t<remove_cvref_t<Rng>>, S>);
+        static_assert(same_as<views::all_t<remove_reference_t<Rng>>, S>);
         static_assert(same_as<decltype(views::all(move(rng))), S>);
         static_assert(noexcept(views::all(move(rng))) == is_noexcept);
 
@@ -113,12 +114,11 @@ constexpr bool test_one(Rng&& rng) {
     }
 
     // Validate const rvalue
-    static_assert(CanViewAll<const remove_cvref_t<Rng>> == (is_view && copyable<V>)
-                  || (!is_view && ranges::enable_borrowed_range<remove_cvref_t<Rng>>) );
-    if constexpr (is_view && copyable<V>) {
+    static_assert(CanViewAll<const remove_reference_t<Rng>> == (is_view && copy_constructible<V>) );
+    if constexpr (is_view && copy_constructible<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
-        static_assert(same_as<views::all_t<const remove_cvref_t<Rng>>, V>);
+        static_assert(same_as<views::all_t<const remove_reference_t<Rng>>, V>);
         static_assert(same_as<decltype(views::all(move(as_const(rng)))), V>);
         static_assert(noexcept(views::all(move(as_const(rng)))) == is_noexcept);
 
@@ -130,34 +130,10 @@ constexpr bool test_one(Rng&& rng) {
 
         static_assert(same_as<decltype(move(as_const(rng)) | pipeline), V>);
         static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
-    } else if constexpr (!is_view && ranges::enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{declval<const remove_cvref_t<Rng>>()});
-        constexpr bool is_noexcept = noexcept(S{declval<const remove_cvref_t<Rng>>()});
-
-        static_assert(same_as<views::all_t<const remove_cvref_t<Rng>>, S>);
-        static_assert(same_as<decltype(views::all(move(as_const(rng)))), S>);
-        static_assert(noexcept(views::all(move(as_const(rng)))) == is_noexcept);
-
-        static_assert(same_as<decltype(move(as_const(rng)) | views::all), S>);
-        static_assert(noexcept(move(as_const(rng)) | views::all) == is_noexcept);
-
-        static_assert(same_as<decltype(move(as_const(rng)) | views::all | views::all | views::all), S>);
-        static_assert(noexcept(move(as_const(rng)) | views::all | views::all | views::all) == is_noexcept);
-
-        static_assert(same_as<decltype(move(as_const(rng)) | pipeline), S>);
-        static_assert(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
     }
 
     return true;
 }
-
-struct non_view_borrowed_range {
-    int* begin() const;
-    int* end() const;
-};
-
-template <>
-inline constexpr bool ranges::enable_borrowed_range<non_view_borrowed_range> = true;
 
 template <class Category, test::Common IsCommon, bool is_random = derived_from<Category, random_access_iterator_tag>>
 using move_only_view = test::range<Category, const int, test::Sized{is_random}, test::CanDifference{is_random},

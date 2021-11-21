@@ -105,6 +105,8 @@ STATIC_ASSERT(test_cpo(ranges::views::drop_while));
 STATIC_ASSERT(test_cpo(ranges::views::elements<42>));
 STATIC_ASSERT(test_cpo(ranges::views::filter));
 STATIC_ASSERT(test_cpo(ranges::views::iota));
+STATIC_ASSERT(test_cpo(ranges::views::istream<int>));
+STATIC_ASSERT(test_cpo(ranges::views::istream<double>));
 STATIC_ASSERT(test_cpo(ranges::views::join));
 STATIC_ASSERT(test_cpo(ranges::views::keys));
 STATIC_ASSERT(test_cpo(ranges::views::lazy_split));
@@ -1792,7 +1794,7 @@ STATIC_ASSERT(!ranges::viewable_range<int() const>);
 
 STATIC_ASSERT(ranges::viewable_range<std::vector<int>&>);
 STATIC_ASSERT(ranges::viewable_range<std::vector<int> const&>);
-STATIC_ASSERT(!ranges::viewable_range<std::vector<int>>);
+STATIC_ASSERT(ranges::viewable_range<std::vector<int>>);
 STATIC_ASSERT(!ranges::viewable_range<std::vector<int> const>);
 STATIC_ASSERT(ranges::viewable_range<std::string_view&>);
 STATIC_ASSERT(ranges::viewable_range<std::string_view const&>);
