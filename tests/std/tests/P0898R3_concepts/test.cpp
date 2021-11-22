@@ -1543,9 +1543,7 @@ namespace test_default_initializable {
         int x;
     };
     STATIC_ASSERT(default_initializable<S>);
-#if defined(MSVC_INTERNAL_TESTING) || defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-952724
     STATIC_ASSERT(!default_initializable<S const>);
-#endif // TRANSITION, DevCom-952724
 
     // Also test GH-1603 "default_initializable accepts types that are not default-initializable"
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1326684
