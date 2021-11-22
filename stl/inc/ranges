@@ -3344,7 +3344,7 @@ namespace ranges {
         // clang-format off
         _NODISCARD constexpr _Iterator<true> begin() const
         #ifdef __clang__ // TRANSITION, LLVM-47414
-            requires _Can_const_join<const _Vw>
+            requires _Can_const_join<_Vw>
         #else // ^^^ workaround / no workaround vvv
             requires input_range<const _Vw> && is_reference_v<_InnerRng<true>>
         #endif // TRANSITION, LLVM-47414
@@ -3365,7 +3365,7 @@ namespace ranges {
         // clang-format off
         _NODISCARD constexpr auto end() const
         #ifdef __clang__ // TRANSITION, LLVM-47414
-            requires _Can_const_join<const _Vw>
+            requires _Can_const_join<_Vw>
         #else // ^^^ workaround / no workaround vvv
             requires input_range<const _Vw> && is_reference_v<_InnerRng<true>>
         #endif // TRANSITION, LLVM-47414
