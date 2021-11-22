@@ -561,6 +561,14 @@ int main() {
         static_assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
     }
 
+    { // Joining a non-const view without const qualified begin and end methods
+        vector<vector<size_t>> nested_vectors = {{0}, {1, 2, 3}, {99}, {4, 5, 6, 7}, {}, {8, 9, 10}};
+        auto RemoveSmallVectors       = [](const vector<size_t>& inner_vector) { return inner_vector.size() > 2; };
+        auto filted_and_joined        = nested_vectors | views::filter(RemoveSmallVectors) | views::join;
+        static constexpr int result[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        assert(ranges::equal(filted_and_joined, result));
+    }
+
     STATIC_ASSERT(instantiation_test());
     instantiation_test();
 }

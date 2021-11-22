@@ -3042,10 +3042,11 @@ namespace ranges {
         /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper, false> _Inner{};
     };
 
-    // clang-format off
-    template <class _Rng> // TRANSITION, LLVM-47414
-    concept _Can_const_join = input_range<const _Rng> && is_reference_v<range_reference_t<_Maybe_const<true, _Rng>>>;
 
+    template <class _Rng> // TRANSITION, LLVM-47414
+    concept _Can_const_join = input_range<const _Rng> && is_reference_v<range_reference_t<const _Rng>>;
+
+    // clang-format off
     template <class _Vw>
         requires is_reference_v<range_reference_t<_Vw>>
     class _Join_view_base<_Vw> : public view_interface<join_view<_Vw>> {};
