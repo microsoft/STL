@@ -2097,6 +2097,16 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString>{what()}</DisplayString>
   </Type>
 
+  <Type Name="std::function&lt;*&gt;">
+    <DisplayString>{target_type().name()}</DisplayString>
+  </Type>
+
+  <Type Name="std::default_searcher&lt;*&gt;">
+    <AlternativeType Name="std::boyer_moore_searcher&lt;*&gt;" />
+    <AlternativeType Name="std::boyer_moore_horspool_searcher&lt;*&gt;" />
+    <DisplayString>{_Data}</DisplayString>
+  </Type>
+
   <Type Name="std::any">
     <Intrinsic Name="has_value"   Expression="_Storage._TypeData != 0"/>
     <Intrinsic Name="_Rep"        Expression="_Storage._TypeData &amp; _Rep_mask"/>
