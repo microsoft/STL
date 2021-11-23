@@ -551,7 +551,7 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
     using _Common          = common_type_t<_Mt, _Nt>;
     using _Common_unsigned = make_unsigned_t<_Common>;
 
-    return _Select_countr_zero_impl<_Common_unsigned>([=](auto _Countr_zero) {
+    return _Select_countr_zero_impl<_Common_unsigned>([=](auto _Countr_zero_impl) {
         _Common_unsigned _Mx_magnitude = _Abs_u(_Mx);
         _Common_unsigned _Nx_magnitude = _Abs_u(_Nx);
         if (_Mx_magnitude == 0U) {
@@ -562,13 +562,13 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
             return static_cast<_Common>(_Mx_magnitude);
         }
 
-        const auto _Mx_trailing_zeroes = static_cast<unsigned long>(_Countr_zero(_Mx_magnitude));
+        const auto _Mx_trailing_zeroes = static_cast<unsigned long>(_Countr_zero_impl(_Mx_magnitude));
         const auto _Common_factors_of_2 =
-            (_STD min) (_Mx_trailing_zeroes, static_cast<unsigned long>(_Countr_zero(_Nx_magnitude)));
+            (_STD min) (_Mx_trailing_zeroes, static_cast<unsigned long>(_Countr_zero_impl(_Nx_magnitude)));
         _Nx_magnitude >>= _Common_factors_of_2;
         _Mx_magnitude >>= _Mx_trailing_zeroes;
         do {
-            _Nx_magnitude >>= static_cast<unsigned long>(_Countr_zero(_Nx_magnitude));
+            _Nx_magnitude >>= static_cast<unsigned long>(_Countr_zero_impl(_Nx_magnitude));
             if (_Mx_magnitude > _Nx_magnitude) {
                 _Common_unsigned _Temp = _Mx_magnitude;
                 _Mx_magnitude          = _Nx_magnitude;
