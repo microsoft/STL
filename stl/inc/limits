@@ -1212,16 +1212,16 @@ constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
     // TRANSITION, DevCom-1527995: Lambdas in this function ensure inlining
 #if _HAS_BSF_TZCNT_INTRINSICS && _HAS_CXX20
     if (!_STD is_constant_evaluated()) {
-#ifndef __AVX2__
+#ifdef __AVX2__
+        return _Callback([](_Ty _Val) { return _Countr_zero_tzcnt(_Val); });
+#else // ^^^ AVX2 ^^^ / vvv not AVX2 vvv
         const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
         if (_Definitely_have_tzcnt) {
             return _Callback([](_Ty _Val) { return _Countr_zero_tzcnt(_Val); });
         } else {
             return _Callback([](_Ty _Val) { return _Countr_zero_bsf(_Val); });
         }
-#else // ^^^ not AVX2 ^^^ / vvv AVX2 vvv
-        return _Callback([](_Ty _Val) { return _Countr_zero_tzcnt(_Val); });
-#endif // ^^^ AVX2 ^^^
+#endif // ^^^ not AVX2 ^^^
     }
 #endif // ^^^ _HAS_BSF_TZCNT_INTRINSICS && _HAS_CXX20 ^^^
     // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
