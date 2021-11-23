@@ -590,6 +590,7 @@ void test_bool_specs() {
 
     // Alternate form
     throw_helper(STR("{:#}"), true);
+    assert(format(STR("{:#c}"), true) == STR("\x1"));
 
     // Leading zero
     throw_helper(STR("{:0}"), true);
