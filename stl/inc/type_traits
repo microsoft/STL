@@ -1367,8 +1367,6 @@ class reference_wrapper;
 // (WG21-N4842 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have
 // invoke-like behavior. As a result, we've chosen to apply the part of P1065R2 resolving LWG-2894 as a defect report.
 
-#pragma warning(push) // TRANSITION, DevCom-936696
-#pragma warning(disable : 28278) // Function '%s' appears with no prototype in scope
 enum class _Invoker_strategy {
     _Functor,
     _Pmf_object,
@@ -1503,7 +1501,6 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
         return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
     }
 }
-#pragma warning(pop) // TRANSITION, DevCom-936696
 
 #pragma warning(push)
 #pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data (/Wall)
