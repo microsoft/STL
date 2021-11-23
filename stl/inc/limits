@@ -1055,7 +1055,7 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
 #define _HAS_BSF_TZCNT_INTRINSICS 1
 #else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
 #define _HAS_BSF_TZCNT_INTRINSICS 0
-#endif // ^^^ intrinsics unavailable
+#endif // ^^^ intrinsics unavailable ^^^
 
 #if _HAS_BSF_TZCNT_INTRINSICS
 extern "C" {
