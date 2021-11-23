@@ -114,6 +114,10 @@ struct bidirectional_pointer {
 template <class T>
 struct output_pointer {
     using iterator_category = output_iterator_tag;
+    using reference         = T&;
+    using value_type        = T;
+    using pointer           = T*;
+    using difference_type   = ptrdiff_t;
 
     constexpr explicit output_pointer(T* const ptr_) : ptr(ptr_) {}
 
@@ -496,6 +500,10 @@ constexpr void test_permutations() {
         {40, 30, 20, 10},
     };
 
+    for (size_t i = 0; i < size(expected); ++i) {
+        assert(is_permutation(begin(buff), end(buff), begin(expected[i]), end(expected[i])));
+    }
+
     size_t cursor = 0;
     do {
         assert(equal(begin(buff), end(buff), begin(expected[cursor]), end(expected[cursor])));
@@ -514,6 +522,32 @@ constexpr void test_permutations() {
 
     assert(cursor == 0);
     assert(equal(begin(buff), end(buff), begin(expected[23]), end(expected[23])));
+
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 8, 7, 3, 4, 5, 6, 2, 1, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 1, 7, 3, 5, 4, 6, 2, 8, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 1, 7, 5, 6, 3, 4, 2, 8, 0};
+        assert(is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
+    {
+        int arr1[] = {0, 1, 2, 3, 4, 10, 5, 6, 7, 8, 9};
+        int arr2[] = {9, 1, 7, 3, 5, 11, 4, 6, 2, 8, 0};
+        assert(!is_permutation(begin(arr1), end(arr1), begin(arr2), end(arr2)));
+    }
 }
 
 constexpr bool test() {

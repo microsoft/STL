@@ -330,12 +330,8 @@ struct char_traits : _Char_traits<_Elem, long> {}; // properties of a string or 
 template <>
 struct char_traits<char16_t> : _WChar_traits<char16_t> {};
 
-using u16streampos = streampos;
-
 template <>
 struct char_traits<char32_t> : _Char_traits<char32_t, unsigned int> {};
-
-using u32streampos = streampos;
 
 template <>
 struct char_traits<wchar_t> : _WChar_traits<wchar_t> {};
@@ -476,10 +472,6 @@ struct char_traits<char> : _Narrow_char_traits<char, int> {}; // properties of a
 #ifdef __cpp_char8_t
 template <>
 struct char_traits<char8_t> : _Narrow_char_traits<char8_t, unsigned int> {};
-
-#ifdef __cpp_lib_char8_t
-using u8streampos = streampos;
-#endif // __cpp_lib_char8_t
 #endif // __cpp_char8_t
 
 template <class _Elem, class _Traits, class _SizeT>
@@ -552,7 +544,16 @@ struct _Char_traits_lt {
 // library-provided char_traits::eq behaves like equal_to<_Elem>
 // TRANSITION: This should not be activated for user-defined specializations of char_traits
 template <class _Elem>
-_INLINE_VAR constexpr bool _Pred_is_consistent_with_memcmp<_Elem, _Elem, _Char_traits_eq<char_traits<_Elem>>> = true;
+_INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred<_Elem, _Elem, _Char_traits_eq<char_traits<_Elem>>> =
+    _Can_memcmp_elements<_Elem, _Elem>;
+
+// library-provided char_traits::lt behaves like less<make_unsigned_t<_Elem>>
+// TRANSITION: This should not be activated for user-defined specializations of char_traits
+template <class _Elem>
+struct _Lex_compare_memcmp_classify_pred<_Elem, _Elem, _Char_traits_lt<char_traits<_Elem>>> {
+    using _UElem = make_unsigned_t<_Elem>;
+    using _Pred  = conditional_t<_Lex_compare_memcmp_classify_elements<_UElem, _UElem>, less<int>, void>;
+};
 
 template <class _Traits>
 using _Traits_ch_t = typename _Traits::char_type;
@@ -1275,7 +1276,7 @@ public:
 #if _HAS_CXX23
     // clang-format off
     template <class _Range>
-        requires (!same_as<remove_cvref_t<_Range>, basic_string_view> // per LWG-3581
+        requires (!same_as<remove_cvref_t<_Range>, basic_string_view>
             && _RANGES contiguous_range<_Range>
             && _RANGES sized_range<_Range>
             && same_as<_RANGES range_value_t<_Range>, _Elem>
@@ -1284,7 +1285,6 @@ public:
                 _Rng.operator _STD basic_string_view<_Elem, _Traits>();
             })
             && (!requires {
-                // per editorial or LWG issue not yet filed as of 2021-06-10
                 typename remove_reference_t<_Range>::traits_type;
             } || same_as<typename remove_reference_t<_Range>::traits_type, _Traits>))
     constexpr basic_string_view(_Range&& _Rng) noexcept(
@@ -1929,9 +1929,6 @@ public:
         this->_Adopt(_Pstring);
     }
 
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _String_const_iterator& operator=(const _String_const_iterator&) noexcept = default;
-
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         _STL_VERIFY(_Ptr, "cannot dereference value-initialized string iterator");
@@ -2167,9 +2164,6 @@ public:
     using reference         = value_type&;
 
     using _Mybase::_Mybase;
-
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _String_iterator& operator=(const _String_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
@@ -2764,10 +2758,11 @@ public:
         _Proxy._Release();
     }
 
-    template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
+    template <class _Ty, enable_if_t<is_convertible_v<const _Ty&, basic_string_view<_Elem, _Traits>>, int> = 0>
     _CONSTEXPR20 basic_string(
-        const _StringViewIsh& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
-        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, _Roff + _Count) using _Al
+        const _Ty& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        // construct from _Right [_Roff, _Roff + _Count) using _Al
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
@@ -2784,34 +2779,6 @@ public:
         _Tidy_init();
     }
 #endif // _HAS_CXX20
-
-private:
-    _CONSTEXPR20 void _Move_assign(basic_string& _Right, _Equal_allocators) noexcept {
-        _Tidy_deallocate();
-        _Pocma(_Getal(), _Right._Getal());
-        _Take_contents(_Right);
-    }
-
-    _CONSTEXPR20 void _Move_assign(basic_string& _Right, _Propagate_allocators) noexcept {
-        if (_Getal() == _Right._Getal()) {
-            _Move_assign(_Right, _Equal_allocators{});
-        } else {
-            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
-            _Mypair._Myval2._Orphan_all();
-            _Mypair._Myval2._Reload_proxy(
-                _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
-            _Pocma(_Getal(), _Right._Getal());
-            _Take_contents(_Right);
-        }
-    }
-
-    _CONSTEXPR20 void _Move_assign(basic_string& _Right, _No_propagate_allocators) {
-        if (_Getal() == _Right._Getal()) {
-            _Move_assign(_Right, _Equal_allocators{});
-        } else {
-            assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
-        }
-    }
 
 public:
 #if _HAS_CXX20
@@ -2860,10 +2827,33 @@ public:
 #endif // _HAS_CXX20
 
     _CONSTEXPR20 basic_string& operator=(basic_string&& _Right) noexcept(
-        noexcept(_Move_assign(_Right, _Choose_pocma<_Alty>{}))) {
-        if (this != _STD addressof(_Right)) {
-            _Move_assign(_Right, _Choose_pocma<_Alty>{});
+        _Choose_pocma_v<_Alty> != _Pocma_values::_No_propagate_allocators) {
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+        auto& _Al                 = _Getal();
+        auto& _Right_al           = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alty>;
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
+            if (_Al != _Right_al) {
+                // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
+                _Mypair._Myval2._Orphan_all();
+                _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
+                _Pocma(_Al, _Right_al);
+                _Take_contents(_Right);
+                return *this;
+            }
+        } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            if (_Al != _Right_al) {
+                assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+                return *this;
+            }
+        }
+
+        _Tidy_deallocate();
+        _Pocma(_Al, _Right_al);
+        _Take_contents(_Right);
 
         return *this;
     }
@@ -3044,54 +3034,50 @@ private:
         }
     }
 
-    _CONSTEXPR20 void _Copy_assign(const basic_string& _Right, false_type) {
-        _Pocca(_Getal(), _Right._Getal());
-        assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
-    }
-
-    _CONSTEXPR20 void _Copy_assign(const basic_string& _Right, true_type) {
-        auto& _Al             = _Getal();
-        const auto& _Right_al = _Right._Getal();
-        if (_Al == _Right_al) {
-            _Copy_assign(_Right, false_type{});
-            return;
+public:
+    _CONSTEXPR20 basic_string& operator=(const basic_string& _Right) {
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
 
-        auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alty, _Al);
-        auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Right_al);
-        _Container_proxy_ptr<_Alty> _New_proxy(_Right_alproxy, _Leave_proxy_unbound{}); // throws
+        auto& _Al             = _Getal();
+        const auto& _Right_al = _Right._Getal();
+        if constexpr (_Choose_pocca_v<_Alty>) {
+            if (_Al != _Right_al) {
+                auto&& _Alproxy       = _GET_PROXY_ALLOCATOR(_Alty, _Al);
+                auto&& _Right_alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Right_al);
+                _Container_proxy_ptr<_Alty> _New_proxy(_Right_alproxy, _Leave_proxy_unbound{}); // throws
 
-        if (_Right._Mypair._Myval2._Large_string_engaged()) {
-            const auto _New_size     = _Right._Mypair._Myval2._Mysize;
-            const auto _New_capacity = _Calculate_growth(_New_size, 0, _Right.max_size());
-            auto _Right_al_non_const = _Right_al;
-            const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity); // throws
+                if (_Right._Mypair._Myval2._Large_string_engaged()) {
+                    const auto _New_size     = _Right._Mypair._Myval2._Mysize;
+                    const auto _New_capacity = _Calculate_growth(_New_size, 0, _Right.max_size());
+                    auto _Right_al_non_const = _Right_al;
+                    const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity); // throws
 
 #if _HAS_CXX20
-            if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
-                _Traits::assign(_Unfancy(_New_ptr), _New_size + 1, _Elem());
-            }
+                    if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to
+                                                        // avoid UB
+                        _Traits::assign(_Unfancy(_New_ptr), _New_size + 1, _Elem());
+                    }
 #endif // _HAS_CXX20
 
-            _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_Right._Mypair._Myval2._Bx._Ptr), _New_size + 1);
-            _Tidy_deallocate();
-            _Mypair._Myval2._Bx._Ptr = _New_ptr;
-            _Mypair._Myval2._Mysize  = _New_size;
-            _Mypair._Myval2._Myres   = _New_capacity;
-        } else {
-            _Copy_assign_val_from_small(_Right);
+                    _Traits::copy(_Unfancy(_New_ptr), _Unfancy(_Right._Mypair._Myval2._Bx._Ptr), _New_size + 1);
+                    _Tidy_deallocate();
+                    _Mypair._Myval2._Bx._Ptr = _New_ptr;
+                    _Mypair._Myval2._Mysize  = _New_size;
+                    _Mypair._Myval2._Myres   = _New_capacity;
+                } else {
+                    _Copy_assign_val_from_small(_Right);
+                }
+
+                _Pocca(_Al, _Right_al);
+                _New_proxy._Bind(_Alproxy, _STD addressof(_Mypair._Myval2));
+                return *this;
+            }
         }
 
         _Pocca(_Al, _Right_al);
-        _New_proxy._Bind(_Alproxy, _STD addressof(_Mypair._Myval2));
-    }
-
-public:
-    _CONSTEXPR20 basic_string& operator=(const basic_string& _Right) {
-        if (this != _STD addressof(_Right)) {
-            _Copy_assign(_Right, _Choose_pocca<_Alty>{});
-        }
-
+        assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         return *this;
     }
 
@@ -3961,15 +3947,34 @@ public:
         );
     }
 
-    _CONSTEXPR20 void resize(_CRT_GUARDOVERFLOW const size_type _Newsize, const _Elem _Ch = _Elem()) {
+    _CONSTEXPR20 void resize(_CRT_GUARDOVERFLOW const size_type _New_size, const _Elem _Ch = _Elem()) {
         // determine new length, padding with _Ch elements as needed
         const size_type _Old_size = size();
-        if (_Newsize <= _Old_size) {
-            _Eos(_Newsize);
+        if (_New_size <= _Old_size) {
+            _Eos(_New_size);
         } else {
-            append(_Newsize - _Old_size, _Ch);
+            append(_New_size - _Old_size, _Ch);
         }
     }
+
+#if _HAS_CXX23
+    template <class _Operation>
+    constexpr void resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
+        if (_Mypair._Myval2._Myres < _New_size) {
+            _Reallocate_grow_by(_New_size - _Mypair._Myval2._Mysize,
+                [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) {
+                    _Traits::copy(_New_ptr, _Old_ptr, _Old_size + 1);
+                });
+        }
+
+        const auto _Result_size = _STD move(_Op)(_Mypair._Myval2._Myptr(), _New_size);
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
+        _STL_VERIFY(_Result_size <= _New_size, "the returned size can't be greater than the passed size");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        _Eos(_Result_size);
+    }
+#endif // _HAS_CXX23
 
     _NODISCARD _CONSTEXPR20 size_type capacity() const noexcept {
         return _Mypair._Myval2._Myres;
@@ -4130,7 +4135,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type find(const _StringViewIsh& _Right, const size_type _Off = 0) const {
+    _NODISCARD _CONSTEXPR20 size_type find(const _StringViewIsh& _Right, const size_type _Off = 0) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for _Right beginning at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(_Traits_find<_Traits>(
@@ -4158,8 +4164,7 @@ public:
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type find(const _Elem _Ch, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type find(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for _Ch at or after _Off
         return static_cast<size_type>(
             _Traits_find_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4167,7 +4172,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type rfind(const _StringViewIsh& _Right, const size_type _Off = npos) const {
+    _NODISCARD _CONSTEXPR20 size_type rfind(const _StringViewIsh& _Right, const size_type _Off = npos) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for _Right beginning before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(_Traits_rfind<_Traits>(
@@ -4195,8 +4201,7 @@ public:
             _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type rfind(const _Elem _Ch, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type rfind(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for _Ch before _Off
         return static_cast<size_type>(
             _Traits_rfind_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4204,7 +4209,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type find_first_of(const _StringViewIsh& _Right, const size_type _Off = 0) const {
+    _NODISCARD _CONSTEXPR20 size_type find_first_of(const _StringViewIsh& _Right, const size_type _Off = 0) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for one of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
@@ -4234,8 +4240,7 @@ public:
             _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type find_first_of(const _Elem _Ch, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type find_first_of(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for _Ch at or after _Off
         return static_cast<size_type>(
             _Traits_find_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4243,7 +4248,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type find_last_of(const _StringViewIsh& _Right, const size_type _Off = npos) const {
+    _NODISCARD _CONSTEXPR20 size_type find_last_of(const _StringViewIsh& _Right, const size_type _Off = npos) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for one of _Right before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(_Traits_find_last_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
@@ -4272,8 +4278,7 @@ public:
             _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type find_last_of(const _Elem _Ch, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type find_last_of(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for _Ch before _Off
         return static_cast<size_type>(
             _Traits_rfind_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4281,7 +4286,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type find_first_not_of(const _StringViewIsh& _Right, const size_type _Off = 0) const {
+    _NODISCARD _CONSTEXPR20 size_type find_first_not_of(const _StringViewIsh& _Right, const size_type _Off = 0) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for none of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(
@@ -4312,8 +4318,7 @@ public:
             _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type find_first_not_of(const _Elem _Ch, const size_type _Off = 0) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type find_first_not_of(const _Elem _Ch, const size_type _Off = 0) const noexcept {
         // look for non-_Ch at or after _Off
         return static_cast<size_type>(
             _Traits_find_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4321,8 +4326,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 size_type find_last_not_of(
-        const _StringViewIsh& _Right, const size_type _Off = npos) const {
+    _NODISCARD _CONSTEXPR20 size_type find_last_not_of(const _StringViewIsh& _Right, const size_type _Off = npos) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for none of _Right before _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return static_cast<size_type>(
@@ -4353,8 +4358,7 @@ public:
             _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
     }
 
-    _NODISCARD _CONSTEXPR20 size_type find_last_not_of(const _Elem _Ch, const size_type _Off = npos) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 size_type find_last_not_of(const _Elem _Ch, const size_type _Off = npos) const noexcept {
         // look for non-_Ch before _Off
         return static_cast<size_type>(
             _Traits_rfind_not_ch<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ch));
@@ -4385,7 +4389,8 @@ public:
 
 #if _HAS_CXX17
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
-    _NODISCARD _CONSTEXPR20 int compare(const _StringViewIsh& _Right) const {
+    _NODISCARD _CONSTEXPR20 int compare(const _StringViewIsh& _Right) const
+        noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // compare [0, size()) with _Right
         basic_string_view<_Elem, _Traits> _As_view = _Right;
         return _Traits_compare<_Traits>(
@@ -4604,8 +4609,8 @@ private:
         _Mypair._Myval2._Myres = _BUF_SIZE - 1;
     }
 
-    _CONSTEXPR20 void _Eos(const size_type _Newsize) { // set new length and null terminator
-        _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _Newsize], _Elem());
+    _CONSTEXPR20 void _Eos(const size_type _New_size) { // set new length and null terminator
+        _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _New_size], _Elem());
     }
 
     _CONSTEXPR20 void _Tidy_init() noexcept { // initialize basic_string data members

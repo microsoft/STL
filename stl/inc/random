@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <iosfwd>
+#include <ios>
 #include <vector>
 #include <xbit_ops.h>
 #include <xstring>
@@ -147,9 +147,9 @@ class seed_seq { // standard sequence of seed values
 public:
     using result_type = unsigned int;
 
-    seed_seq() {}
+    seed_seq() noexcept {}
 
-    template <class _Ty>
+    template <class _Ty, enable_if_t<is_integral_v<_Ty>, int> = 0>
     seed_seq(initializer_list<_Ty> _Ilist) {
         _Construct(_Ilist.begin(), _Ilist.end());
     }
@@ -683,6 +683,12 @@ public:
         return _Ostr;
     }
 
+    template <class _Elem, class _Traits>
+    basic_ostream<_Elem, _Traits>& _Write_full(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
+        _Swc_Traits::_Write_full(_Ostr, *this, _Carry);
+        return _Ostr;
+    }
+
 protected:
     template <class _Gen>
     void _Seed(_Gen& _Gx, bool _Readcy, true_type) { // reset sequence from numeric value
@@ -799,10 +805,20 @@ struct _Swc_traits { // traits for subtract_with_carry generator
         int _Kx = _Get_wc();
 
         for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
-            for (int _Jx = 1; _Jx <= _Kx; ++_Jx) { // unpack into _Kx words
-                unsigned int _Word = static_cast<unsigned int>(_Buf._At(_Ix) >> ((_Kx - _Jx) * 32));
+            for (int _Jx = 0; _Jx < _Kx; ++_Jx) { // unpack into _Kx words
+                const unsigned int _Word = static_cast<unsigned int>(_Buf._At(_Ix) >> (_Jx * 32));
                 _Ostr << _Word << ' ';
             }
+        }
+
+        _Ostr << _Cy;
+    }
+
+    template <class _Elem, class _Traits>
+    static void _Write_full(
+        basic_ostream<_Elem, _Traits>& _Ostr, const _Circ_buf<_Ty, _Nw>& _Buf, _Cy_t _Cy) { // write state to _Ostr
+        for (size_t _Ix = 0; _Ix < _Nw; ++_Ix) {
+            _Ostr << _Buf._At(_Ix) << ' ';
         }
 
         _Ostr << _Cy;
@@ -890,6 +906,44 @@ public:
 
     _NODISCARD static constexpr _Ty(max)() {
         return _Mx - 1;
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(
+        basic_ostream<_Elem, _Traits>& _Ostr, const subtract_with_carry_engine& _Eng) {
+        const auto _Save_flags = _Ostr.flags(ios_base::dec | ios_base::left);
+        const auto _Save_fill  = _Ostr.fill(' ');
+        _Eng._Write_full(_Ostr);
+        _Ostr.flags(_Save_flags);
+        _Ostr.fill(_Save_fill);
+        return _Ostr;
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(
+        basic_istream<_Elem, _Traits>& _Istr, subtract_with_carry_engine& _Eng) {
+        constexpr auto _Nx = long_lag;
+        result_type _Buffer[_Nx];
+        typename _Mybase::_Traits::_Cy_t _Carry_buf;
+        const auto _Save_flags = _Istr.flags(ios_base::dec | ios_base::skipws);
+        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
+            _Istr >> _Buffer[_Ix];
+        }
+
+        _Istr >> _Carry_buf;
+        if (_Istr) {
+            for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
+                _Eng._Ax[_Ix] = _Buffer[_Ix];
+            }
+
+            _Eng._Carry = _Carry_buf;
+            _Eng._Idx   = _Nx;
+        } else {
+            _Istr.setstate(ios_base::failbit);
+        }
+
+        _Istr.flags(_Save_flags);
+        return _Istr;
     }
 };
 

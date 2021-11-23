@@ -16,7 +16,7 @@
 #include <xstddef>
 
 // TRANSITION, GH-2129, move down to _Arm64_popcount
-#if defined(_M_ARM64) && !defined(_M_ARM64EC) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+#if (defined(_M_ARM64) || defined(_M_ARM64EC)) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
     && !defined(__INTEL_COMPILER) && !defined(__clang__) // TRANSITION, LLVM-51488
 #define _HAS_NEON_INTRINSICS 1
 #else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
@@ -1032,6 +1032,14 @@ _NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
 template <class _Ty>
 _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
+#if defined(_M_IX86) || defined(_M_ARM)
+    if constexpr (_Digits == 64) {
+        // 64-bit bit operations on architectures without 64-bit registers are less efficient,
+        // hence we split the value so that it fits in 32-bit registers
+        return _Popcount_fallback(static_cast<unsigned long>(_Val))
+             + _Popcount_fallback(static_cast<unsigned long>(_Val >> 32));
+    }
+#endif // defined(_M_IX86) || defined(_M_ARM)
     // we static_cast these bit patterns in order to truncate them to the correct size
     _Val = static_cast<_Ty>(_Val - ((_Val >> 1) & static_cast<_Ty>(0x5555'5555'5555'5555ull)));
     _Val = static_cast<_Ty>((_Val & static_cast<_Ty>(0x3333'3333'3333'3333ull))
@@ -1043,7 +1051,7 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
     return static_cast<int>(_Val >> (_Digits - 8));
 }
 
-#if defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 extern "C" {
 extern int __isa_available;
 #ifdef __clang__
@@ -1056,21 +1064,9 @@ extern int __isa_available;
 }
 
 template <class _Ty>
-_NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
+_NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
     constexpr _Ty _Max    = (numeric_limits<_Ty>::max) ();
-
-#ifndef __AVX2__
-    // Because the widening done below will always give a non-0 value, checking for tzcnt
-    // is not required for 8-bit and 16-bit since the only difference in behavior between
-    // bsf and tzcnt is when the value is 0.
-    if constexpr (_Digits > 16) {
-        const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
-        if (!_Definitely_have_tzcnt && _Val == 0) {
-            return _Digits;
-        }
-    }
-#endif // __AVX2__
 
     if constexpr (_Digits <= 32) {
         // Intended widening to int. This operation means that a narrow 0 will widen
@@ -1079,21 +1075,71 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
         return static_cast<int>(_TZCNT_U32(static_cast<unsigned int>(~_Max | _Val)));
     } else {
 #ifdef _M_IX86
-        const unsigned int _High = _Val >> 32;
-        const unsigned int _Low  = static_cast<unsigned int>(_Val);
+        const auto _Low = static_cast<unsigned int>(_Val);
         if (_Low == 0) {
-            return 32 + _Checked_x86_x64_countr_zero(_High);
+            const unsigned int _High = _Val >> 32;
+            return static_cast<int>(32 + _TZCNT_U32(_High));
         } else {
-            return _Checked_x86_x64_countr_zero(_Low);
+            return static_cast<int>(_TZCNT_U32(_Low));
         }
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
         return static_cast<int>(_TZCNT_U64(_Val));
 #endif // _M_IX86
     }
 }
+
+template <class _Ty>
+_NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
+    constexpr _Ty _Max    = (numeric_limits<_Ty>::max) ();
+
+    unsigned long _Result;
+    if constexpr (_Digits <= 32) {
+        // Intended widening to int. This operation means that a narrow 0 will widen
+        // to 0xFFFF....FFFF0... instead of 0. We need this to avoid counting all the zeros
+        // of the wider type.
+        if (!_BitScanForward(&_Result, static_cast<unsigned int>(~_Max | _Val))) {
+            return _Digits;
+        }
+    } else {
+#ifdef _M_IX86
+        const auto _Low = static_cast<unsigned int>(_Val);
+        if (_BitScanForward(&_Result, _Low)) {
+            return static_cast<int>(_Result);
+        }
+
+        const unsigned int _High = _Val >> 32;
+        if (!_BitScanForward(&_Result, _High)) {
+            return _Digits;
+        } else {
+            return static_cast<int>(_Result + 32);
+        }
+#else // ^^^ _M_IX86 / !_M_IX86 vvv
+        if (!_BitScanForward64(&_Result, _Val)) {
+            return _Digits;
+        }
+#endif // _M_IX86
+    }
+    return static_cast<int>(_Result);
+}
+
+template <class _Ty>
+_NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
+#ifdef __AVX2__
+    return _Countr_zero_tzcnt(_Val);
+#else // __AVX2__
+    const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
+    if (_Definitely_have_tzcnt) {
+        return _Countr_zero_tzcnt(_Val);
+    } else {
+        return _Countr_zero_bsf(_Val);
+    }
+#endif // __AVX2__
+}
+
 #undef _TZCNT_U32
 #undef _TZCNT_U64
-#endif // defined(_M_IX86) || defined(_M_X64)
+#endif // defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 
 #if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
     && !defined(__INTEL_COMPILER)
@@ -1104,15 +1150,8 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 
 #if _HAS_POPCNT_INTRINSICS
 template <class _Ty>
-_NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
+_NODISCARD int _Unchecked_x86_x64_popcount(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
-#ifndef __AVX__
-    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
-    if (!_Definitely_have_popcnt) {
-        return _Popcount_fallback(_Val);
-    }
-#endif // !defined(__AVX__)
-
     if constexpr (_Digits <= 16) {
         return static_cast<int>(__popcnt16(_Val));
     } else if constexpr (_Digits == 32) {
@@ -1124,6 +1163,17 @@ _NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
         return static_cast<int>(__popcnt64(_Val));
 #endif // _M_IX86
     }
+}
+
+template <class _Ty>
+_NODISCARD int _Checked_x86_x64_popcount(const _Ty _Val) noexcept {
+#ifndef __AVX__
+    const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+    if (!_Definitely_have_popcnt) {
+        return _Popcount_fallback(_Val);
+    }
+#endif // !defined(__AVX__)
+    return _Unchecked_x86_x64_popcount(_Val);
 }
 #endif // _HAS_POPCNT_INTRINSICS
 
@@ -1140,13 +1190,13 @@ constexpr bool _Is_standard_unsigned_integer =
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
-#if defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #if _HAS_CXX20
     if (!_STD is_constant_evaluated()) {
         return _Checked_x86_x64_countr_zero(_Val);
     }
 #endif // _HAS_CXX20
-#endif // defined(_M_IX86) || defined(_M_X64)
+#endif // defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
     // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
     return _Countr_zero_fallback(_Val);
 }
@@ -1166,6 +1216,30 @@ _NODISCARD _CONSTEXPR20 int _Popcount(const _Ty _Val) noexcept {
     }
 #endif // ^^^ any intrinsics available ^^^
     return _Popcount_fallback(_Val);
+}
+
+template <class _Ty, class _Fn>
+_CONSTEXPR20 decltype(auto) _Select_popcount_impl(_Fn _Callback) {
+    // TRANSITION, DevCom-1527995: Lambdas in this function ensure inlining
+#if _HAS_POPCNT_INTRINSICS || _HAS_NEON_INTRINSICS
+#if _HAS_CXX20
+    if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+    {
+#if _HAS_POPCNT_INTRINSICS
+#ifndef __AVX__
+        const bool _Definitely_have_popcnt = __isa_available >= __ISA_AVAILABLE_SSE42;
+        if (!_Definitely_have_popcnt) {
+            return _Callback([](_Ty _Val) { return _Popcount_fallback(_Val); });
+        }
+#endif // !defined(__AVX__)
+        return _Callback([](_Ty _Val) { return _Unchecked_x86_x64_popcount(_Val); });
+#elif _HAS_NEON_INTRINSICS // ^^^ x86/x64 intrinsics available ^^^ / vvv ARM64 intrinsics available vvv
+        return _Callback([](_Ty _Val) { return _Arm64_popcount(_Val); });
+#endif // ^^^ ARM64 intrinsics available ^^^
+    }
+#endif // ^^^ any intrinsics available ^^^
+    return _Callback([](_Ty _Val) { return _Popcount_fallback(_Val); });
 }
 
 #undef _HAS_POPCNT_INTRINSICS

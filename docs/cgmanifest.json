@@ -14,7 +14,7 @@
                 "type": "git",
                 "git": {
                     "repositoryUrl": "https://github.com/microsoft/STL.git",
-                    "commitHash": "1866b848f0175c3361a916680a4318e7f0cc5482"
+                    "commitHash": "ee5a216b516ef033d9153b324842369eee7653d1"
                 }
             }
         },
