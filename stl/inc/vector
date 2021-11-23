@@ -513,14 +513,14 @@ private:
     }
 
     _NODISCARD static const void* _Get_aligned_first(const void* _First, const void* _End) noexcept {
-        const auto _CFirst     = reinterpret_cast<const char* const>(_First);
-        const auto _CEnd       = reinterpret_cast<const char* const>(_End);
+        const auto _CFirst     = reinterpret_cast<const char*>(_First);
+        const auto _CEnd       = reinterpret_cast<const char*>(_End);
         const size_t _Capacity = static_cast<size_t>(_CEnd - _CFirst);
 
         if (_Capacity >= _Asan_granularity) {
             // We are guaranteed to have sufficient space to find an aligned address.
             return reinterpret_cast<const void*>(
-                (reinterpret_cast<const uintptr_t>(_CFirst) + (_Asan_granularity - 1)) & ~(_Asan_granularity - 1));
+                (reinterpret_cast<uintptr_t>(_CFirst) + (_Asan_granularity - 1)) & ~(_Asan_granularity - 1));
         }
 
         uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_CFirst) & (_Asan_granularity - 1);
@@ -547,10 +547,10 @@ private:
             return;
         }
 
-        const auto _First    = reinterpret_cast<const char* const>(_Unfancy_maybe_null(_First_));
-        const auto _End      = reinterpret_cast<const char* const>(_Unfancy_maybe_null(_End_));
-        const auto _Old_last = reinterpret_cast<const char* const>(_Unfancy_maybe_null(_Old_last_));
-        const auto _New_last = reinterpret_cast<const char* const>(_Unfancy_maybe_null(_New_last_));
+        const auto _First    = reinterpret_cast<const char*>(_Unfancy_maybe_null(_First_));
+        const auto _End      = reinterpret_cast<const char*>(_Unfancy_maybe_null(_End_));
+        const auto _Old_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_Old_last_));
+        const auto _New_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_New_last_));
         if constexpr (_Has_minimum_allocation_alignment<vector>) {
             __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
         } else {

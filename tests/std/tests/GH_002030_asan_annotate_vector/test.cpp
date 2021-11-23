@@ -56,7 +56,7 @@ struct throw_on_copy {
 
     throw_on_copy(throw_on_copy&&) {}
 
-    throw_on_copy& operator=(const throw_on_copy&) {
+    [[noreturn]] throw_on_copy& operator=(const throw_on_copy&) {
         throw 0;
     }
 };
@@ -134,7 +134,7 @@ bool verify_vector(vector<T, Alloc>& vec) {
 
     if (bad_address < mid) {
         cout << bad_address << " was marked as poisoned when it should not be." << endl;
-    } else if (bad_address >= mid) {
+    } else {
         cout << bad_address << " was not marked as poisoned when it should be." << endl;
     }
     cout << "Vector State:" << endl;
