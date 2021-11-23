@@ -421,10 +421,10 @@
 #define _NODISCARD_CTOR
 #endif
 
-#ifndef __CUDACC__ // TRANSITION, VSO-568006
-#define _NODISCARD_FRIEND _NODISCARD friend
-#else
+#ifdef __CUDACC__ // TRANSITION, VSO-568006
 #define _NODISCARD_FRIEND friend
+#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#define _NODISCARD_FRIEND _NODISCARD friend
 #endif // TRANSITION, VSO-568006
 
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
