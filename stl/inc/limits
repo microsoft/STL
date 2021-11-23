@@ -1208,7 +1208,7 @@ _NODISCARD _CONSTEXPR20 int _Countr_zero(const _Ty _Val) noexcept {
 }
 
 template <class _Ty, class _Fn>
-_CONSTEXPR20 decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
+constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
     // TRANSITION, DevCom-1527995: Lambdas in this function ensure inlining
 #if _HAS_BSF_TZCNT_INTRINSICS && _HAS_CXX20
     if (!_STD is_constant_evaluated()) {
