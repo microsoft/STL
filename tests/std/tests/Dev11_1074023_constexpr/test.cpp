@@ -30,6 +30,7 @@
 #include <mutex>
 #endif // _M_CEE
 #include <new>
+#include <numeric>
 #include <random>
 #include <ratio>
 #include <regex>
@@ -956,6 +957,27 @@ static_assert(hardware_constructive_interference_size == 64);
 static_assert(hardware_destructive_interference_size == 64);
 #endif // _HAS_CXX17
 
+// P0295R0 gcd(), lcm()
+constexpr bool test_gcd_lcm() {
+#if _HAS_CXX17
+    assert(gcd(0, 0) == 0);
+    assert(gcd(3125, 2401) == 1);
+    assert(gcd(3840, 2160) == 240);
+    assert(gcd(4096, 8192) == 4096);
+    assert(gcd(19937, 19937) == 19937);
+
+    assert(lcm(0, 0) == 0);
+    assert(lcm(0, 1729) == 0);
+    assert(lcm(1729, 0) == 0);
+    assert(lcm(1729, 1729) == 1729);
+    assert(lcm(4096, 8192) == 8192);
+    assert(lcm(1920, 1200) == 9600);
+    assert(lcm(25, 49) == 1225);
+#endif // _HAS_CXX17
+
+    return true;
+}
+
 int main() {
     test_all_constants();
     test_all_bitmasks();
@@ -1020,4 +1042,8 @@ int main() {
            == "1111111011011100101110101001100001110110010101000011001000010000");
     assert(bitset<75>(0xFEDCBA9876543210ULL).to_string()
            == "000000000001111111011011100101110101001100001110110010101000011001000010000");
+
+    // P0295R0 gcd(), lcm()
+    test_gcd_lcm();
+    STATIC_ASSERT(test_gcd_lcm());
 }
