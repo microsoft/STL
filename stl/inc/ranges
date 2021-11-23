@@ -3042,7 +3042,6 @@ namespace ranges {
         /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper, false> _Inner{};
     };
 
-
     template <class _Rng> // TRANSITION, LLVM-47414
     concept _Can_const_join = input_range<const _Rng> && is_reference_v<range_reference_t<const _Rng>>;
 
