@@ -300,6 +300,7 @@ void assert_unique() {
     for (const auto& example : testStrings) {
         assert(cRawToErase.erase(example) == 1);
     }
+    assert(cRawToErase.empty());
 
     assert(!cRawToExtract.extract(testNotInString));
     for (const auto& example : testStrings) {
