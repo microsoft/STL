@@ -53,7 +53,7 @@ class STLTest(Test):
             return result
 
         self._parseTest()
-        self._parseFlags()
+        self._parseFlags(litConfig)
 
         missing_required_features = self.getMissingRequiredFeatures()
         if missing_required_features:
@@ -204,6 +204,8 @@ class STLTest(Test):
         self.linkFlags.extend(self.envlstEntry.getEnvVal('PM_LINK', '').split())
 
         if ('clang'.casefold() in os.path.basename(cxx).casefold()):
+            self._addCustomFeature('clang')
+
             targetArch = litConfig.target_arch.casefold()
             if (targetArch == 'x64'.casefold()):
                 self.compileFlags.append('-m64')
@@ -213,10 +215,13 @@ class STLTest(Test):
                 return Result(UNSUPPORTED, 'clang targeting arm is not supported')
             elif (targetArch == 'arm64'.casefold()):
                 self.compileFlags.append('--target=arm64-pc-windows-msvc')
+        elif ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
+            self._addCustomFeature('nvcc')
 
-        if ('nvcc'.casefold() in os.path.basename(cxx).casefold()):
             # nvcc only supports targeting x64
             self.requires.append('x64')
+        else:
+            self._addCustomFeature('cl')
 
         self.cxx = os.path.normpath(cxx)
         return None
@@ -226,8 +231,9 @@ class STLTest(Test):
         for action in actions:
             action.applyTo(self.config)
 
-    def _parseFlags(self):
+    def _parseFlags(self, litConfig):
         foundStd = False
+        foundCRT = False
         for flag in chain(self.flags, self.compileFlags, self.linkFlags):
             if flag[1:5] == 'std:':
                 foundStd = True
@@ -251,12 +257,64 @@ class STLTest(Test):
                 self.requires.append('arch_ia32') # available for x86, see features.py
             elif flag[1:] == 'arch:VFPv4':
                 self.requires.append('arch_vfpv4') # available for arm, see features.py
+            elif flag[1:] == 'fsanitize=address':
+                self._addCustomFeature('asan')
+            elif flag[1:] == 'MDd':
+                self._addCustomFeature('MDd')
+                self._addCustomFeature('debug_CRT')
+                self._addCustomFeature('dynamic_CRT')
+                foundCRT = True
+            elif flag[1:] == 'MD':
+                self._addCustomFeature('MD')
+                self._addCustomFeature('dynamic_CRT')
+                foundCRT = True
+            elif flag[1:] == 'MTd':
+                self._addCustomFeature('MTd')
+                self._addCustomFeature('debug_CRT')
+                self._addCustomFeature('static_CRT')
+                foundCRT = True
+            elif flag[1:] == 'MT':
+                self._addCustomFeature('MT')
+                self._addCustomFeature('static_CRT')
+                foundCRT = True
 
         if not foundStd:
             self._addCustomFeature('c++14')
 
+        if not foundCRT:
+            self._addCustomFeature('MT')
+            self._addCustomFeature('static_CRT')
+
         self._addCustomFeature('non-lockfree-atomics') # we always support non-lockfree-atomics
         self._addCustomFeature('is-lockfree-runtime-function') # Ditto
+
+        # clang doesn't know how to link in the VS version of the asan runtime automatically
+        if 'asan' in self.config.available_features and 'clang' in self.config.available_features:
+            targetArch = litConfig.target_arch.casefold()
+            archString = str()
+            if targetArch == 'x86'.casefold():
+                archString = 'i386'
+            elif targetArch == 'x64'.casefold():
+                archString = 'x86_64'
+
+            dbgString = str()
+            if 'debug_CRT' in self.config.available_features:
+                dbgString = '_dbg'
+
+            if 'dynamic_CRT' in self.config.available_features:
+                self.linkFlags.append('/wholearchive:clang_rt.asan' + dbgString + '_dynamic_runtime_thunk-' +
+                                      archString + '.lib')
+                self.linkFlags.append('clang_rt.asan' + dbgString + '_dynamic-' + archString + '.lib')
+
+                if targetArch == 'x86'.casefold():
+                    self.linkFlags.append('/include:___asan_seh_interceptor')
+                elif targetArch == 'x64'.casefold():
+                    self.linkFlags.append('/include:__asan_seh_interceptor')
+            else:
+                self.linkFlags.append('/wholearchive:clang_rt.asan' + dbgString + '-' + archString + '.lib')
+                self.linkFlags.append('clang_rt.asan_cxx' + dbgString + '-' + archString + '.lib')
+
+            self.linkFlags.append('/incremental:no')
 
 
 class LibcxxTest(STLTest):

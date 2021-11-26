@@ -2386,6 +2386,48 @@ struct _String_constructor_rvalue_allocator_tag {
     _Xlength_error("string too long");
 }
 
+extern "C" {
+void __sanitizer_annotate_contiguous_container(
+    const void* _First, const void* _End, const void* _Old_last, const void* _New_last) noexcept;
+extern const bool _Asan_string_should_annotate;
+}
+
+#pragma comment(linker, \
+    "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:_Asan_string_should_annotate=_Asan_string_should_annotate_default")
+
+#if !defined(_M_CEE_PURE) && !defined(_DISABLE_STRING_ANNOTATION)
+#if defined(__SANITIZE_ADDRESS__)
+#define _ACTIVATE_STRING_ANNOTATION
+#define _INSERT_STRING_ANNOTATION
+#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ ^^^ // vvv __clang__ vvv
+#if __has_feature(address_sanitizer)
+#define _ACTIVATE_STRING_ANNOTATION
+#define _INSERT_STRING_ANNOTATION
+#endif // __has_feature(address_sanitizer)
+#elif defined(_ANNOTATE_STRING) // ^^^ __clang__ ^^^ // vvv _ANNOTATE_STRING vvv
+#define _INSERT_STRING_ANNOTATION
+#endif // _ANNOTATE_STRING
+#endif // !_M_CEE_PURE && !_DISABLE_STRING_ANNOTATION
+
+#ifdef _ACTIVATE_STRING_ANNOTATION
+#pragma comment(lib, "stl_asan")
+#pragma detect_mismatch("annotate_string", "1")
+#endif // _ACTIVATE_STRING_ANNOTATION
+
+#ifdef _INSERT_STRING_ANNOTATION
+template <class _String, class = void>
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment = alignof(typename _String::value_type)
+                                                            >= _Asan_granularity;
+
+template <class _String>
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment<_String,
+    void_t<decltype(_String::allocator_type::_Minimum_allocation_alignment)>> =
+    _String::allocator_type::_Minimum_allocation_alignment >= _Asan_granularity;
+#else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
+#pragma detect_mismatch("annotate_string", "0")
+#endif // !_INSERT_STRING_ANNOTATION
+
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
 private:
@@ -2458,23 +2500,94 @@ private:
             int>;
 #endif // _HAS_CXX17
 
+#ifdef _INSERT_STRING_ANNOTATION
+    _CONSTEXPR20 void _Create_annotation() const noexcept {
+        // Annotates the valid range with shadow memory
+        auto& _My_data = _Mypair._Myval2;
+        _Apply_annotation(_My_data._Myptr(), _My_data._Myres, _My_data._Myres, _My_data._Mysize);
+    }
+
+    _CONSTEXPR20 void _Remove_annotation() const noexcept {
+        // Removes annotation of the range with shadow memory
+        auto& _My_data = _Mypair._Myval2;
+        _Apply_annotation(_My_data._Myptr(), _My_data._Myres, _My_data._Mysize, _My_data._Myres);
+    }
+
+    _CONSTEXPR20 void _Modify_annotation(const difference_type _Count) const noexcept {
+        // Extends the annotated range by _Count
+        auto& _My_data = _Mypair._Myval2;
+        _Apply_annotation(
+            _My_data._Myptr(), _My_data._Myres, _My_data._Mysize, static_cast<size_type>(_My_data._Mysize + _Count));
+    }
+
+    _NODISCARD static const void* _Get_aligned_first(const void* _First, const size_type _Capacity) noexcept {
+        const char* _CFirst = reinterpret_cast<const char*>(_First);
+
+        if (_Capacity >= _Asan_granularity) { // We are guaranteed to have sufficient space to find an aligned address
+            return reinterpret_cast<void*>(
+                (reinterpret_cast<uintptr_t>(_CFirst) + (_Asan_granularity - 1)) & ~(_Asan_granularity - 1));
+        }
+
+        uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_CFirst) & (_Asan_granularity - 1);
+        if (_Alignment_offset != 0) {
+            _Alignment_offset = _Asan_granularity - _Alignment_offset;
+        }
+
+        if (_Capacity > _Alignment_offset) {
+            return _CFirst + _Alignment_offset;
+        }
+
+        return nullptr;
+    }
+
+    static _CONSTEXPR20 void _Apply_annotation(
+        const value_type* _Ptr, size_type _Capacity, size_type _Old_size, size_type _New_size) noexcept {
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            return;
+        }
+#endif // _HAS_CXX20
+
+        if (!_Asan_string_should_annotate) {
+            return;
+        }
+
+        if (_Capacity == _BUF_SIZE - 1) { // TRANSITION, DevCom-1527920
+            return;
+        }
+
+        // Needs to consider the Null-terminator
+        const char* _First    = reinterpret_cast<const char*>(_Ptr);
+        const char* _End      = reinterpret_cast<const char*>(_Ptr + _Capacity + 1);
+        const char* _Old_last = reinterpret_cast<const char*>(_Ptr + _Old_size + 1);
+        const char* _New_last = reinterpret_cast<const char*>(_Ptr + _New_size + 1);
+        if constexpr (_Has_minimum_allocation_alignment<basic_string>) {
+            __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+        } else {
+            const void* _Aligned_first = _Get_aligned_first(_First, _Capacity + 1);
+            if (!_Aligned_first) {
+                // There is no aligned address within the underlying buffer. Nothing to do
+                return;
+            }
+
+            const void* _Aligned_old_last = _Old_last < _Aligned_first ? _Aligned_first : _Old_last;
+            const void* _Aligned_new_last = _New_last < _Aligned_first ? _Aligned_first : _New_last;
+            const void* _Aligned_end      = _End < _Aligned_first ? _Aligned_first : _End;
+            __sanitizer_annotate_contiguous_container(
+                _Aligned_first, _Aligned_end, _Aligned_old_last, _Aligned_new_last);
+        }
+    }
+
+#define _ASAN_STRING_MODIFY(n)    _Modify_annotation((n))
+#define _ASAN_STRING_REMOVE(_Str) (_Str)._Remove_annotation()
+#define _ASAN_STRING_CREATE(_Str) (_Str)._Create_annotation()
+#else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
+#define _ASAN_STRING_MODIFY(n)
+#define _ASAN_STRING_REMOVE(_Str)
+#define _ASAN_STRING_CREATE(_Str)
+#endif // !_INSERT_STRING_ANNOTATION
+
 public:
-    _CONSTEXPR20 basic_string(const basic_string& _Right)
-        : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Construct_lv_contents(_Right);
-        _Proxy._Release();
-    }
-
-    _CONSTEXPR20 basic_string(const basic_string& _Right, const _Alloc& _Al)
-        : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Construct_lv_contents(_Right);
-        _Proxy._Release();
-    }
-
     _CONSTEXPR20 basic_string() noexcept(is_nothrow_default_constructible_v<_Alty>)
         : _Mypair(_Zero_then_variadic_args_t{}) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
@@ -2486,50 +2599,44 @@ public:
         _Tidy_init();
     }
 
+    _CONSTEXPR20 basic_string(const basic_string& _Right)
+        : _Mypair(_One_then_variadic_args_t{}, _Alty_traits::select_on_container_copy_construction(_Right._Getal())) {
+        _Construct<_Construct_strategy::_From_string>(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+    }
+
+    _CONSTEXPR20 basic_string(const basic_string& _Right, const _Alloc& _Al)
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        _Construct<_Construct_strategy::_From_string>(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+    }
+
     _CONSTEXPR20 basic_string(const basic_string& _Right, const size_type _Roff, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, <end>)
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Right, _Roff, npos);
-        _Proxy._Release();
+        _Right._Mypair._Myval2._Check_offset(_Roff);
+        _Construct<_Construct_strategy::_From_ptr>(
+            _Right._Mypair._Myval2._Myptr() + _Roff, _Right._Mypair._Myval2._Clamp_suffix_size(_Roff, npos));
     }
 
     _CONSTEXPR20 basic_string(
         const basic_string& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, _Roff + _Count)
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Right, _Roff, _Count);
-        _Proxy._Release();
+        _Right._Mypair._Myval2._Check_offset(_Roff);
+        _Construct<_Construct_strategy::_From_ptr>(
+            _Right._Mypair._Myval2._Myptr() + _Roff, _Right._Mypair._Myval2._Clamp_suffix_size(_Roff, _Count));
     }
 
     _CONSTEXPR20 basic_string(_In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count)
         : _Mypair(_Zero_then_variadic_args_t{}) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Ptr, _Count);
-        _Proxy._Release();
+        _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Count);
     }
 
     _CONSTEXPR20 basic_string(
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Ptr, _Count);
-        _Proxy._Release();
+        _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Count);
     }
 
     _CONSTEXPR20 basic_string(_In_z_ const _Elem* const _Ptr) : _Mypair(_Zero_then_variadic_args_t{}) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Ptr);
-        _Proxy._Release();
+        _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
 
 #if _HAS_CXX23
@@ -2541,21 +2648,12 @@ public:
 #endif // _HAS_CXX17
     _CONSTEXPR20 basic_string(_In_z_ const _Elem* const _Ptr, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Ptr);
-        _Proxy._Release();
+        _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
     }
 
     _CONSTEXPR20 basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch)
-        : _Mypair(_Zero_then_variadic_args_t{}) {
-        // construct from _Count * _Ch
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Count, _Ch);
-        _Proxy._Release();
+        : _Mypair(_Zero_then_variadic_args_t{}) { // construct from _Count * _Ch
+        _Construct<_Construct_strategy::_From_char, _Elem>(_Ch, _Count);
     }
 
 #if _HAS_CXX17
@@ -2563,57 +2661,177 @@ public:
 #endif // _HAS_CXX17
     _CONSTEXPR20 basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Count * _Ch with allocator
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Count, _Ch);
-        _Proxy._Release();
+        _Construct<_Construct_strategy::_From_char, _Elem>(_Ch, _Count);
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 basic_string(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
         _Adl_verify_range(_First, _Last);
-        _Construct(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+        if (_First == _Last) {
+            _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
+            _Tidy_init();
+        } else {
+            const auto _UFirst = _Get_unwrapped(_First);
+            const auto _ULast  = _Get_unwrapped(_Last);
+            if constexpr (_Is_elem_cptr_v<decltype(_UFirst)>) {
+                _Construct<_Construct_strategy::_From_ptr>(
+                    _UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
+            } else {
+                _Construct_from_iter(_STD move(_UFirst), _STD move(_ULast));
+            }
+        }
+    }
+
+private:
+    enum class _Construct_strategy : uint8_t { _From_char, _From_ptr, _From_string };
+    template <_Construct_strategy _Strat, class _Char_or_ptr>
+    _CONSTEXPR20 void _Construct(const _Char_or_ptr _Arg, _CRT_GUARDOVERFLOW const size_type _Count) {
+        if constexpr (_Strat == _Construct_strategy::_From_char) {
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Char_or_ptr, _Elem>);
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(_Is_elem_cptr_v<_Char_or_ptr>);
+        }
+
+        auto& _My_data  = _Mypair._Myval2;
+        auto& _Al       = _Getal();
+        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
+        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
+
+        if (_Count < _BUF_SIZE) {
+#if _HAS_CXX20
+            if (_STD is_constant_evaluated()) {
+                _Construct_in_place(_My_data._Bx);
+            }
+#endif // _HAS_CXX20
+
+            _My_data._Mysize = _Count;
+            _My_data._Myres  = _BUF_SIZE - 1;
+            if constexpr (_Strat == _Construct_strategy::_From_char) {
+                _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
+                _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
+            } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
+                _Traits::move(_My_data._Bx._Buf, _Arg, _Count);
+                _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
+            } else { // _Strat == _Construct_strategy::_From_string
+#ifdef _INSERT_STRING_ANNOTATION
+                _Traits::move(_My_data._Bx._Buf, _Arg, _Count);
+#else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
+                _Traits::move(_My_data._Bx._Buf, _Arg, _BUF_SIZE);
+#endif // !_INSERT_STRING_ANNOTATION
+            }
+
+            _ASAN_STRING_CREATE(*this);
+            _Proxy._Release();
+            return;
+        }
+
+        if (_Count > max_size()) {
+            _Xlen_string(); // result too long
+        }
+
+        const size_type _New_capacity = _Calculate_growth(_Count);
+        const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+        _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
+
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
+            _Traits::assign(_Unfancy(_New_ptr), _New_capacity + 1, _Elem());
+        }
+#endif // _HAS_CXX20
+
+        _My_data._Mysize = _Count;
+        _My_data._Myres  = _New_capacity;
+        if constexpr (_Strat == _Construct_strategy::_From_char) {
+            _Traits::assign(_Unfancy(_New_ptr), _Count, _Arg);
+            _Traits::assign(_Unfancy(_New_ptr)[_Count], _Elem());
+        } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
+            _Traits::copy(_Unfancy(_New_ptr), _Arg, _Count);
+            _Traits::assign(_Unfancy(_New_ptr)[_Count], _Elem());
+        } else { // _Strat == _Construct_strategy::_From_string
+            _Traits::copy(_Unfancy(_New_ptr), _Arg, _Count + 1);
+        }
+
+        _ASAN_STRING_CREATE(*this);
         _Proxy._Release();
     }
 
     template <class _Iter>
-    _CONSTEXPR20 void _Construct(_Iter _First, const _Iter _Last, input_iterator_tag) {
-        // initialize from [_First, _Last), input iterators
+    _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Iter _Last) {
+        auto& _My_data  = _Mypair._Myval2;
+        auto& _Al       = _Getal();
+        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
+        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
+
+        _My_data._Mysize = 0;
+        _My_data._Myres  = _BUF_SIZE - 1;
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            _Construct_in_place(_My_data._Bx);
+        }
+#endif // _HAS_CXX20
+
+        if constexpr (_Is_fwd_iter_v<_Iter>) {
+            const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+            if (_Count > max_size()) {
+                _Xlen_string(); // result too long
+            }
+
+            if (_Count >= _BUF_SIZE) {
+                const size_type _New_capacity = _Calculate_growth(_Count);
+                const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+                _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
+                _My_data._Myres = _New_capacity;
+
+#if _HAS_CXX20
+                if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
+                    _Traits::assign(_Unfancy(_New_ptr), _New_capacity + 1, _Elem());
+                }
+#endif // _HAS_CXX20
+            }
+        }
+
         _Tidy_deallocate_guard<basic_string> _Guard{this};
         for (; _First != _Last; ++_First) {
-            push_back(*_First);
+            if constexpr (!_Is_fwd_iter_v<_Iter>) {
+                if (_My_data._Mysize >= _My_data._Myres) { // Need to grow
+                    if (_My_data._Mysize > max_size()) {
+                        _Xlen_string(); // result too long
+                    }
+
+                    const auto _Old_ptr           = _My_data._Myptr();
+                    const size_type _New_capacity = _Calculate_growth(_My_data._Mysize);
+                    const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
+
+#if _HAS_CXX20
+                    if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
+                        _Traits::assign(_Unfancy(_New_ptr), _New_capacity + 1, _Elem());
+                    }
+#endif // _HAS_CXX20
+                    _Traits::copy(_Unfancy(_New_ptr), _Old_ptr, _My_data._Mysize);
+                    if (_My_data._Myres >= _BUF_SIZE) { // Need to deallocate old storage
+                        _Al.deallocate(_My_data._Bx._Ptr, _My_data._Myres + 1);
+                        _My_data._Bx._Ptr = _New_ptr;
+                    } else {
+                        _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
+                    }
+                    _My_data._Myres = _New_capacity;
+                }
+            }
+
+            _Elem* const _Ptr = _Mypair._Myval2._Myptr();
+            _Traits::assign(_Ptr[_Mypair._Myval2._Mysize], *_First);
+            ++_Mypair._Myval2._Mysize;
         }
 
+        _Elem* const _Ptr = _Mypair._Myval2._Myptr();
+        _Traits::assign(_Ptr[_Mypair._Myval2._Mysize], _Elem());
+        _ASAN_STRING_CREATE(*this);
         _Guard._Target = nullptr;
+        _Proxy._Release();
     }
 
-    template <class _Iter>
-    _CONSTEXPR20 void _Construct(const _Iter _First, const _Iter _Last, forward_iterator_tag) {
-        // initialize from [_First, _Last), forward iterators
-        const size_type _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        reserve(_Count);
-        _Construct(_First, _Last, input_iterator_tag{});
-    }
-
-    _CONSTEXPR20 void _Construct(_Elem* const _First, _Elem* const _Last, random_access_iterator_tag) {
-        // initialize from [_First, _Last), pointers
-        if (_First != _Last) {
-            assign(_First, _Convert_size<size_type>(static_cast<size_t>(_Last - _First)));
-        }
-    }
-
-    _CONSTEXPR20 void _Construct(const _Elem* const _First, const _Elem* const _Last, random_access_iterator_tag) {
-        // initialize from [_First, _Last), const pointers
-        if (_First != _Last) {
-            assign(_First, _Convert_size<size_type>(static_cast<size_t>(_Last - _First)));
-        }
-    }
-
+public:
     _CONSTEXPR20 basic_string(basic_string&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
@@ -2623,18 +2841,16 @@ public:
     _CONSTEXPR20 basic_string(basic_string&& _Right, const _Alloc& _Al) noexcept(
         _Alty_traits::is_always_equal::value) // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         if constexpr (!_Alty_traits::is_always_equal::value) {
             if (_Getal() != _Right._Getal()) {
-                _Construct_lv_contents(_Right);
-                _Proxy._Release();
+                _Construct<_Construct_strategy::_From_string>(
+                    _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
                 return;
             }
         }
 
+        _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Take_contents(_Right);
-        _Proxy._Release();
     }
 
     _CONSTEXPR20 basic_string(_String_constructor_concat_tag, const basic_string& _Source_of_al,
@@ -2672,6 +2888,7 @@ public:
         _Traits::copy(_Ptr, _Left_ptr, _Left_size);
         _Traits::copy(_Ptr + static_cast<ptrdiff_t>(_Left_size), _Right_ptr, _Right_size);
         _Traits::assign(_Ptr[_New_size], _Elem());
+        _ASAN_STRING_CREATE(*this);
         _Proxy._Release();
     }
 
@@ -2695,6 +2912,7 @@ public:
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
             _Take_contents(_Left);
             const auto _Ptr = _My_data._Myptr();
+            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Right_size));
             _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), _Right_size + 1);
             _My_data._Mysize = _New_size;
             return;
@@ -2715,6 +2933,7 @@ public:
             _My_data._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal())); // throws, hereafter nothrow in this block
             _Take_contents(_Right);
             const auto _Ptr = _Unfancy(_My_data._Bx._Ptr);
+            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Left_size));
             _Traits::move(_Ptr + _Left_size, _Ptr, _Right_size + 1);
             _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
             _My_data._Mysize = _New_size;
@@ -2743,6 +2962,7 @@ public:
         const auto _Ptr  = _Unfancy(_Fancyptr);
         _Traits::copy(_Ptr, _Left_data._Myptr(), _Left_size);
         _Traits::copy(_Ptr + _Left_size, _Right_data._Myptr(), _Right_size + 1);
+        _ASAN_STRING_CREATE(*this);
         _Proxy._Release();
     }
 
@@ -2750,23 +2970,17 @@ public:
     template <class _StringViewIsh, _Is_string_view_ish<_StringViewIsh> = 0>
     _CONSTEXPR20 explicit basic_string(const _StringViewIsh& _Right, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Right);
-        _Proxy._Release();
+        const basic_string_view<_Elem, _Traits> _As_view = _Right;
+        _Construct<_Construct_strategy::_From_ptr>(_As_view.data(), _Convert_size<size_type>(_As_view.size()));
     }
 
     template <class _Ty, enable_if_t<is_convertible_v<const _Ty&, basic_string_view<_Elem, _Traits>>, int> = 0>
     _CONSTEXPR20 basic_string(
         const _Ty& _Right, const size_type _Roff, const size_type _Count, const _Alloc& _Al = _Alloc())
-        : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        // construct from _Right [_Roff, _Roff + _Count) using _Al
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-        assign(_Right, _Roff, _Count);
-        _Proxy._Release();
+        : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Right [_Roff, _Roff + _Count) using _Al
+        const basic_string_view<_Elem, _Traits> _As_view = _Right;
+        const auto _As_sub_view                          = _As_view.substr(_Roff, _Count);
+        _Construct<_Construct_strategy::_From_ptr>(_As_sub_view.data(), _Convert_size<size_type>(_As_sub_view.size()));
     }
 #endif // _HAS_CXX17
 
@@ -2807,6 +3021,7 @@ public:
         _Released_buffer _Result;
         auto& _My_data = _Mypair._Myval2;
         _Result._Size  = _My_data._Mysize;
+        _ASAN_STRING_REMOVE(*this);
         if (_My_data._Large_string_engaged()) {
             _Result._Ptr = _My_data._Bx._Ptr;
             _Result._Res = _My_data._Myres + 1;
@@ -2888,7 +3103,21 @@ private:
                 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
+#ifdef _INSERT_STRING_ANNOTATION
+                if (!_Right_data._Large_string_engaged()) {
+                    _ASAN_STRING_REMOVE(_Right);
+                }
+#endif // _INSERT_STRING_ANNOTATION
+
                 _Memcpy_val_from(_Right);
+
+#ifdef _INSERT_STRING_ANNOTATION
+                if (!_Right_data._Large_string_engaged()) {
+                    _ASAN_STRING_REMOVE(_Right);
+                    _ASAN_STRING_CREATE(*this);
+                }
+#endif // _INSERT_STRING_ANNOTATION
+
                 _Right._Tidy_init();
                 return;
             }
@@ -2911,40 +3140,6 @@ private:
         _My_data._Mysize = _Right_data._Mysize;
         _My_data._Myres  = _Right_data._Myres;
         _Right._Tidy_init();
-    }
-
-    _CONSTEXPR20 void _Construct_lv_contents(const basic_string& _Right) {
-        // assign by copying data stored in _Right
-        // pre: this != &_Right
-        // pre: *this owns no memory, iterators orphaned (note:
-        // _Buf/_Ptr/_Mysize/_Myres may be garbage init)
-        auto& _Right_data             = _Right._Mypair._Myval2;
-        const size_type _Right_size   = _Right_data._Mysize;
-        const _Elem* const _Right_ptr = _Right_data._Myptr();
-        auto& _My_data                = _Mypair._Myval2;
-
-        // NOTE: even if _Right is in large mode, we only go into large mode ourselves if the actual size of _Right
-        // requires it
-        if (_Right_size < _BUF_SIZE) { // stay small, don't allocate
-            _Traits::copy(_My_data._Bx._Buf, _Right_ptr, _BUF_SIZE);
-            _My_data._Mysize = _Right_size;
-            _My_data._Myres  = _BUF_SIZE - 1;
-            return;
-        }
-
-        auto& _Al                     = _Getal();
-        const size_type _New_capacity = (_STD min) (_Right_size | _ALLOC_MASK, max_size());
-        const pointer _New_array      = _Al.allocate(_New_capacity + 1); // throws
-        _Construct_in_place(_My_data._Bx._Ptr, _New_array);
-
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
-            _Traits::assign(_Unfancy(_New_array), _New_capacity + 1, _Elem());
-        }
-#endif // _HAS_CXX20
-        _Traits::copy(_Unfancy(_New_array), _Right_ptr, _Right_size + 1);
-        _My_data._Mysize = _Right_size;
-        _My_data._Myres  = _New_capacity;
     }
 
 public:
@@ -3090,6 +3285,7 @@ public:
 #endif // _HAS_CXX23
 
     _CONSTEXPR20 basic_string& operator=(const _Elem _Ch) { // assign {_Ch, _Elem()}
+        _ASAN_STRING_MODIFY(static_cast<difference_type>(1 - _Mypair._Myval2._Mysize));
         _Mypair._Myval2._Mysize = 1;
         _Elem* const _Ptr       = _Mypair._Myval2._Myptr();
         _Traits::assign(_Ptr[0], _Ch);
@@ -3149,6 +3345,7 @@ public:
         // append [_Ptr, _Ptr + _Count)
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
+            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count));
             _Mypair._Myval2._Mysize = _Old_size + _Count;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Traits::move(_Old_ptr + _Old_size, _Ptr, _Count);
@@ -3175,6 +3372,7 @@ public:
         // append _Count * _Ch
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
+            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count));
             _Mypair._Myval2._Mysize = _Old_size + _Count;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Traits::assign(_Old_ptr + _Old_size, _Count, _Ch);
@@ -3239,6 +3437,7 @@ public:
         _In_reads_(_Count) const _Elem* const _Ptr, _CRT_GUARDOVERFLOW const size_type _Count) {
         // assign [_Ptr, _Ptr + _Count)
         if (_Count <= _Mypair._Myval2._Myres) {
+            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count - _Mypair._Myval2._Mysize));
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Mypair._Myval2._Mysize = _Count;
             _Traits::move(_Old_ptr, _Ptr, _Count);
@@ -3262,6 +3461,7 @@ public:
     _CONSTEXPR20 basic_string& assign(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch) {
         // assign _Count * _Ch
         if (_Count <= _Mypair._Myval2._Myres) {
+            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count - _Mypair._Myval2._Mysize));
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Mypair._Myval2._Mysize = _Count;
             _Traits::assign(_Old_ptr, _Count, _Ch);
@@ -3342,6 +3542,7 @@ public:
 #endif // _HAS_CXX20
 
         if (_Check_overlap) {
+            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count));
             _Mypair._Myval2._Mysize = _Old_size + _Count;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
@@ -3386,6 +3587,7 @@ public:
         _Mypair._Myval2._Check_offset(_Off);
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Count <= _Mypair._Myval2._Myres - _Old_size) {
+            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Count));
             _Mypair._Myval2._Mysize = _Old_size + _Count;
             _Elem* const _Old_ptr   = _Mypair._Myval2._Myptr();
             _Elem* const _Insert_at = _Old_ptr + _Off;
@@ -3458,8 +3660,9 @@ private:
         _Elem* const _My_ptr      = _Mypair._Myval2._Myptr();
         _Elem* const _Erase_at    = _My_ptr + _Off;
         const size_type _New_size = _Old_size - _Count;
-        _Mypair._Myval2._Mysize   = _New_size;
         _Traits::move(_Erase_at, _Erase_at + _Count, _New_size - _Off + 1); // move suffix + null up
+        _ASAN_STRING_MODIFY(-static_cast<difference_type>(_Count));
+        _Mypair._Myval2._Mysize = _New_size;
         return *this;
     }
 
@@ -3792,6 +3995,7 @@ public:
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al              = _Getal();
             const pointer _New_ptr = _Al.allocate(_Target_capacity + 1); // throws
+            _ASAN_STRING_REMOVE(*this);
 
 #if _HAS_CXX20
             if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
@@ -3804,6 +4008,7 @@ public:
             _Al.deallocate(_My_data._Bx._Ptr, _My_data._Myres + 1);
             _My_data._Bx._Ptr = _New_ptr;
             _My_data._Myres   = _Target_capacity;
+            _ASAN_STRING_CREATE(*this);
         }
     }
 
@@ -3842,6 +4047,7 @@ public:
     _CONSTEXPR20 void push_back(const _Elem _Ch) { // insert element at end
         const size_type _Old_size = _Mypair._Myval2._Mysize;
         if (_Old_size < _Mypair._Myval2._Myres) {
+            _ASAN_STRING_MODIFY(1);
             _Mypair._Myval2._Mysize = _Old_size + 1;
             _Elem* const _Ptr       = _Mypair._Myval2._Myptr();
             _Traits::assign(_Ptr[_Old_size], _Ch);
@@ -4038,7 +4244,7 @@ public:
         return _Count;
     }
 
-    _CONSTEXPR20 void _Swap_bx_large_with_small(_Scary_val& _Starts_large, _Scary_val& _Starts_small) {
+    static _CONSTEXPR20 void _Swap_bx_large_with_small(_Scary_val& _Starts_large, _Scary_val& _Starts_small) noexcept {
         // exchange a string in large mode with one in small mode
         const pointer _Ptr = _Starts_large._Bx._Ptr;
         _Destroy_in_place(_Starts_large._Bx._Ptr);
@@ -4055,11 +4261,27 @@ public:
         auto& _My_data    = _Mypair._Myval2;
         auto& _Right_data = _Right._Mypair._Myval2;
 
+        const bool _My_large    = _My_data._Large_string_engaged();
+        const bool _Right_large = _Right_data._Large_string_engaged();
+#ifdef _INSERT_STRING_ANNOTATION
+        if (_My_large && _Right_large) {
+            // nothing
+        } else if (_My_large) {
+            _ASAN_STRING_REMOVE(_Right);
+        } else if (_Right_large) {
+            _ASAN_STRING_REMOVE(*this);
+        } else {
+            _ASAN_STRING_REMOVE(_Right);
+            _ASAN_STRING_REMOVE(*this);
+        }
+#endif // _INSERT_STRING_ANNOTATION
+
         if constexpr (_Can_memcpy_val) {
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
             {
+
                 const auto _My_data_mem =
                     reinterpret_cast<unsigned char*>(_STD addressof(_My_data)) + _Memcpy_val_offset;
                 const auto _Right_data_mem =
@@ -4068,27 +4290,39 @@ public:
                 _CSTD memcpy(_Temp_mem, _My_data_mem, _Memcpy_val_size);
                 _CSTD memcpy(_My_data_mem, _Right_data_mem, _Memcpy_val_size);
                 _CSTD memcpy(_Right_data_mem, _Temp_mem, _Memcpy_val_size);
+
+#ifdef _INSERT_STRING_ANNOTATION
+                if (_My_large && _Right_large) {
+                    // nothing
+                } else if (_My_large) {
+                    _ASAN_STRING_CREATE(*this);
+                } else if (_Right_large) {
+                    _ASAN_STRING_CREATE(_Right);
+                } else {
+                    _ASAN_STRING_CREATE(_Right);
+                    _ASAN_STRING_CREATE(*this);
+                }
+#endif // _INSERT_STRING_ANNOTATION
+
                 return;
             }
         }
 
-        const bool _My_large    = _My_data._Large_string_engaged();
-        const bool _Right_large = _Right_data._Large_string_engaged();
-        if (_My_large) {
-            if (_Right_large) { // swap buffers, iterators preserved
-                _Swap_adl(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
-            } else { // swap large with small
-                _Swap_bx_large_with_small(_My_data, _Right_data);
-            }
+        if (_My_large && _Right_large) { // swap buffers, iterators preserved
+            _Swap_adl(_My_data._Bx._Ptr, _Right_data._Bx._Ptr);
+        } else if (_My_large) { // swap large with small
+            _Swap_bx_large_with_small(_My_data, _Right_data);
+            _ASAN_STRING_CREATE(*this);
+        } else if (_Right_large) { // swap small with large
+            _Swap_bx_large_with_small(_Right_data, _My_data);
+            _ASAN_STRING_CREATE(_Right);
         } else {
-            if (_Right_large) { // swap small with large
-                _Swap_bx_large_with_small(_Right_data, _My_data);
-            } else {
-                _Elem _Temp_buf[_BUF_SIZE];
-                _Traits::copy(_Temp_buf, _My_data._Bx._Buf, _BUF_SIZE);
-                _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _BUF_SIZE);
-                _Traits::copy(_Right_data._Bx._Buf, _Temp_buf, _BUF_SIZE);
-            }
+            _Elem _Temp_buf[_BUF_SIZE];
+            _Traits::copy(_Temp_buf, _My_data._Bx._Buf, _My_data._Mysize + 1);
+            _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
+            _Traits::copy(_Right_data._Bx._Buf, _Temp_buf, _My_data._Mysize + 1);
+            _ASAN_STRING_CREATE(_Right);
+            _ASAN_STRING_CREATE(*this);
         }
 
         _STD swap(_My_data._Mysize, _Right_data._Mysize);
@@ -4527,6 +4761,7 @@ private:
         }
 #endif // _HAS_CXX20
         _Mypair._Myval2._Orphan_all();
+        _ASAN_STRING_REMOVE(*this);
         _Mypair._Myval2._Mysize = _New_size;
         _Mypair._Myval2._Myres  = _New_capacity;
         _Fn(_Unfancy(_New_ptr), _New_size, _Args...);
@@ -4537,6 +4772,7 @@ private:
             _Construct_in_place(_Mypair._Myval2._Bx._Ptr, _New_ptr);
         }
 
+        _ASAN_STRING_CREATE(*this);
         return *this;
     }
 
@@ -4562,6 +4798,7 @@ private:
         }
 #endif // _HAS_CXX20
         _My_data._Orphan_all();
+        _ASAN_STRING_REMOVE(*this);
         _My_data._Mysize      = _New_size;
         _My_data._Myres       = _New_capacity;
         _Elem* const _Raw_new = _Unfancy(_New_ptr);
@@ -4575,6 +4812,7 @@ private:
             _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
         }
 
+        _ASAN_STRING_CREATE(*this);
         return *this;
     }
 
@@ -4585,6 +4823,7 @@ private:
         _STL_INTERNAL_CHECK(_My_data._Mysize < _BUF_SIZE);
 
         _My_data._Orphan_all();
+        _ASAN_STRING_REMOVE(*this);
         const pointer _Ptr = _My_data._Bx._Ptr;
         auto& _Al          = _Getal();
         _Destroy_in_place(_My_data._Bx._Ptr);
@@ -4596,9 +4835,11 @@ private:
         _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), _My_data._Mysize + 1);
         _Al.deallocate(_Ptr, _My_data._Myres + 1);
         _My_data._Myres = _BUF_SIZE - 1;
+        _ASAN_STRING_CREATE(*this);
     }
 
     _CONSTEXPR20 void _Eos(const size_type _New_size) { // set new length and null terminator
+        _ASAN_STRING_MODIFY(static_cast<difference_type>(_New_size - _Mypair._Myval2._Mysize));
         _Traits::assign(_Mypair._Myval2._Myptr()[_Mypair._Myval2._Mysize = _New_size], _Elem());
     }
 
@@ -4614,11 +4855,13 @@ private:
         }
 #endif // _HAS_CXX20
         _Traits::assign(_My_data._Bx._Buf[0], _Elem());
+        _ASAN_STRING_CREATE(*this);
     }
 
     _CONSTEXPR20 void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
         auto& _My_data = _Mypair._Myval2;
         _My_data._Orphan_all();
+        _ASAN_STRING_REMOVE(*this);
         if (_My_data._Large_string_engaged()) {
             const pointer _Ptr = _My_data._Bx._Ptr;
             auto& _Al          = _Getal();

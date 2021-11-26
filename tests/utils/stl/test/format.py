@@ -15,6 +15,7 @@ import itertools
 import os
 import re
 import shutil
+import sys
 
 import lit
 
@@ -173,13 +174,14 @@ class STLTestFormat:
         if TestType.COMPILE in test.testType:
             cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags]
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
-        elif TestType.LINK in test.testType:
+        elif TestType.LINK in test.testType or \
+                ('clang' in test.config.available_features and 'asan' in test.config.available_features):
             objFile = tmpBase + '.o'
             cmd = [test.cxx, '-c', test.getSourcePath(), *test.flags, *test.compileFlags, '-Fo' + objFile]
             yield TestStep(cmd, shared.execDir, shared.env, False)
 
-            exeFile = tmpBase + '.exe'
-            cmd = [test.cxx, objFile, *test.flags, '-Fe' + exeFile, '-link', *test.linkFlags]
+            shared.execFile = tmpBase + '.exe'
+            cmd = ['link.exe', objFile, *test.flags, '-out:' + shared.execFile, *test.linkFlags]
             yield TestStep(cmd, shared.execDir, shared.env, shouldFail)
         elif TestType.RUN in test.testType:
             shared.execFile = tmpBase + '.exe'
@@ -239,7 +241,10 @@ class STLTestFormat:
             return (lit.Test.PASS, '')
 
         except Exception as e:
-            litConfig.error(repr(e))
+            _, _, exception_traceback = sys.exc_info()
+            filename = exception_traceback.tb_frame.f_code.co_filename
+            line_number = exception_traceback.tb_lineno
+            litConfig.error(repr(e) + ' at ' + filename + ':' + str(line_number))
 
 
 class LibcxxTestFormat(STLTestFormat):

@@ -774,6 +774,9 @@ _NODISCARD constexpr allocation_result<typename allocator_traits<_Alloc>::pointe
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
+// The number of user bytes a single byte of ASAN shadow memory can track.
+_INLINE_VAR constexpr size_t _Asan_granularity = 8;
+
 template <class _Ty>
 class allocator {
 public:
@@ -857,6 +860,8 @@ public:
         return static_cast<size_t>(-1) / sizeof(_Ty);
     }
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
+
+    static constexpr size_t _Minimum_allocation_alignment = _Asan_granularity;
 };
 
 template <>
