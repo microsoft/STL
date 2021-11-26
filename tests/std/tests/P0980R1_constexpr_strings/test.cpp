@@ -210,11 +210,6 @@ public:
         return equal_id() == other.equal_id();
     }
 
-    template <class U>
-    [[nodiscard]] constexpr bool operator!=(const MyAlloc<U, POCCA, POCMA, POCS, EQUAL>& other) const noexcept {
-        return equal_id() != other.equal_id();
-    }
-
     [[nodiscard]] constexpr CharType* allocate(const size_t numElements) {
         return allocator<CharType>{}.allocate(numElements + equal_id()) + equal_id();
     }
@@ -1935,7 +1930,7 @@ constexpr void test_move_ctor() {
     using Str = basic_string<CharType, char_traits<CharType>, StationaryAlloc<CharType>>;
 
     { // Allocated
-        // Iterators are taken over if the containers are equal
+        // Iterators are taken over if the allocators are equal and source is large
         Str range_constructed(get_view_input<CharType>(), StationaryAlloc<CharType>{11});
         const auto test_it = range_constructed.begin();
         Str move_constructed(move(range_constructed));
@@ -1963,7 +1958,7 @@ constexpr void test_move_alloc_ctor(const size_t id1, const size_t id2) {
     using Str = basic_string<CharType, char_traits<CharType>, StationaryAlloc<CharType>>;
 
     { // Allocated
-        // Iterators are taken over if the containers are equal
+        // Iterators are taken over if the allocators are equal and source is large
         Str range_constructed(get_view_input<CharType>(), StationaryAlloc<CharType>{id1});
         const auto test_it = range_constructed.begin();
         Str move_constructed(move(range_constructed), StationaryAlloc<CharType>{id2});
@@ -1989,7 +1984,7 @@ constexpr void test_move_alloc_ctor(const size_t id1, const size_t id2) {
 template <class CharType, class Alloc>
 constexpr void test_move_assign(const size_t id1, const size_t id2, const size_t id3) {
     using Str = basic_string<CharType, char_traits<CharType>, Alloc>;
-    // Iterators are taken over if the containers are equal
+    // Iterators are taken over if the allocators are equal and source is large
 
     { // Allocated to SSO
         Str range_constructed(get_view_input<CharType>(), Alloc{id1});
@@ -2138,7 +2133,7 @@ constexpr bool test_allocator_awareness() {
 }
 
 template <class CharType>
-constexpr bool test_all() {
+constexpr void test_all() {
     test_interface<CharType>();
     test_iterators<CharType>();
     test_growth<CharType>();
@@ -2150,8 +2145,6 @@ constexpr bool test_all() {
     static_assert(test_growth<CharType>());
     static_assert(test_allocator_awareness<CharType>());
 #endif // __EDG__
-
-    return true;
 }
 
 int main() {
