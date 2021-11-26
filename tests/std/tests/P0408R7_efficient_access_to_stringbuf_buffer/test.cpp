@@ -23,9 +23,25 @@ constexpr char large_string[] =
 template <typename Stream>
 struct test_rvalue {
     void operator()(const string& init_value) {
+        test(init_value, ios_base::in);
+        test(init_value, ios_base::out);
+        test(init_value, ios_base::app);
+        test(init_value, ios_base::ate);
+    }
+
+    void test(const string& init_value, const ios_base::openmode mode) {
         string buffer{init_value};
         size_t res = buffer.capacity();
-        Stream stream{move(buffer)};
+        Stream stream{move(buffer), mode};
+
+        // If the stream cannot be written or read we do nothing
+        const auto buffer_view = stream.rdbuf()->_Get_buffer_view();
+        if (!buffer_view._Ptr) {
+            assert(!(mode & ios_base::in) && !(mode & ios_base::out));
+            assert(buffer == init_value);
+            return;
+        }
+
         assert(stream.view() == init_value);
         assert(stream.str() == init_value);
         assert(stream.view() == init_value);
