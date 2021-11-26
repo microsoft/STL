@@ -2329,11 +2329,6 @@ public:
     }
 
     _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            return true;
-        }
-#endif // _HAS_CXX20
         return _BUF_SIZE <= _Myres;
     }
 
@@ -2361,7 +2356,7 @@ public:
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
-        _CONSTEXPR20 _Bxty() noexcept : _Ptr() {} // user-provided, for fancy pointers
+        _CONSTEXPR20 _Bxty() noexcept : _Buf() {} // user-provided, for fancy pointers
 
         _CONSTEXPR20 ~_Bxty() noexcept {} // user-provided, for fancy pointers
 
@@ -2657,26 +2652,20 @@ public:
         auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
 
-#if _HAS_CXX20
-        const bool _Activate_large_mode = _New_capacity < _New_size || _STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const bool _Activate_large_mode = _New_capacity < _New_size;
-#endif // _HAS_CXX20
-
-        if (_Activate_large_mode) {
+        if (_New_capacity < _New_size) {
             // we should never allocate less than _BUF_SIZE space (_New_size could be small if constant evaluated)
             const size_type _Requested_size = (_STD max) (_New_size, _BUF_SIZE);
             _New_capacity                   = _Calculate_growth(_Requested_size, _BUF_SIZE - 1, max_size());
             const pointer _Fancyptr         = _Getal().allocate(_New_capacity + 1); // throws
             _Ptr                            = _Unfancy(_Fancyptr);
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
-        }
 
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
-            _Traits::assign(_Ptr, _New_capacity + 1, _Elem());
-        }
+            if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
+                _Traits::assign(_Ptr, _New_capacity + 1, _Elem());
+            }
 #endif // _HAS_CXX20
+        }
 
         _My_data._Mysize = _New_size;
         _My_data._Myres  = _New_capacity;
@@ -2910,6 +2899,11 @@ private:
             _Right_data._Bx._Ptr = nullptr;
             _Swap_proxy_and_iterators(_Right);
         } else { // copy small string buffer
+#if _HAS_CXX20
+            if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
+                _Construct_in_place(_Mypair._Myval2._Bx);
+            }
+#endif // _HAS_CXX20
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
             _Right_data._Orphan_all();
         }
@@ -2929,15 +2923,9 @@ private:
         const _Elem* const _Right_ptr = _Right_data._Myptr();
         auto& _My_data                = _Mypair._Myval2;
 
-#if _HAS_CXX20
-        const bool _Stay_small = _Right_size < _BUF_SIZE && !_STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const bool _Stay_small = _Right_size < _BUF_SIZE;
-#endif // _HAS_CXX20
-
         // NOTE: even if _Right is in large mode, we only go into large mode ourselves if the actual size of _Right
         // requires it
-        if (_Stay_small) { // stay small, don't allocate
+        if (_Right_size < _BUF_SIZE) { // stay small, don't allocate
             _Traits::copy(_My_data._Bx._Buf, _Right_ptr, _BUF_SIZE);
             _My_data._Mysize = _Right_size;
             _My_data._Myres  = _BUF_SIZE - 1;
@@ -3019,22 +3007,25 @@ public:
     static constexpr auto npos{static_cast<size_type>(-1)};
 
 private:
-    void _Copy_assign_val_from_small(const basic_string& _Right) {
+    _CONSTEXPR20 void _Copy_assign_val_from_small(const basic_string& _Right) {
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
-#if _HAS_CXX20
-        _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
-#endif // _HAS_CXX20
         _Tidy_deallocate();
         if constexpr (_Can_memcpy_val) {
-            _Memcpy_val_from(_Right);
-        } else {
-            auto& _My_data    = _Mypair._Myval2;
-            auto& _Right_data = _Right._Mypair._Myval2;
-
-            _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
-            _My_data._Mysize = _Right_data._Mysize;
-            _My_data._Myres  = _Right_data._Myres;
+#if _HAS_CXX20
+            if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+            {
+                _Memcpy_val_from(_Right);
+                return;
+            }
         }
+
+        auto& _My_data    = _Mypair._Myval2;
+        auto& _Right_data = _Right._Mypair._Myval2;
+
+        _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
+        _My_data._Mysize = _Right_data._Mysize;
+        _My_data._Myres  = _Right_data._Myres;
     }
 
 public:
@@ -3788,26 +3779,16 @@ public:
     _CONSTEXPR20 void shrink_to_fit() { // reduce capacity
         auto& _My_data = _Mypair._Myval2;
 
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
-            if (!_My_data._Large_string_engaged()) { // can't shrink from small mode
-                return;
-            }
-
-            if (_My_data._Mysize < _BUF_SIZE) {
-                _Become_small();
-                return;
-            }
+        if (!_My_data._Large_string_engaged()) { // can't shrink from small mode
+            return;
         }
 
-        size_type _Target_capacity = (_STD min) (_My_data._Mysize | _ALLOC_MASK, max_size());
-#if _HAS_CXX20
-        // must allocate at least _BUF_SIZE space
-        _Target_capacity = (_STD max) (_Target_capacity, _BUF_SIZE);
-#endif // _HAS_CXX20
+        if (_My_data._Mysize < _BUF_SIZE) {
+            _Become_small();
+            return;
+        }
 
+        const size_type _Target_capacity = (_STD min) (_My_data._Mysize | _ALLOC_MASK, max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al              = _Getal();
             const pointer _New_ptr = _Al.allocate(_Target_capacity + 1); // throws
@@ -4057,12 +4038,15 @@ public:
         return _Count;
     }
 
-    void _Swap_bx_large_with_small(_Scary_val& _Starts_large, _Scary_val& _Starts_small) {
+    _CONSTEXPR20 void _Swap_bx_large_with_small(_Scary_val& _Starts_large, _Scary_val& _Starts_small) {
         // exchange a string in large mode with one in small mode
-        // (not _CONSTEXPR20; SSO should be disabled in a constexpr context)
-
         const pointer _Ptr = _Starts_large._Bx._Ptr;
         _Destroy_in_place(_Starts_large._Bx._Ptr);
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            _Construct_in_place(_Starts_large._Bx);
+        }
+#endif // _HAS_CXX20
         _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _BUF_SIZE);
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);
     }
@@ -4594,19 +4578,24 @@ private:
         return *this;
     }
 
-    void _Become_small() {
+    _CONSTEXPR20 void _Become_small() {
         // release any held storage and return to small string mode
-        // pre: *this is in large string mode
-        // pre: this is small enough to return to small string mode
-        // (not _CONSTEXPR20; SSO should be disabled in a constexpr context)
+        auto& _My_data = _Mypair._Myval2;
+        _STL_INTERNAL_CHECK(_My_data._Large_string_engaged());
+        _STL_INTERNAL_CHECK(_My_data._Mysize < _BUF_SIZE);
 
-        _Mypair._Myval2._Orphan_all();
-        const pointer _Ptr = _Mypair._Myval2._Bx._Ptr;
+        _My_data._Orphan_all();
+        const pointer _Ptr = _My_data._Bx._Ptr;
         auto& _Al          = _Getal();
-        _Destroy_in_place(_Mypair._Myval2._Bx._Ptr);
-        _Traits::copy(_Mypair._Myval2._Bx._Buf, _Unfancy(_Ptr), _Mypair._Myval2._Mysize + 1);
-        _Al.deallocate(_Ptr, _Mypair._Myval2._Myres + 1);
-        _Mypair._Myval2._Myres = _BUF_SIZE - 1;
+        _Destroy_in_place(_My_data._Bx._Ptr);
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
+            _Construct_in_place(_Mypair._Myval2._Bx);
+        }
+#endif // _HAS_CXX20
+        _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), _My_data._Mysize + 1);
+        _Al.deallocate(_Ptr, _My_data._Myres + 1);
+        _My_data._Myres = _BUF_SIZE - 1;
     }
 
     _CONSTEXPR20 void _Eos(const size_type _New_size) { // set new length and null terminator
@@ -4614,49 +4603,38 @@ private:
     }
 
     _CONSTEXPR20 void _Tidy_init() noexcept { // initialize basic_string data members
-        auto& _My_data   = _Mypair._Myval2;
+        auto& _My_data = _Mypair._Myval2;
+
         _My_data._Mysize = 0;
-
+        _My_data._Myres  = _BUF_SIZE - 1;
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
 #if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _My_data._Myres        = _BUF_SIZE; // SSO disabled in constexpr context
-            auto& _Al              = _Getal();
-            const pointer _New_ptr = _Al.allocate(_BUF_SIZE + 1); // throws
-            _My_data._Bx._Ptr      = _New_ptr;
-
-            _Elem* const _Raw_new = _Unfancy(_New_ptr);
-            _Traits::assign(_Raw_new, _BUF_SIZE + 1, _Elem());
-        } else
-#endif // _HAS_CXX20
-        {
-            _My_data._Myres = _BUF_SIZE - 1;
-            // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-            _Traits::assign(_My_data._Bx._Buf[0], _Elem());
+        if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
+            _Construct_in_place(_Mypair._Myval2._Bx);
         }
+#endif // _HAS_CXX20
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
     }
 
     _CONSTEXPR20 void _Tidy_deallocate() noexcept { // initialize buffer, deallocating any storage
-        _Mypair._Myval2._Orphan_all();
-        if (_Mypair._Myval2._Large_string_engaged()) {
-            const pointer _Ptr = _Mypair._Myval2._Bx._Ptr;
+        auto& _My_data = _Mypair._Myval2;
+        _My_data._Orphan_all();
+        if (_My_data._Large_string_engaged()) {
+            const pointer _Ptr = _My_data._Bx._Ptr;
             auto& _Al          = _Getal();
-            _Destroy_in_place(_Mypair._Myval2._Bx._Ptr);
-            _Al.deallocate(_Ptr, _Mypair._Myval2._Myres + 1);
+            _Destroy_in_place(_My_data._Bx._Ptr);
+#if _HAS_CXX20
+            if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
+                _Construct_in_place(_Mypair._Myval2._Bx);
+            }
+#endif // _HAS_CXX20
+            _Al.deallocate(_Ptr, _My_data._Myres + 1);
         }
 
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _Mypair._Myval2._Bx._Ptr = nullptr;
-            _Mypair._Myval2._Mysize  = 0;
-            _Mypair._Myval2._Myres   = 0;
-        } else
-#endif // _HAS_CXX20
-        {
-            _Mypair._Myval2._Mysize = 0;
-            _Mypair._Myval2._Myres  = _BUF_SIZE - 1;
-            // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-            _Traits::assign(_Mypair._Myval2._Bx._Buf[0], _Elem());
-        }
+        _My_data._Mysize = 0;
+        _My_data._Myres  = _BUF_SIZE - 1;
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
     }
 
 public:

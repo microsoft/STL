@@ -603,16 +603,12 @@ constexpr bool test_interface() {
         literal_constructed.shrink_to_fit();
 
         const auto c4 = literal_constructed.capacity();
-        if (is_constant_evaluated()) { // check minimum allocation of _BUF_SIZE when constant evaluated
-            assert(c4 == 16 / sizeof(CharType));
+        if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, wchar_t>) {
+            assert(c4 == 7);
+        } else if constexpr (is_same_v<CharType, char32_t>) {
+            assert(c4 == 3);
         } else {
-            if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, wchar_t>) {
-                assert(c4 == 7);
-            } else if constexpr (is_same_v<CharType, char32_t>) {
-                assert(c4 == 3);
-            } else {
-                assert(c4 == 15);
-            }
+            assert(c4 == 15);
         }
     }
 
