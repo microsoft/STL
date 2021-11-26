@@ -2236,7 +2236,7 @@ constexpr bool test_allocator_awareness() {
 }
 
 template <class CharType>
-constexpr bool test_all() {
+constexpr void test_all() {
     test_interface<CharType>();
     test_iterators<CharType>();
     test_growth<CharType>();
@@ -2248,8 +2248,6 @@ constexpr bool test_all() {
     static_assert(test_growth<CharType>());
     static_assert(test_allocator_awareness<CharType>());
 #endif // __EDG__
-
-    return true;
 }
 
 int main() {

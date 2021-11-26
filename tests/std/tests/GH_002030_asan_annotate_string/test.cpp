@@ -18,6 +18,7 @@
 #include <cstring>
 #include <iterator>
 #include <memory>
+#include <sstream>
 #include <string>
 #if _HAS_CXX17
 #include <string_view>
@@ -1594,6 +1595,54 @@ void test_misc() {
 }
 
 template <class Alloc>
+void test_sstream() {
+    using CharType = typename Alloc::value_type;
+    using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
+    using stream   = basic_stringbuf<CharType, char_traits<CharType>, Alloc>;
+
+    constexpr size_t large_size = 20;
+    constexpr size_t sso_size   = 2;
+
+    const str input(large_size, CharType{'b'});
+    const str input_sso(sso_size, CharType{'b'});
+
+    { // RValue construction
+        stream constructed_from_empty{str{}};
+        str buffered_empty = move(constructed_from_empty).str();
+        assert(verify_string(buffered_empty));
+        assert(buffered_empty.empty());
+
+        str to_be_moved = input;
+        stream constructed_from_large{move(to_be_moved)};
+        str buffered = move(constructed_from_large).str();
+        assert(verify_string(to_be_moved));
+        assert(verify_string(buffered));
+
+        str to_be_moved_sso = input_sso;
+        stream constructed_from_sso{move(to_be_moved_sso)};
+        str buffered_sso = move(constructed_from_sso).str();
+        assert(verify_string(to_be_moved_sso));
+        assert(verify_string(buffered_sso));
+    }
+
+    { // RValue str
+        str to_be_moved = input;
+        stream str_large;
+        str_large.str(move(to_be_moved));
+        str buffered = move(str_large).str();
+        assert(verify_string(to_be_moved));
+        assert(verify_string(buffered));
+
+        str to_be_moved_sso = input_sso;
+        stream str_sso;
+        str_sso.str(move(to_be_moved_sso));
+        str buffered_sso = move(str_sso).str();
+        assert(verify_string(to_be_moved_sso));
+        assert(verify_string(buffered_sso));
+    }
+}
+
+template <class Alloc>
 void test_exceptions() {
     using CharType = typename Alloc::value_type;
     using str      = basic_string<CharType, char_traits<CharType>, Alloc>;
@@ -1728,6 +1777,7 @@ void run_tests() {
     test_insertion<Alloc>();
     test_removal<Alloc>();
     test_misc<Alloc>();
+    test_sstream<Alloc>();
     test_exceptions<Alloc>();
 }
 
