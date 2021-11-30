@@ -2062,8 +2062,47 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <Type Name="std::basic_format_args&lt;*&gt;">
     <DisplayString>Num args:{_Num_args}</DisplayString>
     <Expand>
-      <Item Name="Index">_Index_array->_Index</Item>
       <Item Name="Type">_Index_array->_Type_</Item>
+      <IndexListItems>
+        <Size>_Num_args</Size>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 1">
+          *(reinterpret_cast&lt;const int*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 2">
+          *(reinterpret_cast&lt;const unsigned int*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 3">
+          *(reinterpret_cast&lt;const long long*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 4">
+          *(reinterpret_cast&lt;const unsigned long long*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 5">
+          *(reinterpret_cast&lt;const bool*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 6">
+          *(reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 7">
+          *(reinterpret_cast&lt;const float*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 8">
+          *(reinterpret_cast&lt;const double*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 9">
+          *(reinterpret_cast&lt;const long double*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 10">
+          (void*)(*(reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index))
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 11">
+          *(reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 12">
+          *(reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+        </ValueNode>
+        <ValueNode>reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index</ValueNode>
+      </IndexListItems>
     </Expand>
   </Type>
 
