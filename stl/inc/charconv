@@ -932,7 +932,15 @@ _NODISCARD inline uint64_t _Divide(_Big_integer_flt& _Numerator, const _Big_inte
 
         _Numerator._Mydata[1] = static_cast<uint32_t>(_Uu >> 32);
         _Numerator._Mydata[0] = static_cast<uint32_t>(_Uu);
-        _Numerator._Myused    = _Numerator._Mydata[1] > 0 ? 2u : 1u;
+
+        if (_Numerator._Mydata[1] > 0) {
+            _Numerator._Myused = 2u;
+        } else if (_Numerator._Mydata[0] > 0) {
+            _Numerator._Myused = 1u;
+        } else {
+            _Numerator._Myused = 0u;
+        }
+
         return _Quotient;
     }
 
