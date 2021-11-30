@@ -594,6 +594,7 @@ private:
             _Myvec = nullptr;
         }
 
+    private:
         vector* _Myvec;
         size_type _Target_size;
     };
@@ -609,6 +610,7 @@ private:
             _Myvec._Create_annotation();
         }
 
+    private:
         const vector& _Myvec;
     };
 
