@@ -122,7 +122,7 @@ constexpr bool test_rotr() {
         assert(rotr(T{0}, i) == 0);
 
         for (int j = 0; j < 4; ++j) {
-            assert(rotr(every_fourth[3 - j], i) == every_fourth[3 - ((i + j) % 4)]);
+            assert(rotr(every_fourth[(i + j) % 4], i) == every_fourth[j]);
         }
     }
     return true;
