@@ -2046,8 +2046,18 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <Type Name="std::formatter&lt;*,*&gt;">
     <DisplayString>{_Specs._Dynamic_width_index}, {_Specs._Dynamic_precision_index}</DisplayString>
     <Expand>
-      <Item Name="Width index">_Specs._Dynamic_width_index</Item>
-      <Item Name="Precision index">_Specs._Dynamic_precision_index</Item>
+      <Item Name="Dynamic width index">_Specs._Dynamic_width_index</Item>
+      <Item Name="Dynamic precision index">_Specs._Dynamic_precision_index</Item>
+      <Item Name="Width index">_Specs._Width</Item>
+      <Item Name="Precision index">_Specs._Precision</Item>
+      <Item Name="Width index">_Specs._Type</Item>
+      <Item Name="Precision index">_Specs._Alignment</Item>
+      <Item Name="Width index">_Specs._Sgn</Item>
+      <Item Name="Precision index">_Specs._Alt</Item>
+      <Item Name="Width index">_Specs._Localized</Item>
+      <Item Name="Precision index">_Specs._Leading_zero</Item>
+      <Item Name="Width index">_Specs._Fill_length</Item>
+      <Item Name="Precision index">_Specs._Fill</Item>
     </Expand>
   </Type>
 
@@ -2096,10 +2106,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
           (void*)(*(reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index))
         </ValueNode>
         <ValueNode Condition="_Index_array[$i]._Type_ == 11">
-          *(reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          reinterpret_cast&lt;char*&gt;(*((reinterpret_cast&lt;const long long *&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)+0))
         </ValueNode>
         <ValueNode Condition="_Index_array[$i]._Type_ == 12">
-          *(reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          reinterpret_cast&lt;char*&gt;(*((reinterpret_cast&lt;const long long *&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)+0))
         </ValueNode>
         <ValueNode>reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index</ValueNode>
       </IndexListItems>
