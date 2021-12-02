@@ -991,9 +991,9 @@ void test_spec_replacement_field() {
     test_pointer_specs<charT>();
     test_string_specs<charT>();
 }
-
 template <class charT, class... Args>
-void test_size_helper(const size_t expected_size, const basic_string_view<charT> fmt, const Args&... args) {
+void test_size_helper_impl(
+    const size_t expected_size, const _Basic_format_string<charT, Args...> fmt, const Args&... args) {
     assert(formatted_size(fmt, args...) == expected_size);
     assert(formatted_size(locale::classic(), fmt, args...) == expected_size);
 
@@ -1005,7 +1005,7 @@ void test_size_helper(const size_t expected_size, const basic_string_view<charT>
         assert(res.size == signed_size);
         assert(res.out - str.begin() == signed_size);
         assert(res.out == str.end());
-        assert(vformat(fmt, make_testing_format_args<charT>(args...)) == str);
+        assert(vformat(fmt._Str, make_testing_format_args<charT>(args...)) == str);
 
         basic_string<charT> locale_str;
         locale_str.resize(expected_size);
@@ -1025,11 +1025,21 @@ void test_size_helper(const size_t expected_size, const basic_string_view<charT>
     assert(str.starts_with(half_str));
 }
 
+template <class... Args>
+void test_size_helper(const size_t expected_size, const _Fmt_string<Args...> fmt, Args&&... args) {
+    test_size_helper_impl<char, Args...>(expected_size, fmt, forward<Args>(args)...);
+}
+template <class... Args>
+void test_size_helper(const size_t expected_size, const _Fmt_wstring<Args...> fmt, Args&&... args) {
+    test_size_helper_impl<wchar_t, Args...>(expected_size, fmt, forward<Args>(args)...);
+}
+
+
 template <class charT>
 void test_size() {
-    test_size_helper<charT>(3, STR("{}"), 123);
-    test_size_helper<charT>(6, STR("{}"), 3.1415);
-    test_size_helper<charT>(8, STR("{:8}"), STR("scully"));
+    test_size_helper(3, STR("{}"), 123);
+    test_size_helper(6, STR("{}"), 3.1415);
+    test_size_helper(8, STR("{:8}"), STR("scully"));
 }
 
 // The libfmt_ tests are derived from tests in
