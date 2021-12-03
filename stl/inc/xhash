@@ -1094,12 +1094,13 @@ public:
 
 private:
     template <class _Kx>
-    static constexpr bool _Noexcept_heterogenous_erasure =
-        _Nothrow_hash<_Traits, _Kx> //
-        && (!_Multi || (_Nothrow_compare<_Traits, key_type, _Kx> && _Nothrow_compare<_Traits, _Kx, key_type>) );
+    static constexpr bool _Noexcept_heterogenous_erasure() {
+        return _Nothrow_hash<_Traits, _Kx> //
+            && (!_Multi || (_Nothrow_compare<_Traits, key_type, _Kx> && _Nothrow_compare<_Traits, _Kx, key_type>) );
+    }
 
     template <class _Keytype>
-    size_type _Erase(const _Keytype& _Keyval) noexcept(_Noexcept_heterogenous_erasure<_Keytype>) /* strengthened */ {
+    size_type _Erase(const _Keytype& _Keyval) noexcept(_Noexcept_heterogenous_erasure<_Keytype>()) /* strengthened */ {
         const size_t _Hashval = _Traitsobj(_Keyval);
         if constexpr (_Multi) {
             const auto _Where = _Equal_range(_Keyval, _Hashval);
@@ -1121,7 +1122,7 @@ public:
 #if _HAS_CXX23
     template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
         enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
-    size_type erase(_Kx&& _Keyval) noexcept(_Noexcept_heterogenous_erasure<_Kx>) /* strengthened */ {
+    size_type erase(_Kx&& _Keyval) noexcept(_Noexcept_heterogenous_erasure<_Kx>()) /* strengthened */ {
         return _Erase(_Keyval);
     }
 #endif // _HAS_CXX23
