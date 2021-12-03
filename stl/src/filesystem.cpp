@@ -907,7 +907,14 @@ struct alignas(long long) _Aligned_file_attrs {
     if (_Bitmask_includes(_Flags, _Attribute_tag_info_data)) {
         FILE_ATTRIBUTE_TAG_INFO _Info;
         if (!GetFileInformationByHandleEx(_Handle._Get(), FileAttributeTagInfo, &_Info, sizeof(_Info))) {
-            return __std_win_error{GetLastError()};
+            const DWORD _Error = GetLastError();
+            if (_Error == ERROR_INVALID_PARAMETER) {
+                // Calling GetFileInformationByHandleEx with FileAttributeTagInfo fails on FAT file system with
+                // ERROR_INVALID_PARAMETER. Clear _Info.ReparseTag to indicate no symlinks are possible.
+                _Info.ReparseTag = 0;
+            } else {
+                return __std_win_error{_Error};
+            }
         }
 
         _Stats->_Attributes        = __std_fs_file_attr{_Info.FileAttributes};
