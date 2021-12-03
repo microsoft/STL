@@ -1376,10 +1376,9 @@
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
-
-#define __cpp_lib_byteswap       202110L
-#define __cpp_lib_invoke_r       202106L
-#define __cpp_lib_is_scoped_enum 202011L
+#define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_invoke_r                          202106L
+#define __cpp_lib_is_scoped_enum                    202011L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
