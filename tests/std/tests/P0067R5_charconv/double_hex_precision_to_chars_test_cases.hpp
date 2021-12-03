@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
+#ifndef DOUBLE_HEX_PRECISION_TO_CHARS_TEST_CASES_HPP
+#define DOUBLE_HEX_PRECISION_TO_CHARS_TEST_CASES_HPP
 
 #include <charconv>
 
@@ -115,3 +116,5 @@ inline constexpr DoublePrecisionToCharsTestCase double_hex_precision_to_chars_te
     {0x1.801p+0, chars_format::hex, 0, "2p+0"},
     {0x1.900p+0, chars_format::hex, 0, "2p+0"},
 };
+
+#endif // DOUBLE_HEX_PRECISION_TO_CHARS_TEST_CASES_HPP
