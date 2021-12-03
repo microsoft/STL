@@ -1336,11 +1336,11 @@ private:
 public:
 #if _HAS_CXX23
     template <class _Kx, class _Mycomp = key_compare, class = typename _Mycomp::is_transparent,
-        enable_if_t<!is_convertible_v<_Kx&&, iterator> && !is_convertible_v<_Kx&&, const_iterator>, int> = 0>
+        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
     size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Eqrange(_Keyval))) /* strengthened */ {
         return _Erase(_Eqrange(_Keyval));
     }
-#endif
+#endif // _HAS_CXX23
 
     void clear() noexcept {
         const auto _Scary = _Get_scary();
@@ -1744,7 +1744,7 @@ public:
 
 #if _HAS_CXX23
     template <class _Kx, class _Mycomp = key_compare, class = typename _Mycomp::is_transparent,
-        enable_if_t<!is_convertible_v<_Kx&&, iterator> && !is_convertible_v<_Kx&&, const_iterator>, int> = 0>
+        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
     node_type extract(_Kx&& _Keyval) {
         const const_iterator _Where = find(_Keyval);
         if (_Where == end()) {

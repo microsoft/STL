@@ -1096,7 +1096,8 @@ private:
     template <class _Keytype>
     size_type _Erase(const _Keytype& _Keyval) noexcept(
         _Nothrow_hash<_Traits, _Keytype> //
-        && (!_Multi || _Nothrow_compare<_Traits, key_type, _Keytype>) ) /* strengthened */ {
+        && (!_Multi || _Nothrow_compare<_Traits, key_type, _Keytype> //
+            || _Nothrow_compare<_Traits, _Keytype, key_type>) ) /* strengthened */ {
         const size_t _Hashval = _Traitsobj(_Keyval);
         if constexpr (_Multi) {
             const auto _Where = _Equal_range(_Keyval, _Hashval);
@@ -1117,10 +1118,10 @@ private:
 public:
 #if _HAS_CXX23
     template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
-        enable_if_t<!is_convertible_v<_Kx&&, iterator> && !is_convertible_v<_Kx&&, const_iterator>, int> = 0>
-    size_type erase(_Kx&& _Keyval) noexcept(
-        _Nothrow_hash<_Traits, _Kx> //
-        && (!_Multi || _Nothrow_compare<_Traits, key_type, _Kx>) ) /* strengthened */ {
+        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
+    size_type erase(_Kx&& _Keyval) noexcept(_Nothrow_hash<_Traits, _Kx> //
+                                            && (!_Multi || _Nothrow_compare<_Traits, key_type, _Kx> //
+                                                || _Nothrow_compare<_Traits, _Kx, key_type>) ) /* strengthened */ {
         return _Erase(_Keyval);
     }
 #endif // _HAS_CXX23
@@ -1359,7 +1360,7 @@ public:
 
 #if _HAS_CXX23
     template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
-        enable_if_t<!is_convertible_v<_Kx&&, iterator> && !is_convertible_v<_Kx&&, const_iterator>, int> = 0>
+        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
     node_type extract(_Kx&& _Keyval) {
         const auto _Ptr = _Extract(_Keyval);
         if (!_Ptr) {

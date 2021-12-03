@@ -1370,11 +1370,12 @@
 // C++23
 #if _HAS_CXX23
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
-#define __cpp_lib_associative_heterogeneous_erasure 202110L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_allocate_at_least 202106L
 #endif // __cpp_lib_concepts
+
+#define __cpp_lib_associative_heterogeneous_erasure 202110L
 
 #define __cpp_lib_byteswap       202110L
 #define __cpp_lib_invoke_r       202106L

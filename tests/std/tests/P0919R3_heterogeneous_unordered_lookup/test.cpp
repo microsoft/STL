@@ -24,7 +24,7 @@ bool g_prohibit_allocations = false;
 
 class prohibit_allocations {
 public:
-    explicit prohibit_allocations(const bool value) : prev(g_prohibit_allocations) {
+    explicit prohibit_allocations(const bool value) : previous(g_prohibit_allocations) {
         g_prohibit_allocations = value;
     }
 
@@ -32,11 +32,11 @@ public:
     prohibit_allocations& operator=(const prohibit_allocations&) = delete;
 
     ~prohibit_allocations() {
-        g_prohibit_allocations = prev;
+        g_prohibit_allocations = previous;
     }
 
 private:
-    const bool prev;
+    const bool previous;
 };
 
 

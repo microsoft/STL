@@ -110,20 +110,6 @@ STATIC_ASSERT(__cpp_lib_array_constexpr == 201803L);
 STATIC_ASSERT(__cpp_lib_as_const == 201510L);
 #endif
 
-#if _HAS_CXX20
-#ifndef __cpp_lib_assume_aligned
-#error __cpp_lib_assume_aligned is not defined
-#elif __cpp_lib_assume_aligned != 201811L
-#error __cpp_lib_assume_aligned is not 201811L
-#else
-STATIC_ASSERT(__cpp_lib_assume_aligned == 201811L);
-#endif
-#else
-#ifdef __cpp_lib_assume_aligned
-#error __cpp_lib_assume_aligned is defined
-#endif
-#endif
-
 #if _HAS_CXX23
 #ifndef __cpp_lib_associative_heterogeneous_erasure
 #error __cpp_lib_associative_heterogeneous_erasure is not defined
@@ -135,6 +121,20 @@ STATIC_ASSERT(__cpp_lib_associative_heterogeneous_erasure == 202110L);
 #else
 #ifdef __cpp_lib_associative_heterogeneous_erasure
 #error __cpp_lib_associative_heterogeneous_erasure is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_assume_aligned
+#error __cpp_lib_assume_aligned is not defined
+#elif __cpp_lib_assume_aligned != 201811L
+#error __cpp_lib_assume_aligned is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_assume_aligned == 201811L);
+#endif
+#else
+#ifdef __cpp_lib_assume_aligned
+#error __cpp_lib_assume_aligned is defined
 #endif
 #endif
 
