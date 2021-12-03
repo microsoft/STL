@@ -500,7 +500,7 @@ void test_integral_specs() {
     // Alternate form
     assert(format(STR("{:#}"), Integral{0}) == STR("0"));
     assert(format(STR("{:#d}"), Integral{0}) == STR("0"));
-    assert(format(STR("{:#c}"), Integral{'a'}) == STR("a"));
+    throw_helper(STR("{:#c}"), Integral{'a'});
 
     assert(format(STR("{:#b}"), Integral{0}) == STR("0b0"));
     assert(format(STR("{:#B}"), Integral{0}) == STR("0B0"));
@@ -590,7 +590,7 @@ void test_bool_specs() {
 
     // Alternate form
     throw_helper(STR("{:#}"), true);
-    assert(format(STR("{:#c}"), true) == STR("\x1"));
+    throw_helper(STR("{:#c}"), true);
 
     // Leading zero
     throw_helper(STR("{:0}"), true);
@@ -1366,6 +1366,29 @@ void test_slow_append_path() {
     assert(str == hello_world);
 }
 
+template <class charT>
+void test_sane_c_specifier() {
+    throw_helper(STR("{:#}"), true);
+    throw_helper(STR("{:#c}"), true);
+    throw_helper(STR("{:+}"), true);
+    throw_helper(STR("{:+c}"), true);
+    assert(format(STR("{:^}"), true) == STR("true"));
+    assert(format(STR("{:^c}"), true) == STR("\x1"));
+    throw_helper(STR("{:0}"), true);
+    throw_helper(STR("{:0c}"), true);
+    assert(format(STR("{:c}"), true) == STR("\x1"));
+
+    throw_helper(STR("{:#}"), 'c');
+    throw_helper(STR("{:#c}"), 'c');
+    throw_helper(STR("{:+}"), 'c');
+    throw_helper(STR("{:+c}"), 'c');
+    assert(format(STR("{:^}"), 'c') == STR("c"));
+    assert(format(STR("{:^c}"), 'c') == STR("c"));
+    throw_helper(STR("{:0}"), 'c');
+    throw_helper(STR("{:0c}"), 'c');
+    assert(format(STR("{:c}"), 'c') == STR("c"));
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1435,6 +1458,9 @@ void test() {
 
     test_slow_append_path<char>();
     test_slow_append_path<wchar_t>();
+
+    test_sane_c_specifier<char>();
+    test_sane_c_specifier<wchar_t>();
 }
 
 int main() {

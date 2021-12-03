@@ -1286,7 +1286,7 @@ public:
             _THROW(format_error("Invalid type specification."));
         }
         const char _Narrow_type = static_cast<char>(_Type);
-        enum class _Presentation_type_category { _Default, _Integer, _Floating, _String, _Pointer, _Char_default };
+        enum class _Presentation_type_category { _Default, _Integer, _Floating, _String, _Pointer, _Char };
         auto _Cat = _Presentation_type_category::_Default;
         switch (_Narrow_type) {
         case '\0':
@@ -1295,6 +1295,8 @@ public:
             _Cat = _Presentation_type_category::_String;
             break;
         case 'c':
+            _Cat = _Presentation_type_category::_Char;
+            break;
         case 'd':
         case 'B':
         case 'b':
@@ -1329,16 +1331,17 @@ public:
                 _Cat = _Presentation_type_category::_String;
             }
             // note, we don't get a call if there isn't a type, but none is valid for everything.
-            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer) {
+            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer
+                && _Cat != _Presentation_type_category::_Char) {
                 _THROW(format_error("Invalid presentation type for bool"));
             }
             break;
         case _Basic_format_arg_type::_Char_type:
             if (_Cat == _Presentation_type_category::_Default) {
-                _Cat = _Presentation_type_category::_Char_default;
+                _Cat = _Presentation_type_category::_Char;
             }
 
-            if (_Cat != _Presentation_type_category::_Char_default && _Cat != _Presentation_type_category::_Integer) {
+            if (_Cat != _Presentation_type_category::_Char && _Cat != _Presentation_type_category::_Integer) {
                 _THROW(format_error("Invalid presentation type for char/wchar_t"));
             }
             break;
@@ -1350,7 +1353,7 @@ public:
                 _Cat = _Presentation_type_category::_Integer;
             }
 
-            if (_Cat != _Presentation_type_category::_Integer) {
+            if (_Cat != _Presentation_type_category::_Integer && _Cat != _Presentation_type_category::_Char) {
                 _THROW(format_error("Invalid presentation type for integer"));
             }
             break;
