@@ -888,11 +888,10 @@ struct alignas(long long) _Aligned_file_attrs {
         return _Last_error;
     }
 
-    constexpr auto _Basic_info_data = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Last_write_time;
-    constexpr auto _Attribute_tag_info_data = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
-    constexpr auto _Standard_info_data      = __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Link_count;
+    constexpr auto _Basic_info_data    = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Last_write_time;
+    constexpr auto _Standard_info_data = __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Link_count;
 
-    if (_Flags != _Attribute_tag_info_data && _Bitmask_includes(_Flags, _Basic_info_data)) {
+    if (_Bitmask_includes(_Flags, _Basic_info_data | __std_fs_stats_flags::_Reparse_tag)) {
         // we have data FileBasicInfo can fill in, that FileAttributeTagInfo wouldn't exactly fill in
         FILE_BASIC_INFO _Info;
         if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Info, sizeof(_Info))) {
@@ -902,24 +901,21 @@ struct alignas(long long) _Aligned_file_attrs {
         _Stats->_Attributes      = __std_fs_file_attr{_Info.FileAttributes};
         _Stats->_Last_write_time = _Info.LastWriteTime.QuadPart;
         _Flags &= ~_Basic_info_data;
-    }
+        if (_Bitmask_includes(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
+            // Calling GetFileInformationByHandleEx with FileAttributeTagInfo fails on FAT file system with
+            // ERROR_INVALID_PARAMETER. We avoid calling this for non-reparse-points.
+            if (_Info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+                FILE_ATTRIBUTE_TAG_INFO _TagInfo;
+                if (!GetFileInformationByHandleEx(_Handle._Get(), FileAttributeTagInfo, &_TagInfo, sizeof(_TagInfo))) {
+                    return __std_win_error{GetLastError()};
+                }
 
-    if (_Bitmask_includes(_Flags, _Attribute_tag_info_data)) {
-        FILE_ATTRIBUTE_TAG_INFO _Info;
-        if (!GetFileInformationByHandleEx(_Handle._Get(), FileAttributeTagInfo, &_Info, sizeof(_Info))) {
-            const DWORD _Error = GetLastError();
-            if (_Error == ERROR_INVALID_PARAMETER) {
-                // Calling GetFileInformationByHandleEx with FileAttributeTagInfo fails on FAT file system with
-                // ERROR_INVALID_PARAMETER. Clear _Info.ReparseTag to indicate no symlinks are possible.
-                _Info.ReparseTag = 0;
+                _Stats->_Reparse_point_tag = __std_fs_reparse_tag{_TagInfo.ReparseTag};
             } else {
-                return __std_win_error{_Error};
+                _Stats->_Reparse_point_tag = __std_fs_reparse_tag{0};
             }
+            _Flags &= ~__std_fs_stats_flags::_Reparse_tag;
         }
-
-        _Stats->_Attributes        = __std_fs_file_attr{_Info.FileAttributes};
-        _Stats->_Reparse_point_tag = __std_fs_reparse_tag{_Info.ReparseTag};
-        _Flags &= ~_Attribute_tag_info_data;
     }
 
     if (_Bitmask_includes(_Flags, _Standard_info_data)) {
