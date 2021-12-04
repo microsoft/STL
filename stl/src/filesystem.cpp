@@ -912,7 +912,7 @@ struct alignas(long long) _Aligned_file_attrs {
 
                 _Stats->_Reparse_point_tag = __std_fs_reparse_tag{_TagInfo.ReparseTag};
             } else {
-                _Stats->_Reparse_point_tag = __std_fs_reparse_tag{0};
+                _Stats->_Reparse_point_tag = __std_fs_reparse_tag::_None;
             }
             _Flags &= ~__std_fs_stats_flags::_Reparse_tag;
         }
