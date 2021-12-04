@@ -147,12 +147,13 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
         do {
             _Advance_bytes(_Last, -32);
             // vpermq to load left and right, and transpose the lanes
-            constexpr int _Perm  = _MM_SHUFFLE(1, 0, 3, 2);
-            const __m256i _Left  = _mm256_permute4x64_epi64(_mm256_loadu_si256(static_cast<__m256i*>(_First)), _Perm);
-            const __m256i _Right = _mm256_permute4x64_epi64(_mm256_loadu_si256(static_cast<__m256i*>(_Last)), _Perm);
+            const __m256i _Left       = _mm256_loadu_si256(static_cast<__m256i*>(_First));
+            const __m256i _Right      = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
+            const __m256i _Left_perm  = _mm256_permute4x64_epi64(_Left, _MM_SHUFFLE(1, 0, 3, 2));
+            const __m256i _Right_perm = _mm256_permute4x64_epi64(_Right, _MM_SHUFFLE(1, 0, 3, 2));
             // transpose all the chars in the lanes
-            const __m256i _Left_reversed  = _mm256_shuffle_epi8(_Left, _Reverse_char_lanes_avx);
-            const __m256i _Right_reversed = _mm256_shuffle_epi8(_Right, _Reverse_char_lanes_avx);
+            const __m256i _Left_reversed  = _mm256_shuffle_epi8(_Left_perm, _Reverse_char_lanes_avx);
+            const __m256i _Right_reversed = _mm256_shuffle_epi8(_Right_perm, _Reverse_char_lanes_avx);
             _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 32);
@@ -189,11 +190,12 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
             _Advance_bytes(_Last, -32);
-            constexpr int _Perm  = _MM_SHUFFLE(1, 0, 3, 2);
-            const __m256i _Left  = _mm256_permute4x64_epi64(_mm256_loadu_si256(static_cast<__m256i*>(_First)), _Perm);
-            const __m256i _Right = _mm256_permute4x64_epi64(_mm256_loadu_si256(static_cast<__m256i*>(_Last)), _Perm);
-            const __m256i _Left_reversed  = _mm256_shuffle_epi8(_Left, _Reverse_short_lanes_avx);
-            const __m256i _Right_reversed = _mm256_shuffle_epi8(_Right, _Reverse_short_lanes_avx);
+            const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
+            const __m256i _Right          = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
+            const __m256i _Left_perm      = _mm256_permute4x64_epi64(_Left, _MM_SHUFFLE(1, 0, 3, 2));
+            const __m256i _Right_perm     = _mm256_permute4x64_epi64(_Right, _MM_SHUFFLE(1, 0, 3, 2));
+            const __m256i _Left_reversed  = _mm256_shuffle_epi8(_Left_perm, _Reverse_short_lanes_avx);
+            const __m256i _Right_reversed = _mm256_shuffle_epi8(_Right_perm, _Reverse_short_lanes_avx);
             _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 32);
@@ -227,11 +229,12 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
             _Advance_bytes(_Last, -32);
-            constexpr int _Perm  = _MM_SHUFFLE(1, 0, 3, 2);
-            const __m256i _Left  = _mm256_permute4x64_epi64(_mm256_loadu_si256(static_cast<__m256i*>(_First)), _Perm);
-            const __m256i _Right = _mm256_permute4x64_epi64(_mm256_loadu_si256(static_cast<__m256i*>(_Last)), _Perm);
-            const __m256i _Left_reversed  = _mm256_shuffle_epi32(_Left, _MM_SHUFFLE(0, 1, 2, 3));
-            const __m256i _Right_reversed = _mm256_shuffle_epi32(_Right, _MM_SHUFFLE(0, 1, 2, 3));
+            const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
+            const __m256i _Right          = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
+            const __m256i _Left_perm      = _mm256_permute4x64_epi64(_Left, _MM_SHUFFLE(1, 0, 3, 2));
+            const __m256i _Right_perm     = _mm256_permute4x64_epi64(_Right, _MM_SHUFFLE(1, 0, 3, 2));
+            const __m256i _Left_reversed  = _mm256_shuffle_epi32(_Left_perm, _MM_SHUFFLE(0, 1, 2, 3));
+            const __m256i _Right_reversed = _mm256_shuffle_epi32(_Right_perm, _MM_SHUFFLE(0, 1, 2, 3));
             _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 32);
@@ -270,9 +273,8 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
             _Advance_bytes(_Last, -32);
             const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
             const __m256i _Right          = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
-            constexpr int _Perm           = _MM_SHUFFLE(0, 1, 2, 3);
-            const __m256i _Left_reversed  = _mm256_permute4x64_epi64(_Left, _Perm);
-            const __m256i _Right_reversed = _mm256_permute4x64_epi64(_Right, _Perm);
+            const __m256i _Left_reversed  = _mm256_permute4x64_epi64(_Left, _MM_SHUFFLE(0, 1, 2, 3));
+            const __m256i _Right_reversed = _mm256_permute4x64_epi64(_Right, _MM_SHUFFLE(0, 1, 2, 3));
             _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 32);
@@ -291,9 +293,8 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
             const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
-            constexpr int _Perm           = _MM_SHUFFLE(1, 0, 3, 2);
-            const __m128i _Left_reversed  = _mm_shuffle_epi32(_Left, _Perm);
-            const __m128i _Right_reversed = _mm_shuffle_epi32(_Right, _Perm);
+            const __m128i _Left_reversed  = _mm_shuffle_epi32(_Left, _MM_SHUFFLE(1, 0, 3, 2));
+            const __m128i _Right_reversed = _mm_shuffle_epi32(_Right, _MM_SHUFFLE(1, 0, 3, 2));
             _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
             _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 16);
