@@ -436,32 +436,6 @@ _NODISCARD inline _Big_integer_flt _Make_big_integer_flt_one() noexcept {
     return _Xval;
 }
 
-_NODISCARD inline _Big_integer_flt _Make_big_integer_flt_u32(const uint32_t _Value) noexcept {
-    _Big_integer_flt _Xval{};
-    _Xval._Mydata[0] = _Value;
-    _Xval._Myused    = 1;
-    return _Xval;
-}
-
-_NODISCARD inline _Big_integer_flt _Make_big_integer_flt_u64(const uint64_t _Value) noexcept {
-    _Big_integer_flt _Xval{};
-    _Xval._Mydata[0] = static_cast<uint32_t>(_Value);
-    _Xval._Mydata[1] = static_cast<uint32_t>(_Value >> 32);
-    _Xval._Myused    = _Xval._Mydata[1] == 0 ? 1u : 2u;
-    return _Xval;
-}
-
-_NODISCARD inline _Big_integer_flt _Make_big_integer_flt_power_of_two(const uint32_t _Power) noexcept {
-    const uint32_t _Element_index = _Power / _Big_integer_flt::_Element_bits;
-    const uint32_t _Bit_index     = _Power % _Big_integer_flt::_Element_bits;
-
-    _Big_integer_flt _Xval{};
-    _CSTD memset(_Xval._Mydata, 0, _Element_index * sizeof(uint32_t));
-    _Xval._Mydata[_Element_index] = 1u << _Bit_index;
-    _Xval._Myused                 = _Element_index + 1;
-    return _Xval;
-}
-
 _NODISCARD inline uint32_t _Bit_scan_reverse(const _Big_integer_flt& _Xval) noexcept {
     if (_Xval._Myused == 0) {
         return 0;
