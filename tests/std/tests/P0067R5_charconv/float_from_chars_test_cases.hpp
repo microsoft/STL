@@ -778,5 +778,4 @@ inline constexpr FloatFromCharsTestCase float_from_chars_test_cases[] = {
         0x1.a19fe8p+126f},
     {/* 0x1.f0b0b5p+127 in decimal: */ "330107300636279331787628201852738207744", chars_format::general, 39, errc{},
         0x1.f0b0b4p+127f},
-
 };
