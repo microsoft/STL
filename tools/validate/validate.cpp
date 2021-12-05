@@ -68,26 +68,18 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
     size_t tab_characters            = 0;
     size_t trailing_whitespace_lines = 0;
 
+    constexpr size_t MaxErrorsForErrorLinesReported = 10; // per each error type we report
+
     unsigned char prev      = '@';
     unsigned char previous2 = '@';
     unsigned char previous3 = '@';
 
     size_t columns = 0;
 
+    size_t line = 1;
+
     for (BinaryFile binary_file{filepath}; binary_file.read_next_block(buffer);) {
         for (const auto& ch : buffer) {
-            if (prev == CR) {
-                if (ch == LF) {
-                    has_crlf = true;
-                } else {
-                    has_cr = true;
-                }
-            } else {
-                if (ch == LF) {
-                    has_lf = true;
-                }
-            }
-
             if (ch == '\t') {
                 ++tab_characters;
             } else if (ch == 0xEF || ch == 0xBB || ch == 0xBF) {
@@ -98,25 +90,50 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
                 // [0x20, 0x7E] are the printable characters, including the space character.
                 // https://en.wikipedia.org/wiki/ASCII#Printable_characters
                 ++disallowed_characters;
-                constexpr size_t MaxErrorsForDisallowedCharacters = 10;
-                if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
-                    fwprintf(stderr, L"Validation failed: %ls contains disallowed character 0x%02X.\n",
-                        filepath.c_str(), static_cast<unsigned int>(ch));
+
+                if (disallowed_characters <= MaxErrorsForErrorLinesReported) {
+                    fwprintf(stderr, L"Validation failed: %ls contains disallowed character 0x%02X at line %d.\n",
+                        filepath.c_str(), static_cast<unsigned int>(ch), static_cast<unsigned int>(line));
                 }
             }
 
             if (ch == CR || ch == LF) {
                 if (prev == ' ' || prev == '\t') {
                     ++trailing_whitespace_lines;
+
+                    if (overlength_lines <= MaxErrorsForErrorLinesReported) {
+                        fwprintf(stderr, L"Validation failed: %ls contains traling whitespace at line %d.\n",
+                            filepath.c_str(), static_cast<unsigned int>(line));
+                    }
                 }
 
                 if (columns > max_line_length) {
                     ++overlength_lines;
+
+                    if (overlength_lines <= MaxErrorsForErrorLinesReported) {
+                        fwprintf(stderr, L"Validation failed: %ls contains overlength line %d.\n", filepath.c_str(),
+                            static_cast<unsigned int>(line));
+                    }
                 }
                 columns = 0;
             } else {
                 ++columns;
             }
+
+            if (prev == CR) {
+                if (ch == LF) {
+                    has_crlf = true;
+                } else {
+                    has_cr = true;
+                }
+                ++line;
+            } else {
+                if (ch == LF) {
+                    has_lf = true;
+                    ++line;
+                }
+            }
+
             previous3 = exchange(previous2, exchange(prev, ch));
         }
     }
