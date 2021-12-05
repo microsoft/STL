@@ -70,7 +70,7 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
 
     constexpr size_t MaxErrorsForErrorLinesReported = 10; // per each error type we report
 
-    array<size_t, MaxErrorsForErrorLinesReported+1> overlength_line_occurecnes;
+    array<size_t, MaxErrorsForErrorLinesReported> overlength_line_occurecnes;
 
     unsigned char prev      = '@';
     unsigned char previous2 = '@';
