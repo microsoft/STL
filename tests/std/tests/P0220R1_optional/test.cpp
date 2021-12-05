@@ -5123,6 +5123,7 @@ int run_test()
     {
         std::optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(opt.operator->()), X*);
+        STATIC_ASSERT(noexcept(opt.operator->()));
         // ASSERT_NOT_NOEXCEPT(opt.operator->());
         // TODO: This assertion fails with GCC because it can see that
         // (A) operator->() is constexpr, and
@@ -5199,6 +5200,7 @@ int run_test()
     {
         const std::optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(opt.operator->()), X const*);
+        STATIC_ASSERT(noexcept(opt.operator->()));
         // ASSERT_NOT_NOEXCEPT(opt.operator->());
         // TODO: This assertion fails with GCC because it can see that
         // (A) operator->() is constexpr, and
