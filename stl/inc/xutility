@@ -5121,6 +5121,16 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
     }
 }
 
+template <class _Iter, class _Ty>
+_INLINE_VAR constexpr bool _Memchr_in_find_is_safe =
+    _Iterator_is_contiguous<_Iter>&&
+        disjunction_v<conjunction<is_integral<_Ty>, _Is_character_or_bool<_Iter_value_t<_Iter>>>
+#ifdef __cpp_lib_byte
+            ,
+            conjunction<is_same<_Ty, byte>, is_same<_Iter_value_t<_Iter>, byte>>
+#endif // __cpp_lib_byte
+            > && !is_volatile_v<remove_reference_t<_Iter_ref_t<_Iter>>>;
+
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first matching _Val; choose optimization
@@ -5130,12 +5140,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
     if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
     {
-        if constexpr (_Iterator_is_contiguous<_InIt> &&
-                disjunction_v<conjunction<is_integral<_Ty>, _Is_character_or_bool<_Iter_value_t<_InIt>>>
-#ifdef __cpp_lib_byte
-                     , conjunction<is_same<_Ty, byte>, is_same<_Iter_value_t<_InIt>, byte>>
-#endif // __cpp_lib_byte
-            > && !is_volatile_v<remove_reference_t<_Iter_ref_t<_InIt>>>) {
+        if constexpr (_Memchr_in_find_is_safe<_InIt>) {
             if (!_Within_limits(_First, _Val)) {
                 return _Last;
             }
