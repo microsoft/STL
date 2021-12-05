@@ -92,7 +92,7 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
                 ++disallowed_characters;
 
                 if (disallowed_characters <= MaxErrorsForErrorLinesReported) {
-                    fwprintf(stderr, L"Validation failed: %ls contains disallowed character 0x%02X at line %d.\n",
+                    fwprintf(stderr, L"Validation failed: %ls contains disallowed character 0x%02X at line %u.\n",
                         filepath.c_str(), static_cast<unsigned int>(ch), static_cast<unsigned int>(line));
                 }
             }
@@ -102,7 +102,7 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
                     ++trailing_whitespace_lines;
 
                     if (overlength_lines <= MaxErrorsForErrorLinesReported) {
-                        fwprintf(stderr, L"Validation failed: %ls contains traling whitespace at line %d.\n",
+                        fwprintf(stderr, L"Validation failed: %ls contains traling whitespace at line %u.\n",
                             filepath.c_str(), static_cast<unsigned int>(line));
                     }
                 }
@@ -111,7 +111,7 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
                     ++overlength_lines;
 
                     if (overlength_lines <= MaxErrorsForErrorLinesReported) {
-                        fwprintf(stderr, L"Validation failed: %ls contains overlength line %d.\n", filepath.c_str(),
+                        fwprintf(stderr, L"Validation failed: %ls contains overlength line %u.\n", filepath.c_str(),
                             static_cast<unsigned int>(line));
                     }
                 }
