@@ -5140,7 +5140,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
     if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
     {
-        if constexpr (_Memchr_in_find_is_safe<_InIt>) {
+        if constexpr (_Memchr_in_find_is_safe<_InIt, _Ty>) {
             if (!_Within_limits(_First, _Val)) {
                 return _Last;
             }
