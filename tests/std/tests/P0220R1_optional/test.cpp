@@ -4776,6 +4776,7 @@ int run_test()
     {
         optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(*opt), X&);
+        STATIC_ASSERT(noexcept(*opt));
         // ASSERT_NOT_NOEXCEPT(*opt);
         // TODO: This assertion fails with GCC because it can see that
         // (A) operator*() is constexpr, and
@@ -4847,6 +4848,7 @@ int run_test()
     {
         const optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(*opt), X const&);
+        STATIC_ASSERT(noexcept(*opt));
         // ASSERT_NOT_NOEXCEPT(*opt);
         // TODO: This assertion fails with GCC because it can see that
         // (A) operator*() is constexpr, and
@@ -4921,6 +4923,7 @@ int run_test()
     {
         const optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(*std::move(opt)), X const &&);
+        STATIC_ASSERT(noexcept(*std::move(opt)));
         // ASSERT_NOT_NOEXCEPT(*std::move(opt));
         // TODO: This assertion fails with GCC because it can see that
         // (A) operator*() is constexpr, and
@@ -5002,6 +5005,7 @@ int run_test()
     {
         optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(*std::move(opt)), X&&);
+        STATIC_ASSERT(noexcept(*std::move(opt)));
         // ASSERT_NOT_NOEXCEPT(*std::move(opt));
         // TODO: This assertion fails with GCC because it can see that
         // (A) operator*() is constexpr, and
