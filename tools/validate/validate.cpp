@@ -70,6 +70,8 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
 
     constexpr size_t MaxErrorsForErrorLinesReported = 10; // per each error type we report
 
+    array<size_t, MaxErrorsForErrorLinesReported+1> overlength_line_occurecnes;
+
     unsigned char prev      = '@';
     unsigned char previous2 = '@';
     unsigned char previous3 = '@';
@@ -108,12 +110,10 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
                 }
 
                 if (columns > max_line_length) {
-                    ++overlength_lines;
-
-                    if (overlength_lines <= MaxErrorsForErrorLinesReported) {
-                        fwprintf(stderr, L"Validation failed: %ls contains overlength line %u.\n", filepath.c_str(),
-                            static_cast<unsigned int>(line));
+                    if (overlength_lines < MaxErrorsForErrorLinesReported) {
+                        overlength_line_occurecnes[overlength_lines] = line;
                     }
+                    ++overlength_lines;
                 }
                 columns = 0;
             } else {
@@ -198,6 +198,11 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
         if (binary_search(checked_extensions.begin(), checked_extensions.end(), filepath.extension().wstring())) {
             fwprintf(stderr, L"Validation failed: %ls contains %zu lines with more than %zu columns.\n",
                 filepath.c_str(), overlength_lines, max_line_length);
+
+            for (size_t i = 0; i < overlength_lines; ++i) {
+                fwprintf(stderr, L"Validation failed: %ls contains overlength line %u.\n", filepath.c_str(),
+                    static_cast<unsigned int>(overlength_line_occurecnes[i]));
+            }
         }
     }
 }
