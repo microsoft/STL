@@ -12,15 +12,16 @@
 
 // Provides forwarders for InitOnceBeginInitialize and InitOnceComplete for
 // environments that can't use /ALTERNATENAME.
+// They were originally specific to /clr but are now used in other scenarios.
 
 _EXTERN_C
 
-int __stdcall __std_init_once_begin_initialize_fwd(
+int __stdcall __std_init_once_begin_initialize_clr(
     void** _LpInitOnce, unsigned long _DwFlags, int* _FPending, void** _LpContext) noexcept {
     return InitOnceBeginInitialize(reinterpret_cast<LPINIT_ONCE>(_LpInitOnce), _DwFlags, _FPending, _LpContext);
 }
 
-int __stdcall __std_init_once_complete_fwd(void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept {
+int __stdcall __std_init_once_complete_clr(void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept {
     return InitOnceComplete(reinterpret_cast<LPINIT_ONCE>(_LpInitOnce), _DwFlags, _LpContext);
 }
 
