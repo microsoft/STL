@@ -501,6 +501,25 @@ public:
 #else // ^^^ _M_CEE // !_M_CEE vvv
 #define _WINDOWS_API              __declspec(dllimport) __stdcall
 #define _RENAME_WINDOWS_API(_Api) _Api
+
+#if defined(_M_ARM64EC)
+#pragma comment(linker, "/ALTERNATENAME:#__std_init_once_begin_initialize=#InitOnceBeginInitialize")
+#pragma comment(linker, "/ALTERNATENAME:__imp___std_init_once_begin_initialize=__imp_InitOnceBeginInitialize")
+#pragma comment(linker, "/ALTERNATENAME:#__std_init_once_complete=#InitOnceComplete")
+#pragma comment(linker, "/ALTERNATENAME:__imp___std_init_once_complete=__imp_InitOnceComplete")
+#elif defined(_M_HYBRID)
+#pragma comment(linker, "/ALTERNATENAME:__imp_#__std_init_once_begin_initialize@16=__imp_#InitOnceBeginInitialize@16")
+#pragma comment(linker, "/ALTERNATENAME:__imp_#__std_init_once_complete@12=__imp_#InitOnceComplete@12")
+#elif defined(_M_IX86)
+#pragma comment(linker, "/ALTERNATENAME:__imp____std_init_once_begin_initialize@16=__imp__InitOnceBeginInitialize@16")
+#pragma comment(linker, "/ALTERNATENAME:__imp____std_init_once_complete@12=__imp__InitOnceComplete@12")
+#elif defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
+#pragma comment(linker, "/ALTERNATENAME:__imp___std_init_once_begin_initialize=__imp_InitOnceBeginInitialize")
+#pragma comment(linker, "/ALTERNATENAME:__imp___std_init_once_complete=__imp_InitOnceComplete")
+#else // ^^^ known architecture / unknown architecture vvv
+#error Unknown architecture
+#endif // ^^^ unknown architecture ^^^
+
 #endif // _M_CEE
 
 // WINBASEAPI

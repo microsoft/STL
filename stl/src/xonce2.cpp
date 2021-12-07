@@ -11,7 +11,7 @@
 // In particular, basic_string must not be included here.
 
 // Provides forwarders for InitOnceBeginInitialize and InitOnceComplete for
-// environments that can't use aliasobj, like /clr.
+// environments that can't use /ALTERNATENAME, like /clr.
 
 _EXTERN_C
 
