@@ -495,32 +495,16 @@ public:
 };
 #endif // _HAS_CXX17
 
-#ifdef _M_CEE
+#if defined(_M_CEE) || defined(_M_ARM64EC) || defined(_M_HYBRID) \
+    || defined(__clang__) // TRANSITION, Clang doesn't recognize /ALTERNATENAME, not yet reported
 #define _WINDOWS_API              __stdcall
-#define _RENAME_WINDOWS_API(_Api) _Api##_clr
-#else // ^^^ _M_CEE // !_M_CEE vvv
+#define _RENAME_WINDOWS_API(_Api) _Api##_fwd
+#define _LINK_ALTERNATE_NAMES
+#else // ^^^ use forwarders / use /ALTERNATENAME vvv
 #define _WINDOWS_API              __declspec(dllimport) __stdcall
 #define _RENAME_WINDOWS_API(_Api) _Api
-
-#if defined(_M_ARM64EC)
-#pragma comment(linker, "/ALTERNATENAME:#__std_init_once_begin_initialize=#InitOnceBeginInitialize")
-#pragma comment(linker, "/ALTERNATENAME:__imp___std_init_once_begin_initialize=__imp_InitOnceBeginInitialize")
-#pragma comment(linker, "/ALTERNATENAME:#__std_init_once_complete=#InitOnceComplete")
-#pragma comment(linker, "/ALTERNATENAME:__imp___std_init_once_complete=__imp_InitOnceComplete")
-#elif defined(_M_HYBRID)
-#pragma comment(linker, "/ALTERNATENAME:__imp_#__std_init_once_begin_initialize@16=__imp_#InitOnceBeginInitialize@16")
-#pragma comment(linker, "/ALTERNATENAME:__imp_#__std_init_once_complete@12=__imp_#InitOnceComplete@12")
-#elif defined(_M_IX86)
-#pragma comment(linker, "/ALTERNATENAME:__imp____std_init_once_begin_initialize@16=__imp__InitOnceBeginInitialize@16")
-#pragma comment(linker, "/ALTERNATENAME:__imp____std_init_once_complete@12=__imp__InitOnceComplete@12")
-#elif defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
-#pragma comment(linker, "/ALTERNATENAME:__imp___std_init_once_begin_initialize=__imp_InitOnceBeginInitialize")
-#pragma comment(linker, "/ALTERNATENAME:__imp___std_init_once_complete=__imp_InitOnceComplete")
-#else // ^^^ known architecture / unknown architecture vvv
-#error Unknown architecture
-#endif // ^^^ unknown architecture ^^^
-
-#endif // _M_CEE
+#define _LINK_ALTERNATE_NAMES     __std_init_once_link_alternate_names()
+#endif // ^^^ use /ALTERNATENAME ^^^
 
 // WINBASEAPI
 // BOOL
@@ -545,6 +529,8 @@ extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin
 extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_complete)(
     void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept;
 
+extern "C" void __stdcall __std_init_once_link_alternate_names() noexcept;
+
 // #define RTL_RUN_ONCE_INIT_FAILED    0x00000004UL
 // #define INIT_ONCE_INIT_FAILED       RTL_RUN_ONCE_INIT_FAILED
 _INLINE_VAR constexpr unsigned long _Init_once_init_failed = 0x4UL;
@@ -555,6 +541,7 @@ struct _Init_once_completer {
     ~_Init_once_completer() {
         if (_RENAME_WINDOWS_API(__std_init_once_complete)(&_Once._Opaque, _DwFlags, nullptr) == 0) {
             _CSTD abort();
+            _LINK_ALTERNATE_NAMES; // never called, forces xonce2.cpp to be linked
         }
     }
 };
@@ -578,6 +565,7 @@ void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
 
 #undef _WINDOWS_API
 #undef _RENAME_WINDOWS_API
+#undef _LINK_ALTERNATE_NAMES
 
 // condition_variable, timed_mutex, and recursive_timed_mutex are not supported under /clr
 #ifndef _M_CEE
