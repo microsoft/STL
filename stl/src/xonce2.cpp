@@ -3,6 +3,7 @@
 
 #include <yvals_core.h>
 
+#include <stdlib.h>
 #include <synchapi.h>
 
 // This must be as small as possible, because its contents are
@@ -25,7 +26,9 @@ int __stdcall __std_init_once_complete_clr(void** _LpInitOnce, unsigned long _Dw
     return InitOnceComplete(reinterpret_cast<LPINIT_ONCE>(_LpInitOnce), _DwFlags, _LpContext);
 }
 
-void __stdcall __std_init_once_link_alternate_names() noexcept {}
+[[noreturn]] void __stdcall __std_init_once_link_alternate_names_and_abort() noexcept {
+    _CSTD abort();
+}
 
 #if defined(_M_ARM64EC)
 #error ARM64EC is not expected here

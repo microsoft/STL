@@ -499,11 +499,9 @@ public:
     || defined(__clang__) // TRANSITION, Clang doesn't recognize /ALTERNATENAME, not yet reported
 #define _WINDOWS_API              __stdcall
 #define _RENAME_WINDOWS_API(_Api) _Api##_clr
-#define _LINK_ALTERNATE_NAMES
 #else // ^^^ use forwarders / use /ALTERNATENAME vvv
 #define _WINDOWS_API              __declspec(dllimport) __stdcall
 #define _RENAME_WINDOWS_API(_Api) _Api
-#define _LINK_ALTERNATE_NAMES     __std_init_once_link_alternate_names()
 #endif // ^^^ use /ALTERNATENAME ^^^
 
 // WINBASEAPI
@@ -529,7 +527,7 @@ extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin
 extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_complete)(
     void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept;
 
-extern "C" void __stdcall __std_init_once_link_alternate_names() noexcept;
+extern "C" [[noreturn]] void __stdcall __std_init_once_link_alternate_names_and_abort() noexcept;
 
 // #define RTL_RUN_ONCE_INIT_FAILED    0x00000004UL
 // #define INIT_ONCE_INIT_FAILED       RTL_RUN_ONCE_INIT_FAILED
@@ -540,8 +538,7 @@ struct _Init_once_completer {
     unsigned long _DwFlags;
     ~_Init_once_completer() {
         if (_RENAME_WINDOWS_API(__std_init_once_complete)(&_Once._Opaque, _DwFlags, nullptr) == 0) {
-            _CSTD abort();
-            _LINK_ALTERNATE_NAMES; // never called, forces xonce2.cpp to be linked
+            __std_init_once_link_alternate_names_and_abort();
         }
     }
 };
@@ -565,7 +562,6 @@ void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
 
 #undef _WINDOWS_API
 #undef _RENAME_WINDOWS_API
-#undef _LINK_ALTERNATE_NAMES
 
 // condition_variable, timed_mutex, and recursive_timed_mutex are not supported under /clr
 #ifndef _M_CEE
