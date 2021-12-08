@@ -279,7 +279,9 @@ public:
                   _Parse_ctx.advance_to(_Formatter.parse(_Parse_ctx));
                   _Format_ctx.advance_to(_Formatter.format(
                       *const_cast<_Qualified_type*>(static_cast<const _Value_type*>(_Ptr)), _Format_ctx));
-              }) {}
+              }) {
+            static_assert(_Has_const_formatter<_Ty, _Context> || !is_const_v<remove_reference_t<_Ty>>);
+        }
 
         void format(basic_format_parse_context<_CharType>& _Parse_ctx, _Context& _Format_ctx) const {
             _Format(_Parse_ctx, _Format_ctx, _Ptr);
