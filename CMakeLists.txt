@@ -6,6 +6,8 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
 option(BUILD_TESTING "Enable testing" ON)
+include(CMakeDependentOption)
+cmake_dependent_option(BUILD_BENCHMARKS "Enable benchmarks" OFF "BUILD_TESTING" OFF)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
@@ -85,4 +87,8 @@ add_subdirectory(stl)
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
 endif()

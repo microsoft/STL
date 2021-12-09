@@ -47,6 +47,18 @@
       "inheritEnvironments": [ "msvc_arm64" ],
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "variables": []
+    },
+    {
+      "name": "x64-Release",
+      "buildCommandArgs": "-v",
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "cmakeCommandArgs": "",
+      "configurationType": "Release",
+      "ctestCommandArgs": "",
+      "generator": "Ninja",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "variables": []
     }
   ]
 }
