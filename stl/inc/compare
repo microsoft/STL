@@ -35,7 +35,6 @@ enum class _Compare_eq : _Compare_t { equal = 0, equivalent = equal };
 enum class _Compare_ord : _Compare_t { less = -1, greater = 1 };
 enum class _Compare_ncmp : _Compare_t { unordered = -128 };
 
-// CLASS partial_ordering
 struct partial_ordering {
     static const partial_ordering less;
     static const partial_ordering equivalent;
@@ -102,7 +101,6 @@ inline constexpr partial_ordering partial_ordering::equivalent{static_cast<_Comp
 inline constexpr partial_ordering partial_ordering::greater{static_cast<_Compare_t>(_Compare_ord::greater)};
 inline constexpr partial_ordering partial_ordering::unordered{static_cast<_Compare_t>(_Compare_ncmp::unordered)};
 
-// CLASS weak_ordering
 struct weak_ordering {
     static const weak_ordering less;
     static const weak_ordering equivalent;
@@ -165,7 +163,6 @@ inline constexpr weak_ordering weak_ordering::less{static_cast<_Compare_t>(_Comp
 inline constexpr weak_ordering weak_ordering::equivalent{static_cast<_Compare_t>(_Compare_eq::equivalent)};
 inline constexpr weak_ordering weak_ordering::greater{static_cast<_Compare_t>(_Compare_ord::greater)};
 
-// CLASS strong_ordering
 struct strong_ordering {
     static const strong_ordering less;
     static const strong_ordering equal;
@@ -234,37 +231,30 @@ inline constexpr strong_ordering strong_ordering::equal{static_cast<_Compare_t>(
 inline constexpr strong_ordering strong_ordering::equivalent{static_cast<_Compare_t>(_Compare_eq::equivalent)};
 inline constexpr strong_ordering strong_ordering::greater{static_cast<_Compare_t>(_Compare_ord::greater)};
 
-// FUNCTION is_eq
 _NODISCARD constexpr bool is_eq(const partial_ordering _Comp) noexcept {
     return _Comp == 0;
 }
 
-// FUNCTION is_neq
 _NODISCARD constexpr bool is_neq(const partial_ordering _Comp) noexcept {
     return _Comp != 0;
 }
 
-// FUNCTION is_lt
 _NODISCARD constexpr bool is_lt(const partial_ordering _Comp) noexcept {
     return _Comp < 0;
 }
 
-// FUNCTION is_lteq
 _NODISCARD constexpr bool is_lteq(const partial_ordering _Comp) noexcept {
     return _Comp <= 0;
 }
 
-// FUNCTION is_gt
 _NODISCARD constexpr bool is_gt(const partial_ordering _Comp) noexcept {
     return _Comp > 0;
 }
 
-// FUNCTION is_gteq
 _NODISCARD constexpr bool is_gteq(const partial_ordering _Comp) noexcept {
     return _Comp >= 0;
 }
 
-// ALIAS TEMPLATE common_comparison_category_t
 enum _Comparison_category : unsigned char {
     _Comparison_category_none    = 1,
     _Comparison_category_partial = 2,
@@ -332,7 +322,7 @@ struct compare_three_way_result<_Ty1, _Ty2> {
 
 struct compare_three_way {
     template <class _Ty1, class _Ty2>
-        requires three_way_comparable_with<_Ty1, _Ty2> // TRANSITION, GH-489
+        requires three_way_comparable_with<_Ty1, _Ty2>
     _NODISCARD constexpr auto operator()(_Ty1&& _Left, _Ty2&& _Right) const
         noexcept(noexcept(_STD forward<_Ty1>(_Left) <=> _STD forward<_Ty2>(_Right))) /* strengthened */ {
         return _STD forward<_Ty1>(_Left) <=> _STD forward<_Ty2>(_Right);
@@ -342,7 +332,6 @@ struct compare_three_way {
 };
 // clang-format on
 
-// STRUCT _Synth_three_way
 struct _Synth_three_way {
     // clang-format off
     template <class _Ty1, class _Ty2>
@@ -367,13 +356,11 @@ struct _Synth_three_way {
     }
 };
 
-// ALIAS TEMPLATE _Synth_three_way_result
 template <class _Ty1, class _Ty2 = _Ty1>
 using _Synth_three_way_result = decltype(_Synth_three_way{}(_STD declval<_Ty1&>(), _STD declval<_Ty2&>()));
 
 // Note: The following CPOs are passing arguments as lvalues; see GH-1374.
 
-// CUSTOMIZATION POINT OBJECT strong_order
 namespace _Strong_order {
     void strong_order(); // Block unqualified name lookup; see GH-1374.
 
@@ -469,7 +456,6 @@ inline namespace _Cpos {
     inline constexpr _Strong_order::_Cpo strong_order;
 }
 
-// CUSTOMIZATION POINT OBJECT weak_order
 namespace _Weak_order {
     void weak_order(); // Block unqualified name lookup; see GH-1374.
 
@@ -590,7 +576,6 @@ inline namespace _Cpos {
     inline constexpr _Weak_order::_Cpo weak_order;
 }
 
-// CUSTOMIZATION POINT OBJECT partial_order
 namespace _Partial_order {
     void partial_order(); // Block unqualified name lookup; see GH-1374.
 
@@ -668,21 +653,18 @@ inline namespace _Cpos {
     inline constexpr _Partial_order::_Cpo partial_order;
 }
 
-// clang-format off
 template <class _Ty1, class _Ty2>
 concept _Can_fallback_eq_lt = requires(_Ty1& _Left, _Ty2& _Right) {
     { _Left == _Right } -> _Implicitly_convertible_to<bool>;
-    { _Left <  _Right } -> _Implicitly_convertible_to<bool>;
+    { _Left < _Right } -> _Implicitly_convertible_to<bool>;
 };
-// clang-format on
 
-// CUSTOMIZATION POINT OBJECT compare_strong_order_fallback
+template <class _Ty1, class _Ty2>
+concept _Can_strong_order = requires(_Ty1& _Left, _Ty2& _Right) {
+    _STD strong_order(_Left, _Right);
+};
+
 namespace _Compare_strong_order_fallback {
-    template <class _Ty1, class _Ty2>
-    concept _Can_strong_order = requires(_Ty1 & _Left, _Ty2 & _Right) {
-        _STD strong_order(_Left, _Right);
-    };
-
     class _Cpo {
     private:
         enum class _St { _None, _Strong, _Fallback };
@@ -731,13 +713,12 @@ inline namespace _Cpos {
     inline constexpr _Compare_strong_order_fallback::_Cpo compare_strong_order_fallback;
 }
 
-// CUSTOMIZATION POINT OBJECT compare_weak_order_fallback
-namespace _Compare_weak_order_fallback {
-    template <class _Ty1, class _Ty2>
-    concept _Can_weak_order = requires(_Ty1& _Left, _Ty2& _Right) {
-        _STD weak_order(_Left, _Right);
-    };
+template <class _Ty1, class _Ty2>
+concept _Can_weak_order = requires(_Ty1& _Left, _Ty2& _Right) {
+    _STD weak_order(_Left, _Right);
+};
 
+namespace _Compare_weak_order_fallback {
     class _Cpo {
     private:
         enum class _St { _None, _Weak, _Fallback };
@@ -786,21 +767,18 @@ inline namespace _Cpos {
     inline constexpr _Compare_weak_order_fallback::_Cpo compare_weak_order_fallback;
 }
 
-// CUSTOMIZATION POINT OBJECT compare_partial_order_fallback
+template <class _Ty1, class _Ty2>
+concept _Can_partial_order = requires(_Ty1& _Left, _Ty2& _Right) {
+    _STD partial_order(_Left, _Right);
+};
+
 namespace _Compare_partial_order_fallback {
     template <class _Ty1, class _Ty2>
-    concept _Can_partial_order = requires(_Ty1& _Left, _Ty2& _Right) {
-        _STD partial_order(_Left, _Right);
+    concept _Can_fallback_eq_lt_twice = requires(_Ty1 & _Left, _Ty2 & _Right) {
+        { _Left == _Right } -> _Implicitly_convertible_to<bool>;
+        { _Left < _Right } -> _Implicitly_convertible_to<bool>;
+        { _Right < _Left } -> _Implicitly_convertible_to<bool>;
     };
-
-    // clang-format off
-    template <class _Ty1, class _Ty2>
-    concept _Can_fallback_eq_lt_twice = requires(_Ty1& _Left, _Ty2& _Right) {
-        { _Left  == _Right } -> _Implicitly_convertible_to<bool>;
-        { _Left  <  _Right } -> _Implicitly_convertible_to<bool>;
-        { _Right <  _Left  } -> _Implicitly_convertible_to<bool>;
-    };
-    // clang-format on
 
     class _Cpo {
     private:

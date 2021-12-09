@@ -17,7 +17,7 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C_UNLESS_PURE
 
-// MACROS FOR _Dtest RETURN (0 => ZERO)
+// macros for _Dtest return (0 => ZERO)
 #define _DENORM  (-2) // C9X only
 #define _FINITE  (-1)
 #define _INFCODE 1
@@ -32,7 +32,6 @@ union _Dconst { // pun float types as integer array
     long double _Long_double;
 };
 
-// double DECLARATIONS
 _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Cosh(double, double);
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double*);
 _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Sinh(double, double);
@@ -44,7 +43,6 @@ extern _CRTIMP2_PURE_IMPORT _Dconst _Inf;
 extern _CRTIMP2_PURE_IMPORT _Dconst _Nan;
 extern _CRTIMP2_PURE_IMPORT _Dconst _Snan;
 
-// float DECLARATIONS
 _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FCosh(float, float);
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float*);
 _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _FSinh(float, float);
@@ -55,7 +53,6 @@ extern _CRTIMP2_PURE_IMPORT _Dconst _FInf;
 extern _CRTIMP2_PURE_IMPORT _Dconst _FNan;
 extern _CRTIMP2_PURE_IMPORT _Dconst _FSnan;
 
-// long double DECLARATIONS
 _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LCosh(long double, long double);
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _LDtest(long double*);
 _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _LSinh(long double, long double);

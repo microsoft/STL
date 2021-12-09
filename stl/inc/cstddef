@@ -25,7 +25,6 @@ using _CSTD size_t;
 using max_align_t = double; // most aligned type
 
 #ifdef __cpp_lib_byte
-                            // ENUM CLASS byte
 enum class byte : unsigned char {};
 
 template <class _IntType, enable_if_t<is_integral_v<_IntType>, int> = 0>

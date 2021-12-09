@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 _STL_DISABLE_DEPRECATED_WARNING
-// CLASS TEMPLATE wbuffer_convert
 template <class _Codecvt, class _Elem = wchar_t, class _Traits = char_traits<_Elem>>
 class _CXX17_DEPRECATE_CODECVT_HEADER wbuffer_convert
     : public basic_streambuf<_Elem, _Traits> { // stream buffer associated with a codecvt facet
@@ -58,7 +57,7 @@ public:
         _Loc = locale(_Loc, _Pcvt);
     }
 
-    virtual ~wbuffer_convert() noexcept {
+    ~wbuffer_convert() noexcept override {
         while (_Status == _Wrote) { // put any trailing homing shift
             if (_Str.size() < _STRING_INC) {
                 _Str.assign(_STRING_INC, '\0');
@@ -113,7 +112,7 @@ public:
     wbuffer_convert& operator=(const wbuffer_convert&) = delete;
 
 protected:
-    virtual int_type overflow(int_type _Meta = _Traits::eof()) { // put an element to stream
+    int_type overflow(int_type _Meta = _Traits::eof()) override { // put an element to stream
         if (_Traits::eq_int_type(_Traits::eof(), _Meta)) {
             return _Traits::not_eof(_Meta); // EOF, return success code
         } else if (!_Mystrbuf || 0 < _Nback || (_Status != _Unused && _Status != _Wrote)) {
@@ -129,8 +128,9 @@ protected:
                 char* _Buf = &_Str[0];
                 const _Elem* _Src;
                 char* _Dest;
-                switch (_Pcvt->out(_State, &_Ch, &_Ch + 1, _Src, _Buf, _Buf + _Str.size(),
-                    _Dest)) { // test result of converting one element
+
+                // test result of converting one element
+                switch (_Pcvt->out(_State, &_Ch, &_Ch + 1, _Src, _Buf, _Buf + _Str.size(), _Dest)) {
                 case _Codecvt::partial:
                 case _Codecvt::ok:
                     { // converted something, try to put it out
@@ -172,7 +172,7 @@ protected:
         }
     }
 
-    virtual int_type pbackfail(int_type _Meta = _Traits::eof()) { // put an element back to stream
+    int_type pbackfail(int_type _Meta = _Traits::eof()) override { // put an element back to stream
         if (sizeof(_Myback) / sizeof(_Myback[0]) <= _Nback || _Status == _Wrote) {
             return _Traits::eof(); // nowhere to put back
         } else { // enough room, put it back
@@ -189,7 +189,7 @@ protected:
         }
     }
 
-    virtual int_type underflow() { // get an element from stream, but don't point past it
+    int_type underflow() override { // get an element from stream, but don't point past it
         int_type _Meta;
 
         if (0 >= _Nback) {
@@ -206,7 +206,7 @@ protected:
 #pragma warning(push)
 #pragma warning(disable : 6385) // Reading invalid data from 'this->_Myback':
                                 // the readable size is 'X' bytes, but 'Y' bytes may be read.
-    virtual int_type uflow() { // get an element from stream, point past it
+    int_type uflow() override { // get an element from stream, point past it
         int_type _Meta;
 
         if (0 >= _Nback) {
@@ -221,13 +221,13 @@ protected:
     }
 #pragma warning(pop)
 
-    virtual pos_type seekoff(off_type, ios_base::seekdir,
-        ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) { // change position by _Off
+    pos_type seekoff(off_type, ios_base::seekdir,
+        ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) override {
         return pos_type(-1); // always fail
     }
 
-    virtual pos_type seekpos(pos_type,
-        ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) { // change position to _Pos
+    pos_type seekpos(
+        pos_type, ios_base::openmode = static_cast<ios_base::openmode>(ios_base::in | ios_base::out)) override {
         return pos_type(-1); // always fail
     }
 
@@ -257,8 +257,8 @@ private:
                     }
                 }
 
-                switch (_Pcvt->in(_State, _Buf, _Buf + _Str.size(), _Src, &_Ch, &_Ch + 1,
-                    _Dest)) { // test result of converting one element
+                // test result of converting one element
+                switch (_Pcvt->in(_State, _Buf, _Buf + _Str.size(), _Src, &_Ch, &_Ch + 1, _Dest)) {
                 case _Codecvt::partial:
                 case _Codecvt::ok:
                     _Str.erase(0, static_cast<size_t>(_Src - _Buf)); // discard any used input
@@ -297,7 +297,6 @@ private:
     locale _Loc; // manages reference to codecvt facet
 };
 
-// CLASS TEMPLATE wstring_convert
 template <class _Codecvt, class _Elem = wchar_t, class _Walloc = allocator<_Elem>, class _Balloc = allocator<char>>
 class _CXX17_DEPRECATE_CODECVT_HEADER wstring_convert { // converts between _Elem (wide) and char (byte) strings
     enum { _BUF_INC = 8, _BUF_MAX = 16 };
@@ -379,8 +378,8 @@ public:
             _Elem* _Dest = &_Wbuf[0];
             _Elem* _Dnext;
 
-            switch (_Pcvt->in(_State, _First, _Last, _First, _Dest, _Dest + _Wbuf.size(),
-                _Dnext)) { // test result of converting one or more bytes
+            // test result of converting one or more bytes
+            switch (_Pcvt->in(_State, _First, _Last, _First, _Dest, _Dest + _Wbuf.size(), _Dnext)) {
             case _Codecvt::partial:
             case _Codecvt::ok:
                 if (_Dest < _Dnext) {
@@ -447,8 +446,8 @@ public:
             char* _Dest = &_Bbuf[0];
             char* _Dnext;
 
-            switch (_Pcvt->out(_State, _First, _Last, _First, _Dest, _Dest + _Bbuf.size(),
-                _Dnext)) { // test result of converting one or more wide chars
+            // test result of converting one or more wide chars
+            switch (_Pcvt->out(_State, _First, _Last, _First, _Dest, _Dest + _Bbuf.size(), _Dnext)) {
             case _Codecvt::partial:
             case _Codecvt::ok:
                 if (_Dest < _Dnext) {

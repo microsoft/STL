@@ -2166,7 +2166,7 @@ _NODISCARD _OutputIt _Write_integral(
     string _Groups;
     if (_Specs._Localized) {
         _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
-        _Separators = _Count_separators(_End - _Buffer_start, _Groups);
+        _Separators = _Count_separators(static_cast<size_t>(_End - _Buffer_start), _Groups);
         // TRANSITION, separators may be wider for wide chars
         _Width += _Separators;
     }
@@ -2370,24 +2370,43 @@ _NODISCARD _OutputIt _Fmt_write(
     auto _Separators       = 0;
     string _Groups;
 
-    if ((_Specs._Alt || _Specs._Localized) && _Is_finite) {
-        for (auto _It = _Buffer_start; _It < _Result.ptr; ++_It) {
-            if (*_It == '.') {
-                _Radix_point = _It;
-            } else if (*_It == _Exponent) {
-                _Exponent_start = _It;
+    if (_Is_finite) {
+        if (_Specs._Alt || _Specs._Localized) {
+            for (auto _It = _Buffer_start; _It < _Result.ptr; ++_It) {
+                if (*_It == '.') {
+                    _Radix_point = _It;
+                } else if (*_It == _Exponent) {
+                    _Exponent_start = _It;
+                }
             }
-        }
-        _Integral_end = (_STD min) (_Radix_point, _Exponent_start);
+            _Integral_end = (_STD min) (_Radix_point, _Exponent_start);
 
-        if (_Specs._Alt) {
-            if (_Radix_point == _Result.ptr) {
+            if (_Specs._Alt && _Radix_point == _Result.ptr) {
                 // TRANSITION, decimal point may be wider
                 ++_Width;
                 _Append_decimal = true;
             }
 
-            if (_Specs._Type == 'g' || _Specs._Type == 'G') {
+            if (_Specs._Localized) {
+                _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
+                _Separators = _Count_separators(static_cast<size_t>(_Integral_end - _Buffer_start), _Groups);
+            }
+        }
+
+        switch (_Format) {
+        case chars_format::hex:
+        case chars_format::scientific:
+            if (_Extra_precision != 0) {
+                while (*_Exponent_start != _Exponent) { // Trailing zeroes are in front of the exponent
+                    --_Exponent_start;
+                }
+            }
+            [[fallthrough]];
+        case chars_format::fixed:
+            _Zeroes_to_append = _Extra_precision;
+            break;
+        case chars_format::general:
+            if (_Specs._Alt) {
                 auto _Digits = static_cast<int>(_Exponent_start - _Buffer_start);
 
                 if (!_Append_decimal) {
@@ -2407,16 +2426,10 @@ _NODISCARD _OutputIt _Fmt_write(
                     }
                 }
             }
+            break;
+        default:
+            _STL_UNREACHABLE;
         }
-
-        if (_Specs._Localized) {
-            _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
-            _Separators = _Count_separators(_Integral_end - _Buffer_start, _Groups);
-        }
-    }
-
-    if (_Is_finite && (_Specs._Type == 'f' || _Specs._Type == 'F')) {
-        _Zeroes_to_append = _Extra_precision;
     }
 
     _Width += _Zeroes_to_append;
@@ -2444,9 +2457,7 @@ _NODISCARD _OutputIt _Fmt_write(
             }
         }
 
-        _Out          = _RANGES _Copy_unchecked(_Buffer_start, _Exponent_start, _STD move(_Out)).out;
-        _Buffer_start = _Exponent_start;
-
+        _Out = _RANGES _Copy_unchecked(_Buffer_start, _Exponent_start, _STD move(_Out)).out;
         if (_Specs._Alt && _Append_decimal) {
             *_Out++ = '.';
         }
@@ -2455,7 +2466,7 @@ _NODISCARD _OutputIt _Fmt_write(
             *_Out++ = '0';
         }
 
-        return _RANGES _Copy_unchecked(_Buffer_start, _Result.ptr, _STD move(_Out)).out;
+        return _RANGES _Copy_unchecked(_Exponent_start, _Result.ptr, _STD move(_Out)).out;
     };
 
     if (_Write_leading_zeroes) {
@@ -2493,15 +2504,14 @@ _NODISCARD _OutputIt _Fmt_write(
         _THROW(format_error("const void* cannot be localized"));
     }
 
-    // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
-    // Add 3 to the bit width so we always round up on the division.
-    // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
-    // Add 2 for the 0x prefix.
-    auto _Width = 2 + static_cast<int>(_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4;
-
-    // Since the bit width of 0 is 0, special case it instead of complicating the math even more.
-    if (_Value == nullptr) {
-        _Width = 3;
+    // Since the bit width of 0 is 0x0, special-case it instead of complicating the math even more.
+    int _Width = 3;
+    if (_Value != nullptr) {
+        // Compute the bit width of the pointer (i.e. how many bits it takes to be represented).
+        // Add 3 to the bit width so we always round up on the division.
+        // Divide that by the amount of bits a hexit represents (log2(16) = log2(2^4) = 4).
+        // Add 2 for the 0x prefix.
+        _Width = static_cast<int>(2 + (_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4);
     }
 
     return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,
@@ -2872,33 +2882,47 @@ _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt,
     return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_wformat_args(_Args...));
 }
 
-_NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1433873
+#define _TEMPLATE_INT_0_NODISCARD                             \
+    template <int = 0> /* improves throughput, see GH-2329 */ \
+    _NODISCARD
+#else // ^^^ no workaround / workaround vvv
+#define _TEMPLATE_INT_0_NODISCARD _NODISCARD inline
+#endif // ^^^ workaround ^^^
+
+_TEMPLATE_INT_0_NODISCARD
+string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
     return _Str;
 }
 
-_NODISCARD inline wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
+_TEMPLATE_INT_0_NODISCARD
+wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
     return _Str;
 }
 
-_NODISCARD inline string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
+_TEMPLATE_INT_0_NODISCARD
+string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args);
     return _Str;
 }
 
-_NODISCARD inline wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
+_TEMPLATE_INT_0_NODISCARD
+wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args);
     return _Str;
 }
+
+#undef _TEMPLATE_INT_0_NODISCARD // TRANSITION, VSO-1433873
 
 template <class... _Types>
 _NODISCARD string format(const string_view _Fmt, const _Types&... _Args) {

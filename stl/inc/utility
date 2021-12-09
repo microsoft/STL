@@ -27,7 +27,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// FUNCTION TEMPLATE max
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(max) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Left, _Right))) /* strengthened */ {
@@ -51,7 +50,6 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty>, _Pr); // implemented in <al
 template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty>); // implemented in <algorithm>
 
-// FUNCTION TEMPLATE min
 template <class _Ty, class _Pr>
 _NODISCARD constexpr const _Ty&(min) (const _Ty& _Left, const _Ty& _Right, _Pr _Pred) noexcept(
     noexcept(_Pred(_Right, _Left))) /* strengthened */ {
@@ -75,13 +73,11 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>, _Pr); // implemented in <al
 template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty>); // implemented in <algorithm>
 
-// FUNCTION TEMPLATE iter_swap (from <algorithm>)
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 void iter_swap(_FwdIt1 _Left, _FwdIt2 _Right) { // swap *_Left and *_Right
     swap(*_Left, *_Right);
 }
 
-// FUNCTION TEMPLATE swap
 template <class _Ty, size_t _Size, enable_if_t<_Is_swappable<_Ty>::value, int> _Enabled>
 _CONSTEXPR20 void swap(_Ty (&_Left)[_Size], _Ty (&_Right)[_Size]) noexcept(_Is_nothrow_swappable<_Ty>::value) {
     if (&_Left != &_Right) {
@@ -106,20 +102,17 @@ _CONSTEXPR20 void swap(_Ty& _Left, _Ty& _Right) noexcept(
     _Right   = _STD move(_Tmp);
 }
 
-// FUNCTION TEMPLATE _Swap_adl
 template <class _Ty>
 _CONSTEXPR20 void _Swap_adl(_Ty& _Left, _Ty& _Right) noexcept(_Is_nothrow_swappable<_Ty>::value) {
     swap(_Left, _Right);
 }
 
-// STRUCT piecewise_construct_t
 struct piecewise_construct_t { // tag type for pair tuple arguments
     explicit piecewise_construct_t() = default;
 };
 
 _INLINE_VAR constexpr piecewise_construct_t piecewise_construct{};
 
-// STRUCT TEMPLATE pair
 template <class...>
 class tuple;
 
@@ -390,7 +383,6 @@ _NODISCARD constexpr bool operator>=(const pair<_Ty1, _Ty2>& _Left, const pair<_
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-// ALIAS TEMPLATE _Unrefwrap_t
 template <class _Ty>
 struct _Unrefwrap_helper { // leave unchanged if not a reference_wrapper
     using type = _Ty;
@@ -405,7 +397,6 @@ struct _Unrefwrap_helper<reference_wrapper<_Ty>> { // make a reference from a re
 template <class _Ty>
 using _Unrefwrap_t = typename _Unrefwrap_helper<decay_t<_Ty>>::type;
 
-// FUNCTION TEMPLATE make_pair
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr pair<_Unrefwrap_t<_Ty1>, _Unrefwrap_t<_Ty2>> make_pair(_Ty1&& _Val1, _Ty2&& _Val2) noexcept(
     is_nothrow_constructible_v<_Unrefwrap_t<_Ty1>, _Ty1>&&
@@ -437,7 +428,6 @@ namespace _CXX20_DEPRECATE_REL_OPS rel_ops {
     }
 } // namespace rel_ops
 
-// STRUCTS FOR STRUCTURED BINDINGS tuple_size AND tuple_element
 template <class _Tuple>
 struct tuple_size;
 
@@ -486,7 +476,6 @@ struct _CXX20_DEPRECATE_VOLATILE _MSVC_KNOWN_SEMANTICS tuple_element<_Index, con
 template <size_t _Index, class _Tuple>
 using tuple_element_t = typename tuple_element<_Index, _Tuple>::type;
 
-// TUPLE INTERFACE TO array
 template <class _Ty, size_t _Size>
 class array;
 
@@ -500,7 +489,6 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, array<_Ty, _Size>> {
     using type = _Ty;
 };
 
-// TUPLE INTERFACE TO tuple
 template <class... _Types>
 struct tuple_size<tuple<_Types...>> : integral_constant<size_t, sizeof...(_Types)> {}; // size of tuple
 
@@ -520,7 +508,6 @@ template <size_t _Index, class _This, class... _Rest>
 struct _MSVC_KNOWN_SEMANTICS tuple_element<_Index, tuple<_This, _Rest...>>
     : tuple_element<_Index - 1, tuple<_Rest...>> {}; // recursive tuple_element definition
 
-// TUPLE INTERFACE TO pair
 template <class _Ty1, class _Ty2>
 struct tuple_size<pair<_Ty1, _Ty2>> : integral_constant<size_t, 2> {}; // size of pair
 
@@ -613,17 +600,15 @@ _NODISCARD constexpr const _Ty2&& get(
     return _STD get<1>(_STD move(_Pr));
 }
 
-// FUNCTION TEMPLATE exchange
 template <class _Ty, class _Other = _Ty>
 _CONSTEXPR20 _Ty exchange(_Ty& _Val, _Other&& _New_val) noexcept(
-    conjunction_v<is_nothrow_move_constructible<_Ty>, is_nothrow_assignable<_Ty&, _Other>>) /* strengthened */ {
+    conjunction_v<is_nothrow_move_constructible<_Ty>, is_nothrow_assignable<_Ty&, _Other>>) {
     // assign _New_val to _Val, return previous _Val
     _Ty _Old_val = static_cast<_Ty&&>(_Val);
     _Val         = static_cast<_Other&&>(_New_val);
     return _Old_val;
 }
 
-// FUNCTION TEMPLATE as_const
 template <class _Ty>
 _NODISCARD constexpr add_const_t<_Ty>& as_const(_Ty& _Val) noexcept { // view _Val through const lenses
     return _Val;
@@ -633,7 +618,6 @@ template <class _Ty>
 void as_const(const _Ty&&) = delete;
 
 #if _HAS_CXX17
-// in_place TAG TYPE TEMPLATES
 struct in_place_t { // tag used to select a constructor which initializes a contained object in place
     explicit in_place_t() = default;
 };
@@ -666,7 +650,6 @@ inline constexpr bool _Is_standard_integer = is_integral_v<_Ty>
 #endif // __cpp_char8_t
         char16_t, char32_t>;
 
-// FUNCTION TEMPLATE cmp_equal
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
@@ -680,13 +663,11 @@ _NODISCARD constexpr bool cmp_equal(const _Ty1 _Left, const _Ty2 _Right) noexcep
     }
 }
 
-// FUNCTION TEMPLATE cmp_not_equal
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_not_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     return !_STD cmp_equal(_Left, _Right);
 }
 
-// FUNCTION TEMPLATE cmp_less
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     static_assert(_Is_standard_integer<_Ty1> && _Is_standard_integer<_Ty2>,
@@ -700,25 +681,21 @@ _NODISCARD constexpr bool cmp_less(const _Ty1 _Left, const _Ty2 _Right) noexcept
     }
 }
 
-// FUNCTION TEMPLATE cmp_greater
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_greater(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     return _STD cmp_less(_Right, _Left);
 }
 
-// FUNCTION TEMPLATE cmp_less_equal
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_less_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     return !_STD cmp_less(_Right, _Left);
 }
 
-// FUNCTION TEMPLATE cmp_greater_equal
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr bool cmp_greater_equal(const _Ty1 _Left, const _Ty2 _Right) noexcept {
     return !_STD cmp_less(_Left, _Right);
 }
 
-// FUNCTION TEMPLATE in_range
 template <class _Ty>
 _NODISCARD _CONSTEVAL _Ty _Min_limit() noexcept { // same as (numeric_limits<_Ty>::min)(), less throughput cost
     static_assert(_Is_standard_integer<_Ty>); // doesn't attempt to handle all types

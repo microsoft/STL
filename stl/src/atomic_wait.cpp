@@ -3,15 +3,12 @@
 
 // implement atomic wait / notify_one / notify_all
 
-// clang-format off
-
 #include <atomic>
 #include <cstdint>
 #include <new>
 #include <thread>
-#include <Windows.h>
 
-// clang-format on
+#include <Windows.h>
 
 namespace {
 

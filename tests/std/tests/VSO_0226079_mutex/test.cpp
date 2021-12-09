@@ -13,7 +13,7 @@
 #include <thread>
 #include <utility>
 
-#include <test_windows.hpp>
+#include <Windows.h>
 
 using namespace std;
 using namespace std::chrono;
@@ -339,10 +339,10 @@ struct mutex_test_fixture {
     }
 
     // nonstandard xtime type
-    template <class rep, class period>
-    xtime to_xtime(const chrono::duration<rep, period>& rel_time) { // convert duration to xtime
+    template <class Rep, class Period>
+    xtime to_xtime(const chrono::duration<Rep, Period>& rel_time) { // convert duration to xtime
         xtime xt;
-        if (rel_time <= chrono::duration<rep, period>::zero()) { // negative or zero relative time, return zero
+        if (rel_time <= chrono::duration<Rep, Period>::zero()) { // negative or zero relative time, return zero
             xt.sec  = 0;
             xt.nsec = 0;
         } else { // positive relative time, convert

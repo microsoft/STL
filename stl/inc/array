@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Array_const_iterator
 #if _ITERATOR_DEBUG_LEVEL != 0
 struct _Iterator_base12_compatible { // TRANSITION, for binary compatibility
     _Container_proxy* _Myproxy{};
@@ -327,7 +326,6 @@ struct pointer_traits<_Array_const_iterator<_Ty, _Size>> {
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE _Array_iterator
 template <class _Ty, size_t _Size>
 class _Array_iterator : public _Array_const_iterator<_Ty, _Size> {
 public:
@@ -433,7 +431,6 @@ struct pointer_traits<_Array_iterator<_Ty, _Size>> {
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE array
 template <class _Ty, size_t _Size>
 class array { // fixed size array of values
 public:
@@ -618,6 +615,8 @@ template <class _First, class... _Rest>
 array(_First, _Rest...) -> array<typename _Enforce_same<_First, _Rest...>::type, 1 + sizeof...(_Rest)>;
 #endif // _HAS_CXX17
 
+struct _Empty_array_element {};
+
 template <class _Ty>
 class array<_Ty, 0> {
 public:
@@ -731,7 +730,7 @@ public:
         _STL_REPORT_ERROR("array subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD const_reference operator[](size_type) const noexcept /* strengthened */ {
@@ -739,7 +738,7 @@ public:
         _STL_REPORT_ERROR("array subscript out of range");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD reference front() noexcept /* strengthened */ {
@@ -747,7 +746,7 @@ public:
         _STL_REPORT_ERROR("array<T, 0>::front() invalid");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD const_reference front() const noexcept /* strengthened */ {
@@ -755,7 +754,7 @@ public:
         _STL_REPORT_ERROR("array<T, 0>::front() invalid");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD reference back() noexcept /* strengthened */ {
@@ -763,7 +762,7 @@ public:
         _STL_REPORT_ERROR("array<T, 0>::back() invalid");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD const_reference back() const noexcept /* strengthened */ {
@@ -771,7 +770,7 @@ public:
         _STL_REPORT_ERROR("array<T, 0>::back() invalid");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
 
-        return _Elems[0];
+        return *data();
     }
 
     _NODISCARD _CONSTEXPR17 _Ty* data() noexcept {
@@ -786,7 +785,9 @@ public:
         _Xout_of_range("invalid array<T, 0> subscript");
     }
 
-    _Ty _Elems[1];
+    conditional_t<disjunction_v<is_default_constructible<_Ty>, _Is_implicitly_default_constructible<_Ty>>, _Ty,
+        _Empty_array_element>
+        _Elems[1];
 };
 
 template <class _Ty, size_t _Size, enable_if_t<_Size == 0 || _Is_swappable<_Ty>::value, int> = 0>
@@ -850,7 +851,6 @@ _NODISCARD _CONSTEXPR20 bool operator>=(const array<_Ty, _Size>& _Left, const ar
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
-// FUNCTION TEMPLATE to_array
 template <class _Ty, size_t _Size, size_t... _Idx>
 _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> _To_array_lvalue_impl(
     _Ty (&_Array)[_Size], index_sequence<_Idx...>) {
@@ -882,7 +882,6 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty(&&_Array)[_Size
 }
 #endif // _HAS_CXX20
 
-// TUPLE INTERFACE TO array
 template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty& get(array<_Ty, _Size>& _Arr) noexcept {
     static_assert(_Idx < _Size, "array index out of bounds");

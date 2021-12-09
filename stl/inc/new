@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 #if _HAS_CXX20
-// STRUCT destroying_delete_t
 struct destroying_delete_t {
     explicit destroying_delete_t() = default;
 };
@@ -28,7 +27,6 @@ inline constexpr destroying_delete_t destroying_delete{};
 #endif // _HAS_CXX20
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE launder
 template <class _Ty>
 _NODISCARD constexpr _Ty* launder(_Ty* _Ptr) noexcept {
     static_assert(!is_function_v<_Ty> && !is_void_v<_Ty>,
@@ -45,13 +43,11 @@ inline constexpr size_t hardware_destructive_interference_size  = 64;
 
 #endif // _HAS_CXX17
 
-// SUPPORT TYPES
 #if !defined(_INC_NEW) || !defined(_MSC_EXTENSIONS)
 // handler for operator new failures
 using new_handler = void(__CLRCALL_PURE_OR_CDECL*)();
 #endif // !defined(_INC_NEW) || !defined(_MSC_EXTENSIONS)
 
-// FUNCTION AND OBJECT DECLARATIONS
 _CRTIMP2 new_handler __cdecl set_new_handler(_In_opt_ new_handler) noexcept;
 _NODISCARD _CRTIMP2 new_handler __cdecl get_new_handler() noexcept;
 _STD_END

@@ -5,16 +5,17 @@
 #define _XMATH
 #include <cerrno>
 #include <cmath>
+#include <limits>
 #include <ymath.h>
 
-// MACROS FOR _Feraise ARGUMENT
+// macros for _Feraise argument
 #define _FE_DIVBYZERO 0x04
 #define _FE_INEXACT   0x20
 #define _FE_INVALID   0x01
 #define _FE_OVERFLOW  0x08
 #define _FE_UNDERFLOW 0x10
 
-// FLOAT PROPERTIES
+// float properties
 #define _D0 3 // little-endian, small long doubles
 #define _D1 2
 #define _D2 1
@@ -164,5 +165,28 @@ long double* _LXp_invx(long double*, int, long double*);
 long double* _LXp_sqrtx(long double*, int, long double*);
 
 _END_EXTERN_C_UNLESS_PURE
+
+// raise IEEE 754 exceptions
+#ifndef _M_CEE_PURE
+#pragma float_control(except, on, push)
+#endif
+
+template <typename T>
+_NODISCARD T _Xfe_overflow(const T sign) noexcept {
+    static_assert(_STD is_floating_point_v<T>, "Expected is_floating_point_v<T>.");
+    constexpr T huge = _STD numeric_limits<T>::max();
+    return _STD copysign(huge, sign) * huge;
+}
+
+template <typename T>
+_NODISCARD T _Xfe_underflow(const T sign) noexcept {
+    static_assert(_STD is_floating_point_v<T>, "Expected is_floating_point_v<T>.");
+    constexpr T tiny = _STD numeric_limits<T>::min();
+    return _STD copysign(tiny, sign) * tiny;
+}
+
+#ifndef _M_CEE_PURE
+#pragma float_control(pop)
+#endif
 
 #endif // _XMATH

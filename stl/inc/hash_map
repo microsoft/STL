@@ -33,7 +33,6 @@ namespace stdext {
     using _STD _Swap_adl;
     using _STD _Xout_of_range;
 
-    // CLASS TEMPLATE _Hmap_traits
     template <class _Kty, // key type
         class _Ty, // mapped type
         class _Tr, // comparator predicate type
@@ -110,7 +109,6 @@ namespace stdext {
         float _Max_buckets = 0.0F; // current maximum bucket size
     };
 
-    // CLASS TEMPLATE hash_map
     template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, less<_Kty>>,
         class _Alloc = allocator<pair<const _Kty, _Ty>>>
     class hash_map : public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false>> {
@@ -300,7 +298,6 @@ namespace stdext {
         return !(_Left == _Right);
     }
 
-    // CLASS TEMPLATE hash_multimap
     template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, less<_Kty>>,
         class _Alloc = allocator<pair<const _Kty, _Ty>>>
     class hash_multimap : public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true>> {

@@ -13,7 +13,6 @@ static std::_Init_locks initlocks;
 #endif // MRTDLL
 
 _STD_BEGIN
-// OBJECT DECLARATIONS
 
 __PURE_APPDOMAIN_GLOBAL static filebuf flog(_cpp_stderr);
 
@@ -24,7 +23,6 @@ __PURE_APPDOMAIN_GLOBAL extern ostream clog(&flog);
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream clog(&flog);
 #endif // defined(_M_CEE_PURE)
 
-// INITIALIZATION CODE
 struct _Init_clog { // ensures that clog is initialized
     __CLR_OR_THIS_CALL _Init_clog() { // initialize clog
         _Ptr_clog = &clog;

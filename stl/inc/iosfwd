@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// I/O EXCEPTION MACROS
 
 #if _HAS_EXCEPTIONS
 #define _TRY_IO_BEGIN _TRY_BEGIN // begin try block
@@ -44,11 +43,10 @@ _STD_BEGIN
 #define _CATCH_IO_(xtype, x) } // catch block for basic_ios x
 #endif // _HAS_EXCEPTIONS
 
-// STREAM POSITIONING TYPES (from <streambuf>)
+// from <streambuf>
 using streamoff  = long long;
 using streamsize = long long;
 
-// CLASS TEMPLATE fpos (from <streambuf>)
 template <class _Statetype>
 class fpos { // store arbitrary file position
 public:
@@ -138,8 +136,12 @@ private:
 
 using streampos  = fpos<_Mbstatet>;
 using wstreampos = streampos;
+#ifdef __cpp_lib_char8_t
+using u8streampos = streampos;
+#endif // __cpp_lib_char8_t
+using u16streampos = streampos;
+using u32streampos = streampos;
 
-// FORWARD REFERENCES
 class locale;
 template <class _Facet>
 const _Facet& __CRTDECL use_facet(const locale&);
@@ -192,6 +194,16 @@ template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = alloca
 class basic_ostringstream;
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_stringstream;
+#if _HAS_CXX23
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_spanbuf;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_ispanstream;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_ospanstream;
+template <class _Elem, class _Traits = char_traits<_Elem>>
+class basic_spanstream;
+#endif // _HAS_CXX23
 template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_filebuf;
 template <class _Elem, class _Traits = char_traits<_Elem>>
@@ -218,7 +230,6 @@ template <class _Elem>
 class collate;
 #endif // defined(_DLL_CPPLIB)
 
-// char TYPEDEFS
 using ios           = basic_ios<char, char_traits<char>>;
 using streambuf     = basic_streambuf<char, char_traits<char>>;
 using istream       = basic_istream<char, char_traits<char>>;
@@ -236,8 +247,13 @@ using fstream       = basic_fstream<char, char_traits<char>>;
 using syncbuf     = basic_syncbuf<char>;
 using osyncstream = basic_osyncstream<char>;
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+using spanbuf     = basic_spanbuf<char>;
+using ispanstream = basic_ispanstream<char>;
+using ospanstream = basic_ospanstream<char>;
+using spanstream  = basic_spanstream<char>;
+#endif // _HAS_CXX23
 
-// wchar_t TYPEDEFS
 using wios           = basic_ios<wchar_t, char_traits<wchar_t>>;
 using wstreambuf     = basic_streambuf<wchar_t, char_traits<wchar_t>>;
 using wistream       = basic_istream<wchar_t, char_traits<wchar_t>>;
@@ -255,9 +271,14 @@ using wfstream       = basic_fstream<wchar_t, char_traits<wchar_t>>;
 using wsyncbuf     = basic_syncbuf<wchar_t>;
 using wosyncstream = basic_osyncstream<wchar_t>;
 #endif // _HAS_CXX20
+#if _HAS_CXX23
+using wspanbuf     = basic_spanbuf<wchar_t>;
+using wispanstream = basic_ispanstream<wchar_t>;
+using wospanstream = basic_ospanstream<wchar_t>;
+using wspanstream  = basic_spanstream<wchar_t>;
+#endif // _HAS_CXX23
 
 #if defined(_CRTBLD)
-// unsigned short TYPEDEFS
 using ushistream = basic_istream<unsigned short, char_traits<unsigned short>>;
 using ushostream = basic_ostream<unsigned short, char_traits<unsigned short>>;
 using ushfilebuf = basic_filebuf<unsigned short, char_traits<unsigned short>>;

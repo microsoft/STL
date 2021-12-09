@@ -8,6 +8,19 @@
 int main() {} // COMPILE-ONLY
 
 // LIBRARY FEATURE-TEST MACROS
+#if _HAS_CXX23
+#ifndef __cpp_lib_adaptor_iterator_pair_constructor
+#error __cpp_lib_adaptor_iterator_pair_constructor is not defined
+#elif __cpp_lib_adaptor_iterator_pair_constructor != 202106L
+#error __cpp_lib_adaptor_iterator_pair_constructor is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_adaptor_iterator_pair_constructor == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_adaptor_iterator_pair_constructor
+#error __cpp_lib_adaptor_iterator_pair_constructor is defined
+#endif
+#endif
 
 #ifndef __cpp_lib_addressof_constexpr
 #error __cpp_lib_addressof_constexpr is not defined
@@ -320,6 +333,20 @@ STATIC_ASSERT(__cpp_lib_byte == 201603L);
 #else
 #ifdef __cpp_lib_byte
 #error __cpp_lib_byte is defined
+#endif
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_byteswap
+#error __cpp_lib_byteswap is not defined
+#elif __cpp_lib_byteswap != 202110L
+#error __cpp_lib_byteswap is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_byteswap == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_byteswap
+#error __cpp_lib_byteswap is defined
 #endif
 #endif
 
@@ -861,6 +888,16 @@ STATIC_ASSERT(__cpp_lib_interpolate == 201902L);
 STATIC_ASSERT(__cpp_lib_invoke == 201411L);
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_invoke_r
+#error __cpp_lib_invoke_r is not defined
+#elif __cpp_lib_invoke_r != 202106L
+#error __cpp_lib_invoke_r is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_invoke_r == 202106L);
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_is_aggregate
 #error __cpp_lib_is_aggregate is not defined
@@ -1185,7 +1222,15 @@ STATIC_ASSERT(__cpp_lib_not_fn == 201603L);
 STATIC_ASSERT(__cpp_lib_null_iterators == 201304L);
 #endif
 
-#if _HAS_CXX17
+#if _HAS_CXX20
+#ifndef __cpp_lib_optional
+#error __cpp_lib_optional is not defined
+#elif __cpp_lib_optional != 202106L
+#error __cpp_lib_optional is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_optional == 202106L);
+#endif
+#elif _HAS_CXX17
 #ifndef __cpp_lib_optional
 #error __cpp_lib_optional is not defined
 #elif __cpp_lib_optional != 201606L
@@ -1252,14 +1297,28 @@ STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202106L
-#error __cpp_lib_ranges is not 202106L
+#elif __cpp_lib_ranges != 202110L
+#error __cpp_lib_ranges is not 202110L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202106L);
+STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 #else
 #ifdef __cpp_lib_ranges
 #error __cpp_lib_ranges is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#ifndef __cpp_lib_ranges_starts_ends_with
+#error __cpp_lib_ranges_starts_ends_with is not defined
+#elif __cpp_lib_ranges_starts_ends_with != 202106L
+#error __cpp_lib_ranges_starts_ends_with is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_starts_ends_with == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_starts_ends_with
+#error __cpp_lib_ranges_starts_ends_with is defined
 #endif
 #endif
 
@@ -1457,6 +1516,20 @@ STATIC_ASSERT(__cpp_lib_span == 202002L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_spanstream
+#error __cpp_lib_spanstream is not defined
+#elif __cpp_lib_spanstream != 202106L
+#error __cpp_lib_spanstream is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_spanstream == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_spanstream
+#error __cpp_lib_spanstream is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_ssize
 #error __cpp_lib_ssize is not defined
@@ -1486,6 +1559,20 @@ STATIC_ASSERT(__cpp_lib_starts_ends_with == 201711L);
 #endif
 
 #if _HAS_CXX23
+#ifndef __cpp_lib_stdatomic_h
+#error __cpp_lib_stdatomic_h is not defined
+#elif __cpp_lib_stdatomic_h != 202011L
+#error __cpp_lib_stdatomic_h is not 202011L
+#else
+STATIC_ASSERT(__cpp_lib_stdatomic_h == 202011L);
+#endif
+#else
+#ifdef __cpp_lib_stdatomic_h
+#error __cpp_lib_stdatomic_h is defined
+#endif
+#endif
+
+#if _HAS_CXX23
 #ifndef __cpp_lib_string_contains
 #error __cpp_lib_string_contains is not defined
 #elif __cpp_lib_string_contains != 202011L
@@ -1496,6 +1583,20 @@ STATIC_ASSERT(__cpp_lib_string_contains == 202011L);
 #else
 #ifdef __cpp_lib_string_contains
 #error __cpp_lib_string_contains is defined
+#endif
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_string_resize_and_overwrite
+#error __cpp_lib_string_resize_and_overwrite is not defined
+#elif __cpp_lib_string_resize_and_overwrite != 202110L
+#error __cpp_lib_string_resize_and_overwrite is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_string_resize_and_overwrite == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_string_resize_and_overwrite
+#error __cpp_lib_string_resize_and_overwrite is defined
 #endif
 #endif
 
@@ -1689,7 +1790,15 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX17
+#if _HAS_CXX20
+#ifndef __cpp_lib_variant
+#error __cpp_lib_variant is not defined
+#elif __cpp_lib_variant != 202106L
+#error __cpp_lib_variant is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_variant == 202106L);
+#endif
+#elif _HAS_CXX17
 #ifndef __cpp_lib_variant
 #error __cpp_lib_variant is not defined
 #elif __cpp_lib_variant != 202102L

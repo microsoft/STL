@@ -61,11 +61,9 @@ namespace experimental {
         using promise_type = typename _Ret::promise_type;
     };
 
-    // STRUCT TEMPLATE coroutine_traits
     template <typename _Ret, typename... _Ts>
     struct coroutine_traits : _Coroutine_traits_sfinae<_Ret> {};
 
-    // STRUCT TEMPLATE coroutine_handle
     template <typename _PromiseT = void>
     struct coroutine_handle;
 
@@ -90,8 +88,9 @@ namespace experimental {
             return _Ptr;
         }
 
-        __declspec(
-            deprecated("is deprecated. Use coroutine_handle::address() instead")) void* to_address() const noexcept {
+        [[deprecated("coroutine_handle::to_address() is deprecated. "
+                     "Use coroutine_handle::address() instead.")]] void*
+            to_address() const noexcept {
             return _Ptr;
         }
 
@@ -133,8 +132,9 @@ namespace experimental {
     struct coroutine_handle : coroutine_handle<> { // general form
         using coroutine_handle<>::coroutine_handle;
 
-        __declspec(deprecated("with pointer parameter is deprecated. Use coroutine_handle::from_promise(T&) "
-                              "instead")) static coroutine_handle from_promise(_PromiseT* _Prom) noexcept {
+        [[deprecated("coroutine_handle::from_promise(T*) with pointer parameter is deprecated. "
+                     "Use coroutine_handle::from_promise(T&) instead.")]] static coroutine_handle
+            from_promise(_PromiseT* _Prom) noexcept {
             return from_promise(*_Prom);
         }
 
@@ -192,7 +192,6 @@ namespace experimental {
     }
 
 
-    // STRUCT suspend_if
     struct suspend_if {
         bool _Ready;
 
@@ -207,7 +206,6 @@ namespace experimental {
         void await_resume() noexcept {}
     };
 
-    // STRUCT suspend_always
     struct suspend_always {
         bool await_ready() noexcept {
             return false;
@@ -218,7 +216,6 @@ namespace experimental {
         void await_resume() noexcept {}
     };
 
-    // STRUCT suspend_never
     struct suspend_never {
         bool await_ready() noexcept {
             return true;

@@ -28,11 +28,9 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE uninitialized_copy_result
     template <class _In, class _Out>
     using uninitialized_copy_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::uninitialized_copy
     class _Uninitialized_copy_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -80,7 +78,8 @@ namespace ranges {
 
             constexpr bool _Is_sized1 = sized_sentinel_for<_Se, _It>;
             constexpr bool _Is_sized2 = sized_sentinel_for<_OSe, _Out>;
-            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_Se, _It> //
+            if constexpr (_Iter_copy_cat<_It, _Out>::_Bitcopy_constructible
+                          && _Sized_or_unreachable_sentinel_for<_Se, _It> //
                           && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (_Is_sized1 && _Is_sized2) {
                     return _Copy_memcpy_common(_IFirst, _RANGES next(_IFirst, _STD move(_ILast)), _OFirst,
@@ -108,7 +107,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_copy_n
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...)
@@ -119,7 +117,7 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-    if constexpr (_Ptr_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial) {
+    if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_constructible) {
         _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
     } else {
         _Uninitialized_backout<decltype(_UDest)> _Backout{_UDest};
@@ -137,11 +135,9 @@ _NoThrowFwdIt uninitialized_copy_n(const _InIt _First, const _Diff _Count_raw, _
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE uninitialized_copy_n_result
     template <class _In, class _Out>
     using uninitialized_copy_n_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::uninitialized_copy_n
     class _Uninitialized_copy_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -160,7 +156,8 @@ namespace ranges {
             auto _IFirst = _Get_unwrapped_n(_STD move(_First1), _Count);
             auto _OFirst = _Get_unwrapped(_STD move(_First2));
             auto _OLast  = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Ptr_copy_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+            if constexpr (_Iter_copy_cat<_It, _Out>::_Bitcopy_constructible
+                          && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (sized_sentinel_for<_OSe, _Out>) {
                     auto _UResult = _Copy_memcpy_common(
                         _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
@@ -192,7 +189,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE uninitialized_move
 template <class _InIt, class _NoThrowFwdIt>
 _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrowFwdIt _Dest) {
     // move [_First, _Last) to raw [_Dest, ...)
@@ -206,7 +202,6 @@ _NoThrowFwdIt uninitialized_move(const _InIt _First, const _InIt _Last, _NoThrow
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_move
     class _Uninitialized_move_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -247,7 +242,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_move_n
 template <class _InIt, class _Diff, class _NoThrowFwdIt>
 pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count_raw, _NoThrowFwdIt _Dest) {
     // move [_First, _First + _Count) to [_Dest, ...)
@@ -258,7 +252,7 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
 
     auto _UFirst = _Get_unwrapped_n(_First, _Count);
     auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-    if constexpr (_Ptr_move_cat<decltype(_UFirst), decltype(_UDest)>::_Really_trivial) {
+    if constexpr (_Iter_move_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_constructible) {
         _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
         _UFirst += _Count;
     } else {
@@ -280,11 +274,9 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // ALIAS TEMPLATE uninitialized_move_n_result
     template <class _In, class _Out>
     using uninitialized_move_n_result = in_out_result<_In, _Out>;
 
-    // VARIABLE ranges::uninitialized_move_n
     class _Uninitialized_move_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -303,7 +295,8 @@ namespace ranges {
             auto _IFirst      = _Get_unwrapped_n(_STD move(_First1), _Count);
             auto _OFirst      = _Get_unwrapped(_STD move(_First2));
             const auto _OLast = _Get_unwrapped(_STD move(_Last2));
-            if constexpr (_Ptr_move_cat<_It, _Out>::_Really_trivial && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
+            if constexpr (_Iter_move_cat<_It, _Out>::_Bitcopy_constructible
+                          && _Sized_or_unreachable_sentinel_for<_OSe, _Out>) {
                 if constexpr (sized_sentinel_for<_OSe, _Out>) {
                     auto _UResult = _Copy_memcpy_common(
                         _IFirst, _IFirst + _Count, _OFirst, _RANGES next(_OFirst, _STD move(_OLast)));
@@ -332,7 +325,6 @@ namespace ranges {
 
     inline constexpr _Uninitialized_move_n_fn uninitialized_move_n{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::uninitialized_fill
     class _Uninitialized_fill_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -393,7 +385,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_fill_n
 template <class _NoThrowFwdIt, class _Diff, class _Tval>
 _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw, const _Tval& _Val) {
     // copy _Count copies of _Val to raw _First
@@ -430,7 +421,6 @@ _NoThrowFwdIt uninitialized_fill_n(_NoThrowFwdIt _First, const _Diff _Count_raw,
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_fill_n
     class _Uninitialized_fill_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -471,7 +461,6 @@ namespace ranges {
 
     inline constexpr _Uninitialized_fill_n_fn uninitialized_fill_n{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::construct_at
     class _Construct_at_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -492,7 +481,6 @@ namespace ranges {
 
     inline constexpr _Construct_at_fn construct_at{_Not_quite_object::_Construct_tag{}};
 
-    // VARIABLE ranges::destroy_at
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
@@ -518,7 +506,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE destroy
 template <class _NoThrowFwdIt>
 _CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // destroy all elements in [_First, _Last)
@@ -528,7 +515,6 @@ _CONSTEXPR20 void destroy(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last)
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::destroy
     // clang-format off
     template <_No_throw_input_iterator _It, _No_throw_sentinel_for<_It> _Se>
         requires destructible<iter_value_t<_It>>
@@ -575,7 +561,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE destroy_n
 template <class _NoThrowFwdIt, class _Diff>
 _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // destroy all elements in [_First, _First + _Count)
@@ -599,7 +584,6 @@ _CONSTEXPR20 _NoThrowFwdIt destroy_n(_NoThrowFwdIt _First, const _Diff _Count_ra
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::destroy_n
     class _Destroy_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -634,7 +618,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_default_construct
 template <class _NoThrowFwdIt>
 void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // default-initialize all elements in [_First, _Last)
@@ -653,7 +636,6 @@ void uninitialized_default_construct(const _NoThrowFwdIt _First, const _NoThrowF
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_default_construct
     class _Uninitialized_default_construct_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -709,7 +691,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_default_construct_n
 template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // default-initialize all elements in [_First, _First + _Count_raw)
@@ -735,7 +716,6 @@ _NoThrowFwdIt uninitialized_default_construct_n(_NoThrowFwdIt _First, const _Dif
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_default_construct_n
     class _Uninitialized_default_construct_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -770,7 +750,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_value_construct
 template <class _NoThrowFwdIt>
 void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwdIt _Last) {
     // value-initialize all elements in [_First, _Last)
@@ -792,7 +771,6 @@ void uninitialized_value_construct(const _NoThrowFwdIt _First, const _NoThrowFwd
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_value_construct
     class _Uninitialized_value_construct_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -846,7 +824,6 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-// FUNCTION TEMPLATE uninitialized_value_construct_n
 template <class _NoThrowFwdIt, class _Diff>
 _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff _Count_raw) {
     // value-initialize all elements in [_First, _First + _Count_raw)
@@ -861,7 +838,6 @@ _NoThrowFwdIt uninitialized_value_construct_n(_NoThrowFwdIt _First, const _Diff 
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
-    // VARIABLE ranges::uninitialized_value_construct_n
     class _Uninitialized_value_construct_n_fn : private _Not_quite_object {
     public:
         using _Not_quite_object::_Not_quite_object;
@@ -899,7 +875,6 @@ namespace ranges {
 
 
 #if _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
-// CLASS TEMPLATE raw_storage_iterator
 template <class _OutIt, class _Ty>
 class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap stores to raw buffer as output iterator
 public:
@@ -947,7 +922,6 @@ private:
 
 
 #if _HAS_AUTO_PTR_ETC
-// CLASS TEMPLATE auto_ptr
 template <class _Ty>
 class auto_ptr;
 
@@ -1057,12 +1031,11 @@ public:
 #endif // _HAS_AUTO_PTR_ETC
 
 
-// CLASS bad_weak_ptr
 class bad_weak_ptr : public exception { // exception type for invalid use of expired weak_ptr object
 public:
     bad_weak_ptr() noexcept {}
 
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         // return pointer to message string
         return "bad_weak_ptr";
     }
@@ -1072,7 +1045,6 @@ public:
     _THROW(bad_weak_ptr{});
 }
 
-// CLASS _Ref_count_base
 class __declspec(novtable) _Ref_count_base { // common code for reference counting
 private:
 #ifdef _M_CEE_PURE
@@ -1150,25 +1122,23 @@ public:
     }
 };
 
-// CLASS TEMPLATE _Ref_count
 template <class _Ty>
 class _Ref_count : public _Ref_count_base { // handle reference counting for pointer without deleter
 public:
     explicit _Ref_count(_Ty* _Px) : _Ref_count_base(), _Ptr(_Px) {}
 
 private:
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         delete _Ptr;
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         delete this;
     }
 
     _Ty* _Ptr;
 };
 
-// CLASS TEMPLATE _Ref_count_resource
 template <class _Resource, class _Dx>
 class _Ref_count_resource : public _Ref_count_base { // handle reference counting for object with deleter
 public:
@@ -1176,12 +1146,12 @@ public:
         : _Ref_count_base(), _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Px) {}
 
 #ifdef __EDG__ // TRANSITION, VSO-1292293
-    virtual ~_Ref_count_resource() noexcept override {} // TRANSITION, should be non-virtual
+    ~_Ref_count_resource() noexcept override {} // TRANSITION, should be non-virtual
 #else // ^^^ workaround / no workaround vvv
-    virtual ~_Ref_count_resource() noexcept override = default; // TRANSITION, should be non-virtual
+    ~_Ref_count_resource() noexcept override = default; // TRANSITION, should be non-virtual
 #endif // ^^^ no workaround ^^^
 
-    virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
+    void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
         if (_Typeid == typeid(_Dx)) {
             return const_cast<_Dx*>(_STD addressof(_Mypair._Get_first()));
@@ -1194,18 +1164,17 @@ public:
     }
 
 private:
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         _Mypair._Get_first()(_Mypair._Myval2);
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         delete this;
     }
 
     _Compressed_pair<_Dx, _Resource> _Mypair;
 };
 
-// CLASS TEMPLATE _Ref_count_resource_alloc
 template <class _Resource, class _Dx, class _Alloc>
 class _Ref_count_resource_alloc : public _Ref_count_base {
     // handle reference counting for object with deleter and allocator
@@ -1215,12 +1184,12 @@ public:
           _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _One_then_variadic_args_t{}, _Ax, _Px) {}
 
 #ifdef __EDG__ // TRANSITION, VSO-1292293
-    virtual ~_Ref_count_resource_alloc() noexcept override {} // TRANSITION, should be non-virtual
+    ~_Ref_count_resource_alloc() noexcept override {} // TRANSITION, should be non-virtual
 #else // ^^^ workaround / no workaround vvv
-    virtual ~_Ref_count_resource_alloc() noexcept override = default; // TRANSITION, should be non-virtual
+    ~_Ref_count_resource_alloc() noexcept override = default; // TRANSITION, should be non-virtual
 #endif // ^^^ no workaround ^^^
 
-    virtual void* _Get_deleter(const type_info& _Typeid) const noexcept override {
+    void* _Get_deleter(const type_info& _Typeid) const noexcept override {
 #if _HAS_STATIC_RTTI
         if (_Typeid == typeid(_Dx)) {
             return const_cast<_Dx*>(_STD addressof(_Mypair._Get_first()));
@@ -1235,11 +1204,11 @@ public:
 private:
     using _Myalty = _Rebind_alloc_t<_Alloc, _Ref_count_resource_alloc>;
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         _Mypair._Get_first()(_Mypair._Myval2._Myval2);
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         _Myalty _Al = _Mypair._Myval2._Get_first();
         this->~_Ref_count_resource_alloc();
         _Deallocate_plain(_Al, this);
@@ -1248,7 +1217,6 @@ private:
     _Compressed_pair<_Dx, _Compressed_pair<_Myalty, _Resource>> _Mypair;
 };
 
-// DECLARATIONS
 template <class _Ty>
 struct default_delete;
 
@@ -1270,7 +1238,6 @@ struct _Can_enable_shared<_Yty, void_t<typename _Yty::_Esft_type>>
     // is_convertible is necessary to verify unambiguous inheritance
 };
 
-// CLASS TEMPLATE _Ptr_base
 struct _Exception_ptr_access;
 
 template <class _Ty>
@@ -1446,25 +1413,21 @@ private:
 #endif // _HAS_STATIC_RTTI
 };
 
-// TYPE TRAIT _Can_scalar_delete
 template <class _Yty, class = void>
 struct _Can_scalar_delete : false_type {};
 template <class _Yty>
 struct _Can_scalar_delete<_Yty, void_t<decltype(delete _STD declval<_Yty*>())>> : true_type {};
 
-// TYPE TRAIT _Can_array_delete
 template <class _Yty, class = void>
 struct _Can_array_delete : false_type {};
 template <class _Yty>
 struct _Can_array_delete<_Yty, void_t<decltype(delete[] _STD declval<_Yty*>())>> : true_type {};
 
-// TYPE TRAIT _Can_call_function_object
 template <class _Fx, class _Arg, class = void>
 struct _Can_call_function_object : false_type {};
 template <class _Fx, class _Arg>
 struct _Can_call_function_object<_Fx, _Arg, void_t<decltype(_STD declval<_Fx>()(_STD declval<_Arg>()))>> : true_type {};
 
-// TYPE TRAIT _SP_convertible
 template <class _Yty, class _Ty>
 struct _SP_convertible : is_convertible<_Yty*, _Ty*>::type {};
 template <class _Yty, class _Uty>
@@ -1472,7 +1435,6 @@ struct _SP_convertible<_Yty, _Uty[]> : is_convertible<_Yty (*)[], _Uty (*)[]>::t
 template <class _Yty, class _Uty, size_t _Ext>
 struct _SP_convertible<_Yty, _Uty[_Ext]> : is_convertible<_Yty (*)[_Ext], _Uty (*)[_Ext]>::type {};
 
-// TYPE TRAIT _SP_pointer_compatible
 template <class _Yty, class _Ty>
 struct _SP_pointer_compatible : is_convertible<_Yty*, _Ty*>::type {
     // N4659 [util.smartptr.shared]/5 "a pointer type Y* is said to be compatible
@@ -1495,7 +1457,6 @@ struct _SP_pointer_compatible<_Uty[_Ext], const volatile _Uty[]> : true_type {
     // N4659 [util.smartptr.shared]/5 "... or Y is U[N] and T is cv U[]."
 };
 
-// CLASS TEMPLATE shared_ptr
 template <class _Ux>
 struct _Temporary_owner {
     _Ux* _Ptr;
@@ -2038,7 +1999,6 @@ struct _For_overwrite_tag {
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE _Ref_count_obj2
 template <class _Ty>
 class _Ref_count_obj2 : public _Ref_count_base { // handle reference counting for object in control block, no allocator
 public:
@@ -2055,7 +2015,7 @@ public:
         }
     }
 
-    virtual ~_Ref_count_obj2() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_obj2() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage._Value was already destroyed in _Destroy
 
         // N4849 [class.dtor]/7:
@@ -2068,11 +2028,11 @@ public:
     };
 
 private:
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         _Destroy_in_place(_Storage._Value);
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         delete this;
     }
 };
@@ -2288,7 +2248,6 @@ void _Uninitialized_fill_multidimensional_n(_Ty* const _Out, const size_t _Size,
     }
 }
 
-// CLASS TEMPLATE _Ref_count_unbounded_array
 template <class _Ty, bool = is_trivially_destructible_v<remove_extent_t<_Ty>>>
 class _Ref_count_unbounded_array : public _Ref_count_base {
     // handle reference counting for unbounded array with trivial destruction in control block, no allocator
@@ -2319,17 +2278,17 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    virtual ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Ty is trivially destructible
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         // nothing to do, _Ty is trivially destructible
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         this->~_Ref_count_unbounded_array();
         _Deallocate_flexible_array(this);
     }
@@ -2367,23 +2326,22 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    virtual ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_unbounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage was already destroyed in _Destroy
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         _Reverse_destroy_multidimensional_n(_Get_ptr(), _Size);
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         this->~_Ref_count_unbounded_array();
         _Deallocate_flexible_array(this);
     }
 };
 
-// CLASS TEMPLATE _Ref_count_bounded_array
 template <class _Ty>
 class _Ref_count_bounded_array : public _Ref_count_base {
     // handle reference counting for bounded array in control block, no allocator
@@ -2406,23 +2364,22 @@ public:
     };
 
 private:
-    virtual ~_Ref_count_bounded_array() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_bounded_array() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do, _Storage was already destroyed in _Destroy
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         _Destroy_in_place(_Storage); // not _Storage._Value, see N4849 [expr.prim.id.dtor]
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         delete this;
     }
 };
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE _Ebco_base
 template <class _Ty,
     bool = is_empty_v<_Ty> && !is_final_v<_Ty>>
 class _Ebco_base : private _Ty { // Empty Base Class Optimization, active
@@ -2462,7 +2419,6 @@ protected:
     }
 };
 
-// CLASS TEMPLATE _Ref_count_obj_alloc3
 template <class _Ty, class _Alloc>
 class _Ref_count_obj_alloc3 : public _Ebco_base<_Rebind_alloc_t<_Alloc, _Ty>>, public _Ref_count_base {
     // handle reference counting for object in control block, allocator
@@ -2492,17 +2448,17 @@ public:
     };
 
 private:
-    virtual ~_Ref_count_obj_alloc3() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_obj_alloc3() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         allocator_traits<_Rebound>::destroy(this->_Get_val(), _STD addressof(_Storage._Value));
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         _Rebind_alloc_t<_Alloc, _Ref_count_obj_alloc3> _Al(this->_Get_val());
         this->~_Ref_count_obj_alloc3();
         _Deallocate_plain(_Al, this);
@@ -2639,7 +2595,6 @@ void _Uninitialized_fill_multidimensional_n_al(_Ty* const _Out, const size_t _Si
     }
 }
 
-// CLASS TEMPLATE _Ref_count_unbounded_array_alloc
 template <class _Ty, class _Alloc>
 class _Ref_count_unbounded_array_alloc : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
                                          public _Ref_count_base {
@@ -2680,19 +2635,19 @@ private:
         _Wrap<_Element_type> _Storage; // flexible array must be last member
     };
 
-    virtual ~_Ref_count_unbounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_unbounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         if constexpr (!conjunction_v<is_trivially_destructible<_Item>, _Uses_default_destroy<_Rebound, _Item*>>) {
             _Reverse_destroy_multidimensional_n_al(_Get_ptr(), _Size, this->_Get_val());
         }
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         constexpr size_t _Align = alignof(_Ref_count_unbounded_array_alloc);
         using _Storage          = _Alignas_storage_unit<_Align>;
 
@@ -2707,7 +2662,6 @@ private:
     }
 };
 
-// CLASS TEMPLATE _Ref_count_bounded_array_alloc
 template <class _Ty, class _Alloc>
 class _Ref_count_bounded_array_alloc : public _Ebco_base<_Rebind_alloc_t<_Alloc, remove_all_extents_t<_Ty>>>,
                                        public _Ref_count_base {
@@ -2741,19 +2695,19 @@ public:
     };
 
 private:
-    virtual ~_Ref_count_bounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
+    ~_Ref_count_bounded_array_alloc() noexcept override { // TRANSITION, should be non-virtual
         // nothing to do; _Storage._Value already destroyed by _Destroy()
 
         // See N4849 [class.dtor]/7.
     }
 
-    virtual void _Destroy() noexcept override { // destroy managed resource
+    void _Destroy() noexcept override { // destroy managed resource
         if constexpr (!conjunction_v<is_trivially_destructible<_Item>, _Uses_default_destroy<_Rebound, _Item*>>) {
             _Reverse_destroy_multidimensional_n_al(_Storage._Value, extent_v<_Ty>, this->_Get_val());
         }
     }
 
-    virtual void _Delete_this() noexcept override { // destroy self
+    void _Delete_this() noexcept override { // destroy self
         _Rebind_alloc_t<_Alloc, _Ref_count_bounded_array_alloc> _Al(this->_Get_val());
         this->~_Ref_count_bounded_array_alloc();
         _Deallocate_plain(_Al, this);
@@ -2761,7 +2715,6 @@ private:
 };
 #endif // _HAS_CXX20
 
-// FUNCTION TEMPLATE make_shared
 template <class _Ty, class... _Types>
 _NODISCARD
 #if _HAS_CXX20
@@ -2834,7 +2787,6 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared(con
     return _Ret;
 }
 
-// FUNCTION TEMPLATE make_shared_for_overwrite
 template <class _Ty>
 _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_for_overwrite() {
     shared_ptr<_Ty> _Ret;
@@ -2856,7 +2808,6 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> make_shared_f
 }
 #endif // _HAS_CXX20
 
-// FUNCTION TEMPLATE allocate_shared
 template <class _Ty, class _Alloc, class... _Types>
 _NODISCARD
 #if _HAS_CXX20
@@ -2961,7 +2912,6 @@ _NODISCARD enable_if_t<is_bounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared
     return _Ret;
 }
 
-// FUNCTION TEMPLATE allocate_shared_for_overwrite
 template <class _Ty, class _Alloc>
 _NODISCARD enable_if_t<!is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shared_for_overwrite(const _Alloc& _Al) {
     shared_ptr<_Ty> _Ret;
@@ -2997,10 +2947,24 @@ _NODISCARD enable_if_t<is_unbounded_array_v<_Ty>, shared_ptr<_Ty>> allocate_shar
 }
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE weak_ptr
 template <class _Ty>
 class weak_ptr : public _Ptr_base<_Ty> { // class for pointer to reference counted resource
 public:
+#ifndef _M_CEE_PURE
+    // When a constructor is converting from weak_ptr<_Ty2> to weak_ptr<_Ty>, the below type trait intentionally asks
+    // whether it would be possible to static_cast from _Ty* to const _Ty2*; see N4901 [expr.static.cast]/11.
+
+    // Primary template, the value is used when the substitution fails.
+    template <class _Ty2, class = const _Ty2*>
+    static constexpr bool _Must_avoid_expired_conversions_from = true;
+
+    // Template specialization, the value is used when the substitution succeeds.
+    template <class _Ty2>
+    static constexpr bool
+        _Must_avoid_expired_conversions_from<_Ty2, decltype(static_cast<const _Ty2*>(static_cast<_Ty*>(nullptr)))> =
+            false;
+#endif // _M_CEE_PURE
+
     constexpr weak_ptr() noexcept {}
 
     weak_ptr(const weak_ptr& _Other) noexcept {
@@ -3014,7 +2978,17 @@ public:
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(const weak_ptr<_Ty2>& _Other) noexcept {
-        this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other);
+#ifdef _M_CEE_PURE
+        constexpr bool _Avoid_expired_conversions = true; // slow, but always safe; avoids error LNK1179
+#else // _M_CEE_PURE
+        constexpr bool _Avoid_expired_conversions = _Must_avoid_expired_conversions_from<_Ty2>;
+#endif // _M_CEE_PURE
+
+        if constexpr (_Avoid_expired_conversions) {
+            this->_Weakly_convert_lvalue_avoiding_expired_conversions(_Other);
+        } else {
+            this->_Weakly_construct_from(_Other);
+        }
     }
 
     weak_ptr(weak_ptr&& _Other) noexcept {
@@ -3023,7 +2997,17 @@ public:
 
     template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr(weak_ptr<_Ty2>&& _Other) noexcept {
-        this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other));
+#ifdef _M_CEE_PURE
+        constexpr bool _Avoid_expired_conversions = true; // slow, but always safe; avoids error LNK1179
+#else // _M_CEE_PURE
+        constexpr bool _Avoid_expired_conversions = _Must_avoid_expired_conversions_from<_Ty2>;
+#endif // _M_CEE_PURE
+
+        if constexpr (_Avoid_expired_conversions) {
+            this->_Weakly_convert_rvalue_avoiding_expired_conversions(_STD move(_Other));
+        } else {
+            this->_Move_construct_from(_STD move(_Other));
+        }
     }
 
     ~weak_ptr() noexcept {
@@ -3087,7 +3071,6 @@ void swap(weak_ptr<_Ty>& _Left, weak_ptr<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE enable_shared_from_this
 template <class _Ty>
 class enable_shared_from_this { // provide member functions that create shared_ptr to this
 public:
@@ -3130,9 +3113,6 @@ private:
 };
 
 
-// CLASS TEMPLATE unique_ptr AND HELPERS
-
-// STRUCT TEMPLATE default_delete
 template <class _Ty>
 struct default_delete { // default deleter for unique_ptr
     constexpr default_delete() noexcept = default;
@@ -3160,7 +3140,6 @@ struct default_delete<_Ty[]> { // default deleter for unique_ptr to array of unk
     }
 };
 
-// STRUCT TEMPLATE _Get_deleter_pointer_type
 template <class _Ty, class _Dx_noref, class = void>
 struct _Get_deleter_pointer_type { // provide fallback
     using type = _Ty*;
@@ -3175,7 +3154,6 @@ template <class _Dx2>
 using _Unique_ptr_enable_default_t =
     enable_if_t<conjunction_v<negation<is_pointer<_Dx2>>, is_default_constructible<_Dx2>>, int>;
 
-// CLASS TEMPLATE unique_ptr SCALAR
 template <class _Ty, class _Dx /* = default_delete<_Ty> */>
 class unique_ptr { // non-copyable pointer to an object
 public:
@@ -3264,7 +3242,7 @@ public:
         return _Mypair._Get_first();
     }
 
-    _NODISCARD add_lvalue_reference_t<_Ty> operator*() const noexcept /* strengthened */ {
+    _NODISCARD add_lvalue_reference_t<_Ty> operator*() const noexcept(noexcept(*_STD declval<pointer>())) {
         return *_Mypair._Myval2;
     }
 
@@ -3301,7 +3279,6 @@ private:
     _Compressed_pair<_Dx, pointer> _Mypair;
 };
 
-// CLASS TEMPLATE unique_ptr ARRAY
 template <class _Ty, class _Dx>
 class unique_ptr<_Ty[], _Dx> { // non-copyable pointer to an array object
 public:
@@ -3435,7 +3412,6 @@ private:
 };
 
 
-// FUNCTION TEMPLATE make_unique
 template <class _Ty, class... _Types, enable_if_t<!is_array_v<_Ty>, int> = 0>
 _NODISCARD unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
     return unique_ptr<_Ty>(new _Ty(_STD forward<_Types>(_Args)...));
@@ -3451,7 +3427,6 @@ template <class _Ty, class... _Types, enable_if_t<extent_v<_Ty> != 0, int> = 0>
 void make_unique(_Types&&...) = delete;
 
 #if _HAS_CXX20
-// FUNCTION TEMPLATE make_unique_for_overwrite
 template <class _Ty, enable_if_t<!is_array_v<_Ty>, int> = 0>
 _NODISCARD unique_ptr<_Ty> make_unique_for_overwrite() { // make a unique_ptr with default initialization
     return unique_ptr<_Ty>(new _Ty);
@@ -3610,7 +3585,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Out, c
     return _Out;
 }
 
-// GARBAGE COLLECTION
 #if _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 enum class pointer_safety { relaxed, preferred, strict };
 
@@ -3630,7 +3604,6 @@ inline pointer_safety get_pointer_safety() noexcept {
 }
 #endif // _HAS_GARBAGE_COLLECTION_SUPPORT_DELETED_IN_CXX23
 
-// STRUCT TEMPLATE owner_less
 template <class _Ty = void>
 struct owner_less; // not defined
 
@@ -3697,7 +3670,6 @@ struct owner_less<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <class _Ty, class _Dx>
 struct hash<unique_ptr<_Ty, _Dx>> : _Conditionally_enabled_hash<unique_ptr<_Ty, _Dx>,
                                         is_default_constructible_v<hash<typename unique_ptr<_Ty, _Dx>::pointer>>> {
@@ -3717,7 +3689,6 @@ struct hash<shared_ptr<_Ty>> {
     }
 };
 
-// FUNCTION align
 inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noexcept /* strengthened */ {
     // try to carve out _Size bytes on boundary _Bound
     size_t _Off = static_cast<size_t>(reinterpret_cast<uintptr_t>(_Ptr) & (_Bound - 1));
@@ -3747,13 +3718,11 @@ _NODISCARD constexpr _Ty* assume_aligned(_Ty* const _Ptr) noexcept /* strengthen
 }
 #endif // _HAS_CXX20
 
-// SPIN LOCKS
 _EXTERN_C
 _CRTIMP2_PURE void __cdecl _Lock_shared_ptr_spin_lock();
 _CRTIMP2_PURE void __cdecl _Unlock_shared_ptr_spin_lock();
 _END_EXTERN_C
 
-// WRAP SPIN-LOCK
 struct _Shared_ptr_spin_lock { // class to manage a spin lock for shared_ptr atomic operations
     _Shared_ptr_spin_lock() { // lock the spin lock
         _Lock_shared_ptr_spin_lock();
@@ -4125,12 +4094,12 @@ public:
 template <class _Ty>
 struct _Pointer_of_helper {};
 
-// clang-format off
 template <_Has_member_pointer _Ty>
 struct _Pointer_of_helper<_Ty> {
     using type = typename _Ty::pointer;
 };
 
+// clang-format off
 template <_Has_member_element_type _Ty>
     requires (!_Has_member_pointer<_Ty>)
 struct _Pointer_of_helper<_Ty> {

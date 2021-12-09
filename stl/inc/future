@@ -35,7 +35,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// FUNCTION TEMPLATE _Make_unique_alloc
 template <class _Alloc>
 struct _Allocator_deleter {
     _Alloc _Al;
@@ -59,10 +58,8 @@ _NODISCARD _Unique_ptr_alloc<_Alloc> _Make_unique_alloc(_Alloc& _Al, _Args&&... 
     return _Unique_ptr_alloc<_Alloc>(_Constructor._Release(), _Allocator_deleter<_Alloc>{_Al});
 }
 
-// STRUCT _Nil
 struct _Nil {}; // empty struct, for unused argument types
 
-// ENUM future_errc
 enum class future_errc { // names for futures errors
     broken_promise = 1,
     future_already_retrieved,
@@ -70,7 +67,6 @@ enum class future_errc { // names for futures errors
     no_state
 };
 
-// ENUM launch
 enum class launch { // names for launch options passed to async
     async    = 0x1,
     deferred = 0x2
@@ -78,18 +74,15 @@ enum class launch { // names for launch options passed to async
 
 _BITMASK_OPS(launch)
 
-// ENUM future_status
 enum class future_status { // names for timed wait function returns
     ready,
     timeout,
     deferred
 };
 
-// HELPER FUNCTIONS
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Throw_future_error(const error_code& _Code);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Rethrow_future_exception(exception_ptr _Ptr);
 
-// STRUCT TEMPLATE SPECIALIZATION is_error_code_enum
 template <>
 struct is_error_code_enum<future_errc> : true_type {};
 
@@ -103,7 +96,6 @@ _NODISCARD inline error_condition make_error_condition(future_errc _Errno) noexc
     return error_condition(static_cast<int>(_Errno), _STD future_category());
 }
 
-// CLASS future_error
 inline const char* _Future_error_map(int _Errcode) noexcept { // convert to name of future error
     switch (static_cast<future_errc>(_Errcode)) { // switch on error code value
     case future_errc::broken_promise:
@@ -134,13 +126,13 @@ public:
         return _Mycode;
     }
 
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override { // get message string
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override { // get message string
         return _Future_error_map(_Mycode.value());
     }
 
 #if !_HAS_EXCEPTIONS
 protected:
-    virtual void _Doraise() const override { // perform class-specific exception handling
+    void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 #endif // !_HAS_EXCEPTIONS
@@ -153,11 +145,11 @@ class _Future_error_category2 : public error_category { // categorize a future e
 public:
     constexpr _Future_error_category2() noexcept : error_category(_Future_addr) {}
 
-    virtual const char* name() const noexcept override {
+    const char* name() const noexcept override {
         return "future";
     }
 
-    virtual string message(int _Errcode) const override {
+    string message(int _Errcode) const override {
         const char* _Name = _Future_error_map(_Errcode);
         if (_Name) {
             return _Name;
@@ -171,7 +163,6 @@ _NODISCARD inline const error_category& future_category() noexcept {
     return _Immortalize_memcpy_image<_Future_error_category2>();
 }
 
-// STRUCT TEMPLATE _State_deleter
 template <class _Ty>
 class _Associated_state;
 
@@ -188,12 +179,11 @@ struct _State_deleter : _Deleter_base<_Ty> { // manage allocator and deletion st
     _State_deleter(const _State_deleter&) = delete;
     _State_deleter& operator=(const _State_deleter&) = delete;
 
-    virtual void _Delete(_Associated_state<_Ty>* _State) override;
+    void _Delete(_Associated_state<_Ty>* _State) override;
 
     _Alloc _My_alloc;
 };
 
-// CLASS TEMPLATE _Associated_state
 template <class _Ty>
 class _Associated_state { // class for managing associated synchronous state
 public:
@@ -451,7 +441,6 @@ void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(
     _Delete_plain_internal(_Del_alloc, this);
 }
 
-// CLASS TEMPLATE _Packaged_state
 template <class>
 class _Packaged_state;
 
@@ -648,7 +637,6 @@ _Pack_state* _Make_packaged_state(_Fty2&& _Fnarg, const _Alloc& _Al) {
 }
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
-// CLASS TEMPLATE _Deferred_async_state
 template <class _Rx>
 class _Deferred_async_state : public _Packaged_state<_Rx()> {
     // class for managing associated synchronous state for deferred execution from async
@@ -660,19 +648,18 @@ public:
     _Deferred_async_state(_Fty2&& _Fnarg) : _Packaged_state<_Rx()>(_STD forward<_Fty2>(_Fnarg)) {}
 
 private:
-    virtual bool _Has_deferred_function() const noexcept override {
+    bool _Has_deferred_function() const noexcept override {
         // this function is considered to be deferred until it's invoked
         return !this->_Running;
     }
 
-    virtual void _Run_deferred_function(unique_lock<mutex>& _Lock) override { // run the deferred function
+    void _Run_deferred_function(unique_lock<mutex>& _Lock) override { // run the deferred function
         _Lock.unlock();
         _Packaged_state<_Rx()>::_Call_immediate();
         _Lock.lock();
     }
 };
 
-// CLASS TEMPLATE _Task_async_state
 template <class _Rx>
 class _Task_async_state : public _Packaged_state<_Rx()> {
     // class for managing associated synchronous state for asynchronous execution from async
@@ -689,15 +676,15 @@ public:
         this->_Running = true;
     }
 
-    virtual ~_Task_async_state() noexcept {
+    ~_Task_async_state() noexcept override {
         _Wait();
     }
 
-    virtual void _Wait() override { // wait for completion
+    void _Wait() override { // wait for completion
         _Task.wait();
     }
 
-    virtual _State_type& _Get_value(bool _Get_only_once) override {
+    _State_type& _Get_value(bool _Get_only_once) override {
         // return the stored result or throw stored exception
         _Task.wait();
         return _Mybase::_Get_value(_Get_only_once);
@@ -707,7 +694,6 @@ private:
     ::Concurrency::task<void> _Task;
 };
 
-// CLASS TEMPLATE _State_manager
 template <class _Ty>
 class _State_manager {
     // class for managing possibly non-existent associated asynchronous state object
@@ -867,7 +853,6 @@ private:
     bool _Get_only_once;
 };
 
-// CLASS TEMPLATE future
 template <class _Ty>
 class shared_future;
 
@@ -971,7 +956,6 @@ public:
     future& operator=(const future&) = delete;
 };
 
-// CLASS TEMPLATE shared_future
 template <class _Ty>
 class shared_future : public _State_manager<_Ty> {
     // class that defines a copyable asynchronous return object that holds a value
@@ -1070,12 +1054,10 @@ public:
     }
 };
 
-// DEFINITION OF future<void>::share()
 _NODISCARD inline shared_future<void> future<void>::share() noexcept {
     return shared_future<void>(_STD move(*this));
 }
 
-// CLASS TEMPLATE _Promise
 template <class _Ty>
 class _Promise {
 public:
@@ -1144,7 +1126,6 @@ private:
     bool _Future_retrieved;
 };
 
-// CLASS TEMPLATE promise
 template <class _Ty>
 class promise { // class that defines an asynchronous provider that holds a value
 public:
@@ -1176,7 +1157,7 @@ public:
     }
 
     _NODISCARD future<_Ty> get_future() {
-        return future<_Ty>(_MyPromise._Get_state_for_future(), _Nil());
+        return future<_Ty>(_MyPromise._Get_state_for_future(), _Nil{});
     }
 
     void set_value(const _Ty& _Val) {
@@ -1238,7 +1219,7 @@ public:
     }
 
     _NODISCARD future<_Ty&> get_future() {
-        return future<_Ty&>(_MyPromise._Get_state_for_future(), _Nil());
+        return future<_Ty&>(_MyPromise._Get_state_for_future(), _Nil{});
     }
 
     void set_value(_Ty& _Val) {
@@ -1292,7 +1273,7 @@ public:
     }
 
     _NODISCARD future<void> get_future() {
-        return future<void>(_MyPromise._Get_state_for_future(), _Nil());
+        return future<void>(_MyPromise._Get_state_for_future(), _Nil{});
     }
 
     void set_value() {
@@ -1326,7 +1307,6 @@ void swap(promise<_Ty>& _Left, promise<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE packaged_task
 template <class _Fret>
 struct _P_arg_type { // type for functions returning T
     using type = _Fret;
@@ -1385,7 +1365,7 @@ public:
     }
 
     _NODISCARD future<_Ret> get_future() {
-        return future<_Ret>(_MyPromise._Get_state_for_future(), _Nil());
+        return future<_Ret>(_MyPromise._Get_state_for_future(), _Nil{});
     }
 
     void operator()(_ArgTypes... _Args) {
@@ -1450,21 +1430,18 @@ void swap(packaged_task<_Ty>& _Left, packaged_task<_Ty>& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-// FUNCTION TEMPLATE _Invoke_stored_explicit
 template <class... _Types, size_t... _Indices>
 auto _Invoke_stored_explicit(tuple<_Types...>&& _Tuple, index_sequence<_Indices...>) -> decltype(_STD invoke(
     _STD get<_Indices>(_STD move(_Tuple))...)) { // invoke() a tuple with explicit parameter ordering
     return _STD invoke(_STD get<_Indices>(_STD move(_Tuple))...);
 }
 
-// FUNCTION TEMPLATE _Invoke_stored
 template <class... _Types>
 auto _Invoke_stored(tuple<_Types...>&& _Tuple)
     -> decltype(_Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{})) { // invoke() a tuple
     return _Invoke_stored_explicit(_STD move(_Tuple), index_sequence_for<_Types...>{});
 }
 
-// FUNCTION TEMPLATE async
 template <class... _Types>
 class _Fake_no_copy_callable_adapter {
     // async() is built on packaged_task internals which incorrectly use
@@ -1517,7 +1494,7 @@ _NODISCARD future<_Invoke_result_t<decay_t<_Fty>, decay_t<_ArgTypes>...>> async(
         _Get_associated_state<_Ret>(_Policy, _Fake_no_copy_callable_adapter<_Fty, _ArgTypes...>(
                                                  _STD forward<_Fty>(_Fnarg), _STD forward<_ArgTypes>(_Args)...)));
 
-    return future<_Ret>(_Pr._Get_state_for_future(), _Nil());
+    return future<_Ret>(_Pr._Get_state_for_future(), _Nil{});
 }
 
 template <class _Fty, class... _ArgTypes>

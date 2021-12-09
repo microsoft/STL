@@ -57,11 +57,20 @@ std/language.support/support.limits/support.limits.general/locale.version.pass.c
 std/language.support/support.limits/support.limits.general/ostream.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/string_view.version.pass.cpp FAIL
 
+# libc++ doesn't yet implement P2231R1, so it expects an old value for `__cpp_lib_optional`
+std/language.support/support.limits/support.limits.general/optional.version.pass.cpp FAIL
+
 # test emits warning C4310: cast truncates constant value
 std/numerics/bit/bitops.rot/rotl.pass.cpp:0 FAIL
 
 # libc++ doesn't yet implement P1754R1 or P1964R2, so it expects an old value for `__cpp_lib_concepts`
 std/language.support/support.limits/support.limits.general/concepts.version.pass.cpp FAIL
+
+# Bogus test believes that optional<non_constexpr_destructor> cannot be a literal type
+std/utilities/optional/optional.object/optional.object.dtor/dtor.pass.cpp:0 FAIL
+
+# Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
+std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -275,16 +284,7 @@ std/utilities/memory/default.allocator/allocator.members/allocate.verify.cpp SKI
 
 
 # *** MISSING STL FEATURES ***
-# C++23 P1048R1 "is_scoped_enum"
-std/utilities/meta/meta.unary/meta.unary.prop/is_scoped_enum.pass.cpp FAIL
-
-# C++23 P1679R3 "contains() For basic_string/basic_string_view"
-std/strings/basic.string/string.contains/contains.char.pass.cpp FAIL
-std/strings/basic.string/string.contains/contains.ptr.pass.cpp FAIL
-std/strings/basic.string/string.contains/contains.string_view.pass.cpp FAIL
-std/strings/string.view/string.view.template/contains.char.pass.cpp FAIL
-std/strings/string.view/string.view.template/contains.ptr.pass.cpp FAIL
-std/strings/string.view/string.view.template/contains.string_view.pass.cpp FAIL
+# Nothing here! :-)
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -312,11 +312,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 # DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
 std/containers/views/span.cons/ptr_len.pass.cpp:0 FAIL
 std/containers/views/span.cons/ptr_ptr.pass.cpp:0 FAIL
-
-# VSO-1168723 "Implicit copy assignment incorrectly not constexpr when subobject has explicit constexpr copy constructor"
-std/utilities/utility/pairs/pairs.pair/assign_pair.pass.cpp:0 FAIL
-std/utilities/utility/pairs/pairs.pair/assign_rv_pair.pass.cpp:0 FAIL
-std/utilities/utility/pairs/pairs.pair/assign_rv_pair_U_V.pass.cpp:0 FAIL
 
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
@@ -350,13 +345,6 @@ std/input.output/file.streams/fstreams/filebuf.virtuals/underflow.pass.cpp FAIL
 # GH-1295 <array>: array<const T, 0> allows fill() and swap()
 std/containers/sequences/array/array.fill/fill.fail.cpp FAIL
 std/containers/sequences/array/array.swap/swap.fail.cpp FAIL
-
-# GH-942 <array>: std::array<T,0> doesn't compile - when type is not default constructible
-std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
-std/containers/sequences/array/array.cons/initialization.pass.cpp FAIL
-std/containers/sequences/array/array.data/data_const.pass.cpp FAIL
-std/containers/sequences/array/array.data/data.pass.cpp FAIL
-std/containers/sequences/array/iterators.pass.cpp FAIL
 
 # GH-1006 <algorithm>: debug checks for predicates are observable
 std/algorithms/alg.sorting/alg.merge/inplace_merge_comp.pass.cpp FAIL
@@ -557,6 +545,11 @@ std/numerics/complex.number/cmplx.over/conj.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/pow.pass.cpp:0 FAIL
 std/numerics/complex.number/cmplx.over/proj.pass.cpp:0 FAIL
 
+# Assertion failed: c == NaN || c == non_zero_nan
+# Testing input values outside the range of [complex.value.ops]/9
+# libc++ handles those input values differently
+std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
+
 # Assertion failed: std::abs(skew - x_skew) < 0.01
 # Random number generation test with too strict pass criteria (test8 failure probability ~= 0.04)
 std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FAIL
@@ -720,7 +713,6 @@ std/numerics/complex.number/complex.transcendentals/asinh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/atanh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/cos.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/cosh.pass.cpp FAIL
-std/numerics/complex.number/complex.transcendentals/exp.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/log10.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/pow_complex_complex.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/pow_complex_scalar.pass.cpp FAIL
@@ -729,7 +721,6 @@ std/numerics/complex.number/complex.transcendentals/sin.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/sinh.pass.cpp FAIL
 std/numerics/complex.number/complex.transcendentals/tanh.pass.cpp FAIL
 std/numerics/complex.number/complex.value.ops/norm.pass.cpp FAIL
-std/numerics/complex.number/complex.value.ops/polar.pass.cpp FAIL
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
 std/localization/locale.categories/category.ctype/facet.ctype.special/facet.ctype.char.statics/classic_table.pass.cpp FAIL
@@ -778,19 +769,6 @@ std/localization/locales/locale.convenience/conversions/conversions.string/ctor_
 std/input.output/iostream.format/ext.manip/get_money.pass.cpp FAIL
 std/input.output/iostream.format/ext.manip/put_money.pass.cpp FAIL
 std/input.output/iostreams.base/ios/basic.ios.members/copyfmt.pass.cpp FAIL
-
-# Not yet analyzed, likely STL bugs. Assertion failed: os.str() == a
-std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.disc/ctor_sseq.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/ctor_sseq.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/ctor_result_type.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/ctor_sseq.pass.cpp FAIL
-
-# Not yet analyzed, likely STL bugs. Assertion failed: e1 == e2
-std/numerics/rand/rand.adapt/rand.adapt.disc/io.pass.cpp FAIL
-std/numerics/rand/rand.adapt/rand.adapt.ibits/io.pass.cpp FAIL
-std/numerics/rand/rand.eng/rand.eng.sub/io.pass.cpp FAIL
 
 # Likely STL bug: Looks like we shouldn't be using assignment.
 std/thread/futures/futures.promise/set_rvalue.pass.cpp FAIL

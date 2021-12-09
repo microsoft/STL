@@ -16,7 +16,6 @@
 static std::_Init_locks initlocks;
 
 namespace {
-    // OBJECT DECLARATIONS
     struct _Mutex_count_pair {
         _STD shared_mutex _Mutex;
         size_t _Ref_count = 0;

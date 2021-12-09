@@ -19,7 +19,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// FORWARD REFERENCES
 class gslice;
 class slice;
 
@@ -34,7 +33,6 @@ class slice_array;
 template <class _Ty>
 class valarray;
 
-// FUNCTION TEMPLATE _Allocate_for_op_delete
 template <class _Ty>
 _Ty* _Allocate_for_op_delete(size_t _Count) {
     // allocates space for _Count objects of type _Ty
@@ -57,7 +55,6 @@ _Ty* _Allocate_for_op_delete(size_t _Count) {
 using _Boolarray = valarray<bool>;
 using _Sizarray  = valarray<size_t>;
 
-// CLASS TEMPLATE valarray
 template <class _Ty>
 class valarray { // store array with various indexing options
 private:
@@ -1353,7 +1350,6 @@ _NODISCARD valarray<_Ty> tanh(const valarray<_Ty>& _Left) {
     return _Ans;
 }
 
-// CLASS slice
 class slice { // define a slice of a valarray
 public:
     slice() = default;
@@ -1385,7 +1381,6 @@ protected:
     size_t _Stride = 0; // the distance between elements
 };
 
-// CLASS TEMPLATE slice_array
 template <class _Ty>
 class slice_array : public slice { // define a slice of a valarray
 public:
@@ -1500,7 +1495,6 @@ private:
     _Ty* _Myptr; // pointer to valarray contents
 };
 
-// CLASS gslice
 class gslice { // define a generalized (multidimensional) slice of a valarray
 public:
     gslice() : _Start(0) {} // construct with all zeros
@@ -1563,7 +1557,6 @@ private:
     _Sizarray _Stride; // array of distances between elements
 };
 
-// CLASS TEMPLATE gslice_array
 template <class _Ty>
 class gslice_array : public gslice { // define a generalized slice of a valarray
 public:
@@ -1691,7 +1684,6 @@ private:
     _Ty* _Myptr; // pointer to valarray contents
 };
 
-// CLASS TEMPLATE mask_array
 template <class _Ty>
 class mask_array { // define a subset of a valarray with an array of mask bits
 public:
@@ -1841,7 +1833,6 @@ private:
     _Ty* _Myptr; // pointer to valarray contents
 };
 
-// CLASS TEMPLATE indirect_array
 template <class _Ty>
 class indirect_array { // define a subset of a valarray with an array of indexes
 public:

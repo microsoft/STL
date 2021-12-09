@@ -132,6 +132,13 @@ constexpr bool test_one_type(T value, Args&&... args) {
     return true;
 }
 
+// Validate that single-view-of-single-view nests correctly per P2367R0
+static_assert(same_as<ranges::single_view<ranges::single_view<int>>, decltype(views::single(views::single(42)))>);
+// Validate that views::single decays its argument type correctly per P2367R0
+static_assert(same_as<ranges::single_view<const char*>, decltype(views::single("Hello, World!"))>);
+void double_function(double);
+static_assert(same_as<ranges::single_view<void (*)(double)>, decltype(views::single(double_function))>);
+
 int main() {
     static_assert(test_one_type(42, 42));
     test_one_type(42, 42);

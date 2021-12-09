@@ -32,7 +32,6 @@ _END_EXTERN_C
 
 _STD_BEGIN
 
-// CLASS TEMPLATE _Basic_syncbuf_impl
 template <class _Elem, class _Traits>
 class _Basic_syncbuf_impl : public basic_streambuf<_Elem, _Traits> {
 public:
@@ -57,7 +56,7 @@ protected:
         _Swap(_Right);
     }
 
-    void _Swap(_Basic_syncbuf_impl& _Right) { // see LWG-3498 regarding noexcept
+    void _Swap(_Basic_syncbuf_impl& _Right) {
         _Mysb::swap(_Right);
         _STD swap(_Emit_on_sync, _Right._Emit_on_sync);
         _STD swap(_Sync_recorded, _Right._Sync_recorded);
@@ -67,7 +66,6 @@ protected:
     bool _Sync_recorded{false};
 };
 
-// CLASS TEMPLATE basic_syncbuf
 template <class _Elem, class _Traits, class _Alloc>
 class basic_syncbuf : public _Basic_syncbuf_impl<_Elem, _Traits> {
 public:
@@ -108,15 +106,46 @@ public:
         _Tidy();
     }
 
-    basic_syncbuf& operator=(basic_syncbuf&& _Right) { // see LWG-3498 regarding noexcept
+    basic_syncbuf& operator=(basic_syncbuf&& _Right) {
         emit();
-        if (this != _STD addressof(_Right)) {
-            _Move_assign(_STD move(_Right), _Choose_pocma<_Alloc>{});
+
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+        auto& _Al                 = _Getal();
+        auto& _Right_al           = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alloc>;
+        if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            if (_Al != _Right_al) {
+                _Tidy();
+
+                const _Size_type _Right_buf_size  = _Right._Get_buffer_size();
+                const _Size_type _Right_data_size = _Right._Get_data_size();
+
+                _Elem* const _New_ptr = _Unfancy(_Al.allocate(_Right_buf_size));
+                _Traits::copy(_New_ptr, _Right.pbase(), _Right_data_size);
+
+                streambuf_type::setp(_New_ptr, _New_ptr + _Right_data_size, _New_ptr + _Right_buf_size);
+                _STD swap(streambuf_type::_Plocale, _Right._Plocale);
+
+                _STD swap(_Mybase::_Emit_on_sync, _Right._Emit_on_sync);
+                _STD swap(_Mybase::_Sync_recorded, _Right._Sync_recorded);
+                _STD swap(_Wrapped, _Right._Wrapped);
+                _STD swap(_Get_mutex(), _Right._Get_mutex());
+
+                _Right._Tidy();
+                return *this;
+            }
+        }
+
+        _Tidy();
+        _Pocma(_Al, _Right_al);
+        _Swap_except_al(_Right);
         return *this;
     }
 
-    void swap(basic_syncbuf& _Right) { // see LWG-3498 regarding noexcept
+    void swap(basic_syncbuf& _Right) {
         if (this != _STD addressof(_Right)) {
             _Pocs(_Getal(), _Right._Getal());
             _Swap_except_al(_Right);
@@ -161,7 +190,7 @@ public:
     }
 
 protected:
-    virtual int sync() override {
+    int sync() override {
         _Mybase::_Sync_recorded = true;
 
         if (_Mybase::_Emit_on_sync) {
@@ -172,7 +201,7 @@ protected:
         return 0;
     }
 
-    virtual int_type overflow(int_type _Current_elem) override {
+    int_type overflow(int_type _Current_elem) override {
         if (!_Wrapped) {
             return _Traits::eof();
         }
@@ -223,50 +252,13 @@ private:
         }
     }
 
-    void _Move_assign(basic_syncbuf&& _Right, _Equal_allocators) { // see LWG-3498 regarding noexcept
-        _Tidy();
-        _Pocma(_Getal(), _Right._Getal());
-        _Swap_except_al(_Right);
-    }
-
-    void _Move_assign(basic_syncbuf&& _Right, _Propagate_allocators) { // see LWG-3498 regarding noexcept
-        _Tidy();
-        _Pocma(_Getal(), _Right._Getal());
-        _Swap_except_al(_Right);
-    }
-
-    void _Move_assign(basic_syncbuf&& _Right, _No_propagate_allocators) { // see LWG-3498 regarding noexcept
-        auto& _Al = _Getal();
-        if (_Al == _Right._Getal()) {
-            _Move_assign(_STD move(_Right), _Equal_allocators{});
-        } else {
-            _Tidy();
-
-            const _Size_type _Right_buf_size  = _Right._Get_buffer_size();
-            const _Size_type _Right_data_size = _Right._Get_data_size();
-
-            _Elem* const _New_ptr = _Unfancy(_Al.allocate(_Right_buf_size));
-            _Traits::copy(_New_ptr, _Right.pbase(), _Right_data_size);
-
-            streambuf_type::setp(_New_ptr, _New_ptr + _Right_data_size, _New_ptr + _Right_buf_size);
-            _STD swap(streambuf_type::_Plocale, _Right._Plocale);
-
-            _STD swap(_Mybase::_Emit_on_sync, _Right._Emit_on_sync);
-            _STD swap(_Mybase::_Sync_recorded, _Right._Sync_recorded);
-            _STD swap(_Wrapped, _Right._Wrapped);
-            _STD swap(_Get_mutex(), _Right._Get_mutex());
-
-            _Right._Tidy();
-        }
-    }
-
-    void _Swap_except_al(basic_syncbuf& _Right) { // see LWG-3498 regarding noexcept
+    void _Swap_except_al(basic_syncbuf& _Right) {
         _Mybase::_Swap(_Right);
         _STD swap(_Wrapped, _Right._Wrapped);
         _STD swap(_Get_mutex(), _Right._Get_mutex());
     }
 
-    virtual bool _Do_emit() override {
+    bool _Do_emit() override {
         return emit();
     }
 
@@ -314,12 +306,10 @@ private:
 };
 
 template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left,
-    basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) { // see LWG-3498 regarding noexcept
+void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) { // LWG-3616
     _Left.swap(_Right);
 }
 
-// CLASS TEMPLATE basic_osyncstream
 template <class _Elem, class _Traits, class _Alloc>
 class basic_osyncstream : public basic_ostream<_Elem, _Traits> {
 public:

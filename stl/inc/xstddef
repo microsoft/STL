@@ -21,21 +21,18 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// TYPE DEFINITIONS
 template <class>
 // false value attached to a dependent name (for static_assert)
 _INLINE_VAR constexpr bool _Always_false = false;
 
-// FUNCTIONAL STUFF (from <functional>)
+// stuff from <functional>
 #if _HAS_AUTO_PTR_ETC
-// STRUCT TEMPLATE unary_function
 template <class _Arg, class _Result>
 struct unary_function { // base class for unary functions
     using argument_type = _Arg;
     using result_type   = _Result;
 };
 
-// STRUCT TEMPLATE binary_function
 template <class _Arg1, class _Arg2, class _Result>
 struct binary_function { // base class for binary functions
     using first_argument_type  = _Arg1;
@@ -44,7 +41,6 @@ struct binary_function { // base class for binary functions
 };
 #endif // _HAS_AUTO_PTR_ETC
 
-// STRUCT TEMPLATE plus
 template <class _Ty = void>
 struct plus {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -56,7 +52,6 @@ struct plus {
     }
 };
 
-// STRUCT TEMPLATE minus
 template <class _Ty = void>
 struct minus {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -68,7 +63,6 @@ struct minus {
     }
 };
 
-// STRUCT TEMPLATE multiplies
 template <class _Ty = void>
 struct multiplies {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -80,7 +74,6 @@ struct multiplies {
     }
 };
 
-// STRUCT TEMPLATE equal_to
 template <class _Ty = void>
 struct equal_to {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -92,7 +85,6 @@ struct equal_to {
     }
 };
 
-// STRUCT TEMPLATE not_equal_to
 template <class _Ty = void>
 struct not_equal_to {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -104,7 +96,6 @@ struct not_equal_to {
     }
 };
 
-// STRUCT TEMPLATE greater
 template <class _Ty = void>
 struct greater {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -116,7 +107,6 @@ struct greater {
     }
 };
 
-// STRUCT TEMPLATE less
 template <class _Ty = void>
 struct less {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -128,7 +118,6 @@ struct less {
     }
 };
 
-// STRUCT TEMPLATE greater_equal
 template <class _Ty = void>
 struct greater_equal {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -140,7 +129,6 @@ struct greater_equal {
     }
 };
 
-// STRUCT TEMPLATE less_equal
 template <class _Ty = void>
 struct less_equal {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -152,7 +140,6 @@ struct less_equal {
     }
 };
 
-// STRUCT TEMPLATE SPECIALIZATION plus
 template <>
 struct plus<void> {
     template <class _Ty1, class _Ty2>
@@ -165,7 +152,6 @@ struct plus<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION minus
 template <>
 struct minus<void> {
     template <class _Ty1, class _Ty2>
@@ -178,7 +164,6 @@ struct minus<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION multiplies
 template <>
 struct multiplies<void> {
     template <class _Ty1, class _Ty2>
@@ -191,7 +176,6 @@ struct multiplies<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION equal_to
 template <>
 struct equal_to<void> {
     template <class _Ty1, class _Ty2>
@@ -204,7 +188,6 @@ struct equal_to<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION not_equal_to
 template <>
 struct not_equal_to<void> {
     template <class _Ty1, class _Ty2>
@@ -217,7 +200,6 @@ struct not_equal_to<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION greater
 template <>
 struct greater<void> {
     template <class _Ty1, class _Ty2>
@@ -230,7 +212,6 @@ struct greater<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION less
 template <>
 struct less<void> {
     template <class _Ty1, class _Ty2>
@@ -243,7 +224,6 @@ struct less<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION greater_equal
 template <>
 struct greater_equal<void> {
     template <class _Ty1, class _Ty2>
@@ -256,7 +236,6 @@ struct greater_equal<void> {
     using is_transparent = int;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION less_equal
 template <>
 struct less_equal<void> {
     template <class _Ty1, class _Ty2>
@@ -269,7 +248,6 @@ struct less_equal<void> {
     using is_transparent = int;
 };
 
-// FUNCTION TEMPLATE addressof
 template <class _Ty>
 _NODISCARD constexpr _Ty* addressof(_Ty& _Val) noexcept {
     return __builtin_addressof(_Val);
@@ -278,7 +256,6 @@ _NODISCARD constexpr _Ty* addressof(_Ty& _Val) noexcept {
 template <class _Ty>
 const _Ty* addressof(const _Ty&&) = delete;
 
-// FUNCTION TEMPLATE _Unfancy
 template <class _Ptrty>
 _NODISCARD constexpr auto _Unfancy(_Ptrty _Ptr) noexcept { // converts from a fancy pointer to a plain pointer
     return _STD addressof(*_Ptr);
@@ -290,11 +267,7 @@ _NODISCARD constexpr _Ty* _Unfancy(_Ty* _Ptr) noexcept { // do nothing for plain
 }
 _STD_END
 
-#if defined(__EDG__) && defined(_M_X64) // TRANSITION, VSO-1356169
-#define _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) FUNC(_EMPTY_ARGUMENT, OPT1, OPT2, OPT3)
-#else // ^^^ workaround / no workaround vvv
 #define _EMIT_CDECL(FUNC, OPT1, OPT2, OPT3) FUNC(__cdecl, OPT1, OPT2, OPT3)
-#endif // ^^^ no workaround ^^^
 
 #ifdef _M_CEE
 #define _EMIT_CLRCALL(FUNC, OPT1, OPT2, OPT3) FUNC(__clrcall, OPT1, OPT2, OPT3)

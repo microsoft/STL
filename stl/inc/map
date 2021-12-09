@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 _STD_BEGIN
-// CLASS TEMPLATE _Tmap_traits
 template <class _Kty, // key type
     class _Ty, // mapped type
     class _Pr, // comparator predicate type
@@ -70,7 +69,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE map
 template <class _Kty, class _Ty, class _Pr = less<_Kty>, class _Alloc = allocator<pair<const _Kty, _Ty>>>
 class map : public _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, false>> {
     // ordered red-black tree of {key, mapped} values, unique keys
@@ -419,7 +417,6 @@ typename map<_Kty, _Ty, _Keylt, _Alloc>::size_type erase_if(map<_Kty, _Ty, _Keyl
 }
 #endif // _HAS_CXX20
 
-// CLASS TEMPLATE multimap
 template <class _Kty, class _Ty, class _Pr = less<_Kty>, class _Alloc = allocator<pair<const _Kty, _Ty>>>
 class multimap : public _Tree<_Tmap_traits<_Kty, _Ty, _Pr, _Alloc, true>> {
     // ordered red-black tree of {key, mapped} values, non-unique keys

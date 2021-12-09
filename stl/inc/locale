@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE collate
 template <class _Elem>
 class collate : public locale::facet { // facet for ordering sequences of elements
 public:
@@ -68,7 +67,7 @@ public:
     }
 
 protected:
-    __CLR_OR_THIS_CALL ~collate() noexcept {
+    __CLR_OR_THIS_CALL ~collate() noexcept override {
         _CSTD free(_Coll._LocaleName);
     }
 
@@ -118,7 +117,6 @@ private:
     _Locinfo::_Collvec _Coll; // used by _LStrcoll and _XStrxfrm
 };
 
-// STATIC collate::id OBJECT
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdllimport-static-field-def"
@@ -143,7 +141,6 @@ template __PURE_APPDOMAIN_GLOBAL locale::id collate<unsigned short>::id;
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// CLASS TEMPLATE collate_byname
 template <class _Elem>
 class collate_byname : public collate<_Elem> { // collate for named locale
 public:
@@ -156,10 +153,9 @@ public:
         : collate<_Elem>(_Locinfo(_Str.c_str()), _Refs) {} // construct for named locale
 
 protected:
-    virtual __CLR_OR_THIS_CALL ~collate_byname() noexcept {}
+    __CLR_OR_THIS_CALL ~collate_byname() noexcept override {}
 };
 
-// FUNCTION TEMPLATE has_facet
 template <class _Facet>
 _NODISCARD bool has_facet(const locale& _Loc) noexcept {
     _BEGIN_LOCK(_LOCK_LOCALE) // the thread lock, make get atomic
@@ -168,85 +164,71 @@ _NODISCARD bool has_facet(const locale& _Loc) noexcept {
     _END_LOCK()
 }
 
-// FUNCTION TEMPLATE isalnum
 template <class _Elem>
 _NODISCARD bool(isalnum)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::alnum, _Ch);
 }
 
-// FUNCTION TEMPLATE isalpha
 template <class _Elem>
 _NODISCARD bool(isalpha)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::alpha, _Ch);
 }
 
-// FUNCTION TEMPLATE isblank
 template <class _Elem>
 _NODISCARD bool(isblank)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::blank, _Ch);
 }
 
-// FUNCTION TEMPLATE iscntrl
 template <class _Elem>
 _NODISCARD bool(iscntrl)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::cntrl, _Ch);
 }
 
-// FUNCTION TEMPLATE isdigit
 template <class _Elem>
 _NODISCARD bool(isdigit)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::digit, _Ch);
 }
 
-// FUNCTION TEMPLATE isgraph
 template <class _Elem>
 _NODISCARD bool(isgraph)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::graph, _Ch);
 }
 
-// FUNCTION TEMPLATE islower
 template <class _Elem>
 _NODISCARD bool(islower)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::lower, _Ch);
 }
 
-// FUNCTION TEMPLATE isprint
 template <class _Elem>
 _NODISCARD bool(isprint)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::print, _Ch);
 }
 
-// FUNCTION TEMPLATE ispunct
 template <class _Elem>
 _NODISCARD bool(ispunct)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::punct, _Ch);
 }
 
-// FUNCTION TEMPLATE isspace
 template <class _Elem>
 _NODISCARD bool(isspace)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::space, _Ch);
 }
 
-// FUNCTION TEMPLATE isupper
 template <class _Elem>
 _NODISCARD bool(isupper)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::upper, _Ch);
 }
 
-// FUNCTION TEMPLATE isxdigit
 template <class _Elem>
 _NODISCARD bool(isxdigit)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::xdigit, _Ch);
 }
 
-// FUNCTION TEMPLATE tolower
 template <class _Elem>
 _NODISCARD _Elem(tolower)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).tolower(_Ch);
 }
 
-// FUNCTION TEMPLATE toupper
 template <class _Elem>
 _NODISCARD _Elem(toupper)(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).toupper(_Ch);

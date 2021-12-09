@@ -58,13 +58,12 @@ namespace pmr {
         return _Unaligned_new_delete_resource();
     }
 
-    // FUNCTION null_memory_resource
     extern "C" _NODISCARD _CRT_SATELLITE_1 memory_resource* __cdecl null_memory_resource() noexcept {
         class _Null_resource final : public _Identity_equal_resource {
-            virtual void* do_allocate(size_t, size_t) override { // Sorry, OOM!
+            void* do_allocate(size_t, size_t) override { // Sorry, OOM!
                 _Xbad_alloc();
             }
-            virtual void do_deallocate(void*, size_t, size_t) override {} // Nothing to do
+            void do_deallocate(void*, size_t, size_t) override {} // Nothing to do
         };
 
         return &const_cast<_Null_resource&>(_Immortalize_memcpy_image<_Null_resource>());

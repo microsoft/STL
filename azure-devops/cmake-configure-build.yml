@@ -6,9 +6,6 @@ parameters:
   type: string
 - name: targetArch
   type: string
-- name: vcpkgLocationVar
-  type: string
-  default: vcpkgLocation
 - name: targetPlatform
   type: string
 - name: buildOutputLocationVar
@@ -33,8 +30,6 @@ steps:
     call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
     -host_arch=${{ parameters.hostArch }} -arch=${{ parameters.targetArch }} -no_logo
     cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
-    -DCMAKE_TOOLCHAIN_FILE=$(${{ parameters.vcpkgLocationVar }})\scripts\buildsystems\vcpkg.cmake ^
-    -DVCPKG_TARGET_TRIPLET=${{ parameters.targetPlatform }}-windows ^
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DLIT_FLAGS=$(litFlags) ^

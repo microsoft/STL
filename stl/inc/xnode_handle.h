@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 _STD_BEGIN
 
-// STRUCT TEMPLATE _Insert_return_type
 template <class _Iterator, class _NodeType>
 struct _Insert_return_type {
     _Iterator position;
@@ -30,7 +29,6 @@ struct _Insert_return_type {
     _NodeType node;
 };
 
-// CLASS TEMPLATE _Node_handle
 template <class _Derived_type, class _KeyTy, class _ValueTy>
 struct _Node_handle_map_base { // map-specific node handle behavior
     using key_type    = _KeyTy;

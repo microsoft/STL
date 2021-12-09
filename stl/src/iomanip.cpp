@@ -5,17 +5,14 @@
 
 #include <iomanip>
 _STD_BEGIN
-// FUNCTION resetiosflags
 static void __cdecl rsfun(ios_base& iostr, ios_base::fmtflags mask) { // reset specified format flags
     iostr.setf(ios_base::_Fmtzero, mask);
 }
 
-// FUNCTION setiosflags
 static void __cdecl sifun(ios_base& iostr, ios_base::fmtflags mask) { // set specified format flags
     iostr.setf(ios_base::_Fmtmask, mask);
 }
 
-// FUNCTION setbase
 static void __cdecl sbfun(ios_base& iostr, int base) { // set base
     iostr.setf(base == 8    ? ios_base::oct
                : base == 10 ? ios_base::dec
@@ -24,12 +21,10 @@ static void __cdecl sbfun(ios_base& iostr, int base) { // set base
         ios_base::basefield);
 }
 
-// FUNCTION setprecision
 static void __cdecl spfun(ios_base& iostr, streamsize prec) { // set precision
     iostr.precision(prec);
 }
 
-// FUNCTION setw
 static void __cdecl swfun(ios_base& iostr, streamsize wide) { // set width
     iostr.width(wide);
 }

@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Iosb
 template <class _Dummy>
 class _Iosb { // define templatized bitmask/enumerated types, instantiate on demand
 public:
@@ -168,7 +167,6 @@ const typename _Iosb<_Dummy>::_Seekdir _Iosb<_Dummy>::cur;
 template <class _Dummy>
 const typename _Iosb<_Dummy>::_Seekdir _Iosb<_Dummy>::end;
 
-// CLASS ios_base
 class _CRTIMP2_PURE_IMPORT ios_base : public _Iosb<int> { // base class for ios
 public:
     using fmtflags = int;
@@ -195,7 +193,6 @@ public:
     using seek_dir  = unsigned int;
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
-    // CLASS failure
     class failure : public system_error { // base of all iostreams exceptions
     public:
         explicit failure(const string& _Message, const error_code& _Errcode = make_error_code(io_errc::stream))
@@ -206,13 +203,12 @@ public:
 
 #if !_HAS_EXCEPTIONS
     protected:
-        virtual void _Doraise() const override { // report the exception
+        void _Doraise() const override { // report the exception
             _RAISE(*this);
         }
 #endif // !_HAS_EXCEPTIONS
     };
 
-    // CLASS Init
     class _CRTIMP2_PURE_IMPORT Init { // controller for standard-stream initialization
     public:
         __CLR_OR_THIS_CALL Init() { // initialize standard streams on first construction
@@ -473,7 +469,6 @@ protected:
     }
 
 private:
-    // STRUCT _Iosarray
     struct _Iosarray : _Crt_new_delete { // list element for open-ended sparse array of longs/pointers
     public:
         __CLR_OR_THIS_CALL _Iosarray(int _Idx, _Iosarray* _Link)
@@ -485,7 +480,6 @@ private:
         void* _Vp; // stored pointer value
     };
 
-    // STRUCT _Fnarray
     struct _Fnarray : _Crt_new_delete { // list element for open-ended sparse array of event handlers
         __CLR_OR_THIS_CALL _Fnarray(int _Idx, event_callback _Pnew, _Fnarray* _Link)
             : _Next(_Link), _Index(_Idx), _Pfn(_Pnew) {} // construct node for index _Idx and link it in

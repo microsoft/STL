@@ -70,7 +70,6 @@ private:
     const type_info* _Tptr;
 };
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <>
 struct hash<type_index> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef type_index _ARGUMENT_TYPE_NAME;

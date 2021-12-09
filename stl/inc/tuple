@@ -23,7 +23,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 #if _HAS_CONDITIONAL_EXPLICIT
-// VARIABLE TEMPLATE _Tuple_conditional_explicit_v
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_conditional_explicit_v0 = false;
 
@@ -35,7 +34,6 @@ template <class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_conditional_explicit_v =
     _Tuple_conditional_explicit_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 #else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-// STRUCT TEMPLATE _Tuple_implicit_val
 // Constrain tuple's implicit constructors
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_implicit_v0 = false;
@@ -48,7 +46,6 @@ template <class _Dest, class... _Srcs>
 struct _Tuple_implicit_val
     : bool_constant<_Tuple_implicit_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>> {};
 
-// STRUCT TEMPLATE _Tuple_explicit_val
 // Constrain tuple's explicit constructors
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_explicit_v0 = false;
@@ -62,7 +59,6 @@ struct _Tuple_explicit_val
     : bool_constant<_Tuple_explicit_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>> {};
 #endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
-// VARIABLE TEMPLATE _Tuple_constructible_v
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_constructible_v0 = false;
 
@@ -77,7 +73,6 @@ _INLINE_VAR constexpr bool _Tuple_constructible_v =
 template <class _Dest, class... _Srcs>
 struct _Tuple_constructible_val : bool_constant<_Tuple_constructible_v<_Dest, _Srcs...>> {};
 
-// VARIABLE TEMPLATE _Tuple_nothrow_constructible_v
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_nothrow_constructible_v0 = false;
 
@@ -89,7 +84,6 @@ template <class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_nothrow_constructible_v =
     _Tuple_nothrow_constructible_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
-// VARIABLE TEMPLATE _Tuple_assignable_v
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_assignable_v0 = false;
 
@@ -104,7 +98,6 @@ _INLINE_VAR constexpr bool _Tuple_assignable_v =
 template <class _Dest, class... _Srcs>
 struct _Tuple_assignable_val : bool_constant<_Tuple_assignable_v<_Dest, _Srcs...>> {};
 
-// VARIABLE TEMPLATE _Tuple_nothrow_assignable_v
 template <bool _Same, class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v0 = false;
 
@@ -116,7 +109,6 @@ template <class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v =
     _Tuple_nothrow_assignable_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
-// STRUCT TEMPLATE _Tuple_convert_copy_val
 // Constrain tuple's copy converting constructor (LWG-2549)
 template <class _Myself, class... _Other>
 struct _Tuple_convert_copy_val : true_type {};
@@ -126,7 +118,6 @@ struct _Tuple_convert_copy_val<tuple<_This>, _Uty>
     : bool_constant<!disjunction_v<is_same<_This, _Uty>, is_constructible<_This, const tuple<_Uty>&>,
           is_convertible<const tuple<_Uty>&, _This>>> {};
 
-// STRUCT TEMPLATE _Tuple_convert_move_val
 // Constrain tuple's move converting constructor (LWG-2549)
 template <class _Myself, class... _Other>
 struct _Tuple_convert_move_val : true_type {};
@@ -136,7 +127,6 @@ struct _Tuple_convert_move_val<tuple<_This>, _Uty>
     : bool_constant<!disjunction_v<is_same<_This, _Uty>, is_constructible<_This, tuple<_Uty>>,
           is_convertible<tuple<_Uty>, _This>>> {};
 
-// STRUCT TEMPLATE _Tuple_perfect_val
 // Constrain tuple's perfect forwarding constructor (LWG-3121)
 template <class _Myself, class _This2, class... _Rest2>
 struct _Tuple_perfect_val : true_type {};
@@ -145,7 +135,6 @@ template <class _Myself, class _This2>
 struct _Tuple_perfect_val<_Myself, _This2>
     : bool_constant<!is_same_v<_Myself, remove_const_t<remove_reference_t<_This2>>>> {};
 
-// STRUCT _Ignore
 struct _Ignore { // struct that ignores assignments
     template <class _Ty>
     constexpr const _Ignore& operator=(const _Ty&) const noexcept /* strengthened */ {
@@ -161,7 +150,6 @@ _INLINE_VAR constexpr _Ignore ignore{};
 // some class - including injected-class-names! - that we know are not members of the class being defined.
 // This avoids pointless class-member lookup for those names in this context.
 
-// STRUCT TEMPLATE _Tuple_val
 template <class _Ty>
 struct _Tuple_val { // stores each value in a tuple
     constexpr _Tuple_val() : _Val() {}
@@ -189,7 +177,6 @@ struct _Tuple_val { // stores each value in a tuple
     _Ty _Val;
 };
 
-// CLASS TEMPLATE tuple
 struct _Exact_args_t {
     explicit _Exact_args_t() = default;
 }; // tag type to disambiguate construction (from one arg per element)
@@ -747,7 +734,6 @@ template <class _Alloc, class... _Types>
 tuple(allocator_arg_t, _Alloc, tuple<_Types...>) -> tuple<_Types...>;
 #endif // _HAS_CXX17
 
-// OPERATORS FOR tuple
 template <class... _Types1, class... _Types2>
 _NODISCARD constexpr bool operator==(const tuple<_Types1...>& _Left, const tuple<_Types2...>& _Right) {
     static_assert(sizeof...(_Types1) == sizeof...(_Types2), "cannot compare tuples of different sizes");
@@ -796,7 +782,6 @@ _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexce
     return _Left.swap(_Right);
 }
 
-// CLASS _Tuple_element (find element by type)
 template <class _Ty, class _Tuple>
 struct _Tuple_element {}; // backstop _Tuple_element definition
 
@@ -811,7 +796,6 @@ struct _Tuple_element<_Ty, tuple<_This, _Rest...>> { // recursive _Tuple_element
     using _Ttype = typename _Tuple_element<_Ty, tuple<_Rest...>>::_Ttype;
 };
 
-// FUNCTION TEMPLATE get (by index)
 template <size_t _Index, class... _Types>
 _NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept {
     using _Ttype = typename tuple_element<_Index, tuple<_Types...>>::_Ttype;
@@ -846,7 +830,6 @@ _NODISCARD constexpr auto&& _Tuple_get(tuple<_Types...>&& _Tuple) noexcept {
     return static_cast<_Ty&&>(static_cast<_Ttype&>(_Tuple)._Myfirst._Val);
 }
 
-// FUNCTION TEMPLATE get (by type)
 template <class _Ty, class... _Types>
 _NODISCARD constexpr _Ty& get(tuple<_Types...>& _Tuple) noexcept {
     using _Ttype = typename _Tuple_element<_Ty, tuple<_Types...>>::_Ttype;
@@ -871,7 +854,6 @@ _NODISCARD constexpr const _Ty&& get(const tuple<_Types...>&& _Tuple) noexcept {
     return static_cast<const _Ty&&>(static_cast<const _Ttype&>(_Tuple)._Myfirst._Val);
 }
 
-// CONSTRUCTOR TEMPLATES FOR tuple
 template <class _This, class... _Rest>
 template <class _Tag, class _Tpl, size_t... _Indices, enable_if_t<is_same_v<_Tag, _STD _Unpack_tuple_t>, int>>
 constexpr tuple<_This, _Rest...>::tuple(_Tag, _Tpl&& _Right, index_sequence<_Indices...>)
@@ -883,27 +865,23 @@ template <class _Tag, class _Alloc, class _Tpl, size_t... _Indices,
 constexpr tuple<_This, _Rest...>::tuple(_Tag, const _Alloc& _Al, _Tpl&& _Right, index_sequence<_Indices...>)
     : tuple(_Alloc_exact_args_t{}, _Al, _STD get<_Indices>(_STD forward<_Tpl>(_Right))...) {}
 
-// FUNCTION TEMPLATE make_tuple
 template <class... _Types>
 _NODISCARD constexpr tuple<_Unrefwrap_t<_Types>...> make_tuple(_Types&&... _Args) { // make tuple from elements
     using _Ttype = tuple<_Unrefwrap_t<_Types>...>;
     return _Ttype(_STD forward<_Types>(_Args)...);
 }
 
-// FUNCTION TEMPLATE tie
 template <class... _Types>
 _NODISCARD constexpr tuple<_Types&...> tie(_Types&... _Args) noexcept { // make tuple from elements
     using _Ttype = tuple<_Types&...>;
     return _Ttype(_Args...);
 }
 
-// FUNCTION TEMPLATE forward_as_tuple
 template <class... _Types>
 _NODISCARD constexpr tuple<_Types&&...> forward_as_tuple(_Types&&... _Args) noexcept { // forward arguments in a tuple
     return tuple<_Types&&...>(_STD forward<_Types>(_Args)...);
 }
 
-// STRUCT TEMPLATE _Cat_sequences
 template <class _Seq_type1, class _Seq_type2>
 struct _Cat_sequences;
 
@@ -913,7 +891,6 @@ struct _Cat_sequences<index_sequence<_Indexes1...>,
     using type = index_sequence<_Indexes1..., _Indexes2...>;
 };
 
-// FORWARD DECLARATIONS
 template <class _Ty, size_t _Size>
 class array;
 
@@ -929,7 +906,6 @@ _NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept;
 template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
 
-// STRUCT TEMPLATE _View_as_tuple
 template <class _Ty, class... _For_array>
 struct _View_as_tuple { // tuple_cat() supports only tuples, pairs, and arrays
     static_assert(_Always_false<_Ty>, "Unsupported tuple_cat arguments.");
@@ -955,11 +931,9 @@ struct _View_as_tuple<array<_Ty, _Size>, _Types...>
     : _View_as_tuple<array<_Ty, _Size - 1>, _Ty, _Types...> { // view an array as a tuple; counts down to 0
 };
 
-// STRUCT TEMPLATE _Repeat_for
 template <size_t _Nx, class _Ty>
 struct _Repeat_for : integral_constant<size_t, _Nx> {}; // repeats _Nx for each _Ty in a parameter pack
 
-// FUNCTION TEMPLATE tuple_cat
 template <class _Ret, class _Kx_arg, class _Ix_arg, size_t _Ix_next, class... _Tuples>
 struct _Tuple_cat2 { // determine tuple_cat's return type and _Kx/_Ix indices
     static_assert(sizeof...(_Tuples) == 0, "Unsupported tuple_cat arguments.");
@@ -989,12 +963,11 @@ constexpr _Ret _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty&& 
 template <class... _Tuples>
 _NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::type tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
     using _Cat1 = _Tuple_cat1<_Tuples...>;
-    return _Tuple_cat<typename _Cat1::type>(typename _Cat1::_Kx_arg_seq(), typename _Cat1::_Ix_arg_seq(),
+    return _Tuple_cat<typename _Cat1::type>(typename _Cat1::_Kx_arg_seq{}, typename _Cat1::_Ix_arg_seq{},
         _STD forward_as_tuple(_STD forward<_Tuples>(_Tpls)...));
 }
 
 #if _HAS_CXX17
-// FUNCTION TEMPLATE apply
 template <class _Callable, class _Tuple, size_t... _Indices>
 constexpr decltype(auto) _Apply_impl(
     _Callable&& _Obj, _Tuple&& _Tpl, index_sequence<_Indices...>) { // invoke _Obj with the elements of _Tpl
@@ -1007,10 +980,11 @@ constexpr decltype(auto) apply(_Callable&& _Obj, _Tuple&& _Tpl) { // invoke _Obj
         make_index_sequence<tuple_size_v<remove_reference_t<_Tuple>>>{});
 }
 
-// FUNCTION TEMPLATE make_from_tuple
 template <class _Ty, class _Tuple, size_t... _Indices>
-constexpr _Ty _Make_from_tuple_impl(
-    _Tuple&& _Tpl, index_sequence<_Indices...>) { // construct _Ty from the elements of _Tpl
+constexpr _Ty _Make_from_tuple_impl(_Tuple&& _Tpl, index_sequence<_Indices...>) {
+    // construct _Ty from the elements of _Tpl
+    static_assert(is_constructible_v<_Ty, decltype(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl)))...>,
+        "the target type must be constructible from the fields of the argument tuple (N4892 [tuple.apply]/2).");
     return _Ty(_STD get<_Indices>(_STD forward<_Tuple>(_Tpl))...);
 }
 
@@ -1021,7 +995,6 @@ _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) { // construct _Ty from 
 }
 #endif // _HAS_CXX17
 
-// STRUCT TEMPLATE uses_allocator
 template <class... _Types, class _Alloc>
 struct uses_allocator<tuple<_Types...>, _Alloc> : true_type {}; // true_type if container allocator enabled
 

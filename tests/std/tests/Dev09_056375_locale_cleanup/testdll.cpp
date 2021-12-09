@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <locale>
 
-#include <test_windows.hpp>
+#include <Windows.h>
 
 using namespace std;
 

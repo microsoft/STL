@@ -11,7 +11,6 @@
 static std::_Init_locks initlocks;
 
 _STD_BEGIN
-// OBJECT DECLARATIONS
 
 __PURE_APPDOMAIN_GLOBAL static wfilebuf wferr(_cpp_stderr);
 #if defined(_M_CEE_PURE)
@@ -20,7 +19,6 @@ __PURE_APPDOMAIN_GLOBAL extern wostream wcerr(&wferr);
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream wcerr(&wferr);
 #endif
 
-// INITIALIZATION CODE
 struct _Init_wcerr { // ensures that wcerr is initialized
     __CLR_OR_THIS_CALL _Init_wcerr() { // initialize wcerr
         _Ptr_wcerr = &wcerr;

@@ -31,10 +31,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-// CLASS bad_any_cast
 class bad_any_cast : public bad_cast { // thrown by failed any_cast
 public:
-    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept override {
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
         return "Bad any_cast";
     }
 };
@@ -108,7 +107,6 @@ template <class _Ty>
 inline constexpr _Any_small_RTTI _Any_small_RTTI_obj = {
     &_Any_small_RTTI::_Destroy_impl<_Ty>, &_Any_small_RTTI::_Copy_impl<_Ty>, &_Any_small_RTTI::_Move_impl<_Ty>};
 
-// CLASS any
 class any { // storage for any (CopyConstructible) type
 public:
     // Construction and destruction [any.cons]

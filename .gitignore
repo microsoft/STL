@@ -9,3 +9,4 @@ __pycache__/
 /build/
 /out/
 /tools/out/
+/CMakeLists.txt.user

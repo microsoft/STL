@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 parameters:
-- name: vcpkgSHAVar
-  type: string
-  default: vcpkgSHA
 - name: llvmSHAVar
   type: string
   default: llvmSHA
+- name: boostMathSHAVar
+  type: string
+  default: boostMathSHA
 steps:
 - checkout: self
   clean: true
@@ -22,8 +22,8 @@ steps:
       $regexSubmoduleSHA = '^[ \-+]([0-9a-f]+) .*$'
       $llvmSHA = git submodule status --cached llvm-project | %{$_ -replace $regexSubmoduleSHA, '$1'}
       Write-Host "##vso[task.setvariable variable=${{ parameters.llvmSHAVar }};]$llvmSHA"
-      $vcpkgSHA = git submodule status --cached vcpkg | %{$_ -replace $regexSubmoduleSHA, '$1'}
-      Write-Host "##vso[task.setvariable variable=${{ parameters.vcpkgSHAVar }};]$vcpkgSHA"
+      $boostMathSHA = git submodule status --cached boost-math | %{$_ -replace $regexSubmoduleSHA, '$1'}
+      Write-Host "##vso[task.setvariable variable=${{ parameters.boostMathSHAVar }};]$boostMathSHA"
 - script: |
     cd $(Build.SourcesDirectory)
     if not exist "llvm-project" (
@@ -50,22 +50,22 @@ steps:
   displayName: "Checkout LLVM source"
 - script: |
     cd $(Build.SourcesDirectory)
-    if not exist "vcpkg" (
-      mkdir vcpkg
+    if not exist "boost-math" (
+      mkdir boost-math
     )
-    cd vcpkg
+    cd boost-math
 
     if not exist ".git" (
       del /S /Q *
       git init
     )
 
-    git remote get-url vcpkg
+    git remote get-url boostorg
     if errorlevel 1 (
-      git remote add vcpkg https://github.com/Microsoft/vcpkg.git
-      git config --local extensions.partialClone vcpkg
+      git remote add boostorg https://github.com/boostorg/math.git
+      git config --local extensions.partialClone boostorg
     )
 
-    git fetch --filter=tree:0 --depth=1 vcpkg $(${{ parameters.vcpkgSHAVar }})
+    git fetch --filter=tree:0 --depth=1 boostorg $(${{ parameters.boostMathSHAVar }})
     git checkout -f FETCH_HEAD
-  displayName: "Checkout vcpkg source"
+  displayName: "Checkout boost-math source"

@@ -179,6 +179,18 @@ void test_GH_2021() { // COMPILE-ONLY
     tags[0];
 }
 
+struct MoveOnlyType {
+    MoveOnlyType()               = default;
+    MoveOnlyType(MoveOnlyType&&) = default;
+};
+
+void test_LWG3527() { // COMPILE-ONLY
+    allocator<MoveOnlyType> alloc;
+    MoveOnlyType obj;
+    pair<MoveOnlyType&&, MoveOnlyType&&> p{move(obj), move(obj)};
+    [[maybe_unused]] auto t = uses_allocator_construction_args<pair<MoveOnlyType&&, MoveOnlyType&&>>(alloc, move(p));
+}
+
 int main() {
     test_P0475R1();
 

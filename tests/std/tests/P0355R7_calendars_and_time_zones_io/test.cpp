@@ -29,7 +29,7 @@ bool test_duration_basic_out(const duration<Rep, Period>& d, const CharT* expect
     return ss.str() == expected;
 }
 
-#define WIDEN(TYPE, STR) get<const TYPE*>(pair{STR, L##STR});
+#define WIDEN(TYPE, STR) get<const TYPE*>(pair{STR, L##STR})
 
 template <class CharT>
 bool test_duration_locale_out() {
@@ -63,8 +63,6 @@ bool test_duration_locale_out() {
 
     return ss.str() == expected;
 }
-
-#undef WIDEN
 
 void test_duration_output() {
     using LongRatio = ratio<INTMAX_MAX - 1, INTMAX_MAX>;
@@ -128,9 +126,9 @@ void test_duration_output() {
 }
 
 
-template <class CharT, class Parsable>
-void test_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t<basic_string<CharT>*> abbrev = nullptr,
-    minutes* offset = nullptr) {
+template <class CharT, class CStringOrStdString, class Parsable>
+void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
         if constexpr (is_same_v<CharT, char>) {
@@ -147,24 +145,24 @@ void test_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t
     basic_stringstream<CharT> sstr{str};
     if (abbrev) {
         if (offset) {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev, *offset);
+            sstr >> parse(fmt, p, *abbrev, *offset);
         } else {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev);
+            sstr >> parse(fmt, p, *abbrev);
         }
     } else {
         if (offset) {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *offset);
+            sstr >> parse(fmt, p, *offset);
         } else {
-            sstr >> parse(basic_string<CharT>{fmt}, p);
+            sstr >> parse(fmt, p);
         }
     }
 
     assert(sstr);
 }
 
-template <class CharT, class Parsable>
-void fail_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t<basic_string<CharT>*> abbrev = nullptr,
-    minutes* offset = nullptr) {
+template <class CharT, class CStringOrStdString, class Parsable>
+void fail_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
         if constexpr (is_same_v<CharT, char>) {
@@ -181,15 +179,15 @@ void fail_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t
     basic_stringstream<CharT> sstr{str};
     if (abbrev) {
         if (offset) {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev, *offset);
+            sstr >> parse(fmt, p, *abbrev, *offset);
         } else {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev);
+            sstr >> parse(fmt, p, *abbrev);
         }
     } else {
         if (offset) {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *offset);
+            sstr >> parse(fmt, p, *offset);
         } else {
-            sstr >> parse(basic_string<CharT>{fmt}, p);
+            sstr >> parse(fmt, p);
         }
     }
 
@@ -219,6 +217,29 @@ void test_limits(const char* flag, const IntType min, const IntType max) {
     *conv_result.ptr = '\0';
     test_parse(buffer, flag, value);
     assert(value == TimeType{max});
+}
+
+void test_lwg_3536() {
+    // LWG-3536, "Should chrono::from_stream() assign zero to duration for failure?"
+    minutes mm{20};
+
+    {
+        istringstream iss{"2:2:30"};
+        iss >> parse("%H:%M:%S", mm);
+        assert(iss.fail() && mm == 20min);
+    }
+
+    {
+        istringstream iss{"June"};
+        iss >> parse("%B", mm);
+        assert(iss.fail() && mm == 20min);
+    }
+
+    {
+        istringstream iss{""};
+        iss >> parse("%B", mm);
+        assert(iss.fail() && mm == 20min);
+    }
 }
 
 void parse_seconds() {
@@ -1149,39 +1170,41 @@ void parse_timepoints() {
     test_gh_1952();
 }
 
-void parse_wchar() {
+template <class CharT, class CStringOrStdString>
+void test_io_manipulator() {
     seconds time;
-    test_parse(L"12", L"%S", time);
+    test_parse(WIDEN(CharT, "12"), CStringOrStdString{WIDEN(CharT, "%S")}, time);
     assert(time == 12s);
-    test_parse(L"12", L"%M", time);
+    test_parse(WIDEN(CharT, "12"), CStringOrStdString{WIDEN(CharT, "%M")}, time);
     assert(time == 12min);
-    test_parse(L"30", L"%H", time);
+    test_parse(WIDEN(CharT, "30"), CStringOrStdString{WIDEN(CharT, "%H")}, time);
     assert(time == 30h);
-    test_parse(L" 1:23:42", L"%T", time);
+    test_parse(WIDEN(CharT, " 1:23:42"), CStringOrStdString{WIDEN(CharT, "%T")}, time);
     assert(time == 1h + 23min + 42s);
-    wstring tz_name;
-    test_parse(L"Etc/GMT+11", L"%Z", time, &tz_name);
-    assert(tz_name == L"Etc/GMT+11");
-    fail_parse(L"Not_valid! 00", L"%Z %H", time, &tz_name);
+    basic_string<CharT> tz_name;
+    test_parse(WIDEN(CharT, "Etc/GMT+11"), CStringOrStdString{WIDEN(CharT, "%Z")}, time, &tz_name);
+    assert(tz_name == WIDEN(CharT, "Etc/GMT+11"));
+    fail_parse(WIDEN(CharT, "Not_valid! 00"), CStringOrStdString{WIDEN(CharT, "%Z %H")}, time, &tz_name);
 
     weekday wd;
-    test_parse(L"wedNesday", L"%A", wd);
+    test_parse(WIDEN(CharT, "wedNesday"), CStringOrStdString{WIDEN(CharT, "%A")}, wd);
     assert(wd == Wednesday);
 
     month m;
-    test_parse(L"deCeMbeR", L"%b", m);
+    test_parse(WIDEN(CharT, "deCeMbeR"), CStringOrStdString{WIDEN(CharT, "%b")}, m);
     assert(m == December);
 
     sys_seconds st;
-    test_parse(L"oct 29 19:01:42 2020", L"%c", st);
+    test_parse(WIDEN(CharT, "oct 29 19:01:42 2020"), CStringOrStdString{WIDEN(CharT, "%c")}, st);
     assert(st == sys_days{2020y / October / 29d} + 19h + 1min + 42s);
 
-    fail_parse(L"ab", L"a%nb", time);
-    test_parse(L"a b", L"a%nb", time);
-    fail_parse(L"a  b", L"a%nb", time);
+    fail_parse(WIDEN(CharT, "ab"), CStringOrStdString{WIDEN(CharT, "a%nb")}, time);
+    test_parse(WIDEN(CharT, "a b"), CStringOrStdString{WIDEN(CharT, "a%nb")}, time);
+    fail_parse(WIDEN(CharT, "a  b"), CStringOrStdString{WIDEN(CharT, "a%nb")}, time);
 }
 
 void test_parse() {
+    test_lwg_3536();
     parse_seconds();
     parse_minutes();
     parse_hours();
@@ -1192,7 +1215,10 @@ void test_parse() {
     parse_other_week_date();
     parse_whitespace();
     parse_timepoints();
-    parse_wchar();
+    test_io_manipulator<char, const char*>();
+    test_io_manipulator<wchar_t, const wchar_t*>();
+    test_io_manipulator<char, string>();
+    test_io_manipulator<wchar_t, wstring>();
 }
 
 void test() {

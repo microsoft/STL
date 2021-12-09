@@ -11,7 +11,6 @@
 static std::_Init_locks initlocks;
 
 _STD_BEGIN
-// OBJECT DECLARATIONS
 
 __PURE_APPDOMAIN_GLOBAL static filebuf fout(_cpp_stdout);
 
@@ -22,7 +21,6 @@ __PURE_APPDOMAIN_GLOBAL extern ostream cout(&fout);
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT ostream cout(&fout);
 #endif // defined(_M_CEE_PURE)
 
-// INITIALIZATION CODE
 struct _Init_cout { // ensures that cout is initialized
     __CLR_OR_THIS_CALL _Init_cout() { // initialize cout
         _Ptr_cout = &cout;

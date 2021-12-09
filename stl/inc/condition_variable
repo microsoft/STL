@@ -212,6 +212,8 @@ public:
             }
 
             _Unlock_guard<_Lock> _Unlock_outer{_Lck};
+            unique_lock<mutex> _Guard_unlocks_before_locking_outer{_STD move(_Guard)};
+
             const auto _Now = _Clock::now();
             if (_Now >= _Abs_time) {
                 break;
@@ -223,7 +225,7 @@ public:
             _CSTD xtime _Tgt;
             (void) _To_xtime_10_day_clamped(_Tgt, _Rel_time);
             const int _Res = _Cnd_timedwait(_Mycnd(), _Myptr->_Mymtx(), &_Tgt);
-            _Guard.unlock();
+            _Guard_unlocks_before_locking_outer.unlock();
 
             switch (_Res) {
             case _Thrd_timedout:

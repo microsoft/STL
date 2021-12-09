@@ -23,7 +23,7 @@ FILE* _Xfsopen(_In_z_ const wchar_t* filename, _In_ int mode, _In_ int prot) {
     return _wfsopen(filename, mods[mode], prot);
 }
 
-template <typename CharT>
+template <class CharT>
 FILE* _Xfiopen(const CharT* filename, ios_base::openmode mode, int prot) {
     static const int valid[] = {
         // valid combinations of open flags

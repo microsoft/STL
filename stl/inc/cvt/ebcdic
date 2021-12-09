@@ -22,7 +22,6 @@ namespace stdext {
     namespace cvt {
         using _Statype = _CSTD mbstate_t;
 
-        // CLASS TEMPLATE codecvt_ebcdic
         template <class _Elem, unsigned char _Maxcode = 0xff>
         class codecvt_ebcdic
             : public _STD
@@ -40,11 +39,11 @@ namespace stdext {
 
             explicit codecvt_ebcdic(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-            virtual ~codecvt_ebcdic() noexcept {}
+            ~codecvt_ebcdic() noexcept override {}
 
         protected:
-            virtual result do_in(_Statype&, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,
-                _Elem* _First2, _Elem* _Last2, _Elem*& _Mid2) const override {
+            result do_in(_Statype&, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1, _Elem* _First2,
+                _Elem* _Last2, _Elem*& _Mid2) const override {
                 // convert bytes [_First1, _Last1) to [_First2, _Last)
                 _Mid1 = _First1;
                 _Mid2 = _First2;
@@ -61,8 +60,8 @@ namespace stdext {
                 return _First1 == _Mid1 ? _Mybase::partial : _Mybase::ok;
             }
 
-            virtual result do_out(_Statype&, const _Elem* _First1, const _Elem* _Last1, const _Elem*& _Mid1,
-                _Byte* _First2, _Byte* _Last2, _Byte*& _Mid2) const override {
+            result do_out(_Statype&, const _Elem* _First1, const _Elem* _Last1, const _Elem*& _Mid1, _Byte* _First2,
+                _Byte* _Last2, _Byte*& _Mid2) const override {
                 // convert [_First1, _Last1) to bytes [_First2, _Last)
                 _Mid1 = _First1;
                 _Mid2 = _First2;
@@ -79,29 +78,28 @@ namespace stdext {
                 return _First1 == _Mid1 ? _Mybase::partial : _Mybase::ok;
             }
 
-            virtual result do_unshift(_Statype&, _Byte* _First2, _Byte*, _Byte*& _Mid2) const override {
+            result do_unshift(_Statype&, _Byte* _First2, _Byte*, _Byte*& _Mid2) const override {
                 // generate bytes to return to default shift state
                 _Mid2 = _First2;
                 return _Mybase::ok;
             }
 
-            virtual int do_length(
-                _Statype&, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const noexcept override {
+            int do_length(_Statype&, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const noexcept override {
                 // return min(_Count, converted length of bytes [_First1, _Last1))
                 const auto _Wchars = static_cast<size_t>(_Last1 - _First1);
 
                 return static_cast<int>(_Count < _Wchars ? _Count : _Wchars);
             }
 
-            virtual bool do_always_noconv() const noexcept override { // return true if conversions never change input
+            bool do_always_noconv() const noexcept override { // return true if conversions never change input
                 return false;
             }
 
-            virtual int do_max_length() const noexcept override { // return maximum length required for a conversion
+            int do_max_length() const noexcept override { // return maximum length required for a conversion
                 return 1;
             }
 
-            virtual int do_encoding() const noexcept override { // return length of code sequence (from codecvt)
+            int do_encoding() const noexcept override { // return length of code sequence (from codecvt)
                 return 1;
             }
         };

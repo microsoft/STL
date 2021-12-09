@@ -276,7 +276,6 @@ basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _I
     return _Str << _Id._Id;
 }
 
-// STRUCT TEMPLATE SPECIALIZATION hash
 template <>
 struct hash<thread::id> {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef thread::id _ARGUMENT_TYPE_NAME;

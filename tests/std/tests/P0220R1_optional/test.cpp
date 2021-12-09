@@ -4596,7 +4596,14 @@ int run_test()
         typedef X T;
         static_assert(!std::is_trivially_destructible<T>::value, "");
         static_assert(!std::is_trivially_destructible<optional<T>>::value, "");
+
+#if TEST_STD_VER > 17 && !defined(__clang__) // TRANSITION, LLVM-48286
+        // P2231R1 Completing constexpr In optional And variant
+        static_assert(std::is_literal_type<optional<T>>::value, "");
+#else // ^^^ after P2231R1 / before P2231R1 vvv
         static_assert(!std::is_literal_type<optional<T>>::value, "");
+#endif // ^^^ before P2231R1 ^^^
+
         {
             X x;
             optional<X> opt{x};
@@ -4769,14 +4776,7 @@ int run_test()
     {
         optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(*opt), X&);
-        // ASSERT_NOT_NOEXCEPT(*opt);
-        // TODO: This assertion fails with GCC because it can see that
-        // (A) operator*() is constexpr, and
-        // (B) there is no path through the function that throws.
-        // It's arguable if this is the correct behavior for the noexcept
-        // operator.
-        // Regardless this function should still be noexcept(false) because
-        // it has a narrow contract.
+        STATIC_ASSERT(noexcept(*opt));
     }
     {
         optional<X> opt(X{});
@@ -4840,14 +4840,7 @@ int run_test()
     {
         const optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(*opt), X const&);
-        // ASSERT_NOT_NOEXCEPT(*opt);
-        // TODO: This assertion fails with GCC because it can see that
-        // (A) operator*() is constexpr, and
-        // (B) there is no path through the function that throws.
-        // It's arguable if this is the correct behavior for the noexcept
-        // operator.
-        // Regardless this function should still be noexcept(false) because
-        // it has a narrow contract.
+        STATIC_ASSERT(noexcept(*opt));
     }
     {
         constexpr optional<X> opt(X{});
@@ -4914,14 +4907,7 @@ int run_test()
     {
         const optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(*std::move(opt)), X const &&);
-        // ASSERT_NOT_NOEXCEPT(*std::move(opt));
-        // TODO: This assertion fails with GCC because it can see that
-        // (A) operator*() is constexpr, and
-        // (B) there is no path through the function that throws.
-        // It's arguable if this is the correct behavior for the noexcept
-        // operator.
-        // Regardless this function should still be noexcept(false) because
-        // it has a narrow contract.
+        STATIC_ASSERT(noexcept(*std::move(opt)));
     }
     {
         constexpr optional<X> opt(X{});
@@ -4995,14 +4981,7 @@ int run_test()
     {
         optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(*std::move(opt)), X&&);
-        // ASSERT_NOT_NOEXCEPT(*std::move(opt));
-        // TODO: This assertion fails with GCC because it can see that
-        // (A) operator*() is constexpr, and
-        // (B) there is no path through the function that throws.
-        // It's arguable if this is the correct behavior for the noexcept
-        // operator.
-        // Regardless this function should still be noexcept(false) because
-        // it has a narrow contract.
+        STATIC_ASSERT(noexcept(*std::move(opt)));
     }
     {
         optional<X> opt(X{});
@@ -5112,14 +5091,7 @@ int run_test()
     {
         std::optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(opt.operator->()), X*);
-        // ASSERT_NOT_NOEXCEPT(opt.operator->());
-        // TODO: This assertion fails with GCC because it can see that
-        // (A) operator->() is constexpr, and
-        // (B) there is no path through the function that throws.
-        // It's arguable if this is the correct behavior for the noexcept
-        // operator.
-        // Regardless this function should still be noexcept(false) because
-        // it has a narrow contract.
+        STATIC_ASSERT(noexcept(opt.operator->()));
     }
     {
         optional<X> opt(X{});
@@ -5188,14 +5160,7 @@ int run_test()
     {
         const std::optional<X> opt; ((void)opt);
         ASSERT_SAME_TYPE(decltype(opt.operator->()), X const*);
-        // ASSERT_NOT_NOEXCEPT(opt.operator->());
-        // TODO: This assertion fails with GCC because it can see that
-        // (A) operator->() is constexpr, and
-        // (B) there is no path through the function that throws.
-        // It's arguable if this is the correct behavior for the noexcept
-        // operator.
-        // Regardless this function should still be noexcept(false) because
-        // it has a narrow contract.
+        STATIC_ASSERT(noexcept(opt.operator->()));
     }
     {
         constexpr optional<X> opt(X{});
@@ -7414,6 +7379,7 @@ namespace msvc {
 
         void run_test() {
             Test t;
+            (void) t;
         }
     } // namespace vso614907
 } // namespace msvc

@@ -62,7 +62,6 @@ _STD_END
 
 #else // _HAS_EXCEPTIONS
 
-// CLASS exception
 _STDEXT_BEGIN
 class exception;
 _STDEXT_END
@@ -119,26 +118,24 @@ protected:
     const char* _Ptr; // the message pointer
 };
 
-// CLASS bad_exception
 class bad_exception : public exception { // base of all bad exceptions
 public:
     __CLR_OR_THIS_CALL bad_exception(const char* _Message = "bad exception") noexcept : exception(_Message) {}
 
-    virtual __CLR_OR_THIS_CALL ~bad_exception() noexcept {}
+    __CLR_OR_THIS_CALL ~bad_exception() noexcept override {}
 
 protected:
-    virtual void __CLR_OR_THIS_CALL _Doraise() const override { // raise this exception
+    void __CLR_OR_THIS_CALL _Doraise() const override { // raise this exception
         _RAISE(*this);
     }
 };
 
-// CLASS bad_alloc
 class bad_alloc : public exception { // base of all bad allocation exceptions
 public:
     __CLR_OR_THIS_CALL bad_alloc() noexcept
         : exception("bad allocation", 1) {} // construct from message string with no memory allocation
 
-    virtual __CLR_OR_THIS_CALL ~bad_alloc() noexcept {}
+    __CLR_OR_THIS_CALL ~bad_alloc() noexcept override {}
 
 private:
     friend class bad_array_new_length;
@@ -147,7 +144,7 @@ private:
         : exception(_Message, 1) {} // construct from message string with no memory allocation
 
 protected:
-    virtual void __CLR_OR_THIS_CALL _Doraise() const override { // perform class-specific exception handling
+    void __CLR_OR_THIS_CALL _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 };
@@ -160,7 +157,6 @@ public:
 _STDEXT_END
 
 _STD_BEGIN
-// DUMMY FUNCTION DECLARATIONS
 using terminate_handler = void(__cdecl*)();
 
 inline terminate_handler __CRTDECL set_terminate(terminate_handler) noexcept { // register a terminate handler
@@ -268,25 +264,27 @@ public:
         return __ExceptionPtrCompare(&_Lhs, &_Rhs);
     }
 
-    _NODISCARD friend bool operator==(nullptr_t, const exception_ptr& _Rhs) noexcept {
-        return !_Rhs;
-    }
-
     _NODISCARD friend bool operator==(const exception_ptr& _Lhs, nullptr_t) noexcept {
         return !_Lhs;
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD friend bool operator==(nullptr_t, const exception_ptr& _Rhs) noexcept {
+        return !_Rhs;
     }
 
     _NODISCARD friend bool operator!=(const exception_ptr& _Lhs, const exception_ptr& _Rhs) noexcept {
         return !(_Lhs == _Rhs);
     }
 
-    _NODISCARD friend bool operator!=(nullptr_t _Lhs, const exception_ptr& _Rhs) noexcept {
-        return !(_Lhs == _Rhs);
-    }
-
     _NODISCARD friend bool operator!=(const exception_ptr& _Lhs, nullptr_t _Rhs) noexcept {
         return !(_Lhs == _Rhs);
     }
+
+    _NODISCARD friend bool operator!=(nullptr_t _Lhs, const exception_ptr& _Rhs) noexcept {
+        return !(_Lhs == _Rhs);
+    }
+#endif // !_HAS_CXX20
 
 private:
 #ifdef __clang__
@@ -316,12 +314,10 @@ _NODISCARD exception_ptr make_exception_ptr(_Ex _Except) noexcept {
     return exception_ptr::_Copy_exception(_STD addressof(_Except), __GetExceptionInfo(_Except));
 }
 
-// FUNCTION _Throw_bad_array_new_length
 [[noreturn]] inline void _Throw_bad_array_new_length() {
     _THROW(bad_array_new_length{});
 }
 
-// CLASS nested_exception
 class nested_exception { // wrap an exception_ptr
 public:
     nested_exception() noexcept : _Exc(_STD current_exception()) {}
@@ -346,7 +342,6 @@ private:
     exception_ptr _Exc;
 };
 
-// FUNCTION TEMPLATE throw_with_nested
 template <class _Ty, class _Uty>
 struct _With_nested : _Uty, nested_exception { // glue user exception to nested_exception
     explicit _With_nested(_Ty&& _Arg)
@@ -368,7 +363,6 @@ template <class _Ty>
 }
 
 #ifdef _CPPRTTI
-// FUNCTION TEMPLATE rethrow_if_nested
 template <class _Ty>
 void _Rethrow_if_nested(const _Ty* _Ptr, true_type) { // use dynamic_cast
     const auto _Nested = dynamic_cast<const nested_exception*>(_Ptr);

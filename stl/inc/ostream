@@ -20,7 +20,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 #pragma vtordisp(push, 2) // compiler bug workaround
 
-// CLASS TEMPLATE basic_ostream
 template <class _Elem, class _Traits>
 class basic_ostream : virtual public basic_ios<_Elem, _Traits> { // control insertions into a stream buffer
 public:
@@ -60,7 +59,7 @@ public:
     __CLR_OR_THIS_CALL basic_ostream(const basic_ostream&) = delete;
     basic_ostream& __CLR_OR_THIS_CALL operator=(const basic_ostream&) = delete;
 
-    virtual __CLR_OR_THIS_CALL ~basic_ostream() noexcept {}
+    __CLR_OR_THIS_CALL ~basic_ostream() noexcept override {}
 
     using int_type = typename _Traits::int_type;
     using pos_type = typename _Traits::pos_type;
@@ -180,8 +179,8 @@ public:
     }
 #endif // _M_CEE_PURE
 
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(
-        basic_ostream&(__cdecl* _Pfn)(basic_ostream&) ) { // call basic_ostream manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(basic_ostream&(__cdecl* _Pfn)(basic_ostream&) ) {
+        // call basic_ostream manipulator
         return _Pfn(*this);
     }
 
@@ -455,7 +454,14 @@ public:
         return *this;
     }
 
-#if _HAS_CXX17 // LWG-2221 "No formatted output operator for nullptr"
+#if _HAS_CXX23
+    template <class = void> // TRANSITION, ABI
+    basic_ostream& operator<<(const volatile void* _Val) {
+        return *this << const_cast<const void*>(_Val);
+    }
+#endif // _HAS_CXX23
+
+#if _HAS_CXX17
     template <class = void> // TRANSITION, ABI
     basic_ostream& operator<<(nullptr_t) { // insert a null pointer
         return *this << "nullptr";
@@ -523,8 +529,8 @@ public:
         return *this;
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL write(const _Elem* _Str,
-        streamsize _Count) { // insert _Count characters from array _Str
+    basic_ostream& __CLR_OR_THIS_CALL write(const _Elem* _Str, streamsize _Count) {
+        // insert _Count characters from array _Str
         ios_base::iostate _State = ios_base::goodbit;
         const sentry _Ok(*this);
 
@@ -547,8 +553,14 @@ public:
         if (_Rdbuf) { // buffer exists, flush it
             const sentry _Ok(*this);
 
-            if (_Ok && _Rdbuf->pubsync() == -1) {
-                _Myios::setstate(ios_base::badbit); // sync failed
+            if (_Ok) {
+                ios_base::iostate _State = ios_base::goodbit;
+                _TRY_IO_BEGIN
+                if (_Rdbuf->pubsync() == -1) {
+                    _State |= ios_base::badbit; // sync failed
+                }
+                _CATCH_IO_END
+                _Myios::setstate(_State);
             }
         }
         return *this;
@@ -557,19 +569,31 @@ public:
     basic_ostream& __CLR_OR_THIS_CALL seekp(pos_type _Pos) { // set output stream position to _Pos
         const sentry _Ok(*this);
 
-        if (!this->fail() && static_cast<off_type>(_Myios::rdbuf()->pubseekpos(_Pos, ios_base::out)) == -1) {
-            _Myios::setstate(ios_base::failbit);
+        if (!this->fail()) {
+            ios_base::iostate _State = ios_base::goodbit;
+            _TRY_IO_BEGIN
+            if (static_cast<off_type>(_Myios::rdbuf()->pubseekpos(_Pos, ios_base::out)) == -1) {
+                _State |= ios_base::failbit; // seek failed
+            }
+            _CATCH_IO_END
+            _Myios::setstate(_State);
         }
 
         return *this;
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL seekp(
-        off_type _Off, ios_base::seekdir _Way) { // change output stream position by _Off, according to _Way
+    basic_ostream& __CLR_OR_THIS_CALL seekp(off_type _Off, ios_base::seekdir _Way) {
+        // change output stream position by _Off, according to _Way
         const sentry _Ok(*this);
 
-        if (!this->fail() && static_cast<off_type>(_Myios::rdbuf()->pubseekoff(_Off, _Way, ios_base::out)) == -1) {
-            _Myios::setstate(ios_base::failbit);
+        if (!this->fail()) {
+            ios_base::iostate _State = ios_base::goodbit;
+            _TRY_IO_BEGIN
+            if (static_cast<off_type>(_Myios::rdbuf()->pubseekoff(_Off, _Way, ios_base::out)) == -1) {
+                _State |= ios_base::failbit; // seek failed
+            }
+            _CATCH_IO_END
+            _Myios::setstate(_State);
         }
 
         return *this;
@@ -579,10 +603,12 @@ public:
         const sentry _Ok(*this);
 
         if (!this->fail()) {
+            _TRY_IO_BEGIN
             return _Myios::rdbuf()->pubseekoff(0, ios_base::cur, ios_base::out);
-        } else {
-            return pos_type(-1);
+            _CATCH_IO_END
         }
+
+        return pos_type(-1);
     }
 };
 
@@ -646,8 +672,6 @@ template class _CRTIMP2_PURE_IMPORT basic_ostream<wchar_t, char_traits<wchar_t>>
 template class _CRTIMP2_PURE_IMPORT basic_ostream<unsigned short, char_traits<unsigned short>>;
 #endif // __FORCE_INSTANCE
 #endif // defined(_DLL_CPPLIB)
-
-// INSERTERS
 
 template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const char* _Val) { // insert NTBS
@@ -730,8 +754,8 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
 }
 
 template <class _Traits>
-basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr,
-    const char* _Val) { // insert NTBS into char stream
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, const char* _Val) {
+    // insert NTBS into char stream
     using _Elem = char;
     using _Myos = basic_ostream<_Elem, _Traits>;
 
@@ -775,8 +799,8 @@ basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr,
 }
 
 template <class _Traits>
-basic_ostream<char, _Traits>& operator<<(
-    basic_ostream<char, _Traits>& _Ostr, char _Ch) { // insert a char into char stream
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, char _Ch) {
+    // insert a char into char stream
     using _Elem = char;
     using _Myos = basic_ostream<_Elem, _Traits>;
 
@@ -892,8 +916,8 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, 
 }
 
 template <class _Traits>
-basic_ostream<char, _Traits>& operator<<(
-    basic_ostream<char, _Traits>& _Ostr, const signed char* _Val) { // insert a signed char NTBS
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, const signed char* _Val) {
+    // insert a signed char NTBS
     return _Ostr << reinterpret_cast<const char*>(_Val);
 }
 
@@ -903,14 +927,14 @@ basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, si
 }
 
 template <class _Traits>
-basic_ostream<char, _Traits>& operator<<(
-    basic_ostream<char, _Traits>& _Ostr, const unsigned char* _Val) { // insert an unsigned char NTBS
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, const unsigned char* _Val) {
+    // insert an unsigned char NTBS
     return _Ostr << reinterpret_cast<const char*>(_Val);
 }
 
 template <class _Traits>
-basic_ostream<char, _Traits>& operator<<(
-    basic_ostream<char, _Traits>& _Ostr, unsigned char _Ch) { // insert an unsigned char
+basic_ostream<char, _Traits>& operator<<(basic_ostream<char, _Traits>& _Ostr, unsigned char _Ch) {
+    // insert an unsigned char
     return _Ostr << static_cast<char>(_Ch);
 }
 
@@ -972,7 +996,6 @@ _Ostr&& operator<<(_Ostr&& _Os, const _Ty& _Val) { // insert to rvalue stream
     return _STD move(_Os);
 }
 
-// MANIPULATORS
 template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& __CLRCALL_OR_CDECL endl(
     basic_ostream<_Elem, _Traits>& _Ostr) { // insert newline and flush stream
@@ -1032,10 +1055,9 @@ basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>&) = dele
 #endif // _CPPRTTI
 #endif // _HAS_CXX20
 
-// INSERTER FOR error_category
 template <class _Elem, class _Traits>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const error_code& _Errcode) { // display error code
+basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const error_code& _Errcode) {
+    // display error code
     return _Ostr << _Errcode.category().name() << ':' << _Errcode.value();
 }
 _STD_END

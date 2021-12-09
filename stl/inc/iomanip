@@ -21,7 +21,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// STRUCT TEMPLATE _Fillobj
 template <class _Elem>
 struct _Fillobj { // store fill character
     _Fillobj(_Elem _Ch) : _Fill(_Ch) {}
@@ -29,7 +28,6 @@ struct _Fillobj { // store fill character
     _Elem _Fill; // the fill character
 };
 
-// FUNCTION TEMPLATE setfill
 template <class _Elem>
 _NODISCARD _Fillobj<_Elem> setfill(_Elem _Ch) {
     return _Fillobj<_Elem>(_Ch);
@@ -53,18 +51,14 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Ostr;
 }
 
-// STRUCT TEMPLATE _Monobj
 template <class _Money>
 struct _Monobj { // store reference to monetary amount
     _Monobj(_Money& _Val_arg, bool _Intl_arg) : _Val(_Val_arg), _Intl(_Intl_arg) {}
 
     _Money& _Val; // the monetary amount reference
     bool _Intl; // international flag
-
-    _Monobj& operator=(const _Monobj&) = delete;
 };
 
-// FUNCTION TEMPLATE get_money
 template <class _Money>
 _NODISCARD _Monobj<_Money> get_money(_Money& _Val_arg, bool _Intl_arg = false) {
     return _Monobj<_Money>(_Val_arg, _Intl_arg);
@@ -91,7 +85,6 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
     return _Istr;
 }
 
-// FUNCTION TEMPLATE put_money
 template <class _Money>
 _NODISCARD _Monobj<const _Money> put_money(const _Money& _Val_arg, bool _Intl_arg = false) {
     return _Monobj<const _Money>(_Val_arg, _Intl_arg);
@@ -120,7 +113,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Ostr;
 }
 
-// STRUCT TEMPLATE _Timeobj
 template <class _Elem, class _Ptr>
 struct _Timeobj { // store reference to tm object and format
     _Timeobj(_Ptr _Tptr_arg, const _Elem* _Fmt_arg) : _Tptr(_Tptr_arg), _Fmtfirst(_Fmt_arg) {
@@ -133,7 +125,6 @@ struct _Timeobj { // store reference to tm object and format
     const _Elem* _Fmtlast; // format string end
 };
 
-// FUNCTION TEMPLATE get_time
 template <class _Elem>
 _NODISCARD _Timeobj<_Elem, tm*> get_time(tm* _Tptr_arg, const _Elem* _Fmt_arg) {
     return _Timeobj<_Elem, tm*>(_Tptr_arg, _Fmt_arg);
@@ -163,7 +154,6 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
     return _Istr;
 }
 
-// FUNCTION TEMPLATE put_time
 template <class _Elem>
 _NODISCARD _Timeobj<_Elem, const tm*> put_time(const tm* _Tptr_arg, const _Elem* _Fmt_arg) {
     return _Timeobj<_Elem, const tm*>(_Tptr_arg, _Fmt_arg);
@@ -193,7 +183,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Ostr;
 }
 
-// STRUCT TEMPLATE _Quote_in
 template <class _Elem, class _Traits, class _Alloc>
 struct _Quote_in { // store reference to string
     using _Mystr = basic_string<_Elem, _Traits, _Alloc>;
@@ -204,15 +193,14 @@ struct _Quote_in { // store reference to string
     _Mystr& _Str; // reference to string
     _Elem _Delim; // delimiter element
     _Elem _Escape; // escape element
-
-    _Quote_in& operator=(const _Quote_in&) = delete;
 };
 
-// STRUCT TEMPLATE _Quote_out
 template <class _Elem, class _Traits, class _Sizet>
 struct _Quote_out { // store pointer/length for string
     _Quote_out(const _Elem* _Ptr_obj, _Sizet _Size_obj, _Elem _Delim_obj, _Elem _Escape_obj)
         : _Ptr(_Ptr_obj), _Size(_Size_obj), _Delim(_Delim_obj), _Escape(_Escape_obj) {}
+
+    _Quote_out(const _Quote_out&) = default;
 
     const _Elem* _Ptr; // pointer to string
     _Sizet _Size; // length of string
@@ -222,7 +210,6 @@ struct _Quote_out { // store pointer/length for string
     _Quote_out& operator=(const _Quote_out&) = delete;
 };
 
-// FUNCTION TEMPLATE quoted
 template <class _Elem>
 _NODISCARD _Quote_out<_Elem, void, size_t> quoted(
     const _Elem* _Ptr, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
@@ -256,7 +243,6 @@ _NODISCARD _Quote_in<_Elem, _Traits, _Alloc> quoted(
     return _Quote_in<_Elem, _Traits, _Alloc>(_Str, _Delim, _Escape);
 }
 
-// quoted INSERTER
 template <class _Elem, class _Traits, class _QuTraits, class _Sizet>
 basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     const _Quote_out<_Elem, _QuTraits, _Sizet>& _Manip) { // put quoted string to output stream
@@ -352,7 +338,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Ostr << _STD quoted(_Ref, _Manip._Delim, _Manip._Escape);
 }
 
-// quoted EXTRACTOR
 template <class _Elem, class _Traits, class _Alloc>
 basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
     const _Quote_in<_Elem, _Traits, _Alloc>& _Manip) { // get quoted string from input stream
@@ -400,7 +385,6 @@ basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
     return _Istr;
 }
 
-// STRUCT TEMPLATE _Smanip
 template <class _Arg>
 struct _Smanip { // store function pointer and argument value
     _Smanip(void(__cdecl* _Left)(ios_base&, _Arg), _Arg _Val) : _Pfun(_Left), _Manarg(_Val) {}
@@ -423,7 +407,6 @@ basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
     return _Ostr;
 }
 
-// INSTANTIATIONS
 _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl resetiosflags(ios_base::fmtflags);
 _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl setiosflags(ios_base::fmtflags);
 _NODISCARD _MRTIMP2 _Smanip<int> __cdecl setbase(int);

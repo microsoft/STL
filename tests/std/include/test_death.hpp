@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include <test_windows.hpp>
+#include <Windows.h>
 
 namespace std_testing {
     constexpr int internal_failure = 103;

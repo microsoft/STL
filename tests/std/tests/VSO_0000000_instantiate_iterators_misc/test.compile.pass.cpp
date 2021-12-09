@@ -23,7 +23,7 @@
 #define _USE_NAMED_IDL_NAMESPACE 1
 
 #include <algorithm>
-//#include <any> // All templates instantiated in P0220R1_any
+// #include <any> // All templates instantiated in P0220R1_any
 #include <array>
 #include <cassert>
 #include <ccomplex>
@@ -73,7 +73,7 @@
 #include <memory>
 #include <new>
 #include <numeric>
-//#include <optional> // All templates instantiated in P0220R1_optional
+// #include <optional> // All templates instantiated in P0220R1_optional
 #include <ostream>
 #include <random>
 #include <ratio>
@@ -89,7 +89,7 @@
 #include <typeindex>
 #include <typeinfo>
 #include <utility>
-//#include <variant> // All templates instantiated in P0088R3_variant
+// #include <variant> // All templates instantiated in P0088R3_variant
 #include <vector>
 
 // Headers not allowed with /clr:pure

@@ -44,7 +44,6 @@ enum class __std_win_error : unsigned long {
     _Max                       = ~0UL // sentinel not used by Win32
 };
 
-// FUNCTION __std_is_file_not_found
 #pragma warning(push)
 #pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
 _NODISCARD inline bool __std_is_file_not_found(const __std_win_error _Error) noexcept {
@@ -361,7 +360,6 @@ struct _Fs_file {
     }
 };
 
-// FUNCTION OBJECT _Is_slash
 struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
     _NODISCARD constexpr bool operator()(
         const wchar_t _Ch) const { // test if _Ch is a preferred-separator or fallback-separator

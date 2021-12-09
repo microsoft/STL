@@ -16,11 +16,14 @@ static const float invln2 = 1.4426950408889634073599246810018921F;
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(
     float* px, float y, short eoff) { // compute y * e^(*px), (*px) finite, |y| not huge
-    if (*px < -hugexp || y == 0.0F) { // certain underflow
-        *px = 0.0F;
+    if (y == 0.0F) { // zero
+        *px = y;
+        return 0;
+    } else if (*px < -hugexp) { // certain underflow
+        *px = _Xfe_underflow(y);
         return 0;
     } else if (hugexp < *px) { // certain overflow
-        *px = _FInf._Float;
+        *px = _Xfe_overflow(y);
         return _INFCODE;
     } else { // xexp won't overflow
         float g    = *px * invln2;
@@ -38,7 +41,21 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FExp(
             *px = (w + g) / (w - g) * 2.0F * y;
             --xexp;
         }
-        return _FDscale(px, static_cast<long>(xexp) + eoff);
+
+        const short result_code = _FDscale(px, static_cast<long>(xexp) + eoff);
+
+        switch (result_code) {
+        case 0:
+            *px = _Xfe_underflow(y);
+            break;
+        case _INFCODE:
+            *px = _Xfe_overflow(y);
+            break;
+        default:
+            break;
+        }
+
+        return result_code;
     }
 }
 

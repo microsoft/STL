@@ -233,6 +233,7 @@ void t_hash() { // test hash functions
     typedef STD shared_ptr<int> sptr_t;
     sptr_t sp0;
     CSTD size_t hash_val = STD hash<sptr_t>()(sp0);
+    (void) hash_val;
 
     typedef STD unique_ptr<int> uptr_t;
     uptr_t up0;

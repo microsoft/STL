@@ -29,28 +29,26 @@ constexpr int _Small_object_num_ptrs = 6 + 16 / sizeof(void*);
 
 #if !_HAS_EXCEPTIONS
 
-// CLASS bad_cast
 class _CRTIMP2_IMPORT bad_cast : public exception { // base of all bad cast exceptions
 public:
     bad_cast(const char* _Message = "bad cast") noexcept : exception(_Message) {}
 
-    virtual ~bad_cast() noexcept {}
+    ~bad_cast() noexcept override {}
 
 protected:
-    virtual void _Doraise() const override { // perform class-specific exception handling
+    void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 };
 
-// CLASS bad_typeid
 class _CRTIMP2_IMPORT bad_typeid : public exception { // base of all bad typeid exceptions
 public:
     bad_typeid(const char* _Message = "bad typeid") noexcept : exception(_Message) {}
 
-    virtual ~bad_typeid() noexcept {}
+    ~bad_typeid() noexcept override {}
 
 protected:
-    virtual void _Doraise() const override { // perform class-specific exception handling
+    void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
 };

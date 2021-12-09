@@ -57,7 +57,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4892][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4901][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -140,35 +140,30 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-The STL uses boost-math headers to provide P0226R1 Mathematical Special Functions. We recommend using [vcpkg][] to
-acquire this dependency.
-
-1. Install Visual Studio 2022 17.0 Preview 2 or later.
+1. Install Visual Studio 2022 17.1 Preview 1 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.20 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.21 or later, and [Ninja][] 1.10.2 or later.
+    * We recommend selecting "Python 3 64-bit" in the VS Installer.
+    * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
-4. In the terminal, invoke `git submodule update --init --progress llvm-project vcpkg`
-5. In the terminal, invoke `.\vcpkg\bootstrap-vcpkg.bat`
-6. In the terminal, invoke `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
-7. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
+4. In the terminal, invoke `git submodule update --init --progress llvm-project boost-math`
+5. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json`.
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.0 Preview 2 or later.
+1. Install Visual Studio 2022 17.1 Preview 1 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.20 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.21 or later, and [Ninja][] 1.10.2 or later.
+    * We recommend selecting "Python 3 64-bit" in the VS Installer.
+    * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.
 3. Change directories to a location where you'd like a clone of this STL repository.
-4. `git clone https://github.com/microsoft/STL`
-5. `cd STL`
-6. `git submodule update --init --progress llvm-project vcpkg`
-7. `.\vcpkg\bootstrap-vcpkg.bat`
-8. `.\vcpkg\vcpkg.exe install boost-math:x86-windows boost-math:x64-windows`
+4. `git clone https://github.com/microsoft/STL --recurse-submodules`
 
 To build the x86 target:
 
@@ -234,7 +229,7 @@ C:\Users\username\Desktop>dumpbin /IMPORTS .\example.exe | findstr msvcp
 # How To Run The Tests With A Native Tools Command Prompt
 
 1. Follow either [How To Build With A Native Tools Command Prompt][] or [How To Build With The Visual Studio IDE][].
-2. Acquire [Python][] 3.9.6 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
+2. Acquire [Python][] 3.9 or newer and have it on the `PATH` (or run it directly using its absolute or relative path).
 3. Have LLVM's `bin` directory on the `PATH` (so `clang-cl.exe` is available).
     * We recommend selecting "C++ Clang tools for Windows" in the VS Installer. This will automatically add LLVM to the
     `PATH` of the x86 and x64 Native Tools Command Prompts, and will ensure that you're using a supported version.
@@ -456,7 +451,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4892]: https://wg21.link/n4892
+[N4901]: https://wg21.link/n4901
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
@@ -473,5 +468,4 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [lit result codes]: https://llvm.org/docs/CommandGuide/lit.html#test-status-results
 [opencode@microsoft.com]: mailto:opencode@microsoft.com
 [redistributables]: https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads
-[vcpkg]: https://github.com/microsoft/vcpkg
 [natvis documentation]: https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects

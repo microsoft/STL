@@ -29,7 +29,6 @@ namespace stdext {
     using _STD _Is_nothrow_swappable;
     using _STD _Swap_adl;
 
-    // CLASS TEMPLATE _Hset_traits
     template <class _Kty, // key type (same as value type)
         class _Tr, // comparator predicate type
         class _Alloc, // actual allocator type (should be value allocator)
@@ -87,7 +86,6 @@ namespace stdext {
         float _Max_buckets = 0.0F; // current maximum bucket size
     };
 
-    // CLASS TEMPLATE hash_set
     template <class _Kty, class _Tr = hash_compare<_Kty, less<_Kty>>, class _Alloc = allocator<_Kty>>
     class hash_set : public _Hash<_Hset_traits<_Kty, _Tr, _Alloc, false>> { // hash table of key values, unique keys
     public:
@@ -233,7 +231,6 @@ namespace stdext {
         return !(_Left == _Right);
     }
 
-    // CLASS TEMPLATE hash_multiset
     template <class _Kty, class _Tr = hash_compare<_Kty, less<_Kty>>, class _Alloc = allocator<_Kty>>
     class hash_multiset
         : public _Hash<_Hset_traits<_Kty, _Tr, _Alloc, true>> { // hash table of key values, non-unique keys

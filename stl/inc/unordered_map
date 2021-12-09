@@ -22,7 +22,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE _Umap_traits
 template <class _Kty, // key type
     class _Ty, // mapped type
     class _Tr, // comparator predicate type
@@ -63,7 +62,6 @@ public:
     }
 };
 
-// CLASS TEMPLATE unordered_map
 template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
     class _Alloc = allocator<pair<const _Kty, _Ty>>>
 class unordered_map : public _Hash<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, false>> {
@@ -476,7 +474,6 @@ _NODISCARD bool operator!=(const unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Allo
 }
 #endif // !_HAS_CXX20
 
-// CLASS TEMPLATE unordered_multimap
 template <class _Kty, class _Ty, class _Hasher = hash<_Kty>, class _Keyeq = equal_to<_Kty>,
     class _Alloc = allocator<pair<const _Kty, _Ty>>>
 class unordered_multimap : public _Hash<_Umap_traits<_Kty, _Ty, _Uhash_compare<_Kty, _Hasher, _Keyeq>, _Alloc, true>> {
