@@ -227,7 +227,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
     if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
-        const __m256i _Shuf = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+        const __m256i _Shuf = _mm256_set_epi32(0, 1, 2, 3, 4, 5, 6, 7);
         do {
             _Advance_bytes(_Last, -32);
             const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
@@ -383,7 +383,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
-        const __m256i _Shuf = _mm256_setr_epi32(0, 1, 2, 3, 4, 5, 6, 7);
+        const __m256i _Shuf = _mm256_set_epi32(0, 1, 2, 3, 4, 5, 6, 7);
         do {
             _Advance_bytes(_Last, -32);
             const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
