@@ -29,9 +29,13 @@ template <typename T>
 struct Mallocator {
     typedef T value_type;
 
-    Mallocator() {}
+    Mallocator()                  = default;
+    Mallocator(const Mallocator&) = default;
+
     template <typename U>
     Mallocator(const Mallocator<U>&) {}
+
+    Mallocator& operator=(const Mallocator&) = delete;
 
     bool operator==(const Mallocator&) const {
         return true;
@@ -63,8 +67,6 @@ struct Mallocator {
 
         free(p);
     }
-
-    Mallocator& operator=(const Mallocator&) = delete;
 };
 
 template <typename C>
