@@ -1317,7 +1317,7 @@ struct _Identity {
     using type = _Ty;
 };
 template <class _Ty>
-using _Identity_t = typename _Identity<_Ty>::type;
+using _Identity_t _MSVC_KNOWN_SEMANTICS = typename _Identity<_Ty>::type;
 
 #if _HAS_CXX20
 template <class _Ty>
