@@ -17,7 +17,7 @@ using namespace std;
 #ifndef __SANITIZE_ADDRESS__
 #if defined(__clang__) && defined(__has_feature)
 #if __has_feature(address_sanitizer)
-#define __SANITIZE_ADDRESS_
+#define __SANITIZE_ADDRESS__
 #endif
 #endif
 #endif
