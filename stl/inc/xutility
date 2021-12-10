@@ -5097,7 +5097,7 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
         if constexpr (is_same_v<_Elem, bool>) {
             return _Val == true || _Val == false;
         } else if constexpr (is_signed_v<_Elem>) {
-            if (is_signed_v<_Ty>) {
+            if constexpr (is_signed_v<_Ty>) {
                 // signed _Elem, signed _Ty
                 return SCHAR_MIN <= _Val && _Val <= SCHAR_MAX;
             } else {
