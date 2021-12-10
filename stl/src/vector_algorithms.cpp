@@ -20,6 +20,7 @@
 #include <intrin0.h>
 #endif // defined(_M_ARM64EC)
 #include <isa_availability.h>
+#include <stdlib.h>
 
 extern "C" long __isa_enabled;
 
@@ -177,6 +178,19 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
         } while (_First != _Stop_at);
     }
 
+    if (_Byte_length(_First, _Last) >= 8) {
+        const void* _Stop_at = _First;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 3 << 2);
+        do {
+            _Advance_bytes(_Last, -4);
+            unsigned long _Left                  = _byteswap_ulong(*static_cast<unsigned long*>(_First));
+            unsigned long _Right                 = _byteswap_ulong(*static_cast<unsigned long*>(_Last));
+            *static_cast<unsigned long*>(_First) = _Right;
+            *static_cast<unsigned long*>(_Last)  = _Left;
+            _Advance_bytes(_First, 4);
+        } while (_First != _Stop_at);
+    }
+
     _Reverse_tail(static_cast<unsigned char*>(_First), static_cast<unsigned char*>(_Last));
 }
 
@@ -216,6 +230,19 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
             _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 16);
+        } while (_First != _Stop_at);
+    }
+
+    if (_Byte_length(_First, _Last) >= 8) {
+        const void* _Stop_at = _First;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 3 << 2);
+        do {
+            _Advance_bytes(_Last, -4);
+            unsigned long _Left                  = _rotl(*static_cast<unsigned long*>(_First), 16);
+            unsigned long _Right                 = _rotl(*static_cast<unsigned long*>(_Last), 16);
+            *static_cast<unsigned long*>(_First) = _Right;
+            *static_cast<unsigned long*>(_Last)  = _Left;
+            _Advance_bytes(_First, 4);
         } while (_First != _Stop_at);
     }
 
@@ -337,6 +364,18 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
         } while (_Dest != _Stop_at);
     }
 
+    if (_Byte_length(_First, _Last) >= 4) {
+        const void* _Stop_at = _Dest;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 2 << 2);
+        do {
+            _Advance_bytes(_Last, -4);
+            unsigned long _Block                = *static_cast<const unsigned long*>(_Last);
+            unsigned long _Block_reversed       = _byteswap_ulong(_Block);
+            *static_cast<unsigned long*>(_Dest) = _Block_reversed;
+            _Advance_bytes(_Dest, 4);
+        } while (_Dest != _Stop_at);
+    }
+
     _Reverse_copy_tail(static_cast<const unsigned char*>(_First), static_cast<const unsigned char*>(_Last),
         static_cast<unsigned char*>(_Dest));
 }
@@ -371,6 +410,18 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
             const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_short_sse); // SSSE3
             _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 16);
+        } while (_Dest != _Stop_at);
+    }
+
+    if (_Byte_length(_First, _Last) >= 4) {
+        const void* _Stop_at = _Dest;
+        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 2 << 2);
+        do {
+            _Advance_bytes(_Last, -4);
+            unsigned long _Block                = *static_cast<const unsigned long*>(_Last);
+            unsigned long _Block_reversed       = _rotl(_Block, 16);
+            *static_cast<unsigned long*>(_Dest) = _Block_reversed;
+            _Advance_bytes(_Dest, 4);
         } while (_Dest != _Stop_at);
     }
 
