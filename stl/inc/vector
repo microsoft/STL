@@ -458,6 +458,16 @@ extern const bool _Asan_vector_should_annotate;
 #endif // _ACTIVATE_VECTOR_ANNOTATION
 
 #ifdef _INSERT_VECTOR_ANNOTATION
+extern "C" {
+void __cdecl __sanitizer_annotate_contiguous_container(
+    const void* _First, const void* _End, const void* _Old_last, const void* _New_last) noexcept;
+extern const bool _Asan_vector_should_annotate;
+}
+
+#pragma comment(linker, \
+    "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
+
 template <class _Vec, class = void>
 _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment = alignof(typename _Vec::value_type) >= _Asan_granularity;
 
