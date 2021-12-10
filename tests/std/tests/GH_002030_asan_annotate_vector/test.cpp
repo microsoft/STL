@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// REQUIRES: asan, x64 || x86
+// REQUIRES: x64 || x86
 
 #include <cassert>
 #include <cstddef>
@@ -14,10 +14,20 @@
 
 using namespace std;
 
+#ifndef __SANITIZE_ADDRESS__
+#if defined(__clang__) && defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define __SANITIZE_ADDRESS_
+#endif
+#endif
+#endif
+
+#ifdef __SANITIZE_ADDRESS__
 extern "C" {
 void* __sanitizer_contiguous_container_find_bad_address(const void* beg, const void* mid, const void* end) noexcept;
 void __asan_describe_address(void*) noexcept;
 }
+#endif // ASan instrumentation enabled
 
 struct non_trivial_can_throw {
     non_trivial_can_throw() {}
@@ -115,6 +125,7 @@ public:
 
 template <class T, class Alloc>
 bool verify_vector(vector<T, Alloc>& vec) {
+#ifdef __SANITIZE_ADDRESS__
     size_t buffer_bytes = vec.capacity() * sizeof(T);
     void* buffer        = vec.data();
     void* aligned_start = align(8, 1, buffer, buffer_bytes);
@@ -145,6 +156,10 @@ bool verify_vector(vector<T, Alloc>& vec) {
     __asan_describe_address(bad_address);
 
     return false;
+#else // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
+    (void) vec;
+    return true;
+#endif // Asan instrumentation disabled
 }
 
 // Note: This class does not satisfy all the allocator requirements but is sufficient for this test.
@@ -880,7 +895,9 @@ void run_allocator_matrix() {
 }
 
 int main() {
+    // Do some work even when we aren't instrumented
     run_allocator_matrix<char>();
+#ifdef __SANITIZE_ADDRESS__
     run_allocator_matrix<int>();
     run_allocator_matrix<double>();
     run_allocator_matrix<non_trivial_can_throw>();
@@ -896,4 +913,5 @@ int main() {
     test_resize_throw();
     test_insert_n_throw();
 #endif // !__clang__
+#endif // ASan instrumentation enabled
 }

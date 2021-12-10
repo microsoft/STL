@@ -436,6 +436,7 @@ constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain
 #if __has_feature(address_sanitizer)
 #define _ACTIVATE_VECTOR_ANNOTATION
 #define _INSERT_VECTOR_ANNOTATION
+#pragma comment(linker, "/INFERASANLIBS")
 #endif // __has_feature(address_sanitizer)
 #elif defined(_ANNOTATE_VECTOR) // ^^^ __clang__ ^^^ // vvv _ANNOTATE_VECTOR vvv
 #define _INSERT_VECTOR_ANNOTATION
@@ -3429,6 +3430,8 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
 #undef _ASAN_VECTOR_CREATE_GUARD
 #undef _ASAN_VECTOR_EXTEND_GUARD
 #undef _ASAN_VECTOR_RELEASE_GUARD
+#undef _ACTIVATE_VECTOR_ANNOTATION
+#undef _INSERT_VECTOR_ANNOTATION
 _STD_END
 
 #pragma pop_macro("new")
