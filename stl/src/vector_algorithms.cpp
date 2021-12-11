@@ -20,7 +20,6 @@
 #include <intrin0.h>
 #endif // defined(_M_ARM64EC)
 #include <isa_availability.h>
-#include <stdlib.h>
 
 extern "C" long __isa_enabled;
 
