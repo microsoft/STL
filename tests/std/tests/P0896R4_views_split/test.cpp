@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cassert>
 #include <charconv>
+#include <concepts>
 #include <ranges>
 #include <span>
 #include <string_view>
@@ -326,6 +327,23 @@ constexpr bool test_devcom_1559808() {
     assert(i == r.end());
 
     return true;
+}
+
+struct CopyConstructibleRange {
+    CopyConstructibleRange(const CopyConstructibleRange&) = default;
+    CopyConstructibleRange& operator=(const CopyConstructibleRange&) = delete;
+    int* begin() const;
+    int* end() const;
+};
+
+// COMPILE-ONLY
+void testLWG3590(const CopyConstructibleRange& r) {
+    auto split_view = views::split(r, 0);
+
+    STATIC_ASSERT(copy_constructible<CopyConstructibleRange>);
+    STATIC_ASSERT(!copyable<CopyConstructibleRange>);
+
+    [[maybe_unused]] auto base = split_view.base();
 }
 
 int main() {
