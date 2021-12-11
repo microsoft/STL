@@ -334,10 +334,10 @@ struct CopyConstructibleRange {
     CopyConstructibleRange(const CopyConstructibleRange&) = default;
     CopyConstructibleRange& operator=(const CopyConstructibleRange&) = delete;
     constexpr const int* begin() const {
-        return inner.empty() ? nullptr : &inner[0];
+        return inner.data();
     }
     constexpr const int* end() const {
-        return inner.empty() ? nullptr : (&inner[0] + inner.size());
+        return inner.data() + inner.size();
     }
 
     vector<int> inner;
@@ -345,12 +345,12 @@ struct CopyConstructibleRange {
 
 constexpr bool test_LWG_3590() {
     CopyConstructibleRange r{{1, 2, 3, 4}};
-    auto split_view = views::split(r, 0);
+    const auto split_view = views::split(r, 0);
 
     STATIC_ASSERT(copy_constructible<CopyConstructibleRange>);
     STATIC_ASSERT(!copyable<CopyConstructibleRange>);
 
-    auto ref_view = split_view.base();
+    const auto ref_view = split_view.base();
 
     return ref_view.base().inner == r.inner;
 }
