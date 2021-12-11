@@ -330,20 +330,29 @@ constexpr bool test_devcom_1559808() {
 }
 
 struct CopyConstructibleRange {
+    constexpr CopyConstructibleRange(vector<int> v) : inner(move(v)) {}
     CopyConstructibleRange(const CopyConstructibleRange&) = default;
     CopyConstructibleRange& operator=(const CopyConstructibleRange&) = delete;
-    int* begin() const;
-    int* end() const;
+    constexpr const int* begin() const {
+        return inner.empty() ? nullptr : &inner[0];
+    }
+    constexpr const int* end() const {
+        return inner.empty() ? nullptr : (&inner[0] + inner.size());
+    }
+
+    vector<int> inner;
 };
 
-// COMPILE-ONLY
-void testLWG3590(const CopyConstructibleRange& r) {
+constexpr bool test_LWG_3590() {
+    CopyConstructibleRange r{{1, 2, 3, 4}};
     auto split_view = views::split(r, 0);
 
     STATIC_ASSERT(copy_constructible<CopyConstructibleRange>);
     STATIC_ASSERT(!copyable<CopyConstructibleRange>);
 
-    [[maybe_unused]] auto base = split_view.base();
+    auto ref_view = split_view.base();
+
+    return ref_view.base().inner == r.inner;
 }
 
 int main() {
@@ -354,4 +363,7 @@ int main() {
     STATIC_ASSERT(test_devcom_1559808());
 #endif // TRANSITION, DevCom-1516290
     test_devcom_1559808();
+
+    STATIC_ASSERT(test_LWG_3590());
+    assert(test_LWG_3590());
 }
