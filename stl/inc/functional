@@ -1208,6 +1208,10 @@ _NODISCARD bool operator!=(nullptr_t, const function<_Fty>& _Other) noexcept {
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX23
+// _Move_only_function_data is defined as array of pointers.
+// The first element is always pointer to _Move_only_function_base::_Impl_t, it emulates vtable pointer.
+// The other pointers are used as storage for small functor;
+// if the functor does not fit in, the second pointer is the pointer to allocated sotrage, the rest are unused.
 union alignas(max_align_t) _Move_only_function_data {
     void* _Pointers[_Small_object_num_ptrs];
     const void* _Impl;
@@ -1246,6 +1250,10 @@ union alignas(max_align_t) _Move_only_function_data {
 // Size of a large function. Treat an empty function as if it has this size.
 // Treat a small function as if it has this size too if it fits and is trivially copyable.
 inline constexpr size_t _Minimum_function_size = 2 * sizeof(void*);
+
+// The below functions are __stdcall as they are called by pointers from _Move_only_function_base::_Impl_t.
+// (we use explicit __stdcall to make the ABI stable for translation units with different calling convention options)
+// Still non-template functions are defined inline, as the compiler may be able to devirtualize some calls.
 
 template <class _Rx, class... _Types>
 [[noreturn]] _Rx __stdcall _Function_not_callable(const _Move_only_function_data&, _Types&&...) noexcept {
@@ -1526,7 +1534,7 @@ class _Move_only_function_call {
 };
 
 // A script to generate the specializations is at
-// /tools/\move_only_function_specializations/move_only_function_specializations.py
+// /tools/move_only_function_specializations/move_only_function_specializations.py
 // (Avoiding C++ preprocessor for better IDE navigation and debugging experience)
 
 template <class _Rx, class... _Types>
