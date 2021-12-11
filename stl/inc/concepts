@@ -42,7 +42,7 @@ concept derived_from = __is_base_of(_Base, _Derived)
 template <class _From, class _To>
 concept convertible_to = __is_convertible_to(_From, _To)
     && requires {
-        static_cast<_To>(declval<From>());
+        static_cast<_To>(declval<_From>());
     };
 
 template <class _From, class _To>
