@@ -1,5 +1,5 @@
 template = """template <class _Rx, class... _Types>
-class _Move_only_function_call<_Rx(_Types...) {cv} {ref} {noex}> 
+class _Move_only_function_call<_Rx(_Types...) {cv} {ref} {noex}>
     : public _Move_only_function_base<_Rx, {noex_val}, _Types...> {{
 public:
     using result_type = _Rx;
