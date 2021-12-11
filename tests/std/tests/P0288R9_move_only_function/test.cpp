@@ -104,7 +104,7 @@ struct large_implicit_ptr_callable : counter {
     using pfn = int (*)(int a, pass_this_by_ref& b);
 
     operator pfn() {
-        return +[](int a, pass_this_by_ref& b) {
+        return [](int a, pass_this_by_ref& b) {
             assert(a == 23);
             assert(b.v == 63);
             return 41;
