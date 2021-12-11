@@ -39,7 +39,6 @@ private:
     const bool previous;
 };
 
-
 template <typename T>
 struct test_allocator {
     using value_type = T;

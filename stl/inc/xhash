@@ -1071,28 +1071,6 @@ private:
         return _Last;
     }
 
-public:
-    template <class _Iter = iterator, enable_if_t<!is_same_v<_Iter, const_iterator>, int> = 0>
-    iterator erase(iterator _Plist) noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
-        return _List._Make_iter(_Unchecked_erase(_Plist._Ptr));
-    }
-
-    iterator erase(const_iterator _Plist) noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
-        return _List._Make_iter(_Unchecked_erase(_Plist._Ptr));
-    }
-
-    iterator erase(const_iterator _First, const_iterator _Last) noexcept(
-        _Nothrow_hash<_Traits, key_type>) /* strengthened */ {
-        return _List._Make_iter(_Unchecked_erase(_First._Ptr, _Last._Ptr));
-    }
-
-    size_type erase(const key_type& _Keyval) noexcept(
-        _Nothrow_hash<_Traits, key_type> //
-        && (!_Multi || _Nothrow_compare<_Traits, key_type, key_type>) ) /* strengthened */ {
-        return _Erase(_Keyval);
-    }
-
-private:
     template <class _Kx>
     static constexpr bool _Noexcept_heterogeneous_erasure() {
         return _Nothrow_hash<_Traits, _Kx> //
@@ -1119,10 +1097,28 @@ private:
     }
 
 public:
+    template <class _Iter = iterator, enable_if_t<!is_same_v<_Iter, const_iterator>, int> = 0>
+    iterator erase(iterator _Plist) noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
+        return _List._Make_iter(_Unchecked_erase(_Plist._Ptr));
+    }
+
+    iterator erase(const_iterator _Plist) noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
+        return _List._Make_iter(_Unchecked_erase(_Plist._Ptr));
+    }
+
+    iterator erase(const_iterator _First, const_iterator _Last) noexcept(
+        _Nothrow_hash<_Traits, key_type>) /* strengthened */ {
+        return _List._Make_iter(_Unchecked_erase(_First._Ptr, _Last._Ptr));
+    }
+
+    size_type erase(const key_type& _Keyval) noexcept(noexcept(_Erase(_Keyval))) /* strengthened */ {
+        return _Erase(_Keyval);
+    }
+
 #if _HAS_CXX23
     template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
         enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
-    size_type erase(_Kx&& _Keyval) noexcept(_Noexcept_heterogeneous_erasure<_Kx>()) /* strengthened */ {
+    size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Erase(_Keyval))) /* strengthened */ {
         return _Erase(_Keyval);
     }
 #endif // _HAS_CXX23

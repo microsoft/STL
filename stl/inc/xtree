@@ -1296,6 +1296,14 @@ private:
         return _Last._Ptr;
     }
 
+    size_type _Erase(const pair<_Nodeptr, _Nodeptr> _Where) noexcept {
+        const _Unchecked_const_iterator _First(_Where.first, nullptr);
+        const _Unchecked_const_iterator _Last(_Where.second, nullptr);
+        const auto _Num = static_cast<size_type>(_STD distance(_First, _Last));
+        _Erase_unchecked(_First, _Last);
+        return _Num;
+    }
+
 public:
     template <class _Iter = iterator, enable_if_t<!is_same_v<_Iter, const_iterator>, int> = 0>
     iterator erase(iterator _Where) noexcept /* strengthened */ {
@@ -1322,15 +1330,6 @@ public:
 
     size_type erase(const key_type& _Keyval) noexcept(noexcept(_Eqrange(_Keyval))) /* strengthened */ {
         return _Erase(_Eqrange(_Keyval));
-    }
-
-private:
-    size_type _Erase(const pair<_Nodeptr, _Nodeptr> _Where) noexcept {
-        const _Unchecked_const_iterator _First(_Where.first, nullptr);
-        const _Unchecked_const_iterator _Last(_Where.second, nullptr);
-        const auto _Num = static_cast<size_type>(_STD distance(_First, _Last));
-        _Erase_unchecked(_First, _Last);
-        return _Num;
     }
 
 public:
