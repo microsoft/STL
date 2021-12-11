@@ -399,7 +399,10 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     if (_Byte_length(_First, _Last) >= 16 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
         const void* _Stop_at            = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
+        const size_t _Size              = _Byte_length(_First, _Last);
+        void* _Final_dest               = _Dest;
+        _Advance_bytes(_Final_dest, _Size - 16);
+        _Advance_bytes(_Stop_at, _Size >> 4 << 4);
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
@@ -407,6 +410,12 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
             _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
+
+        const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+        const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_char_sse);
+        _mm_storeu_si128(static_cast<__m128i*>(_Final_dest), _Block_reversed);
+
+        return;
     }
 
     _Reverse_copy_tail(static_cast<const unsigned char*>(_First), static_cast<const unsigned char*>(_Last),
@@ -436,7 +445,10 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
     if (_Byte_length(_First, _Last) >= 16 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
         const void* _Stop_at             = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
+        const size_t _Size               = _Byte_length(_First, _Last);
+        void* _Final_dest                = _Dest;
+        _Advance_bytes(_Final_dest, _Size - 16);
+        _Advance_bytes(_Stop_at, _Size >> 4 << 4);
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_Last));
@@ -444,6 +456,12 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
             _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
+
+        const __m128i _Block          = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+        const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_short_sse);
+        _mm_storeu_si128(static_cast<__m128i*>(_Final_dest), _Block_reversed);
+
+        return;
     }
 
     _Reverse_copy_tail(static_cast<const unsigned short*>(_First), static_cast<const unsigned short*>(_Last),
