@@ -137,6 +137,10 @@ void* __cdecl __std_swap_ranges_trivially_swappable(void* _First1, void* _Last1,
     return static_cast<char*>(_First2) + (static_cast<char*>(_Last1) - static_cast<char*>(_First1));
 }
 
+struct alignas(16) _Final_lut_entry_sse {
+    const unsigned char _Lut[16];
+};
+
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _First, void* _Last) noexcept {
 #if !defined(_M_ARM64EC)
     if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
@@ -164,8 +168,30 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
 
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        const void* _Stop_at            = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
+        static constexpr _Final_lut_entry_sse _Reverse_char_sse_final[16] = {
+            {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {1, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {2, 1, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {3, 2, 1, 0, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {4, 3, 2, 1, 0, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {5, 4, 3, 2, 1, 0, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {6, 5, 4, 3, 2, 1, 0, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {7, 6, 5, 4, 3, 2, 1, 0, 8, 9, 10, 11, 12, 13, 14, 15},
+            {8, 7, 6, 5, 4, 3, 2, 1, 0, 9, 10, 11, 12, 13, 14, 15},
+            {9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 10, 11, 12, 13, 14, 15},
+            {10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 11, 12, 13, 14, 15},
+            {11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 12, 13, 14, 15},
+            {12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 13, 14, 15},
+            {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 14, 15},
+            {14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 15},
+        };
+        const void* _Stop_at = _First;
+        const size_t _Size   = _Byte_length(_First, _Last);
+        const __m128i _Final_lut_char_sse =
+            _mm_loadu_si128(reinterpret_cast<const __m128i*>(&_Reverse_char_sse_final[_Size & 0xF]));
+
+        _Advance_bytes(_Stop_at, _Size >> 5 << 4);
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
@@ -176,19 +202,22 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
             _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
-    }
 
-    if (_Byte_length(_First, _Last) >= 8) {
-        const void* _Stop_at = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 3 << 2);
-        do {
-            _Advance_bytes(_Last, -4);
-            unsigned long _Left                  = _byteswap_ulong(*static_cast<unsigned long*>(_First));
-            unsigned long _Right                 = _byteswap_ulong(*static_cast<unsigned long*>(_Last));
-            *static_cast<unsigned long*>(_First) = _Right;
-            *static_cast<unsigned long*>(_Last)  = _Left;
-            _Advance_bytes(_First, 4);
-        } while (_First != _Stop_at);
+        if ((_Size & 0x10) == 0) {
+            const __m128i _Final          = _mm_loadu_si128(static_cast<__m128i*>(_First));
+            const __m128i _Final_reversed = _mm_shuffle_epi8(_Final, _Final_lut_char_sse);
+            _mm_storeu_si128(static_cast<__m128i*>(_First), _Final_reversed);
+        } else {
+            _Advance_bytes(_Last, -16);
+            const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
+            const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
+            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_char_sse);
+            const __m128i _Right_reversed = _mm_shuffle_epi8(_Right, _Reverse_char_sse);
+            _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
+            _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
+        }
+
+        return;
     }
 
     _Reverse_tail(static_cast<unsigned char*>(_First), static_cast<unsigned char*>(_Last));
@@ -219,8 +248,22 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
 
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        const void* _Stop_at             = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
+        static constexpr _Final_lut_entry_sse _Reverse_short_sse_final[8] = {
+            {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {2, 3, 0, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {4, 5, 2, 3, 0, 1, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+            {6, 7, 4, 5, 2, 3, 0, 1, 8, 9, 10, 11, 12, 13, 14, 15},
+            {8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 10, 11, 12, 13, 14, 15},
+            {10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 12, 13, 14, 15},
+            {12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1, 14, 15},
+        };
+        const void* _Stop_at = _First;
+        const size_t _Size   = _Byte_length(_First, _Last);
+        const __m128i _Final_lut_short_sse =
+            _mm_loadu_si128(reinterpret_cast<const __m128i*>(&_Reverse_short_sse_final[(_Size & 0xF) >> 1]));
+
+        _Advance_bytes(_Stop_at, _Size >> 5 << 4);
         do {
             _Advance_bytes(_Last, -16);
             const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
@@ -231,19 +274,22 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
-    }
 
-    if (_Byte_length(_First, _Last) >= 8) {
-        const void* _Stop_at = _First;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 3 << 2);
-        do {
-            _Advance_bytes(_Last, -4);
-            unsigned long _Left                  = _rotl(*static_cast<unsigned long*>(_First), 16);
-            unsigned long _Right                 = _rotl(*static_cast<unsigned long*>(_Last), 16);
-            *static_cast<unsigned long*>(_First) = _Right;
-            *static_cast<unsigned long*>(_Last)  = _Left;
-            _Advance_bytes(_First, 4);
-        } while (_First != _Stop_at);
+        if ((_Size & 0x10) == 0) {
+            const __m128i _Final          = _mm_loadu_si128(static_cast<__m128i*>(_First));
+            const __m128i _Final_reversed = _mm_shuffle_epi8(_Final, _Final_lut_short_sse);
+            _mm_storeu_si128(static_cast<__m128i*>(_First), _Final_reversed);
+        } else {
+            _Advance_bytes(_Last, -16);
+            const __m128i _Left           = _mm_loadu_si128(static_cast<__m128i*>(_First));
+            const __m128i _Right          = _mm_loadu_si128(static_cast<__m128i*>(_Last));
+            const __m128i _Left_reversed  = _mm_shuffle_epi8(_Left, _Reverse_short_sse);
+            const __m128i _Right_reversed = _mm_shuffle_epi8(_Right, _Reverse_short_sse);
+            _mm_storeu_si128(static_cast<__m128i*>(_First), _Right_reversed);
+            _mm_storeu_si128(static_cast<__m128i*>(_Last), _Left_reversed);
+        }
+
+        return;
     }
 
     _Reverse_tail(static_cast<unsigned short*>(_First), static_cast<unsigned short*>(_Last));
@@ -364,18 +410,6 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
         } while (_Dest != _Stop_at);
     }
 
-    if (_Byte_length(_First, _Last) >= 4) {
-        const void* _Stop_at = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 2 << 2);
-        do {
-            _Advance_bytes(_Last, -4);
-            unsigned long _Block                = *static_cast<const unsigned long*>(_Last);
-            unsigned long _Block_reversed       = _byteswap_ulong(_Block);
-            *static_cast<unsigned long*>(_Dest) = _Block_reversed;
-            _Advance_bytes(_Dest, 4);
-        } while (_Dest != _Stop_at);
-    }
-
     _Reverse_copy_tail(static_cast<const unsigned char*>(_First), static_cast<const unsigned char*>(_Last),
         static_cast<unsigned char*>(_Dest));
 }
@@ -410,18 +444,6 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
             const __m128i _Block_reversed = _mm_shuffle_epi8(_Block, _Reverse_short_sse); // SSSE3
             _mm_storeu_si128(static_cast<__m128i*>(_Dest), _Block_reversed);
             _Advance_bytes(_Dest, 16);
-        } while (_Dest != _Stop_at);
-    }
-
-    if (_Byte_length(_First, _Last) >= 4) {
-        const void* _Stop_at = _Dest;
-        _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 2 << 2);
-        do {
-            _Advance_bytes(_Last, -4);
-            unsigned long _Block                = *static_cast<const unsigned long*>(_Last);
-            unsigned long _Block_reversed       = _rotl(_Block, 16);
-            *static_cast<unsigned long*>(_Dest) = _Block_reversed;
-            _Advance_bytes(_Dest, 4);
         } while (_Dest != _Stop_at);
     }
 
