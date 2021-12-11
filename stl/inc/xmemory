@@ -779,6 +779,7 @@ class allocator {
 public:
     static_assert(!is_const_v<_Ty>, "The C++ Standard forbids containers of const elements "
                                     "because allocator<const T> is ill-formed.");
+    static_assert(is_class_v<_Ty>);
 
     using _From_primary = allocator;
 
