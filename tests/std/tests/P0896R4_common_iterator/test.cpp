@@ -172,7 +172,7 @@ struct instantiator {
     }
 };
 
-bool test_operator_arrow() {
+constexpr bool test_operator_arrow() {
     P input[3] = {{0, 1}, {0, 2}, {0, 3}};
 
     using pointerTest = common_iterator<P*, void*>;
@@ -242,7 +242,7 @@ struct poor_sentinel {
     }
 };
 
-void test_gh_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
+constexpr bool test_gh_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
     {
         int x = 42;
         common_iterator<int*, unreachable_sentinel_t> it1{&x};
@@ -256,12 +256,17 @@ void test_gh_2065() { // Guard against regression of GH-2065, for which we previ
         common_iterator<const int*, poor_sentinel> it2{&i};
         assert(it1 - it2 == 0);
     }
+
+    return true;
 }
 
 int main() {
     with_writable_iterators<instantiator, P>::call();
+    static_assert((with_writable_iterators<instantiator, P>::call(), true));
 
     test_operator_arrow();
+    static_assert(test_operator_arrow());
 
     test_gh_2065();
+    static_assert(test_gh_2065());
 }
