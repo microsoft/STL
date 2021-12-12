@@ -60,6 +60,19 @@ static void t_invoke() { // test invoke
     CHECK_INT(STD invoke(sum4, 1, 3, 5, 7), 16);
 }
 
+// COMPILE-ONLY
+void test_LWG_3146() {
+    int i = 0;
+    STD reference_wrapper<int> ri(i);
+    STD reference_wrapper<STD reference_wrapper<int>> rri(ri);
+
+    auto reference       = STD ref(rri);
+    auto const_reference = STD cref(rri);
+
+    (void) reference;
+    (void) const_reference;
+}
+
 void test_main() { // test header <functional>
     // reference_wrapper::operator() with rvalues
     call1(STD cref(fake_lvalue(&f1)));
