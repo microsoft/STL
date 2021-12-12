@@ -943,7 +943,8 @@ public:
     // clang-format off
     template <class _OIter, sentinel_for<_Iter> _OSe>
         requires sentinel_for<_Se, _OIter>
-    _NODISCARD constexpr friend bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
+    _NODISCARD constexpr friend
+    bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
         auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
