@@ -69,8 +69,10 @@ void test_LWG_3146() {
     auto reference       = STD ref(rri);
     auto const_reference = STD cref(rri);
 
-    (void) reference;
-    (void) const_reference;
+    static_assert(STD is_same_v<decltype(reference), STD reference_wrapper<STD reference_wrapper<int>>>,
+        "LWG-3146 is not implemented");
+    static_assert(STD is_same_v<decltype(const_reference), STD reference_wrapper<const STD reference_wrapper<int>>>,
+        "LWG-3146 is not implemented");
 }
 
 void test_main() { // test header <functional>
