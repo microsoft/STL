@@ -98,6 +98,13 @@ void dump_map() {
     }
 }
 
+void test_gh_2362() {
+    allocator<int> al;
+    int* ptr = al.allocate(0);
+    assert(ptr == nullptr);
+    al.deallocate(ptr, 0);
+}
+
 int main() {
     {
         vector<double, MyAllocator<double>> v;
@@ -120,4 +127,6 @@ int main() {
             abort();
         }
     }
+
+    test_gh_2362();
 }
