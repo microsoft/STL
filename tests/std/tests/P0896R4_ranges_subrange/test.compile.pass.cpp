@@ -23,6 +23,12 @@ using std::output_iterator_tag, std::input_iterator_tag, std::forward_iterator_t
 
 int main() {} // COMPILE-ONLY
 
+void test_LWG_3470() {
+    int a[3]                = {1, 2, 3};
+    int* b[3]               = {&a[2], &a[0], &a[1]};
+    [[maybe_unused]] auto c = std::ranges::subrange<const int* const*>(b);
+}
+
 struct empty {};
 
 namespace test_view_interface {
