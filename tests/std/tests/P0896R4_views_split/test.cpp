@@ -330,7 +330,7 @@ constexpr bool test_devcom_1559808() {
 }
 
 struct CopyConstructibleRange {
-    constexpr CopyConstructibleRange(vector<int> v) : inner(move(v)) {}
+    constexpr explicit CopyConstructibleRange(vector<int> v) : inner(move(v)) {}
     CopyConstructibleRange(const CopyConstructibleRange&) = default;
     CopyConstructibleRange& operator=(const CopyConstructibleRange&) = delete;
     constexpr const int* begin() const {
