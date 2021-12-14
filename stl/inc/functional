@@ -1338,14 +1338,16 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
         }
     };
 
-    _Guard_type _Guard;
+    void* _Ptr;
     if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        _Guard._Ptr = ::operator new(sizeof(_Vt));
+        _Ptr = ::operator new(sizeof(_Vt));
     } else {
-        _Guard._Ptr = ::operator new (sizeof(_Vt), align_val_t{alignof(_Vt)});
+        _Ptr = ::operator new (sizeof(_Vt), align_val_t{alignof(_Vt)});
     }
-    ::new (_Guard._Ptr) _Vt(_STD forward<_CTypes>(_Args)...);
-    return _STD exchange(_Guard._Ptr, nullptr);
+    _Guard_type _Guard{_Ptr};
+    ::new (_Ptr) _Vt(_STD forward<_CTypes>(_Args)...);
+    _Guard._Ptr = nullptr;
+    return _Ptr;
 }
 
 template <class _Rx, bool _Noexcept, class... _Types>
