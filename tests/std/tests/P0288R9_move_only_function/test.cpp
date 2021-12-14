@@ -499,7 +499,7 @@ static_assert(is_same_v<move_only_function<int(char*) const&& noexcept>::result_
 bool fail_allocations = false;
 
 #pragma warning(suppress : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
-void* operator new(std::size_t size) {
+void* operator new(size_t size) {
     if (fail_allocations) {
         throw bad_alloc{};
     }
@@ -536,7 +536,6 @@ void test_except() {
         assert(false); // unreachable
     } catch (runtime_error&) {
     }
-
 
     try {
         fail_allocations = true;
