@@ -227,7 +227,7 @@ STATIC_ASSERT(same_as<typename ICID::iterator_category, input_iterator_tag>);
 
 struct poor_sentinel {
     poor_sentinel() = default;
-    poor_sentinel(const poor_sentinel&) {} // non-trivial copy constructor, to test _Variantish behavior
+    constexpr poor_sentinel(const poor_sentinel&) {} // non-trivial copy constructor, to test _Variantish behavior
     poor_sentinel& operator=(const poor_sentinel&) = default;
 
     template <weakly_incrementable Winc>
@@ -308,7 +308,7 @@ constexpr bool test_lwg_3574() {
 
 int main() {
     with_writable_iterators<instantiator, P>::call();
-    static_assert((with_writable_iterators<instantiator, P>::call(), true));
+    static_assert(with_writable_iterators<instantiator, P>::call());
 
     test_operator_arrow();
     static_assert(test_operator_arrow());

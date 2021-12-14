@@ -752,7 +752,7 @@ public:
     }
 
     // clang-format off
-    constexpr friend void swap(_Variantish& _Left, _Variantish& _Right) noexcept(
+    friend constexpr void swap(_Variantish& _Left, _Variantish& _Right) noexcept(
         is_nothrow_move_constructible_v<_It> && is_nothrow_move_constructible_v<_Se>
             && is_nothrow_swappable_v<_It> && is_nothrow_swappable_v<_Se>)
         requires (!_Is_trivially_swappable_v<_It> || !_Is_trivially_swappable_v<_Se>) {
@@ -943,7 +943,7 @@ public:
     // clang-format off
     template <class _OIter, sentinel_for<_Iter> _OSe>
         requires sentinel_for<_Se, _OIter>
-    _NODISCARD constexpr friend
+    _NODISCARD friend constexpr
     bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
         auto& _Right_val = _Right._Get_val();
@@ -975,7 +975,7 @@ public:
     // clang-format off
     template <sized_sentinel_for<_Iter> _OIter, sized_sentinel_for<_Iter> _OSe>
         requires sized_sentinel_for<_Se, _OIter>
-    _NODISCARD constexpr friend iter_difference_t<_OIter> operator-(
+    _NODISCARD friend constexpr iter_difference_t<_OIter> operator-(
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
         auto& _Right_val = _Right._Get_val();
@@ -1000,7 +1000,7 @@ public:
         }
     }
 
-    _NODISCARD constexpr friend iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
+    _NODISCARD friend constexpr iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
         noexcept(_RANGES iter_move(_Right._Val._Iterator))) requires input_iterator<_Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_iter,

@@ -891,7 +891,7 @@ struct with_output_iterators {
 template <class Continuation, class Element>
 struct with_writable_iterators {
     template <class... Args>
-    static constexpr void call() {
+    static constexpr bool call() {
         using namespace test;
         using test::iterator;
 
@@ -902,6 +902,7 @@ struct with_writable_iterators {
             iterator<input, Element, CanDifference::no, CanCompare::no, ProxyRef::yes>>();
 
         with_output_iterators<Continuation, Element>::template call<Args...>();
+        return true;
     }
 };
 
