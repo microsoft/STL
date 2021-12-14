@@ -30,11 +30,22 @@ void __asan_describe_address(void*) noexcept;
 #endif // ASan instrumentation enabled
 
 struct non_trivial_can_throw {
-    non_trivial_can_throw() {}
+    non_trivial_can_throw() {
+        ++i;
+        if (i == 0) {
+            throw i;
+        }
+    }
+
+    int i = 0;
 };
 
 struct non_trivial_cannot_throw {
-    non_trivial_cannot_throw() noexcept {}
+    non_trivial_cannot_throw() noexcept {
+        ++i;
+    }
+
+    int i = 0;
 };
 
 struct throw_on_construction {
@@ -450,6 +461,12 @@ void test_resize() {
     v.resize(N, T());
     assert(verify_vector(v));
     v.resize(1, T());
+    assert(verify_vector(v));
+    v.resize(v.capacity(), T());
+    assert(verify_vector(v));
+    v.resize(v.size() - 1, T());
+    assert(verify_vector(v));
+    v.resize(v.capacity() + N, T());
     assert(verify_vector(v));
 }
 
