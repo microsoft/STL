@@ -3246,10 +3246,10 @@ _NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const
 
 namespace ranges {
     // clang-format off
-    template<class _From, class _To>
+    template <class _From, class _To>
     concept _Uses_nonqualification_pointer_conversion =
-      is_pointer_v<_From> && is_pointer_v<_To> &&
-      !convertible_to<remove_pointer_t<_From>(*)[], remove_pointer_t<_To>(*)[]>;
+        is_pointer_v<_From> && is_pointer_v<_To>
+        && !convertible_to<remove_pointer_t<_From>(*)[], remove_pointer_t<_To>(*)[]>;
 
     template <class _From, class _To>
     concept _Convertible_to_non_slicing = convertible_to<_From, _To>
