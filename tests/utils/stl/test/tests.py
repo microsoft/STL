@@ -290,31 +290,7 @@ class STLTest(Test):
 
         # clang doesn't know how to link in the VS version of the asan runtime automatically
         if 'asan' in self.config.available_features and 'clang' in self.config.available_features:
-            targetArch = litConfig.target_arch.casefold()
-            archString = str()
-            if targetArch == 'x86'.casefold():
-                archString = 'i386'
-            elif targetArch == 'x64'.casefold():
-                archString = 'x86_64'
-
-            dbgString = str()
-            if 'debug_CRT' in self.config.available_features:
-                dbgString = '_dbg'
-
-            if 'dynamic_CRT' in self.config.available_features:
-                self.linkFlags.append('/wholearchive:clang_rt.asan' + dbgString + '_dynamic_runtime_thunk-' +
-                                      archString + '.lib')
-                self.linkFlags.append('clang_rt.asan' + dbgString + '_dynamic-' + archString + '.lib')
-
-                if targetArch == 'x86'.casefold():
-                    self.linkFlags.append('/include:___asan_seh_interceptor')
-                elif targetArch == 'x64'.casefold():
-                    self.linkFlags.append('/include:__asan_seh_interceptor')
-            else:
-                self.linkFlags.append('/wholearchive:clang_rt.asan' + dbgString + '-' + archString + '.lib')
-                self.linkFlags.append('clang_rt.asan_cxx' + dbgString + '-' + archString + '.lib')
-
-            self.linkFlags.append('/incremental:no')
+            self.linkFlags.append("/INFERASANLIBS")
 
 
 class LibcxxTest(STLTest):

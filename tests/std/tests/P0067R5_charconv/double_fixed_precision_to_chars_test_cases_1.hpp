@@ -36,7 +36,8 @@
 // (Keep the cgmanifest.json commitHash in sync.)
 
 
-#pragma once
+#ifndef DOUBLE_FIXED_PRECISION_TO_CHARS_TEST_CASES_1_HPP
+#define DOUBLE_FIXED_PRECISION_TO_CHARS_TEST_CASES_1_HPP
 
 #include <charconv>
 
@@ -295,3 +296,5 @@ inline constexpr DoublePrecisionToCharsTestCase double_fixed_precision_to_chars_
     // Ryu Printf d2fixed_test.cc D2fixedTest Regression
     {7.018232e-82, chars_format::fixed, 6, "0.000000"},
 };
+
+#endif // DOUBLE_FIXED_PRECISION_TO_CHARS_TEST_CASES_1_HPP

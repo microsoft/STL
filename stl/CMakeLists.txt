@@ -548,11 +548,11 @@ add_stl_dlls("d" "_DEBUG" "${VCLIBS_DEBUG_OPTIONS}" "" "/opt:ref,noicf")
 
 function(add_stl_statics FLAVOR_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIONS)
     add_library(libcpmt${FLAVOR_SUFFIX}_eha OBJECT ${EHA_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE "${THIS_CONFIG_DEFINITIONS}; _ANNOTATE_VECTOR; _ANNOTATE_STRING")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE "${THIS_CONFIG_DEFINITIONS};_ANNOTATE_VECTOR;_ANNOTATE_STRING")
     target_compile_options(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};/EHa")
 
     add_library(libcpmt${FLAVOR_SUFFIX} STATIC ${HEADERS} ${IMPLIB_SOURCES} ${SOURCES} ${INITIALIZER_SOURCES} ${STATIC_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_DEFINITIONS}; _ANNOTATE_VECTOR; _ANNOTATE_STRING")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_DEFINITIONS};_ANNOTATE_VECTOR;_ANNOTATE_STRING")
     target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};/EHsc")
     target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math libcpmt${FLAVOR_SUFFIX}_eha std_init_once_begin_initialize std_init_once_complete)
 endfunction()
