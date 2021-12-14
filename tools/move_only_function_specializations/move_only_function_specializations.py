@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 template = """template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) {cv} {ref} {noex}>
     : public _Move_only_function_base<_Rx, {noex_val}, _Types...> {{
@@ -13,7 +16,7 @@ public:
     _Rx operator()(_Types... _Args) {cv} {ref} {noex} {{
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }}
-}};""";
+}};"""
 
 def ref_permutations(cv, noex, noex_val, trait):
     callable = "{trait}<_Rx, {cv} _Vt, _Types...> && {trait}<_Rx, {cv} _Vt&, _Types...>".format(trait = trait, cv = cv)
