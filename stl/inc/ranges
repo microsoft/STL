@@ -1140,8 +1140,8 @@ namespace ranges {
         // clang-format on
 
         _NODISCARD friend constexpr _Ioterator operator+(_Ioterator _It, const difference_type _Off) noexcept(
-            noexcept(_It._Current += _Off)) /* strengthened */ requires _Advanceable<_Wi> {
-            _It._Current += _Off;
+            noexcept(_It += _Off)) /* strengthened */ requires _Advanceable<_Wi> {
+            _It += _Off;
             return _It;
         }
         _NODISCARD friend constexpr _Ioterator operator+(const difference_type _Off, _Ioterator _It) noexcept(
@@ -1149,8 +1149,8 @@ namespace ranges {
             return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
         }
         _NODISCARD friend constexpr _Ioterator operator-(_Ioterator _It, const difference_type _Off) noexcept(
-            noexcept(_It._Current -= _Off)) /* strengthened */ requires _Advanceable<_Wi> {
-            _It._Current -= _Off;
+            noexcept(_It -= _Off)) /* strengthened */ requires _Advanceable<_Wi> {
+            _It -= _Off;
             return _It;
         }
         _NODISCARD friend constexpr difference_type
