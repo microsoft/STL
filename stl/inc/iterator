@@ -893,7 +893,7 @@ public:
 
                 using _Proxy_base::_Proxy_base;
 
-                _NODISCARD constexpr const iter_value_t<_Iter>* operator->() const noexcept /* strengthened */ {
+                _NODISCARD constexpr const iter_value_t<_Iter>* operator->() const noexcept {
                     return _STD addressof(this->_Keep);
                 }
             };
@@ -927,7 +927,7 @@ public:
 
                 using _Proxy_base::_Proxy_base;
 
-                _NODISCARD constexpr const iter_value_t<_Iter>& operator*() const noexcept /* strengthened */ {
+                _NODISCARD constexpr const iter_value_t<_Iter>& operator*() const noexcept {
                     return this->_Keep;
                 }
             };
