@@ -902,6 +902,7 @@ struct with_writable_iterators {
             iterator<input, Element, CanDifference::no, CanCompare::no, ProxyRef::yes>>();
 
         with_output_iterators<Continuation, Element>::template call<Args...>();
+
         return true;
     }
 };

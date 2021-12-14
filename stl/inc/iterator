@@ -752,7 +752,7 @@ public:
     }
 
     // clang-format off
-    friend constexpr void swap(_Variantish& _Left, _Variantish& _Right) noexcept(
+    constexpr friend void swap(_Variantish& _Left, _Variantish& _Right) noexcept(
         is_nothrow_move_constructible_v<_It> && is_nothrow_move_constructible_v<_Se>
             && is_nothrow_swappable_v<_It> && is_nothrow_swappable_v<_Se>)
         requires (!_Is_trivially_swappable_v<_It> || !_Is_trivially_swappable_v<_Se>) {
