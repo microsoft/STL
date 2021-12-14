@@ -1411,10 +1411,6 @@ public:
         }
     }
 
-    ~_Move_only_function_base() {
-        _Checked_destroy(_Data);
-    }
-
     static void _Checked_destroy(_Move_only_function_data& _Data) noexcept {
         const auto _Impl = static_cast<const _Impl_t*>(_Data._Impl);
         if (_Impl->_Destroy) {
@@ -1807,6 +1803,12 @@ public:
 
         using _VtInvQuals = typename _Call::template _VtInvQuals<_Vt>;
         this->template _Construct_with_fn<_Vt, _VtInvQuals>(_Li, _STD forward<_CTypes>(_Args)...);
+    }
+
+    ~move_only_function() {
+        // Do cleanup in this class destructor rather than base,
+        // so that if object construction throws, the unnecessary cleanup isn't called.
+        this->_Checked_destroy(this->_Data);
     }
 
     move_only_function& operator=(nullptr_t) noexcept {
