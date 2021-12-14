@@ -4,8 +4,10 @@
 #include <cassert>
 #include <cstdlib>
 #include <functional>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <vcruntime_new.h>
 
 using namespace std;
 
@@ -494,6 +496,57 @@ static_assert(is_same_v<move_only_function<short(long&) const& noexcept>::result
 static_assert(is_same_v<move_only_function<int(char*) const&& noexcept>::result_type, int>);
 #endif // ^^^ defined(__cpp_noexcept_function_type) ^^^
 
+bool fail_allocations = false;
+
+#pragma warning(suppress : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
+void* operator new(std::size_t size) {
+    if (fail_allocations) {
+        throw bad_alloc{};
+    }
+    void* result = size ? malloc(size) : malloc(1);
+    if (!result) {
+        throw bad_alloc{};
+    }
+    return result;
+}
+
+void operator delete(void* p) noexcept {
+    if (p) {
+        free(p);
+    }
+}
+
+void test_except() {
+    struct throwing {
+        throwing() = default;
+        throwing(throwing&&) { // not noexcept to avoid small functor optimization
+            throw runtime_error{"boo"};
+        }
+        void operator()() {}
+    };
+
+    struct not_throwing {
+        not_throwing() = default;
+        not_throwing(not_throwing&&) {} // not noexcept to avoid small functor optimization
+        void operator()() {}
+    };
+
+    try {
+        move_only_function<void()> f{throwing{}};
+        assert(false); // unreachable
+    } catch (runtime_error&) {
+    }
+
+
+    try {
+        fail_allocations = true;
+        move_only_function<void()> f{not_throwing{}};
+        assert(false); // unreachable
+    } catch (bad_alloc&) {
+        fail_allocations = false;
+    }
+}
+
 int main() {
     test_construct_impl<small_callable>(38);
     test_construct_impl<large_callable>(39);
@@ -509,4 +562,5 @@ int main() {
     test_noexcept();
     test_const();
     test_qual();
+    test_except();
 }
