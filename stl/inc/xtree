@@ -1332,7 +1332,6 @@ public:
         return _Erase(_Eqrange(_Keyval));
     }
 
-public:
 #if _HAS_CXX23
     template <class _Kx, class _Mycomp = key_compare, class = typename _Mycomp::is_transparent,
         enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
