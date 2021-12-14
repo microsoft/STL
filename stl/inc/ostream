@@ -1041,7 +1041,10 @@ basic_ostream<_Elem, _Traits>& flush_emit(basic_ostream<_Elem, _Traits>& _Ostr) 
     _Ostr.flush();
     const auto _Sync_buf_ptr = dynamic_cast<_Basic_syncbuf_impl<_Elem, _Traits>*>(_Ostr.rdbuf());
     if (_Sync_buf_ptr) {
-        _Sync_buf_ptr->_Do_emit();
+        const bool _Emit_failed = !_Sync_buf_ptr->_Do_emit();
+        if (_Emit_failed) {
+            _Ostr.setstate(ios_base::badbit);
+        }
     }
     return _Ostr;
 }

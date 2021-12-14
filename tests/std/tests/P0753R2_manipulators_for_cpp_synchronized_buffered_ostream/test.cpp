@@ -35,7 +35,8 @@ public:
 
 
 template <class Ty, class Alloc = void, bool ThrowOnSync = false>
-void test_osyncstream_manipulators(string_buffer<typename Ty::char_type, ThrowOnSync>* buf = nullptr) {
+void test_osyncstream_manipulators(
+    string_buffer<typename Ty::char_type, ThrowOnSync>* buf = nullptr, bool buffer_can_sync = true) {
     using char_type   = typename Ty::char_type;
     using traits_type = typename Ty::traits_type;
 
@@ -77,7 +78,8 @@ void test_osyncstream_manipulators(string_buffer<typename Ty::char_type, ThrowOn
 
     assert(addressof(flush_emit(os)) == addressof(os));
     if constexpr (is_base_of_v<basic_osyncstream<char_type, traits_type, Alloc>, Ty>) {
-        assert(os.rdstate() == ios::goodbit);
+        auto bit = (buf && buffer_can_sync) ? ios::goodbit : ios::badbit;
+        assert(os.rdstate() == bit);
         if (buf) {
             assert(buf->str == "Another input");
         }
@@ -87,6 +89,12 @@ void test_osyncstream_manipulators(string_buffer<typename Ty::char_type, ThrowOn
     if (buf) {
         buf->str.clear();
     }
+}
+
+void test_lwg_3571() {
+    basic_osyncstream<char> stream(nullptr);
+    stream << flush_emit;
+    assert(stream.rdstate() == ios::badbit);
 }
 
 int main() {
@@ -102,5 +110,7 @@ int main() {
 
     test_osyncstream_manipulators<basic_ostream<char>>(&no_sync_char_buffer);
     test_osyncstream_manipulators<basic_osyncstream<char, char_traits<char>, allocator<char>>, allocator<char>>(
-        &no_sync_char_buffer);
+        &no_sync_char_buffer, false);
+
+    test_lwg_3571();
 }
