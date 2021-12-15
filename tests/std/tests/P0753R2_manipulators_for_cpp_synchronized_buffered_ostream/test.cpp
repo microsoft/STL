@@ -78,8 +78,8 @@ void test_osyncstream_manipulators(
 
     assert(addressof(flush_emit(os)) == addressof(os));
     if constexpr (is_base_of_v<basic_osyncstream<char_type, traits_type, Alloc>, Ty>) {
-        auto bit = (buf && buffer_can_sync) ? ios::goodbit : ios::badbit;
-        assert(os.rdstate() == bit);
+        const auto state = (buf && buffer_can_sync) ? ios::goodbit : ios::badbit;
+        assert(os.rdstate() == state);
         if (buf) {
             assert(buf->str == "Another input");
         }
