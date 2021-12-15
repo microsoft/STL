@@ -4,10 +4,10 @@
 #include <cassert>
 #include <cstdlib>
 #include <functional>
+#include <new>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include <vcruntime_new.h>
 
 using namespace std;
 
@@ -503,7 +503,7 @@ void* operator new(size_t size) {
     if (fail_allocations) {
         throw bad_alloc{};
     }
-    void* result = size ? malloc(size) : malloc(1);
+    void* result = size > 0 ? malloc(size) : malloc(1);
     if (!result) {
         throw bad_alloc{};
     }
@@ -511,9 +511,7 @@ void* operator new(size_t size) {
 }
 
 void operator delete(void* p) noexcept {
-    if (p) {
-        free(p);
-    }
+    free(p);
 }
 
 void test_except() {
