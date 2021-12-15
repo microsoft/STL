@@ -153,7 +153,6 @@ public:
     }
 
     bool emit() {
-        const sentry _Ok(*this);
         if (!_Wrapped) {
             return false;
         }
@@ -345,6 +344,7 @@ public:
     basic_osyncstream& operator=(basic_osyncstream&&) noexcept = default;
 
     void emit() {
+        const typename basic_ostream<_Elem, _Traits>::sentry _Ok(*this);
         if (!_Sync_buf.emit()) {
             _Mybase::setstate(ios::badbit);
         }
