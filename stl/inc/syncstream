@@ -153,6 +153,7 @@ public:
     }
 
     bool emit() {
+        const sentry _Ok(*this);
         if (!_Wrapped) {
             return false;
         }
