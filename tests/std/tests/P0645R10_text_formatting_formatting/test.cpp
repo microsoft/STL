@@ -1318,14 +1318,14 @@ void libfmt_formatter_test_runtime_precision() {
 
 template <class charT>
 void test_locale_specific_formatting_without_locale() {
-#ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
     locale loc("en-US.UTF-8");
     locale::global(loc);
     assert(format(STR("{:L}"), 12345) == STR("12,345"));
     locale::global(locale::classic());
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
-#endif // MSVC_INTERNAL_TESTING
+#endif // _MSVC_INTERNAL_TESTING
 }
 
 template <class charT>

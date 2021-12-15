@@ -2166,7 +2166,7 @@ _NODISCARD _OutputIt _Write_integral(
     string _Groups;
     if (_Specs._Localized) {
         _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
-        _Separators = _Count_separators(_End - _Buffer_start, _Groups);
+        _Separators = _Count_separators(static_cast<size_t>(_End - _Buffer_start), _Groups);
         // TRANSITION, separators may be wider for wide chars
         _Width += _Separators;
     }
@@ -2389,7 +2389,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
             if (_Specs._Localized) {
                 _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
-                _Separators = _Count_separators(_Integral_end - _Buffer_start, _Groups);
+                _Separators = _Count_separators(static_cast<size_t>(_Integral_end - _Buffer_start), _Groups);
             }
         }
 
@@ -2882,33 +2882,47 @@ _OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt,
     return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_wformat_args(_Args...));
 }
 
-_NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1433873
+#define _TEMPLATE_INT_0_NODISCARD                             \
+    template <int = 0> /* improves throughput, see GH-2329 */ \
+    _NODISCARD
+#else // ^^^ no workaround / workaround vvv
+#define _TEMPLATE_INT_0_NODISCARD _NODISCARD inline
+#endif // ^^^ workaround ^^^
+
+_TEMPLATE_INT_0_NODISCARD
+string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
     return _Str;
 }
 
-_NODISCARD inline wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
+_TEMPLATE_INT_0_NODISCARD
+wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
     return _Str;
 }
 
-_NODISCARD inline string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
+_TEMPLATE_INT_0_NODISCARD
+string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args);
     return _Str;
 }
 
-_NODISCARD inline wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
+_TEMPLATE_INT_0_NODISCARD
+wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args);
     return _Str;
 }
+
+#undef _TEMPLATE_INT_0_NODISCARD // TRANSITION, VSO-1433873
 
 template <class... _Types>
 _NODISCARD string format(const string_view _Fmt, const _Types&... _Args) {
