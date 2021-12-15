@@ -275,7 +275,9 @@ constexpr bool test_lwg_3574() {
 
     { // test that copy construction is constexpr, even when the sentinel isn't trivially copy constructible
         common_iterator<int*, poor_sentinel> a{arr};
-        common_iterator<int*, poor_sentinel> b{a};
+        common_iterator<int*, poor_sentinel> b{a}; // copy-construct with a stored iterator
+        common_iterator<int*, poor_sentinel> x{poor_sentinel{}};
+        common_iterator<int*, poor_sentinel> y{x}; // copy-construct with a stored sentinel
         assert(b - a == 0);
     }
 
