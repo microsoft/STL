@@ -2771,7 +2771,12 @@ struct _Format_checker {
     constexpr void _On_replacement_field(size_t, const _CharT*) const noexcept {}
     constexpr const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT*) {
         _Parse_context.advance_to(_Parse_context.begin() + (_First - _Parse_context.begin()._Unwrapped()));
-        return _Id < _Num_args ? _Parse_funcs[_Id](_Parse_context)._Unwrapped() : _First;
+        if (_Id < _Num_args) {
+            auto _Iter = _Parse_funcs[_Id](_Parse_context); // TRANSITION, VSO-1451773 (workaround: named variable)
+            return _Iter._Unwrapped();
+        } else {
+            return _First;
+        }
     }
 };
 
