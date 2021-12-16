@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <ios>
 #include <memory>
+#include <sstream>
 #include <streambuf>
 #include <string>
 #include <syncstream>
@@ -92,9 +93,32 @@ void test_osyncstream_manipulators(
 }
 
 void test_lwg_3571() {
-    basic_osyncstream<char> stream(nullptr);
-    stream << flush_emit;
-    assert(stream.rdstate() == ios::badbit);
+    {
+        osyncstream stream(nullptr);
+        stream << flush_emit;
+        assert(stream.rdstate() == ios::badbit);
+    }
+    {
+        stringstream inner;
+        osyncstream stream(inner);
+        stream << "Hello World";
+        stream.setstate(ios_base::failbit);
+        assert((stream.rdstate() & ios::badbit) == 0);
+        stream << flush_emit;
+        assert(stream.rdstate() & ios::badbit);
+        assert(inner.str() == "");
+    }
+}
+
+void test_lwg_3570() {
+    stringstream inner;
+    osyncstream stream(inner);
+    stream << "Hello World";
+    stream.setstate(ios_base::failbit);
+    assert((stream.rdstate() & ios::badbit) == 0);
+    stream.emit();
+    assert(stream.rdstate() & ios::badbit);
+    assert(inner.str() == "");
 }
 
 int main() {
@@ -113,4 +137,5 @@ int main() {
         &no_sync_char_buffer, false);
 
     test_lwg_3571();
+    test_lwg_3570();
 }
