@@ -606,7 +606,7 @@ public:
 
 #ifdef __cpp_lib_concepts
     template <invocable<> _Fn>
-        requires(copy_constructible<_Ty>)
+        requires copy_constructible<_Ty>
     constexpr optional or_else(_Fn&& _Func) const& {
         static_assert(is_same_v<remove_cvref_t<invoke_result_t<_Fn>>, optional>,
             "optional<T>::or_else(F) requires F to return an optional<T> (N4901 [optional.monadic]/14).");
@@ -619,7 +619,7 @@ public:
     }
 
     template <invocable<> _Fn>
-        requires(move_constructible<_Ty>)
+        requires move_constructible<_Ty>
     constexpr optional or_else(_Fn&& _Func) && {
         static_assert(is_same_v<remove_cvref_t<invoke_result_t<_Fn>>, optional>,
             "optional<T>::or_else(F) requires F to return an optional<T> (N4901 [optional.monadic]/17).");

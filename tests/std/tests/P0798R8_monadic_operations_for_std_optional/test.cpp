@@ -47,6 +47,9 @@ struct fn {
 
 template <class Optional>
 constexpr void test_impl(Optional&& nonempty, Optional&& empty_optional) {
+    assert(nonempty.has_value());
+    assert(!empty_optional.has_value());
+
     using U = decltype(forward<Optional>(nonempty).value());
     {
         fn<U> f{};
