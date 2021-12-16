@@ -92,6 +92,17 @@ void test_osyncstream_manipulators(
     }
 }
 
+template <class Ty>
+class throwing_string_buffer : public basic_streambuf<Ty, char_traits<Ty>> {
+public:
+    throwing_string_buffer()  = default;
+    ~throwing_string_buffer() = default;
+
+    streamsize xsputn(const Ty*, streamsize) override {
+        throw std::ostream::failure("test exception");
+    }
+};
+
 void test_lwg_3571() {
     {
         osyncstream stream(nullptr);
@@ -108,17 +119,45 @@ void test_lwg_3571() {
         assert(stream.rdstate() & ios::badbit);
         assert(inner.str() == "");
     }
+    {
+        throwing_string_buffer<char> inner;
+        osyncstream stream(&inner);
+        stream << "Hello World";
+        stream.exceptions(ios_base::failbit | std::ios_base::badbit);
+        assert((stream.rdstate() & ios::badbit) == 0);
+        try {
+            stream << flush_emit;
+            assert(false);
+        } catch (const std::ostream::failure&) {
+            assert(stream.rdstate() & ios::badbit);
+        }
+    }
 }
 
 void test_lwg_3570() {
-    stringstream inner;
-    osyncstream stream(inner);
-    stream << "Hello World";
-    stream.setstate(ios_base::failbit);
-    assert((stream.rdstate() & ios::badbit) == 0);
-    stream.emit();
-    assert(stream.rdstate() & ios::badbit);
-    assert(inner.str() == "");
+    {
+        stringstream inner;
+        osyncstream stream(inner);
+        stream << "Hello World";
+        stream.setstate(ios_base::failbit);
+        assert((stream.rdstate() & ios::badbit) == 0);
+        stream.emit();
+        assert(stream.rdstate() & ios::badbit);
+        assert(inner.str() == "");
+    }
+    {
+        throwing_string_buffer<char> inner;
+        osyncstream stream(&inner);
+        stream << "Hello World";
+        stream.exceptions(ios_base::failbit | std::ios_base::badbit);
+        assert((stream.rdstate() & ios::badbit) == 0);
+        try {
+            stream.emit();
+            assert(false);
+        } catch (const std::ostream::failure&) {
+            assert(stream.rdstate() & ios::badbit);
+        }
+    }
 }
 
 int main() {
