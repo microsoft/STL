@@ -342,38 +342,38 @@ public:
         }
     }
 
-    _NODISCARD constexpr const _Ty* operator->() const {
+    _NODISCARD constexpr const _Ty* operator->() const noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD addressof(this->_Value);
     }
-    _NODISCARD constexpr _Ty* operator->() {
+    _NODISCARD constexpr _Ty* operator->() noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD addressof(this->_Value);
     }
 
-    _NODISCARD constexpr const _Ty& operator*() const& {
+    _NODISCARD constexpr const _Ty& operator*() const& noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return this->_Value;
     }
-    _NODISCARD constexpr _Ty& operator*() & {
+    _NODISCARD constexpr _Ty& operator*() & noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return this->_Value;
     }
-    _NODISCARD constexpr _Ty&& operator*() && {
+    _NODISCARD constexpr _Ty&& operator*() && noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         return _STD move(this->_Value);
     }
-    _NODISCARD constexpr const _Ty&& operator*() const&& {
+    _NODISCARD constexpr const _Ty&& operator*() const&& noexcept {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
 #endif // _CONTAINER_DEBUG_LEVEL > 0

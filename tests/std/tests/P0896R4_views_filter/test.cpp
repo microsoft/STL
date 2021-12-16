@@ -27,7 +27,7 @@ using pipeline_t =
 
 template <class Rng>
 concept CanViewFilter = requires(Rng&& r) {
-    views::filter(static_cast<Rng&&>(r), is_even);
+    views::filter(forward<Rng>(r), is_even);
 };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
@@ -50,8 +50,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     constexpr auto filter_even = views::filter(is_even);
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewFilter<Rng&> == (!is_view || copyable<V>) );
-    if constexpr (CanViewFilter<Rng&>) { // Validate lvalue
+    STATIC_ASSERT(CanViewFilter<Rng&> == (!is_view || copy_constructible<V>) );
+    if constexpr (CanViewFilter<Rng&>) {
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::filter(rng, is_even)), F>);
@@ -65,8 +65,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(CanViewFilter<const remove_reference_t<Rng>&> == (!is_view || copyable<V>) );
-    if constexpr (is_view && copyable<V>) {
+    STATIC_ASSERT(CanViewFilter<const remove_reference_t<Rng>&> == (!is_view || copy_constructible<V>) );
+    if constexpr (is_view && copy_constructible<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::filter(as_const(rng), is_even)), F>);
@@ -78,9 +78,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(as_const(rng) | pipeline), pipeline_t<const remove_reference_t<Rng>&>>);
         STATIC_ASSERT(noexcept(as_const(rng) | pipeline) == is_noexcept);
     } else if constexpr (!is_view) {
-        using RC = filter_view<views::all_t<const remove_reference_t<Rng>&>, Pred>;
-        constexpr bool is_noexcept =
-            is_nothrow_constructible_v<RC, const remove_reference_t<Rng>&, decltype((is_even))>;
+        using RC                   = filter_view<ranges::ref_view<const remove_reference_t<Rng>>, Pred>;
+        constexpr bool is_noexcept = true;
 
         STATIC_ASSERT(same_as<decltype(views::filter(as_const(rng), is_even)), RC>);
         STATIC_ASSERT(noexcept(views::filter(as_const(rng), is_even)) == is_noexcept);
@@ -93,7 +92,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(CanViewFilter<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
+    STATIC_ASSERT(CanViewFilter<remove_reference_t<Rng>> == (is_view || movable<remove_reference_t<Rng>>) );
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
         STATIC_ASSERT(same_as<decltype(views::filter(move(rng), is_even)), F>);
@@ -104,10 +103,10 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
         STATIC_ASSERT(same_as<decltype(move(rng) | pipeline), pipeline_t<remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(rng) | pipeline) == is_noexcept);
-    } else if constexpr (enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{declval<remove_reference_t<Rng>>()});
+    } else if constexpr (movable<remove_reference_t<Rng>>) {
+        using S                    = ranges::owning_view<remove_reference_t<Rng>>;
         using RS                   = filter_view<S, Pred>;
-        constexpr bool is_noexcept = noexcept(S{declval<remove_reference_t<Rng>>()});
+        constexpr bool is_noexcept = is_nothrow_move_constructible_v<remove_reference_t<Rng>>;
 
         STATIC_ASSERT(same_as<decltype(views::filter(move(rng), is_even)), RS>);
         STATIC_ASSERT(noexcept(views::filter(move(rng), is_even)) == is_noexcept);
@@ -120,28 +119,14 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(CanViewFilter<const remove_reference_t<Rng>> == (is_view && copyable<V>)
-                  || (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) );
-    if constexpr (is_view && copyable<V>) {
+    STATIC_ASSERT(CanViewFilter<const remove_reference_t<Rng>> == (is_view && copy_constructible<V>) );
+    if constexpr (is_view && copy_constructible<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::filter(move(as_const(rng)), is_even)), F>);
         STATIC_ASSERT(noexcept(views::filter(move(as_const(rng)), is_even)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | filter_even), F>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | filter_even) == is_noexcept);
-
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
-    } else if constexpr (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{declval<const remove_reference_t<Rng>>()});
-        using RS                   = filter_view<S, Pred>;
-        constexpr bool is_noexcept = noexcept(S{declval<const remove_reference_t<Rng>>()});
-
-        STATIC_ASSERT(same_as<decltype(views::filter(move(as_const(rng)), is_even)), RS>);
-        STATIC_ASSERT(noexcept(views::filter(move(as_const(rng)), is_even)) == is_noexcept);
-
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | filter_even), RS>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | filter_even) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
@@ -185,7 +170,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         assert(*r.begin() == *begin(expected));
         assert(*r.begin() == *begin(expected));
 
-        if constexpr (copyable<V>) {
+        if constexpr (copy_constructible<V>) {
             auto r2                              = r;
             const same_as<iterator_t<F>> auto i2 = r2.begin();
             assert(*r2.begin() == *i2);
@@ -210,7 +195,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             [[maybe_unused]] same_as<ranges::sentinel_t<F>> auto s = r.end();
         }
 
-        if constexpr (bidirectional_range<V> && common_range<V> && copyable<V>) {
+        if constexpr (bidirectional_range<V> && common_range<V> && copy_constructible<V>) {
             auto r2 = r;
             assert(*prev(r2.end()) == *prev(end(expected)));
         }

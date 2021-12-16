@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
+#ifndef DOUBLE_FROM_CHARS_TEST_CASES_HPP
+#define DOUBLE_FROM_CHARS_TEST_CASES_HPP
 
 #include <charconv>
 #include <stddef.h>
@@ -1639,3 +1640,5 @@ inline constexpr DoubleFromCharsTestCase double_from_chars_test_cases[] = {
      "62881473913110540827237163350510684586298239947245938479716304835356329624224137216",
         chars_format::fixed, 309, errc::result_out_of_range, double_inf},
 };
+
+#endif // DOUBLE_FROM_CHARS_TEST_CASES_HPP
