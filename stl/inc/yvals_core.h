@@ -421,7 +421,7 @@
 #define _NODISCARD_CTOR
 #endif
 
-#ifdef __CUDACC__ // TRANSITION, VSO-568006
+#if defined(__CUDACC__) and !defined(__clang__) // TRANSITION, VSO-568006
 #define _NODISCARD_FRIEND friend
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
 #define _NODISCARD_FRIEND _NODISCARD friend
