@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <charconv>
-#include <concepts>
 #include <ranges>
 #include <span>
 #include <string_view>
@@ -329,30 +328,29 @@ constexpr bool test_devcom_1559808() {
     return true;
 }
 
-struct CopyConstructibleRange {
-    constexpr explicit CopyConstructibleRange(vector<int> v) : inner(move(v)) {}
-    CopyConstructibleRange(const CopyConstructibleRange&) = default;
-    CopyConstructibleRange& operator=(const CopyConstructibleRange&) = delete;
-    constexpr const int* begin() const {
-        return inner.data();
-    }
-    constexpr const int* end() const {
-        return inner.data() + inner.size();
-    }
-
-    vector<int> inner;
-};
-
 constexpr bool test_LWG_3590() {
-    CopyConstructibleRange r{{1, 2, 3, 4}};
-    const auto split_view = views::split(r, 0);
+    struct weird_view : ranges::view_interface<weird_view> {
+        weird_view()                  = default;
+        weird_view(const weird_view&) = default;
+        weird_view& operator=(weird_view&&) = default;
 
-    STATIC_ASSERT(copy_constructible<CopyConstructibleRange>);
-    STATIC_ASSERT(!copyable<CopyConstructibleRange>);
+        constexpr const int* begin() const {
+            return &inner;
+        }
+        constexpr const int* end() const {
+            return &inner + 1;
+        }
 
-    const auto ref_view = split_view.base();
+        int inner = 42;
+    };
+    STATIC_ASSERT(ranges::view<weird_view>);
+    STATIC_ASSERT(copy_constructible<weird_view>);
+    STATIC_ASSERT(!copyable<weird_view>);
 
-    return ref_view.base().inner == r.inner;
+    const auto r                                         = views::split(weird_view{}, 0);
+    [[maybe_unused]] const same_as<weird_view> auto copy = r.base();
+
+    return true;
 }
 
 int main() {
