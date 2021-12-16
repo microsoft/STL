@@ -1918,7 +1918,8 @@ namespace iter_ops {
         }
 
         // clang-format off
-        constexpr trace_iterator& operator=(default_sentinel_t) noexcept(NoThrow == nothrow::yes) requires (Assign == assign::yes) {
+        constexpr trace_iterator& operator=(default_sentinel_t) noexcept(NoThrow == nothrow::yes)
+            requires (Assign == assign::yes) {
             ++trace_->assignments_;
             pos_ = sentinel_position;
             return *this;
