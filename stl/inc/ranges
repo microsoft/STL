@@ -1140,16 +1140,21 @@ namespace ranges {
         // clang-format on
 
         _NODISCARD friend constexpr _Ioterator operator+(_Ioterator _It, const difference_type _Off) noexcept(
-            noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
-            return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
+            is_nothrow_move_constructible_v<_Ioterator>&& noexcept(
+                _It += _Off)) /* strengthened */ requires _Advanceable<_Wi> {
+            _It += _Off;
+            return _It;
         }
         _NODISCARD friend constexpr _Ioterator operator+(const difference_type _Off, _Ioterator _It) noexcept(
-            noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
+            is_nothrow_move_constructible_v<_Wi>&& noexcept(
+                static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
             return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
         }
         _NODISCARD friend constexpr _Ioterator operator-(_Ioterator _It, const difference_type _Off) noexcept(
-            noexcept(static_cast<_Wi>(_It._Current - _Off))) /* strengthened */ requires _Advanceable<_Wi> {
-            return _Ioterator{static_cast<_Wi>(_It._Current - _Off)};
+            is_nothrow_move_constructible_v<_Ioterator>&& noexcept(
+                _It -= _Off)) /* strengthened */ requires _Advanceable<_Wi> {
+            _It -= _Off;
+            return _It;
         }
         _NODISCARD friend constexpr difference_type
             operator-(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
