@@ -337,7 +337,11 @@ constexpr void mm_constexpr_tests() {
         ProxyRef::no>>();
 }
 
-void test_for_issue1893() {
+void test_gh_1893() {
+    // ranges::clamp was sometimes performing too many projections,
+    // and we should conform at least in release mode.
+    // the test protects us from the wrong implementation with std::move instead of std::forward in ranges::clamp
+    // so reference_wrapper s and the lambda are necessary.
     string val           = "meow";
     string low           = "m";
     string high          = "n";
@@ -373,5 +377,5 @@ int main() {
     STATIC_ASSERT((mm_constexpr_tests(), true));
     test_in<mm, const P>();
 
-    test_for_issue1893();
+    test_gh_1893();
 }
