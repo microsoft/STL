@@ -421,6 +421,12 @@
 #define _NODISCARD_CTOR
 #endif
 
+#if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, VSO-568006
+#define _NODISCARD_FRIEND friend
+#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#define _NODISCARD_FRIEND _NODISCARD friend
+#endif // TRANSITION, VSO-568006
+
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
 // that certain type trait specializations have the standard-mandated semantics
 #ifndef __has_cpp_attribute
