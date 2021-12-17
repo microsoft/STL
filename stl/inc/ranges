@@ -3675,7 +3675,8 @@ namespace ranges {
             }
 
             _NODISCARD constexpr iterator_t<_BaseTy> base() && noexcept(
-                is_nothrow_move_constructible_v<iterator_t<_BaseTy>>) /* strengthened */ {
+                is_nothrow_move_constructible_v<iterator_t<_BaseTy>>) /* strengthened */
+                requires forward_range<_Vw> {
                 return _STD move(_It._Get_current());
             }
 
@@ -3756,7 +3757,8 @@ namespace ranges {
 
         _NODISCARD constexpr auto begin() {
             if constexpr (forward_range<_Vw>) {
-                return _Outer_iter<_Simple_view<_Vw>>{*this, _RANGES begin(_Range)};
+                constexpr bool _Both_simple = _Simple_view<_Vw> && _Simple_view<_Pat>;
+                return _Outer_iter<_Both_simple>{*this, _RANGES begin(_Range)};
             } else {
                 this->_Current = _RANGES begin(_Range);
                 return _Outer_iter<false>{*this};
@@ -3772,7 +3774,8 @@ namespace ranges {
         // clang-format off
         _NODISCARD constexpr auto end() requires forward_range<_Vw> && common_range<_Vw> {
             // clang-format on
-            return _Outer_iter<_Simple_view<_Vw>>{*this, _RANGES end(_Range)};
+            constexpr bool _Both_simple = _Simple_view<_Vw> && _Simple_view<_Pat>;
+            return _Outer_iter<_Both_simple>{*this, _RANGES end(_Range)};
         }
 
         _NODISCARD constexpr auto end() const {
