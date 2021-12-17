@@ -36,7 +36,8 @@
 // (Keep the cgmanifest.json commitHash in sync.)
 
 
-#pragma once
+#ifndef FLOAT_FIXED_PRECISION_TO_CHARS_TEST_CASES_HPP
+#define FLOAT_FIXED_PRECISION_TO_CHARS_TEST_CASES_HPP
 
 #include <charconv>
 
@@ -1259,3 +1260,5 @@ inline constexpr FloatPrecisionToCharsTestCase float_fixed_precision_to_chars_te
     {0x1.fffffep+126f, chars_format::fixed, 0, "170141173319264429905852091742258462720"},
     {0x1.fffffep+127f, chars_format::fixed, 0, "340282346638528859811704183484516925440"},
 };
+
+#endif // FLOAT_FIXED_PRECISION_TO_CHARS_TEST_CASES_HPP

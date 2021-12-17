@@ -57,8 +57,6 @@ struct _Monobj { // store reference to monetary amount
 
     _Money& _Val; // the monetary amount reference
     bool _Intl; // international flag
-
-    _Monobj& operator=(const _Monobj&) = delete;
 };
 
 template <class _Money>
@@ -195,14 +193,14 @@ struct _Quote_in { // store reference to string
     _Mystr& _Str; // reference to string
     _Elem _Delim; // delimiter element
     _Elem _Escape; // escape element
-
-    _Quote_in& operator=(const _Quote_in&) = delete;
 };
 
 template <class _Elem, class _Traits, class _Sizet>
 struct _Quote_out { // store pointer/length for string
     _Quote_out(const _Elem* _Ptr_obj, _Sizet _Size_obj, _Elem _Delim_obj, _Elem _Escape_obj)
         : _Ptr(_Ptr_obj), _Size(_Size_obj), _Delim(_Delim_obj), _Escape(_Escape_obj) {}
+
+    _Quote_out(const _Quote_out&) = default;
 
     const _Elem* _Ptr; // pointer to string
     _Sizet _Size; // length of string
