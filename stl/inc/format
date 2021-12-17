@@ -40,9 +40,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_format
-#define _MESSAGE "The contents of <format> are available only in c++latest;"
-#pragma message(_WARNING_MESSAGE("STL4033", _MESSAGE))
-#undef _MESSAGE // TRANSITION, DevCom-1479701
+#pragma message(_WARNING_MESSAGE("STL4033", "The contents of <format> are available only in c++latest;"))
 #pragma message(_WARNING_MESSAGE("STL4033", "see https://github.com/microsoft/STL/issues/1814 for details."))
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
