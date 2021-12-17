@@ -3107,7 +3107,7 @@ namespace move_iterator_test {
         input_iter& operator++();
         void operator++(int);
 
-        constexpr friend rvalue_reference iter_move(input_iter const&) noexcept {
+        friend constexpr rvalue_reference iter_move(input_iter const&) noexcept {
             return {};
         }
         friend void iter_swap(input_iter const&, input_iter const&) noexcept {}

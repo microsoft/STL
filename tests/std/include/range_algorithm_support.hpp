@@ -453,11 +453,11 @@ namespace test {
             ++ptr_;
         }
 
-        [[nodiscard]] constexpr friend Element&& iter_move(iterator const& i) requires at_least<input> {
+        [[nodiscard]] friend constexpr Element&& iter_move(iterator const& i) requires at_least<input> {
             return std::move(*i.ptr_);
         }
 
-        constexpr friend void iter_swap(iterator const& x, iterator const& y)
+        friend constexpr void iter_swap(iterator const& x, iterator const& y)
             noexcept(std::is_nothrow_swappable_v<Element>) requires at_least<input> && std::swappable<Element> {
             ranges::swap(*x.ptr_, *y.ptr_);
         }
