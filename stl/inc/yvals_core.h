@@ -279,6 +279,7 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
+// P0288R9 move_only_function
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0448R4 <spanstream>
 // P0943R6 Supporting C Atomics In C++
@@ -1381,9 +1382,10 @@
 #define __cpp_lib_allocate_at_least 202106L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_byteswap       202110L
-#define __cpp_lib_invoke_r       202106L
-#define __cpp_lib_is_scoped_enum 202011L
+#define __cpp_lib_byteswap           202110L
+#define __cpp_lib_invoke_r           202106L
+#define __cpp_lib_is_scoped_enum     202011L
+#define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
