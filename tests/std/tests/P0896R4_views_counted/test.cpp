@@ -47,6 +47,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((with_writable_iterators<instantiator, int>::call(), true));
+    STATIC_ASSERT(with_writable_iterators<instantiator, int>::call());
     with_writable_iterators<instantiator, int>::call();
 }
