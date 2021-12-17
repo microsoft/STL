@@ -30,10 +30,8 @@ int __stdcall __std_init_once_complete_clr(void** _LpInitOnce, unsigned long _Dw
     _CSTD abort();
 }
 
-#if defined(_M_ARM64EC)
-#error ARM64EC is not expected here
-#elif defined(_M_HYBRID)
-#error CHPE is not expected here
+#if defined(_M_ARM64EC) || defined(_M_HYBRID)
+// <mutex> uses the forwarder fallbacks for ARM64EC and CHPE.
 #elif defined(_M_IX86)
 #pragma comment(linker, "/ALTERNATENAME:__imp____std_init_once_begin_initialize@16=__imp__InitOnceBeginInitialize@16")
 #pragma comment(linker, "/ALTERNATENAME:__imp____std_init_once_complete@12=__imp__InitOnceComplete@12")
