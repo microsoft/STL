@@ -92,7 +92,17 @@ _NODISCARD constexpr _Ty rotr(_Ty _Val, int _Rotation) noexcept;
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
 _NODISCARD constexpr _Ty rotl(const _Ty _Val, const int _Rotation) noexcept {
     constexpr auto _Digits = numeric_limits<_Ty>::digits;
-    const auto _Remainder  = _Rotation % _Digits;
+
+    if (!_STD is_constant_evaluated()) {
+        if constexpr (_Digits == 64) {
+            return _rotl64(_Val, _Rotation);
+        } else if constexpr (_Digits == 32) {
+            return _rotl(_Val, _Rotation);
+        }
+        // TRANSITION: fallback to non-intrinsic case until <intrin0.h> changes
+    }
+
+    const auto _Remainder = _Rotation % _Digits;
     if (_Remainder > 0) {
         return static_cast<_Ty>(
             static_cast<_Ty>(_Val << _Remainder) | static_cast<_Ty>(_Val >> (_Digits - _Remainder)));
@@ -106,7 +116,17 @@ _NODISCARD constexpr _Ty rotl(const _Ty _Val, const int _Rotation) noexcept {
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled>
 _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
     constexpr auto _Digits = numeric_limits<_Ty>::digits;
-    const auto _Remainder  = _Rotation % _Digits;
+
+    if (!_STD is_constant_evaluated()) {
+        if constexpr (_Digits == 64) {
+            return _rotr64(_Val, _Rotation);
+        } else if constexpr (_Digits == 32) {
+            return _rotr(_Val, _Rotation);
+        }
+        // TRANSITION: fallback to non-intrinsic case until <intrin0.h> changes
+    }
+
+    const auto _Remainder = _Rotation % _Digits;
     if (_Remainder > 0) {
         return static_cast<_Ty>(
             static_cast<_Ty>(_Val >> _Remainder) | static_cast<_Ty>(_Val << (_Digits - _Remainder)));
