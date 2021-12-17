@@ -3487,7 +3487,7 @@ namespace ranges {
 
     // clang-format off
     template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
-        requires (_Idx < 2)
+        requires ((_Idx  == 0 && copyable<_It>) || _Idx == 1)
     _NODISCARD constexpr auto get(const subrange<_It, _Se, _Ki>& _Val) {
         if constexpr (_Idx == 0) {
             return _Val.begin();
@@ -3497,7 +3497,7 @@ namespace ranges {
     }
 
     template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
-        requires (_Idx < 2)
+        requires ((_Idx  == 0 && copyable<_It>) || _Idx == 1)
     _NODISCARD constexpr auto get(subrange<_It, _Se, _Ki>&& _Val) {
         if constexpr (_Idx == 0) {
             return _Val.begin();
