@@ -4,6 +4,11 @@
 #include <assert.h>
 #include <memory>
 #include <utility>
+#ifndef _M_CEE_PURE // in /clr:pure we miss runtime coverage of weak_ptr converting constructor
+#include <atomic>
+#include <thread>
+#endif // _M_CEE_PURE
+
 using namespace std;
 
 // Also test GH-1102 "<memory>: weak_ptr conversions don't preserve control blocks for expired objects"
@@ -60,6 +65,72 @@ void test_owner_equal() {
     assert(!owner_equal(wp_expired, wp_expired_different));
 }
 
+void test_gh_000258_sometimes_avoid_locking() {
+#ifndef _M_CEE_PURE
+    struct base1 {
+        int i = 0;
+    };
+
+    struct base2 {
+        int j = 0;
+    };
+
+    struct base3 {
+        int k = 0;
+    };
+
+    struct derived : virtual base1, virtual base2, base3 {};
+
+    static_assert(weak_ptr<base1>::_Must_avoid_expired_conversions_from<derived>, "Should avoid expired");
+    static_assert(weak_ptr<base2>::_Must_avoid_expired_conversions_from<derived>, "Should avoid expired");
+    static_assert(weak_ptr<const base1>::_Must_avoid_expired_conversions_from<derived>, "Should avoid expired");
+    static_assert(weak_ptr<const base2>::_Must_avoid_expired_conversions_from<derived>, "Should avoid expired");
+    static_assert(weak_ptr<const base1>::_Must_avoid_expired_conversions_from<const derived>, "Should avoid expired");
+    static_assert(weak_ptr<const base2>::_Must_avoid_expired_conversions_from<const derived>, "Should avoid expired");
+
+    static_assert(!weak_ptr<base3>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
+    static_assert(!weak_ptr<const base3>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
+    static_assert(!weak_ptr<const base3>::_Must_avoid_expired_conversions_from<const derived>, "Should optimize");
+    static_assert(!weak_ptr<derived>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
+    static_assert(!weak_ptr<const derived>::_Must_avoid_expired_conversions_from<derived>, "Should optimize");
+    static_assert(!weak_ptr<const derived>::_Must_avoid_expired_conversions_from<const derived>, "Should optimize");
+
+    static_assert(!weak_ptr<int>::_Must_avoid_expired_conversions_from<int>, "Should optimize");
+    static_assert(!weak_ptr<const int>::_Must_avoid_expired_conversions_from<int>, "Should optimize");
+    static_assert(!weak_ptr<const int>::_Must_avoid_expired_conversions_from<const int>, "Should optimize");
+
+    for (int i = 0; i < 10; ++i) {
+        // not make_shared -- with make_shared the test would not catch errors
+        shared_ptr<derived> d{new derived{}};
+        weak_ptr<derived> wd{d};
+        atomic<bool> work{true};
+        thread thd{[&] {
+            d.reset();
+            this_thread::yield(); // make crash on incorrect optimization even more likely
+            work = false;
+        }};
+
+        if ((i % 2) == 0) {
+            while (work) {
+                // likely to crash if optimized for a case we shouldn't
+                weak_ptr<base1> wb1{wd};
+                weak_ptr<base2> wb2{wd};
+                weak_ptr<const base3> wb3{wd};
+            }
+        } else {
+            while (work) {
+                // likely to crash if optimized for a case we shouldn't
+                weak_ptr<base1> wb1{weak_ptr<derived>{wd}};
+                weak_ptr<base2> wb2{weak_ptr<derived>{wd}};
+                weak_ptr<base3> wb3{weak_ptr<derived>{wd}};
+            }
+        }
+
+        thd.join();
+    }
+#endif // _M_CEE_PURE
+}
+
 struct A {
     int a{10};
 };
@@ -78,6 +149,7 @@ struct D : B, C {
 
 int main() {
     test_owner_equal();
+    test_gh_000258_sometimes_avoid_locking();
 
     shared_ptr<D> spd(new D);
 

@@ -725,10 +725,10 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_format
 #error __cpp_lib_format is not defined
-#elif __cpp_lib_format != 201907L
-#error __cpp_lib_format is not 201907L
+#elif __cpp_lib_format != 202106L
+#error __cpp_lib_format is not 202106L
 #else
-STATIC_ASSERT(__cpp_lib_format == 201907L);
+STATIC_ASSERT(__cpp_lib_format == 202106L);
 #endif
 #else
 #ifdef __cpp_lib_format
@@ -1192,6 +1192,20 @@ STATIC_ASSERT(__cpp_lib_monadic_optional == 202110L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_move_only_function
+#error __cpp_lib_move_only_function is not defined
+#elif __cpp_lib_move_only_function != 202110L
+#error __cpp_lib_move_only_function is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_move_only_function == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_move_only_function
+#error __cpp_lib_move_only_function is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_node_extract
 #error __cpp_lib_node_extract is not defined
@@ -1236,7 +1250,7 @@ STATIC_ASSERT(__cpp_lib_not_fn == 201603L);
 STATIC_ASSERT(__cpp_lib_null_iterators == 201304L);
 #endif
 
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
+#if _HAS_CXX20
 #ifndef __cpp_lib_optional
 #error __cpp_lib_optional is not defined
 #elif __cpp_lib_optional != 202106L
@@ -1311,10 +1325,10 @@ STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202106L
-#error __cpp_lib_ranges is not 202106L
+#elif __cpp_lib_ranges != 202110L
+#error __cpp_lib_ranges is not 202110L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202106L);
+STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 #else
 #ifdef __cpp_lib_ranges
@@ -1600,6 +1614,20 @@ STATIC_ASSERT(__cpp_lib_string_contains == 202011L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_string_resize_and_overwrite
+#error __cpp_lib_string_resize_and_overwrite is not defined
+#elif __cpp_lib_string_resize_and_overwrite != 202110L
+#error __cpp_lib_string_resize_and_overwrite is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_string_resize_and_overwrite == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_string_resize_and_overwrite
+#error __cpp_lib_string_resize_and_overwrite is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_string_udls
 #error __cpp_lib_string_udls is not defined
 #elif __cpp_lib_string_udls != 201304L
@@ -1790,7 +1818,7 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
+#if _HAS_CXX20
 #ifndef __cpp_lib_variant
 #error __cpp_lib_variant is not defined
 #elif __cpp_lib_variant != 202106L
