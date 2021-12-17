@@ -58,7 +58,7 @@ auto make_testing_format_args(Args&&... vals) {
 template <class charT, class... Args>
 void throw_helper(const charT* fmt, const Args&... vals) {
     try {
-        (void) format(fmt, vals...);
+        (void) vformat(fmt, make_testing_format_args<charT>(vals...));
         assert(false);
     } catch (const format_error&) {
     }
@@ -500,7 +500,7 @@ void test_integral_specs() {
     // Alternate form
     assert(format(STR("{:#}"), Integral{0}) == STR("0"));
     assert(format(STR("{:#d}"), Integral{0}) == STR("0"));
-    assert(format(STR("{:#c}"), Integral{'a'}) == STR("a"));
+    throw_helper(STR("{:#c}"), Integral{'a'});
 
     assert(format(STR("{:#b}"), Integral{0}) == STR("0b0"));
     assert(format(STR("{:#B}"), Integral{0}) == STR("0B0"));
@@ -574,7 +574,8 @@ void test_integral_specs() {
 
 template <class charT, class T>
 void test_type(const charT* fmt, T val) {
-    assert(format(fmt, val) == format(fmt, static_cast<int>(val)));
+    assert(vformat(fmt, make_testing_format_args<charT>(val))
+           == vformat(fmt, make_testing_format_args<charT>(static_cast<int>(val))));
 }
 
 template <class charT>
@@ -589,6 +590,7 @@ void test_bool_specs() {
 
     // Alternate form
     throw_helper(STR("{:#}"), true);
+    throw_helper(STR("{:#c}"), true);
 
     // Leading zero
     throw_helper(STR("{:0}"), true);
@@ -665,6 +667,7 @@ void test_char_specs() {
     // Precision
     throw_helper(STR("{:.5}"), charT{'X'});
 
+
     // Types
     assert(format(STR("{:c}"), charT{'X'}) == STR("X"));
     throw_helper(STR("{:a}"), charT{'X'});
@@ -684,6 +687,15 @@ template <class charT, class Float>
 void test_float_specs() {
     const Float inf = numeric_limits<Float>::infinity();
     const Float nan = numeric_limits<Float>::quiet_NaN();
+
+    // invalid specs
+    throw_helper(STR("{:b}"), 3.14f);
+    throw_helper(STR("{:B}"), 3.14f);
+    throw_helper(STR("{:c}"), 3.14f);
+    throw_helper(STR("{:d}"), 3.14f);
+    throw_helper(STR("{:o}"), 3.14f);
+    throw_helper(STR("{:x}"), 3.14f);
+    throw_helper(STR("{:X}"), 3.14f);
 
     assert(format(STR("{:}"), Float{0}) == STR("0"));
     assert(format(STR("{:}"), inf) == STR("inf"));
@@ -979,9 +991,9 @@ void test_spec_replacement_field() {
     test_pointer_specs<charT>();
     test_string_specs<charT>();
 }
-
 template <class charT, class... Args>
-void test_size_helper(const size_t expected_size, const basic_string_view<charT> fmt, const Args&... args) {
+void test_size_helper_impl(
+    const size_t expected_size, const _Basic_format_string<charT, Args...> fmt, const Args&... args) {
     assert(formatted_size(fmt, args...) == expected_size);
     assert(formatted_size(locale::classic(), fmt, args...) == expected_size);
 
@@ -993,7 +1005,7 @@ void test_size_helper(const size_t expected_size, const basic_string_view<charT>
         assert(res.size == signed_size);
         assert(res.out - str.begin() == signed_size);
         assert(res.out == str.end());
-        assert(format(fmt, args...) == str);
+        assert(vformat(fmt._Str, make_testing_format_args<charT>(args...)) == str);
 
         basic_string<charT> locale_str;
         locale_str.resize(expected_size);
@@ -1013,11 +1025,21 @@ void test_size_helper(const size_t expected_size, const basic_string_view<charT>
     assert(str.starts_with(half_str));
 }
 
+template <class... Args>
+void test_size_helper(const size_t expected_size, const _Fmt_string<Args...> fmt, Args&&... args) {
+    test_size_helper_impl<char, Args...>(expected_size, fmt, forward<Args>(args)...);
+}
+template <class... Args>
+void test_size_helper(const size_t expected_size, const _Fmt_wstring<Args...> fmt, Args&&... args) {
+    test_size_helper_impl<wchar_t, Args...>(expected_size, fmt, forward<Args>(args)...);
+}
+
+
 template <class charT>
 void test_size() {
-    test_size_helper<charT>(3, STR("{}"), 123);
-    test_size_helper<charT>(6, STR("{}"), 3.1415);
-    test_size_helper<charT>(8, STR("{:8}"), STR("scully"));
+    test_size_helper(3, STR("{}"), 123);
+    test_size_helper(6, STR("{}"), 3.1415);
+    test_size_helper(8, STR("{:8}"), STR("scully"));
 }
 
 // The libfmt_ tests are derived from tests in
@@ -1344,6 +1366,29 @@ void test_slow_append_path() {
     assert(str == hello_world);
 }
 
+template <class charT>
+void test_sane_c_specifier() {
+    throw_helper(STR("{:#}"), true);
+    throw_helper(STR("{:#c}"), true);
+    throw_helper(STR("{:+}"), true);
+    throw_helper(STR("{:+c}"), true);
+    assert(format(STR("{:^}"), true) == STR("true"));
+    assert(format(STR("{:^c}"), true) == STR("\x1"));
+    throw_helper(STR("{:0}"), true);
+    throw_helper(STR("{:0c}"), true);
+    assert(format(STR("{:c}"), true) == STR("\x1"));
+
+    throw_helper(STR("{:#}"), 'c');
+    throw_helper(STR("{:#c}"), 'c');
+    throw_helper(STR("{:+}"), 'c');
+    throw_helper(STR("{:+c}"), 'c');
+    assert(format(STR("{:^}"), 'c') == STR("c"));
+    assert(format(STR("{:^c}"), 'c') == STR("c"));
+    throw_helper(STR("{:0}"), 'c');
+    throw_helper(STR("{:0c}"), 'c');
+    assert(format(STR("{:c}"), 'c') == STR("c"));
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1413,6 +1458,9 @@ void test() {
 
     test_slow_append_path<char>();
     test_slow_append_path<wchar_t>();
+
+    test_sane_c_specifier<char>();
+    test_sane_c_specifier<wchar_t>();
 }
 
 int main() {
