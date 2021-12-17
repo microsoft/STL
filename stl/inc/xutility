@@ -3247,10 +3247,13 @@ _NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const
 namespace ranges {
     // clang-format off
     template <class _From, class _To>
+    concept _Uses_nonqualification_pointer_conversion =
+        is_pointer_v<_From> && is_pointer_v<_To>
+        && !convertible_to<remove_pointer_t<_From>(*)[], remove_pointer_t<_To>(*)[]>;
+
+    template <class _From, class _To>
     concept _Convertible_to_non_slicing = convertible_to<_From, _To>
-        && !(is_pointer_v<decay_t<_From>>
-            && is_pointer_v<decay_t<_To>>
-            && _Not_same_as<remove_pointer_t<decay_t<_From>>, remove_pointer_t<decay_t<_To>>>);
+        && !_Uses_nonqualification_pointer_conversion<decay_t<_From>, decay_t<_To>>;
 
     template <class _Ty>
     concept _Pair_like = !is_reference_v<_Ty> && requires(_Ty __t) {
@@ -3330,7 +3333,10 @@ namespace ranges {
         // clang-format off
         subrange() requires default_initializable<_It> = default;
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-2326 (originally DevCom-1331017)
+#if !defined(_MSVC_INTERNAL_TESTING) && !defined(__clang__) && !defined(__EDG__) // TRANSITION, VS 17.1p3
+        // This was originally annotated as a workaround for DevCom-1331017, but the problem it corrects continued to
+        // manifest after that bug was fixed. We reduced a repro to file an additional bug, but the underlying issue had
+        // already been fixed in the internal compiler (see GH-2326).
         constexpr subrange(const subrange&) = default;
         constexpr subrange(subrange&&)      = default;
         constexpr subrange& operator=(const subrange&) = default;
