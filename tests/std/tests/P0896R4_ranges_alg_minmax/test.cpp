@@ -341,7 +341,7 @@ void test_gh_1893() {
     // ranges::clamp was sometimes performing too many projections,
     // and we should conform at least in release mode.
     // the test protects us from the wrong implementation with std::move instead of std::forward in ranges::clamp
-    // so reference_wrapper s and the lambda are necessary.
+    // so reference_wrappers and the lambda are necessary.
     string val           = "meow";
     string low           = "m";
     string high          = "n";
