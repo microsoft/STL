@@ -3330,7 +3330,10 @@ namespace ranges {
         // clang-format off
         subrange() requires default_initializable<_It> = default;
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, GH-2326 (originally DevCom-1331017)
+#if !defined(_MSVC_INTERNAL_TESTING) && !defined(__clang__) && !defined(__EDG__) // TRANSITION, VS 17.1p3
+        // This was originally annotated as a workaround for DevCom-1331017, but the problem it corrects continued to
+        // manifest after that bug was fixed. We reduced a repro to file an additional bug, but the underlying issue had
+        // already been fixed in the internal compiler (see GH-2326).
         constexpr subrange(const subrange&) = default;
         constexpr subrange(subrange&&)      = default;
         constexpr subrange& operator=(const subrange&) = default;

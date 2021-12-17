@@ -739,10 +739,10 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
 #ifndef __cpp_lib_format
 #error __cpp_lib_format is not defined
-#elif __cpp_lib_format != 201907L
-#error __cpp_lib_format is not 201907L
+#elif __cpp_lib_format != 202106L
+#error __cpp_lib_format is not 202106L
 #else
-STATIC_ASSERT(__cpp_lib_format == 201907L);
+STATIC_ASSERT(__cpp_lib_format == 202106L);
 #endif
 #else
 #ifdef __cpp_lib_format
@@ -1189,6 +1189,34 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #else
 #ifdef __cpp_lib_memory_resource
 #error __cpp_lib_memory_resource is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_monadic_optional
+#error __cpp_lib_monadic_optional is not defined
+#elif __cpp_lib_monadic_optional != 202110L
+#error __cpp_lib_monadic_optional is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_monadic_optional == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_monadic_optional
+#error __cpp_lib_monadic_optional is defined
+#endif
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_move_only_function
+#error __cpp_lib_move_only_function is not defined
+#elif __cpp_lib_move_only_function != 202110L
+#error __cpp_lib_move_only_function is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_move_only_function == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_move_only_function
+#error __cpp_lib_move_only_function is defined
 #endif
 #endif
 

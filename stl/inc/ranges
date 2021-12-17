@@ -3042,6 +3042,9 @@ namespace ranges {
         /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper, false> _Inner{};
     };
 
+    template <class _Rng> // TRANSITION, LLVM-47414
+    concept _Can_const_join = input_range<const _Rng> && is_reference_v<range_reference_t<const _Rng>>;
+
     // clang-format off
     template <class _Vw>
         requires is_reference_v<range_reference_t<_Vw>>
@@ -3340,7 +3343,12 @@ namespace ranges {
 
         // clang-format off
         _NODISCARD constexpr _Iterator<true> begin() const
-            requires input_range<const _Vw> && is_reference_v<_InnerRng<true>> {
+        #ifdef __clang__ // TRANSITION, LLVM-47414
+            requires _Can_const_join<_Vw>
+        #else // ^^^ workaround / no workaround vvv
+            requires input_range<const _Vw> && is_reference_v<_InnerRng<true>>
+        #endif // TRANSITION, LLVM-47414
+        {
             // clang-format on
             return _Iterator<true>{*this, _RANGES begin(_Range)};
         }
@@ -3356,7 +3364,12 @@ namespace ranges {
 
         // clang-format off
         _NODISCARD constexpr auto end() const
-            requires input_range<const _Vw> && is_reference_v<_InnerRng<true>> {
+        #ifdef __clang__ // TRANSITION, LLVM-47414
+            requires _Can_const_join<_Vw>
+        #else // ^^^ workaround / no workaround vvv
+            requires input_range<const _Vw> && is_reference_v<_InnerRng<true>>
+        #endif // TRANSITION, LLVM-47414
+        {
             if constexpr (forward_range<const _Vw> && forward_range<_InnerRng<true>>
                     && common_range<const _Vw> && common_range<_InnerRng<true>>) {
                 // clang-format on
