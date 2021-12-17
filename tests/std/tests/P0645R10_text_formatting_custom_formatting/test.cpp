@@ -10,6 +10,16 @@
 #include <type_traits>
 using namespace std;
 
+// copied from the text_formatting_formatting test case
+template <class charT, class... Args>
+auto make_testing_format_args(Args&&... vals) {
+    if constexpr (is_same_v<charT, wchar_t>) {
+        return make_wformat_args(forward<Args>(vals)...);
+    } else {
+        return make_format_args(forward<Args>(vals)...);
+    }
+}
+
 // copied from the string_view tests
 template <typename CharT>
 struct choose_literal; // not defined
@@ -74,12 +84,14 @@ constexpr void test_disabled_formatter_is_disabled() {
 
 template <class T, class charT>
 void test_custom_equiv_with_format(const charT* fmt_string, const T& val) {
-    assert(format(fmt_string, custom_formattable_type<T>{val}) == format(fmt_string, val));
+    assert(vformat(fmt_string, make_testing_format_args<charT>(custom_formattable_type<T>{val}))
+           == vformat(fmt_string, make_testing_format_args<charT>(val)));
 }
 
 template <class T, class charT>
 void test_custom_equiv_with_format_mixed(const charT* fmt_string, const T& val) {
-    assert(format(fmt_string, custom_formattable_type<T>{val}, val) == format(fmt_string, val, val));
+    assert(vformat(fmt_string, make_testing_format_args<charT>(custom_formattable_type<T>{val}, val))
+           == vformat(fmt_string, make_testing_format_args<charT>(val, val)));
 }
 
 template <class T, class charT>

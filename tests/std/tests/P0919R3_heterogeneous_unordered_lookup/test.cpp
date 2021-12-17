@@ -22,17 +22,21 @@ using namespace std;
 
 bool g_prohibit_allocations = false;
 
-struct prohibit_allocations {
-    prohibit_allocations() {
-        g_prohibit_allocations = true;
+class prohibit_allocations {
+public:
+    explicit prohibit_allocations(const bool value) : previous(g_prohibit_allocations) {
+        g_prohibit_allocations = value;
     }
 
     prohibit_allocations(const prohibit_allocations&) = delete;
     prohibit_allocations& operator=(const prohibit_allocations&) = delete;
 
     ~prohibit_allocations() {
-        g_prohibit_allocations = false;
+        g_prohibit_allocations = previous;
     }
+
+private:
+    const bool previous;
 };
 
 template <typename T>
@@ -258,11 +262,21 @@ void assert_range_empty(const pair<It, It>& p) {
 template <typename Container>
 void assert_unique() {
     Container cRaw;
+#if _HAS_CXX23
+    Container cRawToErase;
+    Container cRawToExtract;
+    Container cRawExtractTarget;
+#endif // _HAS_CXX23
+
     emplace_test_strings(cRaw);
+#if _HAS_CXX23
+    emplace_test_strings(cRawToErase);
+    emplace_test_strings(cRawToExtract);
+#endif // _HAS_CXX23
 
     // Test that transparent containers pass through the string_view; non-transparent containers
     // are only passed in here with string_view value_type, so they also don't allocate.
-    [[maybe_unused]] prohibit_allocations prohibitor;
+    [[maybe_unused]] prohibit_allocations prohibitor(true);
     const Container& c = cRaw;
     assert(c.find(testNotInString) == c.end());
     assert(c.contains(testNotInString) == false);
@@ -279,19 +293,46 @@ void assert_unique() {
         assert(rangeTarget.first == target);
         assert(next(rangeTarget.first) == rangeTarget.second);
     }
+
+#if _HAS_CXX23
+    assert(cRawToErase.erase(testNotInString) == 0);
+    for (const auto& example : testStrings) {
+        assert(cRawToErase.erase(example) == 1);
+    }
+    assert(cRawToErase.empty());
+
+    assert(!cRawToExtract.extract(testNotInString));
+    for (const auto& example : testStrings) {
+        auto n = cRawToExtract.extract(example);
+        [[maybe_unused]] prohibit_allocations unprohibitor(false);
+        cRawExtractTarget.insert(move(n));
+    }
+    assert(cRawToExtract.empty());
+    assert(cRawExtractTarget.size() == size(testStrings));
+#endif // _HAS_CXX23
 }
 
 template <typename Container>
 void assert_multi() {
     Container cRaw;
+#if _HAS_CXX23
+    Container cRawToErase;
+    Container cRawToExtract;
+    Container cRawExtractTarget;
+#endif // _HAS_CXX23
+
     const int dupes = 5;
     for (int dupe = 0; dupe < dupes; ++dupe) {
         emplace_test_strings(cRaw);
+#if _HAS_CXX23
+        emplace_test_strings(cRawToErase);
+        emplace_test_strings(cRawToExtract);
+#endif // _HAS_CXX23
     }
 
     // Test that transparent containers pass through the string_view; non-transparent containers
     // are only passed in here with string_view value_type, so they also don't allocate.
-    [[maybe_unused]] prohibit_allocations prohibitor;
+    [[maybe_unused]] prohibit_allocations prohibitor(true);
     const Container& c = cRaw;
     assert(c.find(testNotInString) == c.end());
     assert(c.contains(testNotInString) == false);
@@ -312,6 +353,23 @@ void assert_multi() {
         assert(rangeTarget.first == target);
         assert(rangeTarget.second == last);
     }
+
+#if _HAS_CXX23
+    assert(cRawToErase.erase(testNotInString) == 0);
+    for (const auto& example : testStrings) {
+        assert(cRawToErase.erase(example) == dupes);
+    }
+    assert(cRawToErase.empty());
+
+    assert(!cRawToExtract.extract(testNotInString));
+    for (const auto& example : testStrings) {
+        auto n = cRawToExtract.extract(example);
+        [[maybe_unused]] prohibit_allocations unprohibitor(false);
+        cRawExtractTarget.insert(move(n));
+    }
+    assert(cRawToExtract.size() == size(testStrings) * (dupes - 1));
+    assert(cRawExtractTarget.size() == size(testStrings));
+#endif // _HAS_CXX23
 }
 
 // Also test P0809 "Comparing unordered containers"

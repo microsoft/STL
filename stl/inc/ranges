@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_ranges
-#pragma message("The contents of <ranges> are available only in c++latest mode with concepts support;")
+#pragma message("The contents of <ranges> are available only in c++latest mode;")
 #pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
 #else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
 #include <iosfwd>
@@ -1140,16 +1140,21 @@ namespace ranges {
         // clang-format on
 
         _NODISCARD friend constexpr _Ioterator operator+(_Ioterator _It, const difference_type _Off) noexcept(
-            noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
-            return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
+            is_nothrow_move_constructible_v<_Ioterator>&& noexcept(
+                _It += _Off)) /* strengthened */ requires _Advanceable<_Wi> {
+            _It += _Off;
+            return _It;
         }
         _NODISCARD friend constexpr _Ioterator operator+(const difference_type _Off, _Ioterator _It) noexcept(
-            noexcept(static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
+            is_nothrow_move_constructible_v<_Wi>&& noexcept(
+                static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
             return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
         }
         _NODISCARD friend constexpr _Ioterator operator-(_Ioterator _It, const difference_type _Off) noexcept(
-            noexcept(static_cast<_Wi>(_It._Current - _Off))) /* strengthened */ requires _Advanceable<_Wi> {
-            return _Ioterator{static_cast<_Wi>(_It._Current - _Off)};
+            is_nothrow_move_constructible_v<_Ioterator>&& noexcept(
+                _It -= _Off)) /* strengthened */ requires _Advanceable<_Wi> {
+            _It -= _Off;
+            return _It;
         }
         _NODISCARD friend constexpr difference_type
             operator-(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
@@ -3675,7 +3680,8 @@ namespace ranges {
             }
 
             _NODISCARD constexpr iterator_t<_BaseTy> base() && noexcept(
-                is_nothrow_move_constructible_v<iterator_t<_BaseTy>>) /* strengthened */ {
+                is_nothrow_move_constructible_v<iterator_t<_BaseTy>>) /* strengthened */
+                requires forward_range<_Vw> {
                 return _STD move(_It._Get_current());
             }
 
@@ -3756,7 +3762,8 @@ namespace ranges {
 
         _NODISCARD constexpr auto begin() {
             if constexpr (forward_range<_Vw>) {
-                return _Outer_iter<_Simple_view<_Vw>>{*this, _RANGES begin(_Range)};
+                constexpr bool _Both_simple = _Simple_view<_Vw> && _Simple_view<_Pat>;
+                return _Outer_iter<_Both_simple>{*this, _RANGES begin(_Range)};
             } else {
                 this->_Current = _RANGES begin(_Range);
                 return _Outer_iter<false>{*this};
@@ -3772,7 +3779,8 @@ namespace ranges {
         // clang-format off
         _NODISCARD constexpr auto end() requires forward_range<_Vw> && common_range<_Vw> {
             // clang-format on
-            return _Outer_iter<_Simple_view<_Vw>>{*this, _RANGES end(_Range)};
+            constexpr bool _Both_simple = _Simple_view<_Vw> && _Simple_view<_Pat>;
+            return _Outer_iter<_Both_simple>{*this, _RANGES end(_Range)};
         }
 
         _NODISCARD constexpr auto end() const {
@@ -3962,7 +3970,7 @@ namespace ranges {
         // clang-format on
 
         _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
-            requires copyable<_Vw> {
+            requires copy_constructible<_Vw> {
             return _Range;
         }
         _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
