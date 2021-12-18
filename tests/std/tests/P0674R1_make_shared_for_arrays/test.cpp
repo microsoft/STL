@@ -648,6 +648,7 @@ struct WeirdDeleter {
 static_assert(!is_nothrow_destructible_v<WeirdDeleter<int>>);
 
 void test_GH_1733() {
+    // <memory>: error C2694 when calling make_shared on class with throwing destructor
     WeirdDeleter<NontrivialThrowingDtor> del;
     allocator<int> al;
 

@@ -66,6 +66,7 @@ void test_owner_equal() {
 }
 
 void test_gh_000258_sometimes_avoid_locking() {
+    // weak_ptr's converting constructors could sometimes avoid locking
 #ifndef _M_CEE_PURE
     struct base1 {
         int i = 0;

@@ -175,6 +175,7 @@ constexpr bool test_P0591R4() {
 }
 
 void test_GH_2021() { // COMPILE-ONLY
+    // <map>: Using operator[] on a std::pmr::map fails to compile when the mapped type is a std::pair
     pmr::map<int, pair<int, int>> tags;
     tags[0];
 }
