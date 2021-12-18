@@ -826,7 +826,7 @@ public:
     _CONSTEXPR20 allocator& operator=(const allocator&) = default;
 
     _CONSTEXPR20 void deallocate(_Ty* const _Ptr, const size_t _Count) {
-        _STL_ASSERT(_Ptr != nullptr || _Count == 0, "You can't deallocate a bunch of memory at nullptr");
+        _STL_ASSERT(_Ptr != nullptr || _Count == 0, "null pointer cannot point to a block of non-zero size");
         // no overflow check on the following multiply; we assume _Allocate did that check
         _Deallocate<_New_alignof<_Ty>>(_Ptr, sizeof(_Ty) * _Count);
     }

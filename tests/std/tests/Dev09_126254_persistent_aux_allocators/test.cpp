@@ -98,10 +98,24 @@ void dump_map() {
     }
 }
 
+struct alignas(64) OverAlignedInt {
+    int x;
+#pragma warning(suppress : 4324) // structure was padded due to alignment specifier
+};
+
 void test_gh_2362() {
-    allocator<int> al;
-    int* ptr = al.allocate(0);
-    al.deallocate(ptr, 0);
+    // user suggests to add a debug-only nullptr assertion inside std::allocator<T>::deallocate, checking the pointer
+    // parameter. Passing nullptr to this member function is undefined behavior when the passed size is non-zero
+    {
+        allocator<int> al;
+        int* ptr = al.allocate(0);
+        al.deallocate(ptr, 0);
+    }
+    {
+        allocator<OverAlignedInt> al;
+        OverAlignedInt* ptr = al.allocate(0);
+        al.deallocate(ptr, 0);
+    }
 }
 
 int main() {
