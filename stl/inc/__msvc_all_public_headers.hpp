@@ -17,7 +17,7 @@
 #pragma push_macro("new")
 #undef new
 #define new WILL NOT COMPILE
-#endif // !(defined( __CUDACC__ ) && defined(__clang__))
+#endif // !(defined(__CUDACC__) && defined(__clang__))
 
 // VSO-768746: mbctype.h macroizes _MS, _MP, _M1, and _M2. Include it first for test coverage.
 #ifndef _MSVC_TESTING_NVCC
