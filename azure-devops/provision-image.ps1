@@ -91,7 +91,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
   $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
 
   # https://github.com/PowerShell/PowerShell/releases/latest
-  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.1.4/PowerShell-7.1.4-win-x64.zip'
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.0/PowerShell-7.2.0-win-x64.zip'
   Write-Host "Downloading: $PowerShellZipUrl"
   $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
   $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
@@ -349,21 +349,30 @@ InstallCuda -Url $CudaUrl -Features $CudaFeatures
 Write-Host 'Updating PATH...'
 
 # Step 1: Read the system path, which was just updated by installing Python.
-$environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
+$currentSystemPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
 
 # Step 2: Update the local path (for this running script), so PipInstall can run python.exe.
 # Additional directories can be added here (e.g. if we extracted a zip file
 # or installed something that didn't update the system path).
-$Env:PATH="$($environmentKey.Path)"
+$Env:PATH="$($currentSystemPath)"
 
 # Step 3: Update the system path, permanently recording any additional directories that were added in the previous step.
-Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
-  -Name Path `
-  -Value "$Env:PATH"
+[Environment]::SetEnvironmentVariable("Path", "$Env:PATH", "Machine")
 
 Write-Host 'Finished updating PATH!'
 
+Write-Host 'Running PipInstall...'
+
 PipInstall pip
 PipInstall psutil
+
+Write-Host 'Finished running PipInstall!'
+
+Write-Host 'Setting other environment variables...'
+
+# The STL's PR/CI builds are totally unrepresentative of customer usage.
+[Environment]::SetEnvironmentVariable("VSCMD_SKIP_SENDTELEMETRY", "1", "Machine")
+
+Write-Host 'Finished setting other environment variables!'
 
 Write-Host 'Done!'

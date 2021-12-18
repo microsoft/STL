@@ -1320,7 +1320,7 @@ struct _Identity {
     using type = _Ty;
 };
 template <class _Ty>
-using _Identity_t = typename _Identity<_Ty>::type;
+using _Identity_t _MSVC_KNOWN_SEMANTICS = typename _Identity<_Ty>::type;
 
 #if _HAS_CXX20
 template <class _Ty>
@@ -1370,8 +1370,6 @@ class reference_wrapper;
 // (WG21-N4842 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have
 // invoke-like behavior. As a result, we've chosen to apply the part of P1065R2 resolving LWG-2894 as a defect report.
 
-#pragma warning(push) // TRANSITION, DevCom-936696
-#pragma warning(disable : 28278) // Function '%s' appears with no prototype in scope
 enum class _Invoker_strategy {
     _Functor,
     _Pmf_object,
@@ -1506,7 +1504,6 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
         return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
     }
 }
-#pragma warning(pop) // TRANSITION, DevCom-936696
 
 #pragma warning(push)
 #pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data (/Wall)
@@ -1848,7 +1845,7 @@ void ref(const _Ty&&) = delete;
 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<_Ty> ref(reference_wrapper<_Ty> _Val) noexcept {
-    return _STD ref(_Val.get());
+    return _Val;
 }
 
 template <class _Ty>
@@ -1861,7 +1858,7 @@ void cref(const _Ty&&) = delete;
 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<const _Ty> cref(reference_wrapper<_Ty> _Val) noexcept {
-    return _STD cref(_Val.get());
+    return _Val;
 }
 
 #if _HAS_CXX20

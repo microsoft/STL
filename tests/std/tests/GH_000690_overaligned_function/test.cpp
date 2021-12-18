@@ -43,16 +43,15 @@ struct not_overaligned_t {
 
 static_assert(alignof(overaligned_t) > alignof(std::max_align_t), "overaligned_t is not overaligned");
 
-using function_t = std::function<void(const void* storage, std::size_t storage_size)>;
+template <class function_t>
+void test() {
+    struct functions_t {
+        function_t first{overaligned_t{}};
+        char smallest_pad;
+        function_t second{overaligned_t{}};
+        function_t third{overaligned_t{}};
+    };
 
-struct functions_t {
-    function_t first{overaligned_t{}};
-    char smallest_pad;
-    function_t second{overaligned_t{}};
-    function_t third{overaligned_t{}};
-};
-
-int main() {
     functions_t functions;
     functions.first(&functions.first, sizeof(functions.first));
     functions.second(&functions.second, sizeof(functions.second));
@@ -60,6 +59,12 @@ int main() {
 
     function_t sfo{not_overaligned_t{}};
     sfo(&sfo, sizeof(sfo));
+}
 
-    return 0;
+
+int main() {
+    test<std::function<void(const void* storage, std::size_t storage_size)>>();
+#ifdef __cpp_lib_move_only_function
+    test<std::move_only_function<void(const void* storage, std::size_t storage_size)>>();
+#endif
 }

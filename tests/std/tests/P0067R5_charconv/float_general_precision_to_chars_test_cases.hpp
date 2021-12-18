@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
+#ifndef FLOAT_GENERAL_PRECISION_TO_CHARS_TEST_CASES_HPP
+#define FLOAT_GENERAL_PRECISION_TO_CHARS_TEST_CASES_HPP
 
 #include <charconv>
 
@@ -1213,3 +1214,5 @@ inline constexpr FloatPrecisionToCharsTestCase float_general_precision_to_chars_
     {0x1.2ced34p+126f, chars_format::general, 39, "100000006944061726476491472742798852096"},
     {0x1.fffffep+127f, chars_format::general, 39, "340282346638528859811704183484516925440"},
 };
+
+#endif // FLOAT_GENERAL_PRECISION_TO_CHARS_TEST_CASES_HPP
