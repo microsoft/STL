@@ -1024,6 +1024,7 @@ bool test_lerp() {
 }
 
 void test_GH_1917() {
+    // <cmath>: lerp(1e+308, 5e+307, 4.0) spuriously overflows
     using bit_type = unsigned long long;
     STATIC_ASSERT(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
     {
