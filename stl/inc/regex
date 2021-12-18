@@ -201,8 +201,6 @@ struct _Cmp_icase { // functor to compare for case-insensitive equality
     }
 
     const _RxTraits& _Traits;
-
-    _Cmp_icase& operator=(const _Cmp_icase&) = delete;
 };
 
 template <class _RxTraits>
@@ -216,8 +214,6 @@ struct _Cmp_collate { // functor to compare for locale-specific equality
     }
 
     const _RxTraits& _Traits;
-
-    _Cmp_collate& operator=(const _Cmp_collate&) = delete;
 };
 
 struct _Regex_traits_base { // base of all regular expression traits

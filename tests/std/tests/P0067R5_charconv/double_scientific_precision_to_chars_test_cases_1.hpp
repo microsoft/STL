@@ -36,7 +36,8 @@
 // (Keep the cgmanifest.json commitHash in sync.)
 
 
-#pragma once
+#ifndef DOUBLE_SCIENTIFIC_PRECISION_TO_CHARS_TEST_CASES_1_HPP
+#define DOUBLE_SCIENTIFIC_PRECISION_TO_CHARS_TEST_CASES_1_HPP
 
 #include <charconv>
 
@@ -322,3 +323,5 @@ inline constexpr DoublePrecisionToCharsTestCase double_scientific_precision_to_c
     {0x1.f8b0f962cdffbp+205, chars_format::scientific, 54,
         "1.013759573922253057274232226206362242218089109540405973e+62"},
 };
+
+#endif // DOUBLE_SCIENTIFIC_PRECISION_TO_CHARS_TEST_CASES_1_HPP
