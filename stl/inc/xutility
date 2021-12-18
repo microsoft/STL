@@ -5100,6 +5100,7 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
 #endif // __cpp_lib_byte
     else {
         using _Elem = _Iter_value_t<_InIt>;
+        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Elem) == 1);
         if constexpr (is_same_v<_Elem, bool>) {
             return _Val == true || _Val == false;
         } else if constexpr (is_signed_v<_Elem>) {
