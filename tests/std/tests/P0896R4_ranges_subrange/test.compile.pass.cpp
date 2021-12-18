@@ -1486,7 +1486,7 @@ namespace test_subrange {
 } // namespace test_subrange
 
 namespace test_lwg_3589 {
-    // LWG-3589 added a Constraint to std::get<0>(subrange) to require the iterator type to be copyable
+    // LWG-3589 added a Constraint to std::get<0>(const subrange&) to require the iterator type to be copyable
     template <class T, size_t I>
     concept CanGet = requires {
         std::get<I>(std::declval<T>());
@@ -1504,17 +1504,24 @@ namespace test_lwg_3589 {
         STATIC_ASSERT(std::input_iterator<I>);
         STATIC_ASSERT(std::sentinel_for<S, I>);
 
-        STATIC_ASSERT(CanGet<subrange<I, S>, 0> == std::copyable<I>);
+        STATIC_ASSERT(CanGet<const subrange<I, S>&, 0> == std::copyable<I>);
+        STATIC_ASSERT(CanGet<const subrange<I, S>&, 1>);
+        STATIC_ASSERT(!CanGet<const subrange<I, S>&, 2>);
+        STATIC_ASSERT(CanGet<subrange<I, S>, 0>);
         STATIC_ASSERT(CanGet<subrange<I, S>, 1>);
         STATIC_ASSERT(!CanGet<subrange<I, S>, 2>);
 
-        STATIC_ASSERT(CanRangesGet<subrange<I, S>, 0> == std::copyable<I>);
+        STATIC_ASSERT(CanRangesGet<const subrange<I, S>&, 0> == std::copyable<I>);
+        STATIC_ASSERT(CanRangesGet<const subrange<I, S>&, 1>);
+        STATIC_ASSERT(!CanRangesGet<const subrange<I, S>&, 2>);
+        STATIC_ASSERT(CanRangesGet<subrange<I, S>, 0>);
         STATIC_ASSERT(CanRangesGet<subrange<I, S>, 1>);
         STATIC_ASSERT(!CanRangesGet<subrange<I, S>, 2>);
 
         return true;
     }
 
+    // Validate with a copyable iterator type, and with a move-only iterator type
     STATIC_ASSERT(test<int*, int*>());
     STATIC_ASSERT(test<ranges::iterator_t<ranges::istream_view<int>>, ranges::sentinel_t<ranges::istream_view<int>>>());
 } // namespace test_lwg_3589
