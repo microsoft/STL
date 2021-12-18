@@ -26,6 +26,12 @@
 
 extern "C" long __isa_enabled;
 
+#ifdef _M_X64
+#define VECTORCALL __vectorcall
+#else
+#define VECTORCALL
+#endif
+
 static bool _Use_avx2() {
     return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
 }
@@ -453,7 +459,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 } // extern "C"
 
 template <class _Callback>
-static const void* __vectorcall __std_find_trivial_avx2(
+static const void* VECTORCALL __std_find_trivial_avx2(
     const void* _First, size_t _Size, __m256i _Comparand, _Callback _Get_mask) noexcept {
     // We read by 32-byte pieces, and we align pointers to 32-byte boundary.
     // From start/end partial pieces we mask out matches that don't belong to the range.
@@ -503,7 +509,7 @@ static const void* __vectorcall __std_find_trivial_avx2(
 }
 
 template <class _Callback>
-static const void* __vectorcall __std_find_trivial_sse2(
+static const void* VECTORCALL __std_find_trivial_sse2(
     const void* _First, size_t _Size, __m128i _Comparand, _Callback _Get_mask) noexcept {
     // We read by 16-byte pieces, and we align pointers to 16-byte boundary.
     // From start/end partial pieces we mask out matches that don't belong to the range.
