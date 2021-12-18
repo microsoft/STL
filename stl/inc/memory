@@ -3246,7 +3246,7 @@ public:
         return _Mypair._Get_first();
     }
 
-    _NODISCARD_PURE_OP add_lvalue_reference_t<_Ty> operator*() const noexcept /* strengthened */ {
+    _NODISCARD_PURE_OP add_lvalue_reference_t<_Ty> operator*() const noexcept(noexcept(*_STD declval<pointer>())) {
         return *_Mypair._Myval2;
     }
 
