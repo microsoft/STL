@@ -40,7 +40,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_format
-#pragma message("The contents of <format> are available only in c++latest mode with concepts support;")
+#pragma message("The contents of <format> are available only in c++latest mode;")
 #pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
@@ -97,7 +97,7 @@ enum class _Basic_format_arg_type : uint8_t {
 static_assert(static_cast<int>(_Basic_format_arg_type::_Custom_type) < 16, "must fit in 4-bit bitfield");
 
 _NODISCARD constexpr bool _Is_integral_fmt_type(_Basic_format_arg_type _Ty) {
-    return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_ULong_long_type;
+    return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Char_type;
 }
 _NODISCARD constexpr bool _Is_arithmetic_fmt_type(_Basic_format_arg_type _Ty) {
     return _Ty > _Basic_format_arg_type::_None && _Ty <= _Basic_format_arg_type::_Long_double_type;
@@ -216,6 +216,12 @@ public:
     _NODISCARD constexpr size_t next_arg_id() {
         if (_Next_arg_id < 0) {
             _THROW(format_error("Can not switch from manual to automatic indexing"));
+        }
+
+        if (_STD is_constant_evaluated()) {
+            if (static_cast<size_t>(_Next_arg_id) >= _Num_args) {
+                _You_see_this_error_because_arg_id_is_out_of_range();
+            }
         }
 
         return static_cast<size_t>(_Next_arg_id++);
@@ -538,7 +544,7 @@ private:
         return (_Len >= 4) ? 4 : -1;
     }
 
-    _NODISCARD static int _Estimate_utf8_character_width(const char* const _Ptr, const int _Units) noexcept {
+    _NODISCARD static constexpr int _Estimate_utf8_character_width(const char* const _Ptr, const int _Units) noexcept {
         // Return an estimate for the width of the character composed of _Units code units,
         // whose first code unit is denoted by _Ptr.
         auto _Ch = static_cast<char32_t>(*_Ptr);
@@ -567,7 +573,8 @@ private:
     }
 
 public:
-    _NODISCARD int _Units_in_next_character(const char* const _First, const char* const _Last) const noexcept {
+    _NODISCARD constexpr int _Units_in_next_character(
+        const char* const _First, const char* const _Last) const noexcept {
         // Returns a count of the number of code units that compose the first encoded character in
         // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
         // *_First is not a valid lead byte.
@@ -592,7 +599,7 @@ public:
         }
     }
 
-    _NODISCARD const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
+    _NODISCARD constexpr const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
         // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
         // continuation byte) in [_First, _Last).
         if constexpr (_Statically_Utf8) {
@@ -615,7 +622,7 @@ public:
         }
     }
 
-    _NODISCARD int _Estimate_width(const char* const _Ptr, const int _Units) const {
+    _NODISCARD constexpr int _Estimate_width(const char* const _Ptr, const int _Units) const {
         // Return an estimate for the width of the character composed of _Units code units,
         // whose first code unit is denoted by _Ptr.
         if constexpr (_Statically_Utf8) {
@@ -635,7 +642,8 @@ public:
 template <bool _Statically_Utf8>
 class _Fmt_codec<wchar_t, _Statically_Utf8> {
 public:
-    _NODISCARD int _Units_in_next_character(const wchar_t* _First, const wchar_t* const _Last) const noexcept {
+    _NODISCARD constexpr int _Units_in_next_character(
+        const wchar_t* _First, const wchar_t* const _Last) const noexcept {
         // Returns a count of the number of code units that compose the first encoded character in
         // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
         // *_First is an unpaired surrogate.
@@ -656,12 +664,12 @@ public:
         return 2; // surrogate pair
     }
 
-    _NODISCARD const wchar_t* _Find_encoded(
+    _NODISCARD constexpr const wchar_t* _Find_encoded(
         const wchar_t* const _First, const wchar_t* const _Last, const wchar_t _Val) const {
         return _Find_unchecked(_First, _Last, _Val);
     }
 
-    _NODISCARD int _Estimate_width(const wchar_t* const _Ptr, const int _Units) const {
+    _NODISCARD constexpr int _Estimate_width(const wchar_t* const _Ptr, const int _Units) const {
         // Return an estimate for the width of the character composed of _Units code units,
         // whose first code unit is denoted by _Ptr.
         auto _Ch = static_cast<char32_t>(*_Ptr);
@@ -678,7 +686,8 @@ public:
 };
 
 template <class _CharT, _Parse_align_callbacks<_CharT> _Callbacks_type>
-_NODISCARD const _CharT* _Parse_align(const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
+_NODISCARD constexpr const _CharT* _Parse_align(
+    const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
     // align and fill
     _STL_INTERNAL_CHECK(_First != _Last && *_First != '}');
     auto _Parsed_align = _Fmt_align::_None;
@@ -901,6 +910,11 @@ _NODISCARD constexpr const _CharT* _Parse_format_specs(
     if (*_First != '}') {
         _Callbacks._On_type(*_First);
         ++_First;
+    } else {
+        // call the type callback so it gets a default type, this is required
+        // since _Specs_checker needs to be able to tell that it got a default type
+        // to raise an error for default formatted bools with a sign modifier
+        _Callbacks._On_type(static_cast<_CharT>('\0'));
     }
 
     return _First;
@@ -944,7 +958,7 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
 }
 
 template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
-void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
+constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
     auto _First = _Format_str.data();
     auto _Last  = _First + _Format_str.size();
     const _Fmt_codec<_CharT> _Codec;
@@ -1055,9 +1069,6 @@ public:
     }
 
     constexpr void _On_type(const _CharT _Type) {
-        if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
-            _THROW(format_error("Invalid type specification."));
-        }
         _Specs._Type = static_cast<char>(_Type);
     }
 
@@ -1205,25 +1216,25 @@ private:
     }
 };
 
-class _Numeric_specs_checker {
+// Checks that the type of the argument printed by a replacement
+// field with format specs actually satisfies the requirements for
+// that format spec. If the requirements are met then calls the base class
+// handler method.
+template <class _Handler>
+class _Specs_checker : public _Handler {
 private:
-    _Basic_format_arg_type _Arg_type = _Basic_format_arg_type::_None;
+    _Basic_format_arg_type _Arg_type;
+    // we'll see this if we get a modifier that requires an integer presentation type
+    // for types that can have either integer or non-integer presentation types (charT or bool)
+    bool _Need_arithmetic_presentation_type = false;
 
 public:
-    constexpr explicit _Numeric_specs_checker(_Basic_format_arg_type _Arg_type_) : _Arg_type(_Arg_type_) {}
+    constexpr explicit _Specs_checker(const _Handler& _Handler_inst, const _Basic_format_arg_type _Arg_type_)
+        : _Handler(_Handler_inst), _Arg_type(_Arg_type_) {}
 
     constexpr void _Require_numeric_argument() const {
         if (!_Is_arithmetic_fmt_type(_Arg_type)) {
             _THROW(format_error("Format specifier requires numeric argument."));
-        }
-    }
-
-    constexpr void _Check_sign() const {
-        _Require_numeric_argument();
-        if (_Is_integral_fmt_type(_Arg_type) && _Arg_type != _Basic_format_arg_type::_Int_type
-            && _Arg_type != _Basic_format_arg_type::_Long_long_type
-            && _Arg_type != _Basic_format_arg_type::_Char_type) {
-            _THROW(format_error("Format specifier requires signed argument."));
         }
     }
 
@@ -1232,41 +1243,162 @@ public:
             _THROW(format_error("Precision not allowed for this argument type."));
         }
     }
-};
-
-// Uses _Numeric_specs_checker to check that the type of the argument printed by
-// a replacement field with format specs actually satisfies the requirements for
-// that format spec. If the requirements are met then calls the base class
-// handler method.
-template <class _Handler>
-class _Specs_checker : public _Handler {
-private:
-    _Numeric_specs_checker _Numeric_checker;
-
-public:
-    constexpr explicit _Specs_checker(const _Handler& _Handler_inst, const _Basic_format_arg_type _Arg_type_)
-        : _Handler(_Handler_inst), _Numeric_checker(_Arg_type_) {}
 
     // _On_align has no checking, since we don't implement numeric alignments.
 
+    constexpr void _On_localized() {
+        _Require_numeric_argument();
+        _Handler::_On_localized();
+    }
+
     constexpr void _On_hash() {
-        // Note that '#' is not valid for CharT or bool unless you
-        // pass a numeric presentation type, but we encounter '#' before
-        // the presentation type so we can not check that requirement here
-        _Numeric_checker._Require_numeric_argument();
+        _Need_arithmetic_presentation_type = true;
+        _Require_numeric_argument();
         _Handler::_On_hash();
     }
 
+    constexpr void _On_sign(_Fmt_sign _Sgn) {
+        _Need_arithmetic_presentation_type = true;
+        _Require_numeric_argument();
+        _Handler::_On_sign(_Sgn);
+    }
+
     constexpr void _On_zero() {
-        // Note 0 is again not valid for CharT or bool unless a numeric
-        // presentation type is used.
-        _Numeric_checker._Require_numeric_argument();
+        _Need_arithmetic_presentation_type = true;
+        _Require_numeric_argument();
         _Handler::_On_zero();
     }
 
     constexpr void _On_precision(int _Precision) {
-        _Numeric_checker._Check_precision();
+        _Check_precision();
         _Handler::_On_precision(_Precision);
+    }
+
+    template <class _Ty>
+    constexpr void _On_dynamic_precision(const _Ty _Val) {
+        _Check_precision();
+        _Handler::_On_dynamic_precision(_Val);
+    }
+
+    template <class _CharT>
+    constexpr void _On_type(_CharT _Type) {
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
+            _THROW(format_error("Invalid type specification."));
+        }
+        const char _Narrow_type = static_cast<char>(_Type);
+        enum class _Presentation_type_category { _Default, _Integer, _Floating, _String, _Pointer, _Char };
+        auto _Cat = _Presentation_type_category::_Default;
+        switch (_Narrow_type) {
+        case '\0':
+            break;
+        case 's':
+            _Cat = _Presentation_type_category::_String;
+            break;
+        case 'c':
+            _Cat = _Presentation_type_category::_Char;
+            break;
+        case 'd':
+        case 'B':
+        case 'b':
+        case 'X':
+        case 'x':
+        case 'o':
+            _Cat = _Presentation_type_category::_Integer;
+            break;
+        case 'A':
+        case 'a':
+        case 'E':
+        case 'e':
+        case 'F':
+        case 'f':
+        case 'G':
+        case 'g':
+            _Cat = _Presentation_type_category::_Floating;
+            break;
+        case 'p':
+            _Cat = _Presentation_type_category::_Pointer;
+            break;
+        default:
+            _THROW(format_error("Invalid presentation type specifier"));
+        }
+
+        switch (_Arg_type) {
+        case _Basic_format_arg_type::_None:
+            _STL_INTERNAL_CHECK(!"Invalid argument type.");
+            break;
+        case _Basic_format_arg_type::_Bool_type:
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_String;
+            }
+            // note, we don't get a call if there isn't a type, but none is valid for everything.
+            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer
+                && _Cat != _Presentation_type_category::_Char) {
+                _THROW(format_error("Invalid presentation type for bool"));
+            }
+            break;
+        case _Basic_format_arg_type::_Char_type:
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_Char;
+            }
+
+            if (_Cat != _Presentation_type_category::_Char && _Cat != _Presentation_type_category::_Integer) {
+                _THROW(format_error("Invalid presentation type for char/wchar_t"));
+            }
+            break;
+        case _Basic_format_arg_type::_Int_type:
+        case _Basic_format_arg_type::_UInt_type:
+        case _Basic_format_arg_type::_Long_long_type:
+        case _Basic_format_arg_type::_ULong_long_type:
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_Integer;
+            }
+
+            if (_Cat != _Presentation_type_category::_Integer && _Cat != _Presentation_type_category::_Char) {
+                _THROW(format_error("Invalid presentation type for integer"));
+            }
+            break;
+        case _Basic_format_arg_type::_Float_type:
+        case _Basic_format_arg_type::_Double_type:
+        case _Basic_format_arg_type::_Long_double_type:
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_Floating;
+            }
+
+            if (_Cat != _Presentation_type_category::_Floating) {
+                _THROW(format_error("Invalid presentation type for floating-point"));
+            }
+            break;
+        case _Basic_format_arg_type::_CString_type:
+        case _Basic_format_arg_type::_String_type:
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_String;
+            }
+
+            if (_Cat != _Presentation_type_category::_String) {
+                _THROW(format_error("Invalid presentation type for string"));
+            }
+            break;
+        case _Basic_format_arg_type::_Pointer_type:
+            if (_Cat == _Presentation_type_category::_Default) {
+                _Cat = _Presentation_type_category::_Pointer;
+            }
+
+            if (_Cat != _Presentation_type_category::_Pointer) {
+                _THROW(format_error("Invalid presentation type for pointer"));
+            }
+            break;
+        case _Basic_format_arg_type::_Custom_type:
+            // there's no checking we can do here for custom types
+            // (however if a custom type uses a standard formatter
+            // to do its spec parsing it should get the above checks)
+            break;
+        }
+
+        if (_Need_arithmetic_presentation_type && _Cat != _Presentation_type_category::_Integer
+            && _Cat != _Presentation_type_category::_Floating) {
+            _THROW(format_error("Modifier requires an integer presentation type for bool"));
+        }
+        _Handler::_On_type(_Type);
     }
 };
 
@@ -1367,10 +1499,10 @@ private:
     static constexpr size_t _Num_args       = sizeof...(_Args);
     static constexpr size_t _Storage_length = (_Traits::template _Storage_size<_Args> + ...);
 
-    // The actual storage representation: _Num_args offsets into _Storage, followed immediately by the untyped _Storage
-    // which holds copies of the object representations of arguments (with no regard for alignment). These must be
-    // allocated consecutively, since basic_format_args thinks it can store a pointer to _Index_array and use arithmetic
-    // to access the bytes of _Storage.
+    // The actual storage representation: _Num_args offsets into _Storage, followed immediately by the untyped
+    // _Storage which holds copies of the object representations of arguments (with no regard for alignment).
+    // These must be allocated consecutively, since basic_format_args thinks it can store a pointer to
+    // _Index_array and use arithmetic to access the bytes of _Storage.
     _Format_arg_index _Index_array[_Num_args];
     unsigned char _Storage[_Storage_length];
 
@@ -2101,9 +2233,7 @@ _NODISCARD _OutputIt _Write_integral(
         return _Fmt_write(_STD move(_Out), static_cast<_CharT>(_Value), _Specs, _Locale);
     }
 
-    if (_Specs._Precision != -1) {
-        _THROW(format_error("integral cannot have a precision"));
-    }
+    _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
     if (_Specs._Sgn == _Fmt_sign::_None) {
         _Specs._Sgn = _Fmt_sign::_Minus;
@@ -2113,9 +2243,6 @@ _NODISCARD _OutputIt _Write_integral(
     bool _To_upper = false;
 
     switch (_Specs._Type) {
-    case '\0':
-    case 'd':
-        break;
     case 'B':
         _To_upper = true;
         [[fallthrough]];
@@ -2131,8 +2258,6 @@ _NODISCARD _OutputIt _Write_integral(
     case 'o':
         _Base = 8;
         break;
-    default:
-        _THROW(format_error("invalid integral type"));
     }
 
     // long long -1 representation in binary is 64 bits + sign
@@ -2166,7 +2291,7 @@ _NODISCARD _OutputIt _Write_integral(
     string _Groups;
     if (_Specs._Localized) {
         _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
-        _Separators = _Count_separators(_End - _Buffer_start, _Groups);
+        _Separators = _Count_separators(static_cast<size_t>(_End - _Buffer_start), _Groups);
         // TRANSITION, separators may be wider for wide chars
         _Width += _Separators;
     }
@@ -2213,9 +2338,7 @@ _NODISCARD _OutputIt _Fmt_write(
         return _Write_integral(_STD move(_Out), static_cast<unsigned char>(_Value), _Specs, _Locale);
     }
 
-    if (_Specs._Precision != -1) {
-        _THROW(format_error("bool cannot have a precision"));
-    }
+    _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
     if (_Specs._Localized) {
         _Specs._Localized  = false;
@@ -2240,9 +2363,7 @@ _NODISCARD _OutputIt _Fmt_write(
         return _Write_integral(_STD move(_Out), _Value, _Specs, _Locale);
     }
 
-    if (_Specs._Precision != -1) {
-        _THROW(format_error("charT cannot have a precision"));
-    }
+    _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
     // Clear the type so that the string_view writer doesn't fail on 'c'.
     _Specs._Type = '\0';
@@ -2265,8 +2386,6 @@ _NODISCARD _OutputIt _Fmt_write(
     auto _Precision = _Specs._Precision;
 
     switch (_Specs._Type) {
-    case '\0':
-        break;
     case 'A':
         _To_upper = true;
         [[fallthrough]];
@@ -2303,8 +2422,6 @@ _NODISCARD _OutputIt _Fmt_write(
         _Format   = chars_format::general;
         _Exponent = 'e';
         break;
-    default:
-        _THROW(format_error("invalid floating point type"));
     }
 
     // Consider the powers of 2 in decimal:
@@ -2319,9 +2436,9 @@ _NODISCARD _OutputIt _Fmt_write(
     // Therefore, the min subnormal 2^-1074 consumes 1074 digits of precision (digits after the decimal point).
     // We need 3 more characters for a potential negative sign, the zero integer part, and the decimal point.
     // Therefore, the precision can be clamped to 1074.
-    // The largest number consumes 309 digits before the decimal point. With a precision of 1074, and it being negative,
-    // it would use a buffer of size 1074+309+2.
-    // We need to add an additional number to the max exponent to accommodate the ones place.
+    // The largest number consumes 309 digits before the decimal point. With a precision of 1074, and it being
+    // negative, it would use a buffer of size 1074+309+2. We need to add an additional number to the max
+    // exponent to accommodate the ones place.
     constexpr auto _Max_precision = 1074;
     constexpr auto _Buffer_size   = _Max_precision + DBL_MAX_10_EXP + 3;
     char _Buffer[_Buffer_size];
@@ -2389,7 +2506,7 @@ _NODISCARD _OutputIt _Fmt_write(
 
             if (_Specs._Localized) {
                 _Groups     = _STD use_facet<numpunct<_CharT>>(_Locale._Get()).grouping();
-                _Separators = _Count_separators(_Integral_end - _Buffer_start, _Groups);
+                _Separators = _Count_separators(static_cast<size_t>(_Integral_end - _Buffer_start), _Groups);
             }
         }
 
@@ -2480,29 +2597,12 @@ _NODISCARD _OutputIt _Fmt_write(
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const void* const _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    if (_Specs._Type != '\0' && _Specs._Type != 'p') {
-        _THROW(format_error("invalid const void* type"));
-    }
-
-    if (_Specs._Sgn != _Fmt_sign::_None) {
-        _THROW(format_error("const void* cannot have a sign"));
-    }
-
-    if (_Specs._Alt) {
-        _THROW(format_error("const void* cannot have an alternative representation"));
-    }
-
-    if (_Specs._Precision != -1) {
-        _THROW(format_error("const void* cannot have a precision"));
-    }
-
-    if (_Specs._Leading_zero) {
-        _THROW(format_error("const void* cannot have a leading zero"));
-    }
-
-    if (_Specs._Localized) {
-        _THROW(format_error("const void* cannot be localized"));
-    }
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'p');
+    _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
+    _STL_INTERNAL_CHECK(!_Specs._Alt);
+    _STL_INTERNAL_CHECK(_Specs._Precision == -1);
+    _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
+    _STL_INTERNAL_CHECK(!_Specs._Localized);
 
     // Since the bit width of 0 is 0x0, special-case it instead of complicating the math even more.
     int _Width = 3;
@@ -2571,25 +2671,11 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    if (_Specs._Type != '\0' && _Specs._Type != 's') {
-        _THROW(format_error("invalid string type"));
-    }
-
-    if (_Specs._Sgn != _Fmt_sign::_None) {
-        _THROW(format_error("string cannot have a sign"));
-    }
-
-    if (_Specs._Alt) {
-        _THROW(format_error("string cannot have an alternative representation"));
-    }
-
-    if (_Specs._Leading_zero) {
-        _THROW(format_error("string cannot have a leading zero"));
-    }
-
-    if (_Specs._Localized) {
-        _THROW(format_error("string cannot be localized"));
-    }
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 's');
+    _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
+    _STL_INTERNAL_CHECK(!_Specs._Alt);
+    _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
+    _STL_INTERNAL_CHECK(!_Specs._Localized);
 
     if (_Specs._Precision < 0 && _Specs._Width <= 0) {
         return _Fmt_write(_STD move(_Out), _Value);
@@ -2647,6 +2733,50 @@ struct _Arg_formatter {
         _STL_INTERNAL_CHECK(_Specs);
         _STL_INTERNAL_CHECK(_Ctx);
         return _Fmt_write(_Ctx->out(), _Val, *_Specs, _Ctx->_Get_lazy_locale());
+    }
+};
+
+// Special compile time version of _Parse_format_specs. This version is parameterized on
+// the type of the argument associated with the format specifier, since we don't really
+// care about avoiding code bloat for code that never runs at runtime, and we can't form
+// the erased basic_format_args structure at compile time.
+template <class _Ty, class _ParseContext>
+consteval typename _ParseContext::iterator _Compile_time_parse_format_specs(_ParseContext& _Pc) {
+    using _CharT                = typename _ParseContext::char_type;
+    using _Context              = basic_format_context<back_insert_iterator<_Fmt_buffer<_CharT>>, _CharT>;
+    using _ArgTraits            = _Format_arg_traits<_Context>;
+    using _FormattedTypeMapping = typename _ArgTraits::template _Storage_type<_Ty>;
+    // If the type is going to use a custom formatter we should just use that,
+    // instead of trying to instantiate a custom formatter for its erased handle
+    // type
+    using _FormattedType = conditional_t<is_same_v<_FormattedTypeMapping, typename basic_format_arg<_Context>::handle>,
+        _Ty, _FormattedTypeMapping>;
+    formatter<_FormattedType, _CharT> _Formatter{};
+    return _Formatter.parse(_Pc);
+}
+
+// set of format parsing actions that only checks for validity
+template <class _CharT, class... _Args>
+struct _Format_checker {
+    using _ParseContext = basic_format_parse_context<_CharT>;
+    using _ParseFunc    = typename _ParseContext::iterator (*)(_ParseContext&);
+
+    static constexpr size_t _Num_args = sizeof...(_Args);
+    _ParseContext _Parse_context;
+    _ParseFunc _Parse_funcs[_Num_args > 0 ? _Num_args : 1];
+
+    consteval explicit _Format_checker(basic_string_view<_CharT> _Fmt) noexcept
+        : _Parse_context(_Fmt, _Num_args), _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _ParseContext>...} {}
+    constexpr void _On_text(const _CharT*, const _CharT*) const noexcept {}
+    constexpr void _On_replacement_field(size_t, const _CharT*) const noexcept {}
+    constexpr const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT*) {
+        _Parse_context.advance_to(_Parse_context.begin() + (_First - _Parse_context.begin()._Unwrapped()));
+        if (_Id < _Num_args) {
+            auto _Iter = _Parse_funcs[_Id](_Parse_context); // TRANSITION, VSO-1451773 (workaround: named variable)
+            return _Iter._Unwrapped();
+        } else {
+            return _First;
+        }
     }
 };
 
@@ -2712,7 +2842,7 @@ template <class _Ty, class _CharT, _Basic_format_arg_type _ArgType>
 struct _Formatter_base {
     using _Pc = basic_format_parse_context<_CharT>;
 
-    typename _Pc::iterator parse(_Pc& _ParseCtx) {
+    constexpr typename _Pc::iterator parse(_Pc& _ParseCtx) {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
         const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
         if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
@@ -2772,8 +2902,8 @@ _FORMAT_SPECIALIZE_FOR(unsigned char, _Basic_format_arg_type::_UInt_type);
 template <>
 struct formatter<wchar_t, wchar_t> : _Formatter_base<wchar_t, wchar_t, _Basic_format_arg_type::_Char_type> {};
 
-// We could use the macro for these specializations, but it's confusing to refer to symbols that are defined inside the
-// macro in the macro's "call".
+// We could use the macro for these specializations, but it's confusing to refer to symbols that are defined
+// inside the macro in the macro's "call".
 template <_Format_supported_charT _CharT>
 struct formatter<_CharT*, _CharT> : _Formatter_base<_CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
 
@@ -2792,6 +2922,25 @@ struct formatter<basic_string<_CharT, _Traits, _Allocator>, _CharT>
 template <_Format_supported_charT _CharT, class _Traits>
 struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
+
+template <class _CharT, class... _Args>
+struct _Basic_format_string {
+    basic_string_view<_CharT> _Str;
+
+    template <class _Ty>
+        requires convertible_to<const _Ty&, basic_string_view<_CharT>>
+    consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
+        if (_Is_execution_charset_utf8()) {
+            _Parse_format_string(_Str, _Format_checker<_CharT, remove_cvref_t<_Args>...>{_Str});
+        }
+    }
+};
+
+template <class... _Args>
+using _Fmt_string = _Basic_format_string<char, type_identity_t<_Args>...>;
+
+template <class... _Args>
+using _Fmt_wstring = _Basic_format_string<wchar_t, type_identity_t<_Args>...>;
 
 using format_args  = basic_format_args<format_context>;
 using wformat_args = basic_format_args<wformat_context>;
@@ -2863,71 +3012,85 @@ _OutputIt vformat_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const string_view _Fmt, const _Types&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_format_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Fmt._Str, _STD make_format_args(_Args...));
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const wstring_view _Fmt, const _Types&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Fmt, _STD make_wformat_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Fmt._Str, _STD make_wformat_args(_Args...));
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_format_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt._Str, _STD make_format_args(_Args...));
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
-_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
-    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt, _STD make_wformat_args(_Args...));
+_OutputIt format_to(_OutputIt _Out, const locale& _Loc, const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat_to(_STD move(_Out), _Loc, _Fmt._Str, _STD make_wformat_args(_Args...));
 }
 
-_NODISCARD inline string vformat(const string_view _Fmt, const format_args _Args) {
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1433873
+#define _TEMPLATE_INT_0_NODISCARD                             \
+    template <int = 0> /* improves throughput, see GH-2329 */ \
+    _NODISCARD
+#else // ^^^ no workaround / workaround vvv
+#define _TEMPLATE_INT_0_NODISCARD _NODISCARD inline
+#endif // ^^^ workaround ^^^
+
+_TEMPLATE_INT_0_NODISCARD
+string vformat(const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
     return _Str;
 }
 
-_NODISCARD inline wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
+_TEMPLATE_INT_0_NODISCARD
+wstring vformat(const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Fmt, _Args);
     return _Str;
 }
 
-_NODISCARD inline string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
+_TEMPLATE_INT_0_NODISCARD
+string vformat(const locale& _Loc, const string_view _Fmt, const format_args _Args) {
     string _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args);
     return _Str;
 }
 
-_NODISCARD inline wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
+_TEMPLATE_INT_0_NODISCARD
+wstring vformat(const locale& _Loc, const wstring_view _Fmt, const wformat_args _Args) {
     wstring _Str;
     _Str.reserve(_Fmt.size() + _Args._Estimate_required_capacity());
     _STD vformat_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args);
     return _Str;
 }
 
+#undef _TEMPLATE_INT_0_NODISCARD // TRANSITION, VSO-1433873
+
 template <class... _Types>
-_NODISCARD string format(const string_view _Fmt, const _Types&... _Args) {
-    return _STD vformat(_Fmt, _STD make_format_args(_Args...));
+_NODISCARD string format(const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Fmt._Str, _STD make_format_args(_Args...));
 }
 
 template <class... _Types>
-_NODISCARD wstring format(const wstring_view _Fmt, const _Types&... _Args) {
-    return _STD vformat(_Fmt, _STD make_wformat_args(_Args...));
+_NODISCARD wstring format(const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Fmt._Str, _STD make_wformat_args(_Args...));
 }
 
 template <class... _Types>
-_NODISCARD string format(const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
-    return _STD vformat(_Loc, _Fmt, _STD make_format_args(_Args...));
+_NODISCARD string format(const locale& _Loc, const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Loc, _Fmt._Str, _STD make_format_args(_Args...));
 }
 
 template <class... _Types>
-_NODISCARD wstring format(const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
-    return _STD vformat(_Loc, _Fmt, _STD make_wformat_args(_Args...));
+_NODISCARD wstring format(const locale& _Loc, const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
+    return _STD vformat(_Loc, _Fmt._Str, _STD make_wformat_args(_Args...));
 }
 
 template <class _OutputIt>
@@ -2937,62 +3100,62 @@ struct format_to_n_result {
 };
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
-format_to_n_result<_OutputIt> format_to_n(
-    _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const string_view _Fmt, const _Types&... _Args) {
+format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_t<_OutputIt> _Max,
+    const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
     _Fmt_iterator_buffer<_OutputIt, char, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
-    _STD vformat_to(_Fmt_it{_Buf}, _Fmt, _STD make_format_args(_Args...));
+    _STD vformat_to(_Fmt_it{_Buf}, _Fmt._Str, _STD make_format_args(_Args...));
     return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
-format_to_n_result<_OutputIt> format_to_n(
-    _OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const wstring_view _Fmt, const _Types&... _Args) {
+format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_t<_OutputIt> _Max,
+    const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
     _Fmt_iterator_buffer<_OutputIt, wchar_t, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
-    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt, _STD make_wformat_args(_Args...));
+    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt._Str, _STD make_wformat_args(_Args...));
     return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <output_iterator<const char&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const locale& _Loc,
-    const string_view _Fmt, const _Types&... _Args) {
+    const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
     _Fmt_iterator_buffer<_OutputIt, char, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
-    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt, _STD make_format_args(_Args...));
+    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt._Str, _STD make_format_args(_Args...));
     return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <output_iterator<const wchar_t&> _OutputIt, class... _Types>
 format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_t<_OutputIt> _Max, const locale& _Loc,
-    const wstring_view _Fmt, const _Types&... _Args) {
+    const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
     _Fmt_iterator_buffer<_OutputIt, wchar_t, _Fmt_fixed_buffer_traits> _Buf(_STD move(_Out), _Max);
-    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt, _STD make_wformat_args(_Args...));
+    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt._Str, _STD make_wformat_args(_Args...));
     return {.out = _Buf._Out(), .size = _Buf._Count()};
 }
 
 template <class... _Types>
-_NODISCARD size_t formatted_size(const string_view _Fmt, const _Types&... _Args) {
+_NODISCARD size_t formatted_size(const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
     _Fmt_counting_buffer<char> _Buf;
-    _STD vformat_to(_Fmt_it{_Buf}, _Fmt, _STD make_format_args(_Args...));
+    _STD vformat_to(_Fmt_it{_Buf}, _Fmt._Str, _STD make_format_args(_Args...));
     return _Buf._Count();
 }
 
 template <class... _Types>
-_NODISCARD size_t formatted_size(const wstring_view _Fmt, const _Types&... _Args) {
+_NODISCARD size_t formatted_size(const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
     _Fmt_counting_buffer<wchar_t> _Buf;
-    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt, _STD make_wformat_args(_Args...));
+    _STD vformat_to(_Fmt_wit{_Buf}, _Fmt._Str, _STD make_wformat_args(_Args...));
     return _Buf._Count();
 }
 
 template <class... _Types>
-_NODISCARD size_t formatted_size(const locale& _Loc, const string_view _Fmt, const _Types&... _Args) {
+_NODISCARD size_t formatted_size(const locale& _Loc, const _Fmt_string<_Types...> _Fmt, const _Types&... _Args) {
     _Fmt_counting_buffer<char> _Buf;
-    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt, _STD make_format_args(_Args...));
+    _STD vformat_to(_Fmt_it{_Buf}, _Loc, _Fmt._Str, _STD make_format_args(_Args...));
     return _Buf._Count();
 }
 
 template <class... _Types>
-_NODISCARD size_t formatted_size(const locale& _Loc, const wstring_view _Fmt, const _Types&... _Args) {
+_NODISCARD size_t formatted_size(const locale& _Loc, const _Fmt_wstring<_Types...> _Fmt, const _Types&... _Args) {
     _Fmt_counting_buffer<wchar_t> _Buf;
-    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt, _STD make_wformat_args(_Args...));
+    _STD vformat_to(_Fmt_wit{_Buf}, _Loc, _Fmt._Str, _STD make_wformat_args(_Args...));
     return _Buf._Count();
 }
 

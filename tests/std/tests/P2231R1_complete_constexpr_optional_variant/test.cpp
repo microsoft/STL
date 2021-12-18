@@ -104,25 +104,17 @@ constexpr bool test_optional() {
         assert(move_constructed.has_value());
         assert(*move_constructed == 42);
 
-#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
-        if constexpr (!is_same_v<T, With_nontrivial_destructor>) {
-            if (!is_constant_evaluated()) {
-#endif // TRANSITION
-                optional<T> copy_assigned;
-                assert(!copy_assigned.has_value());
-                copy_assigned = move_constructed;
-                assert(copy_assigned.has_value());
-                assert(*copy_assigned == 42);
+        optional<T> copy_assigned;
+        assert(!copy_assigned.has_value());
+        copy_assigned = move_constructed;
+        assert(copy_assigned.has_value());
+        assert(*copy_assigned == 42);
 
-                optional<T> move_assigned;
-                assert(!move_assigned.has_value());
-                move_assigned = move(copy_assigned);
-                assert(move_assigned.has_value());
-                assert(*move_assigned == 42);
-#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
-            }
-        }
-#endif // TRANSITION, DevCom-1331017
+        optional<T> move_assigned;
+        assert(!move_assigned.has_value());
+        move_assigned = move(copy_assigned);
+        assert(move_assigned.has_value());
+        assert(*move_assigned == 42);
     }
 
     { // construction from optional with convertible types
@@ -237,25 +229,17 @@ constexpr bool test_variant() {
         assert(move_constructed.index() == 1);
         assert(get<T>(move_constructed) == 42);
 
-#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
-        if constexpr (!is_same_v<T, With_nontrivial_destructor>) {
-            if (!is_constant_evaluated()) {
-#endif // TRANSITION
-                variant<Dummy, T> copy_assigned;
-                assert(copy_assigned.index() == 0);
-                copy_assigned = constructed;
-                assert(copy_assigned.index() == 1);
-                assert(get<T>(copy_assigned) == 42);
+        variant<Dummy, T> copy_assigned;
+        assert(copy_assigned.index() == 0);
+        copy_assigned = constructed;
+        assert(copy_assigned.index() == 1);
+        assert(get<T>(copy_assigned) == 42);
 
-                variant<Dummy, T> move_assigned;
-                assert(move_assigned.index() == 0);
-                move_assigned = move(constructed);
-                assert(move_assigned.index() == 1);
-                assert(get<T>(move_assigned) == 42);
-#if !(defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
-            }
-        }
-#endif // TRANSITION
+        variant<Dummy, T> move_assigned;
+        assert(move_assigned.index() == 0);
+        move_assigned = move(constructed);
+        assert(move_assigned.index() == 1);
+        assert(get<T>(move_assigned) == 42);
     }
 
     { // emplace type

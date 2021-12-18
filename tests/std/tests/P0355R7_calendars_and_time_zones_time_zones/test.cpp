@@ -161,7 +161,7 @@ void validate_timezone_transitions(const time_zone* tz, const Transition& transi
     assert(info.end == transition.end());
     assert(info.offset == transition.offset());
     assert(info.save == transition.save());
-    assert(info.abbrev == transition.abbrev());
+    assert(info.abbrev == transition.abbrev() || info.abbrev == transition.abbrev_alt());
 }
 
 void timezone_sys_info_test() {
@@ -206,7 +206,7 @@ void timezone_sys_info_test() {
     // Test abbreviations other than standard/daylight savings such as war time.
     // These scenarios are not handled correctly by icu.dll
     auto war_time = la_tz->get_info(sys_days{year{1942} / April / day{1}});
-    assert(war_time.abbrev == "PDT"); // IANA database == "PWT"
+    assert(war_time.abbrev == "PDT" || war_time.abbrev == "GMT-7"); // IANA database == "PWT"
 }
 
 void timezone_to_local_test() {

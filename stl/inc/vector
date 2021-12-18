@@ -42,9 +42,6 @@ public:
         this->_Adopt(_Pvector);
     }
 
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vector_const_iterator& operator=(const _Vector_const_iterator&) noexcept = default;
-
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
@@ -261,9 +258,6 @@ public:
 
     using _Mybase::_Mybase;
 
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vector_iterator& operator=(const _Vector_iterator&) noexcept = default;
-
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
     }
@@ -434,6 +428,54 @@ constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain
     return _Ptr;
 }
 
+#if !defined(_M_CEE_PURE) && !defined(_DISABLE_VECTOR_ANNOTATION)
+#if defined(__SANITIZE_ADDRESS__)
+#define _ACTIVATE_VECTOR_ANNOTATION
+#define _INSERT_VECTOR_ANNOTATION
+#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ ^^^ // vvv __clang__ vvv
+#if __has_feature(address_sanitizer)
+#define _ACTIVATE_VECTOR_ANNOTATION
+#define _INSERT_VECTOR_ANNOTATION
+#pragma comment(linker, "/INFERASANLIBS")
+#endif // __has_feature(address_sanitizer)
+#elif defined(_ANNOTATE_VECTOR) // ^^^ __clang__ ^^^ // vvv _ANNOTATE_VECTOR vvv
+#define _INSERT_VECTOR_ANNOTATION
+#endif // _ANNOTATE_VECTOR
+#endif // !_M_CEE_PURE && !_DISABLE_VECTOR_ANNOTATION
+
+#ifdef _ACTIVATE_VECTOR_ANNOTATION
+#pragma comment(lib, "stl_asan")
+#pragma detect_mismatch("annotate_vector", "1")
+#endif // _ACTIVATE_VECTOR_ANNOTATION
+
+#ifdef _INSERT_VECTOR_ANNOTATION
+extern "C" {
+void __cdecl __sanitizer_annotate_contiguous_container(
+    const void* _First, const void* _End, const void* _Old_last, const void* _New_last) noexcept;
+extern const bool _Asan_vector_should_annotate;
+}
+
+#if defined(_M_IX86)
+#pragma comment(linker, \
+    "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
+#elif defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
+#pragma comment(linker, \
+    "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
+#endif
+
+template <class _Vec, class = void>
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment = alignof(typename _Vec::value_type) >= _Asan_granularity;
+
+template <class _Vec>
+_INLINE_VAR constexpr bool
+    _Has_minimum_allocation_alignment<_Vec, void_t<decltype(_Vec::allocator_type::_Minimum_allocation_alignment)>> =
+        _Vec::allocator_type::_Minimum_allocation_alignment >= _Asan_granularity;
+#else // ^^^ _INSERT_VECTOR_ANNOTATION ^^^ // vvv !_INSERT_VECTOR_ANNOTATION vvv
+#pragma detect_mismatch("annotate_vector", "0")
+#endif // !_INSERT_VECTOR_ANNOTATION
+
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
@@ -458,6 +500,142 @@ public:
     using difference_type = typename _Alty_traits::difference_type;
 
 private:
+#ifdef _INSERT_VECTOR_ANNOTATION
+    _CONSTEXPR20 void _Create_annotation() const noexcept {
+        // Annotates the shadow memory of the valid range
+        auto& _My_data = _Mypair._Myval2;
+        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Myend, _My_data._Mylast);
+    }
+
+    _CONSTEXPR20 void _Remove_annotation() const noexcept {
+        // Removes the shadow memory annotation of the range
+        auto& _My_data = _Mypair._Myval2;
+        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myend);
+    }
+
+    _CONSTEXPR20 void _Modify_annotation(const difference_type _Count) const noexcept {
+        // Extends/shrinks the annotated range by _Count
+        auto& _My_data = _Mypair._Myval2;
+        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Mylast + _Count);
+    }
+
+    _NODISCARD static const void* _Get_aligned_first(const void* _First, const void* _End) noexcept {
+        const auto _CFirst     = reinterpret_cast<const char*>(_First);
+        const auto _CEnd       = reinterpret_cast<const char*>(_End);
+        const size_t _Capacity = static_cast<size_t>(_CEnd - _CFirst);
+
+        if (_Capacity >= _Asan_granularity) {
+            // We are guaranteed to have sufficient space to find an aligned address.
+            return reinterpret_cast<const void*>(
+                (reinterpret_cast<uintptr_t>(_CFirst) + (_Asan_granularity - 1)) & ~(_Asan_granularity - 1));
+        }
+
+        uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_CFirst) & (_Asan_granularity - 1);
+        if (_Alignment_offset != 0) {
+            _Alignment_offset = _Asan_granularity - _Alignment_offset;
+        }
+
+        if (_Capacity > _Alignment_offset) {
+            return _CFirst + _Alignment_offset;
+        }
+
+        return nullptr;
+    }
+
+    static _CONSTEXPR20 void _Apply_annotation(
+        pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            return;
+        }
+#endif // _HAS_CXX20
+
+        if (!_Asan_vector_should_annotate) {
+            return;
+        }
+
+        const auto _First    = reinterpret_cast<const char*>(_Unfancy_maybe_null(_First_));
+        const auto _End      = reinterpret_cast<const char*>(_Unfancy_maybe_null(_End_));
+        const auto _Old_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_Old_last_));
+        const auto _New_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_New_last_));
+        if constexpr (_Has_minimum_allocation_alignment<vector>) {
+            __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+        } else {
+            const void* const _Aligned_first = _Get_aligned_first(_First, _End);
+            if (!_Aligned_first) {
+                // There is no aligned address within the underlying buffer; nothing to do.
+                return;
+            }
+
+            const void* const _Aligned_old_last = _Old_last < _Aligned_first ? _Aligned_first : _Old_last;
+            const void* const _Aligned_new_last = _New_last < _Aligned_first ? _Aligned_first : _New_last;
+            const void* const _Aligned_end      = _End < _Aligned_first ? _Aligned_first : _End;
+            __sanitizer_annotate_contiguous_container(
+                _Aligned_first, _Aligned_end, _Aligned_old_last, _Aligned_new_last);
+        }
+    }
+
+    class _NODISCARD _Asan_extend_guard {
+    public:
+        _Asan_extend_guard(const _Asan_extend_guard&) = delete;
+        _Asan_extend_guard& operator=(const _Asan_extend_guard&) = delete;
+
+        constexpr explicit _Asan_extend_guard(vector* _Myvec_, size_type _Target_size_) noexcept
+            : _Myvec(_Myvec_), _Target_size(_Target_size_) {
+            _STL_INTERNAL_CHECK(_Myvec != nullptr);
+            auto& _My_data = _Myvec->_Mypair._Myval2;
+            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myfirst + _Target_size);
+        }
+
+        _CONSTEXPR20 ~_Asan_extend_guard() {
+            if (!_Myvec) { // Operation succeeded, no modification to the shadow memory required.
+                return;
+            }
+
+            // Shrinks the shadow memory to the current size of the vector.
+            auto& _My_data = _Myvec->_Mypair._Myval2;
+            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Myfirst + _Target_size, _My_data._Mylast);
+        }
+
+        _CONSTEXPR20 void _Release() noexcept {
+            _Myvec = nullptr;
+        }
+
+    private:
+        vector* _Myvec;
+        size_type _Target_size;
+    };
+
+    class _NODISCARD _Asan_create_guard {
+    public:
+        _Asan_create_guard(const _Asan_create_guard&) = delete;
+        _Asan_create_guard& operator=(const _Asan_create_guard&) = delete;
+
+        constexpr explicit _Asan_create_guard(const vector& _Myvec_) noexcept : _Myvec(_Myvec_) {}
+
+        _CONSTEXPR20 ~_Asan_create_guard() {
+            _Myvec._Create_annotation();
+        }
+
+    private:
+        const vector& _Myvec;
+    };
+
+#define _ASAN_VECTOR_MODIFY(n)       _Modify_annotation((n))
+#define _ASAN_VECTOR_REMOVE          _Remove_annotation()
+#define _ASAN_VECTOR_CREATE          _Create_annotation()
+#define _ASAN_VECTOR_CREATE_GUARD    _Asan_create_guard _Annotator(*this)
+#define _ASAN_VECTOR_EXTEND_GUARD(n) _Asan_extend_guard _Annotator(this, (n))
+#define _ASAN_VECTOR_RELEASE_GUARD   _Annotator._Release()
+#else // ^^^ _INSERT_VECTOR_ANNOTATION ^^^ // vvv !_INSERT_VECTOR_ANNOTATION vvv
+#define _ASAN_VECTOR_MODIFY(n)
+#define _ASAN_VECTOR_REMOVE
+#define _ASAN_VECTOR_CREATE
+#define _ASAN_VECTOR_CREATE_GUARD
+#define _ASAN_VECTOR_EXTEND_GUARD(n)
+#define _ASAN_VECTOR_RELEASE_GUARD
+#endif // !_INSERT_VECTOR_ANNOTATION
+
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer, _Ty&, const _Ty&>>>;
 
@@ -500,7 +678,8 @@ public:
             _Tidy_guard<vector> _Guard{this};
 
             for (; _UFirst != _ULast; ++_UFirst) {
-                emplace_back(*_UFirst); // performance note: emplace_back()'s strong guarantee is unnecessary here
+                // performance note: _Emplace_one_at_back's strong guarantee is unnecessary here.
+                _Emplace_one_at_back(*_UFirst);
             }
 
             _Guard._Target = nullptr;
@@ -553,6 +732,8 @@ public:
                     _Tidy_guard<vector> _Guard{this};
                     _My_data._Mylast =
                         _Uninitialized_move(_Right_data._Myfirst, _Right_data._Mylast, _My_data._Myfirst, _Al);
+
+                    _ASAN_VECTOR_CREATE;
                     _Guard._Target = nullptr;
                 }
                 _Proxy._Release();
@@ -605,47 +786,39 @@ public:
 
 private:
     template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) _Emplace_back_with_unused_capacity(_Valty&&... _Val) {
+    _CONSTEXPR20 _Ty& _Emplace_one_at_back(_Valty&&... _Val) {
         // insert by perfectly forwarding into element at end, provide strong guarantee
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
-        _STL_INTERNAL_CHECK(_Mylast != _My_data._Myend); // check that we have unused capacity
-        _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
-        _Orphan_range(_Mylast, _Mylast);
-        _Ty& _Result = *_Mylast;
-        ++_Mylast;
-#if _HAS_CXX17
-        return _Result;
-#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
-        (void) _Result;
-#endif // _HAS_CXX17
-    }
 
-public:
-    template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) emplace_back(_Valty&&... _Val) {
-        // insert by perfectly forwarding into element at end, provide strong guarantee
-        auto& _My_data   = _Mypair._Myval2;
-        pointer& _Mylast = _My_data._Mylast;
         if (_Mylast != _My_data._Myend) {
             return _Emplace_back_with_unused_capacity(_STD forward<_Valty>(_Val)...);
         }
 
-        _Ty& _Result = *_Emplace_reallocate(_Mylast, _STD forward<_Valty>(_Val)...);
-#if _HAS_CXX17
+        return *_Emplace_reallocate(_Mylast, _STD forward<_Valty>(_Val)...);
+    }
+
+    template <class... _Valty>
+    _CONSTEXPR20 _Ty& _Emplace_back_with_unused_capacity(_Valty&&... _Val) {
+        // insert by perfectly forwarding into element at end, provide strong guarantee
+        auto& _My_data   = _Mypair._Myval2;
+        pointer& _Mylast = _My_data._Mylast;
+        _STL_INTERNAL_CHECK(_Mylast != _My_data._Myend); // check that we have unused capacity
+        if constexpr (conjunction_v<is_nothrow_constructible<_Ty, _Valty...>,
+                          _Uses_default_construct<_Alloc, _Ty*, _Valty...>>) {
+            _ASAN_VECTOR_MODIFY(1);
+            _Construct_in_place(*_Mylast, _STD forward<_Valty>(_Val)...);
+        } else {
+            _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Mylast - _My_data._Myfirst) + 1);
+            _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
+            _ASAN_VECTOR_RELEASE_GUARD;
+        }
+
+        _Orphan_range(_Mylast, _Mylast);
+        _Ty& _Result = *_Mylast;
+        ++_Mylast;
+
         return _Result;
-#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
-        (void) _Result;
-#endif // _HAS_CXX17
-    }
-
-    _CONSTEXPR20 void push_back(const _Ty& _Val) { // insert element at end, provide strong guarantee
-        emplace_back(_Val);
-    }
-
-    _CONSTEXPR20 void push_back(_Ty&& _Val) {
-        // insert by moving into element at end, provide strong guarantee
-        emplace_back(_STD move(_Val));
     }
 
     template <class... _Valty>
@@ -697,6 +870,27 @@ public:
         return _Newvec + _Whereoff;
     }
 
+public:
+    template <class... _Valty>
+    _CONSTEXPR20 decltype(auto) emplace_back(_Valty&&... _Val) {
+        // insert by perfectly forwarding into element at end, provide strong guarantee
+        _Ty& _Result = _Emplace_one_at_back(_STD forward<_Valty>(_Val)...);
+#if _HAS_CXX17
+        return _Result;
+#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
+        (void) _Result;
+#endif // _HAS_CXX17
+    }
+
+    _CONSTEXPR20 void push_back(const _Ty& _Val) { // insert element at end, provide strong guarantee
+        emplace_back(_Val);
+    }
+
+    _CONSTEXPR20 void push_back(_Ty&& _Val) {
+        // insert by moving into element at end, provide strong guarantee
+        emplace_back(_STD move(_Val));
+    }
+
     template <class... _Valty>
     _CONSTEXPR20 iterator emplace(const_iterator _Where, _Valty&&... _Val) {
         // insert by perfectly forwarding _Val at _Where
@@ -717,7 +911,9 @@ public:
                 _Alloc_temporary2<_Alty> _Obj(_Al, _STD forward<_Valty>(_Val)...); // handle aliasing
                 // after constructing _Obj, provide basic guarantee
                 _Orphan_range(_Whereptr, _Oldlast);
+                _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _My_data._Myfirst) + 1);
                 _Alty_traits::construct(_Al, _Unfancy(_Oldlast), _STD move(_Oldlast[-1]));
+                _ASAN_VECTOR_RELEASE_GUARD;
                 ++_My_data._Mylast;
                 _Move_backward_unchecked(_Whereptr, _Oldlast - 1, _Oldlast);
                 *_Whereptr = _STD move(_Obj._Get_value());
@@ -800,6 +996,7 @@ public:
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
             _Orphan_range(_Whereptr, _Oldlast);
 
+            _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _My_data._Myfirst) + _Count);
             if (_Count > _Affected_elements) { // new stuff spills off end
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Count - _Affected_elements, _Tmp, _Al);
                 _Mylast = _Uninitialized_move(_Whereptr, _Oldlast, _Mylast, _Al);
@@ -809,6 +1006,7 @@ public:
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
                 _STD fill(_Whereptr, _Whereptr + _Count, _Tmp);
             }
+            _ASAN_VECTOR_RELEASE_GUARD;
         }
 
         return _Make_iterator_offset(_Whereoff);
@@ -830,10 +1028,10 @@ private:
 
         // For one-at-back, provide strong guarantee.
         // Otherwise, provide basic guarantee (despite N4659 26.3.11.5 [vector.modifiers]/1).
-        // Performance note: except for one-at-back, emplace_back()'s strong guarantee is unnecessary here.
+        // Performance note: except for one-at-back, _Emplace_one_at_back()'s strong guarantee is unnecessary here.
 
         for (; _First != _Last; ++_First) {
-            emplace_back(*_First);
+            _Emplace_one_at_back(*_First);
         }
 
         _Orphan_range(_Myfirst + _Whereoff, _Myfirst + _Oldsize);
@@ -899,6 +1097,7 @@ private:
 
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
 
+            _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _Oldfirst) + _Count);
             if (_Count < _Affected_elements) { // some affected elements must be assigned
                 _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
@@ -951,6 +1150,7 @@ private:
             }
 
             _Orphan_range(_Whereptr, _Oldlast);
+            _ASAN_VECTOR_RELEASE_GUARD;
         }
     }
 
@@ -983,22 +1183,40 @@ public:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
+        constexpr bool _Nothrow_construct =
+            conjunction_v<is_nothrow_copy_constructible<_Ty>, _Uses_default_construct<_Alloc, _Ty*, const _Ty&>>;
+
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) { // reallocate
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
+            if constexpr (_Nothrow_construct) {
+                _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
+                _ASAN_VECTOR_CREATE;
+            } else {
+                _ASAN_VECTOR_CREATE_GUARD;
+                _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
+            }
+
             return;
         }
 
         const auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
         if (_Newsize > _Oldsize) {
             _STD fill(_Myfirst, _Mylast, _Val);
-            _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
+            if constexpr (_Nothrow_construct) {
+                _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
+                _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
+            } else {
+                _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
+                _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
+                _ASAN_VECTOR_RELEASE_GUARD;
+            }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _STD fill(_Myfirst, _Newlast, _Val);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
     }
@@ -1014,7 +1232,6 @@ private:
         _My_data._Orphan_all();
 
         pointer _Next = _Myfirst;
-
         for (; _First != _Last && _Next != _Mylast; ++_First, (void) ++_Next) {
             *_Next = *_First;
         }
@@ -1026,11 +1243,13 @@ private:
 
         // Trim.
         _Destroy_range(_Next, _Mylast, _Getal());
+        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Next - _Mylast));
         _Mylast = _Next;
 
         // Append.
         for (; _First != _Last; ++_First) {
-            emplace_back(*_First); // performance note: emplace_back()'s strong guarantee is unnecessary here
+            // performance note: _Emplace_one_at_back()'s strong guarantee is unnecessary here
+            _Emplace_one_at_back(*_First);
         }
     }
 
@@ -1044,11 +1263,20 @@ private:
         pointer& _Mylast    = _My_data._Mylast;
         pointer& _Myend     = _My_data._Myend;
 
+        constexpr bool _Nothrow_construct = conjunction_v<is_nothrow_constructible<_Ty, _Iter_ref_t<_Iter>>,
+            _Uses_default_construct<_Alloc, _Ty*, _Iter_ref_t<_Iter>>>;
+
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
+            if constexpr (_Nothrow_construct) {
+                _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
+                _ASAN_VECTOR_CREATE;
+            } else {
+                _ASAN_VECTOR_CREATE_GUARD;
+                _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
+            }
             return;
         }
 
@@ -1057,11 +1285,20 @@ private:
             // performance note: traversing [_First, _Mid) twice
             const _Iter _Mid = _STD next(_First, static_cast<difference_type>(_Oldsize));
             _Copy_unchecked(_First, _Mid, _Myfirst);
-            _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
+
+            if constexpr (_Nothrow_construct) {
+                _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
+                _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
+            } else {
+                _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
+                _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
+                _ASAN_VECTOR_RELEASE_GUARD;
+            }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Copy_unchecked(_First, _Last, _Myfirst);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
     }
@@ -1157,6 +1394,7 @@ private:
             const pointer _Newlast = _Myfirst + _Newsize;
             _Orphan_range(_Newlast, _Mylast);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
             return;
         }
@@ -1168,6 +1406,7 @@ private:
                 return;
             }
 
+            _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
             const pointer _Oldlast = _Mylast;
             if constexpr (is_same_v<_Ty2, _Ty>) {
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Newsize - _Oldsize, _Val, _Al);
@@ -1175,6 +1414,7 @@ private:
                 _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty2, _Value_init_tag>);
                 _Mylast = _Uninitialized_value_construct_n(_Oldlast, _Newsize - _Oldsize, _Al);
             }
+            _ASAN_VECTOR_RELEASE_GUARD;
             _Orphan_range(_Oldlast, _Oldlast);
         }
 
@@ -1258,6 +1498,7 @@ private:
 
         if (_Myfirst) { // destroy and deallocate old array
             _Destroy_range(_Myfirst, _Mylast, _Al);
+            _ASAN_VECTOR_REMOVE;
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
             _Myfirst = nullptr;
@@ -1303,6 +1544,7 @@ public:
 
         _Orphan_range(_Mylast - 1, _Mylast);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
+        _ASAN_VECTOR_MODIFY(-1);
         --_Mylast;
     }
 
@@ -1321,6 +1563,7 @@ public:
         _Orphan_range(_Whereptr, _Mylast);
         _Move_unchecked(_Whereptr + 1, _Mylast, _Whereptr);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
+        _ASAN_VECTOR_MODIFY(-1);
         --_Mylast;
         return iterator(_Whereptr, _STD addressof(_My_data));
     }
@@ -1343,6 +1586,7 @@ public:
 
             const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
             _Destroy_range(_Newlast, _Mylast, _Getal());
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newlast - _Mylast));
             _Mylast = _Newlast;
         }
 
@@ -1356,6 +1600,7 @@ public:
 
         _My_data._Orphan_all();
         _Destroy_range(_Myfirst, _Mylast, _Getal());
+        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Mylast - _Myfirst));
         _Mylast = _Myfirst;
     }
 
@@ -1605,12 +1850,14 @@ private:
 
         if (_Myfirst) { // destroy and deallocate old array
             _Destroy_range(_Myfirst, _Mylast, _Al);
+            _ASAN_VECTOR_REMOVE;
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
         }
 
         _Myfirst = _Newvec;
         _Mylast  = _Newvec + _Newsize;
         _Myend   = _Newvec + _Newcapacity;
+        _ASAN_VECTOR_CREATE;
     }
 
     _CONSTEXPR20 void _Tidy() noexcept { // free all storage
@@ -1624,6 +1871,7 @@ private:
 
         if (_Myfirst) { // destroy and deallocate old array
             _Destroy_range(_Myfirst, _Mylast, _Al);
+            _ASAN_VECTOR_REMOVE;
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
             _Myfirst = nullptr;
@@ -1655,6 +1903,7 @@ private:
             } else {
                 static_assert(_Always_false<_Ty>, "Should be unreachable");
             }
+            _ASAN_VECTOR_CREATE;
             _Guard._Target = nullptr;
         }
 
@@ -1673,11 +1922,20 @@ private:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
+        constexpr bool _Nothrow_construct =
+            conjunction_v<is_nothrow_move_constructible<_Ty>, _Uses_default_construct<_Alloc, _Ty*, _Ty>>;
+
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
+            if constexpr (_Nothrow_construct) {
+                _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
+                _ASAN_VECTOR_CREATE;
+            } else {
+                _ASAN_VECTOR_CREATE_GUARD;
+                _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
+            }
             return;
         }
 
@@ -1685,11 +1943,20 @@ private:
         if (_Newsize > _Oldsize) {
             const pointer _Mid = _First + _Oldsize;
             _Move_unchecked(_First, _Mid, _Myfirst);
-            _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+
+            if constexpr (_Nothrow_construct) {
+                _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
+                _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+            } else {
+                _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
+                _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+                _ASAN_VECTOR_RELEASE_GUARD;
+            }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Move_unchecked(_First, _Last, _Myfirst);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
     }
@@ -1941,9 +2208,6 @@ public:
         this->_Adopt(_Mypvbool);
     }
 
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vb_iter_base& operator=(const _Vb_iter_base&) noexcept = default;
-
     _CONSTEXPR20 void _Advance(_Size_type _Off) noexcept {
         _Myoff += _Off;
         _Myptr += _Myoff / _VBITS;
@@ -2043,9 +2307,6 @@ public:
 
     _CONSTEXPR20 _Vb_const_iterator(const _Vbase* _Ptr, const _Container_base* _Mypvbool) noexcept
         : _Mybase(_Ptr, 0, _Mypvbool) {}
-
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vb_const_iterator& operator=(const _Vb_const_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20 const_reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2255,9 +2516,6 @@ public:
 
         return _Reft(*this);
     }
-
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vb_iterator& operator=(const _Vb_iterator&) noexcept = default;
 
     _CONSTEXPR20 _Vb_iterator& operator++() noexcept {
         _Mybase::operator++();
@@ -3165,6 +3423,15 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
             return _Count;
         });
 }
+
+#undef _ASAN_VECTOR_MODIFY
+#undef _ASAN_VECTOR_REMOVE
+#undef _ASAN_VECTOR_CREATE
+#undef _ASAN_VECTOR_CREATE_GUARD
+#undef _ASAN_VECTOR_EXTEND_GUARD
+#undef _ASAN_VECTOR_RELEASE_GUARD
+#undef _ACTIVATE_VECTOR_ANNOTATION
+#undef _INSERT_VECTOR_ANNOTATION
 _STD_END
 
 #pragma pop_macro("new")
