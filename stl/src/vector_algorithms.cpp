@@ -496,7 +496,11 @@ static const void* VECTORCALL __std_find_trivial(
 
         if ((_Bingo &= _Mask) != 0) {
             unsigned long _Offset;
-            _BitScanForward(&_Offset, _Bingo);
+            if constexpr (_Vector_size == 32) {
+                _Offset = _tzcnt_u32(_Bingo);
+            } else {
+                _BitScanForward(&_Offset, _Bingo);
+            }
             _Advance_bytes(_First, _Offset);
             return _First;
         }
