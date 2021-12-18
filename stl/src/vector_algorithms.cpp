@@ -469,6 +469,7 @@ static const void* __vectorcall __std_find_trivial_avx2(
         _Pad_stop = reinterpret_cast<intptr_t>(_Stop_at) & 0x1F;
         if (_Pad_stop != 0) {
             _Stop_mask = _Full_mask >> (32 - _Pad_stop);
+            _Advance_bytes(_Stop_at, -_Pad_stop);
         } else {
             _Advance_bytes(_Stop_at, -32);
         }
@@ -519,6 +520,7 @@ static const void* __vectorcall __std_find_trivial_sse2(
         _Pad_stop = reinterpret_cast<intptr_t>(_Stop_at) & 0xF;
         if (_Pad_stop != 0) {
             _Stop_mask = 0xFFFF >> (16 - _Pad_stop);
+            _Advance_bytes(_Stop_at, -_Pad_stop);
         } else {
             _Advance_bytes(_Stop_at, -16);
         }
