@@ -1208,7 +1208,7 @@ public:
                 _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
             } else {
-                _ASAN_VECTOR_EXTEND_GUARD(static_cast<difference_type>(_Newsize - _Oldsize));
+                _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
                 _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
                 _ASAN_VECTOR_RELEASE_GUARD;
             }
@@ -1290,7 +1290,7 @@ private:
                 _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
             } else {
-                _ASAN_VECTOR_EXTEND_GUARD(static_cast<difference_type>(_Newsize - _Oldsize));
+                _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
                 _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
                 _ASAN_VECTOR_RELEASE_GUARD;
             }
@@ -1406,7 +1406,7 @@ private:
                 return;
             }
 
-            _ASAN_VECTOR_EXTEND_GUARD(_Newsize - _Oldsize);
+            _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
             const pointer _Oldlast = _Mylast;
             if constexpr (is_same_v<_Ty2, _Ty>) {
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Newsize - _Oldsize, _Val, _Al);
@@ -1948,7 +1948,7 @@ private:
                 _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
             } else {
-                _ASAN_VECTOR_EXTEND_GUARD(_Newsize - _Oldsize);
+                _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
                 _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
                 _ASAN_VECTOR_RELEASE_GUARD;
             }
