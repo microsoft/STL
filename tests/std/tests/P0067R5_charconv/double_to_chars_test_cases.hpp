@@ -36,7 +36,8 @@
 // (Keep the cgmanifest.json commitHash in sync.)
 
 
-#pragma once
+#ifndef DOUBLE_TO_CHARS_TEST_CASES_HPP
+#define DOUBLE_TO_CHARS_TEST_CASES_HPP
 
 #include <charconv>
 
@@ -2919,3 +2920,5 @@ inline constexpr DoubleToCharsTestCase double_to_chars_test_cases[] = {
     {0x1p-569, chars_format::scientific, "5.17526350329881e-172"},
     {0x1p-645, chars_format::scientific, "6.84940421565126e-195"},
 };
+
+#endif // DOUBLE_TO_CHARS_TEST_CASES_HPP
