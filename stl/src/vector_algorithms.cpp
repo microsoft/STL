@@ -462,17 +462,16 @@ static const void* __vectorcall __std_find_trivial_avx2(
     intptr_t _Pad_stop            = 0;
     constexpr unsigned _Full_mask = 0xFFFFFFFF;
     const void* _Stop_at          = nullptr;
-    unsigned _Stop_mask           = _Full_mask;
+    unsigned _Stop_mask           = 0;
     if (_Size != SIZE_MAX) {
         _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Size);
         _Pad_stop = reinterpret_cast<intptr_t>(_Stop_at) & 0x1F;
-        if (_Pad_stop != 0) {
-            _Stop_mask = _Full_mask >> (32 - _Pad_stop);
-            _Advance_bytes(_Stop_at, -_Pad_stop);
-        } else {
-            _Advance_bytes(_Stop_at, -32);
+        if (_Pad_stop == 0) {
+            _Pad_stop = 32;
         }
+        _Advance_bytes(_Stop_at, -_Pad_stop);
+        _Stop_mask = _Full_mask >> (32 - _Pad_stop);
     }
 
     const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & 0x1F;
@@ -513,17 +512,16 @@ static const void* __vectorcall __std_find_trivial_sse2(
     intptr_t _Pad_stop            = 0;
     constexpr unsigned _Full_mask = 0xFFFF;
     const void* _Stop_at          = nullptr;
-    unsigned _Stop_mask           = _Full_mask;
+    unsigned _Stop_mask           = 0;
     if (_Size != SIZE_MAX) {
         _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Size);
         _Pad_stop = reinterpret_cast<intptr_t>(_Stop_at) & 0xF;
-        if (_Pad_stop != 0) {
-            _Stop_mask = 0xFFFF >> (16 - _Pad_stop);
-            _Advance_bytes(_Stop_at, -_Pad_stop);
-        } else {
-            _Advance_bytes(_Stop_at, -16);
+        if (_Pad_stop == 0) {
+            _Pad_stop = 16;
         }
+        _Stop_mask = _Full_mask >> (16 - _Pad_stop);
+        _Advance_bytes(_Stop_at, -_Pad_stop);
     }
 
     const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & 0xF;
