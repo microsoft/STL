@@ -88,6 +88,52 @@ struct instantiator {
             assert(!ranges::is_permutation(ranges::begin(r1), ranges::end(r1), ranges::begin(r2), ranges::end(r2),
                 ranges::equal_to{}, get_first, identity{}));
         }
+        {
+            int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+            int arr2[] = {9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+            const Fwd2 r1{arr1};
+            const Fwd2 r2{arr2};
+            assert(ranges::is_permutation(r1, r2));
+        }
+        {
+            int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+            int arr2[] = {9, 8, 7, 3, 4, 5, 6, 2, 1, 0};
+            const Fwd2 r1{arr1};
+            const Fwd2 r2{arr2};
+            assert(ranges::is_permutation(r1, r2));
+        }
+        {
+            int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+            int arr2[] = {9, 1, 7, 3, 5, 4, 6, 2, 8, 0};
+            const Fwd2 r1{arr1};
+            const Fwd2 r2{arr2};
+            assert(ranges::is_permutation(r1, r2));
+        }
+        {
+            int arr1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+            int arr2[] = {9, 1, 7, 5, 6, 3, 4, 2, 8, 0};
+            const Fwd2 r1{arr1};
+            const Fwd2 r2{arr2};
+            assert(ranges::is_permutation(r1, r2));
+        }
+        {
+            int arr1[] = {0, 1, 2, 3, 4, 10, 5, 6, 7, 8, 9};
+            int arr2[] = {9, 1, 7, 3, 5, 11, 4, 6, 2, 8, 0};
+            const Fwd2 r1{arr1};
+            const Fwd2 r2{arr2};
+            assert(!ranges::is_permutation(r1, r2));
+        }
+        {
+            int arr1[] = {-1, 0, 1, 2, 3, 4, 5, 6, 7, 8};
+            int arr2[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+            const Fwd2 r1{arr1};
+            const Fwd2 r2{arr2};
+            assert(!ranges::is_permutation(r1, r2));
+            assert(!ranges::is_permutation(r1, r2, {}, {}, [](int n) { return n - 1; }));
+            assert(ranges::is_permutation(r1, r2, {}, {}, [](int n) { return n - 2; }));
+            assert(ranges::is_permutation(
+                r1, r2, {}, [](int n) { return n + 1; }, [](int n) { return n - 1; }));
+        }
     }
 };
 

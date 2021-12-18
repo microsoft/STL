@@ -150,6 +150,7 @@ void helper2() {
     const Atom const_atom(obj);
 
     bool b = const_atom.is_lock_free();
+    (void) b;
 
     atom.store(obj);
     atom.store(obj, memory_order_seq_cst);

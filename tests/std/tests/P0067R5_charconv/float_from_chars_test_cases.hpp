@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
+#ifndef FLOAT_FROM_CHARS_TEST_CASES_HPP
+#define FLOAT_FROM_CHARS_TEST_CASES_HPP
 
 #include <charconv>
 #include <stddef.h>
@@ -255,3 +256,5 @@ inline constexpr FloatFromCharsTestCase float_from_chars_test_cases[] = {
     {"7.fffffffp+125", chars_format::hex, 14, errc::result_out_of_range, float_inf},
     {"8.0000000p+125", chars_format::hex, 14, errc::result_out_of_range, float_inf},
 };
+
+#endif // FLOAT_FROM_CHARS_TEST_CASES_HPP

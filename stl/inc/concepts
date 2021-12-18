@@ -41,8 +41,8 @@ concept derived_from = __is_base_of(_Base, _Derived)
 
 template <class _From, class _To>
 concept convertible_to = __is_convertible_to(_From, _To)
-    && requires(add_rvalue_reference_t<_From> (&_Fn)()) {
-        static_cast<_To>(_Fn());
+    && requires {
+        static_cast<_To>(_STD declval<_From>());
     };
 
 template <class _From, class _To>
