@@ -458,29 +458,32 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
 } // extern "C"
 
-template <class _Callback>
-static const void* VECTORCALL __std_find_trivial_avx2(
-    const void* _First, size_t _Size, __m256i _Comparand, _Callback _Get_mask) noexcept {
-    // We read by 32-byte pieces, and we align pointers to 32-byte boundary.
+template <class _Vector, class _Callback>
+static const void* VECTORCALL __std_find_trivial(
+    const void* _First, size_t _Size, _Vector _Comparand, _Callback _Get_mask) noexcept {
+    // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
     // From start/end partial pieces we mask out matches that don't belong to the range.
     // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
     // Also, vector instructions favor aligned accesses.
-    intptr_t _Pad_stop            = 0;
-    constexpr unsigned _Full_mask = 0xFFFFFFFF;
-    const void* _Stop_at          = nullptr;
-    unsigned _Stop_mask           = 0;
+    intptr_t _Pad_stop                = 0;
+    constexpr size_t _Vector_size     = sizeof(_Vector);
+    constexpr size_t _Vector_pad_mask = _Vector_size - 1;
+    constexpr unsigned _Full_mask     = static_cast<unsigned>((1ULL << _Vector_size) - 1);
+    const void* _Stop_at              = nullptr;
+    unsigned _Stop_mask               = 0;
+
     if (_Size != SIZE_MAX) {
         _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Size);
-        _Pad_stop = reinterpret_cast<intptr_t>(_Stop_at) & 0x1F;
+        _Pad_stop = reinterpret_cast<intptr_t>(_Stop_at) & _Vector_pad_mask;
         if (_Pad_stop == 0) {
-            _Pad_stop = 32;
+            _Pad_stop = _Vector_size;
         }
         _Advance_bytes(_Stop_at, -_Pad_stop);
-        _Stop_mask = _Full_mask >> (32 - _Pad_stop);
+        _Stop_mask = _Full_mask >> (_Vector_size - _Pad_stop);
     }
 
-    const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & 0x1F;
+    const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
     unsigned _Mask            = (_Full_mask << _Pad_start);
     _Advance_bytes(_First, -_Pad_start);
 
@@ -503,57 +506,7 @@ static const void* VECTORCALL __std_find_trivial_avx2(
             return _First;
         }
 
-        _Advance_bytes(_First, 32);
-        _Mask = _Full_mask;
-    };
-}
-
-template <class _Callback>
-static const void* VECTORCALL __std_find_trivial_sse2(
-    const void* _First, size_t _Size, __m128i _Comparand, _Callback _Get_mask) noexcept {
-    // We read by 16-byte pieces, and we align pointers to 16-byte boundary.
-    // From start/end partial pieces we mask out matches that don't belong to the range.
-    // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
-    // Also, vector instructions favor aligned accesses.
-    intptr_t _Pad_stop            = 0;
-    constexpr unsigned _Full_mask = 0xFFFF;
-    const void* _Stop_at          = nullptr;
-    unsigned _Stop_mask           = 0;
-    if (_Size != SIZE_MAX) {
-        _Stop_at = _First;
-        _Advance_bytes(_Stop_at, _Size);
-        _Pad_stop = reinterpret_cast<intptr_t>(_Stop_at) & 0xF;
-        if (_Pad_stop == 0) {
-            _Pad_stop = 16;
-        }
-        _Stop_mask = _Full_mask >> (16 - _Pad_stop);
-        _Advance_bytes(_Stop_at, -_Pad_stop);
-    }
-
-    const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & 0xF;
-    unsigned _Mask            = (_Full_mask << _Pad_start);
-    _Advance_bytes(_First, -_Pad_start);
-
-    for (;;) {
-        if (_First == _Stop_at) {
-            _Mask = _Stop_mask;
-        }
-
-        unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
-
-        if ((_Bingo &= _Mask) != 0) {
-            unsigned long _Offset;
-            _BitScanForward(&_Offset, _Bingo);
-            _Advance_bytes(_First, _Offset);
-            return _First;
-        }
-
-        if (_First == _Stop_at) {
-            _Advance_bytes(_First, _Pad_stop);
-            return _First;
-        }
-
-        _Advance_bytes(_First, 16);
+        _Advance_bytes(_First, _Vector_size);
         _Mask = _Full_mask;
     };
 }
@@ -570,14 +523,13 @@ static const void* __std_find_trivial_fallback(const void* _First, size_t _Size,
     return _Ptr;
 }
 
-
 extern "C" {
 
 const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uint8_t _Val) noexcept {
     if (_Size >= 32 && _Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi8(_Val);
 
-        return __std_find_trivial_avx2(_First, _Size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return __std_find_trivial(_First, _Size, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi8(_Data, _Comparand));
         });
@@ -586,7 +538,7 @@ const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uin
     if (_Size >= 16 && _Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi8(_Val);
 
-        return __std_find_trivial_sse2(_First, _Size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return __std_find_trivial(_First, _Size, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi8(_Data, _Comparand));
         });
@@ -601,7 +553,7 @@ const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uin
     if (_Bytes_size >= 32 && _Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi16(_Val);
 
-        return __std_find_trivial_avx2(_First, _Bytes_size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi16(_Data, _Comparand));
         });
@@ -610,7 +562,7 @@ const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uin
     if (_Bytes_size >= 16 && _Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi16(_Val);
 
-        return __std_find_trivial_sse2(_First, _Bytes_size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi16(_Data, _Comparand));
         });
@@ -625,7 +577,7 @@ const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uin
     if (_Bytes_size >= 32 && _Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi32(_Val);
 
-        return __std_find_trivial_avx2(_First, _Bytes_size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_Data, _Comparand));
         });
@@ -634,7 +586,7 @@ const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uin
     if (_Bytes_size >= 16 && _Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi32(_Val);
 
-        return __std_find_trivial_sse2(_First, _Bytes_size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi32(_Data, _Comparand));
         });
@@ -649,7 +601,7 @@ const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uin
     if (_Bytes_size >= 32 && _Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi64x(_Val);
 
-        return __std_find_trivial_avx2(_First, _Bytes_size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi64(_Data, _Comparand));
         });
@@ -658,7 +610,7 @@ const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uin
     if (_Bytes_size >= 16 && _Use_sse42()) {
         const __m128i _Comparand = _mm_set1_epi64x(_Val);
 
-        return __std_find_trivial_sse2(_First, _Bytes_size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi64(_Data, _Comparand)); // SSE4.1
         });
