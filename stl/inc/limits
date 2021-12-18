@@ -1063,8 +1063,6 @@ extern "C" {
 extern int __isa_available;
 }
 
-#if _HAS_CXX20
-
 #ifdef __clang__
 #define _TZCNT_U32 __builtin_ia32_tzcnt_u32
 #define _TZCNT_U64 __builtin_ia32_tzcnt_u64
@@ -1149,8 +1147,6 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
     }
 #endif // __AVX2__
 }
-
-#endif // _HAS_CXX20
 
 #endif // _HAS_TZCNT_BSF_INTRINSICS
 
