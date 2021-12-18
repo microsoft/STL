@@ -453,8 +453,12 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 } // extern "C"
 
 template <class _Callback>
-static const void* __std_find_trivial_avx2(
+static const void* __vectorcall __std_find_trivial_avx2(
     const void* _First, size_t _Size, __m256i _Comparand, _Callback _Get_mask) noexcept {
+    // We read by 32-byte pieces, and we align pointers to 32-byte boundary.
+    // From start/end partial pieces we mask out matches that don't belong to the range.
+    // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
+    // Also, vector instructions favor aligned accesses.
     intptr_t _Pad_stop            = 0;
     constexpr unsigned _Full_mask = 0xFFFFFFFF;
     const void* _Stop_at          = nullptr;
@@ -499,8 +503,12 @@ static const void* __std_find_trivial_avx2(
 }
 
 template <class _Callback>
-static const void* __std_find_trivial_sse2(
+static const void* __vectorcall __std_find_trivial_sse2(
     const void* _First, size_t _Size, __m128i _Comparand, _Callback _Get_mask) noexcept {
+    // We read by 16-byte pieces, and we align pointers to 16-byte boundary.
+    // From start/end partial pieces we mask out matches that don't belong to the range.
+    // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
+    // Also, vector instructions favor aligned accesses.
     intptr_t _Pad_stop            = 0;
     constexpr unsigned _Full_mask = 0xFFFF;
     const void* _Stop_at          = nullptr;
