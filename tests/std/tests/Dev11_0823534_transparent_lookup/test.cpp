@@ -269,4 +269,102 @@ int main() {
         assert(ce.equal_range(8) == make_pair(next(ce.begin(), 9), next(ce.begin(), 11)));
         assert(ce.equal_range(9) == make_pair(next(ce.begin(), 11), next(ce.begin(), 11)));
     }
+
+#if _HAS_CXX23
+    {
+        multiset<string, Ke> e(begin(arr), end(arr));
+        set<string, Ke> f(begin(arr), end(arr));
+        multimap<string, int, Ke> g{{"ape", 0}, {"bat", 1}, {"cat", 2}, {"bear", 3}, {"wolf", 4}, {"raven", 5},
+            {"giraffe", 6}, {"panther", 7}, {"unicorn", 8}, {"direwolf", 9}, {"elephant", 10}};
+        map<string, int, Ke> h{{"ape", 0}, {"bat", 1}, {"cat", 2}, {"bear", 3}, {"wolf", 4}, {"raven", 5},
+            {"giraffe", 6}, {"panther", 7}, {"unicorn", 8}, {"direwolf", 9}, {"elephant", 10}};
+
+        assert(e.erase(2) == 0);
+        assert(e.erase(3) == 3);
+        assert(e.erase(4) == 2);
+        assert(e.erase(5) == 1);
+        assert(e.erase(6) == 0);
+        assert(e.erase(7) == 3);
+        assert(e.erase(8) == 2);
+        assert(e.erase(9) == 0);
+        assert(e.empty());
+
+        assert(f.erase(2) == 0);
+        assert(f.erase(3) == 3);
+        assert(f.erase(4) == 2);
+        assert(f.erase(5) == 1);
+        assert(f.erase(6) == 0);
+        assert(f.erase(7) == 3);
+        assert(f.erase(8) == 2);
+        assert(f.erase(9) == 0);
+        assert(f.empty());
+
+        assert(g.erase(2) == 0);
+        assert(g.erase(3) == 3);
+        assert(g.erase(4) == 2);
+        assert(g.erase(5) == 1);
+        assert(g.erase(6) == 0);
+        assert(g.erase(7) == 3);
+        assert(g.erase(8) == 2);
+        assert(g.erase(9) == 0);
+        assert(g.empty());
+
+        assert(h.erase(2) == 0);
+        assert(h.erase(3) == 3);
+        assert(h.erase(4) == 2);
+        assert(h.erase(5) == 1);
+        assert(h.erase(6) == 0);
+        assert(h.erase(7) == 3);
+        assert(h.erase(8) == 2);
+        assert(h.erase(9) == 0);
+        assert(h.empty());
+    }
+
+    {
+        multiset<string, Ke> i(begin(arr), end(arr));
+        set<string, Ke> j(begin(arr), end(arr));
+        multimap<string, int, Ke> k{{"ape", 0}, {"bat", 1}, {"cat", 2}, {"bear", 3}, {"wolf", 4}, {"raven", 5},
+            {"giraffe", 6}, {"panther", 7}, {"unicorn", 8}, {"direwolf", 9}, {"elephant", 10}};
+        map<string, int, Ke> l{{"ape", 0}, {"bat", 1}, {"cat", 2}, {"bear", 3}, {"wolf", 4}, {"raven", 5},
+            {"giraffe", 6}, {"panther", 7}, {"unicorn", 8}, {"direwolf", 9}, {"elephant", 10}};
+
+        auto test_extract = []<typename C>(C& c) {
+            auto n2 = c.extract(2);
+            auto n3 = c.extract(3);
+            auto n4 = c.extract(4);
+            auto n5 = c.extract(5);
+            auto n6 = c.extract(6);
+            auto n7 = c.extract(7);
+            auto n8 = c.extract(8);
+            auto n9 = c.extract(9);
+
+            assert(!n2);
+            assert(n3);
+            assert(n4);
+            assert(n5);
+            assert(!n6);
+            assert(n7);
+            assert(n8);
+            assert(!n9);
+
+            C d;
+
+            d.insert(move(n2));
+            d.insert(move(n3));
+            d.insert(move(n4));
+            d.insert(move(n5));
+            d.insert(move(n6));
+            d.insert(move(n7));
+            d.insert(move(n8));
+            d.insert(move(n9));
+
+            assert(c.size() == 6);
+            assert(d.size() == 5);
+        };
+        test_extract(i);
+        test_extract(j);
+        test_extract(k);
+        test_extract(l);
+    }
+#endif // _HAS_CXX23
 }
