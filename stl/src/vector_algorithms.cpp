@@ -595,7 +595,7 @@ const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uin
     if (_Size >= 32 && _Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi16(_Val);
 
-        return __std_find_trivial_avx2(_First, _Size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return __std_find_trivial_avx2(_First, _Size * 2, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi16(_Data, _Comparand));
         });
@@ -604,7 +604,7 @@ const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uin
     if (_Size >= 16 && _Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi16(_Val);
 
-        return __std_find_trivial_sse2(_First, _Size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return __std_find_trivial_sse2(_First, _Size * 2, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi16(_Data, _Comparand));
         });
@@ -617,7 +617,7 @@ const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uin
     if (_Size >= 32 && _Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi32(_Val);
 
-        return __std_find_trivial_avx2(_First, _Size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return __std_find_trivial_avx2(_First, _Size * 4, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_Data, _Comparand));
         });
@@ -626,7 +626,7 @@ const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uin
     if (_Size >= 16 && _Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi32(_Val);
 
-        return __std_find_trivial_sse2(_First, _Size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return __std_find_trivial_sse2(_First, _Size * 4, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi32(_Data, _Comparand));
         });
@@ -639,7 +639,7 @@ const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uin
     if (_Size >= 32 && _Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi64x(_Val);
 
-        return __std_find_trivial_avx2(_First, _Size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return __std_find_trivial_avx2(_First, _Size * 8, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi64(_Data, _Comparand));
         });
@@ -648,7 +648,7 @@ const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uin
     if (_Size >= 16 && _Use_sse42()) {
         const __m128i _Comparand = _mm_set1_epi64x(_Val);
 
-        return __std_find_trivial_sse2(_First, _Size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return __std_find_trivial_sse2(_First, _Size * 8, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi64(_Data, _Comparand)); // SSE4.1
         });
