@@ -292,6 +292,11 @@ public:
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            return _Primary_char_traits::assign(_Left, _Right);
+        }
+#endif // _HAS_CXX20
         _Left = _Right;
     }
 
@@ -431,6 +436,11 @@ public:
     }
 
     static _CONSTEXPR17 void assign(_Elem& _Left, const _Elem& _Right) noexcept {
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            return _Primary_char_traits::assign(_Left, _Right);
+        }
+#endif // _HAS_CXX20
         _Left = _Right;
     }
 
@@ -2778,10 +2788,7 @@ public:
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
         _Tidy_init();
     }
-#endif // _HAS_CXX20
 
-public:
-#if _HAS_CXX20
     _NODISCARD bool _Move_assign_from_buffer(_Elem* const _Right, const size_type _Size, const size_type _Res) {
         // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_string_engaged()
         _Tidy_deallocate();
@@ -2840,9 +2847,6 @@ public:
                 // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
                 _Mypair._Myval2._Orphan_all();
                 _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
-                _Pocma(_Al, _Right_al);
-                _Take_contents(_Right);
-                return *this;
             }
         } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
             if (_Al != _Right_al) {
@@ -2854,7 +2858,6 @@ public:
         _Tidy_deallocate();
         _Pocma(_Al, _Right_al);
         _Take_contents(_Right);
-
         return *this;
     }
 
@@ -2865,7 +2868,7 @@ public:
 
 private:
     void _Memcpy_val_from(const basic_string& _Right) noexcept {
-        _STL_INTERNAL_CHECK(_Can_memcpy_val); // TRANSITION, if constexpr
+        _STL_INTERNAL_CHECK(_Can_memcpy_val);
         const auto _My_data_mem =
             reinterpret_cast<unsigned char*>(_STD addressof(_Mypair._Myval2)) + _Memcpy_val_offset;
         const auto _Right_data_mem =
@@ -3052,11 +3055,10 @@ public:
                     const auto _New_size     = _Right._Mypair._Myval2._Mysize;
                     const auto _New_capacity = _Calculate_growth(_New_size, 0, _Right.max_size());
                     auto _Right_al_non_const = _Right_al;
-                    const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity); // throws
+                    const auto _New_ptr      = _Right_al_non_const.allocate(_New_capacity + 1); // throws
 
 #if _HAS_CXX20
-                    if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to
-                                                        // avoid UB
+                    if (_STD is_constant_evaluated()) { // Begin the lifetimes of the objects before copying to avoid UB
                         _Traits::assign(_Unfancy(_New_ptr), _New_size + 1, _Elem());
                     }
 #endif // _HAS_CXX20
@@ -4114,23 +4116,22 @@ public:
             _Pocs(_Getal(), _Right._Getal());
 
 #if _ITERATOR_DEBUG_LEVEL != 0
-            const bool _My_large    = _Mypair._Myval2._Large_string_engaged();
-            const bool _Right_large = _Right._Mypair._Myval2._Large_string_engaged();
-            if (!_My_large) {
-                _Mypair._Myval2._Orphan_all();
+            auto& _My_data    = _Mypair._Myval2;
+            auto& _Right_data = _Right._Mypair._Myval2;
+
+            if (!_My_data._Large_string_engaged()) {
+                _My_data._Orphan_all();
             }
 
-            if (!_Right_large) {
-                _Right._Mypair._Myval2._Orphan_all();
+            if (!_Right_data._Large_string_engaged()) {
+                _Right_data._Orphan_all();
             }
 
-            if (_My_large || _Right_large) {
-                _Mypair._Myval2._Swap_proxy_and_iterators(_Right._Mypair._Myval2);
-            }
+            _My_data._Swap_proxy_and_iterators(_Right_data);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        }
 
-        _Swap_data(_Right);
+            _Swap_data(_Right);
+        }
     }
 
 #if _HAS_CXX17
