@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="Dogfood">
+<!--
+Copyright (c) Microsoft Corporation.
+SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+-->
+
+    <PropertyGroup>
+        <FinalBinary>p_stl_asan</FinalBinary>
+        <TargetType>LIBRARY</TargetType>
+        <Arm64CombinedPdb>true</Arm64CombinedPdb>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt_build.settings.targets"/>
+
+    <PropertyGroup>
+        <OutputName>stl_asan</OutputName>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ClProgramDataBaseFileName>$(OutputLibPdbPath)$(OutputName)$(PdbVerName).pdb</ClProgramDataBaseFileName>
+    </PropertyGroup>
+
+    <Import Project="$(MSBuildThisFileDirectory)stl_asan.files.settings.targets"/>
+
+    <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>
+    <Target Name="GetBaseAddress"/>
+
+</Project>

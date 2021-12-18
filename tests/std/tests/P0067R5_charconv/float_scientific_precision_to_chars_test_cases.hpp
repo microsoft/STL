@@ -36,7 +36,8 @@
 // (Keep the cgmanifest.json commitHash in sync.)
 
 
-#pragma once
+#ifndef FLOAT_SCIENTIFIC_PRECISION_TO_CHARS_TEST_CASES_HPP
+#define FLOAT_SCIENTIFIC_PRECISION_TO_CHARS_TEST_CASES_HPP
 
 #include <charconv>
 
@@ -1088,3 +1089,5 @@ inline constexpr FloatPrecisionToCharsTestCase float_scientific_precision_to_cha
     {0x1.fffffep+126f, chars_format::scientific, 37, "1.7014117331926442990585209174225846272e+38"},
     {0x1.fffffep+127f, chars_format::scientific, 37, "3.4028234663852885981170418348451692544e+38"},
 };
+
+#endif // FLOAT_SCIENTIFIC_PRECISION_TO_CHARS_TEST_CASES_HPP

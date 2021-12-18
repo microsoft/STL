@@ -1051,7 +1051,8 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
     return static_cast<int>(_Val >> (_Digits - 8));
 }
 
-#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+#if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \
+    && !defined(__INTEL_COMPILER)
 #define _HAS_TZCNT_BSF_INTRINSICS 1
 #else // ^^^ intrinsics available ^^^ / vvv intrinsics unavailable vvv
 #define _HAS_TZCNT_BSF_INTRINSICS 0
@@ -1060,6 +1061,10 @@ _NODISCARD constexpr int _Popcount_fallback(_Ty _Val) noexcept {
 #if _HAS_TZCNT_BSF_INTRINSICS
 extern "C" {
 extern int __isa_available;
+}
+
+#if _HAS_CXX20
+
 #ifdef __clang__
 #define _TZCNT_U32 __builtin_ia32_tzcnt_u32
 #define _TZCNT_U64 __builtin_ia32_tzcnt_u64
@@ -1067,7 +1072,6 @@ extern int __isa_available;
 #define _TZCNT_U32 _tzcnt_u32
 #define _TZCNT_U64 _tzcnt_u64
 #endif // __clang__
-}
 
 template <class _Ty>
 _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
@@ -1093,6 +1097,9 @@ _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
 #endif // _M_IX86
     }
 }
+
+#undef _TZCNT_U32
+#undef _TZCNT_U64
 
 template <class _Ty>
 _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
@@ -1143,8 +1150,8 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
 #endif // __AVX2__
 }
 
-#undef _TZCNT_U32
-#undef _TZCNT_U64
+#endif // _HAS_CXX20
+
 #endif // _HAS_TZCNT_BSF_INTRINSICS
 
 #if (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))) && !defined(_M_CEE_PURE) && !defined(__CUDACC__) \

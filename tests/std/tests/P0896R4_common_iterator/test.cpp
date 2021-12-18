@@ -172,7 +172,7 @@ struct instantiator {
     }
 };
 
-bool test_operator_arrow() {
+constexpr bool test_operator_arrow() {
     P input[3] = {{0, 1}, {0, 2}, {0, 3}};
 
     using pointerTest = common_iterator<P*, void*>;
@@ -226,6 +226,10 @@ using ICID = iterator_traits<common_iterator<input_copy_but_no_eq, default_senti
 STATIC_ASSERT(same_as<typename ICID::iterator_category, input_iterator_tag>);
 
 struct poor_sentinel {
+    poor_sentinel() = default;
+    constexpr poor_sentinel(const poor_sentinel&) {} // non-trivial copy constructor, to test _Variantish behavior
+    poor_sentinel& operator=(const poor_sentinel&) = default;
+
     template <weakly_incrementable Winc>
     [[nodiscard]] constexpr bool operator==(const Winc&) const noexcept {
         return true;
@@ -242,7 +246,7 @@ struct poor_sentinel {
     }
 };
 
-void test_gh_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
+constexpr bool test_gh_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
     {
         int x = 42;
         common_iterator<int*, unreachable_sentinel_t> it1{&x};
@@ -256,12 +260,64 @@ void test_gh_2065() { // Guard against regression of GH-2065, for which we previ
         common_iterator<const int*, poor_sentinel> it2{&i};
         assert(it1 - it2 == 0);
     }
+
+    return true;
+}
+
+constexpr bool test_lwg_3574() {
+    int arr[]{11, 22, 33};
+
+    {
+        common_iterator<int*, const int*> x{arr};
+        common_iterator<int*, const int*> y{arr + 2};
+        assert(y - x == 2);
+    }
+
+    { // test that copy construction is constexpr, even when the sentinel isn't trivially copy constructible
+        common_iterator<int*, poor_sentinel> a{arr};
+        common_iterator<int*, poor_sentinel> b{a}; // copy-construct with a stored iterator
+        common_iterator<int*, poor_sentinel> x{poor_sentinel{}};
+        common_iterator<int*, poor_sentinel> y{x}; // copy-construct with a stored sentinel
+        assert(b - a == 0);
+    }
+
+    common_iterator<int*, unreachable_sentinel_t> i{arr};
+    common_iterator<const int*, unreachable_sentinel_t> ci{arr + 1};
+
+    assert(*ci == 22);
+    assert(*as_const(ci) == 22);
+    assert(ci.operator->() == arr + 1);
+
+    ci = i;
+    assert(*ci == 11);
+    assert(ci == i);
+
+    assert(*++ci == 22);
+    assert(ci != i);
+
+    assert(*ci++ == 22);
+    assert(*ci == 33);
+
+    assert(iter_move(i) == 11);
+
+    common_iterator<int*, unreachable_sentinel_t> k{arr + 2};
+    iter_swap(i, k);
+    assert(arr[0] == 33);
+    assert(arr[2] == 11);
+
+    return true;
 }
 
 int main() {
     with_writable_iterators<instantiator, P>::call();
+    static_assert(with_writable_iterators<instantiator, P>::call());
 
     test_operator_arrow();
+    static_assert(test_operator_arrow());
 
     test_gh_2065();
+    static_assert(test_gh_2065());
+
+    test_lwg_3574();
+    static_assert(test_lwg_3574());
 }
