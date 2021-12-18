@@ -20,8 +20,27 @@
 #include <intrin0.h>
 #endif // defined(_M_ARM64EC)
 #include <isa_availability.h>
+#include <stdint.h>
+#include <string.h>
+#include <wchar.h>
 
 extern "C" long __isa_enabled;
+
+static bool _Use_avx2() {
+    return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
+}
+
+static bool _Use_sse42() {
+    return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
+}
+
+static bool _Use_sse2() {
+#ifdef _M_IX86
+    return __isa_enabled & (1 << __ISA_AVAILABLE_SSE2);
+#else
+    return true;
+#endif // _M_IX86
+}
 
 template <class _BidIt>
 static void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
@@ -56,7 +75,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept {
 #if !defined(_M_ARM64EC)
     constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
-    if (_Byte_length(_First1, _Last1) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+    if (_Byte_length(_First1, _Last1) >= 32 && _Use_avx2()) {
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_32);
         do {
@@ -71,11 +90,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 #endif // !defined(_M_ARM64EC)
 
     constexpr size_t _Mask_16 = ~((static_cast<size_t>(1) << 4) - 1);
-    if (_Byte_length(_First1, _Last1) >= 16
-#ifdef _M_IX86
-        && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE2)
-#endif // _M_IX86
-    ) {
+    if (_Byte_length(_First1, _Last1) >= 16 && _Use_sse2()) {
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_16);
         do {
@@ -138,7 +153,7 @@ void* __cdecl __std_swap_ranges_trivially_swappable(void* _First1, void* _Last1,
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _First, void* _Last) noexcept {
 #if !defined(_M_ARM64EC)
-    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+    if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
@@ -161,7 +176,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
     }
 #endif // !defined(_M_ARM64EC)
 
-    if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
         const void* _Stop_at            = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
@@ -182,7 +197,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept {
 #if !defined(_M_ARM64EC)
-    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+    if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
@@ -203,7 +218,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
     }
 #endif // !defined(_M_ARM64EC)
 
-    if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
         const void* _Stop_at             = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
@@ -224,7 +239,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept {
 #if !defined(_M_ARM64EC)
-    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+    if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
@@ -242,11 +257,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
     }
 #endif // !defined(_M_ARM64EC)
 
-    if (_Byte_length(_First, _Last) >= 32
-#ifdef _M_IX86
-        && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE2)
-#endif // _M_IX86
-    ) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
         do {
@@ -266,7 +277,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept {
 #if !defined(_M_ARM64EC)
-    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+    if (_Byte_length(_First, _Last) >= 64 && _Use_avx2()) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
@@ -282,11 +293,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
     }
 #endif // !defined(_M_ARM64EC)
 
-    if (_Byte_length(_First, _Last) >= 32
-#ifdef _M_IX86
-        && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE2)
-#endif // _M_IX86
-    ) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
         do {
@@ -307,7 +314,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept {
 #if !defined(_M_ARM64EC)
-    if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
@@ -324,7 +331,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     }
 #endif // !defined(_M_ARM64EC)
 
-    if (_Byte_length(_First, _Last) >= 16 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
+    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
         const void* _Stop_at            = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
@@ -344,7 +351,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
     const void* _First, const void* _Last, void* _Dest) noexcept {
 #if !defined(_M_ARM64EC)
-    if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
@@ -361,7 +368,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
     }
 #endif // !defined(_M_ARM64EC)
 
-    if (_Byte_length(_First, _Last) >= 16 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
+    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
         const void* _Stop_at             = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
@@ -381,7 +388,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept {
 #if !defined(_M_ARM64EC)
-    if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
         do {
@@ -395,11 +402,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     }
 #endif // !defined(_M_ARM64EC)
 
-    if (_Byte_length(_First, _Last) >= 16
-#ifdef _M_IX86
-        && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE2)
-#endif // _M_IX86
-    ) {
+    if (_Byte_length(_First, _Last) >= 16 && _Use_sse2()) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
         do {
@@ -418,7 +421,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept {
 #if !defined(_M_ARM64EC)
-    if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_avx2()) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
         do {
@@ -431,11 +434,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     }
 #endif // !defined(_M_ARM64EC)
 
-    if (_Byte_length(_First, _Last) >= 16
-#ifdef _M_IX86
-        && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE2)
-#endif // _M_IX86
-    ) {
+    if (_Byte_length(_First, _Last) >= 16 && _Use_sse2()) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 4 << 4);
         do {
@@ -451,6 +450,202 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
         static_cast<unsigned long long*>(_Dest));
 }
 
+} // extern "C"
+
+template <class _Callback>
+static const void* __std_find_trivial_avx2(
+    const void* _First, size_t _Size, __m256i _Comparand, _Callback _Get_mask) noexcept {
+    intptr_t _Pad_stop            = 0;
+    constexpr unsigned _Full_mask = 0xFFFFFFFF;
+    const void* _Stop_at          = nullptr;
+    unsigned _Stop_mask           = _Full_mask;
+    if (_Size != SIZE_MAX) {
+        _Stop_at = _First;
+        _Advance_bytes(_Stop_at, _Size);
+        _Pad_stop = reinterpret_cast<intptr_t>(_Stop_at) & 0x1F;
+        if (_Pad_stop != 0) {
+            _Stop_mask = _Full_mask >> (32 - _Pad_stop);
+        } else {
+            _Advance_bytes(_Stop_at, -32);
+        }
+    }
+
+    const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & 0x1F;
+    unsigned _Mask            = (_Full_mask << _Pad_start);
+    _Advance_bytes(_First, -_Pad_start);
+
+    for (;;) {
+        if (_First == _Stop_at) {
+            _Mask = _Stop_mask;
+        }
+
+        unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
+
+        if ((_Bingo &= _Mask) != 0) {
+            unsigned long _Offset;
+            _BitScanForward(&_Offset, _Bingo);
+            _Advance_bytes(_First, _Offset);
+            return _First;
+        }
+
+        if (_First == _Stop_at) {
+            _Advance_bytes(_First, _Pad_stop);
+            return _First;
+        }
+
+        _Advance_bytes(_First, 32);
+        _Mask = _Full_mask;
+    };
+}
+
+template <class _Callback>
+static const void* __std_find_trivial_sse2(
+    const void* _First, size_t _Size, __m128i _Comparand, _Callback _Get_mask) noexcept {
+    intptr_t _Pad_stop            = 0;
+    constexpr unsigned _Full_mask = 0xFFFF;
+    const void* _Stop_at          = nullptr;
+    unsigned _Stop_mask           = _Full_mask;
+    if (_Size != SIZE_MAX) {
+        _Stop_at = _First;
+        _Advance_bytes(_Stop_at, _Size);
+        _Pad_stop = reinterpret_cast<intptr_t>(_Stop_at) & 0xF;
+        if (_Pad_stop != 0) {
+            _Stop_mask = 0xFFFF >> (16 - _Pad_stop);
+        } else {
+            _Advance_bytes(_Stop_at, -16);
+        }
+    }
+
+    const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & 0xF;
+    unsigned _Mask            = (_Full_mask << _Pad_start);
+    _Advance_bytes(_First, -_Pad_start);
+
+    for (;;) {
+        if (_First == _Stop_at) {
+            _Mask = _Stop_mask;
+        }
+
+        unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
+
+        if ((_Bingo &= _Mask) != 0) {
+            unsigned long _Offset;
+            _BitScanForward(&_Offset, _Bingo);
+            _Advance_bytes(_First, _Offset);
+            return _First;
+        }
+
+        if (_First == _Stop_at) {
+            _Advance_bytes(_First, _Pad_stop);
+            return _First;
+        }
+
+        _Advance_bytes(_First, 16);
+        _Mask = _Full_mask;
+    };
+}
+
+template <class _Ty>
+static const void* __std_find_trivial_fallback(const void* _First, size_t _Size, _Ty _Val) {
+    auto _Ptr  = static_cast<const _Ty*>(_First);
+    auto _Last = _Ptr + _Size;
+    for (; _Ptr != _Last; ++_Ptr) {
+        if (*_Ptr == _Val) {
+            break;
+        }
+    }
+    return _Ptr;
+}
+
+
+extern "C" {
+
+const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uint8_t _Val) noexcept {
+    if (_Size >= 32 && _Use_avx2()) {
+        const __m256i _Comparand = _mm256_set1_epi8(_Val);
+
+        return __std_find_trivial_avx2(_First, _Size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+            __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
+            return _mm256_movemask_epi8(_mm256_cmpeq_epi8(_Data, _Comparand));
+        });
+    }
+
+    if (_Size >= 16 && _Use_sse2()) {
+        const __m128i _Comparand = _mm_set1_epi8(_Val);
+
+        return __std_find_trivial_sse2(_First, _Size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+            __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
+            return _mm_movemask_epi8(_mm_cmpeq_epi8(_Data, _Comparand));
+        });
+    }
+
+    return __std_find_trivial_fallback(_First, _Size, _Val);
+}
+
+const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uint16_t _Val) noexcept {
+    if (_Size >= 32 && _Use_avx2()) {
+        const __m256i _Comparand = _mm256_set1_epi16(_Val);
+
+        return __std_find_trivial_avx2(_First, _Size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+            __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
+            return _mm256_movemask_epi8(_mm256_cmpeq_epi16(_Data, _Comparand));
+        });
+    }
+
+    if (_Size >= 16 && _Use_sse2()) {
+        const __m128i _Comparand = _mm_set1_epi16(_Val);
+
+        return __std_find_trivial_sse2(_First, _Size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+            __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
+            return _mm_movemask_epi8(_mm_cmpeq_epi16(_Data, _Comparand));
+        });
+    }
+
+    return __std_find_trivial_fallback(_First, _Size, _Val);
+}
+
+const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uint32_t _Val) noexcept {
+    if (_Size >= 32 && _Use_avx2()) {
+        const __m256i _Comparand = _mm256_set1_epi32(_Val);
+
+        return __std_find_trivial_avx2(_First, _Size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+            __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
+            return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_Data, _Comparand));
+        });
+    }
+
+    if (_Size >= 16 && _Use_sse2()) {
+        const __m128i _Comparand = _mm_set1_epi32(_Val);
+
+        return __std_find_trivial_sse2(_First, _Size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+            __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
+            return _mm_movemask_epi8(_mm_cmpeq_epi32(_Data, _Comparand));
+        });
+    }
+
+    return __std_find_trivial_fallback(_First, _Size, _Val);
+}
+
+const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uint64_t _Val) noexcept {
+    if (_Size >= 32 && _Use_avx2()) {
+        const __m256i _Comparand = _mm256_set1_epi64x(_Val);
+
+        return __std_find_trivial_avx2(_First, _Size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+            __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
+            return _mm256_movemask_epi8(_mm256_cmpeq_epi64(_Data, _Comparand));
+        });
+    }
+
+    if (_Size >= 16 && _Use_sse42()) {
+        const __m128i _Comparand = _mm_set1_epi64x(_Val);
+
+        return __std_find_trivial_sse2(_First, _Size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+            __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
+            return _mm_movemask_epi8(_mm_cmpeq_epi64(_Data, _Comparand)); // SSE4.1
+        });
+    }
+
+    return __std_find_trivial_fallback(_First, _Size, _Val);
+}
 
 } // extern "C"
 

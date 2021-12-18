@@ -265,6 +265,7 @@ set(IMPLIB_SOURCES
 set(DLL_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/dllmain.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/instances.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
 )
 
 # Sources that must not be compiled with /GL, since they contain CRT initializers.
