@@ -304,7 +304,9 @@ int main() {
     {
         puts("Testing <format>.");
         assert(format("{} {}", 1729, "kittens") == "1729 kittens");
+#if 0 // TRANSITION, compiler ignores warning disabling pragmas
         assert(format(L"{} {}", 1729, L"kittens") == L"1729 kittens");
+#endif
     }
 
     {

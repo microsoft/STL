@@ -1840,6 +1840,8 @@ struct _Back_insert_iterator_container_access : back_insert_iterator<_Container>
     using back_insert_iterator<_Container>::container;
 };
 
+#pragma warning(push)
+#pragma warning(disable : 4265) // non-virtual destructor in base class
 template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
 class _Fmt_iterator_buffer final : public _Traits, public _Fmt_buffer<_Ty> {
 private:
@@ -1886,6 +1888,7 @@ public:
         return static_cast<ptrdiff_t>(_Traits::_Count() + this->_Size());
     }
 };
+#pragma warning(pop)
 
 template <class _Ty>
 class _Fmt_iterator_buffer<_Ty*, _Ty> final : public _Fmt_buffer<_Ty> {
