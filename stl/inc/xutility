@@ -78,8 +78,24 @@ inline void* __std_find_trivial_4(void* _First, size_t _Size, uint32_t _Val) noe
     return const_cast<void*>(__std_find_trivial_4(const_cast<const void*>(_First), _Size, _Val));
 }
 
-inline void* __stdcall __std_find_trivial_8(void* _First, size_t _Size, uint64_t _Val) noexcept {
+inline void* __std_find_trivial_8(void* _First, size_t _Size, uint64_t _Val) noexcept {
     return const_cast<void*>(__std_find_trivial_8(const_cast<const void*>(_First), _Size, _Val));
+}
+
+inline void* __std_find_trivial_unsized_1(void* _First, uint8_t _Val) noexcept {
+    return const_cast<void*>(__std_find_trivial_unsized_1(const_cast<const void*>(_First), _Val));
+}
+
+inline void* __std_find_trivial_unsized_2(void* _First, uint16_t _Val) noexcept {
+    return const_cast<void*>(__std_find_trivial_unsized_2(const_cast<const void*>(_First), _Val));
+}
+
+inline void* __std_find_trivial_unsized_4(void* _First, uint32_t _Val) noexcept {
+    return const_cast<void*>(__std_find_trivial_unsized_4(const_cast<const void*>(_First), _Val));
+}
+
+inline void* __std_find_trivial_unsized_8(void* _First, uint64_t _Val) noexcept {
+    return const_cast<void*>(__std_find_trivial_unsized_8(const_cast<const void*>(_First), _Val));
 }
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
