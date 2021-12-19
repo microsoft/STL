@@ -57,7 +57,7 @@ using _Sizarray  = valarray<size_t>;
 
 template <class _Ty>
 class valarray { // store array with various indexing options
-private:
+public:
     friend _Tidy_deallocate_guard<valarray>;
 
     template <class _Ty2>
@@ -72,7 +72,6 @@ private:
     template <class _Ty2>
     friend const _Ty2* end(const valarray<_Ty2>& _Array);
 
-public:
     using value_type = _Ty;
 
     valarray() { // construct empty valarray
