@@ -3959,9 +3959,8 @@ public:
         }
     }
 
-#if _HAS_CXX23
     template <class _Operation>
-    constexpr void resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
+    _CONSTEXPR20 void _Resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
         if (_Mypair._Myval2._Myres < _New_size) {
             _Reallocate_grow_by(_New_size - _Mypair._Myval2._Mysize,
                 [](_Elem* const _New_ptr, const _Elem* const _Old_ptr, const size_type _Old_size) {
@@ -3975,6 +3974,12 @@ public:
         _STL_VERIFY(_Result_size <= _New_size, "the returned size can't be greater than the passed size");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         _Eos(_Result_size);
+    }
+
+#if _HAS_CXX23
+    template <class _Operation>
+    constexpr void resize_and_overwrite(_CRT_GUARDOVERFLOW const size_type _New_size, _Operation _Op) {
+        _Resize_and_overwrite(_New_size, _STD move(_Op));
     }
 #endif // _HAS_CXX23
 

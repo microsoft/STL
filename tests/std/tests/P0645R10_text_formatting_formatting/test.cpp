@@ -38,6 +38,7 @@ struct choose_literal<wchar_t> {
 
 #define TYPED_LITERAL(CharT, Literal) (choose_literal<CharT>::choose(Literal, L##Literal))
 #define STR(Str)                      TYPED_LITERAL(charT, Str)
+#define STR_VIEW(Str)                 basic_string_view(STR(Str))
 
 // Test against IDL mismatch between the DLL which stores the locale and the code which uses it.
 #ifdef _DEBUG
@@ -992,10 +993,21 @@ void test_spec_replacement_field() {
     test_string_specs<charT>();
 }
 template <class charT, class... Args>
-void test_size_helper_impl(
-    const size_t expected_size, const _Basic_format_string<charT, Args...> fmt, const Args&... args) {
+void test_size_helper_impl(const size_t expected_size, const bool expected_is_estimation_exact,
+    const _Basic_format_string<charT, Args...> fmt, const Args&... args) {
     assert(formatted_size(fmt, args...) == expected_size);
     assert(formatted_size(locale::classic(), fmt, args...) == expected_size);
+
+#ifndef __clang__ // TRANSITION, clang consteval bug (likely https://github.com/llvm/llvm-project/issues/52648)
+    if (_Is_execution_charset_utf8()) {
+        assert(fmt._Is_estimation_exact == expected_is_estimation_exact);
+        if (expected_is_estimation_exact) {
+            assert(fmt._Estimate_required_capacity(args...) == expected_size);
+        }
+    }
+#else // ^^^ not clang ^^^ / vvv clang vvv
+    (void) expected_is_estimation_exact;
+#endif // ^^^ clang ^^^
 
     const auto signed_size = static_cast<ptrdiff_t>(expected_size);
     basic_string<charT> str;
@@ -1026,20 +1038,206 @@ void test_size_helper_impl(
 }
 
 template <class... Args>
-void test_size_helper(const size_t expected_size, const _Fmt_string<Args...> fmt, Args&&... args) {
-    test_size_helper_impl<char, Args...>(expected_size, fmt, forward<Args>(args)...);
+void test_size_helper(const size_t expected_size, const bool expected_is_estimation_exact,
+    const _Fmt_string<Args...> fmt, Args&&... args) {
+    test_size_helper_impl<char, Args...>(expected_size, expected_is_estimation_exact, fmt, forward<Args>(args)...);
 }
 template <class... Args>
-void test_size_helper(const size_t expected_size, const _Fmt_wstring<Args...> fmt, Args&&... args) {
-    test_size_helper_impl<wchar_t, Args...>(expected_size, fmt, forward<Args>(args)...);
+void test_size_helper(const size_t expected_size, const bool expected_is_estimation_exact,
+    const _Fmt_wstring<Args...> fmt, Args&&... args) {
+    test_size_helper_impl<wchar_t, Args...>(expected_size, expected_is_estimation_exact, fmt, forward<Args>(args)...);
 }
 
 
 template <class charT>
 void test_size() {
-    test_size_helper(3, STR("{}"), 123);
-    test_size_helper(6, STR("{}"), 3.1415);
-    test_size_helper(8, STR("{:8}"), STR("scully"));
+    test_size_helper(7, true, STR("nothing"));
+    test_size_helper(13, true, STR("still nothing"), 123);
+    test_size_helper(13, true, STR("nothing again"), 3.1415);
+    test_size_helper(26, true, STR("not even one argument used"), STR("scully"));
+    test_size_helper(26, true, STR("not even one argument used"), STR_VIEW("scully"));
+
+    test_size_helper(3, false, STR("{}"), 123);
+    test_size_helper(6, false, STR("{}"), 3.1415);
+    test_size_helper(10, false, STR("abcd{}efg"), 123);
+    test_size_helper(13, false, STR("abcd{}efg"), 3.1415);
+
+    test_size_helper(3, false, STR("{:d}"), 123);
+    test_size_helper(6, false, STR("{:g}"), 3.1415);
+    test_size_helper(10, false, STR("abcd{:d}efg"), 123);
+    test_size_helper(13, false, STR("abcd{:g}efg"), 3.1415);
+
+    test_size_helper(6, true, STR("{}"), STR("scully"));
+    test_size_helper(8, false, STR("{:8}"), STR("scully"));
+    test_size_helper(6, false, STR("{:3}"), STR("scully"));
+    test_size_helper(6, false, STR("{:.8}"), STR("scully"));
+    test_size_helper(3, false, STR("{:.3}"), STR("scully"));
+    test_size_helper(3, false, STR("{:2.3}"), STR("scully"));
+    test_size_helper(8, false, STR("{:8.10}"), STR("scully"));
+
+    test_size_helper(6, true, STR("{}"), STR_VIEW("scully"));
+    test_size_helper(8, false, STR("{:8}"), STR_VIEW("scully"));
+    test_size_helper(6, false, STR("{:3}"), STR_VIEW("scully"));
+    test_size_helper(6, false, STR("{:.8}"), STR_VIEW("scully"));
+    test_size_helper(3, false, STR("{:.3}"), STR_VIEW("scully"));
+    test_size_helper(3, false, STR("{:2.3}"), STR_VIEW("scully"));
+    test_size_helper(8, false, STR("{:8.10}"), STR_VIEW("scully"));
+
+    test_size_helper(13, true, STR("abcd{}efg"), STR("scully"));
+    test_size_helper(15, false, STR("abcd{:8}efg"), STR("scully"));
+    test_size_helper(13, false, STR("abcd{:3}efg"), STR("scully"));
+    test_size_helper(13, false, STR("abcd{:.8}efg"), STR("scully"));
+    test_size_helper(10, false, STR("abcd{:.3}efg"), STR("scully"));
+    test_size_helper(10, false, STR("abcd{:2.3}efg"), STR("scully"));
+    test_size_helper(15, false, STR("abcd{:8.10}efg"), STR("scully"));
+
+    test_size_helper(13, true, STR("abcd{}efg"), STR_VIEW("scully"));
+    test_size_helper(15, false, STR("abcd{:8}efg"), STR_VIEW("scully"));
+    test_size_helper(13, false, STR("abcd{:3}efg"), STR_VIEW("scully"));
+    test_size_helper(13, false, STR("abcd{:.8}efg"), STR_VIEW("scully"));
+    test_size_helper(10, false, STR("abcd{:.3}efg"), STR_VIEW("scully"));
+    test_size_helper(10, false, STR("abcd{:2.3}efg"), STR_VIEW("scully"));
+    test_size_helper(15, false, STR("abcd{:8.10}efg"), STR_VIEW("scully"));
+
+    test_size_helper(8, false, STR("{:{}}"), STR("scully"), 8);
+    test_size_helper(6, false, STR("{:{}}"), STR("scully"), 3);
+    test_size_helper(6, false, STR("{:.{}}"), STR("scully"), 8);
+    test_size_helper(3, false, STR("{:.{}}"), STR("scully"), 3);
+    test_size_helper(3, false, STR("{:{}.{}}"), STR("scully"), 2, 3);
+    test_size_helper(8, false, STR("{:{}.{}}"), STR("scully"), 8, 10);
+
+    test_size_helper(8, false, STR("{:{}}"), STR_VIEW("scully"), 8);
+    test_size_helper(6, false, STR("{:{}}"), STR_VIEW("scully"), 3);
+    test_size_helper(6, false, STR("{:.{}}"), STR_VIEW("scully"), 8);
+    test_size_helper(3, false, STR("{:.{}}"), STR_VIEW("scully"), 3);
+    test_size_helper(3, false, STR("{:{}.{}}"), STR_VIEW("scully"), 2, 3);
+    test_size_helper(8, false, STR("{:{}.{}}"), STR_VIEW("scully"), 8, 10);
+
+    test_size_helper(15, false, STR("abcd{:{}}efg"), STR("scully"), 8);
+    test_size_helper(13, false, STR("abcd{:{}}efg"), STR("scully"), 3);
+    test_size_helper(13, false, STR("abcd{:.{}}efg"), STR("scully"), 8);
+    test_size_helper(10, false, STR("abcd{:.{}}efg"), STR("scully"), 3);
+    test_size_helper(10, false, STR("abcd{:{}.{}}efg"), STR("scully"), 2, 3);
+    test_size_helper(15, false, STR("abcd{:{}.{}}efg"), STR("scully"), 8, 10);
+
+    test_size_helper(15, false, STR("abcd{:{}}efg"), STR_VIEW("scully"), 8);
+    test_size_helper(13, false, STR("abcd{:{}}efg"), STR_VIEW("scully"), 3);
+    test_size_helper(13, false, STR("abcd{:.{}}efg"), STR_VIEW("scully"), 8);
+    test_size_helper(10, false, STR("abcd{:.{}}efg"), STR_VIEW("scully"), 3);
+    test_size_helper(10, false, STR("abcd{:{}.{}}efg"), STR_VIEW("scully"), 2, 3);
+    test_size_helper(15, false, STR("abcd{:{}.{}}efg"), STR_VIEW("scully"), 8, 10);
+
+    test_size_helper(8, false, STR("{0:{1}}"), STR("scully"), 8);
+    test_size_helper(6, false, STR("{0:{1}}"), STR("scully"), 3);
+    test_size_helper(6, false, STR("{0:.{1}}"), STR("scully"), 8);
+    test_size_helper(3, false, STR("{0:.{1}}"), STR("scully"), 3);
+    test_size_helper(3, false, STR("{0:{1}.{2}}"), STR("scully"), 2, 3);
+    test_size_helper(8, false, STR("{0:{1}.{2}}"), STR("scully"), 8, 10);
+
+    test_size_helper(8, false, STR("{0:{1}}"), STR_VIEW("scully"), 8);
+    test_size_helper(6, false, STR("{0:{1}}"), STR_VIEW("scully"), 3);
+    test_size_helper(6, false, STR("{0:.{1}}"), STR_VIEW("scully"), 8);
+    test_size_helper(3, false, STR("{0:.{1}}"), STR_VIEW("scully"), 3);
+    test_size_helper(3, false, STR("{0:{1}.{2}}"), STR_VIEW("scully"), 2, 3);
+    test_size_helper(8, false, STR("{0:{1}.{2}}"), STR_VIEW("scully"), 8, 10);
+
+    test_size_helper(15, false, STR("abcd{0:{1}}efg"), STR("scully"), 8);
+    test_size_helper(13, false, STR("abcd{0:{1}}efg"), STR("scully"), 3);
+    test_size_helper(13, false, STR("abcd{0:.{1}}efg"), STR("scully"), 8);
+    test_size_helper(10, false, STR("abcd{0:.{1}}efg"), STR("scully"), 3);
+    test_size_helper(10, false, STR("abcd{0:{1}.{2}}efg"), STR("scully"), 2, 3);
+    test_size_helper(15, false, STR("abcd{0:{1}.{2}}efg"), STR("scully"), 8, 10);
+
+    test_size_helper(15, false, STR("abcd{0:{1}}efg"), STR_VIEW("scully"), 8);
+    test_size_helper(13, false, STR("abcd{0:{1}}efg"), STR_VIEW("scully"), 3);
+    test_size_helper(13, false, STR("abcd{0:.{1}}efg"), STR_VIEW("scully"), 8);
+    test_size_helper(10, false, STR("abcd{0:.{1}}efg"), STR_VIEW("scully"), 3);
+    test_size_helper(10, false, STR("abcd{0:{1}.{2}}efg"), STR_VIEW("scully"), 2, 3);
+    test_size_helper(15, false, STR("abcd{0:{1}.{2}}efg"), STR_VIEW("scully"), 8, 10);
+
+    test_size_helper(12, true, STR("{} {}!"), STR("Hello"), STR("World"));
+    test_size_helper(18, true, STR("{0} {1}"), STR("one two three"), STR("four"));
+    test_size_helper(27, true, STR("{0} {0}"), STR("one two three"), STR("four"));
+    test_size_helper(18, true, STR("{1} {0}"), STR("one two three"), STR("four"));
+    test_size_helper(9, true, STR("{1} {1}"), STR("one two three"), STR("four"));
+
+    test_size_helper(12, true, STR("{} {}!"), STR_VIEW("Hello"), STR("World"));
+    test_size_helper(18, true, STR("{0} {1}"), STR_VIEW("one two three"), STR("four"));
+    test_size_helper(27, true, STR("{0} {0}"), STR_VIEW("one two three"), STR("four"));
+    test_size_helper(18, true, STR("{1} {0}"), STR_VIEW("one two three"), STR("four"));
+    test_size_helper(9, true, STR("{1} {1}"), STR_VIEW("one two three"), STR("four"));
+
+    test_size_helper(12, true, STR("{} {}!"), STR("Hello"), STR_VIEW("World"));
+    test_size_helper(18, true, STR("{0} {1}"), STR("one two three"), STR_VIEW("four"));
+    test_size_helper(27, true, STR("{0} {0}"), STR("one two three"), STR_VIEW("four"));
+    test_size_helper(18, true, STR("{1} {0}"), STR("one two three"), STR_VIEW("four"));
+    test_size_helper(9, true, STR("{1} {1}"), STR("one two three"), STR_VIEW("four"));
+
+    test_size_helper(12, true, STR("{} {}!"), STR_VIEW("Hello"), STR_VIEW("World"));
+    test_size_helper(18, true, STR("{0} {1}"), STR_VIEW("one two three"), STR_VIEW("four"));
+    test_size_helper(27, true, STR("{0} {0}"), STR_VIEW("one two three"), STR_VIEW("four"));
+    test_size_helper(18, true, STR("{1} {0}"), STR_VIEW("one two three"), STR_VIEW("four"));
+    test_size_helper(9, true, STR("{1} {1}"), STR_VIEW("one two three"), STR_VIEW("four"));
+
+    test_size_helper(12, true, STR("{:s} {:s}!"), STR("Hello"), STR("World"));
+    test_size_helper(18, true, STR("{0:s} {1:s}"), STR("one two three"), STR("four"));
+    test_size_helper(27, true, STR("{0:s} {0:s}"), STR("one two three"), STR("four"));
+    test_size_helper(18, true, STR("{1:s} {0:s}"), STR("one two three"), STR("four"));
+    test_size_helper(9, true, STR("{1:s} {1:s}"), STR("one two three"), STR("four"));
+
+    test_size_helper(12, true, STR("{:s} {:s}!"), STR_VIEW("Hello"), STR("World"));
+    test_size_helper(18, true, STR("{0:s} {1:s}"), STR_VIEW("one two three"), STR("four"));
+    test_size_helper(27, true, STR("{0:s} {0:s}"), STR_VIEW("one two three"), STR("four"));
+    test_size_helper(18, true, STR("{1:s} {0:s}"), STR_VIEW("one two three"), STR("four"));
+    test_size_helper(9, true, STR("{1:s} {1:s}"), STR_VIEW("one two three"), STR("four"));
+
+    test_size_helper(12, true, STR("{:s} {:s}!"), STR("Hello"), STR_VIEW("World"));
+    test_size_helper(18, true, STR("{0:s} {1:s}"), STR("one two three"), STR_VIEW("four"));
+    test_size_helper(27, true, STR("{0:s} {0:s}"), STR("one two three"), STR_VIEW("four"));
+    test_size_helper(18, true, STR("{1:s} {0:s}"), STR("one two three"), STR_VIEW("four"));
+    test_size_helper(9, true, STR("{1:s} {1:s}"), STR("one two three"), STR_VIEW("four"));
+
+    test_size_helper(12, true, STR("{:s} {:s}!"), STR_VIEW("Hello"), STR_VIEW("World"));
+    test_size_helper(18, true, STR("{0:s} {1:s}"), STR_VIEW("one two three"), STR_VIEW("four"));
+    test_size_helper(27, true, STR("{0:s} {0:s}"), STR_VIEW("one two three"), STR_VIEW("four"));
+    test_size_helper(18, true, STR("{1:s} {0:s}"), STR_VIEW("one two three"), STR_VIEW("four"));
+    test_size_helper(9, true, STR("{1:s} {1:s}"), STR_VIEW("one two three"), STR_VIEW("four"));
+
+    test_size_helper(15, false, STR("{0} {1}"), STR("one two three"), 4);
+    test_size_helper(27, true, STR("{0} {0}"), STR("one two three"), 4);
+    test_size_helper(15, false, STR("{1} {0}"), STR("one two three"), 4);
+    test_size_helper(3, false, STR("{1} {1}"), STR("one two three"), 4);
+    test_size_helper(8, false, STR("{0} {1}"), 123, STR("four"));
+    test_size_helper(7, false, STR("{0} {0}"), 123, STR("four"));
+    test_size_helper(8, false, STR("{1} {0}"), 123, STR("four"));
+    test_size_helper(9, true, STR("{1} {1}"), 123, STR("four"));
+
+    test_size_helper(15, false, STR("{0} {1}"), STR_VIEW("one two three"), 4);
+    test_size_helper(27, true, STR("{0} {0}"), STR_VIEW("one two three"), 4);
+    test_size_helper(15, false, STR("{1} {0}"), STR_VIEW("one two three"), 4);
+    test_size_helper(3, false, STR("{1} {1}"), STR_VIEW("one two three"), 4);
+    test_size_helper(8, false, STR("{0} {1}"), 123, STR_VIEW("four"));
+    test_size_helper(7, false, STR("{0} {0}"), 123, STR_VIEW("four"));
+    test_size_helper(8, false, STR("{1} {0}"), 123, STR_VIEW("four"));
+    test_size_helper(9, true, STR("{1} {1}"), 123, STR_VIEW("four"));
+
+    test_size_helper(15, false, STR("{0:s} {1:d}"), STR("one two three"), 4);
+    test_size_helper(27, true, STR("{0:s} {0:s}"), STR("one two three"), 4);
+    test_size_helper(15, false, STR("{1:d} {0:s}"), STR("one two three"), 4);
+    test_size_helper(3, false, STR("{1:d} {1:d}"), STR("one two three"), 4);
+    test_size_helper(8, false, STR("{0:d} {1:s}"), 123, STR("four"));
+    test_size_helper(7, false, STR("{0:d} {0:d}"), 123, STR("four"));
+    test_size_helper(8, false, STR("{1:s} {0:d}"), 123, STR("four"));
+    test_size_helper(9, true, STR("{1:s} {1:s}"), 123, STR("four"));
+
+    test_size_helper(15, false, STR("{0:s} {1:d}"), STR_VIEW("one two three"), 4);
+    test_size_helper(27, true, STR("{0:s} {0:s}"), STR_VIEW("one two three"), 4);
+    test_size_helper(15, false, STR("{1:d} {0:s}"), STR_VIEW("one two three"), 4);
+    test_size_helper(3, false, STR("{1:d} {1:d}"), STR_VIEW("one two three"), 4);
+    test_size_helper(8, false, STR("{0:d} {1:s}"), 123, STR_VIEW("four"));
+    test_size_helper(7, false, STR("{0:d} {0:d}"), 123, STR_VIEW("four"));
+    test_size_helper(8, false, STR("{1:s} {0:d}"), 123, STR_VIEW("four"));
+    test_size_helper(9, true, STR("{1:s} {1:s}"), 123, STR_VIEW("four"));
 }
 
 // The libfmt_ tests are derived from tests in
