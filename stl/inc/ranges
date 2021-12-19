@@ -6352,6 +6352,133 @@ namespace ranges {
 
         inline constexpr _Chunk_by_fn chunk_by;
     } // namespace views
+
+#ifdef __cpp_lib_ranges_to_container
+    // clang-format off
+    template <class _Range, class _Container>
+    concept _Sized_and_reservable = sized_range<_Range> && sized_range<_Container>
+        && requires(_Container& _Cont, const _Container& _CCont, const range_size_t<_Container> _Count) {
+            _Cont.reserve(_Count);
+            { _CCont.capacity() } -> same_as<range_size_t<_Container>>;
+            { _CCont.max_size() } -> same_as<range_size_t<_Container>>;
+        };
+
+    template <class _Rng, class _Container, class... _Types>
+    concept _Common_constructible = common_range<_Rng> && _Cpp17_input_iterator<iterator_t<_Rng>>
+        && constructible_from<_Container, iterator_t<_Rng>, iterator_t<_Rng>, _Types...>;
+
+    template <class _Rng, class _Container, class... _Types>
+    concept _Constructible_and_insertable = constructible_from<_Container, _Types...>
+        && requires(_Container& _Cont) {
+            requires (
+                requires { _Cont.push_back(_STD declval<range_reference_t<_Rng>>()); }
+                || requires { _Cont.insert(_Cont.end(), _STD declval<range_reference_t<_Rng>>()); });
+        };
+
+    template <class _Reference, class _Container>
+    _NODISCARD constexpr auto _Container_inserter(_Container& _Cont) {
+        if constexpr (requires { _Cont.push_back(_STD declval<_Reference>()); }) {
+            return back_insert_iterator{_Cont};
+        } else {
+            return insert_iterator{_Cont, _Cont.end()};
+        }
+    }
+
+    template <class _Container, input_range _Rng, class... _Types>
+        requires (!view<_Container>)
+    _NODISCARD constexpr _Container to(_Rng&& _Range, _Types&&... _Args) {
+        // clang-format on
+        constexpr bool _Ref_converts = convertible_to<range_reference_t<_Rng>, range_value_t<_Container>>;
+        if constexpr (_Ref_converts && constructible_from<_Container, _Rng, _Types...>) {
+            return _Container(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
+        } else if constexpr (_Ref_converts && constructible_from<_Container, from_range_t, _Rng, _Types...>) {
+            return _Container(from_range, _STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
+        } else if constexpr (_Ref_converts && _Common_constructible<_Rng, _Container, _Types...>) {
+            return _Container(_RANGES begin(_Range), _RANGES end(_Range), _STD forward<_Types...>(_Args)...);
+        } else if constexpr (_Ref_converts && _Constructible_and_insertable<_Rng, _Container, _Types...>) {
+            _Container _Cont(_STD forward<_Types>(_Args)...);
+            if constexpr (_Sized_and_reservable<_Rng, _Container>) {
+                _Cont.reserve(_RANGES size(_Range));
+            }
+            _RANGES copy(_Range, _Container_inserter<range_reference_t<_Rng>>(_Cont));
+            return _Cont;
+        } else if constexpr (input_range<range_reference_t<_Rng>>) {
+            const auto _Xform = [](auto&& _Elem) {
+                return _RANGES to<range_value_t<_Container>>(_STD forward<decltype(_Elem)>(_Elem));
+            };
+            return _RANGES to<_Container>(views::transform(_Range, _Xform), _STD forward<_Types>(_Args)...);
+        } else {
+            static_assert(_Always_false<_Container>, "the program is ill-formed per N4910 [range.utility.conv.to]/1.3");
+        }
+    }
+
+    template <class _Container>
+    struct _To_class_fn {
+        _STL_INTERNAL_STATIC_ASSERT(!view<_Container>);
+
+        template <input_range _Rng, class... _Types>
+        _NODISCARD constexpr auto operator()(_Rng&& _Range, _Types&&... _Args) const requires requires {
+            _RANGES to<_Container>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
+        }
+        { return _RANGES to<_Container>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...); }
+    };
+
+    // clang-format off
+    template <class _Container, class... _Types>
+        requires (!view<_Container>)
+    _NODISCARD constexpr auto to(_Types&&... _Args) {
+        return _Range_closure<_To_class_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
+    }
+    // clang-format on
+
+    template <input_range _Rng>
+    struct _Phony_input_iterator {
+        using iterator_category = input_iterator_tag;
+        using value_type        = range_value_t<_Rng>;
+        using difference_type   = ptrdiff_t;
+        using pointer           = add_pointer_t<range_reference_t<_Rng>>;
+        using reference         = range_reference_t<_Rng>;
+
+        reference operator*() const;
+        pointer operator->() const;
+
+        _Phony_input_iterator& operator++();
+        _Phony_input_iterator operator++(int);
+
+        bool operator==(const _Phony_input_iterator&) const;
+    };
+
+    template <template <class...> class _Container, class _Rng, class... _Types>
+    auto _To_helper(int) -> decltype(_Container(_STD declval<_Rng>(), _STD declval<_Types>()...)); // not defined
+
+    template <template <class...> class _Container, class _Rng, class... _Types>
+    auto _To_helper(long)
+        -> decltype(_Container(from_range, _STD declval<_Rng>(), _STD declval<_Types>()...)); // not defined
+
+    template <template <class...> class _Container, class _Rng, class... _Types>
+    auto _To_helper(...) -> decltype(_Container(_STD declval<_Phony_input_iterator<_Rng>>(),
+        _STD declval<_Phony_input_iterator<_Rng>>(), _STD declval<_Types>()...)); // not defined
+
+    template <template <class...> class _Container, input_range _Rng, class... _Types,
+        class _Deduced = decltype(_To_helper<_Container, _Rng, _Types...>(42))>
+    _NODISCARD constexpr _Deduced to(_Rng&& _Range, _Types&&... _Args) {
+        return to<_Deduced>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
+    }
+
+    template <template <class...> class _Container>
+    struct _To_template_fn {
+        template <input_range _Rng, class... _Types,
+            class _Deduced = decltype(_To_helper<_Container, _Rng, _Types...>(42))>
+        _NODISCARD constexpr auto operator()(_Rng&& _Range, _Types&&... _Args) const {
+            return _RANGES to<_Deduced>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
+        }
+    };
+
+    template <template <class...> class _Container, class... _Types>
+    _NODISCARD constexpr auto to(_Types&&... _Args) {
+        return _Range_closure<_To_template_fn<_Container>, decay_t<_Types>...>{_STD forward<_Types>(_Args)...};
+    }
+#endif // __cpp_lib_ranges_to_container
 #endif // _HAS_CXX23
 } // namespace ranges
 

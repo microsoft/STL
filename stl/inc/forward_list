@@ -463,7 +463,7 @@ struct _Flist_insert_after_op2 {
             ++_First; // throws
         }
 
-        while (_First != _Last) { // throws
+        while (_First != _Last) {
             _Newnode._Allocate(); // throws
             _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), *_First); // throws
             const auto _Newtail = _Newnode._Release();
@@ -605,6 +605,24 @@ public:
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
+
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Ty> _Rng>
+    forward_list(from_range_t, _Rng&& _Range) : _Mypair(_Zero_then_variadic_args_t{}) {
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
+        _Insert_op._Append_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        _Alloc_proxy();
+        _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
+    }
+
+    template <_Container_compatible_range<_Ty> _Rng>
+    forward_list(from_range_t, _Rng&& _Range, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
+        _Insert_op._Append_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        _Alloc_proxy();
+        _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
+    }
+#endif // __cpp_lib_containers_ranges
 
     forward_list(forward_list&& _Right) noexcept // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
@@ -898,19 +916,26 @@ public:
         _Insert_after(_Mypair._Myval2._Before_head(), _Val);
     }
 
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Ty> _Rng>
+    void prepend_range(_Rng&& _Range) {
+        insert_range_after(before_begin(), _Range);
+    }
+#endif // __cpp_lib_containers_ranges
+
     void pop_front() noexcept /* strengthened */ {
         _Erase_after(_Mypair._Myval2._Before_head());
     }
 
 private:
     template <class _UIter, class _Sentinel>
-    void _Assign_unchecked(_UIter _UFirst, _Sentinel _ULast) {
+    void _Assign_unchecked(_UIter _UFirst, const _Sentinel _ULast) {
         auto _Myfirst = _Mypair._Myval2._Before_head();
         for (; _UFirst != _ULast; ++_UFirst) {
-            auto _Next = _Myfirst->_Next;
-            if (!_Myfirst->_Next) {
+            const auto _Next = _Myfirst->_Next;
+            if (!_Next) {
                 _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
-                _Insert_op._Append_range_unchecked(_UFirst, _ULast);
+                _Insert_op._Append_range_unchecked(_STD move(_UFirst), _ULast);
                 _Insert_op._Attach_after(_Myfirst);
                 return;
             }
@@ -920,7 +945,7 @@ private:
         }
 
         for (auto _To_delete = _STD exchange(_Myfirst->_Next, nullptr); _To_delete;) {
-            auto _Next = _To_delete->_Next;
+            const auto _Next = _To_delete->_Next;
 #if _ITERATOR_DEBUG_LEVEL == 2
             _Mypair._Myval2._Orphan_ptr(_To_delete);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
@@ -935,6 +960,13 @@ public:
         _Adl_verify_range(_First, _Last);
         _Assign_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
+
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Ty> _Rng>
+    void assign_range(_Rng&& _Range) {
+        _Assign_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // __cpp_lib_containers_ranges
 
     void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) {
         clear();
@@ -984,6 +1016,26 @@ public:
         _Insert_op._Append_range_unchecked(_UFirst, _ULast);
         return _Make_iter(_Insert_op._Attach_after(_Where._Ptr));
     }
+
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Ty> _Rng>
+    iterator insert_range_after(const_iterator _Where, _Rng&& _Range) {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(
+            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list insert_after location incompatible");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
+        auto _UFirst      = _RANGES _Ubegin(_Range);
+        const auto _ULast = _RANGES _Uend(_Range);
+        if (_UFirst == _ULast) {
+            return _Make_iter(_Where._Ptr);
+        }
+
+        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
+        _Insert_op._Append_range_unchecked(_STD move(_UFirst), _ULast);
+        return _Make_iter(_Insert_op._Attach_after(_Where._Ptr));
+    }
+#endif // __cpp_lib_containers_ranges
 
 private:
     void _Erase_after(_Nodeptr _Pnode) noexcept { // erase element after _Pnode
@@ -1506,6 +1558,12 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
 forward_list(_Iter, _Iter, _Alloc = _Alloc()) -> forward_list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_containers_ranges
+template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+forward_list(from_range_t, _Rng&&, _Alloc = _Alloc()) -> forward_list<_RANGES range_value_t<_Rng>, _Alloc>;
+#endif // __cpp_lib_containers_ranges
 
 template <class _Ty, class _Alloc>
 void swap(forward_list<_Ty, _Alloc>& _Left, forward_list<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {

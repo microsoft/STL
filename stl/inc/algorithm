@@ -254,56 +254,6 @@ namespace ranges {
             return {_STD move(in), found};
         }
     };
-
-    // clang-format off
-    template <forward_iterator _Wrapped, class _Se>
-        requires sentinel_for<remove_cvref_t<_Se>, _Wrapped>
-    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
-        // clang-format on
-        // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]
-        auto _ULast = _Get_unwrapped(_STD forward<_Se>(_Last));
-        if constexpr (is_same_v<remove_cvref_t<_Se>, _Wrapped>) {
-            return _ULast;
-        } else if constexpr (sized_sentinel_for<remove_cvref_t<_Se>, _Wrapped>) {
-            return _RANGES next(_UFirst, _ULast - _UFirst);
-        } else {
-            return _RANGES next(_UFirst, _STD move(_ULast));
-        }
-    }
-
-    template <forward_range _Rng>
-    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(_Rng& _Range) {
-        // find the (unwrapped) iterator in _Range which equals _Uend(_Range) [possibly O(N)]
-        if constexpr (common_range<_Rng>) {
-            if constexpr (same_as<_Unwrapped_t<_RANGES iterator_t<_Rng>>, decltype(_Uend(_Range))>) {
-                return _Uend(_Range);
-            } else {
-                return _Get_unwrapped(_RANGES end(_Range));
-            }
-        } else if constexpr (sized_range<_Rng>) {
-            return _RANGES next(_Ubegin(_Range), _RANGES distance(_Range));
-        } else {
-            return _RANGES next(_Ubegin(_Range), _Uend(_Range));
-        }
-    }
-
-    template <forward_range _Rng>
-    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(_Rng& _Range, const _Unwrapped_t<iterator_t<_Rng>>& _Mid) {
-        // find the (unwrapped) iterator in _Range which equals _Uend(_Range) [possibly O(N)]
-        // Pre: [ranges::begin(_Range), _Mid) and [_Mid, ranges::end(_Range)) denote ranges
-        if constexpr (common_range<_Rng>) {
-            return _Uend(_Range);
-        } else if constexpr (sized_range<_Rng>) {
-            const auto _Dist = _RANGES distance(_Range);
-            if constexpr (sized_sentinel_for<_Unwrapped_t<iterator_t<_Rng>>, _Unwrapped_t<iterator_t<_Rng>>>) {
-                return _RANGES next(_Mid, _Dist - (_Mid - _Ubegin(_Range)));
-            } else {
-                return _RANGES next(_Ubegin(_Range), _Dist);
-            }
-        } else {
-            return _RANGES next(_Mid, _Uend(_Range));
-        }
-    }
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -1377,9 +1327,9 @@ namespace ranges {
             auto _UFirst = _Get_unwrapped_n(_STD move(_First), _Count);
             if constexpr (_Iter_copy_cat<decltype(_UFirst), _Out>::_Bitcopy_assignable) {
                 if (!_STD is_constant_evaluated()) {
-                    auto _Final = _UFirst + _Count;
-                    _Result     = _Copy_memmove(_STD move(_UFirst), _Final, _STD move(_Result));
-                    _Seek_wrapped(_First, _STD move(_Final));
+                    _Result = _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _STD move(_Result));
+                    _UFirst += _Count;
+                    _Seek_wrapped(_First, _STD move(_UFirst));
                     return {_STD move(_First), _STD move(_Result)};
                 }
             }

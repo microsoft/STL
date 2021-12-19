@@ -64,6 +64,16 @@ constexpr bool test() {
         assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
     }
 
+    { // _Copy_n_unchecked
+        int_wrapper_copy input[]   = {1, 2, 3, 4};
+        int_wrapper_copy output[4] = {5, 6, 7, 8};
+
+        const auto result = _Copy_n_unchecked(begin(input), size(input), begin(output));
+        static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_copy*>);
+        assert(result == end(output));
+        assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
+    }
+
     { // _Copy_backward_unchecked
         int_wrapper_copy input[]   = {1, 2, 3, 4};
         int_wrapper_copy output[4] = {5, 6, 7, 8};

@@ -294,6 +294,7 @@
 // P1072R10 basic_string::resize_and_overwrite
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
+// P1206R7 Conversions From Ranges To Containers
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -1450,7 +1451,8 @@
 #define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_expected 202202L
+#define __cpp_lib_containers_ranges 202202L
+#define __cpp_lib_expected          202202L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_invoke_r           202106L
@@ -1465,6 +1467,7 @@
 #define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
+#define __cpp_lib_ranges_to_container     202202L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L

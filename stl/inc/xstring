@@ -2815,6 +2815,51 @@ private:
     }
 
 public:
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Elem> _Rng>
+    constexpr basic_string(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc())
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
+        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
+        _Tidy_init();
+
+        if constexpr (_RANGES sized_range<_Rng>) {
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
+
+            if constexpr (contiguous_iterator<decltype(_RANGES _Ubegin(
+                              _Range))> && same_as<_RANGES range_value_t<_Rng>, _Elem>) {
+                if (_Count != 0) {
+                    const auto _Ptr = _STD to_address(_RANGES _Ubegin(_Range));
+                    assign(_Ptr, _Count);
+                }
+            } else {
+                reserve(_Count);
+                _Tidy_deallocate_guard<basic_string> _Guard{this};
+                auto _First      = _RANGES _Ubegin(_Range);
+                const auto _Last = _RANGES _Uend(_Range);
+
+                for (; _First != _Last; ++_First) {
+                    _Push_back_unchecked(*_First);
+                }
+
+                _Guard._Target = nullptr;
+            }
+        } else {
+            _Tidy_deallocate_guard<basic_string> _Guard{this};
+            auto _First      = _RANGES _Ubegin(_Range);
+            const auto _Last = _RANGES _Uend(_Range);
+
+            for (; _First != _Last; ++_First) {
+                push_back(*_First);
+            }
+
+            _Guard._Target = nullptr;
+        }
+
+        _Proxy._Release();
+    }
+#endif // __cpp_lib_containers_ranges
+
     _CONSTEXPR20 basic_string(basic_string&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
@@ -3389,6 +3434,21 @@ public:
         }
     }
 
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Elem> _Rng>
+    constexpr basic_string& append_range(_Rng&& _Range) {
+        if constexpr (_RANGES sized_range<_Rng> && contiguous_iterator<decltype(_RANGES _Ubegin(_Range))> //
+                      && same_as<_RANGES range_value_t<_Rng>, _Elem>) {
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
+            const auto _Ptr   = _STD to_address(_RANGES _Ubegin(_Range));
+            return append(_Ptr, _Count);
+        } else {
+            const basic_string _Right(from_range, _Range, get_allocator());
+            return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        }
+    }
+#endif // __cpp_lib_containers_ranges
+
     _CONSTEXPR20 basic_string& assign(const basic_string& _Right) {
         *this = _Right;
         return *this;
@@ -3481,6 +3541,29 @@ public:
         }
     }
 
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Elem> _Rng>
+    constexpr basic_string& assign_range(_Rng&& _Range) {
+        // clang-format off
+        if constexpr (_RANGES sized_range<_Rng> && contiguous_iterator<decltype(_RANGES _Ubegin(_Range))>
+            && same_as<_RANGES range_value_t<_Rng>, _Elem>) {
+            // clang-format on
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
+            const auto _Ptr   = _STD to_address(_RANGES _Ubegin(_Range));
+            return assign(_Ptr, _Count);
+        } else {
+            basic_string _Right(from_range, _Range, get_allocator());
+            if (_Mypair._Myval2._Myres < _Right._Mypair._Myval2._Myres) {
+                _Mypair._Myval2._Orphan_all();
+                _Swap_data(_Right);
+                return *this;
+            } else {
+                return assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+            }
+        }
+    }
+#endif // __cpp_lib_containers_ranges
+
     _CONSTEXPR20 basic_string& insert(const size_type _Off, const basic_string& _Right) {
         // insert _Right at _Off
         return insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
@@ -3517,8 +3600,8 @@ public:
         _Mypair._Myval2._Check_offset(_Off);
         const size_type _Old_size = _Mypair._Myval2._Mysize;
 
-        // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
-        // and copy to the new buffer if constant evaluated
+        // checking for overlapping ranges is technically UB (considering string literals), so just always
+        // reallocate and copy to the new buffer if constant evaluated
 #if _HAS_CXX20
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size && !_STD is_constant_evaluated();
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
@@ -3631,6 +3714,30 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Elem> _Rng>
+    constexpr iterator insert_range(const const_iterator _Where, _Rng&& _Range) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
+
+        // clang-format off
+        if constexpr (_RANGES sized_range<_Rng> && contiguous_iterator<decltype(_RANGES _Ubegin(_Range))>
+            && same_as<_RANGES range_value_t<_Rng>, _Elem>) {
+            // clang-format on
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
+            const auto _Ptr   = _STD to_address(_RANGES _Ubegin(_Range));
+            insert(_Off, _Ptr, _Count);
+        } else {
+            const basic_string _Right(from_range, _Range, get_allocator());
+            insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        }
+
+        return begin() + static_cast<difference_type>(_Off);
+    }
+#endif // __cpp_lib_containers_ranges
+
     _CONSTEXPR20 basic_string& erase(const size_type _Off = 0) { // erase elements [_Off, ...)
         _Mypair._Myval2._Check_offset(_Off);
         _Eos(_Off);
@@ -3734,8 +3841,8 @@ public:
 
         const size_type _Growth = static_cast<size_type>(_Count - _Nx);
 
-        // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
-        // and copy to the new buffer if constant evaluated
+        // checking for overlapping ranges is technically UB (considering string literals), so just always
+        // reallocate and copy to the new buffer if constant evaluated
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -3895,6 +4002,30 @@ public:
         }
     }
 
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Elem> _Rng>
+    constexpr basic_string& replace_with_range(const const_iterator _First, const const_iterator _Last, _Rng&& _Range) {
+        _Adl_verify_range(_First, _Last);
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        const auto _Off    = static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr());
+        const auto _Length = static_cast<size_type>(_Last._Ptr - _First._Ptr);
+
+        // clang-format off
+        if constexpr (_RANGES sized_range<_Rng> && contiguous_iterator<decltype(_RANGES _Ubegin(_Range))>
+            && same_as<_RANGES range_value_t<_Rng>, _Elem>) {
+            // clang-format on
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
+            const auto _Ptr   = _STD to_address(_RANGES _Ubegin(_Range));
+            return replace(_Off, _Length, _Ptr, _Count);
+        } else {
+            const basic_string _Right(from_range, _Range, get_allocator());
+            return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        }
+    }
+#endif // __cpp_lib_containers_ranges
+
     _NODISCARD _CONSTEXPR20 iterator begin() noexcept {
         return iterator(_Refancy<pointer>(_Mypair._Myval2._Myptr()), _STD addressof(_Mypair._Myval2));
     }
@@ -4027,6 +4158,20 @@ public:
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize};
     }
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_containers_ranges
+private:
+    constexpr void _Push_back_unchecked(const _Elem _Ch) { // insert element at end; assume available capacity
+        const size_type _Old_size = _Mypair._Myval2._Mysize;
+        _STL_INTERNAL_CHECK(_Old_size < _Mypair._Myval2._Myres);
+        _Mypair._Myval2._Mysize = _Old_size + 1;
+        _Elem* const _Ptr       = _Mypair._Myval2._Myptr();
+        _Traits::assign(_Ptr[_Old_size], _Ch);
+        _Traits::assign(_Ptr[_Old_size + 1], _Elem());
+    }
+
+public:
+#endif // __cpp_lib_containers_ranges
 
     _CONSTEXPR20 void push_back(const _Elem _Ch) { // insert element at end
         const size_type _Old_size = _Mypair._Myval2._Mysize;
@@ -4879,6 +5024,13 @@ template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Guide_size_type_t<_Alloc>,
     const _Alloc& = _Alloc()) -> basic_string<_Elem, _Traits, _Alloc>;
+
+#ifdef __cpp_lib_containers_ranges
+template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+basic_string(from_range_t, _Rng&&, _Alloc = _Alloc())
+    -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
+#endif // __cpp_lib_containers_ranges
 #endif // _HAS_CXX17
 
 template <class _Elem, class _Traits, class _Alloc>

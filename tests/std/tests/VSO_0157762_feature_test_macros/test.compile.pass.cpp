@@ -634,6 +634,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_vector == 201907L);
 #endif
 #endif
 
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#ifndef __cpp_lib_containers_ranges
+#error __cpp_lib_containers_ranges is not defined
+#elif __cpp_lib_containers_ranges != 202200L
+#error __cpp_lib_containers_ranges is not 202200L
+#else
+STATIC_ASSERT(__cpp_lib_containers_ranges == 202200L);
+#endif
+#else
+#ifdef __cpp_lib_containers_ranges
+#error __cpp_lib_containers_ranges is defined
+#endif
+#endif
+
 #ifdef __cpp_impl_coroutine
 #ifndef __cpp_lib_coroutine
 #error __cpp_lib_coroutine is not defined
@@ -1461,6 +1475,20 @@ STATIC_ASSERT(__cpp_lib_ranges_starts_ends_with == 202106L);
 #else
 #ifdef __cpp_lib_ranges_starts_ends_with
 #error __cpp_lib_ranges_starts_ends_with is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#ifndef __cpp_lib_ranges_to_container
+#error __cpp_lib_ranges_to_container is not defined
+#elif __cpp_lib_ranges_to_container != 202200L
+#error __cpp_lib_ranges_to_container is not 202200L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_to_container == 202200L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_to_container
+#error __cpp_lib_ranges_to_container is defined
 #endif
 #endif
 
