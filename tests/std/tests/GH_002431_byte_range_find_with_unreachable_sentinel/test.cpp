@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <cassert>
 #include <ranges>
 #include <utility>
@@ -9,7 +10,27 @@
 
 using namespace std;
 
-void* volatile discard;
+template <class T>
+void test_impl(void* sv, void* ev) {
+    const auto s = reinterpret_cast<T*>(sv);
+    const auto e = reinterpret_cast<T*>(ev);
+    ranges::fill(s, e, '0');
+    const auto m     = e - 3;
+    m[0]             = '1';
+    m[1]             = '2';
+    m[2]             = '3';
+    const auto bingo = ranges::find(m, unreachable_sentinel, '3');
+    assert(bingo == e - 1);
+
+    const auto bingo2 = ranges::find(m - 16, unreachable_sentinel, '2');
+    assert(bingo2 == e - 2);
+
+    const auto bingo3 = ranges::find(m - 32, unreachable_sentinel, '1');
+    assert(bingo3 == e - 3);
+
+    const auto bingo4 = ranges::find(m - 64, unreachable_sentinel, '3');
+    assert(bingo4 == e - 1);
+}
 
 int main() {
     SYSTEM_INFO si = {};
@@ -23,21 +44,10 @@ int main() {
     void* p2 = VirtualAlloc(p, page, MEM_COMMIT, PAGE_READWRITE);
     assert(p2 != nullptr);
 
-    const auto p3    = reinterpret_cast<char*>(p2) + page - 3;
-    p3[0]            = '1';
-    p3[1]            = '2';
-    p3[2]            = '3';
-    const auto bingo = ranges::find(p3, unreachable_sentinel, '3');
-    assert(bingo == p3 + 2);
-
-    const auto bingo2 = ranges::find(p3 - 16, unreachable_sentinel, '2');
-    assert(bingo2 == p3 + 1);
-
-    const auto bingo3 = ranges::find(p3 - 32, unreachable_sentinel, '1');
-    assert(bingo3 == p3);
-
-    const auto bingo4 = ranges::find(p3 - 64, unreachable_sentinel, '3');
-    assert(bingo4 == p3 + 2);
+    test_impl<char>(p2, reinterpret_cast<char*>(p2) + page);
+    test_impl<short>(p2, reinterpret_cast<char*>(p2) + page);
+    test_impl<long>(p2, reinterpret_cast<char*>(p2) + page);
+    test_impl<long long>(p2, reinterpret_cast<char*>(p2) + page);
 
     VirtualFree(p, 0, MEM_RELEASE);
 }
