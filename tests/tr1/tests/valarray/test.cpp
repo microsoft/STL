@@ -343,7 +343,7 @@ void test_main() { // test basic workings of valarray definitions
     // test range-based for
     v0 = Mycont();
     for (char c : v0) {
-        (void)c;
+        (void) c;
         CHECK(false);
     }
 
