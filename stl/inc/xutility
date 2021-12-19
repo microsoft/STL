@@ -5121,70 +5121,33 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
 #endif // __cpp_lib_byte
     else {
         using _Elem = _Iter_value_t<_InIt>;
-        _STL_INTERNAL_STATIC_ASSERT(
-            sizeof(_Elem) == 1 || sizeof(_Elem) == 2 || sizeof(_Elem) == 4 || sizeof(_Elem) == 8);
         if constexpr (is_same_v<_Elem, bool>) {
             return _Val == true || _Val == false;
         } else if constexpr (is_signed_v<_Elem>) {
+            constexpr _Elem _Min = static_cast<_Elem>(_Elem{1} << (sizeof(_Elem) * CHAR_BIT - 1));
+            constexpr _Elem _Max = static_cast<_Elem>(~_Min);
+
             if constexpr (is_signed_v<_Ty>) {
                 // signed _Elem, signed _Ty
-                if constexpr (sizeof(_Elem) == 1) {
-                    return SCHAR_MIN <= _Val && _Val <= SCHAR_MAX;
-                } else if constexpr (sizeof(_Elem) == 2) {
-                    return SHRT_MIN <= _Val && _Val <= SHRT_MAX;
-                } else if constexpr (sizeof(_Elem) == 4) {
-                    return LONG_MIN <= _Val && _Val <= LONG_MAX;
-                } else {
-                    return true;
-                }
+                return _Min <= _Val && _Val <= _Max;
             } else {
                 if constexpr (-1 == static_cast<_Ty>(-1)) {
                     // signed _Elem, unsigned _Ty, -1 == static_cast<_Ty>(-1)
-                    if constexpr (sizeof(_Elem) == 1) {
-                        return _Val <= SCHAR_MAX || static_cast<_Ty>(SCHAR_MIN) <= _Val;
-                    } else if constexpr (sizeof(_Elem) == 2) {
-                        return _Val <= SHRT_MAX || static_cast<_Ty>(SHRT_MIN) <= _Val;
-                    } else if constexpr (sizeof(_Elem) == 4) {
-                        return _Val <= LONG_MAX || static_cast<_Ty>(LONG_MIN) <= _Val;
-                    } else {
-                        return true;
-                    }
+                    return _Val <= _Max || static_cast<_Ty>(_Min) <= _Val;
                 } else {
                     // signed _Elem, unsigned _Ty, -1 != static_cast<_Ty>(-1)
-                    if constexpr (sizeof(_Elem) == 1) {
-                        return _Val <= SCHAR_MAX;
-                    } else if constexpr (sizeof(_Elem) == 2) {
-                        return _Val <= SHRT_MAX;
-                    } else if constexpr (sizeof(_Elem) == 4) {
-                        return _Val <= LONG_MAX;
-                    } else {
-                        return true;
-                    }
+                    return _Val <= _Max;
                 }
             }
         } else {
+            constexpr _Elem _Max = static_cast<_Elem>(~_Elem{0});
+
             if constexpr (is_signed_v<_Ty>) {
                 // unsigned _Elem, signed _Ty
-                if constexpr (sizeof(_Elem) == 1) {
-                    return 0 <= _Val && _Val <= UCHAR_MAX;
-                } else if constexpr (sizeof(_Elem) == 2) {
-                    return 0 <= _Val && _Val <= USHRT_MAX;
-                } else if constexpr (sizeof(_Elem) == 4) {
-                    return 0 <= _Val && _Val <= ULONG_MAX;
-                } else {
-                    return true;
-                }
+                return 0 <= _Val && _Val <= _Max;
             } else {
                 // unsigned _Elem, unsigned _Ty
-                if constexpr (sizeof(_Elem) == 1) {
-                    return _Val <= UCHAR_MAX;
-                } else if constexpr (sizeof(_Elem) == 2) {
-                    return _Val <= USHRT_MAX;
-                } else if constexpr (sizeof(_Elem) == 4) {
-                    return _Val <= ULONG_MAX;
-                } else {
-                    return true;
-                }
+                return _Val <= _Max;
             }
         }
     }
