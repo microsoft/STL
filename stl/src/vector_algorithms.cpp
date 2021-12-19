@@ -471,6 +471,18 @@ static const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) 
     }
 }
 
+template <class _Ty>
+static const void* _Find_trivial_tail(const void* _First, size_t _Size, _Ty _Val) {
+    auto _Ptr  = static_cast<const _Ty*>(_First);
+    auto _Last = _Ptr + _Size;
+    for (; _Ptr != _Last; ++_Ptr) {
+        if (*_Ptr == _Val) {
+            break;
+        }
+    }
+    return _Ptr;
+}
+
 template <class _Callback>
 static const void* VECTORCALL _Find_trivial_unsized_avx(
     const void* _First, __m256i _Comparand, _Callback _Get_mask) noexcept {
@@ -651,28 +663,7 @@ const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uin
         _Size &= 0xF;
     }
 
-    // clang-format off
-     auto _Ptr = static_cast<const uint8_t*>(_First);
-     switch (_Size) {
-     case 15: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 14: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 13: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 12: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 11: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 10: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 9:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 8:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 7:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 6:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 5:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 4:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 3:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 2:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 1:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 0:  return _Ptr;
-     default: __assume(false);
-    }
-    // clang-format on
+    return _Find_trivial_tail(_First, _Size, _Val);
 }
 
 const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uint16_t _Val) noexcept {
@@ -716,20 +707,7 @@ const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uin
         Size_bytes &= 0xF;
     }
 
-    // clang-format off
-     auto _Ptr = static_cast<const uint16_t*>(_First);
-     switch (Size_bytes >> 1) {
-     case 7:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 6:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 5:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 4:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 3:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 2:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 1:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 0:  return _Ptr;
-     default: __assume(false);
-    }
-    // clang-format on
+    return _Find_trivial_tail(_First, Size_bytes >> 1, _Val);
 }
 
 const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uint32_t _Val) noexcept {
@@ -773,16 +751,7 @@ const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uin
         Size_bytes &= 0xF;
     }
 
-    // clang-format off
-     auto _Ptr = static_cast<const uint32_t*>(_First);
-     switch (Size_bytes >> 2) {
-     case 3:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 2:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 1:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
-     case 0:  return _Ptr;
-     default: __assume(false);
-    }
-    // clang-format on
+    return _Find_trivial_tail(_First, Size_bytes >> 2, _Val);
 }
 
 const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uint64_t _Val) noexcept {
@@ -826,14 +795,7 @@ const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uin
         Size_bytes &= 0xF;
     }
 
-    auto _Ptr = static_cast<const uint64_t*>(_First);
-    if (Size_bytes != 0) {
-        if (*_Ptr == _Val) {
-            return _Ptr;
-        }
-        ++_Ptr;
-    }
-    return _Ptr;
+    return _Find_trivial_tail(_First, Size_bytes >> 2, _Val);
 }
 
 } // extern "C"
