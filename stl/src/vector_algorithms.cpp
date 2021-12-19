@@ -475,9 +475,8 @@ template <class _Callback>
 static const void* VECTORCALL _Find_trivial_unsized_avx(
     const void* _First, __m256i _Comparand, _Callback _Get_mask) noexcept {
     // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
-    // From start/end partial pieces we mask out matches that don't belong to the range.
+    // From start partial piece we mask out matches that don't belong to the range.
     // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
-    // Also, vector instructions favor aligned accesses.
     constexpr size_t _Vector_pad_mask = 0x1F;
     constexpr unsigned _Full_mask     = 0xFFFF'FFFF;
 
@@ -485,17 +484,24 @@ static const void* VECTORCALL _Find_trivial_unsized_avx(
     unsigned _Mask            = (_Full_mask << _Pad_start);
     _Advance_bytes(_First, -_Pad_start);
 
+    unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
+
+    if ((_Bingo &= _Mask) != 0) {
+        unsigned long _Offset = _tzcnt_u32(_Bingo);
+        _Advance_bytes(_First, _Offset);
+        return _First;
+    }
+
     for (;;) {
         unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
 
-        if ((_Bingo &= _Mask) != 0) {
+        if (_Bingo != 0) {
             unsigned long _Offset = _tzcnt_u32(_Bingo);
             _Advance_bytes(_First, _Offset);
             return _First;
         }
 
         _Advance_bytes(_First, 32);
-        _Mask = _Full_mask;
     };
 }
 
@@ -503,9 +509,8 @@ template <class _Callback>
 static const void* VECTORCALL _Find_trivial_unsized_sse(
     const void* _First, __m128i _Comparand, _Callback _Get_mask) noexcept {
     // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
-    // From start/end partial pieces we mask out matches that don't belong to the range.
+    // From start partial piece we mask out matches that don't belong to the range.
     // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
-    // Also, vector instructions favor aligned accesses.
     constexpr size_t _Vector_pad_mask = 0xF;
     constexpr unsigned _Full_mask     = 0xFFFF;
 
@@ -513,17 +518,23 @@ static const void* VECTORCALL _Find_trivial_unsized_sse(
     unsigned _Mask            = (_Full_mask << _Pad_start);
     _Advance_bytes(_First, -_Pad_start);
 
-    for (;;) {
-        unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
-        unsigned long _Offset;
+    unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
+    unsigned long _Offset;
 
-        if (_BitScanForward(&_Offset, _Bingo &= _Mask)) {
+    if (_BitScanForward(&_Offset, _Bingo & _Mask)) {
+        _Advance_bytes(_First, _Offset);
+        return _First;
+    }
+
+    for (;;) {
+        _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
+
+        if (_BitScanForward(&_Offset, _Bingo)) {
             _Advance_bytes(_First, _Offset);
             return _First;
         }
 
         _Advance_bytes(_First, 16);
-        _Mask = _Full_mask;
     };
 }
 
