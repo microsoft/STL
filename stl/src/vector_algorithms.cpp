@@ -847,7 +847,7 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_1(const void* _First, s
 }
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_2(const void* _First, size_t _Size, uint16_t _Val) noexcept {
-    size_t Size_bytes = _Size * 8;
+    size_t Size_bytes = _Size * 2;
     size_t _Result    = 0; // in bytes, divide before using
 
     size_t _Avx_size = Size_bytes & ~size_t{0x1F};
@@ -884,7 +884,7 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_2(const void* _First, s
 }
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_4(const void* _First, size_t _Size, uint32_t _Val) noexcept {
-    size_t Size_bytes = _Size * 8;
+    size_t Size_bytes = _Size * 4;
     size_t _Result    = 0; // in bytes, divide before using
 
     size_t _Avx_size = Size_bytes & ~size_t{0x1F};
