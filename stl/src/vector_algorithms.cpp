@@ -32,6 +32,8 @@ extern "C" long __isa_enabled;
 #define VECTORCALL
 #endif
 
+#pragma optimize("t", on) // Override /Os with /Ot for this TU
+
 static bool _Use_avx2() {
     return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
 }
@@ -458,169 +460,369 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
 } // extern "C"
 
-template <class _Vector, class _Callback>
-static const void* VECTORCALL __std_find_trivial(
-    const void* _First, size_t _Size, _Vector _Comparand, _Callback _Get_mask) noexcept {
+template <class _Ty>
+static const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) {
+    auto _Ptr = static_cast<const _Ty*>(_First);
+    for (;;) {
+        if (*_Ptr == _Val) {
+            return _Ptr;
+        }
+        ++_Ptr;
+    }
+}
+
+template <class _Callback>
+static const void* VECTORCALL _Find_trivial_unsized_avx(
+    const void* _First, __m256i _Comparand, _Callback _Get_mask) noexcept {
     // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
     // From start/end partial pieces we mask out matches that don't belong to the range.
     // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
     // Also, vector instructions favor aligned accesses.
-    intptr_t _Pad_stop                = 0;
-    constexpr size_t _Vector_size     = sizeof(_Vector);
-    constexpr size_t _Vector_pad_mask = _Vector_size - 1;
-    constexpr unsigned _Full_mask     = static_cast<unsigned>((1ULL << _Vector_size) - 1);
-    const void* _Stop_at              = nullptr;
-    unsigned _Stop_mask               = 0;
-
-    if (_Size != SIZE_MAX) {
-        _Stop_at = _First;
-        _Advance_bytes(_Stop_at, _Size);
-        _Pad_stop = reinterpret_cast<intptr_t>(_Stop_at) & _Vector_pad_mask;
-        if (_Pad_stop == 0) {
-            _Pad_stop = _Vector_size;
-        }
-        _Advance_bytes(_Stop_at, -_Pad_stop);
-        _Stop_mask = _Full_mask >> (_Vector_size - _Pad_stop);
-    }
+    constexpr size_t _Vector_pad_mask = 0x1F;
+    constexpr unsigned _Full_mask     = 0xFFFF'FFFF;
 
     const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
     unsigned _Mask            = (_Full_mask << _Pad_start);
     _Advance_bytes(_First, -_Pad_start);
 
     for (;;) {
-        if (_First == _Stop_at) {
-            _Mask = _Stop_mask;
-        }
-
         unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
 
         if ((_Bingo &= _Mask) != 0) {
-            unsigned long _Offset;
-            if constexpr (_Vector_size == 32) {
-                _Offset = _tzcnt_u32(_Bingo);
-            } else {
-                _BitScanForward(&_Offset, _Bingo);
-            }
+            unsigned long _Offset = _tzcnt_u32(_Bingo);
             _Advance_bytes(_First, _Offset);
             return _First;
         }
 
-        if (_First == _Stop_at) {
-            _Advance_bytes(_First, _Pad_stop);
-            return _First;
-        }
-
-        _Advance_bytes(_First, _Vector_size);
+        _Advance_bytes(_First, 32);
         _Mask = _Full_mask;
     };
 }
 
-template <class _Ty>
-static const void* __std_find_trivial_fallback(const void* _First, size_t _Size, _Ty _Val) {
-    auto _Ptr  = static_cast<const _Ty*>(_First);
-    auto _Last = _Ptr + _Size;
-    for (; _Ptr != _Last; ++_Ptr) {
-        if (*_Ptr == _Val) {
-            break;
+template <class _Callback>
+static const void* VECTORCALL _Find_trivial_unsized_sse(
+    const void* _First, __m128i _Comparand, _Callback _Get_mask) noexcept {
+    // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
+    // From start/end partial pieces we mask out matches that don't belong to the range.
+    // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
+    // Also, vector instructions favor aligned accesses.
+    constexpr size_t _Vector_pad_mask = 0xF;
+    constexpr unsigned _Full_mask     = 0xFFFF;
+
+    const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
+    unsigned _Mask            = (_Full_mask << _Pad_start);
+    _Advance_bytes(_First, -_Pad_start);
+
+    for (;;) {
+        unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
+        unsigned long _Offset;
+
+        if (_BitScanForward(&_Offset, _Bingo &= _Mask)) {
+            _Advance_bytes(_First, _Offset);
+            return _First;
         }
-    }
-    return _Ptr;
+
+        _Advance_bytes(_First, 16);
+        _Mask = _Full_mask;
+    };
 }
 
 extern "C" {
 
-const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uint8_t _Val) noexcept {
-    if (_Size >= 32 && _Use_avx2()) {
+const void* __stdcall __std_find_trivial_unsized_1(const void* _First, uint8_t _Val) noexcept {
+    if (_Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi8(_Val);
-
-        return __std_find_trivial(_First, _Size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return _Find_trivial_unsized_avx(_First, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi8(_Data, _Comparand));
         });
     }
-
-    if (_Size >= 16 && _Use_sse2()) {
+    if (_Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi8(_Val);
-
-        return __std_find_trivial(_First, _Size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return _Find_trivial_unsized_sse(_First, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi8(_Data, _Comparand));
         });
     }
-
-    return __std_find_trivial_fallback(_First, _Size, _Val);
+    return _Find_trivial_unsized_fallback(_First, _Val);
 }
 
-const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uint16_t _Val) noexcept {
-    size_t _Bytes_size = _Size * 2;
-
-    if (_Bytes_size >= 32 && _Use_avx2()) {
+const void* __stdcall __std_find_trivial_unsized_2(const void* _First, uint16_t _Val) noexcept {
+    if (_Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi16(_Val);
-
-        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return _Find_trivial_unsized_avx(_First, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi16(_Data, _Comparand));
         });
     }
-
-    if (_Bytes_size >= 16 && _Use_sse2()) {
+    if (_Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi16(_Val);
-
-        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return _Find_trivial_unsized_sse(_First, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi16(_Data, _Comparand));
         });
     }
-
-    return __std_find_trivial_fallback(_First, _Size, _Val);
+    return _Find_trivial_unsized_fallback(_First, _Val);
 }
 
-const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uint32_t _Val) noexcept {
-    size_t _Bytes_size = _Size * 4;
-
-    if (_Bytes_size >= 32 && _Use_avx2()) {
+const void* __stdcall __std_find_trivial_unsized_4(const void* _First, uint32_t _Val) noexcept {
+    if (_Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi32(_Val);
-
-        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return _Find_trivial_unsized_avx(_First, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_Data, _Comparand));
         });
     }
-
-    if (_Bytes_size >= 16 && _Use_sse2()) {
+    if (_Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi32(_Val);
-
-        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return _Find_trivial_unsized_sse(_First, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi32(_Data, _Comparand));
         });
     }
-
-    return __std_find_trivial_fallback(_First, _Size, _Val);
+    return _Find_trivial_unsized_fallback(_First, _Val);
 }
 
-const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uint64_t _Val) noexcept {
-    size_t _Bytes_size = _Size * 8;
-
-    if (_Bytes_size >= 32 && _Use_avx2()) {
+const void* __stdcall __std_find_trivial_unsized_8(const void* _First, uint64_t _Val) noexcept {
+    if (_Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi64x(_Val);
-
-        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return _Find_trivial_unsized_avx(_First, _Comparand, [](const void* _Current, __m256i _Comparand) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi64(_Data, _Comparand));
         });
     }
-
-    if (_Bytes_size >= 16 && _Use_sse42()) {
+    if (_Use_sse42()) {
         const __m128i _Comparand = _mm_set1_epi64x(_Val);
-
-        return __std_find_trivial(_First, _Bytes_size, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return _Find_trivial_unsized_sse(_First, _Comparand, [](const void* _Current, __m128i _Comparand) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
-            return _mm_movemask_epi8(_mm_cmpeq_epi64(_Data, _Comparand)); // SSE4.1
+            return _mm_movemask_epi8(_mm_cmpeq_epi64(_Data, _Comparand)); // SSE 4.1
         });
     }
+    return _Find_trivial_unsized_fallback(_First, _Val);
+}
 
-    return __std_find_trivial_fallback(_First, _Size, _Val);
+const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uint8_t _Val) noexcept {
+    size_t _Avx_size = _Size & ~size_t{0x1F};
+    if (_Avx_size != 0 && _Use_avx2()) {
+        const __m256i _Comparand = _mm256_set1_epi8(_Val);
+        const void* _Stop_at     = _First;
+        _Advance_bytes(_Stop_at, _Avx_size);
+        do {
+            const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+            int _Bingo          = _mm256_movemask_epi8(_mm256_cmpeq_epi8(_Data, _Comparand));
+            if (_Bingo != 0) {
+                const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                _Advance_bytes(_First, _Offset);
+                return _First;
+            }
+            _Advance_bytes(_First, 32);
+
+        } while (_First != _Stop_at);
+        _Size &= 0x1F;
+    }
+
+    size_t _Sse_size = _Size & ~size_t{0xF};
+    if (_Sse_size != 0 && _Use_sse2()) {
+        const __m128i _Comparand = _mm_set1_epi8(_Val);
+        const void* _Stop_at     = _First;
+        _Advance_bytes(_Stop_at, _Sse_size);
+        do {
+            const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+            int _Bingo          = _mm_movemask_epi8(_mm_cmpeq_epi8(_Data, _Comparand));
+            unsigned long _Offset;
+            if (_BitScanForward(&_Offset, _Bingo)) {
+                _Advance_bytes(_First, _Offset);
+                return _First;
+            }
+            _Advance_bytes(_First, 16);
+
+        } while (_First != _Stop_at);
+        _Size &= 0xF;
+    }
+
+    // clang-format off
+     auto _Ptr = static_cast<const uint8_t*>(_First);
+     switch (_Size) {
+     case 15: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 14: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 13: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 12: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 11: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 10: if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 9:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 8:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 7:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 6:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 5:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 4:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 3:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 2:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 1:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 0:  return _Ptr;
+     default: __assume(false);
+    }
+    // clang-format on
+}
+
+const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uint16_t _Val) noexcept {
+    size_t Size_bytes = _Size * 2;
+
+    size_t _Avx_size = Size_bytes & ~size_t{0x1F};
+    if (_Avx_size != 0 && _Use_avx2()) {
+        const __m256i _Comparand = _mm256_set1_epi16(_Val);
+        const void* _Stop_at     = _First;
+        _Advance_bytes(_Stop_at, _Avx_size);
+        do {
+            const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+            int _Bingo          = _mm256_movemask_epi8(_mm256_cmpeq_epi16(_Data, _Comparand));
+            if (_Bingo != 0) {
+                const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                _Advance_bytes(_First, _Offset);
+                return _First;
+            }
+            _Advance_bytes(_First, 32);
+
+        } while (_First != _Stop_at);
+        Size_bytes &= 0x1F;
+    }
+
+    size_t _Sse_size = Size_bytes & ~size_t{0xF};
+    if (_Sse_size != 0 && _Use_sse2()) {
+        const __m128i _Comparand = _mm_set1_epi16(_Val);
+        const void* _Stop_at     = _First;
+        _Advance_bytes(_Stop_at, _Sse_size);
+        do {
+            const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+            int _Bingo          = _mm_movemask_epi8(_mm_cmpeq_epi16(_Data, _Comparand));
+            unsigned long _Offset;
+            if (_BitScanForward(&_Offset, _Bingo)) {
+                _Advance_bytes(_First, _Offset);
+                return _First;
+            }
+            _Advance_bytes(_First, 16);
+
+        } while (_First != _Stop_at);
+        Size_bytes &= 0xF;
+    }
+
+    // clang-format off
+     auto _Ptr = static_cast<const uint16_t*>(_First);
+     switch (Size_bytes >> 1) {
+     case 7:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 6:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 5:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 4:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 3:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 2:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 1:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 0:  return _Ptr;
+     default: __assume(false);
+    }
+    // clang-format on
+}
+
+const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uint32_t _Val) noexcept {
+    size_t Size_bytes = _Size * 4;
+
+    size_t _Avx_size = Size_bytes & ~size_t{0x1F};
+    if (_Avx_size != 0 && _Use_avx2()) {
+        const __m256i _Comparand = _mm256_set1_epi32(_Val);
+        const void* _Stop_at     = _First;
+        _Advance_bytes(_Stop_at, _Avx_size);
+        do {
+            const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+            int _Bingo          = _mm256_movemask_epi8(_mm256_cmpeq_epi32(_Data, _Comparand));
+            if (_Bingo != 0) {
+                const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                _Advance_bytes(_First, _Offset);
+                return _First;
+            }
+            _Advance_bytes(_First, 32);
+
+        } while (_First != _Stop_at);
+        Size_bytes &= 0x1F;
+    }
+
+    size_t _Sse_size = Size_bytes & ~size_t{0xF};
+    if (_Sse_size != 0 && _Use_sse2()) {
+        const __m128i _Comparand = _mm_set1_epi32(_Val);
+        const void* _Stop_at     = _First;
+        _Advance_bytes(_Stop_at, _Sse_size);
+        do {
+            const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+            int _Bingo          = _mm_movemask_epi8(_mm_cmpeq_epi32(_Data, _Comparand));
+            unsigned long _Offset;
+            if (_BitScanForward(&_Offset, _Bingo)) {
+                _Advance_bytes(_First, _Offset);
+                return _First;
+            }
+            _Advance_bytes(_First, 16);
+
+        } while (_First != _Stop_at);
+        Size_bytes &= 0xF;
+    }
+
+    // clang-format off
+     auto _Ptr = static_cast<const uint32_t*>(_First);
+     switch (Size_bytes >> 2) {
+     case 3:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 2:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 1:  if (*_Ptr == _Val) { return _Ptr; } ++_Ptr; [[fallthrough]];
+     case 0:  return _Ptr;
+     default: __assume(false);
+    }
+    // clang-format on
+}
+
+const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uint64_t _Val) noexcept {
+    size_t Size_bytes = _Size * 8;
+
+    size_t _Avx_size = Size_bytes & ~size_t{0x1F};
+    if (_Avx_size != 0 && _Use_avx2()) {
+        const __m256i _Comparand = _mm256_set1_epi64x(_Val);
+        const void* _Stop_at     = _First;
+        _Advance_bytes(_Stop_at, _Avx_size);
+        do {
+            const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+            int _Bingo          = _mm256_movemask_epi8(_mm256_cmpeq_epi64(_Data, _Comparand));
+            if (_Bingo != 0) {
+                const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                _Advance_bytes(_First, _Offset);
+                return _First;
+            }
+            _Advance_bytes(_First, 32);
+
+        } while (_First != _Stop_at);
+        Size_bytes &= 0x1F;
+    }
+
+    size_t _Sse_size = Size_bytes & ~size_t{0xF};
+    if (_Sse_size != 0 && _Use_sse42()) {
+        const __m128i _Comparand = _mm_set1_epi64x(_Val);
+        const void* _Stop_at     = _First;
+        _Advance_bytes(_Stop_at, _Sse_size);
+        do {
+            const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+            int _Bingo          = _mm_movemask_epi8(_mm_cmpeq_epi64(_Data, _Comparand));
+            unsigned long _Offset;
+            if (_BitScanForward(&_Offset, _Bingo)) {
+                _Advance_bytes(_First, _Offset);
+                return _First;
+            }
+            _Advance_bytes(_First, 16);
+
+        } while (_First != _Stop_at);
+        Size_bytes &= 0xF;
+    }
+
+    auto _Ptr = static_cast<const uint64_t*>(_First);
+    if (Size_bytes != 0) {
+        if (*_Ptr == _Val) {
+            return _Ptr;
+        }
+        ++_Ptr;
+    }
+    return _Ptr;
 }
 
 } // extern "C"
