@@ -26,12 +26,6 @@
 
 extern "C" long __isa_enabled;
 
-#ifdef _M_X64
-#define VECTORCALL __vectorcall
-#else
-#define VECTORCALL
-#endif
-
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
 
 static bool _Use_avx2() {
@@ -484,8 +478,7 @@ static const void* _Find_trivial_tail(const void* _First, size_t _Size, _Ty _Val
 }
 
 template <class _Callback>
-static const void* VECTORCALL _Find_trivial_unsized_avx(
-    const void* _First, __m256i _Comparand, _Callback _Get_mask) noexcept {
+static const void* _Find_trivial_unsized_avx(const void* _First, _Callback _Get_mask) noexcept {
     // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
     // From start partial piece we mask out matches that don't belong to the range.
     // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
@@ -496,7 +489,7 @@ static const void* VECTORCALL _Find_trivial_unsized_avx(
     unsigned _Mask            = (_Full_mask << _Pad_start);
     _Advance_bytes(_First, -_Pad_start);
 
-    unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
+    unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First));
 
     if ((_Bingo &= _Mask) != 0) {
         unsigned long _Offset = _tzcnt_u32(_Bingo);
@@ -505,7 +498,7 @@ static const void* VECTORCALL _Find_trivial_unsized_avx(
     }
 
     for (;;) {
-        unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
+        unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First));
 
         if (_Bingo != 0) {
             unsigned long _Offset = _tzcnt_u32(_Bingo);
@@ -518,8 +511,7 @@ static const void* VECTORCALL _Find_trivial_unsized_avx(
 }
 
 template <class _Callback>
-static const void* VECTORCALL _Find_trivial_unsized_sse(
-    const void* _First, __m128i _Comparand, _Callback _Get_mask) noexcept {
+static const void* _Find_trivial_unsized_sse(const void* _First, _Callback _Get_mask) noexcept {
     // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
     // From start partial piece we mask out matches that don't belong to the range.
     // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
@@ -530,7 +522,7 @@ static const void* VECTORCALL _Find_trivial_unsized_sse(
     unsigned _Mask            = (_Full_mask << _Pad_start);
     _Advance_bytes(_First, -_Pad_start);
 
-    unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
+    unsigned _Bingo = static_cast<unsigned>(_Get_mask(_First));
     unsigned long _Offset;
 
     if (_BitScanForward(&_Offset, _Bingo & _Mask)) {
@@ -539,7 +531,7 @@ static const void* VECTORCALL _Find_trivial_unsized_sse(
     }
 
     for (;;) {
-        _Bingo = static_cast<unsigned>(_Get_mask(_First, _Comparand));
+        _Bingo = static_cast<unsigned>(_Get_mask(_First));
 
         if (_BitScanForward(&_Offset, _Bingo)) {
             _Advance_bytes(_First, _Offset);
@@ -567,14 +559,14 @@ extern "C" {
 const void* __stdcall __std_find_trivial_unsized_1(const void* _First, uint8_t _Val) noexcept {
     if (_Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi8(_Val);
-        return _Find_trivial_unsized_avx(_First, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return _Find_trivial_unsized_avx(_First, [_Comparand](const void* _Current) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi8(_Data, _Comparand));
         });
     }
     if (_Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi8(_Val);
-        return _Find_trivial_unsized_sse(_First, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return _Find_trivial_unsized_sse(_First, [_Comparand](const void* _Current) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi8(_Data, _Comparand));
         });
@@ -585,14 +577,14 @@ const void* __stdcall __std_find_trivial_unsized_1(const void* _First, uint8_t _
 const void* __stdcall __std_find_trivial_unsized_2(const void* _First, uint16_t _Val) noexcept {
     if (_Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi16(_Val);
-        return _Find_trivial_unsized_avx(_First, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return _Find_trivial_unsized_avx(_First, [_Comparand](const void* _Current) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi16(_Data, _Comparand));
         });
     }
     if (_Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi16(_Val);
-        return _Find_trivial_unsized_sse(_First, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return _Find_trivial_unsized_sse(_First, [_Comparand](const void* _Current) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi16(_Data, _Comparand));
         });
@@ -603,14 +595,14 @@ const void* __stdcall __std_find_trivial_unsized_2(const void* _First, uint16_t 
 const void* __stdcall __std_find_trivial_unsized_4(const void* _First, uint32_t _Val) noexcept {
     if (_Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi32(_Val);
-        return _Find_trivial_unsized_avx(_First, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return _Find_trivial_unsized_avx(_First, [_Comparand](const void* _Current) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi32(_Data, _Comparand));
         });
     }
     if (_Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi32(_Val);
-        return _Find_trivial_unsized_sse(_First, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return _Find_trivial_unsized_sse(_First, [_Comparand](const void* _Current) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi32(_Data, _Comparand));
         });
@@ -621,14 +613,14 @@ const void* __stdcall __std_find_trivial_unsized_4(const void* _First, uint32_t 
 const void* __stdcall __std_find_trivial_unsized_8(const void* _First, uint64_t _Val) noexcept {
     if (_Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi64x(_Val);
-        return _Find_trivial_unsized_avx(_First, _Comparand, [](const void* _Current, __m256i _Comparand) {
+        return _Find_trivial_unsized_avx(_First, [_Comparand](const void* _Current) {
             __m256i _Data = _mm256_load_si256(static_cast<const __m256i*>(_Current));
             return _mm256_movemask_epi8(_mm256_cmpeq_epi64(_Data, _Comparand));
         });
     }
     if (_Use_sse42()) {
         const __m128i _Comparand = _mm_set1_epi64x(_Val);
-        return _Find_trivial_unsized_sse(_First, _Comparand, [](const void* _Current, __m128i _Comparand) {
+        return _Find_trivial_unsized_sse(_First, [_Comparand](const void* _Current) {
             __m128i _Data = _mm_load_si128(static_cast<const __m128i*>(_Current));
             return _mm_movemask_epi8(_mm_cmpeq_epi64(_Data, _Comparand)); // SSE 4.1
         });
