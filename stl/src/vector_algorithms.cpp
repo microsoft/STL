@@ -799,7 +799,7 @@ const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uin
         Size_bytes &= 0xF;
     }
 
-    return _Find_trivial_tail(_First, Size_bytes >> 2, _Val);
+    return _Find_trivial_tail(_First, Size_bytes >> 3, _Val);
 }
 
 __declspec(noalias) size_t __stdcall __std_count_trivial_1(const void* _First, size_t _Size, uint8_t _Val) noexcept {
