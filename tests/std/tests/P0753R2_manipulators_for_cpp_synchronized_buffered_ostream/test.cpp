@@ -104,6 +104,7 @@ public:
 };
 
 void test_lwg_3571() {
+    // LWG-3571: "flush_emit should set badbit if the emit call fails"
     {
         osyncstream stream(nullptr);
         stream << flush_emit;
@@ -135,6 +136,7 @@ void test_lwg_3571() {
 }
 
 void test_lwg_3570() {
+    // LWG-3570: "basic_osyncstream::emit should be an unformatted output function"
     {
         stringstream inner;
         osyncstream stream(inner);
