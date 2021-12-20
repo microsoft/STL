@@ -21,8 +21,6 @@
 #endif // defined(_M_ARM64EC)
 #include <isa_availability.h>
 #include <stdint.h>
-#include <string.h>
-#include <wchar.h>
 
 extern "C" long __isa_enabled;
 
