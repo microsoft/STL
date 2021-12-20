@@ -185,7 +185,8 @@ struct MoveOnlyType {
     MoveOnlyType(MoveOnlyType&&) = default;
 };
 
-void test_LWG3527() { // COMPILE-ONLY
+void test_lwg_3527() { // COMPILE-ONLY
+    // LWG-3527: "uses_allocator_construction_args handles rvalue pairs of rvalue references incorrectly"
     allocator<MoveOnlyType> alloc;
     MoveOnlyType obj;
     pair<MoveOnlyType&&, MoveOnlyType&&> p{move(obj), move(obj)};

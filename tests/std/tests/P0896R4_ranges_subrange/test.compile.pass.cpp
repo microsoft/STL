@@ -24,6 +24,7 @@ using std::output_iterator_tag, std::input_iterator_tag, std::forward_iterator_t
 int main() {} // COMPILE-ONLY
 
 void test_LWG_3470() {
+    // LWG-3470: "convertible-to-non-slicing seems to reject valid case"
     int a[]                 = {1, 2, 3};
     int* b[]                = {&a[2], &a[0], &a[1]};
     [[maybe_unused]] auto c = std::ranges::subrange<const int* const*>(b);

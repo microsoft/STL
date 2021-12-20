@@ -293,7 +293,7 @@ namespace unique_ptr_ {
     }
 
     void test_lwg_2415() {
-        // per LWG-2415
+        // per LWG-2415: "Inconsistency between unique_ptr and shared_ptr"
         assert(AssertDeleter::count == 0);
         unique_ptr<int, AssertDeleter> up{nullptr};
         assert(AssertDeleter::count == 1);
