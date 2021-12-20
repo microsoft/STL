@@ -2785,11 +2785,11 @@ consteval pair<typename _ParseContext::iterator, _Dynamic_format_specs<typename 
     using _FormattedType = conditional_t<is_same_v<_FormattedTypeMapping, typename basic_format_arg<_Context>::handle>,
         _Ty, _FormattedTypeMapping>;
     formatter<_FormattedType, _CharT> _Formatter{};
+    auto _Iter = _Formatter.parse(_Pc);
     if constexpr (_Derived_from_formatter_base<formatter<_FormattedType, _CharT>>) {
-        auto _Iter = _Formatter.parse(_Pc);
         return {_Iter, _Formatter._Specs};
     } else {
-        return {_Formatter.parse(_Pc), {}};
+        return {_Iter, {}};
     }
 }
 
