@@ -104,8 +104,9 @@ struct alignas(64) OverAlignedInt {
 };
 
 void test_gh_2362() {
-    // user suggests to add a debug-only nullptr assertion inside std::allocator<T>::deallocate, checking the pointer
-    // parameter. Passing nullptr to this member function is undefined behavior when the passed size is non-zero
+    // @hannes-harnisch suggests to add a debug-only nullptr assertion inside std::allocator<T>::deallocate, checking
+    // the pointer parameter. And deallocate must handle all return values of allocate, so if allocate(0) can return
+    // nullptr, then deallocate(nullptr, 0) must work.
     {
         allocator<int> al;
         int* ptr = al.allocate(0);
