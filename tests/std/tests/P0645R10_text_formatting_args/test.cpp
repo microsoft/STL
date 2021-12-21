@@ -217,6 +217,13 @@ void test_visit_monostate() {
     assert(visit_format_arg(visitor<Context>, basic_format_arg<Context>()) == Arg_type::none);
 }
 
+void test_gh_2427() {
+    // <format>: volatile integral<T> compilation error
+    volatile int vol = 42;
+    auto ret         = format("{}", vol);
+    assert(ret == "42");
+}
+
 int main() {
     test_basic_format_arg<format_context>();
     test_basic_format_arg<wformat_context>();
@@ -224,4 +231,6 @@ int main() {
     test_format_arg_store<wformat_context>();
     test_visit_monostate<format_context>();
     test_visit_monostate<wformat_context>();
+
+    test_gh_2427();
 }
