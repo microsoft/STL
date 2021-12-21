@@ -102,6 +102,57 @@ inline void* __std_find_trivial_unsized_4(void* _First, uint32_t _Val) noexcept 
 inline void* __std_find_trivial_unsized_8(void* _First, uint64_t _Val) noexcept {
     return const_cast<void*>(__std_find_trivial_unsized_8(const_cast<const void*>(_First), _Val));
 }
+
+template <class _Ty, class _TVal>
+__declspec(noalias) size_t __std_count_trivial(_Ty* _First, size_t _Size, const _TVal _Val) noexcept {
+    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+        return __std_count_trivial(_First, _Size, reinterpret_cast<uintptr_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return __std_count_trivial_1(_First, _Size, static_cast<uint8_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return __std_count_trivial_2(_First, _Size, static_cast<uint16_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return __std_count_trivial_4(_First, _Size, static_cast<uint32_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return __std_count_trivial_8(_First, _Size, static_cast<uint64_t>(_Val));
+    } else {
+        static_assert(_Always_false<_Ty>, "Unexpected type");
+    }
+}
+template <class _Ty, class _TVal>
+_Ty* __std_find_trivial(_Ty* _First, size_t _Size, const _TVal _Val) noexcept {
+    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+        return __std_find_trivial(_First, _Size, reinterpret_cast<uintptr_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return static_cast<_Ty*>(__std_find_trivial_1(_First, _Size, static_cast<uint8_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return static_cast<_Ty*>(__std_find_trivial_2(_First, _Size, static_cast<uint16_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return static_cast<_Ty*>(__std_find_trivial_4(_First, _Size, static_cast<uint32_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return static_cast<_Ty*>(__std_find_trivial_8(_First, _Size, static_cast<uint64_t>(_Val)));
+    } else {
+        static_assert(_Always_false<_Ty>, "Unexpected type");
+    }
+}
+
+template <class _Ty, class _TVal>
+_Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
+    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+        return __std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return static_cast<_Ty*>(__std_find_trivial_unsized_1(_First, static_cast<uint8_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return static_cast<_Ty*>(__std_find_trivial_unsized_2(_First, static_cast<uint16_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return static_cast<_Ty*>(__std_find_trivial_unsized_4(_First, static_cast<uint32_t>(_Val)));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return static_cast<_Ty*>(__std_find_trivial_unsized_8(_First, static_cast<uint64_t>(_Val)));
+    } else {
+        static_assert(_Always_false<_Ty>, "Unexpected type");
+    }
+}
+
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
@@ -5139,6 +5190,8 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
     // check whether _Val is within the limits of _Elem
     if constexpr (is_same_v<_Ty, bool>) {
         return true;
+    } else if constexpr (is_pointer_v<_Ty> || is_null_pointer_v<_Ty>) {
+        return true;
     }
 #ifdef __cpp_lib_byte
     else if constexpr (is_same_v<_Ty, byte>) {
@@ -5181,7 +5234,9 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
 
 template <class _Iter, class _Ty>
 _INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe =
-    _Iterator_is_contiguous<_Iter>&& disjunction_v<conjunction<is_integral<_Ty>, is_integral<_Iter_value_t<_Iter>>>
+    _Iterator_is_contiguous<_Iter>&& disjunction_v<conjunction<is_integral<_Ty>, is_integral<_Iter_value_t<_Iter>>>,
+        conjunction<disjunction<is_pointer<_Ty>, is_null_pointer<_Ty>>,
+            disjunction<is_pointer<_Iter_value_t<_Iter>>, is_null_pointer<_Iter_value_t<_Iter>>>>
 #ifdef __cpp_lib_byte
         ,
         conjunction<is_same<_Ty, byte>, is_same<_Iter_value_t<_Iter>, byte>>
@@ -5204,21 +5259,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
 #if _USE_STD_VECTOR_ALGORITHMS
             const auto _First_ptr = _To_address(_First);
             const size_t _Size    = static_cast<size_t>(_Last - _First);
-            using _Ptr_t          = remove_reference_t<_Iter_ref_t<_InIt>>*;
-            _Ptr_t _Result;
-
-            if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
-                _Result = static_cast<_Ptr_t>(__std_find_trivial_1(_First_ptr, _Size, static_cast<uint8_t>(_Val)));
-            } else if constexpr (sizeof(_Iter_value_t<_InIt>) == 2) {
-                _Result = static_cast<_Ptr_t>(__std_find_trivial_2(_First_ptr, _Size, static_cast<uint16_t>(_Val)));
-            } else if constexpr (sizeof(_Iter_value_t<_InIt>) == 4) {
-                _Result = static_cast<_Ptr_t>(__std_find_trivial_4(_First_ptr, _Size, static_cast<uint32_t>(_Val)));
-            } else if constexpr (sizeof(_Iter_value_t<_InIt>) == 8) {
-                _Result = static_cast<_Ptr_t>(__std_find_trivial_8(_First_ptr, _Size, static_cast<uint64_t>(_Val)));
-            } else {
-                static_assert(_Always_false<_InIt>, "Unexpected type");
-            }
-
+            auto _Result          = __std_find_trivial(_First_ptr, _Size, _Val);
             if constexpr (is_pointer_v<_InIt>) {
                 return _Result;
             } else {
@@ -5305,37 +5346,9 @@ namespace ranges {
                 _Ptr_t _Result;
 
                 if constexpr (_Is_sized) {
-                    if constexpr (sizeof(_Iter_value_t<_It>) == 1) {
-                        _Result =
-                            static_cast<_Ptr_t>(__std_find_trivial_1(_First_ptr, _Count, static_cast<uint8_t>(_Val)));
-                    } else if constexpr (sizeof(_Iter_value_t<_It>) == 2) {
-                        _Result =
-                            static_cast<_Ptr_t>(__std_find_trivial_2(_First_ptr, _Count, static_cast<uint16_t>(_Val)));
-                    } else if constexpr (sizeof(_Iter_value_t<_It>) == 4) {
-                        _Result =
-                            static_cast<_Ptr_t>(__std_find_trivial_4(_First_ptr, _Count, static_cast<uint32_t>(_Val)));
-                    } else if constexpr (sizeof(_Iter_value_t<_It>) == 8) {
-                        _Result =
-                            static_cast<_Ptr_t>(__std_find_trivial_8(_First_ptr, _Count, static_cast<uint64_t>(_Val)));
-                    } else {
-                        static_assert(_Always_false<_It>, "Unexpected type");
-                    }
+                    _Result = __std_find_trivial(_First_ptr, _Count, _Val);
                 } else {
-                    if constexpr (sizeof(_Iter_value_t<_It>) == 1) {
-                        _Result =
-                            static_cast<_Ptr_t>(__std_find_trivial_unsized_1(_First_ptr, static_cast<uint8_t>(_Val)));
-                    } else if constexpr (sizeof(_Iter_value_t<_It>) == 2) {
-                        _Result =
-                            static_cast<_Ptr_t>(__std_find_trivial_unsized_2(_First_ptr, static_cast<uint16_t>(_Val)));
-                    } else if constexpr (sizeof(_Iter_value_t<_It>) == 4) {
-                        _Result =
-                            static_cast<_Ptr_t>(__std_find_trivial_unsized_4(_First_ptr, static_cast<uint32_t>(_Val)));
-                    } else if constexpr (sizeof(_Iter_value_t<_It>) == 8) {
-                        _Result =
-                            static_cast<_Ptr_t>(__std_find_trivial_unsized_8(_First_ptr, static_cast<uint64_t>(_Val)));
-                    } else {
-                        static_assert(_Always_false<_It>, "Unexpected type");
-                    }
+                    _Result = __std_find_trivial_unsized(_First_ptr, _Count, _Val);
                 }
 
                 if constexpr (is_pointer_v<_It>) {
@@ -5429,18 +5442,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
 
                 const auto _First_ptr = _To_address(_UFirst);
                 const size_t _Size    = static_cast<size_t>(_Last - _First);
-
-                if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
-                    return static_cast<_Res_t>(__std_count_trivial_1(_First_ptr, _Size, static_cast<uint8_t>(_Val)));
-                } else if constexpr (sizeof(_Iter_value_t<_InIt>) == 2) {
-                    return static_cast<_Res_t>(__std_count_trivial_2(_First_ptr, _Size, static_cast<uint16_t>(_Val)));
-                } else if constexpr (sizeof(_Iter_value_t<_InIt>) == 4) {
-                    return static_cast<_Res_t>(__std_count_trivial_4(_First_ptr, _Size, static_cast<uint32_t>(_Val)));
-                } else if constexpr (sizeof(_Iter_value_t<_InIt>) == 8) {
-                    return static_cast<_Res_t>(__std_count_trivial_8(_First_ptr, _Size, static_cast<uint64_t>(_Val)));
-                } else {
-                    static_assert(_Always_false<_InIt>, "Unexpected type");
-                }
+                return __std_count_trivial(_First_ptr, _Size, _Val);
             }
         }
 #endif // _USE_STD_VECTOR_ALGORITHMS
