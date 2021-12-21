@@ -116,7 +116,7 @@ __declspec(noalias) size_t __std_count_trivial(_Ty* _First, size_t _Size, const 
     } else if constexpr (sizeof(_Ty) == 8) {
         return __std_count_trivial_8(_First, _Size, static_cast<uint64_t>(_Val));
     } else {
-        static_assert(_Always_false<_Ty>, "Unexpected type");
+        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
 }
 template <class _Ty, class _TVal>
@@ -132,7 +132,7 @@ _Ty* __std_find_trivial(_Ty* _First, size_t _Size, const _TVal _Val) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return static_cast<_Ty*>(__std_find_trivial_8(_First, _Size, static_cast<uint64_t>(_Val)));
     } else {
-        static_assert(_Always_false<_Ty>, "Unexpected type");
+        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
 }
 
@@ -149,7 +149,7 @@ _Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
     } else if constexpr (sizeof(_Ty) == 8) {
         return static_cast<_Ty*>(__std_find_trivial_unsized_8(_First, static_cast<uint64_t>(_Val)));
     } else {
-        static_assert(_Always_false<_Ty>, "Unexpected type");
+        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
 }
 
