@@ -5223,7 +5223,7 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
 
             if constexpr (is_signed_v<_Ty>) {
                 // unsigned _Elem, signed _Ty
-                return 0 <= _Val && _Val <= _Max;
+                return 0 <= _Val && static_cast<make_unsigned_t<_Ty>>(_Val) <= _Max;
             } else {
                 // unsigned _Elem, unsigned _Ty
                 return _Val <= _Max;

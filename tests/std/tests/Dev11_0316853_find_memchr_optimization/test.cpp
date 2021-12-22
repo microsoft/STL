@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
@@ -28,6 +29,13 @@ struct Cat {
 bool operator==(int x, const Cat& c) {
     return x == c.m_n * 11;
 }
+
+#pragma warning(push)
+#pragma warning(disable : 4984) //  'if constexpr' is a C++ 17 language extension
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++17-extensions"
+#endif // __clang__
 
 template <class ElementType, class ValueType>
 void test_limit_check_elements_impl() {
@@ -93,6 +101,11 @@ void test_limit_check_elements_impl() {
         }
     }
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+#pragma warning(pop)
 
 template <class ElementType>
 void test_limit_check_elements() {
@@ -379,5 +392,9 @@ int main() {
         assert(find(begin(arr), end(arr), false) == begin(arr) + 3);
         assert(find(begin(arr), end(arr), true) == begin(arr));
         assert(find(begin(arr), end(arr), 2) == end(arr));
+
+        assert(count(begin(arr), end(arr), false) == 2);
+        assert(count(begin(arr), end(arr), true) == 4);
+        assert(count(begin(arr), end(arr), 2) == 0);
     }
 }

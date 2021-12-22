@@ -15,21 +15,16 @@ void test_impl(void* sv, void* ev) {
     const auto s = reinterpret_cast<T*>(sv);
     const auto e = reinterpret_cast<T*>(ev);
     ranges::fill(s, e, '0');
-    const auto m     = e - 3;
-    m[0]             = '1';
-    m[1]             = '2';
-    m[2]             = '3';
-    const auto bingo = ranges::find(m, unreachable_sentinel, '3');
-    assert(bingo == e - 1);
+    const auto m = e - 3;
+    m[0]         = '1';
+    m[1]         = '2';
+    m[2]         = '3';
 
-    const auto bingo2 = ranges::find(m - 16, unreachable_sentinel, '2');
-    assert(bingo2 == e - 2);
-
-    const auto bingo3 = ranges::find(m - 32, unreachable_sentinel, '1');
-    assert(bingo3 == e - 3);
-
-    const auto bingo4 = ranges::find(m - 64, unreachable_sentinel, '3');
-    assert(bingo4 == e - 1);
+    for (int start = -66; start <= 0; ++start) {
+        assert(ranges::find(m + start, unreachable_sentinel, '1') == m);
+        assert(ranges::find(m + start, unreachable_sentinel, '2') == m + 1);
+        assert(ranges::find(m + start, unreachable_sentinel, '3') == m + 2);
+    }
 }
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
