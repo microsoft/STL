@@ -5442,7 +5442,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
 
                 const auto _First_ptr = _To_address(_UFirst);
                 const size_t _Size    = static_cast<size_t>(_Last - _First);
-                return __std_count_trivial(_First_ptr, _Size, _Val);
+                return static_cast<_Iter_diff_t<_InIt>>(__std_count_trivial(_First_ptr, _Size, _Val));
             }
         }
 #endif // _USE_STD_VECTOR_ALGORITHMS
