@@ -2708,11 +2708,6 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mybase(_Al) {
-        _BConstruct(_First, _Last);
-    }
-
-    template <class _Iter>
-    _CONSTEXPR20 void _BConstruct(_Iter _First, _Iter _Last) {
         insert(begin(), _First, _Last);
     }
 

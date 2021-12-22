@@ -16,6 +16,39 @@ using namespace std;
 static constexpr bool input[]         = {true, false, true, true, false, true};
 static constexpr bool input_flipped[] = {false, true, false, false, true, false};
 
+struct demoterator { // demote pointer to input iterator
+    using iterator_category = std::input_iterator_tag;
+    using value_type        = int;
+    using difference_type   = std::ptrdiff_t;
+    using reference         = const int&;
+    using pointer           = void;
+
+    constexpr bool operator==(const demoterator& that) const {
+        return this->ptr == that.ptr;
+    }
+
+    constexpr reference operator*() const {
+        return *ptr;
+    }
+
+    constexpr demoterator& operator++() {
+        ++ptr;
+        return *this;
+    }
+    constexpr void operator++(int) {
+        ++*this;
+    }
+
+    const int* ptr;
+};
+
+// Just long enough to force a reallocation when inserting
+static constexpr int numbers[33] = { //
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
+    0, 1, 2};
+
 template <typename T>
 struct soccc_allocator {
     using value_type = T;
@@ -462,6 +495,18 @@ constexpr bool test_interface() {
 
         emplaced.erase(emplaced.begin(), emplaced.begin() + 2);
         assert(emplaced.size() == 22);
+
+        {
+            // GH-2440: we were incorrectly reallocating _before_ orphaning iterators
+            // (resulting in UB) while inserting ranges of unknown length
+
+            vector<bool> input_inserted;
+            const auto result =
+                input_inserted.insert(input_inserted.end(), demoterator{begin(numbers)}, demoterator{end(numbers)});
+            static_assert(is_same_v<decltype(result), const vector<bool>::iterator>);
+            assert(result == input_inserted.begin());
+            assert(input_inserted.size() == size(numbers));
+        }
 #endif // __EDG__
     }
 
@@ -619,52 +664,6 @@ constexpr bool test_iterators() {
 
     return true;
 }
-
-#ifndef __EDG__ // TRANSITION, VSO_1274387
-constexpr bool test_gh2440() { // COMPILE-ONLY
-    // vector<bool> was incorrectly reallocating before orphaning iterators
-    // (resulting in UB) when reallocating while inserting ranges of unknown
-    // length
-
-    struct I { // demote pointer to input iterator
-        using iterator_category = std::input_iterator_tag;
-        using value_type        = int;
-        using difference_type   = std::ptrdiff_t;
-        using reference         = const int&;
-        using pointer           = void;
-
-        constexpr bool operator==(const I& that) const {
-            return this->ptr == that.ptr;
-        }
-
-        constexpr reference operator*() const {
-            return *ptr;
-        }
-
-        constexpr I& operator++() {
-            ++ptr;
-            return *this;
-        }
-        constexpr void operator++(int) {
-            ++*this;
-        }
-
-        const int* ptr;
-    };
-
-    // Just long enough to force a reallocation
-    constexpr int numbers[33] = {//
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
-        0, 1, 2};
-
-    vector<bool> vec;
-    vec.insert(vec.end(), I{numbers}, I{numbers + 33});
-    return true;
-}
-static_assert(test_gh2440());
-#endif // TRANSITION, VSO_1274387
 
 int main() {
     test_interface();
