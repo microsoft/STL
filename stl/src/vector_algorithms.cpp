@@ -641,7 +641,6 @@ const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uin
                 return _First;
             }
             _Advance_bytes(_First, 32);
-
         } while (_First != _Stop_at);
         _Size &= 0x1F;
     }
@@ -660,7 +659,6 @@ const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uin
                 return _First;
             }
             _Advance_bytes(_First, 16);
-
         } while (_First != _Stop_at);
         _Size &= 0xF;
     }
@@ -685,7 +683,6 @@ const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uin
                 return _First;
             }
             _Advance_bytes(_First, 32);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0x1F;
     }
@@ -704,7 +701,6 @@ const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uin
                 return _First;
             }
             _Advance_bytes(_First, 16);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0xF;
     }
@@ -729,7 +725,6 @@ const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uin
                 return _First;
             }
             _Advance_bytes(_First, 32);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0x1F;
     }
@@ -748,7 +743,6 @@ const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uin
                 return _First;
             }
             _Advance_bytes(_First, 16);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0xF;
     }
@@ -773,7 +767,6 @@ const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uin
                 return _First;
             }
             _Advance_bytes(_First, 32);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0x1F;
     }
@@ -792,7 +785,6 @@ const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uin
                 return _First;
             }
             _Advance_bytes(_First, 16);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0xF;
     }
@@ -813,7 +805,6 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_1(const void* _First, s
             int _Bingo          = _mm256_movemask_epi8(_mm256_cmpeq_epi8(_Data, _Comparand));
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 32);
-
         } while (_First != _Stop_at);
         _Size &= 0x1F;
     }
@@ -828,7 +819,6 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_1(const void* _First, s
             int _Bingo          = _mm_movemask_epi8(_mm_cmpeq_epi8(_Data, _Comparand));
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 16);
-
         } while (_First != _Stop_at);
         _Size &= 0xF;
     }
@@ -850,7 +840,6 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_2(const void* _First, s
             int _Bingo          = _mm256_movemask_epi8(_mm256_cmpeq_epi16(_Data, _Comparand));
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 32);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0x1F;
     }
@@ -865,7 +854,6 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_2(const void* _First, s
             int _Bingo          = _mm_movemask_epi8(_mm_cmpeq_epi16(_Data, _Comparand));
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 16);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0xF;
     }
@@ -887,7 +875,6 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_4(const void* _First, s
             int _Bingo          = _mm256_movemask_epi8(_mm256_cmpeq_epi32(_Data, _Comparand));
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 32);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0x1F;
     }
@@ -902,7 +889,6 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_4(const void* _First, s
             int _Bingo          = _mm_movemask_epi8(_mm_cmpeq_epi32(_Data, _Comparand));
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 16);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0xF;
     }
@@ -924,7 +910,6 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(const void* _First, s
             int _Bingo          = _mm256_movemask_epi8(_mm256_cmpeq_epi64(_Data, _Comparand));
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 32);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0x1F;
     }
@@ -939,7 +924,6 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(const void* _First, s
             int _Bingo          = _mm_movemask_epi8(_mm_cmpeq_epi64(_Data, _Comparand)); // SSE4.1
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 16);
-
         } while (_First != _Stop_at);
         Size_bytes &= 0xF;
     }
