@@ -499,7 +499,7 @@ namespace ranges {
 
                     const auto _First_ptr = _To_address(_First);
                     const size_t _Size    = static_cast<size_t>(_Last - _First);
-                    return static_cast<iter_difference_t<_It>>(__std_count_trivial(_First_ptr, _Size, _Val));
+                    return static_cast<_Res_t>(__std_count_trivial(_First_ptr, _Size, _Val));
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS
