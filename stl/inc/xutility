@@ -5348,7 +5348,7 @@ namespace ranges {
                 if constexpr (_Is_sized) {
                     _Result = __std_find_trivial(_First_ptr, _Count, _Val);
                 } else {
-                    _Result = __std_find_trivial_unsized(_First_ptr, _Count, _Val);
+                    _Result = __std_find_trivial_unsized(_First_ptr, _Val);
                 }
 
                 if constexpr (is_pointer_v<_It>) {
