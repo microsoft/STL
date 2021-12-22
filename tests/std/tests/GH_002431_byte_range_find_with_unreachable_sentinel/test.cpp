@@ -32,6 +32,21 @@ void test_impl(void* sv, void* ev) {
     assert(bingo4 == e - 1);
 }
 
+#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+extern "C" long __isa_enabled;
+
+void disable_instructions(ISA_AVAILABILITY isa) {
+    __isa_enabled &= ~(1UL << static_cast<unsigned long>(isa));
+}
+#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+
+void test_all_element_sizes(void* p, size_t page) {
+    test_impl<char>(p, reinterpret_cast<char*>(p) + page);
+    test_impl<short>(p, reinterpret_cast<char*>(p) + page);
+    test_impl<long>(p, reinterpret_cast<char*>(p) + page);
+    test_impl<long long>(p, reinterpret_cast<char*>(p) + page);
+}
+
 int main() {
     SYSTEM_INFO si = {};
     GetSystemInfo(&si);
@@ -44,10 +59,19 @@ int main() {
     void* p2 = VirtualAlloc(p, page, MEM_COMMIT, PAGE_READWRITE);
     assert(p2 != nullptr);
 
-    test_impl<char>(p2, reinterpret_cast<char*>(p2) + page);
-    test_impl<short>(p2, reinterpret_cast<char*>(p2) + page);
-    test_impl<long>(p2, reinterpret_cast<char*>(p2) + page);
-    test_impl<long long>(p2, reinterpret_cast<char*>(p2) + page);
+    test_all_element_sizes(p, page);
+#ifndef _M_CEE_PURE
+#if defined(_M_IX86) || defined(_M_X64)
+    disable_instructions(__ISA_AVAILABLE_AVX2);
+    test_all_element_sizes(p, page);
+    disable_instructions(__ISA_AVAILABLE_SSE42);
+    test_all_element_sizes(p, page);
+#endif // defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86)
+    disable_instructions(__ISA_AVAILABLE_SSE2);
+    test_all_element_sizes(p, page);
+#endif // defined(_M_IX86)
+#endif // _M_CEE_PURE
 
     VirtualFree(p, 0, MEM_RELEASE);
 }
