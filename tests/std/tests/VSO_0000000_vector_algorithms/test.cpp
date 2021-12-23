@@ -22,8 +22,8 @@ void disable_instructions(ISA_AVAILABILITY isa) {
 constexpr size_t dataCount = 1024;
 
 template <class FwdIt, class T>
-inline size_t last_known_good_count(FwdIt first, FwdIt last, T v) {
-    size_t result = 0;
+inline ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
+    ptrdiff_t result = 0;
     for (; first != last; ++first) {
         result += (*first == v);
     }
@@ -46,7 +46,7 @@ void test_count(mt19937_64& gen) {
     input.reserve(dataCount);
     test_case_count(input, static_cast<T>(dis(gen)));
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        input.push_back(dis(gen)); // intentionally narrows
+        input.push_back(static_cast<T>(dis(gen)));
         test_case_count(input, static_cast<T>(dis(gen)));
     }
 }
@@ -75,7 +75,7 @@ void test_find(mt19937_64& gen) {
     input.reserve(dataCount);
     test_case_find(input, static_cast<T>(dis(gen)));
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
-        input.push_back(dis(gen)); // intentionally narrows
+        input.push_back(static_cast<T>(dis(gen)));
         test_case_find(input, static_cast<T>(dis(gen)));
     }
 }
