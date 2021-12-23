@@ -71,38 +71,6 @@ const void* __stdcall __std_find_trivial_unsized_4(const void* _First, uint32_t 
 const void* __stdcall __std_find_trivial_unsized_8(const void* _First, uint64_t _Val) noexcept;
 _END_EXTERN_C
 
-inline void* __std_find_trivial_1(void* _First, size_t _Size, uint8_t _Val) noexcept {
-    return const_cast<void*>(__std_find_trivial_1(const_cast<const void*>(_First), _Size, _Val));
-}
-
-inline void* __std_find_trivial_2(void* _First, size_t _Size, uint16_t _Val) noexcept {
-    return const_cast<void*>(__std_find_trivial_2(const_cast<const void*>(_First), _Size, _Val));
-}
-
-inline void* __std_find_trivial_4(void* _First, size_t _Size, uint32_t _Val) noexcept {
-    return const_cast<void*>(__std_find_trivial_4(const_cast<const void*>(_First), _Size, _Val));
-}
-
-inline void* __std_find_trivial_8(void* _First, size_t _Size, uint64_t _Val) noexcept {
-    return const_cast<void*>(__std_find_trivial_8(const_cast<const void*>(_First), _Size, _Val));
-}
-
-inline void* __std_find_trivial_unsized_1(void* _First, uint8_t _Val) noexcept {
-    return const_cast<void*>(__std_find_trivial_unsized_1(const_cast<const void*>(_First), _Val));
-}
-
-inline void* __std_find_trivial_unsized_2(void* _First, uint16_t _Val) noexcept {
-    return const_cast<void*>(__std_find_trivial_unsized_2(const_cast<const void*>(_First), _Val));
-}
-
-inline void* __std_find_trivial_unsized_4(void* _First, uint32_t _Val) noexcept {
-    return const_cast<void*>(__std_find_trivial_unsized_4(const_cast<const void*>(_First), _Val));
-}
-
-inline void* __std_find_trivial_unsized_8(void* _First, uint64_t _Val) noexcept {
-    return const_cast<void*>(__std_find_trivial_unsized_8(const_cast<const void*>(_First), _Val));
-}
-
 template <class _Ty, class _TVal>
 __declspec(noalias) size_t __std_count_trivial(_Ty* _First, size_t _Size, const _TVal _Val) noexcept {
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
@@ -121,16 +89,18 @@ __declspec(noalias) size_t __std_count_trivial(_Ty* _First, size_t _Size, const 
 }
 template <class _Ty, class _TVal>
 _Ty* __std_find_trivial(_Ty* _First, size_t _Size, const _TVal _Val) noexcept {
+    using cv_pv = _STD conditional_t<_STD is_const_v<_Ty>, const void*, void*>;
+
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return __std_find_trivial(_First, _Size, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
-        return static_cast<_Ty*>(__std_find_trivial_1(_First, _Size, static_cast<uint8_t>(_Val)));
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_1(_First, _Size, static_cast<uint8_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return static_cast<_Ty*>(__std_find_trivial_2(_First, _Size, static_cast<uint16_t>(_Val)));
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_2(_First, _Size, static_cast<uint16_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return static_cast<_Ty*>(__std_find_trivial_4(_First, _Size, static_cast<uint32_t>(_Val)));
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_4(_First, _Size, static_cast<uint32_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return static_cast<_Ty*>(__std_find_trivial_8(_First, _Size, static_cast<uint64_t>(_Val)));
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_8(_First, _Size, static_cast<uint64_t>(_Val))));
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
@@ -138,16 +108,18 @@ _Ty* __std_find_trivial(_Ty* _First, size_t _Size, const _TVal _Val) noexcept {
 
 template <class _Ty, class _TVal>
 _Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
+    using cv_pv = _STD conditional_t<_STD is_const_v<_Ty>, const void*, void*>;
+
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return __std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
-        return static_cast<_Ty*>(__std_find_trivial_unsized_1(_First, static_cast<uint8_t>(_Val)));
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_unsized_1(_First, static_cast<uint8_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return static_cast<_Ty*>(__std_find_trivial_unsized_2(_First, static_cast<uint16_t>(_Val)));
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_unsized_2(_First, static_cast<uint16_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return static_cast<_Ty*>(__std_find_trivial_unsized_4(_First, static_cast<uint32_t>(_Val)));
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_unsized_4(_First, static_cast<uint32_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return static_cast<_Ty*>(__std_find_trivial_unsized_8(_First, static_cast<uint64_t>(_Val)));
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_unsized_8(_First, static_cast<uint64_t>(_Val))));
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
