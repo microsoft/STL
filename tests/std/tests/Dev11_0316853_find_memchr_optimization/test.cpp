@@ -7,6 +7,9 @@
 #pragma warning(disable : 4389) // signed/unsigned mismatch
 #pragma warning(disable : 4805) // '==': unsafe mix of type '_Ty' and type 'const _Ty' in operation
 // This test intentionally triggers that warning when one of the inputs to find is bool
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wsign-compare"
+#endif // __clang_
 
 #include <algorithm>
 #include <assert.h>
