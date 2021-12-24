@@ -485,8 +485,6 @@ namespace ranges {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
             _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>);
 
-            using _Res_t = iter_difference_t<_It>;
-
 #if _USE_STD_VECTOR_ALGORITHMS
 #if _HAS_CXX20
             if (!_STD is_constant_evaluated())
@@ -497,14 +495,13 @@ namespace ranges {
                         return 0;
                     }
 
-                    const auto _First_ptr = _To_address(_First);
-                    const size_t _Size    = static_cast<size_t>(_Last - _First);
-                    return static_cast<_Res_t>(__std_count_trivial(_First_ptr, _Size, _Val));
+                    return static_cast<iter_difference_t<_It>>(
+                        __std_count_trivial(_To_address(_First), _To_address(_Last), _Val));
                 }
             }
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
-            _Res_t _Count = 0;
+            iter_difference_t<_It> _Count = 0;
             for (; _First != _Last; ++_First) {
                 if (_STD invoke(_Proj, *_First) == _Val) {
                     ++_Count;

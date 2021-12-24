@@ -464,9 +464,8 @@ static const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) 
 }
 
 template <class _Ty>
-static const void* _Find_trivial_tail(const void* _First, size_t _Size, _Ty _Val) {
-    auto _Ptr  = static_cast<const _Ty*>(_First);
-    auto _Last = _Ptr + _Size;
+static const void* _Find_trivial_tail(const void* _First, const void* _Last, _Ty _Val) {
+    auto _Ptr = static_cast<const _Ty*>(_First);
     for (; _Ptr != _Last; ++_Ptr) {
         if (*_Ptr == _Val) {
             break;
@@ -541,9 +540,8 @@ static const void* _Find_trivial_unsized_sse(const void* _First, _Callback _Get_
 }
 
 template <class _Ty>
-__declspec(noalias) size_t _Count_trivial_tail(const void* _First, size_t _Size, size_t _Current, _Ty _Val) {
-    auto _Ptr  = static_cast<const _Ty*>(_First);
-    auto _Last = _Ptr + _Size;
+__declspec(noalias) size_t _Count_trivial_tail(const void* _First, const void* _Last, size_t _Current, _Ty _Val) {
+    auto _Ptr = static_cast<const _Ty*>(_First);
     for (; _Ptr != _Last; ++_Ptr) {
         if (*_Ptr == _Val) {
             ++_Current;
@@ -626,8 +624,10 @@ const void* __stdcall __std_find_trivial_unsized_8(const void* _First, uint64_t 
     return _Find_trivial_unsized_fallback(_First, _Val);
 }
 
-const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uint8_t _Val) noexcept {
-    size_t _Avx_size = _Size & ~size_t{0x1F};
+const void* __stdcall __std_find_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept {
+    size_t Size_bytes = _Byte_length(_First, _Last);
+
+    size_t _Avx_size = Size_bytes & ~size_t{0x1F};
     if (_Avx_size != 0 && _Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi8(_Val);
         const void* _Stop_at     = _First;
@@ -642,10 +642,10 @@ const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uin
             }
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
-        _Size &= 0x1F;
+        Size_bytes &= 0x1F;
     }
 
-    size_t _Sse_size = _Size & ~size_t{0xF};
+    size_t _Sse_size = Size_bytes & ~size_t{0xF};
     if (_Sse_size != 0 && _Use_sse2()) {
         const __m128i _Comparand = _mm_set1_epi8(_Val);
         const void* _Stop_at     = _First;
@@ -660,14 +660,13 @@ const void* __stdcall __std_find_trivial_1(const void* _First, size_t _Size, uin
             }
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
-        _Size &= 0xF;
     }
 
-    return _Find_trivial_tail(_First, _Size, _Val);
+    return _Find_trivial_tail(_First, _Last, _Val);
 }
 
-const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uint16_t _Val) noexcept {
-    size_t Size_bytes = _Size * 2;
+const void* __stdcall __std_find_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept {
+    size_t Size_bytes = _Byte_length(_First, _Last);
 
     size_t _Avx_size = Size_bytes & ~size_t{0x1F};
     if (_Avx_size != 0 && _Use_avx2()) {
@@ -702,14 +701,13 @@ const void* __stdcall __std_find_trivial_2(const void* _First, size_t _Size, uin
             }
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
-        Size_bytes &= 0xF;
     }
 
-    return _Find_trivial_tail(_First, Size_bytes >> 1, _Val);
+    return _Find_trivial_tail(_First, _Last, _Val);
 }
 
-const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uint32_t _Val) noexcept {
-    size_t Size_bytes = _Size * 4;
+const void* __stdcall __std_find_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept {
+    size_t Size_bytes = _Byte_length(_First, _Last);
 
     size_t _Avx_size = Size_bytes & ~size_t{0x1F};
     if (_Avx_size != 0 && _Use_avx2()) {
@@ -744,14 +742,13 @@ const void* __stdcall __std_find_trivial_4(const void* _First, size_t _Size, uin
             }
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
-        Size_bytes &= 0xF;
     }
 
-    return _Find_trivial_tail(_First, Size_bytes >> 2, _Val);
+    return _Find_trivial_tail(_First, _Last, _Val);
 }
 
-const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uint64_t _Val) noexcept {
-    size_t Size_bytes = _Size * 8;
+const void* __stdcall __std_find_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept {
+    size_t Size_bytes = _Byte_length(_First, _Last);
 
     size_t _Avx_size = Size_bytes & ~size_t{0x1F};
     if (_Avx_size != 0 && _Use_avx2()) {
@@ -786,16 +783,17 @@ const void* __stdcall __std_find_trivial_8(const void* _First, size_t _Size, uin
             }
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
-        Size_bytes &= 0xF;
     }
 
-    return _Find_trivial_tail(_First, Size_bytes >> 3, _Val);
+    return _Find_trivial_tail(_First, _Last, _Val);
 }
 
-__declspec(noalias) size_t __stdcall __std_count_trivial_1(const void* _First, size_t _Size, uint8_t _Val) noexcept {
-    size_t _Result = 0;
+__declspec(noalias) size_t
+    __stdcall __std_count_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept {
+    size_t _Size_bytes = _Byte_length(_First, _Last);
+    size_t _Result     = 0;
 
-    size_t _Avx_size = _Size & ~size_t{0x1F};
+    size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
     if (_Avx_size != 0 && _Use_avx2()) {
         const __m256i _Comparand = _mm256_set1_epi8(_Val);
         const void* _Stop_at     = _First;
@@ -806,10 +804,10 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_1(const void* _First, s
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
-        _Size &= 0x1F;
+        _Size_bytes &= 0x1F;
     }
 
-    size_t _Sse_size = _Size & ~size_t{0xF};
+    size_t _Sse_size = _Size_bytes & ~size_t{0xF};
     if (_Sse_size != 0 && _Use_sse42()) {
         const __m128i _Comparand = _mm_set1_epi8(_Val);
         const void* _Stop_at     = _First;
@@ -820,14 +818,14 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_1(const void* _First, s
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
-        _Size &= 0xF;
     }
 
-    return _Count_trivial_tail(_First, _Size, _Result, _Val);
+    return _Count_trivial_tail(_First, _Last, _Result, _Val);
 }
 
-__declspec(noalias) size_t __stdcall __std_count_trivial_2(const void* _First, size_t _Size, uint16_t _Val) noexcept {
-    size_t Size_bytes = _Size * 2;
+__declspec(noalias) size_t
+    __stdcall __std_count_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept {
+    size_t Size_bytes = _Byte_length(_First, _Last);
     size_t _Result    = 0; // in bytes, divide before using
 
     size_t _Avx_size = Size_bytes & ~size_t{0x1F};
@@ -855,14 +853,14 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_2(const void* _First, s
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
-        Size_bytes &= 0xF;
     }
 
-    return _Count_trivial_tail(_First, Size_bytes >> 1, _Result >> 1, _Val);
+    return _Count_trivial_tail(_First, _Last, _Result >> 1, _Val);
 }
 
-__declspec(noalias) size_t __stdcall __std_count_trivial_4(const void* _First, size_t _Size, uint32_t _Val) noexcept {
-    size_t Size_bytes = _Size * 4;
+__declspec(noalias) size_t
+    __stdcall __std_count_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept {
+    size_t Size_bytes = _Byte_length(_First, _Last);
     size_t _Result    = 0; // in bytes, divide before using
 
     size_t _Avx_size = Size_bytes & ~size_t{0x1F};
@@ -890,14 +888,14 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_4(const void* _First, s
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
-        Size_bytes &= 0xF;
     }
 
-    return _Count_trivial_tail(_First, Size_bytes >> 2, _Result >> 2, _Val);
+    return _Count_trivial_tail(_First, _Last, _Result >> 2, _Val);
 }
 
-__declspec(noalias) size_t __stdcall __std_count_trivial_8(const void* _First, size_t _Size, uint64_t _Val) noexcept {
-    size_t Size_bytes = _Size * 8;
+__declspec(noalias) size_t
+    __stdcall __std_count_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept {
+    size_t Size_bytes = _Byte_length(_First, _Last);
     size_t _Result    = 0; // in bytes, divide before using
 
     size_t _Avx_size = Size_bytes & ~size_t{0x1F};
@@ -925,10 +923,9 @@ __declspec(noalias) size_t __stdcall __std_count_trivial_8(const void* _First, s
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
-        Size_bytes &= 0xF;
     }
 
-    return _Count_trivial_tail(_First, Size_bytes >> 3, _Result >> 3, _Val);
+    return _Count_trivial_tail(_First, _Last, _Result >> 3, _Val);
 }
 
 } // extern "C"
