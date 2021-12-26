@@ -881,7 +881,7 @@ struct _Minmax_traits_8 {
 template <_Min_max_mode _Mode, class _Traits>
 auto __stdcall _Minmax_element(const void* _First, const void* const _Last, const bool _Sign) noexcept {
     _Min_max_t _Res   = {_First, _First};
-    auto _Base        = static_cast<const _Traits::_Unsigned_t*>(_First);
+    auto _Base        = static_cast<const char*>(_First);
     auto _Cur_min_val = _Traits::_Init_min_val;
     auto _Cur_max_val = _Traits::_Init_max_val;
 
@@ -945,7 +945,7 @@ auto __stdcall _Minmax_element(const void* _First, const void* const _Last, cons
                         // Extract its vertical index
                         const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_min, _H_pos);
                         // Finally, compute the pointer
-                        _Res._Min = _Base + (_V_pos * 16 + _H_pos) / sizeof(_Cur_min_val);
+                        _Res._Min = _Base + (_V_pos * 16 + _H_pos);
                     }
                 }
 
@@ -992,7 +992,7 @@ auto __stdcall _Minmax_element(const void* _First, const void* const _Last, cons
                         // Extract its vertical index
                         const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_max, _H_pos);
                         // Finally, compute the pointer
-                        _Res._Max = _Base + (_V_pos * 16 + _H_pos) / sizeof(_Cur_min_val);
+                        _Res._Max = _Base + (_V_pos * 16 + _H_pos);
                     }
                 }
 
@@ -1017,7 +1017,7 @@ auto __stdcall _Minmax_element(const void* _First, const void* const _Last, cons
                     _Sse_size -= _Portion_size;
 
                     // Indices will be relative to the new base
-                    _Base = static_cast<const _Traits::_Unsigned_t*>(_First);
+                    _Base = static_cast<const char*>(_First);
 
                     // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
                     _Cur_vals = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
