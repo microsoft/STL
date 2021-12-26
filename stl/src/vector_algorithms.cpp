@@ -904,8 +904,8 @@ auto _Minmax_element(const void* _First, const void* const _Last, const bool _Si
         __m128i _Cur_vals     = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
         __m128i _Cur_vals_min = _Cur_vals; // vector of vertical minimum values
         __m128i _Cur_idx_min  = _mm_setzero_si128(); // vector of vertical minimum indices
-        __m128i _Cur_vals_max = _Cur_vals; // vector of vertical minimum values
-        __m128i _Cur_idx_max  = _mm_setzero_si128(); // vector of vertical minimum indices
+        __m128i _Cur_vals_max = _Cur_vals; // vector of vertical maximum values
+        __m128i _Cur_idx_max  = _mm_setzero_si128(); // vector of vertical maximum indices
         __m128i _Cur_idx      = _mm_setzero_si128(); // current vector of indices
 
         for (;;) {
