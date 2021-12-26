@@ -875,8 +875,11 @@ struct _Minmax_traits_8 {
     }
 };
 
+// Exactly the same signature with __std_min_element_N / __std_max_element_N / __std_minmax_element_N,
+// up to calling convention. This makes sure the template specialization is fused with the export function.
+// In optimized build it avoids extra call, as this function is too large to inline.
 template <_Min_max_mode _Mode, class _Traits>
-auto __stdcall _Minmax_element(const void* _First, const void* const _Last, const bool _Sign) noexcept {
+auto __stdcall _Minmax_element(const void* _First, const void* const _Last, const bool _Sign, int = 0) noexcept {
     _Min_max_t _Res   = {_First, _First};
     auto _Base        = static_cast<const _Traits::_Unsigned_t*>(_First);
     auto _Cur_min_val = _Traits::_Init_min_val;
