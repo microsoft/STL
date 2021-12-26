@@ -497,7 +497,11 @@ _Min_max_t _Both_tail(
         if (*_Ptr < _Cur_min) {
             _Res._Min = _Ptr;
             _Cur_min  = *_Ptr;
-        } else if (_Cur_max <= *_Ptr) {
+        }
+        // Not else!
+        // * Needed for correctness if start with maximum, as we don't handle specially the first element.
+        // * Promote branchless code generation.
+        if (_Cur_max <= *_Ptr) {
             _Res._Max = _Ptr;
             _Cur_max  = *_Ptr;
         }
@@ -555,8 +559,8 @@ struct _Minmax_traits_1 {
         return _mm_sub_epi8(_Val, _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
     }
 
-    static __m128i _Inc() noexcept {
-        return _mm_set1_epi8(1);
+    static __m128i _Inc(__m128i _Idx) noexcept {
+        return _mm_add_epi8(_Idx, _mm_set1_epi8(1));
     }
 
     template <class _Fn>
@@ -633,8 +637,8 @@ struct _Minmax_traits_2 {
         return _mm_sub_epi16(_Val, _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
     }
 
-    static __m128i _Inc() noexcept {
-        return _mm_set1_epi16(1);
+    static __m128i _Inc(__m128i _Idx) noexcept {
+        return _mm_add_epi16(_Idx, _mm_set1_epi16(1));
     }
 
     template <class _Fn>
@@ -716,8 +720,8 @@ struct _Minmax_traits_4 {
         return _mm_sub_epi32(_Val, _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
     }
 
-    static __m128i _Inc() noexcept {
-        return _mm_set1_epi32(1);
+    static __m128i _Inc(__m128i _Idx) noexcept {
+        return _mm_add_epi32(_Idx, _mm_set1_epi32(1));
     }
 
     template <class _Fn>
@@ -792,8 +796,8 @@ struct _Minmax_traits_8 {
         return _mm_sub_epi64(_Val, _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
     }
 
-    static __m128i _Inc() noexcept {
-        return _mm_set1_epi64x(1);
+    static __m128i _Inc(__m128i _Idx) noexcept {
+        return _mm_add_epi64(_Idx, _mm_set1_epi64x(1));
     }
 
     static __m128i _H_min(const __m128i _Cur) noexcept {
@@ -885,6 +889,7 @@ auto _Minmax_element(const void* _First, const void* const _Last, const bool _Si
         size_t _Portion_size = _Sse_size;
 
         if constexpr (_Traits::_Has_portion_max) {
+            // vector of indices will wrap around at this size
             constexpr size_t _Max_portion_size = _Traits::_Portion_max * 16;
             if (_Portion_size > _Max_portion_size) {
                 _Portion_size = _Max_portion_size;
@@ -895,89 +900,123 @@ auto _Minmax_element(const void* _First, const void* const _Last, const bool _Si
 
         _Advance_bytes(_Stop_at, _Portion_size);
 
-        const __m128i _Inc    = _Traits::_Inc();
+        // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
         __m128i _Cur_vals     = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
-        __m128i _Cur_vals_min = _Cur_vals;
-        __m128i _Cur_idx_min  = _mm_setzero_si128();
-        __m128i _Cur_vals_max = _Cur_vals;
-        __m128i _Cur_idx_max  = _mm_setzero_si128();
-        __m128i _Cur_idx      = _mm_setzero_si128();
+        __m128i _Cur_vals_min = _Cur_vals; // vector of vertical minimum values
+        __m128i _Cur_idx_min  = _mm_setzero_si128(); // vector of vertical minimum indices
+        __m128i _Cur_vals_max = _Cur_vals; // vector of vertical minimum values
+        __m128i _Cur_idx_max  = _mm_setzero_si128(); // vector of vertical minimum indices
+        __m128i _Cur_idx      = _mm_setzero_si128(); // current vector of indices
 
         for (;;) {
             _Advance_bytes(_First, 16);
-            _Cur_idx = _mm_add_epi64(_Cur_idx, _Inc);
+
+            // Increment vertical indices. Will stop at exactly wrap around, if not reach the end before
+            _Cur_idx = _Traits::_Inc(_Cur_idx);
 
             if (_First == _Stop_at) {
+                // Reached end or indices wrap around point. Compute horizontal min and/or max
 
                 if constexpr (_Mode != _Min_max_mode::_Max_only) {
-                    const __m128i _H_min  = _Traits::_H_min(_Cur_vals_min);
+                    // Vector populated by the smallest element
+                    const __m128i _H_min = _Traits::_H_min(_Cur_vals_min);
+                    // Get any element of it
                     const auto _H_min_val = _Traits::_Get_any(_H_min);
 
                     if (_H_min_val < _Cur_min_val) {
-                        _Cur_min_val               = _H_min_val;
-                        const __m128i _Eq_mask     = _Traits::_Cmp_eq(_H_min, _Cur_vals_min);
-                        const __m128i _Minus_one   = _mm_cmpeq_epi8(_mm_setzero_si128(), _mm_setzero_si128());
+                        // Current horizontal min is less than the old, update min
+                        _Cur_min_val = _H_min_val;
+                        // Mask of all elements equal to minimum
+                        const __m128i _Eq_mask   = _Traits::_Cmp_eq(_H_min, _Cur_vals_min);
+                        int _Mask                = _mm_movemask_epi8(_Eq_mask);
+                        const __m128i _Minus_one = _mm_cmpeq_epi8(_mm_setzero_si128(), _mm_setzero_si128());
+                        // Indices of minimum elements or the greatest index if none
                         const __m128i _Idx_min_val = _mm_blendv_epi8(_Minus_one, _Cur_idx_min, _Eq_mask);
-                        __m128i _Idx_min           = _Traits::_H_min_u(_Idx_min_val);
-
+                        // The smallest indexes
+                        __m128i _Idx_min = _Traits::_H_min_u(_Idx_min_val);
+                        // Select the smallest vertical indexes from the smallest element mask
+                        _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_min, _Idx_min_val));
+                        // Find the smallest horizontal index
                         unsigned long _H_pos;
-                        _BitScanForward(&_H_pos,
-                            _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_min, _Idx_min_val)) & _mm_movemask_epi8(_Eq_mask));
+                        _BitScanForward(&_H_pos, _Mask);
+                        // Extract its vertical index
                         const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_min, _H_pos);
-                        _Res._Min         = _Base + (_V_pos * 16 + _H_pos) / sizeof(_Cur_min_val);
+                        // Finally, compute the pointer
+                        _Res._Min = _Base + (_V_pos * 16 + _H_pos) / sizeof(_Cur_min_val);
                     }
                 }
 
                 if constexpr (_Mode != _Min_max_mode::_Min_only) {
-                    const __m128i _H_max  = _Traits::_H_max(_Cur_vals_max);
+                    // Vector populated by the largest element
+                    const __m128i _H_max = _Traits::_H_max(_Cur_vals_max);
+                    // Get any element of it
                     const auto _H_max_val = _Traits::_Get_any(_H_max);
 
                     if (_Mode == _Min_max_mode::_Both ? _Cur_max_val <= _H_max_val : _Cur_max_val < _H_max_val) {
-                        _Cur_max_val           = _H_max_val;
+                        // max_element: current horizontal max is greater than the old, update max
+                        // minmax_element: current horizontal max is not less than the old, update max
+                        _Cur_max_val = _H_max_val;
+                        // Mask of all elements equal to maximum
                         const __m128i _Eq_mask = _Traits::_Cmp_eq(_H_max, _Cur_vals_max);
-
-
+                        // Mask of all elements equal to maximum
                         int _Mask = _mm_movemask_epi8(_Eq_mask);
 
                         if constexpr (_Mode == _Min_max_mode::_Both) {
+                            // Indices of minimum elements or zero none
                             const __m128i _Idx_max_val = _mm_blendv_epi8(_mm_setzero_si128(), _Cur_idx_max, _Eq_mask);
-                            const __m128i _Idx_max     = _Traits::_H_max_u(_Idx_max_val);
+                            // The greatest indexes
+                            const __m128i _Idx_max = _Traits::_H_max_u(_Idx_max_val);
+                            // Select the greatest vertical indexes from the largest element mask
                             _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
                         } else {
-                            const __m128i _Minus_one   = _mm_cmpeq_epi8(_mm_setzero_si128(), _mm_setzero_si128());
+                            const __m128i _Minus_one = _mm_cmpeq_epi8(_mm_setzero_si128(), _mm_setzero_si128());
+                            // Indices of minimum elements or the greatest index if none
                             const __m128i _Idx_max_val = _mm_blendv_epi8(_Minus_one, _Cur_idx_max, _Eq_mask);
-                            const __m128i _Idx_max     = _Traits::_H_min_u(_Idx_max_val);
+                            // The smallest indexes
+                            const __m128i _Idx_max = _Traits::_H_min_u(_Idx_max_val);
+                            // Select the smallest vertical indexes from the largest element mask
                             _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
                         }
 
                         unsigned long _H_pos;
                         if constexpr (_Mode == _Min_max_mode::_Both) {
+                            // Find the largest horizontal index
                             _BitScanReverse(&_H_pos, _Mask);
                         } else {
+                            // Find the smallest horizontal index
                             _BitScanForward(&_H_pos, _Mask);
                         }
-
+                        // Extract its vertical index
                         const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_max, _H_pos);
-                        _Res._Max         = _Base + (_V_pos * 16 + _H_pos) / sizeof(_Cur_min_val);
+                        // Finally, compute the pointer
+                        _Res._Max = _Base + (_V_pos * 16 + _H_pos) / sizeof(_Cur_min_val);
                     }
                 }
 
                 if constexpr (_Traits::_Has_portion_max) {
+                    // Last portion or wrapping, need to determine
+
                     _Portion_size = _Sse_size;
                     if (_Portion_size == 0) {
-                        break;
+                        break; // Last portion
                     }
 
+                    // Handle the wrapping indexes. Assume _Cur_idx is zero
+
+                    // This portion size
                     constexpr size_t _Max_portion_size = _Traits::_Portion_max * 16;
                     if (_Portion_size > _Max_portion_size) {
                         _Portion_size = _Max_portion_size;
                     }
 
                     _Advance_bytes(_Stop_at, _Portion_size);
+                    // Size remaining after this
                     _Sse_size -= _Portion_size;
 
+                    // Indices will be relative to the new base
                     _Base = static_cast<const _Traits::_Unsigned_t*>(_First);
 
+                    // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
                     _Cur_vals = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
 
                     if constexpr (_Mode != _Min_max_mode::_Max_only) {
@@ -988,28 +1027,40 @@ auto _Minmax_element(const void* _First, const void* const _Last, const bool _Si
                         _Cur_vals_max = _Cur_vals;
                         _Cur_idx_max  = _mm_setzero_si128();
                     }
+
                     continue;
                 } else {
-                    break;
+                    break; // No wrapping, so it was the only portion
                 }
             }
+            // This is the main part, finding vertical minimum/maximum
 
+            // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
             __m128i _Cur_vals = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
 
             if constexpr (_Mode != _Min_max_mode::_Max_only) {
+                // Mask for the values less than the current minimum
                 const __m128i _Is_less = _Traits::_Cmp_lt(_Cur_vals, _Cur_vals_min);
-                _Cur_idx_min           = _mm_blendv_epi8(_Cur_idx_min, _Cur_idx, _Is_less);
-                _Cur_vals_min          = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less);
+                // Remember their vertical indices
+                _Cur_idx_min = _mm_blendv_epi8(_Cur_idx_min, _Cur_idx, _Is_less);
+                // Update the current minimum
+                _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less);
             }
 
             if constexpr (_Mode == _Min_max_mode::_Max_only) {
+                // Mask for the values greater or equal to the current maximum
                 const __m128i _Is_greater = _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max);
-                _Cur_idx_max              = _mm_blendv_epi8(_Cur_idx_max, _Cur_idx, _Is_greater);
-                _Cur_vals_max             = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater);
+                // Remember their vertical indices
+                _Cur_idx_max = _mm_blendv_epi8(_Cur_idx_max, _Cur_idx, _Is_greater);
+                // Update the current maximum
+                _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater);
             } else if constexpr (_Mode == _Min_max_mode::_Both) {
+                // *Inverse* mask for the values greater or equal to the current maximum
                 const __m128i _Is_less = _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals);
-                _Cur_idx_max           = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max, _Is_less);
-                _Cur_vals_max          = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less);
+                // Remember their vertical indices
+                _Cur_idx_max = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max, _Is_less);
+                // Update the current maximum
+                _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less);
             }
         }
     }
