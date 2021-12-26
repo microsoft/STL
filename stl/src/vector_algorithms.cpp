@@ -806,8 +806,8 @@ struct _Minmax_traits_8 {
     }
 
     static __m128i _H_min(const __m128i _Cur) noexcept {
-        _Signed_t _H_min_a = _mm_cvtsi128_si64(_Cur);
-        _Signed_t _H_min_b = _mm_cvtsi128_si64(_mm_bsrli_si128(_Cur, 8));
+        _Signed_t _H_min_a = _Get_any(_Cur);
+        _Signed_t _H_min_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
         if (_H_min_b < _H_min_a) {
             _H_min_a = _H_min_b;
         }
@@ -815,8 +815,8 @@ struct _Minmax_traits_8 {
     }
 
     static __m128i _H_max(const __m128i _Cur) noexcept {
-        _Signed_t _H_max_a = _mm_cvtsi128_si64(_Cur);
-        _Signed_t _H_max_b = _mm_cvtsi128_si64(_mm_bsrli_si128(_Cur, 8));
+        _Signed_t _H_max_a = _Get_any(_Cur);
+        _Signed_t _H_max_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
         if (_H_max_b > _H_max_a) {
             _H_max_a = _H_max_b;
         }
@@ -824,8 +824,8 @@ struct _Minmax_traits_8 {
     }
 
     static __m128i _H_min_u(const __m128i _Cur) noexcept {
-        _Unsigned_t _H_min_a = _mm_cvtsi128_si64(_Cur);
-        _Unsigned_t _H_min_b = _mm_cvtsi128_si64(_mm_bsrli_si128(_Cur, 8));
+        _Unsigned_t _H_min_a = _Get_any(_Cur);
+        _Unsigned_t _H_min_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
         if (_H_min_b < _H_min_a) {
             _H_min_a = _H_min_b;
         }
@@ -834,7 +834,11 @@ struct _Minmax_traits_8 {
 
 
     static _Signed_t _Get_any(const __m128i _Cur) noexcept {
+#ifdef _M_IX86
+        return static_cast<_Signed_t>(_mm_extract_epi32(_Cur, 1)) | static_cast<_Signed_t>(_mm_cvtsi128_si32(_Cur));
+#else
         return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
+#endif
     }
 
     static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
