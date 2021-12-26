@@ -1072,7 +1072,6 @@ auto __stdcall _Minmax_element(const void* _First, const void* const _Last, cons
         _First, _Last, _Res, _Sign, _Cur_min_val, _Cur_max_val);
 }
 
-
 extern "C" {
 
 const void* __stdcall __std_min_element_1(
