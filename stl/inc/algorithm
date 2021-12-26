@@ -34,7 +34,68 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept;
+
+struct _Min_max_t {
+    const void* _Min;
+    const void* _Max;
+};
+
+const void* __stdcall __std_min_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_min_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_min_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_min_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+
+const void* __stdcall __std_max_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_max_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_max_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
+const void* __stdcall __std_max_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+
+_Min_max_t __stdcall __std_minmax_element_1(const void* _First, const void* _Last, bool _Signed) noexcept;
+_Min_max_t __stdcall __std_minmax_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
+_Min_max_t __stdcall __std_minmax_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
+_Min_max_t __stdcall __std_minmax_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
+
 _END_EXTERN_C
+
+template <class _Ty>
+_Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
+    using cv_pv            = _STD conditional_t<_STD is_const_v<_Ty>, const void*, void*>;
+    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+
+    if constexpr (_STD is_pointer_v<_Ty> || _STD is_null_pointer_v<_Ty>) {
+        return __std_min_element(_First, _Last);
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_min_element_1(_First, _Last, _Signed)));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_min_element_2(_First, _Last, _Signed)));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_min_element_4(_First, _Last, _Signed)));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_min_element_8(_First, _Last, _Signed)));
+    } else {
+        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+    }
+}
+
+template <class _Ty>
+_Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
+    using cv_pv            = _STD conditional_t<_STD is_const_v<_Ty>, const void*, void*>;
+    constexpr bool _Signed = _STD is_signed_v<_Ty>;
+
+    if constexpr (_STD is_pointer_v<_Ty> || _STD is_null_pointer_v<_Ty>) {
+        return __std_max_element(_First, _Last);
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_max_element_1(_First, _Last, _Signed)));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_max_element_2(_First, _Last, _Signed)));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_max_element_4(_First, _Last, _Signed)));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return static_cast<_Ty*>(const_cast<cv_pv>(__std_max_element_8(_First, _Last, _Signed)));
+    } else {
+        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+    }
+}
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
@@ -9229,7 +9290,28 @@ namespace ranges {
 #endif // _HAS_CXX17
 
 template <class _FwdIt, class _Pr>
+_INLINE_VAR constexpr bool _Is_min_max_optimization_safe =
+    _Iterator_is_contiguous<_FwdIt>&&
+        conjunction_v<disjunction<is_integral<_Iter_value_t<_FwdIt>>, is_pointer<_Iter_value_t<_FwdIt>>>,
+            disjunction<is_same<_Pr, less<>>, is_same<_Pr, _RANGES less>,
+                is_same<_Pr, less<_Iter_value_t<_FwdIt>>>>> && !is_volatile_v<remove_reference_t<_Iter_ref_t<_FwdIt>>>;
+
+template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
+#if _USE_STD_VECTOR_ALGORITHMS
+    if (!is_constant_evaluated()) {
+        if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
+            const auto _First_ptr = _To_address(_First);
+            auto _Result          = __std_max_element(_First_ptr, _To_address(_Last));
+            if constexpr (is_pointer_v<_FwdIt>) {
+                return _Result;
+            } else {
+                return _First + (_Result - _First_ptr);
+            }
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
     _FwdIt _Found = _First;
     if (_First != _Last) {
         while (++_First != _Last) {
@@ -9321,6 +9403,20 @@ namespace ranges {
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
+#if _USE_STD_VECTOR_ALGORITHMS
+    if (!is_constant_evaluated()) {
+        if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
+            const auto _First_ptr = _To_address(_First);
+            auto _Result          = __std_min_element(_First_ptr, _To_address(_Last));
+            if constexpr (is_pointer_v<_FwdIt>) {
+                return _Result;
+            } else {
+                return _First + (_Result - _First_ptr);
+            }
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
     _FwdIt _Found = _First;
     if (_First != _Last) {
         while (++_First != _Last) {

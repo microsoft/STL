@@ -20,8 +20,21 @@
 #include <intrin0.h>
 #endif // defined(_M_ARM64EC)
 #include <isa_availability.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 extern "C" long __isa_enabled;
+
+#pragma optimize("t", on) // Override /Os with /Ot for this TU
+
+static bool _Use_sse42() {
+    return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
+}
+
+struct _Min_max_t {
+    const void* _Min;
+    const void* _Max;
+};
 
 template <class _BidIt>
 static void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
@@ -451,6 +464,526 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
         static_cast<unsigned long long*>(_Dest));
 }
 
+} // extern "C"
+
+template <class _Ty>
+const void* _Min_tail(const void* _First, const void* _Last, const void* _Res, _Ty _Cur) noexcept {
+    for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+        if (*_Ptr < _Cur) {
+            _Res = _Ptr;
+            _Cur = *_Ptr;
+        }
+    }
+    return _Res;
+}
+
+template <class _Ty>
+const void* _Max_tail(const void* _First, const void* _Last, const void* _Res, _Ty _Cur) noexcept {
+    for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+        if (_Cur < *_Ptr) {
+            _Res = _Ptr;
+            _Cur = *_Ptr;
+        }
+    }
+    return _Res;
+}
+
+template <class _Ty>
+_Min_max_t _Both_tail(const void* _First, const void* _Last, _Min_max_t& _Res, _Ty _Cur_min, _Ty _Cur_max) noexcept {
+    for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
+        if (*_Ptr < _Cur_min) {
+            _Res._Min = _Ptr;
+            _Cur_min  = *_Ptr;
+        }
+        if (_Cur_min < *_Ptr) {
+            _Res._Max = _Ptr;
+            _Cur_max  = *_Ptr;
+        }
+    }
+    return _Res;
+}
+
+enum class _Min_max_mode {
+    _Min_only,
+    _Max_only,
+    _Both,
+};
+
+template <_Min_max_mode _Mode, class _STy, class _UTy>
+auto _Minmax_tail(
+    const void* _First, const void* _Last, _Min_max_t& _Res, bool _Sign, _UTy _Cur_min, _UTy _Cur_max) noexcept {
+    constexpr _UTy _Cor = (_UTy{1} << (sizeof(_UTy) * CHAR_BIT - 1));
+
+    if constexpr (_Mode == _Min_max_mode::_Min_only) {
+        if (_Sign) {
+            return _Min_tail(_First, _Last, _Res._Min, static_cast<_STy>(_Cur_min));
+        } else {
+            return _Min_tail(_First, _Last, _Res._Min, static_cast<_UTy>(_Cur_min + _Cor));
+        }
+    } else if constexpr (_Mode == _Min_max_mode::_Max_only) {
+        if (_Sign) {
+            return _Max_tail(_First, _Last, _Res._Max, static_cast<_STy>(_Cur_max));
+        } else {
+            return _Max_tail(_First, _Last, _Res._Max, static_cast<_UTy>(_Cur_max + _Cor));
+        }
+    } else {
+        if (_Sign) {
+            return _Both_tail(_First, _Last, _Res, static_cast<_STy>(_Cur_min), static_cast<_STy>(_Cur_max));
+        } else {
+            return _Both_tail(
+                _First, _Last, _Res, static_cast<_UTy>(_Cur_min + _Cor), static_cast<_UTy>(_Cur_max + _Cor));
+        }
+    }
+}
+
+struct _Minmax_traits_1 {
+    using _Signed_t   = int8_t;
+    using _Unsigned_t = uint8_t;
+
+    static constexpr bool _Has_portion_max = true;
+    static constexpr size_t _Portion_max   = 256;
+
+    static constexpr uint8_t _Init_min_val = 0x7F;
+    static constexpr uint8_t _Init_max_val = 0x80;
+
+    static __m128i _Sign_cor(__m128i _Val, bool _Sign) {
+        alignas(16) static constexpr uint8_t _Sign_cors[2][16] = {
+            {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}, {}};
+        return _mm_sub_epi8(_Val, _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
+    }
+
+    static __m128i _Inc() {
+        return _mm_set1_epi8(1);
+    }
+
+    static __m128i _H_min(__m128i _Cur) {
+        const __m128i _Shuf_bytes = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
+        const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
+
+        __m128i _H_min = _Cur;
+        _H_min         = _mm_min_epi8(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
+        _H_min         = _mm_min_epi8(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
+        _H_min         = _mm_min_epi8(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_words));
+        _H_min         = _mm_min_epi8(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_bytes));
+        return _H_min;
+    }
+
+    static __m128i _H_max(__m128i _Cur) {
+        const __m128i _Shuf_bytes = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
+        const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
+
+        __m128i _H_max = _Cur;
+        _H_max         = _mm_max_epi8(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(1, 0, 3, 2)));
+        _H_max         = _mm_max_epi8(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(2, 3, 0, 1)));
+        _H_max         = _mm_max_epi8(_H_max, _mm_shuffle_epi8(_H_max, _Shuf_words));
+        _H_max         = _mm_max_epi8(_H_max, _mm_shuffle_epi8(_H_max, _Shuf_bytes));
+        return _H_max;
+    }
+
+    static int8_t _Get_any(__m128i _Cur) {
+        return static_cast<uint8_t>(_mm_cvtsi128_si32(_Cur));
+    }
+
+    static uint8_t _Get_v_pos(__m128i _Idx, unsigned long _H_pos) {
+        return static_cast<uint8_t>(_mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_H_pos))));
+    }
+
+    static __m128i _Cmp_eq(__m128i _First, __m128i _Second) {
+        return _mm_cmpeq_epi8(_First, _Second);
+    }
+
+    static __m128i _Cmp_gt(__m128i _First, __m128i _Second) {
+        return _mm_cmpgt_epi8(_First, _Second);
+    }
+
+    static __m128i _Cmp_lt(__m128i _First, __m128i _Second) {
+        return _mm_cmplt_epi8(_First, _Second);
+    }
+
+    static __m128i _Min(__m128i _First, __m128i _Second, __m128i) {
+        return _mm_min_epi8(_First, _Second);
+    }
+
+    static __m128i _Max(__m128i _First, __m128i _Second, __m128i) {
+        return _mm_max_epi8(_First, _Second);
+    }
+};
+
+struct _Minmax_traits_2 {
+    using _Signed_t   = int16_t;
+    using _Unsigned_t = uint16_t;
+
+    static constexpr bool _Has_portion_max = true;
+    static constexpr size_t _Portion_max   = 65536;
+
+    static constexpr uint16_t _Init_min_val = 0x7FFF;
+    static constexpr uint16_t _Init_max_val = 0x8000;
+
+    static __m128i _Sign_cor(__m128i _Val, bool _Sign) {
+        alignas(16) static constexpr uint16_t _Sign_cors[2][8] = {
+            0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, {}};
+        return _mm_sub_epi16(_Val, _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
+    }
+
+    static __m128i _Inc() {
+        return _mm_set1_epi16(1);
+    }
+
+    static __m128i _H_min(__m128i _Cur) {
+        const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
+
+        __m128i _H_min = _Cur;
+        _H_min         = _mm_min_epi16(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
+        _H_min         = _mm_min_epi16(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
+        _H_min         = _mm_min_epi16(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_words));
+        return _H_min;
+    }
+
+    static __m128i _H_max(__m128i _Cur) {
+        const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
+
+        __m128i _H_max = _Cur;
+        _H_max         = _mm_max_epi16(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(1, 0, 3, 2)));
+        _H_max         = _mm_max_epi16(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(2, 3, 0, 1)));
+        _H_max         = _mm_max_epi16(_H_max, _mm_shuffle_epi8(_H_max, _Shuf_words));
+        return _H_max;
+    }
+
+    static int16_t _Get_any(__m128i _Cur) {
+        return static_cast<uint16_t>(_mm_cvtsi128_si32(_Cur));
+    }
+
+    static uint16_t _Get_v_pos(__m128i _Idx, unsigned long _H_pos) {
+        uint16_t _Array[8];
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
+        return _Array[_H_pos >> 1];
+    }
+
+    static __m128i _Cmp_eq(__m128i _First, __m128i _Second) {
+        return _mm_cmpeq_epi16(_First, _Second);
+    }
+
+    static __m128i _Cmp_gt(__m128i _First, __m128i _Second) {
+        return _mm_cmpgt_epi16(_First, _Second);
+    }
+
+    static __m128i _Cmp_lt(__m128i _First, __m128i _Second) {
+        return _mm_cmplt_epi16(_First, _Second);
+    }
+
+    static __m128i _Min(__m128i _First, __m128i _Second, __m128i) {
+        return _mm_min_epi16(_First, _Second);
+    }
+
+    static __m128i _Max(__m128i _First, __m128i _Second, __m128i) {
+        return _mm_max_epi16(_First, _Second);
+    }
+};
+
+
+struct _Minmax_traits_4 {
+    using _Signed_t   = int32_t;
+    using _Unsigned_t = uint32_t;
+
+#ifdef _M_IX86
+    static constexpr bool _Has_portion_max = false;
+#else // ^^^ 32-bit ^^^ / vvv 64-bit vvv
+    static constexpr bool _Has_portion_max = true;
+    static constexpr size_t _Portion_max   = 0x1'0000'0000ULL;
+#endif // ^^^ 64-bit ^^^
+
+    static constexpr uint32_t _Init_min_val = 0x7FFF'FFFFUL;
+    static constexpr uint32_t _Init_max_val = 0x8000'0000UL;
+
+    static __m128i _Sign_cor(__m128i _Val, bool _Sign) {
+        alignas(16) static constexpr uint32_t _Sign_cors[2][4] = {
+            0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, {}};
+        return _mm_sub_epi32(_Val, _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
+    }
+
+    static __m128i _Inc() {
+        return _mm_set1_epi32(1);
+    }
+
+    static __m128i _H_min(__m128i _Cur) {
+        __m128i _H_min = _Cur;
+        _H_min         = _mm_min_epi32(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
+        _H_min         = _mm_min_epi32(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
+        return _H_min;
+    }
+
+    static __m128i _H_max(__m128i _Cur) {
+        __m128i _H_max = _Cur;
+        _H_max         = _mm_max_epi32(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(1, 0, 3, 2)));
+        _H_max         = _mm_max_epi32(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(2, 3, 0, 1)));
+        return _H_max;
+    }
+
+    static int32_t _Get_any(__m128i _Cur) {
+        return static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur));
+    }
+
+    static uint32_t _Get_v_pos(__m128i _Idx, unsigned long _H_pos) {
+        uint32_t _Array[4];
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
+        return _Array[_H_pos >> 2];
+    }
+
+    static __m128i _Cmp_eq(__m128i _First, __m128i _Second) {
+        return _mm_cmpeq_epi32(_First, _Second);
+    }
+
+    static __m128i _Cmp_gt(__m128i _First, __m128i _Second) {
+        return _mm_cmpgt_epi32(_First, _Second);
+    }
+
+    static __m128i _Cmp_lt(__m128i _First, __m128i _Second) {
+        return _mm_cmplt_epi32(_First, _Second);
+    }
+
+    static __m128i _Min(__m128i _First, __m128i _Second, __m128i) {
+        return _mm_min_epi32(_First, _Second);
+    }
+
+    static __m128i _Max(__m128i _First, __m128i _Second, __m128i) {
+        return _mm_max_epi32(_First, _Second);
+    }
+};
+
+struct _Minmax_traits_8 {
+    using _Signed_t   = int64_t;
+    using _Unsigned_t = uint64_t;
+
+    static constexpr bool _Has_portion_max = false;
+
+    static constexpr uint64_t _Init_min_val = 0x7FFF'FFFF'FFFF'FFFFULL;
+    static constexpr uint64_t _Init_max_val = 0x8000'0000'0000'0000ULL;
+
+    static __m128i _Sign_cor(__m128i _Val, bool _Sign) {
+        alignas(16) static constexpr uint64_t _Sign_cors[2][2] = {
+            0x8000'0000'0000'0000ULL, 0x8000'0000'0000'0000ULL, {}};
+        return _mm_sub_epi64(_Val, _mm_loadu_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
+    }
+
+    static __m128i _Inc() {
+        return _mm_set1_epi64x(1);
+    }
+
+    static __m128i _H_min(__m128i _Cur) {
+        int64_t _H_min_a = _mm_cvtsi128_si64(_Cur);
+        int64_t _H_min_b = _mm_cvtsi128_si64(_mm_bsrli_si128(_Cur, 8));
+        if (_H_min_b < _H_min_a) {
+            _H_min_a = _H_min_b;
+        }
+        return _mm_set1_epi64x(_H_min_a);
+    }
+
+    static __m128i _H_max(__m128i _Cur) {
+        int64_t _H_max_a = _mm_cvtsi128_si64(_Cur);
+        int64_t _H_max_b = _mm_cvtsi128_si64(_mm_bsrli_si128(_Cur, 8));
+        if (_H_max_b > _H_max_a) {
+            _H_max_a = _H_max_b;
+        }
+        return _mm_set1_epi64x(_H_max_a);
+    }
+
+    static int64_t _Get_any(__m128i _Cur) {
+        return static_cast<uint64_t>(_mm_cvtsi128_si64(_Cur));
+    }
+
+    static uint64_t _Get_v_pos(__m128i _Idx, unsigned long _H_pos) {
+        uint64_t _Array[2];
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
+        return _Array[_H_pos >> 3];
+    }
+
+    static __m128i _Cmp_eq(__m128i _First, __m128i _Second) {
+        return _mm_cmpeq_epi64(_First, _Second);
+    }
+
+    static __m128i _Cmp_gt(__m128i _First, __m128i _Second) {
+        return _mm_cmpgt_epi64(_First, _Second);
+    }
+
+    static __m128i _Cmp_lt(__m128i _First, __m128i _Second) {
+        __m128i _Gt = _mm_cmpgt_epi64(_Second, _First); // less or equal
+        __m128i _Eq = _mm_cmpeq_epi64(_First, _Second);
+        return _mm_andnot_si128(_Eq, _Gt);
+    }
+
+    static __m128i _Min(__m128i _First, __m128i _Second, __m128i _Mask) {
+        return _mm_blendv_epi8(_First, _Second, _Mask);
+    }
+
+    static __m128i _Max(__m128i _First, __m128i _Second, __m128i _Mask) {
+        return _mm_blendv_epi8(_First, _Second, _Mask);
+    }
+};
+
+template <_Min_max_mode _Mode, class _Traits>
+auto _Minmax_element(const void* _First, const void* _Last, bool _Sign) noexcept {
+    _Min_max_t _Res                          = {_First, _First};
+    auto _Base                               = static_cast<const _Traits::_Unsigned_t*>(_First);
+    typename _Traits::_Signed_t _Cur_min_val = _Traits::_Init_min_val;
+    typename _Traits::_Signed_t _Cur_max_val = _Traits::_Init_max_val;
+
+    if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
+        const void* _Stop_at = _First;
+
+        size_t _Sse_size     = _Byte_length(_First, _Last) & ~size_t{0xF};
+        size_t _Portion_size = _Sse_size;
+
+        if constexpr (_Traits::_Has_portion_max) {
+            constexpr size_t _Max_portion_size = _Traits::_Portion_max * 16;
+            if (_Portion_size > _Max_portion_size) {
+                _Portion_size = _Max_portion_size;
+            }
+        }
+
+        _Sse_size -= _Portion_size;
+
+        _Advance_bytes(_Stop_at, _Portion_size);
+
+        const __m128i _Inc    = _Traits::_Inc();
+        __m128i _Cur_vals     = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
+        __m128i _Cur_vals_min = _Cur_vals;
+        __m128i _Cur_idx_min  = _mm_setzero_si128();
+        __m128i _Cur_vals_max = _Cur_vals;
+        __m128i _Cur_idx_max  = _mm_setzero_si128();
+        __m128i _Cur_idx      = _mm_setzero_si128();
+
+        for (;;) {
+            _Advance_bytes(_First, 16);
+            _Cur_idx = _mm_add_epi64(_Cur_idx, _Inc);
+
+            if (_First == _Stop_at) {
+
+                if constexpr (_Mode != _Min_max_mode::_Max_only) {
+                    __m128i _H_min                         = _Traits::_H_min(_Cur_vals_min);
+                    typename _Traits::_Signed_t _H_min_val = _Traits::_Get_any(_H_min);
+                    if (_H_min_val < _Cur_min_val) {
+                        _Cur_min_val = _H_min_val;
+                        unsigned long _H_pos;
+                        _BitScanForward(&_H_pos, _mm_movemask_epi8(_Traits::_Cmp_eq(_H_min, _Cur_vals_min)));
+                        typename _Traits::_Unsigned_t _V_pos = _Traits::_Get_v_pos(_Cur_idx_min, _H_pos);
+                        _Res._Min                            = _Base + (_V_pos * 16 + _H_pos) / sizeof(_Cur_min_val);
+                    }
+                }
+
+                if constexpr (_Mode != _Min_max_mode::_Min_only) {
+                    __m128i _H_max                         = _Traits::_H_max(_Cur_vals_min);
+                    typename _Traits::_Signed_t _H_max_val = _Traits::_Get_any(_H_max);
+                    if (_H_max_val < _Cur_max_val) {
+                        _Cur_max_val = _H_max_val;
+                        unsigned long _H_pos;
+                        _BitScanForward(&_H_pos, _mm_movemask_epi8(_Traits::_Cmp_eq(_H_max, _Cur_vals_max)));
+                        typename _Traits::_Unsigned_t _V_pos = _Traits::_Get_v_pos(_Cur_idx_max, _H_pos);
+                        _Res._Max                            = _Base + (_V_pos * 16 + _H_pos) / sizeof(_Cur_min_val);
+                    }
+                }
+
+                if constexpr (_Traits::_Has_portion_max) {
+                    size_t _Portion_size = _Sse_size;
+                    if (_Portion_size == 0) {
+                        break;
+                    }
+
+                    constexpr size_t _Max_portion_size = _Traits::_Portion_max * 16;
+                    if (_Portion_size > _Max_portion_size) {
+                        _Portion_size = _Max_portion_size;
+                    }
+
+                    _Advance_bytes(_Stop_at, _Portion_size);
+                    _Sse_size -= _Portion_size;
+
+                    _Base = static_cast<const _Traits::_Unsigned_t*>(_First);
+
+                    _Cur_vals = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
+
+                    if constexpr (_Mode != _Min_max_mode::_Max_only) {
+                        _Cur_vals_min = _Cur_vals;
+                        _Cur_idx_min  = _mm_setzero_si128();
+                    }
+                    if constexpr (_Mode != _Min_max_mode::_Min_only) {
+                        _Cur_vals_max = _Cur_vals;
+                        _Cur_idx_max  = _mm_setzero_si128();
+                    }
+                    continue;
+                } else {
+                    break;
+                }
+            }
+
+            __m128i _Cur_vals = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
+
+            if constexpr (_Mode != _Min_max_mode::_Max_only) {
+                const __m128i _Is_less = _Traits::_Cmp_lt(_Cur_vals, _Cur_vals_min);
+                _Cur_idx_min           = _mm_blendv_epi8(_Cur_idx_min, _Cur_idx, _Is_less);
+                _Cur_vals_min          = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less);
+            }
+
+            if constexpr (_Mode != _Min_max_mode::_Min_only) {
+                const __m128i _Is_greater = _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max);
+                _Cur_idx_max              = _mm_blendv_epi8(_Cur_idx_max, _Cur_idx, _Is_greater);
+                _Cur_vals_max             = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater);
+            }
+        };
+    }
+
+    return _Minmax_tail<_Mode, _Traits::_Signed_t, _Traits::_Unsigned_t>(
+        _First, _Last, _Res, _Sign, _Cur_min_val, _Cur_max_val);
+}
+
+
+extern "C" {
+
+const void* __stdcall __std_min_element_1(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Min_only, _Minmax_traits_1>(_First, _Last, _Signed);
+}
+
+const void* __stdcall __std_min_element_2(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Min_only, _Minmax_traits_2>(_First, _Last, _Signed);
+}
+
+const void* __stdcall __std_min_element_4(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Min_only, _Minmax_traits_4>(_First, _Last, _Signed);
+}
+
+const void* __stdcall __std_min_element_8(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Min_only, _Minmax_traits_8>(_First, _Last, _Signed);
+}
+
+const void* __stdcall __std_max_element_1(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Max_only, _Minmax_traits_1>(_First, _Last, _Signed);
+}
+
+const void* __stdcall __std_max_element_2(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Max_only, _Minmax_traits_2>(_First, _Last, _Signed);
+}
+
+const void* __stdcall __std_max_element_4(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Max_only, _Minmax_traits_4>(_First, _Last, _Signed);
+}
+
+const void* __stdcall __std_max_element_8(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Max_only, _Minmax_traits_8>(_First, _Last, _Signed);
+}
+
+_Min_max_t __stdcall __std_minmax_element_1(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Both, _Minmax_traits_1>(_First, _Last, _Signed);
+}
+
+_Min_max_t __stdcall __std_minmax_element_2(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Both, _Minmax_traits_2>(_First, _Last, _Signed);
+}
+
+_Min_max_t __stdcall __std_minmax_element_4(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Both, _Minmax_traits_4>(_First, _Last, _Signed);
+}
+
+_Min_max_t __stdcall __std_minmax_element_8(const void* _First, const void* _Last, bool _Signed) noexcept {
+    return _Minmax_element<_Min_max_mode::_Both, _Minmax_traits_8>(_First, _Last, _Signed);
+}
 
 } // extern "C"
 
