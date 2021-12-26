@@ -1059,11 +1059,11 @@ auto __stdcall _Minmax_element(const void* _First, const void* const _Last, cons
                 _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater);
             } else if constexpr (_Mode == _Min_max_mode::_Both) {
                 // *Inverse* mask for the values greater or equal to the current maximum
-                const __m128i _Is_less = _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals);
+                const __m128i _Is_greater_or_equal_inv = _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals);
                 // Remember their vertical indices
-                _Cur_idx_max = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max, _Is_less);
+                _Cur_idx_max = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max, _Is_greater_or_equal_inv);
                 // Update the current maximum
-                _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less);
+                _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_greater_or_equal_inv);
             }
         }
     }
