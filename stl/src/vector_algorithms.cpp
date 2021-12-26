@@ -876,7 +876,7 @@ struct _Minmax_traits_8 {
 };
 
 template <_Min_max_mode _Mode, class _Traits>
-auto _Minmax_element(const void* _First, const void* const _Last, const bool _Sign) noexcept {
+auto __stdcall _Minmax_element(const void* _First, const void* const _Last, const bool _Sign) noexcept {
     _Min_max_t _Res   = {_First, _First};
     auto _Base        = static_cast<const _Traits::_Unsigned_t*>(_First);
     auto _Cur_min_val = _Traits::_Init_min_val;
