@@ -871,9 +871,9 @@ auto _Minmax_element(const void* _First, const void* _Last, bool _Sign) noexcept
                 }
 
                 if constexpr (_Mode != _Min_max_mode::_Min_only) {
-                    __m128i _H_max                         = _Traits::_H_max(_Cur_vals_min);
+                    __m128i _H_max                         = _Traits::_H_max(_Cur_vals_max);
                     typename _Traits::_Signed_t _H_max_val = _Traits::_Get_any(_H_max);
-                    if (_H_max_val < _Cur_max_val) {
+                    if (_Cur_max_val < _H_max_val) {
                         _Cur_max_val = _H_max_val;
                         unsigned long _H_pos;
                         _BitScanForward(&_H_pos, _mm_movemask_epi8(_Traits::_Cmp_eq(_H_max, _Cur_vals_max)));
