@@ -21,7 +21,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _EXTERN_C
 // The "noalias" attribute tells the compiler optimizer that pointers going into these hand-vectorized algorithms
 // won't be stored beyond the lifetime of the function, and that the function will only reference arrays denoted by
-// those pointers. The optimizer also assumes in that case that a pointer parameter is not returned to the caller via
+// those pointers. The optimizer also assurames in that case that a pointer parameter is not returned to the caller via
 // the return value, so functions using "noalias" must usually return void. This attribute is valuable because these
 // functions are in native code objects that the compiler cannot analyze. In the absence of the noalias attribute, the
 // compiler has to assume that the denoted arrays are "globally address taken", and that any later calls to
@@ -9293,13 +9293,19 @@ template <class _FwdIt, class _Pr>
 _INLINE_VAR constexpr bool _Is_min_max_optimization_safe =
     _Iterator_is_contiguous<_FwdIt>&&
         conjunction_v<disjunction<is_integral<_Iter_value_t<_FwdIt>>, is_pointer<_Iter_value_t<_FwdIt>>>,
-            disjunction<is_same<_Pr, less<>>, is_same<_Pr, _RANGES less>,
+            disjunction<is_same<_Pr, less<>>,
+#ifdef __cpp_lib_concepts
+                is_same<_Pr, _RANGES less>,
+#endif // __cpp_lib_concepts
                 is_same<_Pr, less<_Iter_value_t<_FwdIt>>>>> && !is_volatile_v<remove_reference_t<_Iter_ref_t<_FwdIt>>>;
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
 #if _USE_STD_VECTOR_ALGORITHMS
-    if (!is_constant_evaluated()) {
+#if _HAS_CXX20
+    if (!is_constant_evaluated())
+#endif // _HAS_CXX20
+    {
         if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
             const auto _First_ptr = _To_address(_First);
             auto _Result          = __std_max_element(_First_ptr, _To_address(_Last));
@@ -9404,7 +9410,10 @@ namespace ranges {
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
 #if _USE_STD_VECTOR_ALGORITHMS
-    if (!is_constant_evaluated()) {
+#if _HAS_CXX20
+    if (!is_constant_evaluated())
+#endif // _HAS_CXX20
+    {
         if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
             const auto _First_ptr = _To_address(_First);
             auto _Result          = __std_min_element(_First_ptr, _To_address(_Last));
