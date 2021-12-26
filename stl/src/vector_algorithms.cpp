@@ -497,9 +497,7 @@ _Min_max_t _Both_tail(
         if (*_Ptr < _Cur_min) {
             _Res._Min = _Ptr;
             _Cur_min  = *_Ptr;
-        }
-
-        if (_Cur_min < *_Ptr) {
+        } else if (_Cur_max <= *_Ptr) {
             _Res._Max = _Ptr;
             _Cur_max  = *_Ptr;
         }
@@ -561,41 +559,33 @@ struct _Minmax_traits_1 {
         return _mm_set1_epi8(1);
     }
 
-    static __m128i _H_min(const __m128i _Cur) noexcept {
+    template <class _Fn>
+    static __m128i _H_func(const __m128i _Cur, _Fn _Funct) noexcept {
         const __m128i _Shuf_bytes = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
         const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
 
         __m128i _H_min = _Cur;
-        _H_min         = _mm_min_epi8(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
-        _H_min         = _mm_min_epi8(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
-        _H_min         = _mm_min_epi8(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_words));
-        _H_min         = _mm_min_epi8(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_bytes));
+        _H_min         = _Funct(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
+        _H_min         = _Funct(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
+        _H_min         = _Funct(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_words));
+        _H_min         = _Funct(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_bytes));
         return _H_min;
+    }
+
+    static __m128i _H_min(const __m128i _Cur) noexcept {
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_min_epi8(_First, _Second); });
     }
 
     static __m128i _H_max(const __m128i _Cur) noexcept {
-        const __m128i _Shuf_bytes = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
-        const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
-
-        __m128i _H_max = _Cur;
-        _H_max         = _mm_max_epi8(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(1, 0, 3, 2)));
-        _H_max         = _mm_max_epi8(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(2, 3, 0, 1)));
-        _H_max         = _mm_max_epi8(_H_max, _mm_shuffle_epi8(_H_max, _Shuf_words));
-        _H_max         = _mm_max_epi8(_H_max, _mm_shuffle_epi8(_H_max, _Shuf_bytes));
-        return _H_max;
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_max_epi8(_First, _Second); });
     }
 
-
     static __m128i _H_min_u(const __m128i _Cur) noexcept {
-        const __m128i _Shuf_bytes = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
-        const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_min_epu8(_First, _Second); });
+    }
 
-        __m128i _H_min = _Cur;
-        _H_min         = _mm_min_epu8(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
-        _H_min         = _mm_min_epu8(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
-        _H_min         = _mm_min_epu8(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_words));
-        _H_min         = _mm_min_epu8(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_bytes));
-        return _H_min;
+    static __m128i _H_max_u(const __m128i _Cur) noexcept {
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_max_epu8(_First, _Second); });
     }
 
     static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -647,35 +637,31 @@ struct _Minmax_traits_2 {
         return _mm_set1_epi16(1);
     }
 
-    static __m128i _H_min(const __m128i _Cur) noexcept {
+    template <class _Fn>
+    static __m128i _H_func(const __m128i _Cur, _Fn _Funct) noexcept {
         const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
 
         __m128i _H_min = _Cur;
-        _H_min         = _mm_min_epi16(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
-        _H_min         = _mm_min_epi16(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
-        _H_min         = _mm_min_epi16(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_words));
+        _H_min         = _Funct(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
+        _H_min         = _Funct(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
+        _H_min         = _Funct(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_words));
         return _H_min;
+    }
+
+    static __m128i _H_min(const __m128i _Cur) noexcept {
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_min_epi16(_First, _Second); });
     }
 
     static __m128i _H_max(const __m128i _Cur) noexcept {
-        const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
-
-        __m128i _H_max = _Cur;
-        _H_max         = _mm_max_epi16(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(1, 0, 3, 2)));
-        _H_max         = _mm_max_epi16(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(2, 3, 0, 1)));
-        _H_max         = _mm_max_epi16(_H_max, _mm_shuffle_epi8(_H_max, _Shuf_words));
-        return _H_max;
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_max_epi16(_First, _Second); });
     }
 
     static __m128i _H_min_u(const __m128i _Cur) noexcept {
-        const __m128i _Shuf_bytes = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
-        const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_min_epu16(_First, _Second); });
+    }
 
-        __m128i _H_min = _Cur;
-        _H_min         = _mm_min_epu16(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
-        _H_min         = _mm_min_epu16(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
-        _H_min         = _mm_min_epu16(_H_min, _mm_shuffle_epi8(_H_min, _Shuf_words));
-        return _H_min;
+    static __m128i _H_max_u(const __m128i _Cur) noexcept {
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_max_epu16(_First, _Second); });
     }
 
     static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -734,25 +720,30 @@ struct _Minmax_traits_4 {
         return _mm_set1_epi32(1);
     }
 
-    static __m128i _H_min(const __m128i _Cur) noexcept {
+    template <class _Fn>
+    static __m128i _H_func(const __m128i _Cur, _Fn _Funct) noexcept {
+        const __m128i _Shuf_words = _mm_set_epi8(13, 12, 15, 14, 9, 8, 11, 10, 5, 4, 7, 6, 1, 0, 3, 2);
+
         __m128i _H_min = _Cur;
-        _H_min         = _mm_min_epi32(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
-        _H_min         = _mm_min_epi32(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
+        _H_min         = _Funct(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
+        _H_min         = _Funct(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
         return _H_min;
+    }
+
+    static __m128i _H_min(const __m128i _Cur) noexcept {
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_min_epi32(_First, _Second); });
     }
 
     static __m128i _H_max(const __m128i _Cur) noexcept {
-        __m128i _H_max = _Cur;
-        _H_max         = _mm_max_epi32(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(1, 0, 3, 2)));
-        _H_max         = _mm_max_epi32(_H_max, _mm_shuffle_epi32(_H_max, _MM_SHUFFLE(2, 3, 0, 1)));
-        return _H_max;
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_max_epi32(_First, _Second); });
     }
 
     static __m128i _H_min_u(const __m128i _Cur) noexcept {
-        __m128i _H_min = _Cur;
-        _H_min         = _mm_min_epu32(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(1, 0, 3, 2)));
-        _H_min         = _mm_min_epu32(_H_min, _mm_shuffle_epi32(_H_min, _MM_SHUFFLE(2, 3, 0, 1)));
-        return _H_min;
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_min_epu32(_First, _Second); });
+    }
+
+    static __m128i _H_max_u(const __m128i _Cur) noexcept {
+        return _H_func(_Cur, [](__m128i _First, __m128i _Second) { return _mm_max_epu32(_First, _Second); });
     }
 
     static _Signed_t _Get_any(const __m128i _Cur) noexcept {
@@ -830,6 +821,16 @@ struct _Minmax_traits_8 {
             _H_min_a = _H_min_b;
         }
         return _mm_set1_epi64x(_H_min_a);
+    }
+
+
+    static __m128i _H_max_u(const __m128i _Cur) noexcept {
+        _Unsigned_t _H_max_a = _Get_any(_Cur);
+        _Unsigned_t _H_max_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
+        if (_H_max_b > _H_max_a) {
+            _H_max_a = _H_max_b;
+        }
+        return _mm_set1_epi64x(_H_max_a);
     }
 
 
@@ -911,10 +912,12 @@ auto _Minmax_element(const void* _First, const void* const _Last, const bool _Si
                 if constexpr (_Mode != _Min_max_mode::_Max_only) {
                     const __m128i _H_min  = _Traits::_H_min(_Cur_vals_min);
                     const auto _H_min_val = _Traits::_Get_any(_H_min);
+
                     if (_H_min_val < _Cur_min_val) {
                         _Cur_min_val               = _H_min_val;
                         const __m128i _Eq_mask     = _Traits::_Cmp_eq(_H_min, _Cur_vals_min);
-                        const __m128i _Idx_min_val = _mm_blendv_epi8(_mm_set1_epi32(-1), _Cur_idx_min, _Eq_mask);
+                        const __m128i _Minus_one   = _mm_cmpeq_epi8(_mm_setzero_si128(), _mm_setzero_si128());
+                        const __m128i _Idx_min_val = _mm_blendv_epi8(_Minus_one, _Cur_idx_min, _Eq_mask);
                         __m128i _Idx_min           = _Traits::_H_min_u(_Idx_min_val);
 
                         unsigned long _H_pos;
@@ -928,15 +931,32 @@ auto _Minmax_element(const void* _First, const void* const _Last, const bool _Si
                 if constexpr (_Mode != _Min_max_mode::_Min_only) {
                     const __m128i _H_max  = _Traits::_H_max(_Cur_vals_max);
                     const auto _H_max_val = _Traits::_Get_any(_H_max);
-                    if (_Cur_max_val < _H_max_val) {
-                        _Cur_max_val               = _H_max_val;
-                        const __m128i _Eq_mask     = _Traits::_Cmp_eq(_H_max, _Cur_vals_max);
-                        const __m128i _Idx_max_val = _mm_blendv_epi8(_mm_set1_epi32(-1), _Cur_idx_max, _Eq_mask);
-                        __m128i _Idx_max           = _Traits::_H_min_u(_Idx_max_val);
+
+                    if (_Mode == _Min_max_mode::_Both ? _Cur_max_val <= _H_max_val : _Cur_max_val < _H_max_val) {
+                        _Cur_max_val           = _H_max_val;
+                        const __m128i _Eq_mask = _Traits::_Cmp_eq(_H_max, _Cur_vals_max);
+
+
+                        int _Mask = _mm_movemask_epi8(_Eq_mask);
+
+                        if constexpr (_Mode == _Min_max_mode::_Both) {
+                            const __m128i _Idx_max_val = _mm_blendv_epi8(_mm_setzero_si128(), _Cur_idx_max, _Eq_mask);
+                            const __m128i _Idx_max     = _Traits::_H_max_u(_Idx_max_val);
+                            _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
+                        } else {
+                            const __m128i _Minus_one   = _mm_cmpeq_epi8(_mm_setzero_si128(), _mm_setzero_si128());
+                            const __m128i _Idx_max_val = _mm_blendv_epi8(_Minus_one, _Cur_idx_max, _Eq_mask);
+                            const __m128i _Idx_max     = _Traits::_H_min_u(_Idx_max_val);
+                            _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
+                        }
 
                         unsigned long _H_pos;
-                        _BitScanForward(&_H_pos,
-                            _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val)) & _mm_movemask_epi8(_Eq_mask));
+                        if constexpr (_Mode == _Min_max_mode::_Both) {
+                            _BitScanReverse(&_H_pos, _Mask);
+                        } else {
+                            _BitScanForward(&_H_pos, _Mask);
+                        }
+
                         const auto _V_pos = _Traits::_Get_v_pos(_Cur_idx_max, _H_pos);
                         _Res._Max         = _Base + (_V_pos * 16 + _H_pos) / sizeof(_Cur_min_val);
                     }
@@ -982,10 +1002,14 @@ auto _Minmax_element(const void* _First, const void* const _Last, const bool _Si
                 _Cur_vals_min          = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less);
             }
 
-            if constexpr (_Mode != _Min_max_mode::_Min_only) {
+            if constexpr (_Mode == _Min_max_mode::_Max_only) {
                 const __m128i _Is_greater = _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max);
                 _Cur_idx_max              = _mm_blendv_epi8(_Cur_idx_max, _Cur_idx, _Is_greater);
                 _Cur_vals_max             = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater);
+            } else if constexpr (_Mode == _Min_max_mode::_Both) {
+                const __m128i _Is_less = _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals);
+                _Cur_idx_max           = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max, _Is_less);
+                _Cur_vals_max          = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less);
             }
         }
     }
