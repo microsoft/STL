@@ -9301,12 +9301,9 @@ _INLINE_VAR constexpr bool _Is_min_max_optimization_safe_v =
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _USE_STD_VECTOR_ALGORITHMS && _HAS_CXX20
     if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD is_constant_evaluated()) {
             const auto _First_ptr = _To_address(_First);
             const auto _Result    = __std_max_element(_First_ptr, _To_address(_Last));
             if constexpr (is_pointer_v<_FwdIt>) {
@@ -9316,7 +9313,7 @@ constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // _USE_STD_VECTOR_ALGORITHMS && _HAS_CXX20
 
     _FwdIt _Found = _First;
     if (_First != _Last) {
@@ -9409,12 +9406,9 @@ namespace ranges {
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _USE_STD_VECTOR_ALGORITHMS && _HAS_CXX20
     if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
-#if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-        {
+        if (!_STD is_constant_evaluated()) {
             const auto _First_ptr = _To_address(_First);
             const auto _Result    = __std_min_element(_First_ptr, _To_address(_Last));
             if constexpr (is_pointer_v<_FwdIt>) {
@@ -9424,7 +9418,7 @@ constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // _USE_STD_VECTOR_ALGORITHMS && _HAS_CXX20
 
     _FwdIt _Found = _First;
     if (_First != _Last) {
