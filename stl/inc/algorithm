@@ -9290,7 +9290,7 @@ namespace ranges {
 #endif // _HAS_CXX17
 
 template <class _FwdIt, class _Pr>
-_INLINE_VAR constexpr bool _Is_min_max_optimization_safe =
+_INLINE_VAR constexpr bool _Is_min_max_optimization_safe_v =
     _Iterator_is_contiguous<_FwdIt>&&
         conjunction_v<disjunction<is_integral<_Iter_value_t<_FwdIt>>, is_pointer<_Iter_value_t<_FwdIt>>>,
             disjunction<is_same<_Pr, less<>>,
@@ -9302,13 +9302,13 @@ _INLINE_VAR constexpr bool _Is_min_max_optimization_safe =
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
 #if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
 #if _HAS_CXX20
-    if (!is_constant_evaluated())
+        if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
-    {
-        if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
+        {
             const auto _First_ptr = _To_address(_First);
-            auto _Result          = __std_max_element(_First_ptr, _To_address(_Last));
+            const auto _Result    = __std_max_element(_First_ptr, _To_address(_Last));
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
@@ -9410,13 +9410,13 @@ namespace ranges {
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
 #if _USE_STD_VECTOR_ALGORITHMS
+    if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
 #if _HAS_CXX20
-    if (!is_constant_evaluated())
+        if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
-    {
-        if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
+        {
             const auto _First_ptr = _To_address(_First);
-            auto _Result          = __std_min_element(_First_ptr, _To_address(_Last));
+            const auto _Result    = __std_min_element(_First_ptr, _To_address(_Last));
             if constexpr (is_pointer_v<_FwdIt>) {
                 return _Result;
             } else {
