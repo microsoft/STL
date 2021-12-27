@@ -9538,6 +9538,20 @@ namespace ranges {
 
 template <class _FwdIt, class _Pr>
 constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
+#if _USE_STD_VECTOR_ALGORITHMS && _HAS_CXX20
+    if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
+        if (!_STD is_constant_evaluated()) {
+            const auto _First_ptr = _To_address(_First);
+            const auto _Result    = __std_minmax_element(_First_ptr, _To_address(_Last));
+            if constexpr (is_pointer_v<_FwdIt>) {
+                return {_Result.first, _Result.second};
+            } else {
+                return {_First + (_Result.first - _First_ptr), _First + (_Result.second - _First_ptr)};
+            }
+        }
+    }
+#endif // _USE_STD_VECTOR_ALGORITHMS && _HAS_CXX20
+
     // find smallest and largest elements
     pair<_FwdIt, _FwdIt> _Found(_First, _First);
 
