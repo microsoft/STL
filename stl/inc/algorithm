@@ -54,7 +54,6 @@ _Min_max_t __stdcall __std_minmax_element_1(const void* _First, const void* _Las
 _Min_max_t __stdcall __std_minmax_element_2(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_t __stdcall __std_minmax_element_4(const void* _First, const void* _Last, bool _Signed) noexcept;
 _Min_max_t __stdcall __std_minmax_element_8(const void* _First, const void* _Last, bool _Signed) noexcept;
-
 _END_EXTERN_C
 
 template <class _Ty>
