@@ -1124,7 +1124,7 @@ public:
     }
 
     // [counted.iter.access]
-    _NODISCARD constexpr const _Iter& base() const& noexcept /* strengthened */ {
+    _NODISCARD constexpr const _Iter& base() const& noexcept {
         return _Current;
     }
 

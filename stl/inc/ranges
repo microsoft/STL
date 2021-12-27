@@ -1656,7 +1656,7 @@ namespace ranges {
 #endif // _ITERATOR_DEBUG_LEVEL != 0
             }
 
-            _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept {
                 return _Current;
             }
             _NODISCARD constexpr iterator_t<_Vw> base() && noexcept(
@@ -1948,7 +1948,7 @@ namespace ranges {
                 : _Current{_STD move(_It._Current)}, _Parent{_It._Parent} {}
             // clang-format on
 
-            _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept {
                 return _Current;
             }
             _NODISCARD constexpr iterator_t<_Base> base() && noexcept(
@@ -3675,7 +3675,7 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Outer_iter<_Const>>) // strengthened
                 : _It{_STD move(_It_)} {}
 
-            _NODISCARD constexpr const iterator_t<_BaseTy>& base() const& noexcept /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_BaseTy>& base() const& noexcept {
                 return _It._Get_current();
             }
 
@@ -4407,7 +4407,7 @@ namespace ranges {
                 : _Current{_STD move(_It._Current)} {}
             // clang-format on
 
-            _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept {
                 return _Current;
             }
 
