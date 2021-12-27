@@ -21,6 +21,97 @@ void disable_instructions(ISA_AVAILABILITY isa) {
 
 constexpr size_t dataCount = 1024;
 
+template <class FwdIt>
+FwdIt last_good_known_min_element(FwdIt first, FwdIt last) {
+    FwdIt result = first;
+
+    for (; first != last; ++first) {
+        if (*first < *result) {
+            result = first;
+        }
+    }
+
+    return result;
+}
+
+template <class FwdIt>
+FwdIt last_good_known_max_element(FwdIt first, FwdIt last) {
+    FwdIt result = first;
+
+    for (; first != last; ++first) {
+        if (*result < *first) {
+            result = first;
+        }
+    }
+
+    return result;
+}
+
+template <class FwdIt>
+std::pair<FwdIt, FwdIt> last_good_known_minmax_element(FwdIt first, FwdIt last) {
+    // find smallest and largest elements
+    pair<FwdIt, FwdIt> found(first, first);
+
+    if (first != last) {
+        while (++first != last) { // process one or two elements
+            FwdIt next = first;
+            if (++next == last) { // process last element
+                if (*first < *found.first) {
+                    found.first = first;
+                } else if (!(*first < *found.second)) {
+                    found.second = first;
+                }
+            } else { // process next two elements
+                if (*next < *first) { // test next for new smallest
+                    if (*next < *found.first) {
+                        found.first = next;
+                    }
+                    if (!(*first < *found.second)) {
+                        found.second = first;
+                    }
+                } else { // test first for new smallest
+                    if (*first < *found.first) {
+                        found.first = first;
+                    }
+                    if (!(*next < *found.second)) {
+                        found.second = next;
+                    }
+                }
+                first = next;
+            }
+        }
+    }
+
+    return found;
+}
+
+template <class T>
+void test_case_min_max_element(const vector<T>& input) {
+    auto expected_min    = last_good_known_min_element(input.begin(), input.end());
+    auto expected_max    = last_good_known_max_element(input.begin(), input.end());
+    auto expected_minmax = last_good_known_minmax_element(input.begin(), input.end());
+    auto actual_min      = min_element(input.begin(), input.end());
+    auto actual_max      = max_element(input.begin(), input.end());
+    auto actual_minmax   = minmax_element(input.begin(), input.end());
+    assert(expected_min == actual_min);
+    assert(expected_max == actual_max);
+    assert(expected_minmax == actual_minmax);
+}
+
+template <class T>
+void test_min_max_element(mt19937_64& gen) {
+    auto dis = conditional_t<is_floating_point_v<T>, uniform_real_distribution<T>,
+        conditional_t<(sizeof(T) > 1), uniform_int_distribution<T>, uniform_int_distribution<int>>>(1, 20);
+
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_min_max_element(input);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+        test_case_min_max_element(input);
+    }
+}
+
 template <class BidIt>
 inline void last_known_good_reverse(BidIt first, BidIt last) {
     for (; first != last && first != --last; ++first) {
@@ -107,6 +198,20 @@ void test_swap_ranges(mt19937_64& gen) {
 
 void test_vector_algorithms() {
     mt19937_64 gen(1729);
+
+    test_min_max_element<char>(gen);
+    test_min_max_element<signed char>(gen);
+    test_min_max_element<unsigned char>(gen);
+    test_min_max_element<short>(gen);
+    test_min_max_element<unsigned short>(gen);
+    test_min_max_element<int>(gen);
+    test_min_max_element<unsigned int>(gen);
+    test_min_max_element<long long>(gen);
+    test_min_max_element<unsigned long long>(gen);
+    test_min_max_element<float>(gen);
+    test_min_max_element<double>(gen);
+    test_min_max_element<long double>(gen);
+
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
     test_reverse<unsigned char>(gen);
