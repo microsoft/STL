@@ -21,7 +21,6 @@
 #endif // defined(_M_ARM64EC)
 #include <isa_availability.h>
 #include <stdint.h>
-#include <stdlib.h>
 
 extern "C" long __isa_enabled;
 
@@ -519,7 +518,7 @@ enum class _Min_max_mode {
 template <_Min_max_mode _Mode, class _STy, class _UTy>
 auto _Minmax_tail(
     const void* _First, const void* _Last, _Min_max_t& _Res, bool _Sign, _UTy _Cur_min, _UTy _Cur_max) noexcept {
-    constexpr _UTy _Cor = (_UTy{1} << (sizeof(_UTy) * CHAR_BIT - 1));
+    constexpr _UTy _Cor = (_UTy{1} << (sizeof(_UTy) * 8 - 1));
 
     if constexpr (_Mode == _Min_max_mode::_Min_only) {
         if (_Sign) {
