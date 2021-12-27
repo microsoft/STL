@@ -840,7 +840,8 @@ struct _Minmax_traits_8 {
 
     static _Signed_t _Get_any(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
-        return static_cast<_Signed_t>(_mm_extract_epi32(_Cur, 1)) | static_cast<_Signed_t>(_mm_cvtsi128_si32(_Cur));
+        return static_cast<_Signed_t>((static_cast<_Unsigned_t>(_mm_extract_epi32(_Cur, 1)) << 32)
+                                      | static_cast<_Unsigned_t>(_mm_cvtsi128_si32(_Cur)));
 #else
         return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
 #endif
