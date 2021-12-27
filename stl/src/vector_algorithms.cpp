@@ -985,6 +985,8 @@ auto __stdcall _Minmax_element(const void* _First, const void* const _Last, cons
                         if constexpr (_Mode == _Min_max_mode::_Both) {
                             // Find the largest horizontal index
                             _BitScanReverse(&_H_pos, _Mask);
+                            // Correct from highest val bit to lowest
+                            _H_pos -= sizeof(_Cur_max_val) - 1;
                         } else {
                             // Find the smallest horizontal index
                             _BitScanForward(&_H_pos, _Mask);
