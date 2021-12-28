@@ -596,7 +596,7 @@ const void* __stdcall __std_find_trivial_unsized(const void* _First, const _Ty _
 
         const __m256i _Comparand  = _Traits::_Set_avx(_Val);
         const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
-        unsigned _Mask            = (_Full_mask << _Pad_start);
+        const unsigned _Mask      = (_Full_mask << _Pad_start);
         _Advance_bytes(_First, -_Pad_start);
 
         __m256i _Data   = _mm256_load_si256(static_cast<const __m256i*>(_First));
@@ -630,7 +630,7 @@ const void* __stdcall __std_find_trivial_unsized(const void* _First, const _Ty _
 
         const __m128i _Comparand  = _Traits::_Set_sse(_Val);
         const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
-        unsigned _Mask            = (_Full_mask << _Pad_start);
+        const unsigned _Mask      = (_Full_mask << _Pad_start);
         _Advance_bytes(_First, -_Pad_start);
 
         __m128i _Data   = _mm_load_si128(static_cast<const __m128i*>(_First));
@@ -666,14 +666,14 @@ template <class _Traits, class _Ty>
 const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, _Ty _Val) noexcept {
     size_t Size_bytes = _Byte_length(_First, _Last);
 
-    size_t _Avx_size = Size_bytes & ~size_t{0x1F};
+    const size_t _Avx_size = Size_bytes & ~size_t{0x1F};
     if (_Avx_size != 0 && _Use_avx2()) {
         const __m256i _Comparand = _Traits::_Set_avx(_Val);
         const void* _Stop_at     = _First;
         _Advance_bytes(_Stop_at, _Avx_size);
         do {
             const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-            int _Bingo          = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+            const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
 
             if (_Bingo != 0) {
                 const unsigned long _Offset = _tzcnt_u32(_Bingo);
@@ -686,14 +686,14 @@ const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, 
         Size_bytes &= 0x1F;
     }
 
-    size_t _Sse_size = Size_bytes & ~size_t{0xF};
+    const size_t _Sse_size = Size_bytes & ~size_t{0xF};
     if (_Sse_size != 0 && _Traits::_Sse_available()) {
         const __m128i _Comparand = _Traits::_Set_sse(_Val);
         const void* _Stop_at     = _First;
         _Advance_bytes(_Stop_at, _Sse_size);
         do {
             const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-            int _Bingo          = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+            const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
 
             if (_Bingo != 0) {
                 unsigned long _Offset;
@@ -715,28 +715,28 @@ __declspec(noalias) size_t
     size_t _Size_bytes = _Byte_length(_First, _Last);
     size_t _Result     = 0;
 
-    size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
+    const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
     if (_Avx_size != 0 && _Use_avx2()) {
         const __m256i _Comparand = _Traits::_Set_avx(_Val);
         const void* _Stop_at     = _First;
         _Advance_bytes(_Stop_at, _Avx_size);
         do {
             const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-            int _Bingo          = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+            const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
         _Size_bytes &= 0x1F;
     }
 
-    size_t _Sse_size = _Size_bytes & ~size_t{0xF};
+    const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
     if (_Sse_size != 0 && _Use_sse42()) {
         const __m128i _Comparand = _Traits::_Set_sse(_Val);
         const void* _Stop_at     = _First;
         _Advance_bytes(_Stop_at, _Sse_size);
         do {
             const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-            int _Bingo          = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+            const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
             _Result += __popcnt(_Bingo); // Assume available with SSE4.2
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
