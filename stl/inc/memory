@@ -880,9 +880,13 @@ class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap store
 public:
     using iterator_category = output_iterator_tag;
     using value_type        = void;
-    using difference_type   = void;
-    using pointer           = void;
-    using reference         = void;
+#ifdef __cpp_lib_concepts
+    using difference_type = ptrdiff_t;
+#else
+    using difference_type = void;
+#endif // __cpp_lib_concepts
+    using pointer   = void;
+    using reference = void;
 
     explicit raw_storage_iterator(_OutIt _First) : _Next(_First) {}
 
