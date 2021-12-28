@@ -607,10 +607,6 @@ struct _Minmax_traits_1 {
         return _mm_cmpgt_epi8(_First, _Second);
     }
 
-    static __m128i _Cmp_lt(const __m128i _First, const __m128i _Second) noexcept {
-        return _mm_cmplt_epi8(_First, _Second);
-    }
-
     static __m128i _Min(const __m128i _First, const __m128i _Second, __m128i) noexcept {
         return _mm_min_epi8(_First, _Second);
     }
@@ -683,10 +679,6 @@ struct _Minmax_traits_2 {
 
     static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
         return _mm_cmpgt_epi16(_First, _Second);
-    }
-
-    static __m128i _Cmp_lt(const __m128i _First, const __m128i _Second) noexcept {
-        return _mm_cmplt_epi16(_First, _Second);
     }
 
     static __m128i _Min(const __m128i _First, const __m128i _Second, const __m128i) noexcept {
@@ -765,10 +757,6 @@ struct _Minmax_traits_4 {
 
     static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
         return _mm_cmpgt_epi32(_First, _Second);
-    }
-
-    static __m128i _Cmp_lt(const __m128i _First, const __m128i _Second) noexcept {
-        return _mm_cmplt_epi32(_First, _Second);
     }
 
     static __m128i _Min(const __m128i _First, const __m128i _Second, __m128i) noexcept {
@@ -858,10 +846,6 @@ struct _Minmax_traits_8 {
 
     static __m128i _Cmp_gt(const __m128i _First, const __m128i _Second) noexcept {
         return _mm_cmpgt_epi64(_First, _Second);
-    }
-
-    static __m128i _Cmp_lt(const __m128i _First, const __m128i _Second) noexcept {
-        return _mm_cmpgt_epi64(_Second, _First);
     }
 
     static __m128i _Min(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
@@ -1013,7 +997,7 @@ auto __stdcall _Minmax_element(const void* _First, const void* const _Last, cons
 
             if constexpr (_Mode != _Min_max_mode::_Max_only) {
                 // Looking for the first occurence of minimum, don't overwrite with newly found occurences
-                const __m128i _Is_less = _Traits::_Cmp_lt(_Cur_vals, _Cur_vals_min); // _Cur_vals < _Cur_vals_min
+                const __m128i _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
                 _Cur_idx_min  = _mm_blendv_epi8(_Cur_idx_min, _Cur_idx, _Is_less); // Remember their vertical indices
                 _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
             }
@@ -1025,10 +1009,9 @@ auto __stdcall _Minmax_element(const void* _First, const void* const _Last, cons
                 _Cur_vals_max = _Traits::_Max(_Cur_vals_max, _Cur_vals, _Is_greater); // Update the current maximum
             } else if constexpr (_Mode == _Min_max_mode::_Both) {
                 // Looking for the last occurence of maximum, do overwrite with newly found occurences
-                const __m128i _Is_gt_eq_inv =
-                    _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
-                _Cur_idx_max  = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max, _Is_gt_eq_inv); // Remember vertical indices
-                _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_gt_eq_inv); // Update the current maximum
+                const __m128i _Is_less = _Traits::_Cmp_gt(_Cur_vals_max, _Cur_vals); // !(_Cur_vals >= _Cur_vals_max)
+                _Cur_idx_max  = _mm_blendv_epi8(_Cur_idx, _Cur_idx_max, _Is_less); // Remember their vertical indices
+                _Cur_vals_max = _Traits::_Max(_Cur_vals, _Cur_vals_max, _Is_less); // Update the current maximum
             }
         }
     }
