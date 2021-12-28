@@ -4026,20 +4026,24 @@ namespace ranges {
 
         class _Counted_fn {
         private:
-            enum class _St { _Span, _Subrange, _Subrange_counted };
+            enum class _St { _None, _Span, _Subrange, _Subrange_counted };
 
             template <class _It>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_It>);
-                if constexpr (contiguous_iterator<_It>) {
-                    return {_St::_Span, noexcept(span(_STD to_address(_STD declval<_It>()), iter_difference_t<_It>{}))};
-                } else if constexpr (random_access_iterator<_It>) {
+                using _Decayed = decay_t<_It>;
+                _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_Decayed>);
+                if constexpr (contiguous_iterator<_Decayed>) {
+                    return {_St::_Span,
+                        noexcept(span(_STD to_address(_STD declval<_It>()), iter_difference_t<_Decayed>{}))};
+                } else if constexpr (random_access_iterator<_Decayed>) {
                     return {_St::_Subrange,
-                        noexcept(subrange(_STD declval<_It>(), _STD declval<_It>() + iter_difference_t<_It>{}))};
-                } else {
+                        noexcept(subrange(_STD declval<_It>(), _STD declval<_It>() + iter_difference_t<_Decayed>{}))};
+                } else if constexpr (constructible_from<_Decayed, _It>) {
                     return {_St::_Subrange_counted,
                         noexcept(subrange(
-                            counted_iterator(_STD declval<_It>(), iter_difference_t<_It>{}), default_sentinel))};
+                            counted_iterator(_STD declval<_It>(), iter_difference_t<_Decayed>{}), default_sentinel))};
+                } else {
+                    return {_St::_None};
                 }
             }
 
@@ -4049,9 +4053,9 @@ namespace ranges {
         public:
             // clang-format off
             template <class _It>
-                requires input_or_output_iterator<decay_t<_It>>
+                requires (input_or_output_iterator<decay_t<_It>> && _Choice<_It>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_It&& _First, const iter_difference_t<decay_t<_It>> _Count) const
-                noexcept(_Choice<decay_t<_It>>._No_throw) {
+                noexcept(_Choice<_It>._No_throw) {
                 // clang-format on
                 _STL_ASSERT(_Count >= 0, "The size passed to views::counted must be non-negative");
                 constexpr _St _Strat = _Choice<decay_t<_It>>._Strategy;
