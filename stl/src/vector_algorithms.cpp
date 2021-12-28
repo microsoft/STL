@@ -581,7 +581,7 @@ struct _Find_traits_8 {
     }
 };
 
-// The below functions have exactly the same signature ass exports, up to calling convention.
+// The below functions have exactly the same signature as exports, up to calling convention.
 // This makes sure the template specialization is fused with the export function.
 // In optimized build it avoids extra call, as this function is too large to inline.
 
@@ -635,9 +635,10 @@ const void* __stdcall __std_find_trivial_unsized(const void* _First, const _Ty _
 
         __m128i _Data   = _mm_load_si128(static_cast<const __m128i*>(_First));
         unsigned _Bingo = static_cast<unsigned>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
-        unsigned long _Offset;
 
-        if (_BitScanForward(&_Offset, _Bingo & _Mask)) {
+        if ((_Bingo &= _Mask) != 0) {
+            unsigned long _Offset;
+            _BitScanForward(&_Offset, _Bingo);
             _Advance_bytes(_First, _Offset);
             return _First;
         }
@@ -646,8 +647,9 @@ const void* __stdcall __std_find_trivial_unsized(const void* _First, const _Ty _
             _Data  = _mm_load_si128(static_cast<const __m128i*>(_First));
             _Bingo = static_cast<unsigned>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
 
-
-            if (_BitScanForward(&_Offset, _Bingo)) {
+            if (_Bingo != 0) {
+                unsigned long _Offset;
+                _BitScanForward(&_Offset, _Bingo);
                 _Advance_bytes(_First, _Offset);
                 return _First;
             }
@@ -655,6 +657,7 @@ const void* __stdcall __std_find_trivial_unsized(const void* _First, const _Ty _
             _Advance_bytes(_First, 16);
         };
     }
+
     return _Find_trivial_unsized_fallback(_First, _Val);
 }
 
@@ -671,11 +674,13 @@ const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, 
         do {
             const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
             int _Bingo          = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+
             if (_Bingo != 0) {
                 const unsigned long _Offset = _tzcnt_u32(_Bingo);
                 _Advance_bytes(_First, _Offset);
                 return _First;
             }
+
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
         Size_bytes &= 0x1F;
@@ -689,11 +694,12 @@ const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, 
         do {
             const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
             int _Bingo          = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
-            unsigned long _Offset;
-            if (_BitScanForward(&_Offset, _Bingo)) {
+
+            if (unsigned long _Offset; _BitScanForward(&_Offset, _Bingo)) {
                 _Advance_bytes(_First, _Offset);
                 return _First;
             }
+
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
@@ -736,7 +742,6 @@ __declspec(noalias) size_t
 
     return _Count_trivial_tail(_First, _Last, _Result >> _Traits::_Shift, _Val);
 }
-
 
 extern "C" {
 
