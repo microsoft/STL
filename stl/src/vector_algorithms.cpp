@@ -695,7 +695,9 @@ const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, 
             const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
             int _Bingo          = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
 
-            if (unsigned long _Offset; _BitScanForward(&_Offset, _Bingo)) {
+            if (_Bingo != 0) {
+                unsigned long _Offset;
+                _BitScanForward(&_Offset, _Bingo);
                 _Advance_bytes(_First, _Offset);
                 return _First;
             }
