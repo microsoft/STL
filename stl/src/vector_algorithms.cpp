@@ -861,9 +861,7 @@ struct _Minmax_traits_8 {
     }
 
     static __m128i _Cmp_lt(const __m128i _First, const __m128i _Second) noexcept {
-        __m128i _Gt = _mm_cmpgt_epi64(_Second, _First); // less or equal
-        __m128i _Eq = _mm_cmpeq_epi64(_First, _Second);
-        return _mm_andnot_si128(_Eq, _Gt);
+        return _mm_cmpgt_epi64(_Second, _First);
     }
 
     static __m128i _Min(const __m128i _First, const __m128i _Second, const __m128i _Mask) noexcept {
