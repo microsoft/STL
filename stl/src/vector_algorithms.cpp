@@ -596,7 +596,7 @@ struct _Minmax_traits_1 {
     }
 
     static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-        return static_cast<uint8_t>(_mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_H_pos))));
+        return static_cast<_Unsigned_t>(_mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_H_pos))));
     }
 
     static __m128i _Cmp_eq(const __m128i _First, const __m128i _Second) noexcept {
@@ -668,9 +668,9 @@ struct _Minmax_traits_2 {
     }
 
     static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-        _Unsigned_t _Array[8];
-        _mm_storeu_si128(reinterpret_cast<__m128i*>(&_Array), _Idx);
-        return _Array[_H_pos >> 1];
+        static constexpr const char _Shuf[] = "\x0\x1\x2\x3\x4\x5\x6\x7\x8\x9\xA\xB\xC\xD\xE\xF";
+
+        return static_cast<_Unsigned_t>(_mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_Shuf[_H_pos]))));
     }
 
     static __m128i _Cmp_eq(const __m128i _First, const __m128i _Second) noexcept {
