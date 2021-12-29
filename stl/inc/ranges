@@ -1159,7 +1159,19 @@ namespace ranges {
         _NODISCARD friend constexpr difference_type
             operator-(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
                 noexcept(_Left._Current - _Right._Current)) /* strengthened */ requires _Advanceable<_Wi> {
-            return static_cast<difference_type>(_Left._Current - _Right._Current);
+            if constexpr (_Integer_like<_Wi>) {
+                if constexpr (_Signed_integer_like<_Wi>) {
+                    return static_cast<difference_type>(
+                        static_cast<difference_type>(_Left._Current) - static_cast<difference_type>(_Right._Current));
+                } else if (_Right._Current > _Left._Current) {
+                    return static_cast<difference_type>(
+                        -static_cast<difference_type>(_Right._Current - _Left._Current));
+                } else {
+                    return static_cast<difference_type>(_Left._Current - _Right._Current);
+                }
+            } else {
+                return static_cast<difference_type>(_Left._Current - _Right._Current);
+            }
         }
     };
 
