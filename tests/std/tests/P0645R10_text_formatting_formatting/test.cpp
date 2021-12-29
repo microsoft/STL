@@ -1389,6 +1389,13 @@ void test_sane_c_specifier() {
     assert(format(STR("{:c}"), 'c') == STR("c"));
 }
 
+template <class charT, class T>
+void test_localized_char() {
+    // L should be accepted and ignored for "integral types" charT and char
+    assert(format(STR("{:L}"), T('c')) == STR("c"));
+    assert(format(STR("{:Lc}"), T('c')) == STR("c"));
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1461,6 +1468,10 @@ void test() {
 
     test_sane_c_specifier<char>();
     test_sane_c_specifier<wchar_t>();
+
+    test_localized_char<char, char>();
+    test_localized_char<wchar_t, char>();
+    test_localized_char<wchar_t, wchar_t>();
 }
 
 int main() {

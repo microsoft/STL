@@ -2366,8 +2366,6 @@ _NODISCARD _OutputIt _Fmt_write(
 
     _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
-    // Clear the type so that the string_view writer doesn't fail on 'c'.
-    _Specs._Type = '\0';
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, _Locale);
 }
 
@@ -2673,11 +2671,10 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 's');
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'c' || _Specs._Type == 's');
     _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
     _STL_INTERNAL_CHECK(!_Specs._Alt);
     _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
-    _STL_INTERNAL_CHECK(!_Specs._Localized);
 
     if (_Specs._Precision < 0 && _Specs._Width <= 0) {
         return _Fmt_write(_STD move(_Out), _Value);
