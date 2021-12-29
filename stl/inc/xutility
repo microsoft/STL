@@ -776,10 +776,8 @@ concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_T
 };
 
 template <class _It>
-concept input_or_output_iterator = requires(_It __i) {
-    { *__i } -> _Can_reference;
-    requires weakly_incrementable<_It>;
-};
+concept input_or_output_iterator = requires(_It __i) { { *__i } -> _Can_reference; }
+    && weakly_incrementable<_It>;
 
 template <class _Se, class _It>
 concept sentinel_for = semiregular<_Se>
