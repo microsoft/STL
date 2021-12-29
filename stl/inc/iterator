@@ -170,12 +170,17 @@ protected:
     _Wrapped_iter iter;
 };
 
+#ifndef __cpp_lib_concepts
 template <class _Container>
 _NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
     return insert_iterator<_Container>(_Cont, _Where);
 }
+#else // ^^^ No Ranges / Ranges vvv
+template <class _Container>
+_NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, _RANGES iterator_t<_Container> _Where) {
+    return insert_iterator<_Container>(_Cont, _Where);
+}
 
-#ifdef __cpp_lib_concepts
 template <semiregular _Se>
 class move_sentinel {
 public:
