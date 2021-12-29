@@ -5869,9 +5869,6 @@ namespace ranges {
 
     inline constexpr _Search_fn search{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
-
-template <auto> // _Require_constant<E> is a valid template-id iff E is a constant expression of structural type
-struct _Require_constant;
 #endif // __cpp_lib_concepts
 
 template <class _FwdIt, class _Ty, class _Pr>

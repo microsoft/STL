@@ -3418,6 +3418,9 @@ namespace ranges {
     } // namespace views
 
     // clang-format off
+    template <auto> // _Require_constant<E> is a valid template-id iff E is a constant expression of structural type
+    struct _Require_constant;
+
     template <class _Ty>
     concept _Tiny_range = sized_range<_Ty>
         && requires { typename _Require_constant<remove_reference_t<_Ty>::size()>; }
