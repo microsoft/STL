@@ -668,9 +668,10 @@ struct _Minmax_traits_2 {
     }
 
     static _Unsigned_t _Get_v_pos(const __m128i _Idx, const unsigned long _H_pos) noexcept {
-        static constexpr const char _Shuf[] = "\x0\x1\x2\x3\x4\x5\x6\x7\x8\x9\xA\xB\xC\xD\xE\xF";
+        static constexpr const _Unsigned_t _Shuf[] = {0x0100, 0x0302, 0x0504, 0x0706, 0x0908, 0x0B0A, 0x0D0C, 0x0F0E};
 
-        return static_cast<_Unsigned_t>(_mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_Shuf[_H_pos]))));
+        return static_cast<_Unsigned_t>(
+            _mm_cvtsi128_si32(_mm_shuffle_epi8(_Idx, _mm_cvtsi32_si128(_Shuf[_H_pos >> 1]))));
     }
 
     static __m128i _Cmp_eq(const __m128i _First, const __m128i _Second) noexcept {
