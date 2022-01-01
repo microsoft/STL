@@ -238,32 +238,60 @@ private:
     vector<result_type> _Myvec;
 };
 
-template <class _Real, size_t _Bits, class _Gen>
-_NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value from random sequence
-    _RNG_REQUIRE_REALTYPE(generate_canonical, _Real);
-
-    const size_t _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
-    const size_t _Minbits = _Digits < _Bits ? _Digits : _Bits;
-
-    const _Real _Gxmin = static_cast<_Real>((_Gx.min) ());
-    const _Real _Gxmax = static_cast<_Real>((_Gx.max) ());
-    const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
-
-    const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Minbits) / _STD log2(_Rx)));
-    const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
-
-    _Real _Ans{0};
-    _Real _Factor{1};
-
-    for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
-        _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
-        _Factor *= _Rx;
+template <class _Real, size_t _Minbits, class _Result, _Result _Ix>
+_NODISCARD constexpr int _Generate_canonical_helper() {
+    if constexpr ((_Ix & (_Ix - 1)) == 0) {
+        constexpr auto _Log2 = _STD _Countr_zero(_Ix);
+        return static_cast<int>((_Minbits + _Log2 - 1) / _Log2);
+    } else {
+        return static_cast<int>(_STD ceil(_Minbits / _STD log2(_Ix)));
     }
-
-    return _Ans / _Factor;
 }
 
-#define _NRAND(eng, resty) (_STD generate_canonical<resty, static_cast<size_t>(-1)>(eng))
+template <class _Real, size_t _Bits, class _Gen>
+_NODISCARD _Real generate_canonical(_Gen& _Gx) {
+    _RNG_REQUIRE_REALTYPE(generate_canonical, _Real);
+
+    constexpr auto _Digits    = static_cast<size_t>(numeric_limits<_Real>::digits);
+    constexpr size_t _Minbits = _Digits < _Bits ? _Digits : _Bits;
+
+    if constexpr (is_integral_v<typename _Gen::result_type>) {
+        constexpr auto _Ix = (_Gen::max) () - (_Gen::min) () + 1;
+        const int _Ceil    = _Generate_canonical_helper<_Real, _Minbits, typename _Gen::result_type, _Ix>();
+#pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
+        const int _Kx = _Ceil < 1 ? 1 : _Ceil;
+
+        _Real _Ans{0};
+        _Real _Factor{1};
+        constexpr auto _Gxmin = (_Gen::min) ();
+        constexpr auto _Rx    = static_cast<_Real>((_Gen::max) () - _Gxmin) + 1;
+
+        for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
+            _Ans += static_cast<_Real>(_Gx() - _Gxmin) * _Factor;
+            _Factor *= _Rx;
+        }
+
+        return _Ans / _Factor;
+    } else { // We still need to tolerate TR1-era engines
+        const auto _Gxmin = static_cast<_Real>((_Gx.min) ());
+        const auto _Gxmax = static_cast<_Real>((_Gx.max) ());
+        const auto _Rx    = (_Gxmax - _Gxmin) + _Real{1};
+
+        const auto _Ceil = static_cast<int>(_STD ceil(_Minbits / _STD log2(_Rx)));
+        const int _Kx    = _Ceil < 1 ? 1 : _Ceil;
+
+        _Real _Ans{0};
+        _Real _Factor{1};
+        for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
+            _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
+            _Factor *= _Rx;
+        }
+
+        return _Ans / _Factor;
+    }
+}
+
+#define _NRAND(eng, resty) (_STD generate_canonical<resty, ~size_t{0}>(eng))
 
 _INLINE_VAR constexpr int _MP_len = 5;
 using _MP_arr                     = uint64_t[_MP_len];
