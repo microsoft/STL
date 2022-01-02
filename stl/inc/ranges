@@ -983,13 +983,21 @@ namespace ranges {
         using iterator_category = input_iterator_tag;
     };
 
-    // clang-format off
     template <weakly_incrementable _Wi>
         requires copyable<_Wi>
-    struct _Ioterator : _Ioterator_category_base<_Wi> {
-        // clang-format on
+    class _Ioterator : public _Ioterator_category_base<_Wi> {
+    private:
         /* [[no_unique_address]] */ _Wi _Current{};
 
+        template <weakly_incrementable _Wi2, semiregular _Bo2>
+            requires _Weakly_equality_comparable_with<_Wi2, _Bo2> && copyable<_Wi2>
+        friend class _Iotinel;
+
+        template <weakly_incrementable _Wi2, semiregular _Bo2>
+            requires _Weakly_equality_comparable_with<_Wi2, _Bo2> && copyable<_Wi2>
+        friend class iota_view;
+
+    public:
         using iterator_concept = conditional_t<_Advanceable<_Wi>, random_access_iterator_tag,
             conditional_t<_Decrementable<_Wi>, bidirectional_iterator_tag,
                 conditional_t<incrementable<_Wi>, forward_iterator_tag, input_iterator_tag>>>;
@@ -1174,10 +1182,16 @@ namespace ranges {
     // clang-format off
     template <weakly_incrementable _Wi, semiregular _Bo>
         requires _Weakly_equality_comparable_with<_Wi, _Bo> && copyable<_Wi>
-    struct _Iotinel {
+    class _Iotinel {
         // clang-format on
     private:
         using _It = _Ioterator<_Wi>;
+
+        /* [[no_unique_address]] */ _Bo _Last{};
+
+        template <weakly_incrementable _Wi2, semiregular _Bo2>
+            requires _Weakly_equality_comparable_with<_Wi2, _Bo2> && copyable<_Wi2>
+        friend class iota_view;
 
         _NODISCARD constexpr bool _Equal(const _It& _That) const noexcept(noexcept(_That._Current == _Last)) {
             return _That._Current == _Last;
@@ -1190,7 +1204,10 @@ namespace ranges {
         }
 
     public:
-        /* [[no_unique_address]] */ _Bo _Last{};
+        _Iotinel() = default;
+
+        constexpr explicit _Iotinel(_Bo _Last_) noexcept(is_nothrow_move_constructible_v<_Bo>)
+            : _Last(_STD move(_Last_)) {}
 
         _NODISCARD friend constexpr bool operator==(const _It& _Left, const _Iotinel& _Right) noexcept(
             noexcept(_Right._Equal(_Left))) /* strengthened */ {
