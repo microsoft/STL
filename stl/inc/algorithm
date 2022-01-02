@@ -9327,7 +9327,7 @@ _INLINE_VAR constexpr bool _Is_min_max_optimization_safe_v =
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _USE_STD_VECTOR_ALGORITHMS && !defined(__CUDACC__)
     if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _To_address(_First);
@@ -9339,7 +9339,7 @@ constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // _USE_STD_VECTOR_ALGORITHMS && !defined(__CUDACC__)
 
     _FwdIt _Found = _First;
     if (_First != _Last) {
@@ -9432,7 +9432,7 @@ namespace ranges {
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _USE_STD_VECTOR_ALGORITHMS && !defined(__CUDACC__)
     if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _To_address(_First);
@@ -9444,7 +9444,7 @@ constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) 
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // _USE_STD_VECTOR_ALGORITHMS && !defined(__CUDACC__)
 
     _FwdIt _Found = _First;
     if (_First != _Last) {
@@ -9537,7 +9537,7 @@ namespace ranges {
 
 template <class _FwdIt, class _Pr>
 constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
-#if _USE_STD_VECTOR_ALGORITHMS
+#if _USE_STD_VECTOR_ALGORITHMS && !defined(__CUDACC__)
     if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _To_address(_First);
@@ -9549,7 +9549,7 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
             }
         }
     }
-#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // _USE_STD_VECTOR_ALGORITHMS && !defined(__CUDACC__)
 
     // find smallest and largest elements
     pair<_FwdIt, _FwdIt> _Found(_First, _First);
