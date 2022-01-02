@@ -968,7 +968,10 @@ namespace filesystem {
                 _Text.push_back(L'.');
             }
 
-            return operator+=(_Replacement);
+            _Text._Orphan_all();
+            _Text += _Replacement._Text;
+
+            return *this;
         }
 
         void swap(path& _Rhs) noexcept {
@@ -1398,12 +1401,12 @@ namespace filesystem {
         }
 
         _NODISCARD friend bool operator==(const path& _Left, const path& _Right) noexcept {
-            return _Left.compare(_Right) == 0;
+            return _Left._Compare(_Right._Text) == 0;
         }
 
 #if _HAS_CXX20
         _NODISCARD friend strong_ordering operator<=>(const path& _Left, const path& _Right) noexcept {
-            return _Left.compare(_Right) <=> 0;
+            return _Left._Compare(_Right._Text) <=> 0;
         }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         _NODISCARD friend bool operator!=(const path& _Left, const path& _Right) noexcept {
@@ -1434,6 +1437,7 @@ namespace filesystem {
         }
 
     private:
+        inline int _Compare(const string_type& _Other) const noexcept;
         string_type _Text;
     };
 
@@ -1736,8 +1740,9 @@ namespace filesystem {
             const path& _Elem = *_B_iter;
 
             if (_Elem.empty()) { // skip empty element, N4810 29.11.7.5 [fs.path.itr]/4.4
-            } else if (_Elem == _Dot) { // skip filename elements that are dot, N4810 29.11.7.4.11 [fs.path.gen]/4.2
-            } else if (_Elem == _Dot_dot) {
+            } else if (_Elem._Text
+                       == _Dot) { // skip filename elements that are dot, N4810 29.11.7.4.11 [fs.path.gen]/4.2
+            } else if (_Elem._Text == _Dot_dot) {
                 --_Num;
             } else {
                 ++_Num;
@@ -1785,6 +1790,10 @@ namespace filesystem {
 
     _NODISCARD inline path::iterator path::end() const noexcept /* strengthened */ {
         return iterator(_Text.cend(), this);
+    }
+
+    _NODISCARD inline int path::_Compare(const string_type& _Other) const noexcept {
+        return _Text.compare(_Other);
     }
 
     class filesystem_error : public system_error { // base of all filesystem-error exceptions
