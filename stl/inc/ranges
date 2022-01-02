@@ -976,15 +976,11 @@ namespace ranges {
     // clang-format on
 
     template <class _Wi>
-    struct _Ioterator_category_base {
-        _NODISCARD auto operator<=>(const _Ioterator_category_base&) const = default;
-    };
+    struct _Ioterator_category_base {};
 
     template <incrementable _Wi>
     struct _Ioterator_category_base<_Wi> {
         using iterator_category = input_iterator_tag;
-
-        _NODISCARD auto operator<=>(const _Ioterator_category_base&) const = default;
     };
 
     // clang-format off
@@ -1112,10 +1108,10 @@ namespace ranges {
             }
         }
 
-        // clang-format off
-        _NODISCARD friend constexpr bool operator==(
-            const _Ioterator&, const _Ioterator&) requires equality_comparable<_Wi> = default;
-        // clang-format on
+        _NODISCARD friend constexpr bool operator==(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+            noexcept(_Left._Current == _Right._Current)) requires equality_comparable<_Wi> {
+            return _Left._Current == _Right._Current;
+        }
 
         _NODISCARD friend constexpr bool operator<(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
             noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires totally_ordered<_Wi> {
@@ -1134,10 +1130,10 @@ namespace ranges {
             return !(_Left._Current < _Right._Current);
         }
 
-        // clang-format off
-        _NODISCARD friend constexpr auto operator<=>(const _Ioterator& _Left, const _Ioterator& _Right)
-            requires totally_ordered<_Wi> && three_way_comparable<_Wi> = default;
-        // clang-format on
+        _NODISCARD friend constexpr auto operator<=>(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+            noexcept(_Left._Current <=> _Right._Current)) requires totally_ordered<_Wi> && three_way_comparable<_Wi> {
+            return _Left._Current <=> _Right._Current;
+        }
 
         _NODISCARD friend constexpr _Ioterator operator+(_Ioterator _It, const difference_type _Off) noexcept(
             is_nothrow_move_constructible_v<_Ioterator>&& noexcept(
