@@ -30,6 +30,7 @@ static bool _Use_sse42() {
     return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
 }
 
+// Must be in sync with _Min_max_t in <algorithm>
 struct _Min_max_t {
     const void* _Min;
     const void* _Max;
@@ -691,7 +692,6 @@ struct _Minmax_traits_2 {
     }
 };
 
-
 struct _Minmax_traits_4 {
     using _Signed_t   = int32_t;
     using _Unsigned_t = uint32_t;
@@ -788,43 +788,31 @@ struct _Minmax_traits_8 {
         return _mm_add_epi64(_Idx, _mm_set1_epi64x(1));
     }
 
-    static __m128i _H_min(const __m128i _Cur) noexcept {
+    template <class _Fn>
+    static __m128i _H_func(const __m128i _Cur, _Fn Funct) noexcept {
         _Signed_t _H_min_a = _Get_any(_Cur);
         _Signed_t _H_min_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
-        if (_H_min_b < _H_min_a) {
+        if (Funct(_H_min_b, _H_min_a)) {
             _H_min_a = _H_min_b;
         }
         return _mm_set1_epi64x(_H_min_a);
+    }
+
+    static __m128i _H_min(const __m128i _Cur) noexcept {
+        return _H_func(_Cur, [](_Signed_t _Lhs, _Signed_t _Rhs) { return _Lhs < _Rhs; });
     }
 
     static __m128i _H_max(const __m128i _Cur) noexcept {
-        _Signed_t _H_max_a = _Get_any(_Cur);
-        _Signed_t _H_max_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
-        if (_H_max_b > _H_max_a) {
-            _H_max_a = _H_max_b;
-        }
-        return _mm_set1_epi64x(_H_max_a);
+        return _H_func(_Cur, [](_Signed_t _Lhs, _Signed_t _Rhs) { return _Lhs > _Rhs; });
     }
 
     static __m128i _H_min_u(const __m128i _Cur) noexcept {
-        _Unsigned_t _H_min_a = _Get_any(_Cur);
-        _Unsigned_t _H_min_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
-        if (_H_min_b < _H_min_a) {
-            _H_min_a = _H_min_b;
-        }
-        return _mm_set1_epi64x(_H_min_a);
+        return _H_func(_Cur, [](_Unsigned_t _Lhs, _Unsigned_t _Rhs) { return _Lhs < _Rhs; });
     }
-
 
     static __m128i _H_max_u(const __m128i _Cur) noexcept {
-        _Unsigned_t _H_max_a = _Get_any(_Cur);
-        _Unsigned_t _H_max_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
-        if (_H_max_b > _H_max_a) {
-            _H_max_a = _H_max_b;
-        }
-        return _mm_set1_epi64x(_H_max_a);
+        return _H_func(_Cur, [](_Unsigned_t _Lhs, _Unsigned_t _Rhs) { return _Lhs > _Rhs; });
     }
-
 
     static _Signed_t _Get_any(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
