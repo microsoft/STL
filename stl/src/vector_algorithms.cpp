@@ -31,7 +31,7 @@ static bool _Use_sse42() {
 }
 
 // Must be in sync with _Min_max_t in <algorithm>
-struct _Min_max_t {
+struct _Min_max_element_t {
     const void* _Min;
     const void* _Max;
 };
@@ -491,8 +491,8 @@ const void* _Max_tail(const void* const _First, const void* const _Last, const v
 }
 
 template <class _Ty>
-_Min_max_t _Both_tail(
-    const void* const _First, const void* const _Last, _Min_max_t& _Res, _Ty _Cur_min, _Ty _Cur_max) noexcept {
+_Min_max_element_t _Both_tail(
+    const void* const _First, const void* const _Last, _Min_max_element_t& _Res, _Ty _Cur_min, _Ty _Cur_max) noexcept {
     for (auto _Ptr = static_cast<const _Ty*>(_First); _Ptr != _Last; ++_Ptr) {
         if (*_Ptr < _Cur_min) {
             _Res._Min = _Ptr;
@@ -517,8 +517,8 @@ enum class _Min_max_mode {
 };
 
 template <_Min_max_mode _Mode, class _STy, class _UTy>
-auto _Minmax_tail(
-    const void* _First, const void* _Last, _Min_max_t& _Res, bool _Sign, _UTy _Cur_min, _UTy _Cur_max) noexcept {
+auto _Minmax_tail(const void* _First, const void* _Last, _Min_max_element_t& _Res, bool _Sign, _UTy _Cur_min,
+    _UTy _Cur_max) noexcept {
     constexpr _UTy _Cor = (_UTy{1} << (sizeof(_UTy) * 8 - 1));
 
     if constexpr (_Mode == _Min_max_mode::_Min_only) {
@@ -851,10 +851,10 @@ struct _Minmax_traits_8 {
 // In optimized build it avoids extra call, as this function is too large to inline.
 template <_Min_max_mode _Mode, class _Traits>
 auto __stdcall _Minmax_element(const void* _First, const void* const _Last, const bool _Sign) noexcept {
-    _Min_max_t _Res   = {_First, _First};
-    auto _Base        = static_cast<const char*>(_First);
-    auto _Cur_min_val = _Traits::_Init_min_val;
-    auto _Cur_max_val = _Traits::_Init_max_val;
+    _Min_max_element_t _Res = {_First, _First};
+    auto _Base              = static_cast<const char*>(_First);
+    auto _Cur_min_val       = _Traits::_Init_min_val;
+    auto _Cur_max_val       = _Traits::_Init_max_val;
 
     if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
         size_t _Portion_size = _Byte_length(_First, _Last) & ~size_t{0xF};
@@ -1051,22 +1051,22 @@ const void* __stdcall __std_max_element_8(
     return _Minmax_element<_Min_max_mode::_Max_only, _Minmax_traits_8>(_First, _Last, _Signed);
 }
 
-_Min_max_t __stdcall __std_minmax_element_1(
+_Min_max_element_t __stdcall __std_minmax_element_1(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     return _Minmax_element<_Min_max_mode::_Both, _Minmax_traits_1>(_First, _Last, _Signed);
 }
 
-_Min_max_t __stdcall __std_minmax_element_2(
+_Min_max_element_t __stdcall __std_minmax_element_2(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     return _Minmax_element<_Min_max_mode::_Both, _Minmax_traits_2>(_First, _Last, _Signed);
 }
 
-_Min_max_t __stdcall __std_minmax_element_4(
+_Min_max_element_t __stdcall __std_minmax_element_4(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     return _Minmax_element<_Min_max_mode::_Both, _Minmax_traits_4>(_First, _Last, _Signed);
 }
 
-_Min_max_t __stdcall __std_minmax_element_8(
+_Min_max_element_t __stdcall __std_minmax_element_8(
     const void* const _First, const void* const _Last, const bool _Signed) noexcept {
     return _Minmax_element<_Min_max_mode::_Both, _Minmax_traits_8>(_First, _Last, _Signed);
 }
