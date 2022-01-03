@@ -24,7 +24,9 @@
 
 extern "C" long __isa_enabled;
 
+#ifndef _DEBUG
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
+#endif // !_DEBUG
 
 static bool _Use_sse42() {
     return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
