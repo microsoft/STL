@@ -91,6 +91,7 @@ __declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _T
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
 }
+
 template <class _Ty, class _TVal>
 _Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
     using cv_pv = _STD conditional_t<_STD is_const_v<_Ty>, const void*, void*>;
