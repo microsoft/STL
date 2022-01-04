@@ -768,7 +768,11 @@ concept weakly_incrementable = movable<_Ty> && requires(_Ty __i) {
     requires _Signed_integer_like<iter_difference_t<_Ty>>;
     { ++__i } -> same_as<_Ty&>;
     __i++;
-};
+}
+#ifdef __clang__ // TRANSITION, LLVM-48173
+&& !same_as<_Ty, bool>
+#endif // TRANSITION, LLVM-48173
+;
 
 template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
