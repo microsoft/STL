@@ -3154,7 +3154,7 @@ namespace ranges {
             constexpr void _Check_dereference() const noexcept {
                 _STL_VERIFY(_Parent != nullptr, "cannot dereference value-initialized join_view iterator");
                 _STL_VERIFY(_Outer != _RANGES end(_Parent->_Range), "cannot dereference join_view end iterator");
-                sentinel_t<_InnerRng<false>> _Last;
+                sentinel_t<_InnerRng<_Const>> _Last;
                 if constexpr (_Deref_is_glvalue) {
                     _Last = _RANGES end(*_Outer);
                 } else {
@@ -3180,7 +3180,7 @@ namespace ranges {
             using difference_type = common_type_t<range_difference_t<_Base>, range_difference_t<_InnerRng<_Const>>>;
 
             // clang-format off
-            _Iterator() requires default_initializable<_OuterIter> && default_initializable<_InnerIter> = default;
+            _Iterator() requires default_initializable<_OuterIter> = default; // per LWG-3569
             // clang-format on
 
             constexpr _Iterator(_Parent_t& _Parent_, _OuterIter _Outer_)
