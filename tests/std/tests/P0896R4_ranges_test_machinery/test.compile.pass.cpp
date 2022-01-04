@@ -13,7 +13,7 @@ using namespace std;
 
 int main() {} // COMPILE-ONLY
 
-// GH-2358:  <filesystem>: path's comparison operators are IF-NDR
+// GH-2358: <filesystem>: path's comparison operators are IF-NDR
 static_assert(ranges::range<filesystem::path>);
 static_assert(ranges::range<const filesystem::path>);
 

@@ -1752,8 +1752,8 @@ namespace filesystem {
             const path& _Elem = *_B_iter;
 
             if (_Elem.empty()) { // skip empty element, N4810 29.11.7.5 [fs.path.itr]/4.4
-            } else if (_Elem._Text
-                       == _Dot) { // skip filename elements that are dot, N4810 29.11.7.4.11 [fs.path.gen]/4.2
+            } else if (_Elem._Text == _Dot) {
+                // skip filename elements that are dot, N4810 29.11.7.4.11 [fs.path.gen]/4.2
             } else if (_Elem._Text == _Dot_dot) {
                 --_Num;
             } else {
