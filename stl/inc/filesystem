@@ -1097,62 +1097,7 @@ namespace filesystem {
         }
 
         _NODISCARD int compare(const basic_string_view<value_type> _Other) const noexcept /* strengthened */ {
-            // compare *this with _Other
-            // several places herein quote the standard, but the standard's variable p is replaced with _Other
-            const auto _My_first            = _Text.data();
-            const auto _My_last             = _My_first + _Text.size();
-            const auto _My_root_name_end    = _Find_root_name_end(_My_first, _My_last);
-            const auto _Other_first         = _Other.data();
-            const auto _Other_last          = _Other_first + _Other.size();
-            const auto _Other_root_name_end = _Find_root_name_end(_Other_first, _Other_last);
-
-            // Let rootNameComparison be the result of this->root_name().native().compare(_Other.root_name().native())
-            const int _Root_cmp = _Range_compare(_My_first, _My_root_name_end, _Other_first, _Other_root_name_end);
-            if (_Root_cmp != 0) { // If rootNameComparison is not 0, rootNameComparison
-                return _Root_cmp;
-            }
-
-            auto _My_relative               = _STD find_if_not(_My_root_name_end, _My_last, _Is_slash);
-            auto _Other_relative            = _STD find_if_not(_Other_root_name_end, _Other_last, _Is_slash);
-            const bool _My_has_root_name    = _My_root_name_end != _My_relative;
-            const bool _Other_has_root_name = _Other_root_name_end != _Other_relative;
-            // If !this->has_root_directory() and _Other.has_root_directory(), a value less than 0
-            // If this->has_root_directory() and !_Other.has_root_directory(), a value greater than 0
-            const int _Root_name_cmp = _My_has_root_name - _Other_has_root_name;
-            if (_Root_name_cmp != 0) {
-                return _Root_name_cmp;
-            }
-
-            // Otherwise, lexicographic by element
-            for (;;) {
-                const bool _My_empty    = _My_relative == _My_last;
-                const bool _Other_empty = _Other_relative == _Other_last;
-                const int _Empty_cmp    = _Other_empty - _My_empty;
-                if (_My_empty || _Empty_cmp != 0) {
-                    return _Empty_cmp;
-                }
-
-                const bool _My_slash    = _Is_slash(*_My_relative);
-                const bool _Other_slash = _Is_slash(*_Other_relative);
-                const int _Slash_cmp    = _Other_slash - _My_slash;
-                if (_Slash_cmp != 0) {
-                    return _Slash_cmp;
-                }
-
-                if (_My_slash) { // comparing directory-separator
-                    _My_relative    = _STD find_if_not(_My_relative + 1, _My_last, _Is_slash);
-                    _Other_relative = _STD find_if_not(_Other_relative + 1, _Other_last, _Is_slash);
-                    continue;
-                }
-
-                const int _Cmp = *_My_relative - *_Other_relative;
-                if (_Cmp != 0) {
-                    return _Cmp;
-                }
-
-                ++_My_relative;
-                ++_Other_relative;
-            }
+            return _Compare(_Other);
         }
 
         _NODISCARD int compare(const value_type* const _Other) const noexcept /* strengthened */ {
@@ -1449,7 +1394,7 @@ namespace filesystem {
         }
 
     private:
-        inline int _Compare(const string_type& _Other) const noexcept;
+        inline int _Compare(const basic_string_view<value_type> _Other) const noexcept;
         string_type _Text;
     };
 
@@ -1752,9 +1697,9 @@ namespace filesystem {
             const path& _Elem = *_B_iter;
 
             if (_Elem.empty()) { // skip empty element, N4810 29.11.7.5 [fs.path.itr]/4.4
-            } else if (_Elem._Text == _Dot) {
+            } else if (_Elem == path(_Dot)) {
                 // skip filename elements that are dot, N4810 29.11.7.4.11 [fs.path.gen]/4.2
-            } else if (_Elem._Text == _Dot_dot) {
+            } else if (_Elem == path(_Dot_dot)) {
                 --_Num;
             } else {
                 ++_Num;
@@ -1804,8 +1749,63 @@ namespace filesystem {
         return iterator(_Text.cend(), this);
     }
 
-    _NODISCARD inline int path::_Compare(const string_type& _Other) const noexcept {
-        return _Text.compare(_Other);
+    _NODISCARD inline int path::_Compare(const basic_string_view<value_type> _Other) const noexcept {
+        // compare *this with _Other
+        // several places herein quote the standard, but the standard's variable p is replaced with _Other
+        const auto _My_first            = _Text.data();
+        const auto _My_last             = _My_first + _Text.size();
+        const auto _My_root_name_end    = _Find_root_name_end(_My_first, _My_last);
+        const auto _Other_first         = _Other.data();
+        const auto _Other_last          = _Other_first + _Other.size();
+        const auto _Other_root_name_end = _Find_root_name_end(_Other_first, _Other_last);
+
+        // Let rootNameComparison be the result of this->root_name().native().compare(_Other.root_name().native())
+        const int _Root_cmp = _Range_compare(_My_first, _My_root_name_end, _Other_first, _Other_root_name_end);
+        if (_Root_cmp != 0) { // If rootNameComparison is not 0, rootNameComparison
+            return _Root_cmp;
+        }
+
+        auto _My_relative               = _STD find_if_not(_My_root_name_end, _My_last, _Is_slash);
+        auto _Other_relative            = _STD find_if_not(_Other_root_name_end, _Other_last, _Is_slash);
+        const bool _My_has_root_name    = _My_root_name_end != _My_relative;
+        const bool _Other_has_root_name = _Other_root_name_end != _Other_relative;
+        // If !this->has_root_directory() and _Other.has_root_directory(), a value less than 0
+        // If this->has_root_directory() and !_Other.has_root_directory(), a value greater than 0
+        const int _Root_name_cmp = _My_has_root_name - _Other_has_root_name;
+        if (_Root_name_cmp != 0) {
+            return _Root_name_cmp;
+        }
+
+        // Otherwise, lexicographic by element
+        for (;;) {
+            const bool _My_empty    = _My_relative == _My_last;
+            const bool _Other_empty = _Other_relative == _Other_last;
+            const int _Empty_cmp    = _Other_empty - _My_empty;
+            if (_My_empty || _Empty_cmp != 0) {
+                return _Empty_cmp;
+            }
+
+            const bool _My_slash    = _Is_slash(*_My_relative);
+            const bool _Other_slash = _Is_slash(*_Other_relative);
+            const int _Slash_cmp    = _Other_slash - _My_slash;
+            if (_Slash_cmp != 0) {
+                return _Slash_cmp;
+            }
+
+            if (_My_slash) { // comparing directory-separator
+                _My_relative    = _STD find_if_not(_My_relative + 1, _My_last, _Is_slash);
+                _Other_relative = _STD find_if_not(_Other_relative + 1, _Other_last, _Is_slash);
+                continue;
+            }
+
+            const int _Cmp = *_My_relative - *_Other_relative;
+            if (_Cmp != 0) {
+                return _Cmp;
+            }
+
+            ++_My_relative;
+            ++_Other_relative;
+        }
     }
 
     class filesystem_error : public system_error { // base of all filesystem-error exceptions
