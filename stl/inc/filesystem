@@ -1432,7 +1432,7 @@ namespace filesystem {
         }
 
     private:
-        // operators ==, <==> and += have overloads with path and basic_string_view.
+        // compare, operators ==, <==> and += have overloads with path and basic_string_view.
         // clang-cl to attempt implicit conversion from const path& to wstring_view,
         // and thus affect the result of range<const path>
         // so we added the helpers to avoid the implicit conversions
