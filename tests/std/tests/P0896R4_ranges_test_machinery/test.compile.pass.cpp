@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <concepts>
+#include <filesystem>
 #include <ranges>
 
 #include <range_algorithm_support.hpp>
@@ -11,6 +12,10 @@
 using namespace std;
 
 int main() {} // COMPILE-ONLY
+
+// GH-2358:  <filesystem>: path's comparison operators are IF-NDR
+static_assert(ranges::range<filesystem::path>);
+static_assert(ranges::range<const filesystem::path>);
 
 using test::CanCompare, test::CanDifference, test::IsWrapped, test::ProxyRef, test::to_bool;
 
