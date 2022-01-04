@@ -1435,8 +1435,10 @@ namespace filesystem {
         // operators ==, <==> and += have overloads with path and basic_string_view.
         // clang-cl to attempt implicit conversion from const path& to wstring_view,
         // and thus affect the result of range<const path>
-        // so we added the helpers to avoid the implicit conversios
-        _NODISCARD inline int _Compare(const basic_string_view<value_type> _Other) const noexcept;
+        // so we added the helpers to avoid the implicit conversions
+        _NODISCARD inline int _Compare(const basic_string_view<value_type> _Other) const noexcept {
+            return compare(_Other);
+        }
 
         _NODISCARD path& _PlusAssign(const path& _Added) { // concat _Added to native()
             _Text._Orphan_all();
@@ -1796,10 +1798,6 @@ namespace filesystem {
 
     _NODISCARD inline path::iterator path::end() const noexcept /* strengthened */ {
         return iterator(_Text.cend(), this);
-    }
-
-    _NODISCARD inline int path::_Compare(const basic_string_view<value_type> _Other) const noexcept {
-        return compare(_Other);
     }
 
     class filesystem_error : public system_error { // base of all filesystem-error exceptions
