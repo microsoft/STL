@@ -850,9 +850,7 @@ namespace filesystem {
         }
 
         path& operator+=(const path& _Added) { // concat _Added to native()
-            _Text._Orphan_all();
-            _Text += _Added._Text;
-            return *this;
+            return _PlusEqual(_Added);
         }
 
         path& operator+=(const string_type& _Added) { // concat _Added to native()
@@ -881,35 +879,23 @@ namespace filesystem {
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& operator+=(const _Src& _Added) { // concat _Added to native()
-            const auto _AddedPath = path(_Added);
-            _Text._Orphan_all();
-            _Text += _AddedPath._Text;
-            return *this;
+            return _PlusEqual(path(_Added));
         }
 
         template <class _EcharT, enable_if_t<_Is_EcharT<_EcharT>, int> = 0>
         path& operator+=(const _EcharT _Added) { // concat _Added to native()
-            const auto _AddedPath = path(&_Added, &_Added + 1);
-            _Text._Orphan_all();
-            _Text += _AddedPath._Text;
-            return *this;
+            return _PlusEqual(path(&_Added, &_Added + 1));
         }
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& concat(const _Src& _Added) { // concat _Added to native()
-            const auto _AddedPath = path(_Added);
-            _Text._Orphan_all();
-            _Text += _AddedPath._Text;
-            return *this;
+            return _PlusEqual(path(_Added));
         }
 
         template <class _InIt>
         path& concat(_InIt _First, _InIt _Last) { // concat [_First, _Last) to native()
             static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
-            const auto _AddedPath = path(_First, _Last);
-            _Text._Orphan_all();
-            _Text += _AddedPath._Text;
-            return *this;
+            return _PlusEqual(path(_First, _Last));
         }
 
         void clear() noexcept { // set *this to the empty path
@@ -980,10 +966,7 @@ namespace filesystem {
                 _Text.push_back(L'.');
             }
 
-            _Text._Orphan_all();
-            _Text += _Replacement._Text;
-
-            return *this;
+            return _PlusEqual(_Replacement);
         }
 
         void swap(path& _Rhs) noexcept {
@@ -1449,7 +1432,16 @@ namespace filesystem {
         }
 
     private:
+        // operators ==, <==> and += have overloads with path and basic_string_view.
+        // clang-cl to attempt implicit conversion from const path& to wstring_view,
+        // and thus affect the result of range<const path>
+        // so we added the helpers to avoid the implicit conversios
         inline int _Compare(const basic_string_view<value_type> _Other) const noexcept;
+        _NODISCARD path& _PlusEqual(const path& _Added) { // concat _Added to native()
+            _Text._Orphan_all();
+            _Text += _Added._Text;
+            return *this;
+        }
         string_type _Text;
     };
 
