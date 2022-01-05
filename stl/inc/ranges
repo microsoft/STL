@@ -513,6 +513,22 @@ namespace ranges {
             }
         }
 
+        template <_Not_same_as<_Ty> _Uty>
+            requires convertible_to<const _Uty&, _Ty>
+        constexpr _Defaultabox(const _Defaultabox<_Uty>& _That) : _Engaged{_That} {
+            if (_That) {
+                _Construct_in_place(_Val, *_That);
+            }
+        }
+
+        template <_Not_same_as<_Ty> _Uty>
+            requires convertible_to<_Uty, _Ty>
+        constexpr _Defaultabox(_Defaultabox<_Uty>&& _That) : _Engaged{_That} {
+            if (_That) {
+                _Construct_in_place(_Val, _STD move(*_That));
+            }
+        }
+
         // clang-format off
         _Defaultabox& operator=(const _Defaultabox&) noexcept
             requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty> = default;
@@ -627,6 +643,24 @@ namespace ranges {
     class _Defaultabox<_Ty> { // provide the same API more efficiently for default-constructible types
         // clang-format on
     public:
+        _Defaultabox() = default;
+
+        template <_Not_same_as<_Ty> _Uty>
+            requires convertible_to<const _Uty&, _Ty>
+        constexpr _Defaultabox(const _Defaultabox<_Uty>& _That) {
+            if (_That) {
+                _Value = static_cast<_Ty>(*_That);
+            }
+        }
+
+        template <_Not_same_as<_Ty> _Uty>
+            requires convertible_to<_Uty, _Ty>
+        constexpr _Defaultabox(_Defaultabox<_Uty>&& _That) {
+            if (_That) {
+                _Value = static_cast<_Ty>(_STD move(*_That));
+            }
+        }
+
         constexpr _Defaultabox& operator=(const _Ty& _Right) noexcept(
             is_nothrow_copy_assignable_v<_Ty>) requires copyable<_Ty> {
             _Value = _Right;
