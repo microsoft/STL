@@ -2700,6 +2700,10 @@ private:
             _STL_INTERNAL_STATIC_ASSERT(_Is_elem_cptr<_Char_or_ptr>::value);
         }
 
+        if (_Count > max_size()) {
+            _Xlen_string(); // result too long
+        }
+
         auto& _My_data  = _Mypair._Myval2;
         auto& _Al       = _Getal();
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
@@ -2731,10 +2735,6 @@ private:
             _ASAN_STRING_CREATE(*this);
             _Proxy._Release();
             return;
-        }
-
-        if (_Count > max_size()) {
-            _Xlen_string(); // result too long
         }
 
         const size_type _New_capacity = _Calculate_growth(_Count);
@@ -4861,12 +4861,12 @@ private:
 
         _My_data._Mysize = 0;
         _My_data._Myres  = _BUF_SIZE - 1;
-        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
             _Construct_in_place(_Mypair._Myval2._Bx);
         }
 #endif // _HAS_CXX20
+       // the _Traits::assign is last so the codegen doesn't think the char write can alias this
         _Traits::assign(_My_data._Bx._Buf[0], _Elem());
         _ASAN_STRING_CREATE(*this);
     }
@@ -4881,7 +4881,7 @@ private:
             _Destroy_in_place(_My_data._Bx._Ptr);
 #if _HAS_CXX20
             if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
-                _Construct_in_place(_Mypair._Myval2._Bx);
+                _Construct_in_place(_My_data._Bx);
             }
 #endif // _HAS_CXX20
             _Al.deallocate(_Ptr, _My_data._Myres + 1);
