@@ -156,23 +156,51 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
 
     template <class _Self>
     _CONSTEXPR20 void _Construct_from(_Self&& _Right) noexcept(
-        is_nothrow_constructible_v<_Ty, decltype((_STD forward<_Self>(_Right)._Value))>) {
+        is_nothrow_constructible_v<_Ty, decltype(*_STD forward<_Self>(_Right))>) {
         // initialize contained value from _Right iff it contains a value
         if (_Right._Has_value) {
-            _Construct(_STD forward<_Self>(_Right)._Value);
+            _Construct(*_STD forward<_Self>(_Right));
         }
     }
 
     template <class _Self>
     _CONSTEXPR20 void _Assign_from(_Self&& _Right) noexcept(
-        is_nothrow_constructible_v<_Ty, decltype((_STD forward<_Self>(_Right)._Value))>&&
-            is_nothrow_assignable_v<_Ty&, decltype((_STD forward<_Self>(_Right)._Value))>) {
+        is_nothrow_constructible_v<_Ty, decltype(*_STD forward<_Self>(_Right))>&&
+            is_nothrow_assignable_v<_Ty&, decltype(*_STD forward<_Self>(_Right))>) {
         // assign/initialize/destroy contained value from _Right
         if (_Right._Has_value) {
-            _Assign(_STD forward<_Self>(_Right)._Value);
+            _Assign(*_STD forward<_Self>(_Right));
         } else {
             this->reset();
         }
+    }
+
+    _NODISCARD constexpr _Ty& operator*() & noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        return this->_Value;
+    }
+
+    _NODISCARD constexpr const _Ty& operator*() const& noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        return this->_Value;
+    }
+
+    _NODISCARD constexpr _Ty&& operator*() && noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        return _STD move(this->_Value);
+    }
+
+    _NODISCARD constexpr const _Ty&& operator*() const&& noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        return _STD move(this->_Value);
     }
 };
 
@@ -379,30 +407,7 @@ public:
         return _STD addressof(this->_Value);
     }
 
-    _NODISCARD constexpr const _Ty& operator*() const& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-        return this->_Value;
-    }
-    _NODISCARD constexpr _Ty& operator*() & noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-        return this->_Value;
-    }
-    _NODISCARD constexpr _Ty&& operator*() && noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-        return _STD move(this->_Value);
-    }
-    _NODISCARD constexpr const _Ty&& operator*() const&& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-        return _STD move(this->_Value);
-    }
+    using _Mybase::operator*;
 
     constexpr explicit operator bool() const noexcept {
         return this->_Has_value;
