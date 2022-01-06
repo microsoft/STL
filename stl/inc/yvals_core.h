@@ -256,6 +256,7 @@
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P2210R2 Superior String Splitting
+// P2216R3 std::format Improvements
 // P2231R1 Completing constexpr In optional And variant
 // P2251R1 Require span And basic_string_view To Be Trivially Copyable
 //     (span always provides this behavior)
@@ -278,8 +279,10 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
+// P0288R9 move_only_function
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0448R4 <spanstream>
+// P0798R8 Monadic Operations For optional
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1072R10 basic_string::resize_and_overwrite
@@ -292,6 +295,7 @@
 // P1682R3 to_underlying() For Enumerations
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
+// P2077R3 Heterogeneous Erasure Overloads For Associative Containers
 // P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
@@ -420,6 +424,12 @@
 #else
 #define _NODISCARD_CTOR
 #endif
+
+#if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, VSO-568006
+#define _NODISCARD_FRIEND friend
+#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#define _NODISCARD_FRIEND _NODISCARD friend
+#endif // TRANSITION, VSO-568006
 
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
 // that certain type trait specializations have the standard-mandated semantics
@@ -571,10 +581,10 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202111L
+#define _MSVC_STL_UPDATE  202201L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
-#ifdef __CUDACC__
+#if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
 #if __CUDACC_VER_MAJOR__ < 10      \
     || (__CUDACC_VER_MAJOR__ == 10 \
         && (__CUDACC_VER_MINOR__ < 1 || (__CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ < 243)))
@@ -1269,7 +1279,7 @@
 #define __cpp_lib_erase_if                202002L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
-#define __cpp_lib_format 201907L
+#define __cpp_lib_format 202106L // P2216R3 std::format Improvements
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
@@ -1374,9 +1384,16 @@
 #define __cpp_lib_allocate_at_least 202106L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_byteswap       202110L
-#define __cpp_lib_invoke_r       202106L
-#define __cpp_lib_is_scoped_enum 202011L
+#define __cpp_lib_associative_heterogeneous_erasure 202110L
+#define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_invoke_r                          202106L
+#define __cpp_lib_is_scoped_enum                    202011L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_monadic_optional 202110L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
