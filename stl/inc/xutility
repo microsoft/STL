@@ -5404,7 +5404,6 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
     if constexpr (_Is_vb_iterator<_InIt> && is_same_v<_Ty, bool>) {
         return _Count_vbool(_First, _Last, _Val);
     } else {
-        using _Res_t      = _Iter_diff_t<_InIt>;
         auto _UFirst      = _Get_unwrapped(_First);
         const auto _ULast = _Get_unwrapped(_Last);
 
@@ -5424,7 +5423,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
         }
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
-        _Res_t _Count = 0;
+        _Iter_diff_t<_InIt> _Count = 0;
 
         for (; _UFirst != _ULast; ++_UFirst) {
             if (*_UFirst == _Val) {
