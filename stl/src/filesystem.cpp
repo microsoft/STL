@@ -892,7 +892,6 @@ struct alignas(long long) _Aligned_file_attrs {
     constexpr auto _Standard_info_data = __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Link_count;
 
     if (_Bitmask_includes(_Flags, _Basic_info_data | __std_fs_stats_flags::_Reparse_tag)) {
-        // we have data FileBasicInfo can fill in, that FileAttributeTagInfo wouldn't exactly fill in
         FILE_BASIC_INFO _Info;
         if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Info, sizeof(_Info))) {
             return __std_win_error{GetLastError()};
