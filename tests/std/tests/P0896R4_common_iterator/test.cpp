@@ -49,8 +49,15 @@ struct instantiator {
                 }
 
                 using ipointer = typename iterator_traits<Cit>::pointer;
-                if constexpr (_Has_member_arrow<Iter>) {
-                    STATIC_ASSERT(same_as<ipointer, decltype(declval<const Iter&>().operator->())>);
+                if constexpr (std::is_pointer_v<Iter> || _Has_member_arrow<const Iter&>) {
+                    STATIC_ASSERT(same_as<ipointer, const Iter&>);
+                } else if constexpr (std::is_reference_v<iter_reference_t<Iter>>) {
+                    STATIC_ASSERT(same_as<ipointer, std::add_pointer_t<iter_reference_t<Iter>>>);
+                } else if constexpr (std::constructible_from<iter_value_t<Iter>, iter_reference_t<Iter>>) {
+                    // proxy is a class type
+                    STATIC_ASSERT(std::is_class_v<ipointer>);
+                    // with a member operator->() const
+                    STATIC_ASSERT(&std::add_const_t<ipointer>::operator->);
                 } else {
                     STATIC_ASSERT(same_as<ipointer, void>);
                 }
