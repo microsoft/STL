@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 #include <benchmark/benchmark.h>
 //
 #include <algorithm>
@@ -8,8 +9,6 @@
 #include <vector>
 
 using namespace std;
-
-#pragma warning(disable : 4365)
 
 inline static vector<bool> createRandomVector(const size_t size) {
     static random_device rd;

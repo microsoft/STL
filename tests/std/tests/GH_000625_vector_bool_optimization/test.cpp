@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <vector>
 
-#pragma warning(disable : 4365)
+#pragma warning(disable : 4365) // conversion from 'unsigned __int64' to 'const __int64', signed/unsigned mismatch
 
 using namespace std;
 

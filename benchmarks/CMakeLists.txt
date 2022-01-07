@@ -1,8 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 project(msvc_standard_libraries_benchmarks LANGUAGES CXX)
 
-# # Benchmark Executable
+# Benchmark Executable
 find_package(benchmark REQUIRED)
 file(GLOB_RECURSE msvc_standard_libraries_benchmarks.sources CONFIGURE_DEPENDS std/**)
 
