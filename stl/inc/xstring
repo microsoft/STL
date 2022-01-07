@@ -4140,7 +4140,9 @@ public:
                 });
         }
 
-        const auto _Result_size = _STD move(_Op)(_Mypair._Myval2._Myptr(), _New_size);
+        auto _Arg_ptr           = _Mypair._Myval2._Myptr();
+        auto _Arg_size          = _New_size;
+        const auto _Result_size = _STD move(_Op)(_Arg_ptr, _Arg_size);
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
 #pragma warning(suppress : 4018) //  '<=': signed/unsigned mismatch, we already compared with 0, so it's safe
