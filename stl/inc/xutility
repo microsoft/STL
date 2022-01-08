@@ -188,12 +188,20 @@ struct pointer_traits<_Ty*> {
 };
 
 #if _HAS_CXX20
+#ifdef __cpp_lib_concepts
+template <class _Ty>
+concept _Has_to_address = requires(const _Ty& _Val) {
+    typename pointer_traits<_Ty>;
+    pointer_traits<_Ty>::to_address(_Val);
+};
+#else // ^^^ Use concept / use variable template vvv
 template <class _Ty, class = void>
-inline constexpr bool _Has_to_address_v = false; // determines whether _Ptr has pointer_traits<_Ptr>::to_address(p)
+inline constexpr bool _Has_to_address = false; // determines whether pointer_traits<_Ty> has to_address
 
 template <class _Ty>
 inline constexpr bool
-    _Has_to_address_v<_Ty, void_t<decltype(pointer_traits<_Ty>::to_address(_STD declval<const _Ty&>()))>> = true;
+    _Has_to_address<_Ty, void_t<decltype(pointer_traits<_Ty>::to_address(_STD declval<const _Ty&>()))>> = true;
+#endif // __cpp_lib_concepts
 
 template <class _Ty>
 _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
@@ -204,7 +212,7 @@ _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
 
 template <class _Ptr>
 _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
-    if constexpr (_Has_to_address_v<_Ptr>) {
+    if constexpr (_Has_to_address<_Ptr>) {
         return pointer_traits<_Ptr>::to_address(_Val);
     } else {
         return _STD to_address(_Val.operator->()); // plain pointer overload must come first
