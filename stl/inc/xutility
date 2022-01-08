@@ -4031,7 +4031,9 @@ _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // note: _Copy_unchecked has callers other than the copy family
     if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
         return _Copy_vbool(_First, _Last, _Dest);
-    } else if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
+    }
+
+    if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -4150,37 +4152,37 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     if (_Count <= 0) {
         return _Dest;
     }
+
+    auto _UFirst = _Get_unwrapped_n(_First, _Count);
+    auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
     if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
-        return _Copy_vbool(_First, _First + _Count, _Dest);
-    } else {
-        auto _UFirst = _Get_unwrapped_n(_First, _Count);
-        auto _UDest  = _Get_unwrapped_n(_Dest, _Count);
-        if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_assignable) {
-#if _HAS_CXX20
-            if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-            {
-                _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
-                _Seek_wrapped(_Dest, _UDest);
-                return _Dest;
-            }
-        }
-
-        for (;;) {
-            *_UDest = *_UFirst;
-            ++_UDest;
-            --_Count;
-            if (_Count == 0) { // note that we avoid an extra ++_First here to allow istream_iterator to work,
-                               // see LWG-2471
-                break;
-            }
-
-            ++_UFirst;
-        }
-
-        _Seek_wrapped(_Dest, _UDest);
+        return _Copy_vbool(_UFirst, _UFirst + _Count, _UDest);
     }
 
+    if constexpr (_Iter_copy_cat<decltype(_UFirst), decltype(_UDest)>::_Bitcopy_assignable) {
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
+            _Seek_wrapped(_Dest, _UDest);
+            return _Dest;
+        }
+    }
+
+    for (;;) {
+        *_UDest = *_UFirst;
+        ++_UDest;
+        --_Count;
+        if (_Count == 0) { // note that we avoid an extra ++_First here to allow istream_iterator to work,
+                           // see LWG-2471
+            break;
+        }
+
+        ++_UFirst;
+    }
+
+    _Seek_wrapped(_Dest, _UDest);
     return _Dest;
 }
 
@@ -4263,7 +4265,9 @@ _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // note: _Move_unchecked has callers other than the move family
     if constexpr (_Is_vb_iterator<_InIt> && _Is_vb_iterator<_OutIt>) {
         return _Copy_vbool(_First, _Last, _Dest);
-    } else if constexpr (_Iter_move_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
+    }
+
+    if constexpr (_Iter_move_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
