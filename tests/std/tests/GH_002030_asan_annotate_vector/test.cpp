@@ -922,6 +922,26 @@ void test_insert_n_throw() {
 }
 
 template <class Alloc>
+void test_empty() {
+    using T = typename Alloc::value_type;
+
+    vector<T, Alloc> v1;
+    v1.clear();
+    v1.resize(0);
+    v1.shrink_to_fit();
+    v1.assign(0, T());
+    v1.assign({});
+    v1 = {};
+
+    vector<T, Alloc> v2;
+    v1.assign(v2.begin(), v2.end());
+
+    vector<T, Alloc> v3;
+    v1 = v3;
+    v3 = move(v1);
+}
+
+template <class Alloc>
 void run_tests() {
     test_push_pop<Alloc>();
     test_reserve_shrink<Alloc>();
@@ -933,6 +953,7 @@ void run_tests() {
     test_insert_range<Alloc>();
     test_assign<Alloc>();
     test_resize<Alloc>();
+    test_empty<Alloc>();
 }
 
 template <class T, template <class, class, class> class AllocT>

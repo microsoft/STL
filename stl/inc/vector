@@ -1212,12 +1212,18 @@ public:
                 _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
                 _ASAN_VECTOR_RELEASE_GUARD;
             }
-        } else {
+
+            return;
+        }
+
+        if (_Newsize != 0) {
             const pointer _Newlast = _Myfirst + _Newsize;
             _STD fill(_Myfirst, _Newlast, _Val);
             _Destroy_range(_Newlast, _Mylast, _Al);
             _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
+        } else {
+            clear();
         }
     }
 
@@ -1307,10 +1313,21 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 void assign(_Iter _First, _Iter _Last) {
         _Adl_verify_range(_First, _Last);
+
+        if (_First == _Last) {
+            clear();
+            return;
+        }
+
         _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
     }
 
     _CONSTEXPR20 void assign(initializer_list<_Ty> _Ilist) {
+        if (_Ilist.size() == 0) {
+            clear();
+            return;
+        }
+
         _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
     }
 
@@ -1337,7 +1354,12 @@ public:
     }
 
     _CONSTEXPR20 vector& operator=(initializer_list<_Ty> _Ilist) {
-        _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
+        if (_Ilist.size() == 0) {
+            clear();
+        } else {
+            _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
+        }
+
         return *this;
     }
 
@@ -1597,6 +1619,10 @@ public:
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
+
+        if (_Myfirst == nullptr) {
+            return;
+        }
 
         _My_data._Orphan_all();
         _Destroy_range(_Myfirst, _Mylast, _Getal());
@@ -1936,6 +1962,7 @@ private:
                 _ASAN_VECTOR_CREATE_GUARD;
                 _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
             }
+
             return;
         }
 
@@ -1952,12 +1979,18 @@ private:
                 _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
                 _ASAN_VECTOR_RELEASE_GUARD;
             }
-        } else {
+
+            return;
+        }
+
+        if (_Newsize != 0) {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Move_unchecked(_First, _Last, _Myfirst);
             _Destroy_range(_Newlast, _Mylast, _Al);
             _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
+        } else {
+            clear();
         }
     }
 
