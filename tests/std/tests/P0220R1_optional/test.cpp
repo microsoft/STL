@@ -696,7 +696,9 @@ int run_test()
     {
         optional<B> opt;
         ASSERT_NOT_NOEXCEPT(std::hash<optional<B>>()(opt));
+#ifndef __EDG__ // TRANSITION, DevCom-1633478 / VSO-1460046
         ASSERT_NOT_NOEXCEPT(std::hash<optional<const B>>()(opt));
+#endif // ^^^ no workaround ^^^
     }
 
     {
