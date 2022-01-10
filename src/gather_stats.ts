@@ -278,8 +278,8 @@ function read_usernames() {
 type CookedPRNode = {
     id: number;
     opened: DateTime;
-    closed: DateTime;
-    merged: DateTime;
+    closed: DateTime | null;
+    merged: DateTime | null;
     reviews: DateTime[];
 };
 
@@ -327,30 +327,18 @@ function transform_pr_nodes(pr_nodes: RawPRNode[]) {
             const ret: CookedPRNode = {
                 id: pr_node.id,
                 opened: DateTime.fromISO(pr_node.createdAt),
-                closed: DateTime.fromISO(pr_node.closedAt ?? '2100-01-01'),
-                merged: DateTime.fromISO(pr_node.mergedAt ?? '2100-01-01'),
+                closed: pr_node.closedAt ? DateTime.fromISO(pr_node.closedAt) : null,
+                merged: pr_node.mergedAt ? DateTime.fromISO(pr_node.mergedAt) : null,
                 reviews: maintainer_reviews,
             };
             return ret;
         });
 }
 
-function calculate_wait(when: DateTime, opened: DateTime, reviews: DateTime[]) {
-    let latest_feedback = opened;
-
-    for (const review of reviews) {
-        if (latest_feedback < review && review < when) {
-            latest_feedback = review;
-        }
-    }
-
-    return when.diff(latest_feedback);
-}
-
 type CookedIssueNode = {
     id: number;
     opened: DateTime;
-    closed: DateTime;
+    closed: DateTime | null;
     labeled_cxx20: boolean;
     labeled_cxx23: boolean;
     labeled_lwg: boolean;
@@ -369,7 +357,7 @@ function transform_issue_nodes(issue_nodes: RawIssueNode[]) {
         const ret: CookedIssueNode = {
             id: node.id,
             opened: DateTime.fromISO(node.createdAt),
-            closed: DateTime.fromISO(node.closedAt ?? '2100-01-01'),
+            closed: node.closedAt ? DateTime.fromISO(node.closedAt) : null,
             labeled_cxx20: labels.includes('cxx20'),
             labeled_cxx23: labels.includes('cxx23'),
             labeled_lwg: labels.includes('LWG') && !labels.includes('vNext') && !labels.includes('blocked'),
@@ -378,6 +366,8 @@ function transform_issue_nodes(issue_nodes: RawIssueNode[]) {
         return ret;
     });
 }
+
+const sliding_window = Duration.fromObject({ days: 40 });
 
 function calculate_sliding_window(when: DateTime, merged: DateTime) {
     // A sliding window of 30 days would be simple, but would result in a noisy line as PRs abruptly leave the window.
@@ -431,6 +421,100 @@ function should_emit_data_point(rows: Row[], i: number, key: keyof Row) {
 }
 
 function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_issues: CookedIssueNode[]) {
+    // The original algorithm for calculating stats was simple but slow. For each day in the chart,
+    // we iterated over all PRs/issues and counted how many were open/etc. on that day.
+    // This involved a lot of repeated work, because it calculated each day independently.
+
+    // There's a faster way to calculate most lines. Consider a simple line, like the number of open bugs.
+    // Each bug affects the line only twice, producing a +1 delta on the day that it was opened, and
+    // a -1 delta on the day that it was closed. For each bug, we can record those "events", then sort them by date.
+    // Then, as we iterate over each day in the chart, we can consume the events that have "happened so far",
+    // which will update the number of open bugs without having to recalculate it from scratch.
+
+    // There are limited exceptions to this approach. The PR Age and Monthly Merged PRs stats are more complicated.
+    // We partially accelerate them by using events to update maps, allowing us
+    // to iterate over all PRs that were open (or recently merged) on that day.
+    // In the future, we may need to optimize this further, but this is fast enough for now.
+
+    type Event = {
+        date: DateTime;
+        action: () => void;
+    };
+
+    const events: Event[] = [];
+
+    const opened_prs = new Map<number, DateTime>(); // Tracks when currently open PRs were opened
+    const reviewed_prs = new Map<number, DateTime>(); // Tracks when currently open PRs were last reviewed (or opened)
+    const merged_prs = new Map<number, DateTime>(); // Tracks when recently merged PRs were merged
+
+    for (const pr of all_prs) {
+        events.push({
+            date: pr.opened,
+            action: () => {
+                opened_prs.set(pr.id, pr.opened);
+                reviewed_prs.set(pr.id, pr.opened);
+            },
+        });
+
+        for (const review of pr.reviews) {
+            events.push({ date: review, action: () => reviewed_prs.set(pr.id, review) });
+        }
+
+        if (pr.closed !== null) {
+            events.push({
+                date: pr.closed,
+                action: () => {
+                    opened_prs.delete(pr.id);
+                    reviewed_prs.delete(pr.id);
+                },
+            });
+        }
+
+        if (pr.merged !== null) {
+            const merge_date = pr.merged;
+            const window_end = merge_date.plus(sliding_window);
+            events.push({ date: merge_date, action: () => merged_prs.set(pr.id, merge_date) });
+            events.push({ date: window_end, action: () => merged_prs.delete(pr.id) });
+        }
+    }
+
+    let num_cxx20 = 0;
+    let num_cxx23 = 0;
+    let num_lwg = 0;
+    let num_issue = 0;
+    let num_bug = 0;
+
+    for (const issue of all_issues) {
+        for (const { t, change } of [
+            { t: issue.opened, change: 1 },
+            { t: issue.closed, change: -1 },
+        ]) {
+            if (t !== null) {
+                events.push({
+                    date: t,
+                    action: () => {
+                        // Avoid double-counting C++20 Features etc. and GitHub Issues.
+                        if (issue.labeled_cxx20) {
+                            num_cxx20 += change;
+                        } else if (issue.labeled_cxx23) {
+                            num_cxx23 += change;
+                        } else if (issue.labeled_lwg) {
+                            num_lwg += change;
+                        } else {
+                            num_issue += change;
+
+                            if (issue.labeled_bug) {
+                                num_bug += change;
+                            }
+                        }
+                    },
+                });
+            }
+        }
+    }
+
+    events.sort((a, b) => a.date.toMillis() - b.date.toMillis());
+
     const rows: Row[] = [];
 
     const progress_bar = new cliProgress.SingleBar(
@@ -449,48 +533,24 @@ function write_daily_table(script_start: DateTime, all_prs: CookedPRNode[], all_
         progress_bar.start(Math.ceil(script_start.diff(begin).as('days')), 0);
 
         for (let when = begin; when < script_start; when = when.plus({ days: 1 })) {
-            let num_merged = 0;
-            let num_pr = 0;
-            let num_cxx20 = 0;
-            let num_cxx23 = 0;
-            let num_lwg = 0;
-            let num_issue = 0;
-            let num_bug = 0;
-            let combined_pr_age = Duration.fromObject({});
-            let combined_pr_wait = Duration.fromObject({});
-
-            for (const pr of all_prs) {
-                num_merged += calculate_sliding_window(when, pr.merged);
-
-                if (when < pr.opened || pr.closed < when) {
-                    // This PR wasn't active; do nothing.
-                } else {
-                    ++num_pr;
-                    combined_pr_age = combined_pr_age.plus(when.diff(pr.opened));
-                    combined_pr_wait = combined_pr_wait.plus(calculate_wait(when, pr.opened, pr.reviews));
-                }
+            while (events.length > 0 && events[0].date < when) {
+                events[0].action();
+                events.shift();
             }
 
-            for (const issue of all_issues) {
-                if (when < issue.opened || issue.closed < when) {
-                    // This issue wasn't active; do nothing.
-                } else if (issue.labeled_cxx20) {
-                    // Avoid double-counting C++20 Features and GitHub Issues.
-                    ++num_cxx20;
-                } else if (issue.labeled_cxx23) {
-                    // Avoid double-counting C++23 Features and GitHub Issues.
-                    ++num_cxx23;
-                } else if (issue.labeled_lwg) {
-                    // Avoid double-counting LWG Resolutions and GitHub Issues.
-                    ++num_lwg;
-                } else {
-                    ++num_issue;
+            const num_merged = Array.from(merged_prs.values())
+                .map(t => calculate_sliding_window(when, t))
+                .reduce((x, y) => x + y, 0);
 
-                    if (issue.labeled_bug) {
-                        ++num_bug;
-                    }
-                }
-            }
+            const num_pr = opened_prs.size;
+
+            const zero_duration = Duration.fromObject({});
+            const combined_pr_age = Array.from(opened_prs.values())
+                .map(t => when.diff(t))
+                .reduce((x, y) => x.plus(y), zero_duration);
+            const combined_pr_wait = Array.from(reviewed_prs.values())
+                .map(t => when.diff(t))
+                .reduce((x, y) => x.plus(y), zero_duration);
 
             rows.push({
                 date: when,
@@ -546,9 +606,11 @@ function write_monthly_table(script_start: DateTime, all_prs: CookedPRNode[]) {
     const monthly_merges = new Map<string, number>();
 
     for (const pr of all_prs) {
-        const year_month = pr.merged.toFormat('yyyy-MM');
-        const old_value = monthly_merges.get(year_month) ?? 0;
-        monthly_merges.set(year_month, old_value + 1);
+        if (pr.merged !== null) {
+            const year_month = pr.merged.toFormat('yyyy-MM');
+            const old_value = monthly_merges.get(year_month) ?? 0;
+            monthly_merges.set(year_month, old_value + 1);
+        }
     }
 
     let str = 'const monthly_table = [\n';
