@@ -583,7 +583,7 @@ _NODISCARD __std_tzdb_leap_info* __stdcall __std_tzdb_get_leap_seconds(
         try {
             reg_ls_data = new __std_tzdb_leap_info[ls_size];
             status      = RegQueryValueExW(
-                leap_sec_key, reg_subkey_name, nullptr, nullptr, reinterpret_cast<LPBYTE>(reg_ls_data), &byte_size);
+                     leap_sec_key, reg_subkey_name, nullptr, nullptr, reinterpret_cast<LPBYTE>(reg_ls_data), &byte_size);
             if (status != ERROR_SUCCESS) {
                 *current_reg_ls_size = 0;
             }
