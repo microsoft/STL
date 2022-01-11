@@ -3500,8 +3500,9 @@ struct _Static_partitioned_partition2 {
 
             const auto _Merge_key   = _Team._Get_chunk_key(_Merge_index);
             const auto _Chunk_trues = _Merge_chunk_data._Chunk_trues;
-            _Results                = _Partition_merge(_Results, _Basis._Get_first(_Merge_index, _Merge_key._Start_at),
-                               _STD exchange(_Merge_chunk_data._Beginning_of_falses, {}), _Results_falses, _Chunk_trues);
+
+            _Results = _Partition_merge(_Results, _Basis._Get_first(_Merge_index, _Merge_key._Start_at),
+                _STD exchange(_Merge_chunk_data._Beginning_of_falses, {}), _Results_falses, _Chunk_trues);
             _Results_falses += _Merge_key._Size - _Chunk_trues;
             _Merge_chunk_data._State.store(_Chunk_state::_Done);
         }

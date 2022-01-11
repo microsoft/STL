@@ -2309,7 +2309,8 @@ _NODISCARD _OutputIt _Write_integral(
 
         if (_Separators > 0) {
             return _Write_separated_integer(_Buffer_start, _End, _Groups,
-                                    _STD use_facet<numpunct<_CharT>>(_Locale._Get()).thousands_sep(), _Separators, _STD move(_Out));
+                                    _STD use_facet<numpunct<_CharT>>(_Locale._Get()).thousands_sep(), //
+                                    _Separators, _STD move(_Out));
         }
         return _RANGES _Copy_unchecked(_Buffer_start, _End, _STD move(_Out)).out;
     };
@@ -2562,8 +2563,9 @@ _NODISCARD _OutputIt _Fmt_write(
 
         if (_Specs._Localized) {
             const auto& _Facet = _STD use_facet<numpunct<_CharT>>(_Locale._Get());
-            _Out               = _Write_separated_integer(
-                              _Buffer_start, _Integral_end, _Groups, _Facet.thousands_sep(), _Separators, _STD move(_Out));
+
+            _Out = _Write_separated_integer(
+                _Buffer_start, _Integral_end, _Groups, _Facet.thousands_sep(), _Separators, _STD move(_Out));
             if (_Radix_point != _Result.ptr || _Append_decimal) {
                 *_Out++         = _Facet.decimal_point();
                 _Append_decimal = false;

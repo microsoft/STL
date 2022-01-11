@@ -5536,8 +5536,9 @@ namespace ranges {
 
             // _Temp_count + 1 since we work on closed ranges
             const auto _Total_count = static_cast<iter_difference_t<_It>>(_Temp_count + 1);
-            auto _Result            = _Stable_partition_common_buffered(
-                           _STD move(_First), _STD move(_Last), _Pred, _Proj, _Total_count, _Temp_buf._Data, _Temp_buf._Capacity);
+
+            auto _Result = _Stable_partition_common_buffered(
+                _STD move(_First), _STD move(_Last), _Pred, _Proj, _Total_count, _Temp_buf._Data, _Temp_buf._Capacity);
             return {_STD move(_Result.first), _STD move(_Saved_last)};
         }
 
