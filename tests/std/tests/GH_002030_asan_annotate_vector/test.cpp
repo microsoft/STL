@@ -967,6 +967,7 @@ void run_tests() {
     test_insert_range<Alloc>();
     test_assign<Alloc>();
     test_resize<Alloc>();
+    test_clear<Alloc>();
     test_empty<Alloc>();
 }
 
