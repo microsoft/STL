@@ -333,6 +333,9 @@ Function PipInstall {
 
 Write-Host 'AdminUser password not supplied; assuming already running as AdminUser.'
 
+# Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
+cmd /c ver
+
 Write-Host 'Configuring AntiVirus exclusions...'
 Add-MpPreference -ExclusionPath C:\agent
 Add-MpPreference -ExclusionPath D:\
