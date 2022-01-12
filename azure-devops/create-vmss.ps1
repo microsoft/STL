@@ -170,7 +170,7 @@ Write-Progress `
   -Status 'Setting the subscription context' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Set-AzContext -SubscriptionName CPP_STL_GitHub
+$IgnoredAzureContext = Set-AzContext -SubscriptionName CPP_STL_GitHub
 
 ####################################################################################################
 Write-Progress `
@@ -180,7 +180,7 @@ Write-Progress `
 
 $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
-New-AzResourceGroup -Name $ResourceGroupName -Location $Location
+$IgnoredResourceGroup = New-AzResourceGroup -Name $ResourceGroupName -Location $Location
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ("AdminUser", $AdminPWSecure)
 
@@ -276,7 +276,7 @@ $VM = Set-AzVMSourceImage `
   -Version latest
 
 $VM = Set-AzVMBootDiagnostic -VM $VM -Disable
-New-AzVm `
+$IgnoredAzureOperationResponse = New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
   -VM $VM
@@ -302,7 +302,7 @@ Write-Progress `
   -Status 'Restarting VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+$IgnoredComputeLongRunningOperation = Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 
 ####################################################################################################
 Write-Progress `
@@ -320,7 +320,7 @@ Write-Progress `
   -Status 'Running provisioning script sysprep.ps1 in VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Invoke-AzVMRunCommand `
+$IgnoredRunCommandResult = Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
@@ -340,12 +340,12 @@ Write-Progress `
   -Status 'Converting VM to Image' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Stop-AzVM `
+$IgnoredComputeLongRunningOperation = Stop-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
   -Force
 
-Set-AzVM `
+$IgnoredComputeLongRunningOperation = Set-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
   -Generalized
@@ -361,8 +361,11 @@ Write-Progress `
   -Status 'Deleting unused VM and disk' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Remove-AzVM -Id $VM.ID -Force
-Remove-AzDisk -ResourceGroupName $ResourceGroupName -DiskName $PrototypeOSDiskName -Force
+$IgnoredComputeLongRunningOperation = Remove-AzVM -Id $VM.ID -Force
+$IgnoredOperationStatusResponse = Remove-AzDisk `
+  -ResourceGroupName $ResourceGroupName `
+  -DiskName $PrototypeOSDiskName `
+  -Force
 
 ####################################################################################################
 Write-Progress `
@@ -405,7 +408,7 @@ $Vmss = Set-AzVmssStorageProfile `
   -OsDiskCaching ReadWrite `
   -ImageReferenceId $Image.Id
 
-New-AzVmss `
+$Vmss = New-AzVmss `
   -ResourceGroupName $ResourceGroupName `
   -Name $VmssName `
   -VirtualMachineScaleSet $Vmss
