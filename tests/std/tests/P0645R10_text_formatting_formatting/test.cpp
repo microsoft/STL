@@ -992,16 +992,15 @@ void test_spec_replacement_field() {
     test_string_specs<charT>();
 }
 template <class charT, class... Args>
-void test_size_helper_impl(
-    const size_t expected_size, const _Basic_format_string<charT, Args...> fmt, const Args&... args) {
-    assert(formatted_size(fmt, args...) == expected_size);
-    assert(formatted_size(locale::classic(), fmt, args...) == expected_size);
+void test_size_helper_impl(const size_t expected_size, const _Basic_format_string<charT, Args...> fmt, Args&&... args) {
+    assert(formatted_size(fmt, forward<Args>(args)...) == expected_size);
+    assert(formatted_size(locale::classic(), fmt, forward<Args>(args)...) == expected_size);
 
     const auto signed_size = static_cast<ptrdiff_t>(expected_size);
     basic_string<charT> str;
     {
         str.resize(expected_size);
-        const auto res = format_to_n(str.begin(), signed_size, fmt, args...);
+        const auto res = format_to_n(str.begin(), signed_size, fmt, forward<Args>(args)...);
         assert(res.size == signed_size);
         assert(res.out - str.begin() == signed_size);
         assert(res.out == str.end());
@@ -1009,7 +1008,7 @@ void test_size_helper_impl(
 
         basic_string<charT> locale_str;
         locale_str.resize(expected_size);
-        format_to_n(locale_str.begin(), signed_size, locale::classic(), fmt, args...);
+        format_to_n(locale_str.begin(), signed_size, locale::classic(), fmt, forward<Args>(args)...);
         assert(str == locale_str);
         assert(locale_str.size() == expected_size);
     }
@@ -1017,7 +1016,7 @@ void test_size_helper_impl(
     {
         const auto half_size = expected_size / 2;
         half_str.resize(half_size);
-        const auto res = format_to_n(half_str.begin(), static_cast<ptrdiff_t>(half_size), fmt, args...);
+        const auto res = format_to_n(half_str.begin(), static_cast<ptrdiff_t>(half_size), fmt, forward<Args>(args)...);
         assert(res.size == signed_size);
         assert(static_cast<size_t>(res.out - half_str.begin()) == half_size);
         assert(res.out == half_str.end());

@@ -3143,14 +3143,14 @@ format_to_n_result<_OutputIt> format_to_n(_OutputIt _Out, const iter_difference_
 }
 
 template <class... _Types>
-_NODISCARD size_t formatted_size(const _Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
+_NODISCARD size_t formatted_size(_Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
     _Fmt_counting_buffer<char> _Buf;
     _STD vformat_to(_Fmt_it{_Buf}, _Fmt._Str, _STD make_format_args(_Args...));
     return _Buf._Count();
 }
 
 template <class... _Types>
-_NODISCARD size_t formatted_size(const _Fmt_wstring<_Types...> _Fmt, _Types&&... _Args) {
+_NODISCARD size_t formatted_size(_Fmt_wstring<_Types...> _Fmt, _Types&&... _Args) {
     _Fmt_counting_buffer<wchar_t> _Buf;
     _STD vformat_to(_Fmt_wit{_Buf}, _Fmt._Str, _STD make_wformat_args(_Args...));
     return _Buf._Count();
