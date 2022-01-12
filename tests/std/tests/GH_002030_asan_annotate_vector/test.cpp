@@ -922,6 +922,20 @@ void test_insert_n_throw() {
 }
 
 template <class Alloc>
+void test_clear() {
+    using T = typename Alloc::value_type;
+
+    vector<T, Alloc> v;
+    v.push_back(T());
+    v.assign(v.capacity() + 1, T());
+    assert(verify_vector(v));
+    v.clear();
+    assert(verify_vector(v));
+    v.clear();
+    assert(verify_vector(v));
+}
+
+template <class Alloc>
 void test_empty() {
     using T = typename Alloc::value_type;
 

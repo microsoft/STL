@@ -1626,7 +1626,7 @@ public:
 
         _My_data._Orphan_all();
         _Destroy_range(_Myfirst, _Mylast, _Getal());
-        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Mylast - _Myfirst));
+        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Myfirst - _Mylast));
         _Mylast = _Myfirst;
     }
 
