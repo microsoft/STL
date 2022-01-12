@@ -282,14 +282,15 @@ template <class _Clock, class _Duration>
 _INLINE_VAR constexpr bool _Is_trivially_swappable_v<chrono::time_point<_Clock, _Duration>> =
     _Is_trivially_swappable_v<_Duration>;
 
-template <intmax_t _Ax, intmax_t _Bx>
-struct _Lcm : integral_constant<intmax_t, (_Ax / _Gcd<_Ax, _Bx>::value) * _Bx> {}; // compute LCM of _Ax and _Bx
+_NODISCARD constexpr intmax_t _Lcm(const intmax_t _Ax, const intmax_t _Bx) noexcept {
+    return (_Ax / _Gcd(_Ax, _Bx)) * _Bx;
+}
 
 template <class _Rep1, class _Period1, class _Rep2, class _Period2>
 struct common_type<_CHRONO duration<_Rep1, _Period1>,
     _CHRONO duration<_Rep2, _Period2>> { // common type of two durations
     using type = _CHRONO duration<common_type_t<_Rep1, _Rep2>,
-        ratio<_Gcd<_Period1::num, _Period2::num>::value, _Lcm<_Period1::den, _Period2::den>::value>>;
+        ratio<_Gcd(_Period1::num, _Period2::num), _Lcm(_Period1::den, _Period2::den)>>;
 };
 
 template <class _Clock, class _Duration1, class _Duration2>
