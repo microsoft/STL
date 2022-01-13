@@ -515,6 +515,12 @@ private:
 
     _CONSTEXPR20 void _Modify_annotation(const difference_type _Count) const noexcept {
         // Extends/shrinks the annotated range by _Count
+        if (_Count == 0) { // nothing to do
+            // This also avoids calling _Apply_annotation() with null pointers
+            // when the vector has zero capacity, see GH-2464.
+            return;
+        }
+
         auto& _My_data = _Mypair._Myval2;
         _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Mylast + _Count);
     }
@@ -1212,18 +1218,12 @@ public:
                 _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
                 _ASAN_VECTOR_RELEASE_GUARD;
             }
-
-            return;
-        }
-
-        if (_Newsize != 0) {
+        } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _STD fill(_Myfirst, _Newlast, _Val);
             _Destroy_range(_Newlast, _Mylast, _Al);
             _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
-        } else {
-            clear();
         }
     }
 
@@ -1249,7 +1249,7 @@ private:
 
         // Trim.
         _Destroy_range(_Next, _Mylast, _Getal());
-        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Next - _Mylast));
+        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Next - _Mylast)); // negative when destroying elements
         _Mylast = _Next;
 
         // Append.
@@ -1313,21 +1313,10 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 void assign(_Iter _First, _Iter _Last) {
         _Adl_verify_range(_First, _Last);
-
-        if (_First == _Last) {
-            clear();
-            return;
-        }
-
         _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
     }
 
     _CONSTEXPR20 void assign(initializer_list<_Ty> _Ilist) {
-        if (_Ilist.size() == 0) {
-            clear();
-            return;
-        }
-
         _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
     }
 
@@ -1354,12 +1343,7 @@ public:
     }
 
     _CONSTEXPR20 vector& operator=(initializer_list<_Ty> _Ilist) {
-        if (_Ilist.size() == 0) {
-            clear();
-        } else {
-            _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
-        }
-
+        _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
         return *this;
     }
 
@@ -1608,7 +1592,7 @@ public:
 
             const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
             _Destroy_range(_Newlast, _Mylast, _Getal());
-            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newlast - _Mylast));
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newlast - _Mylast)); // negative when destroying elements
             _Mylast = _Newlast;
         }
 
@@ -1620,13 +1604,16 @@ public:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
-        if (_Myfirst == nullptr) {
+        if (_Myfirst == _Mylast) { // already empty, nothing to do
+            // This is an optimization for debug mode: we can avoid taking the debug lock to invalidate iterators.
+            // Note that when clearing an empty vector, this will preserve past-the-end iterators, which is allowed by
+            // N4901 [tab:container.seq.req] "a.clear() [...] may invalidate the past-the-end iterator".
             return;
         }
 
         _My_data._Orphan_all();
         _Destroy_range(_Myfirst, _Mylast, _Getal());
-        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Myfirst - _Mylast));
+        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Myfirst - _Mylast)); // negative when destroying elements
         _Mylast = _Myfirst;
     }
 
@@ -1979,18 +1966,12 @@ private:
                 _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
                 _ASAN_VECTOR_RELEASE_GUARD;
             }
-
-            return;
-        }
-
-        if (_Newsize != 0) {
+        } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Move_unchecked(_First, _Last, _Myfirst);
             _Destroy_range(_Newlast, _Mylast, _Al);
             _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
-        } else {
-            clear();
         }
     }
 

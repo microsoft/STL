@@ -950,6 +950,10 @@ void test_empty() {
     vector<T, Alloc> v2;
     v1.assign(v2.begin(), v2.end());
 
+    input_iterator_tester<T, 11> in;
+    auto e = in.end();
+    v1.assign(e, e); // empty range of input iterators
+
     vector<T, Alloc> v3;
     v1 = v3;
     v3 = move(v1);
