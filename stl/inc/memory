@@ -171,7 +171,7 @@ namespace ranges {
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
-                for (; _Count > 0 && _OFirst != _OLast; --_Count, (void) ++_IFirst) {
+                for (; _Count > 0 && _Backout._Last != _OLast; --_Count, (void) ++_IFirst) {
                     _Backout._Emplace_back(*_IFirst);
                 }
 
