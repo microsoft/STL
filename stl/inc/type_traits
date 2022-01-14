@@ -1317,7 +1317,7 @@ struct _Identity {
     using type = _Ty;
 };
 template <class _Ty>
-using _Identity_t = typename _Identity<_Ty>::type;
+using _Identity_t _MSVC_KNOWN_SEMANTICS = typename _Identity<_Ty>::type;
 
 #if _HAS_CXX20
 template <class _Ty>
@@ -1842,7 +1842,7 @@ void ref(const _Ty&&) = delete;
 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<_Ty> ref(reference_wrapper<_Ty> _Val) noexcept {
-    return _STD ref(_Val.get());
+    return _Val;
 }
 
 template <class _Ty>
@@ -1855,7 +1855,7 @@ void cref(const _Ty&&) = delete;
 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<const _Ty> cref(reference_wrapper<_Ty> _Val) noexcept {
-    return _STD cref(_Val.get());
+    return _Val;
 }
 
 #if _HAS_CXX20
