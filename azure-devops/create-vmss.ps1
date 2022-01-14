@@ -103,7 +103,7 @@ function New-Password {
 
   # This 64-character alphabet generates 6 bits of entropy per character.
   # The power-of-2 alphabet size allows us to select a character by masking a random Byte with bitwise-AND.
-  $alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
+  $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
   $mask = 63
   if ($alphabet.Length -ne 64) {
     throw 'Bad alphabet length'
@@ -158,7 +158,7 @@ function Wait-Shutdown {
       }
     }
 
-    Write-Host "... not stopped yet, sleeping for 10 seconds"
+    Write-Host '... not stopped yet, sleeping for 10 seconds'
     Start-Sleep -Seconds 10
   }
 }
@@ -182,7 +182,7 @@ $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
 $IgnoredResourceGroup = New-AzResourceGroup -Name $ResourceGroupName -Location $Location
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
-$Credential = New-Object System.Management.Automation.PSCredential ("AdminUser", $AdminPWSecure)
+$Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
 ####################################################################################################
 Write-Progress `
@@ -236,7 +236,7 @@ $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
 $SubnetName = $ResourceGroupName + '-Subnet'
 $Subnet = New-AzVirtualNetworkSubnetConfig `
   -Name $SubnetName `
-  -AddressPrefix "10.0.0.0/16" `
+  -AddressPrefix '10.0.0.0/16' `
   -NetworkSecurityGroup $NetworkSecurityGroup
 
 $VirtualNetworkName = $ResourceGroupName + '-Network'
@@ -244,7 +244,7 @@ $VirtualNetwork = New-AzVirtualNetwork `
   -Name $VirtualNetworkName `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
-  -AddressPrefix "10.0.0.0/16" `
+  -AddressPrefix '10.0.0.0/16' `
   -Subnet $Subnet
 
 ####################################################################################################

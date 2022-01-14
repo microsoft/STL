@@ -352,7 +352,7 @@ InstallCuda -Url $CudaUrl -Features $CudaFeatures
 Write-Host 'Updating PATH...'
 
 # Step 1: Read the system path, which was just updated by installing Python.
-$currentSystemPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$currentSystemPath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
 
 # Step 2: Update the local path (for this running script), so PipInstall can run python.exe.
 # Additional directories can be added here (e.g. if we extracted a zip file
@@ -360,7 +360,7 @@ $currentSystemPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
 $Env:PATH="$($currentSystemPath)"
 
 # Step 3: Update the system path, permanently recording any additional directories that were added in the previous step.
-[Environment]::SetEnvironmentVariable("Path", "$Env:PATH", "Machine")
+[Environment]::SetEnvironmentVariable('Path', "$Env:PATH", 'Machine')
 
 Write-Host 'Finished updating PATH!'
 
@@ -374,7 +374,7 @@ Write-Host 'Finished running PipInstall!'
 Write-Host 'Setting other environment variables...'
 
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
-[Environment]::SetEnvironmentVariable("VSCMD_SKIP_SENDTELEMETRY", "1", "Machine")
+[Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
 
 Write-Host 'Finished setting other environment variables!'
 
