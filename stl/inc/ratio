@@ -24,7 +24,7 @@ _NODISCARD constexpr intmax_t _Abs(const intmax_t _Val) noexcept {
 }
 
 template <intmax_t _Ax, intmax_t _Bx, bool _Sfinae = false,
-    bool _Good = (_Abs(_Ax) <= INTMAX_MAX / (_Bx == 0 ? 1 : _Abs(_Bx)))>
+    bool _Good = _Abs(_Ax) <= INTMAX_MAX / (_Bx == 0 ? 1 : _Abs(_Bx))>
 struct _Safe_mult : integral_constant<intmax_t, _Ax * _Bx> {}; // computes _Ax * _Bx without overflow
 
 template <intmax_t _Ax, intmax_t _Bx, bool _Sfinae>
@@ -45,11 +45,12 @@ struct _Safe_addX<_Ax, _Bx, false, false> { // _Ax + _Bx would overflow
 };
 
 template <intmax_t _Ax, intmax_t _Bx>
-struct _Safe_add : _Safe_addX<_Ax, _Bx, _Sign_of(_Ax) != _Sign_of(_Bx), (_Abs(_Ax) <= INTMAX_MAX - _Abs(_Bx))>::type {
+struct _Safe_add : _Safe_addX<_Ax, _Bx, _Sign_of(_Ax) != _Sign_of(_Bx), _Abs(_Ax) <= INTMAX_MAX - _Abs(_Bx)>::type {
     // computes _Ax + _Bx, forbids overflow
 };
 
 _NODISCARD constexpr intmax_t _Gcd(intmax_t _Ax, intmax_t _Bx) noexcept {
+    // computes GCD of abs(_Ax) and abs(_Bx)
     if (_Ax == 0 && _Bx == 0) {
         return 1; // contrary to mathematical convention; avoids division by 0 in ratio_less
     }
