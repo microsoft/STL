@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <assert.h>
 #include <format>
+#include <iterator>
 #include <limits>
 #include <locale>
-#include <sstream>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -174,9 +174,6 @@ void test_mixed_custom_formattable_type() {
     test_numeric_mixed_args_custom_formattable_type<double, charT>();
 }
 
-template <class charT>
-void test_basic_custom_formatting() {}
-
 int main() {
     string str;
 
@@ -194,6 +191,8 @@ int main() {
     format_to_n(back_insert_iterator(str), 5, locale{}, "{}", basic_custom_formattable_type{"f"});
     assert(str == "f");
     str.clear();
+    assert(formatted_size("{}", basic_custom_formattable_type{"f"}) == 1);
+    assert(formatted_size(locale{}, "{}", basic_custom_formattable_type{"f"}) == 1);
 
 
     assert(format("{}", move_only_custom_formattable_type{"f"}) == "f"s);
@@ -210,6 +209,8 @@ int main() {
     format_to_n(back_insert_iterator(str), 5, locale{}, "{}", move_only_custom_formattable_type{"f"});
     assert(str == "f");
     str.clear();
+    assert(formatted_size("{}", move_only_custom_formattable_type{"f"}) == 1);
+    assert(formatted_size(locale{}, "{}", move_only_custom_formattable_type{"f"}) == 1);
 
 
     test_custom_formattable_type<char>();
