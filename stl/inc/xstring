@@ -2599,7 +2599,7 @@ public:
 
             // initialize from [_First, _Last), input iterators
             _Tidy_deallocate_guard<basic_string> _Guard{this};
-            for (; _UFirst != _UFirst; ++_UFirst) {
+            for (; _UFirst != _ULast; ++_UFirst) {
                 push_back(*_UFirst);
             }
 
