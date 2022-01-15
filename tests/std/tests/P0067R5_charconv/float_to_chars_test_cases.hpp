@@ -36,7 +36,8 @@
 // (Keep the cgmanifest.json commitHash in sync.)
 
 
-#pragma once
+#ifndef FLOAT_TO_CHARS_TEST_CASES_HPP
+#define FLOAT_TO_CHARS_TEST_CASES_HPP
 
 #include <charconv>
 
@@ -544,3 +545,5 @@ inline constexpr FloatToCharsTestCase float_to_chars_test_cases[] = {
     {0x1p87f, chars_format::scientific, "1.5474251e+26"},
     {0x1p-96f, chars_format::scientific, "1.2621775e-29"},
 };
+
+#endif // FLOAT_TO_CHARS_TEST_CASES_HPP

@@ -66,6 +66,7 @@
 // P1164R1 Making create_directory() Intuitive
 // P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
+// P2401R0 Conditional noexcept For exchange()
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -118,6 +119,8 @@
 //     (the std::invoke function only; other components like bind and reference_wrapper are C++20 only)
 // P1518R2 Stop Overconstraining Allocators In Container Deduction Guides
 // P2162R2 Inheriting From variant
+// P2251R1 Require span And basic_string_view To Be Trivially Copyable
+//     (basic_string_view always provides this behavior)
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -253,11 +256,18 @@
 // P2106R0 Range Algorithm Result Types
 // P2116R0 Removing tuple-Like Protocol Support From Fixed-Extent span
 // P2210R2 Superior String Splitting
+// P2216R3 std::format Improvements
 // P2231R1 Completing constexpr In optional And variant
+// P2251R1 Require span And basic_string_view To Be Trivially Copyable
+//     (span always provides this behavior)
 // P2259R1 Repairing Input Range Adaptors And counted_iterator
+// P2281R1 Clarifying Range Adaptor Objects
 // P2325R3 Views Should Not Be Required To Be Default Constructible
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
+// P2372R3 Fixing Locale Handling In chrono Formatters
+// P2415R2 What Is A view?
+// P2432R1 Fix istream_view
 // P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
@@ -269,16 +279,23 @@
 // Other C++20 deprecation warnings
 
 // _HAS_CXX23 directly controls:
+// P0288R9 move_only_function
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0448R4 <spanstream>
+// P0798R8 Monadic Operations For optional
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
+// P1072R10 basic_string::resize_and_overwrite
 // P1132R7 out_ptr(), inout_ptr()
+// P1147R1 Printing volatile Pointers
+// P1272R4 byteswap()
 // P1425R4 Iterator Pair Constructors For stack And queue
+// P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
+// P2077R3 Heterogeneous Erasure Overloads For Associative Containers
 // P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
@@ -379,20 +396,6 @@
 // * unique_copy
 
 #include <vcruntime.h>
-
-// TRANSITION, <vcruntime.h> should define _HAS_CXX23
-#ifndef _HAS_CXX23
-#if _HAS_CXX20 && (defined(_MSVC_LANG) && _MSVC_LANG > 202002L || __cplusplus > 202002L)
-#define _HAS_CXX23 1
-#else
-#define _HAS_CXX23 0
-#endif
-#endif // _HAS_CXX23
-
-#if _HAS_CXX23 && !_HAS_CXX20
-#error _HAS_CXX23 must imply _HAS_CXX20.
-#endif
-
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
 #ifndef _STL_WARNING_LEVEL
@@ -421,6 +424,12 @@
 #else
 #define _NODISCARD_CTOR
 #endif
+
+#if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, VSO-568006
+#define _NODISCARD_FRIEND friend
+#else // ^^^ workaround ^^^ / vvv no workaround vvv
+#define _NODISCARD_FRIEND _NODISCARD friend
+#endif // TRANSITION, VSO-568006
 
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
 // that certain type trait specializations have the standard-mandated semantics
@@ -572,10 +581,10 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202109L
+#define _MSVC_STL_UPDATE  202201L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
-#ifdef __CUDACC__
+#if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
 #if __CUDACC_VER_MAJOR__ < 10      \
     || (__CUDACC_VER_MAJOR__ == 10 \
         && (__CUDACC_VER_MINOR__ < 1 || (__CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ < 243)))
@@ -1270,7 +1279,7 @@
 #define __cpp_lib_erase_if                202002L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
-#define __cpp_lib_format 201907L
+#define __cpp_lib_format 202106L // P2216R3 std::format Improvements
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
@@ -1300,7 +1309,7 @@
 #define __cpp_lib_polymorphic_allocator   201902L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
-#define __cpp_lib_ranges 202106L
+#define __cpp_lib_ranges 202110L
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
@@ -1341,7 +1350,7 @@
 #define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
+#if _HAS_CXX20
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
 #define __cpp_lib_variant  202106L // P2231R1 Completing constexpr In optional And variant
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
@@ -1375,17 +1384,27 @@
 #define __cpp_lib_allocate_at_least 202106L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_invoke_r       202106L
-#define __cpp_lib_is_scoped_enum 202011L
+#define __cpp_lib_associative_heterogeneous_erasure 202110L
+#define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_invoke_r                          202106L
+#define __cpp_lib_is_scoped_enum                    202011L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_out_ptr 202106L
+#define __cpp_lib_monadic_optional 202110L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_spanstream      202106L
-#define __cpp_lib_stdatomic_h     202011L
-#define __cpp_lib_string_contains 202011L
-#define __cpp_lib_to_underlying   202102L
+#define __cpp_lib_move_only_function 202110L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_starts_ends_with 202106L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_spanstream                  202106L
+#define __cpp_lib_stdatomic_h                 202011L
+#define __cpp_lib_string_contains             202011L
+#define __cpp_lib_string_resize_and_overwrite 202110L
+#define __cpp_lib_to_underlying               202102L
 #endif // _HAS_CXX23
 
 #define __cpp_lib_experimental_erase_if   201411L

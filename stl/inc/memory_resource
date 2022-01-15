@@ -356,8 +356,7 @@ namespace pmr {
             void* const _Ptr                 = _Resource->allocate(_Bytes, _Align);
             _Check_alignment(_Ptr, _Align);
 
-            _Oversized_header* const _Hdr =
-                reinterpret_cast<_Oversized_header*>(reinterpret_cast<char*>(_Ptr) + _Bytes) - 1;
+            _Oversized_header* const _Hdr = reinterpret_cast<_Oversized_header*>(static_cast<char*>(_Ptr) + _Bytes) - 1;
 
             _Hdr->_Size  = _Bytes;
             _Hdr->_Align = _Align;
@@ -664,7 +663,7 @@ namespace pmr {
             }
 
             void* const _Result = _Current_buffer;
-            _Current_buffer     = reinterpret_cast<char*>(_Current_buffer) + _Bytes;
+            _Current_buffer     = static_cast<char*>(_Current_buffer) + _Bytes;
             _Space_available -= _Bytes;
             return _Result;
         }

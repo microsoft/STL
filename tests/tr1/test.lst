@@ -4,9 +4,12 @@
 tests\algorithm
 tests\array
 tests\atomic
-tests\atomic1
-tests\atomic2
-tests\atomic4
+
+# TRANSITION, flaky tests
+# tests\atomic1
+# tests\atomic2
+# tests\atomic4
+
 tests\bitset
 tests\cctype
 tests\cerrno
@@ -22,7 +25,10 @@ tests\codecvt
 tests\complex1
 tests\complex2
 tests\complex3
-tests\condition_variable
+
+# TRANSITION, flaky tests
+# tests\condition_variable
+
 tests\csetjmp
 tests\csignal
 tests\cstdarg

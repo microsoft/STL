@@ -303,7 +303,8 @@ int main() {
 
     {
         puts("Testing <format>.");
-        assert(format("{} {}", "testing", "format") == "testing format");
+        assert(format("{} {}", 1729, "kittens") == "1729 kittens");
+        assert(format(L"{} {}", 1729, L"kittens") == L"1729 kittens");
     }
 
     {
@@ -709,7 +710,6 @@ int main() {
             assert(read == expected);
         }
 
-#if 0 // TRANSITION, DevCom-1511903
         const char const_buffer[] = "1 2 3 4 5";
         basic_ispanstream<char> is_const_buffer{span<const char>{const_buffer}};
         read = 0;
@@ -718,7 +718,6 @@ int main() {
             is_const_buffer >> read;
             assert(read == expected);
         }
-#endif // ^^^ no workaround ^^^
 
         const auto expected = "102030"sv;
         char obuffer[10];

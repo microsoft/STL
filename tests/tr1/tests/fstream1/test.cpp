@@ -5,19 +5,14 @@
 #define TEST_NAME "<fstream>, part 1"
 
 #include "tdefs.h"
+#include "temp_file_name.h"
 #include <assert.h>
 #include <fstream>
 #include <string>
 
-#undef tmpnam
-#define tmpnam(x) _tempnam(".", "")
-
 void test_main() { // test basic workings of char fstream definitions
-    const char* tn = CSTD tmpnam(0);
-
-    assert(tn != nullptr);
-
-    STD string tn_str(tn);
+    STD string tn_str = temp_file_name();
+    const char* tn    = tn_str.c_str();
 
     // test output file opening
     STD ofstream ofs(tn);

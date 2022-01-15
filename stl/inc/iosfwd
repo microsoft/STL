@@ -136,6 +136,11 @@ private:
 
 using streampos  = fpos<_Mbstatet>;
 using wstreampos = streampos;
+#ifdef __cpp_lib_char8_t
+using u8streampos = streampos;
+#endif // __cpp_lib_char8_t
+using u16streampos = streampos;
+using u32streampos = streampos;
 
 class locale;
 template <class _Facet>

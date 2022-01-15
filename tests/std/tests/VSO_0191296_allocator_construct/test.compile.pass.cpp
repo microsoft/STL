@@ -134,6 +134,8 @@ struct construct_applying_allocator {
     template <typename Other>
     construct_applying_allocator(const construct_applying_allocator<Other, POCCA, POCMA, POCS>&) {}
 
+    construct_applying_allocator& operator=(const construct_applying_allocator&) = default;
+
     using propagate_on_container_copy_assignment = std::bool_constant<POCCA>;
     using propagate_on_container_move_assignment = std::bool_constant<POCMA>;
     using propagate_on_container_swap            = std::bool_constant<POCS>;

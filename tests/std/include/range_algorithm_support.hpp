@@ -453,11 +453,11 @@ namespace test {
             ++ptr_;
         }
 
-        [[nodiscard]] constexpr friend Element&& iter_move(iterator const& i) requires at_least<input> {
+        [[nodiscard]] friend constexpr Element&& iter_move(iterator const& i) requires at_least<input> {
             return std::move(*i.ptr_);
         }
 
-        constexpr friend void iter_swap(iterator const& x, iterator const& y)
+        friend constexpr void iter_swap(iterator const& x, iterator const& y)
             noexcept(std::is_nothrow_swappable_v<Element>) requires at_least<input> && std::swappable<Element> {
             ranges::swap(*x.ptr_, *y.ptr_);
         }
@@ -891,7 +891,7 @@ struct with_output_iterators {
 template <class Continuation, class Element>
 struct with_writable_iterators {
     template <class... Args>
-    static constexpr void call() {
+    static constexpr bool call() {
         using namespace test;
         using test::iterator;
 
@@ -902,6 +902,8 @@ struct with_writable_iterators {
             iterator<input, Element, CanDifference::no, CanCompare::no, ProxyRef::yes>>();
 
         with_output_iterators<Continuation, Element>::template call<Args...>();
+
+        return true;
     }
 };
 
@@ -1448,4 +1450,9 @@ concept CanIndex = requires(R&& r, const ranges::range_difference_t<R> i) {
 template <class R>
 concept CanBool = requires(R&& r) {
     std::forward<R>(r) ? true : false;
+};
+
+template <class I>
+concept CanIterSwap = requires(I&& i1, I&& i2) {
+    ranges::iter_swap(std::forward<I>(i1), std::forward<I>(i2));
 };

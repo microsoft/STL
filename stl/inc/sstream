@@ -189,6 +189,7 @@ public:
                 _Mystate &= ~_Allocated;
             }
         }
+
         _Tidy();
         return _Result;
     }
@@ -204,27 +205,20 @@ public:
         _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
     }
 
-    void _Str(_Mystr&& _Newstr, _Equal_allocators) {
-        _Tidy();
-        _Pocma(_Al, _Newstr._Getal());
-        _Init_string_inplace(_STD move(_Newstr), _Mystate);
-    }
-
-    void _Str(_Mystr&& _Newstr, _Propagate_allocators) {
-        _Str(_STD move(_Newstr), _Equal_allocators{});
-    }
-
-    void _Str(_Mystr&& _Newstr, _No_propagate_allocators) {
-        if (_Al == _Newstr._Getal()) {
-            _Str(_STD move(_Newstr), _Equal_allocators{});
-        } else {
-            _Tidy();
-            _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
-        }
-    }
-
     void str(_Mystr&& _Newstr) {
-        _Str(_STD move(_Newstr), _Choose_pocma<_Alloc>{});
+        auto& _Newstr_al          = _Newstr._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alloc>;
+        if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            if (_Al != _Newstr_al) {
+                _Tidy();
+                _Init(_Newstr.c_str(), _Newstr.size(), _Mystate);
+                return;
+            }
+        }
+
+        _Tidy();
+        _Pocma(_Al, _Newstr_al);
+        _Init_string_inplace(_STD move(_Newstr), _Mystate);
     }
 
     _NODISCARD allocator_type get_allocator() const noexcept {
@@ -464,29 +458,27 @@ protected:
 
 #if _HAS_CXX20
     void _Init_string_inplace(_Mystr&& _Str, int _State) {
-        _State |= _From_rvalue;
-
-        auto [_Ptr, _Size, _Res] = _Str._Release_to_buffer(_Al);
-        _Elem* const _Pnew       = _Unfancy(_Ptr);
-        if (_Res != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
-            // finite buffer that can be read or written, set it up
-            _Seekhigh        = _Pnew + _Size;
-            auto _End_buffer = _Pnew + _Res;
-
-            _Mysb::setp(_Pnew, (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew, _End_buffer);
-
-            if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
-                _Mysb::setg(_Pnew, nullptr, _Pnew);
-            } else {
-                _Mysb::setg(_Pnew, _Pnew, _Seekhigh);
-            }
-
-            _State |= _Allocated;
-        } else {
+        if ((_State & _Noread) && (_State & _Constant)) { // Cannot read / write buffer, do nothing
             _Seekhigh = nullptr;
+            _Mystate  = _State | _From_rvalue;
+            return;
         }
 
-        _Mystate = _State;
+        // finite buffer that can be read or written, set it up
+        auto [_Ptr, _Size, _Res] = _Str._Release_to_buffer(_Al);
+        _Elem* const _Pnew       = _Unfancy(_Ptr);
+        _Seekhigh                = _Pnew + _Size;
+        auto _Next               = (_State & (_Atend | _Append)) ? _Seekhigh : _Pnew;
+        auto _End_buffer         = _Pnew + _Res;
+
+        _Mysb::setp(_Pnew, _Next, _End_buffer);
+        if (_State & _Noread) { // maintain "_Allocated == eback() points to buffer base" invariant
+            _Mysb::setg(_Pnew, nullptr, _Pnew);
+        } else {
+            _Mysb::setg(_Pnew, _Pnew, _Seekhigh);
+        }
+
+        _Mystate = _State | _Allocated | _From_rvalue;
     }
 #endif // _HAS_CXX20
 
