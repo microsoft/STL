@@ -10,6 +10,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 using namespace std;
 
 // copied from the text_formatting_formatting test case
@@ -146,6 +147,28 @@ void test_numeric_mixed_args_custom_formattable_type() {
     }
 }
 
+template <class CustomFormattableType>
+void test_format_family_overloads() {
+    string str;
+
+    assert(format("{}", CustomFormattableType{"f"}) == "f"s);
+    assert(format(locale{}, "{}", CustomFormattableType{"f"}) == "f"s);
+    format_to(back_insert_iterator(str), "{}", CustomFormattableType{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to(back_insert_iterator(str), locale{}, "{}", CustomFormattableType{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to_n(back_insert_iterator(str), 5, "{}", CustomFormattableType{"f"});
+    assert(str == "f");
+    str.clear();
+    format_to_n(back_insert_iterator(str), 5, locale{}, "{}", CustomFormattableType{"f"});
+    assert(str == "f");
+    str.clear();
+    assert(formatted_size("{}", CustomFormattableType{"f"}) == 1);
+    assert(formatted_size(locale{}, "{}", CustomFormattableType{"f"}) == 1);
+}
+
 template <class charT>
 void test_custom_formattable_type() {
     test_numeric_custom_formattable_type<int, charT>();
@@ -175,44 +198,8 @@ void test_mixed_custom_formattable_type() {
 }
 
 int main() {
-    string str;
-
-    assert(format("{}", basic_custom_formattable_type{"f"}) == "f"s);
-    assert(format(locale{}, "{}", basic_custom_formattable_type{"f"}) == "f"s);
-    format_to(back_insert_iterator(str), "{}", basic_custom_formattable_type{"f"});
-    assert(str == "f");
-    str.clear();
-    format_to(back_insert_iterator(str), locale{}, "{}", basic_custom_formattable_type{"f"});
-    assert(str == "f");
-    str.clear();
-    format_to_n(back_insert_iterator(str), 5, "{}", basic_custom_formattable_type{"f"});
-    assert(str == "f");
-    str.clear();
-    format_to_n(back_insert_iterator(str), 5, locale{}, "{}", basic_custom_formattable_type{"f"});
-    assert(str == "f");
-    str.clear();
-    assert(formatted_size("{}", basic_custom_formattable_type{"f"}) == 1);
-    assert(formatted_size(locale{}, "{}", basic_custom_formattable_type{"f"}) == 1);
-
-
-    assert(format("{}", move_only_custom_formattable_type{"f"}) == "f"s);
-    assert(format(locale{}, "{}", move_only_custom_formattable_type{"f"}) == "f"s);
-    format_to(back_insert_iterator(str), "{}", move_only_custom_formattable_type{"f"});
-    assert(str == "f");
-    str.clear();
-    format_to(back_insert_iterator(str), locale{}, "{}", move_only_custom_formattable_type{"f"});
-    assert(str == "f");
-    str.clear();
-    format_to_n(back_insert_iterator(str), 5, "{}", move_only_custom_formattable_type{"f"});
-    assert(str == "f");
-    str.clear();
-    format_to_n(back_insert_iterator(str), 5, locale{}, "{}", move_only_custom_formattable_type{"f"});
-    assert(str == "f");
-    str.clear();
-    assert(formatted_size("{}", move_only_custom_formattable_type{"f"}) == 1);
-    assert(formatted_size(locale{}, "{}", move_only_custom_formattable_type{"f"}) == 1);
-
-
+    test_format_family_overloads<basic_custom_formattable_type>();
+    test_format_family_overloads<move_only_custom_formattable_type>();
     test_custom_formattable_type<char>();
     test_custom_formattable_type<wchar_t>();
     test_mixed_custom_formattable_type<char>();
