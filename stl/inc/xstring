@@ -2568,10 +2568,6 @@ private:
             return;
         }
 
-        if (_Capacity == _BUF_SIZE - 1) { // TRANSITION, DevCom-1527920
-            return;
-        }
-
         // Needs to consider the Null-terminator
         const char* _First    = reinterpret_cast<const char*>(_Ptr);
         const char* _End      = reinterpret_cast<const char*>(_Ptr + _Capacity + 1);

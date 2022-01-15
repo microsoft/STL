@@ -167,11 +167,6 @@ public:
 
 template <class CharType, class Alloc>
 bool verify_string(basic_string<CharType, char_traits<CharType>, Alloc>& str) {
-    constexpr size_t sso_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(CharType)) - 1;
-    if (str.capacity() == sso_size) { // TRANSITION, DevCom-1527920
-        return true;
-    }
-
     size_t buffer_size  = (str.capacity() + 1) * sizeof(CharType);
     void* buffer        = const_cast<void*>(static_cast<const void*>(str.data()));
     void* aligned_start = align(8, 1, buffer, buffer_size);
@@ -1666,6 +1661,7 @@ void test_exceptions() {
             assert(verify_string(append_iterator));
         }
 
+#if 0 // TRANSITION, DevCom-1527920
         str append_iterator_sso{input_sso};
         try {
             assert(verify_string(append_iterator_sso));
@@ -1674,6 +1670,7 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(append_iterator_sso));
         }
+#endif
 
         str append_input_iterator{input};
         try {
@@ -1684,12 +1681,14 @@ void test_exceptions() {
             assert(verify_string(append_input_iterator));
         }
 
+#if 0 // TRANSITION, DevCom-1527920
         str append_input_iterator_sso{input_sso};
         try {
             append_input_iterator_sso.append(input_iter_data.begin(), input_iter_data.end());
         } catch (...) {
             assert(verify_string(append_input_iterator_sso));
         }
+#endif
     }
 
     { // assign
@@ -1702,6 +1701,7 @@ void test_exceptions() {
             assert(verify_string(assign_iterator));
         }
 
+#if 0 // TRANSITION, DevCom-1527920
         str assign_iterator_sso{input_sso};
         try {
             assert(verify_string(assign_iterator_sso));
@@ -1709,6 +1709,7 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(assign_iterator_sso));
         }
+#endif
 
         str assign_input_iterator{input};
         try {
@@ -1719,6 +1720,7 @@ void test_exceptions() {
             assert(verify_string(assign_input_iterator));
         }
 
+#if 0 // TRANSITION, DevCom-1527920
         str assign_input_iterator_sso{input_sso};
         try {
             assert(verify_string(assign_input_iterator_sso));
@@ -1727,6 +1729,7 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(assign_input_iterator_sso));
         }
+#endif
     }
 
     { // insert
@@ -1739,6 +1742,7 @@ void test_exceptions() {
             assert(verify_string(insert_iterator));
         }
 
+#if 0 // TRANSITION, DevCom-1527920
         str insert_iterator_sso{input_sso};
         try {
             assert(verify_string(insert_iterator_sso));
@@ -1747,6 +1751,7 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(insert_iterator_sso));
         }
+#endif
 
         str insert_input_iterator{input};
         try {
@@ -1757,6 +1762,7 @@ void test_exceptions() {
             assert(verify_string(insert_input_iterator));
         }
 
+#if 0 // TRANSITION, DevCom-1527920
         str insert_input_iterator_sso{input_sso};
         try {
             assert(verify_string(insert_input_iterator_sso));
@@ -1766,6 +1772,7 @@ void test_exceptions() {
         } catch (...) {
             assert(verify_string(insert_input_iterator_sso));
         }
+#endif
     }
 }
 
