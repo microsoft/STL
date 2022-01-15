@@ -2586,7 +2586,7 @@ public:
         const auto _ULast = _Get_unwrapped(_Last);
 
         if constexpr (_Is_random_iter_v<_Iter>) {
-            if (_First != _Last) {
+            if (_UFirst != _ULast) {
                 assign(_UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
             }
         } else {
