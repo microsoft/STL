@@ -211,6 +211,9 @@ public:
 
     void swap(basic_filebuf& _Right) {
         if (this != _STD addressof(_Right)) {
+            auto _Binary_sav = _Binary;
+            _Binary = _Right._Binary;
+            _Right._Binary = _Binary_sav;
             FILE* _Myfile_sav                       = _Myfile;
             const _Cvt* _Pcvt_sav                   = _Pcvt;
             typename _Traits::state_type _State_sav = _State;
@@ -281,6 +284,7 @@ public:
     }
 
     basic_filebuf* open(const char* _Filename, ios_base::openmode _Mode, int _Prot = ios_base::_Default_open_prot) {
+        this->_Binary = _Mode & ios::binary;
         // _Prot is an extension
         if (_Myfile) {
             return nullptr;
@@ -308,6 +312,7 @@ public:
 #endif // _HAS_OLD_IOSTREAMS_MEMBERS
 
     basic_filebuf* open(const wchar_t* _Filename, ios_base::openmode _Mode, int _Prot = ios_base::_Default_open_prot) {
+        this->_Binary = _Mode & ios::binary;
         // in standard as const std::filesystem::path::value_type *; _Prot is an extension
         if (_Myfile) {
             return nullptr;
@@ -356,6 +361,7 @@ public:
 #ifdef _NATIVE_WCHAR_T_DEFINED
     basic_filebuf* open(
         const unsigned short* _Filename, ios_base::openmode _Mode, int _Prot = ios_base::_Default_open_prot) {
+        this->_Binary = _Mode & ios::binary;
         // in standard as const std::filesystem::path::value_type *; _Prot is an extension
         if (_Myfile) {
             return nullptr;
@@ -583,15 +589,21 @@ protected:
 
             if (_Myfile) { // open C stream, attempt read
                 _Reset_back(); // revert from _Mychar buffer
-                // process in 4k - 1 chunks to avoid tripping over fread's clobber-the-end behavior when
-                // doing \r\n -> \n translation
-                constexpr size_t _Read_size = 4095; // _INTERNAL_BUFSIZ - 1
-                while (_Read_size < _Count_s) {
-                    const auto _Actual_read = _CSTD fread(_Ptr, sizeof(_Elem), _Read_size, _Myfile);
-                    _Ptr += _Actual_read;
-                    _Count_s -= _Actual_read;
-                    if (_Actual_read != _Read_size) {
-                        return static_cast<streamsize>(_Start_count - _Count_s);
+
+                if (!_Binary) {
+                    // binary mode does not require a \r\n -> \n translation
+                    // fread only 4095 bytes at a time may result in low performance when reading large files
+                    
+                    // process in 4k - 1 chunks to avoid tripping over fread's clobber-the-end behavior when
+                    // doing \r\n -> \n translation
+                    constexpr size_t _Read_size = 4095; // _INTERNAL_BUFSIZ - 1
+                    while (_Read_size < _Count_s) {
+                        const auto _Actual_read = _CSTD fread(_Ptr, sizeof(_Elem), _Read_size, _Myfile);
+                        _Ptr += _Actual_read;
+                        _Count_s -= _Actual_read;
+                        if (_Actual_read != _Read_size) {
+                            return static_cast<streamsize>(_Start_count - _Count_s);
+                        }
                     }
                 }
 
@@ -781,6 +793,7 @@ private:
     typename _Traits::state_type _State; // current conversion state
     bool _Closef; // true if C stream must be closed
     FILE* _Myfile; // pointer to C stream
+    bool _Binary;// true if open with ios::binary
 
     void _Reset_back() { // restore buffer after putback
         if (_Mysb::eback() == &_Mychar) {
