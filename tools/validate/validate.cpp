@@ -166,7 +166,7 @@ void scan_file(const std::filesystem::path& filepath, const TabPolicy tab_policy
     if (overlength_lines != 0) {
         static constexpr std::array checked_extensions{
             // line length should be capped in files with these extensions:
-            L".git"sv,
+            L""sv,
             L".cmd"sv,
             L".cpp"sv,
             L".h"sv,
