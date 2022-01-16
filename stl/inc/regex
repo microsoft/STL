@@ -498,36 +498,6 @@ private:
 };
 
 template <class _Traits, class _FwdIt1, class _FwdIt2>
-int _Iter_compare2(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
-    if constexpr (is_pointer<_FwdIt1>::value && is_pointer<_FwdIt2>::value) {
-        // _Iter_compare for memory buffer ranges
-        return _Traits_compare<_Traits>(
-            _First1, static_cast<size_t>(_Last1 - _First1), _First2, static_cast<size_t>(_Last2 - _First2));
-    } else {
-        // _Iter_compare for general ranges
-        const auto _Cmp = _STD mismatch(_First1, _Last1, _First2, _Last2, _Char_traits_eq<_Traits>{});
-
-        if (_Cmp.first == _Last1) {
-            if (_Cmp.second == _Last2) {
-                return 0;
-            } else {
-                return -1;
-            }
-        }
-
-        if (_Cmp.second == _Last2) {
-            return 1;
-        }
-
-        if (_Traits::lt(*_Cmp.first, *_Cmp.second)) {
-            return -1;
-        } else {
-            return 1;
-        }
-    }
-}
-
-template <class _Traits, class _FwdIt1, class _FwdIt2>
 int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
     // compare two iterator ranges:
     // if [_First1, _Last1) is lexicographically less than [_First2, _Last2), a negative value
@@ -539,8 +509,38 @@ int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Las
 
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
-    return _Iter_compare2<_Traits>(
-        _Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2), _Get_unwrapped(_Last2));
+    
+    auto _UFirst1 = _Get_unwrapped(_First1);
+    auto _ULast1  = _Get_unwrapped(_Last1);
+    auto _UFirst2 = _Get_unwrapped(_First2);
+    auto _ULast2  = _Get_unwrapped(_Last2);
+
+    if constexpr (is_pointer<decltype(_UFirst1)>::value && is_pointer<decltype(_UFirst2)>::value) {
+        // _Iter_compare for memory buffer ranges
+        return _Traits_compare<_Traits>(
+            _UFirst1, static_cast<size_t>(_ULast1 - _UFirst1), _UFirst2, static_cast<size_t>(_ULast2 - _UFirst2));
+    } else {
+        // _Iter_compare for general ranges
+        const auto _Cmp = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _ULast2, _Char_traits_eq<_Traits>{});
+
+        if (_Cmp.first == _ULast1) {
+            if (_Cmp.second == _ULast2) {
+                return 0;
+            } else {
+                return -1;
+            }
+        }
+
+        if (_Cmp.second == _ULast2) {
+            return 1;
+        }
+
+        if (_Traits::lt(*_Cmp.first, *_Cmp.second)) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
 }
 
 inline bool _Is_word(unsigned char _UCh) {
