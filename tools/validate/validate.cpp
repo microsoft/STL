@@ -12,7 +12,7 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-
+using namespace std::literals;
 
 constexpr size_t max_line_length = 120;
 
@@ -54,7 +54,7 @@ private:
 
 enum class TabPolicy : bool { Forbidden, Allowed };
 
-void scan_file(const std::filesystem::path& filepath, const TabPolicy tab_policy, vector<unsigned char>& buffer) {
+void scan_file(const std::filesystem::path& filepath, const TabPolicy tab_policy, std::vector<unsigned char>& buffer) {
     constexpr char CR = '\r';
     constexpr char LF = '\n';
 
@@ -164,9 +164,9 @@ void scan_file(const std::filesystem::path& filepath, const TabPolicy tab_policy
     }
 
     if (overlength_lines != 0) {
-        static constexpr array checked_extensions{
+        static constexpr std::array checked_extensions{
             // line length should be capped in files with these extensions:
-            L""sv,
+            L".git"sv,
             L".cmd"sv,
             L".cpp"sv,
             L".h"sv,
@@ -186,7 +186,7 @@ void scan_file(const std::filesystem::path& filepath, const TabPolicy tab_policy
 }
 
 int main() {
-    static constexpr array skipped_directories{
+    static constexpr std::array skipped_directories{
         L".git"sv,
         L".vs"sv,
         L".vscode"sv,
@@ -197,13 +197,13 @@ int main() {
         L"out"sv,
     };
 
-    static constexpr array skipped_extensions{
+    static constexpr std::array skipped_extensions{
         L".dll"sv,
         L".exe"sv,
         L".obj"sv,
     };
 
-    static constexpr array tabby_filenames{
+    static constexpr std::array tabby_filenames{
         L".gitmodules"sv,
     };
 
