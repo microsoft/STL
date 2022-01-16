@@ -2000,7 +2000,7 @@ private:
             _Root_node* _Rx = _Prs._Compile();
             _Reset(_Rx);
         } else {
-            static_assert(_Is_input_iter_v<_InIt>, "SHould be at least input iterator");
+            static_assert(_Is_input_iter_v<_InIt>, "Should be at least input iterator");
 
             // build regular expression from input iterators
             basic_string<_Iter_value_t<_InIt>> _Str(_First, _Last);
