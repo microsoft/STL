@@ -509,7 +509,7 @@ int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Las
 
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
-    
+
     auto _UFirst1 = _Get_unwrapped(_First1);
     auto _ULast1  = _Get_unwrapped(_Last1);
     auto _UFirst2 = _Get_unwrapped(_First2);
