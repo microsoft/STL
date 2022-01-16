@@ -18,7 +18,7 @@ constexpr size_t max_line_length = 120;
 
 class BinaryFile {
 public:
-    explicit BinaryFile(const filesystem::path& filepath) {
+    explicit BinaryFile(const std::filesystem::path& filepath) {
         m_file = _wfopen(filepath.c_str(), L"rb");
 
         if (!m_file) {
@@ -54,7 +54,7 @@ private:
 
 enum class TabPolicy : bool { Forbidden, Allowed };
 
-void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vector<unsigned char>& buffer) {
+void scan_file(const std::filesystem::path& filepath, const TabPolicy tab_policy, vector<unsigned char>& buffer) {
     constexpr char CR = '\r';
     constexpr char LF = '\n';
 
@@ -213,8 +213,8 @@ int main() {
 
     std::vector<unsigned char> buffer; // reused for performance
 
-    for (filesystem::recursive_directory_iterator rdi{"."}, last; rdi != last; ++rdi) {
-        const filesystem::path& filepath = rdi->path();
+    for (std::filesystem::recursive_directory_iterator rdi{"."}, last; rdi != last; ++rdi) {
+        const std::filesystem::path& filepath = rdi->path();
 
         const std::wstring filename = filepath.filename().wstring();
 
