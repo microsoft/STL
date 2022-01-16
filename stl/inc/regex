@@ -1989,14 +1989,14 @@ private:
     }
 
     template <class _InIt>
-    void _Reset(_FwdIt _First, _FwdIt _Last, flag_type _Flags) {
+    void _Reset(_InIt _First, _InIt _Last, flag_type _Flags) {
         if constexpr (_Is_fwd_iter_v<_InIt>) {
             // build regular expression from forward iterators
 #if _ENHANCED_REGEX_VISUALIZER
             _Visualization.assign(_First, _Last);
 #endif // _ENHANCED_REGEX_VISUALIZER
 
-            _Parser<_FwdIt, _Elem, _RxTraits> _Prs(_Traits, _First, _Last, _Flags);
+            _Parser<_InIt, _Elem, _RxTraits> _Prs(_Traits, _First, _Last, _Flags);
             _Root_node* _Rx = _Prs._Compile();
             _Reset(_Rx);
         } else {
