@@ -238,4 +238,8 @@ const weekly_table = [
     { date: '2021-12-03', vso: 174, libcxx: 588 },
     { date: '2021-12-10', vso: 174, libcxx: 588 },
     { date: '2021-12-17', vso: 174, libcxx: 590 },
+    { date: '2021-12-24', vso: 176, libcxx: 590 },
+    { date: '2021-12-31', vso: 177, libcxx: 590 },
+    { date: '2022-01-07', vso: 180, libcxx: 590 },
+    { date: '2022-01-14', vso: 182, libcxx: 590 },
 ];
