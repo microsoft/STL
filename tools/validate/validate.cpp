@@ -12,7 +12,7 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-using namespace std;
+//using namespace std;
 
 constexpr size_t max_line_length = 120;
 
@@ -26,7 +26,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool read_next_block(vector<unsigned char>& buffer) {
+    [[nodiscard]] bool read_next_block(std::vector<unsigned char>& buffer) {
         constexpr size_t BlockSize = 65536;
 
         buffer.resize(BlockSize);
@@ -117,7 +117,7 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
             } else {
                 ++columns;
             }
-            previous3 = exchange(previous2, exchange(prev, ch));
+            previous3 = std::exchange(previous2, std::exchange(prev, ch));
         }
     }
 
@@ -176,9 +176,9 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
             L".py"sv,
             L".yml"sv,
         };
-        static_assert(is_sorted(checked_extensions.begin(), checked_extensions.end()));
+        static_assert(std::is_sorted(checked_extensions.begin(), checked_extensions.end()));
 
-        if (binary_search(checked_extensions.begin(), checked_extensions.end(), filepath.extension().wstring())) {
+        if (std::binary_search(checked_extensions.begin(), checked_extensions.end(), filepath.extension().wstring())) {
             fwprintf(stderr, L"Validation failed: %ls contains %zu lines with more than %zu columns.\n",
                 filepath.c_str(), overlength_lines, max_line_length);
         }
@@ -207,20 +207,20 @@ int main() {
         L".gitmodules"sv,
     };
 
-    static_assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
-    static_assert(is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
-    static_assert(is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
+    static_assert(std::is_sorted(skipped_directories.begin(), skipped_directories.end()));
+    static_assert(std::is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
+    static_assert(std::is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
 
-    vector<unsigned char> buffer; // reused for performance
+    std::vector<unsigned char> buffer; // reused for performance
 
     for (filesystem::recursive_directory_iterator rdi{"."}, last; rdi != last; ++rdi) {
         const filesystem::path& filepath = rdi->path();
 
-        const wstring filename = filepath.filename().wstring();
+        const std::wstring filename = filepath.filename().wstring();
 
         if (!rdi->is_regular_file()) {
             if (rdi->is_directory()) {
-                if (binary_search(skipped_directories.begin(), skipped_directories.end(), filename)) {
+                if (std::binary_search(skipped_directories.begin(), skipped_directories.end(), filename)) {
                     rdi.disable_recursion_pending();
                 }
             }
@@ -228,7 +228,7 @@ int main() {
             continue;
         }
 
-        const wstring& relative_path = filepath.native();
+        const std::wstring& relative_path = filepath.native();
 
         constexpr size_t maximum_relative_path_length = 120;
         if (relative_path.size() > maximum_relative_path_length) {
@@ -236,17 +236,17 @@ int main() {
                 filepath.c_str(), relative_path.size(), maximum_relative_path_length);
         }
 
-        if (relative_path.find(L' ') != wstring::npos) {
+        if (relative_path.find(L' ') != std::wstring::npos) {
             fwprintf(stderr, L"Validation failed: the path \"%ls\" contains spaces.\n", filepath.c_str());
         }
 
-        const wstring extension = filepath.extension().wstring();
+        const std::wstring extension = filepath.extension().wstring();
 
-        if (binary_search(skipped_extensions.begin(), skipped_extensions.end(), extension)) {
+        if (std::binary_search(skipped_extensions.begin(), skipped_extensions.end(), extension)) {
             continue;
         }
 
-        const TabPolicy tab_policy = binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)
+        const TabPolicy tab_policy = std::binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)
                                        ? TabPolicy::Allowed
                                        : TabPolicy::Forbidden;
 
