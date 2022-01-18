@@ -1267,11 +1267,12 @@ public:
 template <bool _Statically_Utf8>
 class _Fmt_codec<wchar_t, _Statically_Utf8> {
 public:
-    _NODISCARD const wchar_t* _Find_encoded(
+    _NODISCARD constexpr const wchar_t* _Find_encoded(
         const wchar_t* const _First, const wchar_t* const _Last, const wchar_t _Val) const {
         return _Find_unchecked(_First, _Last, _Val);
     }
-    _NODISCARD int _Units_in_next_character(const wchar_t* _First, const wchar_t* const _Last) const noexcept {
+    _NODISCARD constexpr int _Units_in_next_character(
+        const wchar_t* _First, const wchar_t* const _Last) const noexcept {
         char32_t _Ch;
         auto _Next = _Decode_utf(_First, _Last, _Ch);
         _STL_INTERNAL_CHECK(_Next - _First <= 2);
