@@ -3035,16 +3035,18 @@ public:
 
         const bool _Is_large = _Res > _BUF_SIZE; // Note: _BUF_SIZE because _Res now includes the null terminator
         if (_Is_large) {
+            _ASAN_STRING_REMOVE(*this);
             _Construct_in_place(_My_data._Bx._Ptr, _Refancy<pointer>(_Right));
             _My_data._Mysize = _Size;
             _My_data._Myres  = _Res - 1;
+            _ASAN_STRING_CREATE(*this);
         } else {
+            _ASAN_STRING_MODIFY(static_cast<difference_type>(_Size));
             _Traits::copy(_My_data._Bx._Buf, _Right, _Res);
             _My_data._Mysize = _Size;
             _My_data._Myres  = _BUF_SIZE - 1;
         }
 
-        _ASAN_STRING_CREATE(*this);
         return _Is_large;
     }
 
