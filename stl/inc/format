@@ -1216,7 +1216,7 @@ private:
     }
 
 public:
-    _NODISCARD const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
+    _NODISCARD constexpr const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
         // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
         // continuation byte) in [_First, _Last).
         if constexpr (_Statically_Utf8) {
@@ -1238,7 +1238,7 @@ public:
             return _First;
         }
     }
-    _NODISCARD int _Units_in_next_character(const char* const _First, const char* const _Last) const noexcept {
+    _NODISCARD constexpr int _Units_in_next_character(const char* const _First, const char* const _Last) const noexcept {
         // Returns the number of code units that compose the first encoded character in
         // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
         // *_First is not a valid lead byte.
