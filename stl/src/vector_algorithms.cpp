@@ -39,6 +39,7 @@ static void _Reverse_copy_tail(_BidIt _First, _BidIt _Last, _OutIt _Dest) noexce
     }
 }
 
+#if !defined(_M_ARM64EC)
 static size_t _Byte_length(const void* _First, const void* _Last) noexcept {
     return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
 }
@@ -50,6 +51,7 @@ static void _Advance_bytes(void*& _Target, ptrdiff_t _Offset) noexcept {
 static void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
     _Target = static_cast<const unsigned char*>(_Target) + _Offset;
 }
+#endif // !defined(_M_ARM64EC)
 
 extern "C" {
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
@@ -68,7 +70,6 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
             _Advance_bytes(_First2, 32);
         } while (_First1 != _Stop_at);
     }
-#endif // !defined(_M_ARM64EC)
 
     constexpr size_t _Mask_16 = ~((static_cast<size_t>(1) << 4) - 1);
     if (_Byte_length(_First1, _Last1) >= 16
@@ -119,6 +120,7 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
 #else
 #error Unsupported architecture
 #endif
+#endif // !defined(_M_ARM64EC)
 
     auto _First1c = static_cast<unsigned char*>(_First1);
     auto _Last1c  = static_cast<unsigned char*>(_Last1);
@@ -159,7 +161,6 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
     }
-#endif // !defined(_M_ARM64EC)
 
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
@@ -176,6 +177,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
+#endif // !defined(_M_ARM64EC)
 
     _Reverse_tail(static_cast<unsigned char*>(_First), static_cast<unsigned char*>(_Last));
 }
@@ -201,7 +203,6 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
     }
-#endif // !defined(_M_ARM64EC)
 
     if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
@@ -218,6 +219,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
+#endif // !defined(_M_ARM64EC)
 
     _Reverse_tail(static_cast<unsigned short*>(_First), static_cast<unsigned short*>(_Last));
 }
@@ -240,7 +242,6 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
     }
-#endif // !defined(_M_ARM64EC)
 
     if (_Byte_length(_First, _Last) >= 32
 #ifdef _M_IX86
@@ -260,6 +261,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
             _Advance_bytes(_First, 16);
         } while (_First != _Stop_at);
     }
+#endif // !defined(_M_ARM64EC)
 
     _Reverse_tail(static_cast<unsigned long*>(_First), static_cast<unsigned long*>(_Last));
 }
@@ -280,7 +282,6 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
     }
-#endif // !defined(_M_ARM64EC)
 
     if (_Byte_length(_First, _Last) >= 32
 #ifdef _M_IX86
@@ -301,6 +302,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
         } while (_First != _Stop_at);
     }
 
+#endif // !defined(_M_ARM64EC)
     _Reverse_tail(static_cast<unsigned long long*>(_First), static_cast<unsigned long long*>(_Last));
 }
 
@@ -322,7 +324,6 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
     }
-#endif // !defined(_M_ARM64EC)
 
     if (_Byte_length(_First, _Last) >= 16 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
@@ -336,6 +337,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
+#endif // !defined(_M_ARM64EC)
 
     _Reverse_copy_tail(static_cast<const unsigned char*>(_First), static_cast<const unsigned char*>(_Last),
         static_cast<unsigned char*>(_Dest));
@@ -359,7 +361,6 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
     }
-#endif // !defined(_M_ARM64EC)
 
     if (_Byte_length(_First, _Last) >= 16 && _bittest(&__isa_enabled, __ISA_AVAILABLE_SSE42)) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
@@ -373,6 +374,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
+#endif // !defined(_M_ARM64EC)
 
     _Reverse_copy_tail(static_cast<const unsigned short*>(_First), static_cast<const unsigned short*>(_Last),
         static_cast<unsigned short*>(_Dest));
@@ -393,7 +395,6 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
     }
-#endif // !defined(_M_ARM64EC)
 
     if (_Byte_length(_First, _Last) >= 16
 #ifdef _M_IX86
@@ -410,6 +411,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
+#endif // !defined(_M_ARM64EC)
 
     _Reverse_copy_tail(static_cast<const unsigned long*>(_First), static_cast<const unsigned long*>(_Last),
         static_cast<unsigned long*>(_Dest));
@@ -429,7 +431,6 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
     }
-#endif // !defined(_M_ARM64EC)
 
     if (_Byte_length(_First, _Last) >= 16
 #ifdef _M_IX86
@@ -446,6 +447,7 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
             _Advance_bytes(_Dest, 16);
         } while (_Dest != _Stop_at);
     }
+#endif // !defined(_M_ARM64EC)
 
     _Reverse_copy_tail(static_cast<const unsigned long long*>(_First), static_cast<const unsigned long long*>(_Last),
         static_cast<unsigned long long*>(_Dest));

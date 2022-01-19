@@ -38,7 +38,7 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.vsDevCmdArch }}
-      cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
+      cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON -DVCLIBS_TARGET_ARCHITECTURE=${{ parameters.targetPlatform }}'
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}

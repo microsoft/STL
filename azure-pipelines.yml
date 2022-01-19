@@ -93,3 +93,12 @@ stages:
         parameters:
           targetPlatform: arm64
           vsDevCmdArch: arm64
+
+  - stage: Build_ARM64EC
+    dependsOn: Build_And_Test_x64
+    displayName: 'Build'
+    jobs:
+      - template: azure-devops/cross-build.yml
+        parameters:
+          targetPlatform: arm64EC
+          vsDevCmdArch: arm64
