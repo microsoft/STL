@@ -15,7 +15,6 @@ std/input.output/iostreams.base/ios.base/ios.base.storage/pword.pass.cpp SKIPPED
 std/utilities/smartptr/unique.ptr/unique.ptr.class/unique.ptr.ctor/null.pass.cpp FAIL
 
 # allocator<const T>
-std/iterators/iterator.requirements/iterator.cust/iterator.cust.move/iter_rvalue_reference_t.pass.cpp FAIL
 std/utilities/memory/default.allocator/allocator.ctor.pass.cpp FAIL
 
 # This test is passing non-BidirectionalIterators to std::prev.
@@ -541,9 +540,6 @@ std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FA
 # They shouldn't behave differently. Both of them should probably return NaN.
 std/numerics/c.math/lerp.pass.cpp FAIL
 
-# --month{14} should be 1, not 13 as the test expects
-std/utilities/time/time.cal/time.cal.month/time.cal.month.members/decrement.pass.cpp FAIL
-
 # conversion from '__int64' to 'long', possible loss of data
 std/utilities/time/time.hms/time.hms.members/seconds.pass.cpp:0 FAIL
 std/utilities/time/time.hms/time.hms.members/subseconds.pass.cpp:0 FAIL
@@ -605,6 +601,88 @@ std/utilities/format/format.formatter/format.context/format.formatter.spec/forma
 std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.c_string.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.char.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.const_char_array.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.pointer.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.signed_integral.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.string.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.unsigned_integral.pass.cpp FAIL
+
+# libc++ doesn't yet implement P2216R3 (test uses non-constant-expression format strings)
+std/utilities/format/format.functions/format.pass.cpp FAIL
+std/utilities/format/format.functions/format.locale.pass.cpp FAIL
+std/utilities/format/format.functions/format_to.locale.pass.cpp FAIL
+std/utilities/format/format.functions/format_to.pass.cpp FAIL
+std/utilities/format/format.functions/format_to_n.pass.cpp FAIL
+std/utilities/format/format.functions/format_to_n.locale.pass.cpp FAIL
+std/utilities/format/format.functions/formatted_size.pass.cpp FAIL
+std/utilities/format/format.functions/formatted_size.locale.pass.cpp FAIL
+std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
+
+# libc++ chose option A for [time.clock.file.members], and we chose option B.
+std/utilities/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
+
+# libc++ is missing various Ranges DRs
+std/language.support/support.limits/support.limits.general/ranges.version.pass.cpp FAIL
+
+# test compares singular and non-singular string iterators
+std/strings/basic.string/string.iterators/iterators.pass.cpp FAIL
+
+# test compares iterators into distinct `array`s
+std/ranges/range.adaptors/range.all/range.owning.view/begin_end.pass.cpp FAIL
+
+# libc++ allows some forbidden unique_ptr conversions
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.assign/unique_ptr_Y.pass.cpp FAIL
+std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/unique_ptr.pass.cpp FAIL
+
+# non-portable test of strengthened noexcept
+std/ranges/range.adaptors/range.drop/ctor.default.pass.cpp FAIL
+std/ranges/range.adaptors/range.transform/iterator/deref.pass.cpp FAIL
+std/ranges/range.adaptors/range.transform/iterator/iter_move.pass.cpp FAIL
+std/ranges/range.utility/view.interface/view.interface.pass.cpp FAIL
+
+# tests invalid range
+std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy.pass.cpp SKIPPED
+std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp SKIPPED
+
+# Narrowing conversion
+std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy_n.pass.cpp:0 FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp:0 FAIL
+
+# <charconv> test defines std::_Bit_cast, which we already have
+std/utilities/charconv/charconv.msvc/test.pass.cpp FAIL
+
+# libc++ doesn't yet implement LWG-3533
+std/ranges/range.adaptors/range.transform/end.pass.cpp FAIL
+std/ranges/range.adaptors/range.transform/iterator/base.pass.cpp FAIL
+
+# MaybePOCCAAllocator doesn't meet the allocator requirements
+std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp FAIL
+
+# Mismatching allocator value_type
+std/containers/sequences/vector.bool/get_allocator.pass.cpp FAIL
+
+# Test annotated "XFAIL: msvc" should be "XFAIL: msvc && stdlib=libc++"
+std/language.support/support.dynamic/alloc.errors/set.new.handler/get_new_handler.pass.cpp SKIPPED
+std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_move.pass.cpp SKIPPED
+
+# compares iterators from distinct transform_views
+std/ranges/range.adaptors/range.transform/iterator/plus_minus.pass.cpp FAIL
+
+# MoveOnlyForwardIterator (a misnomer) has mixed-type comparisons and conversions
+std/ranges/range.utility/range.subrange/primitives.pass.cpp:0 FAIL
+
+# libc++ speculatively implements LWG-3645
+std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
+
+# Tests non-portable behavior
+std/utilities/format/format.formatter/format.context/format.context/advance_to.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/arg.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/ctor.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/locale.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.context/out.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.bool.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.c_string.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.char.pass.cpp FAIL
+std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.const_char_array.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.signed_integral.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.string.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.unsigned_integral.pass.cpp FAIL
@@ -642,8 +720,8 @@ std/ranges/range.adaptors/range.transform/iterator/subscript.pass.cpp FAIL
 std/ranges/range.utility/view.interface/view.interface.pass.cpp FAIL
 
 # tests invalid range
-std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy.pass.cpp SKIPPED
-std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp SKIPPED
+std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy.pass.cpp FAIL
+std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp FAIL
 
 # Narrowing conversion
 std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy_n.pass.cpp:0 FAIL
@@ -668,6 +746,9 @@ std/containers/sequences/vector.bool/get_allocator.pass.cpp FAIL
 # Test annotated "XFAIL: msvc" should be "XFAIL: msvc && stdlib=libc++"
 std/language.support/support.dynamic/alloc.errors/set.new.handler/get_new_handler.pass.cpp SKIPPED
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_move.pass.cpp SKIPPED
+
+# view_interface doesn't necessarily inherit view_base after LWG-3549
+std/ranges/range.utility/view.interface/view.interface.pass.cpp FAIL
 
 # compares iterators from distinct transform_views
 std/ranges/range.adaptors/range.transform/iterator/plus_minus.pass.cpp FAIL

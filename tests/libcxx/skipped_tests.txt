@@ -15,7 +15,6 @@ input.output\iostreams.base\ios.base\ios.base.storage\pword.pass.cpp
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.ctor\null.pass.cpp
 
 # allocator<const T>
-iterators\iterator.requirements\iterator.cust\iterator.cust.move\iter_rvalue_reference_t.pass.cpp
 utilities\memory\default.allocator\allocator.ctor.pass.cpp
 
 # This test is passing non-BidirectionalIterators to std::prev.
@@ -230,6 +229,13 @@ utilities\tuple\tuple.tuple\tuple.cnstr\recursion_depth.pass.cpp
 # the feature and adds two tests that (1) pass with deprecation suppressed, and (2) fail without deprecation suppression.
 # We should instead translate libc++ un-deprecation macros to STL un-deprecation macros in the force-include header,
 # and just skip tests when we deprecate before they do.
+utilities\meta\meta.unary\meta.unary.prop\is_literal_type.deprecated.fail.cpp
+
+# Deprecation is a mess. We disable all deprecations in msvc_stdlib_force_include.hpp to allow libc++ tests for
+# deprecated features to pass, which breaks when libc++ deprecates the feature and adds two tests that (1) pass
+# with deprecation suppressed, and (2) fail without deprecation suppression. I think we should instead translate
+# libc++ un-deprecation macros to STL un-deprecation macros in the force-include header, and just skip tests when
+# we deprecate before they do.
 utilities\meta\meta.unary\meta.unary.prop\is_literal_type.deprecated.fail.cpp
 
 
@@ -541,9 +547,6 @@ numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.negbin\eval.pass.cpp
 # They shouldn't behave differently. Both of them should probably return NaN.
 numerics\c.math\lerp.pass.cpp
 
-# --month{14} should be 1, not 13 as the test expects
-utilities\time\time.cal\time.cal.month\time.cal.month.members\decrement.pass.cpp
-
 # conversion from '__int64' to 'long', possible loss of data
 utilities\time\time.hms\time.hms.members\seconds.pass.cpp
 utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
@@ -594,6 +597,84 @@ language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
 # libc++ doesn't implement P2231R1 Add further constexpr support for optional/variant
 language.support\support.limits\support.limits.general\variant.version.pass.cpp
+
+# Tests non-portable behavior
+utilities\format\format.formatter\format.context\format.context\advance_to.pass.cpp
+utilities\format\format.formatter\format.context\format.context\arg.pass.cpp
+utilities\format\format.formatter\format.context\format.context\ctor.pass.cpp
+utilities\format\format.formatter\format.context\format.context\locale.pass.cpp
+utilities\format\format.formatter\format.context\format.context\out.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.bool.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.c_string.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.char.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.const_char_array.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.pointer.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.signed_integral.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.string.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.unsigned_integral.pass.cpp
+
+# libc++ doesn't yet implement P2216R3 (test uses non-constant-expression format strings)
+utilities\format\format.functions\format.pass.cpp
+utilities\format\format.functions\format.locale.pass.cpp
+utilities\format\format.functions\format_to.locale.pass.cpp
+utilities\format\format.functions\format_to.pass.cpp
+utilities\format\format.functions\format_to_n.pass.cpp
+utilities\format\format.functions\format_to_n.locale.pass.cpp
+utilities\format\format.functions\formatted_size.pass.cpp
+utilities\format\format.functions\formatted_size.locale.pass.cpp
+utilities\format\format.functions\locale-specific_form.pass.cpp
+
+# libc++ chose option A for [time.clock.file.members], and we chose option B.
+utilities\time\time.clock\time.clock.file\to_from_sys.pass.cpp
+
+# libc++ is missing various Ranges DRs
+language.support\support.limits\support.limits.general\ranges.version.pass.cpp
+
+# test compares singular and non-singular string iterators
+strings\basic.string\string.iterators\iterators.pass.cpp
+
+# test compares iterators into distinct `array`s
+ranges\range.adaptors\range.all\range.owning.view\begin_end.pass.cpp
+
+# libc++ allows some forbidden unique_ptr conversions
+utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.assign\unique_ptr_Y.pass.cpp
+utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.const\unique_ptr.pass.cpp
+
+# non-portable test of strengthened noexcept
+ranges\range.adaptors\range.drop\ctor.default.pass.cpp
+ranges\range.adaptors\range.transform\iterator\deref.pass.cpp
+ranges\range.adaptors\range.transform\iterator\iter_move.pass.cpp
+ranges\range.utility\view.interface\view.interface.pass.cpp
+
+# tests invalid range
+utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy.pass.cpp
+utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move.pass.cpp
+
+# Narrowing conversion
+utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
+utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move_n.pass.cpp
+
+# <charconv> test defines std::_Bit_cast, which we already have
+utilities\charconv\charconv.msvc\test.pass.cpp
+
+# libc++ doesn't yet implement LWG-3533
+ranges\range.adaptors\range.transform\end.pass.cpp
+ranges\range.adaptors\range.transform\iterator\base.pass.cpp
+
+# MaybePOCCAAllocator doesn't meet the allocator requirements
+containers\sequences\vector\vector.cons\assign_copy.pass.cpp
+
+# Mismatching allocator value_type
+containers\sequences\vector.bool\get_allocator.pass.cpp
+
+# compares iterators from distinct transform_views
+ranges\range.adaptors\range.transform\iterator\plus_minus.pass.cpp
+
+# MoveOnlyForwardIterator (a misnomer) has mixed-type comparisons and conversions
+ranges\range.utility\range.subrange\primitives.pass.cpp
+
+# libc++ speculatively implements LWG-3645
+strings\basic.string\string.capacity\resize_and_overwrite.pass.cpp
 
 # Tests non-portable behavior
 utilities\format\format.formatter\format.context\format.context\advance_to.pass.cpp
@@ -664,6 +745,13 @@ containers\sequences\vector\vector.cons\assign_copy.pass.cpp
 
 # Mismatching allocator value_type
 containers\sequences\vector.bool\get_allocator.pass.cpp
+
+# Test annotated "XFAIL: msvc" should be "XFAIL: msvc && stdlib=libc++"
+language.support\support.dynamic\alloc.errors\set.new.handler\get_new_handler.pass.cpp
+utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\copy_move.pass.cpp
+
+# view_interface doesn't necessarily inherit view_base after LWG-3549
+ranges\range.utility\view.interface\view.interface.pass.cpp
 
 # compares iterators from distinct transform_views
 ranges\range.adaptors\range.transform\iterator\plus_minus.pass.cpp
