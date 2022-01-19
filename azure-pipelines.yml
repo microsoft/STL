@@ -82,7 +82,7 @@ stages:
     jobs:
       - template: azure-devops/cross-build.yml
         parameters:
-          targetPlatform: arm
+          targetPlatform: armv7
           vsDevCmdArch: arm
 
   - stage: Build_ARM64
