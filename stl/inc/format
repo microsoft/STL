@@ -443,10 +443,7 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
 }
 #ifdef __clang__ // TRANSITION: LLVM-52549 (clang-cl 14 will define _MSVC_EXECUTION_CHARACTER_SET)
 _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
-    if (string_view{__clang_literal_encoding__} == "UTF-8") {
-        return true;
-    }
-    return false;
+    return string_view{__clang_literal_encoding__} == "UTF-8"
 }
 #else // ^^^ clang / msvc vvv
 _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
