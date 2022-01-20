@@ -175,9 +175,7 @@ concept _Has_formatter = requires(_Ty& _Val, _Context& _Ctx) {
 };
 
 template <class _Ty, class _Context>
-concept _Has_const_formatter = requires(const _Ty& _Val, _Context& _Ctx) {
-    _STD declval<typename _Context::template formatter_type<remove_cvref_t<_Ty>>>().format(_Val, _Ctx);
-};
+concept _Has_const_formatter = _Has_formatter<const remove_reference_t<_Ty>, _Context>;
 
 template <class _Ty, class _CharT = char>
 struct formatter;
@@ -1427,20 +1425,22 @@ struct _Format_arg_traits {
     // from "raw" to "erased" argument type for _Format_arg_store.
     template <_Has_formatter<_Context> _Ty>
     static auto _Phony_basic_format_arg_constructor(_Ty&&) {
+        // LWG-3631
+        using _Td = remove_cvref_t<_Ty>;
         // See N4885 [format.arg]/5
-        if constexpr (is_same_v<_Ty, bool>) {
+        if constexpr (is_same_v<_Td, bool>) {
             return bool{};
-        } else if constexpr (is_same_v<_Ty, _Char_type>) {
+        } else if constexpr (is_same_v<_Td, _Char_type>) {
             return _Char_type{};
-        } else if constexpr (is_same_v<_Ty, char> && is_same_v<_Char_type, wchar_t>) {
+        } else if constexpr (is_same_v<_Td, char> && is_same_v<_Char_type, wchar_t>) {
             return _Char_type{};
-        } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(int)) {
+        } else if constexpr (signed_integral<_Td> && sizeof(_Td) <= sizeof(int)) {
             return int{};
-        } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned int)) {
+        } else if constexpr (unsigned_integral<_Td> && sizeof(_Td) <= sizeof(unsigned int)) {
             return static_cast<unsigned int>(42);
-        } else if constexpr (signed_integral<_Ty> && sizeof(_Ty) <= sizeof(long long)) {
+        } else if constexpr (signed_integral<_Td> && sizeof(_Td) <= sizeof(long long)) {
             return static_cast<long long>(42);
-        } else if constexpr (unsigned_integral<_Ty> && sizeof(_Ty) <= sizeof(unsigned long long)) {
+        } else if constexpr (unsigned_integral<_Td> && sizeof(_Td) <= sizeof(unsigned long long)) {
             return static_cast<unsigned long long>(42);
         } else {
             return typename basic_format_arg<_Context>::handle{42};
@@ -1571,10 +1571,10 @@ private:
     }
 
 public:
-    _Format_arg_store(_Args&&... _Vals) noexcept {
+    _Format_arg_store(_Args&... _Vals) noexcept {
         _Index_array[0]   = {};
         size_t _Arg_index = 0;
-        (_Store(_Arg_index++, _STD forward<_Args>(_Vals)), ...);
+        (_Store(_Arg_index++, _Vals), ...);
     }
 };
 
@@ -2958,12 +2958,12 @@ using wformat_args = basic_format_args<wformat_context>;
 
 template <class _Context = format_context, class... _Args>
 _NODISCARD auto make_format_args(_Args&&... _Vals) {
-    return _Format_arg_store<_Context, _Args...>{_STD forward<_Args>(_Vals)...};
+    return _Format_arg_store<_Context, _Args...>{_Vals...};
 }
 
 template <class... _Args>
 _NODISCARD auto make_wformat_args(_Args&&... _Vals) {
-    return _Format_arg_store<wformat_context, _Args...>{_STD forward<_Args>(_Vals)...};
+    return _Format_arg_store<wformat_context, _Args...>{_Vals...};
 }
 
 template <output_iterator<const char&> _OutputIt>
