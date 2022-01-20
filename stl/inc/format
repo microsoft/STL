@@ -1557,8 +1557,9 @@ private:
         }
 
         if constexpr (is_volatile_v<_Ty>) {
-            // _Store_impl uses memcpy for storing the value.
-            // We cannot use memcpy with volatile types so make a temporary
+            // _Erased_type is not a volatile type, so static_cast<_Erased_type> would cast away volatile
+            // _Store_impl uses memcpy for storing the value. We cannot use memcpy with volatile types.
+            // Because of the two reasons we have to make a temporary
             const _Erased_type _Temp = _Val;
             _Store_impl<_Erased_type>(_Arg_index, _Arg_type, _Temp);
         } else {
