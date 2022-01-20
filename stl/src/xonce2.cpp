@@ -3,6 +3,7 @@
 
 #include <yvals_core.h>
 
+#include <stdlib.h>
 #include <synchapi.h>
 
 // This must be as small as possible, because its contents are
@@ -11,7 +12,8 @@
 // In particular, basic_string must not be included here.
 
 // Provides forwarders for InitOnceBeginInitialize and InitOnceComplete for
-// environments that can't use aliasobj, like /clr.
+// environments that can't use /ALTERNATENAME.
+// They were originally specific to /clr but are now used in other scenarios.
 
 _EXTERN_C
 
@@ -23,5 +25,21 @@ int __stdcall __std_init_once_begin_initialize_clr(
 int __stdcall __std_init_once_complete_clr(void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept {
     return InitOnceComplete(reinterpret_cast<LPINIT_ONCE>(_LpInitOnce), _DwFlags, _LpContext);
 }
+
+[[noreturn]] void __stdcall __std_init_once_link_alternate_names_and_abort() noexcept {
+    _CSTD abort();
+}
+
+#if defined(_M_ARM64EC) || defined(_M_HYBRID)
+// <mutex> uses the forwarder fallbacks for ARM64EC and CHPE.
+#elif defined(_M_IX86)
+#pragma comment(linker, "/ALTERNATENAME:__imp____std_init_once_begin_initialize@16=__imp__InitOnceBeginInitialize@16")
+#pragma comment(linker, "/ALTERNATENAME:__imp____std_init_once_complete@12=__imp__InitOnceComplete@12")
+#elif defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
+#pragma comment(linker, "/ALTERNATENAME:__imp___std_init_once_begin_initialize=__imp_InitOnceBeginInitialize")
+#pragma comment(linker, "/ALTERNATENAME:__imp___std_init_once_complete=__imp_InitOnceComplete")
+#else // ^^^ known architecture / unknown architecture vvv
+#error Unknown architecture
+#endif // ^^^ unknown architecture ^^^
 
 _END_EXTERN_C
