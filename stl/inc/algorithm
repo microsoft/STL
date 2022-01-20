@@ -134,13 +134,13 @@ template <class _Diff>
 constexpr ptrdiff_t _Temporary_buffer_size(const _Diff _Value) noexcept {
     // convert an iterator difference_type to a ptrdiff_t for use in temporary buffers
     using _CT = common_type_t<ptrdiff_t, _Diff>;
-    return static_cast<ptrdiff_t>((_STD min) (static_cast<_CT>(PTRDIFF_MAX), static_cast<_CT>(_Value)));
+    return static_cast<ptrdiff_t>((_STD min)(static_cast<_CT>(PTRDIFF_MAX), static_cast<_CT>(_Value)));
 }
 
 template <class _Ty>
 struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like attempt
     static constexpr size_t _Optimistic_size  = 4096; // default to ~1 page
-    static constexpr size_t _Optimistic_count = (_STD max) (static_cast<size_t>(1), _Optimistic_size / sizeof(_Ty));
+    static constexpr size_t _Optimistic_count = (_STD max)(static_cast<size_t>(1), _Optimistic_size / sizeof(_Ty));
 
     template <class _Diff>
     explicit _Optimistic_temporary_buffer(const _Diff _Requested_size) noexcept { // get temporary storage
@@ -706,7 +706,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
         using _CT         = _Common_diff_t<_InIt1, _InIt2>;
         const _CT _Count1 = _ULast1 - _UFirst1;
         const _CT _Count2 = _ULast2 - _UFirst2;
-        const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min) (_Count1, _Count2));
+        const auto _Count = static_cast<_Iter_diff_t<_InIt1>>((_STD min)(_Count1, _Count2));
         _ULast1           = _UFirst1 + _Count;
         while (_UFirst1 != _ULast1 && _Pred(*_UFirst1, *_UFirst2)) {
             ++_UFirst1;
@@ -2085,7 +2085,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
         return _First;
     }
 
-    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>((numeric_limits<_Iter_diff_t<_FwdIt>>::max) ())) {
+    if (static_cast<uintmax_t>(_Count) > static_cast<uintmax_t>((numeric_limits<_Iter_diff_t<_FwdIt>>::max)())) {
         // if the number of _Vals searched for is larger than the longest possible sequence, we can't find it
         return _Last;
     }
@@ -3054,7 +3054,7 @@ namespace ranges {
                     const auto _First2_addr   = _STD to_address(_First2);
                     if constexpr (_Is_sized1 && _Is_sized2) {
                         const size_t _Count =
-                            (_STD min) (static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
+                            (_STD min)(static_cast<size_t>(_Last1 - _First1), static_cast<size_t>(_Last2 - _First2));
                         const auto _Last1_addr = _First1_addr + _Count;
                         __std_swap_ranges_trivially_swappable_noalias(_First1_addr, _Last1_addr, _First2_addr);
                         return {_First1 + _Count, _First2 + _Count};
@@ -3638,7 +3638,7 @@ namespace ranges {
         template <class _Ty, output_range<const _Ty&> _Rng>
         constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Value) const {
             auto _First = _RANGES begin(_Range);
-            _Seek_wrapped(_First, (*this) (_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Value));
+            _Seek_wrapped(_First, (*this)(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Value));
             return _First;
         }
     };
@@ -4446,7 +4446,7 @@ _CONSTEXPR20 _OutIt reverse_copy(_BidIt _First, _BidIt _Last, _OutIt _Dest) {
     using _Elem                         = remove_reference_t<_Iter_ref_t<remove_const_t<decltype(_UFirst)>>>;
     using _DestElem                     = remove_reference_t<_Iter_ref_t<decltype(_UDest)>>;
     constexpr bool _Allow_vectorization = conjunction_v<is_same<remove_const_t<_Elem>, _DestElem>,
-        bool_constant<_Iterators_are_contiguous<decltype(_UFirst), decltype(_UDest)>>, is_trivially_copyable<_Elem>,
+        bool_constant<_Iterators_are_contiguous<decltype(_ULast), decltype(_UDest)>>, is_trivially_copyable<_Elem>,
         negation<is_volatile<_Elem>>>;
     constexpr size_t _Nx                = sizeof(_Elem);
 
@@ -5623,7 +5623,8 @@ namespace ranges {
 
             // _Temp_count + 1 since we work on closed ranges
             const auto _Total_count = static_cast<iter_difference_t<_It>>(_Temp_count + 1);
-            auto _Result            = _Stable_partition_common_buffered(
+
+            auto _Result = _Stable_partition_common_buffered(
                 _STD move(_First), _STD move(_Last), _Pred, _Proj, _Total_count, _Temp_buf._Data, _Temp_buf._Capacity);
             return {_STD move(_Result.first), _STD move(_Saved_last)};
         }
@@ -5704,7 +5705,7 @@ namespace ranges {
                     const auto _Right_count = static_cast<_Diff>(_Count - _Mid_offset);
                     const auto _Remaining   = static_cast<_Diff>(_Right_count - _Right_true_count);
                     const auto _High        = _Stable_partition_common_buffered(
-                        _STD move(_Right), _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
+                               _STD move(_Right), _Last, _Pred, _Proj, _Remaining, _Temp_ptr, _Capacity);
                     _Right = _STD move(_High.first);
                     _Right_true_count += _High.second;
                     break;
@@ -7015,7 +7016,7 @@ void inplace_merge(_BidIt _First, _BidIt _Mid, _BidIt _Last, _Pr _Pred) {
     }
 
     const _Diff _Count2 = _STD distance(_UMid, _ULast);
-    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min) (_Count1, _Count2)};
+    _Optimistic_temporary_buffer<_Iter_value_t<_BidIt>> _Temp_buf{(_STD min)(_Count1, _Count2)};
     _Buffered_inplace_merge_unchecked_impl(
         _UFirst, _UMid, _ULast, _Count1, _Count2, _Temp_buf._Data, _Temp_buf._Capacity, _Pass_fn(_Pred));
 }
@@ -7364,7 +7365,7 @@ namespace ranges {
             }
 
             const iter_difference_t<_It> _Count2 = _RANGES distance(_Mid, _Last);
-            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{(_STD min) (_Count1, _Count2)};
+            _Optimistic_temporary_buffer<iter_value_t<_It>> _Temp_buf{(_STD min)(_Count1, _Count2)};
             if (_Count1 <= _Count2 && _Count1 <= _Temp_buf._Capacity) {
                 _RANGES _Inplace_merge_buffer_left(_STD move(_First), _STD move(_Mid), _STD move(_Last),
                     _Temp_buf._Data, _Temp_buf._Capacity, _Pred, _Proj);
@@ -7855,7 +7856,7 @@ void _Uninitialized_chunked_merge_unchecked2(
     while (_Count > _Isort_max<_BidIt>) {
         _Count -= _Isort_max<_BidIt>;
         const _BidIt _Mid1 = _STD next(_First, _Isort_max<_BidIt>);
-        const auto _Chunk2 = (_STD min) (_Isort_max<_BidIt>, _Count);
+        const auto _Chunk2 = (_STD min)(_Isort_max<_BidIt>, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Backout._Last     = _Uninitialized_merge_move(_First, _Mid1, _Mid2, _Backout._Last, _Pred);
@@ -7875,7 +7876,7 @@ void _Chunked_merge_unchecked(_BidIt _First, const _BidIt _Last, _OutIt _Dest, c
     while (_Chunk < _Count) {
         _Count -= _Chunk;
         const _BidIt _Mid1 = _STD next(_First, _Chunk);
-        const auto _Chunk2 = (_STD min) (_Chunk, _Count);
+        const auto _Chunk2 = (_STD min)(_Chunk, _Count);
         _Count -= _Chunk2;
         const _BidIt _Mid2 = _STD next(_Mid1, _Chunk2);
         _Dest              = _Merge_move(_First, _Mid1, _Mid2, _Dest, _Pred);
@@ -8129,7 +8130,7 @@ namespace ranges {
             const auto _Backout_end = _Dest + _Count;
             while (_Isort_max<_It> < _Count) {
                 _Count -= _Isort_max<_It>;
-                const auto _Chunk2 = (_STD min) (_Isort_max<_It>, _Count);
+                const auto _Chunk2 = (_STD min)(_Isort_max<_It>, _Count);
                 _Count -= _Chunk2;
 
                 auto _Mid1     = _First + _Isort_max<_It>;
@@ -8225,7 +8226,7 @@ namespace ranges {
 
             while (_Chunk_size < _Count) {
                 _Count -= _Chunk_size;
-                const auto _Right_chunk_size = (_STD min) (_Chunk_size, _Count);
+                const auto _Right_chunk_size = (_STD min)(_Chunk_size, _Count);
                 _Count -= _Right_chunk_size;
 
                 auto _Mid1  = _First + _Chunk_size;
@@ -9718,7 +9719,7 @@ _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
 template <class _Ty>
 _NODISCARD constexpr _Ty(max)(initializer_list<_Ty> _Ilist) {
     // return leftmost/largest
-    return (_STD max) (_Ilist, less<>{});
+    return (_STD max)(_Ilist, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -9794,7 +9795,7 @@ _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist, _Pr _Pred) {
 template <class _Ty>
 _NODISCARD constexpr _Ty(min)(initializer_list<_Ty> _Ilist) {
     // return leftmost/smallest
-    return (_STD min) (_Ilist, less<>{});
+    return (_STD min)(_Ilist, less<>{});
 }
 
 #ifdef __cpp_lib_concepts
@@ -10360,11 +10361,13 @@ namespace ranges {
                 "The lower bound cannot be greater than the upper bound in a call to std::ranges::clamp "
                 "(N4861 [alg.clamp]/2).");
 
-            if (_STD invoke(_Pred, _STD invoke(_Proj, _Val), _STD invoke(_Proj, _Lo))) {
+            auto&& _Temp = _STD invoke(_Proj, _Val);
+            if (_STD invoke(_Pred, _STD forward<decltype(_Temp)>(_Temp), _STD invoke(_Proj, _Lo))) {
                 return _Lo;
             }
-
-            if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD invoke(_Proj, _Val))) {
+            // The double forward is safe because regular_invocable requires that the invocation of the predicate not
+            // modify _Temp in a manner observable to equality-preserving expressions.
+            if (_STD invoke(_Pred, _STD invoke(_Proj, _Hi), _STD forward<decltype(_Temp)>(_Temp))) {
                 return _Hi;
             }
 
@@ -10431,7 +10434,7 @@ namespace ranges {
                         _Num2 = SIZE_MAX;
                     }
 
-                    const int _Ans = _Memcmp_count(_First1, _First2, (_STD min) (_Num1, _Num2));
+                    const int _Ans = _Memcmp_count(_First1, _First2, (_STD min)(_Num1, _Num2));
                     return _Memcmp_classification_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
                 }
             }

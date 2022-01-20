@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/12.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/13.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 ---
 # Language:        Cpp
@@ -10,6 +10,8 @@ BasedOnStyle:  LLVM
 AccessModifierOffset: -4
 # AlignAfterOpenBracket: Align
 AlignAfterOpenBracket: DontAlign
+# AlignArrayOfStructures: None
+# TRANSITION, LLVM-51935 (try using AlignArrayOfStructures after this crash is fixed)
 # AlignConsecutiveMacros: None
 AlignConsecutiveMacros: Consecutive
 # AlignConsecutiveAssignments: None
@@ -84,6 +86,7 @@ ColumnLimit:     120
 DeriveLineEnding: false
 # DerivePointerAlignment: false
 # DisableFormat:   false
+# EmptyLineAfterAccessModifier: Never
 # EmptyLineBeforeAccessModifier: LogicalBlock
 # ExperimentalAutoDetectBinPacking: false
 # FixNamespaceComments: true
@@ -91,8 +94,8 @@ DeriveLineEnding: false
 #   - foreach
 #   - Q_FOREACH
 #   - BOOST_FOREACH
-# StatementAttributeLikeMacros:
-#   - Q_EMIT
+# IfMacros:
+#   - KJ_IF_MAYBE
 # IncludeBlocks:   Preserve
 IncludeBlocks:   Regroup
 # IncludeCategories:
@@ -125,6 +128,7 @@ IncludeCategories:
     Priority:        2
 # IncludeIsMainRegex: '(Test)?$'
 # IncludeIsMainSourceRegex: ''
+# IndentAccessModifiers: false
 # IndentCaseLabels: false
 # IndentCaseBlocks: false
 IndentCaseBlocks: true
@@ -141,6 +145,7 @@ IndentWrappedFunctionNames: true
 # JavaScriptQuotes: Leave
 # JavaScriptWrapImports: true
 # KeepEmptyLinesAtTheStartOfBlocks: true
+# LambdaBodyIndentation: Signature
 # NOTE: MacroBlockBegin/MacroBlockEnd don't work with _CATCH_ALL.
 # MacroBlockBegin: ''
 # MacroBlockEnd:   ''
@@ -164,8 +169,11 @@ NamespaceIndentation: All
 # PenaltyIndentedWhitespace: 0
 # PointerAlignment: Right
 PointerAlignment: Left
+# PPIndentWidth:   -1
+# ReferenceAlignment: Pointer
 # ReflowComments:  true
-# SortIncludes:    true
+# ShortNamespaceLines: 1
+# SortIncludes:    CaseSensitive
 # SortJavaStaticImport: Before
 # SortUsingDeclarations: true
 # SpaceAfterCStyleCast: false
@@ -183,15 +191,20 @@ SpaceAfterCStyleCast: true
 # SpaceInEmptyBlock: false
 # SpaceInEmptyParentheses: false
 # SpacesBeforeTrailingComments: 1
-# SpacesInAngles:  false
+# SpacesInAngles:  Never
 # SpacesInConditionalStatement: false
 # SpacesInContainerLiterals: true
 # SpacesInCStyleCastParentheses: false
+# SpacesInLineCommentPrefix:
+#   Minimum:         1
+#   Maximum:         -1
 # SpacesInParentheses: false
 # SpacesInSquareBrackets: false
 # SpaceBeforeSquareBrackets: false
 # BitFieldColonSpacing: Both
 # Standard:        Latest
+# StatementAttributeLikeMacros:
+#   - Q_EMIT
 # StatementMacros:
 #   - Q_UNUSED
 #   - QT_REQUIRE_VERSION
