@@ -3618,7 +3618,7 @@ public:
     // clang-format on
 
 #ifdef __cpp_lib_concepts
-    _NODISCARD constexpr const iterator_type& base() const& noexcept /* strengthened */ {
+    _NODISCARD constexpr const iterator_type& base() const& noexcept {
         return _Current;
     }
     _NODISCARD constexpr iterator_type base() && noexcept(is_nothrow_move_constructible_v<_Iter>) /* strengthened */ {
