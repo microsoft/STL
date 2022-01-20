@@ -493,6 +493,7 @@ _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
 
     return 1;
 }
+
 template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_self_synchronizing()>
 class _Fmt_codec;
 
