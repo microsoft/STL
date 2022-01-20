@@ -1015,8 +1015,10 @@ struct _Basic_format_specs {
     // At most one codepoint (so one char32_t or four utf-8 char8_t).
     _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
 
-    ~_Basic_format_specs() {
-        delete reinterpret_cast<void*>(_Reserved);
+    constexpr ~_Basic_format_specs() {
+        if(!_STD is_constant_evaluated()) {
+            ::operator delete(reinterpret_cast<void*>(_Reserved));
+        }
     }
 };
 
@@ -2876,8 +2878,10 @@ struct _Formatter_base {
             basic_format_arg<_FormatContext>{_Val});
     }
 
-    ~_Formatter_base() {
-        delete reinterpret_cast<void*>(_Reserved)
+    constexpr ~_Formatter_base() {
+        if(!_STD is_constant_evaluated()) {
+            ::operator delete(reinterpret_cast<void*>(_Reserved));
+        }
     }
 
 private:
