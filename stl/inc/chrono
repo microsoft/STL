@@ -70,7 +70,7 @@ namespace chrono {
 
         _NODISCARD static constexpr _Rep(max)() noexcept {
             // get largest value
-            return (numeric_limits<_Rep>::max) ();
+            return (numeric_limits<_Rep>::max)();
         }
     };
 
@@ -198,12 +198,12 @@ namespace chrono {
 
         _NODISCARD static constexpr duration(min)() noexcept {
             // get minimum value
-            return duration((duration_values<_Rep>::min) ());
+            return duration((duration_values<_Rep>::min)());
         }
 
         _NODISCARD static constexpr duration(max)() noexcept {
             // get maximum value
-            return duration((duration_values<_Rep>::max) ());
+            return duration((duration_values<_Rep>::max)());
         }
 
     private:
@@ -263,11 +263,11 @@ namespace chrono {
         }
 
         _NODISCARD static constexpr time_point(min)() noexcept {
-            return time_point((_Duration::min) ());
+            return time_point((_Duration::min)());
         }
 
         _NODISCARD static constexpr time_point(max)() noexcept {
-            return time_point((_Duration::max) ());
+            return time_point((_Duration::max)());
         }
 
     private:
@@ -2412,8 +2412,8 @@ namespace chrono {
             return local_time<common_type_t<_Duration, seconds>>{_Sys.time_since_epoch() + _Info.offset};
         }
 
-        static constexpr sys_seconds _Min_seconds{sys_days{(year::min) () / January / 1}};
-        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max) () / December / 32}} - seconds{1}};
+        static constexpr sys_seconds _Min_seconds{sys_days{(year::min)() / January / 1}};
+        static constexpr sys_seconds _Max_seconds{sys_seconds{sys_days{(year::max)() / December / 32}} - seconds{1}};
 
     private:
         template <class _Duration>
@@ -2702,7 +2702,7 @@ namespace chrono {
         // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
         constexpr size_t _Pre_2018_count = 27;
         const size_t _Known_post_2018_ls_size =
-            (_STD max) (_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
+            (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
 
         size_t _Reg_post_2018_ls_size; // number of post-2018 LSs found in the registry
         unique_ptr<__std_tzdb_leap_info[], _Tzdb_deleter<__std_tzdb_leap_info[]>> _Reg_ls_data{
@@ -4008,7 +4008,7 @@ namespace chrono {
             if constexpr (is_integral_v<_Rep1>) {
                 // Must have _Period1 <= _Period2 and numeric_limits<_Rep1>::max() >= _Period2 / _Period1. For example,
                 // std::days can't represent std::seconds, and duration<int, atto>::max() is ~9.2 seconds.
-                constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max) ());
+                constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max)());
 
                 return ratio_less_equal_v<_Period1, _Period2> //
                     && ratio_greater_equal_v<ratio<_Max_tick, _Period2::num>, ratio_divide<ratio<1>, _Period1>>;
@@ -4652,7 +4652,7 @@ namespace chrono {
                         _Multiplier /= 10;
                         _Subsecond_ += _Digit * _Multiplier;
                     } else {
-                        if (_Second_ > ((numeric_limits<int>::max) () - _Digit) / 10) {
+                        if (_Second_ > ((numeric_limits<int>::max)() - _Digit) / 10) {
                             return ios_base::failbit;
                         }
 
@@ -4893,7 +4893,7 @@ namespace chrono {
                             _Width = static_cast<unsigned int>(_Flag - '0');
                             while (++_FmtFirst != _FmtLast && _Ctype_fac.is(ctype_base::digit, *_FmtFirst)) {
                                 const auto _Digit = static_cast<unsigned int>(_Ctype_fac.narrow(*_FmtFirst) - '0');
-                                if (_Width > ((numeric_limits<unsigned int>::max) () - _Digit) / 10) {
+                                if (_Width > ((numeric_limits<unsigned int>::max)() - _Digit) / 10) {
                                     _State |= ios_base::failbit;
                                     break;
                                 }
@@ -5352,7 +5352,7 @@ public:
             _THROW(format_error("Invalid modifier specification."));
         }
 
-        if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
             _THROW(format_error("Invalid type specification."));
         }
 
@@ -5370,7 +5370,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (_Idx > static_cast<size_t>((numeric_limits<int>::max) ())) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
             _THROW(format_error("Dynamic width or precision index too large."));
         }
 

@@ -668,7 +668,7 @@ constexpr bool test_interface() {
 
         str insert_initializer_list = get_literal_input<CharType>();
         const auto it_ilist         = insert_initializer_list.insert(insert_initializer_list.begin() + 6,
-            {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
+                    {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
         assert(it_ilist == insert_initializer_list.begin() + 6);
         assert(equalRanges(insert_initializer_list, "Hello cute fluffy kittens"sv));
 
