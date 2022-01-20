@@ -564,7 +564,7 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
 
         const auto _Mx_trailing_zeroes = static_cast<unsigned long>(_Countr_zero_impl(_Mx_magnitude));
         const auto _Common_factors_of_2 =
-            (_STD min) (_Mx_trailing_zeroes, static_cast<unsigned long>(_Countr_zero_impl(_Nx_magnitude)));
+            (_STD min)(_Mx_trailing_zeroes, static_cast<unsigned long>(_Countr_zero_impl(_Nx_magnitude)));
         _Nx_magnitude >>= _Common_factors_of_2;
         _Mx_magnitude >>= _Mx_trailing_zeroes;
         do {
@@ -616,7 +616,7 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
             }
         }
 
-        constexpr _Ty _High_limit = (numeric_limits<_Ty>::max) () / 2;
+        constexpr _Ty _High_limit = (numeric_limits<_Ty>::max)() / 2;
         const auto _Val1_a        = _Float_abs(_Val1);
         const auto _Val2_a        = _Float_abs(_Val2);
         if (_Val1_a <= _High_limit && _Val2_a <= _High_limit) {
@@ -640,7 +640,7 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
 
         // In the default rounding mode this less than one ULP difference will always be rounded away, so under
         // /fp:fast we could avoid these tests if we had some means of detecting it in the caller.
-        constexpr _Ty _Low_limit = (numeric_limits<_Ty>::min) () * 2;
+        constexpr _Ty _Low_limit = (numeric_limits<_Ty>::min)() * 2;
         if (_Val1_a < _Low_limit) {
             return _Val1 + _Val2 / 2;
         }
