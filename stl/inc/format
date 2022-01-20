@@ -374,7 +374,7 @@ _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
     const _CharT* _First, const _CharT* _Last, unsigned int& _Value) {
     _STL_INTERNAL_CHECK(_First != _Last && '0' <= *_First && *_First <= '9');
 
-    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max) ());
+    constexpr auto _Max_int = static_cast<unsigned int>((numeric_limits<int>::max)());
     constexpr auto _Big_int = _Max_int / 10u;
 
     _Value = 0;
@@ -443,7 +443,7 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
 }
 #ifdef __clang__ // TRANSITION: LLVM-52549 (clang-cl 14 will define _MSVC_EXECUTION_CHARACTER_SET)
 _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
-    if(string_view{__clang_literal_encoding__} == "UTF-8") {
+    if (string_view{__clang_literal_encoding__} == "UTF-8") {
         return true;
     }
     return false;
@@ -455,20 +455,20 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
     // self-synchronizing (and "narrow" so 1200 (utf-16) and 1201 (unicodeFFFE) are not listed)
     // we care about this because if a charset is self-synchronizing then we can search through it
     // for formatting control characters _without_ generally decoding the format string.
-    switch(_MSVC_EXECUTION_CHARACTER_SET) {
-        case 1250: //  ANSI Central European; Central European (Windows)
-        case 1251: //  ANSI Cyrillic; Cyrillic (Windows)
-        case 1252: //  ANSI Latin 1; Western European (Windows)
-        case 1253: //  ANSI Greek; Greek (Windows)
-        case 1254: //  ANSI Turkish; Turkish (Windows)
-        case 1255: //  ANSI Hebrew; Hebrew (Windows)
-        case 1256: //  ANSI Arabic; Arabic (Windows)
-        case 1257: //  ANSI Baltic; Baltic (Windows)
-        case 1258: //  ANSI/OEM Vietnamese; Vietnamese (Windows)
-        case 65001: // Unicode (UTF-8)
-            return true;
-        default:
-            return false;
+    switch (_MSVC_EXECUTION_CHARACTER_SET) {
+    case 1250: //  ANSI Central European; Central European (Windows)
+    case 1251: //  ANSI Cyrillic; Cyrillic (Windows)
+    case 1252: //  ANSI Latin 1; Western European (Windows)
+    case 1253: //  ANSI Greek; Greek (Windows)
+    case 1254: //  ANSI Turkish; Turkish (Windows)
+    case 1255: //  ANSI Hebrew; Hebrew (Windows)
+    case 1256: //  ANSI Arabic; Arabic (Windows)
+    case 1257: //  ANSI Baltic; Baltic (Windows)
+    case 1258: //  ANSI/OEM Vietnamese; Vietnamese (Windows)
+    case 65001: // Unicode (UTF-8)
+        return true;
+    default:
+        return false;
     };
 }
 #endif // ^^^ msvc
@@ -1155,7 +1155,7 @@ template <class _Handler, class _FormatArg>
 _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler{}, _Arg);
-    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max) ())) {
+    if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max)())) {
         _THROW(format_error("Number is too big."));
     }
 
@@ -1229,7 +1229,7 @@ private:
     _ParseContext& _Parse_ctx;
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
-        if (_Idx > static_cast<size_t>((numeric_limits<int>::max) ())) {
+        if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
             _THROW(format_error("Dynamic width or precision index too large."));
         }
 
@@ -1303,7 +1303,7 @@ public:
 
     template <class _CharT>
     constexpr void _On_type(_CharT _Type) {
-        if (_Type < 0 || _Type > (numeric_limits<signed char>::max) ()) {
+        if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
             _THROW(format_error("Invalid type specification."));
         }
         const char _Narrow_type = static_cast<char>(_Type);
@@ -2330,7 +2330,7 @@ _NODISCARD _OutputIt _Write_integral(
 
         if (_Separators > 0) {
             return _Write_separated_integer(_Buffer_start, _End, _Groups,
-                _STD use_facet<numpunct<_CharT>>(_Locale._Get()).thousands_sep(), _Separators, _STD move(_Out));
+                                    _STD use_facet<numpunct<_CharT>>(_Locale._Get()).thousands_sep(), _Separators, _STD move(_Out));
         }
         return _RANGES _Copy_unchecked(_Buffer_start, _End, _STD move(_Out)).out;
     };
@@ -2482,7 +2482,7 @@ _NODISCARD _OutputIt _Fmt_write(
     auto _Buffer_start = _Buffer;
     auto _Width        = static_cast<int>(_Result.ptr - _Buffer_start);
 
-    const auto _Is_negative = (_STD signbit) (_Value);
+    const auto _Is_negative = (_STD signbit)(_Value);
 
     if (_Is_negative) {
         // Remove the '-', it will be dealt with directly
@@ -2498,7 +2498,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Exponent = static_cast<char>(_CSTD toupper(_Exponent));
     }
 
-    const auto _Is_finite = (_STD isfinite) (_Value);
+    const auto _Is_finite = (_STD isfinite)(_Value);
 
     auto _Append_decimal   = false;
     auto _Exponent_start   = _Result.ptr;
@@ -2517,7 +2517,7 @@ _NODISCARD _OutputIt _Fmt_write(
                     _Exponent_start = _It;
                 }
             }
-            _Integral_end = (_STD min) (_Radix_point, _Exponent_start);
+            _Integral_end = (_STD min)(_Radix_point, _Exponent_start);
 
             if (_Specs._Alt && _Radix_point == _Result.ptr) {
                 // TRANSITION, decimal point may be wider
@@ -2584,7 +2584,7 @@ _NODISCARD _OutputIt _Fmt_write(
         if (_Specs._Localized) {
             const auto& _Facet = _STD use_facet<numpunct<_CharT>>(_Locale._Get());
             _Out               = _Write_separated_integer(
-                _Buffer_start, _Integral_end, _Groups, _Facet.thousands_sep(), _Separators, _STD move(_Out));
+                              _Buffer_start, _Integral_end, _Groups, _Facet.thousands_sep(), _Separators, _STD move(_Out));
             if (_Radix_point != _Result.ptr || _Append_decimal) {
                 *_Out++         = _Facet.decimal_point();
                 _Append_decimal = false;
@@ -2654,7 +2654,7 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     const auto _Last     = _Pos + _Value.size();
     int _Estimated_width = 0; // the estimated width of [_Value.data(), _Pos)
     const _Fmt_codec<_CharT> _Codec;
-    constexpr auto _Max_int = (numeric_limits<int>::max) ();
+    constexpr auto _Max_int = (numeric_limits<int>::max)();
 
     while (_Pos != _Last) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {
