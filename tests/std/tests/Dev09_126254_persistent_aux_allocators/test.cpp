@@ -98,6 +98,27 @@ void dump_map() {
     }
 }
 
+struct alignas(64) OverAlignedInt {
+    int x;
+#pragma warning(suppress : 4324) // structure was padded due to alignment specifier
+};
+
+void test_gh_2362() {
+    // @hannes-harnisch suggests to add a debug-only nullptr assertion inside std::allocator<T>::deallocate, checking
+    // the pointer parameter. And deallocate must handle all return values of allocate, so if allocate(0) can return
+    // nullptr, then deallocate(nullptr, 0) must work.
+    {
+        allocator<int> al;
+        int* ptr = al.allocate(0);
+        al.deallocate(ptr, 0);
+    }
+    {
+        allocator<OverAlignedInt> al;
+        OverAlignedInt* ptr = al.allocate(0);
+        al.deallocate(ptr, 0);
+    }
+}
+
 int main() {
     {
         vector<double, MyAllocator<double>> v;
@@ -120,4 +141,6 @@ int main() {
             abort();
         }
     }
+
+    test_gh_2362();
 }
