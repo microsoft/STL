@@ -1011,8 +1011,8 @@ struct _Basic_format_specs {
     bool _Localized       = false;
     bool _Leading_zero    = false;
     uint8_t _Fill_length  = 1;
-    uint8_t _Reserved1 = 0;
-    uintptr_t _Reserved2 = 0;
+    uint8_t _Reserved0 = 0;
+    uintptr_t _Reserved1 = 0;
     // At most one codepoint (so one char32_t or four utf-8 char8_t).
     _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
 };
@@ -2875,6 +2875,7 @@ struct _Formatter_base {
 
 private:
     _Dynamic_format_specs<_CharT> _Specs;
+    uintptr_t _Reserved0;
 };
 
 #define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
