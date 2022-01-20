@@ -4717,9 +4717,9 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<elements_view<_Rng, _Index>> = enable_borrowed_range<_Rng>;
 
     template <class _Rng>
-    using keys_view = elements_view<views::all_t<_Rng>, 0>;
+    using keys_view = elements_view<_Rng, 0>;
     template <class _Rng>
-    using values_view = elements_view<views::all_t<_Rng>, 1>;
+    using values_view = elements_view<_Rng, 1>;
 
     namespace views {
         template <size_t _Index>
