@@ -441,21 +441,37 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
     // This is where we would parse named arg ids if std::format were to support them.
     _THROW(format_error("Invalid format string."));
 }
-
-_NODISCARD constexpr bool _Is_execution_charset_utf8() {
-#pragma warning(push)
-#pragma warning(disable : 4309) // 'initializing' : truncation of constant value
-#pragma warning(disable : 4566) // character represented by universal-character-name '\u4E00' cannot be represented in
-                                // the current code page
-#pragma warning(disable : 6201) // Index '2' is out of valid index range '0' to '1' for possibly stack allocated buffer
-                                // '_Test_char'
-#pragma warning(disable : 6239) // (<non-zero constant> && <expression>) always evaluates to the result of <expression>.
-                                // Did you intend to use the bitwise-and operator?
-    constexpr char _Test_char[] = "\u4e00";
-    return sizeof(_Test_char) == 4 && _Test_char[0] == '\xe4' && _Test_char[1] == '\xb8' && _Test_char[2] == '\x80';
-#pragma warning(pop)
+#ifdef __clang__ // TRANSITION: LLVM-52549 (clang-cl 14 will define _MSVC_EXECUTION_CHARACTER_SET)
+_NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
+    if(string_view{__clang_literal_encoding__} == "UTF-8") {
+        return true;
+    }
+    return false;
 }
+#else // ^^^ clang / msvc vvv
+_NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
 
+    // charset codes (as reported by _MSVC_EXECUTION_CHARACTER_SET) that are
+    // self-synchronizing (and "narrow" so 1200 (utf-16) and 1201 (unicodeFFFE) are not listed)
+    // we care about this because if a charset is self-synchronizing then we can search through it
+    // for formatting control characters _without_ generally decoding the format string.
+    switch(_MSVC_EXECUTION_CHARACTER_SET) {
+        case 1250: //  ANSI Central European; Central European (Windows)
+        case 1251: //  ANSI Cyrillic; Cyrillic (Windows)
+        case 1252: //  ANSI Latin 1; Western European (Windows)
+        case 1253: //  ANSI Greek; Greek (Windows)
+        case 1254: //  ANSI Turkish; Turkish (Windows)
+        case 1255: //  ANSI Hebrew; Hebrew (Windows)
+        case 1256: //  ANSI Arabic; Arabic (Windows)
+        case 1257: //  ANSI Baltic; Baltic (Windows)
+        case 1258: //  ANSI/OEM Vietnamese; Vietnamese (Windows)
+        case 65001: // Unicode (UTF-8)
+            return true;
+        default:
+            return false;
+    };
+}
+#endif // ^^^ msvc
 inline constexpr char16_t _Width_estimate_low_intervals[] = { // Per N4885 [format.string.std]/11
     0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u, 0xFE10u,
     0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u};
@@ -476,8 +492,7 @@ _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
 
     return 1;
 }
-
-template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_utf8()>
+template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_self_synchronizing()>
 class _Fmt_codec;
 
 template <bool _Statically_Utf8>
@@ -507,7 +522,11 @@ protected:
 
     _Fmt_codec_base() {
 #ifndef _FORMAT_CODEPAGE
-#define _FORMAT_CODEPAGE __std_code_page::_Acp
+#ifdef __clang__ // TRANSITION, LLVM-52549
+#define _FORMAT_CODEPAGE static_cast<__std_code_page>(65001) // clang only supports utf-8
+#else // ^^^ clang / msvc vvv
+#define _FORMAT_CODEPAGE static_cast<__std_code_page>(_MSVC_EXECUTION_CHARACTER_SET)
+#endif // ^^^ msvc
 #endif // _FORMAT_CODEPAGE
         [[maybe_unused]] const __std_win_error _Result = __std_get_cvt(_FORMAT_CODEPAGE, &_Cvt);
         _STL_INTERNAL_CHECK(_Result == __std_win_error::_Success);
@@ -2930,7 +2949,7 @@ struct _Basic_format_string {
     template <class _Ty>
         requires convertible_to<const _Ty&, basic_string_view<_CharT>>
     consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
-        if (_Is_execution_charset_utf8()) {
+        if (_Is_execution_charset_self_synchronizing()) {
             _Parse_format_string(_Str, _Format_checker<_CharT, remove_cvref_t<_Args>...>{_Str});
         }
     }
