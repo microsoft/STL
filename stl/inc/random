@@ -104,7 +104,7 @@ basic_istream<_Elem, _Traits>& _Read(
 template <class _Elem, class _Traits, class _Ty>
 basic_istream<_Elem, _Traits>& _In(basic_istream<_Elem, _Traits>& _Is, _Ty& _Dx) { // read from stream
     long double _Vx;
-    _Ty _Max = (numeric_limits<_Ty>::max) ();
+    _Ty _Max = (numeric_limits<_Ty>::max)();
     _Read(_Is, _Vx);
     if (_CSTD fabsl(_Vx) <= _Max) {
         _Dx = static_cast<_Ty>(_Vx);
@@ -256,15 +256,15 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) {
     constexpr size_t _Minbits = _Digits < _Bits ? _Digits : _Bits;
 
     if constexpr (is_integral_v<typename _Gen::result_type>) {
-        constexpr auto _Ix = (_Gen::max) () - (_Gen::min) () + 1;
+        constexpr auto _Ix = (_Gen::max)() - (_Gen::min)() + 1;
         const int _Ceil    = _Generate_canonical_helper<_Real, _Minbits, typename _Gen::result_type, _Ix>();
 #pragma warning(suppress : 6326) // Potential comparison of a constant with another constant
         const int _Kx = _Ceil < 1 ? 1 : _Ceil;
 
         _Real _Ans{0};
         _Real _Factor{1};
-        constexpr auto _Gxmin = (_Gen::min) ();
-        constexpr auto _Rx    = static_cast<_Real>((_Gen::max) () - _Gxmin) + 1;
+        constexpr auto _Gxmin = (_Gen::min)();
+        constexpr auto _Rx    = static_cast<_Real>((_Gen::max)() - _Gxmin) + 1;
 
         for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
             _Ans += static_cast<_Real>(_Gx() - _Gxmin) * _Factor;
@@ -273,8 +273,8 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) {
 
         return _Ans / _Factor;
     } else { // We still need to tolerate TR1-era engines
-        const auto _Gxmin = static_cast<_Real>((_Gx.min) ());
-        const auto _Gxmax = static_cast<_Real>((_Gx.max) ());
+        const auto _Gxmin = static_cast<_Real>((_Gx.min)());
+        const auto _Gxmax = static_cast<_Real>((_Gx.max)());
         const auto _Rx    = (_Gxmax - _Gxmin) + _Real{1};
 
         const auto _Ceil = static_cast<int>(_STD ceil(_Minbits / _STD log2(_Rx)));
@@ -1363,11 +1363,11 @@ public:
     }
 
     _NODISCARD result_type(min)() const {
-        return (_Eng.min) ();
+        return (_Eng.min)();
     }
 
     _NODISCARD result_type(max)() const {
-        return (_Eng.max) ();
+        return (_Eng.max)();
     }
 
     _NODISCARD result_type operator()() {
@@ -1441,11 +1441,11 @@ public:
     explicit discard_block_engine(_Seed_seq& _Seq) : _Mybase(_Seq) {}
 
     _NODISCARD static constexpr typename _Engine::result_type(min)() {
-        return (_Engine::min) ();
+        return (_Engine::min)();
     }
 
     _NODISCARD static constexpr typename _Engine::result_type(max)() {
-        return (_Engine::max) ();
+        return (_Engine::max)();
     }
 };
 
@@ -1515,7 +1515,7 @@ public:
 
         for (; _Idx < _Nx0; ++_Idx) { // pack _Wx0-bit values
             for (;;) { // get a small enough value
-                _Val = _Eng() - (_Engine::min) ();
+                _Val = _Eng() - (_Engine::min)();
                 if (_Val <= _Yx0) {
                     break;
                 }
@@ -1526,7 +1526,7 @@ public:
         _Mask = _Mask << 1 | 1;
         for (; _Idx < _Nx; ++_Idx) { // pack _Wx0+1-bit values
             for (;;) { // get a small enough value
-                _Val = _Eng() - (_Engine::min) ();
+                _Val = _Eng() - (_Engine::min)();
                 if (_Val <= _Yx1) {
                     break;
                 }
@@ -1567,7 +1567,7 @@ public:
 private:
     void _Init() { // compute values for operator()
         size_t _Mx = 0;
-        _Eres _Rx  = (_Engine::max) () - (_Engine::min) () + 1;
+        _Eres _Rx  = (_Engine::max)() - (_Engine::min)() + 1;
 
         _Eres _Tmp = _Rx;
         if (_Tmp == 0) { // all bits used, make _Rx finite
@@ -1652,15 +1652,15 @@ public:
     }
 
     _NODISCARD static constexpr result_type(min)() {
-        return (_Engine::min) ();
+        return (_Engine::min)();
     }
 
     _NODISCARD static constexpr result_type(max)() {
-        return (_Engine::max) ();
+        return (_Engine::max)();
     }
 
     _NODISCARD result_type operator()() {
-        size_t _Idx = static_cast<size_t>(static_cast<double>(_Yx - (_Eng.min) ()) * _Scale);
+        size_t _Idx = static_cast<size_t>(static_cast<double>(_Yx - (_Eng.min)()) * _Scale);
 
         _Yx        = _Arr[_Idx];
         _Arr[_Idx] = _Eng();
@@ -1713,7 +1713,7 @@ private:
 
         _Yx = _Eng();
         _Scale =
-            static_cast<double>(_Kx) / (static_cast<double>((_Eng.max) ()) - static_cast<double>((_Eng.min) ()) + 1.0);
+            static_cast<double>(_Kx) / (static_cast<double>((_Eng.max)()) - static_cast<double>((_Eng.min)()) + 1.0);
     }
 
     _Engine _Eng; // the stored engine
@@ -1879,17 +1879,17 @@ public:
     struct param_type : _Mypbase { // parameter package
         using distribution_type = uniform_int_distribution;
 
-        param_type() : _Mypbase(0, (numeric_limits<_Ty>::max) ()) {}
+        param_type() : _Mypbase(0, (numeric_limits<_Ty>::max)()) {}
 
-        explicit param_type(result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max) ())
+        explicit param_type(result_type _Min0, result_type _Max0 = (numeric_limits<_Ty>::max)())
             : _Mypbase(_Min0, _Max0) {}
 
         param_type(const _Mypbase& _Right) : _Mypbase(_Right) {}
     };
 
-    uniform_int_distribution() : _Mybase(0, (numeric_limits<_Ty>::max) ()) {}
+    uniform_int_distribution() : _Mybase(0, (numeric_limits<_Ty>::max)()) {}
 
-    explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max) ()) : _Mybase(_Min0, _Max0) {}
+    explicit uniform_int_distribution(_Ty _Min0, _Ty _Max0 = (numeric_limits<_Ty>::max)()) : _Mybase(_Min0, _Max0) {}
 
     explicit uniform_int_distribution(const param_type& _Par0) : _Mybase(_Par0) {}
 
@@ -2120,7 +2120,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max) ();
+        return (numeric_limits<result_type>::max)();
     }
 
     void reset() {} // clear internal state
@@ -2165,7 +2165,7 @@ private:
     template <class _Engine>
     result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
         using _Uty = make_unsigned_t<_Ty>;
-        constexpr auto _Ty_max{(numeric_limits<_Ty>::max) ()};
+        constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
         const auto _Ty1_max{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Ty_max))};
 
         _Ty1 _Val;
@@ -2278,7 +2278,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max) ();
+        return (numeric_limits<result_type>::max)();
     }
 
     void reset() {} // clear internal state
@@ -2328,7 +2328,7 @@ private:
 
         for (;;) { // generate and reject
             using _Uty = make_unsigned_t<_Ty>;
-            constexpr auto _Ty_max{(numeric_limits<_Ty>::max) ()};
+            constexpr auto _Ty_max{(numeric_limits<_Ty>::max)()};
             const auto _Ty1_max{_Float_upper_bound<_Ty1>(static_cast<_Uty>(_Ty_max))};
 
             _Ty _Res;
@@ -2511,7 +2511,7 @@ private:
             // inequality gives -1+p*t >= -(1-p)^t, so 1 - (1-p)^t <= p*t = mean. For the other bound, 1-(1-p)^t =
             // 1-(1-p)(1-mean/t)^(t-1) <= 1-(1-p)(1-1/t)^(t-1) <= 1-(1-p)/e.
             const _Ty1 _Ub =
-                (_STD min) (_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Pp + _Ty1{6.32120558828557678e-1});
+                (_STD min)(_Par0._Mean, _Ty1{3.678794411714423216e-1} * _Par0._Pp + _Ty1{6.32120558828557678e-1});
             if (_Rand > _Ub) {
                 _Res = _Ty{0};
             } else {
@@ -2585,7 +2585,7 @@ public:
         }
 
         void _Init(_Ty _Min0, _Ty _Max0) { // set internal state
-            _STL_ASSERT(_Min0 <= _Max0 && (0 <= _Min0 || _Max0 <= _Min0 + (numeric_limits<_Ty>::max) ()),
+            _STL_ASSERT(_Min0 <= _Max0 && (0 <= _Min0 || _Max0 <= _Min0 + (numeric_limits<_Ty>::max)()),
                 "invalid min and max arguments for uniform_real");
             _Min = _Min0;
             _Max = _Max0;
@@ -2989,7 +2989,7 @@ private:
                 // Bad _Sx value! Very small values will overflow log(_Sx) / _Sx.
                 // Generate a new value based on scaling method.
                 const _Ty _Ln2{_Ty{0.69314718055994530941723212145818}};
-                const _Ty _Maxabs{(_STD max) (_STD abs(_Vx1), _STD abs(_Vx2))};
+                const _Ty _Maxabs{(_STD max)(_STD abs(_Vx1), _STD abs(_Vx2))};
                 const int _ExpMax{_STD ilogb(_Maxabs)};
                 _Vx1   = _STD scalbn(_Vx1, -_ExpMax);
                 _Vx2   = _STD scalbn(_Vx2, -_ExpMax);
@@ -4225,7 +4225,7 @@ public:
     }
 
     _NODISCARD result_type(max)() const { // get largest possible result
-        return (numeric_limits<result_type>::max) ();
+        return (numeric_limits<result_type>::max)();
     }
 
     void reset() {} // clear internal state
