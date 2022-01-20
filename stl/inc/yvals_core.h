@@ -712,12 +712,12 @@
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 12
-#error STL1000: Unexpected compiler version, expected Clang 12.0.0 or newer.
+#if __clang_major__ < 13
+#error STL1000: Unexpected compiler version, expected Clang 13.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1930 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.30 or newer.
+#if _MSC_VER < 1931 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.31 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1210,7 +1210,19 @@
 #define _CXX17_DEPRECATE_POLYMORPHIC_ALLOCATOR_DESTROY
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4033
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_IS_ALWAYS_EQUAL_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_DEPRECATE_IS_ALWAYS_EQUAL                                                \
+    [[deprecated("warning STL4033: "                                                    \
+                 "std::allocator::is_always_equal is deprecated in C++20 by LWG-3170. " \
+                 "Prefer std::allocator_traits<allocator<T>>::is_always_equal. "        \
+                 "You can define _SILENCE_CXX20_IS_ALWAYS_EQUAL_DEPRECATION_WARNING "   \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_DEPRECATE_IS_ALWAYS_EQUAL
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4034
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20

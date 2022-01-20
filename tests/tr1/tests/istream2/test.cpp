@@ -189,7 +189,7 @@ void test_main() { // test basic workings of istream definitions
     wchar_t buf[20];
     STD wstreampos pos = ins.tellg();
 
-    CHECK(pos != (STD wstreampos) (-1));
+    CHECK(pos != (STD wstreampos)(-1));
     CHECK_PTR(&ins.ignore(), &ins);
     CHECK_INT(ins.peek(), L'i');
     CHECK_PTR(&ins.putback(L'l'), &ins);
