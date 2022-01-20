@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-template = """template <class _Rx, class... _Types>
+def specialization(cv, ref, ref_inv, noex, noex_val, callable):
+    return f"""template <class _Rx, class... _Types>
 class _Move_only_function_call<_Rx(_Types...) {cv} {ref} {noex}>
     : public _Move_only_function_base<_Rx, {noex_val}, _Types...> {{
 public:
@@ -16,25 +17,21 @@ public:
     _Rx operator()(_Types... _Args) {cv} {ref} {noex} {{
         return this->_Get_invoke()(this->_Data, _STD forward<_Types>(_Args)...);
     }}
-}};"""
+}};
+"""
 
 def ref_permutations(cv, noex, noex_val, trait):
-    callable = "{trait}<_Rx, {cv} _Vt, _Types...> && {trait}<_Rx, {cv} _Vt&, _Types...>".format(trait = trait, cv = cv)
-    print(template.format(cv = cv, ref = "", ref_inv = "&", noex = noex, noex_val = noex_val, callable = callable))
-    print("")
-    callable =  "{trait}<_Rx, {cv} _Vt&, _Types...>".format(trait = trait, cv = cv)
-    print(template.format(cv = cv, ref = "&", ref_inv = "&", noex = noex, noex_val = noex_val, callable = callable))
-    print("")
-    callable =  "{trait}<_Rx, {cv} _Vt, _Types...>".format(trait = trait, cv = cv)
-    print(template.format(cv = cv, ref = "&&", ref_inv = "&&", noex = noex, noex_val = noex_val, callable = callable))
+    return specialization(cv, "", "&", noex, noex_val, \
+        f"{trait}<_Rx, {cv} _Vt, _Types...> && {trait}<_Rx, {cv} _Vt&, _Types...>") + "\n" \
+        + specialization(cv, "&", "&", noex, noex_val, f"{trait}<_Rx, {cv} _Vt&, _Types...>") + "\n" \
+        + specialization(cv, "&&", "&&", noex, noex_val, f"{trait}<_Rx, {cv} _Vt, _Types...>")
 
 def cvref_permutations(noex, noex_val, trait):
-    ref_permutations("", noex, noex_val, trait)
-    print("")
-    ref_permutations("const", noex, noex_val, trait)
+    return ref_permutations("", noex, noex_val, trait) + "\n" \
+        + ref_permutations("const", noex, noex_val, trait)
 
-cvref_permutations("", "false", "is_invocable_r_v")
-print("")
-print("#ifdef __cpp_noexcept_function_type")
-cvref_permutations("noexcept", "true", "is_nothrow_invocable_r_v")
-print("#endif // __cpp_noexcept_function_type")
+
+print(cvref_permutations("", "false", "is_invocable_r_v") + "\n" \
+    + "#ifdef __cpp_noexcept_function_type" + "\n" \
+    + cvref_permutations("noexcept", "true", "is_nothrow_invocable_r_v") \
+    + "#endif // __cpp_noexcept_function_type")
