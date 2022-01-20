@@ -1002,7 +1002,7 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
 
 template <class _CharT>
 struct _Basic_format_specs {
-    uintptr_t _Reserved = 0;
+    uintptr_t _Reserved   = 0;
     int _Width            = 0;
     int _Precision        = -1;
     char _Type            = '\0';
@@ -1016,7 +1016,7 @@ struct _Basic_format_specs {
     _CharT _Fill[4 / sizeof(_CharT)] = {_CharT{' '}};
 
     constexpr ~_Basic_format_specs() {
-        if(!_STD is_constant_evaluated()) {
+        if (!_STD is_constant_evaluated()) {
             ::operator delete(reinterpret_cast<void*>(_Reserved));
         }
     }
@@ -2879,7 +2879,7 @@ struct _Formatter_base {
     }
 
     constexpr ~_Formatter_base() {
-        if(!_STD is_constant_evaluated()) {
+        if (!_STD is_constant_evaluated()) {
             ::operator delete(reinterpret_cast<void*>(_Reserved));
         }
     }
