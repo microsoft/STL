@@ -2875,7 +2875,7 @@ struct _Formatter_base {
 
 private:
     _Dynamic_format_specs<_CharT> _Specs;
-    uintptr_t _Reserved0;
+    uintptr_t _Reserved0 = 0;
 };
 
 #define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
