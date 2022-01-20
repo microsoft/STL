@@ -798,11 +798,10 @@ public:
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
 
-    using propagate_on_container_move_assignment = true_type;
+    using propagate_on_container_move_assignment           = true_type;
+    using is_always_equal _CXX20_DEPRECATE_IS_ALWAYS_EQUAL = true_type;
 
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
-    using is_always_equal _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = true_type;
-
     template <class _Other>
     struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
         using other = allocator<_Other>;
@@ -877,11 +876,10 @@ public:
     using size_type       = size_t;
     using difference_type = ptrdiff_t;
 
-    using propagate_on_container_move_assignment = true_type;
+    using propagate_on_container_move_assignment           = true_type;
+    using is_always_equal _CXX20_DEPRECATE_IS_ALWAYS_EQUAL = true_type;
 
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
-    using is_always_equal _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = true_type;
-
     template <class _Other>
     struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
         using other = allocator<_Other>;
