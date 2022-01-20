@@ -1805,6 +1805,7 @@ void run_allocator_matrix() {
 }
 
 int main() {
+#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, MSVC-PR-346098
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
     run_allocator_matrix<char8_t>();
@@ -1812,4 +1813,5 @@ int main() {
     run_allocator_matrix<char16_t>();
     run_allocator_matrix<char32_t>();
     run_allocator_matrix<wchar_t>();
+#endif // _MSVC_INTERNAL_TESTING
 }
