@@ -2302,7 +2302,7 @@ _NODISCARD _OutputIt _Write_integral(
 #pragma warning(disable : 4296) // '<': expression is always false
         _Out = _Write_sign(_STD move(_Out), _Specs._Sgn, _Value < _Integral{0});
 #pragma warning(pop)
-        _Out = _RANGES transform(_Prefix.begin(), _Prefix.end(), _STD move(_Out), _Widen_char<_CharT>{}).out;
+        _Out = _RANGES transform(_Prefix, _STD move(_Out), _Widen_char<_CharT>{}).out;
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
             _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, _CharT{'0'});
         }
