@@ -18,8 +18,8 @@ int naive_iterations(const int bits, const uint64_t gmin, const uint64_t gmax) {
 void test(const int target_bits) {
     // Increase the range until the number of iterations repeats.
     uint64_t range = 2;
-    int k        = 0;
-    int prev_k   = -1;
+    int k          = 0;
+    int prev_k     = -1;
     while (k != prev_k) {
         prev_k       = exchange(k, naive_iterations(target_bits, 1, range));
         const int k1 = _Generate_canonical_iterations(target_bits, 1, range);
