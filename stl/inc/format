@@ -443,7 +443,7 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
 }
 #ifdef __clang__ // TRANSITION: LLVM-52549 (clang-cl 14 will define _MSVC_EXECUTION_CHARACTER_SET)
 _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
-    return string_view{__clang_literal_encoding__} == "UTF-8"
+    return string_view{__clang_literal_encoding__} == "UTF-8";
 }
 #else // ^^^ clang / msvc vvv
 _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
@@ -453,15 +453,16 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
     // we care about this because if a charset is self-synchronizing then we can search through it
     // for formatting control characters _without_ generally decoding the format string.
     switch (_MSVC_EXECUTION_CHARACTER_SET) {
-    case 1250: //  ANSI Central European; Central European (Windows)
-    case 1251: //  ANSI Cyrillic; Cyrillic (Windows)
-    case 1252: //  ANSI Latin 1; Western European (Windows)
-    case 1253: //  ANSI Greek; Greek (Windows)
-    case 1254: //  ANSI Turkish; Turkish (Windows)
-    case 1255: //  ANSI Hebrew; Hebrew (Windows)
-    case 1256: //  ANSI Arabic; Arabic (Windows)
-    case 1257: //  ANSI Baltic; Baltic (Windows)
-    case 1258: //  ANSI/OEM Vietnamese; Vietnamese (Windows)
+    case 874: // Thai (Windows)
+    case 1250: // ANSI Central European; Central European (Windows)
+    case 1251: // ANSI Cyrillic; Cyrillic (Windows)
+    case 1252: // ANSI Latin 1; Western European (Windows)
+    case 1253: // ANSI Greek; Greek (Windows)
+    case 1254: // ANSI Turkish; Turkish (Windows)
+    case 1255: // ANSI Hebrew; Hebrew (Windows)
+    case 1256: // ANSI Arabic; Arabic (Windows)
+    case 1257: // ANSI Baltic; Baltic (Windows)
+    case 1258: // ANSI/OEM Vietnamese; Vietnamese (Windows)
     case 65001: // Unicode (UTF-8)
         return true;
     default:
