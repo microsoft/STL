@@ -238,19 +238,48 @@ private:
     vector<result_type> _Myvec;
 };
 
+constexpr int _Generate_canonical_iterations(const int _Bits, const uint64_t _Gmin, const uint64_t _Gmax) {
+    // For a URBG type `G` with range == `(G::max() - G::min()) + 1`, returns the number of calls to generate at least
+    // _Bits bits of entropy. Specifically, max(1, ceil(_Bits / log2(range))).
+
+    int _Ceil = 0;
+    if (_Bits == 0) {
+        ;
+    } else if (_Gmax == UINT64_MAX && _Gmin == 0) {
+        _Ceil = ((_Bits - 1) / 64) + 1;
+    } else {
+        const auto _Range = (_Gmax - _Gmin) + 1;
+        if ((_Range & (_Range - 1)) == 0) {
+            _Ceil = (_Bits - 1) / _Countr_zero(_Range) + 1;
+        } else {
+            const auto _Target = ~uint64_t{0} >> (64 - _Bits);
+            uint64_t _Prod     = 1;
+            while (_Prod <= _Target) {
+                if (_Prod > UINT64_MAX / _Range) {
+                    ++_Ceil;
+                    break;
+                }
+                _Prod *= _Range;
+                ++_Ceil;
+            }
+        }
+    }
+
+    return _Ceil < 1 ? 1 : _Ceil;
+}
+
 template <class _Real, size_t _Bits, class _Gen>
 _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(generate_canonical, _Real);
 
-    const size_t _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
-    const size_t _Minbits = _Digits < _Bits ? _Digits : _Bits;
+    constexpr auto _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
+    constexpr auto _Minbits = static_cast<int>(_Digits < _Bits ? _Digits : _Bits);
 
-    const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
-    const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
-    const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
+    constexpr auto _Gxmin = static_cast<_Real>((_Gen::min)());
+    constexpr auto _Gxmax = static_cast<_Real>((_Gen::max)());
+    constexpr auto _Rx    = (_Gxmax - _Gxmin) + _Real{1};
 
-    const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Minbits) / _STD log2(_Rx)));
-    const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
+    constexpr int _Kx = _Generate_canonical_iterations(_Minbits, (_Gen::min)(), (_Gen::max)());
 
     _Real _Ans{0};
     _Real _Factor{1};
@@ -263,7 +292,38 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     return _Ans / _Factor;
 }
 
-#define _NRAND(eng, resty) (_STD generate_canonical<resty, static_cast<size_t>(-1)>(eng))
+template <class _Real, class _Gen>
+_NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
+    _RNG_REQUIRE_REALTYPE(_Nrand_impl, _Real);
+
+    constexpr auto _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
+    constexpr auto _Bits    = ~size_t{0};
+    constexpr auto _Minbits = _Digits < _Bits ? _Digits : _Bits;
+
+    if constexpr (_Select_invoke_traits<decltype(&_Gen::min)>::_Is_invocable::value
+                  && _Select_invoke_traits<decltype(&_Gen::max)>::_Is_invocable::value && _Minbits <= 64) {
+        return _STD generate_canonical<_Real, _Minbits>(_Gx);
+    } else {
+        const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
+        const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
+        const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
+
+        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Minbits) / _STD log2(_Rx)));
+        const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
+
+        _Real _Ans{0};
+        _Real _Factor{1};
+
+        for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
+            _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
+            _Factor *= _Rx;
+        }
+
+        return _Ans / _Factor;
+    }
+}
+
+#define _NRAND(eng, resty) (_Nrand_impl<resty>(eng))
 
 _INLINE_VAR constexpr int _MP_len = 5;
 using _MP_arr                     = uint64_t[_MP_len];
