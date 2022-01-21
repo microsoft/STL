@@ -171,6 +171,7 @@ Write-Progress `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 $IgnoredAzureContext = Set-AzContext -SubscriptionName CPP_STL_GitHub
+az account set --subscription CPP_STL_GitHub
 
 ####################################################################################################
 Write-Progress `
