@@ -2304,7 +2304,7 @@ _NODISCARD _OutputIt _Write_integral(
 #pragma warning(pop)
         _Out = _RANGES _Copy_unchecked(_Prefix.begin(), _Prefix.end(), _STD move(_Out)).out;
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
-            _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, '0');
+            _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, _CharT{'0'});
         }
 
         if (_Separators > 0) {
@@ -2558,7 +2558,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Out = _Write_sign(_STD move(_Out), _Sgn, _Is_negative);
 
         if (_Write_leading_zeroes && _Width < _Specs._Width) {
-            _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, '0');
+            _Out = _RANGES fill_n(_STD move(_Out), _Specs._Width - _Width, _CharT{'0'});
         }
 
         if (_Specs._Localized) {
