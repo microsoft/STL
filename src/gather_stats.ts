@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import * as fs from 'fs';
+import fs from 'fs';
 
-import * as cliProgress from 'cli-progress';
-import * as dotenv from 'dotenv';
+import cliProgress from 'cli-progress';
+import dotenv from 'dotenv';
 import { DateTime, Duration, Settings } from 'luxon';
 import { graphql } from '@octokit/graphql';
-import * as yargs from 'yargs';
+import yargs from 'yargs';
 
 Settings.defaultZone = 'America/Los_Angeles';
 

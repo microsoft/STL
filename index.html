@@ -97,7 +97,7 @@
                     ...get_hidden('cxx20'),
                 },
                 {
-                    data: get_values(weekly_table, 'cxx23').concat(get_values(daily_table, 'cxx23')),
+                    data: get_values(daily_table, 'cxx23'),
                     label: 'C++23 Features',
                     borderColor: '#9966FF',
                     backgroundColor: '#9966FF',
@@ -487,13 +487,13 @@
 
             for (const field of ['cxx20', 'cxx23', 'lwg', 'pr', 'bug', 'issue', 'avg_age', 'avg_wait', 'sum_age',
                 'sum_wait', 'merged']) {
-                const value = daily_table[daily_table.length - 1][field];
-                document.getElementById(`currentValue-${field}`).textContent = value;
+                const value = daily_table[daily_table.length - 1][field] ?? 0;
+                document.getElementById(`currentValue-${field}`).textContent = value.toString();
             }
 
             for (const field of ['vso', 'libcxx']) {
                 const value = weekly_table[weekly_table.length - 1][field];
-                document.getElementById(`currentValue-${field}`).textContent = value;
+                document.getElementById(`currentValue-${field}`).textContent = value.toString();
             }
         };
     </script>
