@@ -196,11 +196,23 @@ $allowHttp = New-AzNetworkSecurityRuleConfig `
   -Access Allow `
   -Protocol Tcp `
   -Direction Outbound `
-  -Priority 1008 `
+  -Priority 1000 `
   -SourceAddressPrefix * `
   -SourcePortRange * `
   -DestinationAddressPrefix * `
   -DestinationPortRange @(80, 443)
+
+$allowQuic = New-AzNetworkSecurityRuleConfig `
+  -Name AllowQUIC `
+  -Description 'Allow QUIC' `
+  -Access Allow `
+  -Protocol Udp `
+  -Direction Outbound `
+  -Priority 1010 `
+  -SourceAddressPrefix * `
+  -SourcePortRange * `
+  -DestinationAddressPrefix * `
+  -DestinationPortRange 443
 
 $allowDns = New-AzNetworkSecurityRuleConfig `
   -Name AllowDNS `
@@ -208,7 +220,7 @@ $allowDns = New-AzNetworkSecurityRuleConfig `
   -Access Allow `
   -Protocol * `
   -Direction Outbound `
-  -Priority 1009 `
+  -Priority 1020 `
   -SourceAddressPrefix * `
   -SourcePortRange * `
   -DestinationAddressPrefix * `
@@ -220,7 +232,7 @@ $denyEverythingElse = New-AzNetworkSecurityRuleConfig `
   -Access Deny `
   -Protocol * `
   -Direction Outbound `
-  -Priority 1010 `
+  -Priority 2000 `
   -SourceAddressPrefix * `
   -SourcePortRange * `
   -DestinationAddressPrefix * `
@@ -231,7 +243,7 @@ $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -Name $NetworkSecurityGroupName `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
-  -SecurityRules @($allowHttp, $allowDns, $denyEverythingElse)
+  -SecurityRules @($allowHttp, $allowQuic, $allowDns, $denyEverythingElse)
 
 $SubnetName = $ResourceGroupName + '-Subnet'
 $Subnet = New-AzVirtualNetworkSubnetConfig `
