@@ -14,7 +14,7 @@ input.output\iostreams.base\ios.base\ios.base.storage\pword.pass.cpp
 # "The behavior demonstrated in this test is not meant to be standard"
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.ctor\null.pass.cpp
 
-# allocator<const T>.
+# allocator<const T>
 iterators\iterator.requirements\iterator.cust\iterator.cust.move\iter_rvalue_reference_t.pass.cpp
 utilities\memory\default.allocator\allocator.ctor.pass.cpp
 
@@ -24,6 +24,7 @@ iterators\iterator.primitives\iterator.operations\prev.pass.cpp
 
 # Itanium ABI assumptions that current_exception and rethrow_exception don't copy the exception object
 language.support\support.exception\except.nested\rethrow_if_nested.pass.cpp
+language.support\support.exception\propagation\current_exception.pass.cpp
 language.support\support.exception\propagation\make_exception_ptr.pass.cpp
 language.support\support.exception\propagation\rethrow_exception.pass.cpp
 
@@ -1067,10 +1068,9 @@ utilities\memory\unique.ptr\iterator_concept_conformance.compile.pass.cpp
 
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
-# XFAIL: msvc
+# "XFAIL: msvc" or "XFAIL: clang"
 algorithms\algorithms.results\in_out_result.compile.pass.cpp
 algorithms\algorithms.results\no_unique_address.compile.pass.cpp
-language.support\support.exception\propagation\current_exception.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\noncopyable_return_type.pass.cpp
 
 # Our machinery doesn't understand compile-only `.compile.pass.cpp` tests.
