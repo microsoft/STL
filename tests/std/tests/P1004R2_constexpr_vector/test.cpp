@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
+#include <numeric>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -60,156 +61,288 @@ struct soccc_allocator {
 
 using vec = vector<int, soccc_allocator<int>>;
 
+class input_iterator_tester {
+private:
+    static constexpr int size = 6;
+    int data[size]            = {};
+
+public:
+    constexpr input_iterator_tester() noexcept {
+        iota(data, data + size, 0);
+    }
+
+    class iterator {
+    private:
+        int* curr;
+
+    public:
+        using iterator_category = input_iterator_tag;
+        using value_type        = int;
+        using difference_type   = ptrdiff_t;
+        using pointer           = void;
+        using reference         = int&;
+
+        constexpr explicit iterator(int* start) : curr(start) {}
+
+        constexpr reference operator*() const {
+            return *curr;
+        }
+
+        constexpr iterator& operator++() {
+            ++curr;
+            return *this;
+        }
+
+        constexpr iterator operator++(int) {
+            auto tmp = *this;
+            ++curr;
+            return tmp;
+        }
+
+        constexpr bool operator==(const iterator& that) const {
+            return curr == that.curr;
+        }
+
+        constexpr bool operator!=(const iterator& that) const {
+            return !(*this == that);
+        }
+    };
+
+    constexpr iterator begin() {
+        return iterator(data);
+    }
+
+    constexpr iterator mid(const int off) {
+        return iterator(data + off);
+    }
+
+    constexpr iterator end() {
+        return iterator(data + size);
+    }
+};
+
 constexpr bool test_interface() {
-    { // constructors
+    input_iterator_tester input_iter_data;
 
-        // Non allocator constructors
-        vec size_default_constructed(5);
-        assert(size_default_constructed.size() == 5);
-#ifndef __EDG__ // TRANSITION, VSO-1273296
-        assert(all_of(
-            size_default_constructed.begin(), size_default_constructed.end(), [](const int val) { return val == 0; }));
-#endif // __EDG__
-
-        vec size_value_constructed(5, 7);
-        assert(size_value_constructed.size() == 5);
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273365
-        assert(all_of(
-            size_value_constructed.begin(), size_value_constructed.end(), [](const int val) { return val == 7; }));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
-
+    { // special member functions
         vec range_constructed(begin(input), end(input));
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
         assert(equal(range_constructed.begin(), range_constructed.end(), begin(input), end(input)));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 
-        vec initializer_list_constructed({2, 3, 4, 5});
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
-        assert(equal(
-            initializer_list_constructed.begin(), initializer_list_constructed.end(), begin(input) + 2, end(input)));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
-
-        // special member functions
         vec default_constructed;
         assert(default_constructed.empty());
-        vec copy_constructed(size_default_constructed);
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
-        assert(equal(copy_constructed.begin(), copy_constructed.end(), size_default_constructed.begin(),
-            size_default_constructed.end()));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
+
+        vec copy_constructed(range_constructed);
+        assert(equal(
+            copy_constructed.begin(), copy_constructed.end(), range_constructed.begin(), range_constructed.end()));
 
         vec move_constructed(move(copy_constructed));
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
-        assert(equal(move_constructed.begin(), move_constructed.end(), size_default_constructed.begin(),
-            size_default_constructed.end()));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
-
+        assert(equal(
+            move_constructed.begin(), move_constructed.end(), range_constructed.begin(), range_constructed.end()));
         assert(copy_constructed.empty()); // implementation-specific assumption that moved-from is empty
 
         vec copy_assigned = range_constructed;
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
         assert(equal(copy_assigned.begin(), copy_assigned.end(), range_constructed.begin(), range_constructed.end()));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 
         vec move_assigned = move(copy_assigned);
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
         assert(equal(move_assigned.begin(), move_assigned.end(), range_constructed.begin(), range_constructed.end()));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
         assert(copy_assigned.empty()); // implementation-specific assumption that moved-from is empty
+    }
 
-        // allocator constructors
+    { // Non allocator constructor
+        vec size_default_constructed(5);
+        assert(size_default_constructed.size() == 5);
+        assert(all_of(
+            size_default_constructed.begin(), size_default_constructed.end(), [](const int val) { return val == 0; }));
+
+        vec size_default_constructed_empty(0);
+        assert(size_default_constructed_empty.empty());
+
+        vec size_value_constructed(5, 7);
+        assert(size_value_constructed.size() == 5);
+        assert(all_of(
+            size_value_constructed.begin(), size_value_constructed.end(), [](const int val) { return val == 7; }));
+
+        vec size_value_constructed_empty(0, 7);
+        assert(size_value_constructed_empty.empty());
+
+        vec range_constructed(begin(input), end(input));
+        assert(equal(range_constructed.begin(), range_constructed.end(), begin(input), end(input)));
+
+        vec range_constructed_empty(begin(input), begin(input));
+        assert(range_constructed_empty.empty());
+
+        vec input_range_constructed(begin(input_iter_data), end(input_iter_data));
+        assert(equal(range_constructed.begin(), range_constructed.end(), begin(input), end(input)));
+
+        vec input_range_constructed_empty(begin(input_iter_data), begin(input_iter_data));
+        assert(input_range_constructed_empty.empty());
+
+        vec initializer_list_constructed({2, 3, 4, 5});
+        assert(equal(
+            initializer_list_constructed.begin(), initializer_list_constructed.end(), begin(input) + 2, end(input)));
+
+        vec initializer_list_constructed_empty({});
+        assert(initializer_list_constructed_empty.empty());
+    }
+
+    { // allocator constructors
         soccc_allocator<int> alloc(2, 3);
         assert(alloc.id == 2);
         assert(alloc.soccc_generation == 3);
+
+        vec al_range_constructed(begin(input), end(input), alloc);
+        assert(equal(al_range_constructed.begin(), al_range_constructed.end(), begin(input), end(input)));
+        assert(al_range_constructed.get_allocator().id == 4);
+        assert(al_range_constructed.get_allocator().soccc_generation == 3);
 
         vec al_default_constructed(alloc);
         assert(al_default_constructed.empty());
         assert(al_default_constructed.get_allocator().id == 4);
         assert(al_default_constructed.get_allocator().soccc_generation == 3);
 
-        vec al_copy_constructed(size_value_constructed, alloc);
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273365
-        assert(all_of(al_copy_constructed.begin(), al_copy_constructed.end(), [](const int val) { return val == 7; }));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
+        vec al_copy_constructed(al_range_constructed, alloc);
+        assert(equal(al_copy_constructed.begin(), al_copy_constructed.end(), begin(input), end(input)));
         assert(al_copy_constructed.get_allocator().id == 4);
         assert(al_copy_constructed.get_allocator().soccc_generation == 3);
 
         vec al_move_constructed(move(al_copy_constructed), alloc);
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273365
-        assert(all_of(al_move_constructed.begin(), al_move_constructed.end(), [](const int val) { return val == 7; }));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
+        assert(equal(al_move_constructed.begin(), al_move_constructed.end(), begin(input), end(input)));
         assert(al_copy_constructed.empty()); // implementation-specific assumption that moved-from is empty
         assert(al_move_constructed.get_allocator().id == 4);
         assert(al_move_constructed.get_allocator().soccc_generation == 3);
 
         vec al_size_default_constructed(5, alloc);
         assert(al_size_default_constructed.size() == 5);
-#ifndef __EDG__ // TRANSITION, VSO-1273296
         assert(all_of(al_size_default_constructed.begin(), al_size_default_constructed.end(),
             [](const int val) { return val == 0; }));
-#endif // __EDG__
         assert(al_size_default_constructed.get_allocator().id == 4);
         assert(al_size_default_constructed.get_allocator().soccc_generation == 3);
 
+        vec al_size_default_constructed_empty(0, alloc);
+        assert(al_size_default_constructed_empty.empty());
+        assert(al_size_default_constructed_empty.get_allocator().id == 4);
+        assert(al_size_default_constructed_empty.get_allocator().soccc_generation == 3);
+
         vec al_size_value_constructed(5, 7, alloc);
         assert(al_size_value_constructed.size() == 5);
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273365
         assert(all_of(al_size_value_constructed.begin(), al_size_value_constructed.end(),
             [](const int val) { return val == 7; }));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
         assert(al_size_value_constructed.get_allocator().id == 4);
         assert(al_size_value_constructed.get_allocator().soccc_generation == 3);
 
-        vec al_range_constructed(begin(input), end(input), alloc);
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
-        assert(equal(al_range_constructed.begin(), al_range_constructed.end(), begin(input), end(input)));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
-        assert(al_range_constructed.get_allocator().id == 4);
-        assert(al_range_constructed.get_allocator().soccc_generation == 3);
+        vec al_size_value_constructed_empty(0, 7, alloc);
+        assert(al_size_value_constructed_empty.empty());
+        assert(al_size_value_constructed_empty.get_allocator().id == 4);
+        assert(al_size_value_constructed_empty.get_allocator().soccc_generation == 3);
+
+        vec al_input_range_constructed(begin(input_iter_data), end(input_iter_data), alloc);
+        assert(equal(al_input_range_constructed.begin(), al_input_range_constructed.end(), begin(input_iter_data),
+            end(input_iter_data)));
+        assert(al_input_range_constructed.get_allocator().id == 4);
+        assert(al_input_range_constructed.get_allocator().soccc_generation == 3);
+
+        vec al_input_range_constructed_empty(begin(input_iter_data), begin(input_iter_data), alloc);
+        assert(al_input_range_constructed_empty.empty());
+        assert(al_input_range_constructed_empty.get_allocator().id == 4);
+        assert(al_input_range_constructed_empty.get_allocator().soccc_generation == 3);
 
         vec al_initializer_list_constructed({2, 3, 4, 5}, alloc);
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
         assert(equal(al_initializer_list_constructed.begin(), al_initializer_list_constructed.end(), begin(input) + 2,
             end(input)));
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
         assert(al_initializer_list_constructed.get_allocator().id == 4);
         assert(al_initializer_list_constructed.get_allocator().soccc_generation == 3);
+
+        vec al_initializer_list_constructed_empty({}, alloc);
+        assert(al_initializer_list_constructed_empty.empty());
+        assert(al_initializer_list_constructed_empty.get_allocator().id == 4);
+        assert(al_initializer_list_constructed_empty.get_allocator().soccc_generation == 3);
     }
 
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
     { // assignment
+        vec default_constructed;
         vec range_constructed(begin(input), end(input));
 
-        vec copy_constructed;
-        copy_constructed = range_constructed;
-        assert(equal(
-            copy_constructed.begin(), copy_constructed.end(), range_constructed.begin(), range_constructed.end()));
+        vec copy_assigned;
+        copy_assigned = range_constructed;
+        assert(equal(copy_assigned.begin(), copy_assigned.end(), range_constructed.begin(), range_constructed.end()));
 
-        vec move_constructed;
-        move_constructed = move(copy_constructed);
-        assert(equal(
-            move_constructed.begin(), move_constructed.end(), range_constructed.begin(), range_constructed.end()));
-        assert(copy_constructed.empty()); // implementation-specific assumption that moved-from is empty
+        vec copy_assigned_empty;
+        copy_assigned_empty = default_constructed;
+        assert(copy_assigned_empty.empty());
 
-        vec initializer_list_constructed;
-        initializer_list_constructed = {0, 1, 2, 3, 4, 5};
-        assert(
-            equal(initializer_list_constructed.begin(), initializer_list_constructed.end(), begin(input), end(input)));
+        vec move_assigned;
+        move_assigned = move(copy_assigned);
+        assert(equal(move_assigned.begin(), move_assigned.end(), range_constructed.begin(), range_constructed.end()));
+        assert(copy_assigned.empty()); // implementation-specific assumption that moved-from is empty
 
-        vec assigned;
-        constexpr int expected_assign_value[] = {4, 4, 4, 4, 4};
-        assigned.assign(5, 4);
-        assert(equal(assigned.begin(), assigned.end(), begin(expected_assign_value), end(expected_assign_value)));
+        vec move_assigned_empty;
+        move_assigned_empty = move(copy_assigned_empty);
+        assert(move_assigned_empty.empty());
+        assert(copy_assigned_empty.empty()); // implementation-specific assumption that moved-from is empty
 
-        assigned.assign(begin(input), end(input));
-        assert(equal(assigned.begin(), assigned.end(), begin(input), end(input)));
+        vec initializer_list_assigned;
+        initializer_list_assigned = {0, 1, 2, 3, 4, 5};
+        assert(equal(initializer_list_assigned.begin(), initializer_list_assigned.end(), begin(input), end(input)));
 
-        constexpr int expected_assign_initializer[] = {2, 3, 4, 5};
-        assigned.assign({2, 3, 4, 5});
-        assert(equal(
-            assigned.begin(), assigned.end(), begin(expected_assign_initializer), end(expected_assign_initializer)));
+        vec initializer_list_assigned_empty;
+        initializer_list_assigned_empty = {};
+        assert(initializer_list_assigned_empty.empty());
     }
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
+
+    { // assign
+        vec assign_value_size_grow;
+        constexpr int expected_assign_value[] = {4, 4, 4, 4, 4};
+        assign_value_size_grow.assign(5, 4);
+        assert(equal(assign_value_size_grow.begin(), assign_value_size_grow.end(), begin(expected_assign_value),
+            end(expected_assign_value)));
+
+        vec assign_value_size_shrink(8, 3);
+        assign_value_size_shrink.assign(5, 4);
+        assert(equal(assign_value_size_shrink.begin(), assign_value_size_shrink.end(), begin(expected_assign_value),
+            end(expected_assign_value)));
+
+        vec assign_value_size_empty(8, 3);
+        assign_value_size_empty.assign(0, 4);
+        assert(assign_value_size_empty.empty());
+
+        vec assign_range_grow(1, 2);
+        assign_range_grow.assign(begin(input), end(input));
+        assert(equal(assign_range_grow.begin(), assign_range_grow.end(), begin(input), end(input)));
+
+        vec assign_range_shrink(10, 2);
+        assign_range_shrink.assign(begin(input), end(input));
+        assert(equal(assign_range_shrink.begin(), assign_range_shrink.end(), begin(input), end(input)));
+
+        vec assign_range_empty(10, 2);
+        assign_range_empty.assign(begin(input), begin(input));
+        assert(assign_range_empty.empty());
+
+        vec assign_input_range_grow(1, 2);
+        assign_input_range_grow.assign(begin(input_iter_data), end(input_iter_data));
+        assert(equal(assign_input_range_grow.begin(), assign_input_range_grow.end(), begin(input_iter_data),
+            end(input_iter_data)));
+
+        vec assign_input_range_shrink(15, 2);
+        assign_input_range_shrink.assign(begin(input_iter_data), end(input_iter_data));
+        assert(equal(assign_input_range_shrink.begin(), assign_input_range_shrink.end(), begin(input_iter_data),
+            end(input_iter_data)));
+
+        vec assign_input_range_empty(15, 2);
+        assign_input_range_empty.assign(begin(input_iter_data), begin(input_iter_data));
+        assert(assign_input_range_empty.empty());
+
+        vec assign_initializer_grow(2, 3);
+        assign_initializer_grow.assign({0, 1, 2, 3, 4, 5});
+        assert(equal(assign_initializer_grow.begin(), assign_initializer_grow.end(), begin(input), end(input)));
+
+        vec assign_initializer_shrink(12, 3);
+        assign_initializer_shrink.assign({0, 1, 2, 3, 4, 5});
+        assert(equal(assign_initializer_shrink.begin(), assign_initializer_shrink.end(), begin(input), end(input)));
+
+        vec assign_initializer_empty(12, 3);
+        assign_initializer_shrink.assign({});
+        assert(assign_initializer_shrink.empty());
+    }
 
     { // allocator
         vec default_constructed;
@@ -223,7 +356,6 @@ constexpr bool test_interface() {
         vec range_constructed(begin(input), end(input));
         const vec const_range_constructed(begin(input), end(input));
 
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273381
         const auto b = range_constructed.begin();
         static_assert(is_same_v<remove_const_t<decltype(b)>, vec::iterator>);
         assert(*b == 0);
@@ -271,7 +403,6 @@ constexpr bool test_interface() {
         const auto cre2 = const_range_constructed.rend();
         static_assert(is_same_v<remove_const_t<decltype(cre2)>, reverse_iterator<vec::const_iterator>>);
         assert(*prev(cre2) == 0);
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
     }
 
     { // access
@@ -358,57 +489,167 @@ constexpr bool test_interface() {
         assert(c2 == 6);
     }
 
-    { // modifiers
-        vec range_constructed(begin(input), end(input));
-
-        vec cleared = range_constructed;
+    { // clear
+        vec cleared = {1, 2, 3, 4, 5};
         cleared.clear();
         assert(cleared.empty());
-        assert(cleared.capacity() == range_constructed.capacity());
 
-        vec inserted;
+        vec cleared_empty;
+        cleared_empty.clear();
+        assert(cleared_empty.empty());
+    }
 
-#ifndef __EDG__ // TRANSITION, VSO-1273386, VSO-1274387
-        const int to_be_inserted = 3;
-        inserted.insert(inserted.begin(), to_be_inserted);
-        assert(inserted.size() == 1);
-        assert(inserted.front() == 3);
+    { // modifiers
+        // insert value
+        const int to_be_inserted = 0;
+        vec insert_front_lvalue{1, 2, 3, 4, 5};
+        insert_front_lvalue.reserve(10);
+        insert_front_lvalue.insert(insert_front_lvalue.begin(), to_be_inserted);
+        assert(equal(insert_front_lvalue.begin(), insert_front_lvalue.end(), begin(input), end(input)));
 
-        const int to_be_inserted2 = 4;
-        inserted.insert(inserted.cbegin(), to_be_inserted2);
-        assert(inserted.size() == 2);
-        assert(inserted.front() == 4);
+        vec insert_front_grow_lvalue{1, 2, 3, 4, 5};
+        insert_front_grow_lvalue.insert(insert_front_grow_lvalue.begin(), to_be_inserted);
+        assert(equal(insert_front_grow_lvalue.begin(), insert_front_grow_lvalue.end(), begin(input), end(input)));
 
-        inserted.insert(inserted.begin(), 1);
-        assert(inserted.size() == 3);
-        assert(inserted.front() == 1);
+        vec insert_front_rvalue{1, 2, 3, 4, 5};
+        insert_front_rvalue.reserve(10);
+        insert_front_rvalue.insert(insert_front_rvalue.begin(), 0);
+        assert(equal(insert_front_rvalue.begin(), insert_front_rvalue.end(), begin(input), end(input)));
 
-        inserted.insert(inserted.cbegin(), 2);
-        assert(inserted.size() == 4);
-        assert(inserted.front() == 2);
-#endif // __EDG__
+        vec insert_front_grow_rvalue{1, 2, 3, 4, 5};
+        insert_front_grow_rvalue.insert(insert_front_grow_rvalue.begin(), 0);
+        assert(equal(insert_front_grow_rvalue.begin(), insert_front_grow_rvalue.end(), begin(input), end(input)));
 
-#ifndef __EDG__ // TRANSITION, VSO-1273381, VSO-1273296
-        const auto it = inserted.insert(inserted.begin(), begin(input), end(input));
-        assert(inserted.size() == 10);
-        assert(it == inserted.begin());
+        const int to_be_inserted_mid = 2;
+        vec insert_mid_lvalue{0, 1, 3, 4, 5};
+        insert_mid_lvalue.reserve(10);
+        insert_mid_lvalue.insert(insert_mid_lvalue.begin() + 2, to_be_inserted_mid);
+        assert(equal(insert_mid_lvalue.begin(), insert_mid_lvalue.end(), begin(input), end(input)));
 
-        const auto it2 = inserted.insert(inserted.cbegin(), begin(input), end(input));
-        assert(inserted.size() == 16);
-        assert(it2 == inserted.begin());
+        vec insert_mid_grow_lvalue{0, 1, 3, 4, 5};
+        insert_mid_grow_lvalue.insert(insert_mid_grow_lvalue.begin() + 2, to_be_inserted_mid);
+        assert(equal(insert_mid_grow_lvalue.begin(), insert_mid_grow_lvalue.end(), begin(input), end(input)));
 
-        const auto it3 = inserted.insert(inserted.begin(), {2, 3, 4});
-        assert(inserted.size() == 19);
-        assert(it3 == inserted.begin());
-#endif // __EDG__
+        vec insert_mid_rvalue{0, 1, 3, 4, 5};
+        insert_mid_rvalue.reserve(10);
+        insert_mid_rvalue.insert(insert_mid_rvalue.begin() + 2, 2);
+        assert(equal(insert_mid_rvalue.begin(), insert_mid_rvalue.end(), begin(input), end(input)));
 
-#ifndef __EDG__ // TRANSITION, VSO-1274387, VSO-1273296
-        inserted.insert(inserted.cbegin(), {2, 3, 4});
-        assert(inserted.size() == 22);
+        vec insert_mid_grow_rvalue{0, 1, 3, 4, 5};
+        insert_mid_grow_rvalue.insert(insert_mid_grow_rvalue.begin() + 2, 2);
+        assert(equal(insert_mid_grow_rvalue.begin(), insert_mid_grow_rvalue.end(), begin(input), end(input)));
 
-        inserted.insert(inserted.begin(), 4, 11);
-        assert(inserted.size() == 26);
+        const int to_be_inserted_end = 5;
+        vec insert_end_lvalue{0, 1, 2, 3, 4};
+        insert_end_lvalue.reserve(10);
+        insert_end_lvalue.insert(insert_end_lvalue.end(), to_be_inserted_end);
+        assert(equal(insert_end_lvalue.begin(), insert_end_lvalue.end(), begin(input), end(input)));
 
+        vec insert_end_grow_lvalue{0, 1, 2, 3, 4};
+        insert_end_grow_lvalue.insert(insert_end_grow_lvalue.end(), to_be_inserted_end);
+        assert(equal(insert_end_grow_lvalue.begin(), insert_end_grow_lvalue.end(), begin(input), end(input)));
+
+        vec insert_end_rvalue{0, 1, 2, 3, 4};
+        insert_end_rvalue.reserve(10);
+        insert_end_rvalue.insert(insert_end_rvalue.end(), 5);
+        assert(equal(insert_end_rvalue.begin(), insert_end_rvalue.end(), begin(input), end(input)));
+
+        vec insert_end_grow_rvalue{0, 1, 2, 3, 4};
+        insert_end_grow_rvalue.insert(insert_end_grow_rvalue.end(), 5);
+        assert(equal(insert_end_grow_rvalue.begin(), insert_end_grow_rvalue.end(), begin(input), end(input)));
+
+        // insert range
+        vec insert_front_range{4, 5};
+        insert_front_range.reserve(10);
+        insert_front_range.insert(insert_front_range.begin(), begin(input), begin(input) + 4);
+        assert(equal(insert_front_range.begin(), insert_front_range.end(), begin(input), end(input)));
+
+        vec insert_front_grow_range{4, 5};
+        insert_front_grow_range.insert(insert_front_grow_range.begin(), begin(input), begin(input) + 4);
+        assert(equal(insert_front_grow_range.begin(), insert_front_grow_range.end(), begin(input), end(input)));
+
+        vec insert_front_input_range{4, 5};
+        insert_front_input_range.reserve(10);
+        insert_front_input_range.insert(
+            insert_front_input_range.begin(), begin(input_iter_data), input_iter_data.mid(4));
+        assert(equal(insert_front_input_range.begin(), insert_front_input_range.end(), begin(input), end(input)));
+
+        vec insert_front_grow_input_range{4, 5};
+        insert_front_grow_input_range.insert(
+            insert_front_grow_input_range.begin(), begin(input_iter_data), input_iter_data.mid(4));
+        assert(equal(
+            insert_front_grow_input_range.begin(), insert_front_grow_input_range.end(), begin(input), end(input)));
+
+        vec insert_mid_range{0, 1, 5};
+        insert_mid_range.reserve(10);
+        insert_mid_range.insert(insert_mid_range.begin() + 2, begin(input) + 2, begin(input) + 5);
+        assert(equal(insert_mid_range.begin(), insert_mid_range.end(), begin(input), end(input)));
+
+        vec insert_mid_grow_range{0, 1, 5};
+        insert_mid_grow_range.insert(insert_mid_grow_range.begin() + 2, begin(input) + 2, begin(input) + 5);
+        assert(equal(insert_mid_grow_range.begin(), insert_mid_grow_range.end(), begin(input), end(input)));
+
+        vec insert_mid_input_range{0, 1, 5};
+        insert_mid_input_range.reserve(10);
+        insert_mid_input_range.insert(
+            insert_mid_input_range.begin() + 2, input_iter_data.mid(2), input_iter_data.mid(5));
+        assert(equal(insert_mid_input_range.begin(), insert_mid_input_range.end(), begin(input), end(input)));
+
+        vec insert_mid_grow_input_range{0, 1, 5};
+        insert_mid_grow_input_range.insert(
+            insert_mid_grow_input_range.begin() + 2, input_iter_data.mid(2), input_iter_data.mid(5));
+        assert(equal(insert_mid_grow_input_range.begin(), insert_mid_grow_input_range.end(), begin(input), end(input)));
+
+        vec insert_end_range{0, 1};
+        insert_end_range.reserve(10);
+        insert_end_range.insert(insert_end_range.end(), begin(input) + 2, end(input));
+        assert(equal(insert_end_range.begin(), insert_end_range.end(), begin(input), end(input)));
+
+        vec insert_end_grow_range{0, 1};
+        insert_end_grow_range.insert(insert_end_grow_range.end(), begin(input) + 2, end(input));
+        assert(equal(insert_end_grow_range.begin(), insert_end_grow_range.end(), begin(input), end(input)));
+
+        vec insert_end_input_range{0, 1};
+        insert_end_input_range.reserve(10);
+        insert_end_input_range.insert(insert_end_input_range.end(), input_iter_data.mid(2), input_iter_data.end());
+        assert(equal(insert_end_input_range.begin(), insert_end_input_range.end(), begin(input), end(input)));
+
+        vec insert_end_grow_input_range{0, 1};
+        insert_end_grow_input_range.insert(
+            insert_end_grow_input_range.end(), input_iter_data.mid(2), input_iter_data.end());
+        assert(equal(insert_end_grow_input_range.begin(), insert_end_grow_input_range.end(), begin(input), end(input)));
+
+        // insert initializer
+        vec insert_front_initializer{4, 5};
+        insert_front_initializer.reserve(10);
+        insert_front_initializer.insert(insert_front_initializer.begin(), {0, 1, 2, 3});
+        assert(equal(insert_front_initializer.begin(), insert_front_initializer.end(), begin(input), end(input)));
+
+        vec insert_front_grow_initializer{4, 5};
+        insert_front_grow_initializer.insert(insert_front_grow_initializer.begin(), {0, 1, 2, 3});
+        assert(equal(
+            insert_front_grow_initializer.begin(), insert_front_grow_initializer.end(), begin(input), end(input)));
+
+        vec insert_mid_initializer{0, 1, 5};
+        insert_mid_initializer.reserve(10);
+        insert_mid_initializer.insert(insert_mid_initializer.begin() + 2, {2, 3, 4});
+        assert(equal(insert_mid_initializer.begin(), insert_mid_initializer.end(), begin(input), end(input)));
+
+        vec insert_mid_grow_initializer{0, 1, 5};
+        insert_mid_grow_initializer.insert(insert_mid_grow_initializer.begin() + 2, {2, 3, 4});
+        assert(equal(insert_mid_grow_initializer.begin(), insert_mid_grow_initializer.end(), begin(input), end(input)));
+
+        vec insert_end_initializer{0, 1};
+        insert_end_initializer.reserve(10);
+        insert_end_initializer.insert(insert_end_initializer.end(), {2, 3, 4, 5});
+        assert(equal(insert_end_initializer.begin(), insert_end_initializer.end(), begin(input), end(input)));
+
+        vec insert_end_grow_initializer{0, 1};
+        insert_end_grow_initializer.insert(insert_end_grow_initializer.end(), {2, 3, 4, 5});
+        assert(equal(insert_end_grow_initializer.begin(), insert_end_grow_initializer.end(), begin(input), end(input)));
+    }
+
+    { // emplace
         vec emplaced;
         emplaced.emplace(emplaced.cbegin(), 42);
         assert(emplaced.size() == 1);
@@ -431,28 +672,21 @@ constexpr bool test_interface() {
         assert(emplaced.size() == 3);
         assert(emplaced.back() == 44);
 
-        emplaced.resize(1);
-        assert(emplaced.size() == 1);
+        emplaced.resize(5);
+        assert(emplaced.size() == 5);
         assert(emplaced.front() == 42);
-
-        emplaced.swap(inserted);
-        assert(inserted.size() == 1);
-        assert(inserted.front() == 42);
-        assert(emplaced.size() == 26);
 
         emplaced.erase(emplaced.end() - 1);
-        assert(emplaced.size() == 25);
+        assert(emplaced.size() == 4);
 
         emplaced.erase(emplaced.begin(), emplaced.begin() + 2);
-        assert(emplaced.size() == 23);
+        assert(emplaced.size() == 2);
 
         emplaced.emplace(emplaced.cbegin(), 42);
-        assert(emplaced.size() == 24);
+        assert(emplaced.size() == 3);
         assert(emplaced.front() == 42);
-#endif // __EDG__
     }
 
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273365
     { // swap
         vec first{2, 3, 4};
         vec second{5, 6, 7, 8};
@@ -463,9 +697,7 @@ constexpr bool test_interface() {
         assert(equal(first.begin(), first.end(), begin(expected_first), end(expected_first)));
         assert(equal(second.begin(), second.end(), begin(expected_second), end(expected_second)));
     }
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273365
     { // erase
         vec erased{1, 2, 3, 4, 2, 3, 2};
         erase(erased, 2);
@@ -476,7 +708,6 @@ constexpr bool test_interface() {
         constexpr int expected_erase_if[] = {4};
         assert(equal(erased.begin(), erased.end(), begin(expected_erase_if), end(expected_erase_if)));
     }
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
 
     { // comparison
         vec first(begin(input), end(input));
@@ -514,7 +745,6 @@ constexpr bool test_interface() {
 constexpr bool test_iterators() {
     vec range_constructed(begin(input), end(input));
 
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273381
     { // increment
         auto it = range_constructed.begin();
         assert(*++it == 1);
@@ -605,8 +835,6 @@ constexpr bool test_iterators() {
         assert(cit2->first == 1);
     }
 
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
-
     return true;
 }
 
@@ -655,12 +883,10 @@ constexpr bool test_growth() {
 
         vector<int> l(3, 47);
 
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
         v.insert(v.end(), l.begin(), l.end());
 
         assert(v.size() == 1003);
         assert(v.capacity() == 1500);
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
     }
 
     {
@@ -670,13 +896,10 @@ constexpr bool test_growth() {
         assert(v.capacity() == 1000);
 
         vector<int> l(7000, 47);
-
-#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1274387
         v.insert(v.end(), l.begin(), l.end());
 
         assert(v.size() == 8000);
         assert(v.capacity() == 8000);
-#endif // !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2
     }
 
     {
@@ -685,12 +908,10 @@ constexpr bool test_growth() {
         assert(v.size() == 1000);
         assert(v.capacity() == 1000);
 
-#ifndef __EDG__ // TRANSITION, VSO-1273386, VSO-1274387
         v.insert(v.end(), 3, 47);
 
         assert(v.size() == 1003);
         assert(v.capacity() == 1500);
-#endif // __EDG__
     }
 
     {
@@ -699,12 +920,10 @@ constexpr bool test_growth() {
         assert(v.size() == 1000);
         assert(v.capacity() == 1000);
 
-#ifndef __EDG__ // TRANSITION, VSO-1273386, VSO-1274387
         v.insert(v.end(), 7000, 47);
 
         assert(v.size() == 8000);
         assert(v.capacity() == 8000);
-#endif // __EDG__
     }
 
     return true;
@@ -714,7 +933,10 @@ int main() {
     test_interface();
     test_iterators();
     test_growth();
-    static_assert(test_interface());
-    static_assert(test_iterators());
-    static_assert(test_growth());
+
+#if !defined(__EDG__) || _ITERATOR_DEBUG_LEVEL != 2 // TRANSITION, VSO-1273365, VSO-1273386, VSO-1274387
+    // static_assert(test_interface());
+    // static_assert(test_iterators());
+    // static_assert(test_growth());
+#endif // __EDG__
 }
