@@ -35,33 +35,6 @@ $CurrentProgress = 1
 
 <#
 .SYNOPSIS
-Returns whether there's a name collision in the resource group.
-
-.DESCRIPTION
-Find-ResourceGroupNameCollision takes a list of resources, and checks if $Test
-collides names with any of the resources.
-
-.PARAMETER Test
-The name to test.
-
-.PARAMETER Resources
-The list of resources.
-#>
-function Find-ResourceGroupNameCollision {
-  [CmdletBinding()]
-  Param([string]$Test, $Resources)
-
-  foreach ($resource in $Resources) {
-    if ($resource.ResourceGroupName -eq $Test) {
-      return $true
-    }
-  }
-
-  return $false
-}
-
-<#
-.SYNOPSIS
 Attempts to find a name that does not collide with any resources in the resource group.
 
 .DESCRIPTION
@@ -76,10 +49,10 @@ function Find-ResourceGroupName {
   [CmdletBinding()]
   Param([string] $Prefix)
 
-  $resources = Get-AzResourceGroup
+  $existingNames = (Get-AzResourceGroup).ResourceGroupName
   $result = $Prefix
   $suffix = 0
-  while (Find-ResourceGroupNameCollision -Test $result -Resources $resources) {
+  while ($result -in $existingNames) {
     $suffix++
     $result = "$Prefix-$suffix"
   }
