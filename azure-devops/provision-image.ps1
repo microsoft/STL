@@ -91,7 +91,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
   $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
 
   # https://github.com/PowerShell/PowerShell/releases/latest
-  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.0/PowerShell-7.2.0-win-x64.zip'
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.1/PowerShell-7.2.1-win-x64.zip'
   Write-Host "Downloading: $PowerShellZipUrl"
   $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
   $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
@@ -141,7 +141,7 @@ $Workloads = @(
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.10.0/python-3.10.0-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.10.1/python-3.10.1-amd64.exe'
 
 $CudaUrl = `
   'https://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_426.00_win10.exe'
@@ -333,6 +333,9 @@ Function PipInstall {
 
 Write-Host 'AdminUser password not supplied; assuming already running as AdminUser.'
 
+# Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
+cmd /c ver
+
 Write-Host 'Configuring AntiVirus exclusions...'
 Add-MpPreference -ExclusionPath C:\agent
 Add-MpPreference -ExclusionPath D:\
@@ -349,7 +352,7 @@ InstallCuda -Url $CudaUrl -Features $CudaFeatures
 Write-Host 'Updating PATH...'
 
 # Step 1: Read the system path, which was just updated by installing Python.
-$currentSystemPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$currentSystemPath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
 
 # Step 2: Update the local path (for this running script), so PipInstall can run python.exe.
 # Additional directories can be added here (e.g. if we extracted a zip file
@@ -357,7 +360,7 @@ $currentSystemPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
 $Env:PATH="$($currentSystemPath)"
 
 # Step 3: Update the system path, permanently recording any additional directories that were added in the previous step.
-[Environment]::SetEnvironmentVariable("Path", "$Env:PATH", "Machine")
+[Environment]::SetEnvironmentVariable('Path', "$Env:PATH", 'Machine')
 
 Write-Host 'Finished updating PATH!'
 
@@ -371,7 +374,7 @@ Write-Host 'Finished running PipInstall!'
 Write-Host 'Setting other environment variables...'
 
 # The STL's PR/CI builds are totally unrepresentative of customer usage.
-[Environment]::SetEnvironmentVariable("VSCMD_SKIP_SENDTELEMETRY", "1", "Machine")
+[Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
 
 Write-Host 'Finished setting other environment variables!'
 

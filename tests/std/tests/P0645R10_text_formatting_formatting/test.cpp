@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <exception>
 #include <format>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -817,6 +818,18 @@ void test_float_specs() {
         assert(format("{:.2000}", value) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::hex, 2000).ptr};
+
+        // TRANSITION, extra diagnostics for GH-2449:
+        if (const string str1 = format("{:.2000a}", value); str1 != expected) {
+            cerr << "Encountered sporadic failure GH-2449!\n";
+            cerr << "    str1: \"" << str1 << "\"\n";
+            cerr << "expected: \"" << expected << "\"\n";
+            cerr << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
+            cerr << "You must report it to the STL maintainers.\n";
+            assert(false);
+        }
+
+        // Keep the original assertion, just in case GH-2449 involves very specific codegen:
         assert(format("{:.2000a}", value) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::scientific, 2000).ptr};
@@ -833,6 +846,18 @@ void test_float_specs() {
         assert(format("{:.2000}", 1.0) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::hex, 2000).ptr};
+
+        // TRANSITION, extra diagnostics for GH-2449:
+        if (const string str2 = format("{:.2000a}", 1.0); str2 != expected) {
+            cerr << "Encountered sporadic failure GH-2449!\n";
+            cerr << "    str2: \"" << str2 << "\"\n";
+            cerr << "expected: \"" << expected << "\"\n";
+            cerr << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
+            cerr << "You must report it to the STL maintainers.\n";
+            assert(false);
+        }
+
+        // Keep the original assertion, just in case GH-2449 involves very specific codegen:
         assert(format("{:.2000a}", 1.0) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::scientific, 2000).ptr};
