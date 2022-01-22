@@ -3474,9 +3474,19 @@ namespace vso1121031 {
     STATIC_ASSERT(!has_member_value_type<indirectly_readable_traits<iterish<float const volatile>>>);
 } // namespace vso1121031
 
+constexpr bool test_lwg_XXX() {
+    int a[3] = {};
+    assert(ranges::distance(a, a + 3) == 3);
+    assert(ranges::distance(a + 3, a) == -3);
+    return true;
+}
+
 int main() {
     iterator_cust_swap_test::test();
     iter_ops::test();
     reverse_iterator_test::test();
     move_iterator_test::test();
+
+    test_lwg_XXX();
+    STATIC_ASSERT(test_lwg_XXX());
 }
