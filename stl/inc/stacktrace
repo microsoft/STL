@@ -121,7 +121,7 @@ public:
         : _Frames(_Other._Frames, _Alloc), _Hash(_Other._Hash) {}
 
     basic_stacktrace(basic_stacktrace&& _Other, const allocator_type& _Alloc)
-        : _Frames(move(_Other._Frames), _Alloc), _Hash(_Other._Hash) {}
+        : _Frames(_STD move(_Other._Frames), _Alloc), _Hash(_Other._Hash) {}
 
     basic_stacktrace& operator=(const basic_stacktrace&) = default;
     basic_stacktrace& operator=(basic_stacktrace&&) noexcept(_Noex_move) = default;
@@ -240,7 +240,7 @@ string to_string(const stacktrace_entry& _Fx) {
 
     if (!_Desc.empty()) {
         if (_Result.empty()) {
-            _Result = move(_Desc);
+            _Result = _STD move(_Desc);
         } else {
             _Result = _Result + ": " + _Desc;
         }
@@ -258,7 +258,7 @@ string to_string(const basic_stacktrace<_Al>& _St) {
             _Result.push_back('\n');
             _Result.append(_Entry_str);
         } else {
-            _Result = move(_Entry_str);
+            _Result = _STD move(_Entry_str);
         }
     }
     return _Result;
