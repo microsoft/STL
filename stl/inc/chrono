@@ -287,8 +287,7 @@ _NODISCARD constexpr intmax_t _Lcm(const intmax_t _Ax, const intmax_t _Bx) noexc
 }
 
 template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-struct common_type<_CHRONO duration<_Rep1, _Period1>,
-    _CHRONO duration<_Rep2, _Period2>> { // common type of two durations
+struct common_type<_CHRONO duration<_Rep1, _Period1>, _CHRONO duration<_Rep2, _Period2>> {
     using type = _CHRONO duration<common_type_t<_Rep1, _Rep2>,
         ratio<_Gcd(_Period1::num, _Period2::num), _Lcm(_Period1::den, _Period2::den)>>;
 };
