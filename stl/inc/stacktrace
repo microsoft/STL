@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-unsigned short __stdcall __std_stacktrace_capture(
+[[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(
     unsigned long _FramesToSkip, unsigned long _FramesToCapture, void** _BackTrace, unsigned long* _BackTraceHash);
 
 [[nodiscard]] _STD string __stdcall __std_stacktrace_description(void* _Address);
@@ -168,29 +168,30 @@ public:
         return _Frames.empty();
     }
 
-    size_type size() const noexcept {
+    [[nodiscard]] size_type size() const noexcept {
         return _Frames.size();
     }
 
-    size_type max_size() const noexcept {
+    [[nodiscard]] size_type max_size() const noexcept {
         return _Frames.max_size();
     }
 
-    const_reference operator[](size_type _Sx) const {
+    [[nodiscard]] const_reference operator[](size_type _Sx) const {
         return _Frames[_Sx];
     }
 
-    const_reference at(size_type _Sx) const {
+    [[nodiscard]] const_reference at(size_type _Sx) const {
         return _Frames.at(_Sx);
     }
 
     template <class _Al2>
-    friend bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
+    [[nodiscard]] friend bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
         return _Lhs._Hash == _Rhs._Hash && _Lhs._Frames == _Rhs._Frames;
     }
 
     template <class _Al2>
-    friend strong_ordering operator<=>(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
+    [[nodiscard]] friend strong_ordering operator<=>(
+        const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
         if (_Lhs._Hash != _Rhs.Hash) {
             return _Lhs._Hash <=> _Rhs._Hash;
         } else {
@@ -204,7 +205,7 @@ public:
         _STD swap(_Hash, _Other._Hash);
     }
 
-    unsigned long _Get_hash() const {
+    [[nodiscard]] unsigned long _Get_hash() const {
         return _Hash;
     }
 
@@ -229,7 +230,7 @@ void swap(basic_stacktrace<_Al>& _Ax, basic_stacktrace<_Al>& _Bx) noexcept(noexc
     return _Ax.swap(_Bx);
 }
 
-inline string to_string(const stacktrace_entry& _Fx) {
+[[nodiscard]] inline string to_string(const stacktrace_entry& _Fx) {
     string _Result;
     auto _Line = _Fx.source_line();
     auto _Desc = _Fx.description();
@@ -250,7 +251,7 @@ inline string to_string(const stacktrace_entry& _Fx) {
 }
 
 template <class _Al>
-string to_string(const basic_stacktrace<_Al>& _St) {
+[[nodiscard]] string to_string(const basic_stacktrace<_Al>& _St) {
     string _Result;
     for (auto& _Entry : _St) {
         string _Entry_str = to_string(_Entry);
@@ -280,15 +281,15 @@ namespace pmr {
 
 template <>
 struct hash<stacktrace_entry> : private hash<void*> {
-    size_t operator()(const stacktrace_entry& _Val) const {
+    [[nodiscard]] size_t operator()(const stacktrace_entry& _Val) const {
         return hash<void*>::operator()(_Val.native_handle());
     }
 };
 
 template <class _Al>
 struct hash<basic_stacktrace<_Al>> {
-    size_t operator()(const basic_stacktrace<_Al>& _Val) const {
-        return _Val;
+    [[nodiscard]] size_t operator()(const basic_stacktrace<_Al>& _Val) const {
+        return _Val._Get_hash();
     }
 };
 _STD_END

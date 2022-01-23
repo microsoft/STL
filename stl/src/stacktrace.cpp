@@ -160,7 +160,7 @@ namespace {
 
 } // namespace
 
-unsigned short __stdcall __std_stacktrace_capture(
+[[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(
     unsigned long _FramesToSkip, unsigned long _FramesToCapture, void** _BackTrace, unsigned long* _BackTraceHash) {
 #ifdef _DEBUG
     _FramesToSkip += 1; // compensate absense of tail call optimization here
