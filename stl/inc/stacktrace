@@ -81,7 +81,7 @@ public:
     using value_type             = stacktrace_entry;
     using const_reference        = const value_type&;
     using reference              = value_type&;
-    using const_iterator         = _Frames_t::const_iterator;
+    using const_iterator         = typename _Frames_t::const_iterator;
     using iterator               = const_iterator;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
@@ -191,10 +191,10 @@ public:
 
     template <class _Al2>
     friend strong_ordering operator<=>(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
-        if (Lhs._Hash != Rhs.Hash) {
-            return Lhs._Hash <=> Rhs._Hash;
+        if (_Lhs._Hash != _Rhs.Hash) {
+            return _Lhs._Hash <=> _Rhs._Hash;
         } else {
-            return Lhs._Frames <=> Rhs._Frames;
+            return _Lhs._Frames <=> _Rhs._Frames;
         }
     }
 
@@ -211,8 +211,8 @@ public:
 private:
     static constexpr size_t _Max_frames = 0xFFFF;
 
-    bool _Noex_move = allocator_traits<_Al>::propagate_on_container_move_assignment::value
-                   || allocator_traits<_Al>::is_always_equal::value;
+    static constexpr bool _Noex_move = allocator_traits<_Al>::propagate_on_container_move_assignment::value
+                                    || allocator_traits<_Al>::is_always_equal::value;
 
     struct _Internal_t {};
 
@@ -229,7 +229,7 @@ void swap(basic_stacktrace<_Al>& _Ax, basic_stacktrace<_Al>& _Bx) noexcept(noexc
     return _Ax.swap(_Bx);
 }
 
-string to_string(const stacktrace_entry& _Fx) {
+inline string to_string(const stacktrace_entry& _Fx) {
     string _Result;
     auto _Line = _Fx.source_line();
     auto _Desc = _Fx.description();
