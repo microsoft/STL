@@ -36,18 +36,15 @@ _NODISCARD constexpr intmax_t _Sign_of(const intmax_t _Val) noexcept {
     return _Val < 0 ? -1 : 1;
 }
 
-template <intmax_t _Ax, intmax_t _Bx, bool _Good, bool _Also_good>
-struct _Safe_addX : integral_constant<intmax_t, _Ax + _Bx> {}; // computes _Ax + _Bx without overflow
+inline void _Safe_add_integer_arithmetic_overflow_error() noexcept {}
 
-template <intmax_t _Ax, intmax_t _Bx>
-struct _Safe_addX<_Ax, _Bx, false, false> { // _Ax + _Bx would overflow
-    static_assert(_Always_false<_Safe_addX>, "integer arithmetic overflow");
-};
+_NODISCARD constexpr intmax_t _Safe_add(const intmax_t _Ax, const intmax_t _Bx) noexcept {
+    if (_Sign_of(_Ax) == _Sign_of(_Bx) && _Abs(_Ax) > INTMAX_MAX - _Abs(_Bx)) {
+        _Safe_add_integer_arithmetic_overflow_error();
+    }
 
-template <intmax_t _Ax, intmax_t _Bx>
-struct _Safe_add : _Safe_addX<_Ax, _Bx, _Sign_of(_Ax) != _Sign_of(_Bx), _Abs(_Ax) <= INTMAX_MAX - _Abs(_Bx)>::type {
-    // computes _Ax + _Bx, forbids overflow
-};
+    return _Ax + _Bx;
+}
 
 _NODISCARD constexpr intmax_t _Gcd(intmax_t _Ax, intmax_t _Bx) noexcept {
     // computes GCD of abs(_Ax) and abs(_Bx)
@@ -97,9 +94,8 @@ struct _Ratio_add { // add two ratios
     static constexpr intmax_t _Gx = _Gcd(_Dx1, _Dx2);
 
     // typename ratio<>::type is necessary here
-    using type =
-        typename ratio<_Safe_add<_Safe_mult<_Nx1, _Dx2 / _Gx>::value, _Safe_mult<_Nx2, _Dx1 / _Gx>::value>::value,
-            _Safe_mult<_Dx1, _Dx2 / _Gx>::value>::type;
+    using type = typename ratio<_Safe_add(_Safe_mult<_Nx1, _Dx2 / _Gx>::value, _Safe_mult<_Nx2, _Dx1 / _Gx>::value),
+        _Safe_mult<_Dx1, _Dx2 / _Gx>::value>::type;
 };
 
 template <class _Rx1, class _Rx2>
