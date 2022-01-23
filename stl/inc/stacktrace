@@ -1,4 +1,4 @@
-// stack standard header
+// stacktrace standard header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -277,6 +277,10 @@ basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>& _Os, cons
 template <class charT, class traits, class Allocator>
 basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>& _Os, const basic_stacktrace<Allocator>& _Fx) {
     return _Os << to_string(_Fx);
+}
+
+namespace pmr {
+    using stacktrace = basic_stacktrace<polymorphic_allocator<stacktrace_entry>>;
 }
 
 template <>
