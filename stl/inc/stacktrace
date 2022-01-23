@@ -1,0 +1,300 @@
+// stack standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _STACKSTRACE_
+#define _STACKSTRACE_
+#include <yvals_core.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#if !_HAS_CXX23
+#pragma message("The contents of <stacktrace> are available only with C++23 or later.")
+#else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
+
+#include <cstdint>
+#include <functional>
+#include <string>
+#include <vector>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+unsigned short __stdcall __std_stacktrace_capture(
+    unsigned long _FramesToSkip, unsigned long _FramesToCapture, void** _BackTrace, unsigned long* _BackTraceHash);
+
+[[nodiscard]] _STD string __stdcall __std_stacktrace_description(void* _Address);
+[[nodiscard]] _STD string __stdcall __std_stacktrace_source_file(void* _Address);
+[[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(void* _Address);
+
+_STD_BEGIN
+
+// 20.?.4, class stacktrace_entry
+class stacktrace_entry {
+public:
+    using native_handle_type = void*;
+
+    constexpr stacktrace_entry() noexcept                              = default;
+    constexpr stacktrace_entry(const stacktrace_entry& other) noexcept = default;
+    constexpr stacktrace_entry& operator=(const stacktrace_entry& other) noexcept = default;
+
+    ~stacktrace_entry() = default;
+
+    [[nodiscard]] constexpr native_handle_type native_handle() const noexcept {
+        return _Address;
+    }
+
+    [[nodiscard]] constexpr explicit operator bool() const noexcept {
+        return _Address != nullptr;
+    }
+
+    [[nodiscard]] string description() const {
+        return __std_stacktrace_description(_Address);
+    }
+
+    [[nodiscard]] string source_file() const {
+        return __std_stacktrace_source_file(_Address);
+    }
+
+    [[nodiscard]] uint_least32_t source_line() const {
+        return __std_stacktrace_source_line(_Address);
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(
+        const stacktrace_entry& x, const stacktrace_entry& y) noexcept = default;
+
+    [[nodiscard]] friend constexpr strong_ordering operator<=>(
+        const stacktrace_entry& x, const stacktrace_entry& y) noexcept = default;
+
+private:
+    void* _Address = nullptr;
+};
+
+template <class _Al>
+class basic_stacktrace {
+private:
+    using _Frames_t = vector<stacktrace_entry, _Al>;
+
+public:
+    using value_type             = stacktrace_entry;
+    using const_reference        = const value_type&;
+    using reference              = value_type&;
+    using const_iterator         = _Frames_t::const_iterator;
+    using iterator               = const_iterator;
+    using reverse_iterator       = _STD reverse_iterator<iterator>;
+    using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
+    using difference_type        = ptrdiff_t;
+    using size_type              = size_t;
+    using allocator_type         = _Al;
+
+    [[nodiscard]] static basic_stacktrace current(const allocator_type& _Alloc = allocator_type()) noexcept {
+        return basic_stacktrace(_Internal_t{}, 0, _Max_frames, _Alloc);
+    }
+
+    [[nodiscard]] static basic_stacktrace current(
+        size_type _Skip, const allocator_type& _Alloc = allocator_type()) noexcept {
+        return basic_stacktrace(_Internal_t{}, _Skip, _Max_frames, _Alloc);
+    }
+
+    [[nodiscard]] static basic_stacktrace current(
+        size_type _Skip, size_type _Max_depth, const allocator_type& _Alloc = allocator_type()) noexcept {
+        return basic_stacktrace(_Internal_t{}, _Skip, (_STD max)(_Max_depth, _Max_frames), _Alloc);
+    }
+
+    basic_stacktrace() noexcept(is_nothrow_default_constructible_v<allocator_type>) = default;
+    explicit basic_stacktrace(const allocator_type& _Alloc) noexcept : _Frames(_Alloc) {}
+
+    basic_stacktrace(const basic_stacktrace&)     = default;
+    basic_stacktrace(basic_stacktrace&&) noexcept = default;
+    basic_stacktrace(const basic_stacktrace& _Other, const allocator_type& _Alloc)
+        : _Frames(_Other._Frames, _Alloc), _Hash(_Other._Hash) {}
+
+    basic_stacktrace(basic_stacktrace&& _Other, const allocator_type& _Alloc)
+        : _Frames(move(_Other._Frames), _Alloc), _Hash(_Other._Hash) {}
+
+    basic_stacktrace& operator=(const basic_stacktrace&) = default;
+    basic_stacktrace& operator=(basic_stacktrace&& other) noexcept(_Noex_move) = default;
+
+    ~basic_stacktrace() = default;
+
+    [[nodiscard]] allocator_type get_allocator() const noexcept {
+        return _Frames.get_allocator();
+    }
+
+    [[nodiscard]] const_iterator begin() const noexcept {
+        return _Frames.cbegin();
+    }
+
+    [[nodiscard]] const_iterator end() const noexcept {
+        return _Frames.cend();
+    }
+
+    [[nodiscard]] const_reverse_iterator rbegin() const noexcept {
+        return _Frames.crbegin();
+    }
+
+    [[nodiscard]] const_reverse_iterator rend() const noexcept {
+        return _Frames.crend();
+    }
+
+    [[nodiscard]] const_iterator cbegin() const noexcept {
+        return _Frames.cbegin();
+    }
+
+    [[nodiscard]] const_iterator cend() const noexcept {
+        return _Frames.cend();
+    }
+
+    [[nodiscard]] const_reverse_iterator crbegin() const noexcept {
+        return _Frames.crbegin();
+    }
+
+    [[nodiscard]] const_reverse_iterator crend() const noexcept {
+        return _Frames.crend();
+    }
+
+    [[nodiscard]] bool empty() const noexcept {
+        return _Frames.empty();
+    }
+
+    size_type size() const noexcept {
+        return _Frames.size();
+    }
+
+    size_type max_size() const noexcept {
+        return _Frames.max_size();
+    }
+
+    const_reference operator[](size_type) const {
+        return _Frames[size_type];
+    }
+
+    const_reference at(size_type) const {
+        return _Frames.at(size_type);
+    }
+
+    template <class _Al2>
+    friend bool operator==(const basic_stacktrace& x, const basic_stacktrace<_Al2>& y) noexcept {
+        return _Hash == _Hash && _Frames == _Frames;
+    }
+
+    template <class _Al2>
+    friend strong_ordering operator<=>(const basic_stacktrace& x, const basic_stacktrace<_Al2>& y) noexcept {
+        if (_Hash != _Hash) {
+            return _Hash <=> _Hash;
+        } else {
+            return _Frames <=> _Frames;
+        }
+    }
+
+    void swap(basic_stacktrace& _Other) noexcept(
+        allocator_traits<_Al>::propagate_on_container_swap::value || allocator_traits<_Al>::is_always_equal::value) {
+        _STD swap(_Frames, _Other._Frames);
+        _STD swap(_Hash, _Other._Hash);
+    }
+
+    unsigned long _Get_hash() const {
+        return _Hash;
+    }
+
+private:
+    static constexpr size_t _Max_frames = 0xFFFF;
+
+    bool _Noex_move = allocator_traits<_Al>::propagate_on_container_move_assignment::value
+                   || allocator_traits<_Al>::is_always_equal::value;
+
+    struct _Internal_t {};
+
+    basic_stacktrace(_Internal_t, size_type _Skip, size_type _Max_depth, const allocator_type& _Alloc)
+        : _Frames(_Max_depth) {
+        _Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip),
+            static_cast<unsigned long>(_Max_depth), reinterpret_cast<void**>(_Frames.data()), &_Hash));
+    }
+
+    _Frames_t _Frames;
+    unsigned long _Hash = 0;
+};
+
+// basic_stacktrace typedef names
+using stacktrace = basic_stacktrace<allocator<stacktrace_entry>>;
+
+// 20.?.6, non-member functions
+template <class Allocator>
+void swap(basic_stacktrace<Allocator>& _Ax, basic_stacktrace<Allocator>& _Bx) noexcept(noexcept(_Ax.swap(_Bx))) {
+    return _Ax.swap(_Bx);
+}
+
+string to_string(const stacktrace_entry& _Fx) {
+    string _Result;
+    auto _Line = _Fx.source_line();
+    auto _Desc = _Fx.description();
+
+    if (_Line != 0) {
+        _Result = _Fx.source_file() + "(" + to_string(_Line) + ")";
+    }
+
+    if (!_Desc.empty()) {
+        if (_Result.empty()) {
+            _Result = move(_Desc);
+        } else {
+            _Result = _Result + " " + _Desc;
+        }
+    }
+
+    return _Result;
+}
+
+template <class Allocator>
+string to_string(const basic_stacktrace<Allocator>& _St) {
+    string _Result;
+    for (auto& _Entry : _St) {
+        string _Entry_str = to_string(_Entry);
+        if (!_Result.empty()) {
+            _Result.push_back('\n');
+            _Result.append(_Entry_str);
+        } else {
+            _Result = move(_Entry_str);
+        }
+    }
+    return _Result;
+}
+
+template <class charT, class traits>
+basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>& _Os, const stacktrace_entry& _Fx) {
+    return _Os << to_string(_Fx);
+}
+
+template <class charT, class traits, class Allocator>
+basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>& _Os, const basic_stacktrace<Allocator>& _Fx) {
+    return _Os << to_string(_Fx);
+}
+
+template <>
+struct hash<stacktrace_entry> : private hash<void*> {
+    size_t operator()(const stacktrace_entry& _Val) const {
+        return hash<void*>::operator()(_Val.native_handle());
+    }
+};
+
+template <class Allocator>
+struct hash<basic_stacktrace<Allocator>> {
+    size_t operator()(const basic_stacktrace<Allocator>& _Val) const {
+        return _Val;
+    }
+};
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // ^^^ _HAS_CXX23 ^^^
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _STACK_

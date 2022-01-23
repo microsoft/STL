@@ -1,0 +1,6 @@
+
+EXPORTS
+    __std_stacktrace_capture
+    __std_stacktrace_description
+    __std_stacktrace_source_file
+    __std_stacktrace_source_line
