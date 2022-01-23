@@ -192,11 +192,7 @@ const timeframe_2021 = {
     min: '2021-01-01',
     time: { unit: 'month' },
 };
-const timeframes = [
-    timeframe_all,
-    timeframe_github,
-    timeframe_2021,
-];
+const timeframes = [timeframe_all, timeframe_github, timeframe_2021];
 const timeframe_github_idx = 1;
 let timeframe_idx = timeframe_github_idx;
 
@@ -451,8 +447,19 @@ window.onload = function () {
         update_all_timeframes();
     });
 
-    for (const field of ['cxx20', 'cxx23', 'lwg', 'pr', 'bug', 'issue', 'avg_age', 'avg_wait', 'sum_age',
-        'sum_wait', 'merged']) {
+    for (const field of [
+        'cxx20',
+        'cxx23',
+        'lwg',
+        'pr',
+        'bug',
+        'issue',
+        'avg_age',
+        'avg_wait',
+        'sum_age',
+        'sum_wait',
+        'merged',
+    ]) {
         const value = daily_table[daily_table.length - 1][field] ?? 0;
         document.getElementById(`currentValue-${field}`).textContent = value.toString();
     }
