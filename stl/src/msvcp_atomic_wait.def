@@ -3,8 +3,6 @@
 
 ; atomic wait satellite DLL definition
 
-LIBRARY LIBRARYNAME
-
 EXPORTS
     __std_acquire_shared_mutex_for_instance
     __std_atomic_compare_exchange_128
