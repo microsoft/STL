@@ -21,7 +21,7 @@ $ErrorActionPreference = 'Stop'
 $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
 $Location = 'westus2'
-$Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
+$Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd-THHmm')
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
