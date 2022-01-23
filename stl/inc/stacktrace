@@ -14,8 +14,8 @@
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
 #include <cstdint>
-#include <functional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #pragma pack(push, _CRT_PACKING)
@@ -205,7 +205,7 @@ public:
         _STD swap(_Hash, _Other._Hash);
     }
 
-    [[nodiscard]] unsigned long _Get_hash() const {
+    [[nodiscard]] unsigned long _Get_hash() const noexcept {
         return _Hash;
     }
 
@@ -280,15 +280,21 @@ namespace pmr {
 }
 
 template <>
-struct hash<stacktrace_entry> : private hash<void*> {
-    [[nodiscard]] size_t operator()(const stacktrace_entry& _Val) const {
-        return hash<void*>::operator()(_Val.native_handle());
+struct hash<stacktrace_entry> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef stacktrace_entry _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+
+    [[nodiscard]] size_t operator()(const stacktrace_entry& _Val) const noexcept {
+        return _Hash_representation(_Val.native_handle());
     }
 };
 
 template <class _Al>
 struct hash<basic_stacktrace<_Al>> {
-    [[nodiscard]] size_t operator()(const basic_stacktrace<_Al>& _Val) const {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_stacktrace<_Al> _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+
+    [[nodiscard]] size_t operator()(const basic_stacktrace<_Al>& _Val) const noexcept {
         return _Val._Get_hash();
     }
 };
