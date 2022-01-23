@@ -66,6 +66,7 @@ sub CustomBuildHook()
         "spanstream",
         "sstream",
         "stack",
+        "stacktrace",
         "stdexcept",
         "stop_token",
         "streambuf",

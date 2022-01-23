@@ -68,6 +68,7 @@ class CustomTestFormat(STLTestFormat):
             'spanstream',
             'sstream',
             'stack',
+            'stacktrace',
             'stdexcept',
             'stop_token',
             'streambuf',

@@ -120,6 +120,7 @@
 #include <spanstream>
 #include <sstream>
 #include <stack>
+#include <stacktrace>
 #include <stdexcept>
 #include <streambuf>
 #include <string>

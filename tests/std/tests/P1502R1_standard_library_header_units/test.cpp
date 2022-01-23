@@ -68,6 +68,7 @@ import <span>;
 import <spanstream>;
 import <sstream>;
 import <stack>;
+import <stacktrace>;
 import <stdexcept>;
 import <stop_token>;
 import <streambuf>;
