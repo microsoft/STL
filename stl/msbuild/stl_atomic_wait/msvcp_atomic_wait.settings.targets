@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <RCIntermediateOutputDirectory>$(IntermediateOutputDirectory)</RCIntermediateOutputDirectory>
         <IntermediateImportLibOutput>$(CrtBuildDir)\msvcprt_atomic_wait$(BuildSuffix).$(MsvcpFlavor).import_only.lib</IntermediateImportLibOutput>
         <DllDefName>$(LibOutputFileName).$(MsvcpFlavor)</DllDefName>
-        <DllDef>$(IntermediateOutputDirectory)\$(DllDefName).def</DllDef>
+        <DllDef>$(MSBuildThisFileDirectory)\..\..\src\msvcp_atomic_wait.def</DllDef>
 
         <LinkGenerateDebugInformation Condition="'$(BLD_REL_NO_DBINFO)' != '1'">true</LinkGenerateDebugInformation>
         <LinkProgramDataBaseFileName Condition="'$(BLD_REL_NO_DBINFO)' != '1'">$(OutputPath)\$(OutputName)$(_PDB_VER_NAME_)$(DllPdbFlavorSuffix)</LinkProgramDataBaseFileName>
@@ -51,9 +51,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </PropertyGroup>
 
     <ItemGroup>
-        <CppPreprocess Include="$(MSBuildThisFileDirectory)\..\..\src\msvcp_atomic_wait.src">
-            <Defines>LIBRARYNAME=$(OutputName.ToUpper())</Defines>
-        </CppPreprocess>
         <DefFromI Include="$(IntermediateOutputDirectory)\msvcp_atomic_wait.i">
             <DestFolder1>$(IntermediateOutputDirectory)</DestFolder1>
             <DestFolder2>$(IntermediateOutputDirectory)</DestFolder2>
