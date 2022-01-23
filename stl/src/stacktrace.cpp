@@ -13,13 +13,12 @@
 
 namespace {
     static constexpr std::size_t max_line_size = 2000;
-    static constexpr std::size_t max_file_size = 260;
 
     static constexpr std::size_t table_size_power_of_two_factor = 10;
 
     static constexpr std::size_t table_size = 1 << table_size_power_of_two_factor;
 
-    static constexpr SYMBOL_INFO InitSymbolInfo() {
+    static constexpr SYMBOL_INFO init_symbol_info() {
         SYMBOL_INFO result  = {};
         result.SizeOfStruct = sizeof(SYMBOL_INFO);
         result.MaxNameLen   = max_line_size;
@@ -31,7 +30,7 @@ namespace {
         bool is_description_valid = false;
         bool is_line_valid        = false;
         IMAGEHLP_LINE line        = {sizeof(IMAGEHLP_LINE)};
-        SYMBOL_INFO info          = InitSymbolInfo();
+        SYMBOL_INFO info          = init_symbol_info();
         wchar_t buffer[max_line_size];
     };
 
@@ -64,7 +63,7 @@ namespace {
             }
 
             if (process_handle) {
-                ::CloseHandle(process_handle);
+                CloseHandle(process_handle);
             }
         }
 
