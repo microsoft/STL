@@ -100,7 +100,7 @@ namespace {
 
             initialize_line(entry, address);
 
-            return entry.line.FileName;
+            return entry.line.FileName ? entry.line.FileName : "";
         }
 
         unsigned source_line(void* address) {
