@@ -93,17 +93,26 @@ public:
     using allocator_type         = _Al;
 
     [[nodiscard]] static basic_stacktrace current(const allocator_type& _Alloc = allocator_type()) noexcept {
-        return basic_stacktrace(_Internal_t{}, 0, _Max_frames, _Alloc);
+        basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Alloc);
+        _Result._Frames.resize(__std_stacktrace_capture(0, static_cast<unsigned long>(_Max_frames),
+            reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
+        return _Result;
     }
 
     [[nodiscard]] static basic_stacktrace current(
         size_type _Skip, const allocator_type& _Alloc = allocator_type()) noexcept {
-        return basic_stacktrace(_Internal_t{}, _Skip, _Max_frames, _Alloc);
+        basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Alloc);
+        _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip),
+            static_cast<unsigned long>(_Max_frames), reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
+        return _Result;
     }
 
     [[nodiscard]] static basic_stacktrace current(
         size_type _Skip, size_type _Max_depth, const allocator_type& _Alloc = allocator_type()) noexcept {
-        return basic_stacktrace(_Internal_t{}, _Skip, (_STD max)(_Max_depth, _Max_frames), _Alloc);
+        basic_stacktrace _Result(_Internal_t{}, _Max_depth, _Alloc);
+        _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip),
+            static_cast<unsigned long>(_Max_depth), reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
+        return _Result;
     }
 
     basic_stacktrace() noexcept(is_nothrow_default_constructible_v<allocator_type>) = default;
@@ -210,11 +219,7 @@ private:
 
     struct _Internal_t {};
 
-    basic_stacktrace(_Internal_t, size_type _Skip, size_type _Max_depth, const allocator_type& _Alloc)
-        : _Frames(_Max_depth) {
-        _Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip),
-            static_cast<unsigned long>(_Max_depth), reinterpret_cast<void**>(_Frames.data()), &_Hash));
-    }
+    basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Alloc) : _Frames(_Max_depth, _Alloc) {}
 
     _Frames_t _Frames;
     unsigned long _Hash = 0;

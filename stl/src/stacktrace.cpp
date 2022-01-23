@@ -139,10 +139,13 @@ namespace {
             clear_if_wrong_address(entry, address);
 
             if (!entry.is_line_valid) {
-                bool success = try_initialize()
-                            && SymFromAddr(process_handle, reinterpret_cast<uintptr_t>(address), nullptr, &entry.info);
+                DWORD d = 0;
+                bool success =
+                    try_initialize()
+                    && SymGetLineFromAddr(process_handle, reinterpret_cast<uintptr_t>(address), &d, &entry.line);
                 if (!success) {
-                    entry.info.NameLen = 0;
+                    entry.line.FileName   = nullptr;
+                    entry.line.LineNumber = 0;
                 }
                 entry.is_line_valid = true;
             }
@@ -161,6 +164,9 @@ namespace {
 
 unsigned short __stdcall __std_stacktrace_capture(
     unsigned long _FramesToSkip, unsigned long _FramesToCapture, void** _BackTrace, unsigned long* _BackTraceHash) {
+#ifdef _DEBUG
+    _FramesToSkip += 1; // compensate absense of tail call optimization here
+#endif
     return CaptureStackBackTrace(_FramesToSkip, _FramesToCapture, _BackTrace, _BackTraceHash);
 }
 
