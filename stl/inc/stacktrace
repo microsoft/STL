@@ -37,9 +37,9 @@ class stacktrace_entry {
 public:
     using native_handle_type = void*;
 
-    constexpr stacktrace_entry() noexcept                              = default;
-    constexpr stacktrace_entry(const stacktrace_entry& other) noexcept = default;
-    constexpr stacktrace_entry& operator=(const stacktrace_entry& other) noexcept = default;
+    constexpr stacktrace_entry() noexcept                        = default;
+    constexpr stacktrace_entry(const stacktrace_entry&) noexcept = default;
+    constexpr stacktrace_entry& operator=(const stacktrace_entry&) noexcept = default;
 
     ~stacktrace_entry() = default;
 
@@ -63,11 +63,10 @@ public:
         return __std_stacktrace_source_line(_Address);
     }
 
-    [[nodiscard]] friend constexpr bool operator==(
-        const stacktrace_entry& x, const stacktrace_entry& y) noexcept = default;
+    [[nodiscard]] friend constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
 
     [[nodiscard]] friend constexpr strong_ordering operator<=>(
-        const stacktrace_entry& x, const stacktrace_entry& y) noexcept = default;
+        const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
 
 private:
     void* _Address = nullptr;
@@ -125,7 +124,7 @@ public:
         : _Frames(move(_Other._Frames), _Alloc), _Hash(_Other._Hash) {}
 
     basic_stacktrace& operator=(const basic_stacktrace&) = default;
-    basic_stacktrace& operator=(basic_stacktrace&& other) noexcept(_Noex_move) = default;
+    basic_stacktrace& operator=(basic_stacktrace&&) noexcept(_Noex_move) = default;
 
     ~basic_stacktrace() = default;
 
@@ -177,25 +176,25 @@ public:
         return _Frames.max_size();
     }
 
-    const_reference operator[](size_type) const {
-        return _Frames[size_type];
+    const_reference operator[](size_type _Sx) const {
+        return _Frames[_Sx];
     }
 
-    const_reference at(size_type) const {
-        return _Frames.at(size_type);
-    }
-
-    template <class _Al2>
-    friend bool operator==(const basic_stacktrace& x, const basic_stacktrace<_Al2>& y) noexcept {
-        return _Hash == _Hash && _Frames == _Frames;
+    const_reference at(size_type _Sx) const {
+        return _Frames.at(_Sx);
     }
 
     template <class _Al2>
-    friend strong_ordering operator<=>(const basic_stacktrace& x, const basic_stacktrace<_Al2>& y) noexcept {
-        if (_Hash != _Hash) {
-            return _Hash <=> _Hash;
+    friend bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
+        return _Lhs._Hash == _Rhs._Hash && _Lhs._Frames == _Rhs._Frames;
+    }
+
+    template <class _Al2>
+    friend strong_ordering operator<=>(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
+        if (Lhs._Hash != Rhs.Hash) {
+            return Lhs._Hash <=> Rhs._Hash;
         } else {
-            return _Frames <=> _Frames;
+            return Lhs._Frames <=> Rhs._Frames;
         }
     }
 
@@ -225,8 +224,8 @@ private:
 
 using stacktrace = basic_stacktrace<allocator<stacktrace_entry>>;
 
-template <class Allocator>
-void swap(basic_stacktrace<Allocator>& _Ax, basic_stacktrace<Allocator>& _Bx) noexcept(noexcept(_Ax.swap(_Bx))) {
+template <class _Al>
+void swap(basic_stacktrace<_Al>& _Ax, basic_stacktrace<_Al>& _Bx) noexcept(noexcept(_Ax.swap(_Bx))) {
     return _Ax.swap(_Bx);
 }
 
@@ -243,15 +242,15 @@ string to_string(const stacktrace_entry& _Fx) {
         if (_Result.empty()) {
             _Result = move(_Desc);
         } else {
-            _Result = _Result + " " + _Desc;
+            _Result = _Result + ": " + _Desc;
         }
     }
 
     return _Result;
 }
 
-template <class Allocator>
-string to_string(const basic_stacktrace<Allocator>& _St) {
+template <class _Al>
+string to_string(const basic_stacktrace<_Al>& _St) {
     string _Result;
     for (auto& _Entry : _St) {
         string _Entry_str = to_string(_Entry);
@@ -270,8 +269,8 @@ basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>& _Os, cons
     return _Os << to_string(_Fx);
 }
 
-template <class charT, class traits, class Allocator>
-basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>& _Os, const basic_stacktrace<Allocator>& _Fx) {
+template <class charT, class traits, class _Al>
+basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>& _Os, const basic_stacktrace<_Al>& _Fx) {
     return _Os << to_string(_Fx);
 }
 
@@ -286,9 +285,9 @@ struct hash<stacktrace_entry> : private hash<void*> {
     }
 };
 
-template <class Allocator>
-struct hash<basic_stacktrace<Allocator>> {
-    size_t operator()(const basic_stacktrace<Allocator>& _Val) const {
+template <class _Al>
+struct hash<basic_stacktrace<_Al>> {
+    size_t operator()(const basic_stacktrace<_Al>& _Val) const {
         return _Val;
     }
 };
