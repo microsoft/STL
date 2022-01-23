@@ -192,11 +192,12 @@ public:
     template <class _Al2>
     [[nodiscard]] friend strong_ordering operator<=>(
         const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
-        if (_Lhs._Hash != _Rhs.Hash) {
-            return _Lhs._Hash <=> _Rhs._Hash;
-        } else {
-            return _Lhs._Frames <=> _Rhs._Frames;
+        const auto _Result = _Lhs._Frames._Size <=> _Rhs._Frames._Size;
+        if (_Result != strong_ordering::equal) {
+            return _Result;
         }
+
+        return _Lhs._Frames <=> _Rhs._Frames;
     }
 
     void swap(basic_stacktrace& _Other) noexcept(
