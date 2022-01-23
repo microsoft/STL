@@ -31,7 +31,7 @@ namespace {
         void* address             = nullptr;
         bool is_description_valid = false;
         bool is_line_valid        = false;
-        IMAGEHLP_LINE64 line      = {sizeof(IMAGEHLP_LINE64)};
+        IMAGEHLP_LINE line        = {sizeof(IMAGEHLP_LINE64)};
         SYMBOL_INFO info          = InitSymbolInfo();
         wchar_t buffer[max_line_size];
     };
