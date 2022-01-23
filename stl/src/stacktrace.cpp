@@ -80,7 +80,7 @@ namespace {
 
         std::string description(void* address) {
             auto& entry = hash_table_entry(address);
-            srw_lock_guard lock{mutex};
+            srw_lock_guard lock{srw};
             clear_if_wrong_address(entry, address);
 
             if (!entry.is_description_valid) {
@@ -97,7 +97,7 @@ namespace {
 
         std::string source_file(void* address) {
             auto& entry = hash_table_entry(address);
-            srw_lock_guard lock{mutex};
+            srw_lock_guard lock{srw};
 
             initialize_line(entry, address);
 
@@ -106,7 +106,7 @@ namespace {
 
         unsigned source_line(void* address) {
             auto& entry = hash_table_entry(address);
-            srw_lock_guard lock{mutex};
+            srw_lock_guard lock{srw};
 
             initialize_line(entry, address);
 
@@ -150,8 +150,7 @@ namespace {
             }
         }
 
-
-        SRWLOCK mutex            = SRWLOCK_INIT;
+        SRWLOCK srw              = SRWLOCK_INIT;
         HANDLE process_handle    = nullptr;
         bool initialized         = false;
         bool initialize_attepted = false;
