@@ -33,8 +33,6 @@ unsigned short __stdcall __std_stacktrace_capture(
 [[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(void* _Address);
 
 _STD_BEGIN
-
-// 20.?.4, class stacktrace_entry
 class stacktrace_entry {
 public:
     using native_handle_type = void*;
@@ -225,10 +223,8 @@ private:
     unsigned long _Hash = 0;
 };
 
-// basic_stacktrace typedef names
 using stacktrace = basic_stacktrace<allocator<stacktrace_entry>>;
 
-// 20.?.6, non-member functions
 template <class Allocator>
 void swap(basic_stacktrace<Allocator>& _Ax, basic_stacktrace<Allocator>& _Bx) noexcept(noexcept(_Ax.swap(_Bx))) {
     return _Ax.swap(_Bx);
@@ -296,7 +292,6 @@ struct hash<basic_stacktrace<Allocator>> {
         return _Val;
     }
 };
-
 _STD_END
 
 #pragma pop_macro("new")
