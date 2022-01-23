@@ -192,7 +192,7 @@ public:
     template <class _Al2>
     [[nodiscard]] friend strong_ordering operator<=>(
         const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
-        const auto _Result = _Lhs._Frames._Size <=> _Rhs._Frames._Size;
+        const auto _Result = _Lhs._Frames.size() <=> _Rhs._Frames.size();
         if (_Result != strong_ordering::equal) {
             return _Result;
         }
