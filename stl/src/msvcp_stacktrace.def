@@ -2,7 +2,9 @@
 ; SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 EXPORTS
+    __std_stacktrace_address_to_string
     __std_stacktrace_capture
     __std_stacktrace_description
     __std_stacktrace_source_file
     __std_stacktrace_source_line
+    __std_stacktrace_to_string

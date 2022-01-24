@@ -28,9 +28,11 @@ _STL_DISABLE_CLANG_WARNINGS
 [[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(
     unsigned long _FramesToSkip, unsigned long _FramesToCapture, void** _BackTrace, unsigned long* _BackTraceHash);
 
-[[nodiscard]] _STD string __stdcall __std_stacktrace_description(void* _Address);
-[[nodiscard]] _STD string __stdcall __std_stacktrace_source_file(void* _Address);
-[[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(void* _Address);
+[[nodiscard]] _STD string __stdcall __std_stacktrace_address_to_string(const void* _Address);
+[[nodiscard]] _STD string __stdcall __std_stacktrace_description(const void* _Address);
+[[nodiscard]] _STD string __stdcall __std_stacktrace_source_file(const void* _Address);
+[[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(const void* _Address);
+[[nodiscard]] _STD string __stdcall __std_stacktrace_to_string(const void* _Addresses, size_t _Size);
 
 _STD_BEGIN
 class stacktrace_entry {
@@ -210,6 +212,11 @@ public:
         return _Hash;
     }
 
+    [[nodiscard]] const void* _Data() const noexcept {
+        return _Frames.data();
+    }
+
+
 private:
     static constexpr size_t _Max_frames = 0xFFFF;
 
@@ -232,38 +239,12 @@ void swap(basic_stacktrace<_Al>& _Ax, basic_stacktrace<_Al>& _Bx) noexcept(noexc
 }
 
 [[nodiscard]] inline string to_string(const stacktrace_entry& _Fx) {
-    string _Result;
-    auto _Line = _Fx.source_line();
-    auto _Desc = _Fx.description();
-
-    if (_Line != 0) {
-        _Result = _Fx.source_file() + "(" + to_string(_Line) + ")";
-    }
-
-    if (!_Desc.empty()) {
-        if (_Result.empty()) {
-            _Result = _STD move(_Desc);
-        } else {
-            _Result = _Result + ": " + _Desc;
-        }
-    }
-
-    return _Result;
+    return __std_stacktrace_address_to_string(_Fx.native_handle());
 }
 
 template <class _Al>
 [[nodiscard]] string to_string(const basic_stacktrace<_Al>& _St) {
-    string _Result;
-    for (auto& _Entry : _St) {
-        string _Entry_str = to_string(_Entry);
-        if (!_Result.empty()) {
-            _Result.push_back('\n');
-            _Result.append(_Entry_str);
-        } else {
-            _Result = _STD move(_Entry_str);
-        }
-    }
-    return _Result;
+    return __std_stacktrace_to_string(_St._Data(), _St.size());
 }
 
 template <class charT, class traits>

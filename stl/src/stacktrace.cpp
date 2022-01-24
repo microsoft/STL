@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <format>
 #include <shared_mutex>
 #include <string>
 
@@ -49,7 +50,7 @@ namespace {
         stacktrace_global_data_t& operator=(const stacktrace_global_data_t) = delete;
 
 
-        std::string description(void* address) {
+        std::string description(const void* const address) {
             srw_lock_guard lock{srw};
             clear_if_wrong_address(address);
 
@@ -65,7 +66,7 @@ namespace {
             return std::string(info.Name, info.NameLen);
         }
 
-        std::string source_file(void* address) {
+        std::string source_file(const void* const address) {
             srw_lock_guard lock{srw};
 
             initialize_line(address);
@@ -73,7 +74,7 @@ namespace {
             return line.FileName ? line.FileName : "";
         }
 
-        unsigned source_line(void* address) {
+        unsigned source_line(const void* const address) {
             srw_lock_guard lock{srw};
 
             initialize_line(address);
@@ -94,7 +95,7 @@ namespace {
             return initialized;
         }
 
-        void clear_if_wrong_address(void* address) {
+        void clear_if_wrong_address(const void* const address) {
             if (last_address != address) {
                 is_description_valid = false;
                 is_line_valid        = false;
@@ -102,7 +103,7 @@ namespace {
             }
         }
 
-        void initialize_line(void* address) {
+        void initialize_line(const void* const address) {
             clear_if_wrong_address(address);
 
             if (!is_line_valid) {
@@ -129,7 +130,7 @@ namespace {
         HANDLE process_handle     = nullptr;
         bool initialized          = false;
         bool initialize_attempted = false;
-        void* last_address        = nullptr;
+        const void* last_address  = nullptr;
         bool is_description_valid = false;
         bool is_line_valid        = false;
         IMAGEHLP_LINE line        = {sizeof(IMAGEHLP_LINE)};
@@ -150,14 +151,49 @@ namespace {
     return CaptureStackBackTrace(_FramesToSkip, _FramesToCapture, _BackTrace, _BackTraceHash);
 }
 
-[[nodiscard]] _STD string __stdcall __std_stacktrace_description(void* _Address) {
+[[nodiscard]] std::string __stdcall __std_stacktrace_description(const void* _Address) {
     return stacktrace_global_data.description(_Address);
 }
 
-[[nodiscard]] _STD string __stdcall __std_stacktrace_source_file(void* _Address) {
+[[nodiscard]] std::string __stdcall __std_stacktrace_source_file(const void* _Address) {
     return stacktrace_global_data.source_file(_Address);
 }
 
-[[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(void* _Address) {
+[[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(const void* _Address) {
     return stacktrace_global_data.source_line(_Address);
+}
+
+[[nodiscard]] std::string __stdcall __std_stacktrace_address_to_string(const void* _Address) {
+    std::string result;
+    auto line = __std_stacktrace_source_line(_Address);
+    auto desc = __std_stacktrace_description(_Address);
+
+    if (line != 0) {
+        result = std::format("{}({})", _Address, line);
+    }
+
+    if (!desc.empty()) {
+        if (result.empty()) {
+            result = std::move(desc);
+        } else {
+            result = std::format("{}: {}", result, desc);
+        }
+    }
+
+    return result;
+}
+
+[[nodiscard]] std::string __stdcall __std_stacktrace_to_string(const void* _Addresses, size_t _Size) {
+    auto data = reinterpret_cast<const void* const*>(_Addresses);
+    std::string result;
+    for (std::size_t i = 0; i != _Size; ++i) {
+        auto str = __std_stacktrace_address_to_string(data[i]);
+        if (!result.empty()) {
+            result.push_back('\n');
+            result.append(str);
+        } else {
+            result = std::move(str);
+        }
+    }
+    return result;
 }
