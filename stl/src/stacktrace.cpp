@@ -202,15 +202,11 @@ namespace {
     auto line = __std_stacktrace_source_line(_Address);
     auto desc = __std_stacktrace_description(_Address);
 
-    if (line != 0) {
-        result = std::format("{}({})", __std_stacktrace_source_file(_Address), line);
-    }
-
     if (!desc.empty()) {
-        if (result.empty()) {
-            result = std::move(desc);
+        if (line == 0) {
+            return desc;
         } else {
-            result = std::format("{}: {}", result, desc);
+            return std::format("{}({}): {}", __std_stacktrace_source_file(_Address), line, desc);
         }
     }
 
