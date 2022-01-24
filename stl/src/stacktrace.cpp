@@ -114,12 +114,12 @@ namespace {
 
     private:
         bool try_initialize() {
-            if (!initialize_attepted) {
+            if (!initialize_attempted) {
                 initialized = DuplicateHandle(GetCurrentProcess(), GetCurrentProcess(), GetCurrentProcess(),
                                   &process_handle, PROCESS_QUERY_INFORMATION, false, 0)
                            && SymInitialize(process_handle, nullptr, true);
 
-                initialize_attepted = true;
+                initialize_attempted = true;
             }
 
             return initialized;
@@ -149,10 +149,10 @@ namespace {
             }
         }
 
-        SRWLOCK srw              = SRWLOCK_INIT;
-        HANDLE process_handle    = nullptr;
-        bool initialized         = false;
-        bool initialize_attepted = false;
+        SRWLOCK srw               = SRWLOCK_INIT;
+        HANDLE process_handle     = nullptr;
+        bool initialized          = false;
+        bool initialize_attempted = false;
     };
 
     static stacktrace_global_data_t stacktrace_global_data;
