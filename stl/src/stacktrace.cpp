@@ -169,7 +169,7 @@ namespace {
     auto desc = __std_stacktrace_description(_Address);
 
     if (line != 0) {
-        result = std::format("{}({})", _Address, line);
+        result = std::format("{}({})", __std_stacktrace_source_file(_Address), line);
     }
 
     if (!desc.empty()) {
