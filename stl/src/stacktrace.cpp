@@ -6,11 +6,13 @@
 #include <string>
 
 // clang-format off
+#include <Shlwapi.h>
 #include <Windows.h>
 #include <dbghelp.h>
 // clang-format on
 
 #pragma comment(lib, "Dbghelp.lib")
+#pragma comment(lib, "Shlwapi.lib")
 
 namespace {
     static constexpr std::size_t max_line_size = 2000;
@@ -57,13 +59,39 @@ namespace {
             if (!is_description_valid) {
                 bool success = try_initialize()
                             && SymFromAddr(process_handle, reinterpret_cast<uintptr_t>(address), nullptr, &info);
-                if (!success) {
-                    info.NameLen = 0;
+
+                if (success) {
+                    function_address.clear();
+                    function_name = std::string_view(info.Name, info.NameLen);
+                    offset        = reinterpret_cast<ptrdiff_t>(address) - static_cast<ptrdiff_t>(info.Address);
+                } else {
+                    function_address = std::format("{}", address);
+                    function_name    = function_address;
+                    offset           = 0;
                 }
+
+                if (!GetModuleHandleExW(
+                        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                        reinterpret_cast<LPCWSTR>(address), &module_handle)) {
+                    module_handle = nullptr;
+                }
+
+                if (module_handle) {
+                    GetModuleFileNameA(module_handle, module_path, MAX_PATH);
+                    module_name = PathFindFileNameA(module_path);
+                } else {
+                    module_name = "";
+                }
+
                 is_description_valid = true;
             }
 
-            return std::string(info.Name, info.NameLen);
+            if (offset > 0) {
+                return std::format("{}!{}+{:#x}", module_name, function_name, offset);
+
+            } else {
+                return std::format("{}!{}", module_name, function_name);
+            }
         }
 
         std::string source_file(const void* const address) {
@@ -131,12 +159,18 @@ namespace {
         bool initialized          = false;
         bool initialize_attempted = false;
         const void* last_address  = nullptr;
+        HMODULE module_handle     = nullptr;
         bool is_description_valid = false;
         bool is_line_valid        = false;
         IMAGEHLP_LINE line        = {sizeof(IMAGEHLP_LINE)};
         DWORD displacement        = 0;
+        ptrdiff_t offset          = 0;
         SYMBOL_INFO info          = init_symbol_info();
-        wchar_t buffer[max_line_size];
+        char buffer[max_line_size];
+        char module_path[MAX_PATH];
+        const char* module_name = nullptr;
+        std::string_view function_name;
+        std::string function_address;
     };
 
     static stacktrace_global_data_t stacktrace_global_data;

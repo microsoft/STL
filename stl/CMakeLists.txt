@@ -530,7 +530,7 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     target_compile_options(msvcp${D_SUFFIX}_stacktrace_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
 
     add_library(msvcp${D_SUFFIX}_stacktrace SHARED "${CMAKE_CURRENT_LIST_DIR}/src/msvcp_stacktrace.def")
-    target_link_libraries(msvcp${D_SUFFIX}_stacktrace PRIVATE msvcp${D_SUFFIX}_stacktrace_objects msvcp${D_SUFFIX}_satellite_objects msvcp${D_SUFFIX}_implib_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib" "Dbghelp.lib")
+    target_link_libraries(msvcp${D_SUFFIX}_stacktrace PRIVATE msvcp${D_SUFFIX}_stacktrace_objects msvcp${D_SUFFIX}_satellite_objects msvcp${D_SUFFIX}_implib_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib" "Dbghelp.lib" "Shlwapi.lib")
     set_target_properties(msvcp${D_SUFFIX}_stacktrace PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_stacktrace${D_SUFFIX}${VCLIBS_SUFFIX}")
     set_target_properties(msvcp${D_SUFFIX}_stacktrace PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     set_target_properties(msvcp${D_SUFFIX}_stacktrace PROPERTIES OUTPUT_NAME "msvcp140${D_SUFFIX}_stacktrace${VCLIBS_SUFFIX}")
