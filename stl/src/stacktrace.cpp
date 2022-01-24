@@ -15,29 +15,6 @@
 namespace {
     static constexpr std::size_t max_line_size = 2000;
 
-    static constexpr std::size_t table_size_power_of_two_factor = 10;
-
-    static constexpr std::size_t table_size = 1 << table_size_power_of_two_factor;
-
-    static constexpr SYMBOL_INFO init_symbol_info() {
-        SYMBOL_INFO result  = {};
-        result.SizeOfStruct = sizeof(SYMBOL_INFO);
-        result.MaxNameLen   = max_line_size;
-        return result;
-    }
-
-    struct stacktrace_address_table_entry_t {
-        void* address             = nullptr;
-        bool is_description_valid = false;
-        bool is_line_valid        = false;
-        IMAGEHLP_LINE line        = {sizeof(IMAGEHLP_LINE)};
-        DWORD displacement        = 0;
-        SYMBOL_INFO info          = init_symbol_info();
-        wchar_t buffer[max_line_size];
-    };
-
-    static stacktrace_address_table_entry_t stacktrace_address_table[table_size];
-
     class _NODISCARD srw_lock_guard {
     public:
         explicit srw_lock_guard(SRWLOCK& locked_) noexcept : locked(&locked_) {
@@ -57,7 +34,7 @@ namespace {
 
     class stacktrace_global_data_t {
     public:
-        stacktrace_global_data_t() = default;
+        constexpr stacktrace_global_data_t() = default;
 
         ~stacktrace_global_data_t() {
             if (initialized) {
@@ -72,46 +49,37 @@ namespace {
         stacktrace_global_data_t(const stacktrace_global_data_t&) = delete;
         stacktrace_global_data_t& operator=(const stacktrace_global_data_t) = delete;
 
-        static stacktrace_address_table_entry_t& hash_table_entry(void* address) {
-            auto index = reinterpret_cast<size_t>(address);
-            index ^= index >> table_size_power_of_two_factor;
-            index &= (1 << table_size_power_of_two_factor) - 1;
-            return stacktrace_address_table[index];
-        }
 
         std::string description(void* address) {
-            auto& entry = hash_table_entry(address);
             srw_lock_guard lock{srw};
-            clear_if_wrong_address(entry, address);
+            clear_if_wrong_address(address);
 
-            if (!entry.is_description_valid) {
+            if (!is_description_valid) {
                 bool success = try_initialize()
-                            && SymFromAddr(process_handle, reinterpret_cast<uintptr_t>(address), nullptr, &entry.info);
+                            && SymFromAddr(process_handle, reinterpret_cast<uintptr_t>(address), nullptr, &info);
                 if (!success) {
-                    entry.info.NameLen = 0;
+                    info.NameLen = 0;
                 }
-                entry.is_description_valid = true;
+                is_description_valid = true;
             }
 
-            return std::string(entry.info.Name, entry.info.NameLen);
+            return std::string(info.Name, info.NameLen);
         }
 
         std::string source_file(void* address) {
-            auto& entry = hash_table_entry(address);
             srw_lock_guard lock{srw};
 
-            initialize_line(entry, address);
+            initialize_line(address);
 
-            return entry.line.FileName ? entry.line.FileName : "";
+            return line.FileName ? line.FileName : "";
         }
 
         unsigned source_line(void* address) {
-            auto& entry = hash_table_entry(address);
             srw_lock_guard lock{srw};
 
-            initialize_line(entry, address);
+            initialize_line(address);
 
-            return entry.line.LineNumber;
+            return line.LineNumber;
         }
 
     private:
@@ -127,34 +95,48 @@ namespace {
             return initialized;
         }
 
-        void clear_if_wrong_address(stacktrace_address_table_entry_t& entry, void* address) {
-            if (entry.address != address) {
-                entry.is_description_valid = false;
-                entry.is_line_valid        = false;
-                entry.address              = address;
+        void clear_if_wrong_address(void* address) {
+            if (last_address != address) {
+                is_description_valid = false;
+                is_line_valid        = false;
+                last_address         = address;
             }
         }
 
-        void initialize_line(stacktrace_address_table_entry_t& entry, void* address) {
-            clear_if_wrong_address(entry, address);
+        void initialize_line(void* address) {
+            clear_if_wrong_address(address);
 
-            if (!entry.is_line_valid) {
-                bool success = try_initialize()
-                            && SymGetLineFromAddr(
-                                process_handle, reinterpret_cast<uintptr_t>(address), &entry.displacement, &entry.line);
+            if (!is_line_valid) {
+                bool success =
+                    try_initialize()
+                    && SymGetLineFromAddr(process_handle, reinterpret_cast<uintptr_t>(address), &displacement, &line);
                 if (!success) {
-                    entry.line.FileName   = nullptr;
-                    entry.line.LineNumber = 0;
-                    entry.displacement    = 0;
+                    line.FileName   = nullptr;
+                    line.LineNumber = 0;
+                    displacement    = 0;
                 }
-                entry.is_line_valid = true;
+                is_line_valid = true;
             }
+        }
+
+        static constexpr SYMBOL_INFO init_symbol_info() {
+            SYMBOL_INFO result  = {};
+            result.SizeOfStruct = sizeof(SYMBOL_INFO);
+            result.MaxNameLen   = max_line_size;
+            return result;
         }
 
         SRWLOCK srw               = SRWLOCK_INIT;
         HANDLE process_handle     = nullptr;
         bool initialized          = false;
         bool initialize_attempted = false;
+        void* last_address        = nullptr;
+        bool is_description_valid = false;
+        bool is_line_valid        = false;
+        IMAGEHLP_LINE line        = {sizeof(IMAGEHLP_LINE)};
+        DWORD displacement        = 0;
+        SYMBOL_INFO info          = init_symbol_info();
+        wchar_t buffer[max_line_size];
     };
 
     static stacktrace_global_data_t stacktrace_global_data;
