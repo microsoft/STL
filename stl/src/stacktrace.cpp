@@ -52,8 +52,7 @@ namespace {
         stacktrace_global_data_t& operator=(const stacktrace_global_data_t) = delete;
 
 
-        std::string description(const void* const address) {
-            srw_lock_guard lock{srw};
+        [[nodiscard]] std::string description(const void* const address) {
             clear_if_wrong_address(address);
 
             if (!is_description_valid) {
@@ -94,21 +93,30 @@ namespace {
             }
         }
 
-        std::string source_file(const void* const address) {
-            srw_lock_guard lock{srw};
-
+        [[nodiscard]] std::string source_file(const void* const address) {
             initialize_line(address);
 
             return line.FileName ? line.FileName : "";
         }
 
-        unsigned source_line(const void* const address) {
-            srw_lock_guard lock{srw};
-
+        [[nodiscard]] unsigned source_line(const void* const address) {
             initialize_line(address);
 
             return line.LineNumber;
         }
+
+        [[nodiscard]] std::string address_to_string(const void* _Address) {
+
+            auto cur_line = source_line(_Address);
+            auto cur_desc = description(_Address);
+
+            if (cur_line == 0) {
+                return cur_desc;
+            } else {
+                return std::format("{}({}): {}", source_file(_Address), cur_line, cur_desc);
+            }
+        }
+
 
     private:
         bool try_initialize() {
@@ -154,7 +162,6 @@ namespace {
             return result;
         }
 
-        SRWLOCK srw               = SRWLOCK_INIT;
         HANDLE process_handle     = nullptr;
         bool initialized          = false;
         bool initialize_attempted = false;
@@ -173,7 +180,10 @@ namespace {
         std::string function_address;
     };
 
-    static stacktrace_global_data_t stacktrace_global_data;
+    stacktrace_global_data_t stacktrace_global_data;
+
+    SRWLOCK srw = SRWLOCK_INIT;
+
 
 } // namespace
 
@@ -186,38 +196,31 @@ namespace {
 }
 
 [[nodiscard]] std::string __stdcall __std_stacktrace_description(const void* _Address) {
+    srw_lock_guard lock{srw};
     return stacktrace_global_data.description(_Address);
 }
 
 [[nodiscard]] std::string __stdcall __std_stacktrace_source_file(const void* _Address) {
+    srw_lock_guard lock{srw};
     return stacktrace_global_data.source_file(_Address);
 }
 
 [[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(const void* _Address) {
+    srw_lock_guard lock{srw};
     return stacktrace_global_data.source_line(_Address);
 }
 
 [[nodiscard]] std::string __stdcall __std_stacktrace_address_to_string(const void* _Address) {
-    std::string result;
-    auto line = __std_stacktrace_source_line(_Address);
-    auto desc = __std_stacktrace_description(_Address);
-
-    if (!desc.empty()) {
-        if (line == 0) {
-            return desc;
-        } else {
-            return std::format("{}({}): {}", __std_stacktrace_source_file(_Address), line, desc);
-        }
-    }
-
-    return result;
+    srw_lock_guard lock{srw};
+    return stacktrace_global_data.address_to_string(_Address);
 }
 
 [[nodiscard]] std::string __stdcall __std_stacktrace_to_string(const void* _Addresses, size_t _Size) {
+    srw_lock_guard lock{srw};
     auto data = reinterpret_cast<const void* const*>(_Addresses);
     std::string result;
     for (std::size_t i = 0; i != _Size; ++i) {
-        auto str = __std_stacktrace_address_to_string(data[i]);
+        auto str = stacktrace_global_data.address_to_string(data[i]);
         if (!result.empty()) {
             result.push_back('\n');
             result.append(str);
