@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <format>
 #include <shared_mutex>
 #include <string>
 
@@ -30,6 +31,7 @@ namespace {
         bool is_description_valid = false;
         bool is_line_valid        = false;
         IMAGEHLP_LINE line        = {sizeof(IMAGEHLP_LINE)};
+        DWORD displacement        = 0;
         SYMBOL_INFO info          = init_symbol_info();
         wchar_t buffer[max_line_size];
     };
@@ -137,13 +139,13 @@ namespace {
             clear_if_wrong_address(entry, address);
 
             if (!entry.is_line_valid) {
-                DWORD d = 0;
-                bool success =
-                    try_initialize()
-                    && SymGetLineFromAddr(process_handle, reinterpret_cast<uintptr_t>(address), &d, &entry.line);
+                bool success = try_initialize()
+                            && SymGetLineFromAddr(
+                                process_handle, reinterpret_cast<uintptr_t>(address), &entry.displacement, &entry.line);
                 if (!success) {
                     entry.line.FileName   = nullptr;
                     entry.line.LineNumber = 0;
+                    entry.displacement    = 0;
                 }
                 entry.is_line_valid = true;
             }
