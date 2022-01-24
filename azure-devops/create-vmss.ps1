@@ -406,11 +406,34 @@ Write-Progress `
   -Status 'Enabling VMSS diagnostic logs' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
+$StorageAccountName = 'stlvmssdiaglogssa'
+
+$ExpirationDate = (Get-Date -AsUTC).AddYears(1).ToString('yyyy-MM-ddTHH:mmZ')
+
+$StorageAccountSASToken = $(az storage account generate-sas `
+  --account-name $StorageAccountName `
+  --expiry $ExpirationDate `
+  --permissions acuw `
+  --resource-types co `
+  --services bt `
+  --https-only `
+  --output tsv `
+  2> $null)
+
+$DiagnosticsDefaultConfig = $(az vmss diagnostics get-default-config --is-windows-os 2> $null). `
+  Replace('__DIAGNOSTIC_STORAGE_ACCOUNT__', $StorageAccountName). `
+  Replace('__VM_OR_VMSS_RESOURCE_ID__', $Vmss.Id)
+
+Out-File -FilePath "$PSScriptRoot\vmss-config.json" -InputObject $DiagnosticsDefaultConfig
+
+$DiagnosticsProtectedSettings = "{'storageAccountName': '$StorageAccountName', "
+$DiagnosticsProtectedSettings += "'storageAccountSasToken': '?$StorageAccountSASToken'}"
+
 az vmss diagnostics set `
   --resource-group $ResourceGroupName `
   --vmss-name $VmssName `
   --settings "$PSScriptRoot\vmss-config.json" `
-  --protected-settings "$PSScriptRoot\vmss-protected.json" `
+  --protected-settings "$DiagnosticsProtectedSettings" `
   --output none
 
 ####################################################################################################
