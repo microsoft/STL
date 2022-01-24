@@ -242,30 +242,30 @@ constexpr int _Generate_canonical_iterations(const int _Bits, const uint64_t _Gm
     // For a URBG type `G` with range == `(G::max() - G::min()) + 1`, returns the number of calls to generate at least
     // _Bits bits of entropy. Specifically, max(1, ceil(_Bits / log2(range))).
 
-    int _Ceil = 0;
+    _STL_INTERNAL_CHECK(0 <= _Bits && _Bits <= 64);
+
     if (_Bits == 0) {
-        ;
-    } else if (_Gmax == UINT64_MAX && _Gmin == 0) {
-        _Ceil = ((_Bits - 1) / 64) + 1;
-    } else {
-        const auto _Range = (_Gmax - _Gmin) + 1;
-        if ((_Range & (_Range - 1)) == 0) {
-            _Ceil = (_Bits - 1) / _Countr_zero(_Range) + 1;
-        } else {
-            const auto _Target = ~uint64_t{0} >> (64 - _Bits);
-            uint64_t _Prod     = 1;
-            while (_Prod <= _Target) {
-                if (_Prod > UINT64_MAX / _Range) {
-                    ++_Ceil;
-                    break;
-                }
-                _Prod *= _Range;
-                ++_Ceil;
-            }
-        }
+        return 1;
     }
 
-    return _Ceil < 1 ? 1 : _Ceil;
+    const auto _Range = (_Gmax - _Gmin) + 1;
+    if ((_Range & (_Range - 1)) == 0) {
+        return (_Bits - 1) / _Countr_zero(_Range) + 1;
+    } else {
+        const auto _Target = ~uint64_t{0} >> (64 - _Bits);
+        uint64_t _Prod     = 1;
+        int _Ceil          = 0;
+        while (_Prod <= _Target) {
+            ++_Ceil;
+            if (_Prod > UINT64_MAX / _Range) {
+                break;
+            }
+
+            _Prod *= _Range;
+        }
+
+        return _Ceil;
+    }
 }
 
 template <class _Real, size_t _Bits, class _Gen>

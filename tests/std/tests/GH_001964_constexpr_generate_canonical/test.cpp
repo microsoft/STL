@@ -29,8 +29,7 @@ void test(const int target_bits) {
 
     // Now only check the crossover points, where incrementing the range actually causes the number of iterations to
     // increase.
-    --k;
-    for (; k > 0; --k) {
+    while (--k) {
         // The largest range such that k iterations generating [1,range] produces less than target_bits bits.
         if (k == 1) {
             range = ~uint64_t{0} >> (64 - target_bits);
@@ -49,8 +48,8 @@ void test(const int target_bits) {
 }
 
 int main() {
-    static_assert(_Generate_canonical_iterations(53, 1, uint64_t{1} << 32) == 2);
-    static_assert(_Generate_canonical_iterations(64, 0, ~uint64_t{0}) == 1);
+    static_assert(_Generate_canonical_iterations(53, 1, uint64_t{1} << 32) == 2, "");
+    static_assert(_Generate_canonical_iterations(64, 0, ~uint64_t{0}) == 1, "");
 
     for (int bits = 1; bits <= 64; ++bits) {
         test(bits);
