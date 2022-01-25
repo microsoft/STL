@@ -143,7 +143,7 @@ Write-Progress `
   -Status 'Setting the subscription context' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$IgnoredAzureContext = Set-AzContext -SubscriptionName CPP_STL_GitHub
+Set-AzContext -SubscriptionName CPP_STL_GitHub | Out-Null
 az account set --subscription CPP_STL_GitHub
 
 ####################################################################################################
@@ -154,7 +154,7 @@ Write-Progress `
 
 $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
-$IgnoredResourceGroup = New-AzResourceGroup -Name $ResourceGroupName -Location $Location
+New-AzResourceGroup -Name $ResourceGroupName -Location $Location | Out-Null
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
@@ -263,10 +263,10 @@ $VM = Set-AzVMSourceImage `
   -Version latest
 
 $VM = Set-AzVMBootDiagnostic -VM $VM -Disable
-$IgnoredAzureOperationResponse = New-AzVm `
+New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
-  -VM $VM
+  -VM $VM | Out-Null
 
 ####################################################################################################
 Write-Progress `
@@ -289,7 +289,7 @@ Write-Progress `
   -Status 'Restarting VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$IgnoredComputeLongRunningOperation = Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName | Out-Null
 
 ####################################################################################################
 Write-Progress `
@@ -307,11 +307,11 @@ Write-Progress `
   -Status 'Running provisioning script sysprep.ps1 in VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$IgnoredRunCommandResult = Invoke-AzVMRunCommand `
+Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\sysprep.ps1"
+  -ScriptPath "$PSScriptRoot\sysprep.ps1" | Out-Null
 
 ####################################################################################################
 Write-Progress `
@@ -327,15 +327,15 @@ Write-Progress `
   -Status 'Converting VM to Image' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$IgnoredComputeLongRunningOperation = Stop-AzVM `
+Stop-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
-  -Force
+  -Force | Out-Null
 
-$IgnoredComputeLongRunningOperation = Set-AzVM `
+Set-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
-  -Generalized
+  -Generalized | Out-Null
 
 $VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
@@ -348,11 +348,11 @@ Write-Progress `
   -Status 'Deleting unused VM and disk' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$IgnoredComputeLongRunningOperation = Remove-AzVM -Id $VM.ID -Force
-$IgnoredOperationStatusResponse = Remove-AzDisk `
+Remove-AzVM -Id $VM.ID -Force | Out-Null
+Remove-AzDisk `
   -ResourceGroupName $ResourceGroupName `
   -DiskName $PrototypeOSDiskName `
-  -Force
+  -Force | Out-Null
 
 ####################################################################################################
 Write-Progress `
