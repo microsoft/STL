@@ -25,9 +25,9 @@ $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd-THHmm')
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
-$ImagePublisher = 'MicrosoftWindowsDesktop'
-$ImageOffer = 'windows-11'
-$ImageSku = 'win11-21h2-ent'
+$ImagePublisher = 'MicrosoftWindowsServer'
+$ImageOffer = 'WindowsServer'
+$ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Creating Scale Set'
 $TotalProgress = 14
