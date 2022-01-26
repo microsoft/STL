@@ -515,6 +515,12 @@ private:
 
     _CONSTEXPR20 void _Modify_annotation(const difference_type _Count) const noexcept {
         // Extends/shrinks the annotated range by _Count
+        if (_Count == 0) { // nothing to do
+            // This also avoids calling _Apply_annotation() with null pointers
+            // when the vector has zero capacity, see GH-2464.
+            return;
+        }
+
         auto& _My_data = _Mypair._Myval2;
         _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Mylast + _Count);
     }
@@ -1243,7 +1249,7 @@ private:
 
         // Trim.
         _Destroy_range(_Next, _Mylast, _Getal());
-        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Next - _Mylast));
+        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Next - _Mylast)); // negative when destroying elements
         _Mylast = _Next;
 
         // Append.
@@ -1586,7 +1592,7 @@ public:
 
             const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
             _Destroy_range(_Newlast, _Mylast, _Getal());
-            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newlast - _Mylast));
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newlast - _Mylast)); // negative when destroying elements
             _Mylast = _Newlast;
         }
 
@@ -1598,9 +1604,16 @@ public:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
+        if (_Myfirst == _Mylast) { // already empty, nothing to do
+            // This is an optimization for debug mode: we can avoid taking the debug lock to invalidate iterators.
+            // Note that when clearing an empty vector, this will preserve past-the-end iterators, which is allowed by
+            // N4901 [tab:container.seq.req] "a.clear() [...] may invalidate the past-the-end iterator".
+            return;
+        }
+
         _My_data._Orphan_all();
         _Destroy_range(_Myfirst, _Mylast, _Getal());
-        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Mylast - _Myfirst));
+        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Myfirst - _Mylast)); // negative when destroying elements
         _Mylast = _Myfirst;
     }
 
@@ -1698,8 +1711,8 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
-        return (_STD min) (static_cast<size_type>((numeric_limits<difference_type>::max) ()),
-            _Alty_traits::max_size(_Getal()));
+        return (_STD min)(
+            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
     }
 
     _NODISCARD _CONSTEXPR20 size_type capacity() const noexcept {
@@ -1936,6 +1949,7 @@ private:
                 _ASAN_VECTOR_CREATE_GUARD;
                 _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
             }
+
             return;
         }
 
@@ -2107,7 +2121,7 @@ _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if constexpr (is_same_v<_Ty, bool>) {
         // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
-        const auto _Min_word_size = (_STD min) (_Left._Myvec.size(), _Right._Myvec.size());
+        const auto _Min_word_size = (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
         const auto _Left_words    = _Left._Myvec._Unchecked_begin();
         const auto _Right_words   = _Right._Myvec._Unchecked_begin();
 
@@ -2134,7 +2148,7 @@ _NODISCARD _CONSTEXPR20 bool operator<(const vector<_Ty, _Alloc>& _Left, const v
         auto _First = _Left._Myvec._Unchecked_begin();
         auto _Other = _Right._Myvec._Unchecked_begin();
 
-        const auto _Last = _First + (_STD min) (_Left._Myvec.size(), _Right._Myvec.size());
+        const auto _Last = _First + (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
 
         for (; _First != _Last; ++_First, (void) ++_Other) {
             using _Comp = _Vbase_compare_three_way<signed char>;
@@ -2952,7 +2966,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
-        constexpr auto _Diff_max  = static_cast<size_type>((numeric_limits<difference_type>::max) ());
+        constexpr auto _Diff_max  = static_cast<size_type>((numeric_limits<difference_type>::max)());
         const size_type _Ints_max = this->_Myvec.max_size();
         if (_Ints_max > _Diff_max / _VBITS) { // max_size bound by difference_type limits
             return _Diff_max;

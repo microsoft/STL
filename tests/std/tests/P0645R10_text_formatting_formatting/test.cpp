@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <exception>
 #include <format>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -818,6 +819,18 @@ void test_float_specs() {
         assert(format("{:.2000}", value) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::hex, 2000).ptr};
+
+        // TRANSITION, extra diagnostics for GH-2449:
+        if (const string str1 = format("{:.2000a}", value); str1 != expected) {
+            cerr << "Encountered sporadic failure GH-2449!\n";
+            cerr << "    str1: \"" << str1 << "\"\n";
+            cerr << "expected: \"" << expected << "\"\n";
+            cerr << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
+            cerr << "You must report it to the STL maintainers.\n";
+            assert(false);
+        }
+
+        // Keep the original assertion, just in case GH-2449 involves very specific codegen:
         assert(format("{:.2000a}", value) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::scientific, 2000).ptr};
@@ -834,6 +847,18 @@ void test_float_specs() {
         assert(format("{:.2000}", 1.0) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::hex, 2000).ptr};
+
+        // TRANSITION, extra diagnostics for GH-2449:
+        if (const string str2 = format("{:.2000a}", 1.0); str2 != expected) {
+            cerr << "Encountered sporadic failure GH-2449!\n";
+            cerr << "    str2: \"" << str2 << "\"\n";
+            cerr << "expected: \"" << expected << "\"\n";
+            cerr << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
+            cerr << "You must report it to the STL maintainers.\n";
+            assert(false);
+        }
+
+        // Keep the original assertion, just in case GH-2449 involves very specific codegen:
         assert(format("{:.2000a}", 1.0) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::scientific, 2000).ptr};
@@ -994,9 +1019,9 @@ void test_spec_replacement_field() {
 }
 template <class charT, class... Args>
 void test_size_helper_impl(const size_t expected_size, const bool expected_is_estimation_exact,
-    const _Basic_format_string<charT, Args...> fmt, const Args&... args) {
-    assert(formatted_size(fmt, args...) == expected_size);
-    assert(formatted_size(locale::classic(), fmt, args...) == expected_size);
+    const _Basic_format_string<charT, Args...> fmt, Args&&... args) {
+    assert(formatted_size(fmt, forward<Args>(args)...) == expected_size);
+    assert(formatted_size(locale::classic(), fmt, forward<Args>(args)...) == expected_size);
 
 #ifndef __clang__ // TRANSITION, clang consteval bug (likely https://github.com/llvm/llvm-project/issues/52648)
     if (_Is_execution_charset_utf8()) {
@@ -1013,7 +1038,7 @@ void test_size_helper_impl(const size_t expected_size, const bool expected_is_es
     basic_string<charT> str;
     {
         str.resize(expected_size);
-        const auto res = format_to_n(str.begin(), signed_size, fmt, args...);
+        const auto res = format_to_n(str.begin(), signed_size, fmt, forward<Args>(args)...);
         assert(res.size == signed_size);
         assert(res.out - str.begin() == signed_size);
         assert(res.out == str.end());
@@ -1021,7 +1046,7 @@ void test_size_helper_impl(const size_t expected_size, const bool expected_is_es
 
         basic_string<charT> locale_str;
         locale_str.resize(expected_size);
-        format_to_n(locale_str.begin(), signed_size, locale::classic(), fmt, args...);
+        format_to_n(locale_str.begin(), signed_size, locale::classic(), fmt, forward<Args>(args)...);
         assert(str == locale_str);
         assert(locale_str.size() == expected_size);
     }
@@ -1029,7 +1054,7 @@ void test_size_helper_impl(const size_t expected_size, const bool expected_is_es
     {
         const auto half_size = expected_size / 2;
         half_str.resize(half_size);
-        const auto res = format_to_n(half_str.begin(), static_cast<ptrdiff_t>(half_size), fmt, args...);
+        const auto res = format_to_n(half_str.begin(), static_cast<ptrdiff_t>(half_size), fmt, forward<Args>(args)...);
         assert(res.size == signed_size);
         assert(static_cast<size_t>(res.out - half_str.begin()) == half_size);
         assert(res.out == half_str.end());
