@@ -1656,7 +1656,7 @@ namespace ranges {
 #endif // _ITERATOR_DEBUG_LEVEL != 0
             }
 
-            _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept {
                 return _Current;
             }
             _NODISCARD constexpr iterator_t<_Vw> base() && noexcept(
@@ -1948,7 +1948,7 @@ namespace ranges {
                 : _Current{_STD move(_It._Current)}, _Parent{_It._Parent} {}
             // clang-format on
 
-            _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept {
                 return _Current;
             }
             _NODISCARD constexpr iterator_t<_Base> base() && noexcept(
@@ -2466,12 +2466,12 @@ namespace ranges {
 
         _NODISCARD constexpr auto size() requires sized_range<_Vw> {
             const auto _Length = _RANGES size(_Range);
-            return (_STD min) (_Length, static_cast<decltype(_Length)>(_Count));
+            return (_STD min)(_Length, static_cast<decltype(_Length)>(_Count));
         }
 
         _NODISCARD constexpr auto size() const requires sized_range<const _Vw> {
             const auto _Length = _RANGES size(_Range);
-            return (_STD min) (_Length, static_cast<decltype(_Length)>(_Count));
+            return (_STD min)(_Length, static_cast<decltype(_Length)>(_Count));
         }
     };
 
@@ -2539,7 +2539,7 @@ namespace ranges {
                     return take_view(_STD forward<_Rng>(_Range), _Count);
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
-                    _Count            = (_STD min) (_RANGES distance(_Range), _Count);
+                    _Count            = (_STD min)(_RANGES distance(_Range), _Count);
                     const auto _First = _RANGES begin(_Range);
 
                     if constexpr (_Strat == _St::_Reconstruct_span) {
@@ -2797,7 +2797,7 @@ namespace ranges {
             requires (!(_Simple_view<_Vw> && random_access_range<const _Vw> && sized_range<const _Vw>)) {
             // clang-format on
             if constexpr (sized_range<_Vw> && random_access_range<_Vw>) {
-                const auto _Offset = (_STD min) (_RANGES distance(_Range), _Count);
+                const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
                 return _RANGES begin(_Range) + _Offset;
             } else {
                 if constexpr (forward_range<_Vw>) {
@@ -2818,7 +2818,7 @@ namespace ranges {
         _NODISCARD constexpr auto begin() const
             requires random_access_range<const _Vw> && sized_range<const _Vw> {
             // clang-format on
-            const auto _Offset = (_STD min) (_RANGES distance(_Range), _Count);
+            const auto _Offset = (_STD min)(_RANGES distance(_Range), _Count);
             return _RANGES begin(_Range) + _Offset;
         }
 
@@ -2909,7 +2909,7 @@ namespace ranges {
                     return drop_view(_STD forward<_Rng>(_Range), _Count);
                 } else {
                     // it's a "reconstructible range"; return the same kind of range with a restricted extent
-                    _Count = (_STD min) (_RANGES distance(_Range), _Count);
+                    _Count = (_STD min)(_RANGES distance(_Range), _Count);
 
                     if constexpr (_Strat == _St::_Reconstruct_span) {
                         return span(_Ubegin(_Range) + _Count, _Uend(_Range));
@@ -3675,7 +3675,7 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Outer_iter<_Const>>) // strengthened
                 : _It{_STD move(_It_)} {}
 
-            _NODISCARD constexpr const iterator_t<_BaseTy>& base() const& noexcept /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_BaseTy>& base() const& noexcept {
                 return _It._Get_current();
             }
 
@@ -4407,7 +4407,7 @@ namespace ranges {
                 : _Current{_STD move(_It._Current)} {}
             // clang-format on
 
-            _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept /* strengthened */ {
+            _NODISCARD constexpr const iterator_t<_Base>& base() const& noexcept {
                 return _Current;
             }
 
@@ -4717,9 +4717,9 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<elements_view<_Rng, _Index>> = enable_borrowed_range<_Rng>;
 
     template <class _Rng>
-    using keys_view = elements_view<views::all_t<_Rng>, 0>;
+    using keys_view = elements_view<_Rng, 0>;
     template <class _Rng>
-    using values_view = elements_view<views::all_t<_Rng>, 1>;
+    using values_view = elements_view<_Rng, 1>;
 
     namespace views {
         template <size_t _Index>
