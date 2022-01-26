@@ -38,8 +38,9 @@ std/language.support/support.exception/except.nested/rethrow_if_nested.pass.cpp 
 # Testing nonstandard behavior
 std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
 
-# This test has undefined behavior under N4842 [basic.start.term]/6
+# Tests with undefined behavior under N4842 [basic.start.term]/6 (detached threads)
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
+std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
 
 # libcxx is incorrect on what the type passed to allocator construct should be
 # See https://reviews.llvm.org/D61364
@@ -637,6 +638,9 @@ std/language.support/support.limits/support.limits.general/iterator.version.pass
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 std/language.support/support.limits/support.limits.general/chrono.version.pass.cpp FAIL
 
+# Test expects __cpp_lib_format to have the old value 201907L for P0645R10; we define the C++20 value 202106L for P2216R3.
+std/language.support/support.limits/support.limits.general/format.version.pass.cpp FAIL
+
 # We unconditionally define __cpp_lib_addressof_constexpr; test error says it
 # "should not be defined when TEST_HAS_BUILTIN(__builtin_addressof) || TEST_GCC_VER >= 700 is not defined!"
 std/language.support/support.limits/support.limits.general/memory.version.pass.cpp FAIL
@@ -650,12 +654,6 @@ std/language.support/support.limits/support.limits.general/variant.version.pass.
 std/utilities/memory/util.dynamic.safety/get_pointer_safety.pass.cpp FAIL
 std/utilities/memory/util.dynamic.safety/declare_no_pointers.pass.cpp FAIL
 std/utilities/memory/util.dynamic.safety/declare_reachable.pass.cpp FAIL
-
-# Clang 12 emits a warning-as-error; this has likely been fixed upstream already:
-# error: temporary whose address is used as value of local variable 'it2' will be destroyed at the end of the full-expression [-Werror,-Wdangling]
-std/iterators/predef.iterators/reverse.iterators/reverse.iter.ops/reverse.iter.op-=/difference_type.pass.cpp:1 FAIL
-std/iterators/predef.iterators/reverse.iterators/reverse.iter.ops/reverse.iter.op+=/difference_type.pass.cpp:1 FAIL
-std/iterators/predef.iterators/reverse.iterators/reverse.iter.ops/reverse.iter.op=/reverse_iterator.pass.cpp:1 FAIL
 
 
 # *** LIKELY STL BUGS ***

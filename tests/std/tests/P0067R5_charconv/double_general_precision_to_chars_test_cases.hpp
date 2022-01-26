@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
+#ifndef DOUBLE_GENERAL_PRECISION_TO_CHARS_TEST_CASES_HPP
+#define DOUBLE_GENERAL_PRECISION_TO_CHARS_TEST_CASES_HPP
 
 #include <charconv>
 
@@ -5058,3 +5059,5 @@ inline constexpr DoublePrecisionToCharsTestCase double_general_precision_to_char
     {0x1.f8b0f962cdffbp+205, chars_format::general, 51, "1.01375957392225305727423222620636224221808910954041e+62"},
     {0x1.f8b0f962cdffbp+205, chars_format::general, 55, "1.013759573922253057274232226206362242218089109540405973e+62"},
 };
+
+#endif // DOUBLE_GENERAL_PRECISION_TO_CHARS_TEST_CASES_HPP

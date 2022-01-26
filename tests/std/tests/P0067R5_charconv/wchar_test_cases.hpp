@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#pragma once
+#ifndef WCHAR_TEST_CASES_HPP
+#define WCHAR_TEST_CASES_HPP
 
 #include <charconv>
 
@@ -165,3 +166,5 @@ inline constexpr FloatToWideTestCase float_to_wide_test_cases[] = {
     // {0x1.729p-1f, chars_format::hex, L"1.729p-1"},
     // {-0x1.729p-1f, chars_format::hex, L"-1.729p-1"},
 };
+
+#endif // WCHAR_TEST_CASES_HPP
