@@ -340,5 +340,24 @@ void test_main() { // test basic workings of valarray definitions
     CHECK_INT(v0.max(), 4);
     CHECK_INT(v0.min(), 2);
 
+    // test range-based for
+    v0 = Mycont();
+    for (char c : v0) {
+        (void) c;
+        CHECK(false);
+    }
+
+    v0 = Mycont("\1\1\1", 3);
+    for (char c : v0) {
+        CHECK_INT(c, 1);
+    }
+
+    v0  = Mycont("\1\2\3", 3);
+    val = 0;
+    for (char c : v0) {
+        val += c;
+    }
+    CHECK_INT(val, 6);
+
     test_math();
 }

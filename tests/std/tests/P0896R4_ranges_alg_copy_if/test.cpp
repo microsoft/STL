@@ -20,7 +20,7 @@ struct not_pair {
     auto operator<=>(not_pair const&) const = default;
 
     template <size_t I>
-    constexpr friend auto&& get(not_pair& np) noexcept {
+    friend constexpr auto&& get(not_pair& np) noexcept {
         if constexpr (I == 0) {
             return np.first;
         } else {
@@ -29,7 +29,7 @@ struct not_pair {
         }
     }
     template <size_t I>
-    constexpr friend auto&& get(not_pair const& np) noexcept {
+    friend constexpr auto&& get(not_pair const& np) noexcept {
         if constexpr (I == 0) {
             return np.first;
         } else {
@@ -38,7 +38,7 @@ struct not_pair {
         }
     }
     template <size_t I>
-    constexpr friend auto&& get(not_pair&& np) noexcept {
+    friend constexpr auto&& get(not_pair&& np) noexcept {
         if constexpr (I == 0) {
             return move(np).first;
         } else {
@@ -47,7 +47,7 @@ struct not_pair {
         }
     }
     template <size_t I>
-    constexpr friend auto&& get(not_pair const&& np) noexcept {
+    friend constexpr auto&& get(not_pair const&& np) noexcept {
         if constexpr (I == 0) {
             return move(np).first;
         } else {

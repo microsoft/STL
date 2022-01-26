@@ -223,6 +223,7 @@ void test_main() { // test basic workings of functional definitions
     test_pointer(first, last, dest);
 
     CSTD size_t hash_val = STD hash<int>()(3);
+    (void) hash_val;
 
     hash_val = STD hash<double>()(3.0);
     hash_val = STD hash<STD string>()(STD string("abc"));

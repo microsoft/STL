@@ -1196,8 +1196,8 @@ public:
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min) (static_cast<size_type>((numeric_limits<difference_type>::max) ()),
-            _Alnode_traits::max_size(_Getal()));
+        return (_STD min)(
+            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alnode_traits::max_size(_Getal()));
     }
 
     _NODISCARD bool empty() const noexcept {
@@ -1296,6 +1296,14 @@ private:
         return _Last._Ptr;
     }
 
+    size_type _Erase(const pair<_Nodeptr, _Nodeptr> _Where) noexcept {
+        const _Unchecked_const_iterator _First(_Where.first, nullptr);
+        const _Unchecked_const_iterator _Last(_Where.second, nullptr);
+        const auto _Num = static_cast<size_type>(_STD distance(_First, _Last));
+        _Erase_unchecked(_First, _Last);
+        return _Num;
+    }
+
 public:
     template <class _Iter = iterator, enable_if_t<!is_same_v<_Iter, const_iterator>, int> = 0>
     iterator erase(iterator _Where) noexcept /* strengthened */ {
@@ -1321,13 +1329,16 @@ public:
     }
 
     size_type erase(const key_type& _Keyval) noexcept(noexcept(_Eqrange(_Keyval))) /* strengthened */ {
-        const auto _Where = _Eqrange(_Keyval);
-        const _Unchecked_const_iterator _First(_Where.first, nullptr);
-        const _Unchecked_const_iterator _Last(_Where.second, nullptr);
-        const auto _Num = static_cast<size_type>(_STD distance(_First, _Last));
-        _Erase_unchecked(_First, _Last);
-        return _Num;
+        return _Erase(_Eqrange(_Keyval));
     }
+
+#if _HAS_CXX23
+    template <class _Kx, class _Mycomp = key_compare, class = typename _Mycomp::is_transparent,
+        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
+    size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Eqrange(_Keyval))) /* strengthened */ {
+        return _Erase(_Eqrange(_Keyval));
+    }
+#endif // _HAS_CXX23
 
     void clear() noexcept {
         const auto _Scary = _Get_scary();
@@ -1728,6 +1739,19 @@ public:
 
         return extract(_Where);
     }
+
+#if _HAS_CXX23
+    template <class _Kx, class _Mycomp = key_compare, class = typename _Mycomp::is_transparent,
+        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
+    node_type extract(_Kx&& _Keyval) {
+        const const_iterator _Where = find(_Keyval);
+        if (_Where == end()) {
+            return node_type{};
+        }
+
+        return extract(_Where);
+    }
+#endif // _HAS_CXX23
 
     auto insert(node_type&& _Handle) {
         if (_Handle.empty()) {

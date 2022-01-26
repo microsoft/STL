@@ -67,8 +67,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <Lib Include="$(CrtLibPath)\msvcprt$(BuildSuffix)_atomic_wait$(ClrLibSuffix).lib">
             <IncludeInChameleonLib>false</IncludeInChameleonLib>
         </Lib>
-        <Lib Include="$(MSBuildThisFileDirectory)\..\..\aliases\$(BuildArchitecture)\std_init_once_begin_initialize.obj" />
-        <Lib Include="$(MSBuildThisFileDirectory)\..\..\aliases\$(BuildArchitecture)\std_init_once_complete.obj" />
     </ItemGroup>
 
     <Import Project="$(VCToolsRootPath)\crt\crt_build.targets"/>
