@@ -267,6 +267,7 @@
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P2372R3 Fixing Locale Handling In chrono Formatters
 // P2415R2 What Is A view?
+// P2418R2 Add Support For std::generator-like Types To std::format
 // P2432R1 Fix istream_view
 // P????R? directory_entry::clear_cache()
 
@@ -1291,7 +1292,7 @@
 #define __cpp_lib_erase_if                202002L
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
-#define __cpp_lib_format 202106L // P2216R3 std::format Improvements
+#define __cpp_lib_format 202110L
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
