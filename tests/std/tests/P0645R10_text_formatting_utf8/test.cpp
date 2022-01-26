@@ -22,7 +22,8 @@ void test_multibyte_format_strings() {
 
     {
         try {
-            (void) format("{:\x9f\x8f\x88<10}"sv, 42); // Bad fill character encoding: missing lead byte before \x9f
+            // Bad fill character encoding: missing lead byte before \x9f
+            (void) vformat("{:\x9f\x8f\x88<10}"sv, make_format_args(42));
             assert(false);
         } catch (const format_error&) {
         }
@@ -153,7 +154,7 @@ int main() {
     assert(setlocale(LC_ALL, ".932") != nullptr);
     run_tests();
 
-#ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
+#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
     assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
     run_tests();
 #endif
