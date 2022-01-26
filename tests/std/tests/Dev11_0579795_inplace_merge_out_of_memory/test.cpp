@@ -186,7 +186,7 @@ void test_stability() {
         const auto partitionPoint         = stable_partition(a.begin(), a.end(), [&](const int_ish& x) {
             ++predCalls;
             return x.value < 50;
-        });
+                });
         const array<int_ish, 100> correct = {
             {20, 13, 29, 28, 17, 44, 48, 26, 47, 43, 20, 19, 35, 42, 39, 18, 33, 26, 40, 16, 27, 11, 16, 28, 21, 30, 21,
                 37, 20, 41, 15, 42, 26, 47, 41, 46, 41, 58, 85, 91, 99, 64, 60, 86, 89, 51, 96, 66, 75, 65, 99, 80, 66,

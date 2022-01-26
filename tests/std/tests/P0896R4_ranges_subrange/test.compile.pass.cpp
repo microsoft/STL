@@ -4,8 +4,8 @@
 // Covers ranges::view_interface and ranges::subrange
 
 #include <cassert>
-#include <concepts>
 #include <forward_list>
+#include <istream>
 #include <list>
 #include <ranges>
 #include <string_view>
@@ -24,7 +24,7 @@ using std::output_iterator_tag, std::input_iterator_tag, std::forward_iterator_t
 int main() {} // COMPILE-ONLY
 
 void test_LWG_3470() {
-    // LWG-3470: "convertible-to-non-slicing seems to reject valid case"
+    // LWG-3470 relaxed the "convertible-to-non-slicing" requirements to allow this non-slicing case
     int a[]                 = {1, 2, 3};
     int* b[]                = {&a[2], &a[0], &a[1]};
     [[maybe_unused]] auto c = std::ranges::subrange<const int* const*>(b);
@@ -1484,3 +1484,44 @@ namespace test_subrange {
     STATIC_ASSERT(test_tuple<subrange<int*, std::unreachable_sentinel_t, subrange_kind::sized>>());
     STATIC_ASSERT(test_tuple<subrange<int*, std::unreachable_sentinel_t, subrange_kind::unsized>>());
 } // namespace test_subrange
+
+namespace test_lwg_3589 {
+    // LWG-3589 added a Constraint to std::get<0>(const subrange&) to require the iterator type to be copyable
+    template <class T, size_t I>
+    concept CanGet = requires {
+        std::get<I>(std::declval<T>());
+    };
+
+    template <class T, size_t I>
+    concept CanRangesGet = requires {
+        ranges::get<I>(std::declval<T>());
+    };
+
+    template <class I, class S>
+    constexpr bool test() {
+        using ranges::subrange;
+
+        STATIC_ASSERT(std::input_iterator<I>);
+        STATIC_ASSERT(std::sentinel_for<S, I>);
+
+        STATIC_ASSERT(CanGet<const subrange<I, S>&, 0> == std::copyable<I>);
+        STATIC_ASSERT(CanGet<const subrange<I, S>&, 1>);
+        STATIC_ASSERT(!CanGet<const subrange<I, S>&, 2>);
+        STATIC_ASSERT(CanGet<subrange<I, S>, 0>);
+        STATIC_ASSERT(CanGet<subrange<I, S>, 1>);
+        STATIC_ASSERT(!CanGet<subrange<I, S>, 2>);
+
+        STATIC_ASSERT(CanRangesGet<const subrange<I, S>&, 0> == std::copyable<I>);
+        STATIC_ASSERT(CanRangesGet<const subrange<I, S>&, 1>);
+        STATIC_ASSERT(!CanRangesGet<const subrange<I, S>&, 2>);
+        STATIC_ASSERT(CanRangesGet<subrange<I, S>, 0>);
+        STATIC_ASSERT(CanRangesGet<subrange<I, S>, 1>);
+        STATIC_ASSERT(!CanRangesGet<subrange<I, S>, 2>);
+
+        return true;
+    }
+
+    // Validate with a copyable iterator type, and with a move-only iterator type
+    STATIC_ASSERT(test<int*, int*>());
+    STATIC_ASSERT(test<ranges::iterator_t<ranges::istream_view<int>>, ranges::sentinel_t<ranges::istream_view<int>>>());
+} // namespace test_lwg_3589
