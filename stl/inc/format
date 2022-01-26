@@ -3215,12 +3215,12 @@ _NODISCARD string format(const _Fmt_string<_Types...> _Fmt, _Types&&... _Args) {
         // The Standard does not allow op passed to resize_and_overwrite to throw an exception, but it's not a concern
         // for our implementation
         _Str._Resize_and_overwrite(_Estimated_size, [&](char* _Out, size_t _Size) {
-            _STD format_to(_Out, _Fmt, _Args...);
+            _STD format_to(_Out, _Fmt, _STD forward<_Types>(_Args)...);
             return _Size;
         });
     } else {
         _Str.reserve(_Estimated_size);
-        _STD format_to(back_insert_iterator{_Str}, _Fmt, _Args...);
+        _STD format_to(back_insert_iterator{_Str}, _Fmt, _STD forward<_Types>(_Args)...);
     }
     return _Str;
 }
@@ -3233,12 +3233,12 @@ _NODISCARD wstring format(const _Fmt_wstring<_Types...> _Fmt, _Types&&... _Args)
         // The Standard does not allow op passed to resize_and_overwrite to throw an exception, but it's not a concern
         // for our implementation
         _Str._Resize_and_overwrite(_Estimated_size, [&](wchar_t* _Out, size_t _Size) {
-            _STD format_to(_Out, _Fmt, _Args...);
+            _STD format_to(_Out, _Fmt, _STD forward<_Types>(_Args)...);
             return _Size;
         });
     } else {
         _Str.reserve(_Estimated_size);
-        _STD format_to(back_insert_iterator{_Str}, _Fmt, _Args...);
+        _STD format_to(back_insert_iterator{_Str}, _Fmt, _STD forward<_Types>(_Args)...);
     }
     return _Str;
 }
@@ -3251,12 +3251,12 @@ _NODISCARD string format(const locale& _Loc, const _Fmt_string<_Types...> _Fmt, 
         // The Standard does not allow op passed to resize_and_overwrite to throw an exception, but it's not a concern
         // for our implementation
         _Str._Resize_and_overwrite(_Estimated_size, [&](char* _Out, size_t _Size) {
-            _STD format_to(_Out, _Loc, _Fmt, _Args...);
+            _STD format_to(_Out, _Loc, _Fmt, _STD forward<_Types>(_Args)...);
             return _Size;
         });
     } else {
         _Str.reserve(_Estimated_size);
-        _STD format_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args...);
+        _STD format_to(back_insert_iterator{_Str}, _Loc, _Fmt, _STD forward<_Types>(_Args)...);
     }
     return _Str;
 }
@@ -3269,12 +3269,12 @@ _NODISCARD wstring format(const locale& _Loc, const _Fmt_wstring<_Types...> _Fmt
         // The Standard does not allow op passed to resize_and_overwrite to throw an exception, but it's not a concern
         // for our implementation
         _Str._Resize_and_overwrite(_Estimated_size, [&](wchar_t* _Out, size_t _Size) {
-            _STD format_to(_Out, _Loc, _Fmt, _Args...);
+            _STD format_to(_Out, _Loc, _Fmt, _STD forward<_Types>(_Args)...);
             return _Size;
         });
     } else {
         _Str.reserve(_Estimated_size);
-        _STD format_to(back_insert_iterator{_Str}, _Loc, _Fmt, _Args...);
+        _STD format_to(back_insert_iterator{_Str}, _Loc, _Fmt, _STD forward<_Types>(_Args)...);
     }
     return _Str;
 }
