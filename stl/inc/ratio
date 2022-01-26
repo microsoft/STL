@@ -19,11 +19,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-template <intmax_t _Val>
-struct _Abs : integral_constant<intmax_t, (_Val < 0 ? -_Val : _Val)> {}; // computes absolute value of _Val
+_NODISCARD constexpr intmax_t _Abs(const intmax_t _Val) noexcept {
+    return _Val < 0 ? -_Val : _Val;
+}
 
 template <intmax_t _Ax, intmax_t _Bx, bool _Sfinae = false,
-    bool _Good = (_Abs<_Ax>::value <= INTMAX_MAX / (_Bx == 0 ? 1 : _Abs<_Bx>::value))>
+    bool _Good = _Abs(_Ax) <= INTMAX_MAX / (_Bx == 0 ? 1 : _Abs(_Bx))>
 struct _Safe_mult : integral_constant<intmax_t, _Ax * _Bx> {}; // computes _Ax * _Bx without overflow
 
 template <intmax_t _Ax, intmax_t _Bx, bool _Sfinae>
@@ -31,36 +32,37 @@ struct _Safe_mult<_Ax, _Bx, _Sfinae, false> { // _Ax * _Bx would overflow
     static_assert(_Sfinae, "integer arithmetic overflow");
 };
 
-template <intmax_t _Val>
-struct _Sign_of : integral_constant<intmax_t, (_Val < 0 ? -1 : 1)> {}; // computes sign of _Val
+_NODISCARD constexpr intmax_t _Sign_of(const intmax_t _Val) noexcept {
+    return _Val < 0 ? -1 : 1;
+}
 
-template <intmax_t _Ax, intmax_t _Bx, bool _Good, bool _Also_good>
-struct _Safe_addX : integral_constant<intmax_t, _Ax + _Bx> {}; // computes _Ax + _Bx without overflow
+inline void _Safe_add_integer_arithmetic_overflow_error() noexcept {}
 
-template <intmax_t _Ax, intmax_t _Bx>
-struct _Safe_addX<_Ax, _Bx, false, false> { // _Ax + _Bx would overflow
-    static_assert(_Always_false<_Safe_addX>, "integer arithmetic overflow");
-};
+_NODISCARD constexpr intmax_t _Safe_add(const intmax_t _Ax, const intmax_t _Bx) noexcept {
+    if (_Sign_of(_Ax) == _Sign_of(_Bx) && _Abs(_Ax) > INTMAX_MAX - _Abs(_Bx)) {
+        _Safe_add_integer_arithmetic_overflow_error();
+    }
 
-template <intmax_t _Ax, intmax_t _Bx>
-struct _Safe_add : _Safe_addX<_Ax, _Bx, _Sign_of<_Ax>::value != _Sign_of<_Bx>::value,
-                       (_Abs<_Ax>::value <= INTMAX_MAX - _Abs<_Bx>::value)>::type {
-    // computes _Ax + _Bx, forbids overflow
-};
+    return _Ax + _Bx;
+}
 
-template <intmax_t _Ax, intmax_t _Bx>
-struct _GcdX : _GcdX<_Bx, _Ax % _Bx>::type {}; // computes GCD of _Ax and _Bx
+_NODISCARD constexpr intmax_t _Gcd(intmax_t _Ax, intmax_t _Bx) noexcept {
+    // computes GCD of abs(_Ax) and abs(_Bx)
+    if (_Ax == 0 && _Bx == 0) {
+        return 1; // contrary to mathematical convention; avoids division by 0 in ratio_less
+    }
 
-template <intmax_t _Ax>
-struct _GcdX<_Ax, 0> : integral_constant<intmax_t, _Ax> {}; // computes GCD of _Ax and 0
+    _Ax = _Abs(_Ax);
+    _Bx = _Abs(_Bx);
 
-template <intmax_t _Ax, intmax_t _Bx>
-struct _Gcd : _GcdX<_Abs<_Ax>::value, _Abs<_Bx>::value>::type {}; // computes GCD of abs(_Ax) and abs(_Bx)
+    while (_Bx != 0) {
+        const intmax_t _Ax2 = _Ax;
+        _Ax                 = _Bx;
+        _Bx                 = _Ax2 % _Bx;
+    }
 
-template <>
-struct _Gcd<0, 0> : integral_constant<intmax_t, 1> {
-    // contrary to mathematical convention; avoids division by 0 in ratio_less
-};
+    return _Ax;
+}
 
 template <intmax_t _Nx, intmax_t _Dx = 1>
 struct ratio { // holds the ratio of _Nx to _Dx
@@ -68,10 +70,8 @@ struct ratio { // holds the ratio of _Nx to _Dx
     static_assert(-INTMAX_MAX <= _Nx, "numerator too negative");
     static_assert(-INTMAX_MAX <= _Dx, "denominator too negative");
 
-    static constexpr intmax_t num =
-        _Sign_of<_Nx>::value * _Sign_of<_Dx>::value * _Abs<_Nx>::value / _Gcd<_Nx, _Dx>::value;
-
-    static constexpr intmax_t den = _Abs<_Dx>::value / _Gcd<_Nx, _Dx>::value;
+    static constexpr intmax_t num = _Sign_of(_Nx) * _Sign_of(_Dx) * _Abs(_Nx) / _Gcd(_Nx, _Dx);
+    static constexpr intmax_t den = _Abs(_Dx) / _Gcd(_Nx, _Dx);
 
     using type = ratio<num, den>;
 };
@@ -91,12 +91,11 @@ struct _Ratio_add { // add two ratios
     static constexpr intmax_t _Nx2 = _Rx2::num;
     static constexpr intmax_t _Dx2 = _Rx2::den;
 
-    static constexpr intmax_t _Gx = _Gcd<_Dx1, _Dx2>::value;
+    static constexpr intmax_t _Gx = _Gcd(_Dx1, _Dx2);
 
     // typename ratio<>::type is necessary here
-    using type =
-        typename ratio<_Safe_add<_Safe_mult<_Nx1, _Dx2 / _Gx>::value, _Safe_mult<_Nx2, _Dx1 / _Gx>::value>::value,
-            _Safe_mult<_Dx1, _Dx2 / _Gx>::value>::type;
+    using type = typename ratio<_Safe_add(_Safe_mult<_Nx1, _Dx2 / _Gx>::value, _Safe_mult<_Nx2, _Dx1 / _Gx>::value),
+        _Safe_mult<_Dx1, _Dx2 / _Gx>::value>::type;
 };
 
 template <class _Rx1, class _Rx2>
@@ -124,8 +123,8 @@ struct _Ratio_multiply { // multiply two ratios
     static constexpr intmax_t _Nx2 = _Rx2::num;
     static constexpr intmax_t _Dx2 = _Rx2::den;
 
-    static constexpr intmax_t _Gx = _Gcd<_Nx1, _Dx2>::value;
-    static constexpr intmax_t _Gy = _Gcd<_Nx2, _Dx1>::value;
+    static constexpr intmax_t _Gx = _Gcd(_Nx1, _Dx2);
+    static constexpr intmax_t _Gy = _Gcd(_Nx2, _Dx1);
 
     using _Num = _Safe_mult<_Nx1 / _Gx, _Nx2 / _Gy, true>;
     using _Den = _Safe_mult<_Dx1 / _Gy, _Dx2 / _Gx, true>;
