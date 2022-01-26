@@ -241,7 +241,7 @@ void test_main() { // test basic workings of forward_list definitions
     CHECK(it == ++v0.begin());
     CHECK_INT(v0.front(), 'b');
     CHECK_INT(*++v0.begin(), 'b');
-    CHECK_INT(*++++v0.begin(), 'a');
+    CHECK_INT(*++ ++v0.begin(), 'a');
     it = v0.insert_after(before_end(v0), v4.begin(), v4.end());
     CHECK(++it == v0.end());
     CHECK_INT(back(v0), back(v4));

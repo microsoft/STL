@@ -59,7 +59,7 @@ void test() {
     constexpr T pi_2     = T{1.5707963267948966};
     constexpr T two      = T{2};
     constexpr T pi       = T{3.141592653589793};
-    constexpr T huge     = (numeric_limits<T>::max) ();
+    constexpr T huge     = (numeric_limits<T>::max)();
     constexpr T inf      = numeric_limits<T>::infinity();
 
     // arg
