@@ -328,6 +328,31 @@ constexpr bool test_devcom_1559808() {
     return true;
 }
 
+constexpr bool test_LWG_3590() {
+    struct weird_view : ranges::view_interface<weird_view> {
+        weird_view()                  = default;
+        weird_view(const weird_view&) = default;
+        weird_view& operator=(weird_view&&) = default;
+
+        constexpr const int* begin() const {
+            return &inner;
+        }
+        constexpr const int* end() const {
+            return &inner + 1;
+        }
+
+        int inner = 42;
+    };
+    STATIC_ASSERT(ranges::view<weird_view>);
+    STATIC_ASSERT(copy_constructible<weird_view>);
+    STATIC_ASSERT(!copyable<weird_view>);
+
+    const auto r                                         = views::split(weird_view{}, 0);
+    [[maybe_unused]] const same_as<weird_view> auto copy = r.base();
+
+    return true;
+}
+
 int main() {
     STATIC_ASSERT(instantiation_test());
     instantiation_test();
@@ -336,4 +361,7 @@ int main() {
     STATIC_ASSERT(test_devcom_1559808());
 #endif // TRANSITION, DevCom-1516290
     test_devcom_1559808();
+
+    STATIC_ASSERT(test_LWG_3590());
+    assert(test_LWG_3590());
 }
