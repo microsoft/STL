@@ -1471,7 +1471,7 @@ struct _Format_arg_traits {
     // clang-format on
 
     template <class _Ty>
-    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<remove_volatile_t<_Ty>>()));
+    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty>()));
 
     template <class _Ty>
     static constexpr size_t _Storage_size = sizeof(_Storage_type<remove_cvref_t<_Ty>>);
