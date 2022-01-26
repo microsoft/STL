@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX17
-#pragma message(_WARNING_MESSAGE("STL4033", "The contents of <filesystem> are available only with C++17 or later."))
+#pragma message(_WARNING_MESSAGE("STL4034", "The contents of <filesystem> are available only with C++17 or later."))
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <algorithm>
 #include <chrono>
@@ -3881,7 +3881,7 @@ namespace filesystem {
         if (_Error == __std_win_error::_Success) {
             _Result = file_time_type{file_time_type::duration{_Stats._Last_write_time}};
         } else {
-            _Result = (file_time_type::min) ();
+            _Result = (file_time_type::min)();
         }
 
         return _Error;
