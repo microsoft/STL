@@ -30,11 +30,33 @@ void __asan_describe_address(void*) noexcept;
 #endif // ASan instrumentation enabled
 
 struct non_trivial_can_throw {
-    non_trivial_can_throw() {}
+    non_trivial_can_throw() {
+        ++i;
+        if (i == 0) {
+            throw i;
+        }
+    }
+
+    non_trivial_can_throw(const non_trivial_can_throw&) {
+        ++i;
+        if (i == 0) {
+            throw i;
+        }
+    }
+
+    non_trivial_can_throw& operator=(const non_trivial_can_throw&) {
+        return *this;
+    }
+
+    unsigned int i = 0;
 };
 
 struct non_trivial_cannot_throw {
-    non_trivial_cannot_throw() noexcept {}
+    non_trivial_cannot_throw() noexcept {
+        ++i;
+    }
+
+    unsigned int i = 0;
 };
 
 struct throw_on_construction {
@@ -318,6 +340,23 @@ void test_move_assign() {
     v2 = move(v1);
     assert(verify_vector(v1));
     assert(verify_vector(v2));
+
+    vector<T, Alloc> v3;
+    vector<T, Alloc> v4;
+    assert(verify_vector(v3));
+    assert(verify_vector(v4));
+
+    v3.reserve(v3.capacity() + 1);
+    assert(verify_vector(v3));
+    v3.resize(v3.capacity() + 1, T());
+    assert(verify_vector(v3));
+    v3.reserve(v3.capacity() + 1);
+    assert(verify_vector(v3));
+    v4.resize(v3.capacity(), T());
+    assert(verify_vector(v4));
+    v3 = move(v4);
+    assert(verify_vector(v3));
+    assert(verify_vector(v4));
 }
 
 template <class Alloc>
@@ -420,17 +459,29 @@ void test_assign() {
     assert(verify_vector(v1));
     v1.assign(v3.begin(), v3.end());
     assert(verify_vector(v1));
+    v1.reserve(v1.size() + 1);
+    assert(verify_vector(v1));
+    vector<T, Alloc> larger(v1.capacity());
+    v1.assign(larger.begin(), larger.end());
+    assert(verify_vector(v1));
+
     v1.assign(t1.begin(), t1.end());
     assert(verify_vector(v1));
     v1.assign(t2.begin(), t2.end());
     assert(verify_vector(v1));
     v1.assign(t1.begin(), t1.end());
     assert(verify_vector(v1));
+
     v1.assign(v3.begin(), v3.end());
     assert(verify_vector(v1));
     v1.assign(v2.begin(), v2.end());
     assert(verify_vector(v1));
+
     v1.assign(N, T());
+    assert(verify_vector(v1));
+    v1.reserve(v1.size() + 1);
+    assert(verify_vector(v1));
+    v1.assign(v1.capacity(), T());
     assert(verify_vector(v1));
 
     vector<T, Alloc> v4;
@@ -450,6 +501,12 @@ void test_resize() {
     v.resize(N, T());
     assert(verify_vector(v));
     v.resize(1, T());
+    assert(verify_vector(v));
+    v.resize(v.capacity(), T());
+    assert(verify_vector(v));
+    v.resize(v.size() - 1, T());
+    assert(verify_vector(v));
+    v.resize(v.capacity() + N, T());
     assert(verify_vector(v));
 }
 
@@ -865,6 +922,44 @@ void test_insert_n_throw() {
 }
 
 template <class Alloc>
+void test_clear() {
+    using T = typename Alloc::value_type;
+
+    vector<T, Alloc> v;
+    v.push_back(T());
+    v.assign(v.capacity() + 1, T());
+    assert(verify_vector(v));
+    v.clear();
+    assert(verify_vector(v));
+    v.clear();
+    assert(verify_vector(v));
+}
+
+template <class Alloc>
+void test_empty() {
+    using T = typename Alloc::value_type;
+
+    vector<T, Alloc> v1;
+    v1.clear();
+    v1.resize(0);
+    v1.shrink_to_fit();
+    v1.assign(0, T());
+    v1.assign({});
+    v1 = {};
+
+    vector<T, Alloc> v2;
+    v1.assign(v2.begin(), v2.end());
+
+    input_iterator_tester<T, 11> in;
+    auto e = in.end();
+    v1.assign(e, e); // empty range of input iterators
+
+    vector<T, Alloc> v3;
+    v1 = v3;
+    v3 = move(v1);
+}
+
+template <class Alloc>
 void run_tests() {
     test_push_pop<Alloc>();
     test_reserve_shrink<Alloc>();
@@ -876,6 +971,8 @@ void run_tests() {
     test_insert_range<Alloc>();
     test_assign<Alloc>();
     test_resize<Alloc>();
+    test_clear<Alloc>();
+    test_empty<Alloc>();
 }
 
 template <class T, template <class, class, class> class AllocT>

@@ -557,7 +557,7 @@ public:
     // clang-format off
     template <class _OIter, class _OSe>
         requires _Not_same_as<_Variantish<_OIter, _OSe>, _Variantish>
-    _Variantish(const _Variantish<_OIter, _OSe>& _That) noexcept(
+    constexpr _Variantish(const _Variantish<_OIter, _OSe>& _That) noexcept(
         is_nothrow_constructible_v<_It, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>)
         : _Contains{_That._Contains} {
         // clang-format on
@@ -574,11 +574,11 @@ public:
     }
 
     // clang-format off
-    _Variantish(const _Variantish&) requires is_trivially_copy_constructible_v<_It>
+    constexpr _Variantish(const _Variantish&) requires is_trivially_copy_constructible_v<_It>
         && is_trivially_copy_constructible_v<_Se> = default;
     // clang-format on
 
-    _Variantish(const _Variantish& _That) noexcept(
+    constexpr _Variantish(const _Variantish& _That) noexcept(
         is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>)
         : _Contains{_That._Contains} {
         switch (_Contains) {
@@ -594,11 +594,11 @@ public:
     }
 
     // clang-format off
-    _Variantish(_Variantish&&) requires is_trivially_move_constructible_v<_It>
+    constexpr _Variantish(_Variantish&&) requires is_trivially_move_constructible_v<_It>
         && is_trivially_move_constructible_v<_Se> = default;
     // clang-format on
 
-    _Variantish(_Variantish&& _That) noexcept(
+    constexpr _Variantish(_Variantish&& _That) noexcept(
         is_nothrow_move_constructible_v<_It>&& is_nothrow_move_constructible_v<_Se>)
         : _Contains{_That._Contains} {
         switch (_Contains) {
@@ -614,15 +614,15 @@ public:
     }
 
     // clang-format off
-    ~_Variantish() requires is_trivially_destructible_v<_It> && is_trivially_destructible_v<_Se> = default;
+    constexpr ~_Variantish() requires is_trivially_destructible_v<_It> && is_trivially_destructible_v<_Se> = default;
     // clang-format on
 
-    ~_Variantish() {
+    constexpr ~_Variantish() {
         _Raw_clear();
     }
 
     // clang-format off
-    _Variantish& operator=(const _Variantish&) requires is_trivially_destructible_v<_It>
+    constexpr _Variantish& operator=(const _Variantish&) requires is_trivially_destructible_v<_It>
         && is_trivially_destructible_v<_Se>
         && is_trivially_copy_constructible_v<_It>
         && is_trivially_copy_constructible_v<_Se>
@@ -630,7 +630,7 @@ public:
         && is_trivially_copy_assignable_v<_Se> = default;
     // clang-format on
 
-    _Variantish& operator=(const _Variantish& _That) noexcept(
+    constexpr _Variantish& operator=(const _Variantish& _That) noexcept(
         is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>&&
             is_nothrow_copy_assignable_v<_It>&& is_nothrow_copy_assignable_v<_Se>) {
         if (_Contains == _That._Contains) {
@@ -667,7 +667,7 @@ public:
     }
 
     // clang-format off
-    _Variantish& operator=(_Variantish&&) requires is_trivially_destructible_v<_It>
+    constexpr _Variantish& operator=(_Variantish&&) requires is_trivially_destructible_v<_It>
         && is_trivially_destructible_v<_Se>
         && is_trivially_move_constructible_v<_It>
         && is_trivially_move_constructible_v<_Se>
@@ -675,7 +675,7 @@ public:
         && is_trivially_move_assignable_v<_Se> = default;
     // clang-format on
 
-    _Variantish& operator=(_Variantish&& _That) noexcept(
+    constexpr _Variantish& operator=(_Variantish&& _That) noexcept(
         is_nothrow_move_constructible_v<_It>&& is_nothrow_move_constructible_v<_Se>&&
             is_nothrow_move_assignable_v<_It>&& is_nothrow_move_assignable_v<_Se>) {
         if (_Contains == _That._Contains) {
@@ -714,7 +714,7 @@ public:
     // clang-format off
     template <class _OIter, class _OSe>
         requires _Not_same_as<_Variantish<_OIter, _OSe>, _Variantish>
-    _Variantish& operator=(const _Variantish<_OIter, _OSe>& _That) noexcept(
+    constexpr _Variantish& operator=(const _Variantish<_OIter, _OSe>& _That) noexcept(
         is_nothrow_constructible_v<_It, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>
             && is_nothrow_assignable_v<_It&, const _OIter&> && is_nothrow_assignable_v<_Se&, const _OSe&>) {
         // clang-format on
@@ -752,7 +752,7 @@ public:
     }
 
     // clang-format off
-    constexpr friend void swap(_Variantish& _Left, _Variantish& _Right) noexcept(
+    friend constexpr void swap(_Variantish& _Left, _Variantish& _Right) noexcept(
         is_nothrow_move_constructible_v<_It> && is_nothrow_move_constructible_v<_Se>
             && is_nothrow_swappable_v<_It> && is_nothrow_swappable_v<_Se>)
         requires (!_Is_trivially_swappable_v<_It> || !_Is_trivially_swappable_v<_Se>) {
@@ -777,7 +777,7 @@ public:
         _Right    = _STD move(_Tmp);
     }
 
-    void _Raw_clear() noexcept {
+    constexpr void _Raw_clear() noexcept {
         switch (_Contains) {
         case _Variantish_state::_Holds_iter:
             _Iterator.~_It();
@@ -790,7 +790,7 @@ public:
         }
     }
 
-    void _Clear() noexcept {
+    constexpr void _Clear() noexcept {
         _Raw_clear();
         _Contains = _Variantish_state::_Nothing;
     }
@@ -818,7 +818,7 @@ private:
     struct _Proxy_base {
         iter_value_t<_Iter> _Keep;
 
-        explicit _Proxy_base(iter_reference_t<_Iter>&& _Right) noexcept(
+        constexpr explicit _Proxy_base(iter_reference_t<_Iter>&& _Right) noexcept(
             is_nothrow_constructible_v<iter_value_t<_Iter>, iter_reference_t<_Iter>>) // strengthened
             : _Keep(_STD forward<iter_reference_t<_Iter>>(_Right)) {}
     };
@@ -846,7 +846,7 @@ public:
     template <class _OIter, class _OSe>
         requires convertible_to<const _OIter&, _Iter> && convertible_to<const _OSe&, _Se>
             && assignable_from<_Iter&, const _OIter&> && assignable_from<_Se&, const _OSe&>
-    common_iterator& operator=(const common_iterator<_OIter, _OSe>& _Right) noexcept(
+    constexpr common_iterator& operator=(const common_iterator<_OIter, _OSe>& _Right) noexcept(
         is_nothrow_constructible_v<_Iter, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>
             && is_nothrow_assignable_v<_Iter&, const _OIter&>
             && is_nothrow_assignable_v<_Se&, const _OSe&>) /* strengthened */ {
@@ -855,7 +855,7 @@ public:
         return *this;
     }
 
-    _NODISCARD decltype(auto) operator*() {
+    _NODISCARD constexpr decltype(auto) operator*() {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be dereferenced if it holds an iterator");
@@ -863,7 +863,7 @@ public:
         return *_Val._Iterator;
     }
 
-    _NODISCARD decltype(auto) operator*() const requires _Dereferenceable<const _Iter> {
+    _NODISCARD constexpr decltype(auto) operator*() const requires _Dereferenceable<const _Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be dereferenced if it holds an iterator");
@@ -872,7 +872,7 @@ public:
     }
 
     // clang-format off
-    _NODISCARD decltype(auto) operator->() const
+    _NODISCARD constexpr decltype(auto) operator->() const
         requires indirectly_readable<const _Iter>
             && (_Has_member_arrow<const _Iter&> || is_reference_v<iter_reference_t<_Iter>>
                 || constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>) {
@@ -893,7 +893,7 @@ public:
 
                 using _Proxy_base::_Proxy_base;
 
-                _NODISCARD const iter_value_t<_Iter>* operator->() const noexcept /* strengthened */ {
+                _NODISCARD constexpr const iter_value_t<_Iter>* operator->() const noexcept {
                     return _STD addressof(this->_Keep);
                 }
             };
@@ -902,7 +902,7 @@ public:
         }
     }
 
-    common_iterator& operator++() {
+    constexpr common_iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be incremented if it holds an iterator");
@@ -911,7 +911,7 @@ public:
         return *this;
     }
 
-    decltype(auto) operator++(int) {
+    constexpr decltype(auto) operator++(int) {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
             "common_iterator can only be incremented if it holds an iterator");
@@ -927,7 +927,7 @@ public:
 
                 using _Proxy_base::_Proxy_base;
 
-                _NODISCARD const iter_value_t<_Iter>& operator*() const noexcept /* strengthened */ {
+                _NODISCARD constexpr const iter_value_t<_Iter>& operator*() const noexcept {
                     return this->_Keep;
                 }
             };
@@ -943,7 +943,8 @@ public:
     // clang-format off
     template <class _OIter, sentinel_for<_Iter> _OSe>
         requires sentinel_for<_Se, _OIter>
-    _NODISCARD friend bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
+    _NODISCARD friend constexpr
+    bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
         auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -974,7 +975,7 @@ public:
     // clang-format off
     template <sized_sentinel_for<_Iter> _OIter, sized_sentinel_for<_Iter> _OSe>
         requires sized_sentinel_for<_Se, _OIter>
-    _NODISCARD friend iter_difference_t<_OIter> operator-(
+    _NODISCARD friend constexpr iter_difference_t<_OIter> operator-(
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
         auto& _Right_val = _Right._Get_val();
@@ -999,7 +1000,7 @@ public:
         }
     }
 
-    _NODISCARD friend iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
+    _NODISCARD friend constexpr iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
         noexcept(_RANGES iter_move(_Right._Val._Iterator))) requires input_iterator<_Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_iter,
@@ -1009,7 +1010,7 @@ public:
     }
 
     template <indirectly_swappable<_Iter> _OIter, class _OSe>
-    friend void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) noexcept(
+    friend constexpr void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) noexcept(
         noexcept(_RANGES iter_swap(_Left._Val._Iterator, _Right._Get_val()._Iterator))) {
         auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -1020,10 +1021,10 @@ public:
         return _RANGES iter_swap(_Left._Val._Iterator, _Right_val._Iterator);
     }
 
-    _NODISCARD _Variantish<_Iter, _Se>& _Get_val() noexcept {
+    _NODISCARD constexpr _Variantish<_Iter, _Se>& _Get_val() noexcept {
         return _Val;
     }
-    _NODISCARD const _Variantish<_Iter, _Se>& _Get_val() const noexcept {
+    _NODISCARD constexpr const _Variantish<_Iter, _Se>& _Get_val() const noexcept {
         return _Val;
     }
 
@@ -1123,7 +1124,7 @@ public:
     }
 
     // [counted.iter.access]
-    _NODISCARD constexpr const _Iter& base() const& noexcept /* strengthened */ {
+    _NODISCARD constexpr const _Iter& base() const& noexcept {
         return _Current;
     }
 
@@ -1304,9 +1305,10 @@ public:
     template <common_with<_Iter> _Other>
     friend constexpr void _Same_sequence(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept {
-        // Per N4861 [counted.iterator]/2, two counted_iterators x and y refer to elements of the same sequence iff
-        // next(x.base(), x.count()) and next(y.base(), y.count()) "refer to the same element." Iterator equality is a
-        // fair proxy for this condition.
+        // Per N4901 [counted.iterator]/3, two counted_iterators x and y refer to elements of the same sequence iff
+        // for some integer n, next(x.base(), x.count() + n) and next(y.base(), y.count() + n)
+        // "refer to the same (possibly past-the-end) element".
+        // Iterator equality is a fair proxy for the vaguely-defined "refer to the same element".
         if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
             using _CIter = common_type_t<_Iter, _Other>;
             using _CDiff = common_type_t<iter_difference_t<_Iter>, iter_difference_t<_Other>>;
@@ -1315,11 +1317,11 @@ public:
             if (_Diff < 0) {
                 _STL_VERIFY(
                     static_cast<_CIter>(_Left._Current) == _RANGES next(static_cast<_CIter>(_Right.base()), -_Diff),
-                    "counted_iterators from different ranges");
+                    "counted_iterators are from different ranges");
             } else {
                 _STL_VERIFY(
                     _RANGES next(static_cast<_CIter>(_Left._Current), _Diff) == static_cast<_CIter>(_Right.base()),
-                    "counted_iterators from different ranges");
+                    "counted_iterators are from different ranges");
             }
         }
     }
@@ -1477,10 +1479,7 @@ public:
         return _Tmp;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO-568006
-    _NODISCARD
-#endif // TRANSITION, VSO-568006
-    friend constexpr checked_array_iterator operator+(
+    _NODISCARD_FRIEND constexpr checked_array_iterator operator+(
         const difference_type _Off, const checked_array_iterator<_Ptr>& _Next) noexcept {
         return _Next + _Off;
     }
@@ -1656,10 +1655,7 @@ public:
         return _Tmp;
     }
 
-#ifndef __CUDACC__ // TRANSITION, VSO-568006
-    _NODISCARD
-#endif // TRANSITION, VSO-568006
-    friend constexpr unchecked_array_iterator operator+(
+    _NODISCARD_FRIEND constexpr unchecked_array_iterator operator+(
         const difference_type _Off, const unchecked_array_iterator& _Next) noexcept {
         return _Next + _Off;
     }
