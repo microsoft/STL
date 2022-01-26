@@ -15,8 +15,6 @@
 #pragma comment(lib, "Shlwapi.lib")
 
 namespace {
-    static constexpr std::size_t max_line_size = 2000;
-
     class _NODISCARD srw_lock_guard {
     public:
         explicit srw_lock_guard(SRWLOCK& locked_) noexcept : locked(&locked_) {
@@ -158,7 +156,7 @@ namespace {
         static constexpr SYMBOL_INFO init_symbol_info() {
             SYMBOL_INFO result  = {};
             result.SizeOfStruct = sizeof(SYMBOL_INFO);
-            result.MaxNameLen   = max_line_size;
+            result.MaxNameLen   = MAX_SYM_NAME;
             return result;
         }
 
@@ -173,7 +171,7 @@ namespace {
         DWORD displacement        = 0;
         ptrdiff_t offset          = 0;
         SYMBOL_INFO info          = init_symbol_info();
-        char buffer[max_line_size];
+        char buffer[MAX_SYM_NAME];
         char module_path[MAX_PATH];
         const char* module_name = nullptr;
         std::string_view function_name;
