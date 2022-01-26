@@ -36,16 +36,6 @@ namespace {
     public:
         constexpr stacktrace_global_data_t() = default;
 
-        ~stacktrace_global_data_t() {
-            if (initialized) {
-                SymCleanup(process_handle);
-            }
-
-            if (process_handle) {
-                CloseHandle(process_handle);
-            }
-        }
-
         stacktrace_global_data_t(const stacktrace_global_data_t&) = delete;
         stacktrace_global_data_t& operator=(const stacktrace_global_data_t) = delete;
 
@@ -117,17 +107,7 @@ namespace {
 
 
     private:
-        bool try_initialize() {
-            if (!initialize_attempted) {
-                initialized = DuplicateHandle(GetCurrentProcess(), GetCurrentProcess(), GetCurrentProcess(),
-                                  &process_handle, PROCESS_QUERY_INFORMATION, false, 0)
-                           && SymInitialize(process_handle, nullptr, true);
-
-                initialize_attempted = true;
-            }
-
-            return initialized;
-        }
+        bool try_initialize();
 
         void clear_if_wrong_address(const void* const address) {
             if (last_address != address) {
@@ -179,8 +159,30 @@ namespace {
     };
 
     stacktrace_global_data_t stacktrace_global_data;
-
     SRWLOCK srw = SRWLOCK_INIT;
+
+    bool stacktrace_global_data_t::try_initialize() {
+        if (!initialize_attempted) {
+            initialized = DuplicateHandle(GetCurrentProcess(), GetCurrentProcess(), GetCurrentProcess(),
+                              &process_handle, PROCESS_QUERY_INFORMATION, false, 0)
+                       && SymInitialize(process_handle, nullptr, true);
+
+            atexit([] {
+                if (stacktrace_global_data.initialized) {
+                    SymCleanup(stacktrace_global_data.process_handle);
+                }
+
+                if (stacktrace_global_data.process_handle) {
+                    CloseHandle(stacktrace_global_data.process_handle);
+                }
+                stacktrace_global_data.initialize_attempted = false;
+            });
+
+            initialize_attempted = true;
+        }
+
+        return initialized;
+    }
 
 
 } // namespace
