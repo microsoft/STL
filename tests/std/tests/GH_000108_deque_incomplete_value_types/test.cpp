@@ -6,9 +6,15 @@
 
 using namespace std;
 
-void test_gh_000108();
+void test_gh_000108_push_pop_size();
+void test_gh_000108_push_pop_size_with_payload();
 
 int main() {
+    test_gh_000108_push_pop_size();
+    test_gh_000108_push_pop_size_with_payload();
+}
+
+void test_gh_000108_push_pop_size() {
     struct recur {
         deque<recur> d;
     };
@@ -24,11 +30,9 @@ int main() {
 
         x.d.pop_front();
     }
-
-    test_gh_000108();
 }
 
-void test_gh_000108() {
+void test_gh_000108_push_pop_size_with_payload() {
     struct recur_payload {
         int n;
         deque<recur_payload> d;
