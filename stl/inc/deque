@@ -793,8 +793,8 @@ public:
             _Growmap(1);
         }
         _Myoff() &= _Mapsize() * _Block_size - 1;
-        size_type _Newoff       = _Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size;
-        const size_type _Block  = _Getblock(--_Newoff);
+        size_type _Newoff      = _Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size;
+        const size_type _Block = _Getblock(--_Newoff);
         if (_Map()[_Block] == nullptr) {
             _Map()[_Block] = _Getal().allocate(_Block_size);
         }
