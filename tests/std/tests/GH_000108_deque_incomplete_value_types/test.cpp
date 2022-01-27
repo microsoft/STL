@@ -36,10 +36,10 @@ void test_gh_000108() {
 
     recur_payload x{};
 
-    x.d.push_back({10});
-    x.d.push_back({20});
-    x.d.push_front({30});
-    x.d.push_front({40});
+    x.d.push_back({10, {}});
+    x.d.push_back({20, {}});
+    x.d.push_front({30, {}});
+    x.d.push_front({40, {}});
 
     assert(x.d.size() == 4 && x.d[0].n == 40 && x.d[1].n == 30 && x.d[2].n == 10 && x.d[3].n == 20);
 }
