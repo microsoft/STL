@@ -42,8 +42,8 @@ public:
 
     _NODISCARD reference operator*() const noexcept {
         constexpr int _Block_size = _Mydeque::_Get_block_size();
-        _Size_type _Block = _Mycont->_Getblock(_Myoff);
-        _Size_type _Off   = _Myoff % _Block_size;
+        _Size_type _Block         = _Mycont->_Getblock(_Myoff);
+        _Size_type _Off           = _Myoff % _Block_size;
         return _Mycont->_Map[_Block][_Off];
     }
 
@@ -258,7 +258,7 @@ public:
 
     _NODISCARD reference operator*() const noexcept {
         constexpr int _Block_size = _Mydeque::_Get_block_size();
-        const auto _Mycont = static_cast<const _Mydeque*>(this->_Getcont());
+        const auto _Mycont        = static_cast<const _Mydeque*>(this->_Getcont());
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mycont, "cannot dereference value-initialized deque iterator");
         _STL_VERIFY(_Mycont->_Myoff <= this->_Myoff && this->_Myoff < _Mycont->_Myoff + _Mycont->_Mysize,
