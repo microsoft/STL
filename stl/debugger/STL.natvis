@@ -1104,7 +1104,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand>
           <IndexListItems>
               <Size>_Mysize</Size>
-              <ValueNode>_Map[(($i + _Myoff) / _EEN_DS) % _Mapsize][($i + _Myoff) % _EEN_DS]</ValueNode>
+              <ValueNode>_Map[(($i + _Myoff) / (sizeof(value_type) <= 1 ? 16 : sizeof(value_type) <= 2 ? 8 : sizeof(value_type) <= 4 ? 4 : sizeof(value_type) <= 8 ? 2 : 1)) % _Mapsize][($i + _Myoff) % (sizeof(value_type) <= 1 ? 16 : sizeof(value_type) <= 2 ? 8 : sizeof(value_type) <= 4 ? 4 : sizeof(value_type) <= 8 ? 2 : 1)]</ValueNode>
           </IndexListItems>
       </Expand>
   </Type>
@@ -1116,18 +1116,18 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
           <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
           <IndexListItems>
               <Size>_Mypair._Myval2._Mysize</Size>
-              <ValueNode>_Mypair._Myval2._Map[(($i + _Mypair._Myval2._Myoff) / _EEN_DS) % _Mypair._Myval2._Mapsize][($i + _Mypair._Myval2._Myoff) % _EEN_DS]</ValueNode>
+              <ValueNode>_Mypair._Myval2._Map[(($i + _Mypair._Myval2._Myoff) / (sizeof(value_type) <= 1 ? 16 : sizeof(value_type) <= 2 ? 8 : sizeof(value_type) <= 4 ? 4 : sizeof(value_type) <= 8 ? 2 : 1)) % _Mypair._Myval2._Mapsize][($i + _Mypair._Myval2._Myoff) % (sizeof(value_type) <= 1 ? 16 : sizeof(value_type) <= 2 ? 8 : sizeof(value_type) <= 4 ? 4 : sizeof(value_type) <= 8 ? 2 : 1)]</ValueNode>
           </IndexListItems>
       </Expand>
   </Type>
 
   <Type Name="std::_Deque_iterator&lt;*&gt;">
       <AlternativeType Name="std::_Deque_const_iterator&lt;*&gt;" />
-      <DisplayString Condition="_Myoff &lt; ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Myoff + ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Mysize">{((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Map[(_Myoff / _EEN_DS) % ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Mapsize][_Myoff % _EEN_DS]}</DisplayString>
+      <DisplayString Condition="_Myoff &lt; ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Myoff + ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Mysize">{((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Map[(_Myoff / (sizeof(value_type) <= 1 ? 16 : sizeof(value_type) <= 2 ? 8 : sizeof(value_type) <= 4 ? 4 : sizeof(value_type) <= 8 ? 2 : 1)) % ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Mapsize][_Myoff % (sizeof(value_type) <= 1 ? 16 : sizeof(value_type) <= 2 ? 8 : sizeof(value_type) <= 4 ? 4 : sizeof(value_type) <= 8 ? 2 : 1)]}</DisplayString>
       <DisplayString Condition="_Myoff &gt;= ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Myoff + ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Mysize">end</DisplayString>
       <Expand>
           <Item Condition="_Myoff &lt; ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Myoff + ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Mysize" Name="[index]">_Myoff - ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Myoff</Item>
-          <Item Condition="_Myoff &lt; ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Myoff + ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Mysize" Name="[ptr]">&amp;((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Map[(_Myoff / _EEN_DS) % ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Mapsize][_Myoff % _EEN_DS]</Item>
+          <Item Condition="_Myoff &lt; ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Myoff + ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Mysize" Name="[ptr]">&amp;((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Map[(_Myoff / (sizeof(value_type) <= 1 ? 16 : sizeof(value_type) <= 2 ? 8 : sizeof(value_type) <= 4 ? 4 : sizeof(value_type) <= 8 ? 2 : 1)) % ((_Mydeque_t *)_Myproxy-&gt;_Mycont)-&gt;_Mapsize][_Myoff % (sizeof(value_type) <= 1 ? 16 : sizeof(value_type) <= 2 ? 8 : sizeof(value_type) <= 4 ? 4 : sizeof(value_type) <= 8 ? 2 : 1)]</Item>
       </Expand>
   </Type>
 
