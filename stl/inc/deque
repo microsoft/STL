@@ -793,8 +793,8 @@ public:
             _Growmap(1);
         }
         _Myoff() &= _Mapsize() * _Block_size - 1;
-        size_type _Newoff = _Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size;
-        size_type _Block  = _Getblock(--_Newoff);
+        size_type _Newoff       = _Myoff() != 0 ? _Myoff() : _Mapsize() * _Block_size;
+        const size_type _Block  = _Getblock(--_Newoff);
         if (_Map()[_Block] == nullptr) {
             _Map()[_Block] = _Getal().allocate(_Block_size);
         }
@@ -956,8 +956,8 @@ public:
     void shrink_to_fit() {
         constexpr int _Block_size = _Scary_val::_Get_block_size();
 
-        size_type _Oldcapacity = _Block_size * _Mapsize();
-        size_type _Newcapacity = _Oldcapacity / 2;
+        const size_type _Oldcapacity = _Block_size * _Mapsize();
+        size_type _Newcapacity       = _Oldcapacity / 2;
 
         if (_Newcapacity < _Block_size * _Minimum_map_size) {
             _Newcapacity = _Block_size * _Minimum_map_size;
@@ -1136,7 +1136,7 @@ public:
         if (empty()) {
             _STL_REPORT_ERROR("deque empty before pop");
         } else { // something to erase, do it
-            size_type _Newoff = _Myoff() + _Mysize() - 1;
+            const size_type _Newoff = _Myoff() + _Mysize() - 1;
             _Orphan_off(_Newoff);
             const size_type _Block = _Getblock(_Newoff);
             _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
@@ -1502,7 +1502,7 @@ private:
 
 #if _ITERATOR_DEBUG_LEVEL == 2
     void _Orphan_off(size_type _Offlo) const noexcept { // orphan iterators with specified offset(s)
-        size_type _Offhigh = _Myoff() + _Mysize() <= _Offlo + 1 ? static_cast<size_type>(-1) : _Offlo;
+        const size_type _Offhigh = _Myoff() + _Mysize() <= _Offlo + 1 ? static_cast<size_type>(-1) : _Offlo;
         if (_Offlo == _Myoff()) {
             _Offlo = 0;
         }
