@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void test_gh_00108();
+void test_gh_000108();
 
 int main() {
     struct recur {
@@ -25,10 +25,10 @@ int main() {
         x.d.pop_front();
     }
 
-    test_gh_00108();
+    test_gh_000108();
 }
 
-void test_gh_00108() {
+void test_gh_000108() {
     struct recur_payload {
         int n;
         deque<recur_payload> d;
