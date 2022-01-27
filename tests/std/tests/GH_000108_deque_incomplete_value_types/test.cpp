@@ -6,14 +6,6 @@
 
 using namespace std;
 
-void test_gh_000108_push_pop_size();
-void test_gh_000108_push_pop_size_with_payload();
-
-int main() {
-    test_gh_000108_push_pop_size();
-    test_gh_000108_push_pop_size_with_payload();
-}
-
 void test_gh_000108_push_pop_size() {
     struct recur {
         deque<recur> d;
@@ -46,4 +38,9 @@ void test_gh_000108_push_pop_size_with_payload() {
     x.d.push_front({40, {}});
 
     assert(x.d.size() == 4 && x.d[0].n == 40 && x.d[1].n == 30 && x.d[2].n == 10 && x.d[3].n == 20);
+}
+
+int main() {
+    test_gh_000108_push_pop_size();
+    test_gh_000108_push_pop_size_with_payload();
 }
