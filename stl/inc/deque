@@ -1297,8 +1297,8 @@ public:
         const bool _Moved = 0 < _Off && _Off + _Count < _Mysize();
 
 #else // _ITERATOR_DEBUG_LEVEL == 2
-        const auto _Off   = static_cast<size_type>(_First - begin());
-        auto _Count       = static_cast<size_type>(_Last - _First);
+        const auto _Off = static_cast<size_type>(_First - begin());
+        auto _Count     = static_cast<size_type>(_Last - _First);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         if (_Count == 0) {
