@@ -2842,15 +2842,19 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
+        // clang-format off
         template <input_or_output_iterator _It, sentinel_for<_It> _Se>
-        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const
-            noexcept(_Nothrow_distance<_It, _Se>) /* strengthened */ {
-            if constexpr (sized_sentinel_for<_Se, _It>) {
-                return _Last - _First;
-            } else {
-                _Adl_verify_range(_First, _Last);
-                return _Distance_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)));
-            }
+            requires (!sized_sentinel_for<_Se, _It>)
+        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            return _Distance_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)));
+        }
+
+        template <input_or_output_iterator _It, sized_sentinel_for<_It> _Se>
+        _NODISCARD constexpr iter_difference_t<_It> operator()(const _It& _First, const _Se& _Last) const
+            noexcept(noexcept(_Last - _First)) /* strengthened */ {
+            return _Last - _First;
         }
 
         template <range _Rng>
@@ -2866,8 +2870,7 @@ namespace ranges {
     private:
         template <class _It, class _Se>
         _NODISCARD static constexpr iter_difference_t<_It> _Distance_unchecked(_It _First, const _Se _Last) noexcept(
-            _Nothrow_distance<_It, _Se>) {
-            _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_It>);
+            noexcept(++_First != _Last)) {
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
 
             iter_difference_t<_It> _Count = 0;
@@ -2878,15 +2881,10 @@ namespace ranges {
             return _Count;
         }
 
-        template <class _It, class _Se>
-        static constexpr bool _Nothrow_distance = noexcept(
-            noexcept(++_STD declval<_Unwrapped_t<_It>&>() != _STD declval<const _Unwrapped_t<_Se>&>()));
-        template <class _It, sized_sentinel_for<_It> _Se>
-        static constexpr bool _Nothrow_distance<_It, _Se> = noexcept(
-            noexcept(_STD declval<_Se&>() - _STD declval<_It&>()));
-
         template <class _Rng>
-        static constexpr bool _Nothrow_size = _Nothrow_distance<iterator_t<_Rng>, sentinel_t<_Rng>>;
+        static constexpr bool _Nothrow_size = noexcept(
+            _Distance_unchecked(_Ubegin(_STD declval<_Rng&>()), _Uend(_STD declval<_Rng&>())));
+
         template <sized_range _Rng>
         static constexpr bool _Nothrow_size<_Rng> = noexcept(_RANGES size(_STD declval<_Rng&>()));
     };
@@ -3333,16 +3331,6 @@ namespace ranges {
         // clang-format off
         subrange() requires default_initializable<_It> = default;
 
-#if !defined(_MSVC_INTERNAL_TESTING) && !defined(__clang__) && !defined(__EDG__) // TRANSITION, VS 17.1p3
-        // This was originally annotated as a workaround for DevCom-1331017, but the problem it corrects continued to
-        // manifest after that bug was fixed. We reduced a repro to file an additional bug, but the underlying issue had
-        // already been fixed in the internal compiler (see GH-2326).
-        constexpr subrange(const subrange&) = default;
-        constexpr subrange(subrange&&)      = default;
-        constexpr subrange& operator=(const subrange&) = default;
-        constexpr subrange& operator=(subrange&&) = default;
-#endif // ^^^ workaround ^^^
-
         template <_Convertible_to_non_slicing<_It> _It2>
         constexpr subrange(_It2 _First_, _Se _Last_) requires (!_Store_size)
             : _First(_STD move(_First_)), _Last(_STD move(_Last_)) {}
@@ -3487,7 +3475,7 @@ namespace ranges {
 
     // clang-format off
     template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
-        requires (_Idx < 2)
+        requires ((_Idx == 0 && copyable<_It>) || _Idx == 1)
     _NODISCARD constexpr auto get(const subrange<_It, _Se, _Ki>& _Val) {
         if constexpr (_Idx == 0) {
             return _Val.begin();
@@ -3618,7 +3606,7 @@ public:
     // clang-format on
 
 #ifdef __cpp_lib_concepts
-    _NODISCARD constexpr const iterator_type& base() const& noexcept /* strengthened */ {
+    _NODISCARD constexpr const iterator_type& base() const& noexcept {
         return _Current;
     }
     _NODISCARD constexpr iterator_type base() && noexcept(is_nothrow_move_constructible_v<_Iter>) /* strengthened */ {
@@ -4953,7 +4941,7 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
         {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min) (_Num1, _Num2));
+            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
             return _Memcmp_pred{}(_Ans, 0) || (_Ans == 0 && _Num1 < _Num2);
         }
     }
@@ -5053,7 +5041,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1
         if (!_STD is_constant_evaluated()) {
             const auto _Num1 = static_cast<size_t>(_ULast1 - _UFirst1);
             const auto _Num2 = static_cast<size_t>(_ULast2 - _UFirst2);
-            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min) (_Num1, _Num2));
+            const int _Ans   = _Memcmp_count(_UFirst1, _UFirst2, (_STD min)(_Num1, _Num2));
             if (_Ans == 0) {
                 return _Num1 <=> _Num2;
             } else {
@@ -5808,7 +5796,7 @@ namespace ranges {
                 const auto _Count1 = _RANGES distance(_Range1);
                 const auto _Count2 = _RANGES distance(_Range2);
                 auto _UResult      = _Search_sized(_Ubegin(_Range1), _Uend(_Range1), _Count1, _Ubegin(_Range2),
-                    _Uend(_Range2), _Count2, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                         _Uend(_Range2), _Count2, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 return _Rewrap_subrange<borrowed_subrange_t<_Rng1>>(_Range1, _STD move(_UResult));
             } else {
                 auto _UResult = _Search_unsized(_Ubegin(_Range1), _Uend(_Range1), _Ubegin(_Range2), _Uend(_Range2),
@@ -5968,7 +5956,7 @@ public:
     using _Udiff = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
 
     explicit _Rng_from_urng(_Urng& _Func) : _Ref(_Func), _Bits(CHAR_BIT * sizeof(_Udiff)), _Bmask(_Udiff(-1)) {
-        for (; (_Urng::max) () - (_Urng::min) () < _Bmask; _Bmask >>= 1) {
+        for (; (_Urng::max)() - (_Urng::min)() < _Bmask; _Bmask >>= 1) {
             --_Bits;
         }
     }
@@ -6012,7 +6000,7 @@ public:
 private:
     _Udiff _Get_bits() { // return a random value within [0, _Bmask]
         for (;;) { // repeat until random value is in range
-            _Udiff _Val = _Ref() - (_Urng::min) ();
+            _Udiff _Val = _Ref() - (_Urng::min)();
 
             if (_Val <= _Bmask) {
                 return _Val;

@@ -1124,7 +1124,7 @@ public:
     }
 
     // [counted.iter.access]
-    _NODISCARD constexpr const _Iter& base() const& noexcept /* strengthened */ {
+    _NODISCARD constexpr const _Iter& base() const& noexcept {
         return _Current;
     }
 
@@ -1305,9 +1305,10 @@ public:
     template <common_with<_Iter> _Other>
     friend constexpr void _Same_sequence(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept {
-        // Per N4861 [counted.iterator]/2, two counted_iterators x and y refer to elements of the same sequence iff
-        // next(x.base(), x.count()) and next(y.base(), y.count()) "refer to the same element." Iterator equality is a
-        // fair proxy for this condition.
+        // Per N4901 [counted.iterator]/3, two counted_iterators x and y refer to elements of the same sequence iff
+        // for some integer n, next(x.base(), x.count() + n) and next(y.base(), y.count() + n)
+        // "refer to the same (possibly past-the-end) element".
+        // Iterator equality is a fair proxy for the vaguely-defined "refer to the same element".
         if constexpr (forward_iterator<_Iter> && forward_iterator<_Other>) {
             using _CIter = common_type_t<_Iter, _Other>;
             using _CDiff = common_type_t<iter_difference_t<_Iter>, iter_difference_t<_Other>>;
@@ -1316,11 +1317,11 @@ public:
             if (_Diff < 0) {
                 _STL_VERIFY(
                     static_cast<_CIter>(_Left._Current) == _RANGES next(static_cast<_CIter>(_Right.base()), -_Diff),
-                    "counted_iterators from different ranges");
+                    "counted_iterators are from different ranges");
             } else {
                 _STL_VERIFY(
                     _RANGES next(static_cast<_CIter>(_Left._Current), _Diff) == static_cast<_CIter>(_Right.base()),
-                    "counted_iterators from different ranges");
+                    "counted_iterators are from different ranges");
             }
         }
     }
