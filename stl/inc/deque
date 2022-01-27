@@ -27,8 +27,6 @@ class _Deque_unchecked_const_iterator {
 private:
     using _Size_type = typename _Mydeque::size_type;
 
-    static constexpr int _Block_size = _Mydeque::_Block_size;
-
 public:
     using iterator_category = random_access_iterator_tag;
 
@@ -43,6 +41,7 @@ public:
         : _Mycont(static_cast<const _Mydeque*>(_Pdeque)), _Myoff(_Off) {}
 
     _NODISCARD reference operator*() const noexcept {
+        constexpr int _Block_size = _Mydeque::_Get_block_size();
         _Size_type _Block = _Mycont->_Getblock(_Myoff);
         _Size_type _Off   = _Myoff % _Block_size;
         return _Mycont->_Map[_Block][_Off];
@@ -240,8 +239,6 @@ class _Deque_const_iterator : public _Iterator_base12 {
 private:
     using _Size_type = typename _Mydeque::size_type;
 
-    static constexpr int _Block_size = _Mydeque::_Block_size;
-
 public:
     using iterator_category = random_access_iterator_tag;
 
@@ -251,7 +248,6 @@ public:
     using reference       = const value_type&;
 
     using _Mydeque_t = _Mydeque; // helper for expression evaluator
-    enum { _EEN_DS = _Block_size }; // helper for expression evaluator
     _Deque_const_iterator() noexcept : _Myoff(0) {
         _Setcont(nullptr);
     }
@@ -261,6 +257,7 @@ public:
     }
 
     _NODISCARD reference operator*() const noexcept {
+        constexpr int _Block_size = _Mydeque::_Get_block_size();
         const auto _Mycont = static_cast<const _Mydeque*>(this->_Getcont());
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Mycont, "cannot dereference value-initialized deque iterator");
@@ -554,20 +551,19 @@ public:
     using const_reference = const value_type&;
     using _Mapptr         = typename _Val_types::_Mapptr;
 
-private:
-    static constexpr size_t _Bytes = sizeof(value_type);
-
-public:
-    static constexpr int _Block_size = _Bytes <= 1 ? 16
-                                     : _Bytes <= 2 ? 8
-                                     : _Bytes <= 4 ? 4
-                                     : _Bytes <= 8 ? 2
-                                                   : 1; // elements per block (a power of 2)
+    static constexpr int _Get_block_size() noexcept { // elements per block (a power of 2)
+        return sizeof(value_type) <= 1 ? 16
+             : sizeof(value_type) <= 2 ? 8
+             : sizeof(value_type) <= 4 ? 4
+             : sizeof(value_type) <= 8 ? 2
+                                       : 1;
+    }
 
     _Deque_val() noexcept : _Map(), _Mapsize(0), _Myoff(0), _Mysize(0) {}
 
     size_type _Getblock(size_type _Off) const noexcept {
         // NB: _Mapsize and _Block_size are guaranteed to be powers of 2
+        constexpr int _Block_size = _Get_block_size();
         return (_Off / _Block_size) & (_Mapsize - 1);
     }
 
@@ -597,7 +593,6 @@ private:
             typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, _Ty&, const _Ty&, _Mapptr>>>;
 
     static constexpr int _Minimum_map_size = 8;
-    static constexpr int _Block_size       = _Scary_val::_Block_size;
 
 public:
     using allocator_type  = _Alloc;
@@ -616,7 +611,6 @@ public:
 
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
-    enum { _EEN_DS = _Block_size }; // helper for expression evaluator
 
     deque() : _Mypair(_Zero_then_variadic_args_t{}) {
         _Get_data()._Alloc_proxy(static_cast<_Alproxy_ty>(_Getal()));
@@ -791,6 +785,8 @@ public:
 
     template <class... _Valty>
     decltype(auto) emplace_front(_Valty&&... _Val) {
+        constexpr int _Block_size = _Scary_val::_Get_block_size();
+
         _Orphan_all();
 
         if (_Myoff() % _Block_size == 0 && _Mapsize() <= (_Mysize() + _Block_size) / _Block_size) {
@@ -958,6 +954,8 @@ public:
     }
 
     void shrink_to_fit() {
+        constexpr int _Block_size = _Scary_val::_Get_block_size();
+
         size_type _Oldcapacity = _Block_size * _Mapsize();
         size_type _Newcapacity = _Oldcapacity / 2;
 
@@ -1079,6 +1077,7 @@ public:
     }
 
     void pop_front() noexcept /* strengthened */ {
+        constexpr int _Block_size = _Scary_val::_Get_block_size();
 #if _ITERATOR_DEBUG_LEVEL == 2
         if (empty()) {
             _STL_REPORT_ERROR("deque empty before pop");
@@ -1107,6 +1106,8 @@ public:
 private:
     template <class... _Tys>
     void _Emplace_back_internal(_Tys&&... _Vals) {
+        constexpr int _Block_size = _Scary_val::_Get_block_size();
+
         if ((_Myoff() + _Mysize()) % _Block_size == 0 && _Mapsize() <= (_Mysize() + _Block_size) / _Block_size) {
             _Growmap(1);
         }
@@ -1130,6 +1131,7 @@ public:
     }
 
     void pop_back() noexcept /* strengthened */ {
+        constexpr int _Block_size = _Scary_val::_Get_block_size();
 #if _ITERATOR_DEBUG_LEVEL == 2
         if (empty()) {
             _STL_REPORT_ERROR("deque empty before pop");
@@ -1436,6 +1438,7 @@ private:
     void _Growmap(size_type _Count) { // grow map by at least _Count pointers, _Mapsize() a power of 2
         static_assert(1 < _Minimum_map_size, "The _Xlen() test should always be performed.");
 
+        constexpr int _Block_size = _Scary_val::_Get_block_size();
         _Alpty _Almap(_Getal());
         size_type _Newsize = 0 < _Mapsize() ? _Mapsize() : 1;
         while (_Newsize - _Mapsize() < _Count || _Newsize < _Minimum_map_size) {
@@ -1473,6 +1476,8 @@ private:
     }
 
     void _Tidy() noexcept { // free all storage
+        constexpr int _Block_size = _Scary_val::_Get_block_size();
+
         _Orphan_all();
 
         _Alpty _Almap(_Getal());
