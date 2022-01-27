@@ -551,7 +551,7 @@ public:
     using const_reference = const value_type&;
     using _Mapptr         = typename _Val_types::_Mapptr;
 
-    static constexpr int _Get_block_size() noexcept { // elements per block (a power of 2)
+    _NODISCARD static _CONSTEVAL int _Get_block_size() noexcept { // elements per block (a power of 2)
         return sizeof(value_type) <= 1 ? 16
              : sizeof(value_type) <= 2 ? 8
              : sizeof(value_type) <= 4 ? 4
