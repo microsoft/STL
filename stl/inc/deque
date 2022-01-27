@@ -42,8 +42,8 @@ public:
 
     _NODISCARD reference operator*() const noexcept {
         constexpr int _Block_size = _Mydeque::_Get_block_size();
-        _Size_type _Block         = _Mycont->_Getblock(_Myoff);
-        _Size_type _Off           = _Myoff % _Block_size;
+        const _Size_type _Block   = _Mycont->_Getblock(_Myoff);
+        const _Size_type _Off     = _Myoff % _Block_size;
         return _Mycont->_Map[_Block][_Off];
     }
 
@@ -265,8 +265,8 @@ public:
             "cannot deference out of range deque iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-        _Size_type _Block = _Mycont->_Getblock(_Myoff);
-        _Size_type _Off   = _Myoff % _Block_size;
+        const _Size_type _Block = _Mycont->_Getblock(_Myoff);
+        const _Size_type _Off   = _Myoff % _Block_size;
         return _Mycont->_Map[_Block][_Off];
     }
 
@@ -1083,7 +1083,7 @@ public:
             _STL_REPORT_ERROR("deque empty before pop");
         } else { // something to erase, do it
             _Orphan_off(_Myoff());
-            size_type _Block = _Getblock(_Myoff());
+            const size_type _Block = _Getblock(_Myoff());
             _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
             if (--_Mysize() == 0) {
                 _Myoff() = 0;
@@ -1093,7 +1093,7 @@ public:
         }
 
 #else // _ITERATOR_DEBUG_LEVEL == 2
-        size_type _Block = _Getblock(_Myoff());
+        const size_type _Block = _Getblock(_Myoff());
         _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Myoff() % _Block_size));
         if (--_Mysize() == 0) {
             _Myoff() = 0;
@@ -1112,8 +1112,8 @@ private:
             _Growmap(1);
         }
         _Myoff() &= _Mapsize() * _Block_size - 1;
-        size_type _Newoff = _Myoff() + _Mysize();
-        size_type _Block  = _Getblock(_Newoff);
+        const size_type _Newoff = _Myoff() + _Mysize();
+        const size_type _Block  = _Getblock(_Newoff);
         if (_Map()[_Block] == nullptr) {
             _Map()[_Block] = _Getal().allocate(_Block_size);
         }
@@ -1138,7 +1138,7 @@ public:
         } else { // something to erase, do it
             size_type _Newoff = _Myoff() + _Mysize() - 1;
             _Orphan_off(_Newoff);
-            size_type _Block = _Getblock(_Newoff);
+            const size_type _Block = _Getblock(_Newoff);
             _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
             if (--_Mysize() == 0) {
                 _Myoff() = 0;
@@ -1146,8 +1146,8 @@ public:
         }
 
 #else // _ITERATOR_DEBUG_LEVEL == 2
-        size_type _Newoff = _Myoff() + _Mysize() - 1;
-        size_type _Block  = _Getblock(_Newoff);
+        const size_type _Newoff = _Myoff() + _Mysize() - 1;
+        const size_type _Block  = _Getblock(_Newoff);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Map()[_Block] + _Newoff % _Block_size));
         if (--_Mysize() == 0) {
             _Myoff() = 0;
@@ -1198,7 +1198,7 @@ public:
     }
 
     iterator insert(const_iterator _Where, const _Ty& _Val) {
-        size_type _Off = static_cast<size_type>(_Where - begin());
+        const size_type _Off = static_cast<size_type>(_Where - begin());
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Off <= _Mysize(), "deque insert iterator outside range");
@@ -1217,7 +1217,7 @@ public:
 
     iterator insert(const_iterator _Where, _CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) {
         // insert _Count * _Val at _Where
-        size_type _Off = static_cast<size_type>(_Where - begin());
+        const size_type _Off = static_cast<size_type>(_Where - begin());
         _Insert_n(_Where, _Count, _Val);
         return begin() + static_cast<difference_type>(_Off);
     }
@@ -1225,7 +1225,7 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert [_First, _Last) at _Where, input iterators
-        size_type _Off = static_cast<size_type>(_Where - begin());
+        const size_type _Off = static_cast<size_type>(_Where - begin());
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Mysize() >= _Off, "deque insert iterator outside range");
@@ -1235,7 +1235,7 @@ public:
         auto _UFirst      = _Get_unwrapped(_First);
         const auto _ULast = _Get_unwrapped(_Last);
 
-        size_type _Oldsize = _Mysize();
+        const size_type _Oldsize = _Mysize();
 
         if (_UFirst != _ULast) {
             if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
@@ -1252,7 +1252,7 @@ public:
                 _RERAISE;
                 _CATCH_END
 
-                size_type _Num = _Mysize() - _Oldsize;
+                const size_type _Num = _Mysize() - _Oldsize;
                 _STD reverse(begin(), begin() + static_cast<difference_type>(_Num)); // flip new stuff in place
                 _STD rotate(begin(), begin() + static_cast<difference_type>(_Num),
                     begin() + static_cast<difference_type>(_Num + _Off));
@@ -1292,13 +1292,13 @@ public:
         _STL_VERIFY(_First <= _Last && begin() <= _First && _Last <= end(), "deque erase iterator outside range");
         _Adl_verify_range(_First, _Last);
 
-        auto _Off   = static_cast<size_type>(_First - begin());
-        auto _Count = static_cast<size_type>(_Last - _First);
-        bool _Moved = 0 < _Off && _Off + _Count < _Mysize();
+        const auto _Off   = static_cast<size_type>(_First - begin());
+        const auto _Count = static_cast<size_type>(_Last - _First);
+        const bool _Moved = 0 < _Off && _Off + _Count < _Mysize();
 
 #else // _ITERATOR_DEBUG_LEVEL == 2
-        auto _Off   = static_cast<size_type>(_First - begin());
-        auto _Count = static_cast<size_type>(_Last - _First);
+        const auto _Off   = static_cast<size_type>(_First - begin());
+        const auto _Count = static_cast<size_type>(_Last - _First);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         if (_Count == 0) {
@@ -1355,9 +1355,9 @@ private:
     void _Insert_n(const_iterator _Where, size_type _Count, const _Ty& _Val) { // insert _Count * _Val at _Where
         iterator _Mid;
         size_type _Num;
-        size_type _Off     = static_cast<size_type>(_Where - begin());
-        size_type _Oldsize = _Mysize();
-        size_type _Rem     = _Oldsize - _Off;
+        const size_type _Off     = static_cast<size_type>(_Where - begin());
+        const size_type _Oldsize = _Mysize();
+        const size_type _Rem     = _Oldsize - _Off;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Off <= _Oldsize, "deque insert iterator outside range");
@@ -1451,7 +1451,7 @@ private:
         }
         _Count = _Newsize - _Mapsize();
 
-        size_type _Myboff = _Myoff() / _Block_size;
+        const size_type _Myboff = _Myoff() / _Block_size;
         _Mapptr _Newmap   = _Almap.allocate(_Mapsize() + _Count);
         _Mapptr _Myptr    = _Newmap + _Myboff;
 
