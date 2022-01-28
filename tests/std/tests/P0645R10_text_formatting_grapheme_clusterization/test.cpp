@@ -2029,9 +2029,6 @@ void test_unicode_decoding() {
 }
 
 int main() {
-    _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_WNDW);
-    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_WNDW);
-    _set_abort_behavior(1, _CALL_REPORTFAULT);
     test_unicode_decoding();
 
     run_unicode_test_data_utf32();

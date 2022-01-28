@@ -431,7 +431,6 @@ inline constexpr _Unicode_property_data<_Grapheme_Break_property_values, 1364> _
         0x2005, 0x200f, 0x2007, 0x2011, 0x2007, 0x2002, 0x2005, 0x2007, 0x2004, 0x2007, 0x2007, 0x801a, 0x2005, 0x1001,
         0x1001, 0x101e, 0x2060, 0x1080, 0x20f0, 0x1e10}};
 
-
 enum class _Extended_Pictographic_property_values : uint8_t { _Extended_Pictographic_value, _No_value = 255 };
 
 inline constexpr _Unicode_property_data<_Extended_Pictographic_property_values, 491>
@@ -531,13 +530,11 @@ _NODISCARD constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wch
         _Val = 0xFFFD;
         return _First + 1;
     }
-
-    return _First + 1;
 }
 
 _NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_t& _Val) noexcept {
     _STL_INTERNAL_CHECK(_First < _Last);
-    // decode a UTF-8 value starting at _First and not exceeding _Last, returning
+    // Decode a UTF-8 encoded code-point starting at _First and not exceeding _Last, returning
     // one past the end of the character decoded. Any invalid codepoints will result in
     // _Val == U+FFFD and _Decode_utf will return one past the
     // maximal subpart of the ill-formed subsequence. So, most invalid UTF-8 will result in
@@ -692,6 +689,7 @@ public:
         return _First == _Last;
     }
     _NODISCARD constexpr bool operator==(const _Unicode_codepoint_iterator& _Other) const noexcept {
+        _STL_INTERNAL_CHECK(_Last == _Other._Last);
         return _First == _Other._First && _Last == _Other._Last;
     }
 };
@@ -739,7 +737,7 @@ public:
 
 class _Grapheme_break_property_sentinel {};
 
-template <typename _CharT>
+template <class _CharT>
 class _Grapheme_break_property_iterator {
     using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharT>;
 
