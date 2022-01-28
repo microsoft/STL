@@ -456,18 +456,19 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
     // This is where we would parse named arg ids if std::format were to support them.
     _THROW(format_error("Invalid format string."));
 }
-#ifdef __clang__ // TRANSITION: LLVM-52549 (clang-cl 14 will define _MSVC_EXECUTION_CHARACTER_SET)
-_NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
-    return string_view{__clang_literal_encoding__} == "UTF-8";
-}
-#else // ^^^ clang / msvc vvv
-_NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
 
-    // charset codes (as reported by _MSVC_EXECUTION_CHARACTER_SET) that are
-    // self-synchronizing (and "narrow" so 1200 (utf-16) and 1201 (unicodeFFFE) are not listed)
-    // we care about this because if a charset is self-synchronizing then we can search through it
+_NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
+#ifdef __clang__ // TRANSITION, LLVM-52549 (clang-cl 14 will define _MSVC_EXECUTION_CHARACTER_SET)
+    return string_view{__clang_literal_encoding__} == "UTF-8";
+#elif defined(__EDG__) // TRANSITION, VSO-1468747
+    return false; // safe fallback response
+#else // ^^^ EDG / MSVC vvv
+    // This is a list of charset codes (as reported by _MSVC_EXECUTION_CHARACTER_SET) that are
+    // self-synchronizing (and "narrow" so 1200 (utf-16) and 1201 (unicodeFFFE) are not listed).
+    // We care about this because if a charset is self-synchronizing then we can search through it
     // for formatting control characters _without_ generally decoding the format string.
     switch (_MSVC_EXECUTION_CHARACTER_SET) {
+    // See: https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
     case 874: // Thai (Windows)
     case 1250: // ANSI Central European; Central European (Windows)
     case 1251: // ANSI Cyrillic; Cyrillic (Windows)
@@ -482,9 +483,9 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
         return true;
     default:
         return false;
-    };
+    }
+#endif // ^^^ MSVC ^^^
 }
-#endif // ^^^ msvc
 
 inline constexpr char16_t _Width_estimate_low_intervals[] = { // Per N4885 [format.string.std]/11
     0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u, 0xFE10u,
@@ -536,16 +537,15 @@ protected:
     }
 
     _Fmt_codec_base() {
-#ifndef _FORMAT_CODEPAGE
 #ifdef __clang__ // TRANSITION, LLVM-52549
-#define _FORMAT_CODEPAGE static_cast<__std_code_page>(65001) // clang only supports utf-8
-#else // ^^^ clang / msvc vvv
-#define _FORMAT_CODEPAGE static_cast<__std_code_page>(_MSVC_EXECUTION_CHARACTER_SET)
-#endif // ^^^ msvc
-#endif // _FORMAT_CODEPAGE
-        [[maybe_unused]] const __std_win_error _Result = __std_get_cvt(_FORMAT_CODEPAGE, &_Cvt);
+        constexpr __std_code_page _Format_codepage{65001}; // clang only supports utf-8
+#elif defined(__EDG__) // TRANSITION, VSO-1468747
+        constexpr __std_code_page _Format_codepage{65001}; // constructor isn't constexpr, so value is unimportant
+#else // ^^^ EDG / MSVC vvv
+        constexpr __std_code_page _Format_codepage{_MSVC_EXECUTION_CHARACTER_SET};
+#endif // ^^^ MSVC ^^^
+        [[maybe_unused]] const __std_win_error _Result = __std_get_cvt(_Format_codepage, &_Cvt);
         _STL_INTERNAL_CHECK(_Result == __std_win_error::_Success);
-#undef _FORMAT_CODEPAGE
     }
 };
 
