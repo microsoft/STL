@@ -1852,8 +1852,6 @@ struct _Back_insert_iterator_container_access : back_insert_iterator<_Container>
     using back_insert_iterator<_Container>::container;
 };
 
-#pragma warning(push)
-#pragma warning(disable : 4265) // non-virtual destructor in base class
 template <class _OutputIt, class _Ty, class _Traits = _Fmt_buffer_traits>
 class _Fmt_iterator_buffer final : public _Traits, public _Fmt_buffer<_Ty> {
 private:
@@ -1900,7 +1898,6 @@ public:
         return static_cast<ptrdiff_t>(_Traits::_Count() + this->_Size());
     }
 };
-#pragma warning(pop)
 
 template <class _Ty>
 class _Fmt_iterator_buffer<_Ty*, _Ty> final : public _Fmt_buffer<_Ty> {
@@ -2749,28 +2746,28 @@ struct _Arg_formatter {
 };
 
 template <class _Ty>
-constexpr bool _Is_known_size_string = false;
+inline constexpr bool _Is_known_size_string = false;
 
 template <_Format_supported_charT _CharT, class _Traits>
-constexpr bool _Is_known_size_string<basic_string_view<_CharT, _Traits>> = true;
+inline constexpr bool _Is_known_size_string<basic_string_view<_CharT, _Traits>> = true;
 
 template <_Format_supported_charT _CharT, class _Traits, class _Allocator>
-constexpr bool _Is_known_size_string<basic_string<_CharT, _Traits, _Allocator>> = true;
+inline constexpr bool _Is_known_size_string<basic_string<_CharT, _Traits, _Allocator>> = true;
 
 template <class _Ty>
-constexpr bool _Is_nullterminated_string = false;
+inline constexpr bool _Is_nullterminated_string = false;
 
 template <_Format_supported_charT _CharT>
-constexpr bool _Is_nullterminated_string<_CharT*> = true;
+inline constexpr bool _Is_nullterminated_string<_CharT*> = true;
 
 template <_Format_supported_charT _CharT>
-constexpr bool _Is_nullterminated_string<const _CharT*> = true;
+inline constexpr bool _Is_nullterminated_string<const _CharT*> = true;
 
 template <_Format_supported_charT _CharT, size_t _Nx>
-constexpr bool _Is_nullterminated_string<const _CharT[_Nx]> = true;
+inline constexpr bool _Is_nullterminated_string<const _CharT[_Nx]> = true;
 
 template <class _Ty>
-constexpr bool _Is_format_arg_type_string = _Is_known_size_string<_Ty> || _Is_nullterminated_string<_Ty>;
+inline constexpr bool _Is_format_arg_type_string = _Is_known_size_string<_Ty> || _Is_nullterminated_string<_Ty>;
 
 template <class _Ty>
 concept _Derived_from_formatter_base = requires {
@@ -2808,12 +2805,13 @@ struct _Format_checker {
     using _ParseContext = basic_format_parse_context<_CharT>;
     using _ParseFunc    = pair<typename _ParseContext::iterator, _Dynamic_format_specs<_CharT>> (*)(_ParseContext&);
 
-    static constexpr size_t _Num_args = sizeof...(_Args);
+    static constexpr size_t _Num_args          = sizeof...(_Args);
+    static constexpr size_t _Num_args_non_zero = _Num_args > 0 ? _Num_args : 1;
     _ParseContext _Parse_context;
-    _ParseFunc _Parse_funcs[_Num_args > 0 ? _Num_args : 1];
-    size_t _Arg_use_count[_Num_args > 0 ? _Num_args : 1]{}; // only used for strings
-    bool _Is_string_type[_Num_args > 0 ? _Num_args : 1];
-    bool _Is_nullterminated_string_type[_Num_args > 0 ? _Num_args : 1];
+    _ParseFunc _Parse_funcs[_Num_args_non_zero];
+    size_t _Arg_use_count[_Num_args_non_zero]{}; // only used for strings
+    bool _Is_string_type[_Num_args_non_zero];
+    bool _Is_nullterminated_string_type[_Num_args_non_zero];
     size_t _Estimated_size    = 0;
     bool _Is_estimation_exact = true;
 
@@ -2843,7 +2841,7 @@ struct _Format_checker {
             if (_Is_string_type[_Id]) {
                 if (_Is_nullterminated_string_type[_Id]) {
                     if (_Specs._Precision >= 0) {
-                        // if precision (the maximux length) is specified as a constant, add it
+                        // if precision (the maximum length) is specified as a constant, add it
                         _Estimated_size += _Specs._Precision;
                         _Is_estimation_exact = false;
                     } else if (_Specs._Width > 0) {
@@ -2873,7 +2871,7 @@ struct _Format_checker {
                     }
                 }
             } else {
-                // for all other arguments use the largest of precision, width and 8
+                // for all other arguments use the largest of precision, width, and 8
                 _Estimated_size += (_STD max)((_STD max)(_Specs._Precision, _Specs._Width), 8);
                 _Is_estimation_exact = false;
             }
@@ -2975,7 +2973,12 @@ struct _Formatter_base {
             basic_format_arg<_FormatContext>{_Val});
     }
 
+private:
     _Dynamic_format_specs<_CharT> _Specs;
+
+    template <class _Ty2, class _ParseContext>
+    friend consteval pair<typename _ParseContext::iterator, _Dynamic_format_specs<typename _ParseContext::char_type>>
+        _Compile_time_parse_format_specs(_ParseContext& _Pc);
 };
 
 #define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
@@ -3041,7 +3044,7 @@ struct _Basic_format_string {
         requires convertible_to<const _Ty&, basic_string_view<_CharT>>
     consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
         if (_Is_execution_charset_utf8()) {
-#ifndef __clang__ // TRANSITION, clang consteval bug (likely https://github.com/llvm/llvm-project/issues/52648)
+#ifndef __clang__ // TRANSITION, clang consteval bug (likely LLVM-52648)
             _Format_checker<_CharT, remove_cvref_t<_Args>...> _Handler{_Str};
             _Parse_format_string(_Str, _Handler);
             _RANGES copy(_Handler._Arg_use_count, _Arg_use_count);
@@ -3050,12 +3053,12 @@ struct _Basic_format_string {
 #else // ^^^ no workaround ^^^ / vvv workaround vvv
             _Parse_format_string(_Str, _Format_checker<_CharT, remove_cvref_t<_Args>...>{_Str});
             _Estimated_size = _Str.size() + _Num_args * 8;
-            _STD fill(_STD begin(_Arg_use_count), _STD end(_Arg_use_count), static_cast<size_t>(1));
+            _RANGES fill(_Arg_use_count, static_cast<size_t>(1));
 #endif // ^^^ workaround ^^^
         } else {
             // fallback to assumption that all arguments are used once
             _Estimated_size = _Str.size() + _Num_args * 8;
-            _STD fill(_STD begin(_Arg_use_count), _STD end(_Arg_use_count), static_cast<size_t>(1));
+            _RANGES fill(_Arg_use_count, static_cast<size_t>(1));
         }
     }
 

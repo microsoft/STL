@@ -1017,22 +1017,48 @@ void test_spec_replacement_field() {
     test_pointer_specs<charT>();
     test_string_specs<charT>();
 }
+
+enum class my_integer { one, two, three, forty_two };
+
+template <class charT>
+struct std::formatter<my_integer, charT> : std::formatter<basic_string_view<charT>, charT> {
+    template <class FC>
+    auto format(const my_integer& val, FC& format_ctx) {
+        basic_string_view<charT> str;
+        switch (val) {
+        case my_integer::one:
+            str = STR("one");
+            break;
+        case my_integer::two:
+            str = STR("two");
+            break;
+        case my_integer::three:
+            str = STR("three");
+            break;
+        case my_integer::forty_two:
+            str = STR("forty two");
+            break;
+        }
+        return std::formatter<basic_string_view<charT>, charT>::format(str, format_ctx);
+    }
+};
+
 template <class charT, class... Args>
 void test_size_helper_impl(const size_t expected_size, const bool expected_is_estimation_exact,
     const _Basic_format_string<charT, Args...> fmt, Args&&... args) {
     assert(formatted_size(fmt, forward<Args>(args)...) == expected_size);
     assert(formatted_size(locale::classic(), fmt, forward<Args>(args)...) == expected_size);
 
-#ifndef __clang__ // TRANSITION, clang consteval bug (likely https://github.com/llvm/llvm-project/issues/52648)
+#ifndef __clang__ // TRANSITION, clang consteval bug (likely LLVM-52648)
     if (_Is_execution_charset_utf8()) {
         assert(fmt._Is_estimation_exact == expected_is_estimation_exact);
         if (expected_is_estimation_exact) {
             assert(fmt._Estimate_required_capacity(args...) == expected_size);
         }
     }
-#else // ^^^ not clang ^^^ / vvv clang vvv
+#else // ^^^ no workaround ^^^ / vvv workaround vvv
     (void) expected_is_estimation_exact;
-#endif // ^^^ clang ^^^
+#endif // ^^^ workaround ^^^
 
     const auto signed_size = static_cast<ptrdiff_t>(expected_size);
     basic_string<charT> str;
@@ -1263,6 +1289,14 @@ void test_size() {
     test_size_helper(7, false, STR("{0:d} {0:d}"), 123, STR_VIEW("four"));
     test_size_helper(8, false, STR("{1:s} {0:d}"), 123, STR_VIEW("four"));
     test_size_helper(9, true, STR("{1:s} {1:s}"), 123, STR_VIEW("four"));
+
+    test_size_helper(3, false, STR("{}"), my_integer::one);
+    test_size_helper(8, false, STR("{:8}"), my_integer::two);
+    test_size_helper(5, false, STR("{:3}"), my_integer::three);
+    test_size_helper(3, false, STR("{:.8}"), my_integer::one);
+    test_size_helper(3, false, STR("{:.3}"), my_integer::forty_two);
+    test_size_helper(3, false, STR("{:2.3}"), my_integer::three);
+    test_size_helper(8, false, STR("{:8.10}"), my_integer::two);
 }
 
 // The libfmt_ tests are derived from tests in
