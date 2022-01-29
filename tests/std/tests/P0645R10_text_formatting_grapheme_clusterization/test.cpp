@@ -1881,7 +1881,7 @@ bool run_unicode_test_data_utf32() {
         _Grapheme_break_property_iterator<char32_t> iter(
             test_case.code_points.data(), test_case.code_points.data() + test_case.code_points.size());
         size_t i = 0;
-        while (iter != _Grapheme_break_property_sentinel{}) {
+        while (iter != default_sentinel) {
             assert(i < test_case.breaks.size());
             assert(*iter == test_case.code_points[test_case.breaks[i]]);
             ++iter;
@@ -1897,10 +1897,10 @@ bool run_unicode_test_data_utf32_utf8_comparison() {
         const auto& utf8_code_points  = test_data<char>[i].code_points;
         assert(ranges::equal(_Grapheme_break_property_iterator<char32_t>(
                                  utf32_code_points.data(), utf32_code_points.data() + utf32_code_points.size()),
-            _Grapheme_break_property_sentinel{},
+            default_sentinel,
             _Grapheme_break_property_iterator<char>(
                 utf8_code_points.data(), utf8_code_points.data() + utf8_code_points.size()),
-            _Grapheme_break_property_sentinel{}));
+            default_sentinel));
     }
 
     return true;
@@ -1980,8 +1980,8 @@ template <typename CharT>
 constexpr void test_utf_decode_helper(
     const CharT* encoded, size_t n_encoded, const char32_t* decoded, size_t n_decoded) {
     static_assert(_Is_any_of_v<CharT, char, wchar_t>);
-    assert(ranges::equal(_Unicode_codepoint_iterator(encoded, encoded + n_encoded), _Unicode_codepoint_sentinel{},
-        decoded, decoded + n_decoded));
+    assert(ranges::equal(
+        _Unicode_codepoint_iterator(encoded, encoded + n_encoded), default_sentinel, decoded, decoded + n_decoded));
 }
 
 template <typename CharT, size_t N_enc, size_t N_dec>
@@ -2044,7 +2044,7 @@ int main() {
     static_assert(test_utf16_decode());
 
     static_assert(forward_iterator<_Unicode_codepoint_iterator<char>>);
-    static_assert(sentinel_for<_Unicode_codepoint_sentinel, _Unicode_codepoint_iterator<char>>);
+    static_assert(sentinel_for<default_sentinel_t, _Unicode_codepoint_iterator<char>>);
     static_assert(forward_iterator<_Grapheme_break_property_iterator<char>>);
     return 0;
 }
