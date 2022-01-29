@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // Generated file - DO NOT EDIT manually!
-'use strict';
-const monthly_table = [
+export type MonthlyRow = {
+    date: string;
+    merge_bar: number;
+};
+export const monthly_table: MonthlyRow[] = [
     { date: '2019-10-16', merge_bar: 29, },
     { date: '2019-11-16', merge_bar: 20, },
     { date: '2019-12-16', merge_bar: 26, },

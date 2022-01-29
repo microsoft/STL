@@ -2,8 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // Generated file - DO NOT EDIT manually!
-'use strict';
-const daily_table = [
+export type DailyRow = {
+    date: string;
+    merged: number;
+    pr: number | null;
+    cxx20: number | null;
+    cxx23: number | null;
+    lwg: number | null;
+    issue: number | null;
+    bug: number | null;
+    avg_age: number;
+    avg_wait: number;
+    sum_age: number;
+    sum_wait: number;
+};
+export const daily_table: DailyRow[] = [
     { date: '2019-09-05', merged: 3.00, pr: 1, cxx20: 60, cxx23: null, lwg: 7, issue: 5, bug: null, avg_age: 0.23, avg_wait: 0.23, sum_age: 0.01, sum_wait: 0.01, },
     { date: '2019-09-06', merged: 6.00, pr: 1, cxx20: 60, cxx23: null, lwg: 7, issue: 6, bug: null, avg_age: 0.03, avg_wait: 0.03, sum_age: 0.00, sum_wait: 0.00, },
     { date: '2019-09-07', merged: 6.00, pr: 2, cxx20: 60, cxx23: null, lwg: 7, issue: 6, bug: null, avg_age: 0.84, avg_wait: 0.64, sum_age: 0.06, sum_wait: 0.04, },
