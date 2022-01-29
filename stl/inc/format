@@ -643,7 +643,7 @@ _NODISCARD constexpr const char32_t* _Decode_utf(
     return _First + 1;
 }
 
-template <typename _CharT>
+template <class _CharT>
 class _Unicode_codepoint_iterator {
 private:
     const _CharT* _First = nullptr;
@@ -3223,7 +3223,7 @@ _NODISCARD _OutputIt _Fmt_write(
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
 // width iterator for UTF-8 and UTF-16
-template <typename _CharT>
+template <class _CharT>
 class _Measure_string_prefix_iterator_utf {
     _Grapheme_break_property_iterator<_CharT> _WrappedIter;
 
