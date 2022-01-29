@@ -1,8 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-'use strict';
-const weekly_table = [
+export type WeeklyRow = {
+    date: string;
+    cxx17?: number;
+    cxx20?: number;
+    lwg?: number;
+    vso: number;
+    libcxx: number;
+};
+
+export const weekly_table: WeeklyRow[] = [
     { date: '2017-06-09', cxx17: 17, lwg: 44, vso: 247, libcxx: 526 },
     { date: '2017-06-16', cxx17: 17, lwg: 43, vso: 246, libcxx: 526 },
     { date: '2017-06-23', cxx17: 17, lwg: 43, vso: 249, libcxx: 517 },
