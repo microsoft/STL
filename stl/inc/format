@@ -753,7 +753,7 @@ class _Grapheme_break_property_iterator {
 
 public:
     using difference_type = ptrdiff_t;
-    using value_type      = typename _Wrapped_iter_type::value_type;
+    using value_type      = iter_value_t<_Wrapped_iter_type>;
 
     constexpr _Grapheme_break_property_iterator(const _CharT* _First, const _CharT* _Last)
         : _WrappedIter(_First, _Last) {}
