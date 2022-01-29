@@ -14,16 +14,13 @@ class PropertyRange:
     upper: int = -1
     prop: str = None
 
-
 @dataclass
 class PropertyTable:
     lower_bounds: list[int] = field(default_factory=list)
     props_and_range: list[int] = field(default_factory=list)
 
-
 LINE_REGEX = re.compile(
     r"^(?P<lower>[0-9A-F]{4,5})(?:\.\.(?P<upper>[0-9A-F]{4,5}))?\s*;\s*(?P<prop>\w+)")
-
 
 def parsePropertyLine(inputLine: str) -> Optional[PropertyRange]:
     result = PropertyRange()
@@ -37,7 +34,6 @@ def parsePropertyLine(inputLine: str) -> Optional[PropertyRange]:
 
     else:
         return None
-
 
 PROP_VALUE_ENUMERATOR_TEMPLATE = "_{}_value"
 PROP_VALUE_ENUM_TEMPLATE = """
@@ -54,7 +50,6 @@ inline constexpr _Unicode_property_data<_{prop_name}_property_values, {size}> _{
 }};
 """
 
-
 def property_ranges_to_table(ranges: list[PropertyRange], props: list[str]) -> PropertyTable:
     result = PropertyTable()
     for range in sorted(ranges, key=lambda x: x.lower):
@@ -64,7 +59,6 @@ def property_ranges_to_table(ranges: list[PropertyRange], props: list[str]) -> P
         prop_idx = props.index(range.prop)
         result.props_and_range.append(size | (prop_idx << 12))
     return result
-
 
 def generate_cpp_data(prop_name: str, ranges: list[PropertyRange]) -> str:
     result = StringIO()
@@ -79,7 +73,6 @@ def generate_cpp_data(prop_name: str, ranges: list[PropertyRange]) -> str:
                                        for x in table.lower_bounds]),
                  props_and_size=",".join(["0x" + format(x, 'x') for x in table.props_and_range])))
     return result.getvalue()
-
 
 if __name__ == "__main__":
     gbp_data_path = Path(__file__).absolute(

@@ -13,14 +13,11 @@ class BreakTestItem:
     breaks: list[int] = field(default_factory=list)
     code_points: list[int] = field(default_factory=list)
 
-
 class CommentLine:
     pass
 
-
 class EOF:
     pass
-
 
 def parseBreakTestLine(input: TextIO) -> Optional[BreakTestItem]:
     result = BreakTestItem()
@@ -75,12 +72,10 @@ const test_case_data<char> test_data<char>[{0}] = {{
 
 cpp_test_data_line_template = "{{ {{{}}}, {{{}}} }}"
 
-
 def lineToCppDataLineUtf32(line: BreakTestItem) -> str:
     return cpp_test_data_line_template.format(','.join(
         ["U'\\x" + format(x, 'x') + "'" for x in line.code_points]), ','.join(
         [str(x) for x in line.breaks]))
-
 
 def lineToCppDataLineUtf8(line: BreakTestItem) -> str:
     utf8_rep = str(array('L', line.code_points),
@@ -88,7 +83,6 @@ def lineToCppDataLineUtf8(line: BreakTestItem) -> str:
     return cpp_test_data_line_template.format(','.join(
         ["static_cast<char>(0x" + format(x, 'x') + ")" for x in utf8_rep]
     ), ','.join([str(x) for x in line.breaks]))
-
 
 if __name__ == "__main__":
     test_data_path = Path(__file__)
