@@ -458,11 +458,7 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
 }
 
 _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
-#ifdef __clang__ // TRANSITION, LLVM-52549 (clang-cl 14 will define _MSVC_EXECUTION_CHARACTER_SET)
-    return string_view{__clang_literal_encoding__} == "UTF-8";
-#elif defined(__EDG__) // TRANSITION, VSO-1468747
-    return false; // safe fallback response
-#else // ^^^ EDG / MSVC vvv
+#ifdef _MSVC_EXECUTION_CHARACTER_SET
     // This is a list of charset codes (as reported by _MSVC_EXECUTION_CHARACTER_SET) that are
     // self-synchronizing (and "narrow" so 1200 (utf-16) and 1201 (unicodeFFFE) are not listed).
     // We care about this because if a charset is self-synchronizing then we can search through it
@@ -484,7 +480,11 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
     default:
         return false;
     }
-#endif // ^^^ MSVC ^^^
+#elif defined(__clang__) // ^^^ no workaround / Clang workaround vvv
+    return string_view{__clang_literal_encoding__} == "UTF-8"; // TRANSITION, Clang 14
+#else // ^^^ Clang workaround / EDG workaround vvv
+    return false; // TRANSITION, VSO-1468747 (EDG) - safe fallback response
+#endif // ^^^ EDG workaround ^^^
 }
 
 inline constexpr char16_t _Width_estimate_low_intervals[] = { // Per N4885 [format.string.std]/11
@@ -537,13 +537,13 @@ protected:
     }
 
     _Fmt_codec_base() {
-#ifdef __clang__ // TRANSITION, LLVM-52549
-        constexpr __std_code_page _Format_codepage{65001}; // clang only supports utf-8
-#elif defined(__EDG__) // TRANSITION, VSO-1468747
-        constexpr __std_code_page _Format_codepage{65001}; // constructor isn't constexpr, so value is unimportant
-#else // ^^^ EDG / MSVC vvv
+#ifdef _MSVC_EXECUTION_CHARACTER_SET
         constexpr __std_code_page _Format_codepage{_MSVC_EXECUTION_CHARACTER_SET};
-#endif // ^^^ MSVC ^^^
+#else // ^^^ no workaround / workaround vvv
+      // TRANSITION, Clang 14 - only utf-8 is supported
+      // TRANSITION, VSO-1468747 (EDG) - constructor isn't constexpr, so value is unimportant
+        constexpr __std_code_page _Format_codepage{65001};
+#endif // ^^^ workaround ^^^
         [[maybe_unused]] const __std_win_error _Result = __std_get_cvt(_Format_codepage, &_Cvt);
         _STL_INTERNAL_CHECK(_Result == __std_win_error::_Success);
     }
