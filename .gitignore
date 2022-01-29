@@ -5,7 +5,7 @@
 .vscode/
 
 # Ignore the TypeScript compiler's output.
-/built/
+/built/gather_stats.js
 
 # Ignore installed packages.
 /node_modules/
