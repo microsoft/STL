@@ -187,7 +187,7 @@ struct _Unicode_property_data {
     }
 };
 
-// The following static data tables are generated from the unicode character database version 13.0.0.
+// The following static data tables are generated from the unicode character database.
 // _Grapheme_Break_property_data comes from ucd/auxiliary/GraphemeBreakProperty.txt.
 //
 // _Extended_Pictographic_property_data comes from ucd/emoji/emoji-data.txt.
@@ -530,6 +530,8 @@ _NODISCARD constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wch
         _Val = 0xFFFD;
         return _First + 1;
     }
+
+    return _First + 1;
 }
 
 _NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_t& _Val) noexcept {
@@ -641,8 +643,6 @@ _NODISCARD constexpr const char32_t* _Decode_utf(
     return _First + 1;
 }
 
-class _Unicode_codepoint_sentinel {};
-
 template <typename _CharT>
 class _Unicode_codepoint_iterator {
 private:
@@ -652,9 +652,8 @@ private:
     char32_t _Val        = 0;
 
 public:
-    using iterator_concept = forward_iterator_tag;
-    using value_type       = char32_t;
-    using difference_type  = ptrdiff_t;
+    using value_type      = char32_t;
+    using difference_type = ptrdiff_t;
 
     constexpr _Unicode_codepoint_iterator(const _CharT* _First_val, const _CharT* _Last_val) noexcept
         : _First(_First_val), _Last(_Last_val) {
@@ -685,7 +684,7 @@ public:
         return _First;
     }
 
-    _NODISCARD constexpr bool operator==(_Unicode_codepoint_sentinel) const noexcept {
+    _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
         return _First == _Last;
     }
     _NODISCARD constexpr bool operator==(const _Unicode_codepoint_iterator& _Other) const noexcept {
@@ -735,8 +734,6 @@ public:
     }
 };
 
-class _Grapheme_break_property_sentinel {};
-
 template <class _CharT>
 class _Grapheme_break_property_iterator {
     using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharT>;
@@ -745,8 +742,8 @@ class _Grapheme_break_property_iterator {
     _GB11_LeftHand_regex _GB11_rx;
 
     _NODISCARD friend constexpr bool operator==(
-        const _Grapheme_break_property_iterator& _Lhs, _Grapheme_break_property_sentinel) noexcept {
-        return _Lhs._WrappedIter == _Unicode_codepoint_sentinel{};
+        const _Grapheme_break_property_iterator& _Lhs, default_sentinel_t) noexcept {
+        return _Lhs._WrappedIter == default_sentinel;
     }
     _NODISCARD friend constexpr bool operator==(
         const _Grapheme_break_property_iterator& _Lhs, const _Grapheme_break_property_iterator& _Rhs) noexcept {
@@ -755,9 +752,8 @@ class _Grapheme_break_property_iterator {
     }
 
 public:
-    using iterator_concept = forward_iterator_tag;
-    using difference_type  = ptrdiff_t;
-    using value_type       = typename _Wrapped_iter_type::value_type;
+    using difference_type = ptrdiff_t;
+    using value_type      = typename _Wrapped_iter_type::value_type;
 
     constexpr _Grapheme_break_property_iterator(const _CharT* _First, const _CharT* _Last)
         : _WrappedIter(_First, _Last) {}
@@ -772,7 +768,7 @@ public:
         size_t _Num_RIs    = 0;
         for (;; _Left_gbp = _Right_gbp, _Left_ExtPic = _Right_ExtPic) {
             ++_WrappedIter;
-            if (_WrappedIter == _Unicode_codepoint_sentinel{}) {
+            if (_WrappedIter == default_sentinel) {
                 return *this; // GB2 Any % eot
             }
             _Right_gbp    = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
@@ -780,7 +776,7 @@ public:
             // match GB11 now, so that we're sure to update it for every character, not just ones where
             // the GB11 rule is considered
             bool _GB11_Match = _GB11_rx._Match(_Left_gbp, _Left_ExtPic);
-            // Also update the nubmer of sequential RIs immediately
+            // Also update the number of sequential RIs immediately
             if (_Left_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value) {
                 ++_Num_RIs;
             } else {
@@ -3226,9 +3222,6 @@ _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale) {
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
-
-class _Measure_string_prefix_sentinel {};
-
 // width iterator for UTF-8 and UTF-16
 template <typename _CharT>
 class _Measure_string_prefix_iterator_utf {
@@ -3238,16 +3231,14 @@ class _Measure_string_prefix_iterator_utf {
         const _Measure_string_prefix_iterator_utf& _Lhs, const _Measure_string_prefix_iterator_utf& _Rhs) noexcept {
         return _Lhs._WrappedIter == _Rhs._WrappedIter;
     }
-    friend constexpr bool operator==(
-        const _Measure_string_prefix_iterator_utf& _Lhs, _Measure_string_prefix_sentinel) noexcept {
-        return _Lhs._WrappedIter == _Grapheme_break_property_sentinel{};
+    friend constexpr bool operator==(const _Measure_string_prefix_iterator_utf& _Lhs, default_sentinel_t) noexcept {
+        return _Lhs._WrappedIter == default_sentinel;
     }
 
 
 public:
-    using iterator_concept = forward_iterator_tag;
-    using difference_type  = ptrdiff_t;
-    using value_type       = int;
+    using difference_type = ptrdiff_t;
+    using value_type      = int;
 
     constexpr _Measure_string_prefix_iterator_utf(const _CharT* _First, const _CharT* _Last)
         : _WrappedIter(_First, _Last) {}
@@ -3282,7 +3273,7 @@ class _Measure_string_prefix_iterator_legacy {
     int _Units         = 0;
 
     _NODISCARD friend constexpr bool operator==(
-        const _Measure_string_prefix_iterator_legacy& _Lhs, _Measure_string_prefix_sentinel) noexcept {
+        const _Measure_string_prefix_iterator_legacy& _Lhs, default_sentinel_t) noexcept {
         return _Lhs._First >= _Lhs._Last;
     }
     _NODISCARD friend constexpr bool operator==(const _Measure_string_prefix_iterator_legacy& _Lhs,
@@ -3299,9 +3290,8 @@ class _Measure_string_prefix_iterator_legacy {
     }
 
 public:
-    using iterator_concept = forward_iterator_tag;
-    using difference_type  = ptrdiff_t;
-    using value_type       = int;
+    using difference_type = ptrdiff_t;
+    using value_type      = int;
 
     _Measure_string_prefix_iterator_legacy(const char* _First_val, const char* _Last_val)
         : _First(_First_val), _Last(_Last_val) {
@@ -3350,7 +3340,7 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     int _Estimated_width    = 0; // the estimated width of [_First, _Pfx_iter)
     constexpr auto _Max_int = (numeric_limits<int>::max)();
 
-    while (_Pfx_iter != _Measure_string_prefix_sentinel{}) {
+    while (_Pfx_iter != default_sentinel) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {
             // We're at our maximum length
             break;
