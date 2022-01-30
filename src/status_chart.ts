@@ -475,7 +475,7 @@ window.onload = function () {
         update_all_timeframes();
     });
 
-    for (const field of [
+    const daily_keys = [
         'cxx20',
         'cxx23',
         'lwg',
@@ -487,13 +487,15 @@ window.onload = function () {
         'sum_age',
         'sum_wait',
         'merged',
-    ]) {
+    ] as const;
+    for (const field of daily_keys) {
         const value = daily_table[daily_table.length - 1][field] ?? 0;
         const span = getElementByIdAs(`currentValue-${field}`, HTMLSpanElement);
         span.textContent = value.toString();
     }
 
-    for (const field of ['vso', 'libcxx']) {
+    const weekly_keys = ['vso', 'libcxx'] as const;
+    for (const field of weekly_keys) {
         const value = weekly_table[weekly_table.length - 1][field];
         const span = getElementByIdAs(`currentValue-${field}`, HTMLSpanElement);
         span.textContent = value.toString();
