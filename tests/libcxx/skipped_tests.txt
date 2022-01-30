@@ -463,7 +463,7 @@ language.support\support.coroutines\end.to.end\multishot_func.pass.cpp
 language.support\support.coroutines\end.to.end\oneshot_func.pass.cpp
 language.support\support.limits\support.limits.general\coroutine.version.pass.cpp
 
-# LLVM-52643 Requires-expression too eagerly completes associated type
+# LLVM-52970 SFINAEing p.x on a pointer wrongly tries to complete the pointee's type
 ranges\range.access\begin.pass.cpp
 ranges\range.access\data.pass.cpp
 ranges\range.access\end.pass.cpp
