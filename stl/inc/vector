@@ -550,6 +550,11 @@ private:
 
     static _CONSTEXPR20 void _Apply_annotation(
         pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
+        _STL_INTERNAL_CHECK(_First_ != nullptr);
+        _STL_INTERNAL_CHECK(_End_ != nullptr);
+        _STL_INTERNAL_CHECK(_Old_last_ != nullptr);
+        _STL_INTERNAL_CHECK(_New_last_ != nullptr);
+
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return;
