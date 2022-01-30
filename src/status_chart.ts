@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import { Chart, ChartEvent, ChartType, LegendElement, LegendItem, TimeUnit, registerables } from 'chart.js';
+Chart.register(...registerables);
+import 'chartjs-adapter-luxon';
+
 import { DailyRow, daily_table } from './daily_table';
 import { WeeklyRow, weekly_table } from './weekly_table';
 import { MonthlyRow, monthly_table } from './monthly_table';
