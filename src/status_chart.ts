@@ -398,19 +398,19 @@ const merge_options = {
 };
 
 window.onload = function () {
-    window.status_chart = new Chart('statusChart', {
+    const status_chart = new Chart('statusChart', {
         type: 'line',
         data: status_data,
         options: status_options,
     });
 
-    window.age_chart = new Chart('ageChart', {
+    const age_chart = new Chart('ageChart', {
         type: 'line',
         data: age_data,
         options: age_options,
     });
 
-    window.merge_chart = new Chart('mergeChart', {
+    const merge_chart = new Chart('mergeChart', {
         type: 'line',
         data: merge_data,
         options: merge_options,
@@ -432,9 +432,9 @@ window.onload = function () {
 
         const clamped_idx = Math.max(timeframe_idx, timeframe_github_idx);
 
-        update_chart_timeframe(window.status_chart, timeframe_idx);
-        update_chart_timeframe(window.age_chart, clamped_idx);
-        update_chart_timeframe(window.merge_chart, clamped_idx);
+        update_chart_timeframe(status_chart, timeframe_idx);
+        update_chart_timeframe(age_chart, clamped_idx);
+        update_chart_timeframe(merge_chart, clamped_idx);
     }
 
     document.getElementById('moreHistory').addEventListener('click', function () {
