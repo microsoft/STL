@@ -13,14 +13,70 @@ function get_values(table, key) {
     return table.filter(row => row[key] !== undefined).map(row => ({ x: row.date, y: row[key] }));
 }
 
+class HiddenInfo {
+    url_key: string;
+    chart_label: string;
+    default_hidden: boolean;
+
+    constructor(url_key: string, chart_label: string, default_hidden: boolean = false) {
+        this.url_key = url_key;
+        this.chart_label = chart_label;
+        this.default_hidden = default_hidden;
+    }
+}
+
+class HiddenInfoMaps {
+    static url_key = new Map<string, HiddenInfo>();
+    static chart_label = new Map<string, HiddenInfo>();
+
+    static {
+        const arr = [
+            new HiddenInfo('cxx17', 'C++17 Features'),
+            new HiddenInfo('cxx20', 'C++20 Features'),
+            new HiddenInfo('cxx23', 'C++23 Features'),
+            new HiddenInfo('lwg', 'LWG Resolutions'),
+            new HiddenInfo('pr', 'Pull Requests'),
+            new HiddenInfo('vso', 'Old Bugs'),
+            new HiddenInfo('bug', 'GitHub Bugs'),
+            new HiddenInfo('issue', 'GitHub Issues'),
+            new HiddenInfo('libcxx', 'Skipped Libcxx Tests'),
+
+            new HiddenInfo('avg_age', 'Average Age', true),
+            new HiddenInfo('avg_wait', 'Average Wait', true),
+            new HiddenInfo('sum_age', 'Combined Age'),
+            new HiddenInfo('sum_wait', 'Combined Wait'),
+
+            new HiddenInfo('merged', 'Line: Sliding Window'),
+            new HiddenInfo('merge_bar', 'Bars: Calendar Months'),
+        ];
+
+        for (const elem of arr) {
+            this.url_key.set(elem.url_key, elem);
+            this.chart_label.set(elem.chart_label, elem);
+        }
+    }
+
+    static lookup(field: 'url_key' | 'chart_label', value: string) {
+        const ret = this[field].get(value);
+
+        if (ret === undefined) {
+            throw new Error('HiddenInfoMaps.lookup() should always find the value.');
+        }
+
+        return ret;
+    }
+}
+
 const url_search_params = new URLSearchParams(window.location.search);
 const hide_string = 'n';
 const show_string = 'y';
 
-function get_hidden(key: string, default_hidden: boolean = false) {
+function get_label_and_hidden(url_key: string) {
+    const { chart_label, default_hidden } = HiddenInfoMaps.lookup('url_key', url_key);
+
     let hidden: boolean;
 
-    const value = url_search_params.get(key);
+    const value = url_search_params.get(url_key);
 
     if (value === hide_string) {
         hidden = true;
@@ -31,9 +87,8 @@ function get_hidden(key: string, default_hidden: boolean = false) {
     }
 
     return {
+        label: chart_label,
         hidden: hidden,
-        stl_default_hidden: default_hidden,
-        stl_key: key,
     };
 }
 
@@ -53,76 +108,67 @@ const status_data = {
     datasets: [
         {
             data: get_values(weekly_table, 'cxx17'),
-            label: 'C++17 Features',
             borderColor: '#9966FF',
             backgroundColor: '#9966FF',
             borderDash: [10, 5],
             yAxisID: 'smallAxis',
-            ...get_hidden('cxx17'),
+            ...get_label_and_hidden('cxx17'),
         },
         {
             data: get_values(weekly_table, 'cxx20').concat(get_values(daily_table, 'cxx20')),
-            label: 'C++20 Features',
             borderColor: '#7030A0',
             backgroundColor: '#7030A0',
             yAxisID: 'smallAxis',
-            ...get_hidden('cxx20'),
+            ...get_label_and_hidden('cxx20'),
         },
         {
             data: get_values(daily_table, 'cxx23'),
-            label: 'C++23 Features',
             borderColor: '#9966FF',
             backgroundColor: '#9966FF',
             yAxisID: 'smallAxis',
-            ...get_hidden('cxx23'),
+            ...get_label_and_hidden('cxx23'),
         },
         {
             data: get_values(weekly_table, 'lwg').concat(get_values(daily_table, 'lwg')),
-            label: 'LWG Resolutions',
             borderColor: '#0070C0',
             backgroundColor: '#0070C0',
             yAxisID: 'smallAxis',
-            ...get_hidden('lwg'),
+            ...get_label_and_hidden('lwg'),
         },
         {
             data: get_values(daily_table, 'pr'),
-            label: 'Pull Requests',
             borderColor: '#00B050',
             backgroundColor: '#00B050',
             yAxisID: 'smallAxis',
-            ...get_hidden('pr'),
+            ...get_label_and_hidden('pr'),
         },
         {
             data: get_values(weekly_table, 'vso'),
-            label: 'Old Bugs',
             borderColor: '#900000',
             backgroundColor: '#900000',
             yAxisID: 'largeAxis',
-            ...get_hidden('vso'),
+            ...get_label_and_hidden('vso'),
         },
         {
             data: get_values(daily_table, 'bug'),
-            label: 'GitHub Bugs',
             borderColor: '#FF0000',
             backgroundColor: '#FF0000',
             yAxisID: 'largeAxis',
-            ...get_hidden('bug'),
+            ...get_label_and_hidden('bug'),
         },
         {
             data: get_values(daily_table, 'issue'),
-            label: 'GitHub Issues',
             borderColor: '#909090',
             backgroundColor: '#909090',
             yAxisID: 'largeAxis',
-            ...get_hidden('issue'),
+            ...get_label_and_hidden('issue'),
         },
         {
             data: get_values(weekly_table, 'libcxx'),
-            label: 'Skipped Libcxx Tests',
             borderColor: '#FFC000',
             backgroundColor: '#FFC000',
             yAxisID: 'largeAxis',
-            ...get_hidden('libcxx'),
+            ...get_label_and_hidden('libcxx'),
         },
     ],
 };
@@ -131,35 +177,31 @@ const age_data = {
     datasets: [
         {
             data: get_values(daily_table, 'avg_age'),
-            label: 'Average Age',
             borderColor: '#909090',
             backgroundColor: '#909090',
             yAxisID: 'leftAxis',
-            ...get_hidden('avg_age', true),
+            ...get_label_and_hidden('avg_age'),
         },
         {
             data: get_values(daily_table, 'avg_wait'),
-            label: 'Average Wait',
             borderColor: '#FF9090',
             backgroundColor: '#FF9090',
             yAxisID: 'leftAxis',
-            ...get_hidden('avg_wait', true),
+            ...get_label_and_hidden('avg_wait'),
         },
         {
             data: get_values(daily_table, 'sum_age'),
-            label: 'Combined Age',
             borderColor: '#000000',
             backgroundColor: '#000000',
             yAxisID: 'rightAxis',
-            ...get_hidden('sum_age'),
+            ...get_label_and_hidden('sum_age'),
         },
         {
             data: get_values(daily_table, 'sum_wait'),
-            label: 'Combined Wait',
             borderColor: '#FF0000',
             backgroundColor: '#FF0000',
             yAxisID: 'rightAxis',
-            ...get_hidden('sum_wait'),
+            ...get_label_and_hidden('sum_wait'),
         },
     ],
 };
@@ -168,20 +210,18 @@ const merge_data = {
     datasets: [
         {
             data: get_values(daily_table, 'merged'),
-            label: 'Line: Sliding Window',
             borderColor: '#00B050',
             backgroundColor: '#00B050',
             yAxisID: 'mergeAxis',
-            ...get_hidden('merged'),
+            ...get_label_and_hidden('merged'),
         },
         {
             type: 'bar',
             data: get_values(monthly_table, 'merge_bar'),
-            label: 'Bars: Calendar Months',
             borderColor: '#CCCCCC',
             borderWidth: 1,
             yAxisID: 'mergeAxis',
-            ...get_hidden('merge_bar'),
+            ...get_label_and_hidden('merge_bar'),
         },
     ],
 };
@@ -231,8 +271,6 @@ function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legen
     const ch = legend.chart;
     const index = legend_item.datasetIndex;
 
-    const { stl_default_hidden, stl_key } = ch.data.datasets[index];
-
     const becoming_hidden = ch.isDatasetVisible(index);
 
     if (becoming_hidden) {
@@ -243,10 +281,12 @@ function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legen
 
     legend_item.hidden = becoming_hidden;
 
-    if (becoming_hidden === stl_default_hidden) {
-        url_search_params.delete(stl_key);
+    const { url_key, default_hidden } = HiddenInfoMaps.lookup('chart_label', legend_item.text);
+
+    if (becoming_hidden === default_hidden) {
+        url_search_params.delete(url_key);
     } else {
-        url_search_params.set(stl_key, becoming_hidden ? hide_string : show_string);
+        url_search_params.set(url_key, becoming_hidden ? hide_string : show_string);
         url_search_params.sort();
     }
 
