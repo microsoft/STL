@@ -18,7 +18,7 @@ const hide_string = 'n';
 const show_string = 'y';
 
 function get_hidden(key: string, default_hidden: boolean = false) {
-    let hidden = null;
+    let hidden: boolean;
 
     const value = url_search_params.get(key);
 
