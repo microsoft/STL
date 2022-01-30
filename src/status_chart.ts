@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-'use strict';
-
 function get_values(table, key) {
     return table.filter(row => row[key] !== undefined).map(row => ({ x: row.date, y: row[key] }));
 }
