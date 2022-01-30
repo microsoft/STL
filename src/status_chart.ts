@@ -222,7 +222,7 @@ const common_options = {
     },
 };
 
-function legend_click_handler(_event, legend_item, legend) {
+function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legend: LegendElement<ChartType>) {
     const ch = legend.chart;
     const index = legend_item.datasetIndex;
 
