@@ -435,7 +435,7 @@ window.onload = function () {
         options: merge_options,
     });
 
-    function update_chart_timeframe(chart, idx) {
+    function update_chart_timeframe(chart: typeof status_chart, idx: number) {
         const xAxis = chart.options.scales.x;
         const new_timeframe = timeframes[idx];
 
