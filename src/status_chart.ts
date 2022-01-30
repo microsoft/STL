@@ -17,7 +17,7 @@ const url_search_params = new URLSearchParams(window.location.search);
 const hide_string = 'n';
 const show_string = 'y';
 
-function get_hidden(key, default_hidden = false) {
+function get_hidden(key: string, default_hidden: boolean = false) {
     let hidden = null;
 
     const value = url_search_params.get(key);
