@@ -470,11 +470,13 @@ window.onload = function () {
         'merged',
     ]) {
         const value = daily_table[daily_table.length - 1][field] ?? 0;
-        document.getElementById(`currentValue-${field}`).textContent = value.toString();
+        const span = document.getElementById(`currentValue-${field}`) as HTMLSpanElement;
+        span.textContent = value.toString();
     }
 
     for (const field of ['vso', 'libcxx']) {
         const value = weekly_table[weekly_table.length - 1][field];
-        document.getElementById(`currentValue-${field}`).textContent = value.toString();
+        const span = document.getElementById(`currentValue-${field}`) as HTMLSpanElement;
+        span.textContent = value.toString();
     }
 };
