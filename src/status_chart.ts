@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import { DailyRow, daily_table } from './daily_table';
+import { WeeklyRow, weekly_table } from './weekly_table';
+import { MonthlyRow, monthly_table } from './monthly_table';
+
 function get_values(table, key) {
     return table.filter(row => row[key] !== undefined).map(row => ({ x: row.date, y: row[key] }));
 }
