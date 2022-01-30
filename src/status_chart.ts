@@ -186,15 +186,20 @@ const merge_data = {
     ],
 };
 
-const timeframe_all = {
+type Timeframe = {
+    min: string;
+    time: { unit: TimeUnit };
+};
+
+const timeframe_all: Timeframe = {
     min: '2017-06-09',
     time: { unit: 'quarter' },
 };
-const timeframe_github = {
+const timeframe_github: Timeframe = {
     min: '2019-09-20', // first Friday after 2019-09-16
     time: { unit: 'quarter' },
 };
-const timeframe_2021 = {
+const timeframe_2021: Timeframe = {
     min: '2021-01-01',
     time: { unit: 'month' },
 };
@@ -265,7 +270,7 @@ const common_title = {
     },
 };
 
-function make_xAxis(timeframe) {
+function make_xAxis(timeframe: Timeframe) {
     return {
         type: 'time',
         min: timeframe.min,
