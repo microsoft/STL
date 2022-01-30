@@ -426,9 +426,12 @@ window.onload = function () {
         chart.update();
     }
 
+    const moreHistoryButton = document.getElementById('moreHistory') as HTMLButtonElement;
+    const lessHistoryButton = document.getElementById('lessHistory') as HTMLButtonElement;
+
     function update_all_timeframes() {
-        document.getElementById('moreHistory').disabled = timeframe_idx === 0;
-        document.getElementById('lessHistory').disabled = timeframe_idx === timeframes.length - 1;
+        moreHistoryButton.disabled = timeframe_idx === 0;
+        lessHistoryButton.disabled = timeframe_idx === timeframes.length - 1;
 
         const clamped_idx = Math.max(timeframe_idx, timeframe_github_idx);
 
@@ -437,7 +440,7 @@ window.onload = function () {
         update_chart_timeframe(merge_chart, clamped_idx);
     }
 
-    document.getElementById('moreHistory').addEventListener('click', function () {
+    moreHistoryButton.addEventListener('click', function () {
         if (timeframe_idx > 0) {
             --timeframe_idx;
         }
@@ -445,7 +448,7 @@ window.onload = function () {
         update_all_timeframes();
     });
 
-    document.getElementById('lessHistory').addEventListener('click', function () {
+    lessHistoryButton.addEventListener('click', function () {
         if (timeframe_idx < timeframes.length - 1) {
             ++timeframe_idx;
         }
