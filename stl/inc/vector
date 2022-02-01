@@ -550,6 +550,11 @@ private:
 
     static _CONSTEXPR20 void _Apply_annotation(
         pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
+        _STL_INTERNAL_CHECK(_First_ != nullptr);
+        _STL_INTERNAL_CHECK(_End_ != nullptr);
+        _STL_INTERNAL_CHECK(_Old_last_ != nullptr);
+        _STL_INTERNAL_CHECK(_New_last_ != nullptr);
+
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return;
@@ -560,10 +565,10 @@ private:
             return;
         }
 
-        const auto _First    = reinterpret_cast<const char*>(_Unfancy_maybe_null(_First_));
-        const auto _End      = reinterpret_cast<const char*>(_Unfancy_maybe_null(_End_));
-        const auto _Old_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_Old_last_));
-        const auto _New_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_New_last_));
+        const auto _First    = reinterpret_cast<const char*>(_Unfancy(_First_));
+        const auto _End      = reinterpret_cast<const char*>(_Unfancy(_End_));
+        const auto _Old_last = reinterpret_cast<const char*>(_Unfancy(_Old_last_));
+        const auto _New_last = reinterpret_cast<const char*>(_Unfancy(_New_last_));
         if constexpr (_Has_minimum_allocation_alignment<vector>) {
             __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
         } else {
