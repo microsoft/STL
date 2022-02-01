@@ -1253,6 +1253,10 @@
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
+#ifdef __cpp_impl_coroutine
+#define __cpp_lib_coroutine 201902L
+#endif // __cpp_impl_coroutine
+
 #if _HAS_CXX20
 #define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
@@ -1348,10 +1352,6 @@
 #define __cpp_lib_type_identity 201806L
 #define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
-
-#if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
-#define __cpp_lib_coroutine 201902L
-#endif // __cpp_impl_coroutine
 
 // C++23
 #if _HAS_CXX23
