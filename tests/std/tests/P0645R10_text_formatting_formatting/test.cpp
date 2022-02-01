@@ -1050,7 +1050,7 @@ void test_size_helper_impl(const size_t expected_size, const bool expected_is_es
     assert(formatted_size(locale::classic(), fmt, forward<Args>(args)...) == expected_size);
 
 #ifndef __clang__ // TRANSITION, clang consteval bug (likely LLVM-52648)
-    if (_Is_execution_charset_utf8()) {
+    if (_Is_execution_charset_self_synchronizing()) {
         assert(fmt._Is_estimation_exact == expected_is_estimation_exact);
         if (expected_is_estimation_exact) {
             assert(fmt._Estimate_required_capacity(args...) == expected_size);
