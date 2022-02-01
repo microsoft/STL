@@ -1349,6 +1349,42 @@
 #define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
 
+#if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
+#define __cpp_lib_coroutine 201902L
+#endif // __cpp_impl_coroutine
+
+// C++23
+#if _HAS_CXX23
+#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_allocate_at_least 202106L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_associative_heterogeneous_erasure 202110L
+#define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_invoke_r                          202106L
+#define __cpp_lib_is_scoped_enum                    202011L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_monadic_optional 202110L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_move_only_function 202110L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_starts_ends_with 202106L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_spanstream                  202106L
+#define __cpp_lib_stdatomic_h                 202011L
+#define __cpp_lib_string_contains             202011L
+#define __cpp_lib_string_resize_and_overwrite 202110L
+#define __cpp_lib_to_underlying               202102L
+#endif // _HAS_CXX23
+
+// macros with language mode sensitivity
 #if _HAS_CXX20
 #define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
@@ -1388,41 +1424,6 @@
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_variant 202102L // P2162R2 Inheriting From variant
 #endif // _HAS_CXX17
-
-#if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
-#define __cpp_lib_coroutine 201902L
-#endif // __cpp_impl_coroutine
-
-// C++23
-#if _HAS_CXX23
-#define __cpp_lib_adaptor_iterator_pair_constructor 202106L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_allocate_at_least 202106L
-#endif // __cpp_lib_concepts
-
-#define __cpp_lib_associative_heterogeneous_erasure 202110L
-#define __cpp_lib_byteswap                          202110L
-#define __cpp_lib_invoke_r                          202106L
-#define __cpp_lib_is_scoped_enum                    202011L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_monadic_optional 202110L
-#endif // __cpp_lib_concepts
-
-#define __cpp_lib_move_only_function 202110L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_out_ptr                 202106L
-#define __cpp_lib_ranges_starts_ends_with 202106L
-#endif // __cpp_lib_concepts
-
-#define __cpp_lib_spanstream                  202106L
-#define __cpp_lib_stdatomic_h                 202011L
-#define __cpp_lib_string_contains             202011L
-#define __cpp_lib_string_resize_and_overwrite 202110L
-#define __cpp_lib_to_underlying               202102L
-#endif // _HAS_CXX23
 
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
