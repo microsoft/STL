@@ -244,28 +244,24 @@ constexpr int _Generate_canonical_iterations(const int _Bits, const uint64_t _Gm
 
     _STL_INTERNAL_CHECK(0 <= _Bits && _Bits <= 64);
 
-    if (_Bits == 0) {
+    if (_Bits == 0 || (_Gmax == UINT64_MAX && _Gmin == 0)) {
         return 1;
     }
 
-    const auto _Range = (_Gmax - _Gmin) + 1;
-    if ((_Range & (_Range - 1)) == 0) {
-        return (_Bits - 1) / _Countr_zero(_Range) + 1;
-    } else {
-        const auto _Target = ~uint64_t{0} >> (64 - _Bits);
-        uint64_t _Prod     = 1;
-        int _Ceil          = 0;
-        while (_Prod <= _Target) {
-            ++_Ceil;
-            if (_Prod > UINT64_MAX / _Range) {
-                break;
-            }
-
-            _Prod *= _Range;
+    const auto _Range  = (_Gmax - _Gmin) + 1;
+    const auto _Target = ~uint64_t{0} >> (64 - _Bits);
+    uint64_t _Prod     = 1;
+    int _Ceil          = 0;
+    while (_Prod <= _Target) {
+        ++_Ceil;
+        if (_Prod > UINT64_MAX / _Range) {
+            break;
         }
 
-        return _Ceil;
+        _Prod *= _Range;
     }
+
+    return _Ceil;
 }
 
 template <class _Real, size_t _Bits, class _Gen>

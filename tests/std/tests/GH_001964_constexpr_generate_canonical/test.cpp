@@ -12,7 +12,7 @@ int naive_iterations(const int bits, const uint64_t gmin, const uint64_t gmax) {
     // a reference for all values.
 
     const double range = static_cast<double>(gmax) - static_cast<double>(gmin) + 1.0;
-    return static_cast<int>(ceil(static_cast<double>(bits) / log2(static_cast<double>(range))));
+    return max(1, static_cast<int>(ceil(static_cast<double>(bits) / log2(static_cast<double>(range)))));
 }
 
 void test(const int target_bits) {
@@ -51,7 +51,7 @@ int main() {
     static_assert(_Generate_canonical_iterations(53, 1, uint64_t{1} << 32) == 2, "");
     static_assert(_Generate_canonical_iterations(64, 0, ~uint64_t{0}) == 1, "");
 
-    for (int bits = 1; bits <= 64; ++bits) {
+    for (int bits = 0; bits <= 64; ++bits) {
         test(bits);
     }
 }
