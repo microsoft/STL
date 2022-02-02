@@ -106,8 +106,7 @@ class CustomTestFormat(STLTestFormat):
         headerUnitOptions = []
         objFilenames = []
         for header in stlHeaders:
-            headerUnitOptions.append('/headerUnit:angle')
-            headerUnitOptions.append(f'{header}={header}.ifc')
+            headerUnitOptions += ['/headerUnit:angle', f'{header}={header}.ifc']
             objFilenames.append(os.path.join(outputDir, f'{header}.obj'))
 
         cmd = [test.cxx, *test.flags, *test.compileFlags, *exportHeaderOptions, *stlHeaders]
