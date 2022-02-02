@@ -112,6 +112,10 @@ class CustomTestFormat(STLTestFormat):
         cmd = [test.cxx, *test.flags, *test.compileFlags, *exportHeaderOptions, *stlHeaders]
         yield TestStep(cmd, shared.execDir, shared.env, False)
 
+        libFilename = 'stl_header_units.lib'
+        cmd = ['lib.exe', '/nologo', f'/out:{libFilename}', *objFilenames]
+        yield TestStep(cmd, shared.execDir, shared.env, False)
+
         if compileTestCppWithEdg:
             test.compileFlags.append('/BE')
 
@@ -119,7 +123,7 @@ class CustomTestFormat(STLTestFormat):
             cmd = [test.cxx, '/c', sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions]
         elif TestType.RUN in test.testType:
             shared.execFile = f'{outputBase}.exe'
-            cmd = [test.cxx, sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions, *objFilenames,
+            cmd = [test.cxx, sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions, libFilename,
                     f'/Fe{shared.execFile}', '/link', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
