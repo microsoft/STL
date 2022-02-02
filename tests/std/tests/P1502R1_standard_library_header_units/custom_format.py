@@ -108,10 +108,10 @@ class CustomTestFormat(STLTestFormat):
             exportHeaderOptions.append(header)
 
             headerUnitOptions.append('/headerUnit:angle')
-            headerUnitOptions.append('{0}={0}.ifc'.format(header))
+            headerUnitOptions.append(f'{header}={header}.ifc')
 
             if not compileTestCppWithEdg:
-                headerUnitOptions.append(os.path.join(outputDir, header + '.obj'))
+                headerUnitOptions.append(os.path.join(outputDir, f'{header}.obj'))
 
         cmd = [test.cxx, *test.flags, *test.compileFlags, *exportHeaderOptions]
         yield TestStep(cmd, shared.execDir, shared.env, False)
@@ -122,8 +122,8 @@ class CustomTestFormat(STLTestFormat):
         if TestType.COMPILE in test.testType:
             cmd = [test.cxx, '/c', sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions]
         elif TestType.RUN in test.testType:
-            shared.execFile = outputBase + '.exe'
-            cmd = [test.cxx, sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions, '/Fe' + shared.execFile,
+            shared.execFile = f'{outputBase}.exe'
+            cmd = [test.cxx, sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions, f'/Fe{shared.execFile}',
                    '/link', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
