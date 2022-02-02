@@ -107,7 +107,7 @@ class CustomTestFormat(STLTestFormat):
         objFilenames = []
         for header in stlHeaders:
             headerUnitOptions += ['/headerUnit:angle', f'{header}={header}.ifc']
-            objFilenames.append(os.path.join(outputDir, f'{header}.obj'))
+            objFilenames.append(f'{header}.obj')
 
         cmd = [test.cxx, *test.flags, *test.compileFlags, *exportHeaderOptions, *stlHeaders]
         yield TestStep(cmd, shared.execDir, shared.env, False)
