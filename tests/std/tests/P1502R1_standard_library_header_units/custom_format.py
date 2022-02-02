@@ -105,15 +105,13 @@ class CustomTestFormat(STLTestFormat):
         exportHeaderOptions = ['/exportHeader', '/headerName:angle', '/Fo', '/MP']
         headerUnitOptions = []
         for header in stlHeaders:
-            exportHeaderOptions.append(header)
-
             headerUnitOptions.append('/headerUnit:angle')
             headerUnitOptions.append(f'{header}={header}.ifc')
 
             if not compileTestCppWithEdg:
                 headerUnitOptions.append(os.path.join(outputDir, f'{header}.obj'))
 
-        cmd = [test.cxx, *test.flags, *test.compileFlags, *exportHeaderOptions]
+        cmd = [test.cxx, *test.flags, *test.compileFlags, *exportHeaderOptions, *stlHeaders]
         yield TestStep(cmd, shared.execDir, shared.env, False)
 
         if compileTestCppWithEdg:
