@@ -2764,29 +2764,26 @@ struct _Arg_formatter {
     }
 };
 
+enum class _String_type : uint8_t { _Not_a_string, _Known_size_string, _Nullterminated_string };
+
 template <class _Ty>
-inline constexpr bool _Is_known_size_string = false;
+inline constexpr _String_type _String_type_of = _String_type::_Not_a_string;
 
 template <_Format_supported_charT _CharT, class _Traits>
-inline constexpr bool _Is_known_size_string<basic_string_view<_CharT, _Traits>> = true;
+inline constexpr _String_type _String_type_of<basic_string_view<_CharT, _Traits>> = _String_type::_Known_size_string;
 
 template <_Format_supported_charT _CharT, class _Traits, class _Allocator>
-inline constexpr bool _Is_known_size_string<basic_string<_CharT, _Traits, _Allocator>> = true;
-
-template <class _Ty>
-inline constexpr bool _Is_nullterminated_string = false;
+inline constexpr _String_type _String_type_of<basic_string<_CharT, _Traits, _Allocator>> =
+    _String_type::_Known_size_string;
 
 template <_Format_supported_charT _CharT>
-inline constexpr bool _Is_nullterminated_string<_CharT*> = true;
+inline constexpr _String_type _String_type_of<_CharT*> = _String_type::_Nullterminated_string;
 
 template <_Format_supported_charT _CharT>
-inline constexpr bool _Is_nullterminated_string<const _CharT*> = true;
+inline constexpr _String_type _String_type_of<const _CharT*> = _String_type::_Nullterminated_string;
 
 template <_Format_supported_charT _CharT, size_t _Nx>
-inline constexpr bool _Is_nullterminated_string<const _CharT[_Nx]> = true;
-
-template <class _Ty>
-inline constexpr bool _Is_format_arg_type_string = _Is_known_size_string<_Ty> || _Is_nullterminated_string<_Ty>;
+inline constexpr _String_type _String_type_of<const _CharT[_Nx]> = _String_type::_Nullterminated_string;
 
 template <class _Ty>
 concept _Derived_from_formatter_base = requires {
@@ -2829,22 +2826,21 @@ struct _Format_checker {
     _ParseContext _Parse_context;
     _ParseFunc _Parse_funcs[_Num_args_non_zero];
     size_t _Arg_use_count[_Num_args_non_zero]{}; // only used for strings
-    bool _Is_string_type[_Num_args_non_zero];
-    bool _Is_nullterminated_string_type[_Num_args_non_zero];
+    _String_type _Arg_type[_Num_args_non_zero];
     size_t _Estimated_size    = 0;
     bool _Is_estimation_exact = true;
 
     consteval explicit _Format_checker(basic_string_view<_CharT> _Fmt) noexcept
         : _Parse_context(_Fmt, _Num_args), _Parse_funcs{&_Compile_time_parse_format_specs<_Args, _ParseContext>...},
-          _Is_string_type{_Is_format_arg_type_string<_Args>...}, _Is_nullterminated_string_type{
-                                                                     _Is_nullterminated_string<_Args>...} {}
+          _Arg_type{_String_type_of<_Args>...} {}
 
     constexpr void _On_text(const _CharT* _First, const _CharT* _Last) noexcept {
         _Estimated_size += _Last - _First;
     }
 
     constexpr void _On_replacement_field(const size_t _Id, const _CharT*) noexcept {
-        if (_Is_string_type[_Id]) {
+        if (_Arg_type[_Id] == _String_type::_Known_size_string
+            || _Arg_type[_Id] == _String_type::_Nullterminated_string) {
             // if type of the argument is a string we will add the length of it later and the size will remain exact
             ++_Arg_use_count[_Id];
         } else {
@@ -2855,49 +2851,47 @@ struct _Format_checker {
 
     constexpr const _CharT* _On_format_specs(const size_t _Id, const _CharT* _First, const _CharT*) {
         _Parse_context.advance_to(_Parse_context.begin() + (_First - _Parse_context.begin()._Unwrapped()));
-        if (_Id < _Num_args) {
-            auto [_Iter, _Specs] = _Parse_funcs[_Id](_Parse_context);
-            if (_Is_string_type[_Id]) {
-                if (_Is_nullterminated_string_type[_Id]) {
-                    if (_Specs._Precision >= 0) {
-                        // if precision (the maximum length) is specified as a constant, add it
-                        _Estimated_size += _Specs._Precision;
-                        _Is_estimation_exact = false;
-                    } else if (_Specs._Width > 0) {
-                        // otherwise, if width (the minimum length) is specified as a constant, add it
-                        _Estimated_size += _Specs._Width;
-                        _Is_estimation_exact = false;
-                    } else if (_Specs._Dynamic_precision_index >= 0) {
-                        // if precision is dynamic we can't really predict so let's estimate it to 32
-                        _Estimated_size += 32;
-                        _Is_estimation_exact = false;
-                    } else if (_Specs._Dynamic_width_index >= 0) {
-                        // if precision is not specified and width is dynamic we will calculate the length of the
-                        // argument and add it to estimation
-                        ++_Arg_use_count[_Id];
-                        _Is_estimation_exact = false;
-                    } else {
-                        // if precision and width are not specified we will calculate the length of the argument and add
-                        // it to estimation. The estimation will remain exact
-                        ++_Arg_use_count[_Id];
-                    }
-                } else {
-                    // if the length of the string is known we will add it to estimation
-                    ++_Arg_use_count[_Id];
-                    if (_Specs._Precision >= 0 || _Specs._Width > 0 || _Specs._Dynamic_precision_index >= 0
-                        || _Specs._Dynamic_width_index >= 0) {
-                        _Is_estimation_exact = false;
-                    }
-                }
-            } else {
-                // for all other arguments use the largest of precision, width, and 8
-                _Estimated_size += (_STD max)((_STD max)(_Specs._Precision, _Specs._Width), 8);
-                _Is_estimation_exact = false;
-            }
-            return _Iter._Unwrapped();
-        } else {
+        if (_Id >= _Num_args) {
             return _First;
         }
+
+        auto [_Iter, _Specs] = _Parse_funcs[_Id](_Parse_context);
+        if (_Arg_type[_Id] == _String_type::_Nullterminated_string) {
+            if (_Specs._Precision >= 0) {
+                // if precision (the maximum length) is specified as a constant, add it
+                _Estimated_size += _Specs._Precision;
+                _Is_estimation_exact = false;
+            } else if (_Specs._Width > 0) {
+                // otherwise, if width (the minimum length) is specified as a constant, add it
+                _Estimated_size += _Specs._Width;
+                _Is_estimation_exact = false;
+            } else if (_Specs._Dynamic_precision_index >= 0) {
+                // if precision is dynamic we can't really predict so let's estimate it to 32
+                _Estimated_size += 32;
+                _Is_estimation_exact = false;
+            } else if (_Specs._Dynamic_width_index >= 0) {
+                // if precision is not specified and width is dynamic we will calculate the length of the
+                // argument and add it to estimation
+                ++_Arg_use_count[_Id];
+                _Is_estimation_exact = false;
+            } else {
+                // if precision and width are not specified we will calculate the length of the argument and add
+                // it to estimation. The estimation will remain exact
+                ++_Arg_use_count[_Id];
+            }
+        } else if (_Arg_type[_Id] == _String_type::_Known_size_string) {
+            // if the length of the string is known we will add it to estimation
+            ++_Arg_use_count[_Id];
+            if (_Specs._Precision >= 0 || _Specs._Width > 0 || _Specs._Dynamic_precision_index >= 0
+                || _Specs._Dynamic_width_index >= 0) {
+                _Is_estimation_exact = false;
+            }
+        } else {
+            // for all other arguments use the largest of precision, width, and 8
+            _Estimated_size += (_STD max)((_STD max)(_Specs._Precision, _Specs._Width), 8);
+            _Is_estimation_exact = false;
+        }
+        return _Iter._Unwrapped();
     }
 };
 
@@ -3085,9 +3079,9 @@ struct _Basic_format_string {
     _NODISCARD constexpr size_t _Estimate_required_capacity_helper(
         const _Args&... _Arg_values, integer_sequence<size_t, _Ids...>) const noexcept {
         const auto _Visitor = [this]<class _ArgTy>(const _ArgTy& _Arg, size_t _Id) noexcept {
-            if constexpr (_Is_known_size_string<_ArgTy>) {
+            if constexpr (_String_type_of<_ArgTy> == _String_type::_Known_size_string) {
                 return _Arg_use_count[_Id] * _Arg.size();
-            } else if constexpr (_Is_nullterminated_string<_ArgTy>) {
+            } else if constexpr (_String_type_of<_ArgTy> == _String_type::_Nullterminated_string) {
                 // don't bother with calculating the length if we don't need to
                 return _Arg_use_count[_Id] > 0 ? _Arg_use_count[_Id] * char_traits<_CharT>::length(_Arg) : 0;
             } else {
