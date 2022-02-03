@@ -285,11 +285,13 @@ int main() {
         assert(!ep);
     }
 
+#ifndef TEST_TOPO_SORT // TRANSITION, VSO-1471382 (error C2672: 'count_if': no matching overloaded function found)
     {
         puts("Testing <execution>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
         assert(count(execution::par, begin(arr), end(arr), 0) == 4);
     }
+#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <filesystem>.");
