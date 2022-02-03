@@ -11,6 +11,8 @@
 #include <DbgEng.h>
 // clang-format on
 
+#pragma comment(lib, "DbgEng.lib")
+
 namespace {
 
     struct com_release_t {
