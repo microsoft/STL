@@ -2,19 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <format>
+#include <memory>
 #include <shared_mutex>
 #include <string>
 
 // clang-format off
-#include <Shlwapi.h>
-#include <Windows.h>
-#include <dbghelp.h>
+#include <initguid.h> // should be before any header that includes <guiddef.h>
+#include <DbgEng.h>
 // clang-format on
 
-#pragma comment(lib, "Dbghelp.lib")
-#pragma comment(lib, "Shlwapi.lib")
-
 namespace {
+
+    struct com_release_t {
+        void operator()(auto* p) {
+            p->Release();
+        }
+    };
+
     class _NODISCARD srw_lock_guard {
     public:
         explicit srw_lock_guard(SRWLOCK& locked_) noexcept : locked(&locked_) {
@@ -34,63 +38,47 @@ namespace {
 
     class stacktrace_global_data_t {
     public:
-        constexpr stacktrace_global_data_t() = default;
+        constexpr stacktrace_global_data_t() noexcept = default;
+        constexpr ~stacktrace_global_data_t() = default;
 
         stacktrace_global_data_t(const stacktrace_global_data_t&) = delete;
         stacktrace_global_data_t& operator=(const stacktrace_global_data_t) = delete;
-
 
         [[nodiscard]] std::string description(const void* const address) {
             clear_if_wrong_address(address);
 
             if (!is_description_valid) {
                 bool success = try_initialize()
-                            && SymFromAddr(process_handle, reinterpret_cast<uintptr_t>(address), nullptr, &info);
+                            && SUCCEEDED(debug_symbols->GetNameByOffset(reinterpret_cast<uintptr_t>(address), buffer,
+                                static_cast<ULONG>(std::size(buffer)), &buffer_size, &symbol_displacement));
 
-                if (success) {
-                    function_address.clear();
-                    function_name = std::string_view(info.Name, info.NameLen);
-                    offset        = reinterpret_cast<ptrdiff_t>(address) - static_cast<ptrdiff_t>(info.Address);
-                } else {
-                    function_address = std::format("{}", address);
-                    function_name    = function_address;
-                    offset           = 0;
-                }
-
-                if (!GetModuleHandleExW(
-                        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                        reinterpret_cast<LPCWSTR>(address), &module_handle)) {
-                    module_handle = nullptr;
-                }
-
-                if (module_handle) {
-                    GetModuleFileNameA(module_handle, module_path, MAX_PATH);
-                    module_name = PathFindFileNameA(module_path);
-                } else {
-                    module_name = "";
+                if (!success) {
+                    buffer_size =
+                        static_cast<ULONG>(std::format_to_n(buffer, std::size(buffer), "{}", address).out - buffer);
+                    symbol_displacement = 0;
                 }
 
                 is_description_valid = true;
             }
 
-            if (offset > 0) {
-                return std::format("{}!{}+{:#x}", module_name, function_name, offset);
-
+            if (symbol_displacement != 0) {
+                return std::format(
+                    "{}+{:#x}", std::string_view(buffer, buffer_size), symbol_displacement);
             } else {
-                return std::format("{}!{}", module_name, function_name);
+                return std::string(std::string_view(buffer, buffer_size));
             }
         }
 
         [[nodiscard]] std::string source_file(const void* const address) {
             initialize_line(address);
 
-            return line.FileName ? line.FileName : "";
+            return std::string(std::string_view(file_name, file_name_size));
         }
 
         [[nodiscard]] unsigned source_line(const void* const address) {
             initialize_line(address);
 
-            return line.LineNumber;
+            return line;
         }
 
         [[nodiscard]] std::string address_to_string(const void* _Address) {
@@ -123,39 +111,33 @@ namespace {
             if (!is_line_valid) {
                 bool success =
                     try_initialize()
-                    && SymGetLineFromAddr(process_handle, reinterpret_cast<uintptr_t>(address), &displacement, &line);
+                            && SUCCEEDED(debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), &line, file_name,
+                                static_cast<ULONG>(std::size(file_name)), &file_name_size, &line_displacement));
                 if (!success) {
-                    line.FileName   = nullptr;
-                    line.LineNumber = 0;
-                    displacement    = 0;
+                    line              = 0;
+                    file_name_size    = 0;
+                    line_displacement = 0;
                 }
                 is_line_valid = true;
             }
         }
 
-        static constexpr SYMBOL_INFO init_symbol_info() {
-            SYMBOL_INFO result  = {};
-            result.SizeOfStruct = sizeof(SYMBOL_INFO);
-            result.MaxNameLen   = MAX_SYM_NAME;
-            return result;
-        }
-
-        HANDLE process_handle     = nullptr;
-        bool initialized          = false;
-        bool initialize_attempted = false;
-        const void* last_address  = nullptr;
-        HMODULE module_handle     = nullptr;
-        bool is_description_valid = false;
-        bool is_line_valid        = false;
-        IMAGEHLP_LINE line        = {sizeof(IMAGEHLP_LINE)};
-        DWORD displacement        = 0;
-        ptrdiff_t offset          = 0;
-        SYMBOL_INFO info          = init_symbol_info();
-        char buffer[MAX_SYM_NAME];
-        char module_path[MAX_PATH];
-        const char* module_name = nullptr;
-        std::string_view function_name;
-        std::string function_address;
+ 
+        IDebugClient* debug_client    = nullptr;
+        IDebugSymbols* debug_symbols  = nullptr;
+        IDebugControl* debug_control  = nullptr;
+        bool attached                 = false;
+        bool initialize_attempted     = false;
+        const void* last_address      = nullptr;
+        bool is_description_valid     = false;
+        bool is_line_valid            = false;
+        char buffer[2000]             = {};
+        ULONG buffer_size             = 0;
+        ULONG64 symbol_displacement   = 0;
+        ULONG line                    = 0;
+        char file_name[MAX_PATH]      = {};
+        ULONG file_name_size          = 0;
+        ULONG64 line_displacement     = 0;
     };
 
     stacktrace_global_data_t stacktrace_global_data;
@@ -163,25 +145,50 @@ namespace {
 
     bool stacktrace_global_data_t::try_initialize() {
         if (!initialize_attempted) {
-            initialized = DuplicateHandle(GetCurrentProcess(), GetCurrentProcess(), GetCurrentProcess(),
-                              &process_handle, PROCESS_QUERY_INFORMATION, false, 0)
-                       && SymInitialize(process_handle, nullptr, true);
+            // Deliberately not calling CoInitialize[Ex]
+            // DbgEng.h API works fine without it. COM initialization may have undesired interference with user's code
 
-            atexit([] {
-                if (stacktrace_global_data.initialized) {
-                    SymCleanup(stacktrace_global_data.process_handle);
+            if (SUCCEEDED(DebugCreate(IID_IDebugClient, reinterpret_cast<void**>(&debug_client)))
+                && SUCCEEDED(debug_client->QueryInterface(IID_IDebugSymbols, reinterpret_cast<void**>(&debug_symbols)))
+                && SUCCEEDED(
+                    debug_client->QueryInterface(IID_IDebugControl, reinterpret_cast<void**>(&debug_control)))) {
+                attached = SUCCEEDED(debug_client->AttachProcess(
+                    0, GetCurrentProcessId(), DEBUG_ATTACH_NONINVASIVE | DEBUG_ATTACH_NONINVASIVE_NO_SUSPEND));
+                if (attached) {
+                    debug_control->WaitForEvent(0, INFINITE);
                 }
-
-                if (stacktrace_global_data.process_handle) {
-                    CloseHandle(stacktrace_global_data.process_handle);
-                }
-                stacktrace_global_data.initialize_attempted = false;
-            });
-
-            initialize_attempted = true;
+            }
         }
 
-        return initialized;
+        atexit([] {
+            // "Phoenix singleton" - destroy and set to null, so that can initialize later again
+
+            if (stacktrace_global_data.debug_client != nullptr) {
+                if (stacktrace_global_data.attached) {
+                    stacktrace_global_data.debug_client->DetachProcesses();
+                    stacktrace_global_data.attached = false;
+                }
+
+                stacktrace_global_data.debug_client->Release();
+                stacktrace_global_data.debug_client = nullptr;
+            }
+
+            if (stacktrace_global_data.debug_control != nullptr) {
+                stacktrace_global_data.debug_control->Release();
+                stacktrace_global_data.debug_control = nullptr;
+            }
+
+            if (stacktrace_global_data.debug_symbols != nullptr) {
+                stacktrace_global_data.debug_symbols->Release();
+                stacktrace_global_data.debug_symbols = nullptr;
+            }
+
+            stacktrace_global_data.initialize_attempted = false;
+        });
+
+        initialize_attempted = true;
+
+        return stacktrace_global_data.debug_symbols != nullptr;
     }
 
 
