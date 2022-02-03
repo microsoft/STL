@@ -107,11 +107,11 @@ class CustomTestFormat(STLTestFormat):
 
         stlHeaders = getImportableCxxLibraryHeaders()
         exportHeaderOptions = ['/exportHeader', '/headerName:angle', '/Fo', '/MP']
-        headerUnitOptions = []
+        consumeBuiltHeaderUnits = []
         objFilenames = []
-        for header in stlHeaders:
-            headerUnitOptions += ['/headerUnit:angle', f'{header}={header}.ifc']
-            objFilenames.append(f'{header}.obj')
+        for hdr in stlHeaders:
+            consumeBuiltHeaderUnits += ['/headerUnit:angle', f'{hdr}={hdr}.ifc']
+            objFilenames.append(f'{hdr}.obj')
 
         cmd = [test.cxx, *test.flags, *test.compileFlags, *exportHeaderOptions, *stlHeaders]
         yield TestStep(cmd, shared.execDir, shared.env, False)
@@ -124,10 +124,10 @@ class CustomTestFormat(STLTestFormat):
             test.compileFlags.append('/BE')
 
         if TestType.COMPILE in test.testType:
-            cmd = [test.cxx, '/c', sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions]
+            cmd = [test.cxx, '/c', sourcePath, *test.flags, *test.compileFlags, *consumeBuiltHeaderUnits]
         elif TestType.RUN in test.testType:
             shared.execFile = f'{outputBase}.exe'
-            cmd = [test.cxx, sourcePath, *test.flags, *test.compileFlags, *headerUnitOptions, libFilename,
+            cmd = [test.cxx, sourcePath, *test.flags, *test.compileFlags, *consumeBuiltHeaderUnits, libFilename,
                     f'/Fe{shared.execFile}', '/link', *test.linkFlags]
 
         yield TestStep(cmd, shared.execDir, shared.env, False)
