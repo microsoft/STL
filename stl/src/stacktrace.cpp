@@ -39,7 +39,7 @@ namespace {
     class stacktrace_global_data_t {
     public:
         constexpr stacktrace_global_data_t() noexcept = default;
-        constexpr ~stacktrace_global_data_t() = default;
+        constexpr ~stacktrace_global_data_t()         = default;
 
         stacktrace_global_data_t(const stacktrace_global_data_t&) = delete;
         stacktrace_global_data_t& operator=(const stacktrace_global_data_t) = delete;
@@ -62,8 +62,7 @@ namespace {
             }
 
             if (symbol_displacement != 0) {
-                return std::format(
-                    "{}+{:#x}", std::string_view(buffer, buffer_size), symbol_displacement);
+                return std::format("{}+{:#x}", std::string_view(buffer, buffer_size), symbol_displacement);
             } else {
                 return std::string(std::string_view(buffer, buffer_size));
             }
@@ -111,8 +110,8 @@ namespace {
             if (!is_line_valid) {
                 bool success =
                     try_initialize()
-                            && SUCCEEDED(debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), &line, file_name,
-                                static_cast<ULONG>(std::size(file_name)), &file_name_size, &line_displacement));
+                    && SUCCEEDED(debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), &line, file_name,
+                        static_cast<ULONG>(std::size(file_name)), &file_name_size, &line_displacement));
                 if (!success) {
                     line              = 0;
                     file_name_size    = 0;
@@ -122,22 +121,22 @@ namespace {
             }
         }
 
- 
-        IDebugClient* debug_client    = nullptr;
-        IDebugSymbols* debug_symbols  = nullptr;
-        IDebugControl* debug_control  = nullptr;
-        bool attached                 = false;
-        bool initialize_attempted     = false;
-        const void* last_address      = nullptr;
-        bool is_description_valid     = false;
-        bool is_line_valid            = false;
-        char buffer[2000]             = {};
-        ULONG buffer_size             = 0;
-        ULONG64 symbol_displacement   = 0;
-        ULONG line                    = 0;
-        char file_name[MAX_PATH]      = {};
-        ULONG file_name_size          = 0;
-        ULONG64 line_displacement     = 0;
+
+        IDebugClient* debug_client   = nullptr;
+        IDebugSymbols* debug_symbols = nullptr;
+        IDebugControl* debug_control = nullptr;
+        bool attached                = false;
+        bool initialize_attempted    = false;
+        const void* last_address     = nullptr;
+        bool is_description_valid    = false;
+        bool is_line_valid           = false;
+        char buffer[2000]            = {};
+        ULONG buffer_size            = 0;
+        ULONG64 symbol_displacement  = 0;
+        ULONG line                   = 0;
+        char file_name[MAX_PATH]     = {};
+        ULONG file_name_size         = 0;
+        ULONG64 line_displacement    = 0;
     };
 
     stacktrace_global_data_t stacktrace_global_data;
