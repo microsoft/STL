@@ -319,6 +319,7 @@ int main() {
         assert(!f.is_open());
     }
 
+#ifndef TEST_TOPO_SORT // TRANSITION, VSO-1471374 (fatal error C1116: unrecoverable error importing module)
     {
         puts("Testing <functional>.");
         function<int(int, int)> f{multiplies{}};
@@ -329,6 +330,7 @@ int main() {
         assert(b(3) == 33);
         static_assert(b(3) == 33);
     }
+#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <future>.");
@@ -861,6 +863,7 @@ int main() {
         assert(this_thread::get_id() != thread::id{});
     }
 
+#ifndef TEST_TOPO_SORT // TRANSITION, VSO-1471374 (fatal error C1116: unrecoverable error importing module)
     {
         puts("Testing <tuple>.");
         constexpr tuple<int, char, double> t{1729, 'c', 1.25};
@@ -871,6 +874,7 @@ int main() {
         static_assert(get<char>(t) == 'c');
         static_assert(get<double>(t) == 1.25);
     }
+#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <type_traits>.");
