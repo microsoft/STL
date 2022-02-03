@@ -96,13 +96,8 @@ class CustomTestFormat(STLTestFormat):
         outputDir, outputBase = test.getTempPaths()
         sourcePath = test.getSourcePath()
 
-        compileTestCppWithEdg = False
-        if '/BE' in test.flags:
-            compileTestCppWithEdg = True
-            test.flags.remove('/BE')
-
-        if '/BE' in test.compileFlags:
-            compileTestCppWithEdg = True
+        compileTestCppWithEdg = '/BE' in test.compileFlags
+        if compileTestCppWithEdg:
             test.compileFlags.remove('/BE')
 
         stlHeaders = getImportableCxxLibraryHeaders()
