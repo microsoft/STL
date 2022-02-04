@@ -3878,7 +3878,7 @@ namespace ranges {
 
         class _Iterator {
         private:
-            friend class _Sentinel;
+            friend _Sentinel;
 
             split_view* _Parent             = nullptr;
             iterator_t<_Vw> _Current        = {};
