@@ -1291,9 +1291,9 @@
 #define __cpp_lib_endian                  201907L
 #define __cpp_lib_erase_if                202002L
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
+#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_format 202110L
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1321,9 +1321,9 @@
 #define __cpp_lib_math_constants          201907L
 #define __cpp_lib_polymorphic_allocator   201902L
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
+#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_ranges 202110L
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
