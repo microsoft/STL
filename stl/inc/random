@@ -238,7 +238,7 @@ private:
     vector<result_type> _Myvec;
 };
 
-constexpr int _Generate_canonical_iterations(const int _Bits, const uint64_t _Gmin, const uint64_t _Gmax) {
+_NODISCARD constexpr int _Generate_canonical_iterations(const int _Bits, const uint64_t _Gmin, const uint64_t _Gmax) {
     // For a URBG type `G` with range == `(G::max() - G::min()) + 1`, returns the number of calls to generate at least
     // _Bits bits of entropy. Specifically, max(1, ceil(_Bits / log2(range))).
 
@@ -288,6 +288,14 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     return _Ans / _Factor;
 }
 
+template <class _Gen, class = void>
+struct _Has_static_min_max : false_type {};
+
+// This checks a requirement of N4901 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
+// to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
+template <class _Gen>
+struct _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> : true_type {};
+
 template <class _Real, class _Gen>
 _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(_Nrand_impl, _Real);
@@ -296,10 +304,9 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
     constexpr auto _Bits    = ~size_t{0};
     constexpr auto _Minbits = _Digits < _Bits ? _Digits : _Bits;
 
-    if constexpr (_Select_invoke_traits<decltype(&_Gen::min)>::_Is_invocable::value
-                  && _Select_invoke_traits<decltype(&_Gen::max)>::_Is_invocable::value && _Minbits <= 64) {
+    if constexpr (_Has_static_min_max<_Gen>::value && _Minbits <= 64) {
         return _STD generate_canonical<_Real, _Minbits>(_Gx);
-    } else {
+    } else { // TRANSITION, for tr1 machinery only; Standard machinery can call generate_canonical directly
         const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
         const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
         const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
