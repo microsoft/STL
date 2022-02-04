@@ -12,6 +12,7 @@
 #pragma message("The contents of <ranges> are available only in c++latest mode;")
 #pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
 #else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
+#include <__msvc_int128.hpp>
 #include <iosfwd>
 #include <iterator>
 #include <limits>
@@ -953,7 +954,9 @@ namespace ranges {
     } // namespace views
 
     template <class _Ty>
-    using _Iota_diff_t = conditional_t<is_integral_v<_Ty>, conditional_t<(sizeof(_Ty) < sizeof(int)), int, long long>,
+    using _Iota_diff_t = conditional_t<is_integral_v<_Ty>,
+        conditional_t<sizeof(_Ty) < sizeof(int), int,
+            conditional_t<sizeof(_Ty) < sizeof(long long), long long, _Int128>>,
         iter_difference_t<_Ty>>;
 
     // clang-format off
@@ -981,6 +984,7 @@ namespace ranges {
     };
 
     template <incrementable _Wi>
+        requires integral<_Iota_diff_t<_Wi>> // TODO: LWG issue
     struct _Ioterator_category_base<_Wi> {
         using iterator_category = input_iterator_tag;
 

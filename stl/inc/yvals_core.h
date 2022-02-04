@@ -1498,5 +1498,11 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STL_UNREACHABLE __assume(false)
 #endif // __clang__
 
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+#define _STL_INTERNAL_STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+#else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
+#define _STL_INTERNAL_STATIC_ASSERT(...)
+#endif // _ENABLE_STL_INTERNAL_CHECK
+
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

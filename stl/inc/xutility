@@ -740,21 +740,49 @@ concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
 };
 
 template <class _Ty>
-concept _Integer_like = _Is_nonbool_integral<remove_cv_t<_Ty>>;
+inline constexpr bool _Integer_class = requires {
+    typename _Ty::_Signed_type;
+    typename _Ty::_Unsigned_type;
+};
+
+template <class _Ty>
+concept _Integer_like = _Is_nonbool_integral<remove_cv_t<_Ty>> || _Integer_class<_Ty>;
 
 template <class _Ty>
 concept _Signed_integer_like = _Integer_like<_Ty> && static_cast<_Ty>(-1) < static_cast<_Ty>(0);
 
+template <bool _Is_integer_class>
+struct _Make_unsigned_like_impl {
+    template <class _Ty>
+    using _Apply = typename _Ty::_Unsigned_type;
+};
+template <>
+struct _Make_unsigned_like_impl<false> {
+    template <class _Ty>
+    using _Apply = make_unsigned_t<_Ty>;
+};
+
 template <class _Ty>
-using _Make_unsigned_like_t = make_unsigned_t<_Ty>;
+using _Make_unsigned_like_t = typename _Make_unsigned_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
 
 template <_Integer_like _Ty>
 _NODISCARD constexpr auto _To_unsigned_like(const _Ty _Value) noexcept {
     return static_cast<_Make_unsigned_like_t<_Ty>>(_Value);
 }
 
+template <bool _Is_integer_class>
+struct _Make_signed_like_impl {
+    template <class _Ty>
+    using _Apply = typename _Ty::_Signed_type;
+};
+template <>
+struct _Make_signed_like_impl<false> {
+    template <class _Ty>
+    using _Apply = make_signed_t<_Ty>;
+};
+
 template <class _Ty>
-using _Make_signed_like_t = make_signed_t<_Ty>;
+using _Make_signed_like_t = typename _Make_signed_like_impl<_Integer_class<_Ty>>::template _Apply<_Ty>;
 
 template <_Integer_like _Ty>
 _NODISCARD constexpr auto _To_signed_like(const _Ty _Value) noexcept {
