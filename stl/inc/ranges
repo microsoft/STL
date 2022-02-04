@@ -77,45 +77,37 @@ namespace ranges {
 
         template <class _Derived>
         struct _Base {
-            // clang-format off
             template <class _Other>
                 requires _Can_compose<_Derived, _Other>
             constexpr auto operator|(_Base<_Other>&& __r) && noexcept(
                 noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)})) {
-                // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
                 return _Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)};
             }
 
-            // clang-format off
             template <class _Other>
                 requires _Can_compose<_Derived, const _Other&>
             constexpr auto operator|(const _Base<_Other>& __r) && noexcept(
                 noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)})) {
-                // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
                 return _Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)};
             }
 
-            // clang-format off
             template <class _Other>
                 requires _Can_compose<const _Derived&, _Other>
             constexpr auto operator|(_Base<_Other>&& __r) const& noexcept(
                 noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)})) {
-                // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
                 return _Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)};
             }
 
-            // clang-format off
             template <class _Other>
                 requires _Can_compose<const _Derived&, const _Other&>
             constexpr auto operator|(const _Base<_Other>& __r) const& noexcept(
                 noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)})) {
-                // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
                 return _Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)};
@@ -637,11 +629,9 @@ namespace ranges {
         bool _Engaged = false;
     };
 
-    // clang-format off
     template <movable _Ty>
         requires default_initializable<_Ty>
     class _Defaultabox<_Ty> { // provide the same API more efficiently for default-constructible types
-        // clang-format on
     public:
         _Defaultabox() = default;
 
@@ -882,11 +872,9 @@ namespace ranges {
         tuple<_Types...> _Captures;
     };
 
-    // clang-format off
     template <class _Ty>
         requires is_object_v<_Ty>
     class empty_view : public view_interface<empty_view<_Ty>> {
-        // clang-format on
     public:
         _NODISCARD static constexpr _Ty* begin() noexcept {
             return nullptr;
@@ -914,11 +902,9 @@ namespace ranges {
         inline constexpr empty_view<_Ty> empty;
     } // namespace views
 
-    // clang-format off
     template <copy_constructible _Ty>
         requires is_object_v<_Ty>
     class single_view : public view_interface<single_view<_Ty>> {
-        // clang-format on
     public:
         // clang-format off
         single_view() requires default_initializable<_Ty> = default;
@@ -929,12 +915,10 @@ namespace ranges {
         constexpr explicit single_view(_Ty&& _Val_) noexcept(is_nothrow_move_constructible_v<_Ty>) // strengthened
             : _Val{in_place, _STD move(_Val_)} {}
 
-        // clang-format off
         template <class... _Types>
             requires constructible_from<_Ty, _Types...>
         constexpr explicit single_view(in_place_t, _Types&&... _Args) noexcept(
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
-            // clang-format on
             : _Val{in_place, _STD forward<_Types>(_Args)...} {}
 
         _NODISCARD constexpr _Ty* begin() noexcept {
@@ -1208,11 +1192,9 @@ namespace ranges {
         }
     };
 
-    // clang-format off
     template <weakly_incrementable _Wi, semiregular _Bo>
         requires _Weakly_equality_comparable_with<_Wi, _Bo> && copyable<_Wi>
     struct _Iotinel {
-        // clang-format on
     private:
         using _It = _Ioterator<_Wi>;
 
@@ -1245,11 +1227,9 @@ namespace ranges {
         }
     };
 
-    // clang-format off
     template <weakly_incrementable _Wi, semiregular _Bo = unreachable_sentinel_t>
         requires _Weakly_equality_comparable_with<_Wi, _Bo> && copyable<_Wi>
     class iota_view : public view_interface<iota_view<_Wi, _Bo>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Wi _Value{};
         /* [[no_unique_address]] */ _Bo _Bound{};
@@ -1357,11 +1337,9 @@ namespace ranges {
         __is >> __t;
     };
 
-    // clang-format off
     template <movable _Ty, class _Elem, class _Traits = char_traits<_Elem>>
         requires default_initializable<_Ty> && _Stream_extractable<_Ty, _Elem, _Traits>
     class basic_istream_view : public view_interface<basic_istream_view<_Ty, _Elem, _Traits>> {
-        // clang-format on
     private:
         class _Iterator {
         private:
@@ -1647,11 +1625,9 @@ namespace ranges {
         using all_t = decltype(all(_STD declval<_Rng>()));
     } // namespace views
 
-    // clang-format off
     template <input_range _Vw, indirect_unary_predicate<iterator_t<_Vw>> _Pr>
         requires view<_Vw> && is_object_v<_Pr>
     class filter_view : public _Cached_position_t<forward_range<_Vw>, _Vw, filter_view<_Vw, _Pr>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
@@ -2607,11 +2583,9 @@ namespace ranges {
         inline constexpr _Take_fn take;
     } // namespace views
 
-    // clang-format off
     template <view _Vw, class _Pr>
         requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
-    class take_while_view : public view_interface<take_while_view<_Vw, _Pr>>  {
-        // clang-format on
+    class take_while_view : public view_interface<take_while_view<_Vw, _Pr>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
@@ -2978,11 +2952,9 @@ namespace ranges {
         inline constexpr _Drop_fn drop;
     } // namespace views
 
-    // clang-format off
     template <view _Vw, class _Pr>
         requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
     class drop_while_view : public _Cached_position_t<forward_range<_Vw>, _Vw, drop_while_view<_Vw, _Pr>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
@@ -3063,11 +3035,9 @@ namespace ranges {
         inline constexpr _Drop_while_fn drop_while;
     } // namespace views
 
-    // clang-format off
     template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
     class join_view;
-    // clang-format on
 
     template <class _Vw>
     class _Join_view_base : public view_interface<join_view<_Vw>> {
@@ -3810,15 +3780,11 @@ namespace ranges {
             }
         }
 
-        // clang-format off
         _NODISCARD constexpr auto begin() const requires forward_range<_Vw> && forward_range<const _Vw> {
-            // clang-format on
             return _Outer_iter<true>{*this, _RANGES begin(_Range)};
         }
 
-        // clang-format off
         _NODISCARD constexpr auto end() requires forward_range<_Vw> && common_range<_Vw> {
-            // clang-format on
             constexpr bool _Both_simple = _Simple_view<_Vw> && _Simple_view<_Pat>;
             return _Outer_iter<_Both_simple>{*this, _RANGES end(_Range)};
         }
@@ -3864,11 +3830,9 @@ namespace ranges {
         inline constexpr _Lazy_split_fn lazy_split;
     } // namespace views
 
-    // clang-format off
     template <forward_range _Vw, forward_range _Pat>
         requires view<_Vw> && view<_Pat> && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
     class split_view : public view_interface<split_view<_Vw, _Pat>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Pat _Pattern{};
@@ -4228,11 +4192,9 @@ namespace ranges {
         inline constexpr _Common_fn common;
     } // namespace views
 
-    // clang-format off
     template <view _Vw>
         requires bidirectional_range<_Vw>
     class reverse_view : public _Cached_position_t<!common_range<_Vw>, _Vw, reverse_view<_Vw>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
 
