@@ -9428,6 +9428,7 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
                     if (_DEBUG_LT_PRED(_Pred, *_Next, *_Found.first)) {
                         _Found.first = _Next;
                     }
+
                     if (!_DEBUG_LT_PRED(_Pred, *_First, *_Found.second)) {
                         _Found.second = _First;
                     }
@@ -9435,6 +9436,7 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
                     if (_DEBUG_LT_PRED(_Pred, *_First, *_Found.first)) {
                         _Found.first = _First;
                     }
+
                     if (!_DEBUG_LT_PRED(_Pred, *_Next, *_Found.second)) {
                         _Found.second = _Next;
                     }

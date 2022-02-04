@@ -2080,6 +2080,7 @@ _OutIt _Format_default(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out,
                 _Num *= 10;
                 _Num += static_cast<unsigned int>(*_First++ - '0');
             }
+
             if (_Num == 0) { // preserve $0, $00
                 *_Out++ = '$';
                 *_Out++ = '0';
@@ -4091,6 +4092,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expre
         _Nfa._Negate();
         _Next();
     }
+
     if ((_L_flags & _L_brk_rstr) && _Mchar == _Meta_rsq) { // insert initial ] when not special
         _Nfa._Add_char_to_class(_Meta_rsq);
         _Next();
