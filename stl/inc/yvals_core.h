@@ -162,7 +162,7 @@
 // P0475R1 Guaranteed Copy Elision For Piecewise Construction
 // P0476R2 <bit> bit_cast
 // P0482R6 Library Support For char8_t
-//     (mbrtoc8 and c8rtomb not yet implemented)
+//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 // P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
