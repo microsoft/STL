@@ -4,7 +4,6 @@
 #include <format>
 #include <memory>
 #include <shared_mutex>
-#include <string>
 
 // clang-format off
 #include <initguid.h> // should be before any header that includes <guiddef.h>
@@ -13,7 +12,19 @@
 
 #pragma comment(lib, "DbgEng.lib")
 
+using _Stacktrace_string_fill_callback = size_t (*)(char*, size_t, void* _Context);
+
+using _Stacktrace_string_fill = size_t (*)(size_t, void* _Str, void* _Context, _Stacktrace_string_fill_callback);
+
 namespace {
+
+    template<class F>
+    size_t string_fill(_Stacktrace_string_fill callback, size_t size, void* str, F f) {
+        return callback(size, str, &f, [] (char* s, size_t sz, void* context) -> size_t { 
+            return (*static_cast<F*>(context))(s, sz);
+        });
+    }
+
 
     struct com_release_t {
         void operator()(auto* p) {
@@ -38,113 +49,15 @@ namespace {
         SRWLOCK* locked;
     };
 
-    class stacktrace_global_data_t {
-    public:
-        constexpr stacktrace_global_data_t() noexcept = default;
-        constexpr ~stacktrace_global_data_t()         = default;
+    IDebugClient* debug_client   = nullptr;
+    IDebugSymbols* debug_symbols = nullptr;
+    IDebugControl* debug_control = nullptr;
+    bool attached                = false;
+    bool initialize_attempted    = false;
 
-        stacktrace_global_data_t(const stacktrace_global_data_t&) = delete;
-        stacktrace_global_data_t& operator=(const stacktrace_global_data_t) = delete;
-
-        [[nodiscard]] std::string description(const void* const address) {
-            clear_if_wrong_address(address);
-
-            if (!is_description_valid) {
-                bool success = try_initialize()
-                            && SUCCEEDED(debug_symbols->GetNameByOffset(reinterpret_cast<uintptr_t>(address), buffer,
-                                static_cast<ULONG>(std::size(buffer)), &buffer_size, &symbol_displacement));
-
-                if (!success) {
-                    buffer_size =
-                        static_cast<ULONG>(std::format_to_n(buffer, std::size(buffer), "{}", address).out - buffer);
-                    symbol_displacement = 0;
-                }
-
-                is_description_valid = true;
-            }
-
-            if (symbol_displacement != 0) {
-                return std::format("{}+{:#x}", std::string_view(buffer, buffer_size), symbol_displacement);
-            } else {
-                return std::string(std::string_view(buffer, buffer_size));
-            }
-        }
-
-        [[nodiscard]] std::string source_file(const void* const address) {
-            initialize_line(address);
-
-            return std::string(std::string_view(file_name, file_name_size));
-        }
-
-        [[nodiscard]] unsigned source_line(const void* const address) {
-            initialize_line(address);
-
-            return line;
-        }
-
-        [[nodiscard]] std::string address_to_string(const void* _Address) {
-
-            auto cur_line = source_line(_Address);
-            auto cur_desc = description(_Address);
-
-            if (cur_line == 0) {
-                return cur_desc;
-            } else {
-                return std::format("{}({}): {}", source_file(_Address), cur_line, cur_desc);
-            }
-        }
-
-
-    private:
-        bool try_initialize();
-
-        void clear_if_wrong_address(const void* const address) {
-            if (last_address != address) {
-                is_description_valid = false;
-                is_line_valid        = false;
-                last_address         = address;
-            }
-        }
-
-        void initialize_line(const void* const address) {
-            clear_if_wrong_address(address);
-
-            if (!is_line_valid) {
-                bool success =
-                    try_initialize()
-                    && SUCCEEDED(debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), &line, file_name,
-                        static_cast<ULONG>(std::size(file_name)), &file_name_size, &line_displacement));
-                if (!success) {
-                    line              = 0;
-                    file_name_size    = 0;
-                    line_displacement = 0;
-                }
-                is_line_valid = true;
-            }
-        }
-
-
-        IDebugClient* debug_client   = nullptr;
-        IDebugSymbols* debug_symbols = nullptr;
-        IDebugControl* debug_control = nullptr;
-        bool attached                = false;
-        bool initialize_attempted    = false;
-        const void* last_address     = nullptr;
-        bool is_description_valid    = false;
-        bool is_line_valid           = false;
-        char buffer[2000]            = {};
-        ULONG buffer_size            = 0;
-        ULONG64 symbol_displacement  = 0;
-        ULONG line                   = 0;
-        char file_name[MAX_PATH]     = {};
-        ULONG file_name_size         = 0;
-        ULONG64 line_displacement    = 0;
-    };
-
-    stacktrace_global_data_t stacktrace_global_data;
     SRWLOCK srw = SRWLOCK_INIT;
 
-    bool stacktrace_global_data_t::try_initialize() {
+    bool try_initialize() {
         if (!initialize_attempted) {
             // Deliberately not calling CoInitialize[Ex]
             // DbgEng.h API works fine without it. COM initialization may have undesired interference with user's code
@@ -164,32 +77,146 @@ namespace {
         atexit([] {
             // "Phoenix singleton" - destroy and set to null, so that can initialize later again
 
-            if (stacktrace_global_data.debug_client != nullptr) {
-                if (stacktrace_global_data.attached) {
-                    stacktrace_global_data.debug_client->DetachProcesses();
-                    stacktrace_global_data.attached = false;
+            if (debug_client != nullptr) {
+                if (attached) {
+                    debug_client->DetachProcesses();
+                    attached = false;
                 }
 
-                stacktrace_global_data.debug_client->Release();
-                stacktrace_global_data.debug_client = nullptr;
+                debug_client->Release();
+                debug_client = nullptr;
             }
 
-            if (stacktrace_global_data.debug_control != nullptr) {
-                stacktrace_global_data.debug_control->Release();
-                stacktrace_global_data.debug_control = nullptr;
+            if (debug_control != nullptr) {
+                debug_control->Release();
+                debug_control = nullptr;
             }
 
-            if (stacktrace_global_data.debug_symbols != nullptr) {
-                stacktrace_global_data.debug_symbols->Release();
-                stacktrace_global_data.debug_symbols = nullptr;
+            if (debug_symbols != nullptr) {
+                debug_symbols->Release();
+                debug_symbols = nullptr;
             }
 
-            stacktrace_global_data.initialize_attempted = false;
+            initialize_attempted = false;
         });
 
         initialize_attempted = true;
 
-        return stacktrace_global_data.debug_symbols != nullptr;
+        return debug_symbols != nullptr;
+    }
+
+    size_t get_description(const void* const address, void* str, size_t off, _Stacktrace_string_fill fill) {
+        if (!try_initialize()) {
+            return 0;
+        }
+
+        size_t size = 4; // a guess, will retry with greater if wrong
+
+        HRESULT hr = E_UNEXPECTED;
+
+        ULONG64 displacement = 0;
+
+        for (;;) {
+            ULONG new_size = 0;
+
+            size_t new_off = string_fill(
+                fill, off + size, str, [address, off, size, &new_size, &hr, &displacement](char* s, size_t) {
+
+                    hr = debug_symbols->GetNameByOffset(
+                        reinterpret_cast<uintptr_t>(address), s + off, static_cast<ULONG>(size), &new_size, &displacement);
+
+                    return (hr == S_OK) ? off + new_size - 1 : off;
+                });
+
+            if (hr == S_OK) {
+                off = new_off;
+                break;
+            } else if (hr == S_FALSE) {
+                size = new_size; // retry with bigger buffer
+            } else {
+                return off;
+            }
+        }
+
+        if (displacement != 0) {
+            constexpr size_t max_disp_num = std::size("+0x1111222233334444") - 1; // maximum possible line number
+
+            off = string_fill(fill, off + max_disp_num, str, [displacement, off](char* s, size_t) {
+                return std::format_to_n(s + off, max_disp_num, "+{:#x}", displacement).out - s;
+            });
+        }
+
+        return off;
+    }
+
+
+    size_t source_file(const void* const address, void* str, size_t off, ULONG* line, _Stacktrace_string_fill fill) {
+        if (!try_initialize()) {
+            return 0;
+        }
+        HRESULT hr = E_UNEXPECTED;
+
+        size_t size = 4; // a guess, will retry with greater if wrong
+
+        for (;;) {
+            ULONG new_size = 0;
+
+            size_t new_off =
+                string_fill(fill, off + size, str, [address, off, size, line, &new_size, &hr](char* s, size_t) {
+
+                hr = debug_symbols->GetLineByOffset(
+                    reinterpret_cast<uintptr_t>(address), line, s + off, static_cast<ULONG>(size), &new_size, nullptr);
+                
+                return (hr == S_OK) ? off + new_size - 1 : off;
+            });
+
+            if (hr == S_OK) {
+                off = new_off;
+                break;
+            } else if (hr == S_FALSE) {
+                size = new_size; // retry with bigger buffer
+            } else {
+                if (line != nullptr) {
+                    *line = 0;
+                }
+
+                return off;
+            }
+        }
+
+        return off;
+    }
+
+    [[nodiscard]] unsigned source_line(const void* const address) {
+        if (!try_initialize()) {
+            return 0;
+        }
+        
+        ULONG line = 0;
+
+        if (FAILED(debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), &line, nullptr,
+            0, nullptr, nullptr))) {
+            return 0;
+        }
+        
+        return line;
+    }
+
+    size_t address_to_string(const void* address, void* str, size_t off, _Stacktrace_string_fill fill) {
+        ULONG line = 0;
+        
+        off = source_file(address, str, off, &line, fill);
+
+        if (line != 0) {
+
+            constexpr size_t max_line_num = std::size("(4294967295): ") - 1; // maximum possible line number
+            
+            off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) { 
+                return std::format_to_n(s + off, max_line_num, "({}): ", line).out - s; 
+            });
+        }
+
+        return get_description(address, str, off, fill);
     }
 
 
@@ -203,38 +230,48 @@ namespace {
     return CaptureStackBackTrace(_FramesToSkip, _FramesToCapture, _BackTrace, _BackTraceHash);
 }
 
-[[nodiscard]] std::string __stdcall __std_stacktrace_description(const void* _Address) {
+void __stdcall __std_stacktrace_description(
+    const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
     srw_lock_guard lock{srw};
-    return stacktrace_global_data.description(_Address);
+
+    get_description(_Address, _Str, 0, _Fill);
 }
 
-[[nodiscard]] std::string __stdcall __std_stacktrace_source_file(const void* _Address) {
+void __stdcall __std_stacktrace_source_file(
+    const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
     srw_lock_guard lock{srw};
-    return stacktrace_global_data.source_file(_Address);
+    
+    source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
-[[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(const void* _Address) {
+unsigned __stdcall __std_stacktrace_source_line(const void* _Address) {
     srw_lock_guard lock{srw};
-    return stacktrace_global_data.source_line(_Address);
+
+    return source_line(_Address);
 }
 
-[[nodiscard]] std::string __stdcall __std_stacktrace_address_to_string(const void* _Address) {
+void __stdcall __std_stacktrace_address_to_string(
+    const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
     srw_lock_guard lock{srw};
-    return stacktrace_global_data.address_to_string(_Address);
+
+    address_to_string(_Address, _Str, 0, _Fill);
 }
 
-[[nodiscard]] std::string __stdcall __std_stacktrace_to_string(const void* _Addresses, size_t _Size) {
+void __stdcall __std_stacktrace_to_string(
+    const void* _Addresses, size_t _Size, void* _Str, _Stacktrace_string_fill _Fill) {
     srw_lock_guard lock{srw};
+
     auto data = reinterpret_cast<const void* const*>(_Addresses);
-    std::string result;
+
+    size_t off = 0;
+    
     for (std::size_t i = 0; i != _Size; ++i) {
-        auto str = stacktrace_global_data.address_to_string(data[i]);
-        if (!result.empty()) {
-            result.push_back('\n');
-            result.append(str);
-        } else {
-            result = std::move(str);
+        if (off != 0) {
+            off = string_fill(_Fill, off + 1, _Str, [](char* s, size_t sz) {
+                s[sz - 1] = '\n';
+                return sz;
+            });
         }
+        off = address_to_string(data[i], _Str, off, _Fill);
     }
-    return result;
 }

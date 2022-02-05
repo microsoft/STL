@@ -25,14 +25,34 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-[[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(
+using _Stacktrace_string_fill_callback = size_t (*)(char*, size_t, void* _Context);
+
+using _Stacktrace_string_fill = size_t (*)(size_t, void* _String, void* _Context, _Stacktrace_string_fill_callback);
+
+struct _Stacktrace_string_fill_op {
+    size_t operator()(char* _Data, size_t _Size) {
+        return _Callback(_Data, _Size, _Context);
+    }
+
+    _Stacktrace_string_fill_callback _Callback;
+    void* _Context;
+};
+
+inline size_t _Stacktrace_string_fill_impl(
+    size_t _Size, void* _String, void* _Context, _Stacktrace_string_fill_callback _Callback) {
+    static_cast<_STD string*>(_String)->resize_and_overwrite(_Size, _Stacktrace_string_fill_op{_Callback, _Context});
+    return static_cast<_STD string*>(_String)->size();
+}
+
+unsigned short __stdcall __std_stacktrace_capture(
     unsigned long _FramesToSkip, unsigned long _FramesToCapture, void** _BackTrace, unsigned long* _BackTraceHash);
 
-[[nodiscard]] _STD string __stdcall __std_stacktrace_address_to_string(const void* _Address);
-[[nodiscard]] _STD string __stdcall __std_stacktrace_description(const void* _Address);
-[[nodiscard]] _STD string __stdcall __std_stacktrace_source_file(const void* _Address);
+void __stdcall __std_stacktrace_address_to_string(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill);
+void __stdcall __std_stacktrace_description(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill);
+void __stdcall __std_stacktrace_source_file(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill);
 [[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(const void* _Address);
-[[nodiscard]] _STD string __stdcall __std_stacktrace_to_string(const void* _Addresses, size_t _Size);
+void __stdcall __std_stacktrace_to_string(
+    const void* _Addresses, size_t _Size, void* _Str, _Stacktrace_string_fill _Fill);
 
 _STD_BEGIN
 class stacktrace_entry {
@@ -54,11 +74,15 @@ public:
     }
 
     [[nodiscard]] string description() const {
-        return __std_stacktrace_description(_Address);
+        string _Result;
+        __std_stacktrace_description(_Address, &_Result, _Stacktrace_string_fill_impl);
+        return _Result;
     }
 
     [[nodiscard]] string source_file() const {
-        return __std_stacktrace_source_file(_Address);
+        string _Result;
+        __std_stacktrace_source_file(_Address, &_Result, _Stacktrace_string_fill_impl);
+        return _Result;
     }
 
     [[nodiscard]] uint_least32_t source_line() const {
@@ -239,12 +263,16 @@ void swap(basic_stacktrace<_Al>& _Ax, basic_stacktrace<_Al>& _Bx) noexcept(noexc
 }
 
 [[nodiscard]] inline string to_string(const stacktrace_entry& _Fx) {
-    return __std_stacktrace_address_to_string(_Fx.native_handle());
+    string _Result;
+    __std_stacktrace_address_to_string(_Fx.native_handle(), &_Result, _Stacktrace_string_fill_impl);
+    return _Result;
 }
 
 template <class _Al>
 [[nodiscard]] string to_string(const basic_stacktrace<_Al>& _St) {
-    return __std_stacktrace_to_string(_St._Data(), _St.size());
+    string _Result;
+    __std_stacktrace_to_string(_St._Data(), _St.size(), &_Result, _Stacktrace_string_fill_impl);
+    return _Result;
 }
 
 template <class charT, class traits>
