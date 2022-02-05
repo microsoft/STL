@@ -35,8 +35,8 @@ _STD_BEGIN
 #define _STL_128_DIV_INTRINSICS 0
 #else // ^^^ Clang / other vvv
 #define _STL_128_DIV_INTRINSICS 1
-#endif
-#else // ^^^ X64 / other vvv
+#endif // ^^^ detect _udiv128 / _div128 ^^^
+#else // ^^^ x64 / other vvv
 #define _STL_128_INTRINSICS     0
 #define _STL_128_DIV_INTRINSICS 0
 #endif // defined(_M_X64) && !defined(_M_ARM64EC)
@@ -901,7 +901,7 @@ struct _Int128 : _Uint128 {
         return _Left;
     }
 
-    _NODISCARD_FRIEND constexpr _Int128 operator>>(const _Int128& _Left, const _Int128& _Right) noexcept {
+    _NODISCARD_FRIEND constexpr _Int128 operator>>(const _Int128& _Left, const _Uint128& _Right) noexcept {
         auto _Tmp{_Left};
         _Tmp._Right_shift(static_cast<unsigned char>(_Right._Word[0]));
         return _Tmp;
