@@ -392,12 +392,10 @@ struct
         // establish _Den < _Num and _Num._Word[1] > 0
         if (_Den._Word[1] >= _Num._Word[1]) {
             if (_Den._Word[1] > _Num._Word[1]) {
-                return {};
+                return 0;
             }
 
-            if (_Den._Word[1] == _Num._Word[1]) {
-                return {_Num._Word[1] == 0 ? _Num._Word[0] / _Den._Word[0] : _Num._Word[0] >= _Den._Word[0]};
-            }
+            return _Num._Word[1] == 0 ? _Num._Word[0] / _Den._Word[0] : _Num._Word[0] >= _Den._Word[0];
         }
 
         // establish _Den has more than 1 non-zero "digit"
@@ -494,7 +492,7 @@ struct
             __q[1] = 0;
         }
 
-        return {static_cast<uint64_t>(__q[1]) << 32 | __q[0]};
+        return static_cast<uint64_t>(__q[1]) << 32 | __q[0];
 #endif // _STL_128_INTRINSICS
     }
 
@@ -503,13 +501,13 @@ struct
         uint64_t _Rem = _Num._Word[1];
         _Rem          = ((_Rem % _Den) << 32) | (_Num._Word[0] >> 32);
         _Rem          = ((_Rem % _Den) << 32) | static_cast<uint32_t>(_Num._Word[0]);
-        return _Uint128_base{_Rem % _Den};
+        return _Rem % _Den;
     }
 #endif // !_STL_128_DIV_INTRINSICS
     _NODISCARD static constexpr _Uint128_base _Modulo(const _Uint128_base& _Num, const uint64_t _Den) noexcept {
         uint64_t _Rem;
         (void) _UDiv128(_Num._Word[1] % _Den, _Num._Word[0], _Den, _Rem);
-        return _Uint128_base{_Rem};
+        return _Rem;
     }
     _NODISCARD static constexpr _Uint128_base _Modulo(_Uint128_base _Num, _Uint128_base _Den) noexcept {
         // establish _Den < _Num and _Num._Word[1] > 0
@@ -518,14 +516,11 @@ struct
                 return _Num;
             }
 
-            if (_Den._Word[1] == _Num._Word[1]) {
-                if (_Den._Word[0] <= _Num._Word[0]) {
-                    return _Uint128_base{
-                        _Num._Word[1] == 0 ? _Num._Word[0] % _Den._Word[0] : _Num._Word[0] - _Den._Word[0]};
-                }
-
-                return _Num;
+            if (_Den._Word[0] <= _Num._Word[0]) {
+                return _Num._Word[1] == 0 ? _Num._Word[0] % _Den._Word[0] : _Num._Word[0] - _Den._Word[0];
             }
+
+            return _Num;
         }
 
         // establish _Den has more than 1 non-zero "digit"

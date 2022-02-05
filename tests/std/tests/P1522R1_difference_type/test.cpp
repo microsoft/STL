@@ -719,13 +719,13 @@ constexpr bool test_cross() {
 
     TEST(_Uint128{1} << _Int128{43}, _Uint128{1ull << 43});
     TEST(_Int128{1} << _Uint128{43}, _Int128{1ull << 43});
-    TEST(_Uint128{-1} << _Int128{43}, _Uint128(0ull - (1ull << 43), ~0ull));
-    TEST(_Int128{-1} << _Uint128{43}, _Int128(0ull - (1ull << 43), ~0ull));
+    TEST(_Uint128{-1} << _Int128{43}, (_Uint128{0ull - (1ull << 43), ~0ull}));
+    TEST(_Int128{-1} << _Uint128{43}, (_Int128{0ull - (1ull << 43), ~0ull}));
 
-    TEST(_Uint128(0, 1) >> _Int128{43}, _Uint128(1ull << 21));
-    TEST(_Int128(0, 1) >> _Uint128{43}, _Int128(1ull << 21));
-    TEST(_Uint128(0, ~0ull) >> _Int128{43}, _Uint128(~((1ull << 21) - 1), (1ull << 21) - 1));
-    TEST(_Int128(0, ~0ull) >> _Uint128{43}, _Int128(~((1ull << 21) - 1), ~0ull));
+    TEST((_Uint128{0, 1}) >> _Int128{43}, _Uint128{1ull << 21});
+    TEST((_Int128{0, 1}) >> _Uint128{43}, _Int128{1ull << 21});
+    TEST((_Uint128{0, ~0ull} >> _Int128{43}), (_Uint128{~((1ull << 21) - 1), (1ull << 21) - 1}));
+    TEST((_Int128{0, ~0ull} >> _Uint128{43}), (_Int128{~((1ull << 21) - 1), ~0ull}));
 
     static_assert(!CanConditional<_Uint128, _Int128>);
     static_assert(!CanConditional<_Int128, _Uint128>);
@@ -763,5 +763,5 @@ int main() {
     test_signed();
     static_assert(test_signed());
     test_cross();
-    // FIXME static_assert(test_cross());
+    static_assert(test_cross());
 }
