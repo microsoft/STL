@@ -5,35 +5,41 @@
 #include <cassert>
 #include <compare>
 #include <concepts>
-#include <xutility>
+#include <cstdint>
+#include <iterator>
+#include <limits>
+#include <type_traits>
 
 using std::_Int128;
 using std::_Uint128;
 
-constexpr void check_equal(const _Uint128& _Left) {
-    assert(_Left == _Left);
-    assert(!(_Left != _Left));
-    assert(!(_Left < _Left));
-    assert(!(_Left > _Left));
-    assert(_Left <= _Left);
-    assert(_Left >= _Left);
-    assert(_Left <=> _Left == 0);
+constexpr void check_equal(const auto& x) {
+    assert(x == x);
+    assert(!(x != x));
+    assert(!(x < x));
+    assert(!(x > x));
+    assert(x <= x);
+    assert(x >= x);
+    assert(x <=> x == 0);
 }
 
-constexpr void check_order(const _Uint128& _Left, const _Uint128& _Right, const std::strong_ordering _Ord) {
-    assert((_Left == _Right) == (_Ord == std::strong_ordering::equal));
-    assert((_Left != _Right) == (_Ord != std::strong_ordering::equal));
-    assert((_Left < _Right) == (_Ord == std::strong_ordering::less));
-    assert((_Left > _Right) == (_Ord == std::strong_ordering::greater));
-    assert((_Left <= _Right) == (_Ord != std::strong_ordering::greater));
-    assert((_Left >= _Right) == (_Ord != std::strong_ordering::less));
+constexpr void check_order(const auto& x, const auto& y, const std::strong_ordering ord) {
+    assert((x == y) == (ord == std::strong_ordering::equal));
+    assert((x != y) == (ord != std::strong_ordering::equal));
+    assert((x < y) == (ord == std::strong_ordering::less));
+    assert((x > y) == (ord == std::strong_ordering::greater));
+    assert((x <= y) == (ord != std::strong_ordering::greater));
+    assert((x >= y) == (ord != std::strong_ordering::less));
 
-    assert((_Right == _Left) == (_Ord == std::strong_ordering::equal));
-    assert((_Right != _Left) == (_Ord != std::strong_ordering::equal));
-    assert((_Right < _Left) == (_Ord == std::strong_ordering::greater));
-    assert((_Right > _Left) == (_Ord == std::strong_ordering::less));
-    assert((_Right <= _Left) == (_Ord != std::strong_ordering::less));
-    assert((_Right >= _Left) == (_Ord != std::strong_ordering::greater));
+    assert((y == x) == (ord == std::strong_ordering::equal));
+    assert((y != x) == (ord != std::strong_ordering::equal));
+    assert((y < x) == (ord == std::strong_ordering::greater));
+    assert((y > x) == (ord == std::strong_ordering::less));
+    assert((y <= x) == (ord != std::strong_ordering::less));
+    assert((y >= x) == (ord != std::strong_ordering::greater));
+
+    assert((x <=> y) == (ord <=> 0));
+    assert((y <=> x) == (0 <=> ord));
 }
 
 constexpr bool test_unsigned() {
@@ -49,6 +55,7 @@ constexpr bool test_unsigned() {
     static_assert(std::same_as<std::common_type_t<char, _Uint128>, _Uint128>);
     static_assert(std::same_as<std::common_type_t<signed char, _Uint128>, _Uint128>);
     static_assert(std::same_as<std::common_type_t<unsigned char, _Uint128>, _Uint128>);
+    static_assert(std::same_as<std::common_type_t<wchar_t, _Uint128>, _Uint128>);
 #ifdef __cpp_char8_t
     static_assert(std::same_as<std::common_type_t<char8_t, _Uint128>, _Uint128>);
 #endif // __cpp_char8_t
@@ -67,6 +74,7 @@ constexpr bool test_unsigned() {
     static_assert(std::same_as<std::common_type_t<_Uint128, char>, _Uint128>);
     static_assert(std::same_as<std::common_type_t<_Uint128, signed char>, _Uint128>);
     static_assert(std::same_as<std::common_type_t<_Uint128, unsigned char>, _Uint128>);
+    static_assert(std::same_as<std::common_type_t<_Uint128, wchar_t>, _Uint128>);
 #ifdef __cpp_char8_t
     static_assert(std::same_as<std::common_type_t<_Uint128, char8_t>, _Uint128>);
 #endif // __cpp_char8_t
@@ -93,6 +101,8 @@ constexpr bool test_unsigned() {
     check_equal(_Uint128{0x11111111'11111111, 0x22222222'22222222});
 
     check_order(_Uint128{42}, _Uint128{-42}, std::strong_ordering::less);
+    check_order(_Uint128{0, 42}, _Uint128{0, 52}, std::strong_ordering::less); // ordered only by MSW
+    check_order(_Uint128{42}, _Uint128{52}, std::strong_ordering::less); // ordered only by LSW
     check_order(_Uint128{0x11111111'11111111, 0x22222222'22222222}, _Uint128{0x01010101'01010101, 0x01010101'01010101},
         std::strong_ordering::greater);
 
@@ -199,7 +209,7 @@ constexpr bool test_unsigned() {
 
         q = _Uint128{0x01010101'01010101, 0x01010101'01010101} / _Uint128{13};
         assert(q._Word[0] == 0xc50013c5'0013c500);
-        assert(q._Word[1] == 0x13c500'13c50013);
+        assert(q._Word[1] == 0x0013c500'13c50013);
 
         q = _Uint128{0x22222222'22222222, 0x22222222'22222222} / _Uint128{0x11111111'11111111, 0x11111111'11111111};
         assert(q._Word[0] == 2);
@@ -224,7 +234,7 @@ constexpr bool test_unsigned() {
         assert(q._Word[1] == 0xffffffff);
 
         _Uint128 result{0x01010101'01010101, 0x01010101'01010101};
-        for (tmp = 0xffu; tmp; tmp <<= 8, result >>= 8) {
+        for (tmp = 0xffu; static_cast<bool>(tmp); tmp <<= 8, result >>= 8) {
             q = ~_Uint128{} / tmp;
             assert(q == result);
             auto m    = ~_Uint128{} % tmp;
@@ -232,6 +242,12 @@ constexpr bool test_unsigned() {
             auto diff = ~_Uint128{} - p;
             assert(m == diff);
         }
+        assert(tmp == 0);
+
+        for (tmp = 1; static_cast<bool>(tmp); tmp <<= 1) {
+            assert(tmp % tmp == 0);
+        }
+        assert(tmp == 0);
     }
 
     {
@@ -256,45 +272,20 @@ constexpr bool test_unsigned() {
     return true;
 }
 
-constexpr void check_equal(const _Int128& _Left) {
-    assert(_Left == _Left);
-    assert(!(_Left != _Left));
-    assert(!(_Left < _Left));
-    assert(!(_Left > _Left));
-    assert(_Left <= _Left);
-    assert(_Left >= _Left);
-    assert(_Left <=> _Left == 0);
-}
-
-constexpr void check_order(const _Int128& _Left, const _Int128& _Right, const std::strong_ordering _Ord) {
-    assert((_Left == _Right) == (_Ord == std::strong_ordering::equal));
-    assert((_Left != _Right) == (_Ord != std::strong_ordering::equal));
-    assert((_Left < _Right) == (_Ord == std::strong_ordering::less));
-    assert((_Left > _Right) == (_Ord == std::strong_ordering::greater));
-    assert((_Left <= _Right) == (_Ord != std::strong_ordering::greater));
-    assert((_Left >= _Right) == (_Ord != std::strong_ordering::less));
-
-    assert((_Right == _Left) == (_Ord == std::strong_ordering::equal));
-    assert((_Right != _Left) == (_Ord != std::strong_ordering::equal));
-    assert((_Right < _Left) == (_Ord == std::strong_ordering::greater));
-    assert((_Right > _Left) == (_Ord == std::strong_ordering::less));
-    assert((_Right <= _Left) == (_Ord != std::strong_ordering::less));
-    assert((_Right >= _Left) == (_Ord != std::strong_ordering::greater));
-}
-
 constexpr bool test_signed() {
     static_assert(std::regular<_Int128>);
     static_assert(std::three_way_comparable<_Int128, std::strong_ordering>);
 
     static_assert(std::numeric_limits<_Int128>::min() == _Int128{0, 1ull << 63});
     static_assert(std::numeric_limits<_Int128>::max() == _Int128{~0ull, ~0ull >> 1});
-    static_assert(std::numeric_limits<_Int128>::digits == 128);
+    static_assert(std::numeric_limits<_Int128>::digits == 127);
     static_assert(!std::numeric_limits<_Int128>::is_modulo);
 
     static_assert(std::same_as<std::common_type_t<bool, _Int128>, _Int128>);
     static_assert(std::same_as<std::common_type_t<char, _Int128>, _Int128>);
     static_assert(std::same_as<std::common_type_t<signed char, _Int128>, _Int128>);
     static_assert(std::same_as<std::common_type_t<unsigned char, _Int128>, _Int128>);
+    static_assert(std::same_as<std::common_type_t<wchar_t, _Int128>, _Int128>);
 #ifdef __cpp_char8_t
     static_assert(std::same_as<std::common_type_t<char8_t, _Int128>, _Int128>);
 #endif // __cpp_char8_t
@@ -313,6 +304,7 @@ constexpr bool test_signed() {
     static_assert(std::same_as<std::common_type_t<_Int128, char>, _Int128>);
     static_assert(std::same_as<std::common_type_t<_Int128, signed char>, _Int128>);
     static_assert(std::same_as<std::common_type_t<_Int128, unsigned char>, _Int128>);
+    static_assert(std::same_as<std::common_type_t<_Int128, wchar_t>, _Int128>);
 #ifdef __cpp_char8_t
     static_assert(std::same_as<std::common_type_t<_Int128, char8_t>, _Int128>);
 #endif // __cpp_char8_t
@@ -347,6 +339,19 @@ constexpr bool test_signed() {
     check_order(_Int128{-2}, _Int128{1}, std::strong_ordering::less);
     check_order(_Int128{2}, _Int128{-1}, std::strong_ordering::greater);
     check_order(_Int128{2}, _Int128{1}, std::strong_ordering::greater);
+
+    check_equal(_Int128{0, 0});
+    check_order(_Int128{0, (1ull << 63)}, _Int128{0, 0}, std::strong_ordering::less);
+    check_order(_Int128{0, (1ull << 63)}, _Int128{0, (1ull << 63)}, std::strong_ordering::equal);
+    check_order(_Int128{0, 0}, _Int128{1, 0}, std::strong_ordering::less);
+    check_order(_Int128{0, (1ull << 63)}, _Int128{1, 0}, std::strong_ordering::less);
+    check_order(_Int128{0, (1ull << 63)}, _Int128{1, (1ull << 63)}, std::strong_ordering::less);
+    check_order(_Int128{0, 0}, _Int128{0, 1}, std::strong_ordering::less);
+    check_order(_Int128{0, (1ull << 63)}, _Int128{0, 1}, std::strong_ordering::less);
+    check_order(_Int128{0, (1ull << 63)}, _Int128{0, 1 | (1ull << 63)}, std::strong_ordering::less);
+    check_order(_Int128{0, 0}, _Int128{1, 1}, std::strong_ordering::less);
+    check_order(_Int128{0, (1ull << 63)}, _Int128{1, 1}, std::strong_ordering::less);
+    check_order(_Int128{0, (1ull << 63)}, _Int128{1, 1 | (1ull << 63)}, std::strong_ordering::less);
 
     assert((_Int128{-2} == _Uint128{0ull - 2, ~0ull}));
     assert((_Uint128{_Int128{-2}} == _Uint128{0ull - 2, ~0ull}));
@@ -454,7 +459,7 @@ constexpr bool test_signed() {
 
         q = _Int128{0x01010101'01010101, 0x01010101'01010101} / _Int128{13};
         assert(q._Word[0] == 0xc50013c5'0013c500);
-        assert(q._Word[1] == 0x13c500'13c50013);
+        assert(q._Word[1] == 0x0013c500'13c50013);
 
         q = _Int128{0x22222222'22222222, 0x22222222'22222222} / _Int128{0x11111111'11111111, 0x11111111'11111111};
         assert(q._Word[0] == 2);
@@ -478,7 +483,7 @@ constexpr bool test_signed() {
         assert(q._Word[0] == 0);
         assert(q._Word[1] == 0);
 
-        _Int128 result{0x80808080'80808080, 0x808080'80808080};
+        _Int128 result{0x80808080'80808080, 0x00808080'80808080};
         for (tmp = 0xffu; tmp > 0; tmp <<= 8, result >>= 8) {
             q = std::numeric_limits<_Int128>::max() / tmp;
             assert(q == result);
@@ -497,6 +502,11 @@ constexpr bool test_signed() {
             auto diff = std::numeric_limits<_Int128>::min() - p;
             assert(m == diff);
         }
+
+        for (tmp = 1; static_cast<bool>(tmp); tmp <<= 1) {
+            assert(tmp % tmp == 0);
+        }
+        assert(tmp == 0);
     }
 
     {
@@ -521,9 +531,70 @@ constexpr bool test_signed() {
     return true;
 }
 
+constexpr bool test_cross() {
+#define TEST(expr, result)                                                                  \
+    do {                                                                                    \
+        static_assert(std::same_as<decltype(expr), std::remove_const_t<decltype(result)>>); \
+        assert((expr) == (result));                                                         \
+    } while (0)
+
+    TEST(_Uint128{42} + _Int128{-43}, _Uint128{-1});
+    TEST(_Int128{42} + _Uint128{-43}, _Uint128{-1});
+    TEST(_Uint128{42} + _Int128{-43}, _Uint128{-1});
+    TEST(_Int128{42} + _Uint128{-43}, _Uint128{-1});
+    TEST(_Uint128{42} - _Int128{-43}, _Uint128{42 + 43});
+    TEST(_Int128{42} - _Uint128{-43}, _Uint128{42 + 43});
+    TEST(_Uint128{42} * _Int128{-43}, _Uint128{42 * -43});
+    TEST(_Int128{42} * _Uint128{-43}, _Uint128{42 * -43});
+    TEST(_Uint128{42} / _Int128{-43}, _Uint128{0});
+    TEST(_Int128{42} / _Uint128{-43}, _Uint128{0});
+    TEST(_Uint128{42} % _Int128{-43}, _Uint128{42});
+    TEST(_Int128{42} % _Uint128{-43}, _Uint128{42});
+    TEST(_Uint128{42} & _Int128{43}, _Uint128{42});
+    TEST(_Int128{42} & _Uint128{43}, _Uint128{42});
+    TEST(_Uint128{42} | _Int128{43}, _Uint128{43});
+    TEST(_Int128{42} | _Uint128{43}, _Uint128{43});
+    TEST(_Uint128{42} ^ _Int128{43}, _Uint128{1});
+    TEST(_Int128{42} ^ _Uint128{43}, _Uint128{1});
+
+    TEST(_Uint128{1} << _Int128{43}, _Uint128{1ull << 43});
+    TEST(_Int128{1} << _Uint128{43}, _Int128{1ull << 43});
+
+    TEST(false ? _Uint128{42} : _Int128{-43}, _Uint128{-43});
+    TEST(true ? _Uint128{42} : _Int128{-43}, _Uint128{42});
+
+    TEST(_Uint128{42} && _Int128{0}, false);
+    TEST(_Int128{42} && _Uint128{0}, false);
+    TEST(_Uint128{42} || _Int128{0}, true);
+    TEST(_Int128{42} || _Uint128{0}, true);
+
+    TEST(_Uint128{42} == _Int128{0}, false);
+    TEST(_Int128{42} == _Uint128{42}, true);
+    TEST(_Uint128{42} != _Int128{0}, true);
+    TEST(_Int128{42} != _Uint128{42}, false);
+
+    TEST(_Uint128{42} <=> _Int128{-43}, std::strong_ordering::less);
+    TEST(_Int128{42} <=> _Uint128{-43}, std::strong_ordering::less);
+
+    TEST(_Uint128{42} < _Int128{-43}, true);
+    TEST(_Int128{42} < _Uint128{-43}, true);
+    TEST(_Uint128{42} > _Int128{-43}, false);
+    TEST(_Int128{42} > _Uint128{-43}, false);
+    TEST(_Uint128{42} <= _Int128{-43}, true);
+    TEST(_Int128{42} <= _Uint128{-43}, true);
+    TEST(_Uint128{42} >= _Int128{-43}, false);
+    TEST(_Int128{42} >= _Uint128{-43}, false);
+
+#undef TEST
+
+    return true;
+}
+
 int main() {
     test_unsigned();
     static_assert(test_unsigned());
     test_signed();
     static_assert(test_signed());
+    test_cross();
+    // FIXME static_assert(test_cross());
 }

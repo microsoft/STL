@@ -9,8 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_ranges
-#pragma message("The contents of <ranges> are available only in c++latest mode;")
-#pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
+#pragma message("The contents of <ranges> are available only with C++20 or later.")
 #else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
 #include <__msvc_int128.hpp>
 #include <iosfwd>
@@ -984,7 +983,7 @@ namespace ranges {
     };
 
     template <incrementable _Wi>
-        requires integral<_Iota_diff_t<_Wi>> // TODO: LWG issue
+        requires integral<_Iota_diff_t<_Wi>> // TRANSITION, as yet unnumbered LWG issue
     struct _Ioterator_category_base<_Wi> {
         using iterator_category = input_iterator_tag;
 
