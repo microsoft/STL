@@ -422,10 +422,6 @@ set(SOURCES_SATELLITE_CODECVT_IDS
     ${CMAKE_CURRENT_LIST_DIR}/src/ulocale.cpp
 )
 
-set(SOURCES_SATELLITE_STACKTRACE
-    ${CMAKE_CURRENT_LIST_DIR}/src/stacktrace.cpp
-)
-
 # Objs that exist only in libcpmt[d][01].lib.
 set(STATIC_SOURCES
     ${SOURCES_SATELLITE_1}
