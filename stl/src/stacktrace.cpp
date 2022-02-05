@@ -18,11 +18,10 @@ using _Stacktrace_string_fill = size_t (*)(size_t, void* _Str, void* _Context, _
 
 namespace {
 
-    template<class F>
+    template <class F>
     size_t string_fill(_Stacktrace_string_fill callback, size_t size, void* str, F f) {
-        return callback(size, str, &f, [] (char* s, size_t sz, void* context) -> size_t { 
-            return (*static_cast<F*>(context))(s, sz);
-        });
+        return callback(size, str, &f,
+            [](char* s, size_t sz, void* context) -> size_t { return (*static_cast<F*>(context))(s, sz); });
     }
 
 
@@ -121,9 +120,8 @@ namespace {
 
             size_t new_off = string_fill(
                 fill, off + size, str, [address, off, size, &new_size, &hr, &displacement](char* s, size_t) {
-
-                    hr = debug_symbols->GetNameByOffset(
-                        reinterpret_cast<uintptr_t>(address), s + off, static_cast<ULONG>(size), &new_size, &displacement);
+                    hr = debug_symbols->GetNameByOffset(reinterpret_cast<uintptr_t>(address), s + off,
+                        static_cast<ULONG>(size), &new_size, &displacement);
 
                     return (hr == S_OK) ? off + new_size - 1 : off;
                 });
@@ -163,12 +161,11 @@ namespace {
 
             size_t new_off =
                 string_fill(fill, off + size, str, [address, off, size, line, &new_size, &hr](char* s, size_t) {
+                    hr = debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), line, s + off,
+                        static_cast<ULONG>(size), &new_size, nullptr);
 
-                hr = debug_symbols->GetLineByOffset(
-                    reinterpret_cast<uintptr_t>(address), line, s + off, static_cast<ULONG>(size), &new_size, nullptr);
-                
-                return (hr == S_OK) ? off + new_size - 1 : off;
-            });
+                    return (hr == S_OK) ? off + new_size - 1 : off;
+                });
 
             if (hr == S_OK) {
                 off = new_off;
@@ -191,28 +188,28 @@ namespace {
         if (!try_initialize()) {
             return 0;
         }
-        
+
         ULONG line = 0;
 
-        if (FAILED(debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), &line, nullptr,
-            0, nullptr, nullptr))) {
+        if (FAILED(debug_symbols->GetLineByOffset(
+                reinterpret_cast<uintptr_t>(address), &line, nullptr, 0, nullptr, nullptr))) {
             return 0;
         }
-        
+
         return line;
     }
 
     size_t address_to_string(const void* address, void* str, size_t off, _Stacktrace_string_fill fill) {
         ULONG line = 0;
-        
+
         off = source_file(address, str, off, &line, fill);
 
         if (line != 0) {
 
             constexpr size_t max_line_num = std::size("(4294967295): ") - 1; // maximum possible line number
-            
-            off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) { 
-                return std::format_to_n(s + off, max_line_num, "({}): ", line).out - s; 
+
+            off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) {
+                return std::format_to_n(s + off, max_line_num, "({}): ", line).out - s;
             });
         }
 
@@ -230,17 +227,15 @@ namespace {
     return CaptureStackBackTrace(_FramesToSkip, _FramesToCapture, _BackTrace, _BackTraceHash);
 }
 
-void __stdcall __std_stacktrace_description(
-    const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
+void __stdcall __std_stacktrace_description(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
     srw_lock_guard lock{srw};
 
     get_description(_Address, _Str, 0, _Fill);
 }
 
-void __stdcall __std_stacktrace_source_file(
-    const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
+void __stdcall __std_stacktrace_source_file(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
     srw_lock_guard lock{srw};
-    
+
     source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
@@ -250,8 +245,7 @@ unsigned __stdcall __std_stacktrace_source_line(const void* _Address) {
     return source_line(_Address);
 }
 
-void __stdcall __std_stacktrace_address_to_string(
-    const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
+void __stdcall __std_stacktrace_address_to_string(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
     srw_lock_guard lock{srw};
 
     address_to_string(_Address, _Str, 0, _Fill);
@@ -264,7 +258,7 @@ void __stdcall __std_stacktrace_to_string(
     auto data = reinterpret_cast<const void* const*>(_Addresses);
 
     size_t off = 0;
-    
+
     for (std::size_t i = 0; i != _Size; ++i) {
         if (off != 0) {
             off = string_fill(_Fill, off + 1, _Str, [](char* s, size_t sz) {
