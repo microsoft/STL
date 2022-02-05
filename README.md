@@ -66,7 +66,8 @@ it'll update `package.json` and `package-lock.json` accordingly. `git add` and `
 * Update `weekly_table.js` by adding a new row.
     + We update it every Friday, although nothing bad will happen if we skip a week or update it on a different day.
     + `vso` is the number of Active work items under the STL's Area Path.
-    + `libcxx` is the number of skipped tests in `tests/libcxx/skipped_tests.txt`, excluding "Missing STL Features".
+    + `libcxx` is the number of skipped/failing tests in `tests/libcxx/expected_results.txt`, excluding
+    "Missing STL Features".
     To determine this number:
         1. Copy the file's contents.
         2. Delete the "Missing STL Features" section.
