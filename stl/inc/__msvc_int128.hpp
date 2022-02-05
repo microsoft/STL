@@ -43,7 +43,11 @@ _STD_BEGIN
 
 struct _Int128;
 
-struct alignas(16) _Uint128 {
+struct
+#ifndef _M_ARM
+    alignas(16)
+#endif
+        _Uint128 {
     uint64_t _Word[2];
 
     using _Signed_type   = _Int128;
