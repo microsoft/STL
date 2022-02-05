@@ -41,17 +41,12 @@ _STD_BEGIN
 #define _STL_128_DIV_INTRINSICS 0
 #endif // defined(_M_X64) && !defined(_M_ARM64EC)
 
-struct _Int128;
-
 struct
 #ifndef _M_ARM
     alignas(16)
 #endif
-        _Uint128 {
+        _Uint128_base {
     uint64_t _Word[2];
-
-    using _Signed_type   = _Int128;
-    using _Unsigned_type = _Uint128;
 
     constexpr void _Left_shift(const unsigned char _Count) noexcept {
         _STL_INTERNAL_CHECK(_Count < 128);
@@ -278,10 +273,10 @@ struct
         return (static_cast<uint64_t>(__q[1]) << 32) | __q[0];
     }
 
-    constexpr _Uint128() noexcept : _Word{} {}
+    constexpr _Uint128_base() noexcept : _Word{} {}
 
     template <integral _Ty>
-    constexpr _Uint128(const _Ty _Val) noexcept : _Word{static_cast<uint64_t>(_Val)} {
+    constexpr _Uint128_base(const _Ty _Val) noexcept : _Word{static_cast<uint64_t>(_Val)} {
         if constexpr (signed_integral<_Ty>) {
             if (_Val < 0) {
                 _Word[1] = ~0ull;
@@ -289,7 +284,7 @@ struct
         }
     }
 
-    constexpr explicit _Uint128(const uint64_t _Low, const uint64_t _High) noexcept : _Word{_Low, _High} {}
+    constexpr explicit _Uint128_base(const uint64_t _Low, const uint64_t _High) noexcept : _Word{_Low, _High} {}
 
     template <integral _Ty>
     _NODISCARD constexpr explicit operator _Ty() const noexcept {
@@ -300,141 +295,84 @@ struct
         return (_Word[0] | _Word[1]) != 0;
     }
 
-    _NODISCARD_FRIEND constexpr bool operator==(const _Uint128&, const _Uint128&) noexcept = default;
+    _NODISCARD_FRIEND constexpr bool operator==(const _Uint128_base&, const _Uint128_base&) noexcept = default;
 
-    _NODISCARD_FRIEND constexpr strong_ordering operator<=>(const _Uint128& _Left, const _Uint128& _Right) noexcept {
-        strong_ordering _Ord = _Left._Word[1] <=> _Right._Word[1];
-        if (_Ord == strong_ordering::equal) {
-            _Ord = _Left._Word[0] <=> _Right._Word[0];
+    _NODISCARD_FRIEND constexpr bool operator<(const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
+        if (_Left._Word[1] < _Right._Word[1]) {
+            return true;
         }
-        return _Ord;
+        if (_Left._Word[1] > _Right._Word[1]) {
+            return false;
+        }
+        return _Left._Word[0] < _Right._Word[0];
+    }
+    _NODISCARD_FRIEND constexpr bool operator>(const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
+        return _Right < _Left;
+    }
+    _NODISCARD_FRIEND constexpr bool operator<=(const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
+        return !(_Right < _Left);
+    }
+    _NODISCARD_FRIEND constexpr bool operator>=(const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
+        return !(_Left < _Right);
     }
 
-    _NODISCARD_FRIEND constexpr _Uint128 operator<<(const _Uint128& _Left, const _Uint128& _Right) noexcept {
-        auto _Tmp{_Left};
-        _Tmp._Left_shift(static_cast<unsigned char>(_Right._Word[0]));
-        return _Tmp;
-    }
-
-    constexpr _Uint128& operator<<=(const _Uint128& _Count) noexcept {
-        _Left_shift(static_cast<unsigned char>(_Count._Word[0]));
+    constexpr _Uint128_base& operator<<=(const integral auto _Count) noexcept {
+        _Left_shift(static_cast<unsigned char>(_Count));
         return *this;
     }
+    constexpr _Uint128_base& operator>>=(const integral auto _Count) noexcept {
+        _Right_shift(static_cast<unsigned char>(_Count));
+        return *this;
+    }
+
     template <integral _Ty>
-    friend constexpr _Ty& operator<<=(_Ty& _Left, const _Uint128& _Right) noexcept {
+    friend constexpr _Ty& operator<<=(_Ty& _Left, const _Uint128_base& _Right) noexcept {
         _Left <<= _Right._Word[0];
         return _Left;
     }
 
-    _NODISCARD_FRIEND constexpr _Uint128 operator>>(const _Uint128& _Left, const _Uint128& _Right) noexcept {
-        auto _Tmp{_Left};
-        _Tmp._Right_shift(static_cast<unsigned char>(_Right._Word[0]));
-        return _Tmp;
-    }
-
-    constexpr _Uint128& operator>>=(const _Uint128& _Count) noexcept {
-        _Right_shift(static_cast<unsigned char>(_Count._Word[0]));
-        return *this;
-    }
     template <integral _Ty>
-    friend constexpr _Ty& operator>>=(_Ty& _Left, const _Uint128& _Right) noexcept {
+    friend constexpr _Ty& operator>>=(_Ty& _Left, const _Uint128_base& _Right) noexcept {
         _Left >>= _Right._Word[0];
         return _Left;
     }
 
-    constexpr _Uint128& operator++() noexcept {
+    constexpr _Uint128_base& operator++() noexcept {
         if (++_Word[0] == 0) {
             ++_Word[1];
         }
         return *this;
     }
-    constexpr _Uint128 operator++(int) noexcept {
+    constexpr _Uint128_base operator++(int) noexcept {
         auto _Tmp = *this;
         ++*this;
         return _Tmp;
     }
 
-    constexpr _Uint128& operator--() noexcept {
+    constexpr _Uint128_base& operator--() noexcept {
         if (_Word[0]-- == 0) {
             --_Word[1];
         }
         return *this;
     }
-    constexpr _Uint128 operator--(int) noexcept {
+    constexpr _Uint128_base operator--(int) noexcept {
         auto _Tmp = *this;
         --*this;
         return _Tmp;
     }
 
-    _NODISCARD constexpr _Uint128 operator+() const noexcept {
-        return *this;
-    }
-
-    _NODISCARD constexpr _Uint128 operator-() const noexcept {
-        return _Uint128{} - *this;
-    }
-
-    _NODISCARD constexpr _Uint128 operator~() const noexcept {
-        return _Uint128{~_Word[0], ~_Word[1]};
-    }
-
-    _NODISCARD_FRIEND constexpr _Uint128 operator+(const _Uint128& _Left, const _Uint128& _Right) noexcept {
-        _Uint128 _Result;
-        const auto _Carry = _AddCarry64(0, _Left._Word[0], _Right._Word[0], _Result._Word[0]);
-        _AddCarry64(_Carry, _Left._Word[1], _Right._Word[1], _Result._Word[1]);
-        return _Result;
-    }
-
-    constexpr _Uint128& operator+=(const _Uint128& _That) noexcept {
-        const auto _Carry = _AddCarry64(0, _Word[0], _That._Word[0], _Word[0]);
-        _AddCarry64(_Carry, _Word[1], _That._Word[1], _Word[1]);
-        return *this;
-    }
-    template <integral _Ty>
-    friend constexpr _Ty& operator+=(_Ty& _Left, const _Uint128& _Right) noexcept {
-        _Left += _Right._Word[0];
-        return _Left;
-    }
-
-    _NODISCARD_FRIEND constexpr _Uint128 operator-(const _Uint128& _Left, const _Uint128& _Right) noexcept {
-        _Uint128 _Result;
-        const auto _Borrow = _SubBorrow64(0, _Left._Word[0], _Right._Word[0], _Result._Word[0]);
-        _SubBorrow64(_Borrow, _Left._Word[1], _Right._Word[1], _Result._Word[1]);
-        return _Result;
-    }
-
-    constexpr _Uint128& operator-=(const _Uint128& _That) noexcept {
-        const auto _Borrow = _SubBorrow64(0, _Word[0], _That._Word[0], _Word[0]);
-        _SubBorrow64(_Borrow, _Word[1], _That._Word[1], _Word[1]);
-        return *this;
-    }
-    template <integral _Ty>
-    friend constexpr _Ty& operator-=(_Ty& _Left, const _Uint128& _Right) noexcept {
-        _Left -= _Right._Word[0];
-        return _Left;
-    }
-
-    _NODISCARD_FRIEND constexpr _Uint128 operator*(const _Uint128& _Left, const _Uint128& _Right) noexcept {
-        _Uint128 _Result;
+    _NODISCARD static constexpr _Uint128_base _Multiply(
+        const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
+        _Uint128_base _Result;
         _Result._Word[0] = _UMul128(_Left._Word[0], _Right._Word[0], _Result._Word[1]);
         _Result._Word[1] += _Left._Word[0] * _Right._Word[1];
         _Result._Word[1] += _Left._Word[1] * _Right._Word[0];
         return _Result;
     }
 
-    constexpr _Uint128& operator*=(const _Uint128& _That) noexcept {
-        *this = *this * _That;
-        return *this;
-    }
-    template <integral _Ty>
-    friend constexpr _Ty& operator*=(_Ty& _Left, const _Uint128& _Right) noexcept {
-        _Left *= _Right._Word[0];
-        return _Left;
-    }
-
 #if !_STL_128_DIV_INTRINSICS
-    _NODISCARD_FRIEND constexpr _Uint128 operator/(const _Uint128& _Num, const uint32_t _Den) noexcept {
-        _Uint128 _Result;
+    _NODISCARD static constexpr _Uint128_base _Divide(const _Uint128_base& _Num, const uint32_t _Den) noexcept {
+        _Uint128_base _Result;
         _Result._Word[1] = _Num._Word[1] / _Den;
         uint64_t _Rem    = ((_Num._Word[1] % _Den) << 32) | (_Num._Word[0] >> 32);
         _Result._Word[0] = (_Rem / _Den) << 32;
@@ -443,24 +381,22 @@ struct
         return _Result;
     }
 #endif // !_STL_128_DIV_INTRINSICS
-
-    _NODISCARD_FRIEND constexpr _Uint128 operator/(const _Uint128& _Num, const uint64_t _Den) noexcept {
-        _Uint128 _Result;
+    _NODISCARD static constexpr _Uint128_base _Divide(const _Uint128_base& _Num, const uint64_t _Den) noexcept {
+        _Uint128_base _Result;
         _Result._Word[1] = _Num._Word[1] / _Den;
         uint64_t _Rem    = _Num._Word[1] % _Den;
         _Result._Word[0] = _UDiv128(_Rem, _Num._Word[0], _Den, _Rem);
         return _Result;
     }
-
-    _NODISCARD_FRIEND constexpr _Uint128 operator/(_Uint128 _Num, _Uint128 _Den) noexcept {
+    _NODISCARD static constexpr _Uint128_base _Divide(_Uint128_base _Num, _Uint128_base _Den) noexcept {
         // establish _Den < _Num and _Num._Word[1] > 0
         if (_Den._Word[1] >= _Num._Word[1]) {
             if (_Den._Word[1] > _Num._Word[1]) {
-                return _Uint128{};
+                return {};
             }
 
             if (_Den._Word[1] == _Num._Word[1]) {
-                return _Uint128{_Num._Word[1] == 0 ? _Num._Word[0] / _Den._Word[0] : _Num._Word[0] >= _Den._Word[0]};
+                return {_Num._Word[1] == 0 ? _Num._Word[0] / _Den._Word[0] : _Num._Word[0] >= _Den._Word[0]};
             }
         }
 
@@ -468,11 +404,11 @@ struct
         if (_Den._Word[1] == 0) {
 #if !_STL_128_DIV_INTRINSICS
             if (_Den._Word[0] < (1ull << 32)) {
-                return operator/(_Num, static_cast<uint32_t>(_Den._Word[0]));
+                return _Divide(_Num, static_cast<uint32_t>(_Den._Word[0]));
             } else
 #endif // !_STL_128_DIV_INTRINSICS
             {
-                return operator/(_Num, _Den._Word[0]);
+                return _Divide(_Num, _Den._Word[0]);
             }
         }
 
@@ -486,7 +422,7 @@ struct
         auto _High_digit = __d == 0 ? 0 : _Num._Word[1] >> (64 - __d); // This creates a third digit for _Num
         _Num <<= __d;
 
-        _Uint128 __qhat;
+        _Uint128_base __qhat;
         __qhat._Word[1] = _High_digit >= _Den._Word[1];
         uint64_t __rhat;
         __qhat._Word[0] = _UDiv128(_High_digit >= _Den._Word[1] ? _High_digit - _Den._Word[1] : _High_digit,
@@ -496,9 +432,9 @@ struct
             if (__qhat._Word[1] > 0) {
                 --__qhat;
             } else {
-                _Uint128 _Prod;
+                _Uint128_base _Prod;
                 _Prod._Word[0] = _UMul128(__qhat._Word[0], _Den._Word[0], _Prod._Word[1]);
-                if (_Prod <= _Uint128{_Num._Word[0], __rhat}) {
+                if (_Prod <= _Uint128_base{_Num._Word[0], __rhat}) {
                     break;
                 }
                 --__qhat._Word[0];
@@ -558,48 +494,24 @@ struct
             __q[1] = 0;
         }
 
-        return _Uint128{static_cast<uint64_t>(__q[1]) << 32 | __q[0]};
+        return {static_cast<uint64_t>(__q[1]) << 32 | __q[0]};
 #endif // _STL_128_INTRINSICS
     }
 
 #if !_STL_128_DIV_INTRINSICS
-    constexpr _Uint128& operator/=(const uint32_t _That) noexcept {
-        *this = *this / _That;
-        return *this;
-    }
-#endif // !_STL_128_DIV_INTRINSICS
-    constexpr _Uint128& operator/=(const uint64_t _That) noexcept {
-        *this = *this / _That;
-        return *this;
-    }
-    constexpr _Uint128& operator/=(const _Uint128& _That) noexcept {
-        *this = *this / _That;
-        return *this;
-    }
-    template <integral _Ty>
-    friend constexpr _Ty& operator/=(_Ty& _Left, const _Uint128& _Right) noexcept {
-        if (_Right._Word[1] != 0) {
-            _Left = 0;
-        } else {
-            _Left /= _Right._Word[0];
-        }
-        return _Left;
-    }
-
-#if !_STL_128_DIV_INTRINSICS
-    _NODISCARD_FRIEND constexpr _Uint128 operator%(const _Uint128& _Num, const uint32_t _Den) noexcept {
+    _NODISCARD static constexpr _Uint128_base _Modulo(const _Uint128_base& _Num, const uint32_t _Den) noexcept {
         uint64_t _Rem = _Num._Word[1];
         _Rem          = ((_Rem % _Den) << 32) | (_Num._Word[0] >> 32);
         _Rem          = ((_Rem % _Den) << 32) | static_cast<uint32_t>(_Num._Word[0]);
-        return _Uint128{_Rem % _Den};
+        return _Uint128_base{_Rem % _Den};
     }
 #endif // !_STL_128_DIV_INTRINSICS
-    _NODISCARD_FRIEND constexpr _Uint128 operator%(const _Uint128& _Num, const uint64_t _Den) noexcept {
+    _NODISCARD static constexpr _Uint128_base _Modulo(const _Uint128_base& _Num, const uint64_t _Den) noexcept {
         uint64_t _Rem;
         (void) _UDiv128(_Num._Word[1] % _Den, _Num._Word[0], _Den, _Rem);
-        return _Uint128{_Rem};
+        return _Uint128_base{_Rem};
     }
-    _NODISCARD_FRIEND constexpr _Uint128 operator%(_Uint128 _Num, _Uint128 _Den) noexcept {
+    _NODISCARD static constexpr _Uint128_base _Modulo(_Uint128_base _Num, _Uint128_base _Den) noexcept {
         // establish _Den < _Num and _Num._Word[1] > 0
         if (_Den._Word[1] >= _Num._Word[1]) {
             if (_Den._Word[1] > _Num._Word[1]) {
@@ -608,7 +520,8 @@ struct
 
             if (_Den._Word[1] == _Num._Word[1]) {
                 if (_Den._Word[0] <= _Num._Word[0]) {
-                    return _Uint128{_Num._Word[1] == 0 ? _Num._Word[0] % _Den._Word[0] : _Num._Word[0] - _Den._Word[0]};
+                    return _Uint128_base{
+                        _Num._Word[1] == 0 ? _Num._Word[0] % _Den._Word[0] : _Num._Word[0] - _Den._Word[0]};
                 }
 
                 return _Num;
@@ -619,11 +532,11 @@ struct
         if (_Den._Word[1] == 0) {
 #if !_STL_128_DIV_INTRINSICS
             if (_Den._Word[0] < (1ull << 32)) {
-                return operator%(_Num, static_cast<uint32_t>(_Den._Word[0]));
+                return _Modulo(_Num, static_cast<uint32_t>(_Den._Word[0]));
             } else
 #endif // !_STL_128_DIV_INTRINSICS
             {
-                return operator%(_Num, _Den._Word[0]);
+                return _Modulo(_Num, _Den._Word[0]);
             }
         }
 
@@ -648,9 +561,9 @@ struct
                     --__qhat_high;
                 }
             } else {
-                _Uint128 _Prod;
+                _Uint128_base _Prod;
                 _Prod._Word[0] = _UMul128(__qhat, _Den._Word[0], _Prod._Word[1]);
-                if (_Prod <= _Uint128{_Num._Word[0], __rhat}) {
+                if (_Prod <= _Uint128_base{_Num._Word[0], __rhat}) {
                     break;
                 }
                 --__qhat;
@@ -719,6 +632,198 @@ struct
         return _Num;
     }
 
+    template <integral _Ty>
+    friend constexpr _Ty& operator&=(_Ty& _Left, const _Uint128_base& _Right) noexcept {
+        _Left &= _Right._Word[0];
+        return _Left;
+    }
+
+    template <integral _Ty>
+    friend constexpr _Ty& operator^=(_Ty& _Left, const _Uint128_base& _Right) noexcept {
+        _Left ^= _Right._Word[0];
+        return _Left;
+    }
+
+    template <integral _Ty>
+    friend constexpr _Ty& operator|=(_Ty& _Left, const _Uint128_base& _Right) noexcept {
+        _Left |= _Right._Word[0];
+        return _Left;
+    }
+};
+
+struct _Int128;
+
+struct _Uint128 : _Uint128_base {
+    using _Signed_type   = _Int128;
+    using _Unsigned_type = _Uint128;
+
+    using _Uint128_base::_Uint128_base;
+    constexpr explicit _Uint128(const _Uint128_base& _That) noexcept : _Uint128_base{_That} {}
+
+    _NODISCARD_FRIEND constexpr strong_ordering operator<=>(const _Uint128& _Left, const _Uint128& _Right) noexcept {
+        strong_ordering _Ord = _Left._Word[1] <=> _Right._Word[1];
+        if (_Ord == strong_ordering::equal) {
+            _Ord = _Left._Word[0] <=> _Right._Word[0];
+        }
+        return _Ord;
+    }
+
+    _NODISCARD_FRIEND constexpr _Uint128 operator<<(const _Uint128& _Left, const _Uint128_base& _Right) noexcept {
+        auto _Tmp{_Left};
+        _Tmp._Left_shift(static_cast<unsigned char>(_Right._Word[0]));
+        return _Tmp;
+    }
+
+    constexpr _Uint128& operator<<=(const _Uint128_base& _Count) noexcept {
+        _Left_shift(static_cast<unsigned char>(_Count._Word[0]));
+        return *this;
+    }
+
+    _NODISCARD_FRIEND constexpr _Uint128 operator>>(const _Uint128& _Left, const _Uint128_base& _Right) noexcept {
+        auto _Tmp{_Left};
+        _Tmp._Right_shift(static_cast<unsigned char>(_Right._Word[0]));
+        return _Tmp;
+    }
+
+    constexpr _Uint128& operator>>=(const _Uint128_base& _Count) noexcept {
+        _Right_shift(static_cast<unsigned char>(_Count._Word[0]));
+        return *this;
+    }
+
+    constexpr _Uint128& operator++() noexcept {
+        if (++_Word[0] == 0) {
+            ++_Word[1];
+        }
+        return *this;
+    }
+    constexpr _Uint128 operator++(int) noexcept {
+        auto _Tmp = *this;
+        ++*this;
+        return _Tmp;
+    }
+
+    constexpr _Uint128& operator--() noexcept {
+        if (_Word[0]-- == 0) {
+            --_Word[1];
+        }
+        return *this;
+    }
+    constexpr _Uint128 operator--(int) noexcept {
+        auto _Tmp = *this;
+        --*this;
+        return _Tmp;
+    }
+
+    _NODISCARD constexpr _Uint128 operator+() const noexcept {
+        return *this;
+    }
+
+    _NODISCARD constexpr _Uint128 operator-() const noexcept {
+        return _Uint128{} - *this;
+    }
+
+    _NODISCARD constexpr _Uint128 operator~() const noexcept {
+        return _Uint128{~_Word[0], ~_Word[1]};
+    }
+
+    _NODISCARD_FRIEND constexpr _Uint128 operator+(const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
+        _Uint128 _Result;
+        const auto _Carry = _AddCarry64(0, _Left._Word[0], _Right._Word[0], _Result._Word[0]);
+        _AddCarry64(_Carry, _Left._Word[1], _Right._Word[1], _Result._Word[1]);
+        return _Result;
+    }
+
+    constexpr _Uint128& operator+=(const _Uint128_base& _That) noexcept {
+        const auto _Carry = _AddCarry64(0, _Word[0], _That._Word[0], _Word[0]);
+        _AddCarry64(_Carry, _Word[1], _That._Word[1], _Word[1]);
+        return *this;
+    }
+    template <integral _Ty>
+    friend constexpr _Ty& operator+=(_Ty& _Left, const _Uint128_base& _Right) noexcept {
+        _Left += _Right._Word[0];
+        return _Left;
+    }
+
+    _NODISCARD_FRIEND constexpr _Uint128 operator-(const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
+        _Uint128 _Result;
+        const auto _Borrow = _SubBorrow64(0, _Left._Word[0], _Right._Word[0], _Result._Word[0]);
+        _SubBorrow64(_Borrow, _Left._Word[1], _Right._Word[1], _Result._Word[1]);
+        return _Result;
+    }
+
+    constexpr _Uint128& operator-=(const _Uint128_base& _That) noexcept {
+        const auto _Borrow = _SubBorrow64(0, _Word[0], _That._Word[0], _Word[0]);
+        _SubBorrow64(_Borrow, _Word[1], _That._Word[1], _Word[1]);
+        return *this;
+    }
+    template <integral _Ty>
+    friend constexpr _Ty& operator-=(_Ty& _Left, const _Uint128& _Right) noexcept {
+        _Left -= _Right._Word[0];
+        return _Left;
+    }
+
+    _NODISCARD_FRIEND constexpr _Uint128 operator*(const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
+        return _Uint128{_Uint128_base::_Multiply(_Left, _Right)};
+    }
+
+    constexpr _Uint128& operator*=(const _Uint128_base& _That) noexcept {
+        *this = *this * _That;
+        return *this;
+    }
+    template <integral _Ty>
+    friend constexpr _Ty& operator*=(_Ty& _Left, const _Uint128& _Right) noexcept {
+        _Left *= _Right._Word[0];
+        return _Left;
+    }
+
+#if !_STL_128_DIV_INTRINSICS
+    _NODISCARD_FRIEND constexpr _Uint128 operator/(const _Uint128& _Num, const uint32_t _Den) noexcept {
+        return _Uint128{_Uint128_base::_Divide(_Num, _Den)};
+    }
+#endif // !_STL_128_DIV_INTRINSICS
+    _NODISCARD_FRIEND constexpr _Uint128 operator/(const _Uint128& _Num, const uint64_t _Den) noexcept {
+        return _Uint128{_Uint128_base::_Divide(_Num, _Den)};
+    }
+    _NODISCARD_FRIEND constexpr _Uint128 operator/(const _Uint128_base& _Num, const _Uint128_base& _Den) noexcept {
+        return _Uint128{_Uint128_base::_Divide(_Num, _Den)};
+    }
+
+#if !_STL_128_DIV_INTRINSICS
+    constexpr _Uint128& operator/=(const uint32_t _That) noexcept {
+        *this = *this / _That;
+        return *this;
+    }
+#endif // !_STL_128_DIV_INTRINSICS
+    constexpr _Uint128& operator/=(const uint64_t _That) noexcept {
+        *this = *this / _That;
+        return *this;
+    }
+    constexpr _Uint128& operator/=(const _Uint128_base& _That) noexcept {
+        *this = *this / _That;
+        return *this;
+    }
+    template <integral _Ty>
+    friend constexpr _Ty& operator/=(_Ty& _Left, const _Uint128& _Right) noexcept {
+        if (_Right._Word[1] != 0) {
+            _Left = 0;
+        } else {
+            _Left /= _Right._Word[0];
+        }
+        return _Left;
+    }
+
+#if !_STL_128_DIV_INTRINSICS
+    _NODISCARD_FRIEND constexpr _Uint128 operator%(const _Uint128_base& _Num, const uint32_t _Den) noexcept {
+        return _Uint128{_Uint128_base::_Modulo(_Num, _Den)};
+    }
+#endif // !_STL_128_DIV_INTRINSICS
+    _NODISCARD_FRIEND constexpr _Uint128 operator%(const _Uint128_base& _Num, const uint64_t _Den) noexcept {
+        return _Uint128{_Uint128_base::_Modulo(_Num, _Den)};
+    }
+    _NODISCARD_FRIEND constexpr _Uint128 operator%(const _Uint128_base& _Num, const _Uint128_base& _Den) noexcept {
+        return _Uint128{_Uint128_base::_Modulo(_Num, _Den)};
+    }
+
     constexpr _Uint128& operator%=(const uint32_t _Den) noexcept {
         *this = *this % _Den;
         return *this;
@@ -727,7 +832,7 @@ struct
         *this = *this % _Den;
         return *this;
     }
-    constexpr _Uint128& operator%=(const _Uint128& _Den) noexcept {
+    constexpr _Uint128& operator%=(const _Uint128_base& _Den) noexcept {
         *this = *this % _Den;
         return *this;
     }
@@ -739,49 +844,34 @@ struct
         return _Left;
     }
 
-    _NODISCARD_FRIEND constexpr _Uint128 operator&(const _Uint128& _Left, const _Uint128& _Right) noexcept {
+    _NODISCARD_FRIEND constexpr _Uint128 operator&(const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
         return _Uint128{_Left._Word[0] & _Right._Word[0], _Left._Word[1] & _Right._Word[1]};
     }
 
-    constexpr _Uint128& operator&=(const _Uint128& _That) noexcept {
+    constexpr _Uint128& operator&=(const _Uint128_base& _That) noexcept {
         _Word[0] &= _That._Word[0];
         _Word[1] &= _That._Word[1];
         return *this;
     }
-    template <integral _Ty>
-    friend constexpr _Ty& operator&=(_Ty& _Left, const _Uint128& _Right) noexcept {
-        _Left &= _Right._Word[0];
-        return _Left;
-    }
 
-    _NODISCARD_FRIEND constexpr _Uint128 operator^(const _Uint128& _Left, const _Uint128& _Right) noexcept {
+    _NODISCARD_FRIEND constexpr _Uint128 operator^(const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
         return _Uint128{_Left._Word[0] ^ _Right._Word[0], _Left._Word[1] ^ _Right._Word[1]};
     }
 
-    constexpr _Uint128& operator^=(const _Uint128& _That) noexcept {
+    constexpr _Uint128& operator^=(const _Uint128_base& _That) noexcept {
         _Word[0] ^= _That._Word[0];
         _Word[1] ^= _That._Word[1];
         return *this;
     }
-    template <integral _Ty>
-    friend constexpr _Ty& operator^=(_Ty& _Left, const _Uint128& _Right) noexcept {
-        _Left ^= _Right._Word[0];
-        return _Left;
-    }
 
-    _NODISCARD_FRIEND constexpr _Uint128 operator|(const _Uint128& _Left, const _Uint128& _Right) noexcept {
+    _NODISCARD_FRIEND constexpr _Uint128 operator|(const _Uint128_base& _Left, const _Uint128_base& _Right) noexcept {
         return _Uint128{_Left._Word[0] | _Right._Word[0], _Left._Word[1] | _Right._Word[1]};
     }
 
-    constexpr _Uint128& operator|=(const _Uint128& _That) noexcept {
+    constexpr _Uint128& operator|=(const _Uint128_base& _That) noexcept {
         _Word[0] |= _That._Word[0];
         _Word[1] |= _That._Word[1];
         return *this;
-    }
-    template <integral _Ty>
-    friend constexpr _Ty& operator|=(_Ty& _Left, const _Uint128& _Right) noexcept {
-        _Left |= _Right._Word[0];
-        return _Left;
     }
 };
 
@@ -842,40 +932,12 @@ struct common_type<_Uint128, _Ty> {
     using type = _Uint128;
 };
 
-struct _Int128 : _Uint128 {
+struct _Int128 : _Uint128_base {
     using _Signed_type   = _Int128;
     using _Unsigned_type = _Uint128;
 
-    constexpr void _Strip_negative(bool& _Flip) noexcept {
-        if ((_Word[1] & (1ull << 63)) != 0) {
-            *this = -*this;
-            _Flip = !_Flip;
-        }
-    }
-
-    constexpr void _Right_shift(const unsigned char _Count) noexcept {
-        if (_Count >= 64) {
-            _Word[0] = static_cast<uint64_t>(static_cast<int64_t>(_Word[1]) >> (_Count % 64));
-            _Word[1] = (_Word[1] & (1ull << 63)) == 0 ? 0 : ~0ull;
-            return;
-        }
-
-        if (_Count != 0) {
-#if _STL_128_INTRINSICS
-            if (!_STD is_constant_evaluated()) {
-                _Word[0] = __shiftright128(_Word[0], _Word[1], _Count);
-            } else
-#endif // _STL_128_INTRINSICS
-            {
-                _Word[0] = (_Word[0] >> _Count) | (_Word[1] << (64 - _Count));
-            }
-
-            _Word[1] = static_cast<uint64_t>(static_cast<int64_t>(_Word[1]) >> _Count);
-        }
-    }
-
-    using _Uint128::_Uint128;
-    constexpr explicit _Int128(const _Uint128& _That) noexcept : _Uint128{_That} {}
+    using _Uint128_base::_Uint128_base;
+    constexpr explicit _Int128(const _Uint128_base& _That) noexcept : _Uint128_base{_That} {}
 
     _NODISCARD_FRIEND constexpr strong_ordering operator<=>(const _Int128& _Left, const _Int128& _Right) noexcept {
         strong_ordering _Ord = static_cast<int64_t>(_Left._Word[1]) <=> static_cast<int64_t>(_Right._Word[1]);
@@ -885,40 +947,55 @@ struct _Int128 : _Uint128 {
         return _Ord;
     }
 
-    _NODISCARD_FRIEND constexpr _Int128 operator<<(const _Int128& _Left, const _Uint128& _Right) noexcept {
+    _NODISCARD_FRIEND constexpr _Int128 operator<<(const _Int128& _Left, const _Uint128_base& _Right) noexcept {
         auto _Tmp{_Left};
         _Tmp._Left_shift(static_cast<unsigned char>(_Right._Word[0]));
         return _Tmp;
     }
 
-    constexpr _Int128& operator<<=(const _Uint128& _Count) noexcept {
+    constexpr _Int128& operator<<=(const _Uint128_base& _Count) noexcept {
         _Left_shift(static_cast<unsigned char>(_Count._Word[0]));
         return *this;
     }
-    template <integral _Ty>
-    friend constexpr _Ty& operator<<=(_Ty& _Left, const _Int128& _Right) noexcept {
-        _Left = static_cast<_Ty>(_Int128{_Left} << _Right);
-        return _Left;
+
+    constexpr void _Right_shift(const unsigned char _Count) noexcept {
+        if (_Count == 0) {
+            return;
+        }
+
+        if (_Count >= 64) {
+            _Word[0] = static_cast<uint64_t>(static_cast<int64_t>(_Word[1]) >> (_Count % 64));
+            _Word[1] = (_Word[1] & (1ull << 63)) == 0 ? 0 : ~0ull;
+            return;
+        }
+
+#if _STL_128_INTRINSICS
+        if (!_STD is_constant_evaluated()) {
+            _Word[0] = __shiftright128(_Word[0], _Word[1], _Count);
+        } else
+#endif // _STL_128_INTRINSICS
+        {
+            _Word[0] = (_Word[0] >> _Count) | (_Word[1] << (64 - _Count));
+        }
+
+        _Word[1] = static_cast<uint64_t>(static_cast<int64_t>(_Word[1]) >> _Count);
     }
 
-    _NODISCARD_FRIEND constexpr _Int128 operator>>(const _Int128& _Left, const _Uint128& _Right) noexcept {
+    _NODISCARD_FRIEND constexpr _Int128 operator>>(const _Int128& _Left, const _Uint128_base& _Right) noexcept {
         auto _Tmp{_Left};
         _Tmp._Right_shift(static_cast<unsigned char>(_Right._Word[0]));
         return _Tmp;
     }
 
-    constexpr _Int128& operator>>=(const _Uint128& _Count) noexcept {
+    constexpr _Int128& operator>>=(const _Uint128_base& _Count) noexcept {
         _Right_shift(static_cast<unsigned char>(_Count._Word[0]));
         return *this;
     }
-    template <integral _Ty>
-    friend constexpr _Ty& operator>>=(_Ty& _Left, const _Int128& _Right) noexcept {
-        _Left = static_cast<_Ty>(_Int128{_Left} >> _Right);
-        return _Left;
-    }
 
     constexpr _Int128& operator++() noexcept {
-        _Uint128::operator++();
+        if (++_Word[0] == 0) {
+            ++_Word[1];
+        }
         return *this;
     }
     constexpr _Int128 operator++(int) noexcept {
@@ -928,7 +1005,9 @@ struct _Int128 : _Uint128 {
     }
 
     constexpr _Int128& operator--() noexcept {
-        _Uint128::operator--();
+        if (_Word[0]-- == 0) {
+            --_Word[1];
+        }
         return *this;
     }
     constexpr _Int128 operator--(int) noexcept {
@@ -942,7 +1021,7 @@ struct _Int128 : _Uint128 {
     }
 
     _NODISCARD constexpr _Int128 operator-() const noexcept {
-        return _Int128{_Uint128::operator-()};
+        return _Int128{} - *this;
     }
 
     _NODISCARD constexpr _Int128 operator~() const noexcept {
@@ -950,10 +1029,15 @@ struct _Int128 : _Uint128 {
     }
 
     _NODISCARD_FRIEND constexpr _Int128 operator+(const _Int128& _Left, const _Int128& _Right) noexcept {
-        return _Int128{static_cast<const _Uint128&>(_Left) + static_cast<const _Uint128&>(_Right)};
+        _Int128 _Result;
+        const auto _Carry = _AddCarry64(0, _Left._Word[0], _Right._Word[0], _Result._Word[0]);
+        _AddCarry64(_Carry, _Left._Word[1], _Right._Word[1], _Result._Word[1]);
+        return _Result;
     }
-    constexpr _Int128& operator+=(const _Int128& _That) noexcept {
-        _Uint128::operator+=(static_cast<const _Uint128&>(_That));
+
+    constexpr _Int128& operator+=(const _Uint128_base& _That) noexcept {
+        const auto _Carry = _AddCarry64(0, _Word[0], _That._Word[0], _Word[0]);
+        _AddCarry64(_Carry, _Word[1], _That._Word[1], _Word[1]);
         return *this;
     }
     template <integral _Ty>
@@ -963,11 +1047,15 @@ struct _Int128 : _Uint128 {
     }
 
     _NODISCARD_FRIEND constexpr _Int128 operator-(const _Int128& _Left, const _Int128& _Right) noexcept {
-        return _Int128{static_cast<const _Uint128&>(_Left) - static_cast<const _Uint128&>(_Right)};
+        _Int128 _Result;
+        const auto _Borrow = _SubBorrow64(0, _Left._Word[0], _Right._Word[0], _Result._Word[0]);
+        _SubBorrow64(_Borrow, _Left._Word[1], _Right._Word[1], _Result._Word[1]);
+        return _Result;
     }
 
-    constexpr _Int128& operator-=(const _Int128& _That) noexcept {
-        _Uint128::operator-=(static_cast<const _Uint128&>(_That));
+    constexpr _Int128& operator-=(const _Uint128_base& _That) noexcept {
+        const auto _Borrow = _SubBorrow64(0, _Word[0], _That._Word[0], _Word[0]);
+        _SubBorrow64(_Borrow, _Word[1], _That._Word[1], _Word[1]);
         return *this;
     }
     template <integral _Ty>
@@ -976,19 +1064,30 @@ struct _Int128 : _Uint128 {
         return _Left;
     }
 
+    constexpr void _Strip_negative(bool& _Flip) noexcept {
+        if ((_Word[1] & (1ull << 63)) != 0) {
+            *this = -*this;
+            _Flip = !_Flip;
+        }
+    }
+
     _NODISCARD_FRIEND constexpr _Int128 operator*(_Int128 _Left, _Int128 _Right) noexcept {
         bool _Negative = false;
         _Left._Strip_negative(_Negative);
         _Right._Strip_negative(_Negative);
-        _Uint128 _Result = static_cast<_Uint128&>(_Left) * static_cast<_Uint128&>(_Right);
+        _Int128 _Result{_Uint128_base::_Multiply(_Left, _Right)};
         if (_Negative) {
             _Result = -_Result;
         }
-        return _Int128{_Result};
+        return _Result;
     }
 
     constexpr _Int128& operator*=(const _Int128& _That) noexcept {
         *this = *this * _That;
+        return *this;
+    }
+    constexpr _Int128& operator*=(const _Uint128& _That) noexcept {
+        *this = _Int128{_That * static_cast<const _Uint128_base&>(*this)};
         return *this;
     }
     template <integral _Ty>
@@ -997,36 +1096,36 @@ struct _Int128 : _Uint128 {
         return _Left;
     }
 
-    _NODISCARD_FRIEND constexpr _Int128 operator/(_Int128 _Num, _Int128 _Den) noexcept {
-        bool _Negative = false;
-        _Num._Strip_negative(_Negative);
-        _Den._Strip_negative(_Negative);
-        _Uint128 _Result = static_cast<_Uint128&>(_Num) / static_cast<_Uint128&>(_Den);
-        if (_Negative) {
-            _Result = -_Result;
-        }
-        return _Int128{_Result};
-    }
-    _NODISCARD_FRIEND constexpr _Int128 operator/(_Int128 _Num, const uint64_t _Den) noexcept {
-        bool _Negative = false;
-        _Num._Strip_negative(_Negative);
-        _Uint128 _Result = static_cast<_Uint128&>(_Num) / _Den;
-        if (_Negative) {
-            _Result = -_Result;
-        }
-        return _Int128{_Result};
-    }
 #if !_STL_128_DIV_INTRINSICS
     _NODISCARD_FRIEND constexpr _Int128 operator/(_Int128 _Num, const uint32_t _Den) noexcept {
         bool _Negative = false;
         _Num._Strip_negative(_Negative);
-        _Uint128 _Result = static_cast<_Uint128&>(_Num) / _Den;
+        _Int128 _Result{_Uint128_base::_Divide(_Num, _Den)};
         if (_Negative) {
             _Result = -_Result;
         }
-        return _Int128{_Result};
+        return _Result;
     }
 #endif // !_STL_128_DIV_INTRINSICS
+    _NODISCARD_FRIEND constexpr _Int128 operator/(_Int128 _Num, const uint64_t _Den) noexcept {
+        bool _Negative = false;
+        _Num._Strip_negative(_Negative);
+        _Int128 _Result{_Uint128_base::_Divide(_Num, _Den)};
+        if (_Negative) {
+            _Result = -_Result;
+        }
+        return _Result;
+    }
+    _NODISCARD_FRIEND constexpr _Int128 operator/(_Int128 _Num, _Int128 _Den) noexcept {
+        bool _Negative = false;
+        _Num._Strip_negative(_Negative);
+        _Den._Strip_negative(_Negative);
+        _Int128 _Result{_Uint128_base::_Divide(_Num, _Den)};
+        if (_Negative) {
+            _Result = -_Result;
+        }
+        return _Result;
+    }
 
     constexpr _Int128& operator/=(const _Int128& _That) noexcept {
         *this = *this / _That;
@@ -1047,7 +1146,7 @@ struct _Int128 : _Uint128 {
             // intentionally not flipping _Negative
         }
 
-        _Uint128 _Result = static_cast<_Uint128&>(_Left) % static_cast<_Uint128&>(_Right);
+        _Uint128 _Result{_Uint128_base::_Modulo(_Left, _Right)};
         if (_Negative) {
             _Result = -_Result;
         }
@@ -1068,45 +1167,30 @@ struct _Int128 : _Uint128 {
         return _Int128{_Left._Word[0] & _Right._Word[0], _Left._Word[1] & _Right._Word[1]};
     }
 
-    constexpr _Int128& operator&=(const _Int128& _That) noexcept {
+    constexpr _Int128& operator&=(const _Uint128_base& _That) noexcept {
         _Word[0] &= _That._Word[0];
         _Word[1] &= _That._Word[1];
         return *this;
-    }
-    template <integral _Ty>
-    friend constexpr _Ty& operator&=(_Ty& _Left, const _Int128& _Right) noexcept {
-        _Left &= _Right._Word[0];
-        return _Left;
     }
 
     _NODISCARD_FRIEND constexpr _Int128 operator^(const _Int128& _Left, const _Int128& _Right) noexcept {
         return _Int128{_Left._Word[0] ^ _Right._Word[0], _Left._Word[1] ^ _Right._Word[1]};
     }
 
-    constexpr _Int128& operator^=(const _Int128& _That) noexcept {
+    constexpr _Int128& operator^=(const _Uint128_base& _That) noexcept {
         _Word[0] ^= _That._Word[0];
         _Word[1] ^= _That._Word[1];
         return *this;
-    }
-    template <integral _Ty>
-    friend constexpr _Ty& operator^=(_Ty& _Left, const _Int128& _Right) noexcept {
-        _Left ^= _Right._Word[0];
-        return _Left;
     }
 
     _NODISCARD_FRIEND constexpr _Int128 operator|(const _Int128& _Left, const _Int128& _Right) noexcept {
         return _Int128{_Left._Word[0] | _Right._Word[0], _Left._Word[1] | _Right._Word[1]};
     }
 
-    constexpr _Int128& operator|=(const _Int128& _That) noexcept {
+    constexpr _Int128& operator|=(const _Uint128_base& _That) noexcept {
         _Word[0] |= _That._Word[0];
         _Word[1] |= _That._Word[1];
         return *this;
-    }
-    template <integral _Ty>
-    friend constexpr _Ty& operator|=(_Ty& _Left, const _Int128& _Right) noexcept {
-        _Left |= _Right._Word[0];
-        return _Left;
     }
 };
 

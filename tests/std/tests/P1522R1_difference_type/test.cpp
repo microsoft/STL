@@ -683,6 +683,14 @@ constexpr bool test_signed() {
     return true;
 }
 
+template <class T>
+T val() noexcept;
+
+template <class T, class U>
+concept CanConditional = requires {
+    true ? val<T>() : val<U>();
+};
+
 constexpr bool test_cross() {
 #define TEST(expr, result)                                                                  \
     do {                                                                                    \
@@ -719,8 +727,8 @@ constexpr bool test_cross() {
     TEST(_Uint128(0, ~0ull) >> _Int128{43}, _Uint128(~((1ull << 21) - 1), (1ull << 21) - 1));
     TEST(_Int128(0, ~0ull) >> _Uint128{43}, _Int128(~((1ull << 21) - 1), ~0ull));
 
-    TEST(false ? _Uint128{42} : _Int128{-43}, _Uint128{-43});
-    TEST(true ? _Uint128{42} : _Int128{-43}, _Uint128{42});
+    static_assert(!CanConditional<_Uint128, _Int128>);
+    static_assert(!CanConditional<_Int128, _Uint128>);
 
     TEST(_Uint128{42} && _Int128{0}, false);
     TEST(_Int128{42} && _Uint128{0}, false);
@@ -732,8 +740,8 @@ constexpr bool test_cross() {
     TEST(_Uint128{42} != _Int128{0}, true);
     TEST(_Int128{42} != _Uint128{42}, false);
 
-    TEST(_Uint128{42} <=> _Int128{-43}, std::strong_ordering::less);
-    TEST(_Int128{42} <=> _Uint128{-43}, std::strong_ordering::less);
+    static_assert(!std::three_way_comparable_with<_Uint128, _Int128>);
+    static_assert(!std::three_way_comparable_with<_Int128, _Uint128>);
 
     TEST(_Uint128{42} < _Int128{-43}, true);
     TEST(_Int128{42} < _Uint128{-43}, true);
