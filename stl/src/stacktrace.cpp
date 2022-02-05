@@ -17,18 +17,18 @@
 
 #pragma comment(lib, "DbgEng.lib")
 
+// The below function pointer types be in sync with <stacktrace>
+
 using _Stacktrace_string_fill_callback = size_t (*)(char*, size_t, void* _Context);
 
 using _Stacktrace_string_fill = size_t (*)(size_t, void* _Str, void* _Context, _Stacktrace_string_fill_callback);
 
 namespace {
-
     template <class F>
     size_t string_fill(_Stacktrace_string_fill callback, size_t size, void* str, F f) {
         return callback(size, str, &f,
             [](char* s, size_t sz, void* context) -> size_t { return (*static_cast<F*>(context))(s, sz); });
     }
-
 
     struct com_release_t {
         void operator()(auto* p) {
@@ -36,6 +36,7 @@ namespace {
         }
     };
 
+    // TRANSITION, GH-2285. Use SRWLOCK instead of std::mutex to avoid nontrivial constructor and nontrivial destructor
     class _NODISCARD srw_lock_guard {
     public:
         explicit srw_lock_guard(SRWLOCK& locked_) noexcept : locked(&locked_) {
@@ -58,8 +59,7 @@ namespace {
     IDebugControl* debug_control = nullptr;
     bool attached                = false;
     bool initialize_attempted    = false;
-
-    SRWLOCK srw = SRWLOCK_INIT;
+    SRWLOCK srw                  = SRWLOCK_INIT;
 
     bool try_initialize() {
         if (!initialize_attempted) {
@@ -114,10 +114,8 @@ namespace {
             return 0;
         }
 
-        size_t size = 4; // a guess, will retry with greater if wrong
-
-        HRESULT hr = E_UNEXPECTED;
-
+        size_t size          = 20; // a guess, will retry with greater if wrong
+        HRESULT hr           = E_UNEXPECTED;
         ULONG64 displacement = 0;
 
         for (;;) {
@@ -152,14 +150,13 @@ namespace {
         return off;
     }
 
-
     size_t source_file(const void* const address, void* str, size_t off, ULONG* line, _Stacktrace_string_fill fill) {
         if (!try_initialize()) {
             return 0;
         }
-        HRESULT hr = E_UNEXPECTED;
 
-        size_t size = 4; // a guess, will retry with greater if wrong
+        HRESULT hr  = E_UNEXPECTED;
+        size_t size = 20; // a guess, will retry with greater if wrong
 
         for (;;) {
             ULONG new_size = 0;
@@ -178,7 +175,7 @@ namespace {
             } else if (hr == S_FALSE) {
                 size = new_size; // retry with bigger buffer
             } else {
-                if (line != nullptr) {
+                if (line) {
                     *line = 0;
                 }
 
@@ -210,7 +207,6 @@ namespace {
         off = source_file(address, str, off, &line, fill);
 
         if (line != 0) {
-
             constexpr size_t max_line_num = std::size("(4294967295): ") - 1; // maximum possible line number
 
             off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) {
@@ -224,6 +220,7 @@ namespace {
 
 } // namespace
 
+_EXTERN_C
 [[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(
     unsigned long _FramesToSkip, unsigned long _FramesToCapture, void** _BackTrace, unsigned long* _BackTraceHash) {
 #ifdef _DEBUG
@@ -274,3 +271,4 @@ void __stdcall __std_stacktrace_to_string(
         off = address_to_string(data[i], _Str, off, _Fill);
     }
 }
+_END_EXTERN_C
