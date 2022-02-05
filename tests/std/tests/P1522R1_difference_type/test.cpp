@@ -269,6 +269,39 @@ constexpr bool test_unsigned() {
         assert(tmp == (x ^ y));
     }
 
+    {
+        _Uint128 x{};
+        assert(++x == 1);
+        assert(--x == 0);
+        assert(x == std::numeric_limits<_Uint128>::min());
+        --x;
+        assert(x._Word[0] == ~0ull);
+        assert(x._Word[1] == ~0ull);
+        assert(x == std::numeric_limits<_Uint128>::max());
+        --x;
+        assert(x._Word[0] == (~0ull << 1));
+        assert(x._Word[1] == ~0ull);
+        x._Word[0] = 0;
+        x._Word[1] = 1;
+        --x;
+        assert(x._Word[0] == ~0ull);
+        assert(x._Word[1] == 0);
+        ++x;
+        assert(x._Word[0] == 0);
+        assert(x._Word[1] == 1);
+        ++x;
+        assert(x._Word[0] == 1);
+        assert(x._Word[1] == 1);
+        x._Word[0] = ~0ull;
+        x._Word[1] = static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max());
+        ++x;
+        assert(x._Word[0] == 0);
+        assert(x._Word[1] == static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::min()));
+        --x;
+        assert(x._Word[0] == ~0ull);
+        assert(x._Word[1] == static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()));
+    }
+
     return true;
 }
 
@@ -526,6 +559,39 @@ constexpr bool test_signed() {
         tmp = x;
         tmp ^= y;
         assert(tmp == (x ^ y));
+    }
+
+    {
+        _Int128 x{};
+        assert(++x == 1);
+        assert(--x == 0);
+        --x;
+        assert(x._Word[0] == ~0ull);
+        assert(x._Word[1] == ~0ull);
+        --x;
+        assert(x._Word[0] == (~0ull << 1));
+        assert(x._Word[1] == ~0ull);
+        x._Word[0] = 0;
+        x._Word[1] = 1;
+        --x;
+        assert(x._Word[0] == ~0ull);
+        assert(x._Word[1] == 0);
+        ++x;
+        assert(x._Word[0] == 0);
+        assert(x._Word[1] == 1);
+        ++x;
+        assert(x._Word[0] == 1);
+        assert(x._Word[1] == 1);
+        x._Word[0] = ~0ull;
+        x._Word[1] = static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max());
+        ++x;
+        assert(x._Word[0] == 0);
+        assert(x._Word[1] == static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::min()));
+        assert(x == std::numeric_limits<_Int128>::min());
+        --x;
+        assert(x._Word[0] == ~0ull);
+        assert(x._Word[1] == static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()));
+        assert(x == std::numeric_limits<_Int128>::max());
     }
 
     return true;
