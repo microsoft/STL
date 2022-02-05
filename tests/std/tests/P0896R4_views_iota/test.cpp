@@ -54,7 +54,7 @@ constexpr void test_integral() {
         } else if constexpr (sizeof(T) < sizeof(long long)) {
             static_assert(same_as<ranges::range_difference_t<R>, long long>);
         } else {
-            static_assert(same_as<ranges::range_difference_t<R>, std::_Int128>);
+            static_assert(same_as<ranges::range_difference_t<R>, std::_Signed128>);
         }
 
         // iota_view is always a simple-view, i.e., const and non-const are always valid ranges with the same iterators:
@@ -220,7 +220,7 @@ constexpr void test_integral() {
         } else if constexpr (sizeof(T) < sizeof(long long)) {
             static_assert(same_as<ranges::range_difference_t<R>, long long>);
         } else {
-            static_assert(same_as<ranges::range_difference_t<R>, std::_Int128>);
+            static_assert(same_as<ranges::range_difference_t<R>, std::_Signed128>);
         }
 
         {

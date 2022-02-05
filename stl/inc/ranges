@@ -955,7 +955,7 @@ namespace ranges {
     template <class _Ty>
     using _Iota_diff_t = conditional_t<is_integral_v<_Ty>,
         conditional_t<sizeof(_Ty) < sizeof(int), int,
-            conditional_t<sizeof(_Ty) < sizeof(long long), long long, _Int128>>,
+            conditional_t<sizeof(_Ty) < sizeof(long long), long long, _Signed128>>,
         iter_difference_t<_Ty>>;
 
     // clang-format off
