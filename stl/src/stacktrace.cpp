@@ -73,6 +73,8 @@ namespace {
         }
 
         atexit([] {
+            srw_lock_guard lock{srw};
+
             // "Phoenix singleton" - destroy and set to null, so that can initialize later again
 
             if (debug_client != nullptr) {
@@ -134,7 +136,7 @@ namespace {
         }
 
         if (displacement != 0) {
-            constexpr size_t max_disp_num = std::size("+0x1111222233334444") - 1; // maximum possible line number
+            constexpr size_t max_disp_num = std::size("+0x1111222233334444") - 1; // maximum possible offset
 
             off = string_fill(fill, off + max_disp_num, str, [displacement, off](char* s, size_t) {
                 return std::format_to_n(s + off, max_disp_num, "+{:#x}", displacement).out - s;
