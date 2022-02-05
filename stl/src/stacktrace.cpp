@@ -7,8 +7,6 @@
 // In particular, basic_string must not be included here.
 
 #include <format>
-#include <memory>
-#include <shared_mutex>
 
 // clang-format off
 #include <initguid.h> // should be before any header that includes <guiddef.h>
