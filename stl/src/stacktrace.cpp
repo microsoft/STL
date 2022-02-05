@@ -25,7 +25,7 @@ using _Stacktrace_string_fill = size_t (*)(size_t, void* _Str, void* _Context, _
 
 namespace {
     template <class F>
-    size_t string_fill(_Stacktrace_string_fill callback, size_t size, void* str, F f) {
+    size_t string_fill(const _Stacktrace_string_fill callback, const size_t size, void* const str, F f) {
         return callback(size, str, &f,
             [](char* s, size_t sz, void* context) -> size_t { return (*static_cast<F*>(context))(s, sz); });
     }
@@ -45,7 +45,7 @@ namespace {
         srw_lock_guard& operator=(const srw_lock_guard&) = delete;
 
     private:
-        SRWLOCK* locked;
+        SRWLOCK* const locked;
     };
 
     IDebugClient* debug_client   = nullptr;
@@ -105,7 +105,7 @@ namespace {
         return debug_symbols != nullptr;
     }
 
-    size_t get_description(const void* const address, void* str, size_t off, _Stacktrace_string_fill fill) {
+    size_t get_description(const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
         if (!try_initialize()) {
             return 0;
         }
@@ -146,7 +146,8 @@ namespace {
         return off;
     }
 
-    size_t source_file(const void* const address, void* str, size_t off, ULONG* line, _Stacktrace_string_fill fill) {
+    size_t source_file(
+        const void* const address, void* const str, size_t off, ULONG* const line, const _Stacktrace_string_fill fill) {
         if (!try_initialize()) {
             return 0;
         }
@@ -197,7 +198,8 @@ namespace {
         return line;
     }
 
-    size_t address_to_string(const void* address, void* str, size_t off, _Stacktrace_string_fill fill) {
+    size_t address_to_string(
+        const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
         ULONG line = 0;
 
         off = source_file(address, str, off, &line, fill);
@@ -217,43 +219,46 @@ namespace {
 } // namespace
 
 _EXTERN_C
-[[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(
-    unsigned long _FramesToSkip, unsigned long _FramesToCapture, void** _BackTrace, unsigned long* _BackTraceHash) {
+[[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(unsigned long _FramesToSkip,
+    const unsigned long _FramesToCapture, void** const _BackTrace, unsigned long* const _BackTraceHash) {
 #ifdef _DEBUG
     _FramesToSkip += 1; // compensate absense of tail call optimization here
 #endif
     return CaptureStackBackTrace(_FramesToSkip, _FramesToCapture, _BackTrace, _BackTraceHash);
 }
 
-void __stdcall __std_stacktrace_description(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
-    srw_lock_guard lock{srw};
+void __stdcall __std_stacktrace_description(
+    const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) {
+    const srw_lock_guard lock{srw};
 
     get_description(_Address, _Str, 0, _Fill);
 }
 
-void __stdcall __std_stacktrace_source_file(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
-    srw_lock_guard lock{srw};
+void __stdcall __std_stacktrace_source_file(
+    const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) {
+    const srw_lock_guard lock{srw};
 
     source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
-unsigned __stdcall __std_stacktrace_source_line(const void* _Address) {
-    srw_lock_guard lock{srw};
+unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) {
+    const srw_lock_guard lock{srw};
 
     return source_line(_Address);
 }
 
-void __stdcall __std_stacktrace_address_to_string(const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) {
-    srw_lock_guard lock{srw};
+void __stdcall __std_stacktrace_address_to_string(
+    const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) {
+    const srw_lock_guard lock{srw};
 
     address_to_string(_Address, _Str, 0, _Fill);
 }
 
 void __stdcall __std_stacktrace_to_string(
-    const void* _Addresses, size_t _Size, void* _Str, _Stacktrace_string_fill _Fill) {
-    srw_lock_guard lock{srw};
+    const void* const _Addresses, const size_t _Size, void* const _Str, const _Stacktrace_string_fill _Fill) {
+    const srw_lock_guard lock{srw};
 
-    auto data = reinterpret_cast<const void* const*>(_Addresses);
+    const auto data = reinterpret_cast<const void* const*>(_Addresses);
 
     size_t off = 0;
 
