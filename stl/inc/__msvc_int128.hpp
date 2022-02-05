@@ -68,7 +68,7 @@ struct
         _Word[0] <<= _Count;
     }
 
-    constexpr void _Right_shift(const unsigned char _Count) noexcept {
+    constexpr void _Unsigned_right_shift(const unsigned char _Count) noexcept {
         // _STL_INTERNAL_CHECK(_Count < 128);
         if (_Count == 0) {
             return;
@@ -325,7 +325,8 @@ struct
         return _Left >> _Right._Word[0];
     }
 
-    constexpr _Base128& operator<<=(const integral auto _Count) noexcept {
+    template <integral _Ty>
+    constexpr _Base128& operator<<=(const _Ty _Count) noexcept {
         _Left_shift(static_cast<unsigned char>(_Count));
         return *this;
     }
@@ -336,8 +337,9 @@ struct
         return _Left;
     }
 
-    constexpr _Base128& operator>>=(const integral auto _Count) noexcept {
-        _Right_shift(static_cast<unsigned char>(_Count));
+    template <integral _Ty>
+    constexpr _Base128& operator>>=(const _Ty _Count) noexcept {
+        _Unsigned_right_shift(static_cast<unsigned char>(_Count));
         return *this;
     }
 
@@ -683,7 +685,8 @@ struct _Uint128 : _Base128 {
         return _Tmp;
     }
 
-    constexpr _Uint128& operator<<=(const integral auto _Count) noexcept {
+    template <integral _Ty>
+    constexpr _Uint128& operator<<=(const _Ty _Count) noexcept {
         _Left_shift(static_cast<unsigned char>(_Count));
         return *this;
     }
@@ -694,16 +697,17 @@ struct _Uint128 : _Base128 {
 
     _NODISCARD_FRIEND constexpr _Uint128 operator>>(const _Uint128& _Left, const _Base128& _Right) noexcept {
         auto _Tmp{_Left};
-        _Tmp._Right_shift(static_cast<unsigned char>(_Right._Word[0]));
+        _Tmp._Unsigned_right_shift(static_cast<unsigned char>(_Right._Word[0]));
         return _Tmp;
     }
 
-    constexpr _Uint128& operator>>=(const integral auto _Count) noexcept {
-        _Right_shift(static_cast<unsigned char>(_Count));
+    template <integral _Ty>
+    constexpr _Uint128& operator>>=(const _Ty _Count) noexcept {
+        _Unsigned_right_shift(static_cast<unsigned char>(_Count));
         return *this;
     }
     constexpr _Uint128& operator>>=(const _Base128& _Count) noexcept {
-        _Right_shift(static_cast<unsigned char>(_Count._Word[0]));
+        _Unsigned_right_shift(static_cast<unsigned char>(_Count._Word[0]));
         return *this;
     }
 
@@ -980,7 +984,8 @@ struct _Int128 : _Base128 {
         return _Tmp;
     }
 
-    constexpr _Int128& operator<<=(const integral auto _Count) noexcept {
+    template <integral _Ty>
+    constexpr _Int128& operator<<=(const _Ty _Count) noexcept {
         _Left_shift(static_cast<unsigned char>(_Count));
         return *this;
     }
@@ -989,7 +994,7 @@ struct _Int128 : _Base128 {
         return *this;
     }
 
-    constexpr void _Right_shift(const unsigned char _Count) noexcept {
+    constexpr void _Signed_right_shift(const unsigned char _Count) noexcept {
         if (_Count == 0) {
             return;
         }
@@ -1014,17 +1019,17 @@ struct _Int128 : _Base128 {
 
     _NODISCARD_FRIEND constexpr _Int128 operator>>(const _Int128& _Left, const _Base128& _Right) noexcept {
         auto _Tmp{_Left};
-        _Tmp._Right_shift(static_cast<unsigned char>(_Right._Word[0]));
+        _Tmp._Signed_right_shift(static_cast<unsigned char>(_Right._Word[0]));
         return _Tmp;
     }
 
-
-    constexpr _Int128& operator>>=(const integral auto _Count) noexcept {
-        _Right_shift(static_cast<unsigned char>(_Count));
+    template <integral _Ty>
+    constexpr _Int128& operator>>=(const _Ty _Count) noexcept {
+        _Signed_right_shift(static_cast<unsigned char>(_Count));
         return *this;
     }
     constexpr _Int128& operator>>=(const _Base128& _Count) noexcept {
-        _Right_shift(static_cast<unsigned char>(_Count._Word[0]));
+        _Signed_right_shift(static_cast<unsigned char>(_Count._Word[0]));
         return *this;
     }
 
@@ -1311,6 +1316,15 @@ struct common_type<_Ty, _Int128> {
 template <integral _Ty>
 struct common_type<_Int128, _Ty> {
     using type = _Int128;
+};
+
+template <>
+struct common_type<_Int128, _Uint128> {
+    using type = _Uint128;
+};
+template <>
+struct common_type<_Uint128, _Int128> {
+    using type = _Uint128;
 };
 
 #undef _STL_128_INTRINSICS

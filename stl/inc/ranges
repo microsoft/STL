@@ -983,7 +983,7 @@ namespace ranges {
     };
 
     template <incrementable _Wi>
-        requires integral<_Iota_diff_t<_Wi>> // TRANSITION, as yet unnumbered LWG issue
+        requires integral<_Iota_diff_t<_Wi>> // TRANSITION, LWG-3670
     struct _Ioterator_category_base<_Wi> {
         using iterator_category = input_iterator_tag;
 
