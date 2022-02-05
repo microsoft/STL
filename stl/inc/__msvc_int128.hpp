@@ -16,10 +16,6 @@
 #include <cstdint>
 #include <intrin.h> // TRANSITION, GH-2520
 
-#if 1 // FIXME: comment out _STL_INTERNAL_CHECKs and remove to make this core
-#include <yvals.h>
-#endif
-
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -49,7 +45,7 @@ struct
     uint64_t _Word[2];
 
     constexpr void _Left_shift(const unsigned char _Count) noexcept {
-        _STL_INTERNAL_CHECK(_Count < 128);
+        // _STL_INTERNAL_CHECK(_Count < 128);
         if (_Count == 0) {
             return;
         }
@@ -73,7 +69,7 @@ struct
     }
 
     constexpr void _Right_shift(const unsigned char _Count) noexcept {
-        _STL_INTERNAL_CHECK(_Count < 128);
+        // _STL_INTERNAL_CHECK(_Count < 128);
         if (_Count == 0) {
             return;
         }
@@ -98,7 +94,7 @@ struct
 
     static constexpr unsigned char _AddCarry64(
         unsigned char _Carry, uint64_t _Left, uint64_t _Right, uint64_t& _Result) noexcept {
-        _STL_INTERNAL_CHECK(_Carry < 2);
+        // _STL_INTERNAL_CHECK(_Carry < 2);
 #if _STL_128_INTRINSICS
         if (!_STD is_constant_evaluated()) {
             return _addcarry_u64(_Carry, _Left, _Right, &_Result);
@@ -112,7 +108,7 @@ struct
 
     static constexpr unsigned char _SubBorrow64(
         unsigned char _Carry, uint64_t _Left, uint64_t _Right, uint64_t& _Result) noexcept {
-        _STL_INTERNAL_CHECK(_Carry < 2);
+        // _STL_INTERNAL_CHECK(_Carry < 2);
 #if _STL_128_INTRINSICS
         if (!_STD is_constant_evaluated()) {
             return _subborrow_u64(_Carry, _Left, _Right, &_Result);
@@ -127,9 +123,11 @@ struct
     template <size_t __m, size_t __n>
     static constexpr void _Knuth_4_3_1_M(
         const uint32_t (&__u)[__m], const uint32_t (&__v)[__n], uint32_t (&__w)[__n + __m]) noexcept {
+#ifdef _ENABLE_STL_INTERNAL_CHECK
         constexpr auto _Int_max = size_t{(numeric_limits<int>::max)()};
         _STL_INTERNAL_STATIC_ASSERT(__m <= _Int_max);
         _STL_INTERNAL_STATIC_ASSERT(__n <= _Int_max);
+#endif
 
         for (auto& _Elem : __w) {
             _Elem = 0;
@@ -175,13 +173,13 @@ struct
     static constexpr void _Knuth_4_3_1_D(uint32_t* const __u, const size_t __u_size, const uint32_t* const __v,
         const size_t __v_size, uint32_t* const __q) noexcept {
         // Pre: __u + [0, __u_size), __v + [0, __v_size), and __q + [0, __u_size - __v_size) are all valid ranges
-        constexpr auto _Int_max = size_t{(numeric_limits<int>::max)()};
-        _STL_INTERNAL_CHECK(__v_size <= _Int_max);
+        // constexpr auto _Int_max = size_t{(numeric_limits<int>::max)()};
+        // _STL_INTERNAL_CHECK(__v_size <= _Int_max);
         const auto __n = static_cast<int>(__v_size);
-        _STL_INTERNAL_CHECK(__u_size > __v_size);
-        _STL_INTERNAL_CHECK(__u_size <= _Int_max);
+        // _STL_INTERNAL_CHECK(__u_size > __v_size);
+        // _STL_INTERNAL_CHECK(__u_size <= _Int_max);
         const auto __m = static_cast<int>(__u_size - __v_size - 1);
-        _STL_INTERNAL_CHECK(__v[__n - 1] >> 31 != 0); // Arguments are already normalized
+        // _STL_INTERNAL_CHECK(__v[__n - 1] >> 31 != 0); // Arguments are already normalized
 
         for (auto __j = static_cast<int>(__m); __j >= 0; --__j) {
             const auto _Two_digits = (static_cast<uint64_t>(__u[__j + __n]) << 32) | __u[__j + __n - 1];
@@ -227,7 +225,7 @@ struct
 
     _NODISCARD static constexpr uint64_t _UDiv128(
         uint64_t _High, uint64_t _Low, uint64_t _Div, uint64_t& _Remainder) noexcept {
-        _STL_INTERNAL_CHECK(_High < _Div);
+        // _STL_INTERNAL_CHECK(_High < _Div);
 
 #if _STL_128_DIV_INTRINSICS
         if (!_STD is_constant_evaluated()) {
@@ -264,12 +262,12 @@ struct
         uint32_t __q[3];
 
         _Knuth_4_3_1_D(__u, 5, __v, 2, __q);
-        _STL_INTERNAL_CHECK(__u[4] == 0);
-        _STL_INTERNAL_CHECK(__u[3] == 0);
-        _STL_INTERNAL_CHECK(__u[2] == 0);
+        // _STL_INTERNAL_CHECK(__u[4] == 0);
+        // _STL_INTERNAL_CHECK(__u[3] == 0);
+        // _STL_INTERNAL_CHECK(__u[2] == 0);
         _Remainder = (static_cast<uint64_t>(__u[1]) << (32 - __d)) | (__u[0] >> __d);
 
-        _STL_INTERNAL_CHECK(__q[2] == 0);
+        // _STL_INTERNAL_CHECK(__q[2] == 0);
         return (static_cast<uint64_t>(__q[1]) << 32) | __q[0];
     }
 
@@ -412,8 +410,8 @@ struct
 
 #if _STL_128_INTRINSICS
         // Knuth 4.3.1D, 2-digit by 2-digit divide in base 2^64
-        _STL_INTERNAL_CHECK(_Den._Word[1] != 0);
-        _STL_INTERNAL_CHECK(_Num._Word[1] > _Den._Word[1]);
+        // _STL_INTERNAL_CHECK(_Den._Word[1] != 0);
+        // _STL_INTERNAL_CHECK(_Num._Word[1] > _Den._Word[1]);
         // Normalize by shifting both left until _Den's high bit is set (So _Den's high digit is >= b / 2)
         const auto __d = _STD countl_zero(_Den._Word[1]);
         _Den <<= __d;
@@ -444,7 +442,7 @@ struct
             }
             __rhat = _Sum;
         }
-        _STL_INTERNAL_CHECK(__qhat._Word[1] == 0);
+        // _STL_INTERNAL_CHECK(__qhat._Word[1] == 0);
 
         // [_High_digit | _Num] -= __qhat * _Den [Since __qhat < b, this is 3-digit - 1-digit * 2-digit]
         uint64_t _Prod0_hi;
@@ -537,8 +535,8 @@ struct
 
 #if _STL_128_INTRINSICS
         // Knuth 4.3.1D, 2-digit by 2-digit divide in base 2^64
-        _STL_INTERNAL_CHECK(_Den._Word[1] != 0);
-        _STL_INTERNAL_CHECK(_Num._Word[1] > _Den._Word[1]);
+        // _STL_INTERNAL_CHECK(_Den._Word[1] != 0);
+        // _STL_INTERNAL_CHECK(_Num._Word[1] > _Den._Word[1]);
         // Normalize by shifting both left until _Den's high bit is set (So _Den's high digit is >= b / 2)
         const auto __d = _STD countl_zero(_Den._Word[1]);
         _Den <<= __d;
@@ -571,7 +569,7 @@ struct
             __rhat = _Sum;
             // The addition didn't overflow, so `__rhat < b` holds
         }
-        _STL_INTERNAL_CHECK(__qhat_high == 0);
+        // _STL_INTERNAL_CHECK(__qhat_high == 0);
 
         // [_High_digit | _Num] -= __qhat * _Den [3-digit - 1-digit * 2-digit]
         uint64_t _Prod0_hi;
@@ -613,12 +611,12 @@ struct
         if (_Three_word_den) {
             // 4-digit by 3-digit base 2^32 division
             _Knuth_4_3_1_D(__u, 5, __v, 3, __q);
-            _STL_INTERNAL_CHECK(__u[3] == 0);
+            // _STL_INTERNAL_CHECK(__u[3] == 0);
         } else {
             // 4-digit by 4-digit base 2^32 division
             _Knuth_4_3_1_D(__u, 5, __v, 4, __q);
         }
-        _STL_INTERNAL_CHECK(__u[4] == 0);
+        // _STL_INTERNAL_CHECK(__u[4] == 0);
 
         _Num._Word[0] = (static_cast<uint64_t>(__u[1]) << 32) | __u[0];
         _Num._Word[1] = (static_cast<uint64_t>(__u[3]) << 32) | __u[2];
