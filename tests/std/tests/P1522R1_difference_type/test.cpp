@@ -692,14 +692,19 @@ concept CanConditional = requires {
 };
 
 constexpr bool test_cross() {
-#define TEST(expr, result)                                                                  \
-    do {                                                                                    \
-        static_assert(std::same_as<decltype(expr), std::remove_const_t<decltype(result)>>); \
-        assert((expr) == (result));                                                         \
+    // Test the behavior of cross-type operations.
+
+#define TEST(expr, result)                                                                      \
+    do {                                                                                        \
+        static_assert(std::same_as<decltype((expr)), std::remove_const_t<decltype((result))>>); \
+        assert((expr) == (result));                                                             \
     } while (0)
 
-    TEST(_Uint128{42} + _Int128{-43}, _Uint128{-1});
-    TEST(_Int128{42} + _Uint128{-43}, _Uint128{-1});
+    //////// Mixed integer-class operands
+
+    // With mixed operands, binary arithmetic operators convert the signed
+    // operand to unsigned, producing an unsigned result.
+
     TEST(_Uint128{42} + _Int128{-43}, _Uint128{-1});
     TEST(_Int128{42} + _Uint128{-43}, _Uint128{-1});
     TEST(_Uint128{42} - _Int128{-43}, _Uint128{42 + 43});
@@ -717,6 +722,8 @@ constexpr bool test_cross() {
     TEST(_Uint128{42} ^ _Int128{43}, _Uint128{1});
     TEST(_Int128{42} ^ _Uint128{43}, _Uint128{1});
 
+    // Shifts yield a result of the left operand's type.
+
     TEST(_Uint128{1} << _Int128{43}, _Uint128{1ull << 43});
     TEST(_Int128{1} << _Uint128{43}, _Int128{1ull << 43});
     TEST(_Uint128{-1} << _Int128{43}, (_Uint128{0ull - (1ull << 43), ~0ull}));
@@ -727,21 +734,28 @@ constexpr bool test_cross() {
     TEST((_Uint128{0, ~0ull} >> _Int128{43}), (_Uint128{~((1ull << 21) - 1), (1ull << 21) - 1}));
     TEST((_Int128{0, ~0ull} >> _Uint128{43}), (_Int128{~((1ull << 21) - 1), ~0ull}));
 
+    // Integer-class types are explicitly convertible to integer-like (the union
+    // of integer-class and integral) types. Integer-class types are implicitly
+    // convertible only to wider types, or types of the same width and
+    // signedness. Consequently, the conditional operator should reject integer-
+    // class operands with the same width but differing signedness.
     static_assert(!CanConditional<_Uint128, _Int128>);
     static_assert(!CanConditional<_Int128, _Uint128>);
 
-    TEST(_Uint128{42} && _Int128{0}, false);
-    TEST(_Int128{42} && _Uint128{0}, false);
-    TEST(_Uint128{42} || _Int128{0}, true);
-    TEST(_Int128{42} || _Uint128{0}, true);
+    // Conversions between integer-class types with the same width and differing
+    // signedness are narrowing, so the three-way comparison operator should
+    // reject mixed operands of such types.
+    static_assert(!std::three_way_comparable_with<_Uint128, _Int128>);
+    static_assert(!std::three_way_comparable_with<_Int128, _Uint128>);
+
+    // Other comparison operators behave as they do for operands of mixed
+    // integral types; when the operands have the same width, the signed operand
+    // converts to unsigned and the comparison is made.
 
     TEST(_Uint128{42} == _Int128{0}, false);
     TEST(_Int128{42} == _Uint128{42}, true);
     TEST(_Uint128{42} != _Int128{0}, true);
     TEST(_Int128{42} != _Uint128{42}, false);
-
-    static_assert(!std::three_way_comparable_with<_Uint128, _Int128>);
-    static_assert(!std::three_way_comparable_with<_Int128, _Uint128>);
 
     TEST(_Uint128{42} < _Int128{-43}, true);
     TEST(_Int128{42} < _Uint128{-43}, true);
@@ -751,6 +765,246 @@ constexpr bool test_cross() {
     TEST(_Int128{42} <= _Uint128{-43}, true);
     TEST(_Uint128{42} >= _Int128{-43}, false);
     TEST(_Int128{42} >= _Uint128{-43}, false);
+
+    // The logical binary operators behave just like they do for integral types;
+    // the individual operands are converted to bool and the operation performed
+    // normally.
+
+    TEST(_Uint128{42} && _Int128{0}, false);
+    TEST(_Int128{42} && _Uint128{0}, false);
+    TEST(_Uint128{42} || _Int128{0}, true);
+    TEST(_Int128{42} || _Uint128{0}, true);
+
+    // Assignments convert the RHS to the type of the LHS, just as for integral
+    // types.
+
+    _Uint128 u{};
+    _Uint128 x{42};
+    _Int128 i{42};
+    _Int128 y{13};
+    TEST(u = i, x);
+    u = 13;
+    TEST(i = u, y);
+
+    x = 26;
+    TEST(u += i, x);
+    y = 39;
+    TEST(i += u, y);
+
+    x = -13;
+    TEST(u -= i, x);
+    y = 52;
+    TEST(i -= u, y);
+
+    x = -26;
+    TEST(u *= _Int128{2}, x);
+    y = 104;
+    TEST(i *= _Uint128{2}, y);
+
+    x = _Uint128{0x55555555'5555554c, 0x55555555'55555555};
+    TEST(u /= _Int128{3}, x); // Yes, u is still unsigned =)
+    y = 34;
+    TEST(i /= _Uint128{3}, y);
+
+    x = 4;
+    TEST(u %= _Int128{8}, x);
+    y = 2;
+    TEST(i %= _Uint128{8}, y);
+
+    x = 16;
+    TEST(u <<= _Int128{2}, x);
+    y = 8;
+    TEST(i <<= _Uint128{2}, y);
+
+    x = 8;
+    TEST(u >>= _Int128{1}, x);
+    y = 4;
+    TEST(i >>= _Uint128{1}, y);
+
+    x = 9;
+    TEST(u |= _Int128{1}, x);
+    y = 5;
+    TEST(i |= _Uint128{1}, y);
+
+    x = 9;
+    TEST(u &= _Int128{59}, x);
+    y = 1;
+    TEST(i &= _Uint128{59}, y);
+
+    x = 12;
+    TEST(u ^= _Int128{5}, x);
+    y = 4;
+    TEST(i ^= _Uint128{5}, y);
+
+    //////// Mixed integer and integer-class operands
+
+    // With mixed operands, binary arithmetic operators convert the signed
+    // operand to unsigned, producing an unsigned result.
+
+    TEST(_Uint128{42} + -43, _Uint128{-1});
+    TEST(_Int128{42} + -43, _Int128{-1});
+    TEST(42 + _Int128{-43}, _Int128{-1});
+    TEST(42 + _Uint128{-43}, _Uint128{-1});
+    TEST(_Uint128{42} - -43, _Uint128{42 + 43});
+    TEST(_Int128{42} - -43, _Int128{42 + 43});
+    TEST(42 - _Int128{-43}, _Int128{42 + 43});
+    TEST(42 - _Uint128{-43}, _Uint128{42 + 43});
+    TEST(_Uint128{42} * -43, _Uint128{42 * -43});
+    TEST(_Int128{42} * -43, _Int128{42 * -43});
+    TEST(42 * _Int128{-43}, _Int128{42 * -43});
+    TEST(42 * _Uint128{-43}, _Uint128{42 * -43});
+    TEST(_Uint128{42} / -43, _Uint128{0});
+    TEST(_Int128{42} / -43, _Int128{0});
+    TEST(42 / _Int128{-43}, _Int128{0});
+    TEST(42 / _Uint128{-43}, _Uint128{0});
+    TEST(_Uint128{42} % -43, _Uint128{42});
+    TEST(_Int128{42} % -43, _Int128{42});
+    TEST(42 % _Int128{-43}, _Int128{42});
+    TEST(42 % _Uint128{-43}, _Uint128{42});
+    TEST(_Uint128{42} & 43, _Uint128{42});
+    TEST(_Int128{42} & 43, _Int128{42});
+    TEST(42 & _Int128{43}, _Int128{42});
+    TEST(42 & _Uint128{43}, _Uint128{42});
+    TEST(_Uint128{42} | 43, _Uint128{43});
+    TEST(_Int128{42} | 43, _Int128{43});
+    TEST(42 | _Int128{43}, _Int128{43});
+    TEST(42 | _Uint128{43}, _Uint128{43});
+    TEST(_Uint128{42} ^ 43, _Uint128{1});
+    TEST(_Int128{42} ^ 43, _Int128{1});
+    TEST(42 ^ _Int128{43}, _Int128{1});
+    TEST(42 ^ _Uint128{43}, _Uint128{1});
+
+    // Shifts yield a result of the left operand's type.
+
+    TEST(_Uint128{1} << 4, _Uint128{1ull << 4});
+    TEST(_Int128{1} << 4, _Int128{1ull << 4});
+    TEST(1 << _Int128{4}, 16);
+    TEST(1 << _Uint128{4}, 16);
+
+    TEST((_Uint128{0, 1}) >> 3, _Uint128{1ull << 61});
+    TEST((_Int128{0, 1}) >> 3, _Int128{1ull << 61});
+    TEST(256 >> _Int128{3}, 32);
+    TEST(256 >> _Uint128{3}, 32);
+
+    TEST(true ? _Uint128{42} : 13, _Uint128{42});
+    TEST(true ? _Int128{42} : 13, _Int128{42});
+    TEST(true ? 42 : _Int128{13}, _Int128{42});
+    TEST(true ? 42 : _Uint128{13}, _Uint128{42});
+
+    // (meow <=> 0) here is a hack to get prvalues
+    TEST(4 <=> _Uint128{3}, (std::strong_ordering::greater <=> 0));
+    TEST(4 <=> _Int128{3}, (std::strong_ordering::greater <=> 0));
+    TEST(_Int128{4} <=> 3, (std::strong_ordering::greater <=> 0));
+    TEST(_Uint128{4} <=> 3, (std::strong_ordering::greater <=> 0));
+    TEST(3 <=> _Uint128{3}, (std::strong_ordering::equal <=> 0));
+    TEST(3 <=> _Int128{3}, (std::strong_ordering::equal <=> 0));
+    TEST(_Int128{3} <=> 3, (std::strong_ordering::equal <=> 0));
+    TEST(_Uint128{3} <=> 3, (std::strong_ordering::equal <=> 0));
+    TEST(-3 <=> _Uint128{3}, (std::strong_ordering::greater <=> 0));
+    TEST(-3 <=> _Int128{3}, (std::strong_ordering::less <=> 0));
+    TEST(_Int128{-3} <=> 3, (std::strong_ordering::less <=> 0));
+    TEST(_Uint128{-3} <=> 3, (std::strong_ordering::greater <=> 0));
+
+    // Other comparison operators behave as they do for operands of mixed
+    // integral types; when the operands have the same width, the signed operand
+    // converts to unsigned and the comparison is made.
+
+    TEST(_Uint128{42} == 0, false);
+    TEST(_Int128{42} == 42, true);
+    TEST(42 == _Int128{0}, false);
+    TEST(42 == _Uint128{42}, true);
+    TEST(_Uint128{42} != 0, true);
+    TEST(_Int128{42} != 42, false);
+    TEST(42 != _Int128{0}, true);
+    TEST(42 != _Uint128{42}, false);
+
+    TEST(_Uint128{42} < -43, true);
+    TEST(_Int128{42} < -43, false);
+    TEST(42 < _Int128{-43}, false);
+    TEST(42 < _Uint128{-43}, true);
+    TEST(_Uint128{42} > -43, false);
+    TEST(_Int128{42} > -43, true);
+    TEST(42 > _Int128{-43}, true);
+    TEST(42 > _Uint128{-43}, false);
+    TEST(_Uint128{42} <= -43, true);
+    TEST(_Int128{42} <= -43, false);
+    TEST(42 <= _Int128{-43}, false);
+    TEST(42 <= _Uint128{-43}, true);
+    TEST(_Uint128{42} >= -43, false);
+    TEST(_Int128{42} >= -43, true);
+    TEST(42 >= _Int128{-43}, true);
+    TEST(42 >= _Uint128{-43}, false);
+
+    // The logical binary operators behave just like they do for integral types;
+    // the individual operands are converted to bool and the operation performed
+    // normally.
+
+    TEST(_Uint128{42} && 0, false);
+    TEST(_Int128{42} && 0, false);
+    TEST(42 && _Int128{0}, false);
+    TEST(42 && _Uint128{0}, false);
+    TEST(_Uint128{42} || 0, true);
+    TEST(_Int128{42} || 0, true);
+    TEST(42 || _Int128{0}, true);
+    TEST(42 || _Uint128{0}, true);
+
+    // Assignments convert the RHS to the type of the LHS, just as for integral
+    // types.
+
+    x = 42;
+    y = 13;
+    TEST(u = 42, x);
+    TEST(i = 13, y);
+
+    x = 55;
+    TEST(u += 13, x);
+    y = 26;
+    TEST(i += 13, y);
+
+    x = -13;
+    TEST(u -= 68, x);
+    y = -6;
+    TEST(i -= 32, y);
+
+    x = -26;
+    TEST(u *= 2, x);
+    y = 12;
+    TEST(i *= -2, y);
+
+    x = _Uint128{0x55555555'5555554c, 0x55555555'55555555};
+    TEST(u /= 3, x); // Yes, u is still unsigned =)
+    y = 4;
+    TEST(i /= 3, y);
+
+    x = 4;
+    TEST(u %= 8, x);
+    y = 4;
+    TEST(i %= 8, y);
+
+    x = 16;
+    TEST(u <<= 2, x);
+    y = 16;
+    TEST(i <<= 2, y);
+
+    x = 8;
+    TEST(u >>= 1, x);
+    y = 8;
+    TEST(i >>= 1, y);
+
+    x = 9;
+    TEST(u |= 9, x);
+    y = 10;
+    TEST(i |= 2, y);
+
+    x = 9;
+    TEST(u &= 59, x);
+    y = 10;
+    TEST(i &= 59, y);
+
+    x = 12;
+    TEST(u ^= 5, x);
+    y = 15;
+    TEST(i ^= 5, y);
 
 #undef TEST
 
