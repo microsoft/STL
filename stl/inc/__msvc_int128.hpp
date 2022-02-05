@@ -454,12 +454,14 @@ struct
 
     _NODISCARD_FRIEND constexpr _Uint128 operator/(_Uint128 _Num, _Uint128 _Den) noexcept {
         // establish _Den < _Num and _Num._Word[1] > 0
-        if (_Den._Word[1] > _Num._Word[1]) {
-            return _Uint128{};
-        }
+        if (_Den._Word[1] >= _Num._Word[1]) {
+            if (_Den._Word[1] > _Num._Word[1]) {
+                return _Uint128{};
+            }
 
-        if (_Den._Word[1] == _Num._Word[1]) {
-            return _Uint128{_Num._Word[1] == 0 ? _Num._Word[0] / _Den._Word[0] : _Num._Word[0] >= _Den._Word[0]};
+            if (_Den._Word[1] == _Num._Word[1]) {
+                return _Uint128{_Num._Word[1] == 0 ? _Num._Word[0] / _Den._Word[0] : _Num._Word[0] >= _Den._Word[0]};
+            }
         }
 
         // establish _Den has more than 1 non-zero "digit"
@@ -599,16 +601,18 @@ struct
     }
     _NODISCARD_FRIEND constexpr _Uint128 operator%(_Uint128 _Num, _Uint128 _Den) noexcept {
         // establish _Den < _Num and _Num._Word[1] > 0
-        if (_Den._Word[1] > _Num._Word[1]) {
-            return _Num;
-        }
-
-        if (_Den._Word[1] == _Num._Word[1]) {
-            if (_Den._Word[0] <= _Num._Word[0]) {
-                return _Uint128{_Num._Word[0] - _Den._Word[0]};
+        if (_Den._Word[1] >= _Num._Word[1]) {
+            if (_Den._Word[1] > _Num._Word[1]) {
+                return _Num;
             }
 
-            return _Num;
+            if (_Den._Word[1] == _Num._Word[1]) {
+                if (_Den._Word[0] <= _Num._Word[0]) {
+                    return _Uint128{_Num._Word[1] == 0 ? _Num._Word[0] % _Den._Word[0] : _Num._Word[0] - _Den._Word[0]};
+                }
+
+                return _Num;
+            }
         }
 
         // establish _Den has more than 1 non-zero "digit"

@@ -421,30 +421,60 @@ constexpr bool test_signed() {
         assert(static_cast<std::int32_t>(nu) == -42);
         assert(static_cast<std::int16_t>(nu) == -42);
         assert(static_cast<std::int8_t>(nu) == -42);
+    }
 
-        _Int128 sum = u + nu;
-        assert(sum._Word[0] == 0);
+    {
+        _Int128 u{42};
+        _Int128 v{13};
+        _Int128 sum = u + v;
+        assert(sum._Word[0] == 55);
         assert(sum._Word[1] == 0);
-
-        --sum;
-        assert(sum._Word[0] == 0ull - 1);
-        assert(sum._Word[1] == 0ull - 1);
-        --sum;
-        assert(sum._Word[0] == 0ull - 2);
-        assert(sum._Word[1] == 0ull - 1);
-        ++sum;
-        assert(sum._Word[0] == 0ull - 1);
-        assert(sum._Word[1] == 0ull - 1);
-        ++sum;
-        assert(sum._Word[0] == 0);
+        sum = v + u;
+        assert(sum._Word[0] == 55);
         assert(sum._Word[1] == 0);
+        _Int128 diff = u - v;
+        assert(diff._Word[0] == 29);
+        assert(diff._Word[1] == 0);
+        diff = v - u;
+        assert(diff._Word[0] == 0ull - 29);
+        assert(diff._Word[1] == ~0ull);
 
-        _Int128 product = u * u;
-        assert(product._Word[0] == 42 * 42);
+        u   = -u;
+        sum = u + v;
+        assert(diff._Word[0] == 0ull - 29);
+        assert(diff._Word[1] == ~0ull);
+        sum = v + u;
+        assert(diff._Word[0] == 0ull - 29);
+        assert(diff._Word[1] == ~0ull);
+        diff = u - v;
+        assert(diff._Word[0] == 0ull - 55);
+        assert(diff._Word[1] == ~0ull);
+        diff = v - u;
+        assert(diff._Word[0] == 55);
+        assert(diff._Word[1] == 0);
+
+        u               = -u;
+        _Int128 product = u * v;
+        assert(product._Word[0] == 42 * 13);
+        assert(product._Word[1] == 0);
+        product = v * u;
+        assert(product._Word[0] == 42 * 13);
         assert(product._Word[1] == 0);
 
-        product = nu * nu;
-        assert(product._Word[0] == 42 * 42);
+        v       = -v;
+        product = u * v;
+        assert(product._Word[0] == 0ull - (42 * 13));
+        assert(product._Word[1] == ~0ull);
+        product = v * u;
+        assert(product._Word[0] == 0ull - (42 * 13));
+        assert(product._Word[1] == ~0ull);
+
+        u       = -u;
+        product = u * v;
+        assert(product._Word[0] == 42 * 13);
+        assert(product._Word[1] == 0);
+        product = v * u;
+        assert(product._Word[0] == 42 * 13);
         assert(product._Word[1] == 0);
 
         product = _Int128{0x01010101'01010101, 0x01010101'01010101} * 5;
@@ -487,6 +517,30 @@ constexpr bool test_signed() {
         assert(q._Word[1] == 0);
 
         q = _Int128{4} / _Int128{13};
+        assert(q._Word[0] == 0);
+        assert(q._Word[1] == 0);
+
+        q = _Int128{13} / _Int128{-4};
+        assert(q._Word[0] == 0ull - 3);
+        assert(q._Word[1] == ~0ull);
+
+        q = _Int128{-4} / _Int128{13};
+        assert(q._Word[0] == 0);
+        assert(q._Word[1] == 0);
+
+        q = _Int128{-13} / _Int128{4};
+        assert(q._Word[0] == 0ull - 3);
+        assert(q._Word[1] == ~0ull);
+
+        q = _Int128{4} / _Int128{-13};
+        assert(q._Word[0] == 0);
+        assert(q._Word[1] == 0);
+
+        q = _Int128{-13} / _Int128{-4};
+        assert(q._Word[0] == 3);
+        assert(q._Word[1] == 0);
+
+        q = _Int128{-4} / _Int128{-13};
         assert(q._Word[0] == 0);
         assert(q._Word[1] == 0);
 
@@ -540,6 +594,38 @@ constexpr bool test_signed() {
             assert(tmp % tmp == 0);
         }
         assert(tmp == 0);
+
+        _Int128 r = _Int128{13} % _Int128{4};
+        assert(r._Word[0] == 1);
+        assert(r._Word[1] == 0);
+
+        r = _Int128{4} % _Int128{13};
+        assert(r._Word[0] == 4);
+        assert(r._Word[1] == 0);
+
+        r = _Int128{13} % _Int128{-4};
+        assert(r._Word[0] == 1);
+        assert(r._Word[1] == 0);
+
+        r = _Int128{-4} % _Int128{13};
+        assert(r._Word[0] == 0ull - 4);
+        assert(r._Word[1] == ~0ull);
+
+        r = _Int128{-13} % _Int128{4};
+        assert(r._Word[0] == 0ull - 1);
+        assert(r._Word[1] == ~0ull);
+
+        r = _Int128{4} % _Int128{-13};
+        assert(r._Word[0] == 4);
+        assert(r._Word[1] == 0);
+
+        r = _Int128{-13} % _Int128{-4};
+        assert(r._Word[0] == 0ull - 1);
+        assert(r._Word[1] == ~0ull);
+
+        r = _Int128{-4} % _Int128{-13};
+        assert(r._Word[0] == 0ull - 4);
+        assert(r._Word[1] == ~0ull);
     }
 
     {
@@ -662,5 +748,5 @@ int main() {
     test_signed();
     static_assert(test_signed());
     test_cross();
-    // FIXME static_assert(test_cross());
+    static_assert(test_cross());
 }
