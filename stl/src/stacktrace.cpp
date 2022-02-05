@@ -30,12 +30,6 @@ namespace {
             [](char* s, size_t sz, void* context) -> size_t { return (*static_cast<F*>(context))(s, sz); });
     }
 
-    struct com_release_t {
-        void operator()(auto* p) {
-            p->Release();
-        }
-    };
-
     // TRANSITION, GH-2285. Use SRWLOCK instead of std::mutex to avoid nontrivial constructor and nontrivial destructor
     class _NODISCARD srw_lock_guard {
     public:
