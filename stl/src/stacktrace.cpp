@@ -165,10 +165,6 @@ namespace {
     }
 
     size_t get_description(const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
-        if (!try_initialize()) {
-            return 0;
-        }
-
         // Initially pass the current capacity, will retry with bigger buffer if fails.
         size_t size          = fill(0, str, nullptr, nullptr) - off;
         HRESULT hr           = E_UNEXPECTED;
@@ -210,10 +206,6 @@ namespace {
 
     size_t source_file(
         const void* const address, void* const str, size_t off, ULONG* const line, const _Stacktrace_string_fill fill) {
-        if (!try_initialize()) {
-            return 0;
-        }
-
         ensure_module_symbols_loaded_from_current_dir(address);
 
         // Initially pass the current capacity, will retry with bigger buffer if fails.
@@ -249,10 +241,6 @@ namespace {
     }
 
     [[nodiscard]] unsigned source_line(const void* const address) {
-        if (!try_initialize()) {
-            return 0;
-        }
-
         ensure_module_symbols_loaded_from_current_dir(address);
 
         ULONG line = 0;
@@ -299,18 +287,30 @@ void __stdcall __std_stacktrace_description(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
     const srw_lock_guard lock{srw};
 
+    if (!try_initialize()) {
+        return;
+    }
+
     get_description(_Address, _Str, 0, _Fill);
 }
 
 void __stdcall __std_stacktrace_source_file(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
     const srw_lock_guard lock{srw};
+    
+    if (!try_initialize()) {
+        return;
+    }
 
     source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
 unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept(false) {
     const srw_lock_guard lock{srw};
+
+    if (!try_initialize()) {
+        return;
+    }
 
     return source_line(_Address);
 }
@@ -319,12 +319,20 @@ void __stdcall __std_stacktrace_address_to_string(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
     const srw_lock_guard lock{srw};
 
+    if (!try_initialize()) {
+        return;
+    }
+
     address_to_string(_Address, _Str, 0, _Fill);
 }
 
 void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const size_t _Size, void* const _Str,
     const _Stacktrace_string_fill _Fill) noexcept(false) {
     const srw_lock_guard lock{srw};
+
+    if (!try_initialize()) {
+        return;
+    }
 
     const auto data = reinterpret_cast<const void* const*>(_Addresses);
 
