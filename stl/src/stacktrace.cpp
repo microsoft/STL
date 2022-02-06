@@ -224,6 +224,10 @@ _EXTERN_C
 #endif
     return CaptureStackBackTrace(_FramesToSkip, _FramesToCapture, _BackTrace, _BackTraceHash);
 }
+_END_EXTERN_C
+
+// Below exports are not extern "C" - these functions may throw
+// (They would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
 
 void __stdcall __std_stacktrace_description(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) {
@@ -270,4 +274,3 @@ void __stdcall __std_stacktrace_to_string(
         off = address_to_string(data[i], _Str, off, _Fill);
     }
 }
-_END_EXTERN_C
