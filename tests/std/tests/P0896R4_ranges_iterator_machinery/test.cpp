@@ -2974,6 +2974,15 @@ namespace iter_ops {
             assert(r.t == expected);
         }
 
+        {
+            // Call distance(i, s) with arrays which must be decayed to pointers.
+            // (This behavior was regressed by LWG-3392.)
+            int some_ints[] = {1, 2, 3};
+            assert(distance(some_ints, some_ints + 1) == 1);
+            assert(distance(some_ints + 1, some_ints) == -1);
+            assert(distance(some_ints, some_ints) == 0);
+        }
+
         return true;
     }
     STATIC_ASSERT(test_distance());
