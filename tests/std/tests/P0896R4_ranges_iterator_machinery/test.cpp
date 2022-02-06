@@ -2863,7 +2863,7 @@ namespace iter_ops {
 
     template <class Element>
     struct pointer_sentinel {
-        Element* ptr;
+        Element* ptr = nullptr;
 
         pointer_sentinel() = default;
         constexpr explicit pointer_sentinel(Element* const p) noexcept : ptr{p} {}
