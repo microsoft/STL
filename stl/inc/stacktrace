@@ -30,7 +30,7 @@ using _Stacktrace_string_fill_callback = size_t (*)(char*, size_t, void* _Contex
 using _Stacktrace_string_fill = size_t (*)(size_t, void* _String, void* _Context, _Stacktrace_string_fill_callback);
 
 struct _Stacktrace_string_fill_op {
-    size_t operator()(char* _Data, size_t _Size) noexcept {
+    size_t operator()(char* _Data, size_t _Size) {
         return _Callback(_Data, _Size, _Context);
     }
 
@@ -57,7 +57,7 @@ void __stdcall __std_stacktrace_description(
     const void* _Address, void* _Str, _Stacktrace_string_fill) noexcept(false);
 void __stdcall __std_stacktrace_source_file(
     const void* _Address, void* _Str, _Stacktrace_string_fill) noexcept(false);
-[[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(const void* _Address) 
+[[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(const void* _Address);
 void __stdcall __std_stacktrace_to_string(const void* _Addresses, size_t _Size, void* _Str,
     _Stacktrace_string_fill) noexcept(false);
 // clang-format on
