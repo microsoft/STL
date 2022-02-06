@@ -152,7 +152,6 @@ int main() {
     assert(
         trim_past_plus(three_excluding_top[2].description()) == "P0881R7_stacktrace!three_excluding_top_outermost"sv);
 
-
     try {
         (void) all.at(all.size());
         assert(false); // should have thrown
