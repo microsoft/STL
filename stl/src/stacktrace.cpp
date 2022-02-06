@@ -170,8 +170,6 @@ namespace {
         HRESULT hr           = E_UNEXPECTED;
         ULONG64 displacement = 0;
 
-        ensure_module_symbols_loaded_from_current_dir(address);
-
         for (;;) {
             ULONG new_size = 0;
 
@@ -206,8 +204,6 @@ namespace {
 
     size_t source_file(
         const void* const address, void* const str, size_t off, ULONG* const line, const _Stacktrace_string_fill fill) {
-        ensure_module_symbols_loaded_from_current_dir(address);
-
         // Initially pass the current capacity, will retry with bigger buffer if fails.
         size_t size = fill(0, str, nullptr, nullptr) - off;
         HRESULT hr  = E_UNEXPECTED;
@@ -241,8 +237,6 @@ namespace {
     }
 
     [[nodiscard]] unsigned source_line(const void* const address) {
-        ensure_module_symbols_loaded_from_current_dir(address);
-
         ULONG line = 0;
 
         if (FAILED(debug_symbols->GetLineByOffset(
@@ -290,6 +284,8 @@ void __stdcall __std_stacktrace_description(
     if (!try_initialize()) {
         return;
     }
+    
+    ensure_module_symbols_loaded_from_current_dir(_Address);
 
     get_description(_Address, _Str, 0, _Fill);
 }
@@ -302,6 +298,8 @@ void __stdcall __std_stacktrace_source_file(
         return;
     }
 
+    ensure_module_symbols_loaded_from_current_dir(_Address);
+
     source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
@@ -311,6 +309,8 @@ unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) noex
     if (!try_initialize()) {
         return;
     }
+
+    ensure_module_symbols_loaded_from_current_dir(_Address);
 
     return source_line(_Address);
 }
@@ -322,6 +322,8 @@ void __stdcall __std_stacktrace_address_to_string(
     if (!try_initialize()) {
         return;
     }
+
+    ensure_module_symbols_loaded_from_current_dir(_Address);
 
     address_to_string(_Address, _Str, 0, _Fill);
 }
@@ -345,6 +347,9 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
                 return sz;
             });
         }
+
+        ensure_module_symbols_loaded_from_current_dir(data[i]);
+
         off = address_to_string(data[i], _Str, off, _Fill);
     }
 }
