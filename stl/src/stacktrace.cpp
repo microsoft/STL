@@ -116,7 +116,7 @@ namespace {
     }
 
     void ensure_module_symbols_loaded_from_current_dir(const void* const address) {
-        ULONG index = 0;
+        ULONG index  = 0;
         ULONG64 base = 0;
         if (FAILED(debug_symbols->GetModuleByOffset(reinterpret_cast<uintptr_t>(address), 0, &index, &base))) {
             return;
@@ -136,13 +136,14 @@ namespace {
 
             if (FAILED(debug_symbols3->GetModuleNameStringWide(
                     DEBUG_MODNAME_IMAGE, index, base, nullptr, 0, &wide_name_size))) {
-                return;            
+                return;
             }
 
             auto image_path = std::make_unique<wchar_t[]>(wide_name_size);
-            
+
             if (debug_symbols3->GetModuleNameStringWide(
-                    DEBUG_MODNAME_IMAGE, index, base, image_path.get(), wide_name_size, nullptr) != S_OK) {
+                    DEBUG_MODNAME_IMAGE, index, base, image_path.get(), wide_name_size, nullptr)
+                != S_OK) {
                 return;
             }
 
@@ -158,7 +159,7 @@ namespace {
             }
 
             PathRemoveFileSpecA(image_path.get());
-            
+
             debug_symbols->AppendSymbolPath(image_path.get());
         }
     }
