@@ -118,7 +118,7 @@ namespace {
             size_t new_off = string_fill(
                 fill, off + size, str, [address, off, size, &new_size, &hr, &displacement](char* s, size_t) {
                     hr = debug_symbols->GetNameByOffset(reinterpret_cast<uintptr_t>(address), s + off,
-                        static_cast<ULONG>(size), &new_size, &displacement);
+                        static_cast<ULONG>(size + 1), &new_size, &displacement);
 
                     return (hr == S_OK) ? off + new_size - 1 : off;
                 });
@@ -159,7 +159,7 @@ namespace {
             size_t new_off =
                 string_fill(fill, off + size, str, [address, off, size, line, &new_size, &hr](char* s, size_t) {
                     hr = debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), line, s + off,
-                        static_cast<ULONG>(size), &new_size, nullptr);
+                        static_cast<ULONG>(size + 1), &new_size, nullptr);
 
                     return (hr == S_OK) ? off + new_size - 1 : off;
                 });
@@ -168,7 +168,7 @@ namespace {
                 off = new_off;
                 break;
             } else if (hr == S_FALSE) {
-                size = new_size; // retry with bigger buffer
+                size = new_size - 1; // retry with bigger buffer
             } else {
                 if (line) {
                     *line = 0;
