@@ -7,13 +7,16 @@
 // In particular, basic_string must not be included here.
 
 #include <format>
+#include <memory>
 
 // clang-format off
 #include <initguid.h> // should be before any header that includes <guiddef.h>
 #include <DbgEng.h>
+#include <Shlwapi.h>
 // clang-format on
 
 #pragma comment(lib, "DbgEng.lib")
+#pragma comment(lib, "Shlwapi.lib")
 
 // The below function pointer types be in sync with <stacktrace>
 
@@ -46,12 +49,13 @@ namespace {
         SRWLOCK* const locked;
     };
 
-    IDebugClient* debug_client   = nullptr;
-    IDebugSymbols* debug_symbols = nullptr;
-    IDebugControl* debug_control = nullptr;
-    bool attached                = false;
-    bool initialize_attempted    = false;
-    SRWLOCK srw                  = SRWLOCK_INIT;
+    IDebugClient* debug_client     = nullptr;
+    IDebugSymbols* debug_symbols   = nullptr;
+    IDebugSymbols3* debug_symbols3 = nullptr;
+    IDebugControl* debug_control   = nullptr;
+    bool attached                  = false;
+    bool initialize_attempted      = false;
+    SRWLOCK srw                    = SRWLOCK_INIT;
 
     void uninitialize() {
         srw_lock_guard lock{srw};
@@ -95,6 +99,9 @@ namespace {
                 if (attached) {
                     debug_control->WaitForEvent(0, INFINITE);
                 }
+
+                // If this failes, will use IDebugSymbols
+                debug_symbols->QueryInterface(IID_IDebugSymbols3, reinterpret_cast<void**>(&debug_symbols3));
             }
         }
 
@@ -108,6 +115,54 @@ namespace {
         return debug_symbols != nullptr;
     }
 
+    void ensure_module_symbols_loaded_from_current_dir(const void* const address) {
+        ULONG index = 0;
+        ULONG64 base = 0;
+        if (FAILED(debug_symbols->GetModuleByOffset(reinterpret_cast<uintptr_t>(address), 0, &index, &base))) {
+            return;
+        }
+
+        DEBUG_MODULE_PARAMETERS params;
+        if (FAILED(debug_symbols->GetModuleParameters(1, &base, index, &params))) {
+            return;
+        }
+
+        if (params.SymbolType != DEBUG_SYMTYPE_DEFERRED) {
+            return;
+        }
+
+        if (debug_symbols3) {
+            ULONG wide_name_size = 0;
+
+            if (FAILED(debug_symbols3->GetModuleNameStringWide(
+                    DEBUG_MODNAME_IMAGE, index, base, nullptr, 0, &wide_name_size))) {
+                return;            
+            }
+
+            auto image_path = std::make_unique<wchar_t[]>(wide_name_size);
+            
+            if (debug_symbols3->GetModuleNameStringWide(
+                    DEBUG_MODNAME_IMAGE, index, base, image_path.get(), wide_name_size, nullptr) != S_OK) {
+                return;
+            }
+
+            PathRemoveFileSpecW(image_path.get());
+
+            debug_symbols3->AppendSymbolPathWide(image_path.get());
+        } else {
+            auto image_path = std::make_unique<char[]>(params.ImageNameSize);
+
+            if (FAILED(debug_symbols->GetModuleNames(index, base, image_path.get(), params.ImageNameSize, nullptr,
+                    nullptr, 0, nullptr, nullptr, 0, nullptr))) {
+                return;
+            }
+
+            PathRemoveFileSpecA(image_path.get());
+            
+            debug_symbols->AppendSymbolPath(image_path.get());
+        }
+    }
+
     size_t get_description(const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
         if (!try_initialize()) {
             return 0;
@@ -117,6 +172,8 @@ namespace {
         size_t size          = fill(0, str, nullptr, nullptr) - off;
         HRESULT hr           = E_UNEXPECTED;
         ULONG64 displacement = 0;
+
+        ensure_module_symbols_loaded_from_current_dir(address);
 
         for (;;) {
             ULONG new_size = 0;
@@ -156,6 +213,8 @@ namespace {
             return 0;
         }
 
+        ensure_module_symbols_loaded_from_current_dir(address);
+
         // Initially pass the current capacity, will retry with bigger buffer if fails.
         size_t size = fill(0, str, nullptr, nullptr) - off;
         HRESULT hr  = E_UNEXPECTED;
@@ -192,6 +251,8 @@ namespace {
         if (!try_initialize()) {
             return 0;
         }
+
+        ensure_module_symbols_loaded_from_current_dir(address);
 
         ULONG line = 0;
 
@@ -247,7 +308,7 @@ void __stdcall __std_stacktrace_source_file(
     source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
-unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept {
+unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept(false) {
     const srw_lock_guard lock{srw};
 
     return source_line(_Address);
