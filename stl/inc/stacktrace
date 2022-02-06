@@ -245,7 +245,17 @@ public:
             return _Result;
         }
 
+#ifdef __cpp_lib_concepts
         return _Lhs._Frames <=> _Rhs._Frames;
+#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
+        for (size_t _Ix = 0, _Mx = _Lhs._Frames.size(); _Ix != _Mx; ++_Ix) {
+            if (_Lhs._Frames[_Ix] != _Rhs._Frames[_Ix]) {
+                return _Lhs._Frames[_Ix] <=> _Lhs._Frames[_Ix];
+            }
+        }
+
+        return strong_ordering::equal;
+#endif // ^^^ !__cpp_lib_concepts ^^^
     }
 
     void swap(basic_stacktrace& _Other) noexcept(
