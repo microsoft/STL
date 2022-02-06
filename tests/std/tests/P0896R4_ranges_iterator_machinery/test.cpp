@@ -2869,19 +2869,19 @@ namespace iter_ops {
         constexpr explicit pointer_sentinel(Element* const p) noexcept : ptr{p} {}
 
         template <class T>
-        _NODISCARD constexpr bool operator==(T* that) const noexcept {
+        [[nodiscard]] constexpr bool operator==(T* that) const noexcept {
             static_assert(std::same_as<T, Element>);
             return ptr == that;
         }
 
         template <class T>
-        _NODISCARD_FRIEND constexpr std::ptrdiff_t operator-(T* x, const pointer_sentinel& y) noexcept {
+        [[nodiscard]] friend constexpr std::ptrdiff_t operator-(T* x, const pointer_sentinel& y) noexcept {
             static_assert(std::same_as<T, Element>);
             return x - y.ptr;
         }
 
         template <class T>
-        _NODISCARD_FRIEND constexpr std::ptrdiff_t operator-(const pointer_sentinel& y, T* x) noexcept {
+        [[nodiscard]] friend constexpr std::ptrdiff_t operator-(const pointer_sentinel& y, T* x) noexcept {
             static_assert(std::same_as<T, Element>);
             return y.ptr - x;
         }
