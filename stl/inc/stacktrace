@@ -342,4 +342,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #endif // ^^^ _HAS_CXX23 ^^^
 
 #endif // _STL_COMPILER_PREPROCESSOR
-#endif // _STACK_
+#endif // _STACKSTRACE_
