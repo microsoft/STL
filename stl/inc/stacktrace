@@ -29,19 +29,24 @@ using _Stacktrace_string_fill_callback = size_t (*)(char*, size_t, void* _Contex
 
 using _Stacktrace_string_fill = size_t (*)(size_t, void* _String, void* _Context, _Stacktrace_string_fill_callback);
 
-struct _Stacktrace_string_fill_op {
-    size_t operator()(char* _Data, size_t _Size) {
-        return _Callback(_Data, _Size, _Context);
-    }
-
-    _Stacktrace_string_fill_callback _Callback;
-    void* _Context;
-};
-
 inline size_t _Stacktrace_string_fill_impl(
     const size_t _Size, void* const _String, void* const _Context, const _Stacktrace_string_fill_callback _Callback) {
-    static_cast<_STD string*>(_String)->resize_and_overwrite(_Size, _Stacktrace_string_fill_op{_Callback, _Context});
-    return static_cast<_STD string*>(_String)->size();
+    if (_Callback) {
+        struct _Stacktrace_string_fill_op {
+            size_t operator()(char* _Data, size_t _Size) {
+                return _Callback(_Data, _Size, _Context);
+            }
+
+            _Stacktrace_string_fill_callback _Callback;
+            void* _Context;
+        };
+
+        static_cast<_STD string*>(_String)->resize_and_overwrite(
+            _Size, _Stacktrace_string_fill_op{_Callback, _Context});
+        return static_cast<_STD string*>(_String)->size();
+    } else {
+        return static_cast<_STD string*>(_String)->capacity();
+    }
 }
 
 _EXTERN_C

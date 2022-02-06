@@ -108,7 +108,8 @@ namespace {
             return 0;
         }
 
-        size_t size          = 20; // a guess, will retry with greater if wrong
+        // Initially pass the current capacity, will retry with bigger buffer if fails.
+        size_t size          = fill(0, str, nullptr, nullptr) - off;
         HRESULT hr           = E_UNEXPECTED;
         ULONG64 displacement = 0;
 
@@ -127,7 +128,7 @@ namespace {
                 off = new_off;
                 break;
             } else if (hr == S_FALSE) {
-                size = new_size; // retry with bigger buffer
+                size = new_size - 1; // retry with bigger buffer
             } else {
                 return off;
             }
@@ -150,8 +151,9 @@ namespace {
             return 0;
         }
 
+        // Initially pass the current capacity, will retry with bigger buffer if fails.
+        size_t size = fill(0, str, nullptr, nullptr) - off;
         HRESULT hr  = E_UNEXPECTED;
-        size_t size = 20; // a guess, will retry with greater if wrong
 
         for (;;) {
             ULONG new_size = 0;
