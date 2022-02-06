@@ -290,7 +290,7 @@ using stacktrace = basic_stacktrace<allocator<stacktrace_entry>>;
 
 template <class _Al>
 void swap(basic_stacktrace<_Al>& _Ax, basic_stacktrace<_Al>& _Bx) noexcept(noexcept(_Ax.swap(_Bx))) {
-    return _Ax.swap(_Bx);
+    _Ax.swap(_Bx);
 }
 
 [[nodiscard]] inline string to_string(const stacktrace_entry& _Fx) {
