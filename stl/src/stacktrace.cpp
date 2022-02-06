@@ -307,7 +307,7 @@ unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) noex
     const srw_lock_guard lock{srw};
 
     if (!try_initialize()) {
-        return;
+        return 0;
     }
 
     ensure_module_symbols_loaded_from_current_dir(_Address);
