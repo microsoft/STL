@@ -211,8 +211,7 @@ int main() {
 #else // ^^^ HAS_NAMES ^^^ / vvv !HAS_NAMES vvv
     assert(trim_past_plus(three_excluding_top[0].description()) == "P0881R7_stacktrace"sv);
     assert(trim_past_plus(three_excluding_top[1].description()) == "P0881R7_stacktrace"sv);
-    assert(
-        trim_past_plus(three_excluding_top[2].description()) == "P0881R7_stacktrace"sv);
+    assert(trim_past_plus(three_excluding_top[2].description()) == "P0881R7_stacktrace"sv);
 #endif // ^^^ !HAS_NAMES ^^^
 
     try {
