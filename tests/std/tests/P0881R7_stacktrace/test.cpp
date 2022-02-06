@@ -166,18 +166,18 @@ int main() {
     assert(all > all_but_top);
     assert(three_excluding_top < all_but_top);
 
-    assert((all <=> all_copy) == std::strong_ordering::equal);
-    assert((all <=> all_but_top) == std::strong_ordering::greater);
-    assert((three_excluding_top <=> all_but_top) == std::strong_ordering::less);
+    assert((all <=> all_copy) == strong_ordering::equal);
+    assert((all <=> all_but_top) == strong_ordering::greater);
+    assert((three_excluding_top <=> all_but_top) == strong_ordering::less);
 
-    assert(std::hash<stacktrace>{}(all) == std::hash<stacktrace>{}(all_copy));
-    assert(std::hash<stacktrace_entry>{}(all[0]) == std::hash<stacktrace_entry>{}(all_copy[0]));
+    assert(hash<stacktrace>{}(all) == hash<stacktrace>{}(all_copy));
+    assert(hash<stacktrace_entry>{}(all[0]) == hash<stacktrace_entry>{}(all_copy[0]));
 
     assert(!all.empty());
-    assert(std::distance(all.begin(), all.end()) == static_cast<ptrdiff_t>(all.size()));
-    assert(std::distance(all.rbegin(), all.rend()) == static_cast<ptrdiff_t>(all.size()));
-    assert(std::distance(all.cbegin(), all.cend()) == static_cast<ptrdiff_t>(all.size()));
-    assert(std::distance(all.crbegin(), all.crend()) == static_cast<ptrdiff_t>(all.size()));
+    assert(distance(all.begin(), all.end()) == static_cast<ptrdiff_t>(all.size()));
+    assert(distance(all.rbegin(), all.rend()) == static_cast<ptrdiff_t>(all.size()));
+    assert(distance(all.cbegin(), all.cend()) == static_cast<ptrdiff_t>(all.size()));
+    assert(distance(all.crbegin(), all.crend()) == static_cast<ptrdiff_t>(all.size()));
 
     stacktrace empty_trace;
     assert(empty_trace.size() == 0);
