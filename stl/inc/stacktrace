@@ -69,6 +69,8 @@ void __stdcall __std_stacktrace_source_file(
 
 void __stdcall __std_stacktrace_to_string(const void* _Addresses, size_t _Size, void* _Str,
     _Stacktrace_string_fill) noexcept(false);
+
+[[nodiscard]] void* __stdcall __std_stacktrace_get_debug_interface() noexcept;
 // clang-format on
 _END_EXTERN_C
 

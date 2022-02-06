@@ -340,4 +340,14 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
         off = address_to_string(data[i], _Str, off, _Fill);
     }
 }
+
+[[nodiscard]] void* __stdcall __std_stacktrace_get_debug_interface() noexcept {
+    const srw_lock_guard lock{srw};
+
+    if (!try_initialize()) {
+        return nullptr;
+    }
+
+    return debug_symbols;
+}
 _END_EXTERN_C
