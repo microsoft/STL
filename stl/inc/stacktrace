@@ -133,25 +133,29 @@ public:
     using size_type              = size_t;
     using allocator_type         = _Al;
 
-    [[nodiscard]] static basic_stacktrace current(const allocator_type& _Alloc = allocator_type()) noexcept {
+    // __declspec(noinline) to make the same behavior for debug and release.
+    // We force the current function to be always noinline and add its frame to skipped.
+
+    [[nodiscard]] __declspec(noinline) static basic_stacktrace
+        current(const allocator_type& _Alloc = allocator_type()) noexcept {
         basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Alloc);
-        _Result._Frames.resize(__std_stacktrace_capture(0, static_cast<unsigned long>(_Max_frames),
+        _Result._Frames.resize(__std_stacktrace_capture(1, static_cast<unsigned long>(_Max_frames),
             reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
         return _Result;
     }
 
-    [[nodiscard]] static basic_stacktrace current(
-        size_type _Skip, const allocator_type& _Alloc = allocator_type()) noexcept {
+    [[nodiscard]] __declspec(noinline) static basic_stacktrace
+        current(size_type _Skip, const allocator_type& _Alloc = allocator_type()) noexcept {
         basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Alloc);
-        _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip),
+        _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
             static_cast<unsigned long>(_Max_frames), reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
         return _Result;
     }
 
-    [[nodiscard]] static basic_stacktrace current(
-        size_type _Skip, size_type _Max_depth, const allocator_type& _Alloc = allocator_type()) noexcept {
+    [[nodiscard]] __declspec(noinline) static basic_stacktrace
+        current(size_type _Skip, size_type _Max_depth, const allocator_type& _Alloc = allocator_type()) noexcept {
         basic_stacktrace _Result(_Internal_t{}, _Max_depth, _Alloc);
-        _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip),
+        _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
             static_cast<unsigned long>(_Max_depth), reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
         return _Result;
     }
