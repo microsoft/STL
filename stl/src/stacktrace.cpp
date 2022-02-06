@@ -218,46 +218,44 @@ namespace {
 
 _EXTERN_C
 [[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(unsigned long _FramesToSkip,
-    const unsigned long _FramesToCapture, void** const _BackTrace, unsigned long* const _BackTraceHash) {
+    const unsigned long _FramesToCapture, void** const _BackTrace, unsigned long* const _BackTraceHash) noexcept {
 #ifdef _DEBUG
     _FramesToSkip += 1; // compensate absense of tail call optimization here
 #endif
     return CaptureStackBackTrace(_FramesToSkip, _FramesToCapture, _BackTrace, _BackTraceHash);
 }
-_END_EXTERN_C
 
-// Below exports are not extern "C" - these functions may throw
-// (They would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
+// Some of these exports may throw (They would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
 
 void __stdcall __std_stacktrace_description(
-    const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) {
+    const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
     const srw_lock_guard lock{srw};
 
     get_description(_Address, _Str, 0, _Fill);
 }
 
 void __stdcall __std_stacktrace_source_file(
-    const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) {
+    const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
     const srw_lock_guard lock{srw};
 
     source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
-unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) {
+unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept {
     const srw_lock_guard lock{srw};
 
     return source_line(_Address);
 }
 
 void __stdcall __std_stacktrace_address_to_string(
-    const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) {
+    const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
     const srw_lock_guard lock{srw};
 
     address_to_string(_Address, _Str, 0, _Fill);
 }
 
-void __stdcall __std_stacktrace_to_string(
-    const void* const _Addresses, const size_t _Size, void* const _Str, const _Stacktrace_string_fill _Fill) {
+void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const size_t _Size, void* const _Str,
+    const _Stacktrace_string_fill _Fill) noexcept(false) {
     const srw_lock_guard lock{srw};
 
     const auto data = reinterpret_cast<const void* const*>(_Addresses);
@@ -274,3 +272,4 @@ void __stdcall __std_stacktrace_to_string(
         off = address_to_string(data[i], _Str, off, _Fill);
     }
 }
+_END_EXTERN_C
