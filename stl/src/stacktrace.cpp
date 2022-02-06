@@ -53,6 +53,34 @@ namespace {
     bool initialize_attempted    = false;
     SRWLOCK srw                  = SRWLOCK_INIT;
 
+    void uninitialize() {
+        srw_lock_guard lock{srw};
+
+        // "Phoenix singleton" - destroy and set to null, so that can initialize later again
+
+        if (debug_client != nullptr) {
+            if (attached) {
+                debug_client->DetachProcesses();
+                attached = false;
+            }
+
+            debug_client->Release();
+            debug_client = nullptr;
+        }
+
+        if (debug_control != nullptr) {
+            debug_control->Release();
+            debug_control = nullptr;
+        }
+
+        if (debug_symbols != nullptr) {
+            debug_symbols->Release();
+            debug_symbols = nullptr;
+        }
+
+        initialize_attempted = false;
+    }
+
     bool try_initialize() {
         if (!initialize_attempted) {
             // Deliberately not calling CoInitialize[Ex]
@@ -70,33 +98,10 @@ namespace {
             }
         }
 
-        atexit([] {
-            srw_lock_guard lock{srw};
-
-            // "Phoenix singleton" - destroy and set to null, so that can initialize later again
-
-            if (debug_client != nullptr) {
-                if (attached) {
-                    debug_client->DetachProcesses();
-                    attached = false;
-                }
-
-                debug_client->Release();
-                debug_client = nullptr;
-            }
-
-            if (debug_control != nullptr) {
-                debug_control->Release();
-                debug_control = nullptr;
-            }
-
-            if (debug_symbols != nullptr) {
-                debug_symbols->Release();
-                debug_symbols = nullptr;
-            }
-
-            initialize_attempted = false;
-        });
+        if (atexit(uninitialize) != 0) {
+            uninitialize();
+            return false;
+        }
 
         initialize_attempted = true;
 
@@ -214,7 +219,6 @@ namespace {
 
         return get_description(address, str, off, fill);
     }
-
 
 } // namespace
 
