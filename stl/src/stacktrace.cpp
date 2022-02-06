@@ -284,7 +284,7 @@ void __stdcall __std_stacktrace_description(
     if (!try_initialize()) {
         return;
     }
-    
+
     ensure_module_symbols_loaded_from_current_dir(_Address);
 
     get_description(_Address, _Str, 0, _Fill);
@@ -293,7 +293,7 @@ void __stdcall __std_stacktrace_description(
 void __stdcall __std_stacktrace_source_file(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
     const srw_lock_guard lock{srw};
-    
+
     if (!try_initialize()) {
         return;
     }
