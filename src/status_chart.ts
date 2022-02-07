@@ -397,6 +397,20 @@ const merge_options = {
     },
 };
 
+function getElementByIdAs<Type extends HTMLElement>(id: string, type: new () => Type) {
+    const element = document.getElementById(id);
+
+    if (element === null) {
+        throw new Error(`document.getElementById('${id}') returned null.`);
+    }
+
+    if (element instanceof type) {
+        return element as Type;
+    }
+
+    throw new Error(`document.getElementById('${id}') returned an unexpected type.`);
+}
+
 window.onload = function () {
     const status_chart = new Chart('statusChart', {
         type: 'line',
@@ -426,8 +440,8 @@ window.onload = function () {
         chart.update();
     }
 
-    const moreHistoryButton = document.getElementById('moreHistory') as HTMLButtonElement;
-    const lessHistoryButton = document.getElementById('lessHistory') as HTMLButtonElement;
+    const moreHistoryButton = getElementByIdAs('moreHistory', HTMLButtonElement);
+    const lessHistoryButton = getElementByIdAs('lessHistory', HTMLButtonElement);
 
     function update_all_timeframes() {
         moreHistoryButton.disabled = timeframe_idx === 0;
@@ -470,13 +484,13 @@ window.onload = function () {
         'merged',
     ]) {
         const value = daily_table[daily_table.length - 1][field] ?? 0;
-        const span = document.getElementById(`currentValue-${field}`) as HTMLSpanElement;
+        const span = getElementByIdAs(`currentValue-${field}`, HTMLSpanElement);
         span.textContent = value.toString();
     }
 
     for (const field of ['vso', 'libcxx']) {
         const value = weekly_table[weekly_table.length - 1][field];
-        const span = document.getElementById(`currentValue-${field}`) as HTMLSpanElement;
+        const span = getElementByIdAs(`currentValue-${field}`, HTMLSpanElement);
         span.textContent = value.toString();
     }
 };
