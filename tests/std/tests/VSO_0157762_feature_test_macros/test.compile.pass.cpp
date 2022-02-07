@@ -1735,20 +1735,6 @@ STATIC_ASSERT(__cpp_lib_to_chars == 201611L);
 #endif
 
 #if _HAS_CXX23
-#ifndef __cpp_lib_unreachable
-#error __cpp_lib_unreachable is not defined
-#elif __cpp_lib_unreachable != 202202L
-#error __cpp_lib_unreachable is not 202202L
-#else
-STATIC_ASSERT(__cpp_lib_unreachable == 202202L);
-#endif
-#else
-#ifdef __cpp_lib_unreachable
-#error __cpp_lib_unreachable is defined
-#endif
-#endif
-
-#if _HAS_CXX23
 #ifndef __cpp_lib_to_underlying
 #error __cpp_lib_to_underlying is not defined
 #elif __cpp_lib_to_underlying != 202102L
@@ -1830,6 +1816,20 @@ STATIC_ASSERT(__cpp_lib_uncaught_exceptions == 201411L);
 #error __cpp_lib_unordered_map_try_emplace is not 201411L
 #else
 STATIC_ASSERT(__cpp_lib_unordered_map_try_emplace == 201411L);
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_unreachable
+#error __cpp_lib_unreachable is not defined
+#elif __cpp_lib_unreachable != 202202L
+#error __cpp_lib_unreachable is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_unreachable == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_unreachable
+#error __cpp_lib_unreachable is defined
+#endif
 #endif
 
 #if _HAS_CXX20
