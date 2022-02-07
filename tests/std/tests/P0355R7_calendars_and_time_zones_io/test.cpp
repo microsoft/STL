@@ -878,6 +878,24 @@ void parse_other_week_date() {
     assert(ymd == 2022y / January / 1d);
 }
 
+void parse_incomplete() {
+    // Parsing should fail if the input is insufficient to supply all fields of the format string, even if the input is
+    // sufficient to supply all fields of the parsable.
+    // Check both explicit and shorthand format strings, since the code path is different.
+    year_month ym;
+    fail_parse("2021-01", "%Y-%m-%d", ym);
+    fail_parse("2022-02", "%F", ym);
+
+    seconds time;
+    fail_parse("01:59", "%H:%M:%S", time);
+    fail_parse("03:23", "%T", time);
+    fail_parse("04", "%R", time);
+
+    // However, it is OK to omit seconds from the format when parsing a duration to seconds precision.
+    test_parse("05:24", "%H:%M", time);
+    test_parse("06:25", "%R", time);
+}
+
 void parse_whitespace() {
     seconds time;
     fail_parse("ab", "a%nb", time);
@@ -1213,6 +1231,7 @@ void test_parse() {
     parse_calendar_types_basic();
     parse_iso_week_date();
     parse_other_week_date();
+    parse_incomplete();
     parse_whitespace();
     parse_timepoints();
     test_io_manipulator<char, const char*>();
