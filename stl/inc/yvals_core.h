@@ -283,7 +283,7 @@
 // P0288R9 move_only_function
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0448R4 <spanstream>
-// P0627R6 unreachable()
+// P0627R6 Function To Mark Unreachable Code
 // P0798R8 Monadic Operations For optional
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum

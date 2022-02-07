@@ -23,8 +23,7 @@ constexpr bool test() {
     return true;
 }
 
-static_assert(test());
-
 int main() {
     test();
+    static_assert(test());
 }
