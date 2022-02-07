@@ -1295,9 +1295,9 @@
 #define __cpp_lib_endian                  201907L
 #define __cpp_lib_erase_if                202002L
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
+#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_format 202110L
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1325,9 +1325,9 @@
 #define __cpp_lib_math_constants          201907L
 #define __cpp_lib_polymorphic_allocator   201902L
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395 and GH-1814
+#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_ranges 202110L
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+#endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
@@ -1502,6 +1502,12 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #else // ^^^ clang ^^^ / vvv other vvv
 #define _STL_UNREACHABLE __assume(false)
 #endif // __clang__
+
+#ifdef _ENABLE_STL_INTERNAL_CHECK
+#define _STL_INTERNAL_STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+#else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
+#define _STL_INTERNAL_STATIC_ASSERT(...)
+#endif // _ENABLE_STL_INTERNAL_CHECK
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
