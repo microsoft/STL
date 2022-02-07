@@ -1253,6 +1253,10 @@
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
+#ifdef __cpp_impl_coroutine
+#define __cpp_lib_coroutine 201902L
+#endif // __cpp_impl_coroutine
+
 #if _HAS_CXX20
 #define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
@@ -1349,46 +1353,6 @@
 #define __cpp_lib_unwrap_ref    201811L
 #endif // _HAS_CXX20
 
-#ifndef _M_CEE
-#if _HAS_CXX20
-#define __cpp_lib_execution 201902L // P1001R2 execution::unseq
-#elif _HAS_CXX17
-#define __cpp_lib_execution 201603L // P0024R2 Parallel Algorithms
-#endif // language mode
-#endif // _M_CEE
-
-#if _HAS_CXX20
-#define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
-#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
-#define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
-#endif // _HAS_CXX17
-
-#if _HAS_CXX20
-#define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
-#define __cpp_lib_variant  202106L // P2231R1 Completing constexpr In optional And variant
-#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
-#define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
-#define __cpp_lib_variant  202102L // P2162R2 Inheriting From variant
-#endif // _HAS_CXX17
-
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
-#elif _HAS_CXX17
-#define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
-#else // _HAS_CXX17
-#define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
-#endif // _HAS_CXX17
-
-#if _HAS_CXX20
-#define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
-#else // _HAS_CXX20
-#define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
-#endif // _HAS_CXX20
-
-#if defined(__cpp_impl_coroutine) || defined(_DOWNLEVEL_COROUTINES_SUPPORTED) // TRANSITION, Clang coroutine support
-#define __cpp_lib_coroutine 201902L
-#endif // __cpp_impl_coroutine
-
 // C++23
 #if _HAS_CXX23
 #define __cpp_lib_adaptor_iterator_pair_constructor 202106L
@@ -1419,6 +1383,47 @@
 #define __cpp_lib_string_resize_and_overwrite 202110L
 #define __cpp_lib_to_underlying               202102L
 #endif // _HAS_CXX23
+
+// macros with language mode sensitivity
+#if _HAS_CXX20
+#define __cpp_lib_array_constexpr 201811L // P1032R1 Miscellaneous constexpr
+#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
+#elif _HAS_CXX17
+#define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
+#else // _HAS_CXX17
+#define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
+#endif // _HAS_CXX17
+
+#ifndef _M_CEE
+#if _HAS_CXX20
+#define __cpp_lib_execution 201902L // P1001R2 execution::unseq
+#elif _HAS_CXX17
+#define __cpp_lib_execution 201603L // P0024R2 Parallel Algorithms
+#endif // language mode
+#endif // _M_CEE
+
+#if _HAS_CXX20
+#define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
+#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
+#endif // _HAS_CXX17
+
+#if _HAS_CXX20
+#define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
+#else // _HAS_CXX20
+#define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
+#endif // _HAS_CXX20
+
+#if _HAS_CXX20
+#define __cpp_lib_variant 202106L // P2231R1 Completing constexpr In optional And variant
+#elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
+#define __cpp_lib_variant 202102L // P2162R2 Inheriting From variant
+#endif // _HAS_CXX17
 
 #define __cpp_lib_experimental_erase_if   201411L
 #define __cpp_lib_experimental_filesystem 201406L
