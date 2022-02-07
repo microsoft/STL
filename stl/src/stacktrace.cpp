@@ -112,7 +112,7 @@ namespace {
                                               0x100   /* SYMOPT_FAIL_CRITICAL_ERRORS */ |
                                               0x10000 /* SYMOPT_AUTO_PUBLICS */ |
                                               0x80000 /* SYMOPT_NO_PROMPTS */;
-                
+
                 constexpr ULONG remove_options = 0x8     /* SYMOPT_NO_CPP */ |
                                                  0x40    /* SYMOPT_LOAD_ANYTHING */ |
                                                  0x100   /* SYMOPT_NO_UNQUALIFIED_LOADS */ |
