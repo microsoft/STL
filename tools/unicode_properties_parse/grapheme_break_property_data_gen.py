@@ -74,6 +74,16 @@ def generate_cpp_data(prop_name: str, ranges: list[PropertyRange]) -> str:
                  props_and_size=",".join(["0x" + format(x, 'x') for x in table.props_and_range])))
     return result.getvalue()
 
+
+"""
+Generate unicode data for inclusion into <format> from
+GraphemeBreakProperty.txt and emoji-data.txt.
+
+GraphemeBreakProperty.txt can be found at https://www.unicode.org/Public/13.0.0/ucd/auxiliary/GraphemeBreakProperty.txt.
+emoji-data.txt can be found at https://www.unicode.org/Public/13.0.0/ucd/emoji/emoji-data.txt
+
+Both files are expected to be in the same directory as this script.
+"""
 if __name__ == "__main__":
     gbp_data_path = Path(__file__).absolute(
     ).with_name("GraphemeBreakProperty.txt")

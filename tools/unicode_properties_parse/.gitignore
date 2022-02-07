@@ -1,0 +1,6 @@
+# we don't ship the unicode data source files
+# they can be downloaded from unicode.org
+# see documentation in each script for more info
+emoji-data.txt
+GraphemeBreakProperty.txt
+GraphemeBreakTest.txt

@@ -84,6 +84,12 @@ def lineToCppDataLineUtf8(line: BreakTestItem) -> str:
         ["static_cast<char>(0x" + format(x, 'x') + ")" for x in utf8_rep]
     ), ','.join([str(x) for x in line.breaks]))
 
+
+"""
+Generate test data from "GraphemeBreakText.txt"
+This file can be downloaded from: https://www.unicode.org/Public/13.0.0/ucd/auxiliary/GraphemeBreakTest.txt.
+This script looks for GraphemeBreakTest.txt in same directory as this script
+"""
 if __name__ == "__main__":
     test_data_path = Path(__file__)
     test_data_path = test_data_path.absolute()
