@@ -102,6 +102,29 @@ namespace {
 
                 // If this failes, will use IDebugSymbols
                 debug_symbols->QueryInterface(IID_IDebugSymbols3, reinterpret_cast<void**>(&debug_symbols3));
+
+                // clang-format off
+                constexpr ULONG add_options = 0x1     /* SYMOPT_CASE_INSENSITIVE */ |
+                                              0x2     /* SYMOPT_UNDNAME */ |
+                                              0x4     /* SYMOPT_DEFERRED_LOADS */ |
+                                              0x10    /* SYMOPT_LOAD_LINES */ |
+                                              0x20    /* SYMOPT_OMAP_FIND_NEAREST */ |
+                                              0x100   /* SYMOPT_FAIL_CRITICAL_ERRORS */ |
+                                              0x10000 /* SYMOPT_AUTO_PUBLICS */ |
+                                              0x80000 /* SYMOPT_NO_PROMPTS */;
+                
+                constexpr ULONG remove_options = 0x8     /* SYMOPT_NO_CPP */ |
+                                                 0x40    /* SYMOPT_LOAD_ANYTHING */ |
+                                                 0x100   /* SYMOPT_NO_UNQUALIFIED_LOADS */ |
+                                                 0x400   /* SYMOPT_EXACT_SYMBOLS */ |
+                                                 0x1000  /* SYMOPT_IGNORE_NT_SYMPATH */ |
+                                                 0x4000  /* SYMOPT_PUBLICS_ONLY */ |
+                                                 0x8000  /* SYMOPT_NO_PUBLICS */ |
+                                                 0x20000 /* SYMOPT_NO_IMAGE_SEARCH */;
+                // clang-format on
+
+                debug_symbols->AddSymbolOptions(add_options);
+                debug_symbols->RemoveSymbolOptions(remove_options);
             }
         }
 
@@ -115,7 +138,14 @@ namespace {
         return debug_symbols != nullptr;
     }
 
-    void ensure_module_symbols_loaded_from_current_dir(const void* const address) {
+    // Temporarily alters symbol search path to search next to the current module
+    void module_symbols_load_from_module_dir(const void* const address) {
+        struct free_deleter {
+            void operator()(void* p) {
+                free(p);
+            }
+        };
+
         ULONG index  = 0;
         ULONG64 base = 0;
         if (FAILED(debug_symbols->GetModuleByOffset(reinterpret_cast<uintptr_t>(address), 0, &index, &base))) {
@@ -139,19 +169,29 @@ namespace {
                 return;
             }
 
-            auto image_path = std::make_unique<wchar_t[]>(wide_name_size);
+            std::unique_ptr<wchar_t[], free_deleter> image_path_wide(
+                static_cast<wchar_t*>(malloc(wide_name_size * sizeof(wchar_t))));
+
+            if (!image_path_wide) {
+                return;
+            }
 
             if (debug_symbols3->GetModuleNameStringWide(
-                    DEBUG_MODNAME_IMAGE, index, base, image_path.get(), wide_name_size, nullptr)
+                    DEBUG_MODNAME_IMAGE, index, base, image_path_wide.get(), wide_name_size, nullptr)
                 != S_OK) {
                 return;
             }
 
-            PathRemoveFileSpecW(image_path.get());
+            PathRemoveFileSpecW(image_path_wide.get());
 
-            debug_symbols3->AppendSymbolPathWide(image_path.get());
+            debug_symbols3->AppendSymbolPathWide(image_path_wide.get());
         } else {
-            auto image_path = std::make_unique<char[]>(params.ImageNameSize);
+            std::unique_ptr<char[], free_deleter> image_path(
+                static_cast<char*>(malloc(params.ImageNameSize * sizeof(char))));
+
+            if (!image_path) {
+                return;
+            }
 
             if (FAILED(debug_symbols->GetModuleNames(index, base, image_path.get(), params.ImageNameSize, nullptr,
                     nullptr, 0, nullptr, nullptr, 0, nullptr))) {
@@ -285,7 +325,7 @@ void __stdcall __std_stacktrace_description(
         return;
     }
 
-    ensure_module_symbols_loaded_from_current_dir(_Address);
+    module_symbols_load_from_module_dir(_Address);
 
     get_description(_Address, _Str, 0, _Fill);
 }
@@ -298,19 +338,19 @@ void __stdcall __std_stacktrace_source_file(
         return;
     }
 
-    ensure_module_symbols_loaded_from_current_dir(_Address);
+    module_symbols_load_from_module_dir(_Address);
 
     source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
-unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept(false) {
+unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept {
     const srw_lock_guard lock{srw};
 
     if (!try_initialize()) {
         return 0;
     }
 
-    ensure_module_symbols_loaded_from_current_dir(_Address);
+    module_symbols_load_from_module_dir(_Address);
 
     return source_line(_Address);
 }
@@ -323,7 +363,7 @@ void __stdcall __std_stacktrace_address_to_string(
         return;
     }
 
-    ensure_module_symbols_loaded_from_current_dir(_Address);
+    module_symbols_load_from_module_dir(_Address);
 
     address_to_string(_Address, _Str, 0, _Fill);
 }
@@ -348,7 +388,7 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
             });
         }
 
-        ensure_module_symbols_loaded_from_current_dir(data[i]);
+        module_symbols_load_from_module_dir(data[i]);
 
         off = address_to_string(data[i], _Str, off, _Fill);
     }

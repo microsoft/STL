@@ -65,7 +65,7 @@ void __stdcall __std_stacktrace_description(
 void __stdcall __std_stacktrace_source_file(
     const void* _Address, void* _Str, _Stacktrace_string_fill) noexcept(false);
 
-[[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(const void* _Address) noexcept(false);
+[[nodiscard]] unsigned __stdcall __std_stacktrace_source_line(const void* _Address) noexcept;
 
 void __stdcall __std_stacktrace_to_string(const void* _Addresses, size_t _Size, void* _Str,
     _Stacktrace_string_fill) noexcept(false);
