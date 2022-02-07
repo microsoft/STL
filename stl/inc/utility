@@ -750,6 +750,10 @@ template <class _Ty>
 _NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
     return static_cast<underlying_type_t<_Ty>>(_Value);
 }
+
+__declspec(noreturn) void unreachable() {
+    __assume(false);
+}
 #endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE
