@@ -752,7 +752,11 @@ _NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
 }
 
 [[noreturn]] inline void unreachable() noexcept /* strengthened */ {
+#ifdef __clang__
+    __builtin_unreachable();
+#else // ^^^ __clang__ ^^^ // vvv not __clang__ vvv
     __assume(false);
+#endif // ^^^ not __clang__ ^^^
 }
 #endif // _HAS_CXX23
 
