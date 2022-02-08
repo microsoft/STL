@@ -224,7 +224,6 @@
 // P1456R1 Move-Only Views
 // P1474R1 Helpful Pointers For contiguous_iterator
 // P1522R1 Iterator Difference Type And Integer Overflow
-//     (technically conforming, but it would be nice to implement a 65-bit integer-like type)
 // P1523R1 Views And Size Types
 // P1612R1 Relocating endian To <bit>
 // P1614R2 Adding Spaceship <=> To The Library
@@ -266,6 +265,7 @@
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P2372R3 Fixing Locale Handling In chrono Formatters
+// P2393R1 Cleaning Up Integer-Class Types
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2432R1 Fix istream_view
