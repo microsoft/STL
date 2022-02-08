@@ -3172,6 +3172,8 @@ public:
         return *this;
     }
 
+    // The Standard depicts these constructors that accept pointer as taking type_identity_t<pointer> to inhibit CTAD.
+    // Since pointer is an opaque type alias in our implementation, it inhibits CTAD without extra decoration.
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
     explicit unique_ptr(pointer _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
 
