@@ -40,8 +40,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_format
-#pragma message("The contents of <format> are available only in c++latest mode;")
-#pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
+#pragma message("The contents of <format> are available only with C++20 or later.")
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
 #include <algorithm>

@@ -10,6 +10,8 @@
 
 using namespace std;
 
+static_assert(ranges::_Advanceable<long long>);
+
 template <class W, class B>
 concept CanViewIota = requires(W w, B b) {
     views::iota(w, b);
@@ -49,8 +51,10 @@ constexpr void test_integral() {
 
         if constexpr (sizeof(T) < sizeof(int)) {
             static_assert(same_as<ranges::range_difference_t<R>, int>);
-        } else {
+        } else if constexpr (sizeof(T) < sizeof(long long)) {
             static_assert(same_as<ranges::range_difference_t<R>, long long>);
+        } else {
+            static_assert(same_as<ranges::range_difference_t<R>, std::_Signed128>);
         }
 
         // iota_view is always a simple-view, i.e., const and non-const are always valid ranges with the same iterators:
@@ -73,7 +77,9 @@ constexpr void test_integral() {
 
         using I = ranges::iterator_t<R>;
         static_assert(same_as<typename I::iterator_concept, random_access_iterator_tag>);
-        static_assert(same_as<typename iterator_traits<I>::iterator_category, input_iterator_tag>);
+        if constexpr (integral<iter_difference_t<I>>) {
+            static_assert(same_as<typename iterator_traits<I>::iterator_category, input_iterator_tag>);
+        }
 
         assert(I{} == I{T{0}});
         static_assert(is_nothrow_default_constructible_v<I>);
@@ -211,8 +217,10 @@ constexpr void test_integral() {
 
         if constexpr (sizeof(T) < sizeof(int)) {
             static_assert(same_as<ranges::range_difference_t<R>, int>);
-        } else {
+        } else if constexpr (sizeof(T) < sizeof(long long)) {
             static_assert(same_as<ranges::range_difference_t<R>, long long>);
+        } else {
+            static_assert(same_as<ranges::range_difference_t<R>, std::_Signed128>);
         }
 
         {
