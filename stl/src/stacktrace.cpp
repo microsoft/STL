@@ -380,13 +380,18 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
 
     size_t off = 0;
 
-    for (std::size_t i = 0; i != _Size; ++i) {
+    for (size_t i = 0; i != _Size; ++i) {
         if (off != 0) {
             off = string_fill(_Fill, off + 1, _Str, [](char* s, size_t sz) {
                 s[sz - 1] = '\n';
                 return sz;
             });
         }
+
+        constexpr size_t max_entry_num = std::size("65536> ") - 1; // maximum possible line number
+
+        off = string_fill(_Fill, off + max_entry_num, _Str,
+            [off, i](char* s, size_t) { return std::format_to_n(s + off, max_entry_num, "{}> ", i + 1).out - s; });
 
         module_symbols_load_from_module_dir(data[i]);
 
