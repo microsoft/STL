@@ -391,7 +391,7 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
         constexpr size_t max_entry_num = std::size("65536> ") - 1; // maximum possible line number
 
         off = string_fill(_Fill, off + max_entry_num, _Str,
-            [off, i](char* s, size_t) { return std::format_to_n(s + off, max_entry_num, "{}> ", i + 1).out - s; });
+            [off, i](char* s, size_t) { return std::format_to_n(s + off, max_entry_num, "{}> ", i).out - s; });
 
         module_symbols_load_from_module_dir(data[i]);
 

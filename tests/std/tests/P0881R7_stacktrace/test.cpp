@@ -76,8 +76,8 @@ string to_string_using_low_level_members(const stacktrace& st) {
     stringstream ss;
     int n = 0;
     for (const auto& i : st) {
-        ++n;
         ss << n << "> ";
+        ++n;
         auto l = i.source_line();
         if (l != 0) {
             ss << i.source_file() << "(" << l << "): ";
@@ -91,8 +91,8 @@ string to_string_using_stream_entry(const stacktrace& st) {
     stringstream ss;
     int n = 0;
     for (const auto& i : st) {
-        ++n;
         ss << n << "> ";
+        ++n;
         ss << i << "\n";
     }
     return ss.str();
@@ -102,8 +102,8 @@ string to_string_using_to_string_entry(const stacktrace& st) {
     stringstream ss;
     int n = 0;
     for (const auto& i : st) {
-        ++n;
         ss << n << "> ";
+        ++n;
         ss << to_string(i) << "\n";
     }
     return ss.str();
