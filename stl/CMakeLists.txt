@@ -215,6 +215,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_ryu.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_ryu_tables.h
+    ${CMAKE_CURRENT_LIST_DIR}/inc/xchrono.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xerrc.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfacet
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfilesystem_abi.h

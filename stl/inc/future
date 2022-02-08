@@ -17,7 +17,6 @@
 #include <experimental/resumable>
 #endif // _RESUMABLE_FUNCTIONS_SUPPORTED
 
-#include <chrono>
 #include <condition_variable>
 #include <functional>
 #include <memory>
@@ -26,6 +25,7 @@
 #include <system_error>
 #include <thread>
 #include <utility>
+#include <xchrono.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
