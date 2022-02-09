@@ -4,13 +4,13 @@
 #include <cassert>
 #include <utility>
 
-constexpr int test_impl(int arg) {
+constexpr char test_impl(const int arg) {
     switch (arg) {
     case 1:
-        return 'x';
+        return 'a';
 
     case 2:
-        return 'y';
+        return 'z';
 
     default:
         std::unreachable();
@@ -18,8 +18,8 @@ constexpr int test_impl(int arg) {
 }
 
 constexpr bool test() {
-    assert(test_impl(1) == 'x');
-    assert(test_impl(2) == 'y');
+    assert(test_impl(1) == 'a');
+    assert(test_impl(2) == 'z');
     return true;
 }
 
