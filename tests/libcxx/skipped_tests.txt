@@ -469,6 +469,9 @@ ranges\range.access\data.pass.cpp
 ranges\range.access\end.pass.cpp
 ranges\range.req\range.range\range.compile.pass.cpp
 
+# Clang doesn't yet implement P0960 "Initializing Aggregates With Parentheses"
+ranges\range.factories\range.iota.view\sentinel\ctor.value.pass.cpp
+
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
 # Clang doesn't enable sized deallocation by default. Should we add -fsized-deallocation or do something else?

@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
+#include <limits>
+#include <memory>
 #include <ranges>
 #include <type_traits>
 #include <utility>
@@ -239,6 +241,57 @@ constexpr void test_integral() {
     }
 }
 
+template <class W>
+constexpr void test_one_difference() {
+    ranges::iota_view r{numeric_limits<W>::min(), numeric_limits<W>::max()};
+    using Diff = conditional_t<sizeof(W) >= sizeof(long long), _Signed128,
+        conditional_t<sizeof(W) >= sizeof(int), long long, int>>;
+    static_assert(same_as<decltype(r.end() - r.begin()), Diff>);
+    static_assert(noexcept(r.end() - r.begin()));
+    const auto n = (Diff{1} << (numeric_limits<W>::digits + (signed_integral<W> ? 1 : 0))) - 1;
+    assert(r.end() - r.begin() == n); // left > right
+    assert(r.begin() - r.end() == -n); // right > left
+}
+
+constexpr bool test_difference() {
+    // Ensure we have full coverage of all branches in `operator-(i, s)`
+
+    // signed integer-like, sizeof(W) < sizeof(int)
+    test_one_difference<signed char>();
+    test_one_difference<short>();
+
+    // unsigned integer-like, sizeof(W) < sizeof(int)
+    test_one_difference<unsigned char>();
+    test_one_difference<unsigned short>();
+
+    // signed integer-like, sizeof<int> <= sizeof(W) < sizeof(long long)
+    test_one_difference<int>();
+
+    // unsigned integer-like, sizeof<int> <= sizeof(W) < sizeof(long long)
+    test_one_difference<unsigned int>();
+
+    // signed integer-like, sizeof<long long> <= sizeof(W)
+    test_one_difference<long long>();
+
+    // unsigned integer-like, sizeof<long long> <= sizeof(W)
+    test_one_difference<unsigned long long>();
+
+    // non-integer-like
+    {
+        char* some_chars = new char[1ull << 24];
+        ranges::iota_view r{&some_chars[0], &some_chars[1ull << 24]};
+        using Diff = ptrdiff_t;
+        static_assert(same_as<decltype(r.end() - r.begin()), Diff>);
+        static_assert(noexcept(r.end() - r.begin()));
+        const auto n = Diff{1} << 24;
+        assert(r.end() - r.begin() == n); // left > right
+        assert(r.begin() - r.end() == -n); // right > left
+        delete[] some_chars;
+    }
+
+    return true;
+}
+
 int main() {
     // Validate standard signed integer types
     static_assert((test_integral<signed char>(), true));
@@ -304,4 +357,7 @@ int main() {
 
         assert(ranges::equal(r, even_ints, ranges::equal_to{}, deref));
     }
+
+    test_difference();
+    static_assert(test_difference());
 }
