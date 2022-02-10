@@ -800,6 +800,12 @@ std/ranges/range.utility/range.subrange/primitives.pass.cpp:0 FAIL
 # libc++ speculatively implements LWG-3645
 std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
 
+# libc++ is missing various <format> DRs
+std/language.support/support.limits/support.limits.general/format.version.pass.cpp FAIL
+
+# We speculatively implement LWG-3670
+std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
