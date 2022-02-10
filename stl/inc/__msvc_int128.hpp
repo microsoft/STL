@@ -902,8 +902,6 @@ struct _Unsigned128 : _Base128 {
     }
 };
 
-template <class>
-class numeric_limits;
 template <>
 class numeric_limits<_Unsigned128> : public _Num_int_base {
 public:
@@ -948,8 +946,6 @@ public:
     static constexpr int digits10   = 38;
 };
 
-template <class...>
-struct common_type;
 template <integral _Ty>
 struct common_type<_Ty, _Unsigned128> {
     using type = _Unsigned128;
@@ -1266,8 +1262,6 @@ struct _Signed128 : _Base128 {
     }
 };
 
-template <class>
-class numeric_limits;
 template <>
 class numeric_limits<_Signed128> : public _Num_int_base {
 public:
