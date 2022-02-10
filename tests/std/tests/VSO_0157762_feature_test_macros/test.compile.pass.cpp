@@ -736,7 +736,7 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #endif
 #endif
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_format
 #error __cpp_lib_format is not defined
 #elif __cpp_lib_format != 202110L
@@ -1336,7 +1336,7 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #endif
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
 #elif __cpp_lib_ranges != 202110L
@@ -1350,7 +1350,7 @@ STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 #endif
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_ranges_starts_ends_with
 #error __cpp_lib_ranges_starts_ends_with is not defined
 #elif __cpp_lib_ranges_starts_ends_with != 202106L
