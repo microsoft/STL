@@ -38,7 +38,7 @@ static_assert(CanSize<ranges::iota_view<unsigned long long, _Unsigned128>>);
 static_assert(CanSize<ranges::iota_view<char, _Signed128>>);
 static_assert(CanSize<ranges::iota_view<char, _Unsigned128>>);
 static_assert(CanSize<ranges::iota_view<wchar_t, _Signed128>>);
-static_assert(CanSize<ranges::iota_view<wchar_t, _Signed128>>);
+static_assert(CanSize<ranges::iota_view<wchar_t, _Unsigned128>>);
 #ifdef __cpp_char8_t
 static_assert(CanSize<ranges::iota_view<char8_t, _Signed128>>);
 static_assert(CanSize<ranges::iota_view<char8_t, _Unsigned128>>);
