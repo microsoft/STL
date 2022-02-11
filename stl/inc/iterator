@@ -177,7 +177,7 @@ _NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, 
 }
 #else // ^^^ No Ranges / Ranges vvv
 template <class _Container>
-_NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, _RANGES iterator_t<_Container> _Where) {
+_NODISCARD constexpr insert_iterator<_Container> inserter(_Container& _Cont, _RANGES iterator_t<_Container> _Where) {
     return insert_iterator<_Container>(_Cont, _Where);
 }
 

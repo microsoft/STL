@@ -3,9 +3,9 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <functional>
 #include <limits>
-#include <memory>
 #include <ranges>
 #include <type_traits>
 #include <utility>
@@ -248,7 +248,7 @@ constexpr void test_one_difference() {
         conditional_t<sizeof(W) >= sizeof(int), long long, int>>;
     static_assert(same_as<decltype(r.end() - r.begin()), Diff>);
     static_assert(noexcept(r.end() - r.begin()));
-    const auto n = (Diff{1} << (numeric_limits<W>::digits + (signed_integral<W> ? 1 : 0))) - 1;
+    constexpr auto n = (Diff{1} << (numeric_limits<W>::digits + (signed_integral<W> ? 1 : 0))) - 1;
     assert(r.end() - r.begin() == n); // left > right
     assert(r.begin() - r.end() == -n); // right > left
 }
@@ -264,26 +264,28 @@ constexpr bool test_difference() {
     test_one_difference<unsigned char>();
     test_one_difference<unsigned short>();
 
-    // signed integer-like, sizeof<int> <= sizeof(W) < sizeof(long long)
+    // signed integer-like, sizeof(int) <= sizeof(W) < sizeof(long long)
     test_one_difference<int>();
+    test_one_difference<long>();
 
-    // unsigned integer-like, sizeof<int> <= sizeof(W) < sizeof(long long)
+    // unsigned integer-like, sizeof(int) <= sizeof(W) < sizeof(long long)
     test_one_difference<unsigned int>();
+    test_one_difference<unsigned long>();
 
-    // signed integer-like, sizeof<long long> <= sizeof(W)
+    // signed integer-like, sizeof(long long) <= sizeof(W)
     test_one_difference<long long>();
 
-    // unsigned integer-like, sizeof<long long> <= sizeof(W)
+    // unsigned integer-like, sizeof(long long) <= sizeof(W)
     test_one_difference<unsigned long long>();
 
     // non-integer-like
     {
-        char* some_chars = new char[1ull << 24];
-        ranges::iota_view r{&some_chars[0], &some_chars[1ull << 24]};
-        using Diff = ptrdiff_t;
+        using Diff       = ptrdiff_t;
+        constexpr Diff n = 128 * 1024;
+        char* some_chars = new char[n];
+        ranges::iota_view r{some_chars + 0, some_chars + n};
         static_assert(same_as<decltype(r.end() - r.begin()), Diff>);
         static_assert(noexcept(r.end() - r.begin()));
-        const auto n = Diff{1} << 24;
         assert(r.end() - r.begin() == n); // left > right
         assert(r.begin() - r.end() == -n); // right > left
         delete[] some_chars;
