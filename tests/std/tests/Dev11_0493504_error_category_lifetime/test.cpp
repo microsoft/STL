@@ -28,6 +28,19 @@ struct Global {
 
 Global global;
 
+// Also test LWG-3598: system_category().default_error_condition(0) has a generic category.
+void test_lwg_3598() {
+    error_condition cond = system_category().default_error_condition(0);
+
+    assert(cond.category() == generic_category());
+    // generic_category().default_error_condition(0).message() depends on locale
+    // but it was "unknown error" before
+    assert(cond.message() != "unknown error");
+    assert(cond.value() == 0);
+
+    assert(error_code() == error_condition());
+}
+
 int main() {
     // Also test DevDiv-781294 "<system_error>: Visual C++ 2013 RC system_category().equivalent function does not work".
     const error_code code(ERROR_NOT_ENOUGH_MEMORY, system_category());
@@ -44,6 +57,8 @@ int main() {
     // Also test VSO-649432 <system_error> system_category().message() ends with extra newlines
     const auto msg = code.message();
     assert(!msg.empty() && msg.back() != '\0' && !isspace(static_cast<unsigned char>(msg.back())));
+
+    test_lwg_3598();
 }
 
 

@@ -501,7 +501,12 @@ public:
     }
 
     _NODISCARD string message(int _Errcode) const override {
-        return _Syserror_map(_Errcode);
+        if (_Errcode == 0) {
+            const _System_error_message _Msg(0);
+            return string(_Msg._Str, _Msg._Length);
+        } else {
+            return _Syserror_map(_Errcode);
+        }
     }
 };
 
@@ -544,12 +549,16 @@ public:
     }
 
     _NODISCARD error_condition default_error_condition(int _Errval) const noexcept override {
-        // make error_condition for error code (generic if possible)
-        const int _Posv = _Winerror_map(_Errval);
-        if (_Posv == 0) {
-            return error_condition(_Errval, _STD system_category());
+        if (_Errval == 0) {
+            return error_condition(0, _STD generic_category());
         } else {
-            return error_condition(_Posv, _STD generic_category());
+            // make error_condition for error code (generic if possible)
+            const int _Posv = _Winerror_map(_Errval);
+            if (_Posv == 0) {
+                return error_condition(_Errval, _STD system_category());
+            } else {
+                return error_condition(_Posv, _STD generic_category());
+            }
         }
     }
 };
