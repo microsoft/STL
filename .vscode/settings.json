@@ -6,6 +6,7 @@
     "files.associations": {
         ".clang-format": "yaml",
         "header-units.json": "jsonc",
+        "importable_cxx_library_headers.json": "jsonc",
         "**/stl/inc/**": "cpp"
     },
     "files.eol": "\r\n",
