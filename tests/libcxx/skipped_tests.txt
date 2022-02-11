@@ -655,6 +655,9 @@ utilities\memory\util.dynamic.safety\get_pointer_safety.pass.cpp
 utilities\memory\util.dynamic.safety\declare_no_pointers.pass.cpp
 utilities\memory\util.dynamic.safety\declare_reachable.pass.cpp
 
+# libc++ doesn't implement P1964R2 Wording For boolean-testable
+language.support\support.limits\support.limits.general\concepts.version.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
