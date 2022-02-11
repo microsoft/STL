@@ -4,7 +4,6 @@
 use strict;
 use warnings;
 
-use File::Spec::Win32;
 use JSON::PP;
 use Run;
 
@@ -104,10 +103,7 @@ sub CustomBuildHook()
 
             my @dep = ();
             foreach my $req (@{$jsonObject->{"rules"}[0]{"requires"}}) {
-                # TRANSITION, VSO-1466711 fixed in VS 2022 17.2 Preview 2
-                # (Perl) This should be: my $filename = $req->{"logical-name"};
-                my ($volume, $directories, $filename) = File::Spec::Win32->splitpath($req->{"source-path"});
-                push(@dep, $filename);
+                push(@dep, $req->{"logical-name"});
             }
             $remainingDependencies{$hdr} = \@dep;
         }
