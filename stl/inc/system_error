@@ -501,6 +501,7 @@ public:
     }
 
     _NODISCARD string message(int _Errcode) const override {
+        // TRANSITION, GH-2561, move the logic to syserror.cpp
         if (_Errcode == 0) {
             const _System_error_message _Msg(0);
             return string(_Msg._Str, _Msg._Length);
@@ -549,6 +550,7 @@ public:
     }
 
     _NODISCARD error_condition default_error_condition(int _Errval) const noexcept override {
+        // TRANSITION, GH-2561, move the logic to syserror.cpp
         if (_Errval == 0) {
             return error_condition(0, _STD generic_category());
         } else {
