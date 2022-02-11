@@ -1276,7 +1276,7 @@
 #endif // __cpp_char8_t
 
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
-#define __cpp_lib_concepts 201907L
+#define __cpp_lib_concepts 202002L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
 #define __cpp_lib_constexpr_algorithms    201806L
