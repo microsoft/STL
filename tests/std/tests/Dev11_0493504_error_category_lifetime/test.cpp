@@ -33,9 +33,7 @@ void test_lwg_3598() {
     error_condition cond = system_category().default_error_condition(0);
 
     assert(cond.category() == generic_category());
-    // generic_category().default_error_condition(0).message() depends on locale
-    // but it was "unknown error" before
-    assert(cond.message() != "unknown error");
+    assert(cond.message() == "success");
     assert(cond.value() == 0);
 
     assert(error_code() == error_condition());
