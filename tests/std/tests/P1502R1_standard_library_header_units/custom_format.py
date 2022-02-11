@@ -111,7 +111,7 @@ def getAllHeaders(headerUnitsJsonFilename):
 
     # We want to build everything that's mentioned in header-units.json, plus all of the
     # headers that were commented out for providing macros that control header inclusion.
-    return sorted(set(buildAsHeaderUnits + ['version', 'yvals.h', 'yvals_core.h']))
+    return buildAsHeaderUnits + ['version', 'yvals.h', 'yvals_core.h']
 
 
 class CustomTestFormat(STLTestFormat):
