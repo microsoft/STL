@@ -433,10 +433,10 @@ STATIC_ASSERT(__cpp_lib_complex_udls == 201309L);
 #if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_concepts
 #error __cpp_lib_concepts is not defined
-#elif __cpp_lib_concepts != 201907L
-#error __cpp_lib_concepts is not 201907L
+#elif __cpp_lib_concepts != 202002L
+#error __cpp_lib_concepts is not 202002L
 #else
-STATIC_ASSERT(__cpp_lib_concepts == 201907L);
+STATIC_ASSERT(__cpp_lib_concepts == 202002L);
 #endif
 #else
 #ifdef __cpp_lib_concepts
