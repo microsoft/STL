@@ -551,14 +551,14 @@ public:
     _NODISCARD error_condition default_error_condition(int _Errval) const noexcept override {
         if (_Errval == 0) {
             return error_condition(0, _STD generic_category());
+        }
+
+        // make error_condition for error code (generic if possible)
+        const int _Posv = _Winerror_map(_Errval);
+        if (_Posv == 0) {
+            return error_condition(_Errval, _STD system_category());
         } else {
-            // make error_condition for error code (generic if possible)
-            const int _Posv = _Winerror_map(_Errval);
-            if (_Posv == 0) {
-                return error_condition(_Errval, _STD system_category());
-            } else {
-                return error_condition(_Posv, _STD generic_category());
-            }
+            return error_condition(_Posv, _STD generic_category());
         }
     }
 };
