@@ -196,6 +196,7 @@ tests\LWG3018_shared_ptr_function
 tests\LWG3146_excessive_unwrapping_ref_cref
 tests\LWG3422_seed_seq_ctors
 tests\LWG3480_directory_iterator_range
+tests\LWG3610_iota_view_size_and_integer_class
 tests\P0019R8_atomic_ref
 tests\P0024R2_parallel_algorithms_adjacent_difference
 tests\P0024R2_parallel_algorithms_adjacent_find
