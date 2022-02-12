@@ -283,6 +283,7 @@
 // P0288R9 move_only_function
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0448R4 <spanstream>
+// P0627R6 unreachable()
 // P0798R8 Monadic Operations For optional
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
@@ -1382,6 +1383,7 @@
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
 #define __cpp_lib_to_underlying               202102L
+#define __cpp_lib_unreachable                 202202L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
