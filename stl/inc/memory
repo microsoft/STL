@@ -3953,6 +3953,8 @@ public:
 
     constexpr atomic() noexcept = default;
 
+    constexpr atomic(nullptr_t) noexcept : atomic() {}
+
     atomic(const shared_ptr<_Ty> _Value) noexcept : _Base(_Value._Ptr, _Value._Rep) {
         _Value._Incref();
     }
