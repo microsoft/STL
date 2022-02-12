@@ -1192,20 +1192,6 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #endif
 #endif
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
-#ifndef __cpp_lib_monadic_optional
-#error __cpp_lib_monadic_optional is not defined
-#elif __cpp_lib_monadic_optional != 202110L
-#error __cpp_lib_monadic_optional is not 202110L
-#else
-STATIC_ASSERT(__cpp_lib_monadic_optional == 202110L);
-#endif
-#else
-#ifdef __cpp_lib_monadic_optional
-#error __cpp_lib_monadic_optional is defined
-#endif
-#endif
-
 #if _HAS_CXX23
 #ifndef __cpp_lib_move_only_function
 #error __cpp_lib_move_only_function is not defined
@@ -1264,7 +1250,15 @@ STATIC_ASSERT(__cpp_lib_not_fn == 201603L);
 STATIC_ASSERT(__cpp_lib_null_iterators == 201304L);
 #endif
 
-#if _HAS_CXX20
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_optional
+#error __cpp_lib_optional is not defined
+#elif __cpp_lib_optional != 202110L
+#error __cpp_lib_optional is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_optional == 202110L);
+#endif
+#elif _HAS_CXX20
 #ifndef __cpp_lib_optional
 #error __cpp_lib_optional is not defined
 #elif __cpp_lib_optional != 202106L

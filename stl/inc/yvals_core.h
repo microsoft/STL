@@ -1366,12 +1366,7 @@
 #define __cpp_lib_byteswap                          202110L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_is_scoped_enum                    202011L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_monadic_optional 202110L
-#endif // __cpp_lib_concepts
-
-#define __cpp_lib_move_only_function 202110L
+#define __cpp_lib_move_only_function                202110L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
@@ -1409,7 +1404,9 @@
 #endif // language mode
 #endif // _M_CEE
 
-#if _HAS_CXX20
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
