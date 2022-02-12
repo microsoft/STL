@@ -216,7 +216,7 @@ const merge_data = {
             ...get_label_and_hidden('merged'),
         },
         {
-            type: 'bar',
+            type: 'bar' as const,
             data: get_values(monthly_table, 'merge_bar'),
             borderColor: '#CCCCCC',
             borderWidth: 1,
