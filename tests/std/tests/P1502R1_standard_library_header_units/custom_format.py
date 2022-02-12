@@ -31,7 +31,7 @@ def getAllHeaders(headerUnitsJsonFilename):
 
 
 def getImportableCxxLibraryHeaders(sourcePath):
-    # This JSON file is shared between Python and Perl, 
+    # This JSON file is shared between Python and Perl,
     # reducing the number of things we need to update when adding new Standard headers.
     jsonFilename = os.path.join(os.path.dirname(sourcePath), 'importable_cxx_library_headers.json')
     return loadJsonWithComments(jsonFilename)
