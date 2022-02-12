@@ -5607,6 +5607,61 @@ _FwdIt rotate(_ExPo&&, _FwdIt _First, _FwdIt _Mid, _FwdIt _Last) noexcept /* ter
 }
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    class _Adjacent_find_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_binary_predicate<projected<_It, _Pj>, projected<_It, _Pj>> _Pr = ranges::equal_to>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+
+            auto _UResult = _Adjacent_find_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>, projected<iterator_t<_Rng>, _Pj>> _Pr =
+                ranges::equal_to>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _UResult = _Adjacent_find_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr _It _Adjacent_find_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            // find first satisfying _Pred with successor
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<_Pr, projected<_It, _Pj>, projected<_It, _Pj>>);
+
+            if (_First == _Last) {
+                return _First;
+            }
+
+            for (auto _Next = _First;; ++_First) {
+                if (++_Next == _Last) {
+                    return _Next;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Next))) {
+                    return _First;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Adjacent_find_fn adjacent_find{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // __cpp_lib_concepts
+
 template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred) { // find first satisfying _Pred
     _Adl_verify_range(_First, _Last);

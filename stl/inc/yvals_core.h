@@ -300,6 +300,7 @@
 // P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
+// P2443R1 views::chunk_by
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1374,6 +1375,7 @@
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #endif // __cpp_lib_concepts
 
