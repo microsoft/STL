@@ -11,15 +11,18 @@
 using namespace std;
 using P = pair<int, int>;
 
-// clang-format off
 template <class Iter>
 concept CanDifference = requires(Iter it) {
-    { it - it };
+    {it - it};
 };
 
 template <class Iter>
 concept HasProxy = !is_reference_v<iter_reference_t<Iter>>;
-// clang-format on
+
+template <class Iter>
+concept CanArrow = requires(const Iter& i) {
+    {i.operator->()};
+};
 
 struct instantiator {
     template <input_or_output_iterator Iter>
@@ -49,15 +52,8 @@ struct instantiator {
                 }
 
                 using ipointer = typename iterator_traits<Cit>::pointer;
-                if constexpr (std::is_pointer_v<Iter> || _Has_member_arrow<const Iter&>) {
-                    STATIC_ASSERT(same_as<ipointer, const Iter&>);
-                } else if constexpr (std::is_reference_v<iter_reference_t<Iter>>) {
-                    STATIC_ASSERT(same_as<ipointer, std::add_pointer_t<iter_reference_t<Iter>>>);
-                } else if constexpr (std::constructible_from<iter_value_t<Iter>, iter_reference_t<Iter>>) {
-                    // proxy is a class type
-                    STATIC_ASSERT(std::is_class_v<ipointer>);
-                    // with a member operator->() const
-                    STATIC_ASSERT(&std::add_const_t<ipointer>::operator->);
+                if constexpr (CanArrow<Cit>) {
+                    STATIC_ASSERT(same_as<ipointer, decltype(declval<const Cit&>().operator->())>);
                 } else {
                     STATIC_ASSERT(same_as<ipointer, void>);
                 }

@@ -1740,7 +1740,7 @@ public:
         _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const _Lazy_locale& _Loc_)
         : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
 
-    _NODISCARD basic_format_arg<basic_format_context> arg(size_t _Id) const {
+    _NODISCARD basic_format_arg<basic_format_context> arg(size_t _Id) const noexcept {
         return _Args.get(_Id);
     }
     _NODISCARD locale locale() {

@@ -112,7 +112,7 @@
         "typeinfo",
         "unordered_map",
         "unordered_set",
-        "use_ansi.h",
+        // "use_ansi.h", // internal header, incompatible with being a separate header unit
         "utility",
         "valarray",
         "variant",

@@ -1307,7 +1307,7 @@ namespace ranges {
         // clang-format off
         _NODISCARD constexpr auto size() const noexcept(noexcept(_Bound - _Value)) /* strengthened */
             requires (same_as<_Wi, _Bo> && _Advanceable<_Wi>)
-                || (integral<_Wi> && integral<_Bo>)
+                || (_Integer_like<_Wi> && _Integer_like<_Bo>)
                 || sized_sentinel_for<_Bo, _Wi> {
             // clang-format on
             if constexpr (_Integer_like<_Wi> && _Integer_like<_Bo>) {

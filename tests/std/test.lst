@@ -196,6 +196,7 @@ tests\LWG3018_shared_ptr_function
 tests\LWG3146_excessive_unwrapping_ref_cref
 tests\LWG3422_seed_seq_ctors
 tests\LWG3480_directory_iterator_range
+tests\LWG3610_iota_view_size_and_integer_class
 tests\P0019R8_atomic_ref
 tests\P0024R2_parallel_algorithms_adjacent_difference
 tests\P0024R2_parallel_algorithms_adjacent_find
@@ -282,6 +283,7 @@ tests\P0595R2_is_constant_evaluated
 tests\P0607R0_inline_variables
 tests\P0608R3_improved_variant_converting_constructor
 tests\P0616R0_using_move_in_numeric
+tests\P0627R6_unreachable
 tests\P0631R8_numbers_math_constants
 tests\P0645R10_text_formatting_args
 tests\P0645R10_text_formatting_custom_formatting
