@@ -4797,7 +4797,8 @@ namespace ranges {
             constexpr _Iterator& operator--() requires bidirectional_range<_Vw> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(_Parent != nullptr, "cannot decrement value-initialized chunk_by_view iterator");
-                _STL_VERIFY(_Current != _RANGES begin(_Parent->_Range), "cannot decrement chunk_by_view iterator before begin");
+                _STL_VERIFY(
+                    _Current != _RANGES begin(_Parent->_Range), "cannot decrement chunk_by_view iterator before begin");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 _Next    = _Current;
                 _Current = _Parent->_Find_prev(_Current);
