@@ -1960,7 +1960,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator*() const
-                _NOEXCEPT_IDL0(noexcept(_STD invoke(*_Parent->_Fun, *_Current))) /* strengthened */ {
+                _NOEXCEPT_IDL0(noexcept(_STD invoke(*_Parent->_Fun, *_Current))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Check_dereference();
                 _STL_VERIFY(
@@ -2140,14 +2140,6 @@ namespace ranges {
                 _Left._Same_range(_Right);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 return _Left._Current - _Right._Current;
-            }
-
-            _NODISCARD friend constexpr decltype(auto) iter_move(const _Iterator& _It) noexcept(noexcept(*_It)) {
-                if constexpr (is_lvalue_reference_v<decltype(*_It)>) {
-                    return _STD move(*_It);
-                } else {
-                    return *_It;
-                }
             }
         };
 
