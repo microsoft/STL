@@ -127,7 +127,7 @@ void test_duration_output() {
 
 
 template <class CharT, class CStringOrStdString, class Parsable>
-void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
+std::ios_base::iostate parse_state(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
@@ -157,41 +157,19 @@ void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
         }
     }
 
-    assert(sstr);
+    return sstr.rdstate();
+}
+
+template <class CharT, class CStringOrStdString, class Parsable>
+void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
+    assert((parse_state(str, fmt, p, abbrev, offset) & ~std::ios_base::eofbit) == 0);
 }
 
 template <class CharT, class CStringOrStdString, class Parsable>
 void fail_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
-    p = Parsable{};
-    if (abbrev) {
-        if constexpr (is_same_v<CharT, char>) {
-            *abbrev = "!";
-        } else {
-            *abbrev = L"!";
-        }
-    }
-
-    if (offset) {
-        *offset = minutes::min();
-    }
-
-    basic_stringstream<CharT> sstr{str};
-    if (abbrev) {
-        if (offset) {
-            sstr >> parse(fmt, p, *abbrev, *offset);
-        } else {
-            sstr >> parse(fmt, p, *abbrev);
-        }
-    } else {
-        if (offset) {
-            sstr >> parse(fmt, p, *offset);
-        } else {
-            sstr >> parse(fmt, p);
-        }
-    }
-
-    assert(!sstr);
+    assert((parse_state(str, fmt, p, abbrev, offset) & ~std::ios_base::eofbit) != 0);
 }
 
 template <class TimeType, class IntType = int>
@@ -883,13 +861,21 @@ void parse_incomplete() {
     // sufficient to supply all fields of the parsable.
     // Check both explicit and shorthand format strings, since the code path is different.
     year_month ym;
-    fail_parse("2021-01", "%Y-%m-%d", ym);
-    fail_parse("2022-02", "%F", ym);
+    assert(parse_state("2021-01", "%Y-%m-%d", ym) == (std::ios_base::eofbit | std::ios_base::failbit));
+    assert(parse_state("2022-02", "%F", ym) == (std::ios_base::eofbit | std::ios_base::failbit));
+    assert(parse_state("2021-", "%Y-%m-%d", ym) == (std::ios_base::eofbit | std::ios_base::failbit));
+    assert(parse_state("2022-", "%F", ym) == (std::ios_base::eofbit | std::ios_base::failbit));
 
     seconds time;
     fail_parse("01:59", "%H:%M:%S", time);
     fail_parse("03:23", "%T", time);
     fail_parse("04", "%R", time);
+
+    // Check for parsing of whitespace fields after other fields.  More whitespace tests below.
+    test_parse("15:19", "%H:%M%t", time);
+    test_parse("15:19", "%R%t", time);
+    fail_parse("15:19", "%H:%M%n", time);
+    fail_parse("15:19", "%R%n", time);
 
     // However, it is OK to omit seconds from the format when parsing a duration to seconds precision.
     test_parse("05:24", "%H:%M", time);
