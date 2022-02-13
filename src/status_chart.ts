@@ -9,8 +9,35 @@ import { DailyRow, daily_table } from './daily_table';
 import { WeeklyRow, weekly_table } from './weekly_table';
 import { MonthlyRow, monthly_table } from './monthly_table';
 
-function get_values(table, key) {
-    return table.filter(row => row[key] !== undefined).map(row => ({ x: row.date, y: row[key] }));
+type StlDataPoint = {
+    x: string;
+    y: number | null;
+};
+
+function get_values<TimelyRow extends DailyRow | WeeklyRow | MonthlyRow>(
+    table: TimelyRow[],
+    get_y: (row: TimelyRow) => number | null | undefined
+) {
+    const datapoints: StlDataPoint[] = [];
+    for (const row of table) {
+        const y = get_y(row);
+        if (y !== undefined) {
+            datapoints.push({ x: row.date, y: y });
+        }
+    }
+    return datapoints;
+}
+
+function get_daily_values(key: Exclude<keyof DailyRow, 'date'>) {
+    return get_values(daily_table, row => row[key]);
+}
+
+function get_weekly_values(key: Exclude<keyof WeeklyRow, 'date'>) {
+    return get_values(weekly_table, row => row[key]);
+}
+
+function get_monthly_values(key: Exclude<keyof MonthlyRow, 'date'>) {
+    return get_values(monthly_table, row => row[key]);
 }
 
 class HiddenInfo {
@@ -107,7 +134,7 @@ function update_url() {
 const status_data = {
     datasets: [
         {
-            data: get_values(weekly_table, 'cxx17'),
+            data: get_weekly_values('cxx17'),
             borderColor: '#9966FF',
             backgroundColor: '#9966FF',
             borderDash: [10, 5],
@@ -115,56 +142,56 @@ const status_data = {
             ...get_label_and_hidden('cxx17'),
         },
         {
-            data: get_values(weekly_table, 'cxx20').concat(get_values(daily_table, 'cxx20')),
+            data: get_weekly_values('cxx20').concat(get_daily_values('cxx20')),
             borderColor: '#7030A0',
             backgroundColor: '#7030A0',
             yAxisID: 'smallAxis',
             ...get_label_and_hidden('cxx20'),
         },
         {
-            data: get_values(daily_table, 'cxx23'),
+            data: get_daily_values('cxx23'),
             borderColor: '#9966FF',
             backgroundColor: '#9966FF',
             yAxisID: 'smallAxis',
             ...get_label_and_hidden('cxx23'),
         },
         {
-            data: get_values(weekly_table, 'lwg').concat(get_values(daily_table, 'lwg')),
+            data: get_weekly_values('lwg').concat(get_daily_values('lwg')),
             borderColor: '#0070C0',
             backgroundColor: '#0070C0',
             yAxisID: 'smallAxis',
             ...get_label_and_hidden('lwg'),
         },
         {
-            data: get_values(daily_table, 'pr'),
+            data: get_daily_values('pr'),
             borderColor: '#00B050',
             backgroundColor: '#00B050',
             yAxisID: 'smallAxis',
             ...get_label_and_hidden('pr'),
         },
         {
-            data: get_values(weekly_table, 'vso'),
+            data: get_weekly_values('vso'),
             borderColor: '#900000',
             backgroundColor: '#900000',
             yAxisID: 'largeAxis',
             ...get_label_and_hidden('vso'),
         },
         {
-            data: get_values(daily_table, 'bug'),
+            data: get_daily_values('bug'),
             borderColor: '#FF0000',
             backgroundColor: '#FF0000',
             yAxisID: 'largeAxis',
             ...get_label_and_hidden('bug'),
         },
         {
-            data: get_values(daily_table, 'issue'),
+            data: get_daily_values('issue'),
             borderColor: '#909090',
             backgroundColor: '#909090',
             yAxisID: 'largeAxis',
             ...get_label_and_hidden('issue'),
         },
         {
-            data: get_values(weekly_table, 'libcxx'),
+            data: get_weekly_values('libcxx'),
             borderColor: '#FFC000',
             backgroundColor: '#FFC000',
             yAxisID: 'largeAxis',
@@ -176,28 +203,28 @@ const status_data = {
 const age_data = {
     datasets: [
         {
-            data: get_values(daily_table, 'avg_age'),
+            data: get_daily_values('avg_age'),
             borderColor: '#909090',
             backgroundColor: '#909090',
             yAxisID: 'leftAxis',
             ...get_label_and_hidden('avg_age'),
         },
         {
-            data: get_values(daily_table, 'avg_wait'),
+            data: get_daily_values('avg_wait'),
             borderColor: '#FF9090',
             backgroundColor: '#FF9090',
             yAxisID: 'leftAxis',
             ...get_label_and_hidden('avg_wait'),
         },
         {
-            data: get_values(daily_table, 'sum_age'),
+            data: get_daily_values('sum_age'),
             borderColor: '#000000',
             backgroundColor: '#000000',
             yAxisID: 'rightAxis',
             ...get_label_and_hidden('sum_age'),
         },
         {
-            data: get_values(daily_table, 'sum_wait'),
+            data: get_daily_values('sum_wait'),
             borderColor: '#FF0000',
             backgroundColor: '#FF0000',
             yAxisID: 'rightAxis',
@@ -209,7 +236,7 @@ const age_data = {
 const merge_data = {
     datasets: [
         {
-            data: get_values(daily_table, 'merged'),
+            data: get_daily_values('merged'),
             borderColor: '#00B050',
             backgroundColor: '#00B050',
             yAxisID: 'mergeAxis',
@@ -217,7 +244,7 @@ const merge_data = {
         },
         {
             type: 'bar' as const,
-            data: get_values(monthly_table, 'merge_bar'),
+            data: get_monthly_values('merge_bar'),
             borderColor: '#CCCCCC',
             borderWidth: 1,
             yAxisID: 'mergeAxis',
