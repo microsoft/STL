@@ -482,8 +482,8 @@ constexpr compare_test_case compareTestCases[] = {
 bool run_compare_test_case(const compare_test_case& testCase) {
     const path leftPath(testCase.left);
     const path rightPath(testCase.right);
-    const int actualCmp = leftPath.compare(testCase.right); // string_view
-    const size_t leftPathHash = hash_value(leftPath);
+    const int actualCmp        = leftPath.compare(testCase.right); // string_view
+    const size_t leftPathHash  = hash_value(leftPath);
     const size_t rightPathHash = hash_value(rightPath);
     // technically the standard only requires that these agree in sign, but our implementation
     // wants to always return the same value
