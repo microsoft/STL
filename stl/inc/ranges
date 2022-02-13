@@ -4771,7 +4771,8 @@ namespace ranges {
 
             _Iterator() = default;
 
-            _NODISCARD constexpr value_type operator*() const {
+            _NODISCARD constexpr value_type operator*() const
+                noexcept(is_nothrow_copy_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(_Current != _Next, "cannot dereference chunk_by_view end iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -4783,7 +4784,7 @@ namespace ranges {
                 _STL_VERIFY(_Current != _Next, "cannot increment chunk_by_view iterator past end");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 _Current = _Next;
-                _Next    = _Parent->_Find_next(_Current);
+                _Next    = _Parent->_Find_next(_Next);
                 return *this;
             }
 
@@ -4796,9 +4797,10 @@ namespace ranges {
             constexpr _Iterator& operator--() requires bidirectional_range<_Vw> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(_Parent != nullptr, "cannot decrement value-initialized chunk_by_view iterator");
+                _STL_VERIFY(_Current != _RANGES begin(_Parent->_Range), "cannot decrement chunk_by_view iterator before begin");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 _Next    = _Current;
-                _Current = _Parent->_Find_prev(_Next);
+                _Current = _Parent->_Find_prev(_Current);
                 return *this;
             }
 
@@ -4824,33 +4826,29 @@ namespace ranges {
             _STL_VERIFY(_Pred, "cannot increment a chunk_by_view iterator whose parent view has no predicate");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-            return _RANGES next(_RANGES adjacent_find(_It, _RANGES end(_Range),
-                                    [this]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) {
-                                        return !_STD invoke(
-                                            *_Pred, _STD forward<_Ty1>(_Left), _STD forward<_Ty2>(_Right));
-                                    }),
-                1, _RANGES end(_Range));
+            const auto _Not_pred = [&_Orig_pred = *_Pred]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) {
+                return !_STD invoke(_Orig_pred, _STD forward<_Ty1>(_Left), _STD forward<_Ty2>(_Right));
+            };
+            const auto _Before_next = _RANGES adjacent_find(_It, _RANGES end(_Range), _Not_pred);
+            return _RANGES next(_Before_next, 1, _RANGES end(_Range));
         }
 
         _NODISCARD constexpr iterator_t<_Vw> _Find_prev(iterator_t<_Vw> _It) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-            _STL_VERIFY(_It != _RANGES begin(_Range), "cannot decrement chunk_by_view iterator before begin");
             _STL_VERIFY(_Pred, "cannot decrement a chunk_by_view iterator whose parent view has no predicate");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
             reverse_view _Rv{subrange{_RANGES begin(_Range), _It}};
-            return _RANGES prev(_RANGES adjacent_find(_Rv,
-                                    [this]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) {
-                                        return !_STD invoke(
-                                            *_Pred, _STD forward<_Ty2>(_Right), _STD forward<_Ty1>(_Left));
-                                    })
-                                    .base(),
-                1, _RANGES begin(_Range));
+            const auto _Rev_not_pred = [&_Orig_pred = *_Pred]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) {
+                return !_STD invoke(_Orig_pred, _STD forward<_Ty2>(_Right), _STD forward<_Ty1>(_Left));
+            };
+            const auto _After_prev = _RANGES adjacent_find(_Rv, _Rev_not_pred);
+            return _RANGES prev(_After_prev.base(), 1, _RANGES begin(_Range));
         }
 
     public:
         // clang-format off
-        chunk_by_view() requires default_initializable<_Vw> && default_initializable<_Vw> = default;
+        chunk_by_view() requires default_initializable<_Vw> && default_initializable<_Pr> = default;
         // clang-format on
 
         constexpr explicit chunk_by_view(_Vw _Range_, _Pr _Pred_) noexcept(
