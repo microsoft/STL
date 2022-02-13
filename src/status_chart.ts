@@ -476,14 +476,11 @@ window.onload = function () {
     });
 
     function update_chart_timeframe(chart: typeof status_chart, idx: number) {
-        if (!('scales' in chart.options && 'x' in chart.options.scales && 'time' in chart.options.scales.x)) {
-            throw new Error('update_chart_timeframe() expected chart to have been produced with make_xAxis().');
+        if (!('scales' in chart.options)) {
+            throw new Error('update_chart_timeframe() expected chart.options.scales to exist.');
         }
 
-        const new_timeframe = timeframes[idx];
-
-        chart.options.scales.x.min = new_timeframe.min;
-        chart.options.scales.x.time.unit = new_timeframe.time.unit;
+        chart.options.scales.x = make_xAxis(timeframes[idx]);
 
         chart.update();
     }
