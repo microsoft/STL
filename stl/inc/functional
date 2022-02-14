@@ -1532,7 +1532,7 @@ class _Move_only_function_call {
 };
 
 // A script to generate the specializations is at
-// /tools/move_only_function_specializations/move_only_function_specializations.py
+// /tools/scripts/move_only_function_specializations.py
 // (Avoiding C++ preprocessor for better IDE navigation and debugging experience)
 
 template <class _Rx, class... _Types>
