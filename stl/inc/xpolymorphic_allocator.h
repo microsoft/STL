@@ -145,7 +145,7 @@ namespace pmr {
             const size_t _Align = alignof(max_align_t)) { // allocate _Bytes bytes of memory with alignment _Align
             _STL_ASSERT(_Is_pow_2(_Align), "memory_resource::allocate(): Alignment must be a power of two.");
             void* _Ptr = do_allocate(_Bytes, _Align);
-            return new (_Ptr) byte[_Bytes];
+            return ::operator new(_Bytes, _Ptr);
         }
 
         void deallocate(void* const _Ptr, const size_t _Bytes, const size_t _Align = alignof(max_align_t)) {
