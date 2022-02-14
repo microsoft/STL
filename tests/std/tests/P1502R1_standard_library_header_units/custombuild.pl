@@ -42,9 +42,9 @@ sub getAllHeaders
 
 sub getImportableCxxLibraryHeaders()
 {
-    # This JSON file is shared between Python and Perl,
+    # This JSON With Comments file is shared between Python and Perl,
     # reducing the number of things we need to update when adding new Standard headers.
-    my $jsonObject = loadJsonWithComments("importable_cxx_library_headers.json");
+    my $jsonObject = loadJsonWithComments("importable_cxx_library_headers.jsonc");
     return @{$jsonObject};
 }
 
