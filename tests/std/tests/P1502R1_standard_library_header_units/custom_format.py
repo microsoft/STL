@@ -74,6 +74,7 @@ def getImportableCxxLibraryHeaders():
         'spanstream',
         'sstream',
         'stack',
+        'stacktrace',
         'stdexcept',
         'stop_token',
         'streambuf',
