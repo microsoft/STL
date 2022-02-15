@@ -1960,9 +1960,13 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator*() const
-                _NOEXCEPT_IDL0(noexcept(_STD invoke(*_Parent->_Fun, *_Current))) {
+                noexcept(noexcept(_STD invoke(*_Parent->_Fun, *_Current))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                _Check_dereference();
+                try {
+                    _Check_dereference();
+                } catch (...) {
+                    _STL_VERIFY(false, "cannot dereference end transform_view iterator");
+                }
                 _STL_VERIFY(
                     _Parent->_Fun, "Cannot dereference iterator into transform_view with no transformation function");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
