@@ -2879,7 +2879,7 @@ struct _Formatter_base {
     }
 
     template <class _FormatContext>
-    typename _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) {
+    typename _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
         if (_Specs._Dynamic_width_index >= 0) {
             _Specs._Width =
                 _Get_dynamic_specs<_Width_checker>(_FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
@@ -2897,7 +2897,7 @@ struct _Formatter_base {
     }
 
 private:
-    _Dynamic_format_specs<_CharT> _Specs;
+    mutable _Dynamic_format_specs<_CharT> _Specs;
 };
 
 #define _FORMAT_SPECIALIZE_FOR(_Type, _ArgType) \
