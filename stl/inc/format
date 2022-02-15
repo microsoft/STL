@@ -2541,8 +2541,8 @@ _NODISCARD _OutputIt _Fmt_write(
         case chars_format::hex:
         case chars_format::scientific:
             if (_Extra_precision != 0) {
-                while (*_Exponent_start != _Exponent) { // Trailing zeroes are in front of the exponent
-                    --_Exponent_start;
+                // Trailing zeroes are in front of the exponent
+                while (*--_Exponent_start != _Exponent) {
                 }
             }
             [[fallthrough]];
