@@ -4881,7 +4881,7 @@ namespace ranges {
                 return _Iterator{*this, _First, this->_Get_cache(_Range)};
             }
 
-            auto _Result = _Find_next(_First);
+            const auto _Result = _Find_next(_First);
             this->_Set_cache(_Range, _Result);
             return _Iterator{*this, _First, _Result};
         }
