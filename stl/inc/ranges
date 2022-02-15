@@ -4752,7 +4752,7 @@ namespace ranges {
 
         class _Iterator {
         private:
-            friend class chunk_by_view;
+            friend chunk_by_view;
 
             chunk_by_view* _Parent{};
             /* [[no_unique_address]] */ iterator_t<_Vw> _Current{};
@@ -4776,7 +4776,7 @@ namespace ranges {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(_Current != _Next, "cannot dereference chunk_by_view end iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                return subrange(_Current, _Next);
+                return subrange{_Current, _Next};
             }
 
             constexpr _Iterator& operator++() {
@@ -4875,18 +4875,21 @@ namespace ranges {
 #if _CONTAINER_DEBUG_LEVEL > 0
             _STL_VERIFY(_Pred, "cannot call begin on a chunk_by_view with no predicate");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
+
+            const auto _First = _RANGES begin(_Range);
             if (this->_Has_cache()) {
-                return _Iterator{*this, _RANGES begin(_Range), this->_Get_cache(_Range)};
+                return _Iterator{*this, _First, this->_Get_cache(_Range)};
             }
 
-            auto _Result = _Find_next(_RANGES begin(_Range));
+            auto _Result = _Find_next(_First);
             this->_Set_cache(_Range, _Result);
-            return _Iterator{*this, _RANGES begin(_Range), _Result};
+            return _Iterator{*this, _First, _Result};
         }
 
         _NODISCARD constexpr auto end() {
             if constexpr (common_range<_Vw>) {
-                return _Iterator{*this, _RANGES end(_Range), _RANGES end(_Range)};
+                const auto _Last = _RANGES end(_Range);
+                return _Iterator{*this, _Last, _Last};
             } else {
                 return default_sentinel;
             }

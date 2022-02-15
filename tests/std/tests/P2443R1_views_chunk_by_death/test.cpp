@@ -48,45 +48,45 @@ void test_view_begin() {
 }
 
 constexpr auto lambda = [](int i, int j) { return i == j; };
-using FV              = decltype(ranges::chunk_by_view{some_ints, lambda});
+using V               = decltype(ranges::chunk_by_view{some_ints, lambda});
 
 void test_operator_star_end_iterator() {
-    FV r{some_ints, lambda};
-    ranges::iterator_t<FV> i = ranges::next(r.begin(), r.end());
+    V r{some_ints, lambda};
+    ranges::iterator_t<V> i = ranges::next(r.begin(), r.end());
     (void) (*i); // cannot dereference chunk_by_view end iterator
 }
 
 void test_operator_preincrement_after_end() {
-    FV r{some_ints, lambda};
-    ranges::iterator_t<FV> i = ranges::next(r.begin(), r.end());
+    V r{some_ints, lambda};
+    ranges::iterator_t<V> i = ranges::next(r.begin(), r.end());
     ++i; // cannot increment chunk_by_view iterator past end
 }
 
 void test_operator_postincrement_after_end() {
-    FV r{some_ints, lambda};
-    ranges::iterator_t<FV> i = ranges::next(r.begin(), r.end());
+    V r{some_ints, lambda};
+    ranges::iterator_t<V> i = ranges::next(r.begin(), r.end());
     i++; // cannot increment chunk_by_view iterator past end
 }
 
 void test_operator_predecrement_value_initialized_iterator() {
-    ranges::iterator_t<FV> i{};
+    ranges::iterator_t<V> i{};
     --i; // cannot decrement value-initialized chunk_by_view iterator
 }
 
 void test_operator_predecrement_before_begin() {
-    FV r{some_ints, lambda};
-    ranges::iterator_t<FV> i = r.begin();
+    V r{some_ints, lambda};
+    ranges::iterator_t<V> i = r.begin();
     --i; // cannot decrement chunk_by_view iterator before begin
 }
 
 void test_operator_postdecrement_value_initialized_iterator() {
-    ranges::iterator_t<FV> i{};
+    ranges::iterator_t<V> i{};
     i--; // cannot decrement value-initialized chunk_by_view iterator
 }
 
 void test_operator_postdecrement_before_begin() {
-    FV r{some_ints, lambda};
-    ranges::iterator_t<FV> i = r.begin();
+    V r{some_ints, lambda};
+    ranges::iterator_t<V> i = r.begin();
     i--; // cannot decrement chunk_by_view iterator before begin
 }
 
