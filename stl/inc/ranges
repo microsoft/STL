@@ -1910,7 +1910,7 @@ namespace ranges {
             _Parent_t* _Parent{};
 
 #if _ITERATOR_DEBUG_LEVEL != 0
-            constexpr void _Check_dereference() const {
+            constexpr void _Check_dereference() const noexcept {
                 _STL_VERIFY(_Parent != nullptr, "cannot dereference value-initialized transform_view iterator");
                 _STL_VERIFY(_Current != _RANGES end(_Parent->_Range), "cannot dereference end transform_view iterator");
             }
@@ -1962,11 +1962,7 @@ namespace ranges {
             _NODISCARD constexpr decltype(auto) operator*() const
                 noexcept(noexcept(_STD invoke(*_Parent->_Fun, *_Current))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                try {
-                    _Check_dereference();
-                } catch (...) {
-                    _STL_VERIFY(false, "cannot dereference end transform_view iterator");
-                }
+                _Check_dereference();
                 _STL_VERIFY(
                     _Parent->_Fun, "Cannot dereference iterator into transform_view with no transformation function");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
