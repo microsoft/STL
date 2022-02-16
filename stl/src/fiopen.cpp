@@ -60,7 +60,7 @@ FILE* _Xfiopen(const CharT* filename, ios_base::openmode mode, int prot) {
     // look for a valid mode
     int n = 0;
     while (valid[n] != mode) {
-        if (++n == _STD size(valid)) {
+        if (++n == static_cast<int>(_STD size(valid))) {
             return nullptr; // no valid mode
         }
     }
