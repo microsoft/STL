@@ -3,8 +3,8 @@
 
 
 #include <cassert>
-#include <thread>
 #include <future>
+#include <thread>
 
 
 static std::atomic<int> has_default_objects{0};
@@ -64,21 +64,22 @@ struct no_default_or_assign {
     int x;
 };
 
-template<typename F>
+template <class F>
 void assert_throws_future_error(F f, std::error_code errc) {
     try {
         f();
     } catch (const std::future_error& e) {
         assert(e.code() == errc);
         return;
-    } catch (...) {}
+    } catch (...) {
+    }
     assert(false);
 }
 
 template <class T>
 void run_tests() {
     using promise = std::promise<T>;
-    using future = std::future<T>;
+    using future  = std::future<T>;
 
     {
         promise p;
@@ -92,15 +93,9 @@ void run_tests() {
         T v(10);
         p.set_value(v);
         assert(f.get().x == 10);
-        assert_throws_future_error([&]{
-            p.set_value(v);
-        }, std::future_errc::promise_already_satisfied);
-        assert_throws_future_error([&]{
-            f.get();
-        }, std::future_errc::no_state);
-        assert_throws_future_error([&]{
-            p.get_future().get();
-        }, std::future_errc::future_already_retrieved);
+        assert_throws_future_error([&] { p.set_value(v); }, std::future_errc::promise_already_satisfied);
+        assert_throws_future_error([&] { f.get(); }, std::future_errc::no_state);
+        assert_throws_future_error([&] { p.get_future().get(); }, std::future_errc::future_already_retrieved);
     }
 
     {
@@ -121,9 +116,7 @@ void run_tests() {
         promise p;
         future f = p.get_future();
         p.set_exception(std::make_exception_ptr(3));
-        assert_throws_future_error([&]{
-            p.set_value(T(2));
-        }, std::future_errc::promise_already_satisfied);
+        assert_throws_future_error([&] { p.set_value(T(2)); }, std::future_errc::promise_already_satisfied);
         try {
             f.get();
             assert(false);
@@ -138,9 +131,9 @@ void run_tests() {
         promise p;
         future f = p.get_future();
         std::atomic<int> failures{0};
-        int succeeded = -1;
+        int succeeded    = -1;
         auto make_thread = [&](int n) {
-            return std::thread([&, n]{
+            return std::thread([&, n] {
                 try {
                     p.set_value(T(n));
                 } catch (std::future_error) {
@@ -150,10 +143,8 @@ void run_tests() {
                 succeeded = n;
             });
         };
-        std::thread threads[]{
-            make_thread(0), make_thread(1), make_thread(2), make_thread(3),
-            make_thread(4), make_thread(5), make_thread(6), make_thread(7)
-        };
+        std::thread threads[]{make_thread(0), make_thread(1), make_thread(2), make_thread(3), make_thread(4),
+            make_thread(5), make_thread(6), make_thread(7)};
 
         for (auto& t : threads) {
             t.join();
@@ -164,24 +155,18 @@ void run_tests() {
     }
 
     {
-        (void) std::async(std::launch::async, []() -> T {
-            return T(16);
-        });
+        (void) std::async(std::launch::async, []() -> T { return T(16); });
         (void) std::async(std::launch::async, []() -> T {
             const T x(40);
             return x;
         });
 
-        future f = std::async(std::launch::async, []() -> T {
-            return T(23);
-        });
+        future f = std::async(std::launch::async, []() -> T { return T(23); });
         assert(f.get().x == 23);
     }
 
     {
-        std::packaged_task<T()> pt([]() -> T {
-            return T(7);
-        });
+        std::packaged_task<T()> pt([]() -> T { return T(7); });
         future f = pt.get_future();
         pt();
 
