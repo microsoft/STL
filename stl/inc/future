@@ -184,14 +184,14 @@ struct _State_deleter : _Deleter_base<_Ty> { // manage allocator and deletion st
     _Alloc _My_alloc;
 };
 
-struct _DummyType {};
+template <class _Ty>
+union _Result_holder {
+    _Result_holder() {}
+    ~_Result_holder() {}
 
-template <typename _Ty>
-union _DummyUnionType {
-    _DummyType _Dummy{};
-    _Ty _HeldValue;
+    _Ty _Held_value;
     operator _Ty&() noexcept {
-        return _HeldValue;
+        return _Held_value;
     }
 };
 
@@ -211,9 +211,10 @@ public:
         if (_Already_has_stored_result() && !_Ready) { // registered for release at thread exit
             _Cond._Unregister(_Mtx);
         }
+
         if constexpr (!is_default_constructible_v<_Ty>) {
             if (_Has_stored_result) {
-                _Result._HeldValue.~Ty();
+                _Result._Held_value.~_Ty();
             }
         }
     }
@@ -297,17 +298,21 @@ public:
             _Rethrow_future_exception(_Exception);
         }
 
-        return _Result;
+        if constexpr (is_default_constructible_v<_Ty>) {
+            return _Result;
+        } else {
+            return _Result._Held_value;
+        }
     }
 
-    template <typename _Ty2>
+    template <class _Ty2>
     void _Emplace_result(_Ty2&& _Val) {
         // TRANSITION: _Associated_state ctor will move or copy assign if _Result was default constructed
         // rather than move or copy construct
         if constexpr (is_default_constructible_v<_Ty>) {
             _Result = _STD forward<_Ty2>(_Val);
         } else {
-            ::new (static_cast<void*>(_STD addressof(_Result._HeldValue))) _Ty(_STD forward<_Ty2>(_Val));
+            ::new (static_cast<void*>(_STD addressof(_Result._Held_value))) _Ty(_STD forward<_Ty2>(_Val));
             _Has_stored_result = true;
         }
     }
@@ -353,7 +358,8 @@ public:
             _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
         }
 
-        _STL_ASSERT((_Exc != nullptr), "promise<T>::set_exception(nullptr)");
+        _STL_ASSERT(_Exc != nullptr, "promise<T>::set_exception/set_exception_at_thread_exit called with a null "
+                                     "std::exception_ptr, which is invalid per N4901 32.9.6 [future.promise]/20");
         _Exception = _Exc;
         _Do_notify(_Lock, _At_thread_exit);
     }
@@ -370,7 +376,7 @@ public:
         if constexpr (is_default_constructible_v<_Ty>) {
             return _Has_stored_result;
         } else {
-            return _Has_stored_result || (_Exception != nullptr);
+            return _Has_stored_result || _Exception;
         }
     }
 
@@ -401,7 +407,7 @@ protected:
     }
 
 public:
-    typename conditional<is_default_constructible_v<_Ty>, _Ty, _DummyUnionType<_Ty>>::type _Result;
+    conditional_t<is_default_constructible_v<_Ty>, _Ty, _Result_holder<_Ty>> _Result;
     exception_ptr _Exception;
     mutex _Mtx;
     condition_variable _Cond;
@@ -423,6 +429,7 @@ private:
         if constexpr (is_default_constructible_v<_Ty>) {
             _Has_stored_result = true;
         }
+
         if (_At_thread_exit) { // notify at thread exit
             _Cond._Register(*_Lock, &_Ready);
         } else { // notify immediately
