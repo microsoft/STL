@@ -397,18 +397,14 @@ set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
 
 ## Benchmarks
 
-Building of benchmarks can be enabled by setting `BUILD_BENCHMARKS` to true. The tests use the benchmark library so it
-is also required to set `BUILD_TESTING` to true.
+Building of benchmarks can be enabled by setting `BUILD_BENCHMARKS` to true. The benchmarks use the benchmark library so
+it is also required to set `BUILD_TESTING` to true. The benchmarks depend on an externally installed benchmark library.
+This can be done via `vcpkg install benchmark`.
 
-
-Benchmarks live in the `benchmark` subdirectory and can be built and run via the `msvc_standard_libraries_benchmarks`
-target. Currently all tests are merged into a single binary. Individual tests can be run by passing
+Benchmarks live in the `benchmark` subdirectory and can be built and run via the `stl_benchmarks`
+target. Currently all benchmarks are merged into a single binary. Individual benchmarks can be run by passing
 `--benchmark_filter=<regex>` (Please check the official
 [documentation](https://github.com/google/benchmark/blob/main/docs/user_guide.md#running-a-subset-of-benchmarks))
-
-The tests depend on an externally installed benchmark library. This can be done via `vcpkg install benchmark`.
-However, it has the drawback that it is not possible to benchmark code that links into the libraries provided by the
-STL.
 
 # Editing And Testing The Debugger Visualizer
 

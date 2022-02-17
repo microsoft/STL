@@ -14,7 +14,7 @@ inline static vector<bool> createRandomVector(const size_t size) {
     static random_device rd;
     static mt19937 gen{random_device{}()};
     vector<bool> result(size);
-    generate_n(result.begin(), size, []() { return bernoulli_distribution{0.5}(gen); });
+    generate_n(result.begin(), size, [] { return bernoulli_distribution{0.5}(gen); });
     return result;
 }
 
