@@ -1,0 +1,3 @@
+$env:PATH="$PSScriptRoot\bin\@VCLIBS_I386_OR_AMD64@;$env:PATH"
+$env:INCLUDE="$PSScriptRoot\inc;$env:INCLUDE"
+$env:LIB="$PSScriptRoot\out\lib\@VCLIBS_I386_OR_AMD64@;$env:LIB"
