@@ -170,12 +170,17 @@ protected:
     _Wrapped_iter iter;
 };
 
+#ifndef __cpp_lib_concepts
 template <class _Container>
 _NODISCARD _CONSTEXPR20 insert_iterator<_Container> inserter(_Container& _Cont, typename _Container::iterator _Where) {
     return insert_iterator<_Container>(_Cont, _Where);
 }
+#else // ^^^ No Ranges / Ranges vvv
+template <class _Container>
+_NODISCARD constexpr insert_iterator<_Container> inserter(_Container& _Cont, _RANGES iterator_t<_Container> _Where) {
+    return insert_iterator<_Container>(_Cont, _Where);
+}
 
-#ifdef __cpp_lib_concepts
 template <semiregular _Se>
 class move_sentinel {
 public:
@@ -1044,7 +1049,7 @@ struct _Common_iterator_pointer_type {
 
 // clang-format off
 template <class _Iter, class _Se>
-    requires _Has_member_arrow<const common_iterator<_Iter, _Se>&> //
+    requires _Has_member_arrow<const common_iterator<_Iter, _Se>&>
 struct _Common_iterator_pointer_type<_Iter, _Se> {
     // clang-format on
     using pointer = decltype(_STD declval<const common_iterator<_Iter, _Se>&>().operator->());

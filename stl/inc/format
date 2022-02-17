@@ -1129,10 +1129,15 @@ public:
     template <class _Ty>
     _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
         if constexpr (is_integral_v<_Ty>) {
-            if constexpr (is_signed_v<_Ty>) {
-                if (_Value < 0) {
-                    _THROW(format_error("Negative width."));
-                }
+            bool _Positive;
+            if constexpr (same_as<_Ty, bool>) { // avoid "bool > 0", which triggers C4804
+                _Positive = _Value != 0;
+            } else {
+                _Positive = _Value > 0;
+            }
+
+            if (!_Positive) {
+                _THROW(format_error("width is not positive."));
             }
             return static_cast<unsigned long long>(_Value);
         } else {
@@ -1603,8 +1608,10 @@ class _Format_arg_store<_Context> {};
 template <class _Context>
 class basic_format_args {
 public:
-    basic_format_args() noexcept;
+    basic_format_args() noexcept = default;
+
     basic_format_args(const _Format_arg_store<_Context>&) noexcept {}
+
     template <class... _Args>
     basic_format_args(const _Format_arg_store<_Context, _Args...>& _Store) noexcept
         : _Num_args(sizeof...(_Args)), _Index_array(_Store._Index_array) {}
@@ -2394,8 +2401,6 @@ _NODISCARD _OutputIt _Fmt_write(
 
     _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
-    // Clear the type so that the string_view writer doesn't fail on 'c'.
-    _Specs._Type = '\0';
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, _Locale);
 }
 
@@ -2698,11 +2703,10 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 's');
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'c' || _Specs._Type == 's');
     _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
     _STL_INTERNAL_CHECK(!_Specs._Alt);
     _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
-    _STL_INTERNAL_CHECK(!_Specs._Localized);
 
     if (_Specs._Precision < 0 && _Specs._Width <= 0) {
         return _Fmt_write(_STD move(_Out), _Value);
