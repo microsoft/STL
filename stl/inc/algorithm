@@ -4773,9 +4773,7 @@ concept uniform_random_bit_generator = invocable<_Ty&>
     && requires {
         { (_Ty::min)() } -> same_as<invoke_result_t<_Ty&>>;
         { (_Ty::max)() } -> same_as<invoke_result_t<_Ty&>>;
-        typename _Require_constant<(_Ty::min)()>;
-        typename _Require_constant<(_Ty::max)()>;
-        requires (_Ty::min)() < (_Ty::max)();
+        requires bool_constant<(_Ty::min)() < (_Ty::max)()>::value;
     };
 // clang-format on
 

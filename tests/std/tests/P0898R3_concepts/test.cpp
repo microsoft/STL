@@ -536,6 +536,15 @@ namespace test_convertible_to {
     STATIC_ASSERT(convertible_to<char_array, ConvertsFrom<char const*>>);
     STATIC_ASSERT(convertible_to<char (&)[], ConvertsFrom<char const*>>);
 
+    // volatile array glvalues
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
+    STATIC_ASSERT(convertible_to<int volatile (&)[42], int volatile (&)[42]>);
+    STATIC_ASSERT(convertible_to<int volatile (&)[42][13], int volatile (&)[42][13]>);
+#endif // TRANSITION, DevCom-1627396
+    STATIC_ASSERT(convertible_to<int volatile(&&)[42], int volatile(&&)[42]>);
+    STATIC_ASSERT(convertible_to<int volatile(&&)[42][13], int volatile(&&)[42][13]>);
+
+
     // char
     STATIC_ASSERT(!test<char, void>());
     STATIC_ASSERT(!test<char, fn>());
@@ -709,6 +718,14 @@ namespace test_common_reference_with {
     STATIC_ASSERT(!test<Interconvertible<0>&, Interconvertible<1> const&>());
 
     STATIC_ASSERT(test<SimpleBase, ConvertsFrom<int, SimpleBase>>());
+
+    STATIC_ASSERT(test<int volatile&, int volatile&>());
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
+    STATIC_ASSERT(test<int volatile (&)[42], int volatile (&)[42]>());
+    STATIC_ASSERT(test<int volatile (&)[42][13], int volatile (&)[42][13]>());
+#endif // TRANSITION, DevCom-1627396
+    STATIC_ASSERT(test<int volatile(&&)[42], int volatile(&&)[42]>());
+    STATIC_ASSERT(test<int volatile(&&)[42][13], int volatile(&&)[42][13]>());
 } // namespace test_common_reference_with
 
 namespace test_common_with {
@@ -2022,6 +2039,11 @@ namespace test_swappable_with {
     STATIC_ASSERT(!test<int (&)[3][4][1][2], int (&)[4][4][1][2]>());
 
     STATIC_ASSERT(test<int (&)[2][2], int (&)[2][2]>());
+
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1627396
+    STATIC_ASSERT(test<int volatile (&)[4], int volatile (&)[4]>());
+    STATIC_ASSERT(test<int volatile (&)[3][4], int volatile (&)[3][4]>());
+#endif // TRANSITION, DevCom-1627396
 
     STATIC_ASSERT(test<MovableFriendSwap, MovableFriendSwap>() == is_permissive);
     STATIC_ASSERT(test<MovableFriendSwap&, MovableFriendSwap&>());
