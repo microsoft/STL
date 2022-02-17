@@ -799,16 +799,17 @@ _NODISCARD constexpr auto _To_signed_like(const _Ty _Value) noexcept {
 
 // clang-format off
 template <class _Ty>
-concept weakly_incrementable = movable<_Ty> && requires(_Ty __i) {
-    typename iter_difference_t<_Ty>;
-    requires _Signed_integer_like<iter_difference_t<_Ty>>;
-    { ++__i } -> same_as<_Ty&>;
-    __i++;
-}
+concept weakly_incrementable = movable<_Ty>
+    && requires(_Ty __i) {
+        typename iter_difference_t<_Ty>;
+        requires _Signed_integer_like<iter_difference_t<_Ty>>;
+        { ++__i } -> same_as<_Ty&>;
+        __i++;
+    }
 #ifdef __clang__ // TRANSITION, LLVM-48173
-&& !same_as<_Ty, bool>
+    && !same_as<_Ty, bool>
 #endif // TRANSITION, LLVM-48173
-;
+    ;
 
 template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {

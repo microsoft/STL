@@ -1129,14 +1129,8 @@ public:
     template <class _Ty>
     _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
         if constexpr (is_integral_v<_Ty>) {
-            bool _Positive;
-            if constexpr (same_as<_Ty, bool>) { // avoid "bool > 0", which triggers C4804
-                _Positive = _Value != 0;
-            } else {
-                _Positive = _Value > 0;
-            }
-
-            if (!_Positive) {
+#pragma warning(suppress : 4804) // '>': unsafe use of type 'bool' in operation
+            if (!(_Value > 0)) {
                 _THROW(format_error("width is not positive."));
             }
             return static_cast<unsigned long long>(_Value);
