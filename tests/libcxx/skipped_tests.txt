@@ -612,6 +612,7 @@ utilities\format\format.formatter\format.context\format.formatter.spec\formatter
 utilities\format\format.formatter\format.context\format.formatter.spec\formatter.signed_integral.pass.cpp
 utilities\format\format.formatter\format.context\format.formatter.spec\formatter.string.pass.cpp
 utilities\format\format.formatter\format.context\format.formatter.spec\formatter.unsigned_integral.pass.cpp
+utilities\format\format.formatter\format.formatter.spec\formatter.char.pass.cpp
 
 # libc++ doesn't yet implement P2216R3 (test uses non-constant-expression format strings)
 utilities\format\format.functions\format.pass.cpp
@@ -722,10 +723,6 @@ ranges\range.adaptors\range.drop\ctor.default.pass.cpp
 ranges\range.adaptors\range.transform\iterator\subscript.pass.cpp
 ranges\range.utility\view.interface\view.interface.pass.cpp
 
-# tests invalid range
-utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy.pass.cpp
-utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move.pass.cpp
-
 # Narrowing conversion
 utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move_n.pass.cpp
@@ -767,6 +764,17 @@ language.support\support.limits\support.limits.general\format.version.pass.cpp
 
 # libc++ doesn't yet implement LWG-3670
 ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
+
+# Test suite incorrectly detects clang-cl support for `int128`
+concepts\concepts.lang\concepts.arithmetic\integral.pass.cpp
+language.support\support.limits\limits\numeric.limits.members\lowest.pass.cpp
+numerics\bit\bit.pow.two\bit_ceil.pass.cpp
+numerics\bit\bitops.count\countl_one.pass.cpp
+numerics\bit\bitops.count\countl_zero.pass.cpp
+numerics\bit\bitops.count\countr_one.pass.cpp
+numerics\bit\bitops.count\countr_zero.pass.cpp
+numerics\bit\bitops.count\popcount.pass.cpp
+utilities\type.index\type.index.hash\enabled_hash.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
