@@ -288,6 +288,8 @@ public:
             _Rethrow_future_exception(_Exception);
         }
 
+        // TRANSITION: This should be assigned before `_Exception` is rethrown so that a `future::get`
+        // that throws a stored exception is invalidated (see: N4901 [futures.unique.future]/17)
         _Retrieved = true;
         _Maybe_run_deferred_function(_Lock);
         while (!_Ready) {
@@ -359,7 +361,7 @@ public:
         }
 
         _STL_ASSERT(_Exc != nullptr, "promise<T>::set_exception/set_exception_at_thread_exit called with a null "
-                                     "std::exception_ptr, which is invalid per N4901 32.9.6 [future.promise]/20");
+                                     "std::exception_ptr, which is invalid per N4901 32.9.6 [futures.promise]/20");
         _Exception = _Exc;
         _Do_notify(_Lock, _At_thread_exit);
     }

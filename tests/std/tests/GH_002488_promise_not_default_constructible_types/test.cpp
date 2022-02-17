@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 
+#include <atomic>
 #include <cassert>
+#include <exception>
 #include <future>
+#include <system_error>
 #include <thread>
 
 
@@ -65,11 +68,11 @@ struct no_default_or_assign {
 };
 
 template <class F>
-void assert_throws_future_error(F f, std::error_code errc) {
+void assert_throws_future_error(F f, std::error_code expected_code) {
     try {
         f();
     } catch (const std::future_error& e) {
-        assert(e.code() == errc);
+        assert(e.code() == expected_code);
         return;
     } catch (...) {
     }
@@ -78,18 +81,18 @@ void assert_throws_future_error(F f, std::error_code errc) {
 
 template <class T>
 void run_tests() {
-    using promise = std::promise<T>;
-    using future  = std::future<T>;
+    using Promise = std::promise<T>;
+    using Future  = std::future<T>;
 
     {
-        promise p;
+        Promise p;
         p.set_value(T(4));
         assert(p.get_future().get().x == 4);
     }
 
     {
-        promise p;
-        future f = p.get_future();
+        Promise p;
+        Future f = p.get_future();
         T v(10);
         p.set_value(v);
         assert(f.get().x == 10);
@@ -99,8 +102,8 @@ void run_tests() {
     }
 
     {
-        promise p;
-        future f = p.get_future();
+        Promise p;
+        Future f = p.get_future();
         p.set_exception(std::make_exception_ptr(5));
         try {
             f.get();
@@ -113,8 +116,8 @@ void run_tests() {
     }
 
     {
-        promise p;
-        future f = p.get_future();
+        Promise p;
+        Future f = p.get_future();
         p.set_exception(std::make_exception_ptr(3));
         assert_throws_future_error([&] { p.set_value(T(2)); }, std::future_errc::promise_already_satisfied);
         try {
@@ -128,8 +131,8 @@ void run_tests() {
     }
 
     {
-        promise p;
-        future f = p.get_future();
+        Promise p;
+        Future f = p.get_future();
         std::atomic<int> failures{0};
         int succeeded    = -1;
         auto make_thread = [&](int n) {
@@ -155,19 +158,19 @@ void run_tests() {
     }
 
     {
-        (void) std::async(std::launch::async, []() -> T { return T(16); });
-        (void) std::async(std::launch::async, []() -> T {
+        (void) std::async(std::launch::async, [] { return T(16); });
+        (void) std::async(std::launch::async, [] {
             const T x(40);
             return x;
         });
 
-        future f = std::async(std::launch::async, []() -> T { return T(23); });
+        Future f = std::async(std::launch::async, [] { return T(23); });
         assert(f.get().x == 23);
     }
 
     {
-        std::packaged_task<T()> pt([]() -> T { return T(7); });
-        future f = pt.get_future();
+        std::packaged_task<T()> pt([] { return T(7); });
+        Future f = pt.get_future();
         pt();
 
         assert(f.get().x == 7);
