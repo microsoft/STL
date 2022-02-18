@@ -1448,12 +1448,7 @@ private:
     mutable file_status _Mysymstat;
 };
 
-enum class _Prefix_directory_t : bool {
-    _Dont_add,
-    _Add,
-};
-
-template <_Prefix_directory_t _Prefix_directory_v>
+template <class _Prefix_directory>
 class _Directory_iterator {
 public:
     using string_type = path::string_type;
@@ -1566,7 +1561,7 @@ private:
     }
 
     void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype) {
-        if constexpr (_Prefix_directory_v == _Prefix_directory_t::_Add) {
+        if constexpr (_Prefix_directory::value) {
             // set entry to _Mydirpath/_Filename
             _Myentry.assign(_Mydirpath / path(_Filename), file_status(_Ftype));
         } else {
@@ -1580,19 +1575,19 @@ private:
     value_type _Myentry;
 };
 
-template <_Prefix_directory_t _Prefix_directory_v>
+template <class _Prefix_directory>
 _NODISCARD bool operator==(
-    const _Directory_iterator<_Prefix_directory_v>& _Left, const _Directory_iterator<_Prefix_directory_v>& _Right) {
+    const _Directory_iterator<_Prefix_directory>& _Left, const _Directory_iterator<_Prefix_directory>& _Right) {
     return _Left._Equal(_Right);
 }
 
-template <_Prefix_directory_t _Prefix_directory_v>
+template <class _Prefix_directory>
 _NODISCARD bool operator!=(
-    const _Directory_iterator<_Prefix_directory_v>& _Left, const _Directory_iterator<_Prefix_directory_v>& _Right) {
+    const _Directory_iterator<_Prefix_directory>& _Left, const _Directory_iterator<_Prefix_directory>& _Right) {
     return !(_Left == _Right);
 }
 
-using directory_iterator = _Directory_iterator<_Prefix_directory_t::_Add>;
+using directory_iterator = _Directory_iterator<true_type>;
 
 _NODISCARD inline const directory_iterator& begin(const directory_iterator& _Iter) noexcept {
     return _Iter;
@@ -1604,7 +1599,7 @@ _NODISCARD inline directory_iterator end(const directory_iterator&) noexcept {
 
 class recursive_directory_iterator {
 public:
-    using _Myiter     = _Directory_iterator<_Prefix_directory_t::_Dont_add>;
+    using _Myiter     = _Directory_iterator<false_type>;
     using _Mypair     = pair<_Myiter, path>;
     using string_type = path::string_type;
     using char_type   = string_type::value_type;
@@ -2514,7 +2509,7 @@ inline bool _Remove_all(const path& _Path, uintmax_t& _Ans,
     error_code& _Code) noexcept { // recursively remove a file or directory, count removed files
     _Code.clear();
     if (is_directory(_Path)) { // empty and remove a directory
-        using _Myit = _Directory_iterator<_Prefix_directory_t::_Dont_add>;
+        using _Myit = _Directory_iterator<false_type>;
         _Myit _Last;
 
         for (;;) { // remove a directory entry
