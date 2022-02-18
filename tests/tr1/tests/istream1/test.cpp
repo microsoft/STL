@@ -214,7 +214,7 @@ void test_main() { // test basic workings of istream definitions
     char buf[20];
     STD streampos pos = ins.tellg();
 
-    CHECK(pos != (STD streampos) (-1));
+    CHECK(pos != (STD streampos)(-1));
     CHECK_PTR(&ins.ignore(), &ins);
     CHECK_INT(ins.peek(), 'i');
     CHECK_PTR(&ins.putback('l'), &ins);

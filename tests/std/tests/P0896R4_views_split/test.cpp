@@ -285,7 +285,7 @@ constexpr bool instantiation_test() {
     instantiator::call<test_range<forward_iterator_tag, Common::yes, CanView::yes, Copyability::copyable>>();
 
     { // ensure we get something contiguous
-        for (string_view sv : "127..0..0..1"sv | views::split(".."sv)) {
+        for (ranges::contiguous_range auto sv : "127..0..0..1"sv | views::split(".."sv)) {
             assert(!sv.empty());
         }
     }

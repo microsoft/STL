@@ -482,12 +482,17 @@ constexpr compare_test_case compareTestCases[] = {
 bool run_compare_test_case(const compare_test_case& testCase) {
     const path leftPath(testCase.left);
     const path rightPath(testCase.right);
-    const int actualCmp = leftPath.compare(testCase.right); // string_view
+    const int actualCmp        = leftPath.compare(testCase.right); // string_view
+    const size_t leftPathHash  = hash_value(leftPath);
+    const size_t rightPathHash = hash_value(rightPath);
     // technically the standard only requires that these agree in sign, but our implementation
     // wants to always return the same value
     EXPECT(leftPath.compare(rightPath) == actualCmp); // const path&
     EXPECT(leftPath.compare(rightPath.native()) == actualCmp); // const string_type&
     EXPECT(leftPath.compare(rightPath.c_str()) == actualCmp); // const value_type *
+    // LWG-3657: hash<filesystem::path>::operator() returns the same value as filesystem::hash_value
+    EXPECT(hash<path>{}(leftPath) == leftPathHash);
+    EXPECT(hash<path>{}(rightPath) == rightPathHash);
     compare_result actual;
     if (actualCmp < 0) {
         actual = compare_result::less;
@@ -498,7 +503,7 @@ bool run_compare_test_case(const compare_test_case& testCase) {
         EXPECT(!(leftPath > rightPath));
         EXPECT(leftPath <= rightPath);
         EXPECT(!(leftPath >= rightPath));
-        EXPECT(hash_value(leftPath) != hash_value(rightPath)); // not required, but desirable
+        EXPECT(leftPathHash != rightPathHash); // not required, but desirable
     } else if (actualCmp > 0) {
         actual = compare_result::greater;
         EXPECT(rightPath.compare(testCase.left) < 0);
@@ -508,7 +513,7 @@ bool run_compare_test_case(const compare_test_case& testCase) {
         EXPECT(leftPath > rightPath);
         EXPECT(!(leftPath <= rightPath));
         EXPECT(leftPath >= rightPath);
-        EXPECT(hash_value(leftPath) != hash_value(rightPath)); // not required, but desirable
+        EXPECT(leftPathHash != rightPathHash); // not required, but desirable
     } else {
         actual = compare_result::equal;
         EXPECT(leftPath == rightPath);
@@ -517,7 +522,7 @@ bool run_compare_test_case(const compare_test_case& testCase) {
         EXPECT(!(leftPath > rightPath));
         EXPECT(leftPath <= rightPath);
         EXPECT(leftPath >= rightPath);
-        EXPECT(hash_value(leftPath) == hash_value(rightPath));
+        EXPECT(leftPathHash == rightPathHash);
     }
 
     if (testCase.expected == actual) {

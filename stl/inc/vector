@@ -550,6 +550,11 @@ private:
 
     static _CONSTEXPR20 void _Apply_annotation(
         pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
+        _STL_INTERNAL_CHECK(_First_ != nullptr);
+        _STL_INTERNAL_CHECK(_End_ != nullptr);
+        _STL_INTERNAL_CHECK(_Old_last_ != nullptr);
+        _STL_INTERNAL_CHECK(_New_last_ != nullptr);
+
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
             return;
@@ -560,10 +565,10 @@ private:
             return;
         }
 
-        const auto _First    = reinterpret_cast<const char*>(_Unfancy_maybe_null(_First_));
-        const auto _End      = reinterpret_cast<const char*>(_Unfancy_maybe_null(_End_));
-        const auto _Old_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_Old_last_));
-        const auto _New_last = reinterpret_cast<const char*>(_Unfancy_maybe_null(_New_last_));
+        const auto _First    = reinterpret_cast<const char*>(_Unfancy(_First_));
+        const auto _End      = reinterpret_cast<const char*>(_Unfancy(_End_));
+        const auto _Old_last = reinterpret_cast<const char*>(_Unfancy(_Old_last_));
+        const auto _New_last = reinterpret_cast<const char*>(_Unfancy(_New_last_));
         if constexpr (_Has_minimum_allocation_alignment<vector>) {
             __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
         } else {
@@ -1711,8 +1716,8 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
-        return (_STD min) (static_cast<size_type>((numeric_limits<difference_type>::max) ()),
-            _Alty_traits::max_size(_Getal()));
+        return (_STD min)(
+            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
     }
 
     _NODISCARD _CONSTEXPR20 size_type capacity() const noexcept {
@@ -2121,7 +2126,7 @@ _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if constexpr (is_same_v<_Ty, bool>) {
         // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
-        const auto _Min_word_size = (_STD min) (_Left._Myvec.size(), _Right._Myvec.size());
+        const auto _Min_word_size = (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
         const auto _Left_words    = _Left._Myvec._Unchecked_begin();
         const auto _Right_words   = _Right._Myvec._Unchecked_begin();
 
@@ -2148,7 +2153,7 @@ _NODISCARD _CONSTEXPR20 bool operator<(const vector<_Ty, _Alloc>& _Left, const v
         auto _First = _Left._Myvec._Unchecked_begin();
         auto _Other = _Right._Myvec._Unchecked_begin();
 
-        const auto _Last = _First + (_STD min) (_Left._Myvec.size(), _Right._Myvec.size());
+        const auto _Last = _First + (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
 
         for (; _First != _Last; ++_First, (void) ++_Other) {
             using _Comp = _Vbase_compare_three_way<signed char>;
@@ -2966,7 +2971,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
-        constexpr auto _Diff_max  = static_cast<size_type>((numeric_limits<difference_type>::max) ());
+        constexpr auto _Diff_max  = static_cast<size_type>((numeric_limits<difference_type>::max)());
         const size_type _Ints_max = this->_Myvec.max_size();
         if (_Ints_max > _Diff_max / _VBITS) { // max_size bound by difference_type limits
             return _Diff_max;
