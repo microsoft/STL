@@ -127,7 +127,7 @@ void test_duration_output() {
 
 
 template <class CharT, class CStringOrStdString, class Parsable>
-std::ios_base::iostate parse_state(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
+ios_base::iostate parse_state(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
@@ -163,13 +163,13 @@ std::ios_base::iostate parse_state(const CharT* str, const CStringOrStdString& f
 template <class CharT, class CStringOrStdString, class Parsable>
 void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
-    assert((parse_state(str, fmt, p, abbrev, offset) & ~std::ios_base::eofbit) == 0);
+    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) == 0);
 }
 
 template <class CharT, class CStringOrStdString, class Parsable>
 void fail_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
-    assert((parse_state(str, fmt, p, abbrev, offset) & ~std::ios_base::eofbit) != 0);
+    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) != 0);
 }
 
 template <class TimeType, class IntType = int>
@@ -861,10 +861,10 @@ void parse_incomplete() {
     // sufficient to supply all fields of the parsable.
     // Check both explicit and shorthand format strings, since the code path is different.
     year_month ym;
-    assert(parse_state("2021-01", "%Y-%m-%d", ym) == (std::ios_base::eofbit | std::ios_base::failbit));
-    assert(parse_state("2022-02", "%F", ym) == (std::ios_base::eofbit | std::ios_base::failbit));
-    assert(parse_state("2021-", "%Y-%m-%d", ym) == (std::ios_base::eofbit | std::ios_base::failbit));
-    assert(parse_state("2022-", "%F", ym) == (std::ios_base::eofbit | std::ios_base::failbit));
+    assert(parse_state("2021-01", "%Y-%m-%d", ym) == (ios_base::eofbit | ios_base::failbit));
+    assert(parse_state("2022-02", "%F", ym) == (ios_base::eofbit | ios_base::failbit));
+    assert(parse_state("2021-", "%Y-%m-%d", ym) == (ios_base::eofbit | ios_base::failbit));
+    assert(parse_state("2022-", "%F", ym) == (ios_base::eofbit | ios_base::failbit));
 
     seconds time;
     fail_parse("01:59", "%H:%M:%S", time);
