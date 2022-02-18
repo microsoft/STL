@@ -515,7 +515,7 @@ int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Las
     auto _UFirst2 = _Get_unwrapped(_First2);
     auto _ULast2  = _Get_unwrapped(_Last2);
 
-    if constexpr (is_pointer<decltype(_UFirst1)>::value && is_pointer<decltype(_UFirst2)>::value) {
+    if constexpr (is_pointer_v<decltype(_UFirst1)> && is_pointer_v<decltype(_UFirst2)>) {
         // _Iter_compare for memory buffer ranges
         return _Traits_compare<_Traits>(
             _UFirst1, static_cast<size_t>(_ULast1 - _UFirst1), _UFirst2, static_cast<size_t>(_ULast2 - _UFirst2));
