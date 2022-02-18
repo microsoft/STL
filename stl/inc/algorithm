@@ -5135,6 +5135,7 @@ _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _P
     return _STD shift_right(_First, _Last, _Pos_to_shift);
 }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
 namespace ranges {
     template <class _It, class _Se>
     constexpr _It _Shift_left_unchecked(_It _First, const _Se _Last, _Iter_diff_t<_It> _Pos_to_shift) {
@@ -5188,19 +5189,21 @@ namespace ranges {
         const auto _UFirst = _Get_unwrapped(_First);
         const auto _ULast  = _Get_unwrapped(_Last);
 
-        if constexpr (bidirectional_iterator<_Se>) {
-            auto _UEnd_at = _ULast;
-            if constexpr (sized_sentinel_for<_Se, _It>) {
+        using _Unwrapped = _Unwrapped_t<_It>;
+
+        if constexpr (is_constructible_v<_Unwrapped, const _Unwrapped_t<_Se>&> && bidirectional_iterator<_Unwrapped>) {
+            _Unwrapped _UEnd_at = _ULast;
+            if constexpr (sized_sentinel_for<_It, _It>) {
                 auto _Size = _ULast - _UFirst;
                 if (_Pos_to_shift >= _Size) {
-                    _RANGES advance(_First, _Size);
+                    _Seek_wrapped(_First, _UEnd_at);
                     return {_First, _First};
                 }
                 _RANGES advance(_UEnd_at, -_Pos_to_shift);
             } else {
                 for (; 0 < _Pos_to_shift; --_Pos_to_shift) {
                     if (_UEnd_at == _UFirst) {
-                        _First = _RANGES next(_First, _Last);
+                        _Seek_wrapped(_First, decltype(_UFirst)(_ULast));
                         return {_First, _First};
                     }
                     --_UEnd_at;
@@ -5209,11 +5212,10 @@ namespace ranges {
 
             _Seek_wrapped(_First, _RANGES _Move_backward_common(_UFirst, _UEnd_at, _ULast));
             return {_First, _RANGES next(_First, _Last)};
-        } else if constexpr (sized_sentinel_for<_Se, _It>) {
+        } else if constexpr (sized_sentinel_for<_Se, _It> && bidirectional_iterator<_Se>) {
             auto _Size = _ULast - _UFirst;
             if (_Pos_to_shift >= _Size) {
-                _RANGES advance(_UFirst, _Size);
-                _Seek_wrapped(_First, _UFirst);
+                _RANGES advance(_First, _Size);
                 return {_First, _First};
             }
 
@@ -5280,6 +5282,7 @@ namespace ranges {
         return _Shift_right(_RANGES begin(_Range), _RANGES end(_Range), _Pos_to_shift);
     }
 } // namespace ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX20
 
 template <class _FwdIt, class _Pr>

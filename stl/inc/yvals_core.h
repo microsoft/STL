@@ -301,6 +301,7 @@
 // P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
+// P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1334,11 +1335,11 @@
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
 #define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
 #else
 #define __cpp_lib_shift 201806L
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #ifdef __cpp_consteval
 #define __cpp_lib_source_location 201907L

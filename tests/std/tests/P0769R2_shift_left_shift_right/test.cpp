@@ -12,7 +12,7 @@
 #if __cpp_lib_shift >= 202202L
 // Test ranges::shift_left, ranges::shift_right from P2440R1
 #define TEST_RANGES
-#endif
+#endif // __cpp_lib_shift >= 202202L
 
 using namespace std;
 
@@ -127,7 +127,7 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
             assert(first == tmp.begin());
             test_iota(first, last, pos_to_shift + 1, tmpSize);
         }
-#endif
+#endif // TEST_RANGES
     }
 
     fill_iota(tmp, tmpSize);
@@ -149,7 +149,7 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
         assert(first == tmp.begin());
         test_iota(last, tmp.end(), 1, tmpSize);
     }
-#endif
+#endif // TEST_RANGES
 }
 
 template <typename Container>
@@ -175,7 +175,7 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
         assert(last == tmp.end());
         test_iota(first, last, 1, tmpSize);
     }
-#endif
+#endif // TEST_RANGES
 
     for (ptrdiff_t pos_to_shift = 0; pos_to_shift < tmpSize; ++pos_to_shift) {
         fill_iota(tmp, tmpSize);
@@ -195,7 +195,7 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
             assert(last == tmp.end());
             test_iota(first, last, 1, tmpSize - pos_to_shift);
         }
-#endif
+#endif // TEST_RANGES
     }
 
     fill_iota(tmp, tmpSize);
@@ -217,7 +217,7 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
         assert(last == tmp.end());
         test_iota(tmp.begin(), first, 1, tmpSize);
     }
-#endif
+#endif // TEST_RANGES
 }
 
 int main() {

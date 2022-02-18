@@ -14,10 +14,10 @@
 #include <limits>
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX23
 #include <algorithm>
 #include <iterator>
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -528,7 +528,7 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
     }
 }
 
-#ifdef __cpp_lib_concepts
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
 namespace ranges {
     template <class _Out, class _Ty>
     using iota_result = out_value_result<_Out, _Ty>;
@@ -556,7 +556,7 @@ namespace ranges {
         return {_STD move(_First), _STD move(_Val)};
     }
 } // namespace ranges
-#endif // __cpp_lib_concepts
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #if _HAS_CXX17
 template <class _Integral>
