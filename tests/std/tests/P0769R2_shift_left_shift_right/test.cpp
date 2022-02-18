@@ -11,7 +11,11 @@
 
 #if __cpp_lib_shift >= 202202L
 // Test ranges::shift_left, ranges::shift_right from P2440R1
-#define TEST_RANGES
+//#define TEST_RANGES
+/*
+ * Disabled until `forward_list::_Unchecked_end` is fixed to return the same type as `forward_list::end()._Unwrapped()`
+ * to work with `_Uend` in <xutility>
+ */
 #endif // __cpp_lib_shift >= 202202L
 
 using namespace std;

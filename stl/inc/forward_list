@@ -801,12 +801,8 @@ public:
         return _Unchecked_const_iterator(_Mypair._Myval2._Myhead, nullptr);
     }
 
-    _Unchecked_iterator _Unchecked_end() noexcept {
-        return _Unchecked_iterator(nullptr, nullptr);
-    }
-
-    _Unchecked_const_iterator _Unchecked_end() const noexcept {
-        return _Unchecked_const_iterator(nullptr, nullptr);
+    _Default_sentinel _Unchecked_end() const noexcept {
+        return {};
     }
 
     _Unchecked_const_iterator _Unchecked_end_iter() const noexcept {
