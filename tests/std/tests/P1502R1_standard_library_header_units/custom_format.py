@@ -13,94 +13,9 @@ from stl.test.tests import TestType
 noisyProgress = False
 
 
-# P1502R1_standard_library_header_units/test.cpp cites the definition of "importable C++ library headers".
-def getImportableCxxLibraryHeaders():
-    return [
-        'algorithm',
-        'any',
-        'array',
-        'atomic',
-        'barrier',
-        'bit',
-        'bitset',
-        'charconv',
-        'chrono',
-        'codecvt',
-        'compare',
-        'complex',
-        'concepts',
-        'condition_variable',
-        'coroutine',
-        'deque',
-        'exception',
-        'execution',
-        'filesystem',
-        'format',
-        'forward_list',
-        'fstream',
-        'functional',
-        'future',
-        'initializer_list',
-        'iomanip',
-        'ios',
-        'iosfwd',
-        'iostream',
-        'istream',
-        'iterator',
-        'latch',
-        'limits',
-        'list',
-        'locale',
-        'map',
-        'memory',
-        'memory_resource',
-        'mutex',
-        'new',
-        'numbers',
-        'numeric',
-        'optional',
-        'ostream',
-        'queue',
-        'random',
-        'ranges',
-        'ratio',
-        'regex',
-        'scoped_allocator',
-        'semaphore',
-        'set',
-        'shared_mutex',
-        'source_location',
-        'span',
-        'spanstream',
-        'sstream',
-        'stack',
-        'stacktrace',
-        'stdexcept',
-        'stop_token',
-        'streambuf',
-        'string',
-        'string_view',
-        'strstream',
-        'syncstream',
-        'system_error',
-        'thread',
-        'tuple',
-        'type_traits',
-        'typeindex',
-        'typeinfo',
-        'unordered_map',
-        'unordered_set',
-        'utility',
-        'valarray',
-        'variant',
-        'vector',
-        'version',
-    ]
-
-
 def loadJsonWithComments(filename):
     # This is far from a general-purpose solution (it doesn't attempt to handle block comments like /**/
-    # and comments appearing within strings like "cats // dogs"), but it's sufficient for header-units.json.
+    # and comments appearing within strings like "cats // dogs"), but it's sufficient for our purposes.
     comment = re.compile('//.*')
     with open(filename) as file:
         replacedLines = [re.sub(comment, '', line) for line in file]
@@ -112,7 +27,14 @@ def getAllHeaders(headerUnitsJsonFilename):
 
     # We want to build everything that's mentioned in header-units.json, plus all of the
     # headers that were commented out for providing macros that control header inclusion.
-    return sorted(set(buildAsHeaderUnits + ['version', 'yvals.h', 'yvals_core.h']))
+    return buildAsHeaderUnits + ['version', 'yvals.h', 'yvals_core.h']
+
+
+def getImportableCxxLibraryHeaders(sourcePath):
+    # This JSON With Comments file is shared between Python and Perl,
+    # reducing the number of things we need to update when adding new Standard headers.
+    jsonFilename = os.path.join(os.path.dirname(sourcePath), 'importable_cxx_library_headers.jsonc')
+    return loadJsonWithComments(jsonFilename)
 
 
 class CustomTestFormat(STLTestFormat):
@@ -189,7 +111,7 @@ class CustomTestFormat(STLTestFormat):
                 for hdr in readyToBuild:
                     consumeBuiltHeaderUnits += ['/headerUnit:angle', f'{hdr}={hdr}.ifc']
         else: # Build independent header units:
-            stlHeaders = getImportableCxxLibraryHeaders()
+            stlHeaders = getImportableCxxLibraryHeaders(sourcePath)
             exportHeaderOptions = ['/exportHeader', '/headerName:angle', '/Fo', '/MP']
             for hdr in stlHeaders:
                 consumeBuiltHeaderUnits += ['/headerUnit:angle', f'{hdr}={hdr}.ifc']

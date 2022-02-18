@@ -63,7 +63,7 @@ struct std::formatter<basic_custom_formattable_type, char> {
         }
         return parse_ctx.end();
     }
-    format_context::iterator format(const basic_custom_formattable_type& val, format_context& ctx) {
+    format_context::iterator format(const basic_custom_formattable_type& val, format_context& ctx) const {
         ctx.advance_to(copy(val.string_content.begin(), val.string_content.end(), ctx.out()));
         return ctx.out();
     }
@@ -77,7 +77,7 @@ struct std::formatter<not_const_formattable_type, char> {
         }
         return parse_ctx.end();
     }
-    format_context::iterator format(not_const_formattable_type& val, format_context& ctx) {
+    format_context::iterator format(not_const_formattable_type& val, format_context& ctx) const {
         ctx.advance_to(copy(val.string_content.begin(), val.string_content.end(), ctx.out()));
         return ctx.out();
     }
@@ -91,7 +91,7 @@ struct custom_formattable_type {
 template <class T, class charT>
 struct std::formatter<custom_formattable_type<T>, charT> : std::formatter<T, charT> {
     template <class FC>
-    auto format(const custom_formattable_type<T>& val, FC& format_ctx) {
+    auto format(const custom_formattable_type<T>& val, FC& format_ctx) const {
         return std::formatter<T, charT>::format(val.val, format_ctx);
     }
 };

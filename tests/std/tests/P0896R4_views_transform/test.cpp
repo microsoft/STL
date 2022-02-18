@@ -490,10 +490,10 @@ struct iterator_instantiator {
             auto r0 = make_view();
             auto i0 = r0.begin();
             assert(*i0 == add8(mutable_ints[0]));
-            STATIC_ASSERT(NOEXCEPT_IDL0(*i0));
+            STATIC_ASSERT(noexcept(*i0));
 
             assert(ranges::iter_move(i0) == add8(mutable_ints[0])); // NB: moving from int leaves it unchanged
-            STATIC_ASSERT(NOEXCEPT_IDL0(ranges::iter_move(i0)));
+            STATIC_ASSERT(noexcept(ranges::iter_move(i0)));
 
             STATIC_ASSERT(!CanIterSwap<decltype(i0)>);
         }
