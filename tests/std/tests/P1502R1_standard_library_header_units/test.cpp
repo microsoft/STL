@@ -285,7 +285,7 @@ int main() {
         assert(!ep);
     }
 
-#ifndef TEST_TOPO_SORT // TRANSITION, VSO-1471382 (error C2672: 'count_if': no matching overloaded function found)
+#if !defined(TEST_TOPO_SORT) || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1471382 fixed in VS 2022 17.2p2
     {
         puts("Testing <execution>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
@@ -321,7 +321,7 @@ int main() {
         assert(!f.is_open());
     }
 
-#ifndef TEST_TOPO_SORT // TRANSITION, VSO-1471374 (fatal error C1116: unrecoverable error importing module)
+#if !defined(TEST_TOPO_SORT) || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1471374 fixed in VS 2022 17.2p2
     {
         puts("Testing <functional>.");
         function<int(int, int)> f{multiplies{}};
@@ -865,7 +865,7 @@ int main() {
         assert(this_thread::get_id() != thread::id{});
     }
 
-#ifndef TEST_TOPO_SORT // TRANSITION, VSO-1471374 (fatal error C1116: unrecoverable error importing module)
+#if !defined(TEST_TOPO_SORT) || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1471374 fixed in VS 2022 17.2p2
     {
         puts("Testing <tuple>.");
         constexpr tuple<int, char, double> t{1729, 'c', 1.25};
