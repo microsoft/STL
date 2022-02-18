@@ -14,6 +14,11 @@
 #include <limits>
 #endif // _HAS_CXX17
 
+#ifdef __cpp_lib_concepts
+#include <algorithm>
+#include <iterator>
+#endif // __cpp_lib_concepts
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
@@ -522,6 +527,36 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
         *_UFirst = _Val;
     }
 }
+
+#ifdef __cpp_lib_concepts
+namespace ranges {
+    template <class _Out, class _Ty>
+    using iota_result = out_value_result<_Out, _Ty>;
+
+    template <class _It, class _Se, class _Ty>
+    constexpr _It _Iota_unchecked(_It _First, const _Se& _Last, _Ty& _Val) {
+        for (; _First != _Last; ++_First, (void) ++_Val) {
+            *_First = const_cast<const _Ty&>(_Val);
+        }
+        return _STD move(_First);
+    }
+
+    template <input_or_output_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Ty>
+        requires indirectly_writable<_It, const _Ty&>
+    constexpr iota_result<_It, _Ty> iota(_It _First, _Se _Last, _Ty _Val) {
+        _Adl_verify_range(_First, _Last);
+        _Seek_wrapped(_First, _Iota_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_Last), _Val));
+        return {_STD move(_First), _STD move(_Val)};
+    }
+
+    template <weakly_incrementable _Ty, output_range<const _Ty&> _Rng>
+    constexpr iota_result<borrowed_iterator_t<_Rng>, _Ty> iota(_Rng&& _Range, _Ty _Val) {
+        auto _First = _RANGES begin(_Range);
+        _Seek_wrapped(_First, _Iota_unchecked(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Val));
+        return {_STD move(_First), _STD move(_Val)};
+    }
+} // namespace ranges
+#endif // __cpp_lib_concepts
 
 #if _HAS_CXX17
 template <class _Integral>

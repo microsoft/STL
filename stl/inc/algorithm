@@ -179,6 +179,22 @@ namespace ranges {
         }
     };
 
+    template <class _Out, class _Ty>
+    struct out_value_result {
+        /* [[no_unique_address]] */ _Out out;
+        /* [[no_unique_address]] */ _Ty value;
+
+        template <_Convertible_from<const _Out&> _OOut, _Convertible_from<const _Ty&> _Ty2>
+        constexpr operator out_value_result<_OOut, _Ty2>() const& {
+            return {out, value};
+        }
+
+        template <_Convertible_from<_Out&&> _OOut, _Convertible_from<_Ty&&> _Ty2>
+        constexpr operator out_value_result<_OOut, _Ty2>() && {
+            return {_STD move(out), _STD move(value)};
+        }
+    };
+
     template <forward_iterator _Wrapped, sentinel_for<_Wrapped> _Se>
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
         // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]
@@ -5118,6 +5134,152 @@ _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _P
     // not parallelized as benchmarks show it isn't worth it
     return _STD shift_right(_First, _Last, _Pos_to_shift);
 }
+
+namespace ranges {
+    template <class _It, class _Se>
+    constexpr _It _Shift_left_unchecked(_It _First, const _Se _Last, _Iter_diff_t<_It> _Pos_to_shift) {
+        if (_Pos_to_shift <= 0) {
+            _RANGES advance(_First, _Last);
+            return _First;
+        }
+
+        auto _Start_at = _First;
+
+        if constexpr (sized_sentinel_for<_Se, _It>) {
+            if (_Pos_to_shift >= _Last - _First) {
+                return _First;
+            }
+            _RANGES advance(_Start_at, _Pos_to_shift);
+        } else {
+            for (; 0 < _Pos_to_shift; --_Pos_to_shift) {
+                if (_Start_at == _Last) {
+                    return _First;
+                }
+                ++_Start_at;
+            }
+        }
+
+        return _RANGES _Move_unchecked(_Start_at, _Last, _First).out;
+    }
+
+    template <permutable _It, sentinel_for<_It> _Se>
+    constexpr subrange<_It> shift_left(_It _First, _Se _Last, _Iter_diff_t<_It> _Pos_to_shift) {
+        _Adl_verify_range(_First, _Last);
+        auto _Result = _First;
+        _Seek_wrapped(_Result, _Shift_left_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pos_to_shift));
+        return {_First, _Result};
+    }
+
+    template <forward_range _Rng>
+        requires permutable<iterator_t<_Rng>>
+    constexpr borrowed_subrange_t<_Rng> shift_left(_Rng&& _Range, range_difference_t<_Rng> _Pos_to_shift) {
+        auto _First  = _RANGES begin(_Range);
+        auto _Result = _First;
+        _Seek_wrapped(_Result, _Shift_left_unchecked(_STD move(_Get_unwrapped(_Result)), _Uend(_Range), _Pos_to_shift));
+        return {_First, _Result};
+    }
+
+    template <class _It, typename _Se>
+    constexpr subrange<_It> _Shift_right(_It _First, const _Se _Last, _Iter_diff_t<_It> _Pos_to_shift) {
+        if (_Pos_to_shift <= 0) {
+            return {_First, _RANGES next(_First, _Last)};
+        }
+
+        const auto _UFirst = _Get_unwrapped(_First);
+        const auto _ULast  = _Get_unwrapped(_Last);
+
+        if constexpr (bidirectional_iterator<_Se>) {
+            auto _UEnd_at = _ULast;
+            if constexpr (sized_sentinel_for<_Se, _It>) {
+                auto _Size = _ULast - _UFirst;
+                if (_Pos_to_shift >= _Size) {
+                    _RANGES advance(_First, _Size);
+                    return {_First, _First};
+                }
+                _RANGES advance(_UEnd_at, -_Pos_to_shift);
+            } else {
+                for (; 0 < _Pos_to_shift; --_Pos_to_shift) {
+                    if (_UEnd_at == _UFirst) {
+                        _First = _RANGES next(_First, _Last);
+                        return {_First, _First};
+                    }
+                    --_UEnd_at;
+                }
+            }
+
+            _Seek_wrapped(_First, _RANGES _Move_backward_common(_UFirst, _UEnd_at, _ULast));
+            return {_First, _RANGES next(_First, _Last)};
+        } else if constexpr (sized_sentinel_for<_Se, _It>) {
+            auto _Size = _ULast - _UFirst;
+            if (_Pos_to_shift >= _Size) {
+                _RANGES advance(_UFirst, _Size);
+                _Seek_wrapped(_First, _UFirst);
+                return {_First, _First};
+            }
+
+            auto _UEnd_at = _RANGES next(_UFirst, _Size - _Pos_to_shift);
+            _Seek_wrapped(_First, _RANGES _Move_backward_common(_UFirst, _UEnd_at, _ULast));
+            return {_First, _RANGES next(_First, _Size)};
+        } else {
+            auto _UResult = _UFirst;
+
+            for (; 0 < _Pos_to_shift; --_Pos_to_shift) {
+                if (_UResult == _ULast) {
+                    _Seek_wrapped(_First, _UResult);
+                    return {_First, _First};
+                }
+                ++_UResult;
+            }
+            _Seek_wrapped(_First, _UResult);
+
+            auto _Trail = _UFirst;
+            auto _Lead  = _UResult;
+
+            for (; _Trail != _UResult; ++_Trail, (void) ++_Lead) {
+                if (_Lead == _ULast) {
+                    _RANGES _Move_unchecked(_UFirst, _Trail, _UResult);
+
+                    auto _WLead = _First;
+                    _Seek_wrapped(_WLead, _Lead);
+
+                    return {_First, _WLead};
+                }
+            }
+
+            // Here, _Trail = _UFirst + original _Pos_to_shift
+            // Here, _Lead = _UFirst + 2 * original _Pos_to_shift
+
+            for (;;) {
+                // This loop swaps the range [_UFirst, _UResult) with [_Trail, _Lead),
+                // advancing _Trail and _Lead by _Pos_to_shift
+                for (auto _Mid = _UFirst; _Mid != _UResult; ++_Mid, (void) ++_Trail, ++_Lead) {
+                    if (_Lead == _ULast) {
+                        _Trail = _RANGES _Move_unchecked(_Mid, _UResult, _Trail).out;
+                        _RANGES _Move_unchecked(_UFirst, _Mid, _Trail);
+
+                        auto _WLead = _First;
+                        _Seek_wrapped(_WLead, _Lead);
+
+                        return {_First, _WLead};
+                    }
+                    _RANGES iter_swap(_Mid, _Trail);
+                }
+            }
+        }
+    }
+
+    template <permutable _It, sentinel_for<_It> _Se>
+    constexpr subrange<_It> shift_right(_It _First, _Se _Last, _Iter_diff_t<_It> _Pos_to_shift) {
+        _Adl_verify_range(_First, _Last);
+        return _Shift_right(_First, _Last, _Pos_to_shift);
+    }
+
+    template <forward_range _Rng>
+        requires permutable<iterator_t<_Rng>>
+    constexpr borrowed_subrange_t<_Rng> shift_right(_Rng&& _Range, range_difference_t<_Rng> _Pos_to_shift) {
+        return _Shift_right(_RANGES begin(_Range), _RANGES end(_Range), _Pos_to_shift);
+    }
+} // namespace ranges
 #endif // _HAS_CXX20
 
 template <class _FwdIt, class _Pr>

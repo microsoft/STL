@@ -1332,8 +1332,13 @@
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
-#define __cpp_lib_shift                   201806L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
+#else
+#define __cpp_lib_shift 201806L
+#endif // __cpp_lib_concepts
 
 #ifdef __cpp_consteval
 #define __cpp_lib_source_location 201907L
@@ -1371,6 +1376,7 @@
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
 #define __cpp_lib_ranges_starts_ends_with 202106L
+#define __cpp_lib_ranges_iota             202202L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L
