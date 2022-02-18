@@ -52,7 +52,7 @@ void _Uses_allocator_construct(_Ty* const _Ptr, _Outer_alloc& _Outer, _Inner_all
 template <class _Ty, class _Alloc, class... _Types>
 decltype(auto) _Uses_allocator_piecewise(_Alloc& _Al, tuple<_Types...>&& _Tuple) {
     if constexpr (uses_allocator_v<_Ty, _Alloc>) {
-        if constexpr (is_constructible<_Ty, allocator_arg_t, _Alloc&, _Types...>::value) {
+        if constexpr (is_constructible_v<_Ty, allocator_arg_t, _Alloc&, _Types...>) {
             return _STD tuple_cat(tuple<allocator_arg_t, _Alloc&>(allocator_arg, _Al), _STD move(_Tuple));
         } else {
             return _STD tuple_cat(_STD move(_Tuple), tuple<_Alloc&>(_Al));
