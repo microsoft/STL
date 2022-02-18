@@ -798,12 +798,12 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(_FwdIt1 _First1, _FwdIt1 _Last1, _Fw
 template <class _FwdIt1, class _FwdIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool is_permutation(
     _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, _Pr _Pred) {
-    // test if [_UFirst1, _ULast1) == permuted [_UFirst2, _ULast2)
+    // test if [_First1, _Last1) == permuted [_First2, _Last2)
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
     auto _UFirst1 = _Get_unwrapped(_First1);
-    auto _UFirst2 = _Get_unwrapped(_First2);
     auto _ULast1  = _Get_unwrapped(_Last1);
+    auto _UFirst2 = _Get_unwrapped(_First2);
     auto _ULast2  = _Get_unwrapped(_Last2);
     if constexpr (_Is_random_iter_v<_FwdIt1> && _Is_random_iter_v<_FwdIt2>) {
         // test if [_UFirst1, _ULast1) == permuted [_UFirst2, _ULast2), random-access iterators
@@ -850,8 +850,6 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(
                 return false; // sequence 1 is longer than sequence 2, not a permutation
             }
         }
-
-        return true;
     } else {
         static_assert(_Always_false<_FwdIt1>, "Iterators should be at least forward iterators");
     }
@@ -4725,29 +4723,31 @@ _SampleIt _Sample_selection_unchecked(
 }
 
 template <class _PopIt, class _SampleIt, class _Diff, class _Urng>
-_SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count,
-    _Urng&& _Func) { // randomly select _Count elements from [_First, _Last) into _Dest
+_SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Urng&& _Func) {
+    // randomly select _Count elements from [_First, _Last) into _Dest
     static_assert(_Is_fwd_iter_v<_PopIt> || _Is_random_iter_v<_SampleIt>,
         "If the source range is not forward, the destination range must be random-access.");
     static_assert(is_integral_v<_Diff>, "The sample size must have an integer type.");
     _Adl_verify_range(_First, _Last);
     if (0 < _Count) {
+        auto _UFirst = _Get_unwrapped(_First);
+        auto _ULast  = _Get_unwrapped(_Last);
         _Rng_from_urng<_Iter_diff_t<_PopIt>, remove_reference_t<_Urng>> _RngFunc(_Func);
         if constexpr (_Is_fwd_iter_v<_PopIt>) {
             // source is forward: use selection sampling (stable)
             using _PopDiff       = _Iter_diff_t<_PopIt>;
             using _CT            = common_type_t<_Diff, _PopDiff>;
-            const auto _Pop_size = _STD distance(_First, _Last);
+            const auto _Pop_size = _STD distance(_UFirst, _ULast);
             if (static_cast<_CT>(_Count) > static_cast<_CT>(_Pop_size)) {
                 _Count = static_cast<_Diff>(_Pop_size); // narrowing OK because _Count is getting smaller
             }
 
             _Seek_wrapped(_Dest,
-                _Sample_selection_unchecked(_First, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
+                _Sample_selection_unchecked(_UFirst, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
         } else if constexpr (_Is_input_iter_v<_PopIt>) {
             // source is input: use reservoir sampling (unstable)
-            _Seek_wrapped(
-                _Dest, _Sample_reservoir_unchecked(_First, _Last, _Get_unwrapped_unverified(_Dest), _Count, _RngFunc));
+            _Seek_wrapped(_Dest,
+                _Sample_reservoir_unchecked(_UFirst, _ULast, _Get_unwrapped_unverified(_Dest), _Count, _RngFunc));
         } else {
             static_assert(_Always_false<_PopIt>, "Source iterators must be at least input iterators");
         }

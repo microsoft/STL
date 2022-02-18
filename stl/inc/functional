@@ -2210,8 +2210,6 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
                 }
             }
         }
-
-        return {_Last1, _Last1};
     } else {
         static_assert(_Always_false<_FwdItHaystack>, "Iterator parameters must be at least forward iterators");
     }
