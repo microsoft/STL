@@ -179,22 +179,6 @@ namespace ranges {
         }
     };
 
-    template <class _Out, class _Ty>
-    struct out_value_result {
-        /* [[no_unique_address]] */ _Out out;
-        /* [[no_unique_address]] */ _Ty value;
-
-        template <_Convertible_from<const _Out&> _OOut, _Convertible_from<const _Ty&> _Ty2>
-        constexpr operator out_value_result<_OOut, _Ty2>() const& {
-            return {out, value};
-        }
-
-        template <_Convertible_from<_Out&&> _OOut, _Convertible_from<_Ty&&> _Ty2>
-        constexpr operator out_value_result<_OOut, _Ty2>() && {
-            return {_STD move(out), _STD move(value)};
-        }
-    };
-
     template <forward_iterator _Wrapped, sentinel_for<_Wrapped> _Se>
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
         // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]

@@ -14,10 +14,9 @@
 #include <limits>
 #endif // _HAS_CXX17
 
-#if _HAS_CXX23
-#include <algorithm>
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
 #include <iterator>
-#endif // _HAS_CXX23
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

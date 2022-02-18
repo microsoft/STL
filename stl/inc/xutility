@@ -4113,6 +4113,24 @@ namespace ranges {
         }
     };
 
+#if _HAS_CXX23
+    template <class _Out, class _Ty>
+    struct out_value_result {
+        /* [[no_unique_address]] */ _Out out;
+        /* [[no_unique_address]] */ _Ty value;
+
+        template <_Convertible_from<const _Out&> _OOut, _Convertible_from<const _Ty&> _Ty2>
+        constexpr operator out_value_result<_OOut, _Ty2>() const& {
+            return {out, value};
+        }
+
+        template <_Convertible_from<_Out&&> _OOut, _Convertible_from<_Ty&&> _Ty2>
+        constexpr operator out_value_result<_OOut, _Ty2>() && {
+            return {_STD move(out), _STD move(value)};
+        }
+    };
+#endif // _HAS_CXX23
+
     template <class _In, class _Out>
     using copy_result = in_out_result<_In, _Out>;
 
