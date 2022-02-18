@@ -6,6 +6,7 @@
 #include <sstream>
 #include <stacktrace>
 #include <string>
+#include <thread>
 
 #ifdef HAS_EXPORT
 #define MAYBE_EXPORT __declspec(dllexport)
@@ -14,6 +15,8 @@
 #endif // ^^^ !HAS_EXPORT ^^^
 
 using namespace std;
+
+const int base_line = __LINE__;
 
 // Note: the bellow assumes tail call optimization disabled, which is in case in /Od
 
@@ -123,7 +126,7 @@ string to_string_using_to_string(const stacktrace& st) {
 #define HAS_NAMES
 #endif // ^^^ defined(HAS_DEBUG_INFO) || defined(HAS_EXPORT) ^^^
 
-int main() {
+void test_impl() {
     auto all = all_outermost();
     assert(all.size() >= 4);
 
@@ -133,10 +136,10 @@ int main() {
     assert(filesystem::path(all.at(2).source_file()).filename() == "test.cpp"sv);
     assert(filesystem::path(all.at(3).source_file()).filename() == "test.cpp"sv);
 
-    assert(all.at(0).source_line() == 21);
-    assert(all.at(1).source_line() == 25);
-    assert(all.at(2).source_line() == 29);
-    assert(all.at(3).source_line() == 33);
+    assert(all.at(0).source_line() == base_line + 5);
+    assert(all.at(1).source_line() == base_line + 9);
+    assert(all.at(2).source_line() == base_line + 13);
+    assert(all.at(3).source_line() == base_line + 17);
 #else // ^^^ HAS_DEBUG_INFO ^^^ / vvv !HAS_DEBUG_INFO vvv
     assert(filesystem::path(all.at(0).source_file()).filename() == ""sv);
     assert(filesystem::path(all.at(1).source_file()).filename() == ""sv);
@@ -169,9 +172,9 @@ int main() {
     assert(filesystem::path(all_but_top[1].source_file()).filename() == "test.cpp"sv);
     assert(filesystem::path(all_but_top[2].source_file()).filename() == "test.cpp"sv);
 
-    assert(all_but_top[0].source_line() == 41);
-    assert(all_but_top[1].source_line() == 45);
-    assert(all_but_top[2].source_line() == 49);
+    assert(all_but_top[0].source_line() == base_line + 25);
+    assert(all_but_top[1].source_line() == base_line + 29);
+    assert(all_but_top[2].source_line() == base_line + 33);
 #else // ^^^ HAS_DEBUG_INFO ^^^ / vvv !HAS_DEBUG_INFO vvv
     assert(filesystem::path(all_but_top[0].source_file()).filename() == ""sv);
     assert(filesystem::path(all_but_top[1].source_file()).filename() == ""sv);
@@ -199,9 +202,9 @@ int main() {
     assert(filesystem::path(three_excluding_top[1].source_file()).filename() == "test.cpp"sv);
     assert(filesystem::path(three_excluding_top[2].source_file()).filename() == "test.cpp"sv);
 
-    assert(three_excluding_top[0].source_line() == 57);
-    assert(three_excluding_top[1].source_line() == 61);
-    assert(three_excluding_top[2].source_line() == 65);
+    assert(three_excluding_top[0].source_line() == base_line + 41);
+    assert(three_excluding_top[1].source_line() == base_line + 45);
+    assert(three_excluding_top[2].source_line() == base_line + 49);
 #else // ^^^ HAS_DEBUG_INFO ^^^ / vvv !HAS_DEBUG_INFO vvv
     assert(filesystem::path(three_excluding_top[0].source_file()).filename() == ""sv);
     assert(filesystem::path(three_excluding_top[1].source_file()).filename() == ""sv);
@@ -266,4 +269,10 @@ int main() {
     assert(s == to_string_using_stream(all));
     assert(s == to_string_using_to_string_entry(all));
     assert(s == to_string_using_to_string(all));
+}
+
+int main() {
+    std::thread t{test_impl};
+    test_impl();
+    t.join();
 }
