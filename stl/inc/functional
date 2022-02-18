@@ -1532,7 +1532,7 @@ class _Move_only_function_call {
 };
 
 // A script to generate the specializations is at
-// /tools/move_only_function_specializations/move_only_function_specializations.py
+// /tools/scripts/move_only_function_specializations.py
 // (Avoiding C++ preprocessor for better IDE navigation and debugging experience)
 
 template <class _Rx, class... _Types>
@@ -2330,7 +2330,7 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
         return;
     }
 
-    if ((numeric_limits<_Diff>::max) () - _Pat_size < _Pat_size) {
+    if ((numeric_limits<_Diff>::max)() - _Pat_size < _Pat_size) {
         _Xlength_error("Boyer-Moore pattern is too long");
     }
 
@@ -2346,7 +2346,7 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
     for (size_t _Jx = _Mx; _Jx > 0; --_Jx, --_Tx) {
         _Fx[_Jx - 1] = _Tx;
         while (_Tx <= _Mx && !_Eq(_Pat_first[_Jx - 1], _Pat_first[_Tx - 1])) {
-            _Shifts[_Tx - 1] = (_STD min) (_Shifts[_Tx - 1], static_cast<_Diff>(_Mx - _Jx));
+            _Shifts[_Tx - 1] = (_STD min)(_Shifts[_Tx - 1], static_cast<_Diff>(_Mx - _Jx));
             _Tx              = _Fx[_Tx - 1];
         }
     }
@@ -2366,7 +2366,7 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
     size_t _Qx1 = 1;
     while (_Qx < _Mx) {
         for (size_t _Kx = _Qx1; _Kx <= _Qx; ++_Kx) {
-            _Shifts[_Kx - 1] = (_STD min) (_Shifts[_Kx - 1], static_cast<_Diff>(_Mx + _Qx - _Kx));
+            _Shifts[_Kx - 1] = (_STD min)(_Shifts[_Kx - 1], static_cast<_Diff>(_Mx + _Qx - _Kx));
         }
         _Qx1 = _Qx + 1;
 
@@ -2410,7 +2410,7 @@ pair<_RanItHaystack, _RanItHaystack> _Boyer_moore_search(
                 --_Idx;
                 --_UFirst;
             } while (_Eq(*_UFirst, _UPat_first[_Idx]));
-            _Shift = (_STD max) (_Delta1._Lookup(*_UFirst), _Delta2[_Idx]);
+            _Shift = (_STD max)(_Delta1._Lookup(*_UFirst), _Delta2[_Idx]);
         }
     }
 
