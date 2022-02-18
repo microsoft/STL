@@ -77,11 +77,6 @@ std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op=/move_i
 std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp FAIL
 std/iterators/predef.iterators/reverse.iterators/iterator_concept_conformance.compile.pass.cpp FAIL
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp FAIL
-std/iterators/predef.iterators/reverse.iterators/reverse.iter.cons/assign.pass.cpp FAIL
-
-# optional's comparisons aren't portably constrained (https://reviews.llvm.org/D116884)
-std/concepts/concepts.compare/concepts.totallyordered/totally_ordered.pass.cpp FAIL
-std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable.compile.pass.cpp FAIL
 
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
@@ -394,6 +389,13 @@ std/language.support/cmp/cmp.alg/partial_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/strong_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
 
+# GH-2576: Even rvalue `empty_view`s are `borrowed_range`s
+std/ranges/range.adaptors/range.all/range.owning.view/borrowing.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.all/range.ref.view/borrowing.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.take/range_concept_conformance.compile.pass.cpp FAIL
+std/ranges/range.adaptors/range.transform/iterator/compare.pass.cpp FAIL
+std/ranges/range.req/range.refinements/random_access_range.compile.pass.cpp FAIL
+
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -606,6 +608,7 @@ std/utilities/format/format.formatter/format.context/format.formatter.spec/forma
 std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.string.pass.cpp FAIL
 std/utilities/format/format.formatter/format.context/format.formatter.spec/formatter.unsigned_integral.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.char.pass.cpp FAIL
+std/utilities/format/format.formatter/format.formatter.spec/formatter.floating_point.pass.cpp FAIL
 
 # libc++ doesn't yet implement P2216R3 (test uses non-constant-expression format strings)
 std/utilities/format/format.functions/format.pass.cpp FAIL
@@ -657,9 +660,6 @@ std/ranges/range.adaptors/range.transform/iterator/base.pass.cpp FAIL
 
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp FAIL
-
-# Mismatching allocator value_type
-std/containers/sequences/vector.bool/get_allocator.pass.cpp FAIL
 
 # Test annotated "XFAIL: msvc" should be "XFAIL: msvc && stdlib=libc++"
 std/language.support/support.dynamic/alloc.errors/set.new.handler/get_new_handler.pass.cpp SKIPPED
@@ -762,8 +762,9 @@ std/language.support/support.limits/support.limits.general/format.version.pass.c
 # libc++ doesn't yet implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
-# Test suite incorrectly detects clang-cl support for `int128`
+# Test suite incorrectly detects support for `int128`
 std/concepts/concepts.lang/concepts.arithmetic/integral.pass.cpp:1 FAIL
+std/language.support/support.limits/limits/numeric.limits.members/digits.pass.cpp:1 FAIL
 std/language.support/support.limits/limits/numeric.limits.members/lowest.pass.cpp:1 FAIL
 std/numerics/bit/bit.pow.two/bit_ceil.pass.cpp:1 FAIL
 std/numerics/bit/bitops.count/countl_one.pass.cpp:1 FAIL
@@ -772,6 +773,7 @@ std/numerics/bit/bitops.count/countr_one.pass.cpp:1 FAIL
 std/numerics/bit/bitops.count/countr_zero.pass.cpp:1 FAIL
 std/numerics/bit/bitops.count/popcount.pass.cpp:1 FAIL
 std/utilities/type.index/type.index.hash/enabled_hash.pass.cpp:1 FAIL
+std/utilities/utility/utility.intcmp/intcmp.cmp_greater_equal/cmp_greater_equal.pass.cpp:1 FAIL
 
 
 # *** LIKELY STL BUGS ***
