@@ -1340,7 +1340,7 @@ struct get_nth_fn {
         test::proxy_reference<T, Elem> r) const noexcept requires requires {
         (*this)(r.peek());
     }
-    { return (*this) (r.peek()); }
+    { return (*this)(r.peek()); }
 };
 inline constexpr get_nth_fn<0> get_first;
 inline constexpr get_nth_fn<1> get_second;
