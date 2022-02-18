@@ -676,8 +676,6 @@ utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.const\u
 
 # non-portable test of strengthened noexcept
 ranges\range.adaptors\range.drop\ctor.default.pass.cpp
-ranges\range.adaptors\range.transform\iterator\deref.pass.cpp
-ranges\range.adaptors\range.transform\iterator\iter_move.pass.cpp
 ranges\range.adaptors\range.transform\iterator\subscript.pass.cpp
 ranges\range.utility\view.interface\view.interface.pass.cpp
 
