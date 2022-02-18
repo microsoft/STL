@@ -16,7 +16,7 @@
 
 using namespace std;
 
-const int base_line = __LINE__;
+[[maybe_unused]] const int base_line = __LINE__;
 
 // Note: the bellow assumes tail call optimization disabled, which is in case in /Od
 
