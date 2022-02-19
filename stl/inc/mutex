@@ -76,8 +76,7 @@ private:
     friend condition_variable;
     friend condition_variable_any;
 
-#pragma warning(suppress : 4996) // warning STL4034: std::aligned_storage is deprecated in C++23 by P1413R3
-    aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
+    typename _Aligned_storage<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment>::type _Mtx_storage;
 
     _Mtx_t _Mymtx() noexcept { // get pointer to _Mtx_internal_imp_t inside _Mtx_storage
         return reinterpret_cast<_Mtx_t>(&_Mtx_storage);
@@ -699,8 +698,7 @@ public:
     }
 
 private:
-#pragma warning(suppress : 4996) // warning STL4034: std::aligned_storage is deprecated in C++23 by P1413R3
-    aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cnd_storage;
+    typename _Aligned_storage<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment>::type _Cnd_storage;
 
     _Cnd_t _Mycnd() noexcept { // get pointer to _Cnd_internal_imp_t inside _Cnd_storage
         return reinterpret_cast<_Cnd_t>(&_Cnd_storage);

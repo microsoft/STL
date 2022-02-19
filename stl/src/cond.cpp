@@ -12,10 +12,8 @@
 #include "primitives.hpp"
 
 struct _Cnd_internal_imp_t { // condition variable implementation for ConcRT
-#pragma warning(suppress : 4996) // warning STL4034: std::aligned_storage is deprecated in C++23 by P1413R3
-    std::aligned_storage_t<Concurrency::details::stl_condition_variable_max_size,
-        Concurrency::details::stl_condition_variable_max_alignment>
-        cv;
+    typename std::_Aligned_storage<Concurrency::details::stl_condition_variable_max_size,
+        Concurrency::details::stl_condition_variable_max_alignment>::type cv;
 
     [[nodiscard]] Concurrency::details::stl_condition_variable_interface* _get_cv() noexcept {
         // get pointer to implementation

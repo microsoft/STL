@@ -1028,6 +1028,14 @@ struct _CXX23_DEPRECATE_ALIGNED_STORAGE aligned_storage { // define type with si
     using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
+// TRANSITION, ABI: Internal non-deprecated version to avoid ABI changes due to deprecation
+template <size_t _Len, size_t _Align = alignof(max_align_t)>
+struct _Aligned_storage { // define type with size _Len and alignment _Align
+    using _Next                 = char;
+    static constexpr bool _Fits = _Align <= alignof(_Next);
+    using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
+};
+
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
 using aligned_storage_t = typename aligned_storage<_Len, _Align>::type;
 
