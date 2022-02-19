@@ -301,6 +301,7 @@
 // P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
+// P2273R3 constexpr unique_ptr
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -631,6 +632,13 @@
 #else // ^^^ constexpr in C++20 and later / inline (not constexpr) in C++17 and earlier vvv
 #define _CONSTEXPR20 inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
+
+// Functions that became constexpr in C++23
+#if _HAS_CXX23
+#define _CONSTEXPR23 constexpr
+#else // ^^^ constexpr in C++23 and later / inline (not constexpr) in C++20 and earlier vvv
+#define _CONSTEXPR23 inline
+#endif // ^^^ inline (not constexpr) in C++20 and earlier ^^^
 
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
@@ -1285,7 +1293,7 @@
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
 #define __cpp_lib_constexpr_functional    201907L
 #define __cpp_lib_constexpr_iterator      201811L
-#define __cpp_lib_constexpr_memory        201811L
+#define __cpp_lib_constexpr_memory        202202L
 #define __cpp_lib_constexpr_numeric       201911L
 #define __cpp_lib_constexpr_string        201907L
 #define __cpp_lib_constexpr_string_view   201811L
