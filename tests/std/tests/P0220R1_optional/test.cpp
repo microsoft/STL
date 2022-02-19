@@ -7409,11 +7409,11 @@ namespace msvc {
             }
         };
 
-        template <class T, action result>
+        template <class T, action Result>
         void testMove() {
             std::optional<T> orig{std::in_place};
             std::optional<T> moved = std::move(orig);
-            assert(last == result);
+            assert(last == Result);
         }
 
         void run_test() {
