@@ -20,7 +20,7 @@ constexpr bool test() {
         assert(p1 == p1);
         assert(p1 != p2);
 
-#if defined(__EDG__) || defined(__clang__)
+#if defined(__EDG__) || defined(__clang__) // TRANSITION, DevCom-1670907
         auto p3 = make_unique<int[]>(10);
         auto p4 = make_unique_for_overwrite<int[]>(4);
         swap(p3, p4);
@@ -28,9 +28,9 @@ constexpr bool test() {
         assert(p3 != p4);
 #endif // defined(__EDG__) || defined(__clang__)
 
-        unique_ptr<int> p5 = nullptr;
+        auto p5 = unique_ptr<int>{nullptr};
         assert(p5 == nullptr);
-#ifndef __EDG__
+#ifndef __EDG__ // TRANSITION, DevCom-1670889
         assert(!(p5 < nullptr));
         assert(p5 <= nullptr);
         assert(!(p5 > nullptr));
@@ -45,29 +45,29 @@ constexpr bool test() {
     // [unique.ptr.single.general] 20.11.1.3.1
     {
         // constructors
-        auto p1 = unique_ptr<int>(new int{});
+        auto p1 = unique_ptr<int>{new int{}};
         auto d1 = default_delete<int>{};
-        auto p2 = unique_ptr<int>(new int{}, d1);
-        auto p3 = unique_ptr<int>(new int{}, default_delete<int>{});
+        auto p2 = unique_ptr<int>{new int{}, d1};
+        auto p3 = unique_ptr<int>{new int{}, default_delete<int>{}};
         auto p4 = move(p3);
-        auto p5 = unique_ptr<int>(nullptr);
-        auto p6 = unique_ptr<int, default_delete<int>&>(new int{}, d1);
-        auto p7 = unique_ptr<int>(move(p6));
+        auto p5 = unique_ptr<int>{nullptr};
+        auto p6 = unique_ptr<int, default_delete<int>&>{new int{}, d1};
+        auto p7 = unique_ptr<int>{move(p6)};
 
         // assignment
         p3      = move(p4);
-        auto p8 = unique_ptr<int, default_delete<int>&>(new int{}, d1);
+        auto p8 = unique_ptr<int, default_delete<int>&>{new int{}, d1};
         p7      = move(p8);
         p1      = nullptr;
 
         // observers
         assert(*p2 == 0);
-        auto p9 = unique_ptr<Dummy>(new Dummy);
+        auto p9 = unique_ptr<Dummy>{new Dummy};
         assert(p9->test() == 10);
         assert(p2.get() != nullptr);
         [[maybe_unused]] auto& d2 = p2.get_deleter();
         [[maybe_unused]] auto& d3 = as_const(p2).get_deleter();
-        bool b1                   = static_cast<bool>(p2);
+        auto b1                   = static_cast<bool>(p2);
         assert(b1);
 
         // modifiers
@@ -81,17 +81,17 @@ constexpr bool test() {
     // [unique.ptr.runtime.general] 20.11.1.4.1:
     {
         // constructors
-        auto p1 = unique_ptr<int[]>(new int[5]);
+        auto p1 = unique_ptr<int[]>{new int[5]};
         auto d1 = default_delete<int[]>{};
-        auto p2 = unique_ptr<int[]>(new int[5], d1);
-        auto p3 = unique_ptr<int[]>(new int[5], default_delete<int[]>{});
+        auto p2 = unique_ptr<int[]>{new int[5], d1};
+        auto p3 = unique_ptr<int[]>{new int[5], default_delete<int[]>{}};
         auto p4 = move(p1);
-        auto p5 = unique_ptr<int[], default_delete<int[]>&>(new int[5], d1);
-        auto p6 = unique_ptr<int[]>(move(p5));
+        auto p5 = unique_ptr<int[], default_delete<int[]>&>{new int[5], d1};
+        auto p6 = unique_ptr<int[]>{move(p5)};
 
         // assignment
         p1      = move(p4);
-        auto p7 = unique_ptr<int[], default_delete<int[]>&>(new int[5], d1);
+        auto p7 = unique_ptr<int[], default_delete<int[]>&>{new int[5], d1};
         p6      = move(p7);
         p4      = nullptr;
 
@@ -101,7 +101,7 @@ constexpr bool test() {
         assert(p1.get() != nullptr);
         [[maybe_unused]] auto& d2 = p1.get_deleter();
         [[maybe_unused]] auto& d3 = as_const(p1).get_deleter();
-        bool b1                   = static_cast<bool>(p1);
+        auto b1                   = static_cast<bool>(p1);
         assert(b1);
 
         // modifiers

@@ -514,13 +514,21 @@ STATIC_ASSERT(__cpp_lib_constexpr_iterator == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20
+#if _HAS_CXX23
 #ifndef __cpp_lib_constexpr_memory
 #error __cpp_lib_constexpr_memory is not defined
 #elif __cpp_lib_constexpr_memory != 202202L
 #error __cpp_lib_constexpr_memory is not 202202L
 #else
 STATIC_ASSERT(__cpp_lib_constexpr_memory == 202202L);
+#endif
+#elif _HAS_CXX20
+#ifndef __cpp_lib_constexpr_memory
+#error __cpp_lib_constexpr_memory is not defined
+#elif __cpp_lib_constexpr_memory != 201811L
+#error __cpp_lib_constexpr_memory is not 201811L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_memory == 201811L);
 #endif
 #else
 #ifdef __cpp_lib_constexpr_memory
