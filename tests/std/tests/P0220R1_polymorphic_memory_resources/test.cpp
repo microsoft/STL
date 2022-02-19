@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING
+#define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 
 #include <algorithm>
 #include <cmath>

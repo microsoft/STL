@@ -1022,7 +1022,7 @@ struct _Aligned<_Len, _Align, char, false> {
 };
 
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
-struct aligned_storage { // define type with size _Len and alignment _Align
+struct _CXX23_DEPRECATE_ALIGNED_STORAGE aligned_storage { // define type with size _Len and alignment _Align
     using _Next                 = char;
     static constexpr bool _Fits = _Align <= alignof(_Next);
     using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
@@ -1046,7 +1046,8 @@ struct _Maximum<_First, _Second, _Rest...> : _Maximum<(_First < _Second ? _Secon
 };
 
 template <size_t _Len, class... _Types>
-struct aligned_union { // define type with size at least _Len, for storing anything in _Types
+struct _CXX23_DEPRECATE_ALIGNED_UNION aligned_union { // define type with size at least _Len, for storing anything in
+                                                      // _Types
     static constexpr size_t _Max_len        = _Maximum<_Len, sizeof(_Types)...>::value; // NOT sizeof...(_Types)
     static constexpr size_t alignment_value = _Maximum<alignof(_Types)...>::value;
 
