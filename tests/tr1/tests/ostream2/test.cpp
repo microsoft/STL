@@ -331,7 +331,7 @@ void test_main() { // test basic workings of ostream definitions
     outs.str(L"");
     outs << L"some stuff ";
     STD wstreampos pos = outs.tellp();
-    CHECK(pos != (STD wstreampos) (-1));
+    CHECK(pos != (STD wstreampos)(-1));
     outs << istr.rdbuf();
     CHECK_WSTR(outs.str().c_str(), L"some stuff rest of stream\n");
     CHECK_PTR(&outs.seekp(pos), &outs);
