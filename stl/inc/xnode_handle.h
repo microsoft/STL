@@ -75,6 +75,7 @@ private:
     using _Nodeptr       = typename _Alnode_traits::pointer;
 
     _Nodeptr _Ptr{};
+#pragma warning(suppress : 4996) // warning STL4035: std::aligned_union is deprecated in C++23 by P1413R3
     aligned_union_t<0, _Alloc> _Alloc_storage; // Invariant: contains a live _Alloc iff _Ptr != nullptr
 
     void _Clear() noexcept { // destroy any contained node and return to the empty state
