@@ -62,10 +62,6 @@ struct _Node_handle_set_base { // set-specific node handle behavior
     }
 };
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif // __clang__
 template <class _Node, class _Alloc, template <class...> class _Base, class... _Types>
 class _Node_handle : public _Base<_Node_handle<_Node, _Alloc, _Base, _Types...>, _Types...> {
     // storage for a node from one of the node-based standard containers
@@ -209,9 +205,6 @@ public:
         return _Node_handle{_Ptr, _Al};
     }
 };
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
 
 _STD_END
 #pragma pop_macro("new")
