@@ -20,7 +20,7 @@ constexpr bool test() {
         assert(p1 == p1);
         assert(p1 != p2);
 
-#if defined(__EDG__) || defined(__clang__) // TRANSITION, DevCom-1670907
+#if defined(__EDG__) || defined(__clang__) // TRANSITION, DevCom-1670918
         auto p3 = make_unique<int[]>(10);
         auto p4 = make_unique_for_overwrite<int[]>(4);
         swap(p3, p4);
@@ -30,7 +30,7 @@ constexpr bool test() {
 
         auto p5 = unique_ptr<int>{nullptr};
         assert(p5 == nullptr);
-#ifndef __EDG__ // TRANSITION, DevCom-1670889
+#ifndef __EDG__ // TRANSITION, DevCom-1670927
         assert(!(p5 < nullptr));
         assert(p5 <= nullptr);
         assert(!(p5 > nullptr));
