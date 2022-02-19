@@ -4616,6 +4616,7 @@ namespace chrono {
             while (*_Fmt != '\0' && (_State & ~ios_base::eofbit) == ios_base::goodbit) {
                 if (_First == _Last) {
                     _State |= ios_base::failbit | ios_base::eofbit;
+                    break;
                 } else if (*_Fmt == '%') {
                     _First = _Parse_time_field(_First, _Iosbase, _State, *++_Fmt, '\0', 0, _Subsecond_precision);
                 } else if (_Ctype_fac.narrow(*_First++) != *_Fmt) {

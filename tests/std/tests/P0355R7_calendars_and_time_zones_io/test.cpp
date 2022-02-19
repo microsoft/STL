@@ -163,13 +163,13 @@ ios_base::iostate parse_state(const CharT* str, const CStringOrStdString& fmt, P
 template <class CharT, class CStringOrStdString, class Parsable>
 void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
-    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) == 0);
+    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) == ios_base::goodbit);
 }
 
 template <class CharT, class CStringOrStdString, class Parsable>
 void fail_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
-    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) != 0);
+    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) != ios_base::goodbit);
 }
 
 template <class TimeType, class IntType = int>
