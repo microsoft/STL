@@ -36,7 +36,7 @@ constexpr bool test() {
         assert(!(p5 > nullptr));
         assert(p5 >= nullptr);
         assert((p5 <=> nullptr) == strong_ordering::equal);
-#endif // __EDG__
+#endif // !__EDG__
     }
 
     // changes in [unique.ptr.dltr.dflt] 20.11.1.1.2 and  [unique.ptr.dltr.dflt1] 20.11.1.1.3
