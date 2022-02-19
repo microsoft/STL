@@ -15,25 +15,28 @@ constexpr bool test() {
     // [memory.syn] 20.11.1
     {
         auto p1 = make_unique<int>(42);
-        auto p2 = make_unique<int[]>(10);
-        auto p3 = make_unique_for_overwrite<int>();
-        auto p4 = make_unique_for_overwrite<int[]>(4);
-
-        swap(p1, p3);
-        swap(p2, p4);
-
+        auto p2 = make_unique_for_overwrite<int>();
+        swap(p1, p2);
         assert(p1 == p1);
-        assert(p2 == p2);
-        assert(p1 != p3);
-        assert(p2 != p4);
+        assert(p1 != p2);
+
+#if defined(__EDG__) || defined(__clang__)
+        auto p3 = make_unique<int[]>(10);
+        auto p4 = make_unique_for_overwrite<int[]>(4);
+        swap(p3, p4);
+        assert(p3 == p3);
+        assert(p3 != p4);
+#endif // defined(__EDG__) || defined(__clang__)
 
         unique_ptr<int> p5 = nullptr;
         assert(p5 == nullptr);
+#ifndef __EDG__
         assert(!(p5 < nullptr));
         assert(p5 <= nullptr);
         assert(!(p5 > nullptr));
         assert(p5 >= nullptr);
         assert((p5 <=> nullptr) == strong_ordering::equal);
+#endif // __EDG__
     }
 
     // changes in [unique.ptr.dltr.dflt] 20.11.1.1.2 and  [unique.ptr.dltr.dflt1] 20.11.1.1.3
