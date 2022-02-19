@@ -90,7 +90,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
 
     _Ty* _Data; // points to heap memory iff _Capacity > _Optimistic_count
     ptrdiff_t _Capacity;
-    aligned_union_t<0, _Ty> _Stack_space[_Optimistic_count];
+    typename _Aligned_storage<sizeof(_Ty), alignof(_Ty)>::type _Stack_space[_Optimistic_count];
 };
 
 #ifdef __cpp_lib_concepts
