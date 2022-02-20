@@ -213,7 +213,7 @@ utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\recursion_depth.pass.cpp
 
 # Deprecation is a mess. We disable all deprecations in llvm-project/libcxx/test/support/msvc_stdlib_force_include.h
-# (external to this repo) to allow libc++ tests for  deprecated features to pass, which breaks when libc++ deprecates 
+# (external to this repo) to allow libc++ tests for  deprecated features to pass, which breaks when libc++ deprecates
 # the feature and adds two tests that (1) pass with deprecation suppressed, and (2) fail without deprecation suppression.
 # We should instead translate libc++ un-deprecation macros to STL un-deprecation macros in the force-include header,
 # and just skip tests when we deprecate before they do.
