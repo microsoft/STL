@@ -22,8 +22,8 @@ int main() {
         }
 
         const uint32_t* const first = big._Mydata;
-        const uint32_t* const last = first + big._Myused;
-        const uint32_t* const mid = find_if(first, last, [](const uint32_t elem) { return elem != 0; });
+        const uint32_t* const last  = first + big._Myused;
+        const uint32_t* const mid   = find_if(first, last, [](const uint32_t elem) { return elem != 0; });
 
         indices.emplace_back(static_cast<uint32_t>(elements.size()), static_cast<uint32_t>(mid - first),
             static_cast<uint32_t>(last - mid));
