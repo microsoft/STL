@@ -13,7 +13,7 @@ jobs:
     if: github.event.comment.body == '/pr mark wip' && github.event.issue.pull_request
     runs-on: ubuntu-latest
     steps:
-      - name: Move To Initial Review
+      - name: Move To Work In Progress
         uses: actions/github-script@v6
         with:
           script: |
@@ -26,48 +26,41 @@ jobs:
             const code_reviews = projects.data.find(project => {
               return project.name === 'Code Reviews';
             })
-            if (code_reviews === undefined) {
+            if (!code_reviews) {
               return
             }
 
             // Find "Work In Progress" column manually by name matching
-            // Also find the card of the PR in all columns
+            // Also find the card of the PR in either "Initial Review" or "Final Review"
             // This avoids hardcoding the column ID and card ID
             const columns = await github.rest.projects.listColumns({
               project_id: code_reviews.id,
             });
 
-            let work_in_progress = null
-            let pr_card = null
-            // FIXME forEach is needed instead of a for loop, otherwise it doesn't work
-            // FIXME find out why
+            const work_in_progress = columns.data.find(column => column.name === 'Work In Progress')
+            if (!work_in_progress) {
+              return
+            }
 
-            // Since .then is asynchronous, we cannot guarantee work_in_progress is set before
-            // the PR card is found if we were to process them in the same loop
             columns.data.forEach(column => {
-              if (column.name === 'Work In Progress') {
-                work_in_progress = column.id
+              if (column.name !== 'Initial Review' && column.name !== 'Final Review') {
+                return // no reason to search through other columns and avoids unnecessary API calls
               }
-            })
 
-            // FIXME figure out best way to handle error
-            columns.data.forEach(column => {
               github.rest.projects.listCards({
                 column_id: column.id,
               }).then(cards => {
                   cards.data.forEach(card => {
                     if (card.content_url === context.payload.issue.url) {
-                      pr_card = card.id // TODO break out early somehow, avoid extra work
+                      // card is the PR card
 
-                      if (work_in_progress !== null) {
-                        github.rest.projects.moveCard({
-                          card_id: pr_card,
-                          position: 'bottom',
-                          column_id: work_in_progress,
-                        }).catch(error => {})
-                      }
+                      github.rest.projects.moveCard({
+                        card_id: card.id,
+                        position: 'bottom',
+                        column_id: work_in_progress.id,
+                      }).catch(error => {}) // FIXME figure out best way to handle error
                     }
                   })
                 })
-                .catch(error => {})
+                .catch(error => {}) // FIXME figure out best way to handle error
             })

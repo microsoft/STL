@@ -7,13 +7,13 @@ on:
     types: [created]
     branch:
       - main
+
 jobs:
   label-pr-as-wip:
-    if: github.event.issue.pull_request
+    if: github.event.comment.body == '/pr mark wip' && github.event.issue.pull_request
     runs-on: ubuntu-latest
     steps:
       - name: Add Work In Progress To PR
-        if: github.event.comment.body == '/pr mark wip'
         uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: "work in progress"
