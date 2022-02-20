@@ -1059,7 +1059,7 @@ struct _CXX23_DEPRECATE_ALIGNED_UNION aligned_union { // define type with size a
     static constexpr size_t _Max_len        = _Maximum<_Len, sizeof(_Types)...>::value; // NOT sizeof...(_Types)
     static constexpr size_t alignment_value = _Maximum<alignof(_Types)...>::value;
 
-    using type = aligned_storage_t<_Max_len, alignment_value>;
+    using type = typename _Aligned_storage<_Max_len, alignment_value>::type;
 };
 
 template <size_t _Len, class... _Types>
