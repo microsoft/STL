@@ -937,7 +937,7 @@ void test_pointer_specs() {
     throw_helper(STR("{:0}"), nullptr);
 
     // Width
-    assert(format(STR("{:5}"), nullptr) == STR("0x0  "));
+    assert(format(STR("{:5}"), nullptr) == STR("  0x0"));
 
     // Precision
     throw_helper(STR("{:.5}"), nullptr);
@@ -1322,8 +1322,7 @@ void libfmt_formatter_test_runtime_width() {
     assert(format(STR("{0:{1}}"), 42ull, 7) == STR("     42"));
     assert(format(STR("{0:{1}}"), -1.23, 8) == STR("   -1.23"));
     assert(format(STR("{0:{1}}"), -1.23l, 9) == STR("    -1.23"));
-    assert(format(STR("{0:{1}}"), reinterpret_cast<void*>(0xcafe), 10)
-           == STR("0xcafe    ")); // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:{1}}"), reinterpret_cast<void*>(0xcafe), 10) == STR("    0xcafe"));
     assert(format(STR("{0:{1}}"), 'x', 11) == STR("x          "));
     assert(format(STR("{0:{1}}"), STR("str"), 12) == STR("str         "));
 }
