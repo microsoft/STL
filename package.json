@@ -4,7 +4,11 @@
   "description": "STL Status Chart",
   "main": "gather_stats.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pregather": "npx tsc -p src_gather/tsconfig.json",
+    "gather": "node built/gather_stats.js",
+    "premake": "npx tsc -p src/tsconfig.json",
+    "make": "npx esbuild src/status_chart.ts --bundle --format=esm --minify --target=es2020 --external:chart.js --external:chartjs-adapter-luxon --outfile=built/status_chart.mjs",
+    "view": "npx http-server -c-1 -o"
   },
   "repository": {
     "type": "git",
