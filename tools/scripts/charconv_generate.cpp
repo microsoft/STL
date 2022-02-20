@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // The following code is the generator for the
-// big powers of ten table found in// _Multiply_by_power_of_ten(). This code is provided for future use if the table needs to be amended.
-// Do not remove this code.
+// big powers of ten table found in// _Multiply_by_power_of_ten(). This code is provided for future use if the table
+// needs to be amended. Do not remove this code.
 
 #include <algorithm>
 #include <charconv>
