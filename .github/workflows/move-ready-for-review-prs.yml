@@ -1,0 +1,69 @@
+name: Move PR To Initial Review
+on:
+  issue_comment:
+    types: [created]
+    branch:
+      - main
+jobs:
+  move-pr-to-initial-review:
+    if: github.event.comment.body == '/pr mark ready' && github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move To Initial Review
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Find "Code Reviews" project manually by name matching
+            // This avoids hardcoding the project ID
+            const projects = await github.rest.projects.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+            const code_reviews = projects.data.find(project => {
+              return project.name === 'Code Reviews';
+            })
+            if (code_reviews === undefined) {
+              return
+            }
+
+            // Find "Initial Review" column manually by name matching
+            // Also find the card of the PR in all columns
+            // This avoids hardcoding the column ID and card ID
+            const columns = await github.rest.projects.listColumns({
+              project_id: code_reviews.id,
+            });
+
+            let work_in_progress = null
+            let pr_card = null
+            // FIXME forEach is needed instead of a for loop, otherwise it doesn't work
+            // FIXME find out why
+
+            // Since .then is asynchronous, cannot guarantee work_in_progress is set before
+            // the PR card is found. Just loop through the columns again
+            columns.data.forEach(column => {
+              if (column.name === 'Initial Review') {
+                work_in_progress = column.id
+              }
+            })
+
+            // FIXME figure out best way to handle error
+            columns.data.forEach(column => {
+              github.rest.projects.listCards({
+                column_id: column.id,
+              }).then(cards => {
+                  cards.data.forEach(card => {
+                    if (card.content_url === context.payload.issue.url) {
+                      pr_card = card.id // TODO break out early somehow, avoid extra work
+                      
+                      if (work_in_progress !== null) {
+                        github.rest.projects.moveCard({
+                          card_id: pr_card,
+                          position: 'bottom',
+                          column_id: work_in_progress,
+                        }).catch(error => {})
+                      }
+                    }
+                  })
+                })
+                .catch(error => {})
+            })
