@@ -483,7 +483,7 @@ function getElementByIdAs<Type extends HTMLElement>(id: string, type: new () => 
     throw new Error(`document.getElementById('${id}') returned an unexpected type.`);
 }
 
-window.onload = function () {
+function load_charts() {
     const status_chart = new Chart('statusChart', {
         type: 'line',
         data: status_data,
@@ -567,4 +567,6 @@ window.onload = function () {
         const span = getElementByIdAs(`currentValue-${field}`, HTMLSpanElement);
         span.textContent = value.toString();
     }
-};
+}
+
+load_charts();
