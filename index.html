@@ -26,15 +26,16 @@
             font-weight: bold;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"
-        integrity="sha256-ErZ09KkZnzjpqcane4SCyyHsKAXMvID9/xwbl/Aq1pc=" crossorigin="anonymous"></script>
-    <script
-        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"
-        integrity="sha256-xlxh4PaMDyZ72hWQ7f/37oYI0E2PrBbtzi1yhvnG+/E=" crossorigin="anonymous"></script>
-    <script src="daily_table.js"></script>
-    <script src="weekly_table.js"></script>
-    <script src="monthly_table.js"></script>
-    <script src="status_chart.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1.4.6/dist/es-module-shims.min.js"
+        crossorigin="anonymous"></script>
+    <script type="importmap">
+        { "imports": {
+            "chart.js": "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/+esm",
+            "chartjs-adapter-luxon": "https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.1.0/+esm",
+            "luxon": "https://cdn.jsdelivr.net/npm/luxon@2.3.0/+esm"
+        } }
+    </script>
+    <script type="module" src="built/status_chart.mjs"></script>
 </head>
 
 <body>
