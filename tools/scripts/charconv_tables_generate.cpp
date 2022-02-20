@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // The following code generated the lookup tables for the
-// scientific exponent X. Don't remove this code.// cl /EHsc /nologo /W4 /MT /O2 /std:c++17 generate_tables.cpp && generate_tables
+// scientific exponent X. Don't remove this code.
+// cl /EHsc /nologo /W4 /MT /O2 /std:c++17 generate_tables.cpp && generate_tables
 
 #include <algorithm>
 #include <assert.h>
