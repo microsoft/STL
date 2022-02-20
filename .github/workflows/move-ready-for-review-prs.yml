@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 name: Move PR To Initial Review
 on:
   issue_comment:
@@ -54,7 +57,7 @@ jobs:
                   cards.data.forEach(card => {
                     if (card.content_url === context.payload.issue.url) {
                       pr_card = card.id // TODO break out early somehow, avoid extra work
-                      
+
                       if (work_in_progress !== null) {
                         github.rest.projects.moveCard({
                           card_id: pr_card,
