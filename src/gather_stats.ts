@@ -389,16 +389,17 @@ function calculate_sliding_window(when: DateTime, merged: DateTime) {
 }
 
 function write_generated_file(filename: string, table_str: string) {
-    const generated_file_warning_comment = '// Generated file - DO NOT EDIT manually!\n';
+    const str = `
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-    let str = '// Copyright (c) Microsoft Corporation.\n';
-    str += '// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception\n\n';
-    str += generated_file_warning_comment;
-    str += "'use strict';\n";
-    str += table_str;
-    str += generated_file_warning_comment;
+// Generated file - DO NOT EDIT manually!
+'use strict';
+${table_str.trim()}
+// Generated file - DO NOT EDIT manually!
+`;
 
-    fs.writeFileSync(filename, str);
+    fs.writeFileSync(filename, str.trimStart());
 }
 
 type Row = {
