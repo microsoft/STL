@@ -1395,8 +1395,10 @@ void test_sane_c_specifier() {
     throw_helper(STR("{:+}"), true);
     throw_helper(STR("{:+c}"), true);
     assert(format(STR("{:^}"), true) == STR("true"));
+    throw_helper(STR("{:^c}"), true);
     throw_helper(STR("{:0}"), true);
     throw_helper(STR("{:0c}"), true);
+    throw_helper(STR("{:c}"), true);
 
     throw_helper(STR("{:#}"), 'c');
     throw_helper(STR("{:#c}"), 'c');
