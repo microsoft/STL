@@ -34,6 +34,7 @@ utilities\template.bitset\bitset.cons\string_ctor.pass.cpp
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 utilities\format\format.functions\vformat_to.locale.pass.cpp
 utilities\format\format.functions\vformat_to.pass.cpp
+utilities\format\format.functions\vformat.locale.pass.cpp
 utilities\format\format.functions\vformat.pass.cpp
 
 # Tests with undefined behavior under N4842 [basic.start.term]/6 (detached threads)
