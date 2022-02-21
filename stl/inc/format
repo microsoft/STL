@@ -1369,8 +1369,7 @@ public:
                 _Cat = _Presentation_type_category::_String;
             }
             // note, we don't get a call if there isn't a type, but none is valid for everything.
-            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer
-                && _Cat != _Presentation_type_category::_Char) {
+            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer) {
                 _THROW(format_error("Invalid presentation type for bool"));
             }
             break;
