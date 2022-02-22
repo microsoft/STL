@@ -419,9 +419,9 @@ const age_options = {
                 text: 'Average Age, Average Wait (days)',
             },
             min: 0,
-            max: 450,
+            max: 500,
             ticks: {
-                stepSize: 50,
+                stepSize: 100,
             },
         },
         rightAxis: {
@@ -433,9 +433,9 @@ const age_options = {
                 text: 'Combined Age, Combined Wait (PR-months)',
             },
             min: 0,
-            max: 450,
+            max: 500,
             ticks: {
-                stepSize: 50,
+                stepSize: 100,
             },
         },
     },
