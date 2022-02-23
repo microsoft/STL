@@ -3,6 +3,7 @@
 
 set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_int128.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_tzdb.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_xlocinfo_types.hpp
@@ -559,3 +560,6 @@ add_stl_statics("d1" "_DEBUG;_ITERATOR_DEBUG_LEVEL=1" "${VCLIBS_DEBUG_OPTIONS}")
 add_stl_statics("d0" "_DEBUG;_ITERATOR_DEBUG_LEVEL=0" "${VCLIBS_DEBUG_OPTIONS}")
 
 add_library(stl_asan STATIC ${ASAN_SOURCES})
+
+configure_file(set_environment.bat.in "${PROJECT_BINARY_DIR}/set_environment.bat" @ONLY)
+configure_file(set_environment.ps1.in "${PROJECT_BINARY_DIR}/set_environment.ps1" @ONLY)
