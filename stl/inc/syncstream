@@ -346,7 +346,7 @@ public:
 
     void emit() {
         ios_base::iostate _State = ios_base::goodbit;
-        const typename basic_ostream<_Elem, _Traits>::sentry _Ok(*this);
+        const typename _Mybase::sentry _Ok(*this);
         if (!_Ok) {
             _State |= ios_base::badbit;
         } else {
