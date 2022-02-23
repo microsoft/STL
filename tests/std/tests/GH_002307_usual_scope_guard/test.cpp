@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <deque>
@@ -8,28 +9,28 @@
 
 using namespace std;
 
-struct bomb {
+struct countdown {
     int val;
 
-    static int countdown;
+    static int count;
 
     void tick() {
-        if (countdown == 0) {
-            throw runtime_error("BOOM");
+        if (count == 0) {
+            throw runtime_error{"GO"};
         } else {
-            --countdown;
+            --count;
         }
     }
 
-    bomb(int init) : val(init) {
+    countdown(const int init) : val(init) {
         tick();
     }
 
-    bomb(const bomb& other) : val(other.val) {
+    countdown(const countdown& other) : val(other.val) {
         tick();
     }
 
-    bomb& operator=(const bomb& other) {
+    countdown& operator=(const countdown& other) {
         tick();
         val = other.val;
         return *this;
@@ -40,57 +41,57 @@ struct bomb {
     }
 };
 
-int bomb::countdown = 0;
+int countdown::count = 0;
 
 constexpr int init_data[] = {1, 2, 3, 4, 5, 6, 7};
 constexpr int more_data[] = {10, 11, 12, 13, 14};
 
 template <class Container>
-void check(Container& c) {
-    assert(equal(c.begin(), c.end(), init_data));
+void check(const Container& c) {
+    assert(equal(c.begin(), c.end(), begin(init_data), end(init_data)));
 }
 
-void check_exception(runtime_error& ex) {
-    assert(strcmp(ex.what(), "BOOM") == 0);
+void check_exception(const runtime_error& ex) {
+    assert(strcmp(ex.what(), "GO") == 0);
 }
 
 void test_deque() {
-    bomb::countdown = 8;
+    countdown::count = 8;
 
-    deque<bomb> dq(begin(init_data), end(init_data));
+    deque<countdown> dq(begin(init_data), end(init_data));
 
     try {
-        bomb::countdown = 3;
+        countdown::count = 3;
         dq.insert(dq.end() - 2, begin(more_data), end(more_data));
         assert(false); // Should have thrown an exception
-    } catch (runtime_error& ex) {
+    } catch (const runtime_error& ex) {
         check_exception(ex);
         check(dq);
     }
 
     try {
-        bomb::countdown = 3;
+        countdown::count = 3;
         dq.insert(dq.begin() + 2, begin(more_data), end(more_data));
         assert(false); // Should have thrown an exception
-    } catch (runtime_error& ex) {
+    } catch (const runtime_error& ex) {
         check_exception(ex);
         check(dq);
     }
 
     try {
-        bomb::countdown = 3;
+        countdown::count = 3;
         dq.insert(dq.end() - 2, 6, 10);
         assert(false); // Should have thrown an exception
-    } catch (runtime_error& ex) {
+    } catch (const runtime_error& ex) {
         check_exception(ex);
         check(dq);
     }
 
     try {
-        bomb::countdown = 3;
+        countdown::count = 3;
         dq.insert(dq.begin() + 2, 6, 11);
         assert(false); // Should have thrown an exception
-    } catch (runtime_error& ex) {
+    } catch (const runtime_error& ex) {
         check_exception(ex);
         check(dq);
     }

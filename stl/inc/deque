@@ -1220,20 +1220,21 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
-    enum class _Restore_old_size_guard_direction : bool {
-        _Remove_front,
-        _Remove_back,
+private:
+    enum class _Pop_direction : bool {
+        _Front,
+        _Back,
     };
 
-    template <_Restore_old_size_guard_direction _Direction>
-    struct _Restore_old_size_guard {
+    template <_Pop_direction _Direction>
+    struct _NODISCARD _Restore_old_size_guard {
         deque* _Container;
         const size_type _Oldsize;
 
         ~_Restore_old_size_guard() {
             if (_Container) {
                 while (_Oldsize < _Container->_Mysize()) {
-                    if constexpr (_Direction == _Restore_old_size_guard_direction::_Remove_front) {
+                    if constexpr (_Direction == _Pop_direction::_Front) {
                         _Container->pop_front(); // restore old size, at least
                     } else {
                         _Container->pop_back(); // restore old size, at least
@@ -1242,6 +1243,7 @@ public:
             }
         }
     };
+public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
@@ -1260,7 +1262,7 @@ public:
 
         if (_UFirst != _ULast) {
             if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
-                _Restore_old_size_guard<_Restore_old_size_guard_direction::_Remove_front> _Guard{this, _Oldsize};
+                _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
                 for (; _UFirst != _ULast; ++_UFirst) {
                     emplace_front(*_UFirst); // prepend flipped
                 }
@@ -1272,7 +1274,7 @@ public:
                 _STD rotate(begin(), begin() + static_cast<difference_type>(_Num),
                     begin() + static_cast<difference_type>(_Num + _Off));
             } else { // closer to back
-                _Restore_old_size_guard<_Restore_old_size_guard_direction::_Remove_back> _Guard{this, _Oldsize};
+                _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
                 _Orphan_all();
                 for (; _UFirst != _ULast; ++_UFirst) {
                     _Emplace_back_internal(*_UFirst);
@@ -1373,7 +1375,7 @@ private:
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         if (_Off < _Rem) { // closer to front
-            _Restore_old_size_guard<_Restore_old_size_guard_direction::_Remove_front> _Guard{this, _Oldsize};
+            _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
             if (_Off < _Count) { // insert longer than prefix
                 for (_Num = _Count - _Off; 0 < _Num; --_Num) {
                     push_front(_Val); // push excess values
@@ -1398,7 +1400,7 @@ private:
             }
             _Guard._Container = nullptr;
         } else { // closer to back
-            _Restore_old_size_guard<_Restore_old_size_guard_direction::_Remove_back> _Guard{this, _Oldsize};
+            _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
             if (_Rem < _Count) { // insert longer than suffix
                 _Orphan_all();
                 for (_Num = _Count - _Rem; 0 < _Num; --_Num) {
