@@ -414,7 +414,24 @@ The STL is built atop other compiler support libraries that ship with Windows an
 VCRuntime, and VCStartup. The following diagram describes the dependencies between those components and their ship
 vehicles.
 
-![MSVC Libraries Block Diagram](docs/msvc_libraries.plantuml.svg)
+```mermaid
+flowchart TB
+    classDef default text-align:left
+    subgraph VisualStudioSubgraph[Visual Studio]
+        direction TB
+        STLNode("<b>STL</b><br>This repo; provides C++ Standard Library headers, separately<br>compiled implementations of most of the iostreams functionality,<br>and a few runtime support components like std::exception_ptr.")
+        subgraph VCRuntimeSubgraph[VCRuntime]
+            direction TB
+            VCStartupNode("<b>VCStartup</b><br>Provides compiler support mechanisms that<br>live in each binary; such as machinery to<br>call constructors and destructors for global<br>variables, the entry point, and the /GS cookie.<br><br>Merged into static and import libraries of VCRuntime.")
+            VCRuntimeNode("<b>VCRuntime</b><br>Provides compiler support mechanisms that can be<br>shared between binaries; code that the compiler calls<br>on your behalf, such as the C++ exception handling<br>runtime, string.h intrinsics, math intrinsics, and<br>declarations for CPU-vendor-specific intrinsics.")
+        end
+    end
+    subgraph WindowsSDKSubgraph[Windows SDK]
+        UniversalCRTNode("<b>Universal CRT</b><br>Windows component that provides C library support, such as printf,<br>C locales, and some POSIX-like shims for the Windows API, like _stat.")
+    end
+    STLNode ==> VCRuntimeSubgraph & UniversalCRTNode
+    VCStartupNode ==> VCRuntimeNode ==> UniversalCRTNode
+```
 
 # Contributing
 
