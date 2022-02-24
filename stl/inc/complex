@@ -203,7 +203,7 @@ namespace _Float_multi_prec {
 #undef _FMP_USING_X86_X64_INTRINSICS
 #undef _FMP_USING_ARM64_INTRINSICS
 
-#define _FMP ::std::_Float_multi_prec::
+#define _FMP _STD _Float_multi_prec::
 
 // implements numerical algorithms for <complex>
 namespace _Math_algorithms {
