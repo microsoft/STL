@@ -171,7 +171,7 @@ namespace ranges {
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
-                for (; _Count > 0 && _OFirst != _OLast; --_Count, (void) ++_IFirst) {
+                for (; _Count > 0 && _Backout._Last != _OLast; --_Count, (void) ++_IFirst) {
                     _Backout._Emplace_back(*_IFirst);
                 }
 
@@ -880,9 +880,13 @@ class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap store
 public:
     using iterator_category = output_iterator_tag;
     using value_type        = void;
-    using difference_type   = void;
-    using pointer           = void;
-    using reference         = void;
+#ifdef __cpp_lib_concepts
+    using difference_type = ptrdiff_t;
+#else
+    using difference_type = void;
+#endif // __cpp_lib_concepts
+    using pointer   = void;
+    using reference = void;
 
     explicit raw_storage_iterator(_OutIt _First) : _Next(_First) {}
 
@@ -3172,6 +3176,8 @@ public:
         return *this;
     }
 
+    // The Standard depicts these constructors that accept pointer as taking type_identity_t<pointer> to inhibit CTAD.
+    // Since pointer is an opaque type alias in our implementation, it inhibits CTAD without extra decoration.
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
     explicit unique_ptr(pointer _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
 
@@ -3952,6 +3958,8 @@ public:
     using _Base::notify_one;
 
     constexpr atomic() noexcept = default;
+
+    constexpr atomic(nullptr_t) noexcept : atomic() {}
 
     atomic(const shared_ptr<_Ty> _Value) noexcept : _Base(_Value._Ptr, _Value._Rep) {
         _Value._Incref();
