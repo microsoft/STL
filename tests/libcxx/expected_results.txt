@@ -31,12 +31,6 @@ std/language.support/support.exception/propagation/rethrow_exception.pass.cpp FA
 # Testing nonstandard behavior
 std/utilities/template.bitset/bitset.cons/string_ctor.pass.cpp FAIL
 
-# libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
-std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
-std/utilities/format/format.functions/vformat_to.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
-std/utilities/format/format.functions/vformat.pass.cpp FAIL
-
 # Tests with undefined behavior under N4842 [basic.start.term]/6 (detached threads)
 std/thread/futures/futures.task/futures.task.members/dtor.pass.cpp SKIPPED
 std/thread/futures/futures.unique_future/wait_until.pass.cpp SKIPPED
@@ -85,6 +79,12 @@ std/iterators/predef.iterators/reverse.iterators/reverse.iter.cons/assign.pass.c
 # optional's comparisons aren't portably constrained (https://reviews.llvm.org/D116884)
 std/concepts/concepts.compare/concepts.totallyordered/totally_ordered.pass.cpp FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable.compile.pass.cpp FAIL
+
+# libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
+std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
+std/utilities/format/format.functions/vformat_to.pass.cpp FAIL
+std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
+std/utilities/format/format.functions/vformat.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
