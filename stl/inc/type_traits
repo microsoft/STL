@@ -333,13 +333,25 @@ _INLINE_VAR constexpr bool is_convertible_v = __is_convertible_to(_From, _To);
 
 #if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
 template <class _Ty>
+struct is_convertible<_Ty&, volatile _Ty&> : true_type {};
+
+template <class _Ty>
 struct is_convertible<volatile _Ty&, volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<_Ty&, const volatile _Ty&> : true_type {};
 
 template <class _Ty>
 struct is_convertible<volatile _Ty&, const volatile _Ty&> : true_type {};
 
 template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<_Ty&, volatile _Ty&> = true;
+
+template <class _Ty>
 _INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<_Ty&, const volatile _Ty&> = true;
 
 template <class _Ty>
 _INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, const volatile _Ty&> = true;
