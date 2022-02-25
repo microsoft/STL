@@ -1190,13 +1190,10 @@ struct _Cond_res_workaround {};
 template <class _Ty1, class _Ty2>
 struct _Cond_res_workaround<_Ty1, _Ty2, void_t<_Cond_res_if_right<_Ty1, _Ty2>>> {
     using _Uty = remove_cvref_t<_Ty1>;
-    using type = conditional_t<
-        conjunction_v<is_same<_Uty, remove_cvref_t<_Ty2>>, is_scalar<_Uty>,
-            disjunction<
-                conjunction<is_lvalue_reference<_Ty1>, is_rvalue_reference<_Ty2>>,
-                conjunction<is_rvalue_reference<_Ty1>, is_lvalue_reference<_Ty2>>>>,
-        _Uty,
-        _Cond_res_if_right<_Ty1, _Ty2>>;
+    using type = conditional_t<conjunction_v<is_same<_Uty, remove_cvref_t<_Ty2>>, is_scalar<_Uty>,
+                                   disjunction<conjunction<is_lvalue_reference<_Ty1>, is_rvalue_reference<_Ty2>>,
+                                       conjunction<is_rvalue_reference<_Ty1>, is_lvalue_reference<_Ty2>>>>,
+        _Uty, _Cond_res_if_right<_Ty1, _Ty2>>;
 };
 
 template <class _Ty1, class _Ty2>
