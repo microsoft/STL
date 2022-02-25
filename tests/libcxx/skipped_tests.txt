@@ -273,9 +273,6 @@ utilities\utility\pairs\pairs.spec\three_way_comparison.pass.cpp
 # DevCom-1626727: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
 algorithms\robust_re_difference_type.compile.pass.cpp
 
-# DevCom-1627396: C1XX's __is_convertible_to intrinsic mis-handles volatile array lvalues
-concepts\concepts.lang\concept.swappable\swappable_with.compile.pass.cpp
-
 # DevCom-1628714: C1XX refuses nullptr_t == reference-to-function in a requires expression
 concepts\concepts.compare\concept.equalitycomparable\equality_comparable_with.compile.pass.cpp
 
