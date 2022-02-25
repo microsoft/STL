@@ -323,24 +323,6 @@ _INLINE_VAR constexpr bool is_fundamental_v = is_arithmetic_v<_Ty> || is_void_v<
 template <class _Ty>
 struct is_fundamental : bool_constant<is_fundamental_v<_Ty>> {}; // determine whether _Ty is a fundamental type
 
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
-template <class _From, class _To>
-_INLINE_VAR constexpr bool _Is_convertible_vref = false;
-
-template <class _Ty>
-_INLINE_VAR constexpr bool _Is_convertible_vref<volatile _Ty&, volatile _Ty&> = true;
-
-template <class _Ty>
-_INLINE_VAR constexpr bool _Is_convertible_vref<volatile _Ty&, const volatile _Ty&> = true;
-
-template <class _From, class _To>
-struct is_convertible : bool_constant<__is_convertible_to(_From, _To) || _Is_convertible_vref<_From, _To>> {
-    // determine whether _From is convertible to _To
-};
-
-template <class _From, class _To>
-_INLINE_VAR constexpr bool is_convertible_v = __is_convertible_to(_From, _To) || _Is_convertible_vref<_From, _To>;
-#else // ^^^ workaround / no workaround vvv
 template <class _From, class _To>
 struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
     // determine whether _From is convertible to _To
@@ -348,7 +330,20 @@ struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
 
 template <class _From, class _To>
 _INLINE_VAR constexpr bool is_convertible_v = __is_convertible_to(_From, _To);
-#endif
+
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
+template <class _Ty>
+struct is_convertible<volatile _Ty&, volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<volatile _Ty&, const volatile _Ty&> : true_type {};
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, const volatile _Ty&> = true;
+#endif // ^^^ workaround
 
 template <class _Ty>
 struct is_enum : bool_constant<__is_enum(_Ty)> {}; // determine whether _Ty is an enumerated type
