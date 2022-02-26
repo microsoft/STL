@@ -2221,15 +2221,13 @@ public:
 
     template <class _Engine>
     _NODISCARD _Ty operator()(_Engine& _Eng) const {
-        _Ty _Res;
-        _Ty1 _Val;
-        for (_Res = 0, _Val = 1.0;; ++_Res) { // count repetitions
+        _Ty1 _Val = 1.0;
+        for (_Ty _Res = 0;; ++_Res) { // count repetitions
             _Val *= _NRAND(_Eng, _Ty1);
             if (_Val <= _Gx0) {
-                break;
+                return _Res;
             }
         }
-        return _Res;
     }
 
     void _Init(const _Ty1& _Mean0) { // set internal state
