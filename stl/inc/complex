@@ -1932,7 +1932,7 @@ _NODISCARD inline float _Log_abs(const complex<float>& _Left) noexcept {
 
 template <class _Ty>
 _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
-    const _Ty _Log_abs_v = _STD _Log_abs(_Left); // get logarithm of magnitude
+    const _Ty _Log_abs_v = _Log_abs(_Left); // get logarithm of magnitude
     const _Ty _Theta     = _Ctraits<_Ty>::atan2(_STD imag(_Left), _STD real(_Left)); // get phase
     return complex<_Ty>(_Log_abs_v, _Theta);
 }
