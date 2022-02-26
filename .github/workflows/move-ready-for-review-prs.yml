@@ -26,6 +26,9 @@ jobs:
             const code_reviews = projects.data.find(project => {
               return project.name === 'Code Reviews';
             })
+            if (!code_reviews) {
+              return
+            }
 
             // Find "Initial Review" column manually by name matching
             // This assumes the card is in "Work In Progress" column
