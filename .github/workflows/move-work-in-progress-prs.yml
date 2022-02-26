@@ -58,9 +58,13 @@ jobs:
                         card_id: card.id,
                         position: 'bottom',
                         column_id: work_in_progress.id,
-                      }).catch(error => {}) // FIXME figure out best way to handle error
+                      }).catch(error => {
+                        console.error("Error occured while moving card to Work In Progress!")
+                      })
                     }
                   })
                 })
-                .catch(error => {}) // FIXME figure out best way to handle error
+                .catch(error => {
+                  console.error("Error while fetching cards from column ID " + column.id)
+                })
             })

@@ -56,4 +56,6 @@ jobs:
               card_id: pr_card.id,
               position: 'bottom',
               column_id: initial_review.id,
-            }).catch(error => {}) // FIXME figure out best way to handle error
+            }).catch(error => {
+              console.error("Error occured while moving card to Initial Review!")
+            })
