@@ -989,8 +989,8 @@ public:
         result_type _Buffer[_Nx];
         typename _Mybase::_Traits::_Cy_t _Carry_buf;
         const auto _Save_flags = _Istr.flags(ios_base::dec | ios_base::skipws);
-        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
-            _Istr >> _Buffer[_Ix];
+        for (auto& _Val : _Buffer) {
+            _Istr >> _Val;
         }
 
         _Istr >> _Carry_buf;
@@ -1721,8 +1721,9 @@ public:
     friend basic_istream<_Elem, _Traits>& operator>>(
         basic_istream<_Elem, _Traits>& _Istr, shuffle_order_engine& _Eng) { // read state from _Istr
         _Istr >> _Eng._Eng;
-        for (size_t _Idx = 0; _Idx < shuffle_order_engine::table_size; ++_Idx) {
-            _Istr >> _Eng._Arr[_Idx];
+
+        for (auto& _Val : _Eng._Arr) {
+            _Istr >> _Val;
         }
 
         return _Istr >> _Eng._Yx;
@@ -1732,8 +1733,9 @@ public:
     friend basic_ostream<_Elem, _Traits>& operator<<(
         basic_ostream<_Elem, _Traits>& _Ostr, const shuffle_order_engine& _Eng) { // write state to _Ostr
         _Ostr << _Eng._Eng;
-        for (size_t _Idx = 0; _Idx < shuffle_order_engine::table_size; ++_Idx) {
-            _Ostr << ' ' << _Eng._Arr[_Idx];
+
+        for (const auto& _Val : _Eng._Arr) {
+            _Ostr << ' ' << _Val;
         }
 
         return _Ostr << ' ' << _Eng._Yx;
@@ -1741,8 +1743,8 @@ public:
 
 private:
     void _Init() { // compute values for operator()
-        for (size_t _Idx = 0; _Idx < _Kx; ++_Idx) {
-            _Arr[_Idx] = _Eng();
+        for (auto& _Val : _Arr) {
+            _Val = _Eng();
         }
 
         _Yx = _Eng();
@@ -4423,11 +4425,10 @@ public:
 
         template <class _Elem, class _Traits>
         basic_ostream<_Elem, _Traits>& _Write(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
-            const size_t _Nvals = _Pvec.size();
-            _Ostr << ' ' << _Nvals;
+            _Ostr << ' ' << _Pvec.size();
 
-            for (size_t _Idx = 0; _Idx < _Nvals; ++_Idx) {
-                _Out(_Ostr, _Pvec[_Idx]);
+            for (const auto& _Val : _Pvec) {
+                _Out(_Ostr, _Val);
             }
 
             return _Ostr;
@@ -4685,8 +4686,8 @@ public:
         const piecewise_constant_distribution& _Dist) { // write state to _Ostr
         static_cast<const piecewise_constant_distribution::_Mypbase&>(_Dist._Par)._Write(_Ostr);
 
-        for (size_t _Idx = 0; _Idx < _Dist._Par._Bvec.size(); ++_Idx) {
-            _Out(_Ostr, _Dist._Par._Bvec[_Idx]);
+        for (const auto& _Val : _Dist._Par._Bvec) {
+            _Out(_Ostr, _Val);
         }
 
         return _Ostr;
@@ -4911,8 +4912,8 @@ public:
         const piecewise_linear_distribution& _Dist) { // write state to _Ostr
         static_cast<const piecewise_linear_distribution::_Mypbase&>(_Dist._Par)._Write(_Ostr);
 
-        for (size_t _Idx = 0; _Idx < _Dist._Par._Bvec.size(); ++_Idx) {
-            _Out(_Ostr, _Dist._Par._Bvec[_Idx]);
+        for (const auto& _Val : _Dist._Par._Bvec) {
+            _Out(_Ostr, _Val);
         }
 
         return _Ostr;
