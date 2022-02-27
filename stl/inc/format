@@ -536,15 +536,20 @@ protected:
     }
 
     _Fmt_codec_base() {
+        static const _Cvtvec _Cvt_cache = [] {
 #ifdef _MSVC_EXECUTION_CHARACTER_SET
-        constexpr __std_code_page _Format_codepage{_MSVC_EXECUTION_CHARACTER_SET};
+            constexpr __std_code_page _Format_codepage{_MSVC_EXECUTION_CHARACTER_SET};
 #else // ^^^ no workaround / workaround vvv
       // TRANSITION, Clang 14 - only utf-8 is supported
       // TRANSITION, VSO-1468747 (EDG) - constructor isn't constexpr, so value is unimportant
-        constexpr __std_code_page _Format_codepage{65001};
+            constexpr __std_code_page _Format_codepage{65001};
 #endif // ^^^ workaround ^^^
-        [[maybe_unused]] const __std_win_error _Result = __std_get_cvt(_Format_codepage, &_Cvt);
-        _STL_INTERNAL_CHECK(_Result == __std_win_error::_Success);
+            _Cvtvec _Cvt_temp;
+            [[maybe_unused]] const __std_win_error _Result = __std_get_cvt(_Format_codepage, &_Cvt_temp);
+            _STL_INTERNAL_CHECK(_Result == __std_win_error::_Success);
+            return _Cvt_temp;
+        }();
+        _Cvt = _Cvt_cache;
     }
 };
 
