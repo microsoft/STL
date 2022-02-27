@@ -536,7 +536,9 @@ protected:
     }
 
     _Fmt_codec_base() {
-        thread_local const _Cvtvec _Cvt_cache = [] {
+#pragma warning(push)
+#pragma warning(disable : 4640) // '_Cvt_cache': construction of local static object is not thread-safe
+        static const _Cvtvec _Cvt_cache = [] {
 #ifdef _MSVC_EXECUTION_CHARACTER_SET
             constexpr __std_code_page _Format_codepage{_MSVC_EXECUTION_CHARACTER_SET};
 #else // ^^^ no workaround / workaround vvv
@@ -549,6 +551,7 @@ protected:
             _STL_INTERNAL_CHECK(_Result == __std_win_error::_Success);
             return _Cvt_temp;
         }();
+#pragma warning(pop)
         _Cvt = _Cvt_cache;
     }
 };
