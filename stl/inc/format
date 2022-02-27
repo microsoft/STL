@@ -536,7 +536,7 @@ protected:
     }
 
     _Fmt_codec_base() {
-        static const _Cvtvec _Cvt_cache = [] {
+        thread_local const _Cvtvec _Cvt_cache = [] {
 #ifdef _MSVC_EXECUTION_CHARACTER_SET
             constexpr __std_code_page _Format_codepage{_MSVC_EXECUTION_CHARACTER_SET};
 #else // ^^^ no workaround / workaround vvv
