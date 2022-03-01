@@ -1254,7 +1254,7 @@
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
-#ifdef __cpp_impl_coroutine
+#ifdef __cpp_impl_coroutine // TRANSITION, Clang 14 coroutine support
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
 
