@@ -44,7 +44,7 @@ template <class _From, class _To>
 concept convertible_to = is_convertible_v<_From, _To>
 #else // ^^^ workaround / no workaround vvv
 concept convertible_to = __is_convertible_to(_From, _To)
-#endif
+#endif // ^^^ no workaround ^^^
     && requires {
         static_cast<_To>(_STD declval<_From>());
     };
