@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-
 #include <atomic>
 #include <cassert>
 #include <exception>
@@ -9,11 +8,9 @@
 #include <system_error>
 #include <thread>
 
-
 static std::atomic<int> has_default_objects{0};
 static std::atomic<int> no_default_objects{0};
 static std::atomic<int> no_default_or_assign_objects{0};
-
 
 struct has_default {
     has_default() : x(0xbad) {
