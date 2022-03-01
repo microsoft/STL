@@ -63,21 +63,32 @@ static void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
 extern "C" {
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept {
-#if defined(_M_IX86) || defined(_VECTOR_X64)
     constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
-    if (_Byte_length(_First1, _Last1) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+    if (_Byte_length(_First1, _Last1) >= 32
+#if defined(_M_IX86) || defined(_VECTOR_X64)
+        && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)
+#endif
+    ) {
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_32);
         do {
+#if defined(_M_IX86) || defined(_VECTOR_X64)
             const __m256i _Left  = _mm256_loadu_si256(static_cast<__m256i*>(_First1));
             const __m256i _Right = _mm256_loadu_si256(static_cast<__m256i*>(_First2));
             _mm256_storeu_si256(static_cast<__m256i*>(_First1), _Right);
             _mm256_storeu_si256(static_cast<__m256i*>(_First2), _Left);
+#elif defined(_VECTOR_ARM64) // ^^^ _M_IX86 || _VECTOR_X64 ^^^ // vvv _VECTOR_ARM64 vvv
+            const __n128x2 _Left  = neon_ld1m2_q8(static_cast<__int8*>(_First1));
+            const __n128x2 _Right = neon_ld1m2_q8(static_cast<__int8*>(_First2));
+            neon_st1m2_q8(static_cast<__int8*>(_First2), _Left);
+            neon_st1m2_q8(static_cast<__int8*>(_First1), _Right);
+#else // ^^^ _VECTOR_ARM64 ^^^
+#error Unsupported architecture
+#endif
             _Advance_bytes(_First1, 32);
             _Advance_bytes(_First2, 32);
         } while (_First1 != _Stop_at);
     }
-#endif // _M_IX86 || _VECTOR_X64
 
     constexpr size_t _Mask_16 = ~((static_cast<size_t>(1) << 4) - 1);
     if (_Byte_length(_First1, _Last1) >= 16
@@ -155,15 +166,20 @@ void* __cdecl __std_swap_ranges_trivially_swappable(void* _First1, void* _Last1,
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _First, void* _Last) noexcept {
+    if (_Byte_length(_First, _Last) >= 64
 #if defined(_M_IX86) || defined(_VECTOR_X64)
-    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+        && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        const void* _Stop_at                  = _First;
+#else
+    ) {
+#endif
+        const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
             _Advance_bytes(_Last, -32);
+#if defined(_M_IX86) || defined(_VECTOR_X64)
             // vpermq to load left and right, and transpose the lanes
             const __m256i _Left       = _mm256_loadu_si256(static_cast<__m256i*>(_First));
             const __m256i _Right      = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
@@ -174,10 +190,25 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
             const __m256i _Right_reversed = _mm256_shuffle_epi8(_Right_perm, _Reverse_char_lanes_avx);
             _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
+#elif defined(_VECTOR_ARM64) // ^^^ _M_IX86 || _VECTOR_X65 ^^^ // vvv _VECTOR_ARM64 vvv
+            const __n128x2 _Left = neon_ld1m2_q8(static_cast<__int8*>(_First));
+            const __n128x2 _Right = neon_ld1m2_q8(static_cast<__int8*>(_Last));
+            const __n128 _Left_dword_reversed1 = neon_rev64q_8(_Left.val[0]);
+            const __n128 _Left_dword_reversed2 = neon_rev64q_8(_Left.val[1]);
+            const __n128 _Right_dword_reversed2 = neon_rev64q_8(_Right.val[0]);
+            const __n128 _Right_dword_reversed1 = neon_rev64q_8(_Right.val[1]);
+            const __n128 _Left_reversed1 = neon_extq64(_Left_dword_reversed1, _Left_dword_reversed1, 1);
+            const __n128 _Left_reversed2 = neon_extq64(_Left_dword_reversed2, _Left_dword_reversed2, 1);
+            const __n128 _Right_reversed2 = neon_extq64(_Right_dword_reversed2, _Right_dword_reversed2, 1);
+            const __n128 _Right_reversed1 = neon_extq64(_Right_dword_reversed1, _Right_dword_reversed1, 1);
+            neon_st1m2_q8(static_cast<__int8*>(_Last), __n128x2{_Left_reversed2, _Left_reversed1});
+            neon_st1m2_q8(static_cast<__int8*>(_First), __n128x2{_Right_reversed1, _Right_reversed2});
+#else // ^^^ _VECTOR_ARM64 ^^^
+#error Unsupported architecture
+#endif
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
     }
-#endif // _M_IX86 || _VECTOR_X64
 
     if (_Byte_length(_First, _Last) >= 32
 #if defined(_M_IX86) || defined(_VECTOR_X64)
@@ -221,15 +252,20 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept {
+    if (_Byte_length(_First, _Last) >= 64
 #if defined(_M_IX86) || defined(_VECTOR_X64)
-    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+        && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        const void* _Stop_at                   = _First;
+#else
+    ) {
+#endif
+        const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
             _Advance_bytes(_Last, -32);
+#if defined(_M_IX86) || defined(_VECTOR_X64)
             const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
             const __m256i _Right          = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
             const __m256i _Left_perm      = _mm256_permute4x64_epi64(_Left, _MM_SHUFFLE(1, 0, 3, 2));
@@ -238,10 +274,25 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
             const __m256i _Right_reversed = _mm256_shuffle_epi8(_Right_perm, _Reverse_short_lanes_avx);
             _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
+#elif defined(_VECTOR_ARM64) // ^^^ _M_IX86 || _VECTOR_X64 ^^^ // vvv _VECTOR_ARM64 vvv
+            const __n128x2 _Left = neon_ld1m2_q16(static_cast<__int16*>(_First));
+            const __n128x2 _Right = neon_ld1m2_q16(static_cast<__int16*>(_Last));
+            const __n128 _Left_dword_reversed1 = neon_rev64q_16(_Left.val[0]);
+            const __n128 _Left_dword_reversed2 = neon_rev64q_16(_Left.val[1]);
+            const __n128 _Right_dword_reversed2 = neon_rev64q_16(_Right.val[0]);
+            const __n128 _Right_dword_reversed1 = neon_rev64q_16(_Right.val[1]);
+            const __n128 _Left_reversed1 = neon_extq64(_Left_dword_reversed1, _Left_dword_reversed1, 1);
+            const __n128 _Left_reversed2 = neon_extq64(_Left_dword_reversed2, _Left_dword_reversed2, 1);
+            const __n128 _Right_reversed2 = neon_extq64(_Right_dword_reversed2, _Right_dword_reversed2, 1);
+            const __n128 _Right_reversed1 = neon_extq64(_Right_dword_reversed1, _Right_dword_reversed1, 1);
+            neon_st1m2_q16(static_cast<__int16*>(_Last), __n128x2{_Left_reversed2, _Left_reversed1});
+            neon_st1m2_q16(static_cast<__int16*>(_First), __n128x2{_Right_reversed1, _Right_reversed2});
+#else // ^^^ _VECTOR_ARM64 ^^^
+#error Unsupported architecture
+#endif
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
     }
-#endif // _M_IX86 || _VECTOR_X64
 
     if (_Byte_length(_First, _Last) >= 32
 #if defined(_M_IX86) || defined(_VECTOR_X64)
@@ -285,12 +336,16 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept {
+    if (_Byte_length(_First, _Last) >= 64
 #if defined(_M_IX86) || defined(_VECTOR_X64)
-    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+        && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)
+#endif
+    ) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
             _Advance_bytes(_Last, -32);
+#if defined(_M_IX86) || defined(_VECTOR_X64)
             const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
             const __m256i _Right          = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
             const __m256i _Left_perm      = _mm256_permute4x64_epi64(_Left, _MM_SHUFFLE(1, 0, 3, 2));
@@ -299,10 +354,25 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
             const __m256i _Right_reversed = _mm256_shuffle_epi32(_Right_perm, _MM_SHUFFLE(0, 1, 2, 3));
             _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
+#elif defined(_VECTOR_ARM64) // ^^^ _M_IX86 || _VECTOR_X64 ^^^ // vvv _VECTOR_ARM64 vvv
+            const __n128x2 _Left = neon_ld1m2_q32(static_cast<__int32*>(_First));
+            const __n128x2 _Right = neon_ld1m2_q32(static_cast<__int32*>(_Last));
+            const __n128 _Left_dword_reversed1 = neon_rev64q_32(_Left.val[0]);
+            const __n128 _Left_dword_reversed2 = neon_rev64q_32(_Left.val[1]);
+            const __n128 _Right_dword_reversed2 = neon_rev64q_32(_Right.val[0]);
+            const __n128 _Right_dword_reversed1 = neon_rev64q_32(_Right.val[1]);
+            const __n128 _Left_reversed1 = neon_extq64(_Left_dword_reversed1, _Left_dword_reversed1, 1);
+            const __n128 _Left_reversed2 = neon_extq64(_Left_dword_reversed2, _Left_dword_reversed2, 1);
+            const __n128 _Right_reversed2 = neon_extq64(_Right_dword_reversed2, _Right_dword_reversed2, 1);
+            const __n128 _Right_reversed1 = neon_extq64(_Right_dword_reversed1, _Right_dword_reversed1, 1);
+            neon_st1m2_q32(static_cast<__int32*>(_Last), __n128x2{_Left_reversed2, _Left_reversed1});
+            neon_st1m2_q32(static_cast<__int32*>(_First), __n128x2{_Right_reversed1, _Right_reversed2});
+#else // ^^^ _VECTOR_ARM64 ^^^
+#error Unsupported architecture
+#endif
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
     }
-#endif // _M_IX86 || _VECTOR_X64
 
     if (_Byte_length(_First, _Last) >= 32
 #ifdef _M_IX86
@@ -344,22 +414,37 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
 }
 
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept {
+    if (_Byte_length(_First, _Last) >= 64
 #if defined(_M_IX86) || defined(_VECTOR_X64)
-    if (_Byte_length(_First, _Last) >= 64 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+        && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)
+#endif
+    ) {
         const void* _Stop_at = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 6 << 5);
         do {
             _Advance_bytes(_Last, -32);
+#if defined(_M_IX86) || defined(_VECTOR_X64)
             const __m256i _Left           = _mm256_loadu_si256(static_cast<__m256i*>(_First));
             const __m256i _Right          = _mm256_loadu_si256(static_cast<__m256i*>(_Last));
             const __m256i _Left_reversed  = _mm256_permute4x64_epi64(_Left, _MM_SHUFFLE(0, 1, 2, 3));
             const __m256i _Right_reversed = _mm256_permute4x64_epi64(_Right, _MM_SHUFFLE(0, 1, 2, 3));
             _mm256_storeu_si256(static_cast<__m256i*>(_First), _Right_reversed);
             _mm256_storeu_si256(static_cast<__m256i*>(_Last), _Left_reversed);
+#elif defined(_VECTOR_ARM64) // ^^^ _M_IX86 || _VECTOR_X64 ^^^ // vvv _VECTOR_ARM64 vvv
+            const __n128x2 _Left = neon_ld1m2_q64(static_cast<__int64*>(_First));
+            const __n128x2 _Right = neon_ld1m2_q64(static_cast<__int64*>(_Last));
+            const __n128 _Left_reversed1 = neon_extq64(_Left.val[0], _Left.val[0], 1);
+            const __n128 _Left_reversed2 = neon_extq64(_Left.val[1], _Left.val[1], 1);
+            const __n128 _Right_reversed2 = neon_extq64(_Right.val[0], _Right.val[0], 1);
+            const __n128 _Right_reversed1 = neon_extq64(_Right.val[1], _Right.val[1], 1);
+            neon_st1m2_q64(static_cast<__int64*>(_Last), __n128x2{_Left_reversed2, _Left_reversed1});
+            neon_st1m2_q64(static_cast<__int64*>(_First), __n128x2{_Right_reversed1, _Right_reversed2});
+#else // ^^^ _VECTOR_ARM64 ^^^
+#error Unsupported architecture
+#endif
             _Advance_bytes(_First, 32);
         } while (_First != _Stop_at);
     }
-#endif // _M_IX86 || _VECTOR_X64
 
     if (_Byte_length(_First, _Last) >= 32
 #ifdef _M_IX86
@@ -399,23 +484,37 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _Firs
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
     const void* _First, const void* _Last, void* _Dest) noexcept {
+    if (_Byte_length(_First, _Last) >= 32
 #if defined(_M_IX86) || defined(_VECTOR_X64)
-    if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+        && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        const void* _Stop_at                  = _Dest;
+#else
+    ) {
+#endif
+        const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
         do {
             _Advance_bytes(_Last, -32);
+#if defined(_M_IX86) || defined(_VECTOR_X64)
             const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
             const __m256i _Block_permuted = _mm256_permute4x64_epi64(_Block, _MM_SHUFFLE(1, 0, 3, 2));
             const __m256i _Block_reversed = _mm256_shuffle_epi8(_Block_permuted, _Reverse_char_lanes_avx);
             _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
+#elif defined(_VECTOR_ARM64) // ^^^ _M_IX86 || _VECTOR_X64 ^^^ // vvv _VECTOR_ARM64 vvv
+            const __n128x2 _Right = neon_ld1m2_q8(static_cast<const __int8*>(_Last));
+            const __n128 _Right_dword_reversed2 = neon_rev64q_8(_Right.val[0]);
+            const __n128 _Right_dword_reversed1 = neon_rev64q_8(_Right.val[1]);
+            const __n128 _Right_reversed2 = neon_extq64(_Right_dword_reversed2, _Right_dword_reversed2, 1);
+            const __n128 _Right_reversed1 = neon_extq64(_Right_dword_reversed1, _Right_dword_reversed1, 1);
+            neon_st1m2_q8(static_cast<__int8*>(_Dest), __n128x2{_Right_reversed1, _Right_reversed2});
+#else // ^^^ _VECTOR_ARM64 ^^^
+#error Unsupported architecture
+#endif
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
     }
-#endif // _M_IX86 || _VECTOR_X64
 
     if (_Byte_length(_First, _Last) >= 16
 #if defined(_M_IX86) || defined(_VECTOR_X64)
@@ -454,23 +553,37 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_1(
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
     const void* _First, const void* _Last, void* _Dest) noexcept {
+    if (_Byte_length(_First, _Last) >= 32
 #if defined(_M_IX86) || defined(_VECTOR_X64)
-    if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+        && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
-        const void* _Stop_at                   = _Dest;
+#else
+    ) {
+#endif
+        const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
         do {
             _Advance_bytes(_Last, -32);
+#if defined(_M_IX86) || defined(_VECTOR_X64)
             const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
             const __m256i _Block_permuted = _mm256_permute4x64_epi64(_Block, _MM_SHUFFLE(1, 0, 3, 2));
             const __m256i _Block_reversed = _mm256_shuffle_epi8(_Block_permuted, _Reverse_short_lanes_avx);
             _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
+#elif defined(_VECTOR_ARM64) // ^^^ _M_IX86 || _VECTOR_X64 ^^^ // vvv _VECTOR_ARM64 vvv
+            const __n128x2 _Right = neon_ld1m2_q16(static_cast<const __int16*>(_Last));
+            const __n128 _Right_dword_reversed2 = neon_rev64q_16(_Right.val[0]);
+            const __n128 _Right_dword_reversed1 = neon_rev64q_16(_Right.val[1]);
+            const __n128 _Right_reversed2 = neon_extq64(_Right_dword_reversed2, _Right_dword_reversed2, 1);
+            const __n128 _Right_reversed1 = neon_extq64(_Right_dword_reversed1, _Right_dword_reversed1, 1);
+            neon_st1m2_q16(reinterpret_cast<__int16*>(_Dest), __n128x2{_Right_reversed1, _Right_reversed2});
+#else // ^^^ _VECTOR_ARM64 ^^^
+#error Unsupported architecture
+#endif
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
     }
-#endif // _M_IX86 || _VECTOR_X64
 
     if (_Byte_length(_First, _Last) >= 16
 #if defined(_M_IX86) || defined(_VECTOR_X64)
@@ -509,20 +622,33 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_2(
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
     const void* _First, const void* _Last, void* _Dest) noexcept {
+    if (_Byte_length(_First, _Last) >= 32
 #if defined(_M_IX86) || defined(_VECTOR_X64)
-    if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+        && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)
+#endif
+    ) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
         do {
             _Advance_bytes(_Last, -32);
+#if defined(_M_IX86) || defined(_VECTOR_X64)
             const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
             const __m256i _Block_permuted = _mm256_permute4x64_epi64(_Block, _MM_SHUFFLE(1, 0, 3, 2));
             const __m256i _Block_reversed = _mm256_shuffle_epi32(_Block_permuted, _MM_SHUFFLE(0, 1, 2, 3));
             _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
+#elif defined(_VECTOR_ARM64) // ^^^ _M_IX86 || _VECTOR_X64 ^^^ // vvv _VECTOR_ARM64 vvv
+            const __n128x2 _Right = neon_ld1m2_q32(static_cast<const __int32*>(_Last));
+            const __n128 _Right_dword_reversed2 = neon_rev64q_32(_Right.val[0]);
+            const __n128 _Right_dword_reversed1 = neon_rev64q_32(_Right.val[1]);
+            const __n128 _Right_reversed2 = neon_extq64(_Right_dword_reversed2, _Right_dword_reversed2, 1);
+            const __n128 _Right_reversed1 = neon_extq64(_Right_dword_reversed1, _Right_dword_reversed1, 1);
+            neon_st1m2_q32(static_cast<__int32*>(_Dest), __n128x2{_Right_reversed1, _Right_reversed2});
+#else // ^^^ _VECTOR_ARM64 ^^^
+#error Unsupported architecture
+#endif
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
     }
-#endif // _M_IX86 || _VECTOR_X64
 
     if (_Byte_length(_First, _Last) >= 16
 #ifdef _M_IX86
@@ -559,19 +685,30 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_4(
 
 __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
     const void* _First, const void* _Last, void* _Dest) noexcept {
+    if (_Byte_length(_First, _Last) >= 32
 #if defined(_M_IX86) || defined(_VECTOR_X64)
-    if (_Byte_length(_First, _Last) >= 32 && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)) {
+        && _bittest(&__isa_enabled, __ISA_AVAILABLE_AVX2)
+#endif
+    ) {
         const void* _Stop_at = _Dest;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 5);
         do {
             _Advance_bytes(_Last, -32);
+#if defined(_M_IX86) || defined(_VECTOR_X64)
             const __m256i _Block          = _mm256_loadu_si256(static_cast<const __m256i*>(_Last));
             const __m256i _Block_reversed = _mm256_permute4x64_epi64(_Block, _MM_SHUFFLE(0, 1, 2, 3));
             _mm256_storeu_si256(static_cast<__m256i*>(_Dest), _Block_reversed);
+#elif defined(_VECTOR_ARM64) // ^^^ _M_IX86 || _VECTOR_X64 ^^^ // vvv _VECTOR_ARM64 vvv
+            const __n128x2 _Right = neon_ld1m2_q64(static_cast<const __int64*>(_Last));
+            const __n128 _Right_reversed2 = neon_extq64(_Right.val[0], _Right.val[0], 1);
+            const __n128 _Right_reversed1 = neon_extq64(_Right.val[1], _Right.val[1], 1);
+            neon_st1m2_q64(static_cast<__int64*>(_Dest), __n128x2{_Right_reversed1, _Right_reversed2});
+#else // ^^^ _VECTOR_ARM64 ^^^
+#error Unsupported architecture
+#endif
             _Advance_bytes(_Dest, 32);
         } while (_Dest != _Stop_at);
     }
-#endif // _M_IX86 || _VECTOR_X64
 
     if (_Byte_length(_First, _Last) >= 16
 #ifdef _M_IX86
