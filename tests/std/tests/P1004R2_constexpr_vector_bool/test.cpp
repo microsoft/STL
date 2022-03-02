@@ -17,14 +17,14 @@ static constexpr bool input[]         = {true, false, true, true, false, true};
 static constexpr bool input_flipped[] = {false, true, false, false, true, false};
 
 struct demoterator { // demote pointer to input iterator
-    using iterator_category = std::input_iterator_tag;
+    using iterator_category = input_iterator_tag;
     using value_type        = int;
-    using difference_type   = std::ptrdiff_t;
+    using difference_type   = ptrdiff_t;
     using reference         = const int&;
     using pointer           = void;
 
     constexpr bool operator==(const demoterator& that) const {
-        return this->ptr == that.ptr;
+        return ptr == that.ptr;
     }
 
     constexpr reference operator*() const {
