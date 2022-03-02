@@ -612,7 +612,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_vector == 201907L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang 14 coroutine support
+#ifdef __cpp_impl_coroutine
 #ifndef __cpp_lib_coroutine
 #error __cpp_lib_coroutine is not defined
 #elif __cpp_lib_coroutine != 201902L
