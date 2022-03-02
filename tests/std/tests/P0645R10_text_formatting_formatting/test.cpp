@@ -631,7 +631,6 @@ void test_bool_specs() {
 
     test_type(STR("{:b}"), true);
     test_type(STR("{:B}"), true);
-    test_type(STR("{:c}"), true);
     test_type(STR("{:d}"), true);
     test_type(STR("{:o}"), true);
     test_type(STR("{:x}"), true);
@@ -639,7 +638,6 @@ void test_bool_specs() {
 
     test_type(STR("{:b}"), false);
     test_type(STR("{:B}"), false);
-    test_type(STR("{:c}"), false);
     test_type(STR("{:d}"), false);
     test_type(STR("{:o}"), false);
     test_type(STR("{:x}"), false);
@@ -1371,10 +1369,10 @@ void test_sane_c_specifier() {
     throw_helper(STR("{:+}"), true);
     throw_helper(STR("{:+c}"), true);
     assert(format(STR("{:^}"), true) == STR("true"));
-    assert(format(STR("{:^c}"), true) == STR("\x1"));
+    throw_helper(STR("{:^c}"), true);
     throw_helper(STR("{:0}"), true);
     throw_helper(STR("{:0c}"), true);
-    assert(format(STR("{:c}"), true) == STR("\x1"));
+    throw_helper(STR("{:c}"), true);
 
     throw_helper(STR("{:#}"), 'c');
     throw_helper(STR("{:#c}"), 'c');
