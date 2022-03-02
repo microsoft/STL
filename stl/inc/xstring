@@ -582,7 +582,7 @@ template <class _Traits>
 constexpr int _Traits_compare(_In_reads_(_Left_size) const _Traits_ptr_t<_Traits> _Left, const size_t _Left_size,
     _In_reads_(_Right_size) const _Traits_ptr_t<_Traits> _Right, const size_t _Right_size) noexcept {
     // compare [_Left, _Left + _Left_size) to [_Right, _Right + _Right_size) using _Traits
-    const int _Ans = _Traits::compare(_Left, _Right, (_STD min) (_Left_size, _Right_size));
+    const int _Ans = _Traits::compare(_Left, _Right, (_STD min)(_Left_size, _Right_size));
 
     if (_Ans != 0) {
         return _Ans;
@@ -653,11 +653,11 @@ constexpr size_t _Traits_rfind(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits
     const size_t _Needle_size) noexcept {
     // search [_Haystack, _Haystack + _Hay_size) for [_Needle, _Needle + _Needle_size) beginning before _Start_at
     if (_Needle_size == 0) {
-        return (_STD min) (_Start_at, _Hay_size); // empty string always matches
+        return (_STD min)(_Start_at, _Hay_size); // empty string always matches
     }
 
     if (_Needle_size <= _Hay_size) { // room for match, look for it
-        for (auto _Match_try = _Haystack + (_STD min) (_Start_at, _Hay_size - _Needle_size);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - _Needle_size);; --_Match_try) {
             if (_Traits::eq(*_Match_try, *_Needle) && _Traits::compare(_Match_try, _Needle, _Needle_size) == 0) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -676,7 +676,7 @@ constexpr size_t _Traits_rfind_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<_Tra
     const size_t _Start_at, const _Traits_ch_t<_Traits> _Ch) noexcept {
     // search [_Haystack, _Haystack + _Hay_size) for _Ch before _Start_at
     if (_Hay_size != 0) { // room for match, look for it
-        for (auto _Match_try = _Haystack + (_STD min) (_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (_Traits::eq(*_Match_try, _Ch)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -790,7 +790,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
     // in [_Haystack, _Haystack + _Hay_size), look for last of [_Needle, _Needle + _Needle_size), before _Start_at
     // general algorithm
     if (_Needle_size != 0 && _Hay_size != 0) { // worth searching, do it
-        for (auto _Match_try = _Haystack + (_STD min) (_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (_Traits::find(_Needle, _Needle_size, *_Match_try)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -817,7 +817,7 @@ constexpr size_t _Traits_find_last_of(_In_reads_(_Hay_size) const _Traits_ptr_t<
             return _Traits_find_last_of<_Traits>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size, false_type{});
         }
 
-        for (auto _Match_try = _Haystack + (_STD min) (_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (_Matches._Match(*_Match_try)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -897,7 +897,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
     // in [_Haystack, _Haystack + _Hay_size), look for none of [_Needle, _Needle + _Needle_size), before _Start_at
     // general algorithm
     if (_Hay_size != 0) { // worth searching, do it
-        for (auto _Match_try = _Haystack + (_STD min) (_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (!_Traits::find(_Needle, _Needle_size, *_Match_try)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -925,7 +925,7 @@ constexpr size_t _Traits_find_last_not_of(_In_reads_(_Hay_size) const _Traits_pt
                 _Haystack, _Hay_size, _Start_at, _Needle, _Needle_size, false_type{});
         }
 
-        for (auto _Match_try = _Haystack + (_STD min) (_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (!_Matches._Match(*_Match_try)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -944,7 +944,7 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
     const size_t _Hay_size, const size_t _Start_at, const _Traits_ch_t<_Traits> _Ch) noexcept {
     // search [_Haystack, _Haystack + _Hay_size) for any value other than _Ch before _Start_at
     if (_Hay_size != 0) { // room for match, look for it
-        for (auto _Match_try = _Haystack + (_STD min) (_Start_at, _Hay_size - 1);; --_Match_try) {
+        for (auto _Match_try = _Haystack + (_STD min)(_Start_at, _Hay_size - 1);; --_Match_try) {
             if (!_Traits::eq(*_Match_try, _Ch)) {
                 return static_cast<size_t>(_Match_try - _Haystack); // found a match
             }
@@ -1371,7 +1371,7 @@ public:
     _NODISCARD constexpr size_type max_size() const noexcept {
         // bound to PTRDIFF_MAX to make end() - begin() well defined (also makes room for npos)
         // bound to static_cast<size_t>(-1) / sizeof(_Elem) by address space limits
-        return (_STD min) (static_cast<size_t>(PTRDIFF_MAX), static_cast<size_t>(-1) / sizeof(_Elem));
+        return (_STD min)(static_cast<size_t>(PTRDIFF_MAX), static_cast<size_t>(-1) / sizeof(_Elem));
     }
 
     _NODISCARD constexpr const_reference operator[](const size_type _Off) const noexcept /* strengthened */ {
@@ -1694,7 +1694,7 @@ private:
 
     constexpr size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
-        return (_STD min) (_Size, _Mysize - _Off);
+        return (_STD min)(_Size, _Mysize - _Off);
     }
 
     [[noreturn]] static void _Xran() {
@@ -2357,7 +2357,7 @@ public:
 
     _CONSTEXPR20 size_type _Clamp_suffix_size(const size_type _Off, const size_type _Size) const noexcept {
         // trims _Size to the longest it can be assuming a string at/after _Off
-        return (_STD min) (_Size, _Mysize - _Off);
+        return (_STD min)(_Size, _Mysize - _Off);
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
@@ -2582,41 +2582,31 @@ public:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
         _Adl_verify_range(_First, _Last);
-        _Construct(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+        auto _UFirst      = _Get_unwrapped(_First);
+        const auto _ULast = _Get_unwrapped(_Last);
+
+        if constexpr (is_same_v<remove_const_t<remove_pointer_t<decltype(_UFirst)>>, _Elem>) {
+            if (_UFirst != _ULast) {
+                assign(_UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
+            }
+        } else {
+            if constexpr (_Is_fwd_iter_v<_Iter>) {
+                const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
+                reserve(_Count);
+            } else {
+                static_assert(_Is_input_iter_v<_Iter>, "Should be at least input iterator");
+            }
+
+            // initialize from [_First, _Last), input iterators
+            _Tidy_deallocate_guard<basic_string> _Guard{this};
+            for (; _UFirst != _ULast; ++_UFirst) {
+                push_back(*_UFirst);
+            }
+
+            _Guard._Target = nullptr;
+        }
+
         _Proxy._Release();
-    }
-
-    template <class _Iter>
-    _CONSTEXPR20 void _Construct(_Iter _First, const _Iter _Last, input_iterator_tag) {
-        // initialize from [_First, _Last), input iterators
-        _Tidy_deallocate_guard<basic_string> _Guard{this};
-        for (; _First != _Last; ++_First) {
-            push_back(*_First);
-        }
-
-        _Guard._Target = nullptr;
-    }
-
-    template <class _Iter>
-    _CONSTEXPR20 void _Construct(const _Iter _First, const _Iter _Last, forward_iterator_tag) {
-        // initialize from [_First, _Last), forward iterators
-        const size_type _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        reserve(_Count);
-        _Construct(_First, _Last, input_iterator_tag{});
-    }
-
-    _CONSTEXPR20 void _Construct(_Elem* const _First, _Elem* const _Last, random_access_iterator_tag) {
-        // initialize from [_First, _Last), pointers
-        if (_First != _Last) {
-            assign(_First, _Convert_size<size_type>(static_cast<size_t>(_Last - _First)));
-        }
-    }
-
-    _CONSTEXPR20 void _Construct(const _Elem* const _First, const _Elem* const _Last, random_access_iterator_tag) {
-        // initialize from [_First, _Last), const pointers
-        if (_First != _Last) {
-            assign(_First, _Convert_size<size_type>(static_cast<size_t>(_Last - _First)));
-        }
     }
 
     _CONSTEXPR20 basic_string(basic_string&& _Right) noexcept
@@ -2665,7 +2655,7 @@ public:
 
         if (_Activate_large_mode) {
             // we should never allocate less than _BUF_SIZE space (_New_size could be small if constant evaluated)
-            const size_type _Requested_size = (_STD max) (_New_size, _BUF_SIZE);
+            const size_type _Requested_size = (_STD max)(_New_size, _BUF_SIZE);
             _New_capacity                   = _Calculate_growth(_Requested_size, _BUF_SIZE - 1, max_size());
             const pointer _Fancyptr         = _Getal().allocate(_New_capacity + 1); // throws
             _Ptr                            = _Unfancy(_Fancyptr);
@@ -2945,7 +2935,7 @@ private:
         }
 
         auto& _Al                     = _Getal();
-        const size_type _New_capacity = (_STD min) (_Right_size | _ALLOC_MASK, max_size());
+        const size_type _New_capacity = (_STD min)(_Right_size | _ALLOC_MASK, max_size());
         const pointer _New_array      = _Al.allocate(_New_capacity + 1); // throws
         _Construct_in_place(_My_data._Bx._Ptr, _New_array);
 
@@ -3802,10 +3792,10 @@ public:
             }
         }
 
-        size_type _Target_capacity = (_STD min) (_My_data._Mysize | _ALLOC_MASK, max_size());
+        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
 #if _HAS_CXX20
         // must allocate at least _BUF_SIZE space
-        _Target_capacity = (_STD max) (_Target_capacity, _BUF_SIZE);
+        _Target_capacity = (_STD max)(_Target_capacity, _BUF_SIZE);
 #endif // _HAS_CXX20
 
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
@@ -3943,8 +3933,8 @@ public:
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
         const size_type _Alloc_max   = _Alty_traits::max_size(_Getal());
         const size_type _Storage_max = // can always store small string
-            (_STD max) (_Alloc_max, static_cast<size_type>(_BUF_SIZE));
-        return (_STD min) (static_cast<size_type>((numeric_limits<difference_type>::max) ()),
+            (_STD max)(_Alloc_max, static_cast<size_type>(_BUF_SIZE));
+        return (_STD min)(static_cast<size_type>((numeric_limits<difference_type>::max)()),
             _Storage_max - 1 // -1 is for null terminator and/or npos
         );
     }
@@ -3972,9 +3962,10 @@ public:
         const auto _Result_size = _STD move(_Op)(_Mypair._Myval2._Myptr(), _New_size);
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
+#pragma warning(suppress : 4018) //  '<=': signed/unsigned mismatch, we already compared with 0, so it's safe
         _STL_VERIFY(_Result_size <= _New_size, "the returned size can't be greater than the passed size");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        _Eos(_Result_size);
+        _Eos(static_cast<size_type>(_Result_size));
     }
 #endif // _HAS_CXX23
 
@@ -4518,7 +4509,7 @@ private:
             return _Max;
         }
 
-        return (_STD max) (_Masked, _Old + _Old / 2);
+        return (_STD max)(_Masked, _Old + _Old / 2);
     }
 
     _NODISCARD _CONSTEXPR20 size_type _Calculate_growth(const size_type _Requested) const noexcept {
