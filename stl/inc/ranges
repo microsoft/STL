@@ -4812,12 +4812,12 @@ namespace ranges {
             }
 
             _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Left._Current == _Right._Current)) /* strengthened */ {
+                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Right._Current))) /* strengthened */ {
                 return _Left._Current == _Right._Current;
             }
 
             _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, default_sentinel_t) noexcept(
-                noexcept(_Left._Current == _Left._Next)) /* strengthened */ {
+                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Left._Next))) /* strengthened */ {
                 return _Left._Current == _Left._Next;
             }
         };
@@ -4835,6 +4835,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr iterator_t<_Vw> _Find_prev(iterator_t<_Vw> _It) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_range<_Vw>);
 #if _ITERATOR_DEBUG_LEVEL != 0
             _STL_VERIFY(_Pred, "cannot decrement a chunk_by_view iterator whose parent view has no predicate");
 #endif // _ITERATOR_DEBUG_LEVEL != 0

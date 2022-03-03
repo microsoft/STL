@@ -47,7 +47,7 @@ void test_view_begin() {
     (void) r.begin(); // cannot call begin on a chunk_by_view that holds no predicate
 }
 
-constexpr auto lambda = [](int i, int j) { return i == j; };
+constexpr auto lambda = [](int, int) { return true; };
 using V               = decltype(ranges::chunk_by_view{some_ints, lambda});
 
 void test_operator_star_end_iterator() {
