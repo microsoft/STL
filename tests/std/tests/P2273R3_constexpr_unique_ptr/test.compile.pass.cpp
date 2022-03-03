@@ -8,14 +8,13 @@
 using namespace std;
 
 struct Dummy {
-    constexpr Dummy() = default;
     constexpr int test() const {
         return 10;
     }
 };
 
 constexpr bool test() {
-    // [memory.syn] 20.11.1
+    // [memory.syn]
     {
         auto p1 = make_unique<int>(42);
         auto p2 = make_unique_for_overwrite<int>();
@@ -33,19 +32,27 @@ constexpr bool test() {
 
         auto p5 = unique_ptr<int>{nullptr};
         assert(p5 == nullptr);
+        assert(nullptr == p5);
+        assert(!(p5 != nullptr));
+        assert(!(nullptr != p5));
 #ifndef __EDG__ // TRANSITION, DevCom-1670927
         assert(!(p5 < nullptr));
+        assert(!(nullptr < p5));
         assert(p5 <= nullptr);
+        assert(nullptr <= p5);
         assert(!(p5 > nullptr));
+        assert(!(nullptr > p5));
         assert(p5 >= nullptr);
+        assert(nullptr >= p5);
         assert((p5 <=> nullptr) == strong_ordering::equal);
+        assert((nullptr <=> p5) == strong_ordering::equal);
 #endif // !__EDG__
     }
 
-    // changes in [unique.ptr.dltr.dflt] 20.11.1.1.2 and  [unique.ptr.dltr.dflt1] 20.11.1.1.3
+    // changes in [unique.ptr.dltr.dflt] and [unique.ptr.dltr.dflt1]
     // will be tested via destructors and copy assign/constructors
 
-    // [unique.ptr.single.general] 20.11.1.3.1
+    // [unique.ptr.single.general]
     {
         // constructors
         auto p1 = unique_ptr<int>{new int{}};
@@ -75,13 +82,13 @@ constexpr bool test() {
 
         // modifiers
         p1.reset();
-        auto manual_delete = p2.get();
-        p2.release();
+        p1.reset(new int{});
+        auto manual_delete = p2.release();
         delete manual_delete;
         p5.swap(p1);
     }
 
-    // [unique.ptr.runtime.general] 20.11.1.4.1:
+    // [unique.ptr.runtime.general]
     {
         // constructors
         auto p1 = unique_ptr<int[]>{new int[5]};
@@ -99,8 +106,8 @@ constexpr bool test() {
         p4      = nullptr;
 
         // observers
-        p1[0] = 5;
-        assert(p1[0] == 5);
+        p1[0] = 50;
+        assert(p1[0] == 50);
         assert(p1.get() != nullptr);
         [[maybe_unused]] auto& d2 = p1.get_deleter();
         [[maybe_unused]] auto& d3 = as_const(p1).get_deleter();
@@ -108,11 +115,11 @@ constexpr bool test() {
         assert(b1);
 
         // modifiers
-        auto manual_delete = p1.get();
-        p1.release();
+        auto manual_delete = p1.release();
         delete[] manual_delete;
         p1.reset(new int[3]);
         p1.reset(nullptr);
+        p1.reset();
         p1.swap(p4);
     }
 
