@@ -80,6 +80,12 @@ iterators\predef.iterators\reverse.iterators\reverse.iter.cons\assign.pass.cpp
 concepts\concepts.compare\concepts.totallyordered\totally_ordered.pass.cpp
 concepts\concepts.compare\concept.equalitycomparable\equality_comparable.compile.pass.cpp
 
+# libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
+utilities\format\format.functions\vformat_to.locale.pass.cpp
+utilities\format\format.functions\vformat_to.pass.cpp
+utilities\format\format.functions\vformat.locale.pass.cpp
+utilities\format\format.functions\vformat.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
