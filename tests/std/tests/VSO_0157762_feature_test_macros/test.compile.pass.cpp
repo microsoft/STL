@@ -1316,6 +1316,20 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX23 && !defined(__clang__) && !defined(__EDG__) // TRANSITION, Clang and EDG support for modules
+#ifndef __cpp_lib_modules
+#error __cpp_lib_modules is not defined
+#elif __cpp_lib_modules != 202207L
+#error __cpp_lib_modules is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_modules == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_modules
+#error __cpp_lib_modules is defined
+#endif
+#endif
+
 #ifdef __cpp_lib_concepts
 #ifndef __cpp_lib_move_iterator_concept
 #error __cpp_lib_move_iterator_concept is not defined
