@@ -19,22 +19,22 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-using _CSTD clock_t;
-using _CSTD size_t;
-using _CSTD time_t;
-using _CSTD tm;
-using _CSTD asctime;
-using _CSTD clock;
-using _CSTD ctime;
-using _CSTD difftime;
-using _CSTD gmtime;
-using _CSTD localtime;
-using _CSTD mktime;
-using _CSTD strftime;
-using _CSTD time;
+_EXPORT_STD using _CSTD clock_t;
+_EXPORT_STD using _CSTD size_t;
+_EXPORT_STD using _CSTD time_t;
+_EXPORT_STD using _CSTD tm;
+_EXPORT_STD using _CSTD asctime;
+_EXPORT_STD using _CSTD clock;
+_EXPORT_STD using _CSTD ctime;
+_EXPORT_STD using _CSTD difftime;
+_EXPORT_STD using _CSTD gmtime;
+_EXPORT_STD using _CSTD localtime;
+_EXPORT_STD using _CSTD mktime;
+_EXPORT_STD using _CSTD strftime;
+_EXPORT_STD using _CSTD time;
 #if _HAS_CXX17
-using _CSTD timespec;
-using _CSTD timespec_get;
+_EXPORT_STD using _CSTD timespec;
+_EXPORT_STD using _CSTD timespec_get;
 #endif // _HAS_CXX17
 _STD_END
 
