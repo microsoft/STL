@@ -3,6 +3,7 @@
 
 set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_all_public_headers.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_chrono.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_int128.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_system_error_abi.hpp
     ${CMAKE_CURRENT_LIST_DIR}/inc/__msvc_tzdb.hpp
@@ -215,7 +216,6 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_ryu.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_ryu_tables.h
-    ${CMAKE_CURRENT_LIST_DIR}/inc/xchrono.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xerrc.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfacet
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfilesystem_abi.h

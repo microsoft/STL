@@ -8,7 +8,7 @@
 #define _CHRONO_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <xchrono.h>
+#include <__msvc_chrono.hpp>
 
 #if _HAS_CXX20
 #include <__msvc_tzdb.hpp>

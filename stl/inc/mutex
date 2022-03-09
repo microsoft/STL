@@ -13,12 +13,12 @@
 #error <mutex> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
 
+#include <__msvc_chrono.hpp>
 #include <cstdlib>
 #include <system_error>
 #include <thread>
 #include <utility>
 #include <xcall_once.h>
-#include <xchrono.h>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

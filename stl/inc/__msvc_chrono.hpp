@@ -1,11 +1,11 @@
-// xchrono.h internal header
+// __msvc_chrono.hpp internal header
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
-#ifndef _XCHRONO_H
-#define _XCHRONO_H
+#ifndef __MSVC_CHRONO_HPP
+#define __MSVC_CHRONO_HPP
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <ctime>
@@ -784,4 +784,4 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma warning(pop)
 #pragma pack(pop)
 #endif // _STL_COMPILER_PREPROCESSOR
-#endif // _XCHRONO_H
+#endif // __MSVC_CHRONO_HPP

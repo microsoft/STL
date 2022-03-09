@@ -8,10 +8,10 @@
 #define _THREAD_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <__msvc_chrono.hpp>
 #include <memory>
 #include <process.h>
 #include <tuple>
-#include <xchrono.h>
 #include <xthreads.h>
 #if _HAS_CXX20
 #include <compare>
