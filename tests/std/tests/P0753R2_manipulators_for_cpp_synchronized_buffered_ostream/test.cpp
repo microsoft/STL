@@ -60,7 +60,11 @@ void test_osyncstream_manipulators(
         if constexpr (ThrowOnSync) {
             assert(os.rdstate() == ios_base::badbit);
         } else {
-            assert(os.rdstate() == (buf ? ios_base::goodbit : ios_base::badbit));
+            if(buf) {
+                assert(os.rdstate() == ios_base::goodbit);
+            else {
+                assert(os.rdstate() == ios_base::badbit);
+            }
         }
 
         if (buf) {
