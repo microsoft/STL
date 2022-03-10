@@ -3881,7 +3881,7 @@ namespace filesystem {
         if (_Error == __std_win_error::_Success) {
             _Result = file_time_type{file_time_type::duration{_Stats._Last_write_time}};
         } else {
-            _Result = (file_time_type::min) ();
+            _Result = (file_time_type::min)();
         }
 
         return _Error;
@@ -4337,6 +4337,15 @@ namespace filesystem {
         return _STD filesystem::copy(_From, _To, copy_options::none);
     }
 } // namespace filesystem
+
+template <>
+struct hash<filesystem::path> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef filesystem::path _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    _NODISCARD size_t operator()(const filesystem::path& _Path) const noexcept {
+        return _STD filesystem::hash_value(_Path);
+    }
+};
 
 #ifdef __cpp_lib_concepts
 namespace ranges {

@@ -25,7 +25,7 @@ FILE* _Xfsopen(_In_z_ const wchar_t* filename, _In_ int mode, _In_ int prot) {
 
 template <class CharT>
 FILE* _Xfiopen(const CharT* filename, ios_base::openmode mode, int prot) {
-    static const int valid[] = {
+    static const ios_base::openmode valid[] = {
         // valid combinations of open flags
         ios_base::in,
         ios_base::out,
@@ -41,7 +41,6 @@ FILE* _Xfiopen(const CharT* filename, ios_base::openmode mode, int prot) {
         ios_base::in | ios_base::out | ios_base::binary,
         ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary,
         ios_base::in | ios_base::out | ios_base::app | ios_base::binary,
-        0,
     };
 
     FILE* fp                     = nullptr;
@@ -58,13 +57,12 @@ FILE* _Xfiopen(const CharT* filename, ios_base::openmode mode, int prot) {
 
     mode &= ~(ios_base::ate | ios_base::_Nocreate | ios_base::_Noreplace);
 
+    // look for a valid mode
     int n = 0;
-    while (valid[n] != 0 && valid[n] != mode) { // look for a valid mode
-        ++n;
-    }
-
-    if (valid[n] == 0) {
-        return nullptr; // no valid mode
+    while (valid[n] != mode) {
+        if (++n == static_cast<int>(_STD size(valid))) {
+            return nullptr; // no valid mode
+        }
     }
 
     if (norepflag && (mode & (ios_base::out | ios_base::app))
@@ -81,12 +79,12 @@ FILE* _Xfiopen(const CharT* filename, ios_base::openmode mode, int prot) {
         return nullptr; // open failed
     }
 
-    if (!atendflag || fseek(fp, 0, SEEK_END) == 0) {
-        return fp; // no need to seek to end, or seek succeeded
+    if (atendflag && fseek(fp, 0, SEEK_END) != 0) {
+        fclose(fp); // can't position at end
+        return nullptr;
     }
 
-    fclose(fp); // can't position at end
-    return nullptr;
+    return fp; // no need to seek to end, or seek succeeded
 }
 
 _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(

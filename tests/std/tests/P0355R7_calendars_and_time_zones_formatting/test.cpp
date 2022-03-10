@@ -207,10 +207,19 @@ bool test_parse_chrono_format_specs() {
     return true;
 }
 
+template <class charT, class... Args>
+auto make_testing_format_args(Args&&... vals) {
+    if constexpr (is_same_v<charT, wchar_t>) {
+        return make_wformat_args(forward<Args>(vals)...);
+    } else {
+        return make_format_args(forward<Args>(vals)...);
+    }
+}
+
 template <class CharT, class... Args>
 void throw_helper(const basic_string_view<CharT> fmt, const Args&... vals) {
     try {
-        (void) format(fmt, vals...);
+        (void) vformat(fmt, make_testing_format_args<CharT>(vals...));
         assert(false);
     } catch (const format_error&) {
     }
@@ -334,15 +343,15 @@ void test_day_formatter() {
     using view_typ = basic_string_view<CharT>;
     using str_typ  = basic_string<CharT>;
 
-    view_typ s0(STR("{:%d}"));
-    view_typ s1(STR("{:%e}"));
-    view_typ s2(STR("{:%Od}"));
-    view_typ s3(STR("{:%Oe}"));
-    view_typ s4(STR("{}"));
-    view_typ s5(STR("{:=>8}"));
-    view_typ s6(STR("{:lit}"));
-    view_typ s7(STR("{:%d days}"));
-    view_typ s8(STR("{:*^6%dmm}"));
+    constexpr view_typ s0(STR("{:%d}"));
+    constexpr view_typ s1(STR("{:%e}"));
+    constexpr view_typ s2(STR("{:%Od}"));
+    constexpr view_typ s3(STR("{:%Oe}"));
+    constexpr view_typ s4(STR("{}"));
+    constexpr view_typ s5(STR("{:=>8}"));
+    constexpr view_typ s6(STR("{:lit}"));
+    constexpr view_typ s7(STR("{:%d days}"));
+    constexpr view_typ s8(STR("{:*^6%dmm}"));
 
     str_typ a0(STR("27"));
     str_typ a1(STR("05"));
