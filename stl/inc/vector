@@ -490,7 +490,7 @@ _INLINE_VAR constexpr bool
 #pragma detect_mismatch("annotate_vector", "0")
 #endif // !_INSERT_VECTOR_ANNOTATION
 
-template <class _Ty, class _Alloc = allocator<_Ty>>
+_EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
     template <class>
@@ -2280,7 +2280,7 @@ using _Vbase = unsigned int; // word type for vector<bool> representation
 
 _INLINE_VAR constexpr int _VBITS = 8 * sizeof(_Vbase); // at least CHAR_BITS bits per word
 
-template <class _Ty, class _Alloc>
+_EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD _CONSTEXPR20 bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if (_Left.size() != _Right.size()) {
         return false;
@@ -2344,7 +2344,7 @@ struct _Vbase_compare_three_way {
 };
 
 #ifdef __cpp_lib_concepts
-template <class _Ty, class _Alloc>
+_EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if constexpr (is_same_v<_Ty, bool>) {
@@ -2412,18 +2412,18 @@ _NODISCARD _CONSTEXPR20 bool operator>=(const vector<_Ty, _Alloc>& _Left, const 
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-template <class _Ty, class _Alloc>
+_EXPORT_STD template <class _Ty, class _Alloc>
 _CONSTEXPR20 void swap(vector<_Ty, _Alloc>& _Left, vector<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
 #if _HAS_CXX20
-template <class _Ty, class _Alloc, class _Uty>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
 constexpr typename vector<_Ty, _Alloc>::size_type erase(vector<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
     return _Erase_remove(_Cont, _Val);
 }
 
-template <class _Ty, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
 constexpr typename vector<_Ty, _Alloc>::size_type erase_if(vector<_Ty, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
 }
@@ -3637,7 +3637,7 @@ struct hash<vector<bool, _Alloc>> {
 
 #if _HAS_CXX17
 namespace pmr {
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     using vector = _STD vector<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
