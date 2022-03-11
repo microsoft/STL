@@ -69,11 +69,11 @@ inline size_t __stdcall _Stacktrace_string_fill_impl(
             void* _Context;
         };
 
-        static_cast<_STD string*>(_String)->resize_and_overwrite(
+        static_cast<string*>(_String)->resize_and_overwrite(
             _Size, _Stacktrace_string_fill_op{_Callback, _Context});
-        return static_cast<_STD string*>(_String)->size();
+        return static_cast<string*>(_String)->size();
     } else {
-        return static_cast<_STD string*>(_String)->capacity();
+        return static_cast<string*>(_String)->capacity();
     }
 }
 
