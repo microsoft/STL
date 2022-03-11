@@ -53,7 +53,7 @@ _EXTERN_C
 unsigned short __stdcall __std_stacktrace_capture(unsigned long _FramesToSkip, unsigned long _FramesToCapture,
     void** _BackTrace, unsigned long* _BackTraceHash) noexcept;
 
-// Some of these exports may throw (They would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
+// Some of these functions may throw (they would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
 
 // clang-format off
 void __stdcall __std_stacktrace_address_to_string(
