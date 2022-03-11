@@ -307,12 +307,12 @@ namespace {
 } // namespace
 
 _EXTERN_C
-[[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(unsigned long _FramesToSkip,
-    const unsigned long _FramesToCapture, void** const _BackTrace, unsigned long* const _BackTraceHash) noexcept {
+[[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(unsigned long _Frames_to_skip,
+    const unsigned long _Frames_to_capture, void** const _Back_trace, unsigned long* const _Back_trace_hash) noexcept {
 #ifdef _DEBUG
-    _FramesToSkip += 1; // compensate absense of tail call optimization here
+    _Frames_to_skip += 1; // compensate absense of tail call optimization here
 #endif
-    return CaptureStackBackTrace(_FramesToSkip, _FramesToCapture, _BackTrace, _BackTraceHash);
+    return CaptureStackBackTrace(_Frames_to_skip, _Frames_to_capture, _Back_trace, _Back_trace_hash);
 }
 
 // Some of these exports may throw (They would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
@@ -343,7 +343,7 @@ void __stdcall __std_stacktrace_source_file(
     source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
-unsigned __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept {
+unsigned int __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept {
     const srw_lock_guard lock{srw};
 
     if (!try_initialize()) {
