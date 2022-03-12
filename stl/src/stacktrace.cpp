@@ -20,9 +20,10 @@
 
 // The below function pointer types be in sync with <stacktrace>
 
-using _Stacktrace_string_fill_callback = size_t (__stdcall*)(char*, size_t, void* _Context);
+using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char*, size_t, void* _Context);
 
-using _Stacktrace_string_fill = size_t (__stdcall*)(size_t, void* _Str, void* _Context, _Stacktrace_string_fill_callback);
+using _Stacktrace_string_fill = size_t(__stdcall*)(
+    size_t, void* _Str, void* _Context, _Stacktrace_string_fill_callback);
 
 namespace {
     template <class F>
