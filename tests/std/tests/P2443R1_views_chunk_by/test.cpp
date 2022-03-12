@@ -15,8 +15,9 @@
 using namespace std;
 
 constexpr auto equal_ranges = [](auto&& left, auto&& right) { return ranges::equal(left, right); };
-constexpr std::less<> pred{};
-using Pred = std::less<>;
+
+using Pred = less<>;
+constexpr Pred pred{};
 
 template <class Rng>
 concept CanViewChunkBy = requires(Rng&& r) {
