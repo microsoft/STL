@@ -227,11 +227,11 @@ public:
         return _Frames.max_size();
     }
 
-    [[nodiscard]] const_reference operator[](size_type _Sx) const noexcept /* strengthened */ {
+    [[nodiscard]] const_reference operator[](const size_type _Sx) const noexcept /* strengthened */ {
         return _Frames[_Sx];
     }
 
-    [[nodiscard]] const_reference at(size_type _Sx) const {
+    [[nodiscard]] const_reference at(const size_type _Sx) const {
         return _Frames.at(_Sx);
     }
 
