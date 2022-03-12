@@ -188,12 +188,20 @@ struct pointer_traits<_Ty*> {
 };
 
 #if _HAS_CXX20
+#ifdef __cpp_lib_concepts
+template <class _Ty>
+concept _Has_to_address = requires(const _Ty& _Val) {
+    typename pointer_traits<_Ty>;
+    pointer_traits<_Ty>::to_address(_Val);
+};
+#else // ^^^ Use concept / use variable template vvv
 template <class _Ty, class = void>
-inline constexpr bool _Has_to_address_v = false; // determines whether _Ptr has pointer_traits<_Ptr>::to_address(p)
+inline constexpr bool _Has_to_address = false; // determines whether pointer_traits<_Ty> has to_address
 
 template <class _Ty>
 inline constexpr bool
-    _Has_to_address_v<_Ty, void_t<decltype(pointer_traits<_Ty>::to_address(_STD declval<const _Ty&>()))>> = true;
+    _Has_to_address<_Ty, void_t<decltype(pointer_traits<_Ty>::to_address(_STD declval<const _Ty&>()))>> = true;
+#endif // __cpp_lib_concepts
 
 template <class _Ty>
 _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
@@ -204,7 +212,7 @@ _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
 
 template <class _Ptr>
 _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
-    if constexpr (_Has_to_address_v<_Ptr>) {
+    if constexpr (_Has_to_address<_Ptr>) {
         return pointer_traits<_Ptr>::to_address(_Val);
     } else {
         return _STD to_address(_Val.operator->()); // plain pointer overload must come first
@@ -791,12 +799,17 @@ _NODISCARD constexpr auto _To_signed_like(const _Ty _Value) noexcept {
 
 // clang-format off
 template <class _Ty>
-concept weakly_incrementable = movable<_Ty> && requires(_Ty __i) {
-    typename iter_difference_t<_Ty>;
-    requires _Signed_integer_like<iter_difference_t<_Ty>>;
-    { ++__i } -> same_as<_Ty&>;
-    __i++;
-};
+concept weakly_incrementable = movable<_Ty>
+    && requires(_Ty __i) {
+        typename iter_difference_t<_Ty>;
+        requires _Signed_integer_like<iter_difference_t<_Ty>>;
+        { ++__i } -> same_as<_Ty&>;
+        __i++;
+    }
+#ifdef __clang__ // TRANSITION, LLVM-48173
+    && !same_as<_Ty, bool>
+#endif // TRANSITION, LLVM-48173
+    ;
 
 template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
@@ -804,10 +817,8 @@ concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_T
 };
 
 template <class _It>
-concept input_or_output_iterator = requires(_It __i) {
-    { *__i } -> _Can_reference;
-    requires weakly_incrementable<_It>;
-};
+concept input_or_output_iterator = requires(_It __i) { { *__i } -> _Can_reference; }
+    && weakly_incrementable<_It>;
 
 template <class _Se, class _It>
 concept sentinel_for = semiregular<_Se>
@@ -1081,7 +1092,7 @@ namespace ranges {
                 constexpr _St _Strat = _Choice<_Ty1, _Ty2>._Strategy;
 
                 if constexpr (_Strat == _St::_Custom) {
-                    iter_swap(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
+                    (void) iter_swap(static_cast<_Ty1&&>(_Val1), static_cast<_Ty2&&>(_Val2));
                 } else if constexpr (_Strat == _St::_Swap) {
                     _RANGES swap(*static_cast<_Ty1&&>(_Val1), *static_cast<_Ty2&&>(_Val2));
                 } else if constexpr (_Strat == _St::_Exchange) {
@@ -3342,7 +3353,8 @@ namespace ranges {
         // [[no_unique_address]] conditional_t<_Store_size, _Size_type, _Nil> _Size{};
 
         template <class _Rng>
-        constexpr subrange(true_type, _Rng&& _Val) : subrange(_STD forward<_Rng>(_Val), _RANGES size(_Val)) {
+        constexpr subrange(true_type, _Rng&& _Val)
+            : subrange(_STD forward<_Rng>(_Val), static_cast<_Size_type>(_RANGES size(_Val))) {
             // delegation target for subrange(_Rng&&) when we must store the range size
             _STL_INTERNAL_STATIC_ASSERT(_Store_size);
         }
@@ -5936,9 +5948,6 @@ namespace ranges {
 
     inline constexpr _Search_fn search{_Not_quite_object::_Construct_tag{}};
 } // namespace ranges
-
-template <auto> // _Require_constant<E> is a valid template-id iff E is a constant expression of structural type
-struct _Require_constant;
 #endif // __cpp_lib_concepts
 
 template <class _FwdIt, class _Ty, class _Pr>

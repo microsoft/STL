@@ -1129,10 +1129,15 @@ public:
     template <class _Ty>
     _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
         if constexpr (is_integral_v<_Ty>) {
-            if constexpr (is_signed_v<_Ty>) {
-                if (_Value < 0) {
-                    _THROW(format_error("Negative width."));
-                }
+            bool _Positive;
+            if constexpr (same_as<_Ty, bool>) { // avoid "bool > 0", which triggers C4804
+                _Positive = _Value != 0;
+            } else {
+                _Positive = _Value > 0;
+            }
+
+            if (!_Positive) {
+                _THROW(format_error("width is not positive."));
             }
             return static_cast<unsigned long long>(_Value);
         } else {
@@ -1364,8 +1369,7 @@ public:
                 _Cat = _Presentation_type_category::_String;
             }
             // note, we don't get a call if there isn't a type, but none is valid for everything.
-            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer
-                && _Cat != _Presentation_type_category::_Char) {
+            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer) {
                 _THROW(format_error("Invalid presentation type for bool"));
             }
             break;
@@ -1489,10 +1493,10 @@ struct _Format_arg_traits {
     // clang-format on
 
     template <class _Ty>
-    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty>()));
+    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty&>()));
 
     template <class _Ty>
-    static constexpr size_t _Storage_size = sizeof(_Storage_type<remove_cvref_t<_Ty>>);
+    static constexpr size_t _Storage_size = sizeof(_Storage_type<_Ty>);
 };
 
 struct _Format_arg_index {
@@ -1554,7 +1558,7 @@ private:
 
     template <class _Ty>
     void _Store(const size_t _Arg_index, _Ty&& _Val) noexcept {
-        using _Erased_type = typename _Traits::template _Storage_type<remove_cvref_t<_Ty>>;
+        using _Erased_type = typename _Traits::template _Storage_type<_Ty>;
 
         _Basic_format_arg_type _Arg_type;
         if constexpr (is_same_v<_Erased_type, bool>) {
@@ -1603,8 +1607,10 @@ class _Format_arg_store<_Context> {};
 template <class _Context>
 class basic_format_args {
 public:
-    basic_format_args() noexcept;
+    basic_format_args() noexcept = default;
+
     basic_format_args(const _Format_arg_store<_Context>&) noexcept {}
+
     template <class... _Args>
     basic_format_args(const _Format_arg_store<_Context, _Args...>& _Store) noexcept
         : _Num_args(sizeof...(_Args)), _Index_array(_Store._Index_array) {}
@@ -1733,7 +1739,7 @@ public:
         _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const _Lazy_locale& _Loc_)
         : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
 
-    _NODISCARD basic_format_arg<basic_format_context> arg(size_t _Id) const {
+    _NODISCARD basic_format_arg<basic_format_context> arg(size_t _Id) const noexcept {
         return _Args.get(_Id);
     }
     _NODISCARD locale locale() {
@@ -2394,8 +2400,6 @@ _NODISCARD _OutputIt _Fmt_write(
 
     _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
-    // Clear the type so that the string_view writer doesn't fail on 'c'.
-    _Specs._Type = '\0';
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, _Locale);
 }
 
@@ -2541,8 +2545,8 @@ _NODISCARD _OutputIt _Fmt_write(
         case chars_format::hex:
         case chars_format::scientific:
             if (_Extra_precision != 0) {
-                while (*_Exponent_start != _Exponent) { // Trailing zeroes are in front of the exponent
-                    --_Exponent_start;
+                // Trailing zeroes are in front of the exponent
+                while (*--_Exponent_start != _Exponent) {
                 }
             }
             [[fallthrough]];
@@ -2641,7 +2645,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Width = static_cast<int>(2 + (_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4);
     }
 
-    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Right,
         [=](_OutputIt _Out) { return _Fmt_write<_CharT>(_STD move(_Out), _Value); });
 }
 
@@ -2698,11 +2702,10 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 's');
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'c' || _Specs._Type == 's');
     _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
     _STL_INTERNAL_CHECK(!_Specs._Alt);
     _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
-    _STL_INTERNAL_CHECK(!_Specs._Localized);
 
     if (_Specs._Precision < 0 && _Specs._Width <= 0) {
         return _Fmt_write(_STD move(_Out), _Value);
@@ -2879,20 +2882,21 @@ struct _Formatter_base {
     }
 
     template <class _FormatContext>
-    typename _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) {
+    typename _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
+        _Dynamic_format_specs<_CharT> _Format_specs = _Specs;
         if (_Specs._Dynamic_width_index >= 0) {
-            _Specs._Width =
+            _Format_specs._Width =
                 _Get_dynamic_specs<_Width_checker>(_FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
         }
 
         if (_Specs._Dynamic_precision_index >= 0) {
-            _Specs._Precision = _Get_dynamic_specs<_Precision_checker>(
+            _Format_specs._Precision = _Get_dynamic_specs<_Precision_checker>(
                 _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
         }
 
         return _STD visit_format_arg(
             _Arg_formatter<typename _FormatContext::iterator, _CharT>{
-                ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Specs)},
+                ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
             basic_format_arg<_FormatContext>{_Val});
     }
 

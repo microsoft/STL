@@ -224,7 +224,6 @@
 // P1456R1 Move-Only Views
 // P1474R1 Helpful Pointers For contiguous_iterator
 // P1522R1 Iterator Difference Type And Integer Overflow
-//     (technically conforming, but it would be nice to implement a 65-bit integer-like type)
 // P1523R1 Views And Size Types
 // P1612R1 Relocating endian To <bit>
 // P1614R2 Adding Spaceship <=> To The Library
@@ -266,6 +265,7 @@
 // P2328R1 join_view Should Join All views Of ranges
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P2372R3 Fixing Locale Handling In chrono Formatters
+// P2393R1 Cleaning Up Integer-Class Types
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2432R1 Fix istream_view
@@ -283,6 +283,7 @@
 // P0288R9 move_only_function
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0448R4 <spanstream>
+// P0627R6 unreachable()
 // P0798R8 Monadic Operations For optional
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
@@ -583,7 +584,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202202L
+#define _MSVC_STL_UPDATE  202203L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -1277,7 +1278,7 @@
 #endif // __cpp_char8_t
 
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
-#define __cpp_lib_concepts 201907L
+#define __cpp_lib_concepts 202002L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
 #define __cpp_lib_constexpr_algorithms    201806L
@@ -1366,12 +1367,7 @@
 #define __cpp_lib_byteswap                          202110L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_is_scoped_enum                    202011L
-
-#ifdef __cpp_lib_concepts
-#define __cpp_lib_monadic_optional 202110L
-#endif // __cpp_lib_concepts
-
-#define __cpp_lib_move_only_function 202110L
+#define __cpp_lib_move_only_function                202110L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
@@ -1384,6 +1380,7 @@
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
 #define __cpp_lib_to_underlying               202102L
+#define __cpp_lib_unreachable                 202202L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
@@ -1409,7 +1406,9 @@
 #endif // language mode
 #endif // _M_CEE
 
-#if _HAS_CXX20
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again

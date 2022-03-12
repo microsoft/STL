@@ -1468,7 +1468,7 @@ public:
 
         *_Mypdir = _Open_dir(_Dest, _Path.c_str(), _Errno, _Ftype);
         if (*_Mypdir) {
-            _Form_name(_Dest, _Ftype, _Prefix_directory());
+            _Form_name(_Dest, _Ftype);
         }
     }
 
@@ -1480,7 +1480,7 @@ public:
 
         *_Mypdir = _Open_dir(_Dest, _Path.c_str(), _Errno, _Ftype);
         if (*_Mypdir) {
-            _Form_name(_Dest, _Ftype, _Prefix_directory());
+            _Form_name(_Dest, _Ftype);
         }
 
         _Code = error_code(_Errno, _STD system_category());
@@ -1555,19 +1555,19 @@ private:
                 _Close_dir(*_Mypdir);
                 *_Mypdir = nullptr; // end of directory
             } else {
-                _Form_name(_Dest, _Ftype, _Prefix_directory());
+                _Form_name(_Dest, _Ftype);
             }
         }
     }
 
-    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype,
-        true_type) { // set entry to _Mydirpath/_Filename
-        _Myentry.assign(_Mydirpath / path(_Filename), file_status(_Ftype));
-    }
-
-    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype,
-        false_type) { // set entry to _Filename
-        _Myentry.assign(path(_Filename), file_status(_Ftype));
+    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype) {
+        if constexpr (_Prefix_directory::value) {
+            // set entry to _Mydirpath/_Filename
+            _Myentry.assign(_Mydirpath / path(_Filename), file_status(_Ftype));
+        } else {
+            // set entry to _Filename
+            _Myentry.assign(path(_Filename), file_status(_Ftype));
+        }
     }
 
     shared_ptr<void*> _Mypdir;

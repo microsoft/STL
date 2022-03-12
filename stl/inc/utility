@@ -750,6 +750,13 @@ template <class _Ty>
 _NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
     return static_cast<underlying_type_t<_Ty>>(_Value);
 }
+
+[[noreturn]] inline void unreachable() noexcept /* strengthened */ {
+    _STL_UNREACHABLE;
+#ifdef _DEBUG
+    _CSTD abort(); // likely to be called in debug mode, but can't be relied upon - already entered the UB territory
+#endif // _DEBUG
+}
 #endif // _HAS_CXX23
 
 #if _HAS_TR1_NAMESPACE
