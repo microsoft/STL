@@ -108,7 +108,8 @@ constexpr bool test_source_location() {
     return true;
 }
 
-int main() {
+__declspec(dllexport) // for <stacktrace> test export main to have it named even without debug info
+    int main() {
     {
         puts("Testing <algorithm>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
@@ -759,6 +760,17 @@ int main() {
         assert(s.empty());
     }
 
+    {
+        puts("Testing <stacktrace>.");
+        auto desc = stacktrace::current().at(0).description();
+        if (auto pos = desc.find("!"); pos != string::npos) {
+            desc = desc.substr(pos + 1);
+        }
+        if (auto pos = desc.find("+"); pos != string::npos) {
+            desc.resize(pos);
+        }
+        assert(desc == "main");
+    }
     {
         puts("Testing <stdexcept>.");
         bool caught_puppies = false;
