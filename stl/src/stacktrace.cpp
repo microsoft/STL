@@ -139,72 +139,6 @@ namespace {
         return debug_symbols != nullptr;
     }
 
-    // Temporarily alters symbol search path to search next to the current module
-    void module_symbols_load_from_module_dir(const void* const address) {
-        struct free_deleter {
-            void operator()(void* p) {
-                free(p);
-            }
-        };
-
-        ULONG index  = 0;
-        ULONG64 base = 0;
-        if (FAILED(debug_symbols->GetModuleByOffset(reinterpret_cast<uintptr_t>(address), 0, &index, &base))) {
-            return;
-        }
-
-        DEBUG_MODULE_PARAMETERS params;
-        if (FAILED(debug_symbols->GetModuleParameters(1, &base, index, &params))) {
-            return;
-        }
-
-        if (params.SymbolType != DEBUG_SYMTYPE_DEFERRED) {
-            return;
-        }
-
-        if (debug_symbols3) {
-            ULONG wide_name_size = 0;
-
-            if (FAILED(debug_symbols3->GetModuleNameStringWide(
-                    DEBUG_MODNAME_IMAGE, index, base, nullptr, 0, &wide_name_size))) {
-                return;
-            }
-
-            std::unique_ptr<wchar_t[], free_deleter> image_path_wide(
-                static_cast<wchar_t*>(malloc(wide_name_size * sizeof(wchar_t))));
-
-            if (!image_path_wide) {
-                return;
-            }
-
-            if (debug_symbols3->GetModuleNameStringWide(
-                    DEBUG_MODNAME_IMAGE, index, base, image_path_wide.get(), wide_name_size, nullptr)
-                != S_OK) {
-                return;
-            }
-
-            PathRemoveFileSpecW(image_path_wide.get());
-
-            debug_symbols3->AppendSymbolPathWide(image_path_wide.get());
-        } else {
-            std::unique_ptr<char[], free_deleter> image_path(
-                static_cast<char*>(malloc(params.ImageNameSize * sizeof(char))));
-
-            if (!image_path) {
-                return;
-            }
-
-            if (FAILED(debug_symbols->GetModuleNames(index, base, image_path.get(), params.ImageNameSize, nullptr,
-                    nullptr, 0, nullptr, nullptr, 0, nullptr))) {
-                return;
-            }
-
-            PathRemoveFileSpecA(image_path.get());
-
-            debug_symbols->AppendSymbolPath(image_path.get());
-        }
-    }
-
     size_t get_description(const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
         // Initially pass the current capacity, will retry with bigger buffer if fails.
         size_t size          = fill(0, str, nullptr, nullptr) - off;
@@ -326,8 +260,6 @@ void __stdcall __std_stacktrace_description(
         return;
     }
 
-    module_symbols_load_from_module_dir(_Address);
-
     get_description(_Address, _Str, 0, _Fill);
 }
 
@@ -339,8 +271,6 @@ void __stdcall __std_stacktrace_source_file(
         return;
     }
 
-    module_symbols_load_from_module_dir(_Address);
-
     source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
@@ -350,8 +280,6 @@ unsigned int __stdcall __std_stacktrace_source_line(const void* const _Address) 
     if (!try_initialize()) {
         return 0;
     }
-
-    module_symbols_load_from_module_dir(_Address);
 
     return source_line(_Address);
 }
@@ -363,8 +291,6 @@ void __stdcall __std_stacktrace_address_to_string(
     if (!try_initialize()) {
         return;
     }
-
-    module_symbols_load_from_module_dir(_Address);
 
     address_to_string(_Address, _Str, 0, _Fill);
 }
@@ -393,8 +319,6 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
 
         off = string_fill(_Fill, off + max_entry_num, _Str,
             [off, i](char* s, size_t) { return std::format_to_n(s + off, max_entry_num, "{}> ", i).out - s; });
-
-        module_symbols_load_from_module_dir(data[i]);
 
         off = address_to_string(data[i], _Str, off, _Fill);
     }
