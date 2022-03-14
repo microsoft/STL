@@ -86,33 +86,33 @@ public:
 
     ~stacktrace_entry() = default;
 
-    [[nodiscard]] constexpr native_handle_type native_handle() const noexcept {
+    _NODISCARD constexpr native_handle_type native_handle() const noexcept {
         return _Address;
     }
 
-    [[nodiscard]] constexpr explicit operator bool() const noexcept {
+    _NODISCARD constexpr explicit operator bool() const noexcept {
         return _Address != nullptr;
     }
 
-    [[nodiscard]] string description() const {
+    _NODISCARD string description() const {
         string _Result;
         __std_stacktrace_description(_Address, &_Result, _Stacktrace_string_fill_impl);
         return _Result;
     }
 
-    [[nodiscard]] string source_file() const {
+    _NODISCARD string source_file() const {
         string _Result;
         __std_stacktrace_source_file(_Address, &_Result, _Stacktrace_string_fill_impl);
         return _Result;
     }
 
-    [[nodiscard]] uint_least32_t source_line() const {
+    _NODISCARD uint_least32_t source_line() const {
         return __std_stacktrace_source_line(_Address);
     }
 
-    [[nodiscard]] friend constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
+    _NODISCARD friend constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
 
-    [[nodiscard]] friend constexpr strong_ordering operator<=>(
+    _NODISCARD friend constexpr strong_ordering operator<=>(
         const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
 
 private:
@@ -139,7 +139,7 @@ public:
     // __declspec(noinline) to make the same behavior for debug and release.
     // We force the current function to be always noinline and add its frame to skipped.
 
-    [[nodiscard]] __declspec(noinline) static basic_stacktrace
+    _NODISCARD __declspec(noinline) static basic_stacktrace
         current(const allocator_type& _Alloc = allocator_type()) noexcept {
         basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Alloc);
         _Result._Frames.resize(__std_stacktrace_capture(1, static_cast<unsigned long>(_Max_frames),
@@ -147,7 +147,7 @@ public:
         return _Result;
     }
 
-    [[nodiscard]] __declspec(noinline) static basic_stacktrace
+    _NODISCARD __declspec(noinline) static basic_stacktrace
         current(size_type _Skip, const allocator_type& _Alloc = allocator_type()) noexcept {
         basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Alloc);
         _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
@@ -155,7 +155,7 @@ public:
         return _Result;
     }
 
-    [[nodiscard]] __declspec(noinline) static basic_stacktrace
+    _NODISCARD __declspec(noinline) static basic_stacktrace
         current(size_type _Skip, size_type _Max_depth, const allocator_type& _Alloc = allocator_type()) noexcept {
         basic_stacktrace _Result(_Internal_t{}, _Max_depth, _Alloc);
         _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
@@ -179,69 +179,69 @@ public:
 
     ~basic_stacktrace() = default;
 
-    [[nodiscard]] allocator_type get_allocator() const noexcept {
+    _NODISCARD allocator_type get_allocator() const noexcept {
         return _Frames.get_allocator();
     }
 
-    [[nodiscard]] const_iterator begin() const noexcept {
+    _NODISCARD const_iterator begin() const noexcept {
         return _Frames.cbegin();
     }
 
-    [[nodiscard]] const_iterator end() const noexcept {
+    _NODISCARD const_iterator end() const noexcept {
         return _Frames.cend();
     }
 
-    [[nodiscard]] const_reverse_iterator rbegin() const noexcept {
+    _NODISCARD const_reverse_iterator rbegin() const noexcept {
         return _Frames.crbegin();
     }
 
-    [[nodiscard]] const_reverse_iterator rend() const noexcept {
+    _NODISCARD const_reverse_iterator rend() const noexcept {
         return _Frames.crend();
     }
 
-    [[nodiscard]] const_iterator cbegin() const noexcept {
+    _NODISCARD const_iterator cbegin() const noexcept {
         return _Frames.cbegin();
     }
 
-    [[nodiscard]] const_iterator cend() const noexcept {
+    _NODISCARD const_iterator cend() const noexcept {
         return _Frames.cend();
     }
 
-    [[nodiscard]] const_reverse_iterator crbegin() const noexcept {
+    _NODISCARD const_reverse_iterator crbegin() const noexcept {
         return _Frames.crbegin();
     }
 
-    [[nodiscard]] const_reverse_iterator crend() const noexcept {
+    _NODISCARD const_reverse_iterator crend() const noexcept {
         return _Frames.crend();
     }
 
-    [[nodiscard]] bool empty() const noexcept {
+    _NODISCARD bool empty() const noexcept {
         return _Frames.empty();
     }
 
-    [[nodiscard]] size_type size() const noexcept {
+    _NODISCARD size_type size() const noexcept {
         return _Frames.size();
     }
 
-    [[nodiscard]] size_type max_size() const noexcept {
+    _NODISCARD size_type max_size() const noexcept {
         return _Frames.max_size();
     }
 
-    [[nodiscard]] const_reference operator[](const size_type _Sx) const noexcept /* strengthened */ {
+    _NODISCARD const_reference operator[](const size_type _Sx) const noexcept /* strengthened */ {
         return _Frames[_Sx];
     }
 
-    [[nodiscard]] const_reference at(const size_type _Sx) const {
+    _NODISCARD const_reference at(const size_type _Sx) const {
         return _Frames.at(_Sx);
     }
 
     template <class _Al2>
-    [[nodiscard]] friend bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
+    _NODISCARD friend bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
         return _Lhs._Hash == _Rhs._Hash && _Lhs._Frames == _Rhs._Frames;
     }
 
     template <class _Al2>
-    [[nodiscard]] friend strong_ordering operator<=>(
+    _NODISCARD friend strong_ordering operator<=>(
         const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
         const auto _Result = _Lhs._Frames.size() <=> _Rhs._Frames.size();
         if (_Result != strong_ordering::equal) {
@@ -267,11 +267,11 @@ public:
         _STD swap(_Hash, _Other._Hash);
     }
 
-    [[nodiscard]] unsigned long _Get_hash() const noexcept {
+    _NODISCARD unsigned long _Get_hash() const noexcept {
         return _Hash;
     }
 
-    [[nodiscard]] const void* _Data() const noexcept {
+    _NODISCARD const void* _Data() const noexcept {
         return _Frames.data();
     }
 
@@ -296,14 +296,14 @@ void swap(basic_stacktrace<_Al>& _Ax, basic_stacktrace<_Al>& _Bx) noexcept(noexc
     _Ax.swap(_Bx);
 }
 
-[[nodiscard]] inline string to_string(const stacktrace_entry& _Fx) {
+_NODISCARD inline string to_string(const stacktrace_entry& _Fx) {
     string _Result;
     __std_stacktrace_address_to_string(_Fx.native_handle(), &_Result, _Stacktrace_string_fill_impl);
     return _Result;
 }
 
 template <class _Al>
-[[nodiscard]] string to_string(const basic_stacktrace<_Al>& _St) {
+_NODISCARD string to_string(const basic_stacktrace<_Al>& _St) {
     string _Result;
     __std_stacktrace_to_string(_St._Data(), _St.size(), &_Result, _Stacktrace_string_fill_impl);
     return _Result;
@@ -325,14 +325,14 @@ namespace pmr {
 
 template <>
 struct hash<stacktrace_entry> {
-    [[nodiscard]] size_t operator()(const stacktrace_entry& _Val) const noexcept {
+    _NODISCARD size_t operator()(const stacktrace_entry& _Val) const noexcept {
         return _Hash_representation(_Val.native_handle());
     }
 };
 
 template <class _Al>
 struct hash<basic_stacktrace<_Al>> {
-    [[nodiscard]] size_t operator()(const basic_stacktrace<_Al>& _Val) const noexcept {
+    _NODISCARD size_t operator()(const basic_stacktrace<_Al>& _Val) const noexcept {
         return _Val._Get_hash();
     }
 };
