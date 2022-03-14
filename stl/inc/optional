@@ -853,7 +853,7 @@ _CONSTEXPR20 void swap(optional<_Ty>& _Left, optional<_Ty>& _Right) noexcept(noe
     _Left.swap(_Right);
 }
 
-template <class _Ty, enable_if_t<is_constructible_v<decay_t<_Ty>, _Ty>, int> = 0>
+template <class _Ty, enable_if_t<is_constructible_v<decay_t<_Ty>, _Ty>, int> = 0> // LWG-3627
 _NODISCARD constexpr optional<decay_t<_Ty>> make_optional(_Ty&& _Value) {
     return optional<decay_t<_Ty>>{_STD forward<_Ty>(_Value)};
 }
