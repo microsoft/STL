@@ -36,8 +36,8 @@ template <class Void, class T, class... Us>
 constexpr bool can_shared_ptr_reset_impl = false;
 
 template <class T, class... Us>
-constexpr bool can_shared_ptr_reset_impl<
-  void_t<decltype(declval<shared_ptr<T>&>().reset(declval<Us>()...))>, T, Us...> = true;
+constexpr bool
+    can_shared_ptr_reset_impl<void_t<decltype(declval<shared_ptr<T>&>().reset(declval<Us>()...))>, T, Us...> = true;
 
 template <class T, class... Us>
 constexpr bool can_shared_ptr_reset = can_shared_ptr_reset_impl<void, T, Us...>;
