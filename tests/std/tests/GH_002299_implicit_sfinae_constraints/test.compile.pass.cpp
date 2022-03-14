@@ -90,7 +90,7 @@ constexpr bool can_make_any_impl<void_t<decltype(make_any<T>(declval<Us>()...))>
 template <class T, class... Us>
 constexpr bool can_make_any = can_make_any_impl<void, T, Us...>;
 
-STATIC_ASSERT(!can_make_any<unique_ptr, const unique_ptr<int>&>);
+STATIC_ASSERT(!can_make_any<unique_ptr<int>, const unique_ptr<int>&>);
 STATIC_ASSERT(!can_make_any<int, int, int>);
 STATIC_ASSERT(!can_make_any<int, initializer_list<int>&>);
 #endif
