@@ -853,15 +853,16 @@ _CONSTEXPR20 void swap(optional<_Ty>& _Left, optional<_Ty>& _Right) noexcept(noe
     _Left.swap(_Right);
 }
 
-template <class _Ty>
+template <class _Ty, enable_if_t<is_constructible_v<decay_t<_Ty>, _Ty>, int> = 0>
 _NODISCARD constexpr optional<decay_t<_Ty>> make_optional(_Ty&& _Value) {
     return optional<decay_t<_Ty>>{_STD forward<_Ty>(_Value)};
 }
-template <class _Ty, class... _Types>
+template <class _Ty, class... _Types, enable_if_t<is_constructible_v<_Ty, _Types...>, int> = 0>
 _NODISCARD constexpr optional<_Ty> make_optional(_Types&&... _Args) {
     return optional<_Ty>{in_place, _STD forward<_Types>(_Args)...};
 }
-template <class _Ty, class _Elem, class... _Types>
+template <class _Ty, class _Elem, class... _Types,
+    enable_if_t<is_constructible_v<_Ty, initializer_list<_Elem>&, _Types...>, int> = 0>
 _NODISCARD constexpr optional<_Ty> make_optional(initializer_list<_Elem> _Ilist, _Types&&... _Args) {
     return optional<_Ty>{in_place, _Ilist, _STD forward<_Types>(_Args)...};
 }
