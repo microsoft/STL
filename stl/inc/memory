@@ -1681,8 +1681,10 @@ public:
         shared_ptr(_Px, _Dt).swap(*this);
     }
 
-    template <class _Dx, class _Alloc,
-        enable_if_t<conjunction_v<is_move_constructible<_Dx>, _Can_call_function_object<_Dx&, nullptr_t&>>, int> = 0>
+    template <class _Ux, class _Dx, class _Alloc,
+        enable_if_t<conjunction_v<is_move_constructible<_Dx>, _Can_call_function_object<_Dx&, _Ux*&>,
+                        _SP_convertible<_Ux, _Ty>>,
+            int> = 0>
     void reset(_Ux* _Px, _Dx _Dt, _Alloc _Ax) { // release, take ownership of _Px, with deleter _Dt, allocator _Ax
         shared_ptr(_Px, _Dt, _Ax).swap(*this);
     }
