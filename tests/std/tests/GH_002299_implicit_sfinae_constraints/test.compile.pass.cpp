@@ -22,7 +22,7 @@ template <class T, class U, class = void>
 constexpr bool can_shared_ptr_assign = false;
 
 template <class T, class U>
-constexpr bool can_shared_ptr_assign<T, U, void_t<decltype(declval<shared_ptr<T&>>() = declval<U>())>> = true;
+constexpr bool can_shared_ptr_assign<T, U, void_t<decltype(declval<shared_ptr<T>&>() = declval<U>())>> = true;
 
 STATIC_ASSERT(!can_shared_ptr_assign<int, shared_ptr<long>>);
 STATIC_ASSERT(!can_shared_ptr_assign<int, const shared_ptr<long>&>);
@@ -32,11 +32,15 @@ STATIC_ASSERT(!can_shared_ptr_assign<int, auto_ptr<long>>);
 #endif
 
 // tests for shared_ptr<T>::reset
-template <class T, class U, class = void>
-constexpr bool can_shared_ptr_reset = false;
+template <class Void, class T, class... Us>
+constexpr bool can_shared_ptr_reset_impl = false;
 
 template <class T, class... Us>
-constexpr bool can_shared_ptr_reset<T, U, void_t<decltype(declval<shared_ptr<T&>>().reset(declval<Us>()...))>> = true;
+constexpr bool can_shared_ptr_reset_impl<
+  void_t<decltype(declval<shared_ptr<T>&>().reset(declval<Us>()...))>, T, Us...> = true;
+
+template <class T, class... Us>
+constexpr bool can_shared_ptr_reset = can_shared_ptr_reset_impl<void, T, Us...>;
 
 STATIC_ASSERT(!can_shared_ptr_reset<int, long*>);
 STATIC_ASSERT(!can_shared_ptr_reset<int, long*, default_delete<long>>);
@@ -47,7 +51,7 @@ template <class T, class U, class = void>
 constexpr bool can_weak_ptr_assign = false;
 
 template <class T, class U>
-constexpr bool can_weak_ptr_assign<T, U, void_t<decltype(declval<weak_ptr<T&>>() = declval<U>())>> = true;
+constexpr bool can_weak_ptr_assign<T, U, void_t<decltype(declval<weak_ptr<T>&>() = declval<U>())>> = true;
 
 STATIC_ASSERT(!can_weak_ptr_assign<int, weak_ptr<long>>);
 STATIC_ASSERT(!can_weak_ptr_assign<int, const weak_ptr<long>&>);
