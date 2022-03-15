@@ -752,7 +752,7 @@ private:
 template <class _Traits>
 class _Hash;
 
-template <class _Ty, class _Alloc = allocator<_Ty>>
+_EXPORT_STD template <class _Ty, class _Alloc = allocator<_Ty>>
 class list { // bidirectional linked list
 private:
     template <class>
@@ -1864,12 +1864,12 @@ template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value
 list(from_range_t, _Rng&&, _Alloc = _Alloc()) -> list<_RANGES range_value_t<_Rng>, _Alloc>;
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-template <class _Ty, class _Alloc>
+_EXPORT_STD template <class _Ty, class _Alloc>
 void swap(list<_Ty, _Alloc>& _Left, list<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
-template <class _Ty, class _Alloc>
+_EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD bool operator==(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return _Left.size() == _Right.size()
         && _STD equal(_Left._Unchecked_begin(), _Left._Unchecked_end(), _Right._Unchecked_begin());
@@ -1883,7 +1883,7 @@ _NODISCARD bool operator!=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
 #endif // !_HAS_CXX20
 
 #ifdef __cpp_lib_concepts
-template <class _Ty, class _Alloc>
+_EXPORT_STD template <class _Ty, class _Alloc>
 _NODISCARD _Synth_three_way_result<_Ty> operator<=>(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Alloc>& _Right) {
     return _STD lexicographical_compare_three_way(_Left._Unchecked_begin(), _Left._Unchecked_end(),
         _Right._Unchecked_begin(), _Right._Unchecked_end(), _Synth_three_way{});
@@ -1912,12 +1912,12 @@ _NODISCARD bool operator>=(const list<_Ty, _Alloc>& _Left, const list<_Ty, _Allo
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #if _HAS_CXX20
-template <class _Ty, class _Alloc, class _Uty>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Uty>
 typename list<_Ty, _Alloc>::size_type erase(list<_Ty, _Alloc>& _Cont, const _Uty& _Val) {
     return _Cont.remove_if([&](_Ty& _Elem) { return _Elem == _Val; });
 }
 
-template <class _Ty, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Ty, class _Alloc, class _Pr>
 typename list<_Ty, _Alloc>::size_type erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pred) {
     return _Cont.remove_if(_Pass_fn(_Pred));
 }
@@ -1925,7 +1925,7 @@ typename list<_Ty, _Alloc>::size_type erase_if(list<_Ty, _Alloc>& _Cont, _Pr _Pr
 
 #if _HAS_CXX17
 namespace pmr {
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     using list = _STD list<_Ty, polymorphic_allocator<_Ty>>;
 } // namespace pmr
 #endif // _HAS_CXX17
