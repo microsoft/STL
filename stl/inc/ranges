@@ -4782,6 +4782,190 @@ namespace ranges {
         inline constexpr auto keys   = elements<0>;
         inline constexpr auto values = elements<1>;
     } // namespace views
+
+#if _HAS_CXX23
+    template <forward_range _Vw, indirect_binary_predicate<iterator_t<_Vw>, iterator_t<_Vw>> _Pr>
+        requires view<_Vw> && is_object_v<_Pr>
+    class chunk_by_view : public _Cached_position<_Vw, chunk_by_view<_Vw, _Pr>> {
+    private:
+        /* [[no_unique_address]] */ _Vw _Range{};
+        /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
+
+        class _Iterator {
+        private:
+            friend chunk_by_view;
+
+            chunk_by_view* _Parent{};
+            /* [[no_unique_address]] */ iterator_t<_Vw> _Current{};
+            /* [[no_unique_address]] */ iterator_t<_Vw> _Next{};
+
+            constexpr _Iterator(chunk_by_view& _Parent_, iterator_t<_Vw> _Current_, iterator_t<_Vw> _Next_) noexcept(
+                is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
+                : _Parent(_STD addressof(_Parent_)), _Current(_STD move(_Current_)), _Next(_STD move(_Next_)) {}
+
+        public:
+            using value_type        = subrange<iterator_t<_Vw>>;
+            using difference_type   = range_difference_t<_Vw>;
+            using iterator_category = input_iterator_tag;
+            using iterator_concept =
+                conditional_t<bidirectional_range<_Vw>, bidirectional_iterator_tag, forward_iterator_tag>;
+
+            _Iterator() = default;
+
+            _NODISCARD constexpr value_type operator*() const
+                noexcept(is_nothrow_copy_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current != _Next, "cannot dereference chunk_by_view end iterator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                return subrange{_Current, _Next};
+            }
+
+            constexpr _Iterator& operator++() {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current != _Next, "cannot increment chunk_by_view iterator past end");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                _Current = _Next;
+                _Next    = _Parent->_Find_next(_Next);
+                return *this;
+            }
+
+            constexpr _Iterator operator++(int) {
+                auto _Tmp = *this;
+                ++*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator--() requires bidirectional_range<_Vw> {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Parent != nullptr, "cannot decrement value-initialized chunk_by_view iterator");
+                _STL_VERIFY(
+                    _Current != _RANGES begin(_Parent->_Range), "cannot decrement chunk_by_view iterator before begin");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                _Next    = _Current;
+                _Current = _Parent->_Find_prev(_Current);
+                return *this;
+            }
+
+            constexpr _Iterator operator--(int) requires bidirectional_range<_Vw> {
+                auto _Tmp = *this;
+                --*this;
+                return _Tmp;
+            }
+
+            _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Right._Current))) /* strengthened */ {
+                return _Left._Current == _Right._Current;
+            }
+
+            _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, default_sentinel_t) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Left._Next))) /* strengthened */ {
+                return _Left._Current == _Left._Next;
+            }
+        };
+
+        _NODISCARD constexpr iterator_t<_Vw> _Find_next(iterator_t<_Vw> _It) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Pred, "cannot increment a chunk_by_view iterator whose parent view has no predicate");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+            const auto _Not_pred = [&_Orig_pred = *_Pred]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) {
+                return !_STD invoke(_Orig_pred, _STD forward<_Ty1>(_Left), _STD forward<_Ty2>(_Right));
+            };
+            const auto _Before_next = _RANGES adjacent_find(_It, _RANGES end(_Range), _Not_pred);
+            return _RANGES next(_Before_next, 1, _RANGES end(_Range));
+        }
+
+        _NODISCARD constexpr iterator_t<_Vw> _Find_prev(iterator_t<_Vw> _It) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_range<_Vw>);
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Pred, "cannot decrement a chunk_by_view iterator whose parent view has no predicate");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+            reverse_view _Rv{subrange{_RANGES begin(_Range), _It}};
+            const auto _Rev_not_pred = [&_Orig_pred = *_Pred]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) {
+                return !_STD invoke(_Orig_pred, _STD forward<_Ty2>(_Right), _STD forward<_Ty1>(_Left));
+            };
+            const auto _After_prev = _RANGES adjacent_find(_Rv, _Rev_not_pred);
+            return _RANGES prev(_After_prev.base(), 1, _RANGES begin(_Range));
+        }
+
+    public:
+        // clang-format off
+        chunk_by_view() requires default_initializable<_Vw> && default_initializable<_Pr> = default;
+        // clang-format on
+
+        constexpr explicit chunk_by_view(_Vw _Range_, _Pr _Pred_) noexcept(
+            is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pr>) // strengthened
+            : _Range(_STD move(_Range_)), _Pred{in_place, _STD move(_Pred_)} {}
+
+        _NODISCARD constexpr _Vw base() const& noexcept(
+            is_nothrow_copy_constructible_v<_Vw>) /* strengthened */ requires copy_constructible<_Vw> {
+            return _Range;
+        }
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Pred, "chunk_by_view has no predicate");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            return *_Pred;
+        }
+
+        _NODISCARD constexpr _Iterator begin() {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Pred, "cannot call begin on a chunk_by_view with no predicate");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+            const auto _First = _RANGES begin(_Range);
+            if (this->_Has_cache()) {
+                return _Iterator{*this, _First, this->_Get_cache(_Range)};
+            }
+
+            const auto _Result = _Find_next(_First);
+            this->_Set_cache(_Range, _Result);
+            return _Iterator{*this, _First, _Result};
+        }
+
+        _NODISCARD constexpr auto end() {
+            if constexpr (common_range<_Vw>) {
+                const auto _Last = _RANGES end(_Range);
+                return _Iterator{*this, _Last, _Last};
+            } else {
+                return default_sentinel;
+            }
+        }
+    };
+
+    template <class _Rng, class _Pr>
+    chunk_by_view(_Rng&&, _Pr) -> chunk_by_view<views::all_t<_Rng>, _Pr>;
+
+    namespace views {
+        struct _Chunk_by_fn {
+            // clang-format off
+            template <viewable_range _Rng, class _Pr>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pr&& _Pred) const noexcept(
+                noexcept(chunk_by_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred)))) requires requires {
+                chunk_by_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred));
+            } {
+                // clang-format on
+                return chunk_by_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred));
+            }
+
+            // clang-format off
+            template <class _Pr>
+                requires constructible_from<decay_t<_Pr>, _Pr>
+            _NODISCARD constexpr auto operator()(_Pr&& _Pred) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
+                // clang-format on
+                return _Range_closure<_Chunk_by_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
+            }
+        };
+
+        inline constexpr _Chunk_by_fn chunk_by;
+    } // namespace views
+#endif // _HAS_CXX23
 } // namespace ranges
 
 namespace views = ranges::views;
