@@ -516,11 +516,9 @@ int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Las
     auto _ULast2  = _Get_unwrapped(_Last2);
 
     if constexpr (is_pointer_v<decltype(_UFirst1)> && is_pointer_v<decltype(_UFirst2)>) {
-        // _Iter_compare for memory buffer ranges
         return _Traits_compare<_Traits>(
             _UFirst1, static_cast<size_t>(_ULast1 - _UFirst1), _UFirst2, static_cast<size_t>(_ULast2 - _UFirst2));
     } else {
-        // _Iter_compare for general ranges
         const auto _Cmp = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _ULast2, _Char_traits_eq<_Traits>{});
 
         if (_Cmp.first == _ULast1) {
@@ -1990,8 +1988,8 @@ private:
 
     template <class _InIt>
     void _Reset(_InIt _First, _InIt _Last, flag_type _Flags) {
+        // build regular expression from iterator range
         if constexpr (_Is_fwd_iter_v<_InIt>) {
-            // build regular expression from forward iterators
 #if _ENHANCED_REGEX_VISUALIZER
             _Visualization.assign(_First, _Last);
 #endif // _ENHANCED_REGEX_VISUALIZER
@@ -2000,9 +1998,8 @@ private:
             _Root_node* _Rx = _Prs._Compile();
             _Reset(_Rx);
         } else {
-            static_assert(_Is_input_iter_v<_InIt>, "Should be at least input iterator");
+            static_assert(_Is_input_iter_v<_InIt>, "Iterators must be at least input iterators");
 
-            // build regular expression from input iterators
             basic_string<_Iter_value_t<_InIt>> _Str(_First, _Last);
 
             _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags);
