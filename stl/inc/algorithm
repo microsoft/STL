@@ -806,7 +806,6 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(
     auto _UFirst2 = _Get_unwrapped(_First2);
     auto _ULast2  = _Get_unwrapped(_Last2);
     if constexpr (_Is_random_iter_v<_FwdIt1> && _Is_random_iter_v<_FwdIt2>) {
-        // test if [_UFirst1, _ULast1) == permuted [_UFirst2, _ULast2), random-access iterators
         if (_ULast1 - _UFirst1 != _ULast2 - _UFirst2) {
             return false;
         }
@@ -820,7 +819,6 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(
 
         return true;
     } else if constexpr (_Is_fwd_iter_v<_FwdIt1> && _Is_fwd_iter_v<_FwdIt2>) {
-        // test if [_UFirst1, _ULast1) == permuted [_UFirst2, _ULast2), arbitrary iterators
         for (;; ++_UFirst1, (void) ++_UFirst2) { // trim matching prefix
             if (_UFirst1 == _ULast1) {
                 return _UFirst2 == _ULast2;
@@ -851,7 +849,7 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(
             }
         }
     } else {
-        static_assert(_Always_false<_FwdIt1>, "Iterators should be at least forward iterators");
+        static_assert(_Always_false<_FwdIt1>, "Iterators must be at least forward iterators");
     }
 }
 
@@ -4730,12 +4728,12 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Ur
     static_assert(is_integral_v<_Diff>, "The sample size must have an integer type.");
     _Adl_verify_range(_First, _Last);
     if (0 < _Count) {
-        auto _UFirst = _Get_unwrapped(_First);
-        auto _ULast  = _Get_unwrapped(_Last);
-        _Rng_from_urng<_Iter_diff_t<_PopIt>, remove_reference_t<_Urng>> _RngFunc(_Func);
+        auto _UFirst   = _Get_unwrapped(_First);
+        auto _ULast    = _Get_unwrapped(_Last);
+        using _PopDiff = _Iter_diff_t<_PopIt>;
+        _Rng_from_urng<_PopDiff, remove_reference_t<_Urng>> _RngFunc(_Func);
         if constexpr (_Is_fwd_iter_v<_PopIt>) {
             // source is forward: use selection sampling (stable)
-            using _PopDiff       = _Iter_diff_t<_PopIt>;
             using _CT            = common_type_t<_Diff, _PopDiff>;
             const auto _Pop_size = _STD distance(_UFirst, _ULast);
             if (static_cast<_CT>(_Count) > static_cast<_CT>(_Pop_size)) {
