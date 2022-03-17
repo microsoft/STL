@@ -958,6 +958,7 @@ void memory_test() {
     };
     my_shared_from_this msft{};
     default_delete<void> dd0{default_delete<int>{}};
+    (void) dd0;
     default_delete<int[]> dd1{default_delete<int[]>{}};
     dd1(new int[5]);
 
