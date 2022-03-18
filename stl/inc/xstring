@@ -2726,6 +2726,7 @@ private:
 
         if (_Stay_small) {
 #if _HAS_CXX20
+            // TRANSITION: This is currently unused until SSO support is merged
             if (_STD is_constant_evaluated()) {
                 _Construct_in_place(_My_data._Bx);
             }
