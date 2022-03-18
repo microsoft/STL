@@ -285,13 +285,11 @@ int main() {
         assert(!ep);
     }
 
-#if !defined(TEST_TOPO_SORT) || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1471382 fixed in VS 2022 17.2p2
     {
         puts("Testing <execution>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
         assert(count(execution::par, begin(arr), end(arr), 0) == 4);
     }
-#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <filesystem>.");
