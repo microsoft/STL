@@ -282,14 +282,14 @@ template <class _Clock, class _Duration>
 _INLINE_VAR constexpr bool _Is_trivially_swappable_v<chrono::time_point<_Clock, _Duration>> =
     _Is_trivially_swappable_v<_Duration>;
 
-template <intmax_t _Ax, intmax_t _Bx>
-struct _Lcm : integral_constant<intmax_t, (_Ax / _Gcd<_Ax, _Bx>::value) * _Bx> {}; // compute LCM of _Ax and _Bx
+_NODISCARD constexpr intmax_t _Lcm(const intmax_t _Ax, const intmax_t _Bx) noexcept {
+    return (_Ax / _Gcd(_Ax, _Bx)) * _Bx;
+}
 
 template <class _Rep1, class _Period1, class _Rep2, class _Period2>
-struct common_type<_CHRONO duration<_Rep1, _Period1>,
-    _CHRONO duration<_Rep2, _Period2>> { // common type of two durations
+struct common_type<_CHRONO duration<_Rep1, _Period1>, _CHRONO duration<_Rep2, _Period2>> {
     using type = _CHRONO duration<common_type_t<_Rep1, _Rep2>,
-        ratio<_Gcd<_Period1::num, _Period2::num>::value, _Lcm<_Period1::den, _Period2::den>::value>>;
+        ratio<_Gcd(_Period1::num, _Period2::num), _Lcm(_Period1::den, _Period2::den)>>;
 };
 
 template <class _Clock, class _Duration1, class _Duration2>
@@ -5956,7 +5956,7 @@ namespace chrono {
         }
 
         template <class _FormatContext, class _Ty>
-        _NODISCARD auto _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) {
+        _NODISCARD auto _Write(_FormatContext& _FormatCtx, const _Ty& _Val, const tm& _Time) const {
             basic_ostringstream<_CharT> _Stream;
 
             _Stream.imbue(_Specs._Localized ? _FormatCtx.locale() : locale::classic());
@@ -6004,7 +6004,7 @@ namespace chrono {
         // "40 is not a valid day".
         template <class _Ty>
         bool _Custom_write(
-            basic_ostream<_CharT>& _Os, const _Chrono_spec<_CharT>& _Spec, const tm& _Time, const _Ty& _Val) {
+            basic_ostream<_CharT>& _Os, const _Chrono_spec<_CharT>& _Spec, const tm& _Time, const _Ty& _Val) const {
             if constexpr (is_same_v<_Ty, local_info>) {
                 if (_Val.result != local_info::unique) {
                     _THROW(format_error("Cannot print non-unique local_info"));
@@ -6334,7 +6334,7 @@ struct _Fill_tm_formatter {
     }
 
     template <class _FormatContext>
-    auto format(const _Ty& _Val, _FormatContext& _FormatCtx) {
+    auto format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
         return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
     }
 
@@ -6425,7 +6425,7 @@ struct formatter<_CHRONO sys_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO sys_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
+    auto format(const _CHRONO sys_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
         return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Val));
     }
 
@@ -6440,7 +6440,7 @@ struct formatter<_CHRONO utc_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO utc_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
+    auto format(const _CHRONO utc_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
         const auto _Sys = _CHRONO utc_clock::to_sys(_Val);
         return _Impl._Write(_FormatCtx, _Val, _Fill_tm(_Sys));
     }
@@ -6456,7 +6456,7 @@ struct formatter<_CHRONO tai_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO tai_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
+    auto format(const _CHRONO tai_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
         using namespace chrono;
         using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
         constexpr _Common _Offset{sys_days{year{1970} / January / 1} - sys_days{year{1958} / January / 1}};
@@ -6475,7 +6475,7 @@ struct formatter<_CHRONO gps_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO gps_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
+    auto format(const _CHRONO gps_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
         using namespace chrono;
         using _Common = common_type_t<_Duration, days>; // slightly optimize by performing conversion at compile time
         constexpr _Common _Offset{sys_days{year{1980} / January / Sunday[1]} - sys_days{year{1970} / January / 1}};
@@ -6494,7 +6494,7 @@ struct formatter<_CHRONO file_time<_Duration>, _CharT> {
     }
 
     template <class _FormatContext>
-    auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _FormatCtx) {
+    auto format(const _CHRONO file_time<_Duration>& _Val, _FormatContext& _FormatCtx) const {
         const auto _Utc = _CHRONO file_clock::to_utc(_Val);
         const auto _Sys = _CHRONO utc_clock::to_sys(_Utc);
         return _Impl._Write(_FormatCtx, _Utc, _Fill_tm(_Sys));
@@ -6517,7 +6517,7 @@ struct formatter<_CHRONO zoned_time<_Duration, _TimeZonePtr>, _CharT>
     : formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT> {
 
     template <class _FormatContext>
-    auto format(const _CHRONO zoned_time<_Duration, _TimeZonePtr>& _Val, _FormatContext& _FormatCtx) {
+    auto format(const _CHRONO zoned_time<_Duration, _TimeZonePtr>& _Val, _FormatContext& _FormatCtx) const {
         using _Mybase    = formatter<_CHRONO _Local_time_format_t<_Duration>, _CharT>;
         const auto _Info = _Val.get_info();
         return _Mybase::format({_Val.get_local_time(), &_Info.abbrev, &_Info.offset}, _FormatCtx);

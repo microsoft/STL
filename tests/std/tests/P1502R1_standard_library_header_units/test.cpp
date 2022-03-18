@@ -285,11 +285,13 @@ int main() {
         assert(!ep);
     }
 
+#if !defined(TEST_TOPO_SORT) || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1471382 fixed in VS 2022 17.2p2
     {
         puts("Testing <execution>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
         assert(count(execution::par, begin(arr), end(arr), 0) == 4);
     }
+#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <filesystem>.");
@@ -319,6 +321,7 @@ int main() {
         assert(!f.is_open());
     }
 
+#if !defined(TEST_TOPO_SORT) || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1471374 fixed in VS 2022 17.2p2
     {
         puts("Testing <functional>.");
         function<int(int, int)> f{multiplies{}};
@@ -329,6 +332,7 @@ int main() {
         assert(b(3) == 33);
         static_assert(b(3) == 33);
     }
+#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <future>.");
@@ -861,6 +865,7 @@ int main() {
         assert(this_thread::get_id() != thread::id{});
     }
 
+#if !defined(TEST_TOPO_SORT) || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1471374 fixed in VS 2022 17.2p2
     {
         puts("Testing <tuple>.");
         constexpr tuple<int, char, double> t{1729, 'c', 1.25};
@@ -871,6 +876,7 @@ int main() {
         static_assert(get<char>(t) == 'c');
         static_assert(get<double>(t) == 1.25);
     }
+#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <type_traits>.");

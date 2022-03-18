@@ -63,7 +63,9 @@ concept common_with =
     requires {
         typename common_type_t<_Ty1, _Ty2>;
         typename common_type_t<_Ty2, _Ty1>;
-        requires same_as<common_type_t<_Ty1, _Ty2>, common_type_t<_Ty2, _Ty1>>;
+    }
+    && same_as<common_type_t<_Ty1, _Ty2>, common_type_t<_Ty2, _Ty1>>
+    && requires {
         static_cast<common_type_t<_Ty1, _Ty2>>(_STD declval<_Ty1>());
         static_cast<common_type_t<_Ty1, _Ty2>>(_STD declval<_Ty2>());
     }

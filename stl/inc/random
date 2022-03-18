@@ -238,19 +238,44 @@ private:
     vector<result_type> _Myvec;
 };
 
+_NODISCARD constexpr int _Generate_canonical_iterations(const int _Bits, const uint64_t _Gmin, const uint64_t _Gmax) {
+    // For a URBG type `G` with range == `(G::max() - G::min()) + 1`, returns the number of calls to generate at least
+    // _Bits bits of entropy. Specifically, max(1, ceil(_Bits / log2(range))).
+
+    _STL_INTERNAL_CHECK(0 <= _Bits && _Bits <= 64);
+
+    if (_Bits == 0 || (_Gmax == UINT64_MAX && _Gmin == 0)) {
+        return 1;
+    }
+
+    const auto _Range  = (_Gmax - _Gmin) + 1;
+    const auto _Target = ~uint64_t{0} >> (64 - _Bits);
+    uint64_t _Prod     = 1;
+    int _Ceil          = 0;
+    while (_Prod <= _Target) {
+        ++_Ceil;
+        if (_Prod > UINT64_MAX / _Range) {
+            break;
+        }
+
+        _Prod *= _Range;
+    }
+
+    return _Ceil;
+}
+
 template <class _Real, size_t _Bits, class _Gen>
 _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(generate_canonical, _Real);
 
-    const size_t _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
-    const size_t _Minbits = _Digits < _Bits ? _Digits : _Bits;
+    constexpr auto _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
+    constexpr auto _Minbits = static_cast<int>(_Digits < _Bits ? _Digits : _Bits);
 
-    const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
-    const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
-    const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
+    constexpr auto _Gxmin = static_cast<_Real>((_Gen::min)());
+    constexpr auto _Gxmax = static_cast<_Real>((_Gen::max)());
+    constexpr auto _Rx    = (_Gxmax - _Gxmin) + _Real{1};
 
-    const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Minbits) / _STD log2(_Rx)));
-    const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
+    constexpr int _Kx = _Generate_canonical_iterations(_Minbits, (_Gen::min)(), (_Gen::max)());
 
     _Real _Ans{0};
     _Real _Factor{1};
@@ -263,7 +288,45 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     return _Ans / _Factor;
 }
 
-#define _NRAND(eng, resty) (_STD generate_canonical<resty, static_cast<size_t>(-1)>(eng))
+template <class _Gen, class = void>
+struct _Has_static_min_max : false_type {};
+
+// This checks a requirement of N4901 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
+// to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
+template <class _Gen>
+struct _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> : true_type {};
+
+template <class _Real, class _Gen>
+_NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
+    _RNG_REQUIRE_REALTYPE(_Nrand_impl, _Real);
+
+    constexpr auto _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
+    constexpr auto _Bits    = ~size_t{0};
+    constexpr auto _Minbits = _Digits < _Bits ? _Digits : _Bits;
+
+    if constexpr (_Has_static_min_max<_Gen>::value && _Minbits <= 64) {
+        return _STD generate_canonical<_Real, _Minbits>(_Gx);
+    } else { // TRANSITION, for tr1 machinery only; Standard machinery can call generate_canonical directly
+        const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
+        const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
+        const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
+
+        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Minbits) / _STD log2(_Rx)));
+        const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
+
+        _Real _Ans{0};
+        _Real _Factor{1};
+
+        for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
+            _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
+            _Factor *= _Rx;
+        }
+
+        return _Ans / _Factor;
+    }
+}
+
+#define _NRAND(eng, resty) (_Nrand_impl<resty>(eng))
 
 _INLINE_VAR constexpr int _MP_len = 5;
 using _MP_arr                     = uint64_t[_MP_len];
