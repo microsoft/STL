@@ -29,21 +29,18 @@ void _Uses_allocator_construct(_Ty* const _Ptr, _Outer_alloc& _Outer, _Inner_all
     // uses-allocator construction of *_Ptr by alloc _Outer propagating alloc _Inner, non-pair case
     if constexpr (uses_allocator_v<_Ty, _Inner_alloc>) {
         if constexpr (is_constructible_v<_Ty, allocator_arg_t, _Inner_alloc&, _Types...>) {
-            // uses-allocator construction of *_Ptr by alloc _Outer propagating alloc _Inner, allocator_arg_t case
             allocator_traits<_Outer_alloc>::construct(
                 _Outer, _Ptr, allocator_arg, _Inner, _STD forward<_Types>(_Args)...);
         } else {
-            // uses-allocator construction of *_Ptr by alloc _Outer propagating alloc _Inner, non-allocator_arg_t case
             static_assert(is_constructible_v<_Ty, _Types..., _Inner_alloc&>,
-                "N4700 23.10.7.2 [allocator.uses.construction]/1 requires "
+                "N4901 [allocator.uses.trait]/1 requires "
                 "is_constructible_v<T, Args..., Alloc&> when uses_allocator_v<T, Alloc> is true and "
                 "is_constructible_v<T, allocator_arg_t, Alloc&, Args...> is false");
             allocator_traits<_Outer_alloc>::construct(_Outer, _Ptr, _STD forward<_Types>(_Args)..., _Inner);
         }
     } else {
-        // uses-allocator construction of *_Ptr by alloc _Outer, !uses_allocator_v<_Ty, _Inner_alloc> case
         static_assert(is_constructible_v<_Ty, _Types...>,
-            "N4700 23.10.7.2 [allocator.uses.construction]/1 requires "
+            "N4901 [allocator.uses.trait]/1 requires "
             "is_constructible_v<T, Args...> when uses_allocator_v<T, Alloc> is false");
         allocator_traits<_Outer_alloc>::construct(_Outer, _Ptr, _STD forward<_Types>(_Args)...);
     }
