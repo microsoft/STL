@@ -81,10 +81,7 @@ class CustomTestFormat(STLTestFormat):
                 with open(os.path.join(outputDir, f'{hdr}.module.json')) as file:
                     jsonObject = json.load(file)
                     objFilenames.append(jsonObject['rules'][0]['primary-output'])
-                    # TRANSITION, VSO-1466711 fixed in VS 2022 17.2 Preview 2
-                    # os.path.basename(req['source-path']) should be req['logical-name']
-                    dep = [os.path.basename(req['source-path']) for req in jsonObject['rules'][0]['requires']]
-                    remainingDependencies[hdr] = dep
+                    remainingDependencies[hdr] = [req['logical-name'] for req in jsonObject['rules'][0]['requires']]
 
             # Build header units in topologically sorted order.
             while len(remainingDependencies) > 0:
