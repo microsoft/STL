@@ -17,7 +17,7 @@
 #include <experimental/resumable>
 #endif // _RESUMABLE_FUNCTIONS_SUPPORTED
 
-#include <chrono>
+#include <__msvc_chrono.hpp>
 #include <condition_variable>
 #include <functional>
 #include <memory>
