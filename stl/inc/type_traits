@@ -331,6 +331,32 @@ struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
 template <class _From, class _To>
 _INLINE_VAR constexpr bool is_convertible_v = __is_convertible_to(_From, _To);
 
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
+template <class _Ty>
+struct is_convertible<_Ty&, volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<volatile _Ty&, volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<_Ty&, const volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<volatile _Ty&, const volatile _Ty&> : true_type {};
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<_Ty&, volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<_Ty&, const volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, const volatile _Ty&> = true;
+#endif // ^^^ workaround
+
 template <class _Ty>
 struct is_enum : bool_constant<__is_enum(_Ty)> {}; // determine whether _Ty is an enumerated type
 
@@ -1179,10 +1205,6 @@ struct basic_common_reference {};
 template <class _Ty>
 _Ty _Returns_exactly() noexcept; // not defined
 
-template <class _Ty1, class _Ty2>
-using _Cond_res = // N4810 [meta.trans.other]/2.4
-    decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
-
 template <class _From>
 struct _Copy_cv_impl {
     template <class _To>
@@ -1222,6 +1244,34 @@ struct _Add_qualifiers<_Ty1&&> {
     template <class _Ty2>
     using _Apply = add_rvalue_reference_t<_Copy_cv<_Ty1, _Ty2>>;
 };
+
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-876860
+template <class _Ty1, class _Ty2>
+using _Cond_res_if_right = // N4810 [meta.trans.other]/2.4
+    decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
+
+template <class _Ty>
+using _Is_scalar_or_array = disjunction<is_scalar<_Ty>, is_array<_Ty>>;
+
+template <class _Ty1, class _Ty2, class = void>
+struct _Cond_res_workaround {};
+
+template <class _Ty1, class _Ty2>
+struct _Cond_res_workaround<_Ty1, _Ty2, void_t<_Cond_res_if_right<_Ty1, _Ty2>>> {
+    using _Uty = remove_cvref_t<_Ty1>;
+    using type = conditional_t<conjunction_v<is_same<_Uty, remove_cvref_t<_Ty2>>, _Is_scalar_or_array<_Uty>,
+                                   disjunction<conjunction<is_lvalue_reference<_Ty1>, is_rvalue_reference<_Ty2>>,
+                                       conjunction<is_rvalue_reference<_Ty1>, is_lvalue_reference<_Ty2>>>>,
+        decay_t<_Copy_cv<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>>, _Cond_res_if_right<_Ty1, _Ty2>>;
+};
+
+template <class _Ty1, class _Ty2>
+using _Cond_res = typename _Cond_res_workaround<_Ty1, _Ty2>::type;
+#else // ^^^ workaround / no workaround vvv
+template <class _Ty1, class _Ty2>
+using _Cond_res = // N4810 [meta.trans.other]/2.4
+    decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
+#endif // ^^^ no workaround ^^^
 
 template <class...>
 struct common_reference;
