@@ -909,6 +909,9 @@ namespace ranges {
         }
     };
 
+    template <class _Ty>
+    inline constexpr bool enable_borrowed_range<empty_view<_Ty>> = true;
+
     namespace views {
         template <class _Ty>
         inline constexpr empty_view<_Ty> empty;
