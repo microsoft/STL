@@ -1914,6 +1914,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval, copy_options _Opts,
         _Oldstat = status(_Oldpval);
         _Newstat = status(_Newpval);
     }
+
     if (!exists(_Oldstat) || equivalent(_Oldpval, _Newpval, _Code2) || is_other(_Oldstat) || is_other(_Newstat)
         || (is_directory(_Oldstat) && is_regular_file(_Newstat))) {
         _Code = make_error_code(errc::operation_not_permitted);

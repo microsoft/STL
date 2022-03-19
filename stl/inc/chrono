@@ -3648,24 +3648,31 @@ namespace chrono {
             if (_Second || _Subsecond) {
                 _Ret |= _F_sec;
             }
+
             if (_Minute) {
                 _Ret |= _F_min;
             }
+
             if (_Hour_24) {
                 _Ret |= _F_hr;
             }
+
             if (_Day) {
                 _Ret |= _F_day;
             }
+
             if (_Weekday) {
                 _Ret |= _F_wkday;
             }
+
             if (_Month) {
                 _Ret |= _F_mon;
             }
+
             if (_Day_of_year) {
                 _Ret |= _F_doy;
             }
+
             if (_Two_dig_year && _Century) {
                 _Ret |= _F_year;
             }
