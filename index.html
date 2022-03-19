@@ -26,15 +26,16 @@
             font-weight: bold;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"
-        integrity="sha256-Y26AMvaIfrZ1EQU49pf6H4QzVTrOI8m9wQYKkftBt4s=" crossorigin="anonymous"></script>
-    <script
-        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"
-        integrity="sha256-xlxh4PaMDyZ72hWQ7f/37oYI0E2PrBbtzi1yhvnG+/E=" crossorigin="anonymous"></script>
-    <script src="daily_table.js"></script>
-    <script src="weekly_table.js"></script>
-    <script src="monthly_table.js"></script>
-    <script src="status_chart.js"></script>
+    <script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1.4.6/dist/es-module-shims.min.js"
+        crossorigin="anonymous"></script>
+    <script type="importmap">
+        { "imports": {
+            "chart.js": "https://cdn.jsdelivr.net/npm/chart.js@3.7.1/+esm",
+            "chartjs-adapter-luxon": "https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.1.0/+esm",
+            "luxon": "https://cdn.jsdelivr.net/npm/luxon@2.3.0/+esm"
+        } }
+    </script>
+    <script type="module" src="built/status_chart.mjs"></script>
 </head>
 
 <body>
@@ -92,10 +93,10 @@
                     and excluding only <b>cxx20</b>, <b>cxx23</b>, and <b>LWG</b> to avoid double-counting.
                 </li>
                 <li>(<span class="currentValue" id="currentValue-libcxx"></span>)
-                    <a href="https://github.com/microsoft/STL/blob/master/tests/libcxx/skipped_tests.txt">
-                        Skipped tests in the libcxx test suite.</a> There are many reasons for skipped tests:
+                    <a href="https://github.com/microsoft/STL/blob/main/tests/libcxx/expected_results.txt">
+                        Skipped/failing tests in the libcxx test suite.</a> There are many reasons for such tests:
                     STL bugs, test bugs, compiler bugs, missing STL features, missing compiler features, etc.
-                    To avoid double-counting, this chart excludes skipped tests due to missing STL features.
+                    To avoid double-counting, this line excludes missing STL features.
                 </li>
             </ul>
         </li>

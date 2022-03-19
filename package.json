@@ -4,7 +4,11 @@
   "description": "STL Status Chart",
   "main": "gather_stats.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pregather": "npx tsc -p src_gather/tsconfig.json",
+    "gather": "node built/gather_stats.js",
+    "premake": "npx tsc -p src/tsconfig.json",
+    "make": "npx esbuild src/status_chart.ts --bundle --format=esm --minify --target=es2020 --external:chart.js --external:chartjs-adapter-luxon --outfile=built/status_chart.mjs",
+    "view": "npx http-server -c-1 -o"
   },
   "repository": {
     "type": "git",
@@ -28,13 +32,17 @@
   "dependencies": {
     "@octokit/graphql": "^4.8.0",
     "@types/cli-progress": "^3.9.2",
-    "@types/luxon": "^2.0.9",
-    "@types/node": "^17.0.13",
-    "@types/yargs": "^17.0.8",
+    "@types/luxon": "^2.3.1",
+    "@types/node": "^17.0.21",
+    "@types/yargs": "^17.0.10",
+    "chart.js": "^3.7.1",
+    "chartjs-adapter-luxon": "^1.1.0",
     "cli-progress": "^3.10.0",
-    "dotenv": "^14.3.2",
-    "luxon": "^2.3.0",
-    "typescript": "^4.5.5",
+    "dotenv": "^16.0.0",
+    "esbuild": "^0.14.27",
+    "http-server": "^14.1.0",
+    "luxon": "^2.3.1",
+    "typescript": "^4.6.2",
     "yargs": "^17.3.1"
   }
 }

@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "module": "CommonJS",
+        "moduleResolution": "node",
         "outDir": "./built",
         "target": "ES2020",
         "allowUnreachableCode": false,
@@ -10,7 +10,4 @@
         "strict": true,
         "forceConsistentCasingInFileNames": true,
     },
-    "include": [
-        "./src/**/*"
-    ]
 }

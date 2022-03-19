@@ -1,0 +1,28 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+name: Compile TypeScript
+on:
+  pull_request:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Commit
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.sha }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ">=17.5.0"
+      - name: Install Packages
+        run: |
+          npm ci
+      - name: Compile gather_stats.ts
+        run: |
+          npx tsc --noEmit -p src_gather/tsconfig.json
+      - name: Compile status_chart.ts
+        run: |
+          npx tsc -p src/tsconfig.json
