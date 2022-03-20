@@ -2273,6 +2273,18 @@ public:
         return *this;
     }
 
+#if _HAS_CXX23
+    constexpr const _Vb_reference& operator=(bool _Val) const noexcept {
+        if (_Val) {
+            *const_cast<_Vbase*>(_Getptr()) |= _Mask();
+        } else {
+            *const_cast<_Vbase*>(_Getptr()) &= ~_Mask();
+        }
+
+        return *this;
+    }
+#endif // _HAS_CXX23
+
     _CONSTEXPR20 void flip() noexcept {
         *const_cast<_Vbase*>(_Getptr()) ^= _Mask();
     }

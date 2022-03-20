@@ -225,13 +225,14 @@ std/utilities/tuple/tuple.tuple/tuple.cnstr/recursion_depth.pass.cpp SKIPPED
 # deprecate before they do.
 std/utilities/meta/meta.unary/meta.unary.prop/is_literal_type.deprecated.fail.cpp FAIL
 
+# libc++ doesn't implement P2321R2's changes to vector<bool>::reference
+std/containers/sequences/vector.bool/iterator_concept_conformance.compile.pass.cpp FAIL
+
 
 # *** MISSING STL FEATURES ***
 # P2321R2 zip
 std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
-std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp FAIL
-std/utilities/meta/meta.trans/meta.trans.other/common_type.pass.cpp FAIL
 
 # P1328R1 constexpr type_info::operator==()
 std/language.support/support.limits/support.limits.general/typeinfo.version.pass.cpp FAIL
