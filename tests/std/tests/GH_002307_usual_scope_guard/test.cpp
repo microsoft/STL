@@ -22,7 +22,7 @@ struct countdown {
         }
     }
 
-    countdown(const int init) : val(init) {
+    explicit countdown(const int init) : val(init) {
         tick();
     }
 
@@ -80,7 +80,7 @@ void test_deque() {
 
     try {
         countdown::count = 3;
-        dq.insert(dq.end() - 2, 6, 10);
+        dq.insert(dq.end() - 2, 6, countdown{10});
         assert(false); // Should have thrown an exception
     } catch (const runtime_error& ex) {
         check_exception(ex);
@@ -89,7 +89,7 @@ void test_deque() {
 
     try {
         countdown::count = 3;
-        dq.insert(dq.begin() + 2, 6, 11);
+        dq.insert(dq.begin() + 2, 6, countdown{11});
         assert(false); // Should have thrown an exception
     } catch (const runtime_error& ex) {
         check_exception(ex);

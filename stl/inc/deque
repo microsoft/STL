@@ -1230,13 +1230,13 @@ private:
         deque* _Container;
         const size_type _Oldsize;
 
-        ~_Restore_old_size_guard() {
+        ~_Restore_old_size_guard() { // restore old size, at least
             if (_Container) {
                 while (_Oldsize < _Container->_Mysize()) {
                     if constexpr (_Direction == _Pop_direction::_Front) {
-                        _Container->pop_front(); // restore old size, at least
+                        _Container->pop_front();
                     } else {
-                        _Container->pop_back(); // restore old size, at least
+                        _Container->pop_back();
                     }
                 }
             }
@@ -1273,8 +1273,8 @@ public:
                 _STD rotate(begin(), begin() + static_cast<difference_type>(_Num),
                     begin() + static_cast<difference_type>(_Num + _Off));
             } else { // closer to back
-                _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
                 _Orphan_all();
+                _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
                 for (; _UFirst != _ULast; ++_UFirst) {
                     _Emplace_back_internal(*_UFirst);
                 }
