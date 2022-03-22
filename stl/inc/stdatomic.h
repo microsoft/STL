@@ -14,10 +14,12 @@
 #ifndef __cplusplus
 #error <stdatomic.h> is not yet supported when compiling as C, but this is planned for a future release.
 #endif // __cplusplus
-#endif // ^^^ C and C++ compilers ^^^
 
 #include <yvals.h>
-#if _STL_COMPILER_PREPROCESSOR
+// because this header needs to work in C and C++ we do the
+// preprocessor check above, if it's less restrictive than
+// what yvals_core would do then that's a bug.
+_STL_INTERNAL_STATIC_ASSERT(!_STL_COMPILER_PREPROCESSOR);
 
 #ifdef _M_CEE_PURE
 #error <stdatomic.h> is not supported when compiling with /clr:pure.
@@ -135,5 +137,5 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma pack(pop)
 #endif // ^^^ _HAS_CXX23 ^^^
 
-#endif // _STL_COMPILER_PREPROCESSOR
+#endif // defined(RC_INVOKED) || defined(Q_MOC_RUN) || defined(__midl)
 #endif // _STDATOMIC_H_
