@@ -1623,7 +1623,7 @@ public:
         return *this;
     }
 
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     shared_ptr& operator=(const shared_ptr<_Ty2>& _Right) noexcept {
         shared_ptr(_Right).swap(*this);
         return *this;
@@ -1634,21 +1634,24 @@ public:
         return *this;
     }
 
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     shared_ptr& operator=(shared_ptr<_Ty2>&& _Right) noexcept { // take resource from _Right
         shared_ptr(_STD move(_Right)).swap(*this);
         return *this;
     }
 
 #if _HAS_AUTO_PTR_ETC
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<is_convertible_v<_Ty2*, _Ty*>, int> = 0>
     shared_ptr& operator=(auto_ptr<_Ty2>&& _Right) {
         shared_ptr(_STD move(_Right)).swap(*this);
         return *this;
     }
 #endif // _HAS_AUTO_PTR_ETC
 
-    template <class _Ux, class _Dx>
+    template <class _Ux, class _Dx,
+        enable_if_t<conjunction_v<_SP_pointer_compatible<_Ux, _Ty>,
+                        is_convertible<typename unique_ptr<_Ux, _Dx>::pointer, element_type*>>,
+            int> = 0>
     shared_ptr& operator=(unique_ptr<_Ux, _Dx>&& _Right) { // move from unique_ptr
         shared_ptr(_STD move(_Right)).swap(*this);
         return *this;
@@ -1662,17 +1665,26 @@ public:
         shared_ptr().swap(*this);
     }
 
-    template <class _Ux>
+    template <class _Ux,
+        enable_if_t<conjunction_v<conditional_t<is_array_v<_Ty>, _Can_array_delete<_Ux>, _Can_scalar_delete<_Ux>>,
+                        _SP_convertible<_Ux, _Ty>>,
+            int> = 0>
     void reset(_Ux* _Px) { // release, take ownership of _Px
         shared_ptr(_Px).swap(*this);
     }
 
-    template <class _Ux, class _Dx>
+    template <class _Ux, class _Dx,
+        enable_if_t<conjunction_v<is_move_constructible<_Dx>, _Can_call_function_object<_Dx&, _Ux*&>,
+                        _SP_convertible<_Ux, _Ty>>,
+            int> = 0>
     void reset(_Ux* _Px, _Dx _Dt) { // release, take ownership of _Px, with deleter _Dt
         shared_ptr(_Px, _Dt).swap(*this);
     }
 
-    template <class _Ux, class _Dx, class _Alloc>
+    template <class _Ux, class _Dx, class _Alloc,
+        enable_if_t<conjunction_v<is_move_constructible<_Dx>, _Can_call_function_object<_Dx&, _Ux*&>,
+                        _SP_convertible<_Ux, _Ty>>,
+            int> = 0>
     void reset(_Ux* _Px, _Dx _Dt, _Alloc _Ax) { // release, take ownership of _Px, with deleter _Dt, allocator _Ax
         shared_ptr(_Px, _Dt, _Ax).swap(*this);
     }
@@ -3023,7 +3035,7 @@ public:
         return *this;
     }
 
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr& operator=(const weak_ptr<_Ty2>& _Right) noexcept {
         weak_ptr(_Right).swap(*this);
         return *this;
@@ -3034,13 +3046,13 @@ public:
         return *this;
     }
 
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr& operator=(weak_ptr<_Ty2>&& _Right) noexcept {
         weak_ptr(_STD move(_Right)).swap(*this);
         return *this;
     }
 
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr& operator=(const shared_ptr<_Ty2>& _Right) noexcept {
         weak_ptr(_Right).swap(*this);
         return *this;

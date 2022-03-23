@@ -162,7 +162,7 @@
 // P0475R1 Guaranteed Copy Elision For Piecewise Construction
 // P0476R2 <bit> bit_cast
 // P0482R6 Library Support For char8_t
-//     (mbrtoc8 and c8rtomb not yet implemented)
+//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 // P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
@@ -1485,7 +1485,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
-#define _STL_WIN32_WINNT_WINXP   0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
 #define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
 #define _STL_WIN32_WINNT_WINBLUE 0x0603 // _WIN32_WINNT_WINBLUE from sdkddkver.h

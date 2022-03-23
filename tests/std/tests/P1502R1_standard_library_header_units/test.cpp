@@ -285,13 +285,11 @@ int main() {
         assert(!ep);
     }
 
-#if !defined(TEST_TOPO_SORT) || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1471382 fixed in VS 2022 17.2p2
     {
         puts("Testing <execution>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
         assert(count(execution::par, begin(arr), end(arr), 0) == 4);
     }
-#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <filesystem>.");
@@ -321,7 +319,6 @@ int main() {
         assert(!f.is_open());
     }
 
-#if !defined(TEST_TOPO_SORT) || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1471374 fixed in VS 2022 17.2p2
     {
         puts("Testing <functional>.");
         function<int(int, int)> f{multiplies{}};
@@ -332,7 +329,6 @@ int main() {
         assert(b(3) == 33);
         static_assert(b(3) == 33);
     }
-#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <future>.");
@@ -865,7 +861,6 @@ int main() {
         assert(this_thread::get_id() != thread::id{});
     }
 
-#if !defined(TEST_TOPO_SORT) || defined(_MSVC_INTERNAL_TESTING) // TRANSITION, VSO-1471374 fixed in VS 2022 17.2p2
     {
         puts("Testing <tuple>.");
         constexpr tuple<int, char, double> t{1729, 'c', 1.25};
@@ -876,7 +871,6 @@ int main() {
         static_assert(get<char>(t) == 'c');
         static_assert(get<double>(t) == 1.25);
     }
-#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <type_traits>.");
@@ -958,14 +952,10 @@ int main() {
     {
         puts("Testing <variant>.");
         constexpr const char* cats = "CATS";
-#if 0 // TRANSITION, DevCom-1162647 (constexpr variant stores wrong pointer)
         constexpr variant<int, const char*, double> var{in_place_type<const char*>, cats};
         static_assert(var.index() == 1);
         static_assert(holds_alternative<const char*>(var));
         static_assert(get<const char*>(var) == cats);
-#else // ^^^ no workaround / workaround vvv
-        const variant<int, const char*, double> var{in_place_type<const char*>, cats};
-#endif // ^^^ workaround ^^^
         assert(var.index() == 1);
         assert(holds_alternative<const char*>(var));
         assert(get<const char*>(var) == cats);
