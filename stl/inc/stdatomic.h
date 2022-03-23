@@ -7,7 +7,7 @@
 #ifndef _STDATOMIC_H_
 #define _STDATOMIC_H_
 
-// do nothing for preprocessors, see _STL_COMPILER_PREPROCESSOR in yvals_core.h
+// see _STL_COMPILER_PREPROCESSOR in yvals_core.h
 #if !defined(RC_INVOKED) && !defined(Q_MOC_RUN) && !defined(__midl)
 
 // provide a specific error message for C compilers, before the general error message in yvals_core.h
@@ -16,10 +16,6 @@
 #endif // __cplusplus
 
 #include <yvals.h>
-// because this header needs to work in C and C++ we do the
-// preprocessor check above, if it's less restrictive than
-// what yvals_core would do then that's a bug.
-_STL_INTERNAL_STATIC_ASSERT(_STL_COMPILER_PREPROCESSOR);
 
 #ifdef _M_CEE_PURE
 #error <stdatomic.h> is not supported when compiling with /clr:pure.
