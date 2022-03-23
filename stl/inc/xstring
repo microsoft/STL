@@ -2810,8 +2810,8 @@ private:
         _Tidy_deallocate_guard<basic_string> _Guard{this};
         for (; _First != _Last; ++_First) {
             if constexpr (!_Is_fwd_iter_v<_Iter>) {
-                if (_My_data._Mysize >= _My_data._Myres) { // Need to grow
-                    if (_My_data._Mysize > max_size()) {
+                if (_My_data._Mysize == _My_data._Myres) { // Need to grow
+                    if (_My_data._Mysize == max_size()) {
                         _Xlen_string(); // result too long
                     }
 
