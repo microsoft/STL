@@ -19,7 +19,7 @@
 // because this header needs to work in C and C++ we do the
 // preprocessor check above, if it's less restrictive than
 // what yvals_core would do then that's a bug.
-_STL_INTERNAL_STATIC_ASSERT(!_STL_COMPILER_PREPROCESSOR);
+_STL_INTERNAL_STATIC_ASSERT(_STL_COMPILER_PREPROCESSOR);
 
 #ifdef _M_CEE_PURE
 #error <stdatomic.h> is not supported when compiling with /clr:pure.
