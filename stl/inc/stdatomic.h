@@ -137,5 +137,5 @@ _STL_RESTORE_CLANG_WARNINGS
 #pragma pack(pop)
 #endif // ^^^ _HAS_CXX23 ^^^
 
-#endif // defined(RC_INVOKED) || defined(Q_MOC_RUN) || defined(__midl)
+#endif // !defined(RC_INVOKED) && !defined(Q_MOC_RUN) && !defined(__midl)
 #endif // _STDATOMIC_H_
