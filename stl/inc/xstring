@@ -2527,7 +2527,7 @@ private:
         const char* _CFirst = reinterpret_cast<const char*>(_First);
 
         if (_Capacity >= _Asan_granularity) { // We are guaranteed to have sufficient space to find an aligned address
-            return reinterpret_cast<void*>(
+            return reinterpret_cast<const void*>(
                 (reinterpret_cast<uintptr_t>(_CFirst) + (_Asan_granularity - 1)) & ~(_Asan_granularity - 1));
         }
 
@@ -2555,7 +2555,7 @@ private:
             return;
         }
 
-        // Needs to consider the Null-terminator
+        // Needs to consider the null terminator
         const char* _First    = reinterpret_cast<const char*>(_Ptr);
         const char* _End      = reinterpret_cast<const char*>(_Ptr + _Capacity + 1);
         const char* _Old_last = reinterpret_cast<const char*>(_Ptr + _Old_size + 1);
@@ -2652,7 +2652,7 @@ public:
 
     _CONSTEXPR20 basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch)
         : _Mypair(_Zero_then_variadic_args_t{}) { // construct from _Count * _Ch
-        _Construct<_Construct_strategy::_From_char, _Elem>(_Ch, _Count);
+        _Construct<_Construct_strategy::_From_char>(_Ch, _Count);
     }
 
 #if _HAS_CXX17
@@ -2660,19 +2660,19 @@ public:
 #endif // _HAS_CXX17
     _CONSTEXPR20 basic_string(_CRT_GUARDOVERFLOW const size_type _Count, const _Elem _Ch, const _Alloc& _Al)
         : _Mypair(_One_then_variadic_args_t{}, _Al) { // construct from _Count * _Ch with allocator
-        _Construct<_Construct_strategy::_From_char, _Elem>(_Ch, _Count);
+        _Construct<_Construct_strategy::_From_char>(_Ch, _Count);
     }
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 basic_string(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Adl_verify_range(_First, _Last);
-        if (_First == _Last) {
+        auto _UFirst = _Get_unwrapped(_First);
+        auto _ULast  = _Get_unwrapped(_Last);
+        if (_UFirst == _ULast) {
             _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
             _Tidy_init();
         } else {
-            const auto _UFirst = _Get_unwrapped(_First);
-            const auto _ULast  = _Get_unwrapped(_Last);
             if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
                 _Construct<_Construct_strategy::_From_ptr>(
                     _UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
@@ -2835,13 +2835,13 @@ private:
                 }
             }
 
-            _Elem* const _Ptr = _Mypair._Myval2._Myptr();
-            _Traits::assign(_Ptr[_Mypair._Myval2._Mysize], *_First);
-            ++_Mypair._Myval2._Mysize;
+            _Elem* const _Ptr = _My_data._Myptr();
+            _Traits::assign(_Ptr[_My_data._Mysize], *_First);
+            ++_My_data._Mysize;
         }
 
-        _Elem* const _Ptr = _Mypair._Myval2._Myptr();
-        _Traits::assign(_Ptr[_Mypair._Myval2._Mysize], _Elem());
+        _Elem* const _Ptr = _My_data._Myptr();
+        _Traits::assign(_Ptr[_My_data._Mysize], _Elem());
         _ASAN_STRING_CREATE(*this);
         _Guard._Target = nullptr;
         _Proxy._Release();
@@ -3018,7 +3018,7 @@ public:
         // Move assign from a buffer, used exclusively by basic_stringbuf; returns _Large_string_engaged()
         auto& _My_data = _Mypair._Myval2;
         _STL_INTERNAL_CHECK(!_My_data._Large_string_engaged() && _My_data._Mysize == 0);
-        _STL_INTERNAL_CHECK(_Size < _Res); // So there is place for null terminator
+        _STL_INTERNAL_CHECK(_Size < _Res); // So there is room for null terminator
         _Traits::assign(_Right[_Size], _Elem());
 
         const bool _Is_large = _Res > _BUF_SIZE; // Note: _BUF_SIZE because _Res now includes the null terminator
@@ -4324,7 +4324,6 @@ public:
             if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
             {
-
                 const auto _My_data_mem =
                     reinterpret_cast<unsigned char*>(_STD addressof(_My_data)) + _Memcpy_val_offset;
                 const auto _Right_data_mem =
