@@ -2740,6 +2740,7 @@ private:
             return;
         }
 
+        _My_data._Myres               = _BUF_SIZE - 1;
         const size_type _New_capacity = _Calculate_growth(_Count);
         const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
         _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
