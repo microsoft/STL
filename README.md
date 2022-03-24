@@ -140,10 +140,10 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.1 Preview 4 or later.
+1. Install Visual Studio 2022 17.2 Preview 2 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.21 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.22 or later, and [Ninja][] 1.10.2 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
@@ -155,10 +155,10 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.1 Preview 4 or later.
+1. Install Visual Studio 2022 17.2 Preview 2 or later.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.21 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.22 or later, and [Ninja][] 1.10.2 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.
@@ -414,7 +414,40 @@ The STL is built atop other compiler support libraries that ship with Windows an
 VCRuntime, and VCStartup. The following diagram describes the dependencies between those components and their ship
 vehicles.
 
-![MSVC Libraries Block Diagram](docs/msvc_libraries.plantuml.svg)
+```mermaid
+flowchart TB
+    classDef default text-align:left
+    subgraph VisualStudioSubgraph[Visual Studio]
+        direction TB
+        STLNode("<b>STL</b>
+        This repo; provides C++ Standard Library headers, separately
+        compiled implementations of most of the iostreams functionality,
+        and a few runtime support components like std::exception_ptr.")
+        subgraph VCRuntimeSubgraph[VCRuntime]
+            direction TB
+            VCStartupNode("<b>VCStartup</b>
+            Provides compiler support mechanisms that
+            live in each binary; such as machinery to
+            call constructors and destructors for global
+            variables, the entry point, and the /GS cookie.
+
+            Merged into static and import libraries of VCRuntime.")
+            VCRuntimeNode("<b>VCRuntime</b>
+            Provides compiler support mechanisms that can be
+            shared between binaries; code that the compiler calls
+            on your behalf, such as the C++ exception handling
+            runtime, string.h intrinsics, math intrinsics, and
+            declarations for CPU-vendor-specific intrinsics.")
+        end
+    end
+    subgraph WindowsSDKSubgraph[Windows SDK]
+        UniversalCRTNode("<b>Universal CRT</b>
+        Windows component that provides C library support, such as printf,
+        C locales, and some POSIX-like shims for the Windows API, like _stat.")
+    end
+    STLNode ==> VCRuntimeSubgraph & UniversalCRTNode
+    VCStartupNode ==> VCRuntimeNode ==> UniversalCRTNode
+```
 
 # Contributing
 

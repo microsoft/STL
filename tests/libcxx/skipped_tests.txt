@@ -14,26 +14,19 @@ input.output\iostreams.base\ios.base\ios.base.storage\pword.pass.cpp
 # "The behavior demonstrated in this test is not meant to be standard"
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.ctor\null.pass.cpp
 
-# allocator<const T>.
+# allocator<const T>
+iterators\iterator.requirements\iterator.cust\iterator.cust.move\iter_rvalue_reference_t.pass.cpp
 utilities\memory\default.allocator\allocator.ctor.pass.cpp
-
-# path::value_type is char assumptions
-input.output\file.streams\fstreams\filebuf.members\open_path.pass.cpp
-input.output\file.streams\fstreams\fstream.cons\path.pass.cpp
-input.output\file.streams\fstreams\fstream.members\open_path.pass.cpp
-input.output\file.streams\fstreams\ofstream.cons\path.pass.cpp
-input.output\file.streams\fstreams\ofstream.members\open_path.pass.cpp
 
 # This test is passing non-BidirectionalIterators to std::prev.
 # LWG-3197 "std::prev should not require BidirectionalIterator" (New)
 iterators\iterator.primitives\iterator.operations\prev.pass.cpp
 
 # Itanium ABI assumptions that current_exception and rethrow_exception don't copy the exception object
-# rethrow_if_nested.pass.cpp can crash.
+language.support\support.exception\except.nested\rethrow_if_nested.pass.cpp
 language.support\support.exception\propagation\current_exception.pass.cpp
 language.support\support.exception\propagation\make_exception_ptr.pass.cpp
 language.support\support.exception\propagation\rethrow_exception.pass.cpp
-language.support\support.exception\except.nested\rethrow_if_nested.pass.cpp
 
 # Testing nonstandard behavior
 utilities\template.bitset\bitset.cons\string_ctor.pass.cpp
@@ -42,8 +35,7 @@ utilities\template.bitset\bitset.cons\string_ctor.pass.cpp
 thread\futures\futures.task\futures.task.members\dtor.pass.cpp
 thread\futures\futures.unique_future\wait_until.pass.cpp
 
-# libcxx is incorrect on what the type passed to allocator construct should be
-# See https://reviews.llvm.org/D61364
+# libcxx is incorrect on what the type passed to allocator::construct should be (https://reviews.llvm.org/D61364)
 containers\associative\map\map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
 containers\associative\set\insert_and_emplace_allocator_requirements.pass.cpp
 containers\unord\unord.map\unord.map.modifiers\insert_and_emplace_allocator_requirements.pass.cpp
@@ -61,17 +53,38 @@ language.support\support.limits\support.limits.general\string_view.version.pass.
 # libc++ doesn't yet implement P2231R1, so it expects an old value for `__cpp_lib_optional`
 language.support\support.limits\support.limits.general\optional.version.pass.cpp
 
-# test emits warning C4310: cast truncates constant value
-numerics\bit\bitops.rot\rotl.pass.cpp
-
-# libc++ doesn't yet implement P1754R1 or P1964R2, so it expects an old value for `__cpp_lib_concepts`
-language.support\support.limits\support.limits.general\concepts.version.pass.cpp
-
-# Bogus test believes that optional<non_constexpr_destructor> cannot be a literal type
-utilities\optional\optional.object\optional.object.dtor\dtor.pass.cpp
-
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
+
+# string_view and array iterators are not portably pointers (https://reviews.llvm.org/D117368)
+iterators\iterator.primitives\iterator.traits\cxx20_iterator_traits.compile.pass.cpp
+iterators\iterator.requirements\iterator.cust\iterator.cust.move\iter_move.pass.cpp
+strings\string.view\string.view.cons\from_iterator_sentinel.pass.cpp
+strings\string.view\string.view.deduct\iterator_sentinel.pass.cpp
+utilities\format\format.formatter\format.parse.ctx\advance_to.pass.cpp
+utilities\format\format.formatter\format.parse.ctx\begin.pass.cpp
+utilities\format\format.formatter\format.parse.ctx\ctor.pass.cpp
+utilities\format\format.formatter\format.parse.ctx\end.pass.cpp
+
+# libc++ doesn't correctly constrain the iterator_traits specialization for common_iterator (https://reviews.llvm.org/D117449)
+iterators\predef.iterators\iterators.common\iterator_traits.compile.pass.cpp
+
+# libc++ hasn't updated {move,reverse}_iterator for P0896R4
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op=\move_iterator.pass.cpp
+iterators\predef.iterators\move.iterators\move.iterator\iterator_concept_conformance.compile.pass.cpp
+iterators\predef.iterators\reverse.iterators\iterator_concept_conformance.compile.pass.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.cmp\three-way.pass.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.cons\assign.pass.cpp
+
+# optional's comparisons aren't portably constrained (https://reviews.llvm.org/D116884)
+concepts\concepts.compare\concepts.totallyordered\totally_ordered.pass.cpp
+concepts\concepts.compare\concept.equalitycomparable\equality_comparable.compile.pass.cpp
+
+# libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
+utilities\format\format.functions\vformat_to.locale.pass.cpp
+utilities\format\format.functions\vformat_to.pass.cpp
+utilities\format\format.functions\vformat.locale.pass.cpp
+utilities\format\format.functions\vformat.pass.cpp
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -105,7 +118,6 @@ input.output\filesystems\class.path\path.itr\iterator.pass.cpp
 input.output\filesystems\class.path\path.member\path.append.pass.cpp
 input.output\filesystems\class.path\path.member\path.compare.pass.cpp
 input.output\filesystems\class.path\path.member\path.concat.pass.cpp
-input.output\filesystems\class.path\path.member\path.assign\braced_init.pass.cpp
 input.output\filesystems\class.path\path.member\path.assign\copy.pass.cpp
 input.output\filesystems\class.path\path.member\path.assign\move.pass.cpp
 input.output\filesystems\class.path\path.member\path.assign\source.pass.cpp
@@ -127,7 +139,6 @@ input.output\filesystems\class.path\path.member\path.native.obs\c_str.pass.cpp
 input.output\filesystems\class.path\path.member\path.native.obs\named_overloads.pass.cpp
 input.output\filesystems\class.path\path.member\path.native.obs\native.pass.cpp
 input.output\filesystems\class.path\path.member\path.native.obs\operator_string.pass.cpp
-input.output\filesystems\class.path\path.member\path.native.obs\string_alloc.pass.cpp
 input.output\filesystems\class.path\path.nonmember\append_op.pass.cpp
 input.output\filesystems\class.path\path.nonmember\path.factory.pass.cpp
 input.output\filesystems\class.path\path.nonmember\path.io.pass.cpp
@@ -194,14 +205,7 @@ input.output\filesystems\fs.op.funcs\fs.op.temp_dir_path\temp_directory_path.pas
 input.output\filesystems\fs.op.funcs\fs.op.weakly_canonical\weakly_canonical.pass.cpp
 
 # generate_feature_test_macro_components.py needs to learn about C1XX
-language.support\support.limits\support.limits.general\type_traits.version.pass.cpp
 language.support\support.limits\support.limits.general\version.version.pass.cpp
-
-# Contest does not understand .sh tests, which must be run specially
-input.output\iostream.objects\narrow.stream.objects\cin.sh.cpp
-input.output\iostream.objects\wide.stream.objects\wcin.sh.cpp
-namespace\addressable_functions.sh.cpp
-thread\thread.condition\thread.condition.condvarany\wait_terminates.sh.cpp
 
 # These tests set an allocator with a max_size() too small to default construct an unordered container
 # (due to our minimum bucket size).
@@ -212,80 +216,25 @@ containers\unord\unord.set\max_size.pass.cpp
 
 # Extreme compiler memory consumption.
 utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
+utilities\tuple\tuple.tuple\tuple.cnstr\recursion_depth.pass.cpp
 
-# .verify.cpp tests use clang-verify to validate warnings
-containers\associative\map\map.access\empty.verify.cpp
-containers\associative\multimap\empty.verify.cpp
-containers\associative\multiset\empty.verify.cpp
-containers\associative\set\empty.verify.cpp
-containers\container.adaptors\priority.queue\priqueue.members\empty.verify.cpp
-containers\container.adaptors\queue\queue.defn\empty.verify.cpp
-containers\container.adaptors\stack\stack.defn\empty.verify.cpp
-containers\sequences\array\empty.verify.cpp
-containers\sequences\deque\deque.capacity\empty.verify.cpp
-containers\sequences\forwardlist\empty.verify.cpp
-containers\sequences\list\list.capacity\empty.verify.cpp
-containers\sequences\vector.bool\empty.verify.cpp
-containers\sequences\vector\vector.capacity\empty.verify.cpp
-containers\sequences\vector\vector.cons\copy.move_only.verify.cpp
-containers\unord\unord.map\empty.verify.cpp
-containers\unord\unord.multimap\empty.verify.cpp
-containers\unord\unord.multiset\empty.verify.cpp
-containers\unord\unord.set\empty.verify.cpp
-depr\depr.lib.binders\depr.lib.bind.1st\bind1st.depr_in_cxx11.verify.cpp
-depr\depr.lib.binders\depr.lib.bind.2nd\bind2nd.depr_in_cxx11.verify.cpp
-depr\depr.lib.binders\depr.lib.binder.1st\binder1st.depr_in_cxx11.verify.cpp
-depr\depr.lib.binders\depr.lib.binder.2nd\binder2nd.depr_in_cxx11.verify.cpp
-input.output\filesystems\class.path\path.member\path.decompose\empty.verify.cpp
-input.output\iostream.format\input.streams\istream.rvalue\not_istreamable.verify.cpp
-input.output\iostream.format\output.streams\ostream.rvalue\not_ostreamable.verify.cpp
-input.output\iostream.format\quoted.manip\quoted_char.verify.cpp
-input.output\iostream.format\quoted.manip\quoted_traits.verify.cpp
-iterators\iterator.container\empty.array.verify.cpp
-iterators\iterator.container\empty.container.verify.cpp
-iterators\iterator.container\empty.initializer_list.verify.cpp
-language.support\cmp\cmp.categories.pre\zero_type.verify.cpp
-language.support\support.dynamic\new.delete\new.delete.array\new_size_align_nothrow.verify.cpp
-language.support\support.dynamic\new.delete\new.delete.array\new_size_align.verify.cpp
-language.support\support.dynamic\new.delete\new.delete.array\new_size_nothrow.verify.cpp
-language.support\support.dynamic\new.delete\new.delete.array\new_size.verify.cpp
-language.support\support.dynamic\new.delete\new.delete.placement\new_array_ptr.verify.cpp
-language.support\support.dynamic\new.delete\new.delete.placement\new_ptr.verify.cpp
-language.support\support.dynamic\new.delete\new.delete.single\new_size_align_nothrow.verify.cpp
-language.support\support.dynamic\new.delete\new.delete.single\new_size_align.verify.cpp
-language.support\support.dynamic\new.delete\new.delete.single\new_size_nothrow.verify.cpp
-language.support\support.dynamic\new.delete\new.delete.single\new_size.verify.cpp
-language.support\support.dynamic\ptr.launder\launder.nodiscard.verify.cpp
-numerics\numbers\illformed.verify.cpp
-re\re.results\re.results.size\empty.verify.cpp
-strings\basic.string\string.capacity\empty.verify.cpp
-strings\string.view\string.view.capacity\empty.verify.cpp
-thread\futures\futures.async\async.verify.cpp
-thread\futures\futures.promise\copy_assign.verify.cpp
-thread\futures\futures.promise\copy_ctor.verify.cpp
-thread\futures\futures.unique_future\copy_assign.verify.cpp
-thread\futures\futures.unique_future\copy_ctor.verify.cpp
-utilities\allocator.adaptor\allocator.adaptor.members\allocate_size_hint.verify.cpp
-utilities\allocator.adaptor\allocator.adaptor.members\allocate_size.verify.cpp
-utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\alloc_F.verify.cpp
-utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\alloc_function.verify.cpp
-utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\alloc_nullptr.verify.cpp
-utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\alloc_rfunction.verify.cpp
-utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\alloc.verify.cpp
-utilities\function.objects\negators\binary_negate.depr_in_cxx17.verify.cpp
-utilities\function.objects\negators\not1.depr_in_cxx17.verify.cpp
-utilities\function.objects\negators\not2.depr_in_cxx17.verify.cpp
-utilities\function.objects\negators\unary_negate.depr_in_cxx17.verify.cpp
-utilities\memory\allocator.traits\allocator.traits.members\allocate.verify.cpp
-utilities\memory\default.allocator\allocator_types.deprecated_in_cxx17.verify.cpp
-utilities\memory\default.allocator\allocator_types.removed_in_cxx20.verify.cpp
-utilities\memory\default.allocator\allocator_void.deprecated_in_cxx17.verify.cpp
-utilities\memory\default.allocator\allocator.members\allocate.constexpr.size.verify.cpp
-utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
+# Deprecation is a mess. We disable all deprecations in msvc_stdlib_force_include.hpp to allow libc++ tests for
+# deprecated features to pass, which breaks when libc++ deprecates the feature and adds two tests that (1) pass
+# with deprecation suppressed, and (2) fail without deprecation suppression. We should instead translate libc++
+# un-deprecation macros to STL un-deprecation macros in the force-include header, and just skip tests when we
+# deprecate before they do.
+utilities\meta\meta.unary\meta.unary.prop\is_literal_type.deprecated.fail.cpp
 
 
 # *** MISSING STL FEATURES ***
-# Nothing here! :-)
+# P2321R2 zip
+language.support\support.limits\support.limits.general\tuple.version.pass.cpp
+language.support\support.limits\support.limits.general\utility.version.pass.cpp
+utilities\meta\meta.trans\meta.trans.other\common_reference.compile.pass.cpp
+utilities\meta\meta.trans\meta.trans.other\common_type.pass.cpp
+
+# P1328R1 constexpr type_info::operator==()
+language.support\support.limits\support.limits.general\typeinfo.version.pass.cpp
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -305,23 +254,86 @@ thread\futures\futures.promise\set_value_at_thread_exit_const.pass.cpp
 thread\futures\futures.promise\set_value_at_thread_exit_void.pass.cpp
 thread\futures\futures.task\futures.task.members\make_ready_at_thread_exit.pass.cpp
 
+# LWG-3633 "Atomics are copy constructible and copy assignable from volatile atomics" (Open)
+atomics\atomics.types.generic\copy_semantics_traits.pass.cpp
+
 
 # *** C1XX COMPILER BUGS ***
 # DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
 
-# DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
-containers\views\span.cons\ptr_len.pass.cpp
-containers\views\span.cons\ptr_ptr.pass.cpp
-
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort.pass.cpp
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
+
+# DevCom-1559808: (structured bindings for `subrange` in a constant expression)
+ranges\range.utility\range.subrange\structured_bindings.pass.cpp
+
+# DevCom-1626139 "compile-time NaN comparison"
+iterators\predef.iterators\reverse.iterators\reverse.iter.cmp\three-way.pass.cpp
+library\description\conventions\expos.only.func\synth_three_way.pass.cpp
+utilities\function.objects\comparisons\compare_three_way.pass.cpp
+utilities\tuple\tuple.tuple\tuple.rel\three_way.pass.cpp
+utilities\utility\pairs\pairs.spec\three_way_comparison.pass.cpp
+
+# DevCom-1626727: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
+algorithms\robust_re_difference_type.compile.pass.cpp
+
+# DevCom-1628714: C1XX refuses nullptr_t == reference-to-function in a requires expression
+concepts\concepts.compare\concept.equalitycomparable\equality_comparable_with.compile.pass.cpp
+
+# DevCom-1629961: ICE testing if function lvalues are comparable with the spaceship operator
+language.support\cmp\cmp.concept\three_way_comparable.compile.pass.cpp
+
+# DevCom-1638496: C1XX doesn't properly reject int <=> unsigned
+language.support\cmp\cmp.concept\three_way_comparable_with.compile.pass.cpp
+language.support\cmp\cmp.result\compare_three_way_result.compile.pass.cpp
+utilities\tuple\tuple.tuple\tuple.rel\three_way.pass.cpp
+
+# DevCom-1638563: icky static analysis false positive
+language.support\support.coroutines\end.to.end\go.pass.cpp
 
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
+
+# Clang doesn't implement the common coroutine ABI until LLVM 14
+language.support\support.coroutines\coroutine.handle\coroutine.handle.capacity\operator_bool.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.compare\equal_comp.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.compare\less_comp.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.completion\done.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.con\assign.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.con\construct.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.export\address.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.export\from_address.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.hash\hash.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.noop\noop_coroutine.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.prom\promise.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.resumption\destroy.pass.cpp
+language.support\support.coroutines\coroutine.handle\coroutine.handle.resumption\resume.pass.cpp
+language.support\support.coroutines\coroutine.handle\void_handle.pass.cpp
+language.support\support.coroutines\coroutine.traits\promise_type.pass.cpp
+language.support\support.coroutines\coroutine.trivial.awaitables\suspend_always.pass.cpp
+language.support\support.coroutines\coroutine.trivial.awaitables\suspend_never.pass.cpp
+language.support\support.coroutines\end.to.end\await_result.pass.cpp
+language.support\support.coroutines\end.to.end\bool_await_suspend.pass.cpp
+language.support\support.coroutines\end.to.end\expected.pass.cpp
+language.support\support.coroutines\end.to.end\fullexpr-dtor.pass.cpp
+language.support\support.coroutines\end.to.end\generator.pass.cpp
+language.support\support.coroutines\end.to.end\go.pass.cpp
+language.support\support.coroutines\end.to.end\multishot_func.pass.cpp
+language.support\support.coroutines\end.to.end\oneshot_func.pass.cpp
+language.support\support.limits\support.limits.general\coroutine.version.pass.cpp
+
+# LLVM-52970 SFINAEing p.x on a pointer wrongly tries to complete the pointee's type
+ranges\range.access\begin.pass.cpp
+ranges\range.access\data.pass.cpp
+ranges\range.access\end.pass.cpp
+ranges\range.req\range.range\range.compile.pass.cpp
+
+# Clang doesn't yet implement P0960 "Initializing Aggregates With Parentheses"
+ranges\range.factories\range.iota.view\sentinel\ctor.value.pass.cpp
 
 
 # *** CLANG ISSUES, NOT YET ANALYZED ***
@@ -412,14 +424,20 @@ utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp
 depr\depr.c.headers\math_h.pass.cpp
 numerics\c.math\cmath.pass.cpp
 
-# GH-1596: <algorithm>: unqualified calls to _Adl_verify_range incorrectly cause instantiation
-algorithms\robust_against_adl.pass.cpp
+# GH-2358: <filesystem>: path's comparison operators are IF-NDR
+input.output\filesystems\class.path\range_concept_conformance.compile.pass.cpp
+
+# GH-1374: Spaceship CPO wording in [cmp.alg] needs an overhaul
+# (Technically an STL bug until the wording in the working draft is fixed to agree.)
+language.support\cmp\cmp.alg\partial_order.pass.cpp
+language.support\cmp\cmp.alg\strong_order.pass.cpp
+language.support\cmp\cmp.alg\weak_order.pass.cpp
 
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
-depr\depr.c.headers\stdlib_h.pass.cpp
-language.support\support.runtime\cstdlib.pass.cpp
+depr\depr.c.headers\stdlib_h.aligned_alloc.compile.pass.cpp
+language.support\support.runtime\cstdlib.aligned_alloc.compile.pass.cpp
 
 # OS-11107628 "_Exit allows cleanup in other DLLs"
 thread\thread.threads\thread.thread.class\thread.thread.assign\move2.pass.cpp
@@ -445,6 +463,7 @@ utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp
 language.support\support.limits\support.limits.general\string.version.pass.cpp
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
+atomics\atomics.types.operations\atomics.types.operations.wait\atomic_notify_all.pass.cpp
 thread\futures\futures.async\async.pass.cpp
 thread\futures\futures.shared_future\get.pass.cpp
 thread\futures\futures.shared_future\wait.pass.cpp
@@ -523,23 +542,10 @@ input.output\iostream.format\input.streams\istream.unformatted\get_pointer_size.
 # Sensitive to implementation details. Assertion failed: test_alloc_base::count == expected_num_allocs
 containers\container.requirements\container.requirements.general\allocator_move.pass.cpp
 
-# Tests std::weak_equality/strong_equality which were removed by P1959R0
-language.support\cmp\cmp.common\common_comparison_category.pass.cpp
-language.support\cmp\cmp.partialord\partialord.pass.cpp
-language.support\cmp\cmp.strongeq\cmp.strongeq.pass.cpp
-language.support\cmp\cmp.strongord\strongord.pass.cpp
-language.support\cmp\cmp.weakeq\cmp.weakeq.pass.cpp
-language.support\cmp\cmp.weakord\weakord.pass.cpp
-
 # Comment: "Test C99 compound literal."
 # Code: `(int[]){3, 4}`
 # error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
 containers\sequences\array\array.creation\to_array.pass.cpp
-
-# Tests that need to learn that iterators have non-void difference types in C++20
-iterators\predef.iterators\insert.iterators\back.insert.iterator\types.pass.cpp
-iterators\predef.iterators\insert.iterators\front.insert.iterator\types.pass.cpp
-iterators\predef.iterators\insert.iterators\insert.iterator\types.pass.cpp
 
 # Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
 numerics\complex.number\cmplx.over\conj.pass.cpp
@@ -563,37 +569,17 @@ numerics\rand\rand.dis\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
 # Assertion failed: (std::lerp(T(2.3), T(2.3), inf) == T(2.3))
 # Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
 # They shouldn't behave differently. Both of them should probably return NaN.
-numerics\c.math\c.math.lerp\c.math.lerp.pass.cpp
+numerics\c.math\lerp.pass.cpp
 
 # --month{14} should be 1, not 13 as the test expects
 utilities\time\time.cal\time.cal.month\time.cal.month.members\decrement.pass.cpp
-
-# test is broken due to month_weekday not being default constructible
-utilities\time\time.cal\time.cal.mwd\time.cal.mwd.members\month.pass.cpp
 
 # conversion from '__int64' to 'long', possible loss of data
 utilities\time\time.hms\time.hms.members\seconds.pass.cpp
 utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
 
-# Code: `for (int i = 1000; i < 20; ++i)`
-# warning C6294: Ill-defined for-loop:  initial condition does not satisfy test.  Loop body not executed.
-utilities\time\time.cal\time.cal.month\time.cal.month.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.ym\time.cal.ym.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.ymd\time.cal.ymd.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.ymdlast\time.cal.ymdlast.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\comparisons.pass.cpp
-utilities\time\time.cal\time.cal.ymwdlast\time.cal.ymwdlast.nonmembers\comparisons.pass.cpp
-
-# Tests are manually declaring printf, which appears to be unused.
-# warning C28301: No annotations for first declaration of 'printf'.
-utilities\time\time.cal\time.cal.weekday\time.cal.weekday.nonmembers\minus.pass.cpp
-utilities\time\time.cal\time.cal.year\time.cal.year.nonmembers\minus.pass.cpp
-
 # Bogus test passes a class type as the second argument to std::advance
 iterators\iterator.primitives\iterator.operations\robust_against_adl.pass.cpp
-
-# Non-Standard test should be moved from libcxx/test/std to libcxx/test/libcxx
-utilities\memory\util.smartptr\util.smartptr.shared\libcxx.control_block_layout.pass.cpp
 
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
@@ -620,12 +606,6 @@ strings\string.conversions\stoll.pass.cpp
 strings\string.conversions\stoul.pass.cpp
 strings\string.conversions\stoull.pass.cpp
 
-# Bogus test uses std::cout without including <iostream>.
-utilities\time\time.cal\time.cal.wdidx\time.cal.wdidx.nonmembers\streaming.pass.cpp
-
-# Bogus test constructs year_month_weekday from weekday, but the constructor actually takes weekday_indexed.
-utilities\time\time.cal\time.cal.ymwd\time.cal.ymwd.nonmembers\streaming.pass.cpp
-
 # We define __cpp_lib_has_unique_object_representations in C++17 mode; test error says it
 # "should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
 language.support\support.limits\support.limits.general\type_traits.version.pass.cpp
@@ -638,22 +618,94 @@ language.support\support.limits\support.limits.general\iterator.version.pass.cpp
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 language.support\support.limits\support.limits.general\chrono.version.pass.cpp
 
-# Test expects __cpp_lib_format to have the old value 201907L for P0645R10; we define the C++20 value 202106L for P2216R3.
-language.support\support.limits\support.limits.general\format.version.pass.cpp
-
 # We unconditionally define __cpp_lib_addressof_constexpr; test error says it
 # "should not be defined when TEST_HAS_BUILTIN(__builtin_addressof) || TEST_GCC_VER >= 700 is not defined!"
 language.support\support.limits\support.limits.general\memory.version.pass.cpp
 
-# Test should be enabled after LLVM update
-# updated test https://github.com/llvm/llvm-project/commit/0324b46cd873abc4fabe19f4bd468d10398ffd0d#diff-a9be5c3f8e18be99f40fb35f58960f400413a76252d86b53f80d76cb09cb53ef
-# should work
+# libc++ doesn't implement P2231R1 Add further constexpr support for optional/variant
 language.support\support.limits\support.limits.general\variant.version.pass.cpp
 
-# libc++ doesn't implement P2186R2 Removing Garbage Collection Support
-utilities\memory\util.dynamic.safety\get_pointer_safety.pass.cpp
-utilities\memory\util.dynamic.safety\declare_no_pointers.pass.cpp
-utilities\memory\util.dynamic.safety\declare_reachable.pass.cpp
+# Tests non-portable behavior
+utilities\format\format.formatter\format.context\format.context\advance_to.pass.cpp
+utilities\format\format.formatter\format.context\format.context\arg.pass.cpp
+utilities\format\format.formatter\format.context\format.context\ctor.pass.cpp
+utilities\format\format.formatter\format.context\format.context\locale.pass.cpp
+utilities\format\format.formatter\format.context\format.context\out.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.bool.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.c_string.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.char.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.const_char_array.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.signed_integral.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.string.pass.cpp
+utilities\format\format.formatter\format.context\format.formatter.spec\formatter.unsigned_integral.pass.cpp
+
+# libc++ doesn't yet implement P2216R3 (test uses non-constant-expression format strings)
+utilities\format\format.functions\format.pass.cpp
+utilities\format\format.functions\format.locale.pass.cpp
+utilities\format\format.functions\format_to.locale.pass.cpp
+utilities\format\format.functions\format_to.pass.cpp
+utilities\format\format.functions\format_to_n.pass.cpp
+utilities\format\format.functions\format_to_n.locale.pass.cpp
+utilities\format\format.functions\formatted_size.pass.cpp
+utilities\format\format.functions\formatted_size.locale.pass.cpp
+utilities\format\format.functions\locale-specific_form.pass.cpp
+
+# libc++ chose option A for [time.clock.file.members], and we chose option B.
+utilities\time\time.clock\time.clock.file\to_from_sys.pass.cpp
+
+# libc++ is missing various Ranges DRs
+language.support\support.limits\support.limits.general\ranges.version.pass.cpp
+
+# test compares singular and non-singular string iterators
+strings\basic.string\string.iterators\iterators.pass.cpp
+
+# test compares iterators into distinct `array`s
+ranges\range.adaptors\range.all\range.owning.view\begin_end.pass.cpp
+
+# libc++ allows some forbidden unique_ptr conversions
+utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.assign\unique_ptr_Y.pass.cpp
+utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.const\unique_ptr.pass.cpp
+
+# non-portable test of strengthened noexcept
+ranges\range.adaptors\range.drop\ctor.default.pass.cpp
+ranges\range.adaptors\range.transform\iterator\subscript.pass.cpp
+ranges\range.utility\view.interface\view.interface.pass.cpp
+
+# tests invalid range
+utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy.pass.cpp
+utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move.pass.cpp
+
+# Narrowing conversion
+utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
+utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move_n.pass.cpp
+
+# <charconv> test defines std::_Bit_cast, which we already have
+utilities\charconv\charconv.msvc\test.pass.cpp
+
+# libc++ doesn't yet implement LWG-3533
+ranges\range.adaptors\range.transform\end.pass.cpp
+ranges\range.adaptors\range.transform\iterator\base.pass.cpp
+
+# MaybePOCCAAllocator doesn't meet the allocator requirements
+containers\sequences\vector\vector.cons\assign_copy.pass.cpp
+
+# Mismatching allocator value_type
+containers\sequences\vector.bool\get_allocator.pass.cpp
+
+# compares iterators from distinct transform_views
+ranges\range.adaptors\range.transform\iterator\plus_minus.pass.cpp
+
+# MoveOnlyForwardIterator (a misnomer) has mixed-type comparisons and conversions
+ranges\range.utility\range.subrange\primitives.pass.cpp
+
+# libc++ speculatively implements LWG-3645
+strings\basic.string\string.capacity\resize_and_overwrite.pass.cpp
+
+# libc++ is missing various <format> DRs
+language.support\support.limits\support.limits.general\format.version.pass.cpp
+
+# We speculatively implement LWG-3670
+ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
@@ -785,6 +837,21 @@ localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.memb
 # Likely STL bug in <chrono>: "result type of conditional expression is ambiguous"
 utilities\time\time.duration\time.duration.alg\abs.pass.cpp
 
+# Likely STL bug in <format>: we check argument ids at compiletime in next_arg_id
+utilities\format\format.formatter\format.parse.ctx\next_arg_id.pass.cpp
+
+# Likely STL bug in `bind_front`: we don't respect deletion of the target call operator
+utilities\function.objects\func.bind_front\bind_front.pass.cpp
+
+# Likely STL bug in `join_view::_Iterator`: constexpr weirdness
+ranges\range.adaptors\range.join.view\end.pass.cpp
+ranges\range.adaptors\range.join.view\iterator\decrement.pass.cpp
+ranges\range.adaptors\range.join.view\iterator\increment.pass.cpp
+ranges\range.adaptors\range.join.view\iterator\iter.swap.pass.cpp
+ranges\range.adaptors\range.join.view\iterator\star.pass.cpp
+ranges\range.adaptors\range.join.view\sentinel\ctor.parent.pass.cpp
+ranges\range.adaptors\range.join.view\sentinel\eq.pass.cpp
+
 
 # *** NOT YET ANALYZED ***
 # Not yet analyzed. Asserting about alloc_count.
@@ -800,8 +867,13 @@ utilities\tuple\tuple.tuple\tuple.helper\tuple_size_incomplete.pass.cpp
 utilities\tuple\tuple.tuple\tuple.helper\tuple_size_structured_bindings.pass.cpp
 
 # Not yet analyzed. Possibly testing nonstandard deduction guides.
+containers\associative\map\map.cons\deduct.pass.cpp
 containers\associative\map\map.cons\deduct_const.pass.cpp
+containers\associative\multimap\multimap.cons\deduct.pass.cpp
 containers\associative\multimap\multimap.cons\deduct_const.pass.cpp
+containers\container.adaptors\priority.queue\priqueue.cons\deduct.pass.cpp
+containers\sequences\list\list.cons\deduct.pass.cpp
+containers\unord\unord.map\unord.map.cnstr\deduct.pass.cpp
 containers\unord\unord.map\unord.map.cnstr\deduct_const.pass.cpp
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct.pass.cpp
 containers\unord\unord.multimap\unord.multimap.cnstr\deduct_const.pass.cpp
@@ -817,16 +889,15 @@ re\re.const\re.matchflag\match_prev_avail.pass.cpp
 input.output\filesystems\class.path\path.member\path.charconv.pass.cpp
 
 # Not yet analyzed. Probably ADL shenanigans.
+algorithms\robust_against_adl.compile.pass.cpp
+strings\basic.string\string.modifiers\robust_against_adl.pass.cpp
 thread\thread.threads\thread.thread.class\thread.thread.constr\robust_against_adl.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\robust_against_adl.pass.cpp
 utilities\function.objects\refwrap\refwrap.invoke\robust_against_adl.pass.cpp
 utilities\variant\variant.visit\robust_against_adl.pass.cpp
 
-# Not yet analyzed. Probably MSVC bug.
+# Not yet analyzed. Possibly C1XX constexpr bug.
 utilities\function.objects\func.invoke\invoke_constexpr.pass.cpp
-
-# Not yet analyzed. Probably name mangling bug.
-utilities\function.objects\func.wrap\func.wrap.func\noncopyable_return_type.pass.cpp
 
 # Not yet analyzed. Failing for "[a[.ch.]z]".
 re\re.alg\re.alg.match\awk.locale.pass.cpp
@@ -851,9 +922,386 @@ utilities\memory\allocator.traits\allocator.traits.members\destroy.pass.cpp
 # Not yet analyzed. Error mentions allocator<const T>.
 utilities\memory\specialized.algorithms\specialized.construct\construct_at.pass.cpp
 
+# Not yet analyzed. Looks like deduction guide SFINAE failure.
+containers\sequences\deque\deque.cons\deduct.pass.cpp
+containers\sequences\forwardlist\forwardlist.cons\deduct.pass.cpp
+containers\sequences\vector\vector.cons\deduct.pass.cpp
+
+# Not yet analyzed. Seems to force a sign conversion error?
+iterators\iterator.primitives\iterator.operations\advance.pass.cpp
+
+# Not yet analyzed. Maybe Clang over-eagerly instantiating noexcept-specifier?
+ranges\range.access\empty.pass.cpp
+ranges\range.access\size.pass.cpp
+ranges\range.access\ssize.pass.cpp
+utilities\memory\unique.ptr\iterator_concept_conformance.compile.pass.cpp
+
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
-# Our machinery doesn't understand compile-only `.compile.pass.cpp` tests.
-# (Implemented for GitHub, see GH-1382.)
-concepts\concept.constructible\constructible_from.compile.pass.cpp
+# "XFAIL: msvc" or "XFAIL: clang"
+algorithms\algorithms.results\in_out_result.compile.pass.cpp
+algorithms\algorithms.results\no_unique_address.compile.pass.cpp
+utilities\function.objects\func.wrap\func.wrap.func\noncopyable_return_type.pass.cpp
+
+# Contest doesn't understand compile-only `.compile.pass.cpp` tests. Tests with a stub `main` are
+# fine, but tests with no `main` function are effectively GitHub-only.
+algorithms\robust_against_adl.compile.pass.cpp
+algorithms\robust_re_difference_type.compile.pass.cpp
+atomics\atomics.types.generic\constexpr_noexcept.compile.pass.cpp
+concepts\concepts.callable\concept.equiv\equivalence_relation.compile.pass.cpp
+concepts\concepts.callable\concept.equiv\equivalence_relation.subsumption.compile.pass.cpp
+concepts\concepts.callable\concept.invocable\invocable.compile.pass.cpp
+concepts\concepts.callable\concept.predicate\predicate.compile.pass.cpp
+concepts\concepts.callable\concept.predicate\predicate.subsumption.compile.pass.cpp
+concepts\concepts.callable\concept.regularinvocable\regular_invocable.compile.pass.cpp
+concepts\concepts.callable\concept.relation\relation.compile.pass.cpp
+concepts\concepts.callable\concept.relation\relation.subsumption.compile.pass.cpp
+concepts\concepts.callable\concept.strictweakorder\strict_weak_order.compile.pass.cpp
+concepts\concepts.callable\concept.strictweakorder\strict_weak_order.subsumption.compile.pass.cpp
+concepts\concepts.lang\concept.assignable\assignable_from.compile.pass.cpp
+concepts\concepts.lang\concept.swappable\swappable_with.compile.pass.cpp
+containers\associative\map\iterator_concept_conformance.compile.pass.cpp
+containers\associative\map\map.cons\copy_assign.addressof.compile.pass.cpp
+containers\associative\map\range_concept_conformance.compile.pass.cpp
+containers\associative\multimap\iterator_concept_conformance.compile.pass.cpp
+containers\associative\multimap\multimap.cons\copy_assign.addressof.compile.pass.cpp
+containers\associative\multimap\range_concept_conformance.compile.pass.cpp
+containers\associative\multiset\iterator_concept_conformance.compile.pass.cpp
+containers\associative\multiset\multiset.cons\copy_assign.addressof.compile.pass.cpp
+containers\associative\multiset\range_concept_conformance.compile.pass.cpp
+containers\associative\set\iterator_concept_conformance.compile.pass.cpp
+containers\associative\set\range_concept_conformance.compile.pass.cpp
+containers\associative\set\set.cons\copy_assign.addressof.compile.pass.cpp
+containers\container.adaptors\priority.queue\priqueue.cons\assign_copy.addressof.compile.pass.cpp
+containers\container.adaptors\priority.queue\priqueue.cons\ctor_iter_constraint.compile.pass.cpp
+containers\container.adaptors\queue\queue.defn\assign_copy.addressof.compile.pass.cpp
+containers\iterator.rel_ops.compile.pass.cpp
+containers\sequences\array\array.cons\implicit_copy.addressof.compile.pass.cpp
+containers\sequences\array\iterator_concept_conformance.compile.pass.cpp
+containers\sequences\array\range_concept_conformance.compile.pass.cpp
+containers\sequences\deque\deque.cons\move_assign.addressof.compile.pass.cpp
+containers\sequences\deque\iterator_concept_conformance.compile.pass.cpp
+containers\sequences\deque\range_concept_conformance.compile.pass.cpp
+containers\sequences\forwardlist\forwardlist.cons\assign_copy.addressof.compile.pass.cpp
+containers\sequences\forwardlist\forwardlist.iter\iterator_concept_conformance.compile.pass.cpp
+containers\sequences\forwardlist\forwardlist.ops\merge_lvalue_pred.addressof.compile.pass.cpp
+containers\sequences\forwardlist\forwardlist.ops\merge_lvalue.addressof.compile.pass.cpp
+containers\sequences\forwardlist\forwardlist.ops\merge_rvalue_pred.addressof.compile.pass.cpp
+containers\sequences\forwardlist\forwardlist.ops\merge_rvalue.addressof.compile.pass.cpp
+containers\sequences\forwardlist\range_concept_conformance.compile.pass.cpp
+containers\sequences\list\iterator_concept_conformance.compile.pass.cpp
+containers\sequences\list\list.cons\assign_copy.addressof.compile.pass.cpp
+containers\sequences\list\list.cons\assign_move.addressof.compile.pass.cpp
+containers\sequences\list\list.modifiers\emplace.addressof.compile.pass.cpp
+containers\sequences\list\list.modifiers\erase_iter.addressof.compile.pass.cpp
+containers\sequences\list\list.modifiers\insert_iter_rvalue.addressof.compile.pass.cpp
+containers\sequences\list\list.modifiers\insert_iter_size_value.addressof.compile.pass.cpp
+containers\sequences\list\list.modifiers\insert_iter_value.addressof.compile.pass.cpp
+containers\sequences\list\list.ops\merge_comp.addressof.compile.pass.cpp
+containers\sequences\list\list.ops\splice_pos_list_iter_iter.addressof.compile.pass.cpp
+containers\sequences\list\list.ops\splice_pos_list_iter.addressof.compile.pass.cpp
+containers\sequences\list\list.special\swap.addressof.compile.pass.cpp
+containers\sequences\list\range_concept_conformance.compile.pass.cpp
+containers\sequences\vector.bool\iterator_concept_conformance.compile.pass.cpp
+containers\sequences\vector.bool\range_concept_conformance.compile.pass.cpp
+containers\sequences\vector\iterator_concept_conformance.compile.pass.cpp
+containers\sequences\vector\range_concept_conformance.compile.pass.cpp
+containers\sequences\vector\vector.cons\assign_copy.addressof.compile.pass.cpp
+containers\sequences\vector\vector.cons\assign_move.addressof.compile.pass.cpp
+containers\sequences\vector\vector.cons\move.addressof.compile.pass.cpp
+containers\sequences\vector\vector.modifiers\emplace.addressof.compile.pass.cpp
+containers\sequences\vector\vector.modifiers\erase_iter_iter.addressof.compile.pass.cpp
+containers\sequences\vector\vector.modifiers\erase_iter.addressof.compile.pass.cpp
+containers\sequences\vector\vector.modifiers\insert_iter_iter_iter.addressof.compile.pass.cpp
+containers\sequences\vector\vector.modifiers\insert_iter_rvalue.addressof.compile.pass.cpp
+containers\sequences\vector\vector.modifiers\insert_iter_size_value.addressof.compile.pass.cpp
+containers\sequences\vector\vector.modifiers\insert_iter_value.addressof.compile.pass.cpp
+containers\sequences\vector\vector.special\swap.addressof.compile.pass.cpp
+containers\unord\unord.map\iterator_concept_conformance.compile.pass.cpp
+containers\unord\unord.map\range_concept_conformance.compile.pass.cpp
+containers\unord\unord.map\unord.map.cnstr\assign_copy.addressof.compile.pass.cpp
+containers\unord\unord.multimap\iterator_concept_conformance.compile.pass.cpp
+containers\unord\unord.multimap\range_concept_conformance.compile.pass.cpp
+containers\unord\unord.multimap\unord.multimap.cnstr\assign_copy.addressof.compile.pass.cpp
+containers\unord\unord.multiset\iterator_concept_conformance.compile.pass.cpp
+containers\unord\unord.multiset\range_concept_conformance.compile.pass.cpp
+containers\unord\unord.multiset\unord.multiset.cnstr\assign_copy.addressof.compile.pass.cpp
+containers\unord\unord.set\iterator_concept_conformance.compile.pass.cpp
+containers\unord\unord.set\range_concept_conformance.compile.pass.cpp
+containers\unord\unord.set\unord.set.cnstr\assign_copy.addressof.compile.pass.cpp
+containers\views\enable_borrowed_range.compile.pass.cpp
+containers\views\range_concept_conformance.compile.pass.cpp
+containers\views\span.cons\span.dtor.compile.pass.cpp
+containers\views\span.iterators\iterator_concept_conformance.compile.pass.cpp
+containers\views\trivially_copyable.compile.pass.cpp
+depr\depr.c.headers\stdlib_h.aligned_alloc.compile.pass.cpp
+input.output\filesystems\class.directory_iterator\iterator_concept_conformance.compile.pass.cpp
+input.output\filesystems\class.directory_iterator\range_concept_conformance.compile.pass.cpp
+input.output\filesystems\class.path\range_concept_conformance.compile.pass.cpp
+input.output\filesystems\class.rec.dir.itr\range_concept_conformance.compile.pass.cpp
+input.output\filesystems\fs.filesystem.synopsis\enable_borrowed_range.compile.pass.cpp
+input.output\filesystems\fs.filesystem.synopsis\enable_view.compile.pass.cpp
+input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
+iterators\iterator.primitives\iterator.traits\cxx20_iterator_traits.compile.pass.cpp
+iterators\iterator.primitives\iterator.traits\iter_reference_t.compile.pass.cpp
+iterators\iterator.primitives\range.iter.ops\range.iter.ops.next\constraints.compile.pass.cpp
+iterators\iterator.primitives\range.iter.ops\range.iter.ops.prev\constraints.compile.pass.cpp
+iterators\iterator.requirements\alg.req.ind.move\indirectly_movable_storable.compile.pass.cpp
+iterators\iterator.requirements\alg.req.ind.move\indirectly_movable_storable.subsumption.compile.pass.cpp
+iterators\iterator.requirements\alg.req.ind.move\indirectly_movable.compile.pass.cpp
+iterators\iterator.requirements\alg.req.ind.move\indirectly_movable.subsumption.compile.pass.cpp
+iterators\iterator.requirements\alg.req.ind.swap\indirectly_swappable.compile.pass.cpp
+iterators\iterator.requirements\alg.req.ind.swap\indirectly_swappable.subsumption.compile.pass.cpp
+iterators\iterator.requirements\indirectcallable\indirectinvocable\indirect_binary_predicate.compile.pass.cpp
+iterators\iterator.requirements\indirectcallable\indirectinvocable\indirect_equivalence_relation.compile.pass.cpp
+iterators\iterator.requirements\indirectcallable\indirectinvocable\indirect_result_t.compile.pass.cpp
+iterators\iterator.requirements\indirectcallable\indirectinvocable\indirect_strict_weak_order.compile.pass.cpp
+iterators\iterator.requirements\indirectcallable\indirectinvocable\indirect_unary_predicate.compile.pass.cpp
+iterators\iterator.requirements\indirectcallable\indirectinvocable\indirectly_comparable.compile.pass.cpp
+iterators\iterator.requirements\indirectcallable\indirectinvocable\indirectly_regular_unary_invocable.compile.pass.cpp
+iterators\iterator.requirements\indirectcallable\indirectinvocable\indirectly_unary_invocable.compile.pass.cpp
+iterators\iterator.requirements\indirectcallable\projected\projected.compile.pass.cpp
+iterators\iterator.requirements\iterator.assoc.types\incrementable.traits\incrementable_traits.compile.pass.cpp
+iterators\iterator.requirements\iterator.assoc.types\incrementable.traits\iter_difference_t.compile.pass.cpp
+iterators\iterator.requirements\iterator.assoc.types\readable.traits\indirectly_readable_traits.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.bidir\bidirectional_iterator.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.bidir\subsumption.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.forward\forward_iterator.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.forward\subsumption.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.inc\incrementable.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.inc\subsumption.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.input\input_iterator.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.input\subsumption.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.iterator\input_or_output_iterator.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.iterator\subsumption.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.output\output_iterator.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.random.access\contiguous_iterator.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.random.access\random_access_iterator.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.readable\indirectly_readable.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.readable\iter_common_reference_t.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.sentinel\sentinel_for.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.sentinel\sentinel_for.subsumption.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.sentinel\sized_sentinel_for.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.winc\weakly_incrementable.compile.pass.cpp
+iterators\iterator.requirements\iterator.concepts\iterator.concept.writable\indirectly_writable.compile.pass.cpp
+iterators\predef.iterators\counted.iterator\iterator_concept_conformance.compile.pass.cpp
+iterators\predef.iterators\counted.iterator\iterator_traits.compile.pass.cpp
+iterators\predef.iterators\counted.iterator\member_types.compile.pass.cpp
+iterators\predef.iterators\insert.iterators\back.insert.iterator\iterator_concept_conformance.compile.pass.cpp
+iterators\predef.iterators\insert.iterators\front.insert.iterator\iterator_concept_conformance.compile.pass.cpp
+iterators\predef.iterators\insert.iterators\insert.iterator\iterator_concept_conformance.compile.pass.cpp
+iterators\predef.iterators\iterators.common\iterator_traits.compile.pass.cpp
+iterators\predef.iterators\move.iterators\move.iterator\iterator_concept_conformance.compile.pass.cpp
+iterators\predef.iterators\reverse.iterators\iterator_concept_conformance.compile.pass.cpp
+iterators\stream.iterators\istream.iterator\iterator_concept_conformance.compile.pass.cpp
+iterators\stream.iterators\istreambuf.iterator\iterator_concept_conformance.compile.pass.cpp
+iterators\stream.iterators\ostream.iterator\iterator_concept_conformance.compile.pass.cpp
+iterators\stream.iterators\ostreambuf.iterator\iterator_concept_conformance.compile.pass.cpp
+language.support\cmp\cmp.concept\three_way_comparable_with.compile.pass.cpp
+language.support\cmp\cmp.concept\three_way_comparable.compile.pass.cpp
+language.support\cmp\cmp.result\compare_three_way_result.compile.pass.cpp
+language.support\support.runtime\cstdlib.aligned_alloc.compile.pass.cpp
+language.support\support.runtime\ctime.timespec.compile.pass.cpp
+language.support\support.types\max_align_t.compile.pass.cpp
+library\description\conventions\customization.point.object\cpo.compile.pass.cpp
+numerics\bit\bit.cast\bit_cast.compile.pass.cpp
+numerics\numarray\template.valarray\valarray.assign\value_assign.addressof.compile.pass.cpp
+ranges\range.adaptors\range.all\all_t.compile.pass.cpp
+ranges\range.adaptors\range.all\range.owning.view\borrowing.compile.pass.cpp
+ranges\range.adaptors\range.common.view\borrowing.compile.pass.cpp
+ranges\range.adaptors\range.common.view\ctad.compile.pass.cpp
+ranges\range.adaptors\range.drop\ctad.compile.pass.cpp
+ranges\range.adaptors\range.join.view\ctad.compile.pass.cpp
+ranges\range.adaptors\range.join.view\iterator\member_types.compile.pass.cpp
+ranges\range.adaptors\range.reverse\borrowing.compile.pass.cpp
+ranges\range.adaptors\range.reverse\ctad.compile.pass.cpp
+ranges\range.adaptors\range.reverse\range_concept_conformance.compile.pass.cpp
+ranges\range.adaptors\range.take\borrowing.compile.pass.cpp
+ranges\range.adaptors\range.take\ctad.compile.pass.cpp
+ranges\range.adaptors\range.take\range_concept_conformance.compile.pass.cpp
+ranges\range.adaptors\range.transform\ctad.compile.pass.cpp
+ranges\range.adaptors\range.transform\iterator\requirements.compile.pass.cpp
+ranges\range.factories\range.iota.view\borrowing.compile.pass.cpp
+ranges\range.factories\range.iota.view\ctad.compile.pass.cpp
+ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
+ranges\range.factories\range.iota.view\range_concept_conformance.compile.pass.cpp
+ranges\range.factories\range.iota.view\type.compile.pass.cpp
+ranges\range.factories\range.single.view\ctad.compile.pass.cpp
+ranges\range.factories\range.single.view\range_concept_conformance.compile.pass.cpp
+ranges\range.req\range.range\borrowed_range.compile.pass.cpp
+ranges\range.req\range.range\borrowed_range.subsumption.compile.pass.cpp
+ranges\range.req\range.range\enable_borrowed_range.compile.pass.cpp
+ranges\range.req\range.range\helper_aliases.compile.pass.cpp
+ranges\range.req\range.range\iterator_t.compile.pass.cpp
+ranges\range.req\range.range\range_size_t.compile.pass.cpp
+ranges\range.req\range.range\range.compile.pass.cpp
+ranges\range.req\range.range\sentinel_t.compile.pass.cpp
+ranges\range.req\range.refinements\bidirectional_range.compile.pass.cpp
+ranges\range.req\range.refinements\common_range.compile.pass.cpp
+ranges\range.req\range.refinements\contiguous_range.compile.pass.cpp
+ranges\range.req\range.refinements\forward_range.compile.pass.cpp
+ranges\range.req\range.refinements\input_range.compile.pass.cpp
+ranges\range.req\range.refinements\output_range.compile.pass.cpp
+ranges\range.req\range.refinements\random_access_range.compile.pass.cpp
+ranges\range.req\range.refinements\subsumption.compile.pass.cpp
+ranges\range.req\range.refinements\viewable_range.compile.pass.cpp
+ranges\range.req\range.sized\sized_range.compile.pass.cpp
+ranges\range.req\range.sized\subsumption.compile.pass.cpp
+ranges\range.req\range.view\enable_view.compile.pass.cpp
+ranges\range.req\range.view\view_base.compile.pass.cpp
+ranges\range.req\range.view\view.compile.pass.cpp
+ranges\range.req\range.view\view.subsumption.compile.pass.cpp
+ranges\range.utility\range.dangling\borrowed_iterator.compile.pass.cpp
+ranges\range.utility\range.dangling\borrowed_subrange.compile.pass.cpp
+ranges\range.utility\range.subrange\ctad.compile.pass.cpp
+ranges\range.utility\range.subrange\enable_borrowed_range.compile.pass.cpp
+ranges\range.utility\range.subrange\general.compile.pass.cpp
+re\re.iter\re.regiter\iterator_concept_conformance.compile.pass.cpp
+re\re.iter\re.tokiter\iterator_concept_conformance.compile.pass.cpp
+re\re.results\range_concept_conformance.compile.pass.cpp
+strings\basic.string\range_concept_conformance.compile.pass.cpp
+strings\basic.string\string.cons\nullptr.compile.pass.cpp
+strings\basic.string\string.iterators\iterator_concept_conformance.compile.pass.cpp
+strings\string.view\enable_borrowed_range.compile.pass.cpp
+strings\string.view\range_concept_conformance.compile.pass.cpp
+strings\string.view\string.view.cons\nullptr.compile.pass.cpp
 strings\string.view\string.view.io\stream_insert_decl_present.compile.pass.cpp
+strings\string.view\string.view.iterators\iterator_concept_conformance.compile.pass.cpp
+strings\string.view\trivially_copyable.compile.pass.cpp
+thread\thread.semaphore\ctor.compile.pass.cpp
+utilities\function.objects\comparisons\transparent_three_way.compile.pass.cpp
+utilities\memory\default.allocator\PR50299.compile.pass.cpp
+utilities\memory\storage.iterator\types.compile.pass.cpp
+utilities\memory\unique.ptr\iterator_concept_conformance.compile.pass.cpp
+utilities\memory\util.smartptr\util.smartptr.shared\iterator_concept_conformance.compile.pass.cpp
+utilities\optional\iterator_concept_conformance.compile.pass.cpp
+utilities\tuple\tuple.tuple\tuple.cnstr\cnstr_with_any.compile.pass.cpp
+utilities\tuple\tuple.tuple\tuple.cnstr\empty_tuple_trivial.compile.pass.cpp
+utilities\tuple\tuple.tuple\tuple.rel\size_incompatible_three_way.compile.pass.cpp
+
+# .verify.cpp tests use clang-verify to validate warnings; GitHub knows not to run them,
+# Contest must be told.
+atomics\atomics.types.generic\trivially_copyable.verify.cpp
+atomics\atomics.types.operations\atomics.types.operations.req\copy.assign.ptr.volatile.verify.cpp
+atomics\atomics.types.operations\atomics.types.operations.req\copy.assign.volatile.verify.cpp
+concepts\concepts.lang\concept.default.init\default_initializable.verify.cpp
+containers\associative\map\map.access\empty.verify.cpp
+containers\associative\multimap\empty.verify.cpp
+containers\associative\multiset\empty.verify.cpp
+containers\associative\set\empty.verify.cpp
+containers\container.adaptors\priority.queue\priqueue.members\empty.verify.cpp
+containers\container.adaptors\queue\queue.defn\empty.verify.cpp
+containers\container.adaptors\stack\stack.defn\empty.verify.cpp
+containers\container.node\node_handle.nodiscard.verify.cpp
+containers\sequences\array\empty.verify.cpp
+containers\sequences\deque\deque.capacity\empty.verify.cpp
+containers\sequences\forwardlist\empty.verify.cpp
+containers\sequences\list\list.capacity\empty.verify.cpp
+containers\sequences\vector.bool\empty.verify.cpp
+containers\sequences\vector\vector.capacity\empty.verify.cpp
+containers\sequences\vector\vector.cons\copy.move_only.verify.cpp
+containers\unord\unord.map\empty.verify.cpp
+containers\unord\unord.multimap\empty.verify.cpp
+containers\unord\unord.multiset\empty.verify.cpp
+containers\unord\unord.set\empty.verify.cpp
+containers\views\span.cons\iterator_len.verify.cpp
+containers\views\span.cons\iterator_sentinel.verify.cpp
+containers\views\span.obs\empty.nodiscard.verify.cpp
+depr\depr.atomics\depr.atomics.nonmembers\atomic_init.depr_in_cxx20.verify.cpp
+depr\depr.lib.binders\depr.lib.bind.1st\bind1st.depr_in_cxx11.verify.cpp
+depr\depr.lib.binders\depr.lib.bind.2nd\bind2nd.depr_in_cxx11.verify.cpp
+depr\depr.lib.binders\depr.lib.binder.1st\binder1st.depr_in_cxx11.verify.cpp
+depr\depr.lib.binders\depr.lib.binder.2nd\binder2nd.depr_in_cxx11.verify.cpp
+input.output\filesystems\class.path\path.member\path.decompose\empty.verify.cpp
+input.output\iostream.format\input.streams\istream.rvalue\not_istreamable.verify.cpp
+input.output\iostream.format\output.streams\ostream.rvalue\not_ostreamable.verify.cpp
+input.output\iostream.format\quoted.manip\quoted_char.verify.cpp
+input.output\iostream.format\quoted.manip\quoted_traits.verify.cpp
+iterators\iterator.container\empty.array.verify.cpp
+iterators\iterator.container\empty.container.verify.cpp
+iterators\iterator.container\empty.initializer_list.verify.cpp
+iterators\iterator.primitives\iterator.basic\deprecated.verify.cpp
+iterators\iterator.primitives\range.iter.ops\range.iter.ops.advance\constraints.verify.cpp
+iterators\iterator.requirements\iterator.cust\iterator.cust.move\iter_move.nodiscard.verify.cpp
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.const\ctor.convert.LWG3435.verify.cpp
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.const\ctor.iter.explicit.verify.cpp
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op=\assign.LWG3435.verify.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.cons\assign.LWG3435.verify.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.cons\ctor.iter.explicit.verify.cpp
+iterators\predef.iterators\reverse.iterators\reverse.iter.cons\ctor.reverse_iterator.LWG3435.verify.cpp
+language.support\cmp\cmp.alg\strong_order_long_double.verify.cpp
+language.support\cmp\cmp.categories.pre\zero_type.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.array\new_size_align_nothrow.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.array\new_size_align.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.array\new_size_nothrow.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.array\new_size.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.placement\new_array_ptr.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.placement\new_ptr.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.single\new_size_align_nothrow.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.single\new_size_align.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.single\new_size_nothrow.verify.cpp
+language.support\support.dynamic\new.delete\new.delete.single\new_size.verify.cpp
+language.support\support.dynamic\ptr.launder\launder.nodiscard.verify.cpp
+localization\locale.categories\category.ctype\locale.codecvt.byname\codecvt_byname_char16_t_char.depr_in_cxx20.verify.cpp
+localization\locale.categories\category.ctype\locale.codecvt.byname\codecvt_byname_char32_t_char.depr_in_cxx20.verify.cpp
+localization\locale.categories\category.ctype\locale.codecvt\codecvt_char16_t_char.depr_in_cxx20.verify.cpp
+localization\locale.categories\category.ctype\locale.codecvt\codecvt_char32_t_char.depr_in_cxx20.verify.cpp
+numerics\c.math\abs.verify.cpp
+numerics\numbers\illformed.verify.cpp
+ranges\range.adaptors\range.join.view\ctad.verify.cpp
+re\re.results\re.results.size\empty.verify.cpp
+strings\basic.string.literals\literal.verify.cpp
+strings\basic.string\string.capacity\empty.verify.cpp
+strings\basic.string\string.capacity\reserve.deprecated_in_cxx20.verify.cpp
+strings\string.view\string_view.literals\literal.verify.cpp
+strings\string.view\string.view.capacity\empty.verify.cpp
+thread\futures\futures.async\async.verify.cpp
+thread\futures\futures.promise\copy_assign.verify.cpp
+thread\futures\futures.promise\copy_ctor.verify.cpp
+thread\futures\futures.unique_future\copy_assign.verify.cpp
+thread\futures\futures.unique_future\copy_ctor.verify.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\allocate_size_hint.verify.cpp
+utilities\allocator.adaptor\allocator.adaptor.members\allocate_size.verify.cpp
+utilities\any\any.nonmembers\any.cast\const_correctness.verify.cpp
+utilities\any\any.nonmembers\any.cast\not_copy_constructible.verify.cpp
+utilities\format\format.formatter\format.parse.ctx\check_arg_id.verify.cpp
+utilities\function.objects\func.bind_front\bind_front.verify.cpp
+utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\alloc_F.verify.cpp
+utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\alloc_function.verify.cpp
+utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\alloc_nullptr.verify.cpp
+utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\alloc_rfunction.verify.cpp
+utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\alloc.verify.cpp
+utilities\function.objects\negators\binary_negate.depr_in_cxx17.verify.cpp
+utilities\function.objects\negators\not1.depr_in_cxx17.verify.cpp
+utilities\function.objects\negators\not2.depr_in_cxx17.verify.cpp
+utilities\function.objects\negators\unary_negate.depr_in_cxx17.verify.cpp
+utilities\memory\allocator.traits\allocator.traits.members\allocate.verify.cpp
+utilities\memory\default.allocator\allocator_types.deprecated_in_cxx17.verify.cpp
+utilities\memory\default.allocator\allocator_types.removed_in_cxx20.verify.cpp
+utilities\memory\default.allocator\allocator.members\allocate.constexpr.size.verify.cpp
+utilities\memory\default.allocator\allocator.members\allocate.verify.cpp
+utilities\memory\pointer.conversion\to_address_on_funcptr.verify.cpp
+utilities\memory\pointer.conversion\to_address_on_function.verify.cpp
+utilities\memory\storage.iterator\deprecated.verify.cpp
+utilities\meta\meta.trans\meta.trans.other\result_of.deprecated.verify.cpp
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.observers\dereference.verify.cpp
+utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.observers\op_arrow.verify.cpp
+utilities\tuple\tuple.tuple\tuple.cnstr\default.lazy.verify.cpp
+utilities\tuple\tuple.tuple\tuple.rel\size_incompatible_comparison.verify.cpp
+utilities\utility\utility.underlying\to_underlying.verify.cpp
+
+# Contest does not understand .sh tests, which must be run specially
+atomics\atomics.general\replace_failure_order_codegen.sh.cpp
+containers\associative\map\PR28469_undefined_behavior_segfault.sh.cpp
+input.output\iostream.objects\narrow.stream.objects\cerr.sh.cpp
+input.output\iostream.objects\narrow.stream.objects\cin.sh.cpp
+input.output\iostream.objects\narrow.stream.objects\clog.sh.cpp
+input.output\iostream.objects\narrow.stream.objects\cout.sh.cpp
+input.output\iostream.objects\wide.stream.objects\wcerr.sh.cpp
+input.output\iostream.objects\wide.stream.objects\wcin.sh.cpp
+input.output\iostream.objects\wide.stream.objects\wclog.sh.cpp
+input.output\iostream.objects\wide.stream.objects\wcout.sh.cpp
+namespace\addressable_functions.sh.cpp
+strings\basic.string\string.capacity\shrink_to_fit.explicit_instantiation.sh.cpp
+thread\thread.condition\thread.condition.condvarany\wait_terminates.sh.cpp
+utilities\format\format.arguments\format.arg.store\make_format_args.sh.cpp

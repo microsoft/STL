@@ -153,12 +153,10 @@ void test_node_handle(NodeHandle& nh1, NodeHandle& nh2, Validator1 v1, Validator
     // Nothrow/constexpr default construction
     static_assert(std::is_nothrow_default_constructible_v<NodeHandle>);
     CHECK_EMPTY(NodeHandle{});
-#if defined(__cpp_constinit)
+#ifdef __cpp_constinit
 #pragma warning(suppress : 4640) // C4640 emitted by MSVC because 'NodeHandle' type has non-trivial dtor
     { static constinit NodeHandle static_handle{}; }
-#elif defined(__clang__)
-    { [[clang::require_constant_initialization]] static NodeHandle static_handle{}; }
-#endif // ^^^ __clang__ ^^^
+#endif // ^^^ __cpp_constinit ^^^
 
     // No copies!
     static_assert(!std::is_copy_constructible_v<NodeHandle>);

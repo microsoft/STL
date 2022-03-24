@@ -238,19 +238,44 @@ private:
     vector<result_type> _Myvec;
 };
 
+_NODISCARD constexpr int _Generate_canonical_iterations(const int _Bits, const uint64_t _Gmin, const uint64_t _Gmax) {
+    // For a URBG type `G` with range == `(G::max() - G::min()) + 1`, returns the number of calls to generate at least
+    // _Bits bits of entropy. Specifically, max(1, ceil(_Bits / log2(range))).
+
+    _STL_INTERNAL_CHECK(0 <= _Bits && _Bits <= 64);
+
+    if (_Bits == 0 || (_Gmax == UINT64_MAX && _Gmin == 0)) {
+        return 1;
+    }
+
+    const auto _Range  = (_Gmax - _Gmin) + 1;
+    const auto _Target = ~uint64_t{0} >> (64 - _Bits);
+    uint64_t _Prod     = 1;
+    int _Ceil          = 0;
+    while (_Prod <= _Target) {
+        ++_Ceil;
+        if (_Prod > UINT64_MAX / _Range) {
+            break;
+        }
+
+        _Prod *= _Range;
+    }
+
+    return _Ceil;
+}
+
 template <class _Real, size_t _Bits, class _Gen>
 _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value from random sequence
     _RNG_REQUIRE_REALTYPE(generate_canonical, _Real);
 
-    const size_t _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
-    const size_t _Minbits = _Digits < _Bits ? _Digits : _Bits;
+    constexpr auto _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
+    constexpr auto _Minbits = static_cast<int>(_Digits < _Bits ? _Digits : _Bits);
 
-    const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
-    const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
-    const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
+    constexpr auto _Gxmin = static_cast<_Real>((_Gen::min)());
+    constexpr auto _Gxmax = static_cast<_Real>((_Gen::max)());
+    constexpr auto _Rx    = (_Gxmax - _Gxmin) + _Real{1};
 
-    const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Minbits) / _STD log2(_Rx)));
-    const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
+    constexpr int _Kx = _Generate_canonical_iterations(_Minbits, (_Gen::min)(), (_Gen::max)());
 
     _Real _Ans{0};
     _Real _Factor{1};
@@ -263,7 +288,45 @@ _NODISCARD _Real generate_canonical(_Gen& _Gx) { // build a floating-point value
     return _Ans / _Factor;
 }
 
-#define _NRAND(eng, resty) (_STD generate_canonical<resty, static_cast<size_t>(-1)>(eng))
+template <class _Gen, class = void>
+struct _Has_static_min_max : false_type {};
+
+// This checks a requirement of N4901 [rand.req.urng] `concept uniform_random_bit_generator` but doesn't attempt
+// to implement the whole concept - we just need to distinguish Standard machinery from tr1 machinery.
+template <class _Gen>
+struct _Has_static_min_max<_Gen, void_t<decltype(bool_constant<(_Gen::min)() < (_Gen::max)()>::value)>> : true_type {};
+
+template <class _Real, class _Gen>
+_NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from random sequence
+    _RNG_REQUIRE_REALTYPE(_Nrand_impl, _Real);
+
+    constexpr auto _Digits  = static_cast<size_t>(numeric_limits<_Real>::digits);
+    constexpr auto _Bits    = ~size_t{0};
+    constexpr auto _Minbits = _Digits < _Bits ? _Digits : _Bits;
+
+    if constexpr (_Has_static_min_max<_Gen>::value && _Minbits <= 64) {
+        return _STD generate_canonical<_Real, _Minbits>(_Gx);
+    } else { // TRANSITION, for tr1 machinery only; Standard machinery can call generate_canonical directly
+        const _Real _Gxmin = static_cast<_Real>((_Gx.min)());
+        const _Real _Gxmax = static_cast<_Real>((_Gx.max)());
+        const _Real _Rx    = (_Gxmax - _Gxmin) + _Real{1};
+
+        const int _Ceil = static_cast<int>(_STD ceil(static_cast<_Real>(_Minbits) / _STD log2(_Rx)));
+        const int _Kx   = _Ceil < 1 ? 1 : _Ceil;
+
+        _Real _Ans{0};
+        _Real _Factor{1};
+
+        for (int _Idx = 0; _Idx < _Kx; ++_Idx) { // add in another set of bits
+            _Ans += (static_cast<_Real>(_Gx()) - _Gxmin) * _Factor;
+            _Factor *= _Rx;
+        }
+
+        return _Ans / _Factor;
+    }
+}
+
+#define _NRAND(eng, resty) (_Nrand_impl<resty>(eng))
 
 _INLINE_VAR constexpr int _MP_len = 5;
 using _MP_arr                     = uint64_t[_MP_len];
@@ -926,8 +989,8 @@ public:
         result_type _Buffer[_Nx];
         typename _Mybase::_Traits::_Cy_t _Carry_buf;
         const auto _Save_flags = _Istr.flags(ios_base::dec | ios_base::skipws);
-        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
-            _Istr >> _Buffer[_Ix];
+        for (auto& _Val : _Buffer) {
+            _Istr >> _Val;
         }
 
         _Istr >> _Carry_buf;
@@ -1154,9 +1217,8 @@ public:
     }
 
 protected:
-    _Post_satisfies_(this->_Idx == 0)
-
-        void _Refill_lower() { // compute values for the lower half of the history array
+    _Post_satisfies_(this->_Idx == 0) void _Refill_lower() {
+        // compute values for the lower half of the history array
         constexpr size_t _Wrap_bound_one = _Nx - _One_mod_n;
         constexpr size_t _Wrap_bound_m   = _Nx - _M_mod_n;
 
@@ -1659,8 +1721,9 @@ public:
     friend basic_istream<_Elem, _Traits>& operator>>(
         basic_istream<_Elem, _Traits>& _Istr, shuffle_order_engine& _Eng) { // read state from _Istr
         _Istr >> _Eng._Eng;
-        for (size_t _Idx = 0; _Idx < shuffle_order_engine::table_size; ++_Idx) {
-            _Istr >> _Eng._Arr[_Idx];
+
+        for (auto& _Val : _Eng._Arr) {
+            _Istr >> _Val;
         }
 
         return _Istr >> _Eng._Yx;
@@ -1670,8 +1733,9 @@ public:
     friend basic_ostream<_Elem, _Traits>& operator<<(
         basic_ostream<_Elem, _Traits>& _Ostr, const shuffle_order_engine& _Eng) { // write state to _Ostr
         _Ostr << _Eng._Eng;
-        for (size_t _Idx = 0; _Idx < shuffle_order_engine::table_size; ++_Idx) {
-            _Ostr << ' ' << _Eng._Arr[_Idx];
+
+        for (const auto& _Val : _Eng._Arr) {
+            _Ostr << ' ' << _Val;
         }
 
         return _Ostr << ' ' << _Eng._Yx;
@@ -1679,8 +1743,8 @@ public:
 
 private:
     void _Init() { // compute values for operator()
-        for (size_t _Idx = 0; _Idx < _Kx; ++_Idx) {
-            _Arr[_Idx] = _Eng();
+        for (auto& _Val : _Arr) {
+            _Val = _Eng();
         }
 
         _Yx = _Eng();
@@ -2157,15 +2221,13 @@ public:
 
     template <class _Engine>
     _NODISCARD _Ty operator()(_Engine& _Eng) const {
-        _Ty _Res;
-        _Ty1 _Val;
-        for (_Res = 0, _Val = 1.0;; ++_Res) { // count repetitions
+        _Ty1 _Val = 1.0;
+        for (_Ty _Res = 0;; ++_Res) { // count repetitions
             _Val *= _NRAND(_Eng, _Ty1);
             if (_Val <= _Gx0) {
-                break;
+                return _Res;
             }
         }
-        return _Res;
     }
 
     void _Init(const _Ty1& _Mean0) { // set internal state
@@ -4361,11 +4423,10 @@ public:
 
         template <class _Elem, class _Traits>
         basic_ostream<_Elem, _Traits>& _Write(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
-            const size_t _Nvals = _Pvec.size();
-            _Ostr << ' ' << _Nvals;
+            _Ostr << ' ' << _Pvec.size();
 
-            for (size_t _Idx = 0; _Idx < _Nvals; ++_Idx) {
-                _Out(_Ostr, _Pvec[_Idx]);
+            for (const auto& _Val : _Pvec) {
+                _Out(_Ostr, _Val);
             }
 
             return _Ostr;
@@ -4623,8 +4684,8 @@ public:
         const piecewise_constant_distribution& _Dist) { // write state to _Ostr
         static_cast<const piecewise_constant_distribution::_Mypbase&>(_Dist._Par)._Write(_Ostr);
 
-        for (size_t _Idx = 0; _Idx < _Dist._Par._Bvec.size(); ++_Idx) {
-            _Out(_Ostr, _Dist._Par._Bvec[_Idx]);
+        for (const auto& _Val : _Dist._Par._Bvec) {
+            _Out(_Ostr, _Val);
         }
 
         return _Ostr;
@@ -4849,8 +4910,8 @@ public:
         const piecewise_linear_distribution& _Dist) { // write state to _Ostr
         static_cast<const piecewise_linear_distribution::_Mypbase&>(_Dist._Par)._Write(_Ostr);
 
-        for (size_t _Idx = 0; _Idx < _Dist._Par._Bvec.size(); ++_Idx) {
-            _Out(_Ostr, _Dist._Par._Bvec[_Idx]);
+        for (const auto& _Val : _Dist._Par._Bvec) {
+            _Out(_Ostr, _Val);
         }
 
         return _Ostr;

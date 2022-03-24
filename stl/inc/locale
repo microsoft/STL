@@ -165,72 +165,72 @@ _NODISCARD bool has_facet(const locale& _Loc) noexcept {
 }
 
 template <class _Elem>
-_NODISCARD bool(isalnum)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isalnum(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::alnum, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isalpha)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isalpha(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::alpha, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isblank)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isblank(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::blank, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(iscntrl)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool iscntrl(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::cntrl, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isdigit)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isdigit(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::digit, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isgraph)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isgraph(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::graph, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(islower)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool islower(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::lower, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isprint)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isprint(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::print, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(ispunct)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool ispunct(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::punct, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isspace)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isspace(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::space, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isupper)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isupper(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::upper, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isxdigit)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isxdigit(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::xdigit, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD _Elem(tolower)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD _Elem tolower(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).tolower(_Ch);
 }
 
 template <class _Elem>
-_NODISCARD _Elem(toupper)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD _Elem toupper(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).toupper(_Ch);
 }
 _STD_END
