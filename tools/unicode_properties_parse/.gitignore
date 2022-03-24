@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
 # we don't ship the unicode data source files
 # they can be downloaded from unicode.org
 # see documentation in each script for more info
