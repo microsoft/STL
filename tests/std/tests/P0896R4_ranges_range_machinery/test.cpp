@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <deque>
+#include <filesystem>
 #include <forward_list>
 #include <initializer_list>
 #include <iostream>
@@ -30,6 +31,10 @@
 
 // Note that many tests herein assume:
 STATIC_ASSERT(std::same_as<std::make_unsigned_t<std::ptrdiff_t>, std::size_t>);
+
+// GH-2358: <filesystem>: path's comparison operators are IF-NDR
+static_assert(ranges::range<std::filesystem::path>);
+static_assert(ranges::range<const std::filesystem::path>);
 
 template <class T>
 concept Decayed = std::same_as<std::decay_t<T>, T>;

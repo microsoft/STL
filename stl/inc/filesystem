@@ -850,7 +850,7 @@ namespace filesystem {
         }
 
         path& operator+=(const path& _Added) { // concat _Added to native()
-            return _PlusAssign(_Added);
+            return operator+=(_Added._Text);
         }
 
         path& operator+=(const string_type& _Added) { // concat _Added to native()
@@ -879,23 +879,23 @@ namespace filesystem {
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& operator+=(const _Src& _Added) { // concat _Added to native()
-            return _PlusAssign(path(_Added));
+            return operator+=(path(_Added)._Text);
         }
 
         template <class _EcharT, enable_if_t<_Is_EcharT<_EcharT>, int> = 0>
         path& operator+=(const _EcharT _Added) { // concat _Added to native()
-            return _PlusAssign(path(&_Added, &_Added + 1));
+            return operator+=(path(&_Added, &_Added + 1)._Text);
         }
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& concat(const _Src& _Added) { // concat _Added to native()
-            return _PlusAssign(path(_Added));
+            return operator+=(path(_Added)._Text);
         }
 
         template <class _InIt>
         path& concat(_InIt _First, _InIt _Last) { // concat [_First, _Last) to native()
             static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
-            return _PlusAssign(path(_First, _Last));
+            return operator+=(path(_First, _Last)._Text);
         }
 
         void clear() noexcept { // set *this to the empty path
@@ -966,7 +966,7 @@ namespace filesystem {
                 _Text.push_back(L'.');
             }
 
-            return _PlusAssign(_Replacement);
+            return operator+=(_Replacement._Text);
         }
 
         void swap(path& _Rhs) noexcept {
@@ -1396,12 +1396,12 @@ namespace filesystem {
         }
 
         _NODISCARD friend bool operator==(const path& _Left, const path& _Right) noexcept {
-            return _Left._Compare(_Right._Text) == 0;
+            return _Left.compare(_Right._Text) == 0;
         }
 
 #if _HAS_CXX20
         _NODISCARD friend strong_ordering operator<=>(const path& _Left, const path& _Right) noexcept {
-            return _Left._Compare(_Right._Text) <=> 0;
+            return _Left.compare(_Right._Text) <=> 0;
         }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         _NODISCARD friend bool operator!=(const path& _Left, const path& _Right) noexcept {
@@ -1432,20 +1432,6 @@ namespace filesystem {
         }
 
     private:
-        // compare, operators ==, <==> and += have overloads with path and basic_string_view.
-        // clang-cl to attempt implicit conversion from const path& to wstring_view,
-        // and thus affect the result of range<const path>
-        // so we added the helpers to avoid the implicit conversions
-        _NODISCARD int _Compare(const basic_string_view<value_type> _Other) const noexcept {
-            return compare(_Other);
-        }
-
-        _NODISCARD path& _PlusAssign(const path& _Added) { // concat _Added to native()
-            _Text._Orphan_all();
-            _Text += _Added._Text;
-            return *this;
-        }
-
         string_type _Text;
     };
 
@@ -1748,9 +1734,8 @@ namespace filesystem {
             const path& _Elem = *_B_iter;
 
             if (_Elem.empty()) { // skip empty element, N4810 29.11.7.5 [fs.path.itr]/4.4
-            } else if (_Elem == path(_Dot)) {
-                // skip filename elements that are dot, N4810 29.11.7.4.11 [fs.path.gen]/4.2
-            } else if (_Elem == path(_Dot_dot)) {
+            } else if (_Elem == _Dot) { // skip filename elements that are dot, N4810 29.11.7.4.11 [fs.path.gen]/4.2
+            } else if (_Elem == _Dot_dot) {
                 --_Num;
             } else {
                 ++_Num;
