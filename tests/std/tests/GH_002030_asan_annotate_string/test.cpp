@@ -167,6 +167,14 @@ public:
 
 template <class CharType, class Alloc>
 bool verify_string(basic_string<CharType, char_traits<CharType>, Alloc>& str) {
+    constexpr auto proxy_size = _Size_after_ebco_v<_Container_base>;
+    if constexpr (proxy_size % _Asan_granularity != 0) { // If we have a misaligned SSO buffer we disable ASAN
+        constexpr size_t max_sso_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(CharType)) - 1;
+        if (str.capacity() == max_sso_size) {
+            return true;
+        }
+    }
+
     size_t buffer_size  = (str.capacity() + 1) * sizeof(CharType);
     void* buffer        = const_cast<void*>(static_cast<const void*>(str.data()));
     void* aligned_start = align(8, 1, buffer, buffer_size);

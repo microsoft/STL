@@ -2555,6 +2555,14 @@ private:
             return;
         }
 
+        // We need to check whether we have a misaligned SSO buffer because of the proxy in `_Container_base`(e.g x86)
+        if constexpr (_Memcpy_val_offset % _Asan_granularity != 0) {
+            const uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_Ptr) & (_Asan_granularity - 1);
+            if (_Alignment_offset != 0 && _Capacity == _BUF_SIZE - 1) {
+                return;
+            }
+        }
+
         // Needs to consider the null terminator
         const char* _First    = reinterpret_cast<const char*>(_Ptr);
         const char* _End      = reinterpret_cast<const char*>(_Ptr + _Capacity + 1);
