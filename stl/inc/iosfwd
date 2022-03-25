@@ -248,10 +248,10 @@ _EXPORT_STD using syncbuf     = basic_syncbuf<char>;
 _EXPORT_STD using osyncstream = basic_osyncstream<char>;
 #endif // _HAS_CXX20
 #if _HAS_CXX23
-using spanbuf     = basic_spanbuf<char>;
-using ispanstream = basic_ispanstream<char>;
-using ospanstream = basic_ospanstream<char>;
-using spanstream  = basic_spanstream<char>;
+_EXPORT_STD using spanbuf     = basic_spanbuf<char>;
+_EXPORT_STD using ispanstream = basic_ispanstream<char>;
+_EXPORT_STD using ospanstream = basic_ospanstream<char>;
+_EXPORT_STD using spanstream  = basic_spanstream<char>;
 #endif // _HAS_CXX23
 
 using wios           = basic_ios<wchar_t, char_traits<wchar_t>>;
@@ -272,10 +272,10 @@ _EXPORT_STD using wsyncbuf     = basic_syncbuf<wchar_t>;
 _EXPORT_STD using wosyncstream = basic_osyncstream<wchar_t>;
 #endif // _HAS_CXX20
 #if _HAS_CXX23
-using wspanbuf     = basic_spanbuf<wchar_t>;
-using wispanstream = basic_ispanstream<wchar_t>;
-using wospanstream = basic_ospanstream<wchar_t>;
-using wspanstream  = basic_spanstream<wchar_t>;
+_EXPORT_STD using wspanbuf     = basic_spanbuf<wchar_t>;
+_EXPORT_STD using wispanstream = basic_ispanstream<wchar_t>;
+_EXPORT_STD using wospanstream = basic_ospanstream<wchar_t>;
+_EXPORT_STD using wspanstream  = basic_spanstream<wchar_t>;
 #endif // _HAS_CXX23
 
 _STD_END
