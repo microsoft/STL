@@ -230,19 +230,19 @@ template <class _Elem>
 class collate;
 #endif // defined(_DLL_CPPLIB)
 
-using ios           = basic_ios<char, char_traits<char>>;
-using streambuf     = basic_streambuf<char, char_traits<char>>;
-using istream       = basic_istream<char, char_traits<char>>;
-using ostream       = basic_ostream<char, char_traits<char>>;
-using iostream      = basic_iostream<char, char_traits<char>>;
-using stringbuf     = basic_stringbuf<char, char_traits<char>, allocator<char>>;
-using istringstream = basic_istringstream<char, char_traits<char>, allocator<char>>;
-using ostringstream = basic_ostringstream<char, char_traits<char>, allocator<char>>;
-using stringstream  = basic_stringstream<char, char_traits<char>, allocator<char>>;
-using filebuf       = basic_filebuf<char, char_traits<char>>;
-using ifstream      = basic_ifstream<char, char_traits<char>>;
-using ofstream      = basic_ofstream<char, char_traits<char>>;
-using fstream       = basic_fstream<char, char_traits<char>>;
+using ios                       = basic_ios<char, char_traits<char>>;
+using streambuf                 = basic_streambuf<char, char_traits<char>>;
+using istream                   = basic_istream<char, char_traits<char>>;
+using ostream                   = basic_ostream<char, char_traits<char>>;
+using iostream                  = basic_iostream<char, char_traits<char>>;
+_EXPORT_STD using stringbuf     = basic_stringbuf<char, char_traits<char>, allocator<char>>;
+_EXPORT_STD using istringstream = basic_istringstream<char, char_traits<char>, allocator<char>>;
+_EXPORT_STD using ostringstream = basic_ostringstream<char, char_traits<char>, allocator<char>>;
+_EXPORT_STD using stringstream  = basic_stringstream<char, char_traits<char>, allocator<char>>;
+using filebuf                   = basic_filebuf<char, char_traits<char>>;
+using ifstream                  = basic_ifstream<char, char_traits<char>>;
+using ofstream                  = basic_ofstream<char, char_traits<char>>;
+using fstream                   = basic_fstream<char, char_traits<char>>;
 #if _HAS_CXX20
 _EXPORT_STD using syncbuf     = basic_syncbuf<char>;
 _EXPORT_STD using osyncstream = basic_osyncstream<char>;
@@ -254,19 +254,19 @@ _EXPORT_STD using ospanstream = basic_ospanstream<char>;
 _EXPORT_STD using spanstream  = basic_spanstream<char>;
 #endif // _HAS_CXX23
 
-using wios           = basic_ios<wchar_t, char_traits<wchar_t>>;
-using wstreambuf     = basic_streambuf<wchar_t, char_traits<wchar_t>>;
-using wistream       = basic_istream<wchar_t, char_traits<wchar_t>>;
-using wostream       = basic_ostream<wchar_t, char_traits<wchar_t>>;
-using wiostream      = basic_iostream<wchar_t, char_traits<wchar_t>>;
-using wstringbuf     = basic_stringbuf<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
-using wistringstream = basic_istringstream<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
-using wostringstream = basic_ostringstream<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
-using wstringstream  = basic_stringstream<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
-using wfilebuf       = basic_filebuf<wchar_t, char_traits<wchar_t>>;
-using wifstream      = basic_ifstream<wchar_t, char_traits<wchar_t>>;
-using wofstream      = basic_ofstream<wchar_t, char_traits<wchar_t>>;
-using wfstream       = basic_fstream<wchar_t, char_traits<wchar_t>>;
+using wios                       = basic_ios<wchar_t, char_traits<wchar_t>>;
+using wstreambuf                 = basic_streambuf<wchar_t, char_traits<wchar_t>>;
+using wistream                   = basic_istream<wchar_t, char_traits<wchar_t>>;
+using wostream                   = basic_ostream<wchar_t, char_traits<wchar_t>>;
+using wiostream                  = basic_iostream<wchar_t, char_traits<wchar_t>>;
+_EXPORT_STD using wstringbuf     = basic_stringbuf<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
+_EXPORT_STD using wistringstream = basic_istringstream<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
+_EXPORT_STD using wostringstream = basic_ostringstream<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
+_EXPORT_STD using wstringstream  = basic_stringstream<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
+using wfilebuf                   = basic_filebuf<wchar_t, char_traits<wchar_t>>;
+using wifstream                  = basic_ifstream<wchar_t, char_traits<wchar_t>>;
+using wofstream                  = basic_ofstream<wchar_t, char_traits<wchar_t>>;
+using wfstream                   = basic_fstream<wchar_t, char_traits<wchar_t>>;
 #if _HAS_CXX20
 _EXPORT_STD using wsyncbuf     = basic_syncbuf<wchar_t>;
 _EXPORT_STD using wosyncstream = basic_osyncstream<wchar_t>;
