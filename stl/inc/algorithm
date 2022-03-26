@@ -436,7 +436,8 @@ namespace ranges {
 
 #if _USE_STD_VECTOR_ALGORITHMS
             if (!_STD is_constant_evaluated()) {
-                if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty>) {
+                if constexpr (is_same_v<_Pj, identity> && _Vector_alg_in_find_is_safe<_It, _Ty> && //
+                              _Sized_or_unreachable_sentinel_for<_Se, _It>) {
                     if (!_Within_limits(_First, _Val)) {
                         return 0;
                     }
