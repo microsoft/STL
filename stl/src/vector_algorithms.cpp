@@ -178,7 +178,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
     }
 #endif // !defined(_M_ARM64EC)
 
-    if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
         const __m128i _Reverse_char_sse = _mm_set_epi8(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
         const void* _Stop_at            = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
