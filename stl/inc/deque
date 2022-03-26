@@ -722,7 +722,6 @@ public:
         _Take_contents(_Right);
     }
 
-public:
     deque& operator=(deque&& _Right) noexcept(_Alty_traits::is_always_equal::value) {
         if (this == _STD addressof(_Right)) {
             return *this;

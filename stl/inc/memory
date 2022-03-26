@@ -171,7 +171,7 @@ namespace ranges {
             } else {
                 _Uninitialized_backout _Backout{_STD move(_OFirst)};
 
-                for (; _Count > 0 && _OFirst != _OLast; --_Count, (void) ++_IFirst) {
+                for (; _Count > 0 && _Backout._Last != _OLast; --_Count, (void) ++_IFirst) {
                     _Backout._Emplace_back(*_IFirst);
                 }
 
@@ -880,9 +880,13 @@ class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap store
 public:
     using iterator_category = output_iterator_tag;
     using value_type        = void;
-    using difference_type   = void;
-    using pointer           = void;
-    using reference         = void;
+#ifdef __cpp_lib_concepts
+    using difference_type = ptrdiff_t;
+#else
+    using difference_type = void;
+#endif // __cpp_lib_concepts
+    using pointer   = void;
+    using reference = void;
 
     explicit raw_storage_iterator(_OutIt _First) : _Next(_First) {}
 
@@ -1619,7 +1623,7 @@ public:
         return *this;
     }
 
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     shared_ptr& operator=(const shared_ptr<_Ty2>& _Right) noexcept {
         shared_ptr(_Right).swap(*this);
         return *this;
@@ -1630,21 +1634,24 @@ public:
         return *this;
     }
 
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     shared_ptr& operator=(shared_ptr<_Ty2>&& _Right) noexcept { // take resource from _Right
         shared_ptr(_STD move(_Right)).swap(*this);
         return *this;
     }
 
 #if _HAS_AUTO_PTR_ETC
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<is_convertible_v<_Ty2*, _Ty*>, int> = 0>
     shared_ptr& operator=(auto_ptr<_Ty2>&& _Right) {
         shared_ptr(_STD move(_Right)).swap(*this);
         return *this;
     }
 #endif // _HAS_AUTO_PTR_ETC
 
-    template <class _Ux, class _Dx>
+    template <class _Ux, class _Dx,
+        enable_if_t<conjunction_v<_SP_pointer_compatible<_Ux, _Ty>,
+                        is_convertible<typename unique_ptr<_Ux, _Dx>::pointer, element_type*>>,
+            int> = 0>
     shared_ptr& operator=(unique_ptr<_Ux, _Dx>&& _Right) { // move from unique_ptr
         shared_ptr(_STD move(_Right)).swap(*this);
         return *this;
@@ -1658,17 +1665,26 @@ public:
         shared_ptr().swap(*this);
     }
 
-    template <class _Ux>
+    template <class _Ux,
+        enable_if_t<conjunction_v<conditional_t<is_array_v<_Ty>, _Can_array_delete<_Ux>, _Can_scalar_delete<_Ux>>,
+                        _SP_convertible<_Ux, _Ty>>,
+            int> = 0>
     void reset(_Ux* _Px) { // release, take ownership of _Px
         shared_ptr(_Px).swap(*this);
     }
 
-    template <class _Ux, class _Dx>
+    template <class _Ux, class _Dx,
+        enable_if_t<conjunction_v<is_move_constructible<_Dx>, _Can_call_function_object<_Dx&, _Ux*&>,
+                        _SP_convertible<_Ux, _Ty>>,
+            int> = 0>
     void reset(_Ux* _Px, _Dx _Dt) { // release, take ownership of _Px, with deleter _Dt
         shared_ptr(_Px, _Dt).swap(*this);
     }
 
-    template <class _Ux, class _Dx, class _Alloc>
+    template <class _Ux, class _Dx, class _Alloc,
+        enable_if_t<conjunction_v<is_move_constructible<_Dx>, _Can_call_function_object<_Dx&, _Ux*&>,
+                        _SP_convertible<_Ux, _Ty>>,
+            int> = 0>
     void reset(_Ux* _Px, _Dx _Dt, _Alloc _Ax) { // release, take ownership of _Px, with deleter _Dt, allocator _Ax
         shared_ptr(_Px, _Dt, _Ax).swap(*this);
     }
@@ -3019,7 +3035,7 @@ public:
         return *this;
     }
 
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr& operator=(const weak_ptr<_Ty2>& _Right) noexcept {
         weak_ptr(_Right).swap(*this);
         return *this;
@@ -3030,13 +3046,13 @@ public:
         return *this;
     }
 
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr& operator=(weak_ptr<_Ty2>&& _Right) noexcept {
         weak_ptr(_STD move(_Right)).swap(*this);
         return *this;
     }
 
-    template <class _Ty2>
+    template <class _Ty2, enable_if_t<_SP_pointer_compatible<_Ty2, _Ty>::value, int> = 0>
     weak_ptr& operator=(const shared_ptr<_Ty2>& _Right) noexcept {
         weak_ptr(_Right).swap(*this);
         return *this;
@@ -3118,9 +3134,9 @@ struct default_delete { // default deleter for unique_ptr
     constexpr default_delete() noexcept = default;
 
     template <class _Ty2, enable_if_t<is_convertible_v<_Ty2*, _Ty*>, int> = 0>
-    default_delete(const default_delete<_Ty2>&) noexcept {}
+    _CONSTEXPR23 default_delete(const default_delete<_Ty2>&) noexcept {}
 
-    void operator()(_Ty* _Ptr) const noexcept /* strengthened */ { // delete a pointer
+    _CONSTEXPR23 void operator()(_Ty* _Ptr) const noexcept /* strengthened */ { // delete a pointer
         static_assert(0 < sizeof(_Ty), "can't delete an incomplete type");
         delete _Ptr;
     }
@@ -3131,10 +3147,10 @@ struct default_delete<_Ty[]> { // default deleter for unique_ptr to array of unk
     constexpr default_delete() noexcept = default;
 
     template <class _Uty, enable_if_t<is_convertible_v<_Uty (*)[], _Ty (*)[]>, int> = 0>
-    default_delete(const default_delete<_Uty[]>&) noexcept {}
+    _CONSTEXPR23 default_delete(const default_delete<_Uty[]>&) noexcept {}
 
     template <class _Uty, enable_if_t<is_convertible_v<_Uty (*)[], _Ty (*)[]>, int> = 0>
-    void operator()(_Uty* _Ptr) const noexcept /* strengthened */ { // delete a pointer
+    _CONSTEXPR23 void operator()(_Uty* _Ptr) const noexcept /* strengthened */ { // delete a pointer
         static_assert(0 < sizeof(_Uty), "can't delete an incomplete type");
         delete[] _Ptr;
     }
@@ -3167,27 +3183,30 @@ public:
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
     constexpr unique_ptr(nullptr_t) noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
-    unique_ptr& operator=(nullptr_t) noexcept {
+    _CONSTEXPR23 unique_ptr& operator=(nullptr_t) noexcept {
         reset();
         return *this;
     }
 
+    // The Standard depicts these constructors that accept pointer as taking type_identity_t<pointer> to inhibit CTAD.
+    // Since pointer is an opaque type alias in our implementation, it inhibits CTAD without extra decoration.
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
-    explicit unique_ptr(pointer _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
+    _CONSTEXPR23 explicit unique_ptr(pointer _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
 
     template <class _Dx2 = _Dx, enable_if_t<is_constructible_v<_Dx2, const _Dx2&>, int> = 0>
-    unique_ptr(pointer _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
+    _CONSTEXPR23 unique_ptr(pointer _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
 
     template <class _Dx2                                                                            = _Dx,
         enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0>
-    unique_ptr(pointer _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
+    _CONSTEXPR23 unique_ptr(pointer _Ptr, _Dx&& _Dt) noexcept
+        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
 
     template <class _Dx2                                                                                      = _Dx,
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
     unique_ptr(pointer, remove_reference_t<_Dx>&&) = delete;
 
     template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
-    unique_ptr(unique_ptr&& _Right) noexcept
+    _CONSTEXPR23 unique_ptr(unique_ptr&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
 
     template <class _Ty2, class _Dx2,
@@ -3195,7 +3214,7 @@ public:
             conjunction_v<negation<is_array<_Ty2>>, is_convertible<typename unique_ptr<_Ty2, _Dx2>::pointer, pointer>,
                 conditional_t<is_reference_v<_Dx>, is_same<_Dx2, _Dx>, is_convertible<_Dx2, _Dx>>>,
             int> = 0>
-    unique_ptr(unique_ptr<_Ty2, _Dx2>&& _Right) noexcept
+    _CONSTEXPR23 unique_ptr(unique_ptr<_Ty2, _Dx2>&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx2>(_Right.get_deleter()), _Right.release()) {}
 
 #if _HAS_AUTO_PTR_ETC
@@ -3208,14 +3227,14 @@ public:
         enable_if_t<conjunction_v<negation<is_array<_Ty2>>, is_assignable<_Dx&, _Dx2>,
                         is_convertible<typename unique_ptr<_Ty2, _Dx2>::pointer, pointer>>,
             int> = 0>
-    unique_ptr& operator=(unique_ptr<_Ty2, _Dx2>&& _Right) noexcept {
+    _CONSTEXPR23 unique_ptr& operator=(unique_ptr<_Ty2, _Dx2>&& _Right) noexcept {
         reset(_Right.release());
         _Mypair._Get_first() = _STD forward<_Dx2>(_Right._Mypair._Get_first());
         return *this;
     }
 
     template <class _Dx2 = _Dx, enable_if_t<is_move_assignable_v<_Dx2>, int> = 0>
-    unique_ptr& operator=(unique_ptr&& _Right) noexcept {
+    _CONSTEXPR23 unique_ptr& operator=(unique_ptr&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             reset(_Right.release());
             _Mypair._Get_first() = _STD forward<_Dx>(_Right._Mypair._Get_first());
@@ -3223,46 +3242,46 @@ public:
         return *this;
     }
 
-    void swap(unique_ptr& _Right) noexcept {
+    _CONSTEXPR23 void swap(unique_ptr& _Right) noexcept {
         _Swap_adl(_Mypair._Myval2, _Right._Mypair._Myval2);
         _Swap_adl(_Mypair._Get_first(), _Right._Mypair._Get_first());
     }
 
-    ~unique_ptr() noexcept {
+    _CONSTEXPR23 ~unique_ptr() noexcept {
         if (_Mypair._Myval2) {
             _Mypair._Get_first()(_Mypair._Myval2);
         }
     }
 
-    _NODISCARD _Dx& get_deleter() noexcept {
+    _NODISCARD _CONSTEXPR23 _Dx& get_deleter() noexcept {
         return _Mypair._Get_first();
     }
 
-    _NODISCARD const _Dx& get_deleter() const noexcept {
+    _NODISCARD _CONSTEXPR23 const _Dx& get_deleter() const noexcept {
         return _Mypair._Get_first();
     }
 
-    _NODISCARD add_lvalue_reference_t<_Ty> operator*() const noexcept(noexcept(*_STD declval<pointer>())) {
+    _NODISCARD _CONSTEXPR23 add_lvalue_reference_t<_Ty> operator*() const noexcept(noexcept(*_STD declval<pointer>())) {
         return *_Mypair._Myval2;
     }
 
-    _NODISCARD pointer operator->() const noexcept {
+    _NODISCARD _CONSTEXPR23 pointer operator->() const noexcept {
         return _Mypair._Myval2;
     }
 
-    _NODISCARD pointer get() const noexcept {
+    _NODISCARD _CONSTEXPR23 pointer get() const noexcept {
         return _Mypair._Myval2;
     }
 
-    explicit operator bool() const noexcept {
+    _CONSTEXPR23 explicit operator bool() const noexcept {
         return static_cast<bool>(_Mypair._Myval2);
     }
 
-    pointer release() noexcept {
+    _CONSTEXPR23 pointer release() noexcept {
         return _STD exchange(_Mypair._Myval2, nullptr);
     }
 
-    void reset(pointer _Ptr = nullptr) noexcept {
+    _CONSTEXPR23 void reset(pointer _Ptr = nullptr) noexcept {
         pointer _Old = _STD exchange(_Mypair._Myval2, _Ptr);
         if (_Old) {
             _Mypair._Get_first()(_Old);
@@ -3298,27 +3317,28 @@ public:
                         && is_convertible_v<remove_pointer_t<_Uty> (*)[], element_type (*)[]>)>; // TRANSITION, GH-248
 
     template <class _Uty, class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0, class = _Enable_ctor_reset<_Uty>>
-    explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
+    _CONSTEXPR23 explicit unique_ptr(_Uty _Ptr) noexcept : _Mypair(_Zero_then_variadic_args_t{}, _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx, enable_if_t<is_constructible_v<_Dx2, const _Dx2&>, int> = 0,
         class = _Enable_ctor_reset<_Uty>>
-    unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
+    _CONSTEXPR23 unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0,
         class = _Enable_ctor_reset<_Uty>>
-    unique_ptr(_Uty _Ptr, _Dx&& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
+    _CONSTEXPR23 unique_ptr(_Uty _Ptr, _Dx&& _Dt) noexcept
+        : _Mypair(_One_then_variadic_args_t{}, _STD move(_Dt), _Ptr) {}
 
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<is_reference<_Dx2>, is_constructible<_Dx2, remove_reference_t<_Dx2>>>, int> = 0>
     unique_ptr(_Uty, remove_reference_t<_Dx>&&) = delete;
 
     template <class _Dx2 = _Dx, enable_if_t<is_move_constructible_v<_Dx2>, int> = 0>
-    unique_ptr(unique_ptr&& _Right) noexcept
+    _CONSTEXPR23 unique_ptr(unique_ptr&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
 
     template <class _Dx2 = _Dx, enable_if_t<is_move_assignable_v<_Dx2>, int> = 0>
-    unique_ptr& operator=(unique_ptr&& _Right) noexcept {
+    _CONSTEXPR23 unique_ptr& operator=(unique_ptr&& _Right) noexcept {
         if (this != _STD addressof(_Right)) {
             reset(_Right.release());
             _Mypair._Get_first() = _STD move(_Right._Mypair._Get_first());
@@ -3336,11 +3356,11 @@ public:
     template <class _Uty, class _Ex,
         class = _Enable_conversion<_Uty, _Ex,
             conditional_t<is_reference_v<_Dx>, is_same<_Ex, _Dx>, is_convertible<_Ex, _Dx>>>>
-    unique_ptr(unique_ptr<_Uty, _Ex>&& _Right) noexcept
+    _CONSTEXPR23 unique_ptr(unique_ptr<_Uty, _Ex>&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Ex>(_Right.get_deleter()), _Right.release()) {}
 
     template <class _Uty, class _Ex, class = _Enable_conversion<_Uty, _Ex, is_assignable<_Dx&, _Ex>>>
-    unique_ptr& operator=(unique_ptr<_Uty, _Ex>&& _Right) noexcept {
+    _CONSTEXPR23 unique_ptr& operator=(unique_ptr<_Uty, _Ex>&& _Right) noexcept {
         reset(_Right.release());
         _Mypair._Get_first() = _STD forward<_Ex>(_Right._Mypair._Get_first());
         return *this;
@@ -3349,52 +3369,52 @@ public:
     template <class _Dx2 = _Dx, _Unique_ptr_enable_default_t<_Dx2> = 0>
     constexpr unique_ptr(nullptr_t) noexcept : _Mypair(_Zero_then_variadic_args_t{}) {}
 
-    unique_ptr& operator=(nullptr_t) noexcept {
+    _CONSTEXPR23 unique_ptr& operator=(nullptr_t) noexcept {
         reset();
         return *this;
     }
 
-    void reset(nullptr_t = nullptr) noexcept {
+    _CONSTEXPR23 void reset(nullptr_t = nullptr) noexcept {
         reset(pointer());
     }
 
-    void swap(unique_ptr& _Right) noexcept {
+    _CONSTEXPR23 void swap(unique_ptr& _Right) noexcept {
         _Swap_adl(_Mypair._Myval2, _Right._Mypair._Myval2);
         _Swap_adl(_Mypair._Get_first(), _Right._Mypair._Get_first());
     }
 
-    ~unique_ptr() noexcept {
+    _CONSTEXPR23 ~unique_ptr() noexcept {
         if (_Mypair._Myval2) {
             _Mypair._Get_first()(_Mypair._Myval2);
         }
     }
 
-    _NODISCARD _Dx& get_deleter() noexcept {
+    _NODISCARD _CONSTEXPR23 _Dx& get_deleter() noexcept {
         return _Mypair._Get_first();
     }
 
-    _NODISCARD const _Dx& get_deleter() const noexcept {
+    _NODISCARD _CONSTEXPR23 const _Dx& get_deleter() const noexcept {
         return _Mypair._Get_first();
     }
 
-    _NODISCARD _Ty& operator[](size_t _Idx) const noexcept /* strengthened */ {
+    _NODISCARD _CONSTEXPR23 _Ty& operator[](size_t _Idx) const noexcept /* strengthened */ {
         return _Mypair._Myval2[_Idx];
     }
 
-    _NODISCARD pointer get() const noexcept {
+    _NODISCARD _CONSTEXPR23 pointer get() const noexcept {
         return _Mypair._Myval2;
     }
 
-    explicit operator bool() const noexcept {
+    _CONSTEXPR23 explicit operator bool() const noexcept {
         return static_cast<bool>(_Mypair._Myval2);
     }
 
-    pointer release() noexcept {
+    _CONSTEXPR23 pointer release() noexcept {
         return _STD exchange(_Mypair._Myval2, nullptr);
     }
 
     template <class _Uty, class = _Enable_ctor_reset<_Uty, false_type>>
-    void reset(_Uty _Ptr) noexcept {
+    _CONSTEXPR23 void reset(_Uty _Ptr) noexcept {
         pointer _Old = _STD exchange(_Mypair._Myval2, _Ptr);
         if (_Old) {
             _Mypair._Get_first()(_Old);
@@ -3413,12 +3433,12 @@ private:
 
 
 template <class _Ty, class... _Types, enable_if_t<!is_array_v<_Ty>, int> = 0>
-_NODISCARD unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
+_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
     return unique_ptr<_Ty>(new _Ty(_STD forward<_Types>(_Args)...));
 }
 
 template <class _Ty, enable_if_t<is_array_v<_Ty> && extent_v<_Ty> == 0, int> = 0>
-_NODISCARD unique_ptr<_Ty> make_unique(const size_t _Size) { // make a unique_ptr
+_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique(const size_t _Size) { // make a unique_ptr
     using _Elem = remove_extent_t<_Ty>;
     return unique_ptr<_Ty>(new _Elem[_Size]());
 }
@@ -3428,12 +3448,12 @@ void make_unique(_Types&&...) = delete;
 
 #if _HAS_CXX20
 template <class _Ty, enable_if_t<!is_array_v<_Ty>, int> = 0>
-_NODISCARD unique_ptr<_Ty> make_unique_for_overwrite() { // make a unique_ptr with default initialization
+_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite() { // make a unique_ptr with default initialization
     return unique_ptr<_Ty>(new _Ty);
 }
 
 template <class _Ty, enable_if_t<is_unbounded_array_v<_Ty>, int> = 0>
-_NODISCARD unique_ptr<_Ty> make_unique_for_overwrite(
+_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite(
     const size_t _Size) { // make a unique_ptr with default initialization
     using _Elem = remove_extent_t<_Ty>;
     return unique_ptr<_Ty>(new _Elem[_Size]);
@@ -3444,12 +3464,12 @@ void make_unique_for_overwrite(_Types&&...) = delete;
 #endif // _HAS_CXX20
 
 template <class _Ty, class _Dx, enable_if_t<_Is_swappable<_Dx>::value, int> = 0>
-void swap(unique_ptr<_Ty, _Dx>& _Left, unique_ptr<_Ty, _Dx>& _Right) noexcept {
+_CONSTEXPR23 void swap(unique_ptr<_Ty, _Dx>& _Left, unique_ptr<_Ty, _Dx>& _Right) noexcept {
     _Left.swap(_Right);
 }
 
 template <class _Ty1, class _Dx1, class _Ty2, class _Dx2>
-_NODISCARD bool operator==(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
+_NODISCARD _CONSTEXPR23 bool operator==(const unique_ptr<_Ty1, _Dx1>& _Left, const unique_ptr<_Ty2, _Dx2>& _Right) {
     return _Left.get() == _Right.get();
 }
 
@@ -3497,7 +3517,7 @@ _NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty1, _Dx1>::pointer,
 #endif // __cpp_lib_concepts
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator==(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
+_NODISCARD _CONSTEXPR23 bool operator==(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) noexcept {
     return !_Left;
 }
 
@@ -3519,44 +3539,44 @@ _NODISCARD bool operator!=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) 
 #endif // !_HAS_CXX20
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
+_NODISCARD _CONSTEXPR23 bool operator<(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
     return less<_Ptr>{}(_Left.get(), _Right);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator<(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
+_NODISCARD _CONSTEXPR23 bool operator<(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     using _Ptr = typename unique_ptr<_Ty, _Dx>::pointer;
     return less<_Ptr>{}(_Left, _Right.get());
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator>=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
+_NODISCARD _CONSTEXPR23 bool operator>=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
     return !(_Left < _Right);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator>=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
+_NODISCARD _CONSTEXPR23 bool operator>=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     return !(_Left < _Right);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator>(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
+_NODISCARD _CONSTEXPR23 bool operator>(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
     return _Right < _Left;
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator>(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
+_NODISCARD _CONSTEXPR23 bool operator>(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     return _Right < _Left;
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator<=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
+_NODISCARD _CONSTEXPR23 bool operator<=(const unique_ptr<_Ty, _Dx>& _Left, nullptr_t _Right) {
     return !(_Right < _Left);
 }
 
 template <class _Ty, class _Dx>
-_NODISCARD bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
+_NODISCARD _CONSTEXPR23 bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) {
     return !(_Right < _Left);
 }
 
@@ -3564,7 +3584,7 @@ _NODISCARD bool operator<=(nullptr_t _Left, const unique_ptr<_Ty, _Dx>& _Right) 
 // clang-format off
 template <class _Ty, class _Dx>
     requires three_way_comparable<typename unique_ptr<_Ty, _Dx>::pointer>
-_NODISCARD compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>::pointer> operator<=>(
+_NODISCARD _CONSTEXPR23 compare_three_way_result_t<typename unique_ptr<_Ty, _Dx>::pointer> operator<=>(
     const unique_ptr<_Ty, _Dx>& _Left, nullptr_t) {
     // clang-format on
     return _Left.get() <=> static_cast<typename unique_ptr<_Ty, _Dx>::pointer>(nullptr);
@@ -3952,6 +3972,8 @@ public:
     using _Base::notify_one;
 
     constexpr atomic() noexcept = default;
+
+    constexpr atomic(nullptr_t) noexcept : atomic() {}
 
     atomic(const shared_ptr<_Ty> _Value) noexcept : _Base(_Value._Ptr, _Value._Rep) {
         _Value._Incref();

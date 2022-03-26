@@ -19,14 +19,10 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+using _CSTD sig_atomic_t;
+using _CSTD raise;
 #ifndef _M_CEE_PURE
-using _CSTD sig_atomic_t;
-using _CSTD raise;
 using _CSTD signal;
-
-#else // _M_CEE_PURE
-using _CSTD sig_atomic_t;
-using _CSTD raise;
 #endif // _M_CEE_PURE
 _STD_END
 

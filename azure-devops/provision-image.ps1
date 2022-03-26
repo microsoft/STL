@@ -91,7 +91,7 @@ if ([string]::IsNullOrEmpty($AdminUserPassword)) {
   $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
 
   # https://github.com/PowerShell/PowerShell/releases/latest
-  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.1/PowerShell-7.2.1-win-x64.zip'
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.2/PowerShell-7.2.2-win-x64.zip'
   Write-Host "Downloading: $PowerShellZipUrl"
   $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
   $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
@@ -133,6 +133,7 @@ $Workloads = @(
   'Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
+  'Microsoft.VisualStudio.Component.VC.Tools.ARM64EC',
   'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
   # TRANSITION, LLVM-51128 (Clang 12 targeting ARM64 is incompatible with WinSDK 10.0.20348.0)
   'Microsoft.VisualStudio.Component.Windows10SDK.19041'
@@ -141,7 +142,7 @@ $Workloads = @(
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
 $VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.10.1/python-3.10.1-amd64.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.10.3/python-3.10.3-amd64.exe'
 
 $CudaUrl = `
   'https://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_426.00_win10.exe'

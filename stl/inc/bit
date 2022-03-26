@@ -98,8 +98,12 @@ _NODISCARD constexpr _Ty rotl(const _Ty _Val, const int _Rotation) noexcept {
             return _rotl64(_Val, _Rotation);
         } else if constexpr (_Digits == 32) {
             return _rotl(_Val, _Rotation);
+        } else if constexpr (_Digits == 16) {
+            return _rotl16(_Val, static_cast<unsigned char>(_Rotation));
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(_Digits == 8);
+            return _rotl8(_Val, static_cast<unsigned char>(_Rotation));
         }
-        // TRANSITION: fallback to non-intrinsic case until <intrin0.h> changes
     }
 
     const auto _Remainder = _Rotation % _Digits;
@@ -122,8 +126,12 @@ _NODISCARD constexpr _Ty rotr(const _Ty _Val, const int _Rotation) noexcept {
             return _rotr64(_Val, _Rotation);
         } else if constexpr (_Digits == 32) {
             return _rotr(_Val, _Rotation);
+        } else if constexpr (_Digits == 16) {
+            return _rotr16(_Val, static_cast<unsigned char>(_Rotation));
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(_Digits == 8);
+            return _rotr8(_Val, static_cast<unsigned char>(_Rotation));
         }
-        // TRANSITION: fallback to non-intrinsic case until <intrin0.h> changes
     }
 
     const auto _Remainder = _Rotation % _Digits;

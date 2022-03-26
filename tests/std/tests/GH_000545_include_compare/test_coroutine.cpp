@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <version> // TRANSITION, P0912R5 Library Support For Coroutines
-#ifdef __cpp_lib_coroutine // TRANSITION, P0912R5 Library Support For Coroutines
+#include <version> // TRANSITION, Clang 14 coroutine support
+#ifdef __cpp_lib_coroutine // TRANSITION, Clang 14 coroutine support
 
 #include <coroutine>
 
@@ -10,6 +10,6 @@
 
 static_assert(std::is_eq(std::partial_ordering::equivalent));
 
-#endif // TRANSITION, P0912R5 Library Support For Coroutines
+#endif // TRANSITION, Clang 14 coroutine support
 
 void test_coroutine() {}

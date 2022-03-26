@@ -5,6 +5,8 @@
     "Version": "1.0",
     "BuildAsHeaderUnits": [
         // "__msvc_all_public_headers.hpp", // for testing, not production
+        "__msvc_chrono.hpp",
+        "__msvc_int128.hpp",
         "__msvc_system_error_abi.hpp",
         "__msvc_tzdb.hpp",
         "__msvc_xlocinfo_types.hpp",
@@ -111,7 +113,7 @@
         "typeinfo",
         "unordered_map",
         "unordered_set",
-        "use_ansi.h",
+        // "use_ansi.h", // internal header, incompatible with being a separate header unit
         "utility",
         "valarray",
         "variant",
