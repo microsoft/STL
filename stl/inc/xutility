@@ -5358,8 +5358,8 @@ namespace ranges {
                     }
 
                     const auto _First_ptr = _STD to_address(_First);
-                    const auto _Result =
-                        static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+                    const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_It>>*>(
+                        _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
                     if (_Result) {
                         if constexpr (is_pointer_v<_It>) {
                             return _Result;
