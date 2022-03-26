@@ -220,7 +220,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _Firs
     }
 #endif // !defined(_M_ARM64EC)
 
-    if (_Byte_length(_First, _Last) >= 32 && _Use_sse2()) {
+    if (_Byte_length(_First, _Last) >= 32 && _Use_sse42()) {
         const __m128i _Reverse_short_sse = _mm_set_epi8(1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
         const void* _Stop_at             = _First;
         _Advance_bytes(_Stop_at, _Byte_length(_First, _Last) >> 5 << 4);
@@ -457,21 +457,17 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 template <class _Ty>
 static const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) {
     auto _Ptr = static_cast<const _Ty*>(_First);
-    for (;;) {
-        if (*_Ptr == _Val) {
-            return _Ptr;
-        }
+    while (*_Ptr != _Val) {
         ++_Ptr;
     }
+    return _Ptr;
 }
 
 template <class _Ty>
 static const void* _Find_trivial_tail(const void* _First, const void* _Last, _Ty _Val) {
     auto _Ptr = static_cast<const _Ty*>(_First);
-    for (; _Ptr != _Last; ++_Ptr) {
-        if (*_Ptr == _Val) {
-            break;
-        }
+    while (_Ptr != _Last && *_Ptr != _Val) {
+        ++_Ptr;
     }
     return _Ptr;
 }

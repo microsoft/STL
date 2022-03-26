@@ -94,18 +94,20 @@ __declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _T
 
 template <class _Ty, class _TVal>
 _Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
-    using cv_pv = _STD conditional_t<_STD is_const_v<_Ty>, const void*, void*>;
-
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return __std_find_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_1(_First, _Last, static_cast<uint8_t>(_Val))));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_1(_First, _Last, static_cast<uint8_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_2(_First, _Last, static_cast<uint16_t>(_Val))));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_2(_First, _Last, static_cast<uint16_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_4(_First, _Last, static_cast<uint32_t>(_Val))));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_4(_First, _Last, static_cast<uint32_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
@@ -113,18 +115,20 @@ _Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
 
 template <class _Ty, class _TVal>
 _Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
-    using cv_pv = _STD conditional_t<_STD is_const_v<_Ty>, const void*, void*>;
-
     if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
         return __std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
     } else if constexpr (sizeof(_Ty) == 1) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_unsized_1(_First, static_cast<uint8_t>(_Val))));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_unsized_1(_First, static_cast<uint8_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_unsized_2(_First, static_cast<uint16_t>(_Val))));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_unsized_2(_First, static_cast<uint16_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_unsized_4(_First, static_cast<uint32_t>(_Val))));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_unsized_4(_First, static_cast<uint32_t>(_Val))));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_find_trivial_unsized_8(_First, static_cast<uint64_t>(_Val))));
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_unsized_8(_First, static_cast<uint64_t>(_Val))));
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
@@ -5180,6 +5184,7 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
         if constexpr (is_same_v<_Elem, bool>) {
             return _Val == true || _Val == false;
         } else if constexpr (is_signed_v<_Elem>) {
+            // use instead of numeric_limits::min/max; avoid <limits> dependency
             constexpr _Elem _Min = static_cast<_Elem>(_Elem{1} << (sizeof(_Elem) * CHAR_BIT - 1));
             constexpr _Elem _Max = static_cast<_Elem>(~_Min);
 
@@ -5223,7 +5228,7 @@ _INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe =
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first matching _Val; choose optimization
-    // activate optimization for contiguous iterators to (const) bytes and integral values
+    // activate optimization for contiguous iterators to most scalar types (possibly const-qualified)
 #if _HAS_CXX20
     if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
@@ -5337,8 +5342,8 @@ namespace ranges {
                     }
 
                     const auto _First_ptr = _STD to_address(_First);
-                    const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_It>>*>(
-                        _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+                    const auto _Result =
+                        static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
                     if (_Result) {
                         if constexpr (is_pointer_v<_It>) {
                             return _Result;
