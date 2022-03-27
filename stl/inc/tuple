@@ -91,6 +91,12 @@ template <class... _Dests, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_assignable_v0<true, tuple<_Dests...>, _Srcs...> =
     conjunction_v<is_assignable<_Dests&, _Srcs>...>; // note _Dests& instead of _Dests
 
+#if _HAS_CXX23
+template <class... _Dests, class... _Srcs>
+_INLINE_VAR constexpr bool _Tuple_assignable_v0<true, const tuple<_Dests...>, _Srcs...> =
+    conjunction_v<is_assignable<const _Dests&, _Srcs>...>;
+#endif // _HAS_CXX23
+
 template <class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_assignable_v =
     _Tuple_assignable_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
@@ -105,27 +111,24 @@ template <class... _Dests, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v0<true, tuple<_Dests...>, _Srcs...> =
     conjunction_v<is_nothrow_assignable<_Dests&, _Srcs>...>; // note _Dests& instead of _Dests
 
+#if _HAS_CXX23
+template <class... _Dests, class... _Srcs>
+_INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v0<true, const tuple<_Dests...>, _Srcs...> =
+    conjunction_v<is_nothrow_assignable<const _Dests&, _Srcs>...>;
+#endif // _HAS_CXX23
+
 template <class _Dest, class... _Srcs>
 _INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v =
     _Tuple_nothrow_assignable_v0<tuple_size_v<_Dest> == sizeof...(_Srcs), _Dest, _Srcs...>;
 
-// Constrain tuple's copy converting constructor (LWG-2549)
-template <class _Myself, class... _Other>
-struct _Tuple_convert_copy_val : true_type {};
+// Constrain tuple's converting constructors
+template <class _Myself, class _OtherTuple, class... _Other>
+struct _Tuple_convert_val : true_type {};
 
-template <class _This, class _Uty>
-struct _Tuple_convert_copy_val<tuple<_This>, _Uty>
-    : bool_constant<!disjunction_v<is_same<_This, _Uty>, is_constructible<_This, const tuple<_Uty>&>,
-          is_convertible<const tuple<_Uty>&, _This>>> {};
-
-// Constrain tuple's move converting constructor (LWG-2549)
-template <class _Myself, class... _Other>
-struct _Tuple_convert_move_val : true_type {};
-
-template <class _This, class _Uty>
-struct _Tuple_convert_move_val<tuple<_This>, _Uty>
-    : bool_constant<!disjunction_v<is_same<_This, _Uty>, is_constructible<_This, tuple<_Uty>>,
-          is_convertible<tuple<_Uty>, _This>>> {};
+template <class _This, class _OtherTuple, class _Uty>
+struct _Tuple_convert_val<tuple<_This>, _OtherTuple, _Uty>
+    : bool_constant<!disjunction_v<is_same<_This, _Uty>, is_constructible<_This, _OtherTuple>,
+          is_convertible<_OtherTuple, _This>>> {};
 
 // Constrain tuple's perfect forwarding constructor (LWG-3121)
 template <class _Myself, class _This2, class... _Rest2>
@@ -348,7 +351,7 @@ public:
 
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other&...>,
-                                               _STD _Tuple_convert_copy_val<tuple, _Other...>>,
+                                               _STD _Tuple_convert_val<tuple, const tuple<_Other...>&, _Other...>>,
                                    int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>)
         tuple(const tuple<_Other...>& _Right) noexcept(
@@ -356,14 +359,14 @@ public:
         : tuple(_Unpack_tuple_t{}, _Right) {}
 #else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
     template <class... _Other, enable_if_t<conjunction_v<_Tuple_implicit_val<tuple, const _Other&...>,
-                                               _Tuple_convert_copy_val<tuple, _Other...>>,
+                                               _Tuple_convert_val<tuple, const tuple<_Other...>&, _Other...>>,
                                    int> = 0>
     constexpr tuple(const tuple<_Other...>& _Right) noexcept(
         _Tuple_nothrow_constructible_v<tuple, const _Other&...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _Right) {}
 
     template <class... _Other, enable_if_t<conjunction_v<_Tuple_explicit_val<tuple, const _Other&...>,
-                                               _Tuple_convert_copy_val<tuple, _Other...>>,
+                                               _Tuple_convert_val<tuple, const tuple<_Other...>&, _Other...>>,
                                    int> = 0>
     constexpr explicit tuple(const tuple<_Other...>& _Right) noexcept(
         _Tuple_nothrow_constructible_v<tuple, const _Other&...>) // strengthened
@@ -372,22 +375,22 @@ public:
 
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class... _Other, enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other...>,
-                                               _STD _Tuple_convert_move_val<tuple, _Other...>>,
+                                               _STD _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
                                    int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _Other...>)
         tuple(tuple<_Other...>&& _Right) noexcept(_Tuple_nothrow_constructible_v<tuple, _Other...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
 #else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class... _Other,
-        enable_if_t<conjunction_v<_Tuple_implicit_val<tuple, _Other...>, _Tuple_convert_move_val<tuple, _Other...>>,
-            int> = 0>
+    template <class... _Other, enable_if_t<conjunction_v<_Tuple_implicit_val<tuple, _Other...>,
+                                               _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
+                                   int> = 0>
     constexpr tuple(tuple<_Other...>&& _Right) noexcept(
         _Tuple_nothrow_constructible_v<tuple, _Other...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
 
-    template <class... _Other,
-        enable_if_t<conjunction_v<_Tuple_explicit_val<tuple, _Other...>, _Tuple_convert_move_val<tuple, _Other...>>,
-            int> = 0>
+    template <class... _Other, enable_if_t<conjunction_v<_Tuple_explicit_val<tuple, _Other...>,
+                                               _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
+                                   int> = 0>
     constexpr explicit tuple(tuple<_Other...>&& _Right) noexcept(
         _Tuple_nothrow_constructible_v<tuple, _Other...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
@@ -510,22 +513,22 @@ public:
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Alloc, class... _Other,
         enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, const _Other&...>,
-                        _STD _Tuple_convert_copy_val<tuple, _Other...>>,
+                        _STD _Tuple_convert_val<tuple, const tuple<_Other...>&, _Other...>>,
             int> = 0>
     _CONSTEXPR20 explicit(_Tuple_conditional_explicit_v<tuple, const _Other&...>)
         tuple(allocator_arg_t, const _Alloc& _Al, const tuple<_Other...>& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _Right) {}
 #else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
     template <class _Alloc, class... _Other,
-        enable_if_t<
-            conjunction_v<_Tuple_implicit_val<tuple, const _Other&...>, _Tuple_convert_copy_val<tuple, _Other...>>,
+        enable_if_t<conjunction_v<_Tuple_implicit_val<tuple, const _Other&...>,
+                        _Tuple_convert_val<tuple, const tuple<_Other...>&, _Other...>>,
             int> = 0>
     _CONSTEXPR20 tuple(allocator_arg_t, const _Alloc& _Al, const tuple<_Other...>& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _Right) {}
 
     template <class _Alloc, class... _Other,
-        enable_if_t<
-            conjunction_v<_Tuple_explicit_val<tuple, const _Other&...>, _Tuple_convert_copy_val<tuple, _Other...>>,
+        enable_if_t<conjunction_v<_Tuple_explicit_val<tuple, const _Other&...>,
+                        _Tuple_convert_val<tuple, const tuple<_Other...>&, _Other...>>,
             int> = 0>
     _CONSTEXPR20 explicit tuple(allocator_arg_t, const _Alloc& _Al, const tuple<_Other...>& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _Right) {}
@@ -534,20 +537,22 @@ public:
 #if _HAS_CONDITIONAL_EXPLICIT
     template <class _Alloc, class... _Other,
         enable_if_t<conjunction_v<_STD _Tuple_constructible_val<tuple, _Other...>,
-                        _STD _Tuple_convert_move_val<tuple, _Other...>>,
+                        _STD _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
             int> = 0>
     _CONSTEXPR20 explicit(_Tuple_conditional_explicit_v<tuple, _Other...>)
         tuple(allocator_arg_t, const _Alloc& _Al, tuple<_Other...>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
 #else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
     template <class _Alloc, class... _Other,
-        enable_if_t<conjunction_v<_Tuple_implicit_val<tuple, _Other...>, _Tuple_convert_move_val<tuple, _Other...>>,
+        enable_if_t<conjunction_v<_Tuple_implicit_val<tuple, _Other...>,
+                        _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
             int> = 0>
     _CONSTEXPR20 tuple(allocator_arg_t, const _Alloc& _Al, tuple<_Other...>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
 
     template <class _Alloc, class... _Other,
-        enable_if_t<conjunction_v<_Tuple_explicit_val<tuple, _Other...>, _Tuple_convert_move_val<tuple, _Other...>>,
+        enable_if_t<conjunction_v<_Tuple_explicit_val<tuple, _Other...>,
+                        _Tuple_convert_val<tuple, tuple<_Other...>, _Other...>>,
             int> = 0>
     _CONSTEXPR20 explicit tuple(allocator_arg_t, const _Alloc& _Al, tuple<_Other...>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
