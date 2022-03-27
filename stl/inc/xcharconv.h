@@ -25,7 +25,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-enum class chars_format {
+_EXPORT_STD enum class chars_format {
     scientific = 0b001,
     fixed      = 0b010,
     hex        = 0b100,
@@ -34,7 +34,7 @@ enum class chars_format {
 
 _BITMASK_OPS(chars_format)
 
-struct to_chars_result {
+_EXPORT_STD struct to_chars_result {
     char* ptr;
     errc ec;
 #if _HAS_CXX20
