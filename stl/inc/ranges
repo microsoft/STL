@@ -4803,28 +4803,35 @@ namespace ranges {
         template <bool _Const>
         class _Sentinel;
 
-        template <class _Outer, class _Inner, class _Pattern, bool _Deref_is_glvalue>
+        template <bool _Const>
         struct _Category_base {};
 
-        template <forward_range _Outer, forward_range _Inner, class _Pattern>
-        struct _Category_base<_Outer, _Inner, _Pattern, true> {
+        template <bool _Const>
+            requires forward_range<_Maybe_const<_Const, _Vw>> && forward_range<_InnerRng<_Const>> //
+                && is_reference_v<_InnerRng<_Const>>
+        struct _Category_base<_Const> {
+            using _Outer       = _Maybe_const<_Const, _Vw>;
+            using _Inner       = _InnerRng<_Const>;
+            using _PatternBase = _Maybe_const<_Const, _Pat>;
+
+            static constexpr bool _Deref_is_glvalue = is_reference_v<_InnerRng<_Const>>;
+
             using iterator_category = conditional_t<
-                !is_lvalue_reference_v<common_reference_t<range_reference_t<_Inner>, range_reference_t<_Pattern>>>,
+                !is_lvalue_reference_v<common_reference_t<range_reference_t<_Inner>, range_reference_t<_PatternBase>>>,
                 input_iterator_tag,
-                conditional_t<common_range<_Inner> && common_range<_Pattern> //
+                conditional_t<common_range<_Inner> && common_range<_PatternBase> //
                                   && derived_from<_Iter_cat_t<iterator_t<_Outer>>, bidirectional_iterator_tag> //
                                   && derived_from<_Iter_cat_t<iterator_t<_Inner>>, bidirectional_iterator_tag> //
-                                  && derived_from<_Iter_cat_t<iterator_t<_Pattern>>, bidirectional_iterator_tag>,
+                                  && derived_from<_Iter_cat_t<iterator_t<_PatternBase>>, bidirectional_iterator_tag>,
                     bidirectional_iterator_tag,
                     conditional_t<derived_from<_Iter_cat_t<iterator_t<_Outer>>, forward_iterator_tag> //
                                       && derived_from<_Iter_cat_t<iterator_t<_Inner>>, forward_iterator_tag> //
-                                      && derived_from<_Iter_cat_t<iterator_t<_Pattern>>, forward_iterator_tag>,
+                                      && derived_from<_Iter_cat_t<iterator_t<_PatternBase>>, forward_iterator_tag>,
                         forward_iterator_tag, input_iterator_tag>>>;
         };
 
         template <bool _Const>
-        class _Iterator : public _Category_base<_Maybe_const<_Const, _Vw>, _InnerRng<_Const>,
-                              _Maybe_const<_Const, _Pat>, is_reference_v<_InnerRng<_Const>>> {
+        class _Iterator : public _Category_base<_Const> {
         private:
             friend join_with_view;
 
