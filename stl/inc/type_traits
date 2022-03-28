@@ -2060,37 +2060,37 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
     // true_type if and only if it is valid to swap two _Ty lvalues by exchanging object representations.
 };
 
-#define _BITMASK_OPS(_BITMASK)                                                                  \
-    _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept {         \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
-        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) & static_cast<_IntTy>(_Right)); \
-    }                                                                                           \
-                                                                                                \
-    _NODISCARD constexpr _BITMASK operator|(_BITMASK _Left, _BITMASK _Right) noexcept {         \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
-        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) | static_cast<_IntTy>(_Right)); \
-    }                                                                                           \
-                                                                                                \
-    _NODISCARD constexpr _BITMASK operator^(_BITMASK _Left, _BITMASK _Right) noexcept {         \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
-        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) ^ static_cast<_IntTy>(_Right)); \
-    }                                                                                           \
-                                                                                                \
-    constexpr _BITMASK& operator&=(_BITMASK& _Left, _BITMASK _Right) noexcept {                 \
-        return _Left = _Left & _Right;                                                          \
-    }                                                                                           \
-                                                                                                \
-    constexpr _BITMASK& operator|=(_BITMASK& _Left, _BITMASK _Right) noexcept {                 \
-        return _Left = _Left | _Right;                                                          \
-    }                                                                                           \
-                                                                                                \
-    constexpr _BITMASK& operator^=(_BITMASK& _Left, _BITMASK _Right) noexcept {                 \
-        return _Left = _Left ^ _Right;                                                          \
-    }                                                                                           \
-                                                                                                \
-    _NODISCARD constexpr _BITMASK operator~(_BITMASK _Left) noexcept {                          \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
-        return static_cast<_BITMASK>(~static_cast<_IntTy>(_Left));                              \
+#define _BITMASK_OPS(_MAYBE_EXPORT, _BITMASK)                                                         \
+    _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept { \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                              \
+        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) & static_cast<_IntTy>(_Right));       \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator|(_BITMASK _Left, _BITMASK _Right) noexcept { \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                              \
+        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) | static_cast<_IntTy>(_Right));       \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator^(_BITMASK _Left, _BITMASK _Right) noexcept { \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                              \
+        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) ^ static_cast<_IntTy>(_Right));       \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT constexpr _BITMASK& operator&=(_BITMASK& _Left, _BITMASK _Right) noexcept {         \
+        return _Left = _Left & _Right;                                                                \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT constexpr _BITMASK& operator|=(_BITMASK& _Left, _BITMASK _Right) noexcept {         \
+        return _Left = _Left | _Right;                                                                \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT constexpr _BITMASK& operator^=(_BITMASK& _Left, _BITMASK _Right) noexcept {         \
+        return _Left = _Left ^ _Right;                                                                \
+    }                                                                                                 \
+                                                                                                      \
+    _MAYBE_EXPORT _NODISCARD constexpr _BITMASK operator~(_BITMASK _Left) noexcept {                  \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                              \
+        return static_cast<_BITMASK>(~static_cast<_IntTy>(_Left));                                    \
     }
 
 template <class _Bitmask>

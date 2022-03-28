@@ -1877,7 +1877,7 @@ namespace filesystem {
         _File_attribute_readonly = all & ~_All_write // returned for files with FILE_ATTRIBUTE_READONLY
     };
 
-    _BITMASK_OPS(perms)
+    _BITMASK_OPS(_EXPORT_STD, perms)
 
     _EXPORT_STD enum class copy_options {
         none = static_cast<int>(__std_fs_copy_options::_None),
@@ -1901,7 +1901,7 @@ namespace filesystem {
         _Unspecified_copy_prevention_tag = 0x10000 // to be removed by LWG-3057
     };
 
-    _BITMASK_OPS(copy_options)
+    _BITMASK_OPS(_EXPORT_STD, copy_options)
 
     _EXPORT_STD class file_status {
     public:
@@ -2483,7 +2483,7 @@ namespace filesystem {
     };
 
     _EXPORT_STD enum class directory_options { none = 0, follow_directory_symlink = 1, skip_permission_denied = 2 };
-    _BITMASK_OPS(directory_options)
+    _BITMASK_OPS(_EXPORT_STD, directory_options)
 
     struct _Dir_enum_impl {
         _NODISCARD static __std_win_error _Advance_and_reset_if_no_more_files(shared_ptr<_Dir_enum_impl>& _Ptr) {
@@ -3959,7 +3959,7 @@ namespace filesystem {
 
     _EXPORT_STD enum class perm_options { replace = 0x1, add = 0x2, remove = 0x4, nofollow = 0x8 };
 
-    _BITMASK_OPS(perm_options)
+    _BITMASK_OPS(_EXPORT_STD, perm_options)
 
     _NODISCARD inline __std_win_error _Permissions(
         const path& _Target, const perms _Perms, perm_options _Options) noexcept {

@@ -32,7 +32,7 @@ _EXPORT_STD enum class chars_format {
     general    = fixed | scientific,
 };
 
-_BITMASK_OPS(chars_format)
+_BITMASK_OPS(_EXPORT_STD, chars_format)
 
 _EXPORT_STD struct to_chars_result {
     char* ptr;

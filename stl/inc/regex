@@ -116,7 +116,7 @@ namespace regex_constants {
         collate  = 0x0800
     };
 
-    _BITMASK_OPS(syntax_option_type)
+    _BITMASK_OPS(_EXPORT_STD, syntax_option_type)
 
     _EXPORT_STD enum match_flag_type : int { // specify matching and formatting rules
         match_default     = 0x0000,
@@ -136,7 +136,7 @@ namespace regex_constants {
         _Skip_zero_length = 0x4000,
     };
 
-    _BITMASK_OPS(match_flag_type)
+    _BITMASK_OPS(_EXPORT_STD, match_flag_type)
 
     _EXPORT_STD enum error_type { // identify error
         error_collate,
@@ -1174,7 +1174,7 @@ enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_longest = 0x08
 };
 
-_BITMASK_OPS(_Node_flags)
+_BITMASK_OPS(_EMPTY_ARGUMENT, _Node_flags)
 
 enum _Node_type { // type flag for nfa nodes
     _N_none,

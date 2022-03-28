@@ -76,7 +76,7 @@ enum class __std_fs_file_attr : unsigned long {
 
     _Invalid = 0xFFFFFFFF, // #define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
 };
-_BITMASK_OPS(__std_fs_file_attr)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_file_attr)
 
 enum class __std_fs_reparse_tag : unsigned long {
     _None        = 0,
@@ -119,7 +119,7 @@ enum class __std_fs_stats_flags : unsigned long {
     _All_data = _Attributes | _Reparse_tag | _File_size | _Link_count | _Last_write_time
 };
 
-_BITMASK_OPS(__std_fs_stats_flags)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_stats_flags)
 
 struct __std_fs_stats {
     long long _Last_write_time;
@@ -193,7 +193,7 @@ enum class __std_access_rights : unsigned long {
     _File_generic_write = 0x00120116,
 };
 
-_BITMASK_OPS(__std_access_rights)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_access_rights)
 
 enum class __std_fs_file_flags : unsigned long {
     _None               = 0,
@@ -201,7 +201,7 @@ enum class __std_fs_file_flags : unsigned long {
     _Open_reparse_point = 0x00200000, // #define FILE_FLAG_OPEN_REPARSE_POINT    0x00200000
 };
 
-_BITMASK_OPS(__std_fs_file_flags)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_file_flags)
 
 enum class __std_fs_file_handle : intptr_t { _Invalid = -1 };
 
@@ -226,7 +226,7 @@ enum class __std_fs_copy_options {
     _Update_existing    = 0x4,
 };
 
-_BITMASK_OPS(__std_fs_copy_options)
+_BITMASK_OPS(_EMPTY_ARGUMENT, __std_fs_copy_options)
 
 _EXTERN_C
 _NODISCARD __std_ulong_and_error __stdcall __std_fs_get_full_path_name(_In_z_ const wchar_t* _Source,

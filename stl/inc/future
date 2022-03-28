@@ -72,7 +72,7 @@ _EXPORT_STD enum class launch { // names for launch options passed to async
     deferred = 0x2
 };
 
-_BITMASK_OPS(launch)
+_BITMASK_OPS(_EXPORT_STD, launch)
 
 _EXPORT_STD enum class future_status { // names for timed wait function returns
     ready,
