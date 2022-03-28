@@ -1674,7 +1674,7 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    _NODISCARD friend constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
+    _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
         is_nothrow_copy_constructible_v<_BidIt>&& noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
         auto _Tmp = _It.current;
         --_Tmp;
@@ -3728,23 +3728,23 @@ public:
 
 #ifdef __cpp_lib_concepts
     template <sentinel_for<_Iter> _Sent>
-    _NODISCARD friend constexpr bool operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
+    _NODISCARD_FRIEND constexpr bool operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
         return _Left._Current == _Right._Get_last();
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
-    _NODISCARD friend constexpr difference_type operator-(
+    _NODISCARD_FRIEND constexpr difference_type operator-(
         const move_sentinel<_Sent>& _Left, const move_iterator& _Right) {
         return _Left._Get_last() - _Right._Current;
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
-    _NODISCARD friend constexpr difference_type operator-(
+    _NODISCARD_FRIEND constexpr difference_type operator-(
         const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
         return _Left._Current - _Right._Get_last();
     }
 
-    _NODISCARD friend constexpr reference iter_move(const move_iterator& _It)
+    _NODISCARD_FRIEND constexpr reference iter_move(const move_iterator& _It)
 #ifdef __EDG__ // TRANSITION, VSO-1222776
         noexcept(noexcept(_RANGES iter_move(_STD declval<const _Iter&>())))
 #else // ^^^ workaround / no workaround vvv
@@ -3904,7 +3904,7 @@ struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
     struct _Base {
         template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
+        _NODISCARD_FRIEND constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
             return false;
         }
     };
