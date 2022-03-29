@@ -87,10 +87,10 @@ def lineToCppDataLineUtf8(line: BreakTestItem) -> str:
 
 """
 Generate test data from "GraphemeBreakText.txt"
-This file can be downloaded from: https://www.unicode.org/Public/13.0.0/ucd/auxiliary/GraphemeBreakTest.txt.
+This file can be downloaded from: https://www.unicode.org/Public/14.0.0/ucd/auxiliary/GraphemeBreakTest.txt.
 This script looks for GraphemeBreakTest.txt in same directory as this script
 """
-if __name__ == "__main__":
+def generate_all() -> str:
     test_data_path = Path(__file__)
     test_data_path = test_data_path.absolute()
     test_data_path = test_data_path.with_name("GraphemeBreakTest.txt")
@@ -99,5 +99,8 @@ if __name__ == "__main__":
     while line := parseBreakTestLine(file):
         if len(line.code_points) > 0:
             lines.append(line)
-    print(cpp_template.format(len(lines), ','.join(map(lineToCppDataLineUtf32, lines)),
-          ','.join(map(lineToCppDataLineUtf8, lines))))
+    return cpp_template.format(len(lines), ','.join(map(lineToCppDataLineUtf32, lines)),
+          ','.join(map(lineToCppDataLineUtf8, lines)))
+
+if __name__ == "__main__":
+    print(generate_all())
