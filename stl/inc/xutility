@@ -5230,16 +5230,19 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
     }
 }
 
-template <class _Iter, class _Ty>
-_INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe =
-    _Iterator_is_contiguous<_Iter>&& disjunction_v<conjunction<is_integral<_Ty>, is_integral<_Iter_value_t<_Iter>>>,
-        conjunction<disjunction<is_pointer<_Ty>, is_null_pointer<_Ty>>,
-            disjunction<is_pointer<_Iter_value_t<_Iter>>, is_null_pointer<_Iter_value_t<_Iter>>>>
+// _Iterator_is_contiguous<_Iter> && (is_integral<_Ty> && is_integral<_Val> ||
+// (is_pointer<_Ty> || is_null_pointer<_Ty>) && (is_pointer<_Val> || is_null_pointer<_Val>) ||
+// is_same<_Ty, byte> && is_same<_Val, byte>) && !is_volatile<remove_reference_t<_Val>>
+template <class _Iter, class _Ty, class _Val = _Iter_value_t<_Iter>>
+_INLINE_VAR constexpr bool
+    _Vector_alg_in_find_is_safe =
+        _Iterator_is_contiguous<_Iter>&&disjunction_v < conjunction<is_integral<_Ty>, is_integral<_Val>>,
+    conjunction<disjunction<is_pointer<_Ty>, is_null_pointer<_Ty>>, disjunction<is_pointer<_Val>, is_null_pointer<_Val>>>
 #ifdef __cpp_lib_byte
         ,
-        conjunction<is_same<_Ty, byte>, is_same<_Iter_value_t<_Iter>, byte>>
+        conjunction<is_same<_Ty, byte>, is_same<_Val, byte>>
 #endif // __cpp_lib_byte
-        > && !is_volatile_v<remove_reference_t<_Iter_ref_t<_Iter>>>;
+        > && !is_volatile_v<remove_reference_t<_Val>>;
 
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
