@@ -4814,8 +4814,6 @@ namespace ranges {
             using _Inner       = _InnerRng<_Const>;
             using _PatternBase = _Maybe_const<_Const, _Pat>;
 
-            static constexpr bool _Deref_is_glvalue = is_reference_v<_InnerRng<_Const>>;
-
             using iterator_category = conditional_t<
                 !is_lvalue_reference_v<common_reference_t<range_reference_t<_Inner>, range_reference_t<_PatternBase>>>,
                 input_iterator_tag,
@@ -4873,7 +4871,7 @@ namespace ranges {
                 }
             }
 
-            _NODISCARD constexpr auto&& _Get_inner() {
+            _NODISCARD constexpr auto&& _Get_inner() noexcept {
                 if constexpr (_Deref_is_glvalue) {
                     return *_Outer_it;
                 } else {
@@ -4901,7 +4899,9 @@ namespace ranges {
 
                         auto&& _Inner = _Update_inner();
                         _Inner_it._Emplace_second(_RANGES begin(_Inner));
-                    } else if (_Inner_it._Contains == _Variantish_state::_Holds_second) {
+                    } else {
+                        _STL_INTERNAL_CHECK(_Inner_it._Contains == _Variantish_state::_Holds_second);
+
                         auto&& _Inner = _Get_inner();
                         if (_Inner_it._Second != _RANGES end(_Inner)) {
                             break;
@@ -4916,8 +4916,6 @@ namespace ranges {
                         }
 
                         _Inner_it._Emplace_first(_RANGES begin(_Parent->_Pattern));
-                    } else {
-                        _Throw_bad_variant_access();
                     }
                 }
             }
@@ -5038,19 +5036,24 @@ namespace ranges {
 
             friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) requires _Deref_is_glvalue
                 && equality_comparable<_OuterIter> && equality_comparable<_InnerIter> {
-                if (_Left._Outer_it == _Right._Outer_it) {
-                    if (_Left._Inner_it._Contains == _Right._Inner_it._Contains) {
-                        switch (_Left._Inner_it._Contains) {
-                        case _Variantish_state::_Holds_first:
-                            return _Left._Inner_it._First == _Right._Inner_it._First;
-                        case _Variantish_state::_Holds_second:
-                            return _Left._Inner_it._Second == _Right._Inner_it._Second;
-                        case _Variantish_state::_Nothing:
-                            return true;
-                        }
-                    }
+                if (_Left._Outer_it != _Right._Outer_it) {
+                    return false;
                 }
-                return false;
+
+                if (_Left._Inner_it._Contains != _Right._Inner_it._Contains) {
+                    return false;
+                }
+
+                switch (_Left._Inner_it._Contains) {
+                case _Variantish_state::_Holds_first:
+                    return _Left._Inner_it._First == _Right._Inner_it._First;
+                case _Variantish_state::_Holds_second:
+                    return _Left._Inner_it._Second == _Right._Inner_it._Second;
+                case _Variantish_state::_Nothing:
+                    return true;
+                }
+
+                _STL_UNREACHABLE;
             }
 
             friend constexpr decltype(auto) iter_move(const _Iterator& _It) {

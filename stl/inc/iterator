@@ -803,7 +803,7 @@ public:
     constexpr void _Emplace_first(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty1, _Types...>) {
         _Clear();
 
-        _Construct_in_place(_First, forward<_Types>(_Args)...);
+        _Construct_in_place(_First, _STD forward<_Types>(_Args)...);
         _Contains = _Variantish_state::_Holds_first;
     }
 
@@ -811,7 +811,7 @@ public:
     constexpr void _Emplace_second(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty2, _Types...>) {
         _Clear();
 
-        _Construct_in_place(_Second, forward<_Types>(_Args)...);
+        _Construct_in_place(_Second, _STD forward<_Types>(_Args)...);
         _Contains = _Variantish_state::_Holds_second;
     }
 
