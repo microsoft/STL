@@ -179,6 +179,9 @@ int main() {
         v.push_back("fluffy");
         v.push_back("kittens");
 
+        static_assert(
+            !std::_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype("fluffy")>, "should not optimize");
+
         assert(find(v.begin(), v.end(), "fluffy") == v.begin() + 2);
         assert(find(v.begin(), v.end(), "zombies") == v.end());
 
