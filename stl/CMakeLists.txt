@@ -130,6 +130,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/deque
     ${CMAKE_CURRENT_LIST_DIR}/inc/exception
     ${CMAKE_CURRENT_LIST_DIR}/inc/execution
+    ${CMAKE_CURRENT_LIST_DIR}/inc/expected
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/coroutine
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/deque
     ${CMAKE_CURRENT_LIST_DIR}/inc/experimental/filesystem

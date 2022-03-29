@@ -88,6 +88,7 @@
 #include <complex>
 #include <deque>
 #include <exception>
+#include <expected>
 #include <filesystem>
 #include <format>
 #include <forward_list>

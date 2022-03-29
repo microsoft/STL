@@ -714,6 +714,20 @@ STATIC_ASSERT(__cpp_lib_execution == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_expected
+#error __cpp_lib_expected is not defined
+#elif __cpp_lib_expected != 202202L
+#error __cpp_lib_expected is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_expected == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_expected
+#error __cpp_lib_expected is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_experimental_erase_if
 #error __cpp_lib_experimental_erase_if is not defined
 #elif __cpp_lib_experimental_erase_if != 201411L

@@ -254,6 +254,7 @@ tests\P0220R1_searchers
 tests\P0220R1_string_view
 tests\P0288R9_move_only_function
 tests\P0295R0_gcd_lcm
+tests\P0323R12_expected
 tests\P0325R4_to_array
 tests\P0339R6_polymorphic_allocator
 tests\P0355R7_calendars_and_time_zones_clocks
