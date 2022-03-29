@@ -136,7 +136,7 @@ int main() {
         v.push_back(44);
         v.push_back(55);
 
-#ifdef __cpp_lib_concepts 
+#ifdef __cpp_lib_concepts
         static_assert(std::_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype(33)>, "should optimize");
 #endif // __cpp_lib_concepts
 
