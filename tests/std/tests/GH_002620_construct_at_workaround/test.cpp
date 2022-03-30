@@ -7,7 +7,7 @@ using namespace std;
 
 struct S {
     int v;
-    S(int v) : v(v) {}
+    S(int v_) : v(v_) {}
     S(const S&) = delete;
 };
 
@@ -20,7 +20,7 @@ union U {
 
 struct copy_elider {
     operator S() const {
-        return S(42);
+        return S{42};
     }
 };
 
