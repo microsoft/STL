@@ -134,39 +134,39 @@ public:
     // We force the current function to be always noinline and add its frame to skipped.
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
-        current(const allocator_type& _Alloc = allocator_type()) noexcept {
-        basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Alloc);
+        current(const allocator_type& _Al = allocator_type()) noexcept {
+        basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Al);
         _Result._Frames.resize(__std_stacktrace_capture(1, static_cast<unsigned long>(_Max_frames),
             reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
         return _Result;
     }
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
-        current(size_type _Skip, const allocator_type& _Alloc = allocator_type()) noexcept {
-        basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Alloc);
+        current(size_type _Skip, const allocator_type& _Al = allocator_type()) noexcept {
+        basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Al);
         _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
             static_cast<unsigned long>(_Max_frames), reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
         return _Result;
     }
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
-        current(size_type _Skip, size_type _Max_depth, const allocator_type& _Alloc = allocator_type()) noexcept {
-        basic_stacktrace _Result(_Internal_t{}, _Max_depth, _Alloc);
+        current(size_type _Skip, size_type _Max_depth, const allocator_type& _Al = allocator_type()) noexcept {
+        basic_stacktrace _Result(_Internal_t{}, _Max_depth, _Al);
         _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
             static_cast<unsigned long>(_Max_depth), reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
         return _Result;
     }
 
     basic_stacktrace() noexcept(is_nothrow_default_constructible_v<allocator_type>) = default;
-    explicit basic_stacktrace(const allocator_type& _Alloc) noexcept : _Frames(_Alloc) {}
+    explicit basic_stacktrace(const allocator_type& _Al) noexcept : _Frames(_Al) {}
 
     basic_stacktrace(const basic_stacktrace&)     = default;
     basic_stacktrace(basic_stacktrace&&) noexcept = default;
-    basic_stacktrace(const basic_stacktrace& _Other, const allocator_type& _Alloc)
-        : _Frames(_Other._Frames, _Alloc), _Hash(_Other._Hash) {}
+    basic_stacktrace(const basic_stacktrace& _Other, const allocator_type& _Al)
+        : _Frames(_Other._Frames, _Al), _Hash(_Other._Hash) {}
 
-    basic_stacktrace(basic_stacktrace&& _Other, const allocator_type& _Alloc)
-        : _Frames(_STD move(_Other._Frames), _Alloc), _Hash(_Other._Hash) {}
+    basic_stacktrace(basic_stacktrace&& _Other, const allocator_type& _Al)
+        : _Frames(_STD move(_Other._Frames), _Al), _Hash(_Other._Hash) {}
 
     basic_stacktrace& operator=(const basic_stacktrace&) = default;
     basic_stacktrace& operator=(basic_stacktrace&&) noexcept(_Noex_move) = default;
@@ -255,8 +255,8 @@ public:
 #endif // ^^^ !__cpp_lib_concepts ^^^
     }
 
-    void swap(basic_stacktrace& _Other) noexcept(
-        allocator_traits<_Al>::propagate_on_container_swap::value || allocator_traits<_Al>::is_always_equal::value) {
+    void swap(basic_stacktrace& _Other) noexcept(allocator_traits<_Alloc>::propagate_on_container_swap::value
+                                                 || allocator_traits<_Alloc>::is_always_equal::value) {
         _STD swap(_Frames, _Other._Frames);
         _STD swap(_Hash, _Other._Hash);
     }
@@ -277,7 +277,7 @@ private:
 
     struct _Internal_t {};
 
-    basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Alloc) : _Frames(_Max_depth, _Alloc) {}
+    basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al) : _Frames(_Max_depth, _Al) {}
 
     _Frames_t _Frames;
     unsigned long _Hash = 0;
