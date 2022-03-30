@@ -104,9 +104,9 @@ public:
         return __std_stacktrace_source_line(_Address);
     }
 
-    _NODISCARD friend constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
+    _NODISCARD_FRIEND constexpr bool operator==(const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
 
-    _NODISCARD friend constexpr strong_ordering operator<=>(
+    _NODISCARD_FRIEND constexpr strong_ordering operator<=>(
         const stacktrace_entry&, const stacktrace_entry&) noexcept = default;
 
 private:
