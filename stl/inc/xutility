@@ -4035,7 +4035,7 @@ namespace ranges {
     }
 
 #if _HAS_CXX23
-    template <class _Out, class _Ty>
+    _EXPORT_STD template <class _Out, class _Ty>
     struct out_value_result {
         /* [[no_unique_address]] */ _Out out;
         /* [[no_unique_address]] */ _Ty value;
