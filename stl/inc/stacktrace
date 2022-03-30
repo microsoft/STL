@@ -31,8 +31,8 @@ using _Stacktrace_string_fill = size_t(__stdcall*)(
     size_t _Size, void* _String, void* _Context, _Stacktrace_string_fill_callback _Callback);
 
 _EXTERN_C
-unsigned short __stdcall __std_stacktrace_capture(unsigned long _Frames_to_skip, unsigned long _Frames_to_capture,
-    void** _Back_trace, unsigned long* _Back_trace_hash) noexcept;
+_NODISCARD unsigned short __stdcall __std_stacktrace_capture(unsigned long _Frames_to_skip,
+    unsigned long _Frames_to_capture, void** _Back_trace, unsigned long* _Back_trace_hash) noexcept;
 
 // Some of these functions may throw
 // (they would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
@@ -60,16 +60,10 @@ _STD_BEGIN
 inline size_t __stdcall _Stacktrace_string_fill_impl(
     const size_t _Size, void* const _String, void* const _Context, const _Stacktrace_string_fill_callback _Callback) {
     if (_Callback) {
-        struct _Stacktrace_string_fill_op {
-            size_t operator()(char* _Data, size_t _Size) {
+        static_cast<string*>(_String)->resize_and_overwrite(
+            _Size, [_Callback, _Context](char* _Data, size_t _Size) noexcept -> size_t {
                 return _Callback(_Data, _Size, _Context);
-            }
-
-            _Stacktrace_string_fill_callback _Callback;
-            void* _Context;
-        };
-
-        static_cast<string*>(_String)->resize_and_overwrite(_Size, _Stacktrace_string_fill_op{_Callback, _Context});
+            });
         return static_cast<string*>(_String)->size();
     } else {
         return static_cast<string*>(_String)->capacity();
@@ -106,7 +100,7 @@ public:
         return _Result;
     }
 
-    _NODISCARD uint_least32_t source_line() const {
+    _NODISCARD uint_least32_t source_line() const noexcept /* strengthened */ {
         return __std_stacktrace_source_line(_Address);
     }
 
@@ -119,10 +113,10 @@ private:
     void* _Address = nullptr;
 };
 
-template <class _Al>
+template <class _Alloc>
 class basic_stacktrace {
 private:
-    using _Frames_t = vector<stacktrace_entry, _Al>;
+    using _Frames_t = vector<stacktrace_entry, _Alloc>;
 
 public:
     using value_type             = stacktrace_entry;
@@ -134,7 +128,7 @@ public:
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
     using difference_type        = ptrdiff_t;
     using size_type              = size_t;
-    using allocator_type         = _Al;
+    using allocator_type         = _Alloc;
 
     // __declspec(noinline) to make the same behavior for debug and release.
     // We force the current function to be always noinline and add its frame to skipped.
@@ -236,12 +230,12 @@ public:
     }
 
     template <class _Al2>
-    _NODISCARD friend bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
-        return _Lhs._Hash == _Rhs._Hash && _Lhs._Frames == _Rhs._Frames;
+    _NODISCARD_FRIEND bool operator==(const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
+        return _Lhs._Hash == _Rhs._Hash && _STD equal(_Lhs.begin(), _Lhs.end(), _Rhs.begin(), _Rhs.end());
     }
 
     template <class _Al2>
-    _NODISCARD friend strong_ordering operator<=>(
+    _NODISCARD_FRIEND strong_ordering operator<=>(
         const basic_stacktrace& _Lhs, const basic_stacktrace<_Al2>& _Rhs) noexcept {
         const auto _Result = _Lhs._Frames.size() <=> _Rhs._Frames.size();
         if (_Result != strong_ordering::equal) {
@@ -253,7 +247,7 @@ public:
 #else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
         for (size_t _Ix = 0, _Mx = _Lhs._Frames.size(); _Ix != _Mx; ++_Ix) {
             if (_Lhs._Frames[_Ix] != _Rhs._Frames[_Ix]) {
-                return _Lhs._Frames[_Ix] <=> _Lhs._Frames[_Ix];
+                return _Lhs._Frames[_Ix] <=> _Rhs._Frames[_Ix];
             }
         }
 
@@ -278,8 +272,8 @@ public:
 private:
     static constexpr size_t _Max_frames = 0xFFFF;
 
-    static constexpr bool _Noex_move = allocator_traits<_Al>::propagate_on_container_move_assignment::value
-                                    || allocator_traits<_Al>::is_always_equal::value;
+    static constexpr bool _Noex_move = allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
+                                    || allocator_traits<_Alloc>::is_always_equal::value;
 
     struct _Internal_t {};
 
@@ -309,14 +303,14 @@ _NODISCARD string to_string(const basic_stacktrace<_Al>& _St) {
     return _Result;
 }
 
-template <class charT, class traits>
-basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>& _Os, const stacktrace_entry& _Fx) {
-    return _Os << to_string(_Fx);
+template <class _CharT, class _Traits>
+basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const stacktrace_entry& _St) {
+    return _Os << _STD to_string(_St);
 }
 
-template <class charT, class traits, class _Al>
-basic_ostream<charT, traits>& operator<<(basic_ostream<charT, traits>& _Os, const basic_stacktrace<_Al>& _Fx) {
-    return _Os << to_string(_Fx);
+template <class _CharT, class _Traits, class _Al>
+basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const basic_stacktrace<_Al>& _St) {
+    return _Os << _STD to_string(_St);
 }
 
 namespace pmr {

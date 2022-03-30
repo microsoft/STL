@@ -3,9 +3,12 @@
 
 #include <cassert>
 #include <filesystem>
+#include <iterator>
 #include <sstream>
 #include <stacktrace>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 #include <thread>
 
 #ifdef HAS_EXPORT
@@ -76,46 +79,46 @@ string trim_past_plus(string str) {
 }
 
 string to_string_using_low_level_members(const stacktrace& st) {
-    stringstream ss;
+    ostringstream oss;
     int n = 0;
     for (const auto& i : st) {
-        ss << n << "> ";
+        oss << n << "> ";
         ++n;
         auto l = i.source_line();
         if (l != 0) {
-            ss << i.source_file() << "(" << l << "): ";
+            oss << i.source_file() << "(" << l << "): ";
         }
-        ss << i.description() << "\n";
+        oss << i.description() << "\n";
     }
-    return ss.str();
+    return oss.str();
 }
 
 string to_string_using_stream_entry(const stacktrace& st) {
-    stringstream ss;
+    ostringstream oss;
     int n = 0;
     for (const auto& i : st) {
-        ss << n << "> ";
+        oss << n << "> ";
         ++n;
-        ss << i << "\n";
+        oss << i << "\n";
     }
-    return ss.str();
+    return oss.str();
 }
 
 string to_string_using_to_string_entry(const stacktrace& st) {
-    stringstream ss;
+    ostringstream oss;
     int n = 0;
     for (const auto& i : st) {
-        ss << n << "> ";
+        oss << n << "> ";
         ++n;
-        ss << to_string(i) << "\n";
+        oss << to_string(i) << "\n";
     }
-    return ss.str();
+    return oss.str();
 }
 
 string to_string_using_stream(const stacktrace& st) {
-    stringstream ss;
-    ss << st << "\n";
-    return ss.str();
+    stringstream oss;
+    oss << st << "\n";
+    return oss.str();
 }
 
 string to_string_using_to_string(const stacktrace& st) {
@@ -229,7 +232,7 @@ void test_impl() {
     try {
         (void) all.at(all.size());
         assert(false); // should have thrown
-    } catch (out_of_range) {
+    } catch (const out_of_range&) {
     }
 
     auto all_copy = all;
@@ -272,7 +275,6 @@ void test_impl() {
 }
 
 int main() {
-    std::thread t{test_impl};
+    jthread t{test_impl};
     test_impl();
-    t.join();
 }

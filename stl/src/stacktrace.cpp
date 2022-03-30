@@ -18,12 +18,12 @@
 #pragma comment(lib, "DbgEng.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
-// The below function pointer types be in sync with <stacktrace>
+// The below function pointer types must be in sync with <stacktrace>
 
-using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char*, size_t, void* _Context);
+using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char* _Data, size_t _Size, void* _Context);
 
 using _Stacktrace_string_fill = size_t(__stdcall*)(
-    size_t, void* _Str, void* _Context, _Stacktrace_string_fill_callback);
+    size_t _Size, void* _String, void* _Context, _Stacktrace_string_fill_callback _Callback);
 
 namespace {
     template <class F>
@@ -61,11 +61,11 @@ namespace {
     void uninitialize() {
         srw_lock_guard lock{srw};
 
-        // "Phoenix singleton" - destroy and set to null, so that can initialize later again
+        // "Phoenix singleton" - destroy and set to null, so that it can be initialized later again
 
         if (debug_client != nullptr) {
             if (attached) {
-                debug_client->DetachProcesses();
+                (void) debug_client->DetachProcesses();
                 attached = false;
             }
 
@@ -98,11 +98,11 @@ namespace {
                 attached = SUCCEEDED(debug_client->AttachProcess(
                     0, GetCurrentProcessId(), DEBUG_ATTACH_NONINVASIVE | DEBUG_ATTACH_NONINVASIVE_NO_SUSPEND));
                 if (attached) {
-                    debug_control->WaitForEvent(0, INFINITE);
+                    (void) debug_control->WaitForEvent(0, INFINITE);
                 }
 
-                // If this failes, will use IDebugSymbols
-                debug_symbols->QueryInterface(IID_IDebugSymbols3, reinterpret_cast<void**>(&debug_symbols3));
+                // If this fails, will use IDebugSymbols
+                (void) debug_symbols->QueryInterface(IID_IDebugSymbols3, reinterpret_cast<void**>(&debug_symbols3));
 
                 // clang-format off
                 constexpr ULONG add_options = 0x1     /* SYMOPT_CASE_INSENSITIVE */ |
@@ -124,8 +124,8 @@ namespace {
                                                  0x20000 /* SYMOPT_NO_IMAGE_SEARCH */;
                 // clang-format on
 
-                debug_symbols->AddSymbolOptions(add_options);
-                debug_symbols->RemoveSymbolOptions(remove_options);
+                (void) debug_symbols->AddSymbolOptions(add_options);
+                (void) debug_symbols->RemoveSymbolOptions(remove_options);
             }
         }
 
@@ -140,7 +140,7 @@ namespace {
     }
 
     size_t get_description(const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
-        // Initially pass the current capacity, will retry with bigger buffer if fails.
+        // Initially pass the current capacity, will retry with bigger buffer if it fails.
         size_t size          = fill(0, str, nullptr, nullptr) - off;
         HRESULT hr           = E_UNEXPECTED;
         ULONG64 displacement = 0;
@@ -211,7 +211,7 @@ namespace {
         return off;
     }
 
-    [[nodiscard]] unsigned source_line(const void* const address) {
+    [[nodiscard]] unsigned int source_line(const void* const address) {
         ULONG line = 0;
 
         if (FAILED(debug_symbols->GetLineByOffset(
@@ -245,12 +245,13 @@ _EXTERN_C
 [[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(unsigned long _Frames_to_skip,
     const unsigned long _Frames_to_capture, void** const _Back_trace, unsigned long* const _Back_trace_hash) noexcept {
 #ifdef _DEBUG
-    _Frames_to_skip += 1; // compensate absense of tail call optimization here
+    _Frames_to_skip += 1; // compensate for absence of tail call optimization here
 #endif
     return CaptureStackBackTrace(_Frames_to_skip, _Frames_to_capture, _Back_trace, _Back_trace_hash);
 }
 
-// Some of these exports may throw (They would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
+// Some of these functions may throw (They would propagate bad_alloc potentially thrown from
+// string::resize_and_overwrite)
 
 void __stdcall __std_stacktrace_description(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
@@ -315,7 +316,7 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
             });
         }
 
-        constexpr size_t max_entry_num = std::size("65536> ") - 1; // maximum possible line number
+        constexpr size_t max_entry_num = std::size("65536> ") - 1; // maximum possible entry number
 
         off = string_fill(_Fill, off + max_entry_num, _Str,
             [off, i](char* s, size_t) { return std::format_to_n(s + off, max_entry_num, "{}> ", i).out - s; });
