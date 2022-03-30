@@ -433,4 +433,19 @@ int main() {
         assert(count(begin(arr), end(arr), true) == 4);
         assert(count(begin(arr), end(arr), 2) == 0);
     }
+
+    { // Test pointers
+        const char* s = "xxxyyy";
+        const char* arr[]{s, s + 1, s + 1, s + 5, s, s + 4};
+
+        static_assert(std::_Vector_alg_in_find_is_safe<decltype(begin(arr)), decltype(s + 1)>, "should optimize");
+
+        assert(find(begin(arr), end(arr), s) == begin(arr));
+        assert(find(begin(arr), end(arr), s + 1) == begin(arr) + 1);
+        assert(find(begin(arr), end(arr), s + 3) == end(arr));
+
+        assert(count(begin(arr), end(arr), s + 1) == 2);
+        assert(count(begin(arr), end(arr), s + 5) == 1);
+        assert(count(begin(arr), end(arr), s + 3) == 0);
+    }
 }
