@@ -21,7 +21,7 @@ using namespace std;
 
 [[maybe_unused]] const int base_line = __LINE__;
 
-// Note: the bellow assumes tail call optimization disabled, which is in case in /Od
+// Note: the below assumes that tail call optimization is disabled, which is the case in /Od
 
 MAYBE_EXPORT stacktrace all_innermost() {
     return stacktrace::current();
