@@ -129,7 +129,7 @@ _NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
 }
 
 #if _HAS_CXX20
-#if __EDG__ // TRANSITION, DevCom-10000405
+#ifdef __EDG__ // TRANSITION, DevCom-10000405
 template <class _Ty, class... _Types,
     class = void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
 #else // ^^^ no workaround // workaround vvv
