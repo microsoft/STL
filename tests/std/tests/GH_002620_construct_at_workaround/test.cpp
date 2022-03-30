@@ -27,7 +27,7 @@ struct copy_elider {
 int main() {
     U u;
     // GH-2620: <xutility>: SFINAE constraint on construct_at prevents emplacing immovable objects with copy elision
-#ifndef __EDG__ // TRANSITION, DevCom-XXXX
+#ifndef __EDG__ // TRANSITION, DevCom-10000388
     construct_at(&u.s, copy_elider{});
-#endif // TRANSITION, DevCom-XXXX
+#endif // TRANSITION, DevCom-10000388
 }
