@@ -741,41 +741,31 @@ private:
     bool _Matches[256] = {};
 };
 
-template <class _Traits>
+template <class _Traits, bool _Special = _Is_specialization_v<_Traits, char_traits>>
 constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
     const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
-    const size_t _Needle_size, false_type) noexcept {
+    const size_t _Needle_size) noexcept {
     // in [_Haystack, _Haystack + _Hay_size), look for one of [_Needle, _Needle + _Needle_size), at/after _Start_at
-    // general algorithm
     if (_Needle_size != 0 && _Start_at < _Hay_size) { // room for match, look for it
-        const auto _End = _Haystack + _Hay_size;
-        for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
-            if (_Traits::find(_Needle, _Needle_size, *_Match_try)) {
-                return static_cast<size_t>(_Match_try - _Haystack); // found a match
+        if constexpr (_Special) {
+            _String_bitmap<typename _Traits::char_type> _Matches;
+            if (!_Matches._Mark(_Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the
+                                                                    // bitmap, fall back to the serial algorithm
+                return _Traits_find_first_of<_Traits, false>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size);
             }
-        }
-    }
 
-    return static_cast<size_t>(-1); // no match
-}
-
-template <class _Traits>
-constexpr size_t _Traits_find_first_of(_In_reads_(_Hay_size) const _Traits_ptr_t<_Traits> _Haystack,
-    const size_t _Hay_size, const size_t _Start_at, _In_reads_(_Needle_size) const _Traits_ptr_t<_Traits> _Needle,
-    const size_t _Needle_size, true_type) noexcept {
-    // in [_Haystack, _Haystack + _Hay_size), look for one of [_Needle, _Needle + _Needle_size), at/after _Start_at
-    // special case for std::char_traits
-    if (_Needle_size != 0 && _Start_at < _Hay_size) { // room for match, look for it
-        _String_bitmap<typename _Traits::char_type> _Matches;
-        if (!_Matches._Mark(_Needle, _Needle + _Needle_size)) { // couldn't put one of the characters into the bitmap,
-                                                                // fall back to the serial algorithm
-            return _Traits_find_first_of<_Traits>(_Haystack, _Hay_size, _Start_at, _Needle, _Needle_size, false_type{});
-        }
-
-        const auto _End = _Haystack + _Hay_size;
-        for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
-            if (_Matches._Match(*_Match_try)) {
-                return static_cast<size_t>(_Match_try - _Haystack); // found a match
+            const auto _End = _Haystack + _Hay_size;
+            for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
+                if (_Matches._Match(*_Match_try)) {
+                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
+                }
+            }
+        } else {
+            const auto _End = _Haystack + _Hay_size;
+            for (auto _Match_try = _Haystack + _Start_at; _Match_try < _End; ++_Match_try) {
+                if (_Traits::find(_Needle, _Needle_size, *_Match_try)) {
+                    return static_cast<size_t>(_Match_try - _Haystack); // found a match
+                }
             }
         }
     }
@@ -1576,8 +1566,7 @@ public:
 
     _NODISCARD constexpr size_type find_first_of(const basic_string_view _Right,
         const size_type _Off = 0) const noexcept { // look for one of _Right at or after _Off
-        return _Traits_find_first_of<_Traits>(
-            _Mydata, _Mysize, _Off, _Right._Mydata, _Right._Mysize, _Is_specialization<_Traits, char_traits>{});
+        return _Traits_find_first_of<_Traits>(_Mydata, _Mysize, _Off, _Right._Mydata, _Right._Mysize);
     }
 
     _NODISCARD constexpr size_type find_first_of(const _Elem _Ch, const size_type _Off = 0) const noexcept {
@@ -1588,15 +1577,13 @@ public:
     _NODISCARD constexpr size_type find_first_of(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for one of [_Ptr, _Ptr + _Count) at or after _Off
-        return _Traits_find_first_of<_Traits>(
-            _Mydata, _Mysize, _Off, _Ptr, _Count, _Is_specialization<_Traits, char_traits>{});
+        return _Traits_find_first_of<_Traits>(_Mydata, _Mysize, _Off, _Ptr, _Count);
     }
 
     _NODISCARD constexpr size_type find_first_of(
         _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
-        return _Traits_find_first_of<_Traits>(
-            _Mydata, _Mysize, _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{});
+        return _Traits_find_first_of<_Traits>(_Mydata, _Mysize, _Off, _Ptr, _Traits::length(_Ptr));
     }
 
     _NODISCARD constexpr size_type find_last_of(const basic_string_view _Right,
@@ -2582,41 +2569,31 @@ public:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _Tidy_init();
         _Adl_verify_range(_First, _Last);
-        _Construct(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+        auto _UFirst      = _Get_unwrapped(_First);
+        const auto _ULast = _Get_unwrapped(_Last);
+
+        if constexpr (is_same_v<remove_const_t<remove_pointer_t<decltype(_UFirst)>>, _Elem>) {
+            if (_UFirst != _ULast) {
+                assign(_UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
+            }
+        } else {
+            if constexpr (_Is_fwd_iter_v<_Iter>) {
+                const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
+                reserve(_Count);
+            } else {
+                static_assert(_Is_input_iter_v<_Iter>, "Should be at least input iterator");
+            }
+
+            // initialize from [_First, _Last), input iterators
+            _Tidy_deallocate_guard<basic_string> _Guard{this};
+            for (; _UFirst != _ULast; ++_UFirst) {
+                push_back(*_UFirst);
+            }
+
+            _Guard._Target = nullptr;
+        }
+
         _Proxy._Release();
-    }
-
-    template <class _Iter>
-    _CONSTEXPR20 void _Construct(_Iter _First, const _Iter _Last, input_iterator_tag) {
-        // initialize from [_First, _Last), input iterators
-        _Tidy_deallocate_guard<basic_string> _Guard{this};
-        for (; _First != _Last; ++_First) {
-            push_back(*_First);
-        }
-
-        _Guard._Target = nullptr;
-    }
-
-    template <class _Iter>
-    _CONSTEXPR20 void _Construct(const _Iter _First, const _Iter _Last, forward_iterator_tag) {
-        // initialize from [_First, _Last), forward iterators
-        const size_type _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        reserve(_Count);
-        _Construct(_First, _Last, input_iterator_tag{});
-    }
-
-    _CONSTEXPR20 void _Construct(_Elem* const _First, _Elem* const _Last, random_access_iterator_tag) {
-        // initialize from [_First, _Last), pointers
-        if (_First != _Last) {
-            assign(_First, _Convert_size<size_type>(static_cast<size_t>(_Last - _First)));
-        }
-    }
-
-    _CONSTEXPR20 void _Construct(const _Elem* const _First, const _Elem* const _Last, random_access_iterator_tag) {
-        // initialize from [_First, _Last), const pointers
-        if (_First != _Last) {
-            assign(_First, _Convert_size<size_type>(static_cast<size_t>(_Last - _First)));
-        }
     }
 
     _CONSTEXPR20 basic_string(basic_string&& _Right) noexcept
@@ -3972,9 +3949,10 @@ public:
         const auto _Result_size = _STD move(_Op)(_Mypair._Myval2._Myptr(), _New_size);
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Result_size >= 0, "the returned size can't be smaller than 0");
+#pragma warning(suppress : 4018) //  '<=': signed/unsigned mismatch, we already compared with 0, so it's safe
         _STL_VERIFY(_Result_size <= _New_size, "the returned size can't be greater than the passed size");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
-        _Eos(_Result_size);
+        _Eos(static_cast<size_type>(_Result_size));
     }
 #endif // _HAS_CXX23
 
@@ -4214,8 +4192,8 @@ public:
         noexcept(_Is_nothrow_convertible_v<const _StringViewIsh&, basic_string_view<_Elem, _Traits>>) {
         // look for one of _Right at or after _Off
         basic_string_view<_Elem, _Traits> _As_view = _Right;
-        return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
-            _Off, _As_view.data(), _As_view.size(), _Is_specialization<_Traits, char_traits>{}));
+        return static_cast<size_type>(_Traits_find_first_of<_Traits>(
+            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _As_view.data(), _As_view.size()));
     }
 #endif // _HAS_CXX17
 
@@ -4223,22 +4201,21 @@ public:
         const basic_string& _Right, const size_type _Off = 0) const noexcept {
         // look for one of _Right at or after _Off
         return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
-            _Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize,
-            _Is_specialization<_Traits, char_traits>{}));
+            _Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(_In_reads_(_Count) const _Elem* const _Ptr, const size_type _Off,
         const size_type _Count) const noexcept /* strengthened */ {
         // look for one of [_Ptr, _Ptr + _Count) at or after _Off
-        return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
-            _Off, _Ptr, _Count, _Is_specialization<_Traits, char_traits>{}));
+        return static_cast<size_type>(
+            _Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Count));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(
         _In_z_ const _Elem* const _Ptr, const size_type _Off = 0) const noexcept /* strengthened */ {
         // look for one of [_Ptr, <null>) at or after _Off
-        return static_cast<size_type>(_Traits_find_first_of<_Traits>(_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize,
-            _Off, _Ptr, _Traits::length(_Ptr), _Is_specialization<_Traits, char_traits>{}));
+        return static_cast<size_type>(_Traits_find_first_of<_Traits>(
+            _Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize, _Off, _Ptr, _Traits::length(_Ptr)));
     }
 
     _NODISCARD _CONSTEXPR20 size_type find_first_of(const _Elem _Ch, const size_type _Off = 0) const noexcept {

@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _FORMAT_CODEPAGE (__std_code_page{932})
-
 #include <cassert>
 #include <clocale>
 #include <format>

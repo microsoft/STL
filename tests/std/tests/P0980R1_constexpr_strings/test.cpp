@@ -2383,6 +2383,18 @@ constexpr void test_all() {
     static_assert(test_allocator_awareness<CharType>());
 }
 
+#if _HAS_CXX23
+void test_gh_2524() { // COMPILE-ONLY
+    // resize_and_overwrite generates warning C4018 when Operation returns int
+    string s;
+    s.resize_and_overwrite(1, [](char* buffer, size_t) {
+        *buffer = 'x';
+        int i   = 1;
+        return i;
+    });
+}
+#endif // _HAS_CXX23
+
 int main() {
     test_all<char>();
 #ifdef __cpp_char8_t

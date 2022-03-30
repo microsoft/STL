@@ -40,8 +40,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_format
-#pragma message("The contents of <format> are available only in c++latest mode;")
-#pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
+#pragma message("The contents of <format> are available only with C++20 or later.")
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
 #include <__msvc_format_ucd_tables.hpp>
@@ -53,6 +52,7 @@
 #include <iterator>
 #include <limits>
 #include <locale>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -807,18 +807,34 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
     _THROW(format_error("Invalid format string."));
 }
 
-_NODISCARD constexpr bool _Is_execution_charset_utf8() {
-#pragma warning(push)
-#pragma warning(disable : 4309) // 'initializing' : truncation of constant value
-#pragma warning(disable : 4566) // character represented by universal-character-name '\u4E00' cannot be represented in
-                                // the current code page
-#pragma warning(disable : 6201) // Index '2' is out of valid index range '0' to '1' for possibly stack allocated buffer
-                                // '_Test_char'
-#pragma warning(disable : 6239) // (<non-zero constant> && <expression>) always evaluates to the result of <expression>.
-                                // Did you intend to use the bitwise-and operator?
-    constexpr char _Test_char[] = "\u4e00";
-    return sizeof(_Test_char) == 4 && _Test_char[0] == '\xe4' && _Test_char[1] == '\xb8' && _Test_char[2] == '\x80';
-#pragma warning(pop)
+_NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
+#ifdef _MSVC_EXECUTION_CHARACTER_SET
+    // This is a list of charset codes (as reported by _MSVC_EXECUTION_CHARACTER_SET) that are
+    // self-synchronizing (and "narrow" so 1200 (utf-16) and 1201 (unicodeFFFE) are not listed).
+    // We care about this because if a charset is self-synchronizing then we can search through it
+    // for formatting control characters _without_ generally decoding the format string.
+    switch (_MSVC_EXECUTION_CHARACTER_SET) {
+    // See: https://docs.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
+    case 874: // Thai (Windows)
+    case 1250: // ANSI Central European; Central European (Windows)
+    case 1251: // ANSI Cyrillic; Cyrillic (Windows)
+    case 1252: // ANSI Latin 1; Western European (Windows)
+    case 1253: // ANSI Greek; Greek (Windows)
+    case 1254: // ANSI Turkish; Turkish (Windows)
+    case 1255: // ANSI Hebrew; Hebrew (Windows)
+    case 1256: // ANSI Arabic; Arabic (Windows)
+    case 1257: // ANSI Baltic; Baltic (Windows)
+    case 1258: // ANSI/OEM Vietnamese; Vietnamese (Windows)
+    case 65001: // Unicode (UTF-8)
+        return true;
+    default:
+        return false;
+    }
+#elif defined(__clang__) // ^^^ no workaround / Clang workaround vvv
+    return string_view{__clang_literal_encoding__} == "UTF-8"; // TRANSITION, Clang 14
+#else // ^^^ Clang workaround / EDG workaround vvv
+    return false; // TRANSITION, VSO-1468747 (EDG) - safe fallback response
+#endif // ^^^ EDG workaround ^^^
 }
 
 inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4885 [format.string.std]/11
@@ -839,7 +855,7 @@ _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
     return 1;
 }
 
-template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_utf8()>
+template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_self_synchronizing()>
 class _Fmt_codec;
 
 template <bool _Statically_Utf8>
@@ -868,12 +884,15 @@ protected:
     }
 
     _Fmt_codec_base() {
-#ifndef _FORMAT_CODEPAGE
-#define _FORMAT_CODEPAGE __std_code_page::_Acp
-#endif // _FORMAT_CODEPAGE
-        [[maybe_unused]] const __std_win_error _Result = __std_get_cvt(_FORMAT_CODEPAGE, &_Cvt);
+#ifdef _MSVC_EXECUTION_CHARACTER_SET
+        constexpr __std_code_page _Format_codepage{_MSVC_EXECUTION_CHARACTER_SET};
+#else // ^^^ no workaround / workaround vvv
+      // TRANSITION, Clang 14 - only utf-8 is supported
+      // TRANSITION, VSO-1468747 (EDG) - constructor isn't constexpr, so value is unimportant
+        constexpr __std_code_page _Format_codepage{65001};
+#endif // ^^^ workaround ^^^
+        [[maybe_unused]] const __std_win_error _Result = __std_get_cvt(_Format_codepage, &_Cvt);
         _STL_INTERNAL_CHECK(_Result == __std_win_error::_Success);
-#undef _FORMAT_CODEPAGE
     }
 };
 
@@ -954,6 +973,26 @@ public:
     }
 };
 
+template <class _CharT>
+_NODISCARD constexpr _Fmt_codec<_CharT> _Get_fmt_codec() {
+    return {};
+}
+
+// clang-format off
+template <class _CharT>
+    requires (is_same_v<_CharT, char> && !_Is_execution_charset_self_synchronizing())
+_NODISCARD const _Fmt_codec<_CharT>& _Get_fmt_codec() {
+    // clang-format on
+    using _CodecType = _Fmt_codec<_CharT>;
+
+    static once_flag _Flag;
+    alignas(_CodecType) static unsigned char _Storage[sizeof(_CodecType)];
+
+    _STD call_once(_Flag, [] { _STD construct_at(reinterpret_cast<_CodecType*>(&_Storage)); });
+
+    return *_STD launder(reinterpret_cast<const _CodecType*>(&_Storage));
+}
+
 template <class _CharT, _Parse_align_callbacks<_CharT> _Callbacks_type>
 _NODISCARD constexpr const _CharT* _Parse_align(
     const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
@@ -961,7 +1000,7 @@ _NODISCARD constexpr const _CharT* _Parse_align(
     _STL_INTERNAL_CHECK(_First != _Last && *_First != '}');
     auto _Parsed_align = _Fmt_align::_None;
 
-    const int _Units = _Fmt_codec<_CharT>{}._Units_in_next_character(_First, _Last);
+    const int _Units = _Get_fmt_codec<_CharT>()._Units_in_next_character(_First, _Last);
     if (_Units < 0) { // invalid fill character encoding
         _THROW(format_error("Invalid format string."));
     }
@@ -1228,9 +1267,9 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
 
 template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
 constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
-    auto _First = _Format_str.data();
-    auto _Last  = _First + _Format_str.size();
-    const _Fmt_codec<_CharT> _Codec;
+    auto _First        = _Format_str.data();
+    auto _Last         = _First + _Format_str.size();
+    const auto& _Codec = _Get_fmt_codec<_CharT>();
 
     while (_First != _Last) {
         const _CharT* _OpeningCurl = _First;
@@ -1365,10 +1404,15 @@ public:
     template <class _Ty>
     _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
         if constexpr (is_integral_v<_Ty>) {
-            if constexpr (is_signed_v<_Ty>) {
-                if (_Value < 0) {
-                    _THROW(format_error("Negative width."));
-                }
+            bool _Positive;
+            if constexpr (same_as<_Ty, bool>) { // avoid "bool > 0", which triggers C4804
+                _Positive = _Value != 0;
+            } else {
+                _Positive = _Value > 0;
+            }
+
+            if (!_Positive) {
+                _THROW(format_error("width is not positive."));
             }
             return static_cast<unsigned long long>(_Value);
         } else {
@@ -1600,8 +1644,7 @@ public:
                 _Cat = _Presentation_type_category::_String;
             }
             // note, we don't get a call if there isn't a type, but none is valid for everything.
-            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer
-                && _Cat != _Presentation_type_category::_Char) {
+            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer) {
                 _THROW(format_error("Invalid presentation type for bool"));
             }
             break;
@@ -1718,17 +1761,15 @@ struct _Format_arg_traits {
 
     static auto _Phony_basic_format_arg_constructor(nullptr_t) -> const void*; // not defined
 
-    // clang-format off
     template <class _Ty>
         requires is_void_v<_Ty>
     static auto _Phony_basic_format_arg_constructor(_Ty*) -> const void*; // not defined
-    // clang-format on
 
     template <class _Ty>
-    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty>()));
+    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty&>()));
 
     template <class _Ty>
-    static constexpr size_t _Storage_size = sizeof(_Storage_type<remove_cvref_t<_Ty>>);
+    static constexpr size_t _Storage_size = sizeof(_Storage_type<_Ty>);
 };
 
 struct _Format_arg_index {
@@ -1790,7 +1831,7 @@ private:
 
     template <class _Ty>
     void _Store(const size_t _Arg_index, _Ty&& _Val) noexcept {
-        using _Erased_type = typename _Traits::template _Storage_type<remove_cvref_t<_Ty>>;
+        using _Erased_type = typename _Traits::template _Storage_type<_Ty>;
 
         _Basic_format_arg_type _Arg_type;
         if constexpr (is_same_v<_Erased_type, bool>) {
@@ -1839,8 +1880,10 @@ class _Format_arg_store<_Context> {};
 template <class _Context>
 class basic_format_args {
 public:
-    basic_format_args() noexcept;
+    basic_format_args() noexcept = default;
+
     basic_format_args(const _Format_arg_store<_Context>&) noexcept {}
+
     template <class... _Args>
     basic_format_args(const _Format_arg_store<_Context, _Args...>& _Store) noexcept
         : _Num_args(sizeof...(_Args)), _Index_array(_Store._Index_array) {}
@@ -1945,11 +1988,9 @@ public:
     }
 };
 
-// clang-format off
 template <class _Out, class _CharT>
     requires output_iterator<_Out, const _CharT&>
 class basic_format_context {
-    // clang-format on
 private:
     _Out _OutputIt;
     basic_format_args<basic_format_context> _Args;
@@ -1969,7 +2010,7 @@ public:
         _Out _OutputIt_, basic_format_args<basic_format_context> _Ctx_args, const _Lazy_locale& _Loc_)
         : _OutputIt(_STD move(_OutputIt_)), _Args(_Ctx_args), _Loc(_Loc_) {}
 
-    _NODISCARD basic_format_arg<basic_format_context> arg(size_t _Id) const {
+    _NODISCARD basic_format_arg<basic_format_context> arg(size_t _Id) const noexcept {
         return _Args.get(_Id);
     }
     _NODISCARD locale locale() {
@@ -2630,8 +2671,6 @@ _NODISCARD _OutputIt _Fmt_write(
 
     _STL_INTERNAL_CHECK(_Specs._Precision == -1);
 
-    // Clear the type so that the string_view writer doesn't fail on 'c'.
-    _Specs._Type = '\0';
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{&_Value, 1}, _Specs, _Locale);
 }
 
@@ -2777,8 +2816,8 @@ _NODISCARD _OutputIt _Fmt_write(
         case chars_format::hex:
         case chars_format::scientific:
             if (_Extra_precision != 0) {
-                while (*_Exponent_start != _Exponent) { // Trailing zeroes are in front of the exponent
-                    --_Exponent_start;
+                // Trailing zeroes are in front of the exponent
+                while (*--_Exponent_start != _Exponent) {
                 }
             }
             [[fallthrough]];
@@ -2877,7 +2916,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Width = static_cast<int>(2 + (_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4);
     }
 
-    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Right,
         [=](_OutputIt _Out) { return _Fmt_write<_CharT>(_STD move(_Out), _Value); });
 }
 
@@ -3003,7 +3042,9 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     const auto _First    = _Value.data();
     const auto _Last     = _First + _Value.size();
     _Measure_string_prefix_iterator<_CharT> _Pfx_iter(_First, _Last);
-    int _Estimated_width    = 0; // the estimated width of [_First, _Pfx_iter)
+    int _Estimated_width = 0; // the estimated width of [_First, _Pfx_iter)
+    const auto& _Codec   = _Get_fmt_codec<_CharT>();
+
     constexpr auto _Max_int = (numeric_limits<int>::max)();
 
     while (_Pfx_iter != default_sentinel) {
@@ -3039,11 +3080,10 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const basic_string_view<_CharT> _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale) {
-    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 's');
+    _STL_INTERNAL_CHECK(_Specs._Type == '\0' || _Specs._Type == 'c' || _Specs._Type == 's');
     _STL_INTERNAL_CHECK(_Specs._Sgn == _Fmt_sign::_None);
     _STL_INTERNAL_CHECK(!_Specs._Alt);
     _STL_INTERNAL_CHECK(!_Specs._Leading_zero);
-    _STL_INTERNAL_CHECK(!_Specs._Localized);
 
     if (_Specs._Precision < 0 && _Specs._Width <= 0) {
         return _Fmt_write(_STD move(_Out), _Value);
@@ -3220,20 +3260,21 @@ struct _Formatter_base {
     }
 
     template <class _FormatContext>
-    typename _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) {
+    typename _FormatContext::iterator format(const _Ty& _Val, _FormatContext& _FormatCtx) const {
+        _Dynamic_format_specs<_CharT> _Format_specs = _Specs;
         if (_Specs._Dynamic_width_index >= 0) {
-            _Specs._Width =
+            _Format_specs._Width =
                 _Get_dynamic_specs<_Width_checker>(_FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_width_index)));
         }
 
         if (_Specs._Dynamic_precision_index >= 0) {
-            _Specs._Precision = _Get_dynamic_specs<_Precision_checker>(
+            _Format_specs._Precision = _Get_dynamic_specs<_Precision_checker>(
                 _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
         }
 
         return _STD visit_format_arg(
             _Arg_formatter<typename _FormatContext::iterator, _CharT>{
-                ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Specs)},
+                ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
             basic_format_arg<_FormatContext>{_Val});
     }
 
@@ -3298,7 +3339,7 @@ struct _Basic_format_string {
     template <class _Ty>
         requires convertible_to<const _Ty&, basic_string_view<_CharT>>
     consteval _Basic_format_string(const _Ty& _Str_val) : _Str(_Str_val) {
-        if (_Is_execution_charset_utf8()) {
+        if (_Is_execution_charset_self_synchronizing()) {
             _Parse_format_string(_Str, _Format_checker<_CharT, remove_cvref_t<_Args>...>{_Str});
         }
     }

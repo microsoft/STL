@@ -237,7 +237,7 @@ void test_codecvt_encoding(
             }
         } else {
             assert(testCase.wide != nullptr);
-            __analysis_assume(testCase.wide);
+            _Analysis_assume_(testCase.wide);
             wstring wide = widePrefix;
             wide.append(testCase.wide);
             const wchar_t* const wideFirst = wide.data();
