@@ -3939,7 +3939,7 @@ _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
     return _Dest;
 }
 
-template <class _InIt, class _OutIt>
+_EXPORT_STD template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy [_First, _Last) to [_Dest, ...)
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
@@ -3950,7 +3950,7 @@ _CONSTEXPR20 _OutIt copy(_InIt _First, _InIt _Last, _OutIt _Dest) { // copy [_Fi
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy [_First, _Last) to [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
@@ -3965,7 +3965,7 @@ namespace ranges {
     template <class _To, class _From>
     concept _Convertible_from = convertible_to<_From, _To>;
 
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     struct in_out_result {
         /* [[no_unique_address]] */ _In in;
         /* [[no_unique_address]] */ _Out out;
@@ -4052,7 +4052,7 @@ namespace ranges {
     };
 #endif // _HAS_CXX23
 
-    template <class _In, class _Out>
+    _EXPORT_STD template <class _In, class _Out>
     using copy_result = in_out_result<_In, _Out>;
 
     // clang-format off
@@ -4108,11 +4108,11 @@ namespace ranges {
         // clang-format on
     };
 
-    inline constexpr _Copy_fn copy{_Not_quite_object::_Construct_tag {}};
+    _EXPORT_STD inline constexpr _Copy_fn copy{_Not_quite_object::_Construct_tag {}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _Diff, class _OutIt>
+_EXPORT_STD template <class _InIt, class _Diff, class _OutIt>
 _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
     // copy [_First, _First + _Count) to [_Dest, ...)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
@@ -4149,7 +4149,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _Diff, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _Diff, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy [_First, _First + _Count) to [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
@@ -4201,7 +4201,7 @@ _NODISCARD _CONSTEXPR20 _BidIt2 _Copy_backward_unchecked(_BidIt1 _First, _BidIt1
     return _Dest;
 }
 
-template <class _BidIt1, class _BidIt2>
+_EXPORT_STD template <class _BidIt1, class _BidIt2>
 _CONSTEXPR20 _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // copy [_First, _Last) backwards to [..., _Dest)
     _Adl_verify_range(_First, _Last);
@@ -4232,7 +4232,7 @@ _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     return _Dest;
 }
 
-template <class _InIt, class _OutIt>
+_EXPORT_STD template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt move(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
     _Adl_verify_range(_First, _Last);
@@ -4244,7 +4244,7 @@ _CONSTEXPR20 _OutIt move(_InIt _First, _InIt _Last, _OutIt _Dest) {
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 move(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // move [_First, _Last) to [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
@@ -4274,7 +4274,7 @@ _CONSTEXPR20 _BidIt2 _Move_backward_unchecked(_BidIt1 _First, _BidIt1 _Last, _Bi
     return _Dest;
 }
 
-template <class _BidIt1, class _BidIt2>
+_EXPORT_STD template <class _BidIt1, class _BidIt2>
 _CONSTEXPR20 _BidIt2 move_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) {
     // move [_First, _Last) backwards to [..., _Dest)
     _Adl_verify_range(_First, _Last);
@@ -4359,7 +4359,7 @@ _NODISCARD bool _Is_all_bits_zero(const _Ty& _Val) {
     }
 }
 
-template <class _FwdIt, class _Ty>
+_EXPORT_STD template <class _FwdIt, class _Ty>
 _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // copy _Val through [_First, _Last)
     _Adl_verify_range(_First, _Last);
@@ -4390,7 +4390,7 @@ _CONSTEXPR20 void fill(const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val)
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 void fill(_ExPo&&, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept /* terminates */ {
     // copy _Val through [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
@@ -4399,7 +4399,7 @@ void fill(_ExPo&&, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept /* ter
 }
 #endif // _HAS_CXX17
 
-template <class _OutIt, class _Diff, class _Ty>
+_EXPORT_STD template <class _OutIt, class _Diff, class _Ty>
 _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val) {
     // copy _Val _Count times through [_Dest, ...)
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
@@ -4438,7 +4438,7 @@ _CONSTEXPR20 _OutIt fill_n(_OutIt _Dest, const _Diff _Count_raw, const _Ty& _Val
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Diff, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Diff, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept /* terminates */ {
     // copy _Val _Count times through [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
@@ -4482,7 +4482,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Fill_n_fn fill_n{_Not_quite_object::_Construct_tag {}};
+    _EXPORT_STD inline constexpr _Fill_n_fn fill_n{_Not_quite_object::_Construct_tag {}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -4585,7 +4585,7 @@ _NODISCARD int _Memcmp_count(_CtgIt1 _First1, _CtgIt2 _First2, const size_t _Cou
     return _CSTD memcmp(_First1_ch, _First2_ch, _Count * sizeof(_Iter_value_t<_CtgIt1>));
 }
 
-template <class _InIt1, class _InIt2, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, _Pr _Pred) {
     // compare [_First1, _Last1) to [_First2, ...)
     _Adl_verify_range(_First1, _Last1);
@@ -4611,19 +4611,19 @@ _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, co
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2>
+_EXPORT_STD template <class _InIt1, class _InIt2>
 _NODISCARD _CONSTEXPR20 bool equal(const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2) {
     // compare [_First1, _Last1) to [_First2, ...)
     return _STD equal(_First1, _Last1, _First2, equal_to<>{});
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2) noexcept
 /* terminates */ {
     // compare [_First1, _Last1) to [_First2, ...)
@@ -4631,7 +4631,7 @@ _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1
 }
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool equal(
     const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // compare [_First1, _Last1) to [_First2, _Last2)
@@ -4668,12 +4668,12 @@ _NODISCARD _CONSTEXPR20 bool equal(
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
 #endif // _HAS_CXX17
 
-template <class _InIt1, class _InIt2>
+_EXPORT_STD template <class _InIt1, class _InIt2>
 _NODISCARD _CONSTEXPR20 bool equal(
     const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2) {
     // compare [_First1, _Last1) to [_First2, _Last2)
@@ -4681,7 +4681,7 @@ _NODISCARD _CONSTEXPR20 bool equal(
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2) noexcept /* terminates */ {
     // compare [_First1, _Last1) to [_First2, _Last2)
@@ -4704,7 +4704,7 @@ namespace ranges {
         }
     }
 
-    template <class _In1, class _In2>
+    _EXPORT_STD template <class _In1, class _In2>
     struct in_in_result {
         /* [[no_unique_address]] */ _In1 in1;
         /* [[no_unique_address]] */ _In2 in2;
@@ -4720,7 +4720,7 @@ namespace ranges {
         }
     };
 
-    template <class _In1, class _In2>
+    _EXPORT_STD template <class _In1, class _In2>
     using mismatch_result = in_in_result<_In1, _In2>;
 
     // clang-format off
@@ -4826,7 +4826,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Mismatch_fn mismatch{_Not_quite_object::_Construct_tag {}};
+    _EXPORT_STD inline constexpr _Mismatch_fn mismatch{_Not_quite_object::_Construct_tag {}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
@@ -4887,7 +4887,7 @@ using _Lex_compare_memcmp_classify =
     conditional_t<_Iterators_are_contiguous<_It1, _It2> && !_Iterator_is_volatile<_It1> && !_Iterator_is_volatile<_It2>,
         typename _Lex_compare_memcmp_classify_pred<_Iter_value_t<_It1>, _Iter_value_t<_It2>, _Pr>::_Pred, void>;
 
-template <class _InIt1, class _InIt2, class _Pr>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _Pr>
 _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
     const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2, _Pr _Pred) {
     // order [_First1, _Last1) vs. [_First2, _Last2)
@@ -4922,7 +4922,7 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
     return _UFirst1 == _ULast1 && _UFirst2 != _ULast2;
 }
 
-template <class _InIt1, class _InIt2>
+_EXPORT_STD template <class _InIt1, class _InIt2>
 _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
     const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2) {
     // order [_First1, _Last1) vs. [_First2, _Last2)
@@ -4930,7 +4930,7 @@ _NODISCARD _CONSTEXPR20 bool lexicographical_compare(
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool lexicographical_compare(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
     // order [_First1, _Last1) vs. [_First2, _Last2)
@@ -4940,7 +4940,7 @@ _NODISCARD bool lexicographical_compare(_ExPo&&, const _FwdIt1 _First1, const _F
     return _STD lexicographical_compare(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD bool lexicographical_compare(_ExPo&&, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
     const _FwdIt2 _Last2) noexcept /* terminates */ {
     // order [_First1, _Last1) vs. [_First2, _Last2)
@@ -4991,7 +4991,7 @@ using _Lex_compare_three_way_memcmp_classify =
         typename _Lex_compare_three_way_memcmp_classify_comp<_Iter_value_t<_It1>, _Iter_value_t<_It2>, _Cmp>::_Comp,
         void>;
 
-template <class _InIt1, class _InIt2, class _Cmp>
+_EXPORT_STD template <class _InIt1, class _InIt2, class _Cmp>
 _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1, const _InIt1 _Last1,
     const _InIt2 _First2, const _InIt2 _Last2, _Cmp _Comp) -> decltype(_Comp(*_First1, *_First2)) {
     _Adl_verify_range(_First1, _Last1);
@@ -5033,7 +5033,7 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(const _InIt1 _First1
     }
 }
 
-template <class _InIt1, class _InIt2>
+_EXPORT_STD template <class _InIt1, class _InIt2>
 _NODISCARD constexpr auto lexicographical_compare_three_way(
     const _InIt1 _First1, const _InIt1 _Last1, const _InIt2 _First2, const _InIt2 _Last2) {
     return _STD lexicographical_compare_three_way(_First1, _Last1, _First2, _Last2, compare_three_way{});
@@ -5141,7 +5141,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
     return _First;
 }
 
-template <class _InIt, class _Ty>
+_EXPORT_STD template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt find(_InIt _First, const _InIt _Last, const _Ty& _Val) { // find first matching _Val
     _Adl_verify_range(_First, _Last);
     if constexpr (_Is_vb_iterator<_InIt> && is_same_v<_Ty, bool>) {
@@ -5153,7 +5153,7 @@ _NODISCARD _CONSTEXPR20 _InIt find(_InIt _First, const _InIt _Last, const _Ty& _
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _FwdIt find(_ExPo&& _Exec, _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
 #endif // _HAS_CXX17
 
@@ -5272,11 +5272,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Find_fn find{_Not_quite_object::_Construct_tag {}};
+    _EXPORT_STD inline constexpr _Find_fn find{_Not_quite_object::_Construct_tag {}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _InIt, class _Ty>
+_EXPORT_STD template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InIt _Last, const _Ty& _Val) {
     // count elements that match _Val
     _Adl_verify_range(_First, _Last);
@@ -5315,7 +5315,7 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _Iter_diff_t<_FwdIt> count(
     _ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last, const _Ty& _Val) noexcept; // terminates
 #endif // _HAS_CXX17
@@ -5485,7 +5485,7 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
     return true;
 }
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse elements in [_First, _Last)
     _Adl_verify_range(_First, _Last);
     auto _UFirst = _Get_unwrapped(_First);
@@ -5522,7 +5522,7 @@ _CONSTEXPR20 void reverse(const _BidIt _First, const _BidIt _Last) { // reverse 
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _BidIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 void reverse(_ExPo&&, _BidIt _First, _BidIt _Last) noexcept /* terminates */ {
     // reverse elements in [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
@@ -5541,7 +5541,7 @@ constexpr pair<_BidIt, _BidIt> _Reverse_until_sentinel_unchecked(_BidIt _First, 
     return pair<_BidIt, _BidIt>(_First, _Last);
 }
 
-template <class _FwdIt>
+_EXPORT_STD template <class _FwdIt>
 _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
     // exchange the ranges [_First, _Mid) and [_Mid, _Last)
     // that is, rotates [_First, _Last) left by distance(_First, _Mid) positions
@@ -5598,7 +5598,7 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt rotate(_ExPo&&, _FwdIt _First, _FwdIt _Mid, _FwdIt _Last) noexcept /* terminates */ {
     // rotate [_First, _Last) left by distance(_First, _Mid) positions
     // not parallelized as benchmarks show it isn't worth it
@@ -5606,7 +5606,7 @@ _FwdIt rotate(_ExPo&&, _FwdIt _First, _FwdIt _Mid, _FwdIt _Last) noexcept /* ter
 }
 #endif // _HAS_CXX17
 
-template <class _InIt, class _Pr>
+_EXPORT_STD template <class _InIt, class _Pr>
 _NODISCARD _CONSTEXPR20 _InIt find_if(_InIt _First, const _InIt _Last, _Pr _Pred) { // find first satisfying _Pred
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -5690,7 +5690,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Find_if_fn find_if{_Not_quite_object::_Construct_tag {}};
+    _EXPORT_STD inline constexpr _Find_if_fn find_if{_Not_quite_object::_Construct_tag {}};
 
     class _Find_if_not_fn : private _Not_quite_object {
     public:
@@ -5737,7 +5737,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Find_if_not_fn find_if_not{_Not_quite_object::_Construct_tag {}};
+    _EXPORT_STD inline constexpr _Find_if_not_fn find_if_not{_Not_quite_object::_Construct_tag {}};
 
     class _Adjacent_find_fn : private _Not_quite_object {
     public:
@@ -5788,7 +5788,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Adjacent_find_fn adjacent_find{_Not_quite_object::_Construct_tag {}};
+    _EXPORT_STD inline constexpr _Adjacent_find_fn adjacent_find{_Not_quite_object::_Construct_tag {}};
 
     // clang-format off
     template <class _It1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
@@ -5933,11 +5933,11 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Search_fn search{_Not_quite_object::_Construct_tag {}};
+    _EXPORT_STD inline constexpr _Search_fn search{_Not_quite_object::_Construct_tag {}};
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _FwdIt, class _Ty, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element not before _Val
     _Adl_verify_range(_First, _Last);
@@ -5959,13 +5959,13 @@ _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, const _FwdIt _Last, co
     return _First;
 }
 
-template <class _FwdIt, class _Ty>
+_EXPORT_STD template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // find first element not before _Val
     return _STD lower_bound(_First, _Last, _Val, less<>{});
 }
 
-template <class _FwdIt, class _Ty, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Ty, class _Pr>
 _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
     // find first element that _Val is before
     _Adl_verify_range(_First, _Last);
@@ -5987,7 +5987,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _T
     return _First;
 }
 
-template <class _FwdIt, class _Ty>
+_EXPORT_STD template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // find first element that _Val is before
     return _STD upper_bound(_First, _Last, _Val, less<>{});

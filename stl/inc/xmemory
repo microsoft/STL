@@ -2040,7 +2040,7 @@ _NODISCARD constexpr bool _Allocators_equal(const _Alloc& _Lhs, const _Alloc& _R
     }
 }
 
-template <class _FwdIt, class _Ty>
+_EXPORT_STD template <class _FwdIt, class _Ty>
 _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _Last, const _Ty& _Val) {
     // remove each matching _Val
     _Adl_verify_range(_First, _Last);
@@ -2061,7 +2061,7 @@ _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove(_FwdIt _First, const _FwdIt _La
     return _First;
 }
 
-template <class _FwdIt, class _Pr>
+_EXPORT_STD template <class _FwdIt, class _Pr>
 _NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // remove each satisfying _Pred
     _Adl_verify_range(_First, _Last);
