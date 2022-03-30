@@ -1036,10 +1036,10 @@ template <class _Iter>
 using _Guide_pair_t = pair<add_const_t<typename iterator_traits<_Iter>::value_type::first_type>,
     typename iterator_traits<_Iter>::value_type::second_type>;
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct is_execution_policy : false_type {};
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 inline constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 
 // Note: The noexcept specifiers on all parallel algorithm overloads enforce termination as per

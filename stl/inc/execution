@@ -71,7 +71,7 @@ inline constexpr size_t _Oversubmission_multiplier   = 4;
 inline constexpr size_t _Still_active                = static_cast<size_t>(-1);
 
 namespace execution {
-    class sequenced_policy {
+    _EXPORT_STD class sequenced_policy {
         // indicates support for only sequential execution, and requests termination on exceptions
     public:
         using _Standard_execution_policy   = int;
@@ -79,9 +79,9 @@ namespace execution {
         static constexpr bool _Ivdep       = false;
     };
 
-    inline constexpr sequenced_policy seq{/* unspecified */};
+    _EXPORT_STD inline constexpr sequenced_policy seq{/* unspecified */};
 
-    class parallel_policy {
+    _EXPORT_STD class parallel_policy {
         // indicates support by element access functions for parallel execution with parallel forward progress
         // guarantees, and requests termination on exceptions
     public:
@@ -90,9 +90,9 @@ namespace execution {
         static constexpr bool _Ivdep       = true;
     };
 
-    inline constexpr parallel_policy par{/* unspecified */};
+    _EXPORT_STD inline constexpr parallel_policy par{/* unspecified */};
 
-    class parallel_unsequenced_policy {
+    _EXPORT_STD class parallel_unsequenced_policy {
         // indicates support by element access functions for parallel execution with weakly parallel forward progress
         // guarantees, and requests termination on exceptions
         //
@@ -103,10 +103,10 @@ namespace execution {
         static constexpr bool _Ivdep       = true;
     };
 
-    inline constexpr parallel_unsequenced_policy par_unseq{/* unspecified */};
+    _EXPORT_STD inline constexpr parallel_unsequenced_policy par_unseq{/* unspecified */};
 
 #if _HAS_CXX20
-    class unsequenced_policy {
+    _EXPORT_STD class unsequenced_policy {
         // indicates support by element access functions for weakly parallel forward progress guarantees, and for
         // executing interleaved on the same thread, and requests termination on exceptions
         //
@@ -117,7 +117,7 @@ namespace execution {
         static constexpr bool _Ivdep       = true;
     };
 
-    inline constexpr unsequenced_policy unseq{/* unspecified */};
+    _EXPORT_STD inline constexpr unsequenced_policy unseq{/* unspecified */};
 #endif // _HAS_CXX20
 
 } // namespace execution
@@ -4057,7 +4057,8 @@ struct _Static_partitioned_reduce2 {
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, class _BinOp,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _Ty reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val, _BinOp _Reduce_op) noexcept
 /* terminates */ {
     // return commutative and associative reduction of _Val and [_First, _Last), using _Reduce_op
@@ -4156,7 +4157,7 @@ struct _Static_partitioned_transform_reduce_binary2 { // transform-reduction tas
 #pragma warning(push)
 #pragma warning(disable : 4868) // compiler may not enforce left-to-right evaluation order
                                 // in braced initializer list (/Wall)
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp1, class _BinOp2,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp1, class _BinOp2,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _Ty transform_reduce(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Ty _Val, _BinOp1 _Reduce_op,
     _BinOp2 _Transform_op) noexcept /* terminates */ {
@@ -4252,7 +4253,7 @@ struct _Static_partitioned_transform_reduce2 { // transformed reduction task sch
     }
 };
 
-template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _NODISCARD _Ty transform_reduce(_ExPo&&, const _FwdIt _First, const _FwdIt _Last, _Ty _Val, _BinOp _Reduce_op,
     _UnaryOp _Transform_op) noexcept /* terminates */ {
@@ -4402,7 +4403,7 @@ struct _Static_partitioned_exclusive_scan2 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Ty _Val,
     _BinOp _Reduce_op) noexcept /* terminates */ {
@@ -4531,7 +4532,7 @@ struct _Static_partitioned_inclusive_scan2 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty _Val) noexcept
 /* terminates */ {
@@ -4575,7 +4576,8 @@ _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _B
     return _Dest;
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 inclusive_scan(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op) noexcept
 /* terminates */ {
     // compute partial noncommutative and associative reductions into _Dest, using _Reduce_op
@@ -4718,7 +4720,7 @@ struct _Static_partitioned_transform_exclusive_scan2 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 transform_exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Ty _Val,
     _BinOp _Reduce_op, _UnaryOp _Transform_op) noexcept /* terminates */ {
@@ -4849,7 +4851,7 @@ struct _Static_partitioned_transform_inclusive_scan2 {
     }
 };
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
     _UnaryOp _Transform_op, _Ty _Val) noexcept /* terminates */ {
@@ -4895,7 +4897,7 @@ _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
     return _Dest;
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 transform_inclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
     _UnaryOp _Transform_op) noexcept /* terminates */ {
@@ -4997,7 +4999,8 @@ _FwdIt2 _Adjacent_difference_seq(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _D
     return _Dest;
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp,
+    _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt2 adjacent_difference(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Diff_op) noexcept
 /* terminates */ {
     // compute adjacent differences into _Dest

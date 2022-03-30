@@ -102,7 +102,7 @@ _NODISCARD _CONSTEXPR20 _Iter_value_t<_InIt> reduce(const _InIt _First, const _I
     return _STD reduce(_First, _Last, _Iter_value_t<_InIt>{}, plus{});
 }
 
-template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _Ty reduce(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Ty _Val, _BinOp _Reduce_op) noexcept; // terminates
 
 template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
@@ -219,7 +219,7 @@ _NODISCARD _CONSTEXPR20 _Ty transform_reduce(
     return _Val;
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp1, class _BinOp2,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp1, class _BinOp2,
     _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Ty _Val,
     _BinOp1 _Reduce_op, _BinOp2 _Transform_op) noexcept; // terminates
@@ -234,7 +234,8 @@ _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, 
         _STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _STD move(_Val), plus{}, multiplies{});
 }
 
-template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, class _UnaryOp, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt, class _Ty, class _BinOp, class _UnaryOp,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _NODISCARD _Ty transform_reduce(_ExPo&& _Exec, const _FwdIt _First1, const _FwdIt _Last1, _Ty _Val, _BinOp _Reduce_op,
     _UnaryOp _Transform_op) noexcept; // terminates
 #endif // _HAS_CXX17
@@ -306,7 +307,8 @@ _CONSTEXPR20 _OutIt exclusive_scan(const _InIt _First, const _InIt _Last, const 
     return _STD exclusive_scan(_First, _Last, _Dest, _STD move(_Val), plus{});
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _Ty _Val,
     _BinOp _Reduce_op) noexcept; // terminates
 
@@ -365,11 +367,12 @@ _CONSTEXPR20 _OutIt inclusive_scan(const _InIt _First, const _InIt _Last, const 
     return _STD inclusive_scan(_First, _Last, _Dest, plus{});
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty,
+    _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 inclusive_scan(
     _ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty _Val) noexcept; // terminates
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 inclusive_scan(
     _ExPo&& _Exec, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op) noexcept; // terminates
 
@@ -406,7 +409,7 @@ _CONSTEXPR20 _OutIt transform_exclusive_scan(
     return _Dest;
 }
 
-template <class _ExPo, class _FwdIt1, class _OutIt, class _Ty, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _OutIt, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
 _OutIt transform_exclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _OutIt _Dest, _Ty _Val,
     _BinOp _Reduce_op, _UnaryOp _Transform_op) noexcept; // terminates
@@ -455,12 +458,12 @@ _CONSTEXPR20 _OutIt transform_inclusive_scan(
     return _Dest;
 }
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest,
     _BinOp _Reduce_op, _UnaryOp _Transform_op, _Ty _Val) noexcept; // terminates
 
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp,
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp,
     _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 transform_inclusive_scan(_ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest,
     _BinOp _Reduce_op, _UnaryOp _Transform_op) noexcept; // terminates
@@ -500,7 +503,7 @@ _CONSTEXPR20 _OutIt adjacent_difference(const _InIt _First, const _InIt _Last, c
 }
 
 #if _HAS_CXX17
-template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
+_EXPORT_STD template <class _ExPo, class _FwdIt1, class _FwdIt2, class _BinOp, _Enable_if_execution_policy_t<_ExPo> = 0>
 _FwdIt2 adjacent_difference(
     _ExPo&& _Exec, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Diff_op) noexcept; // terminates
 
