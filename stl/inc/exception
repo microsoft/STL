@@ -389,7 +389,7 @@ template <class _Ty>
 void rethrow_if_nested(const _Ty&) = delete; // requires /GR option
 #endif // _CPPRTTI
 
-class bad_variant_access
+_EXPORT_STD class bad_variant_access
     : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
 public:
     bad_variant_access() noexcept = default;

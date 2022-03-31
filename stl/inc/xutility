@@ -6154,7 +6154,7 @@ _NODISCARD constexpr bool _Is_finite(const _Ty _Xx) { // constexpr isfinite()
 }
 
 #if _HAS_CXX17
-struct monostate {};
+_EXPORT_STD struct monostate {};
 #endif // _HAS_CXX17
 
 _STD_END
