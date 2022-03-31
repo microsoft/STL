@@ -2972,10 +2972,10 @@ public:
 
 class _Measure_string_prefix_iterator_legacy {
 private:
-    _Fmt_codec<char, false> _Codec;
-    const char* _First = nullptr;
-    const char* _Last  = nullptr;
-    int _Units         = 0;
+    _Fmt_codec<char, false>& _Codec = _Get_fmt_codec<char>();
+    const char* _First              = nullptr;
+    const char* _Last               = nullptr;
+    int _Units                      = 0;
 
     _NODISCARD friend constexpr bool operator==(
         const _Measure_string_prefix_iterator_legacy& _Lhs, default_sentinel_t) noexcept {
@@ -3024,7 +3024,7 @@ public:
     }
 };
 
-template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_utf8()>
+template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_self_synchronizing()>
 struct _Measure_string_prefix_iterator : _Measure_string_prefix_iterator_utf<_CharT> {
     using _Measure_string_prefix_iterator_utf<_CharT>::_Measure_string_prefix_iterator_utf;
 };
@@ -3043,7 +3043,6 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
     const auto _Last     = _First + _Value.size();
     _Measure_string_prefix_iterator<_CharT> _Pfx_iter(_First, _Last);
     int _Estimated_width = 0; // the estimated width of [_First, _Pfx_iter)
-    const auto& _Codec   = _Get_fmt_codec<_CharT>();
 
     constexpr auto _Max_int = (numeric_limits<int>::max)();
 
