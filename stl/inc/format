@@ -2972,10 +2972,10 @@ public:
 
 class _Measure_string_prefix_iterator_legacy {
 private:
-    _Fmt_codec<char, false>& _Codec = _Get_fmt_codec<char>();
-    const char* _First              = nullptr;
-    const char* _Last               = nullptr;
-    int _Units                      = 0;
+    _Fmt_codec<char> _Codec = _Get_fmt_codec<char>();
+    const char* _First      = nullptr;
+    const char* _Last       = nullptr;
+    int _Units              = 0;
 
     _NODISCARD friend constexpr bool operator==(
         const _Measure_string_prefix_iterator_legacy& _Lhs, default_sentinel_t) noexcept {
