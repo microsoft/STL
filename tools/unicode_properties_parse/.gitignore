@@ -1,3 +1,4 @@
+#// clang-format off
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
@@ -7,7 +8,6 @@
 #
 # Also turn off clang format, which somehow thinks
 # this is a source code file, note the // is required
-#// clang-format off
 emoji-data.txt
 GraphemeBreakProperty.txt
 GraphemeBreakTest.txt
