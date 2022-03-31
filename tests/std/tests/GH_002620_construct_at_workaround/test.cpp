@@ -7,7 +7,7 @@ using namespace std;
 
 struct S {
     int v;
-    S(int v_) : v(v_) {}
+    explicit S(int v_) : v(v_) {}
     S(const S&) = delete;
 };
 
