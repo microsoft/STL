@@ -173,7 +173,7 @@ In addition, certain files include the notices provided below.
 // UNICODE, INC. LICENSE AGREEMENT - DATA FILES AND SOFTWARE
 //
 // See Terms of Use <https://www.unicode.org/copyright.html>
-// for definitions of Unicode Inc.Æs Data Files and Software.
+// for definitions of Unicode Inc.'s Data Files and Software.
 //
 // NOTICE TO USER: Carefully read the following legal agreement.
 // BY DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING UNICODE INC.'S

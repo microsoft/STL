@@ -63,7 +63,7 @@ MSVC_FORMAT_UCD_TABLES_HPP_TEMPLATE = """
 // UNICODE, INC. LICENSE AGREEMENT - DATA FILES AND SOFTWARE
 //
 // See Terms of Use <https://www.unicode.org/copyright.html>
-// for definitions of Unicode Inc.’s Data Files and Software.
+// for definitions of Unicode Inc.'s Data Files and Software.
 //
 // NOTICE TO USER: Carefully read the following legal agreement.
 // BY DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING UNICODE INC.'S
@@ -161,14 +161,15 @@ struct _Unicode_property_data {{
 // https://github.com/microsoft/stl repository.
 //
 // The data format is a set of arrays for each character property. The first is an array of uint32_t encoding
-// the lower bound of each range of codepoints that has the given property. The second is an array of uint16_t encoding
-// both the range size and property value as follows:
+// the lower bound of each range of codepoints that has the given property.
+// The second is an array of uint16_t encoding both the range size and property value as follows:
 // 16               12                                   0
 // +-----------------------------------------------------+
 // | property_value  |              range_size           |
 // +-----------------------------------------------------+
-// that is: the size is stored in the least significant 12 bits (leading to a max size of 4095), and the property value
-// is stored in the most significant 4 bits, leading to a maximum of 16 property values.
+// that is: the size is stored in the least significant 12 bits
+// (leading to a max size of 4095), and the property value is stored in the most significant 4 bits,
+// leading to a maximum of 16 property values.
 //
 // Note that the Extended_Pictographic property only has one value, and we encode it as zero in the most significant 4
 // bits, so the most significant 4 bits of _Extended_Pictographic_Props_And_Range are "unused", in some sense.
@@ -220,8 +221,11 @@ def generate_data_tables() -> str:
     Generate unicode data for inclusion into <format> from
     GraphemeBreakProperty.txt and emoji-data.txt.
 
-    GraphemeBreakProperty.txt can be found at https://www.unicode.org/Public/14.0.0/ucd/auxiliary/GraphemeBreakProperty.txt.
-    emoji-data.txt can be found at https://www.unicode.org/Public/14.0.0/ucd/emoji/emoji-data.txt
+    GraphemeBreakProperty.txt can be found at
+    https://www.unicode.org/Public/14.0.0/ucd/auxiliary/GraphemeBreakProperty.txt.
+
+    emoji-data.txt can be found at
+    https://www.unicode.org/Public/14.0.0/ucd/emoji/emoji-data.txt
 
     Both files are expected to be in the same directory as this script.
     """
