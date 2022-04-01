@@ -3,10 +3,12 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <cstddef>
 #include <deque>
 #include <isa_availability.h>
 #include <list>
 #include <random>
+#include <type_traits>
 #include <vector>
 
 using namespace std;
@@ -32,7 +34,7 @@ inline ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
 
 
 template <class T>
-void test_case_count(vector<T>& input, T v) {
+void test_case_count(const vector<T>& input, T v) {
     auto expected = last_known_good_count(input.begin(), input.end(), v);
     auto actual   = count(input.begin(), input.end(), v);
     assert(expected == actual);
@@ -54,14 +56,15 @@ void test_count(mt19937_64& gen) {
 template <class FwdIt, class T>
 inline auto last_known_good_find(FwdIt first, FwdIt last, T v) {
     for (; first != last; ++first) {
-        if (*first == v)
+        if (*first == v) {
             break;
+        }
     }
     return first;
 }
 
 template <class T>
-void test_case_find(vector<T>& input, T v) {
+void test_case_find(const vector<T>& input, T v) {
     auto expected = last_known_good_find(input.begin(), input.end(), v);
     auto actual   = find(input.begin(), input.end(), v);
     assert(expected == actual);
@@ -166,18 +169,6 @@ void test_swap_ranges(mt19937_64& gen) {
 
 void test_vector_algorithms() {
     mt19937_64 gen(1729);
-    test_reverse<char>(gen);
-    test_reverse<signed char>(gen);
-    test_reverse<unsigned char>(gen);
-    test_reverse<short>(gen);
-    test_reverse<unsigned short>(gen);
-    test_reverse<int>(gen);
-    test_reverse<unsigned int>(gen);
-    test_reverse<long long>(gen);
-    test_reverse<unsigned long long>(gen);
-    test_reverse<float>(gen);
-    test_reverse<double>(gen);
-    test_reverse<long double>(gen);
 
     test_count<char>(gen);
     test_count<signed char>(gen);
@@ -198,6 +189,19 @@ void test_vector_algorithms() {
     test_find<unsigned int>(gen);
     test_find<long long>(gen);
     test_find<unsigned long long>(gen);
+
+    test_reverse<char>(gen);
+    test_reverse<signed char>(gen);
+    test_reverse<unsigned char>(gen);
+    test_reverse<short>(gen);
+    test_reverse<unsigned short>(gen);
+    test_reverse<int>(gen);
+    test_reverse<unsigned int>(gen);
+    test_reverse<long long>(gen);
+    test_reverse<unsigned long long>(gen);
+    test_reverse<float>(gen);
+    test_reverse<double>(gen);
+    test_reverse<long double>(gen);
 
     test_reverse_copy<char>(gen);
     test_reverse_copy<signed char>(gen);

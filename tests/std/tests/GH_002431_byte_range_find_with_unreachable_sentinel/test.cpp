@@ -3,8 +3,8 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <ranges>
-#include <utility>
 
 #include <Windows.h>
 
@@ -27,13 +27,13 @@ void test_impl(void* sv, void* ev) {
     }
 }
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+#if defined(_M_IX86) || defined(_M_X64)
 extern "C" long __isa_enabled;
 
 void disable_instructions(ISA_AVAILABILITY isa) {
     __isa_enabled &= ~(1UL << static_cast<unsigned long>(isa));
 }
-#endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
+#endif // defined(_M_IX86) || defined(_M_X64)
 
 void test_all_element_sizes(void* p, size_t page) {
     test_impl<char>(p, reinterpret_cast<char*>(p) + page);
@@ -47,7 +47,7 @@ int main() {
     GetSystemInfo(&si);
 
     const size_t page  = si.dwPageSize;
-    const size_t alloc = max<size_t>(page * 2, si.dwAllocationGranularity);
+    const size_t alloc = (max) (page * 2, size_t{si.dwAllocationGranularity});
 
     void* p = VirtualAlloc(nullptr, alloc, MEM_RESERVE, PAGE_NOACCESS);
     assert(p != nullptr);
@@ -55,7 +55,6 @@ int main() {
     assert(p2 != nullptr);
 
     test_all_element_sizes(p, page);
-#ifndef _M_CEE_PURE
 #if defined(_M_IX86) || defined(_M_X64)
     disable_instructions(__ISA_AVAILABLE_AVX2);
     test_all_element_sizes(p, page);
@@ -66,7 +65,6 @@ int main() {
     disable_instructions(__ISA_AVAILABLE_SSE2);
     test_all_element_sizes(p, page);
 #endif // defined(_M_IX86)
-#endif // _M_CEE_PURE
 
     VirtualFree(p, 0, MEM_RELEASE);
 }

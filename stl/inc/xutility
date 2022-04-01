@@ -21,7 +21,17 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if defined(_CRTBLD) && defined(CRTDLL2)
+// TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
+// the DLL. (We could additionally link them into the DLL - not as exports, just for internal usage - but we
+// haven't chosen to do that yet.) When we can break ABI and export the vector algorithms from the DLL,
+// this preprocessor case should be removed.
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 0
+#elif _USE_STD_VECTOR_ALGORITHMS
+#error Vector algorithms are not supported when building msvcp140.dll, but _USE_STD_VECTOR_ALGORITHMS is set.
+#endif // _USE_STD_VECTOR_ALGORITHMS
+#elif (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
 #ifndef _USE_STD_VECTOR_ALGORITHMS
 #define _USE_STD_VECTOR_ALGORITHMS 1
 #endif // _USE_STD_VECTOR_ALGORITHMS
@@ -5185,17 +5195,13 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 template <class _InIt, class _Ty>
 _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
     // check whether _Val is within the limits of _Elem
-    if constexpr (is_same_v<_Ty, bool>) {
-        return true;
-    } else if constexpr (is_pointer_v<_Ty> || is_null_pointer_v<_Ty>) {
-        return true;
-    }
+    if constexpr (disjunction_v<
 #ifdef __cpp_lib_byte
-    else if constexpr (is_same_v<_Ty, byte>) {
-        return true;
-    }
+                      is_same<_Ty, byte>,
 #endif // __cpp_lib_byte
-    else {
+                      is_same<_Ty, bool>, is_pointer<_Ty>, is_null_pointer<_Ty>>) {
+        return true;
+    } else {
         using _Elem = _Iter_value_t<_InIt>;
         if constexpr (is_same_v<_Elem, bool>) {
             return _Val == true || _Val == false;
@@ -5230,29 +5236,27 @@ _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
     }
 }
 
-// _Iterator_is_contiguous<_Iter> && (is_integral<_Ty> && is_integral<_Val> ||
-// is_pointer<_Ty> && is_pointer<_Val> || is_null_pointer<_Val>) ||
-// is_same<_Ty, byte> && is_same<_Ty, _Val>
-template <class _Iter, class _Ty, class _Val = _Iter_value_t<_Iter>>
-_INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe =
-    _Iterator_is_contiguous<_Iter>&&
-        disjunction_v<conjunction<is_integral<_Ty>, is_integral<_Val>>, conjunction<is_pointer<_Ty>, is_same<_Ty, _Val>>
+template <class _Iter, class _Ty, class _Elem = _Iter_value_t<_Iter>>
+_INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe = // Can we activate the vector algorithms for find/count?
+    _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
+    && !_Iterator_is_volatile<_Iter> // The iterator must not be volatile.
+    && disjunction_v< // And one of the following conditions must be met:
 #ifdef __cpp_lib_byte
-            ,
-            conjunction<is_same<_Ty, byte>, is_same<_Val, byte>>
+        conjunction<is_same<_Ty, byte>, is_same<_Elem, byte>>, // We're finding a std::byte in a range of std::byte.
 #endif // __cpp_lib_byte
-            > && !is_volatile_v<remove_reference_t<_Val>>;
+        conjunction<is_integral<_Ty>, is_integral<_Elem>>, // We're finding an integer in a range of integers.
+        // The integer types can be different, which requires careful handling.
+        conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>>; // We're finding a U* in a range of U* (identical types).
 
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first matching _Val; choose optimization
     // activate optimization for contiguous iterators to most scalar types (possibly const-qualified)
+    if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
 #if _HAS_CXX20
-    if (!_STD is_constant_evaluated())
+        if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
-    {
-        if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
-            // find first integer bitwise matching integral _Val
+        {
             if (!_Within_limits(_First, _Val)) {
                 return _Last;
             }
@@ -5275,7 +5279,7 @@ _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, c
                     return _Result ? _First + (_Result - _First_ptr) : _Last;
                 }
             }
-            // Not trying wmemchr due to DevCom-1614562
+            // TRANSITION, DevCom-1614562: not trying wmemchr
 #endif // ^^^ not _USE_STD_VECTOR_ALGORITHMS ^^^
         }
     }
@@ -5340,7 +5344,9 @@ namespace ranges {
                 _Ptr_t _Result;
 
                 if constexpr (_Is_sized) {
-                    _Result = __std_find_trivial(_First_ptr, _To_address(_Last), _Val);
+                    const auto _Last_ptr = _First_ptr + (_Last - _First);
+
+                    _Result = __std_find_trivial(_First_ptr, _Last_ptr, _Val);
                 } else {
                     _Result = __std_find_trivial_unsized(_First_ptr, _Val);
                 }
@@ -5372,7 +5378,7 @@ namespace ranges {
                         return _RANGES next(_STD move(_First), _Last);
                     }
                 }
-                // Not trying wmemchr due to DevCom-1614562
+                // TRANSITION, DevCom-1614562: not trying wmemchr
 #endif // ^^^ not _USE_STD_VECTOR_ALGORITHMS ^^^
             }
         }
@@ -5431,11 +5437,11 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
         const auto _ULast = _Get_unwrapped(_Last);
 
 #if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
 #if _HAS_CXX20
-        if (!_STD is_constant_evaluated())
+            if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
-        {
-            if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
+            {
                 if (!_Within_limits(_UFirst, _Val)) {
                     return 0;
                 }

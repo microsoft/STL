@@ -7,15 +7,21 @@
 #pragma warning(disable : 4389) // signed/unsigned mismatch
 #pragma warning(disable : 4805) // '==': unsafe mix of type '_Ty' and type 'const _Ty' in operation
 // This test intentionally triggers that warning when one of the inputs to find is bool
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+
 #ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions"
 #pragma clang diagnostic ignored "-Wsign-compare"
-#endif // __clang_
+#endif // __clang__
 
 #include <algorithm>
 #include <assert.h>
+#include <climits>
 #include <iterator>
+#include <limits>
 #include <list>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 using namespace std;
@@ -31,13 +37,6 @@ struct Cat {
 bool operator==(int x, const Cat& c) {
     return x == c.m_n * 11;
 }
-
-#pragma warning(push)
-#pragma warning(disable : 4984) //  'if constexpr' is a C++ 17 language extension
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++17-extensions"
-#endif // __clang__
 
 template <class ElementType, class ValueType>
 void test_limit_check_elements_impl() {
@@ -104,11 +103,6 @@ void test_limit_check_elements_impl() {
     }
 }
 
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
-#pragma warning(pop)
-
 template <class ElementType>
 void test_limit_check_elements() {
     test_limit_check_elements_impl<ElementType, signed char>();
@@ -126,8 +120,6 @@ void test_limit_check_elements() {
 
 int main() {
     { // DevDiv-316853 "<algorithm>: find()'s memchr() optimization is incorrect"
-
-
         vector<signed char> v;
         v.push_back(22);
         v.push_back(33);
@@ -137,7 +129,7 @@ int main() {
         v.push_back(55);
 
 #ifdef __cpp_lib_concepts
-        static_assert(std::_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype(33)>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype(33)>, "should optimize");
 #endif // __cpp_lib_concepts
 
         assert(find(v.begin(), v.end(), 33) - v.begin() == 1);
@@ -163,7 +155,7 @@ int main() {
         l.push_back(44);
         l.push_back(55);
 
-        static_assert(!std::_Vector_alg_in_find_is_safe<decltype(l.begin()), decltype(33)>, "should not optimize");
+        static_assert(!_Vector_alg_in_find_is_safe<decltype(l.begin()), decltype(33)>, "should not optimize");
 
         assert(find(l.begin(), l.end(), 44) == next(l.begin(), 3));
         assert(find(l.begin(), l.end(), 17) == l.end());
@@ -179,8 +171,7 @@ int main() {
         v.push_back("fluffy");
         v.push_back("kittens");
 
-        static_assert(
-            !std::_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype("fluffy")>, "should not optimize");
+        static_assert(!_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype("fluffy")>, "should not optimize");
 
         assert(find(v.begin(), v.end(), "fluffy") == v.begin() + 2);
         assert(find(v.begin(), v.end(), "zombies") == v.end());
@@ -199,7 +190,7 @@ int main() {
         v.push_back(0xAABBCCDDUL);
 
 #ifdef __cpp_lib_concepts
-        static_assert(std::_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype(0x10203040UL)>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype(0x10203040UL)>, "should optimize");
 #endif // __cpp_lib_concepts
 
         // Make sure we don't look for 0x11 bytes in the range!
@@ -219,7 +210,7 @@ int main() {
         v.push_back(33);
         v.push_back(33);
 
-        static_assert(!std::_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype(Cat(3))>, "should not optimize");
+        static_assert(!_Vector_alg_in_find_is_safe<decltype(v.begin()), decltype(Cat(3))>, "should not optimize");
 
         assert(find(v.begin(), v.end(), Cat(2)) == v.begin() + 1);
         assert(find(v.begin(), v.end(), Cat(4)) == v.end());
@@ -238,7 +229,7 @@ int main() {
         vc.push_back('w');
 
 #ifdef __cpp_lib_concepts
-        static_assert(std::_Vector_alg_in_find_is_safe<decltype(vc.begin()), decltype('m')>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(vc.begin()), decltype('m')>, "should optimize");
 #endif // __cpp_lib_concepts
 
         assert(find(vc.begin(), vc.end(), 'o') == vc.begin() + 3);
@@ -263,7 +254,7 @@ int main() {
         vsc.push_back(127);
 
 #ifdef __cpp_lib_concepts
-        static_assert(std::_Vector_alg_in_find_is_safe<decltype(vsc.begin()), decltype(29)>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(vsc.begin()), decltype(29)>, "should optimize");
 #endif // __cpp_lib_concepts
 
         assert(find(vsc.begin(), vsc.end(), 17) == vsc.begin());
@@ -290,7 +281,7 @@ int main() {
         vuc.push_back(255);
 
 #ifdef __cpp_lib_concepts
-        static_assert(std::_Vector_alg_in_find_is_safe<decltype(vuc.begin()), decltype(47)>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(vuc.begin()), decltype(47)>, "should optimize");
 #endif // __cpp_lib_concepts
 
         assert(find(vuc.begin(), vuc.end(), 47) == vuc.begin() + 2);
@@ -306,7 +297,7 @@ int main() {
     { // Test optimized value types.
         const unsigned char arr[] = {10, 20, 0, 255, 30, 40};
 
-        static_assert(std::_Vector_alg_in_find_is_safe<decltype(begin(arr)), decltype(30)>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr)), decltype(30)>, "should optimize");
 
         assert(find(begin(arr), end(arr), static_cast<signed char>(30)) == begin(arr) + 4);
         assert(find(begin(arr), end(arr), static_cast<short>(30)) == begin(arr) + 4);
@@ -336,7 +327,7 @@ int main() {
     test_limit_check_elements<long long>();
     test_limit_check_elements<unsigned char>();
     test_limit_check_elements<unsigned short>();
-    test_limit_check_elements<unsigned>();
+    test_limit_check_elements<unsigned int>();
     test_limit_check_elements<unsigned long>();
     test_limit_check_elements<unsigned long long>();
 
@@ -423,7 +414,7 @@ int main() {
     { // Test bools
         const bool arr[]{true, true, true, false, true, false};
 
-        static_assert(std::_Vector_alg_in_find_is_safe<decltype(begin(arr)), decltype(true)>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr)), decltype(true)>, "should optimize");
 
         assert(find(begin(arr), end(arr), false) == begin(arr) + 3);
         assert(find(begin(arr), end(arr), true) == begin(arr));
@@ -438,7 +429,7 @@ int main() {
         const char* s = "xxxyyy";
         const char* arr[]{s, s + 1, s + 1, s + 5, s, s + 4};
 
-        static_assert(std::_Vector_alg_in_find_is_safe<decltype(begin(arr)), decltype(s + 1)>, "should optimize");
+        static_assert(_Vector_alg_in_find_is_safe<decltype(begin(arr)), decltype(s + 1)>, "should optimize");
 
         assert(find(begin(arr), end(arr), s) == begin(arr));
         assert(find(begin(arr), end(arr), s + 1) == begin(arr) + 1);

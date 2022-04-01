@@ -28,49 +28,51 @@ extern "C" long __isa_enabled;
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
 #endif // !_DEBUG
 
-static bool _Use_avx2() noexcept {
-    return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
-}
+namespace {
+    bool _Use_avx2() noexcept {
+        return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
+    }
 
-static bool _Use_sse42() noexcept {
-    return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
-}
+    bool _Use_sse42() noexcept {
+        return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
+    }
 
-static bool _Use_sse2() noexcept {
+    bool _Use_sse2() noexcept {
 #ifdef _M_IX86
-    return __isa_enabled & (1 << __ISA_AVAILABLE_SSE2);
+        return __isa_enabled & (1 << __ISA_AVAILABLE_SSE2);
 #else
-    return true;
+        return true;
 #endif // _M_IX86
-}
-
-template <class _BidIt>
-static void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
-    for (; _First != _Last && _First != --_Last; ++_First) {
-        const auto _Temp = *_First;
-        *_First          = *_Last;
-        *_Last           = _Temp;
     }
-}
 
-template <class _BidIt, class _OutIt>
-static void _Reverse_copy_tail(_BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
-    while (_First != _Last) {
-        *_Dest++ = *--_Last;
+    template <class _BidIt>
+    void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
+        for (; _First != _Last && _First != --_Last; ++_First) {
+            const auto _Temp = *_First;
+            *_First          = *_Last;
+            *_Last           = _Temp;
+        }
     }
-}
 
-static size_t _Byte_length(const void* _First, const void* _Last) noexcept {
-    return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
-}
+    template <class _BidIt, class _OutIt>
+    void _Reverse_copy_tail(_BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
+        while (_First != _Last) {
+            *_Dest++ = *--_Last;
+        }
+    }
 
-static void _Advance_bytes(void*& _Target, ptrdiff_t _Offset) noexcept {
-    _Target = static_cast<unsigned char*>(_Target) + _Offset;
-}
+    size_t _Byte_length(const void* _First, const void* _Last) noexcept {
+        return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
+    }
 
-static void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
-    _Target = static_cast<const unsigned char*>(_Target) + _Offset;
-}
+    void _Advance_bytes(void*& _Target, ptrdiff_t _Offset) noexcept {
+        _Target = static_cast<unsigned char*>(_Target) + _Offset;
+    }
+
+    void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
+        _Target = static_cast<const unsigned char*>(_Target) + _Offset;
+    }
+} // unnamed namespace
 
 extern "C" {
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
@@ -125,8 +127,8 @@ __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
         const void* _Stop_at = _First1;
         _Advance_bytes(_Stop_at, _Byte_length(_First1, _Last1) & _Mask_4);
         do {
-            const unsigned long _Left             = *static_cast<unsigned long*>(_First1);
-            const unsigned long _Right            = *static_cast<unsigned long*>(_First2);
+            const unsigned long _Left = *static_cast<unsigned long*>(_First1);
+            const unsigned long _Right = *static_cast<unsigned long*>(_First2);
             *static_cast<unsigned long*>(_First1) = _Right;
             *static_cast<unsigned long*>(_First2) = _Left;
             _Advance_bytes(_First1, 4);
@@ -453,294 +455,297 @@ __declspec(noalias) void __cdecl __std_reverse_copy_trivially_copyable_8(
 
 } // extern "C"
 
-template <class _Ty>
-static const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) {
-    auto _Ptr = static_cast<const _Ty*>(_First);
-    while (*_Ptr != _Val) {
-        ++_Ptr;
-    }
-    return _Ptr;
-}
-
-template <class _Ty>
-static const void* _Find_trivial_tail(const void* _First, const void* _Last, _Ty _Val) {
-    auto _Ptr = static_cast<const _Ty*>(_First);
-    while (_Ptr != _Last && *_Ptr != _Val) {
-        ++_Ptr;
-    }
-    return _Ptr;
-}
-
-template <class _Ty>
-__declspec(noalias) size_t _Count_trivial_tail(const void* _First, const void* _Last, size_t _Current, _Ty _Val) {
-    auto _Ptr = static_cast<const _Ty*>(_First);
-    for (; _Ptr != _Last; ++_Ptr) {
-        if (*_Ptr == _Val) {
-            ++_Current;
+namespace {
+    template <class _Ty>
+    const void* _Find_trivial_unsized_fallback(const void* _First, _Ty _Val) {
+        auto _Ptr = static_cast<const _Ty*>(_First);
+        while (*_Ptr != _Val) {
+            ++_Ptr;
         }
-    }
-    return _Current;
-}
-
-struct _Find_traits_1 {
-    static constexpr size_t _Shift = 0;
-
-    static __m256i _Set_avx(const uint8_t _Val) noexcept {
-        return _mm256_set1_epi8(_Val);
+        return _Ptr;
     }
 
-    static __m128i _Set_sse(const uint8_t _Val) noexcept {
-        return _mm_set1_epi8(_Val);
+    template <class _Ty>
+    const void* _Find_trivial_tail(const void* _First, const void* _Last, _Ty _Val) {
+        auto _Ptr = static_cast<const _Ty*>(_First);
+        while (_Ptr != _Last && *_Ptr != _Val) {
+            ++_Ptr;
+        }
+        return _Ptr;
     }
 
-    static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-        return _mm256_cmpeq_epi8(_Lhs, _Rhs);
+    template <class _Ty>
+    __declspec(noalias) size_t _Count_trivial_tail(const void* _First, const void* _Last, size_t _Current, _Ty _Val) {
+        auto _Ptr = static_cast<const _Ty*>(_First);
+        for (; _Ptr != _Last; ++_Ptr) {
+            if (*_Ptr == _Val) {
+                ++_Current;
+            }
+        }
+        return _Current;
     }
 
-    static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-        return _mm_cmpeq_epi8(_Lhs, _Rhs);
-    }
+    struct _Find_traits_1 {
+        static constexpr size_t _Shift = 0;
 
-    static bool _Sse_available() noexcept {
-        return _Use_sse2();
-    }
-};
-
-struct _Find_traits_2 {
-    static constexpr size_t _Shift = 1;
-
-    static __m256i _Set_avx(const uint16_t _Val) noexcept {
-        return _mm256_set1_epi16(_Val);
-    }
-
-    static __m128i _Set_sse(const uint16_t _Val) noexcept {
-        return _mm_set1_epi16(_Val);
-    }
-
-    static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-        return _mm256_cmpeq_epi16(_Lhs, _Rhs);
-    }
-
-    static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-        return _mm_cmpeq_epi16(_Lhs, _Rhs);
-    }
-
-    static bool _Sse_available() noexcept {
-        return _Use_sse2();
-    }
-};
-
-struct _Find_traits_4 {
-    static constexpr size_t _Shift = 2;
-
-    static __m256i _Set_avx(const uint32_t _Val) noexcept {
-        return _mm256_set1_epi32(_Val);
-    }
-
-    static __m128i _Set_sse(const uint32_t _Val) noexcept {
-        return _mm_set1_epi32(_Val);
-    }
-
-    static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-        return _mm256_cmpeq_epi32(_Lhs, _Rhs);
-    }
-
-    static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-        return _mm_cmpeq_epi32(_Lhs, _Rhs);
-    }
-
-    static bool _Sse_available() noexcept {
-        return _Use_sse2();
-    }
-};
-
-struct _Find_traits_8 {
-    static constexpr size_t _Shift = 3;
-
-    static __m256i _Set_avx(const uint64_t _Val) noexcept {
-        return _mm256_set1_epi64x(_Val);
-    }
-
-    static __m128i _Set_sse(const uint64_t _Val) noexcept {
-        return _mm_set1_epi64x(_Val);
-    }
-
-    static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
-        return _mm256_cmpeq_epi64(_Lhs, _Rhs);
-    }
-
-    static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
-        return _mm_cmpeq_epi64(_Lhs, _Rhs); // SSE4.1
-    }
-
-    static bool _Sse_available() noexcept {
-        return _Use_sse42(); // for pcmpeqq on _Cmp_sse
-    }
-};
-
-// The below functions have exactly the same signature as exports, up to calling convention.
-// This makes sure the template specialization is fused with the export function.
-// In optimized build it avoids extra call, as this function is too large to inline.
-
-template <class _Traits, class _Ty>
-const void* __stdcall __std_find_trivial_unsized(const void* _First, const _Ty _Val) noexcept {
-    if (_Use_avx2()) {
-        // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
-        // From start partial piece we mask out matches that don't belong to the range.
-        // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
-        constexpr size_t _Vector_pad_mask = 0x1F;
-        constexpr unsigned _Full_mask     = 0xFFFF'FFFF;
-
-        const __m256i _Comparand  = _Traits::_Set_avx(_Val);
-        const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
-        const unsigned _Mask      = (_Full_mask << _Pad_start);
-        _Advance_bytes(_First, -_Pad_start);
-
-        __m256i _Data   = _mm256_load_si256(static_cast<const __m256i*>(_First));
-        unsigned _Bingo = static_cast<unsigned>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
-
-        if ((_Bingo &= _Mask) != 0) {
-            unsigned long _Offset = _tzcnt_u32(_Bingo);
-            _Advance_bytes(_First, _Offset);
-            return _First;
+        static __m256i _Set_avx(const uint8_t _Val) noexcept {
+            return _mm256_set1_epi8(_Val);
         }
 
-        for (;;) {
-            _Data  = _mm256_load_si256(static_cast<const __m256i*>(_First));
-            _Bingo = static_cast<unsigned>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
+        static __m128i _Set_sse(const uint8_t _Val) noexcept {
+            return _mm_set1_epi8(_Val);
+        }
 
-            if (_Bingo != 0) {
+        static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_cmpeq_epi8(_Lhs, _Rhs);
+        }
+
+        static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_cmpeq_epi8(_Lhs, _Rhs);
+        }
+
+        static bool _Sse_available() noexcept {
+            return _Use_sse2();
+        }
+    };
+
+    struct _Find_traits_2 {
+        static constexpr size_t _Shift = 1;
+
+        static __m256i _Set_avx(const uint16_t _Val) noexcept {
+            return _mm256_set1_epi16(_Val);
+        }
+
+        static __m128i _Set_sse(const uint16_t _Val) noexcept {
+            return _mm_set1_epi16(_Val);
+        }
+
+        static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_cmpeq_epi16(_Lhs, _Rhs);
+        }
+
+        static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_cmpeq_epi16(_Lhs, _Rhs);
+        }
+
+        static bool _Sse_available() noexcept {
+            return _Use_sse2();
+        }
+    };
+
+    struct _Find_traits_4 {
+        static constexpr size_t _Shift = 2;
+
+        static __m256i _Set_avx(const uint32_t _Val) noexcept {
+            return _mm256_set1_epi32(_Val);
+        }
+
+        static __m128i _Set_sse(const uint32_t _Val) noexcept {
+            return _mm_set1_epi32(_Val);
+        }
+
+        static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_cmpeq_epi32(_Lhs, _Rhs);
+        }
+
+        static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_cmpeq_epi32(_Lhs, _Rhs);
+        }
+
+        static bool _Sse_available() noexcept {
+            return _Use_sse2();
+        }
+    };
+
+    struct _Find_traits_8 {
+        static constexpr size_t _Shift = 3;
+
+        static __m256i _Set_avx(const uint64_t _Val) noexcept {
+            return _mm256_set1_epi64x(_Val);
+        }
+
+        static __m128i _Set_sse(const uint64_t _Val) noexcept {
+            return _mm_set1_epi64x(_Val);
+        }
+
+        static __m256i _Cmp_avx(const __m256i _Lhs, const __m256i _Rhs) noexcept {
+            return _mm256_cmpeq_epi64(_Lhs, _Rhs);
+        }
+
+        static __m128i _Cmp_sse(const __m128i _Lhs, const __m128i _Rhs) noexcept {
+            return _mm_cmpeq_epi64(_Lhs, _Rhs); // SSE4.1
+        }
+
+        static bool _Sse_available() noexcept {
+            return _Use_sse42(); // for pcmpeqq on _Cmp_sse
+        }
+    };
+
+    // The below functions have exactly the same signature as the extern "C" functions, up to calling convention.
+    // This makes sure the template specialization is fused with the extern "C" function.
+    // In optimized builds it avoids an extra call, as this function is too large to inline.
+
+    template <class _Traits, class _Ty>
+    const void* __stdcall __std_find_trivial_unsized(const void* _First, const _Ty _Val) noexcept {
+        if (_Use_avx2()) {
+            // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
+            // From start partial piece we mask out matches that don't belong to the range.
+            // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
+            constexpr size_t _Vector_pad_mask = 0x1F;
+            constexpr unsigned int _Full_mask = 0xFFFF'FFFF;
+
+            const __m256i _Comparand  = _Traits::_Set_avx(_Val);
+            const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
+            const unsigned int _Mask  = _Full_mask << _Pad_start;
+            _Advance_bytes(_First, -_Pad_start);
+
+            __m256i _Data       = _mm256_load_si256(static_cast<const __m256i*>(_First));
+            unsigned int _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
+
+            if ((_Bingo &= _Mask) != 0) {
                 unsigned long _Offset = _tzcnt_u32(_Bingo);
                 _Advance_bytes(_First, _Offset);
                 return _First;
             }
 
-            _Advance_bytes(_First, 32);
-        };
-    }
-    if (_Traits::_Sse_available()) {
-        // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
-        // From start partial piece we mask out matches that don't belong to the range.
-        // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
-        constexpr size_t _Vector_pad_mask = 0xF;
-        constexpr unsigned _Full_mask     = 0xFFFF;
+            for (;;) {
+                _Data  = _mm256_load_si256(static_cast<const __m256i*>(_First));
+                _Bingo = static_cast<unsigned int>(_mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand)));
 
-        const __m128i _Comparand  = _Traits::_Set_sse(_Val);
-        const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
-        const unsigned _Mask      = (_Full_mask << _Pad_start);
-        _Advance_bytes(_First, -_Pad_start);
+                if (_Bingo != 0) {
+                    unsigned long _Offset = _tzcnt_u32(_Bingo);
+                    _Advance_bytes(_First, _Offset);
+                    return _First;
+                }
 
-        __m128i _Data   = _mm_load_si128(static_cast<const __m128i*>(_First));
-        unsigned _Bingo = static_cast<unsigned>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
-
-        if ((_Bingo &= _Mask) != 0) {
-            unsigned long _Offset;
-            _BitScanForward(&_Offset, _Bingo);
-            _Advance_bytes(_First, _Offset);
-            return _First;
+                _Advance_bytes(_First, 32);
+            }
         }
 
-        for (;;) {
-            _Data  = _mm_load_si128(static_cast<const __m128i*>(_First));
-            _Bingo = static_cast<unsigned>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
+        if (_Traits::_Sse_available()) {
+            // We read by vector-sized pieces, and we align pointers to vector-sized boundary.
+            // From start partial piece we mask out matches that don't belong to the range.
+            // This makes sure we never cross page boundary, thus we read 'as if' sequentially.
+            constexpr size_t _Vector_pad_mask = 0xF;
+            constexpr unsigned int _Full_mask = 0xFFFF;
 
-            if (_Bingo != 0) {
+            const __m128i _Comparand  = _Traits::_Set_sse(_Val);
+            const intptr_t _Pad_start = reinterpret_cast<intptr_t>(_First) & _Vector_pad_mask;
+            const unsigned int _Mask  = _Full_mask << _Pad_start;
+            _Advance_bytes(_First, -_Pad_start);
+
+            __m128i _Data       = _mm_load_si128(static_cast<const __m128i*>(_First));
+            unsigned int _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
+
+            if ((_Bingo &= _Mask) != 0) {
                 unsigned long _Offset;
                 _BitScanForward(&_Offset, _Bingo);
                 _Advance_bytes(_First, _Offset);
                 return _First;
             }
 
-            _Advance_bytes(_First, 16);
-        };
-    }
+            for (;;) {
+                _Data  = _mm_load_si128(static_cast<const __m128i*>(_First));
+                _Bingo = static_cast<unsigned int>(_mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand)));
 
-    return _Find_trivial_unsized_fallback(_First, _Val);
-}
+                if (_Bingo != 0) {
+                    unsigned long _Offset;
+                    _BitScanForward(&_Offset, _Bingo);
+                    _Advance_bytes(_First, _Offset);
+                    return _First;
+                }
 
-
-template <class _Traits, class _Ty>
-const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, _Ty _Val) noexcept {
-    size_t Size_bytes = _Byte_length(_First, _Last);
-
-    const size_t _Avx_size = Size_bytes & ~size_t{0x1F};
-    if (_Avx_size != 0 && _Use_avx2()) {
-        const __m256i _Comparand = _Traits::_Set_avx(_Val);
-        const void* _Stop_at     = _First;
-        _Advance_bytes(_Stop_at, _Avx_size);
-        do {
-            const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-            const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
-
-            if (_Bingo != 0) {
-                const unsigned long _Offset = _tzcnt_u32(_Bingo);
-                _Advance_bytes(_First, _Offset);
-                return _First;
+                _Advance_bytes(_First, 16);
             }
+        }
 
-            _Advance_bytes(_First, 32);
-        } while (_First != _Stop_at);
-        Size_bytes &= 0x1F;
+        return _Find_trivial_unsized_fallback(_First, _Val);
     }
 
-    const size_t _Sse_size = Size_bytes & ~size_t{0xF};
-    if (_Sse_size != 0 && _Traits::_Sse_available()) {
-        const __m128i _Comparand = _Traits::_Set_sse(_Val);
-        const void* _Stop_at     = _First;
-        _Advance_bytes(_Stop_at, _Sse_size);
-        do {
-            const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-            const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
 
-            if (_Bingo != 0) {
-                unsigned long _Offset;
-                _BitScanForward(&_Offset, _Bingo);
-                _Advance_bytes(_First, _Offset);
-                return _First;
-            }
+    template <class _Traits, class _Ty>
+    const void* __stdcall __std_find_trivial(const void* _First, const void* _Last, _Ty _Val) noexcept {
+        size_t _Size_bytes = _Byte_length(_First, _Last);
 
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop_at);
+        const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
+        if (_Avx_size != 0 && _Use_avx2()) {
+            const __m256i _Comparand = _Traits::_Set_avx(_Val);
+            const void* _Stop_at     = _First;
+            _Advance_bytes(_Stop_at, _Avx_size);
+            do {
+                const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+                const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+
+                if (_Bingo != 0) {
+                    const unsigned long _Offset = _tzcnt_u32(_Bingo);
+                    _Advance_bytes(_First, _Offset);
+                    return _First;
+                }
+
+                _Advance_bytes(_First, 32);
+            } while (_First != _Stop_at);
+            _Size_bytes &= 0x1F;
+        }
+
+        const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
+        if (_Sse_size != 0 && _Traits::_Sse_available()) {
+            const __m128i _Comparand = _Traits::_Set_sse(_Val);
+            const void* _Stop_at     = _First;
+            _Advance_bytes(_Stop_at, _Sse_size);
+            do {
+                const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+                const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+
+                if (_Bingo != 0) {
+                    unsigned long _Offset;
+                    _BitScanForward(&_Offset, _Bingo);
+                    _Advance_bytes(_First, _Offset);
+                    return _First;
+                }
+
+                _Advance_bytes(_First, 16);
+            } while (_First != _Stop_at);
+        }
+
+        return _Find_trivial_tail(_First, _Last, _Val);
     }
 
-    return _Find_trivial_tail(_First, _Last, _Val);
-}
+    template <class _Traits, class _Ty>
+    __declspec(noalias) size_t
+        __stdcall __std_count_trivial(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
+        size_t _Size_bytes = _Byte_length(_First, _Last);
+        size_t _Result     = 0;
 
-template <class _Traits, class _Ty>
-__declspec(noalias) size_t
-    __stdcall __std_count_trivial(const void* _First, const void* const _Last, const _Ty _Val) noexcept {
-    size_t _Size_bytes = _Byte_length(_First, _Last);
-    size_t _Result     = 0;
+        const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
+        if (_Avx_size != 0 && _Use_avx2()) {
+            const __m256i _Comparand = _Traits::_Set_avx(_Val);
+            const void* _Stop_at     = _First;
+            _Advance_bytes(_Stop_at, _Avx_size);
+            do {
+                const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
+                const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
+                _Result += __popcnt(_Bingo); // Assume available with SSE4.2
+                _Advance_bytes(_First, 32);
+            } while (_First != _Stop_at);
+            _Size_bytes &= 0x1F;
+        }
 
-    const size_t _Avx_size = _Size_bytes & ~size_t{0x1F};
-    if (_Avx_size != 0 && _Use_avx2()) {
-        const __m256i _Comparand = _Traits::_Set_avx(_Val);
-        const void* _Stop_at     = _First;
-        _Advance_bytes(_Stop_at, _Avx_size);
-        do {
-            const __m256i _Data = _mm256_loadu_si256(static_cast<const __m256i*>(_First));
-            const int _Bingo    = _mm256_movemask_epi8(_Traits::_Cmp_avx(_Data, _Comparand));
-            _Result += __popcnt(_Bingo); // Assume available with SSE4.2
-            _Advance_bytes(_First, 32);
-        } while (_First != _Stop_at);
-        _Size_bytes &= 0x1F;
+        const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
+        if (_Sse_size != 0 && _Use_sse42()) {
+            const __m128i _Comparand = _Traits::_Set_sse(_Val);
+            const void* _Stop_at     = _First;
+            _Advance_bytes(_Stop_at, _Sse_size);
+            do {
+                const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
+                const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
+                _Result += __popcnt(_Bingo); // Assume available with SSE4.2
+                _Advance_bytes(_First, 16);
+            } while (_First != _Stop_at);
+        }
+
+        return _Count_trivial_tail(_First, _Last, _Result >> _Traits::_Shift, _Val);
     }
-
-    const size_t _Sse_size = _Size_bytes & ~size_t{0xF};
-    if (_Sse_size != 0 && _Use_sse42()) {
-        const __m128i _Comparand = _Traits::_Set_sse(_Val);
-        const void* _Stop_at     = _First;
-        _Advance_bytes(_Stop_at, _Sse_size);
-        do {
-            const __m128i _Data = _mm_loadu_si128(static_cast<const __m128i*>(_First));
-            const int _Bingo    = _mm_movemask_epi8(_Traits::_Cmp_sse(_Data, _Comparand));
-            _Result += __popcnt(_Bingo); // Assume available with SSE4.2
-            _Advance_bytes(_First, 16);
-        } while (_First != _Stop_at);
-    }
-
-    return _Count_trivial_tail(_First, _Last, _Result >> _Traits::_Shift, _Val);
-}
+} // unnamed namespace
 
 extern "C" {
 
