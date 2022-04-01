@@ -472,31 +472,28 @@ struct Immovable {
 };
 
 // Validate that the _Defaultabox primary template works when fed with a non-trivially-destructible type
-struct non_trivially_destructible_input_iterator {
-    constexpr ~non_trivially_destructible_input_iterator() {}
-
-    // When the type is default constructible, the partial specialization is used.
-    // Avoid that so we can test what we want to test.
-    non_trivially_destructible_input_iterator() = delete;
-
-    using difference_type = int;
-    using value_type      = int;
-
-    constexpr non_trivially_destructible_input_iterator& operator++() {
-        return *this;
-    }
-    constexpr void operator++(int) {
-        ++*this;
-    }
-    constexpr int operator*() const {
-        return 0;
-    }
-    constexpr bool operator==(default_sentinel_t) const {
-        return true;
-    }
-};
-
 void test_non_trivially_destructible_type() { // COMPILE-ONLY
+    struct non_trivially_destructible_input_iterator {
+        using difference_type = int;
+        using value_type      = int;
+
+        ~non_trivially_destructible_input_iterator() {}
+
+        // To test the correct specialization of _Defaultabox, this type must not be default constructible.
+        non_trivially_destructible_input_iterator() = delete;
+
+        non_trivially_destructible_input_iterator& operator++() {
+            return *this;
+        }
+        void operator++(int) {}
+        int operator*() const {
+            return 0;
+        }
+        bool operator==(default_sentinel_t) const {
+            return true;
+        }
+    };
+
     using Inner = ranges::subrange<non_trivially_destructible_input_iterator, default_sentinel_t>;
 
     auto r = views::empty<Inner> | views::join;
