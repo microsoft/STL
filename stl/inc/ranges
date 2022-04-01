@@ -5071,14 +5071,22 @@ namespace ranges {
                         return _RANGES iter_swap(_Left._Inner_it._First, _Right._Inner_it._First);
                     case _Variantish_state::_Holds_second:
                         return _RANGES iter_swap(_Left._Inner_it._First, _Right._Inner_it._Second);
+                    case _Variantish_state::_Nothing:
+                        break;
                     }
+                    break;
                 case _Variantish_state::_Holds_second:
                     switch (_Right._Inner_it._Contains) {
                     case _Variantish_state::_Holds_first:
                         return _RANGES iter_swap(_Left._Inner_it._Second, _Right._Inner_it._First);
                     case _Variantish_state::_Holds_second:
                         return _RANGES iter_swap(_Left._Inner_it._Second, _Right._Inner_it._Second);
+                    case _Variantish_state::_Nothing:
+                        break;
                     }
+                    break;
+                case _Variantish_state::_Nothing:
+                    break;
                 }
 
                 _Throw_bad_variant_access();
