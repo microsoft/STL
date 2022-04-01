@@ -6,7 +6,6 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
-#include <format>
 #include <memory>
 
 // clang-format off
@@ -170,7 +169,9 @@ namespace {
             constexpr size_t max_disp_num = std::size("+0x1111222233334444") - 1; // maximum possible offset
 
             off = string_fill(fill, off + max_disp_num, str, [displacement, off](char* s, size_t) {
-                return std::format_to_n(s + off, max_disp_num, "+{:#x}", displacement).out - s;
+                int ret = std::snprintf(s + off, max_disp_num, "+0x%llX", displacement);
+                _STL_VERIFY(ret > 0, "formatting error");
+                return off + ret;
             });
         }
 
@@ -232,7 +233,9 @@ namespace {
             constexpr size_t max_line_num = std::size("(4294967295): ") - 1; // maximum possible line number
 
             off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) {
-                return std::format_to_n(s + off, max_line_num, "({}): ", line).out - s;
+                int ret = std::snprintf(s + off, max_line_num, "(%u): ", line);
+                _STL_VERIFY(ret > 0, "formatting error");
+                return off + ret;
             });
         }
 
@@ -318,8 +321,11 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
 
         constexpr size_t max_entry_num = std::size("65536> ") - 1; // maximum possible entry number
 
-        off = string_fill(_Fill, off + max_entry_num, _Str,
-            [off, i](char* s, size_t) { return std::format_to_n(s + off, max_entry_num, "{}> ", i).out - s; });
+        off = string_fill(_Fill, off + max_entry_num, _Str, [off, i](char* s, size_t) {
+            int ret = std::snprintf(s + off, max_entry_num, "%u> ", static_cast<unsigned int>(i));
+            _STL_VERIFY(ret > 0, "formatting error");
+            return off + ret;
+        });
 
         off = address_to_string(data[i], _Str, off, _Fill);
     }
