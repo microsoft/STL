@@ -484,22 +484,22 @@ void test_valueless_iterator() {
     try {
         (void) *it2;
         assert(false);
-    } catch (std::bad_variant_access&) {
+    } catch (bad_variant_access&) {
     }
     try {
         (void) ++it2;
         assert(false);
-    } catch (std::bad_variant_access&) {
+    } catch (bad_variant_access&) {
     }
     try {
         (void) --it2;
         assert(false);
-    } catch (std::bad_variant_access&) {
+    } catch (bad_variant_access&) {
     }
     try {
         (void) ranges::iter_move(it2);
         assert(false);
-    } catch (std::bad_variant_access&) {
+    } catch (bad_variant_access&) {
     }
 }
 

@@ -3050,7 +3050,8 @@ namespace ranges {
     private:
         struct _Cache_wrapper {
             template <input_iterator _Iter>
-            constexpr _Cache_wrapper(_Not_quite_object::_Construct_tag, const _Iter& _It) noexcept(noexcept(*_It))
+            constexpr _Cache_wrapper(_Not_quite_object::_Construct_tag, const _Iter& _It) noexcept(
+                noexcept(static_cast<decltype(_Val)>(*_It)))
                 : _Val(*_It) {}
 
             remove_cv_t<range_reference_t<_Vw>> _Val;
@@ -4774,7 +4775,8 @@ namespace ranges {
     private:
         struct _Cache_wrapper {
             template <input_iterator _Iter>
-            constexpr _Cache_wrapper(_Not_quite_object::_Construct_tag, const _Iter& _It) noexcept(noexcept(*_It))
+            constexpr _Cache_wrapper(_Not_quite_object::_Construct_tag, const _Iter& _It) noexcept(
+                noexcept(static_cast<decltype(_Val)>(*_It)))
                 : _Val(*_It) {}
 
             remove_cv_t<range_reference_t<_Vw>> _Val;
@@ -4891,7 +4893,7 @@ namespace ranges {
             }
 
             constexpr void _Satisfy() {
-                while (true) {
+                for (;;) {
                     if (_Inner_it._Contains == _Variantish_state::_Holds_first) {
                         if (_Inner_it._First != _RANGES end(_Parent->_Pattern)) {
                             break;
@@ -4991,7 +4993,7 @@ namespace ranges {
                     _Inner_it._Emplace_second(_RANGES end(_Inner));
                 }
 
-                while (true) {
+                for (;;) {
                     if (_Inner_it._Contains == _Variantish_state::_Holds_first) {
                         auto& _It = _Inner_it._First;
                         if (_It == _RANGES begin(_Parent->_Pattern)) {
@@ -5034,7 +5036,8 @@ namespace ranges {
                 return _Tmp;
             }
 
-            friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) requires _Deref_is_glvalue
+            _NODISCARD_FRIEND constexpr bool operator==(
+                const _Iterator& _Left, const _Iterator& _Right) requires _Deref_is_glvalue
                 && equality_comparable<_OuterIter> && equality_comparable<_InnerIter> {
                 if (_Left._Outer_it != _Right._Outer_it) {
                     return false;
@@ -5056,7 +5059,7 @@ namespace ranges {
                 _STL_UNREACHABLE;
             }
 
-            friend constexpr decltype(auto) iter_move(const _Iterator& _It) {
+            _NODISCARD_FRIEND constexpr decltype(auto) iter_move(const _Iterator& _It) {
                 using _Rvalue_ref =
                     common_reference_t<iter_rvalue_reference_t<_InnerIter>, iter_rvalue_reference_t<_PatternIter>>;
                 return _It._Visit_inner_it<_Rvalue_ref>(_RANGES iter_move);
@@ -5126,7 +5129,7 @@ namespace ranges {
 
             template <bool _OtherConst>
             requires sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
-                _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
+                _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
                     const _Sentinel& _Right) noexcept(noexcept(_Right._Equal(_Left))) /* strengthened */ {
                 return _Right._Equal(_Left);
             }
