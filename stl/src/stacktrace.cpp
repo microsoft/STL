@@ -104,23 +104,23 @@ namespace {
                 (void) debug_symbols->QueryInterface(IID_IDebugSymbols3, reinterpret_cast<void**>(&debug_symbols3));
 
                 // clang-format off
-                constexpr ULONG add_options = 0x1     /* SYMOPT_CASE_INSENSITIVE */ |
-                                              0x2     /* SYMOPT_UNDNAME */ |
-                                              0x4     /* SYMOPT_DEFERRED_LOADS */ |
-                                              0x10    /* SYMOPT_LOAD_LINES */ |
-                                              0x20    /* SYMOPT_OMAP_FIND_NEAREST */ |
-                                              0x100   /* SYMOPT_FAIL_CRITICAL_ERRORS */ |
-                                              0x10000 /* SYMOPT_AUTO_PUBLICS */ |
-                                              0x80000 /* SYMOPT_NO_PROMPTS */;
+                constexpr ULONG add_options = 0x1     /* SYMOPT_CASE_INSENSITIVE */
+                                            | 0x2     /* SYMOPT_UNDNAME */
+                                            | 0x4     /* SYMOPT_DEFERRED_LOADS */
+                                            | 0x10    /* SYMOPT_LOAD_LINES */
+                                            | 0x20    /* SYMOPT_OMAP_FIND_NEAREST */
+                                            | 0x100   /* SYMOPT_FAIL_CRITICAL_ERRORS */
+                                            | 0x10000 /* SYMOPT_AUTO_PUBLICS */
+                                            | 0x80000 /* SYMOPT_NO_PROMPTS */;
 
-                constexpr ULONG remove_options = 0x8     /* SYMOPT_NO_CPP */ |
-                                                 0x40    /* SYMOPT_LOAD_ANYTHING */ |
-                                                 0x100   /* SYMOPT_NO_UNQUALIFIED_LOADS */ |
-                                                 0x400   /* SYMOPT_EXACT_SYMBOLS */ |
-                                                 0x1000  /* SYMOPT_IGNORE_NT_SYMPATH */ |
-                                                 0x4000  /* SYMOPT_PUBLICS_ONLY */ |
-                                                 0x8000  /* SYMOPT_NO_PUBLICS */ |
-                                                 0x20000 /* SYMOPT_NO_IMAGE_SEARCH */;
+                constexpr ULONG remove_options = 0x8     /* SYMOPT_NO_CPP */
+                                               | 0x40    /* SYMOPT_LOAD_ANYTHING */
+                                               | 0x100   /* SYMOPT_NO_UNQUALIFIED_LOADS */
+                                               | 0x400   /* SYMOPT_EXACT_SYMBOLS */
+                                               | 0x1000  /* SYMOPT_IGNORE_NT_SYMPATH */
+                                               | 0x4000  /* SYMOPT_PUBLICS_ONLY */
+                                               | 0x8000  /* SYMOPT_NO_PUBLICS */
+                                               | 0x20000 /* SYMOPT_NO_IMAGE_SEARCH */;
                 // clang-format on
 
                 (void) debug_symbols->AddSymbolOptions(add_options);
