@@ -271,17 +271,16 @@ namespace ranges {
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             : _Val(_STD forward<_Types>(_Args)...), _Engaged{true} {}
 
-        // clang-format off
-        ~_Copyable_box() requires is_trivially_destructible_v<_Ty> = default;
-        // clang-format on
-
         constexpr ~_Copyable_box() {
             if (_Engaged) {
                 _Val.~_Ty();
             }
         }
 
+        // TRANSITION, LLVM-46269, destructor order is significant
         // clang-format off
+        ~_Copyable_box() requires is_trivially_destructible_v<_Ty> = default;
+
         _Copyable_box(const _Copyable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
         // clang-format on
 
@@ -474,17 +473,16 @@ namespace ranges {
     public:
         constexpr _Defaultabox() noexcept {}
 
-        // clang-format off
-        ~_Defaultabox() requires is_trivially_destructible_v<_Ty> = default;
-        // clang-format on
-
         constexpr ~_Defaultabox() {
             if (_Engaged) {
                 _Val.~_Ty();
             }
         }
 
+        // TRANSITION, LLVM-46269, destructor order is significant
         // clang-format off
+        ~_Defaultabox() requires is_trivially_destructible_v<_Ty> = default;
+
         _Defaultabox(const _Defaultabox&)
             requires copy_constructible<_Ty> && is_trivially_copy_constructible_v<_Ty> = default;
         // clang-format on
@@ -693,6 +691,7 @@ namespace ranges {
             }
         }
 
+        // TRANSITION, LLVM-46269, destructor order is significant
         // clang-format off
         ~_Non_propagating_cache() requires is_trivially_destructible_v<_Ty> = default;
         // clang-format on
