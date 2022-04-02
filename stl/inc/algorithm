@@ -9163,15 +9163,16 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-template <class _FwdIt, class _Pr>
-_INLINE_VAR constexpr bool _Is_min_max_optimization_safe_v =
-    _Iterator_is_contiguous<_FwdIt>&&
-        conjunction_v<disjunction<is_integral<_Iter_value_t<_FwdIt>>, is_pointer<_Iter_value_t<_FwdIt>>>,
-            disjunction<is_same<_Pr, less<>>,
+template <class _Iter, class _Pr, class _Elem = _Iter_value_t<_Iter>>
+_INLINE_VAR constexpr bool _Is_min_max_optimization_safe_v = // Activate the vector algorithms for min_/max_element?
+    _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
+    && !_Iterator_is_volatile<_Iter> // The iterator must not be volatile.
+    && conjunction_v<disjunction<is_integral<_Elem>, is_pointer<_Elem>>, // Element is of integral or pointer type.
+        disjunction< // And either of the following:
 #ifdef __cpp_lib_concepts
-                is_same<_Pr, _RANGES less>,
+            is_same<_Pr, _RANGES less>, // predicate is ranges::less
 #endif // __cpp_lib_concepts
-                is_same<_Pr, less<_Iter_value_t<_FwdIt>>>>> && !is_volatile_v<remove_reference_t<_Iter_ref_t<_FwdIt>>>;
+            is_same<_Pr, less<>>, is_same<_Pr, less<_Elem>>>>; // predicate is less
 
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
