@@ -1006,7 +1006,7 @@ auto __stdcall _Minmax_element(const void* _First, const void* const _Last, cons
         }
     }
 
-    return _Minmax_tail<_Mode, _Traits::_Signed_t, _Traits::_Unsigned_t>(
+    return _Minmax_tail<_Mode, typename _Traits::_Signed_t, typename _Traits::_Unsigned_t>(
         _First, _Last, _Res, _Sign, _Cur_min_val, _Cur_max_val);
 }
 
