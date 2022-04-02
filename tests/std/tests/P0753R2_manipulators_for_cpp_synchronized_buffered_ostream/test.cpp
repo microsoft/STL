@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <ios>
 #include <memory>
+#include <sstream>
 #include <streambuf>
 #include <string>
 #include <syncstream>
@@ -35,7 +36,8 @@ public:
 
 
 template <class Ty, class Alloc = void, bool ThrowOnSync = false>
-void test_osyncstream_manipulators(string_buffer<typename Ty::char_type, ThrowOnSync>* buf = nullptr) {
+void test_osyncstream_manipulators(
+    string_buffer<typename Ty::char_type, ThrowOnSync>* buf = nullptr, bool buffer_can_sync = true) {
     using char_type   = typename Ty::char_type;
     using traits_type = typename Ty::traits_type;
 
@@ -56,9 +58,13 @@ void test_osyncstream_manipulators(string_buffer<typename Ty::char_type, ThrowOn
     assert(addressof(flush_emit(os)) == addressof(os));
     if constexpr (is_base_of_v<basic_osyncstream<char_type, traits_type, Alloc>, Ty>) {
         if constexpr (ThrowOnSync) {
-            assert(os.rdstate() == ios::badbit);
+            assert(os.rdstate() == ios_base::badbit);
         } else {
-            assert(os.rdstate() == (buf ? ios::goodbit : ios::badbit));
+            if (buf) {
+                assert(os.rdstate() == ios_base::goodbit);
+            } else {
+                assert(os.rdstate() == ios_base::badbit);
+            }
         }
 
         if (buf) {
@@ -77,7 +83,8 @@ void test_osyncstream_manipulators(string_buffer<typename Ty::char_type, ThrowOn
 
     assert(addressof(flush_emit(os)) == addressof(os));
     if constexpr (is_base_of_v<basic_osyncstream<char_type, traits_type, Alloc>, Ty>) {
-        assert(os.rdstate() == ios::goodbit);
+        const auto state = (buf && buffer_can_sync) ? ios_base::goodbit : ios_base::badbit;
+        assert(os.rdstate() == state);
         if (buf) {
             assert(buf->str == "Another input");
         }
@@ -86,6 +93,76 @@ void test_osyncstream_manipulators(string_buffer<typename Ty::char_type, ThrowOn
 
     if (buf) {
         buf->str.clear();
+    }
+}
+
+template <class Ty>
+class throwing_string_buffer : public basic_streambuf<Ty, char_traits<Ty>> {
+public:
+    throwing_string_buffer()  = default;
+    ~throwing_string_buffer() = default;
+
+    streamsize xsputn(const Ty*, streamsize) override {
+        throw ios_base::failure{"test exception"};
+    }
+};
+
+void test_lwg_3571() {
+    // LWG-3571: "flush_emit should set badbit if the emit call fails"
+    {
+        osyncstream stream(nullptr);
+        stream << flush_emit;
+        assert(stream.rdstate() == ios_base::badbit);
+    }
+    {
+        stringstream inner;
+        osyncstream stream(inner);
+        stream << "Hello World";
+        stream.setstate(ios_base::failbit);
+        assert((stream.rdstate() & ios_base::badbit) == ios_base::goodbit);
+        stream << flush_emit;
+        assert(stream.rdstate() & ios_base::badbit);
+        assert(inner.str() == "");
+    }
+    {
+        throwing_string_buffer<char> inner;
+        osyncstream stream(&inner);
+        stream << "Hello World";
+        stream.exceptions(ios_base::failbit | ios_base::badbit);
+        assert((stream.rdstate() & ios_base::badbit) == ios_base::goodbit);
+        try {
+            stream << flush_emit;
+            assert(false);
+        } catch (const ios_base::failure&) {
+            assert(stream.rdstate() & ios_base::badbit);
+        }
+    }
+}
+
+void test_lwg_3570() {
+    // LWG-3570: "basic_osyncstream::emit should be an unformatted output function"
+    {
+        stringstream inner;
+        osyncstream stream(inner);
+        stream << "Hello World";
+        stream.setstate(ios_base::failbit);
+        assert((stream.rdstate() & ios_base::badbit) == ios_base::goodbit);
+        stream.emit();
+        assert(stream.rdstate() & ios_base::badbit);
+        assert(inner.str() == "");
+    }
+    {
+        throwing_string_buffer<char> inner;
+        osyncstream stream(&inner);
+        stream << "Hello World";
+        stream.exceptions(ios_base::failbit | ios_base::badbit);
+        assert((stream.rdstate() & ios_base::badbit) == ios_base::goodbit);
+        try {
+            stream.emit();
+            assert(false);
+        } catch (const ios_base::failure&) {
+            assert(stream.rdstate() & ios_base::badbit);
+        }
     }
 }
 
@@ -102,5 +179,8 @@ int main() {
 
     test_osyncstream_manipulators<basic_ostream<char>>(&no_sync_char_buffer);
     test_osyncstream_manipulators<basic_osyncstream<char, char_traits<char>, allocator<char>>, allocator<char>>(
-        &no_sync_char_buffer);
+        &no_sync_char_buffer, false);
+
+    test_lwg_3571();
+    test_lwg_3570();
 }

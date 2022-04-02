@@ -105,7 +105,7 @@ template <class _Fn, class _List>
 struct _Meta_apply_;
 template <class _Fn, class _List>
 using _Meta_apply =
-    // explode _List into the parameters of meta-callable _Fn
+    // unpack _List into the parameters of meta-callable _Fn
     typename _Meta_apply_<_Fn, _List>::type;
 
 template <class _Fn, template <class...> class _List, class... _Types>
