@@ -58,20 +58,19 @@ _END_EXTERN_C
 
 template <class _Ty>
 _Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
-    using cv_pv            = _STD conditional_t<_STD is_const_v<_Ty>, const void*, void*>;
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty> || _STD is_null_pointer_v<_Ty>) {
-        using cv_uintptr_ptr = _STD conditional_t<_STD is_const_v<_Ty>, const uintptr_t*, uintptr_t*>;
-        return __std_min_element(reinterpret_cast<cv_uintptr_ptr>(_First), reinterpret_cast<cv_uintptr_ptr>(_Last));
+        return const_cast<_Ty*>(reinterpret_cast<const _Ty*>(
+            __std_min_element(reinterpret_cast<const uintptr_t*>(_First), reinterpret_cast<const uintptr_t*>(_Last))));
     } else if constexpr (sizeof(_Ty) == 1) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_min_element_1(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_min_element_1(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_min_element_2(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_min_element_2(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_min_element_4(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_min_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_min_element_8(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_min_element_8(_First, _Last, _Signed)));
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
@@ -79,20 +78,19 @@ _Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
 
 template <class _Ty>
 _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
-    using cv_pv            = _STD conditional_t<_STD is_const_v<_Ty>, const void*, void*>;
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty> || _STD is_null_pointer_v<_Ty>) {
-        using cv_uintptr_ptr = _STD conditional_t<_STD is_const_v<_Ty>, const uintptr_t*, uintptr_t*>;
-        return __std_max_element(reinterpret_cast<cv_uintptr_ptr>(_First), reinterpret_cast<cv_uintptr_ptr>(_Last));
+        return const_cast<_Ty*>(reinterpret_cast<const _Ty*>(
+            __std_max_element(reinterpret_cast<const uintptr_t*>(_First), reinterpret_cast<const uintptr_t*>(_Last))));
     } else if constexpr (sizeof(_Ty) == 1) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_max_element_1(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_max_element_1(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 2) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_max_element_2(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_max_element_2(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 4) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_max_element_4(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_max_element_4(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 8) {
-        return static_cast<_Ty*>(const_cast<cv_pv>(__std_max_element_8(_First, _Last, _Signed)));
+        return const_cast<_Ty*>(static_cast<const _Ty*>(__std_max_element_8(_First, _Last, _Signed)));
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
@@ -100,24 +98,29 @@ _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
 
 template <class _Ty>
 _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
-    using cv_pv            = _STD conditional_t<_STD is_const_v<_Ty>, const void*, void*>;
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
     if constexpr (_STD is_pointer_v<_Ty> || _STD is_null_pointer_v<_Ty>) {
-        using cv_uintptr_ptr = _STD conditional_t<_STD is_const_v<_Ty>, const uintptr_t*, uintptr_t*>;
-        return __std_minmax_element(reinterpret_cast<cv_uintptr_ptr>(_First), reinterpret_cast<cv_uintptr_ptr>(_Last));
+        auto _Res =
+            __std_minmax_element(reinterpret_cast<const uintptr_t*>(_First), reinterpret_cast<const uintptr_t*>(_Last));
+        return {const_cast<_Ty*>(reinterpret_cast<const _Ty*>(_Res.first)),
+            const_cast<_Ty*>(reinterpret_cast<const _Ty*>(_Res.second))};
     } else if constexpr (sizeof(_Ty) == 1) {
         auto _Res = __std_minmax_element_1(_First, _Last, _Signed);
-        return {static_cast<_Ty*>(const_cast<cv_pv>(_Res._Min)), static_cast<_Ty*>(const_cast<cv_pv>(_Res._Max))};
+        return {
+            const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
     } else if constexpr (sizeof(_Ty) == 2) {
         auto _Res = __std_minmax_element_2(_First, _Last, _Signed);
-        return {static_cast<_Ty*>(const_cast<cv_pv>(_Res._Min)), static_cast<_Ty*>(const_cast<cv_pv>(_Res._Max))};
+        return {
+            const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
     } else if constexpr (sizeof(_Ty) == 4) {
         auto _Res = __std_minmax_element_4(_First, _Last, _Signed);
-        return {static_cast<_Ty*>(const_cast<cv_pv>(_Res._Min)), static_cast<_Ty*>(const_cast<cv_pv>(_Res._Max))};
+        return {
+            const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
     } else if constexpr (sizeof(_Ty) == 8) {
         auto _Res = __std_minmax_element_8(_First, _Last, _Signed);
-        return {static_cast<_Ty*>(const_cast<cv_pv>(_Res._Min)), static_cast<_Ty*>(const_cast<cv_pv>(_Res._Max))};
+        return {
+            const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
