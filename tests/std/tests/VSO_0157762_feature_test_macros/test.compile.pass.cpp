@@ -1556,7 +1556,13 @@ STATIC_ASSERT(__cpp_lib_source_location == 201907L);
 #endif
 #else
 #ifdef __cpp_lib_source_location
+#if defined(__has_builtin)
+#if !__has_builtin(__builtin_source_location)
 #error __cpp_lib_source_location is defined
+#endif
+#else
+#error __cpp_lib_source_location is defined
+#endif
 #endif
 #endif
 
