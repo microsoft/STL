@@ -1343,11 +1343,9 @@
 #define __cpp_lib_shift                   201806L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
 
-#if defined(__clang__)
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_source_location)
 #define __cpp_lib_source_location 201907L
-#endif
 #endif
 #elif defined(__cpp_consteval)
 #define __cpp_lib_source_location 201907L

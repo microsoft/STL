@@ -37,24 +37,24 @@ private:
 /*
 clang implements GCC's __builtin_source_location.
 */
-    struct __impl
-    {
+    struct __impl {
         char const* _M_file_name;
         char const* _M_function_name;
         unsigned _M_line;
         unsigned _M_column;
     };
     using __builtin_ret_type = decltype(__builtin_source_location());
+
 public:
     _NODISCARD static consteval source_location current(
         __builtin_ret_type _Soc_impl_ptr = __builtin_source_location()) noexcept {
         source_location _Result;
         if (_Soc_impl_ptr != nullptr) {
             __impl const& _Soc_impl = *static_cast<__impl const*>(_Soc_impl_ptr);
-            _Result._Line     = _Soc_impl._M_line;
-            _Result._Column   = _Soc_impl._M_column;
-            _Result._File     = _Soc_impl._M_file_name;
-            _Result._Function = _Soc_impl._M_function_name;
+            _Result._Line           = _Soc_impl._M_line;
+            _Result._Column         = _Soc_impl._M_column;
+            _Result._File           = _Soc_impl._M_file_name;
+            _Result._Function       = _Soc_impl._M_function_name;
         }
         return _Result;
     }
@@ -63,12 +63,12 @@ public:
     _NODISCARD static consteval source_location current(const uint_least32_t _Line_
 #if defined(__has_builtin)
 #if !__has_builtin(__builtin_source_location)
-        = __builtin_LINE()
+                                                        = __builtin_LINE()
 #endif
 #else
-        = __builtin_LINE()
+                                                        = __builtin_LINE()
 #endif
-        ,
+                                                        ,
         const uint_least32_t _Column_ = __builtin_COLUMN(), const char* const _File_ = __builtin_FILE(),
         const char* const _Function_ = __builtin_FUNCTION()) noexcept {
         source_location _Result;
