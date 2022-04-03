@@ -34,9 +34,9 @@ struct source_location {
 #if defined(__has_builtin)
 #if __has_builtin(__builtin_source_location)
 private:
-/*
-clang implements GCC's __builtin_source_location.
-*/
+    /*
+    clang implements GCC's __builtin_source_location.
+    */
     struct __impl {
         char const* _M_file_name;
         char const* _M_function_name;
@@ -68,7 +68,7 @@ public:
 #else
                                                         = __builtin_LINE()
 #endif
-                                                        ,
+                                                            ,
         const uint_least32_t _Column_ = __builtin_COLUMN(), const char* const _File_ = __builtin_FILE(),
         const char* const _Function_ = __builtin_FUNCTION()) noexcept {
         source_location _Result;
