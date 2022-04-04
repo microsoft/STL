@@ -4346,15 +4346,6 @@ _CONSTEXPR20 _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest)
     return _Dest;
 }
 
-#if _HAS_CXX17
-template <class _ExPo, class _BidIt1, class _BidIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
-_BidIt2 copy_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noexcept /* terminates */ {
-    // copy [_First, _Last) backwards to [..., _Dest)
-    // not parallelized as benchmarks show it isn't worth it
-    return _STD copy_backward(_First, _Last, _Dest);
-}
-#endif // _HAS_CXX17
-
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
@@ -4427,15 +4418,6 @@ _CONSTEXPR20 _BidIt2 move_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest)
     _Seek_wrapped(_Dest, _Move_backward_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
-
-#if _HAS_CXX17
-template <class _ExPo, class _BidIt1, class _BidIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
-_BidIt2 move_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noexcept /* terminates */ {
-    // move [_First, _Last) backwards to [..., _Dest)
-    // not parallelized as benchmarks show it isn't worth it
-    return _STD move_backward(_First, _Last, _Dest);
-}
-#endif // _HAS_CXX17
 
 
 template <class _Ty>
