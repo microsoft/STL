@@ -1032,10 +1032,6 @@ _NODISCARD inline uint64_t _Divide(_Big_integer_flt& _Numerator, const _Big_inte
     }
 
     // Trim the remainder:
-    for (uint32_t _Ix = _Max_numerator_element_index + 1; _Ix < _Numerator._Myused; ++_Ix) {
-        _Numerator._Mydata[_Ix] = 0;
-    }
-
     uint32_t _Used = _Max_numerator_element_index + 1;
 
     while (_Used != 0 && _Numerator._Mydata[_Used - 1] == 0) {
