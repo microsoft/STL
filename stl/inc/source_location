@@ -12,7 +12,7 @@
 #if defined(__clang__)
 #if __clang_major__ < 15
 #pragma message("Your clang is too old. We need at least clang 15.0.0")
-#else
+#else // ^^^ __clang_major__ < 15 /__clang_major__ >= 15 vvv
 #pragma message("The contents of <source_location> are available only with C++20.")
 #endif
 #else // ^^^ defined(__clang__) / !defined(__clang__) vvv
