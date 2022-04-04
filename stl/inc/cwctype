@@ -18,7 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-// remove any (improper) macro overrides
+// TRANSITION, /clr:pure (see corecrt_wctype.h): remove any (improper) macro overrides
 #undef iswalnum
 #undef iswalpha
 #undef iswblank

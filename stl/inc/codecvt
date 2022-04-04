@@ -216,6 +216,7 @@ protected:
 template <class _Elem, unsigned long _Mymax = 0x10ffff, codecvt_mode _Mymode = codecvt_mode{}>
 class _CXX17_DEPRECATE_CODECVT_HEADER codecvt_utf16 : public codecvt<_Elem, char, _Statype> {
     // facet for converting between _Elem and UTF-16 multibyte sequences
+private:
     enum { _Bytes_per_word = 2 };
 
 public:

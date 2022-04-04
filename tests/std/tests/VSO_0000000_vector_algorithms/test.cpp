@@ -3,10 +3,12 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <cstddef>
 #include <deque>
 #include <isa_availability.h>
 #include <list>
 #include <random>
+#include <type_traits>
 #include <vector>
 
 using namespace std;
@@ -20,6 +22,66 @@ void disable_instructions(ISA_AVAILABILITY isa) {
 #endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
 
 constexpr size_t dataCount = 1024;
+
+template <class FwdIt, class T>
+inline ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
+    ptrdiff_t result = 0;
+    for (; first != last; ++first) {
+        result += (*first == v);
+    }
+    return result;
+}
+
+
+template <class T>
+void test_case_count(const vector<T>& input, T v) {
+    auto expected = last_known_good_count(input.begin(), input.end(), v);
+    auto actual   = count(input.begin(), input.end(), v);
+    assert(expected == actual);
+}
+
+template <class T>
+void test_count(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    binomial_distribution<TD> dis(10);
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_count(input, static_cast<T>(dis(gen)));
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+        test_case_count(input, static_cast<T>(dis(gen)));
+    }
+}
+
+template <class FwdIt, class T>
+inline auto last_known_good_find(FwdIt first, FwdIt last, T v) {
+    for (; first != last; ++first) {
+        if (*first == v) {
+            break;
+        }
+    }
+    return first;
+}
+
+template <class T>
+void test_case_find(const vector<T>& input, T v) {
+    auto expected = last_known_good_find(input.begin(), input.end(), v);
+    auto actual   = find(input.begin(), input.end(), v);
+    assert(expected == actual);
+}
+
+template <class T>
+void test_find(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    binomial_distribution<TD> dis(10);
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_find(input, static_cast<T>(dis(gen)));
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+        test_case_find(input, static_cast<T>(dis(gen)));
+    }
+}
 
 template <class BidIt>
 inline void last_known_good_reverse(BidIt first, BidIt last) {
@@ -107,6 +169,27 @@ void test_swap_ranges(mt19937_64& gen) {
 
 void test_vector_algorithms() {
     mt19937_64 gen(1729);
+
+    test_count<char>(gen);
+    test_count<signed char>(gen);
+    test_count<unsigned char>(gen);
+    test_count<short>(gen);
+    test_count<unsigned short>(gen);
+    test_count<int>(gen);
+    test_count<unsigned int>(gen);
+    test_count<long long>(gen);
+    test_count<unsigned long long>(gen);
+
+    test_find<char>(gen);
+    test_find<signed char>(gen);
+    test_find<unsigned char>(gen);
+    test_find<short>(gen);
+    test_find<unsigned short>(gen);
+    test_find<int>(gen);
+    test_find<unsigned int>(gen);
+    test_find<long long>(gen);
+    test_find<unsigned long long>(gen);
+
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
     test_reverse<unsigned char>(gen);
