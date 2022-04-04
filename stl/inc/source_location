@@ -18,7 +18,7 @@
 #else
 #pragma message("The contents of <source_location> are available only with C++20 consteval support.")
 #endif
-#else // ^^^ !defined(__cpp_consteval) / defined(__cpp_consteval) vvv
+#else // ^^^ !defined(__cpp_lib_source_location) / defined(__cpp_lib_source_location) vvv
 
 #include <cstdint>
 
