@@ -1451,6 +1451,35 @@ namespace {
             pmr_container_test<std::pmr::wsmatch>();
         }
     } // namespace containers
+
+    namespace map_containers {
+        template <class T>
+        void pair_conversion_test() {
+            struct pair_conv {
+                operator pair<const int, int>() const {
+                    return {};
+                }
+            };
+
+            struct mem_pair_conv {
+                pair<const int, int> pair_{1, 42};
+                operator const pair<const int, int>&() const {
+                    return pair_;
+                }
+            };
+
+            T cont;
+            cont.emplace(pair_conv{});
+            cont.emplace(mem_pair_conv{});
+        }
+
+        void test() {
+            pair_conversion_test<std::pmr::map<int, int>>();
+            pair_conversion_test<std::pmr::multimap<int, int>>();
+            pair_conversion_test<std::pmr::unordered_map<int, int>>();
+            pair_conversion_test<std::pmr::unordered_multimap<int, int>>();
+        }
+    } // namespace map_containers
 } // unnamed namespace
 
 int main() {
@@ -1491,4 +1520,6 @@ int main() {
     pool::allocate_deallocate::test();
 
     containers::test();
+
+    map_containers::test();
 }
