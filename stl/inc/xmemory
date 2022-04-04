@@ -2088,7 +2088,7 @@ template<class _Ty, class _Uty, class = void>
 _INLINE_VAR constexpr bool _Is_normally_bindable = false;
 
 template<class _Ty, class _Uty>
-_INLINE_VAR constexpr bool _Is_normally_bindable<_Ty, _Uty, void_t<_Normally_bound_ref<_Ty, _Uty>>> = false;
+_INLINE_VAR constexpr bool _Is_normally_bindable<_Ty, _Uty, void_t<_Normally_bound_ref<_Ty, _Uty>>> = true;
 
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
