@@ -1456,14 +1456,14 @@ namespace {
         template <class T>
         void pair_conversion_test() {
             struct pair_conv {
-                operator pair<const int, int>() const {
+                operator std::pair<const int, int>() const {
                     return {};
                 }
             };
 
             struct mem_pair_conv {
-                pair<const int, int> pair_{1, 42};
-                operator const pair<const int, int>&() const {
+                std::pair<const int, int> pair_{1, 42};
+                operator const std::pair<const int, int>&() const {
                     return pair_;
                 }
             };
