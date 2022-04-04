@@ -932,13 +932,13 @@ std/containers/sequences/forwardlist/forwardlist.cons/deduct.pass.cpp FAIL
 std/containers/sequences/vector/vector.cons/deduct.pass.cpp FAIL
 
 # Not yet analyzed. Seems to force a sign conversion error?
-std/iterators/iterator.primitives/iterator.operations/advance.pass.cpp FAIL
+std/iterators/iterator.primitives/iterator.operations/advance.pass.cpp SKIPPED
 
 # Not yet analyzed. Maybe Clang over-eagerly instantiating noexcept-specifier?
 std/ranges/range.access/empty.pass.cpp:1 FAIL
 std/ranges/range.access/size.pass.cpp:1 FAIL
 std/ranges/range.access/ssize.pass.cpp:1 FAIL
-std/utilities/memory/unique.ptr/iterator_concept_conformance.compile.pass.cpp:1 FAIL
+std/utilities/memory/unique.ptr/iterator_concept_conformance.compile.pass.cpp:1 SKIPPED
 
 # *** XFAILs WHICH PASS ***
 # Nothing here! :-)

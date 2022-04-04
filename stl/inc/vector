@@ -2246,6 +2246,7 @@ public:
 template <class _Alvbase_wrapped>
 class _Vb_reference : public _Vb_iter_base<_Alvbase_wrapped> {
     // reference to a bit within a base word
+private:
     using _Mybase          = _Vb_iter_base<_Alvbase_wrapped>;
     using _Mycont          = typename _Mybase::_Mycont;
     using _Difference_type = typename _Mybase::_Difference_type;

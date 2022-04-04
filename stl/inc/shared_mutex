@@ -74,6 +74,7 @@ private:
 // shared_timed_mutex is not supported under /clr
 #ifndef _M_CEE
 class shared_timed_mutex { // class for mutual exclusion shared across threads
+private:
     using _Read_cnt_t = unsigned int;
 
     static constexpr _Read_cnt_t _Max_readers = static_cast<_Read_cnt_t>(-1);
