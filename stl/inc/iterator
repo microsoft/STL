@@ -271,7 +271,7 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    _NODISCARD friend bool operator==(const istream_iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
+    _NODISCARD_FRIEND bool operator==(const istream_iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
         return !_Left._Myistr;
     }
 #endif // __cpp_lib_concepts
@@ -434,7 +434,7 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    _NODISCARD friend bool operator==(const istreambuf_iterator& _Left, default_sentinel_t) {
+    _NODISCARD_FRIEND bool operator==(const istreambuf_iterator& _Left, default_sentinel_t) {
         if (!_Left._Got) {
             _Left._Peek();
         }
@@ -948,7 +948,7 @@ public:
     // clang-format off
     template <class _OIter, sentinel_for<_Iter> _OSe>
         requires sentinel_for<_Se, _OIter>
-    _NODISCARD friend constexpr
+    _NODISCARD_FRIEND constexpr
     bool operator==(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
         auto& _Right_val = _Right._Get_val();
@@ -980,7 +980,7 @@ public:
     // clang-format off
     template <sized_sentinel_for<_Iter> _OIter, sized_sentinel_for<_Iter> _OSe>
         requires sized_sentinel_for<_Se, _OIter>
-    _NODISCARD friend constexpr iter_difference_t<_OIter> operator-(
+    _NODISCARD_FRIEND constexpr iter_difference_t<_OIter> operator-(
         const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) {
         // clang-format on
         auto& _Right_val = _Right._Get_val();
@@ -1005,7 +1005,7 @@ public:
         }
     }
 
-    _NODISCARD friend constexpr iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
+    _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
         noexcept(_RANGES iter_move(_Right._Val._Iterator))) requires input_iterator<_Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_iter,
@@ -1225,7 +1225,7 @@ public:
         return counted_iterator{_Current + _Diff, static_cast<iter_difference_t<_Iter>>(_Length - _Diff)};
     }
 
-    _NODISCARD friend constexpr counted_iterator operator+(
+    _NODISCARD_FRIEND constexpr counted_iterator operator+(
         const iter_difference_t<_Iter> _Diff, const counted_iterator& _Right) requires random_access_iterator<_Iter> {
         return counted_iterator{_Right._Current + _Diff, static_cast<iter_difference_t<_Iter>>(_Right._Length - _Diff)};
     }
@@ -1246,7 +1246,7 @@ public:
     }
 
     template <common_with<_Iter> _Other>
-    _NODISCARD friend constexpr iter_difference_t<_Other> operator-(
+    _NODISCARD_FRIEND constexpr iter_difference_t<_Other> operator-(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _Same_sequence(_Left, _Right);
@@ -1254,12 +1254,12 @@ public:
         return _Right.count() - _Left._Length;
     }
 
-    _NODISCARD friend constexpr iter_difference_t<_Iter> operator-(
+    _NODISCARD_FRIEND constexpr iter_difference_t<_Iter> operator-(
         const counted_iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
         return -_Left._Length;
     }
 
-    _NODISCARD friend constexpr iter_difference_t<_Iter> operator-(
+    _NODISCARD_FRIEND constexpr iter_difference_t<_Iter> operator-(
         default_sentinel_t, const counted_iterator& _Right) noexcept /* strengthened */ {
         return _Right._Length;
     }
@@ -1276,7 +1276,7 @@ public:
 
     // [counted.iter.cmp]
     template <common_with<_Iter> _Other>
-    _NODISCARD friend constexpr bool operator==(
+    _NODISCARD_FRIEND constexpr bool operator==(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _Same_sequence(_Left, _Right);
@@ -1284,13 +1284,13 @@ public:
         return _Left._Length == _Right.count();
     }
 
-    _NODISCARD friend constexpr bool operator==(const counted_iterator& _Left, default_sentinel_t) noexcept
+    _NODISCARD_FRIEND constexpr bool operator==(const counted_iterator& _Left, default_sentinel_t) noexcept
     /* strengthened */ {
         return _Left._Length == 0;
     }
 
     template <common_with<_Iter> _Other>
-    _NODISCARD friend constexpr strong_ordering operator<=>(
+    _NODISCARD_FRIEND constexpr strong_ordering operator<=>(
         const counted_iterator& _Left, const counted_iterator<_Other>& _Right) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _Same_sequence(_Left, _Right);
@@ -1299,7 +1299,7 @@ public:
     }
 
     // [counted.iter.cust]
-    _NODISCARD friend constexpr iter_rvalue_reference_t<_Iter> iter_move(const counted_iterator& _Right) noexcept(
+    _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_Iter> iter_move(const counted_iterator& _Right) noexcept(
         noexcept(_RANGES iter_move(_Right._Current))) requires input_iterator<_Iter> {
         return _RANGES iter_move(_Right._Current);
     }
