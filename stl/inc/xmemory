@@ -2066,28 +2066,28 @@ typename _Container::size_type _Erase_nodes_if(_Container& _Cont, _Pr _Pred) {
     return _Old_size - _Cont.size();
 }
 
-template<class _Ty1, class _Ty2>
+template <class _Ty1, class _Ty2>
 void _Deduce_as_pair(const pair<_Ty1, _Ty2>&);
 
-template<class _Ty, class = void>
+template <class _Ty, class = void>
 _INLINE_VAR constexpr bool _Cannot_as_pair = true;
 
-template<class _Ty>
+template <class _Ty>
 _INLINE_VAR constexpr bool _Cannot_as_pair<_Ty, void_t<decltype(_STD _Deduce_as_pair(_STD declval<_Ty>()))>> = false;
 
-template<class _Ty>
+template <class _Ty>
 const _Ty& _Normally_bind(const _Ty&);
 
-template<class _Ty>
+template <class _Ty>
 _Ty&& _Normally_bind(_Ty&&);
 
-template<class _Ty, class _Uty>
+template <class _Ty, class _Uty>
 using _Normally_bound_ref = decltype(_STD _Normally_bind(_STD declval<_Uty>()));
 
-template<class _Ty, class _Uty, class = void>
+template <class _Ty, class _Uty, class = void>
 _INLINE_VAR constexpr bool _Is_normally_bindable = false;
 
-template<class _Ty, class _Uty>
+template <class _Ty, class _Uty>
 _INLINE_VAR constexpr bool _Is_normally_bindable<_Ty, _Uty, void_t<_Normally_bound_ref<_Ty, _Uty>>> = true;
 
 #if _HAS_CXX20
