@@ -2187,12 +2187,11 @@ template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_specialization_v<_Ty, pair> && _Cannot_as_pair<_Uty&>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
     struct _Pair_remaker {
-        using _Pair_t = remove_cv_t<_Ty>;
-
         const _Alloc& _Al;
         _Uty& _Ux;
 
-        constexpr operator _Pair_t() const {
+        constexpr operator remove_cv_t<_Ty>() const {
+            using _Pair_t = remove_cv_t<_Ty>;
             static_assert(_Is_normally_bindable<_Pair_t, _Uty>,
                 "The argument must be bindable to a reference to the std::pair type.");
 
