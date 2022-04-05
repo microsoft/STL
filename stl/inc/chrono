@@ -3397,8 +3397,8 @@ namespace chrono {
                         } else {
                             return false;
                         }
-                    }
 #pragma warning(pop)
+                    }
 
                     if (_Second) {
                         _Result += _CHRONO duration_cast<_DurationType>(seconds{*_Second});
