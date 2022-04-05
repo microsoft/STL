@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <type_traits>
-#include <tuple>
-#include <memory>
 #include <cassert>
+#include <memory>
+#include <tuple>
+#include <type_traits>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -21,12 +21,14 @@ class pseudo_any {
 
 public:
     pseudo_any() = default;
-    template <class ValT, enable_if_t<conjunction_v<negation<is_same<decay_t<ValT>, pseudo_any>>,
-                                                is_copy_constructible<decay_t<ValT>>>,
-                                    int> = 0>
+    template <class ValT,
+        enable_if_t<conjunction_v<negation<is_same<decay_t<ValT>, pseudo_any>>, is_copy_constructible<decay_t<ValT>>>,
+            int> = 0>
     constexpr pseudo_any(ValT&&) noexcept : has_value_{true} {}
 
-    constexpr bool has_value() const noexcept { return has_value_; }
+    constexpr bool has_value() const noexcept {
+        return has_value_;
+    }
 };
 
 STATIC_ASSERT(is_copy_constructible_v<tuple<pseudo_any>>);
