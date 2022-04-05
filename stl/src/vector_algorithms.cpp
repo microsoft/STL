@@ -28,43 +28,45 @@ extern "C" long __isa_enabled;
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
 #endif // !_DEBUG
 
-static bool _Use_sse42() {
-    return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
-}
-
 // Must be in sync with _Min_max_t in <algorithm>
 struct _Min_max_element_t {
     const void* _Min;
     const void* _Max;
 };
 
-template <class _BidIt>
-static void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
-    for (; _First != _Last && _First != --_Last; ++_First) {
-        const auto _Temp = *_First;
-        *_First          = *_Last;
-        *_Last           = _Temp;
+namespace {
+    static bool _Use_sse42() {
+        return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
     }
-}
 
-template <class _BidIt, class _OutIt>
-static void _Reverse_copy_tail(_BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
-    while (_First != _Last) {
-        *_Dest++ = *--_Last;
+    template <class _BidIt>
+    static void _Reverse_tail(_BidIt _First, _BidIt _Last) noexcept {
+        for (; _First != _Last && _First != --_Last; ++_First) {
+            const auto _Temp = *_First;
+            *_First          = *_Last;
+            *_Last           = _Temp;
+        }
     }
-}
 
-static size_t _Byte_length(const void* _First, const void* _Last) noexcept {
-    return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
-}
+    template <class _BidIt, class _OutIt>
+    static void _Reverse_copy_tail(_BidIt _First, _BidIt _Last, _OutIt _Dest) noexcept {
+        while (_First != _Last) {
+            *_Dest++ = *--_Last;
+        }
+    }
 
-static void _Advance_bytes(void*& _Target, ptrdiff_t _Offset) noexcept {
-    _Target = static_cast<unsigned char*>(_Target) + _Offset;
-}
+    static size_t _Byte_length(const void* _First, const void* _Last) noexcept {
+        return static_cast<const unsigned char*>(_Last) - static_cast<const unsigned char*>(_First);
+    }
 
-static void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
-    _Target = static_cast<const unsigned char*>(_Target) + _Offset;
-}
+    static void _Advance_bytes(void*& _Target, ptrdiff_t _Offset) noexcept {
+        _Target = static_cast<unsigned char*>(_Target) + _Offset;
+    }
+
+    static void _Advance_bytes(const void*& _Target, ptrdiff_t _Offset) noexcept {
+        _Target = static_cast<const unsigned char*>(_Target) + _Offset;
+    }
+} // unnamed namespace
 
 extern "C" {
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
