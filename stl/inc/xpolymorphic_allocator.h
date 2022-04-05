@@ -98,7 +98,8 @@ void _Uses_allocator_construct(
 }
 
 template <class _Ty1, class _Ty2, class _Outer_alloc, class _Inner_alloc, class _Uty, class _Vty>
-void _Uses_allocator_construct(pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, pair<_Uty, _Vty>&& _Pair) {
+void _Uses_allocator_construct(
+    pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, pair<_Uty, _Vty>&& _Pair) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, rvalue pair argument
     _Uses_allocator_construct_pair(_Ptr, _Outer, _Inner, _STD forward_as_tuple(_STD forward<_Uty>(_Pair.first)),
         _STD forward_as_tuple(_STD forward<_Vty>(_Pair.second)));
@@ -106,8 +107,7 @@ void _Uses_allocator_construct(pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Oute
 
 template <class _Ty1, class _Ty2, class _Outer_alloc, class _Inner_alloc, class _Uty,
     enable_if_t<_Cannot_as_pair<_Uty>, int> = 0>
-void _Uses_allocator_construct(
-    pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Uty&& _Ux) {
+void _Uses_allocator_construct(pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Uty&& _Ux) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, non-pair argument
     static_assert(_Is_normally_bindable<pair<_Ty1, _Ty2>, _Uty>,
         "The argument must be bindable to a reference to the std::pair type.");
