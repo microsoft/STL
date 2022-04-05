@@ -2183,20 +2183,6 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pa
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD get<1>(_STD move(_Pair))));
 }
 
-template <class _Ty, class _Alloc, class... _Types>
-_NODISCARD constexpr _Ty make_obj_using_allocator(const _Alloc& _Al, _Types&&... _Args) {
-    return _STD make_from_tuple<_Ty>(_STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
-}
-
-template <class _Ty, class _Alloc, class... _Types>
-constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& _Al, _Types&&... _Args) {
-    return _STD apply(
-        [&](auto&&... _Construct_args) {
-            return _STD construct_at(_Ptr, _STD forward<decltype(_Construct_args)>(_Construct_args)...);
-        },
-        _STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
-}
-
 template <class _Ty, class _Alloc, class _Uty,
     enable_if_t<_Is_specialization_v<_Ty, pair> && _Cannot_as_pair<_Uty&>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
@@ -2233,6 +2219,20 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
     // equivalent to
     // return _STD make_tuple(_Pair_remaker{_Al, _Ux});
     return tuple<_Pair_remaker>({_Al, _Ux});
+}
+
+template <class _Ty, class _Alloc, class... _Types>
+_NODISCARD constexpr _Ty make_obj_using_allocator(const _Alloc& _Al, _Types&&... _Args) {
+    return _STD make_from_tuple<_Ty>(_STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
+}
+
+template <class _Ty, class _Alloc, class... _Types>
+constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& _Al, _Types&&... _Args) {
+    return _STD apply(
+        [&](auto&&... _Construct_args) {
+            return _STD construct_at(_Ptr, _STD forward<decltype(_Construct_args)>(_Construct_args)...);
+        },
+        _STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
 }
 #endif // _HAS_CXX20
 _STD_END
