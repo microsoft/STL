@@ -2123,7 +2123,7 @@ template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_spe
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept;
 
 template <class _Ty, class _Alloc, class _Uty,
-    enable_if_t<_Is_specialization_v<_Ty, pair> && _Cannot_as_pair<_Uty>, int> = 0>
+    enable_if_t<_Is_specialization_v<_Ty, pair> && _Cannot_as_pair<_Uty&>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept;
 
 template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
