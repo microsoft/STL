@@ -329,7 +329,7 @@ public:
     }
 };
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 struct char_traits : _Char_traits<_Elem, long> {}; // properties of a string or stream unknown element
 
 template <>
@@ -942,7 +942,7 @@ _INLINE_VAR constexpr bool _Is_EcharT = _Is_any_of_v<_Ty, char, wchar_t,
     char16_t, char32_t>;
 
 #if _HAS_CXX17
-template <class _Elem, class _Traits = char_traits<_Elem>>
+_EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_string_view;
 
 template <class _Traits>
@@ -1213,7 +1213,7 @@ struct pointer_traits<_String_view_iterator<_Traits>> {
 // type
 #pragma warning(disable : 6510)
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 class basic_string_view { // wrapper for any kind of contiguous character buffer
 public:
     static_assert(is_same_v<_Elem, typename _Traits::char_type>,
@@ -1696,7 +1696,7 @@ namespace ranges {
 } // namespace ranges
 #endif // __cpp_lib_concepts
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 _NODISCARD constexpr bool operator==(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return _Lhs._Equal(_Rhs);
@@ -1710,7 +1710,7 @@ _NODISCARD constexpr bool operator==(
 }
 #endif // !_HAS_CXX20
 
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
+_EXPORT_STD template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
 _NODISCARD constexpr bool operator==(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return _Lhs._Equal(_Rhs);
@@ -1829,26 +1829,26 @@ struct _Get_comparison_category<_Traits, void_t<typename _Traits::comparison_cat
 template <class _Traits>
 using _Get_comparison_category_t = typename _Get_comparison_category<_Traits>::type;
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
     const basic_string_view<_Elem, _Traits> _Lhs, const basic_string_view<_Elem, _Traits> _Rhs) noexcept {
     return static_cast<_Get_comparison_category_t<_Traits>>(_Lhs.compare(_Rhs) <=> 0);
 }
 
-template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
+_EXPORT_STD template <class _Elem, class _Traits, int = 2> // TRANSITION, VSO-409326
 _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
     const basic_string_view<_Elem, _Traits> _Lhs, const _Identity_t<basic_string_view<_Elem, _Traits>> _Rhs) noexcept {
     return static_cast<_Get_comparison_category_t<_Traits>>(_Lhs.compare(_Rhs) <=> 0);
 }
 #endif // _HAS_CXX20
 
-using string_view = basic_string_view<char>;
+_EXPORT_STD using string_view = basic_string_view<char>;
 #ifdef __cpp_lib_char8_t
-using u8string_view = basic_string_view<char8_t>;
+_EXPORT_STD using u8string_view = basic_string_view<char8_t>;
 #endif // __cpp_lib_char8_t
-using u16string_view = basic_string_view<char16_t>;
-using u32string_view = basic_string_view<char32_t>;
-using wstring_view   = basic_string_view<wchar_t>;
+_EXPORT_STD using u16string_view = basic_string_view<char16_t>;
+_EXPORT_STD using u32string_view = basic_string_view<char32_t>;
+_EXPORT_STD using wstring_view   = basic_string_view<wchar_t>;
 
 
 template <class _Elem>
@@ -1858,7 +1858,7 @@ struct hash<basic_string_view<_Elem>> : _Conditionally_enabled_hash<basic_string
     }
 };
 
-template <class _Elem, class _Traits>
+_EXPORT_STD template <class _Elem, class _Traits>
 basic_ostream<_Elem, _Traits>& operator<<(
     basic_ostream<_Elem, _Traits>& _Ostr, const basic_string_view<_Elem, _Traits> _Str) {
     return _Insert_string(_Ostr, _Str.data(), _Str.size());
@@ -1867,25 +1867,26 @@ basic_ostream<_Elem, _Traits>& operator<<(
 
 inline namespace literals {
     inline namespace string_view_literals {
-        _NODISCARD constexpr string_view operator"" sv(const char* _Str, size_t _Len) noexcept {
+        _EXPORT_STD _NODISCARD constexpr string_view operator"" sv(const char* _Str, size_t _Len) noexcept {
             return string_view(_Str, _Len);
         }
 
-        _NODISCARD constexpr wstring_view operator"" sv(const wchar_t* _Str, size_t _Len) noexcept {
+        _EXPORT_STD _NODISCARD constexpr wstring_view operator"" sv(const wchar_t* _Str, size_t _Len) noexcept {
             return wstring_view(_Str, _Len);
         }
 
 #ifdef __cpp_char8_t
-        _NODISCARD constexpr basic_string_view<char8_t> operator"" sv(const char8_t* _Str, size_t _Len) noexcept {
+        _EXPORT_STD _NODISCARD constexpr basic_string_view<char8_t> operator"" sv(
+            const char8_t* _Str, size_t _Len) noexcept {
             return basic_string_view<char8_t>(_Str, _Len);
         }
 #endif // __cpp_char8_t
 
-        _NODISCARD constexpr u16string_view operator"" sv(const char16_t* _Str, size_t _Len) noexcept {
+        _EXPORT_STD _NODISCARD constexpr u16string_view operator"" sv(const char16_t* _Str, size_t _Len) noexcept {
             return u16string_view(_Str, _Len);
         }
 
-        _NODISCARD constexpr u32string_view operator"" sv(const char32_t* _Str, size_t _Len) noexcept {
+        _EXPORT_STD _NODISCARD constexpr u32string_view operator"" sv(const char32_t* _Str, size_t _Len) noexcept {
             return u32string_view(_Str, _Len);
         }
     } // namespace string_view_literals
@@ -2440,7 +2441,7 @@ concept _Contiguous_range_of =
     _RANGES contiguous_range<_Rng> && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
-template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+_EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
 private:
     friend _Tidy_deallocate_guard<basic_string>;
@@ -5066,13 +5067,13 @@ basic_string(from_range_t, _Rng&&, _Alloc = _Alloc())
 #endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _CONSTEXPR20 void swap(basic_string<_Elem, _Traits, _Alloc>& _Left,
     basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept /* strengthened */ {
     _Left.swap(_Right);
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     const auto _Left_size  = _Left.size();
@@ -5084,7 +5085,7 @@ _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     return {_String_constructor_concat_tag{}, _Left, _Left.c_str(), _Left_size, _Right.c_str(), _Right_size};
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     _In_z_ const _Elem* const _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     using _Size_type       = typename basic_string<_Elem, _Traits, _Alloc>::size_type;
@@ -5097,7 +5098,7 @@ _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     return {_String_constructor_concat_tag{}, _Right, _Left, _Left_size, _Right.c_str(), _Right_size};
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     const _Elem _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     const auto _Right_size = _Right.size();
@@ -5108,7 +5109,7 @@ _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     return {_String_constructor_concat_tag{}, _Right, _STD addressof(_Left), 1, _Right.c_str(), _Right_size};
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     using _Size_type       = typename basic_string<_Elem, _Traits, _Alloc>::size_type;
@@ -5121,7 +5122,7 @@ _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     return {_String_constructor_concat_tag{}, _Left, _Left.c_str(), _Left_size, _Right, _Right_size};
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const _Elem _Right) {
     const auto _Left_size = _Left.size();
@@ -5132,19 +5133,19 @@ _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     return {_String_constructor_concat_tag{}, _Left, _Left.c_str(), _Left_size, _STD addressof(_Right), 1};
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, basic_string<_Elem, _Traits, _Alloc>&& _Right) {
     return _STD move(_Right.insert(0, _Left));
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     basic_string<_Elem, _Traits, _Alloc>&& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) {
     return _STD move(_Left.append(_Right));
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     basic_string<_Elem, _Traits, _Alloc>&& _Left, basic_string<_Elem, _Traits, _Alloc>&& _Right) {
 #if _ITERATOR_DEBUG_LEVEL == 2
@@ -5157,51 +5158,51 @@ _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     return {_String_constructor_concat_tag{}, _Left, _Right};
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     _In_z_ const _Elem* const _Left, basic_string<_Elem, _Traits, _Alloc>&& _Right) {
     return _STD move(_Right.insert(0, _Left));
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     const _Elem _Left, basic_string<_Elem, _Traits, _Alloc>&& _Right) {
     return _STD move(_Right.insert(0, 1, _Left));
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     basic_string<_Elem, _Traits, _Alloc>&& _Left, _In_z_ const _Elem* const _Right) {
     return _STD move(_Left.append(_Right));
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 basic_string<_Elem, _Traits, _Alloc> operator+(
     basic_string<_Elem, _Traits, _Alloc>&& _Left, const _Elem _Right) {
     _Left.push_back(_Right);
     return _STD move(_Left);
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 bool operator==(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
     return _Left._Equal(_Right);
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _CONSTEXPR20 bool operator==(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     return _Left._Equal(_Right);
 }
 
 #if _HAS_CXX20
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, const basic_string<_Elem, _Traits, _Alloc>& _Right) noexcept {
     return static_cast<_Get_comparison_category_t<_Traits>>(_Left.compare(_Right) <=> 0);
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD constexpr _Get_comparison_category_t<_Traits> operator<=>(
     const basic_string<_Elem, _Traits, _Alloc>& _Left, _In_z_ const _Elem* const _Right) {
     return static_cast<_Get_comparison_category_t<_Traits>>(_Left.compare(_Right) <=> 0);
@@ -5293,13 +5294,13 @@ _NODISCARD bool operator>=(const basic_string<_Elem, _Traits, _Alloc>& _Left, _I
 }
 #endif // ^^^ !_HAS_CXX20 ^^^
 
-using string  = basic_string<char, char_traits<char>, allocator<char>>;
-using wstring = basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
+_EXPORT_STD using string  = basic_string<char, char_traits<char>, allocator<char>>;
+_EXPORT_STD using wstring = basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
 #ifdef __cpp_lib_char8_t
-using u8string = basic_string<char8_t, char_traits<char8_t>, allocator<char8_t>>;
+_EXPORT_STD using u8string = basic_string<char8_t, char_traits<char8_t>, allocator<char8_t>>;
 #endif // __cpp_lib_char8_t
-using u16string = basic_string<char16_t, char_traits<char16_t>, allocator<char16_t>>;
-using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32_t>>;
+_EXPORT_STD using u16string = basic_string<char16_t, char_traits<char16_t>, allocator<char16_t>>;
+_EXPORT_STD using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32_t>>;
 
 template <class _Elem, class _Alloc>
 struct hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>>
@@ -5309,7 +5310,7 @@ struct hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>>
     }
 };
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 basic_istream<_Elem, _Traits>& operator>>(
     basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
     using _Myis   = basic_istream<_Elem, _Traits>;
@@ -5358,7 +5359,7 @@ basic_istream<_Elem, _Traits>& operator>>(
     return _Istr;
 }
 
-template <class _Elem, class _Traits, class _Alloc>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc>
 basic_ostream<_Elem, _Traits>& operator<<(
     basic_ostream<_Elem, _Traits>& _Ostr, const basic_string<_Elem, _Traits, _Alloc>& _Str) {
     return _Insert_string(_Ostr, _Str.data(), _Str.size());
@@ -5373,25 +5374,26 @@ inline namespace literals {
 #define _CONSTEXPR20_STRING_LITERALS _CONSTEXPR20
 #endif // ^^^ no workaround ^^^
 
-        _NODISCARD _CONSTEXPR20_STRING_LITERALS string operator"" s(const char* _Str, size_t _Len) {
+        _EXPORT_STD _NODISCARD _CONSTEXPR20_STRING_LITERALS string operator"" s(const char* _Str, size_t _Len) {
             return string{_Str, _Len};
         }
 
-        _NODISCARD _CONSTEXPR20_STRING_LITERALS wstring operator"" s(const wchar_t* _Str, size_t _Len) {
+        _EXPORT_STD _NODISCARD _CONSTEXPR20_STRING_LITERALS wstring operator"" s(const wchar_t* _Str, size_t _Len) {
             return wstring{_Str, _Len};
         }
 
 #ifdef __cpp_char8_t
-        _NODISCARD _CONSTEXPR20_STRING_LITERALS basic_string<char8_t> operator"" s(const char8_t* _Str, size_t _Len) {
+        _EXPORT_STD _NODISCARD _CONSTEXPR20_STRING_LITERALS basic_string<char8_t> operator"" s(
+            const char8_t* _Str, size_t _Len) {
             return basic_string<char8_t>{_Str, _Len};
         }
 #endif // __cpp_char8_t
 
-        _NODISCARD _CONSTEXPR20_STRING_LITERALS u16string operator"" s(const char16_t* _Str, size_t _Len) {
+        _EXPORT_STD _NODISCARD _CONSTEXPR20_STRING_LITERALS u16string operator"" s(const char16_t* _Str, size_t _Len) {
             return u16string{_Str, _Len};
         }
 
-        _NODISCARD _CONSTEXPR20_STRING_LITERALS u32string operator"" s(const char32_t* _Str, size_t _Len) {
+        _EXPORT_STD _NODISCARD _CONSTEXPR20_STRING_LITERALS u32string operator"" s(const char32_t* _Str, size_t _Len) {
             return u32string{_Str, _Len};
         }
 
@@ -5401,13 +5403,13 @@ inline namespace literals {
 } // namespace literals
 
 #if _HAS_CXX20
-template <class _Elem, class _Traits, class _Alloc, class _Uty>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc, class _Uty>
 constexpr typename basic_string<_Elem, _Traits, _Alloc>::size_type erase(
     basic_string<_Elem, _Traits, _Alloc>& _Cont, const _Uty& _Val) {
     return _Erase_remove(_Cont, _Val);
 }
 
-template <class _Elem, class _Traits, class _Alloc, class _Pr>
+_EXPORT_STD template <class _Elem, class _Traits, class _Alloc, class _Pr>
 constexpr typename basic_string<_Elem, _Traits, _Alloc>::size_type erase_if(
     basic_string<_Elem, _Traits, _Alloc>& _Cont, _Pr _Pred) {
     return _Erase_remove_if(_Cont, _Pass_fn(_Pred));
@@ -5416,16 +5418,16 @@ constexpr typename basic_string<_Elem, _Traits, _Alloc>::size_type erase_if(
 
 #if _HAS_CXX17
 namespace pmr {
-    template <class _Elem, class _Traits = char_traits<_Elem>>
+    _EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>>
     using basic_string = _STD basic_string<_Elem, _Traits, polymorphic_allocator<_Elem>>;
 
-    using string = basic_string<char>;
+    _EXPORT_STD using string = basic_string<char>;
 #ifdef __cpp_lib_char8_t
-    using u8string = basic_string<char8_t>;
+    _EXPORT_STD using u8string = basic_string<char8_t>;
 #endif // __cpp_lib_char8_t
-    using u16string = basic_string<char16_t>;
-    using u32string = basic_string<char32_t>;
-    using wstring   = basic_string<wchar_t>;
+    _EXPORT_STD using u16string = basic_string<char16_t>;
+    _EXPORT_STD using u32string = basic_string<char32_t>;
+    _EXPORT_STD using wstring   = basic_string<wchar_t>;
 } // namespace pmr
 #endif // _HAS_CXX17
 _STD_END
