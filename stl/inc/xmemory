@@ -2203,13 +2203,13 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
             if constexpr (is_same_v<_Pair_ref_t, const _Pair_t&>) {
                 // equivalent to
                 // return _STD make_obj_using_allocator<_Pair_t>(_Al, _Pair_ref);
-                return _STD make_tuple(piecewise_construct,
+                return _Pair_t(piecewise_construct,
                     _STD uses_allocator_construction_args<_Pair_first_t>(_Al, _Pair_ref.first),
                     _STD uses_allocator_construction_args<_Pair_second_t>(_Al, _Pair_ref.second));
             } else {
                 // equivalent to
                 // return _STD make_obj_using_allocator<_Pair_t>(_Al, _STD move(_Pair_ref));
-                return _STD make_tuple(piecewise_construct,
+                return _Pair_t(piecewise_construct,
                     _STD uses_allocator_construction_args<_Pair_first_t>(_Al, _STD get<0>(_STD move(_Pair_ref))),
                     _STD uses_allocator_construction_args<_Pair_second_t>(_Al, _STD get<1>(_STD move(_Pair_ref))));
             }
