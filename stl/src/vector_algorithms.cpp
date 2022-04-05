@@ -24,20 +24,9 @@ extern "C" long __isa_enabled;
 #pragma optimize("t", on) // Override /Os with /Ot for this TU
 #endif // !_DEBUG
 
-// Must be in sync with _Min_max_t in <algorithm>
-struct _Min_max_element_t {
-    const void* _Min;
-    const void* _Max;
-};
-
 namespace {
     bool _Use_avx2() noexcept {
         return __isa_enabled & (1 << __ISA_AVAILABLE_AVX2);
-    }
-
-
-    static bool _Use_sse42() {
-        return __isa_enabled & (1 << __ISA_AVAILABLE_SSE42);
     }
 
     bool _Use_sse42() noexcept {
@@ -82,6 +71,12 @@ namespace {
 } // unnamed namespace
 
 extern "C" {
+// Must be in sync with _Min_max_t in <algorithm>
+struct _Min_max_element_t {
+    const void* _Min;
+    const void* _Max;
+};
+
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept {
     constexpr size_t _Mask_32 = ~((static_cast<size_t>(1) << 5) - 1);
