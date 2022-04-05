@@ -98,8 +98,7 @@ void _Uses_allocator_construct(
 }
 
 template <class _Ty1, class _Ty2, class _Outer_alloc, class _Inner_alloc, class _Uty, class _Vty>
-void _Uses_allocator_construct(
-    pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, pair<_Uty, _Vty>&& _Pair) {
+void _Uses_allocator_construct(pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, pair<_Uty, _Vty>&& _Pair) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, rvalue pair argument
     _Uses_allocator_construct_pair(_Ptr, _Outer, _Inner, _STD forward_as_tuple(_STD forward<_Uty>(_Pair.first)),
         _STD forward_as_tuple(_STD forward<_Vty>(_Pair.second)));
@@ -119,8 +118,7 @@ void _Uses_allocator_construct(
         _Uses_allocator_construct_pair(
             _Ptr, _Outer, _Inner, _STD forward_as_tuple(_Pair_ref.first), _STD forward_as_tuple(_Pair_ref.second));
     } else {
-        _Uses_allocator_construct_pair(
-            _Ptr, _Outer, _Inner, _STD forward_as_tuple(_STD forward<_Ty1>(_Pair_ref.first)),
+        _Uses_allocator_construct_pair(_Ptr, _Outer, _Inner, _STD forward_as_tuple(_STD forward<_Ty1>(_Pair_ref.first)),
             _STD forward_as_tuple(_STD forward<_Ty2>(_Pair_ref.second)));
     }
 }
