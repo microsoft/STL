@@ -2073,8 +2073,8 @@ template <class _Ty, class = void>
 _INLINE_VAR constexpr bool _Is_not_deducible_as_pair = true;
 
 template <class _Ty>
-_INLINE_VAR constexpr bool
-    _Is_not_deducible_as_pair<_Ty, void_t<decltype(_STD _Deduce_as_pair(_STD declval<_Ty>()))>> = false;
+_INLINE_VAR constexpr bool _Is_not_deducible_as_pair<_Ty, void_t<decltype(_STD _Deduce_as_pair(_STD declval<_Ty>()))>> =
+    false;
 
 template <class _Ty>
 const _Ty& _Normally_bind(const _Ty&);
