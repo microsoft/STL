@@ -2082,7 +2082,7 @@ template <class _Ty>
 _Ty&& _Normally_bind(_Ty&&);
 
 template <class _Ty, class _Uty>
-using _Normally_bound_ref = decltype(_STD _Normally_bind(_STD declval<_Uty>()));
+using _Normally_bound_ref = decltype(_STD _Normally_bind<_Ty>(_STD declval<_Uty>()));
 
 template <class _Ty, class _Uty, class = void>
 _INLINE_VAR constexpr bool _Is_normally_bindable = false;
