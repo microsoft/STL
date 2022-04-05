@@ -2122,8 +2122,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, co
 template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept;
 
-template <class _Ty, class _Alloc, class _Uty, enable_if_t<
-    _Is_specialization_v<_Ty, pair> && _Cannot_as_pair<_Uty>, int> = 0>
+template <class _Ty, class _Alloc, class _Uty,
+    enable_if_t<_Is_specialization_v<_Ty, pair> && _Cannot_as_pair<_Uty>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept;
 
 template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
@@ -2197,12 +2197,12 @@ constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& 
         _STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
 }
 
-template <class _Ty, class _Alloc, class _Uty, enable_if_t<
-    _Is_specialization_v<_Ty, pair> && _Cannot_as_pair<_Uty&>, int>>
+template <class _Ty, class _Alloc, class _Uty,
+    enable_if_t<_Is_specialization_v<_Ty, pair> && _Cannot_as_pair<_Uty&>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
     struct _Pair_remaker {
         using _Pair_t = remove_cv_t<_Ty>;
-        
+
         const _Alloc& _Al;
         _Uty& _Ux;
 
@@ -2224,8 +2224,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
                 // equivalent to
                 // return _STD make_obj_using_allocator<_Pair_t>(_Al, _STD move(_Pair_ref));
                 return _STD make_tuple(piecewise_construct,
-                   _STD uses_allocator_construction_args<_Pair_first_t>(_Al, _STD get<0>(_STD move(_Pair_ref))),
-                   _STD uses_allocator_construction_args<_Pair_second_t>(_Al, _STD get<1>(_STD move(_Pair_ref))));
+                    _STD uses_allocator_construction_args<_Pair_first_t>(_Al, _STD get<0>(_STD move(_Pair_ref))),
+                    _STD uses_allocator_construction_args<_Pair_second_t>(_Al, _STD get<1>(_STD move(_Pair_ref))));
             }
         }
     };
