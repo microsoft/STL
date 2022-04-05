@@ -2229,7 +2229,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
             }
         }
     };
-    
+
     // equivalent to
     // return _STD make_tuple(_Pair_remaker{_Al, _Ux});
     return tuple<_Pair_remaker>({_Al, _Ux});
