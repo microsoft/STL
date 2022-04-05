@@ -2070,10 +2070,11 @@ template <class _Ty1, class _Ty2>
 void _Deduce_as_pair(const pair<_Ty1, _Ty2>&);
 
 template <class _Ty, class = void>
-_INLINE_VAR constexpr bool _Cannot_as_pair = true;
+_INLINE_VAR constexpr bool _Is_not_deducible_as_pair = true;
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _Cannot_as_pair<_Ty, void_t<decltype(_STD _Deduce_as_pair(_STD declval<_Ty>()))>> = false;
+_INLINE_VAR constexpr bool
+    _Is_not_deducible_as_pair<_Ty, void_t<decltype(_STD _Deduce_as_pair(_STD declval<_Ty>()))>> = false;
 
 template <class _Ty>
 const _Ty& _Normally_bind(const _Ty&);
@@ -2123,7 +2124,7 @@ template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_spe
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept;
 
 template <class _Ty, class _Alloc, class _Uty,
-    enable_if_t<_Is_specialization_v<_Ty, pair> && _Cannot_as_pair<_Uty&>, int> = 0>
+    enable_if_t<_Is_specialization_v<_Ty, pair> && _Is_not_deducible_as_pair<_Uty&>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept;
 
 template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
@@ -2184,7 +2185,7 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pa
 }
 
 template <class _Ty, class _Alloc, class _Uty,
-    enable_if_t<_Is_specialization_v<_Ty, pair> && _Cannot_as_pair<_Uty&>, int>>
+    enable_if_t<_Is_specialization_v<_Ty, pair> && _Is_not_deducible_as_pair<_Uty&>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
     struct _Pair_remaker {
         const _Alloc& _Al;
