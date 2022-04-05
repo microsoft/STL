@@ -259,4 +259,6 @@ export const weekly_table: WeeklyRow[] = [
     { date: '2022-03-04', vso: 192, libcxx: 626 },
     { date: '2022-03-11', vso: 192, libcxx: 626 },
     { date: '2022-03-18', vso: 194, libcxx: 626 },
+    { date: '2022-03-25', vso: 181, libcxx: 616 },
+    { date: '2022-04-01', vso: 181, libcxx: 616 },
 ];

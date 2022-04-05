@@ -260,7 +260,7 @@ type Timeframe = {
 
 const timeframe_all: Timeframe = {
     min: '2017-06-09',
-    time: { unit: 'quarter' },
+    time: { unit: 'year' },
 };
 const timeframe_github: Timeframe = {
     min: '2019-09-20', // first Friday after 2019-09-16
@@ -268,7 +268,7 @@ const timeframe_github: Timeframe = {
 };
 const timeframe_2021: Timeframe = {
     min: '2021-01-01',
-    time: { unit: 'month' },
+    time: { unit: 'quarter' },
 };
 const timeframes = [timeframe_all, timeframe_github, timeframe_2021];
 const timeframe_github_idx = 1;
@@ -419,7 +419,7 @@ const age_options = {
                 text: 'Average Age, Average Wait (days)',
             },
             min: 0,
-            max: 500,
+            max: 600,
             ticks: {
                 stepSize: 100,
             },
@@ -433,7 +433,7 @@ const age_options = {
                 text: 'Combined Age, Combined Wait (PR-months)',
             },
             min: 0,
-            max: 500,
+            max: 600,
             ticks: {
                 stepSize: 100,
             },
