@@ -132,8 +132,7 @@ template <class _Myself, class _This2, class... _Rest2>
 struct _Tuple_perfect_val : true_type {};
 
 template <class _Myself, class _This2>
-struct _Tuple_perfect_val<_Myself, _This2>
-    : bool_constant<!is_same_v<_Myself, _Remove_cvref_t<_This2>>> {};
+struct _Tuple_perfect_val<_Myself, _This2> : bool_constant<!is_same_v<_Myself, _Remove_cvref_t<_This2>>> {};
 
 template <class _Ty0, class _Ty1, class _Uty0, class _Uty1>
 struct _Tuple_perfect_val<tuple<_Ty0, _Ty1>, _Uty0, _Uty1>
