@@ -172,41 +172,41 @@ public:
     }
 
 #if _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
-    _NODISCARD friend bool operator==(const error_code& _Left, const error_code& _Right) noexcept {
+    _NODISCARD_FRIEND bool operator==(const error_code& _Left, const error_code& _Right) noexcept {
         return _Left.category() == _Right.category() && _Left.value() == _Right.value();
     }
 
-    _NODISCARD friend bool operator==(const error_code& _Left, const error_condition& _Right) noexcept {
+    _NODISCARD_FRIEND bool operator==(const error_code& _Left, const error_condition& _Right) noexcept {
         return _System_error_equal(_Left, _Right);
     }
 
 #ifdef __cpp_lib_concepts
-    _NODISCARD friend strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
+    _NODISCARD_FRIEND strong_ordering operator<=>(const error_code& _Left, const error_code& _Right) noexcept {
         if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
             return _Result;
         }
         return _Left.value() <=> _Right.value();
     }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-    _NODISCARD friend bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
+    _NODISCARD_FRIEND bool operator<(const error_code& _Left, const error_code& _Right) noexcept {
         return _Left.category() < _Right.category()
             || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
     }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 #if !_HAS_CXX20
-    _NODISCARD friend bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
+    _NODISCARD_FRIEND bool operator==(const error_condition& _Left, const error_code& _Right) noexcept {
         return _System_error_equal(_Right, _Left);
     }
 
-    _NODISCARD friend bool operator!=(const error_code& _Left, const error_code& _Right) noexcept {
+    _NODISCARD_FRIEND bool operator!=(const error_code& _Left, const error_code& _Right) noexcept {
         return !(_Left == _Right);
     }
 
-    _NODISCARD friend bool operator!=(const error_code& _Left, const error_condition& _Right) noexcept {
+    _NODISCARD_FRIEND bool operator!=(const error_code& _Left, const error_condition& _Right) noexcept {
         return !_System_error_equal(_Left, _Right);
     }
 
-    _NODISCARD friend bool operator!=(const error_condition& _Left, const error_code& _Right) noexcept {
+    _NODISCARD_FRIEND bool operator!=(const error_condition& _Left, const error_code& _Right) noexcept {
         return !_System_error_equal(_Right, _Left);
     }
 #endif // !_HAS_CXX20
@@ -261,12 +261,12 @@ public:
     }
 
 #if _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
-    _NODISCARD friend bool operator==(const error_condition& _Left, const error_condition& _Right) noexcept {
+    _NODISCARD_FRIEND bool operator==(const error_condition& _Left, const error_condition& _Right) noexcept {
         return _Left.category() == _Right.category() && _Left.value() == _Right.value();
     }
 
 #ifdef __cpp_lib_concepts
-    _NODISCARD friend strong_ordering operator<=>(
+    _NODISCARD_FRIEND strong_ordering operator<=>(
         const error_condition& _Left, const error_condition& _Right) noexcept {
         if (const auto _Result = _Left.category() <=> _Right.category(); _Result != 0) {
             return _Result;
@@ -274,13 +274,13 @@ public:
         return _Left.value() <=> _Right.value();
     }
 #else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
-    _NODISCARD friend bool operator<(const error_condition& _Left, const error_condition& _Right) noexcept {
+    _NODISCARD_FRIEND bool operator<(const error_condition& _Left, const error_condition& _Right) noexcept {
         return _Left.category() < _Right.category()
             || (_Left.category() == _Right.category() && _Left.value() < _Right.value());
     }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 #if !_HAS_CXX20
-    _NODISCARD friend bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
+    _NODISCARD_FRIEND bool operator!=(const error_condition& _Left, const error_condition& _Right) noexcept {
         return !(_Left == _Right);
     }
 #endif // !_HAS_CXX20
