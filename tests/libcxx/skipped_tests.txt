@@ -80,6 +80,12 @@ iterators\predef.iterators\reverse.iterators\reverse.iter.cons\assign.pass.cpp
 concepts\concepts.compare\concepts.totallyordered\totally_ordered.pass.cpp
 concepts\concepts.compare\concept.equalitycomparable\equality_comparable.compile.pass.cpp
 
+# libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
+utilities\format\format.functions\vformat_to.locale.pass.cpp
+utilities\format\format.functions\vformat_to.pass.cpp
+utilities\format\format.functions\vformat.locale.pass.cpp
+utilities\format\format.functions\vformat.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -256,17 +262,6 @@ atomics\atomics.types.generic\copy_semantics_traits.pass.cpp
 # DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 utilities\meta\meta.unary\meta.unary.prop\is_constructible.pass.cpp
 
-# DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
-concepts\concepts.lang\concept.common\common_with.compile.pass.cpp
-concepts\concepts.lang\concept.commonref\common_reference.compile.pass.cpp
-containers\views\span.cons\iterator_sentinel.pass.cpp
-iterators\iterator.requirements\iterator.concepts\iterator.concept.bidir\bidirectional_iterator.compile.pass.cpp
-iterators\iterator.requirements\iterator.concepts\iterator.concept.random.access\contiguous_iterator.compile.pass.cpp
-iterators\iterator.requirements\iterator.concepts\iterator.concept.readable\indirectly_readable.compile.pass.cpp
-iterators\iterator.requirements\iterator.concepts\iterator.concept.forward\forward_iterator.compile.pass.cpp
-iterators\iterator.requirements\iterator.concepts\iterator.concept.input\input_iterator.compile.pass.cpp
-iterators\iterator.requirements\iterator.concepts\iterator.concept.random.access\random_access_iterator.compile.pass.cpp
-
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort.pass.cpp
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
@@ -283,9 +278,6 @@ utilities\utility\pairs\pairs.spec\three_way_comparison.pass.cpp
 
 # DevCom-1626727: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
 algorithms\robust_re_difference_type.compile.pass.cpp
-
-# DevCom-1627396: C1XX's __is_convertible_to intrinsic mis-handles volatile array lvalues
-concepts\concepts.lang\concept.swappable\swappable_with.compile.pass.cpp
 
 # DevCom-1628714: C1XX refuses nullptr_t == reference-to-function in a requires expression
 concepts\concepts.compare\concept.equalitycomparable\equality_comparable_with.compile.pass.cpp

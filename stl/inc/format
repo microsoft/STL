@@ -50,6 +50,7 @@
 #include <exception>
 #include <iterator>
 #include <locale>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -718,6 +719,26 @@ public:
     }
 };
 
+template <class _CharT>
+_NODISCARD constexpr _Fmt_codec<_CharT> _Get_fmt_codec() {
+    return {};
+}
+
+// clang-format off
+template <class _CharT>
+    requires (is_same_v<_CharT, char> && !_Is_execution_charset_self_synchronizing())
+_NODISCARD const _Fmt_codec<_CharT>& _Get_fmt_codec() {
+    // clang-format on
+    using _CodecType = _Fmt_codec<_CharT>;
+
+    static once_flag _Flag;
+    alignas(_CodecType) static unsigned char _Storage[sizeof(_CodecType)];
+
+    _STD call_once(_Flag, [] { _STD construct_at(reinterpret_cast<_CodecType*>(&_Storage)); });
+
+    return *_STD launder(reinterpret_cast<const _CodecType*>(&_Storage));
+}
+
 template <class _CharT, _Parse_align_callbacks<_CharT> _Callbacks_type>
 _NODISCARD constexpr const _CharT* _Parse_align(
     const _CharT* _First, const _CharT* _Last, _Callbacks_type&& _Callbacks) {
@@ -725,7 +746,7 @@ _NODISCARD constexpr const _CharT* _Parse_align(
     _STL_INTERNAL_CHECK(_First != _Last && *_First != '}');
     auto _Parsed_align = _Fmt_align::_None;
 
-    const int _Units = _Fmt_codec<_CharT>{}._Units_in_next_character(_First, _Last);
+    const int _Units = _Get_fmt_codec<_CharT>()._Units_in_next_character(_First, _Last);
     if (_Units < 0) { // invalid fill character encoding
         _THROW(format_error("Invalid format string."));
     }
@@ -992,9 +1013,9 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
 
 template <class _CharT, _Parse_replacement_field_callbacks<_CharT> _HandlerT>
 constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _HandlerT&& _Handler) {
-    auto _First = _Format_str.data();
-    auto _Last  = _First + _Format_str.size();
-    const _Fmt_codec<_CharT> _Codec;
+    auto _First        = _Format_str.data();
+    auto _Last         = _First + _Format_str.size();
+    const auto& _Codec = _Get_fmt_codec<_CharT>();
 
     while (_First != _Last) {
         const _CharT* _OpeningCurl = _First;
@@ -1369,8 +1390,7 @@ public:
                 _Cat = _Presentation_type_category::_String;
             }
             // note, we don't get a call if there isn't a type, but none is valid for everything.
-            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer
-                && _Cat != _Presentation_type_category::_Char) {
+            if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer) {
                 _THROW(format_error("Invalid presentation type for bool"));
             }
             break;
@@ -1487,17 +1507,15 @@ struct _Format_arg_traits {
 
     static auto _Phony_basic_format_arg_constructor(nullptr_t) -> const void*; // not defined
 
-    // clang-format off
     template <class _Ty>
         requires is_void_v<_Ty>
     static auto _Phony_basic_format_arg_constructor(_Ty*) -> const void*; // not defined
-    // clang-format on
 
     template <class _Ty>
-    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty>()));
+    using _Storage_type = decltype(_Phony_basic_format_arg_constructor(_STD declval<_Ty&>()));
 
     template <class _Ty>
-    static constexpr size_t _Storage_size = sizeof(_Storage_type<remove_cvref_t<_Ty>>);
+    static constexpr size_t _Storage_size = sizeof(_Storage_type<_Ty>);
 };
 
 struct _Format_arg_index {
@@ -1559,7 +1577,7 @@ private:
 
     template <class _Ty>
     void _Store(const size_t _Arg_index, _Ty&& _Val) noexcept {
-        using _Erased_type = typename _Traits::template _Storage_type<remove_cvref_t<_Ty>>;
+        using _Erased_type = typename _Traits::template _Storage_type<_Ty>;
 
         _Basic_format_arg_type _Arg_type;
         if constexpr (is_same_v<_Erased_type, bool>) {
@@ -1716,11 +1734,9 @@ public:
     }
 };
 
-// clang-format off
 template <class _Out, class _CharT>
     requires output_iterator<_Out, const _CharT&>
 class basic_format_context {
-    // clang-format on
 private:
     _Out _OutputIt;
     basic_format_args<basic_format_context> _Args;
@@ -2646,7 +2662,7 @@ _NODISCARD _OutputIt _Fmt_write(
         _Width = static_cast<int>(2 + (_STD bit_width(reinterpret_cast<uintptr_t>(_Value)) + 3) / 4);
     }
 
-    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Left,
+    return _Write_aligned(_STD move(_Out), _Width, _Specs, _Fmt_align::_Right,
         [=](_OutputIt _Out) { return _Fmt_write<_CharT>(_STD move(_Out), _Value); });
 }
 
@@ -2660,11 +2676,11 @@ template <class _CharT>
 _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> _Value, int& _Width) {
     // Returns a pointer past-the-end of the largest prefix of _Value that fits in _Width, or all
     // of _Value if _Width is negative. Updates _Width to the estimated width of that prefix.
-    const int _Max_width = _Width;
-    auto _Pos            = _Value.data();
-    const auto _Last     = _Pos + _Value.size();
-    int _Estimated_width = 0; // the estimated width of [_Value.data(), _Pos)
-    const _Fmt_codec<_CharT> _Codec;
+    const int _Max_width    = _Width;
+    auto _Pos               = _Value.data();
+    const auto _Last        = _Pos + _Value.size();
+    int _Estimated_width    = 0; // the estimated width of [_Value.data(), _Pos)
+    const auto& _Codec      = _Get_fmt_codec<_CharT>();
     constexpr auto _Max_int = (numeric_limits<int>::max)();
 
     while (_Pos != _Last) {

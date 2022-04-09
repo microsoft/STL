@@ -80,6 +80,12 @@ std/iterators/predef.iterators/reverse.iterators/reverse.iter.cons/assign.pass.c
 std/concepts/concepts.compare/concepts.totallyordered/totally_ordered.pass.cpp FAIL
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable.compile.pass.cpp FAIL
 
+# libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
+std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
+std/utilities/format/format.functions/vformat_to.pass.cpp FAIL
+std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
+std/utilities/format/format.functions/vformat.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -256,17 +262,6 @@ std/atomics/atomics.types.generic/copy_semantics_traits.pass.cpp FAIL
 # DevCom-409222 "Constructing rvalue reference from non-reference-related lvalue reference"
 std/utilities/meta/meta.unary/meta.unary.prop/is_constructible.pass.cpp:0 FAIL
 
-# DevCom-876860 "conditional operator errors" blocks readable<volatile int*>.
-std/concepts/concepts.lang/concept.common/common_with.compile.pass.cpp:0 FAIL
-std/concepts/concepts.lang/concept.commonref/common_reference.compile.pass.cpp:0 FAIL
-std/containers/views/span.cons/iterator_sentinel.pass.cpp:0 FAIL
-std/iterators/iterator.requirements/iterator.concepts/iterator.concept.bidir/bidirectional_iterator.compile.pass.cpp:0 FAIL
-std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp:0 FAIL
-std/iterators/iterator.requirements/iterator.concepts/iterator.concept.readable/indirectly_readable.compile.pass.cpp:0 FAIL
-std/iterators/iterator.requirements/iterator.concepts/iterator.concept.forward/forward_iterator.compile.pass.cpp:0 FAIL
-std/iterators/iterator.requirements/iterator.concepts/iterator.concept.input/input_iterator.compile.pass.cpp:0 FAIL
-std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/random_access_iterator.compile.pass.cpp:0 FAIL
-
 # VSO-1271673 "static analyzer doesn't know about short-circuiting"
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
@@ -283,9 +278,6 @@ std/utilities/utility/pairs/pairs.spec/three_way_comparison.pass.cpp:0 FAIL
 
 # DevCom-1626727: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
 std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
-
-# DevCom-1627396: C1XX's __is_convertible_to intrinsic mis-handles volatile array lvalues
-std/concepts/concepts.lang/concept.swappable/swappable_with.compile.pass.cpp:0 FAIL
 
 # DevCom-1628714: C1XX refuses nullptr_t == reference-to-function in a requires expression
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
@@ -940,13 +932,13 @@ std/containers/sequences/forwardlist/forwardlist.cons/deduct.pass.cpp FAIL
 std/containers/sequences/vector/vector.cons/deduct.pass.cpp FAIL
 
 # Not yet analyzed. Seems to force a sign conversion error?
-std/iterators/iterator.primitives/iterator.operations/advance.pass.cpp FAIL
+std/iterators/iterator.primitives/iterator.operations/advance.pass.cpp SKIPPED
 
 # Not yet analyzed. Maybe Clang over-eagerly instantiating noexcept-specifier?
 std/ranges/range.access/empty.pass.cpp:1 FAIL
 std/ranges/range.access/size.pass.cpp:1 FAIL
 std/ranges/range.access/ssize.pass.cpp:1 FAIL
-std/utilities/memory/unique.ptr/iterator_concept_conformance.compile.pass.cpp:1 FAIL
+std/utilities/memory/unique.ptr/iterator_concept_conformance.compile.pass.cpp:1 SKIPPED
 
 # *** XFAILs WHICH PASS ***
 # Nothing here! :-)
