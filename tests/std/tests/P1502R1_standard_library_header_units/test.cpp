@@ -293,6 +293,12 @@ int main() {
     }
 
     {
+        puts("Testing <expected>.");
+        constexpr expected<double, int> test{unexpect, 42};
+        assert(test.error() == 42);
+    }
+
+    {
         puts("Testing <filesystem>.");
         constexpr wstring_view dot{L"."};
         error_code ec{};
