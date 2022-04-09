@@ -714,7 +714,7 @@ STATIC_ASSERT(__cpp_lib_execution == 201603L);
 #endif
 #endif
 
-#if _HAS_CXX23
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_expected
 #error __cpp_lib_expected is not defined
 #elif __cpp_lib_expected != 202202L

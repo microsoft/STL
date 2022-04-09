@@ -304,6 +304,7 @@
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
 // P2443R1 views::chunk_by
+// P2549R0 unexpected<E>::error()
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.

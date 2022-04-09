@@ -29,13 +29,13 @@ _STD_BEGIN
 
 // [expected.un.object]
 // clang-format off
-template <copy_constructible _Err>
+template <copy_constructible _Err> // TRANSITION, LWG-3688
     requires (is_object_v<_Err> && !is_array_v<_Err> && !is_volatile_v<_Err> && !is_const_v<_Err>)
 class unexpected {
     // clang-format on
     static_assert(!_Is_specialization_v<_Err, unexpected>, "E must not be a specialization of unexpected");
 
-    template <class _Ty, copy_constructible _Err2>
+    template <class _Ty, copy_constructible _Err2> // TRANSITION, LWG-3688
     friend class expected;
 
 public:
@@ -61,8 +61,7 @@ public:
     // clang-format on
 
     // [expected.un.observe]
-    // TRANSITION, P2549
-#ifdef __cpp_explicit_this_parameter
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
     _NODISCARD constexpr decltype(auto) error(this unexpected&& _Self) noexcept {
         return _STD forward<unexpected>(_Self)._Unexpected;
     }
@@ -126,8 +125,7 @@ public:
     __CLR_OR_THIS_CALL explicit bad_expected_access(_Err _Unex) noexcept(is_nothrow_move_constructible_v<_Err>)
         : _Unexpected(_STD move(_Unex)) {}
 
-// TRANSITION, P2549
-#ifdef __cpp_explicit_this_parameter
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
     _NODISCARD constexpr decltype(auto) error(this unexpected&& _Self) noexcept {
         return _STD forward<unexpected>(_Self)._Unexpected;
     }
@@ -156,9 +154,9 @@ struct unexpect_t {
 
 inline constexpr unexpect_t unexpect{};
 
-template <class _Ty, copy_constructible _Err>
+template <class _Ty, copy_constructible _Err> // TRANSITION, LWG-3688
 class expected {
-    template <class _UTy, copy_constructible _UErr>
+    template <class _UTy, copy_constructible _UErr> // TRANSITION, LWG-3688
     friend class expected;
 
 public:
@@ -525,7 +523,7 @@ public:
         return _STD addressof(_Value);
     }
 
-#ifdef __cpp_explicit_this_parameter
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
     _NODISCARD constexpr decltype(auto) operator*(this expected&& _Self) {
         return _STD forward<expected>(_Self)._Value;
     }
@@ -551,7 +549,7 @@ public:
         return _Has_value;
     }
 
-#ifdef __cpp_explicit_this_parameter
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
     _NODISCARD constexpr decltype(auto) value(this expected&& _Self) {
         if (_Has_value) {
             return _STD forward<expected>(_Self)._Value;
@@ -585,7 +583,7 @@ public:
     }
 #endif // !__cpp_explicit_this_parameter
 
-#ifdef __cpp_explicit_this_parameter
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
     _NODISCARD constexpr decltype(auto) error(this expected&& _Self) noexcept { // strengthened
         return _STD forward<expected>(_Self)._Unexpected;
     }
@@ -626,11 +624,7 @@ public:
     }
 
     // [expected.object.eq]
-#ifdef __clang__ // TRANSITION, LLVM-XXXXX
-    template <class _Uty, _Weakly_equality_comparable_with<_Err> _UErr>
-#else // ^^^ __clang__ ^^^ / vvv !__clang__ vvv
     template <_Weakly_equality_comparable_with<_Ty> _Uty, _Weakly_equality_comparable_with<_Err> _UErr>
-#endif // !__clang__
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
         noexcept(_Implicitly_convert_to<bool>(_Left._Value == *_Right)) && noexcept(
             _Implicitly_convert_to<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
@@ -643,13 +637,12 @@ public:
         }
     }
 
-#ifdef __clang__ // TRANSITION, LLVM-XXXXX
+    // clang-format off
     template <class _Uty>
-#else // ^^^ __clang__ ^^^ / vvv !__clang__ vvv
-    template <_Weakly_equality_comparable_with<_Ty> _Uty>
-#endif // !__clang__
+        requires (!same_as<_Uty, expected> && _Weakly_equality_comparable_with<_Ty, _Uty>)
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const _Uty& _Right) noexcept(
         noexcept(_Implicitly_convert_to<bool>(_Left._Value == _Right))) { // strengthened
+        // clang-format on
         if (!_Left._Has_value) {
             return false;
         } else {
@@ -668,7 +661,7 @@ public:
     }
 
 private:
-#ifdef __cpp_explicit_this_parameter
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
     [[noreturn]] inline void _Throw_bad_expected_access(this expected&& _Self) {
         _THROW(bad_expected_access{_STD forward<expected>(_Self)._Unexpected});
     }
@@ -694,7 +687,7 @@ private:
     };
 };
 
-template <class _Ty, copy_constructible _Err>
+template <class _Ty, copy_constructible _Err> // TRANSITION, LWG-3688
     requires is_void_v<_Ty>
 class expected<_Ty, _Err> {
 public:
@@ -915,7 +908,7 @@ public:
     }
 
     constexpr void operator*() const noexcept {}
-#ifdef __cpp_explicit_this_parameter
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
     _NODISCARD constexpr void value(this expected&& _Self) {
         if (!_Has_value) {
             _Throw_bad_expected_access();
@@ -944,7 +937,7 @@ public:
     }
 #endif // !__cpp_explicit_this_parameter
 
-#ifdef __cpp_explicit_this_parameter
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
     _NODISCARD constexpr decltype(auto) error(this expected&& _Self) noexcept { // strengthened
         return _STD forward<expected>(_Self)._Unexpected;
     }
@@ -985,7 +978,7 @@ public:
     }
 
 private:
-#ifdef __cpp_explicit_this_parameter
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
     [[noreturn]] inline void _Throw_bad_expected_access(this expected&& _Self) {
         _THROW(bad_expected_access{_STD forward<expected>(_Self)._Unexpected});
     }
