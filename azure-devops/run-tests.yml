@@ -14,9 +14,6 @@ parameters:
 - name: displayName
   type: string
   default: 'Run Tests'
-- name: publishArtifact
-  type: boolean
-  default: false
 steps:
 - task: CmdLine@2
   displayName: ${{ parameters.displayName }}
@@ -38,11 +35,7 @@ steps:
     testResultsFormat: JUnit
     testResultsFiles: '**/test-results.xml'
     testRunTitle: 'test-${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)'
-- publish: $(${{ parameters.buildOutPutLocationVar }})/out
-  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-libs-$(System.JobId)'
-  condition: ${{ parameters.publishArtifact }}
-  displayName: 'Publish Libs and Headers Artifact'
-- publish: $(${{ parameters.buildOutPutLocationVar }})/tests
-  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-tests-$(System.JobId)'
-  condition: ${{ parameters.publishArtifact }}
-  displayName: 'Publish Tests Artifact'
+- publish: $(${{ parameters.buildOutputLocationVar }})/test-results.xml
+  artifact: '${{ parameters.targetPlatform }}-$(System.JobPositionInPhase)-xml-$(System.JobId)'
+  condition: failed()
+  displayName: 'Publish XML Artifact'

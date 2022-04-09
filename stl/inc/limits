@@ -1023,7 +1023,7 @@ _NODISCARD constexpr int _Countl_zero_fallback(_Ty _Val) noexcept {
 // see "Hacker's Delight" section 5-4
 template <class _Ty>
 _NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
-    constexpr int _Digits = std::numeric_limits<_Ty>::digits;
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
     return _Digits - _Countl_zero_fallback(static_cast<_Ty>(static_cast<_Ty>(~_Val) & static_cast<_Ty>(_Val - 1)));
 }
 
@@ -1063,8 +1063,6 @@ extern "C" {
 extern int __isa_available;
 }
 
-#if _HAS_CXX20
-
 #ifdef __clang__
 #define _TZCNT_U32 __builtin_ia32_tzcnt_u32
 #define _TZCNT_U64 __builtin_ia32_tzcnt_u64
@@ -1076,7 +1074,7 @@ extern int __isa_available;
 template <class _Ty>
 _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
-    constexpr _Ty _Max    = (numeric_limits<_Ty>::max) ();
+    constexpr _Ty _Max    = (numeric_limits<_Ty>::max)();
 
     if constexpr (_Digits <= 32) {
         // Intended widening to int. This operation means that a narrow 0 will widen
@@ -1104,7 +1102,7 @@ _NODISCARD int _Countr_zero_tzcnt(const _Ty _Val) noexcept {
 template <class _Ty>
 _NODISCARD int _Countr_zero_bsf(const _Ty _Val) noexcept {
     constexpr int _Digits = numeric_limits<_Ty>::digits;
-    constexpr _Ty _Max    = (numeric_limits<_Ty>::max) ();
+    constexpr _Ty _Max    = (numeric_limits<_Ty>::max)();
 
     unsigned long _Result;
     if constexpr (_Digits <= 32) {
@@ -1149,8 +1147,6 @@ _NODISCARD int _Checked_x86_x64_countr_zero(const _Ty _Val) noexcept {
     }
 #endif // __AVX2__
 }
-
-#endif // _HAS_CXX20
 
 #endif // _HAS_TZCNT_BSF_INTRINSICS
 
@@ -1202,14 +1198,37 @@ constexpr bool _Is_standard_unsigned_integer =
     _Is_any_of_v<remove_cv_t<_Ty>, unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long>;
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr int _Countr_zero(const _Ty _Val) noexcept {
-#if _HAS_CXX20 && _HAS_TZCNT_BSF_INTRINSICS
-    if (!_STD is_constant_evaluated()) {
+_NODISCARD _CONSTEXPR20 int _Countr_zero(const _Ty _Val) noexcept {
+#if _HAS_TZCNT_BSF_INTRINSICS
+#if _HAS_CXX20
+    if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+    {
         return _Checked_x86_x64_countr_zero(_Val);
     }
-#endif // _HAS_CXX20 && _HAS_TZCNT_BSF_INTRINSICS
-    // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
+#endif // _HAS_TZCNT_BSF_INTRINSICS
     return _Countr_zero_fallback(_Val);
+}
+
+template <class _Ty, class _Fn>
+constexpr decltype(auto) _Select_countr_zero_impl(_Fn _Callback) {
+    // TRANSITION, DevCom-1527995: Lambdas in this function ensure inlining
+#if _HAS_TZCNT_BSF_INTRINSICS && _HAS_CXX20
+    if (!_STD is_constant_evaluated()) {
+#ifdef __AVX2__
+        return _Callback([](_Ty _Val) { return _Countr_zero_tzcnt(_Val); });
+#else // ^^^ AVX2 ^^^ / vvv not AVX2 vvv
+        const bool _Definitely_have_tzcnt = __isa_available >= __ISA_AVAILABLE_AVX2;
+        if (_Definitely_have_tzcnt) {
+            return _Callback([](_Ty _Val) { return _Countr_zero_tzcnt(_Val); });
+        } else {
+            return _Callback([](_Ty _Val) { return _Countr_zero_bsf(_Val); });
+        }
+#endif // ^^^ not AVX2 ^^^
+    }
+#endif // ^^^ _HAS_TZCNT_BSF_INTRINSICS && _HAS_CXX20 ^^^
+    // C++17 constexpr gcd() calls this function, so it should be constexpr unless we detect runtime evaluation.
+    return _Callback([](_Ty _Val) { return _Countr_zero_fallback(_Val); });
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> _Enabled = 0>

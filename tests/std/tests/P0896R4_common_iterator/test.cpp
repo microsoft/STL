@@ -11,15 +11,18 @@
 using namespace std;
 using P = pair<int, int>;
 
-// clang-format off
 template <class Iter>
 concept CanDifference = requires(Iter it) {
-    { it - it };
+    {it - it};
 };
 
 template <class Iter>
 concept HasProxy = !is_reference_v<iter_reference_t<Iter>>;
-// clang-format on
+
+template <class Iter>
+concept CanArrow = requires(const Iter& i) {
+    {i.operator->()};
+};
 
 struct instantiator {
     template <input_or_output_iterator Iter>
@@ -49,8 +52,8 @@ struct instantiator {
                 }
 
                 using ipointer = typename iterator_traits<Cit>::pointer;
-                if constexpr (_Has_member_arrow<Iter>) {
-                    STATIC_ASSERT(same_as<ipointer, decltype(declval<const Iter&>().operator->())>);
+                if constexpr (CanArrow<Cit>) {
+                    STATIC_ASSERT(same_as<ipointer, decltype(declval<const Cit&>().operator->())>);
                 } else {
                     STATIC_ASSERT(same_as<ipointer, void>);
                 }
@@ -306,6 +309,29 @@ constexpr bool test_lwg_3574() {
     assert(arr[2] == 11);
 
     return true;
+}
+
+// Validate that _Variantish works when fed with a non-trivially-destructible type
+void test_non_trivially_destructible_type() { // COMPILE-ONLY
+    struct non_trivially_destructible_input_iterator {
+        using difference_type = int;
+        using value_type      = int;
+
+        ~non_trivially_destructible_input_iterator() {}
+
+        non_trivially_destructible_input_iterator& operator++() {
+            return *this;
+        }
+        void operator++(int) {}
+        int operator*() const {
+            return 0;
+        }
+        bool operator==(default_sentinel_t) const {
+            return true;
+        }
+    };
+
+    common_iterator<non_trivially_destructible_input_iterator, default_sentinel_t> it;
 }
 
 int main() {
