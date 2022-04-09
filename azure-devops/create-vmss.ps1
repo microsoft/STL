@@ -21,44 +21,17 @@ $ErrorActionPreference = 'Stop'
 $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
 $Location = 'westus2'
-$Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
+$Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd-THHmm')
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
-$ImagePublisher = 'MicrosoftWindowsDesktop'
-$ImageOffer = 'windows-11'
-$ImageSku = 'win11-21h2-ent'
+$ImagePublisher = 'MicrosoftWindowsServer'
+$ImageOffer = 'WindowsServer'
+$ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Creating Scale Set'
 $TotalProgress = 14
 $CurrentProgress = 1
-
-<#
-.SYNOPSIS
-Returns whether there's a name collision in the resource group.
-
-.DESCRIPTION
-Find-ResourceGroupNameCollision takes a list of resources, and checks if $Test
-collides names with any of the resources.
-
-.PARAMETER Test
-The name to test.
-
-.PARAMETER Resources
-The list of resources.
-#>
-function Find-ResourceGroupNameCollision {
-  [CmdletBinding()]
-  Param([string]$Test, $Resources)
-
-  foreach ($resource in $Resources) {
-    if ($resource.ResourceGroupName -eq $Test) {
-      return $true
-    }
-  }
-
-  return $false
-}
 
 <#
 .SYNOPSIS
@@ -76,10 +49,10 @@ function Find-ResourceGroupName {
   [CmdletBinding()]
   Param([string] $Prefix)
 
-  $resources = Get-AzResourceGroup
+  $existingNames = (Get-AzResourceGroup).ResourceGroupName
   $result = $Prefix
   $suffix = 0
-  while (Find-ResourceGroupNameCollision -Test $result -Resources $resources) {
+  while ($result -in $existingNames) {
     $suffix++
     $result = "$Prefix-$suffix"
   }
@@ -170,7 +143,8 @@ Write-Progress `
   -Status 'Setting the subscription context' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$IgnoredAzureContext = Set-AzContext -SubscriptionName CPP_STL_GitHub
+Set-AzContext -SubscriptionName CPP_STL_GitHub | Out-Null
+az account set --subscription CPP_STL_GitHub
 
 ####################################################################################################
 Write-Progress `
@@ -180,7 +154,7 @@ Write-Progress `
 
 $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
-$IgnoredResourceGroup = New-AzResourceGroup -Name $ResourceGroupName -Location $Location
+New-AzResourceGroup -Name $ResourceGroupName -Location $Location | Out-Null
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
@@ -196,11 +170,23 @@ $allowHttp = New-AzNetworkSecurityRuleConfig `
   -Access Allow `
   -Protocol Tcp `
   -Direction Outbound `
-  -Priority 1008 `
+  -Priority 1000 `
   -SourceAddressPrefix * `
   -SourcePortRange * `
   -DestinationAddressPrefix * `
   -DestinationPortRange @(80, 443)
+
+$allowQuic = New-AzNetworkSecurityRuleConfig `
+  -Name AllowQUIC `
+  -Description 'Allow QUIC' `
+  -Access Allow `
+  -Protocol Udp `
+  -Direction Outbound `
+  -Priority 1010 `
+  -SourceAddressPrefix * `
+  -SourcePortRange * `
+  -DestinationAddressPrefix * `
+  -DestinationPortRange 443
 
 $allowDns = New-AzNetworkSecurityRuleConfig `
   -Name AllowDNS `
@@ -208,7 +194,7 @@ $allowDns = New-AzNetworkSecurityRuleConfig `
   -Access Allow `
   -Protocol * `
   -Direction Outbound `
-  -Priority 1009 `
+  -Priority 1020 `
   -SourceAddressPrefix * `
   -SourcePortRange * `
   -DestinationAddressPrefix * `
@@ -220,7 +206,7 @@ $denyEverythingElse = New-AzNetworkSecurityRuleConfig `
   -Access Deny `
   -Protocol * `
   -Direction Outbound `
-  -Priority 1010 `
+  -Priority 2000 `
   -SourceAddressPrefix * `
   -SourcePortRange * `
   -DestinationAddressPrefix * `
@@ -231,7 +217,7 @@ $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -Name $NetworkSecurityGroupName `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
-  -SecurityRules @($allowHttp, $allowDns, $denyEverythingElse)
+  -SecurityRules @($allowHttp, $allowQuic, $allowDns, $denyEverythingElse)
 
 $SubnetName = $ResourceGroupName + '-Subnet'
 $Subnet = New-AzVirtualNetworkSubnetConfig `
@@ -277,10 +263,10 @@ $VM = Set-AzVMSourceImage `
   -Version latest
 
 $VM = Set-AzVMBootDiagnostic -VM $VM -Disable
-$IgnoredAzureOperationResponse = New-AzVm `
+New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
-  -VM $VM
+  -VM $VM | Out-Null
 
 ####################################################################################################
 Write-Progress `
@@ -303,7 +289,7 @@ Write-Progress `
   -Status 'Restarting VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$IgnoredComputeLongRunningOperation = Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName | Out-Null
 
 ####################################################################################################
 Write-Progress `
@@ -321,11 +307,11 @@ Write-Progress `
   -Status 'Running provisioning script sysprep.ps1 in VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$IgnoredRunCommandResult = Invoke-AzVMRunCommand `
+Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\sysprep.ps1"
+  -ScriptPath "$PSScriptRoot\sysprep.ps1" | Out-Null
 
 ####################################################################################################
 Write-Progress `
@@ -341,15 +327,15 @@ Write-Progress `
   -Status 'Converting VM to Image' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$IgnoredComputeLongRunningOperation = Stop-AzVM `
+Stop-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
-  -Force
+  -Force | Out-Null
 
-$IgnoredComputeLongRunningOperation = Set-AzVM `
+Set-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
-  -Generalized
+  -Generalized | Out-Null
 
 $VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
@@ -362,11 +348,11 @@ Write-Progress `
   -Status 'Deleting unused VM and disk' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$IgnoredComputeLongRunningOperation = Remove-AzVM -Id $VM.ID -Force
-$IgnoredOperationStatusResponse = Remove-AzDisk `
+Remove-AzVM -Id $VM.ID -Force | Out-Null
+Remove-AzDisk `
   -ResourceGroupName $ResourceGroupName `
   -DiskName $PrototypeOSDiskName `
-  -Force
+  -Force | Out-Null
 
 ####################################################################################################
 Write-Progress `
@@ -420,11 +406,34 @@ Write-Progress `
   -Status 'Enabling VMSS diagnostic logs' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
+$StorageAccountName = 'stlvmssdiaglogssa'
+
+$ExpirationDate = (Get-Date -AsUTC).AddYears(1).ToString('yyyy-MM-ddTHH:mmZ')
+
+$StorageAccountSASToken = $(az storage account generate-sas `
+  --account-name $StorageAccountName `
+  --expiry $ExpirationDate `
+  --permissions acuw `
+  --resource-types co `
+  --services bt `
+  --https-only `
+  --output tsv `
+  2> $null)
+
+$DiagnosticsDefaultConfig = $(az vmss diagnostics get-default-config --is-windows-os 2> $null). `
+  Replace('__DIAGNOSTIC_STORAGE_ACCOUNT__', $StorageAccountName). `
+  Replace('__VM_OR_VMSS_RESOURCE_ID__', $Vmss.Id)
+
+Out-File -FilePath "$PSScriptRoot\vmss-config.json" -InputObject $DiagnosticsDefaultConfig
+
+$DiagnosticsProtectedSettings = "{'storageAccountName': '$StorageAccountName', "
+$DiagnosticsProtectedSettings += "'storageAccountSasToken': '?$StorageAccountSASToken'}"
+
 az vmss diagnostics set `
   --resource-group $ResourceGroupName `
   --vmss-name $VmssName `
   --settings "$PSScriptRoot\vmss-config.json" `
-  --protected-settings "$PSScriptRoot\vmss-protected.json" `
+  --protected-settings "$DiagnosticsProtectedSettings" `
   --output none
 
 ####################################################################################################

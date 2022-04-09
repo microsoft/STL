@@ -17,8 +17,8 @@
 #pragma message("The contents of <semaphore> are available only with C++20 or later.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
+#include <__msvc_chrono.hpp>
 #include <atomic>
-#include <chrono>
 #include <climits>
 
 #pragma pack(push, _CRT_PACKING)

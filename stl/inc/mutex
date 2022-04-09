@@ -13,7 +13,7 @@
 #error <mutex> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
 
-#include <chrono>
+#include <__msvc_chrono.hpp>
 #include <cstdlib>
 #include <system_error>
 #include <thread>

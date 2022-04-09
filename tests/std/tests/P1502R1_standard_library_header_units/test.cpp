@@ -952,14 +952,10 @@ int main() {
     {
         puts("Testing <variant>.");
         constexpr const char* cats = "CATS";
-#if 0 // TRANSITION, DevCom-1162647 (constexpr variant stores wrong pointer)
         constexpr variant<int, const char*, double> var{in_place_type<const char*>, cats};
         static_assert(var.index() == 1);
         static_assert(holds_alternative<const char*>(var));
         static_assert(get<const char*>(var) == cats);
-#else // ^^^ no workaround / workaround vvv
-        const variant<int, const char*, double> var{in_place_type<const char*>, cats};
-#endif // ^^^ workaround ^^^
         assert(var.index() == 1);
         assert(holds_alternative<const char*>(var));
         assert(get<const char*>(var) == cats);

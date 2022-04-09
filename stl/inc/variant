@@ -105,7 +105,7 @@ template <class _Fn, class _List>
 struct _Meta_apply_;
 template <class _Fn, class _List>
 using _Meta_apply =
-    // explode _List into the parameters of meta-callable _Fn
+    // unpack _List into the parameters of meta-callable _Fn
     typename _Meta_apply_<_Fn, _List>::type;
 
 template <class _Fn, template <class...> class _List, class... _Types>
@@ -1472,7 +1472,7 @@ struct _Variant_dispatcher<index_sequence<_Is...>> {
     template <class _Ret, class _Callable, class... _Types, bool _Any_valueless = ((_Is == 0) || ...)>
     _NODISCARD static constexpr _Ret _Dispatch2(_Callable&& _Obj, _Types&&... _Args) {
         if constexpr (_Any_valueless) {
-            ((void) _Args, ...); // TRANSITION, DevCom-1004719
+            ((void) _Args, ...); // TRANSITION, VSO-1513409
             _Throw_bad_variant_access();
         }
 #if _HAS_CXX20

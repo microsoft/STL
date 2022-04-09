@@ -4,6 +4,15 @@
             "component": {
                 "type": "git",
                 "git": {
+                    "repositoryUrl": "https://github.com/boostorg/boost",
+                    "commitHash": "b143a5b72075f47307a23e680889d8434c8afc54"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "git",
+                "git": {
                     "repositoryUrl": "https://github.com/llvm/llvm-project.git",
                     "commitHash": "fc2a5ef9c8754fe3fbdf96483901ca3f13406b35"
                 }

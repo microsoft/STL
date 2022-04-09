@@ -45,4 +45,3 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       targetArch: ${{ parameters.vsDevCmdArch }}
       displayName: 'Build Tests'
-      publishArtifact: false # disabled due to GH-1653
