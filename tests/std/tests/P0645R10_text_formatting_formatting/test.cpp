@@ -631,7 +631,6 @@ void test_bool_specs() {
 
     test_type(STR("{:b}"), true);
     test_type(STR("{:B}"), true);
-    test_type(STR("{:c}"), true);
     test_type(STR("{:d}"), true);
     test_type(STR("{:o}"), true);
     test_type(STR("{:x}"), true);
@@ -639,7 +638,6 @@ void test_bool_specs() {
 
     test_type(STR("{:b}"), false);
     test_type(STR("{:B}"), false);
-    test_type(STR("{:c}"), false);
     test_type(STR("{:d}"), false);
     test_type(STR("{:o}"), false);
     test_type(STR("{:x}"), false);
@@ -912,7 +910,7 @@ void test_pointer_specs() {
     throw_helper(STR("{:0}"), nullptr);
 
     // Width
-    assert(format(STR("{:5}"), nullptr) == STR("0x0  "));
+    assert(format(STR("{:5}"), nullptr) == STR("  0x0"));
 
     // Precision
     throw_helper(STR("{:.5}"), nullptr);
@@ -992,16 +990,15 @@ void test_spec_replacement_field() {
     test_string_specs<charT>();
 }
 template <class charT, class... Args>
-void test_size_helper_impl(
-    const size_t expected_size, const _Basic_format_string<charT, Args...> fmt, const Args&... args) {
-    assert(formatted_size(fmt, args...) == expected_size);
-    assert(formatted_size(locale::classic(), fmt, args...) == expected_size);
+void test_size_helper_impl(const size_t expected_size, const _Basic_format_string<charT, Args...> fmt, Args&&... args) {
+    assert(formatted_size(fmt, forward<Args>(args)...) == expected_size);
+    assert(formatted_size(locale::classic(), fmt, forward<Args>(args)...) == expected_size);
 
     const auto signed_size = static_cast<ptrdiff_t>(expected_size);
     basic_string<charT> str;
     {
         str.resize(expected_size);
-        const auto res = format_to_n(str.begin(), signed_size, fmt, args...);
+        const auto res = format_to_n(str.begin(), signed_size, fmt, forward<Args>(args)...);
         assert(res.size == signed_size);
         assert(res.out - str.begin() == signed_size);
         assert(res.out == str.end());
@@ -1009,7 +1006,7 @@ void test_size_helper_impl(
 
         basic_string<charT> locale_str;
         locale_str.resize(expected_size);
-        format_to_n(locale_str.begin(), signed_size, locale::classic(), fmt, args...);
+        format_to_n(locale_str.begin(), signed_size, locale::classic(), fmt, forward<Args>(args)...);
         assert(str == locale_str);
         assert(locale_str.size() == expected_size);
     }
@@ -1017,7 +1014,7 @@ void test_size_helper_impl(
     {
         const auto half_size = expected_size / 2;
         half_str.resize(half_size);
-        const auto res = format_to_n(half_str.begin(), static_cast<ptrdiff_t>(half_size), fmt, args...);
+        const auto res = format_to_n(half_str.begin(), static_cast<ptrdiff_t>(half_size), fmt, forward<Args>(args)...);
         assert(res.size == signed_size);
         assert(static_cast<size_t>(res.out - half_str.begin()) == half_size);
         assert(res.out == half_str.end());
@@ -1298,8 +1295,7 @@ void libfmt_formatter_test_runtime_width() {
     assert(format(STR("{0:{1}}"), 42ull, 7) == STR("     42"));
     assert(format(STR("{0:{1}}"), -1.23, 8) == STR("   -1.23"));
     assert(format(STR("{0:{1}}"), -1.23l, 9) == STR("    -1.23"));
-    assert(format(STR("{0:{1}}"), reinterpret_cast<void*>(0xcafe), 10)
-           == STR("0xcafe    ")); // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:{1}}"), reinterpret_cast<void*>(0xcafe), 10) == STR("    0xcafe"));
     assert(format(STR("{0:{1}}"), 'x', 11) == STR("x          "));
     assert(format(STR("{0:{1}}"), STR("str"), 12) == STR("str         "));
 }
@@ -1373,10 +1369,10 @@ void test_sane_c_specifier() {
     throw_helper(STR("{:+}"), true);
     throw_helper(STR("{:+c}"), true);
     assert(format(STR("{:^}"), true) == STR("true"));
-    assert(format(STR("{:^c}"), true) == STR("\x1"));
+    throw_helper(STR("{:^c}"), true);
     throw_helper(STR("{:0}"), true);
     throw_helper(STR("{:0c}"), true);
-    assert(format(STR("{:c}"), true) == STR("\x1"));
+    throw_helper(STR("{:c}"), true);
 
     throw_helper(STR("{:#}"), 'c');
     throw_helper(STR("{:#c}"), 'c');
@@ -1387,6 +1383,13 @@ void test_sane_c_specifier() {
     throw_helper(STR("{:0}"), 'c');
     throw_helper(STR("{:0c}"), 'c');
     assert(format(STR("{:c}"), 'c') == STR("c"));
+}
+
+template <class charT, class T>
+void test_localized_char() {
+    // L should be accepted and ignored for "integral types" charT and char
+    assert(format(STR("{:L}"), T('c')) == STR("c"));
+    assert(format(STR("{:Lc}"), T('c')) == STR("c"));
 }
 
 void test() {
@@ -1461,6 +1464,10 @@ void test() {
 
     test_sane_c_specifier<char>();
     test_sane_c_specifier<wchar_t>();
+
+    test_localized_char<char, char>();
+    test_localized_char<wchar_t, char>();
+    test_localized_char<wchar_t, wchar_t>();
 }
 
 int main() {

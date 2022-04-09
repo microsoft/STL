@@ -696,9 +696,7 @@ int run_test()
     {
         optional<B> opt;
         ASSERT_NOT_NOEXCEPT(std::hash<optional<B>>()(opt));
-#ifndef __EDG__ // TRANSITION, DevCom-1633478 / VSO-1460046
         ASSERT_NOT_NOEXCEPT(std::hash<optional<const B>>()(opt));
-#endif // ^^^ no workaround ^^^
     }
 
     {
@@ -7384,6 +7382,47 @@ namespace msvc {
             (void) t;
         }
     } // namespace vso614907
+
+    namespace gh2458 {
+        // optional<const meow> o = std::move(lvalue_optional_const_meow);
+        // was moving from the contained const object
+        enum class action { none, copy, move };
+        action last = action::none;
+
+        struct Copyable {
+            Copyable() = default;
+            Copyable(const Copyable&) {
+                last = action::copy;
+            }
+            Copyable(Copyable&&) {
+                last = action::move;
+            }
+        };
+
+        struct ConstMovable {
+            ConstMovable() = default;
+            ConstMovable(const ConstMovable&) {
+                last = action::copy;
+            }
+            ConstMovable(const ConstMovable&&) {
+                last = action::move;
+            }
+        };
+
+        template <class T, action Result>
+        void testMove() {
+            std::optional<T> orig{std::in_place};
+            std::optional<T> moved = std::move(orig);
+            assert(last == Result);
+        }
+
+        void run_test() {
+            testMove<Copyable, action::move>();
+            testMove<const Copyable, action::copy>();
+            testMove<ConstMovable, action::move>();
+            testMove<const ConstMovable, action::move>();
+        }
+    } // namespace gh2458
 } // namespace msvc
 
 int main() {
@@ -7480,4 +7519,6 @@ int main() {
     msvc::vso406124::run_test();
     msvc::vso508126::run_test();
     msvc::vso614907::run_test();
+
+    msvc::gh2458::run_test();
 }
