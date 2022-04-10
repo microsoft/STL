@@ -310,6 +310,19 @@ public:
 
 
     // [expected.object.assign]
+    template <class _Uty>
+        requires is_nothrow_move_constructible_v<_Uty>
+    struct _GuardTy {
+        constexpr _GuardTy(_Uty* _Target_, _Uty* _Tmp_) noexcept : _Target(_Target_), _Tmp(_Tmp_) {}
+        constexpr ~_GuardTy() noexcept {
+            if (_Target) {
+                _STD construct_at(_Target, _STD move(*_Tmp));
+            }
+        }
+        _Uty* _Target;
+        _Uty* _Tmp;
+    };
+
     template <class _First, class _Second, class... _Args>
     static constexpr void _Reinit_expected(_First& _New_val, _Second& _Old_val, _Args&&... _Vals) noexcept(
         is_nothrow_constructible_v<_First, _Args...> || is_nothrow_move_constructible_v<_First>) // strengthened
@@ -322,15 +335,12 @@ public:
             _STD destroy_at(_STD addressof(_Old_val));
             _STD construct_at(_STD addressof(_New_val), _STD move(_Tmp));
         } else {
-            _STL_INTERNAL_STATIC_ASSERT(is_nothrow_move_constructible_v<_Second>);
             _Second _Tmp(_STD move(_Old_val));
-            _STD destroy_at(addressof(_Old_val));
-            try {
-                _STD construct_at(addressof(_New_val), _STD forward<_Args>(_Vals)...);
-            } catch (...) {
-                _STD construct_at(addressof(_Old_val), _STD move(_Tmp));
-                throw;
-            }
+            _STD destroy_at(_STD addressof(_Old_val));
+
+            _GuardTy<_Second> _Guard{_STD addressof(_Old_val), _STD addressof(_Tmp)};
+            _STD construct_at(_STD addressof(_New_val), _STD forward<_Args>(_Vals)...);
+            _Guard._Target = nullptr;
         }
     }
 
@@ -477,25 +487,23 @@ public:
             } else if constexpr (is_nothrow_move_constructible_v<_Err>) {
                 _Err _Tmp(_STD move(_Other._Unexpected));
                 _Other._Unexpected.~_Err();
-                try {
-                    _STD construct_at(_STD addressof(_Other._Value), _STD move(_Value));
-                    _Value.~_Ty();
-                    _STD construct_at(_STD addressof(_Unexpected), _STD move(_Tmp));
-                } catch (...) {
-                    _STD construct_at(_STD addressof(_Other._Unexpected), _STD move(_Tmp));
-                    throw;
-                }
+
+                _GuardTy<_Err> _Guard{_STD addressof(_Other._Unexpected), _STD addressof(_Tmp)};
+                _STD construct_at(_STD addressof(_Other._Value), _STD move(_Value));
+                _Guard._Target = nullptr;
+
+                _Value.~_Ty();
+                _STD construct_at(_STD addressof(_Unexpected), _STD move(_Tmp));
             } else {
                 _Ty _Tmp(_STD move(_Value));
                 _Value.~_Ty();
-                try {
-                    _STD construct_at(_STD addressof(_Unexpected), _STD move(_Other._Unexpected));
-                    _Other._Unexpected.~_Err();
-                    _STD construct_at(_STD addressof(_Other._Value), _STD move(_Tmp));
-                } catch (...) {
-                    _STD construct_at(_STD addressof(_Value), _STD move(_Tmp));
-                    throw;
-                }
+
+                _GuardTy<_Ty> _Guard{_STD addressof(_Value), _STD addressof(_Tmp)};
+                _STD construct_at(_STD addressof(_Unexpected), _STD move(_Other._Unexpected));
+                _Guard._Target = nullptr;
+
+                _Other._Unexpected.~_Err();
+                _STD construct_at(_STD addressof(_Other._Value), _STD move(_Tmp));
             }
 
             _Has_value        = false;
