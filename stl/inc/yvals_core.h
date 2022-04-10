@@ -302,6 +302,7 @@
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
+// P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2443R1 views::chunk_by
 
 // Parallel Algorithms Notes
@@ -1335,7 +1336,7 @@
 #define __cpp_lib_polymorphic_allocator   201902L
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#define __cpp_lib_ranges 202110L
+#define __cpp_lib_ranges 202202L
 #endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
@@ -1371,6 +1372,8 @@
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
+
+#define __cpp_lib_bind_back                         202202L
 #define __cpp_lib_byteswap                          202110L
 #define __cpp_lib_invoke_r                          202106L
 #define __cpp_lib_is_scoped_enum                    202011L
