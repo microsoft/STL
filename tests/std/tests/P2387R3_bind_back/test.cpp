@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <functional>
 #include <memory>
 #include <string>
@@ -126,10 +126,7 @@ constexpr bool test_constexpr() {
     return true;
 }
 
-int main() {
-    assert(test_constexpr());
-    static_assert(test_constexpr());
-
+void test_move_only_types() {
     // Test movable-only types.
     auto unique_lambda = [up1 = make_unique<int>(1200)](unique_ptr<int>&& up2) {
         if (up1 && up2) {
@@ -148,6 +145,13 @@ int main() {
     auto bound7 = move(bound6);
     assert(*move(bound6)() == -9000);
     assert(*move(bound7)() == 1234);
+}
+
+int main() {
+    assert(test_constexpr());
+    static_assert(test_constexpr());
+
+    test_move_only_types();
 
     // Also test GH-1292 "bind_front violates [func.require]p8" in which the return type of bind_front inadvertently
     // depends on the value category and/or cv-qualification of its arguments.
