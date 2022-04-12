@@ -435,6 +435,13 @@
 #define _NODISCARD_FRIEND _NODISCARD friend
 #endif // TRANSITION, VSO-568006
 
+#pragma push_macro("msvc")
+#pragma push_macro("known_semantics")
+#pragma push_macro("noop_dtor")
+#undef msvc
+#undef known_semantics
+#undef noop_dtor
+
 // Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
 // that certain type trait specializations have the standard-mandated semantics
 #ifndef __has_cpp_attribute
@@ -446,6 +453,12 @@
 #else
 #define _MSVC_KNOWN_SEMANTICS
 #endif
+
+#define _MSVC_NOOP_DTOR [[msvc::noop_dtor]]
+
+#pragma pop_macro("noop_dtor")
+#pragma pop_macro("known_semantics")
+#pragma pop_macro("msvc")
 
 // Controls whether the STL uses "conditional explicit" internally
 #ifndef _HAS_CONDITIONAL_EXPLICIT
