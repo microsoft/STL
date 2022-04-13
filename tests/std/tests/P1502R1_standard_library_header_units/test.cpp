@@ -330,6 +330,7 @@ int main() {
         static_assert(b(3) == 33);
     }
 
+#if defined(_MSVC_INTERNAL_TESTING) || defined(TEST_TOPO_SORT) // TRANSITION, VSO-1496084 fixed in 17.3 Preview 1
     {
         puts("Testing <future>.");
         promise<int> p{};
@@ -339,6 +340,7 @@ int main() {
         assert(f.wait_for(chrono::seconds{0}) == future_status::ready);
         assert(f.get() == 1729);
     }
+#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <initializer_list>.");
@@ -769,6 +771,7 @@ int main() {
         assert(caught_puppies);
     }
 
+#if defined(_MSVC_INTERNAL_TESTING) || defined(TEST_TOPO_SORT) // TRANSITION, VSO-1496084 fixed in 17.3 Preview 1
     {
         puts("Testing <stop_token>.");
         vector<int> vec;
@@ -804,6 +807,7 @@ int main() {
             80, 40, 20, 10, 5, 16, 8, 4, 2, 1, -1000};
         assert(equal(vec.begin(), vec.end(), begin(expected), end(expected)));
     }
+#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <streambuf>.");
