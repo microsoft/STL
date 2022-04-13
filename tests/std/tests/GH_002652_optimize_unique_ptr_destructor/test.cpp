@@ -58,7 +58,8 @@ int main() {
     std::unique_ptr<S<1>>{};
     assert(!S<1>::called);
 
-    S<0>::called = S<1>::called = false;
+    S<0>::called = false;
+    S<1>::called = false;
 
     std::unique_ptr<S<0>[]> {};
     assert(S<0>::called);
