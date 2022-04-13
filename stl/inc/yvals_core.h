@@ -601,8 +601,8 @@
 #error STL1000: Unexpected compiler version, expected Clang 13.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1931 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.31 or newer.
+#if _MSC_VER < 1932 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.32 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
