@@ -7,7 +7,7 @@ variables:
   tmpDir: 'D:\Temp'
   buildOutputLocation: 'D:\build'
 
-pool: 'StlBuild-2022-03-17-T1445'
+pool: 'StlBuild-2022-04-12-T1624'
 
 stages:
   - stage: Code_Format
