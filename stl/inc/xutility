@@ -453,14 +453,11 @@ struct incrementable_traits<_Ty> {
 };
 // clang-format on
 
-template <class _Ty>
-concept _Is_from_primary = _Same_impl<typename _Ty::_From_primary, _Ty>;
-
 template <class>
 struct iterator_traits;
 
 template <class _Ty>
-using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
+using iter_difference_t = typename conditional_t<_Is_library_defined<iterator_traits<remove_cvref_t<_Ty>>>,
     incrementable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::difference_type;
 
 template <class>
@@ -505,7 +502,7 @@ struct indirectly_readable_traits<_Ty> : _Cond_value_type<typename _Ty::value_ty
 // clang-format on
 
 template <class _Ty>
-using iter_value_t = typename conditional_t<_Is_from_primary<iterator_traits<remove_cvref_t<_Ty>>>,
+using iter_value_t = typename conditional_t<_Is_library_defined<iterator_traits<remove_cvref_t<_Ty>>>,
     indirectly_readable_traits<remove_cvref_t<_Ty>>, iterator_traits<remove_cvref_t<_Ty>>>::value_type;
 
 template <_Dereferenceable _Ty>
@@ -718,7 +715,7 @@ struct _Iterator_traits_base<_It> {
 
 template <class _Ty>
 struct iterator_traits : _Iterator_traits_base<_Ty> {
-    using _From_primary = iterator_traits;
+    using _Library_defined = iterator_traits;
 };
 
 template <class _Ty>
@@ -928,7 +925,7 @@ struct _Iter_concept_impl2 {
 template <>
 struct _Iter_concept_impl2<false> {
     template <class _It, class _Traits>
-        requires _Is_from_primary<iterator_traits<_It>>
+        requires _Is_library_defined<iterator_traits<_It>>
     using _Apply = random_access_iterator_tag;
 };
 
@@ -943,7 +940,7 @@ struct _Iter_concept_impl1<false> {
     using _Apply = typename _Iter_concept_impl2<_Has_member_iterator_category<_Traits>>::template _Apply<_It, _Traits>;
 };
 
-template <class _It, class _Traits = conditional_t<_Is_from_primary<iterator_traits<_It>>, _It, iterator_traits<_It>>>
+template <class _It, class _Traits = conditional_t<_Is_library_defined<iterator_traits<_It>>, _It, iterator_traits<_It>>>
 using _Iter_concept =
     typename _Iter_concept_impl1<_Has_member_iterator_concept<_Traits>>::template _Apply<_It, _Traits>;
 

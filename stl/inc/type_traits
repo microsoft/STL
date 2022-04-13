@@ -2327,6 +2327,12 @@ namespace _DEPRECATE_TR1_NAMESPACE tr1 {
 _STL_RESTORE_DEPRECATED_WARNING
 #endif // _HAS_TR1_NAMESPACE
 
+template <class _Ty, class = void>
+_INLINE_VAR constexpr bool _Is_library_defined = false;
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_library_defined<_Ty, void_t<typename _Ty::_Library_defined>> =
+    is_same_v<typename _Ty::_Library_defined, _Ty>;
+
 _STD_END
 
 #pragma pop_macro("new")

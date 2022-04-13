@@ -457,8 +457,8 @@ template <class _Alloc, class = void>
 struct _Is_default_allocator : false_type {};
 
 template <class _Ty>
-struct _Is_default_allocator<allocator<_Ty>, void_t<typename allocator<_Ty>::_From_primary>>
-    : is_same<typename allocator<_Ty>::_From_primary, allocator<_Ty>>::type {};
+struct _Is_default_allocator<allocator<_Ty>, void_t<typename allocator<_Ty>::_Library_defined>>
+    : is_same<typename allocator<_Ty>::_Library_defined, allocator<_Ty>>::type {};
 
 template <class _Void, class... _Types>
 struct _Has_no_allocator_construct : true_type {};
@@ -783,7 +783,7 @@ public:
     static_assert(!is_const_v<_Ty>, "The C++ Standard forbids containers of const elements "
                                     "because allocator<const T> is ill-formed.");
 
-    using _From_primary = allocator;
+    using _Library_defined = allocator;
 
     using value_type = _Ty;
 

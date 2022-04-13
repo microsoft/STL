@@ -271,7 +271,6 @@ pair<_InIt, _NoThrowFwdIt> uninitialized_move_n(_InIt _First, const _Diff _Count
 }
 #endif // _HAS_CXX17
 
-
 #ifdef __cpp_lib_concepts
 namespace ranges {
     template <class _In, class _Out>
@@ -873,7 +872,6 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 #endif // _HAS_CXX17
 
-
 #if _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
 template <class _OutIt, class _Ty>
 class _CXX17_DEPRECATE_RAW_STORAGE_ITERATOR raw_storage_iterator { // wrap stores to raw buffer as output iterator
@@ -923,7 +921,6 @@ private:
     _OutIt _Next;
 };
 #endif // _HAS_DEPRECATED_RAW_STORAGE_ITERATOR
-
 
 #if _HAS_AUTO_PTR_ETC
 template <class _Ty>
@@ -1033,7 +1030,6 @@ public:
     using element_type = void;
 };
 #endif // _HAS_AUTO_PTR_ETC
-
 
 class bad_weak_ptr : public exception { // exception type for invalid use of expired weak_ptr object
 public:
@@ -3128,9 +3124,10 @@ private:
     mutable weak_ptr<_Ty> _Wptr;
 };
 
-
 template <class _Ty>
 struct default_delete { // default deleter for unique_ptr
+    using _Library_defined = default_delete;
+
     constexpr default_delete() noexcept = default;
 
     template <class _Ty2, enable_if_t<is_convertible_v<_Ty2*, _Ty*>, int> = 0>
@@ -3144,6 +3141,8 @@ struct default_delete { // default deleter for unique_ptr
 
 template <class _Ty>
 struct default_delete<_Ty[]> { // default deleter for unique_ptr to array of unknown size
+    using _Library_defined = default_delete;
+
     constexpr default_delete() noexcept = default;
 
     template <class _Uty, enable_if_t<is_convertible_v<_Uty (*)[], _Ty (*)[]>, int> = 0>
@@ -3248,8 +3247,12 @@ public:
     }
 
     _CONSTEXPR23 ~unique_ptr() noexcept {
-        if (_Mypair._Myval2) {
+        if constexpr (is_pointer_v<pointer> && _Is_specialization_v<_Dx, default_delete> && _Is_library_defined<_Dx>) {
             _Mypair._Get_first()(_Mypair._Myval2);
+        } else {
+            if (_Mypair._Myval2) {
+                _Mypair._Get_first()(_Mypair._Myval2);
+            }
         }
     }
 
@@ -3384,8 +3387,12 @@ public:
     }
 
     _CONSTEXPR23 ~unique_ptr() noexcept {
-        if (_Mypair._Myval2) {
+        if constexpr (is_pointer_v<pointer> && _Is_specialization_v<_Dx, default_delete> && _Is_library_defined<_Dx>) {
             _Mypair._Get_first()(_Mypair._Myval2);
+        } else {
+            if (_Mypair._Myval2) {
+                _Mypair._Get_first()(_Mypair._Myval2);
+            }
         }
     }
 
@@ -3430,7 +3437,6 @@ private:
 
     _Compressed_pair<_Dx, pointer> _Mypair;
 };
-
 
 template <class _Ty, class... _Types, enable_if_t<!is_array_v<_Ty>, int> = 0>
 _NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique(_Types&&... _Args) { // make a unique_ptr
