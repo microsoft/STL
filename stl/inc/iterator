@@ -1390,7 +1390,7 @@ private:
 
 // clang-format off
 template <input_iterator _Iter>
-    requires (!_Is_from_primary<iterator_traits<_Iter>>)
+    requires (!_Is_library_defined<iterator_traits<_Iter>>)
 struct iterator_traits<counted_iterator<_Iter>> : iterator_traits<_Iter> {
     // clang-format on
     using pointer = conditional_t<contiguous_iterator<_Iter>, add_pointer_t<iter_reference_t<_Iter>>, void>;
