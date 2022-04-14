@@ -616,8 +616,8 @@ protected:
                 break; // not enough room, even without header
             }
 
-            if (*_Pstate == 0u) {
-                if constexpr ((_Mymode & generate_header) != 0) { // header to put
+            if constexpr ((_Mymode & generate_header) != 0) { // header to put
+                if (*_Pstate == 0u) {
                     if (_Last2 - _Mid2 < 3 + _Nput) {
                         break; // not enough room for header + output
                     }
