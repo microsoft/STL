@@ -17,6 +17,7 @@
 using namespace std;
 
 class pseudo_any {
+private:
     bool has_value_ = false;
 
 public:
@@ -45,7 +46,7 @@ static_assert(!get<1>(t2).has_value());
 static_assert(!get<0>(t3).has_value());
 static_assert(!get<1>(t3).has_value());
 static_assert(get<2>(t3).has_value());
-#endif
+#endif // _HAS_CXX20
 
 int main() {
     assert(!get<0>(t2).has_value());
