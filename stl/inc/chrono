@@ -3387,17 +3387,16 @@ namespace chrono {
             if constexpr (_Can_rep_sec) {
                 if (_Used & _F_sec) {
                     if (_Subsecond) {
-                        using _CastedType = duration<int64_t, typename _DurationType::period>;
                         const _SubsecondType _Sub{*_Subsecond};
-#pragma warning(push)
-#pragma warning(disable : 4127) // conditional expression is constant
-                        if (treat_as_floating_point_v<typename _DurationType::rep> //
-                            || _CHRONO duration_cast<_CastedType>(_Sub) == _Sub) {
-                            _Result += _CHRONO duration_cast<_DurationType>(_Sub);
-                        } else {
-                            return false;
+
+                        if constexpr (!treat_as_floating_point_v<typename _DurationType::rep>) {
+                            using _CastedType = duration<int64_t, typename _DurationType::period>;
+                            if (_CHRONO duration_cast<_CastedType>(_Sub) != _Sub) {
+                                return false;
+                            }
                         }
-#pragma warning(pop)
+
+                        _Result += _CHRONO duration_cast<_DurationType>(_Sub);
                     }
 
                     if (_Second) {
