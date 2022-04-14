@@ -255,7 +255,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
     if constexpr (_Digits <= 32) {
         return static_cast<int>(_CountLeadingZeros(_Val)) - (numeric_limits<unsigned long>::digits - _Digits);
     } else {
-        return static_cast<int>(_CountLeadingZeros64(_Val)) - (numeric_limits<unsigned long long>::digits - _Digits);
+        return static_cast<int>(_CountLeadingZeros64(_Val));
     }
 #endif // TRANSITION, GH-1586
 }
