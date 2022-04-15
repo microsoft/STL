@@ -41,7 +41,6 @@ class _Mpunct : public money_base { // common base class for moneypunct<_Elem, f
 public:
     friend _Tidy_guard<_Mpunct>;
 
-public:
     using char_type   = _Elem;
     using string_type = basic_string<_Elem, char_traits<_Elem>, allocator<_Elem>>;
 
