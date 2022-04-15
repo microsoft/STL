@@ -87,7 +87,8 @@ struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for marking allocati
 #endif // _DEBUG
 };
 
-class locale : public _Locbase<int>, public _Crt_new_delete { // nonmutable collection of facets that describe a locale
+class locale : public _Locbase<int>, public _Crt_new_delete {
+    // nonmutable collection of facets that describe a locale
 public:
     using category = int;
 
