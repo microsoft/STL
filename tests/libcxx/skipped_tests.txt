@@ -267,6 +267,7 @@ algorithms\alg.sorting\alg.sort\partial.sort\partial_sort.pass.cpp
 algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
 
 # DevCom-1559808: (structured bindings for `subrange` in a constant expression)
+# Skipped as this sometimes emits "fatal error C1001: Internal compiler error." with a crash dialog.
 ranges\range.utility\range.subrange\structured_bindings.pass.cpp
 
 # DevCom-1626139 "compile-time NaN comparison"

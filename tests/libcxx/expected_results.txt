@@ -267,7 +267,8 @@ std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
 
 # DevCom-1559808: (structured bindings for `subrange` in a constant expression)
-std/ranges/range.utility/range.subrange/structured_bindings.pass.cpp:0 FAIL
+# Skipped as this sometimes emits "fatal error C1001: Internal compiler error." with a crash dialog.
+std/ranges/range.utility/range.subrange/structured_bindings.pass.cpp:0 SKIPPED
 
 # DevCom-1626139 "compile-time NaN comparison"
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp:0 FAIL
