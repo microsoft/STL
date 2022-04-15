@@ -218,7 +218,7 @@ std/containers/unord/unord.set/max_size.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.apply/apply_large_arity.pass.cpp SKIPPED
 std/utilities/tuple/tuple.tuple/tuple.cnstr/recursion_depth.pass.cpp SKIPPED
 
-# Deprecation is a mess. We disable all deprecations in msvc_stdlib_force_include.hpp to allow libc++ tests for
+# Deprecation is a mess. We disable all deprecations in msvc_stdlib_force_include.h to allow libc++ tests for
 # deprecated features to pass, which breaks when libc++ deprecates the feature and adds two tests that (1) pass
 # with deprecation suppressed, and (2) fail without deprecation suppression. We should instead translate libc++
 # un-deprecation macros to STL un-deprecation macros in the force-include header, and just skip tests when we
