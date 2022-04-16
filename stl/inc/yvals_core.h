@@ -435,17 +435,41 @@
 #define _NODISCARD_FRIEND _NODISCARD friend
 #endif // TRANSITION, VSO-568006
 
-// Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
-// that certain type trait specializations have the standard-mandated semantics
+#pragma push_macro("msvc")
+#pragma push_macro("known_semantics")
+#pragma push_macro("noop_dtor")
+#undef msvc
+#undef known_semantics
+#undef noop_dtor
+
 #ifndef __has_cpp_attribute
-#define _MSVC_KNOWN_SEMANTICS
+#define _HAS_MSVC_ATTRIBUTE(x) 0
 #elif defined(__CUDACC__) // TRANSITION, CUDA - warning: attribute namespace "msvc" is unrecognized
-#define _MSVC_KNOWN_SEMANTICS
-#elif __has_cpp_attribute(msvc::known_semantics)
+#define _HAS_MSVC_ATTRIBUTE(x) 0
+#else
+#define _HAS_MSVC_ATTRIBUTE(x) __has_cpp_attribute(msvc::x)
+#endif
+
+// Should we use [[msvc::known_semantics]] to tell the compiler that certain
+// type trait specializations have the standard-mandated semantics?
+#if _HAS_MSVC_ATTRIBUTE(known_semantics)
 #define _MSVC_KNOWN_SEMANTICS [[msvc::known_semantics]]
 #else
 #define _MSVC_KNOWN_SEMANTICS
 #endif
+
+// Should we use [[msvc::noop_dtor]] to tell the compiler that some non-trivial
+// destructors have no effects?
+#if _HAS_MSVC_ATTRIBUTE(noop_dtor)
+#define _MSVC_NOOP_DTOR [[msvc::noop_dtor]]
+#else
+#define _MSVC_NOOP_DTOR
+#endif
+
+#undef _HAS_MSVC_ATTRIBUTE
+#pragma pop_macro("noop_dtor")
+#pragma pop_macro("known_semantics")
+#pragma pop_macro("msvc")
 
 // Controls whether the STL uses "conditional explicit" internally
 #ifndef _HAS_CONDITIONAL_EXPLICIT
