@@ -1138,13 +1138,13 @@ __PURE_APPDOMAIN_GLOBAL locale::id num_get<_Elem, _InIt>::id;
 
 template <class _Ty>
 int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fmtflags _Float_flags) {
+    // return the effective precision determined by N4910 [facet.num.put.virtuals]/2.1 and printf's rules
     const bool _Is_hex = _Float_flags == (ios_base::fixed | ios_base::scientific);
     if (_Is_hex) {
+        // return the number of hexits needed (after the radix point) to represent the floating-point value exactly
         if constexpr (is_same_v<_Ty, double>) {
-            // the number of hexits needed to represent (DBL_MANT_DIG - 1) bits after the radix point exactly
             return ((DBL_MANT_DIG - 1) + 3) / 4;
         } else if constexpr (is_same_v<_Ty, long double>) {
-            // the number of hexits needed to represent (LDBL_MANT_DIG - 1) bits after the radix point exactly
             return ((LDBL_MANT_DIG - 1) + 3) / 4;
         } else {
             static_assert(_Always_false<_Ty>, "Expected only double or long double here (not float).");

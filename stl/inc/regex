@@ -171,9 +171,9 @@ struct _Cl_names { // structure to associate class name with mask value
     template <class _Elem>
     _NODISCARD const _Elem* _Get() const noexcept {
         if constexpr (is_same_v<_Elem, char>) {
-            return _Narrow; // get narrow pointer
+            return _Narrow;
         } else {
-            return _Wide; // get wide pointer
+            return _Wide;
         }
     }
 };
