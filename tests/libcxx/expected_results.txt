@@ -283,9 +283,6 @@ std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
 # DevCom-1628714: C1XX refuses nullptr_t == reference-to-function in a requires expression
 std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
 
-# DevCom-1629961: ICE testing if function lvalues are comparable with the spaceship operator
-std/language.support/cmp/cmp.concept/three_way_comparable.compile.pass.cpp:0 FAIL
-
 # DevCom-1638496: C1XX doesn't properly reject int <=> unsigned
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:0 FAIL
 std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:0 FAIL
