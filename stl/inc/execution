@@ -66,9 +66,9 @@ void __stdcall __std_execution_wake_by_address_all(_In_ const volatile void* _Ad
 _END_EXTERN_C
 
 _STD_BEGIN
-constexpr size_t _Oversubscription_multiplier = 32;
-constexpr size_t _Oversubmission_multiplier   = 4;
-constexpr size_t _Still_active                = static_cast<size_t>(-1);
+inline constexpr size_t _Oversubscription_multiplier = 32;
+inline constexpr size_t _Oversubmission_multiplier   = 4;
+inline constexpr size_t _Still_active                = static_cast<size_t>(-1);
 
 namespace execution {
     class sequenced_policy {
