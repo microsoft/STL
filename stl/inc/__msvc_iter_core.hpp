@@ -432,24 +432,24 @@ concept sized_sentinel_for = sentinel_for<_Se, _It>
 
 namespace ranges {
     // clang-format off
-    enum class subrange_kind : bool { unsized, sized };
+    _EXPORT_STD enum class subrange_kind : bool { unsized, sized };
 
-    template <input_or_output_iterator _It, sentinel_for<_It> _Se = _It,
+    _EXPORT_STD template <input_or_output_iterator _It, sentinel_for<_It> _Se = _It,
         subrange_kind _Ki = sized_sentinel_for<_Se, _It> ? subrange_kind::sized : subrange_kind::unsized>
         requires (_Ki == subrange_kind::sized || !sized_sentinel_for<_Se, _It>)
     class subrange;
 
-    template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
+    _EXPORT_STD template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
         requires ((_Idx == 0 && copyable<_It>) || _Idx == 1)
     _NODISCARD constexpr auto get(const subrange<_It, _Se, _Ki>& _Val);
 
-    template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
+    _EXPORT_STD template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
         requires (_Idx < 2)
     _NODISCARD constexpr auto get(subrange<_It, _Se, _Ki>&& _Val);
     // clang-format on
 } // namespace ranges
 
-using ranges::get;
+_EXPORT_STD using ranges::get;
 
 template <class _It, class _Se, ranges::subrange_kind _Ki>
 struct tuple_size<ranges::subrange<_It, _Se, _Ki>> : integral_constant<size_t, 2> {};

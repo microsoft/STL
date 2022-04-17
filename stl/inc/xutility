@@ -1689,7 +1689,7 @@ namespace ranges {
     inline constexpr bool _Has_complete_elements<_Ty> = true;
     // clang-format on
 
-    template <class>
+    _EXPORT_STD template <class>
     inline constexpr bool enable_borrowed_range = false;
 
     template <class _Rng>
@@ -1758,10 +1758,10 @@ namespace ranges {
     } // namespace _Begin
 
     inline namespace _Cpos {
-        inline constexpr _Begin::_Cpo begin;
+        _EXPORT_STD inline constexpr _Begin::_Cpo begin;
     }
 
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     using iterator_t = decltype(_RANGES begin(_STD declval<_Ty&>()));
 
     namespace _End {
@@ -1834,16 +1834,16 @@ namespace ranges {
     } // namespace _End
 
     inline namespace _Cpos {
-        inline constexpr _End::_Cpo end;
+        _EXPORT_STD inline constexpr _End::_Cpo end;
     }
 
-    template <class _Rng>
-    concept range = requires(_Rng& __r) {
+    _EXPORT_STD template <class _Rng>
+    concept range = requires(_Rng & __r) {
         _RANGES begin(__r);
         _RANGES end(__r);
     };
 
-    template <range _Rng>
+    _EXPORT_STD template <range _Rng>
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
 
     template <class _Wrapped>
@@ -2033,19 +2033,19 @@ namespace ranges {
         inline constexpr _Unchecked_end::_Cpo _Uend;
     }
 
-    template <class _Rng>
+    _EXPORT_STD template <class _Rng>
     concept borrowed_range = range<_Rng> && _Should_range_access<_Rng>;
 
-    template <range _Rng>
+    _EXPORT_STD template <range _Rng>
     using range_difference_t = iter_difference_t<iterator_t<_Rng>>;
 
-    template <range _Rng>
+    _EXPORT_STD template <range _Rng>
     using range_value_t = iter_value_t<iterator_t<_Rng>>;
 
-    template <range _Rng>
+    _EXPORT_STD template <range _Rng>
     using range_reference_t = iter_reference_t<iterator_t<_Rng>>;
 
-    template <range _Rng>
+    _EXPORT_STD template <range _Rng>
     using range_rvalue_reference_t = iter_rvalue_reference_t<iterator_t<_Rng>>;
 
     struct _Cbegin_fn {
@@ -2060,7 +2060,7 @@ namespace ranges {
     };
 
     inline namespace _Cpos {
-        inline constexpr _Cbegin_fn cbegin;
+        _EXPORT_STD inline constexpr _Cbegin_fn cbegin;
     }
 
     struct _Cend_fn {
@@ -2075,7 +2075,7 @@ namespace ranges {
     };
 
     inline namespace _Cpos {
-        inline constexpr _Cend_fn cend;
+        _EXPORT_STD inline constexpr _Cend_fn cend;
     }
 
     namespace _Rbegin {
@@ -2143,7 +2143,7 @@ namespace ranges {
     } // namespace _Rbegin
 
     inline namespace _Cpos {
-        inline constexpr _Rbegin::_Cpo rbegin;
+        _EXPORT_STD inline constexpr _Rbegin::_Cpo rbegin;
     }
 
     namespace _Rend {
@@ -2212,7 +2212,7 @@ namespace ranges {
     } // namespace _Rend
 
     inline namespace _Cpos {
-        inline constexpr _Rend::_Cpo rend;
+        _EXPORT_STD inline constexpr _Rend::_Cpo rend;
     }
 
     struct _Crbegin_fn {
@@ -2227,7 +2227,7 @@ namespace ranges {
     };
 
     inline namespace _Cpos {
-        inline constexpr _Crbegin_fn crbegin;
+        _EXPORT_STD inline constexpr _Crbegin_fn crbegin;
     }
 
     struct _Crend_fn {
@@ -2242,10 +2242,10 @@ namespace ranges {
     };
 
     inline namespace _Cpos {
-        inline constexpr _Crend_fn crend;
+        _EXPORT_STD inline constexpr _Crend_fn crend;
     }
 
-    template <class>
+    _EXPORT_STD template <class>
     inline constexpr bool disable_sized_range = false;
 
     namespace _Size {
@@ -2326,7 +2326,7 @@ namespace ranges {
     } // namespace _Size
 
     inline namespace _Cpos {
-        inline constexpr _Size::_Cpo size;
+        _EXPORT_STD inline constexpr _Size::_Cpo size;
     }
 
     namespace _Empty {
@@ -2393,7 +2393,7 @@ namespace ranges {
     } // namespace _Empty
 
     inline namespace _Cpos {
-        inline constexpr _Empty::_Cpo empty;
+        _EXPORT_STD inline constexpr _Empty::_Cpo empty;
     }
 
     namespace _Data {
@@ -2449,7 +2449,7 @@ namespace ranges {
     } // namespace _Data
 
     inline namespace _Cpos {
-        inline constexpr _Data::_Cpo data;
+        _EXPORT_STD inline constexpr _Data::_Cpo data;
     }
 
     struct _Cdata_fn {
@@ -2464,18 +2464,18 @@ namespace ranges {
     };
 
     inline namespace _Cpos {
-        inline constexpr _Cdata_fn cdata;
+        _EXPORT_STD inline constexpr _Cdata_fn cdata;
     }
 
-    template <class _Rng>
-    concept sized_range = range<_Rng> && requires(_Rng& __r) {
+    _EXPORT_STD template <class _Rng>
+    concept sized_range = range<_Rng> && requires(_Rng & __r) {
         _RANGES size(__r);
     };
 
-    template <sized_range _Rng>
+    _EXPORT_STD template <sized_range _Rng>
     using range_size_t = decltype(_RANGES size(_STD declval<_Rng&>()));
 
-    struct view_base {};
+    _EXPORT_STD struct view_base {};
 
     template <template <class...> class _Template, class... _Args>
     void _Derived_from_specialization_impl(const _Template<_Args...>&);
@@ -2485,34 +2485,34 @@ namespace ranges {
         _RANGES _Derived_from_specialization_impl<_Template>(_Obj); // qualified: avoid ADL, handle incompletable types
     };
 
-    template <class _Derived>
+    _EXPORT_STD template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
     class view_interface;
 
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     inline constexpr bool enable_view =
         derived_from<_Ty, view_base> || _Derived_from_specialization_of<_Ty, view_interface>;
 
-    template <class _Ty>
+    _EXPORT_STD template <class _Ty>
     concept view = range<_Ty> && movable<_Ty> && enable_view<_Ty>;
 
-    template <class _Rng, class _Ty>
+    _EXPORT_STD template <class _Rng, class _Ty>
     concept output_range = range<_Rng> && output_iterator<iterator_t<_Rng>, _Ty>;
 
-    template <class _Rng>
+    _EXPORT_STD template <class _Rng>
     concept input_range = range<_Rng> && input_iterator<iterator_t<_Rng>>;
 
-    template <class _Rng>
+    _EXPORT_STD template <class _Rng>
     concept forward_range = range<_Rng> && forward_iterator<iterator_t<_Rng>>;
 
-    template <class _Rng>
+    _EXPORT_STD template <class _Rng>
     concept bidirectional_range = range<_Rng> && bidirectional_iterator<iterator_t<_Rng>>;
 
-    template <class _Rng>
+    _EXPORT_STD template <class _Rng>
     concept random_access_range = range<_Rng> && random_access_iterator<iterator_t<_Rng>>;
 
-    template <class _Rng>
-    concept contiguous_range = range<_Rng> && contiguous_iterator<iterator_t<_Rng>> && requires(_Rng& __r) {
+    _EXPORT_STD template <class _Rng>
+    concept contiguous_range = range<_Rng> && contiguous_iterator<iterator_t<_Rng>> && requires(_Rng & __r) {
         { _RANGES data(__r) } -> same_as<add_pointer_t<range_reference_t<_Rng>>>;
     };
 
@@ -2698,7 +2698,7 @@ namespace ranges {
     };
 
     inline namespace _Cpos {
-        inline constexpr _Ssize_fn ssize;
+        _EXPORT_STD inline constexpr _Ssize_fn ssize;
     }
 
     class _Next_fn : private _Not_quite_object {
@@ -2810,7 +2810,7 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    template <class _Rng>
+    _EXPORT_STD template <class _Rng>
     concept common_range = range<_Rng> && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
 
     template <class _It, class _Se>
@@ -2824,7 +2824,7 @@ namespace ranges {
     };
 
     // clang-format off
-    template <class _Derived>
+    _EXPORT_STD template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
     class view_interface {
     private:
@@ -3097,7 +3097,7 @@ namespace ranges {
     };
 
     // clang-format off
-    template <input_or_output_iterator _It, sentinel_for<_It> _Se, subrange_kind _Ki>
+    _EXPORT_STD template <input_or_output_iterator _It, sentinel_for<_It> _Se, subrange_kind _Ki>
         requires (_Ki == subrange_kind::sized || !sized_sentinel_for<_Se, _It>)
     class subrange : public _Subrange_base<_It, _Se, _Ki> {
         // clang-format on
@@ -3271,7 +3271,7 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<subrange<_It, _Se, _Ki>> = true;
 
     // clang-format off
-    template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
+    _EXPORT_STD template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
         requires ((_Idx == 0 && copyable<_It>) || _Idx == 1)
     _NODISCARD constexpr auto get(const subrange<_It, _Se, _Ki>& _Val) {
         if constexpr (_Idx == 0) {
@@ -3281,7 +3281,7 @@ namespace ranges {
         }
     }
 
-    template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
+    _EXPORT_STD template <size_t _Idx, class _It, class _Se, subrange_kind _Ki>
         requires (_Idx < 2)
     _NODISCARD constexpr auto get(subrange<_It, _Se, _Ki>&& _Val) {
         if constexpr (_Idx == 0) {
@@ -3292,16 +3292,16 @@ namespace ranges {
     }
     // clang-format on
 
-    struct dangling {
+    _EXPORT_STD struct dangling {
         constexpr dangling() noexcept = default;
         template <class... _Args>
         constexpr dangling(_Args&&...) noexcept {}
     };
 
-    template <range _Rng>
+    _EXPORT_STD template <range _Rng>
     using borrowed_iterator_t = conditional_t<borrowed_range<_Rng>, iterator_t<_Rng>, dangling>;
 
-    template <range _Rng>
+    _EXPORT_STD template <range _Rng>
     using borrowed_subrange_t = conditional_t<borrowed_range<_Rng>, subrange<iterator_t<_Rng>>, dangling>;
 } // namespace ranges
 #endif // __cpp_lib_concepts

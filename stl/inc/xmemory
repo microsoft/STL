@@ -2326,10 +2326,8 @@ constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& 
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
-struct from_range_t {
-    explicit from_range_t() = default;
-};
-inline constexpr from_range_t from_range;
+_EXPORT_STD struct from_range_t { explicit from_range_t() = default; };
+_EXPORT_STD inline constexpr from_range_t from_range;
 
 template <class _Rng, class _Elem>
 concept _Container_compatible_range =
