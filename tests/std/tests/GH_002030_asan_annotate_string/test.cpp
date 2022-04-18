@@ -1793,9 +1793,9 @@ void run_tests() {
     test_removal<Alloc>();
     test_misc<Alloc>();
     test_sstream<Alloc>();
-#if !defined(__clang__) && !defined(_M_) // TRANSITION, LLVM-54804
+#if !defined(__clang__) && !defined(_M_IX86) // TRANSITION, LLVM-54804
     test_exceptions<Alloc>();
-#endif // !defined(__clang__) && !defined(_M_)
+#endif // !defined(__clang__) && !defined(_M_IX86)
 }
 
 template <class CharType, template <class, class, class> class Alloc>
