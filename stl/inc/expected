@@ -28,14 +28,14 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 // [expected.un.object]
-// clang-format off
-template <copy_constructible _Err> // TRANSITION, LWG-3688
-    requires (is_object_v<_Err> && !is_array_v<_Err> && !is_volatile_v<_Err> && !is_const_v<_Err>)
+template <class _Err>
 class unexpected {
-    // clang-format on
+    static_assert(is_object_v<_Err>, "E must be an object type");
+    static_assert(!is_array_v<_Err>, "E must not be an array type");
+    static_assert(!is_volatile_v<_Err> && !is_const_v<_Err>, "E must not be cv-qualified");
     static_assert(!_Is_specialization_v<_Err, unexpected>, "E must not be a specialization of unexpected");
 
-    template <class _Ty, copy_constructible _Err2> // TRANSITION, LWG-3688
+    template <class _Ty, class _Err2>
     friend class expected;
 
 public:
@@ -54,16 +54,16 @@ public:
         : _Unexpected(_Ilist, _STD forward<_Args>(_Vals)...) {}
 
     template <class _UError = _Err>
-        requires (!is_same_v<remove_cvref_t<_UError>, unexpected> && !is_same_v<remove_cvref_t<_UError>, in_place_t> //
+        requires (!is_same_v<remove_cvref_t<_UError>, unexpected> && !is_same_v<remove_cvref_t<_UError>, in_place_t>
                  && is_constructible_v<_Err, _UError>)
     constexpr explicit unexpected(_UError&& _Unex) noexcept(is_nothrow_constructible_v<_Err, _UError>) // strengthened
         : _Unexpected(_STD forward<_UError>(_Unex)) {}
     // clang-format on
 
-    // [expected.un.observe]
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
-    _NODISCARD constexpr decltype(auto) error(this unexpected&& _Self) noexcept {
-        return _STD forward<unexpected>(_Self)._Unexpected;
+    // [expected.un.obs]
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549, P0847R7
+    _NODISCARD constexpr decltype(auto) error(this auto&& _Self) noexcept {
+        return (_STD forward<decltype(_Self)>(_Self)._Unexpected);
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Err& error() const& noexcept {
@@ -81,17 +81,18 @@ public:
 #endif // !__cpp_explicit_this_parameter
 
     // [expected.un.swap]
-    constexpr void swap(unexpected& _Other) noexcept(is_nothrow_swappable_v<_Err>) requires is_swappable_v<_Err> {
+    constexpr void swap(unexpected& _Other) noexcept(is_nothrow_swappable_v<_Err>) {
+        static_assert(is_swappable_v<_Err>, "E must be swappable");
         _Swap_adl(_Unexpected, _Other._Unexpected);
     }
 
-    friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(
-        is_nothrow_swappable_v<_Err>) requires is_swappable_v<_Err> {
+    friend constexpr void swap(unexpected& _Left, unexpected& _Right) noexcept(is_nothrow_swappable_v<_Err>) {
+        static_assert(is_swappable_v<_Err>, "E must be swappable");
         _Left.swap(_Right);
     }
 
     // [expected.un.eq]
-    template <_Weakly_equality_comparable_with<_Err> _UErr>
+    template <class _UErr>
     _NODISCARD_FRIEND constexpr bool operator==(const unexpected& _Left, const unexpected<_UErr>& _Right) noexcept( //
         noexcept(_Implicitly_convert_to<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
         return _Left._Unexpected == _Right.error();
@@ -100,6 +101,9 @@ public:
 private:
     _Err _Unexpected;
 };
+
+template <class _Err>
+unexpected(_Err) -> unexpected<_Err>;
 
 template <class _Err>
 class bad_expected_access;
@@ -111,8 +115,14 @@ public:
         return "Bad expected access";
     }
 
-#if !_HAS_EXCEPTIONS
 protected:
+    bad_expected_access()                           = default;
+    bad_expected_access(const bad_expected_access&) = default;
+    bad_expected_access(bad_expected_access&&)      = default;
+    bad_expected_access& operator=(const bad_expected_access&) = default;
+    bad_expected_access& operator=(bad_expected_access&&) = default;
+
+#if !_HAS_EXCEPTIONS
     void _Doraise() const override { // perform class-specific exception handling
         _RAISE(*this);
     }
@@ -122,24 +132,24 @@ protected:
 template <class _Err>
 class bad_expected_access : public bad_expected_access<void> {
 public:
-    __CLR_OR_THIS_CALL explicit bad_expected_access(_Err _Unex) noexcept(is_nothrow_move_constructible_v<_Err>)
+    explicit bad_expected_access(_Err _Unex) noexcept(is_nothrow_move_constructible_v<_Err>) // strengthened
         : _Unexpected(_STD move(_Unex)) {}
 
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
-    _NODISCARD constexpr decltype(auto) error(this unexpected&& _Self) noexcept {
-        return _STD forward<unexpected>(_Self)._Unexpected;
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549, P0847R7
+    _NODISCARD decltype(auto) error(this auto&& _Self) noexcept {
+        return (_STD forward<decltype(_Self)>(_Self)._Unexpected);
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
-    _NODISCARD constexpr const _Err& error() const& noexcept {
+    _NODISCARD const _Err& error() const& noexcept {
         return _Unexpected;
     }
-    _NODISCARD constexpr _Err& error() & noexcept {
+    _NODISCARD _Err& error() & noexcept {
         return _Unexpected;
     }
-    _NODISCARD constexpr const _Err&& error() const&& noexcept {
+    _NODISCARD const _Err&& error() const&& noexcept {
         return _STD move(_Unexpected);
     }
-    _NODISCARD constexpr _Err&& error() && noexcept {
+    _NODISCARD _Err&& error() && noexcept {
         return _STD move(_Unexpected);
     }
 #endif // !__cpp_explicit_this_parameter
@@ -154,9 +164,9 @@ struct unexpect_t {
 
 inline constexpr unexpect_t unexpect{};
 
-template <class _Ty, copy_constructible _Err> // TRANSITION, LWG-3688
+template <class _Ty, class _Err>
 class expected {
-    template <class _UTy, copy_constructible _UErr> // TRANSITION, LWG-3688
+    template <class _UTy, class _UErr>
     friend class expected;
 
 public:
@@ -168,12 +178,14 @@ public:
     using rebind = expected<_Uty, error_type>;
 
     // [expected.object.ctor]
-    // clang-format off
-    constexpr expected() requires is_default_constructible_v<_Ty> : _Has_value(true), _Value() {}
+    constexpr expected() noexcept(is_nothrow_default_constructible_v<_Ty>) // strengthened
+        requires is_default_constructible_v<_Ty> //
+        : _Value(), _Has_value(true) {}
 
+    // clang-format off
     constexpr expected(const expected& _Other) noexcept(
-        is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_constructible_v<_Err>) //
-        requires (!is_trivially_copy_constructible_v<_Ty> && !is_trivially_copy_constructible_v<_Err> //
+        is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_constructible_v<_Err>) // strengthened
+        requires (!is_trivially_copy_constructible_v<_Ty> && !is_trivially_copy_constructible_v<_Err>
                  && is_copy_constructible_v<_Ty> && is_copy_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
         // clang-format on
@@ -189,8 +201,8 @@ public:
         is_trivially_copy_constructible_v<_Ty> && is_trivially_copy_constructible_v<_Err> = default;
 
     constexpr expected(expected&& _Other) noexcept(
-        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_constructible_v<_Err>) //
-        requires (!is_trivially_move_constructible_v<_Ty> && !is_trivially_move_constructible_v<_Err> //
+        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_constructible_v<_Err>) // strengthened
+        requires (!is_trivially_move_constructible_v<_Ty> && !is_trivially_move_constructible_v<_Err>
                  && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
         // clang-format on
@@ -225,7 +237,7 @@ public:
             && _Is_not_convertible<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<const _Uty&, _Ty> || !is_convertible_v<const _UErr&, _Err>)
         expected(const expected<_Uty, _UErr>& _Other) noexcept(is_nothrow_constructible_v<_Ty, const _Uty&>&&
-                is_nothrow_constructible_v<_Err, const _UErr&>) /* strengthened */
+                is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
         : _Has_value(_Other._Has_value) {
         if (_Has_value) {
             _STD construct_at(_STD addressof(_Value), _Other._Value);
@@ -238,7 +250,7 @@ public:
         requires is_constructible_v<_Ty, _Uty> && is_constructible_v<_Err, _UErr> && _Is_not_convertible<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<_Uty, _Ty> || !is_convertible_v<_UErr, _Err>)
         expected(expected<_Uty, _UErr>&& _Other) noexcept(
-            is_nothrow_constructible_v<_Ty, _Uty>&& is_nothrow_constructible_v<_Err, _UErr>) /* strengthened */
+            is_nothrow_constructible_v<_Ty, _Uty>&& is_nothrow_constructible_v<_Err, _UErr>) // strengthened
         : _Has_value(_Other._Has_value) {
         if (_Has_value) {
             _STD construct_at(_STD addressof(_Value), _STD forward<_Uty>(_Other._Value));
@@ -252,47 +264,47 @@ public:
         requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected> //
                  && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected> && is_constructible_v<_Ty, _Uty>)
     constexpr explicit(!is_convertible_v<_Uty, _Ty>)
-        expected(_Uty&& _Other) noexcept(is_nothrow_constructible_v<_Ty, _Uty>) /* strengthened */
-        : _Has_value(true), _Value(_STD forward<_Uty>(_Other)) {}
+        expected(_Uty&& _Other) noexcept(is_nothrow_constructible_v<_Ty, _Uty>) // strengthened
+        : _Value(_STD forward<_Uty>(_Other)), _Has_value(true) {}
     // clang-format on
 
     template <class _UErr>
         requires is_constructible_v<_Err, const _UErr&>
     constexpr expected(const unexpected<_UErr>& _Other) noexcept(
-        is_nothrow_constructible_v<_Err, const _UErr&>) /* strengthened */
-        : _Has_value(false), _Unexpected(_Other._Unexpected) {}
+        is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
+        : _Unexpected(_Other._Unexpected), _Has_value(false) {}
 
     template <class _UErr>
         requires is_constructible_v<_Err, _UErr>
-    constexpr expected(unexpected<_UErr>&& _Other) noexcept(is_nothrow_constructible_v<_Err, _UErr>) /* strengthened */
-        : _Has_value(false), _Unexpected(_STD forward<_UErr>(_Other._Unexpected)) {}
+    constexpr expected(unexpected<_UErr>&& _Other) noexcept(is_nothrow_constructible_v<_Err, _UErr>) // strengthened
+        : _Unexpected(_STD forward<_UErr>(_Other._Unexpected)), _Has_value(false) {}
 
     template <class... _Args>
         requires is_constructible_v<_Ty, _Args...>
     constexpr explicit expected(in_place_t, _Args&&... _Vals) noexcept(
-        is_nothrow_constructible_v<_Ty, _Args...>) /* strengthened */
-        : _Has_value(true), _Value(_STD forward<_Args>(_Vals)...) {}
+        is_nothrow_constructible_v<_Ty, _Args...>) // strengthened
+        : _Value(_STD forward<_Args>(_Vals)...), _Has_value(true) {}
 
     // clang-format off
     template <class _Uty, class... _Args>
         requires is_constructible_v<_Ty, initializer_list<_Uty>&,_Args... >
     constexpr explicit expected(in_place_t, initializer_list<_Uty> _Ilist, _Args&&... _Vals) noexcept(
-        is_nothrow_constructible_v<_Ty, initializer_list<_Uty>&, _Args...>) /* strengthened */
-        : _Has_value(true), _Value(_Ilist, _STD forward<_Args>(_Vals)...) {}
+        is_nothrow_constructible_v<_Ty, initializer_list<_Uty>&, _Args...>) // strengthened
+        : _Value(_Ilist, _STD forward<_Args>(_Vals)...), _Has_value(true) {}
     // clang-format on
 
     template <class... _Args>
         requires is_constructible_v<_Err, _Args...>
     constexpr explicit expected(unexpect_t, _Args&&... _Vals) noexcept(
-        is_nothrow_constructible_v<_Err, _Args...>) /* strengthened */
-        : _Has_value(false), _Unexpected(_STD forward<_Args>(_Vals)...) {}
+        is_nothrow_constructible_v<_Err, _Args...>) // strengthened
+        : _Unexpected(_STD forward<_Args>(_Vals)...), _Has_value(false) {}
 
     // clang-format off
     template <class _Uty, class... _Args>
         requires is_constructible_v<_Err, initializer_list<_Uty>&, _Args... >
     constexpr explicit expected(unexpect_t, initializer_list<_Uty> _Ilist, _Args&&... _Vals) noexcept(
-        is_nothrow_constructible_v<_Err, initializer_list<_Uty>&, _Args...>) /* strengthened */
-        : _Has_value(false), _Unexpected(_Ilist, _STD forward<_Args>(_Vals)...) {}
+        is_nothrow_constructible_v<_Err, initializer_list<_Uty>&, _Args...>) // strengthened
+        : _Unexpected(_Ilist, _STD forward<_Args>(_Vals)...), _Has_value(false) {}
     // clang-format on
 
     // [expected.object.dtor]
@@ -523,7 +535,7 @@ public:
         _Lhs.swap(_Rhs);
     }
 
-    // [expected.object.observe]
+    // [expected.object.obs]
     _NODISCARD constexpr const _Ty* operator->() const noexcept {
         return _STD addressof(_Value);
     }
@@ -531,9 +543,9 @@ public:
         return _STD addressof(_Value);
     }
 
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
-    _NODISCARD constexpr decltype(auto) operator*(this expected&& _Self) {
-        return _STD forward<expected>(_Self)._Value;
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
+    _NODISCARD constexpr decltype(auto) operator*(this auto&& _Self) noexcept {
+        return (_STD forward<decltype(_Self)>(_Self)._Value);
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Ty& operator*() const& noexcept {
@@ -557,43 +569,48 @@ public:
         return _Has_value;
     }
 
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
-    _NODISCARD constexpr decltype(auto) value(this expected&& _Self) {
-        if (_Has_value) {
-            return _STD forward<expected>(_Self)._Value;
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
+    _NODISCARD constexpr decltype(auto) value(this auto&& _Self) {
+        if (_Self._Has_value) {
+            return (_STD forward<decltype(_Self)>(_Self)._Value);
         }
-        _Throw_bad_expected_access();
+
+        _STD forward<decltype(_Self)>(_Self)._Throw_bad_expected_access();
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Ty& value() const& {
         if (_Has_value) {
             return _Value;
         }
+
         _Throw_bad_expected_access();
     }
     _NODISCARD constexpr _Ty& value() & {
         if (_Has_value) {
             return _Value;
         }
+
         _Throw_bad_expected_access();
     }
     _NODISCARD constexpr const _Ty&& value() const&& {
         if (_Has_value) {
             return _STD move(_Value);
         }
+
         _Throw_bad_expected_access();
     }
     _NODISCARD constexpr _Ty&& value() && {
         if (_Has_value) {
             return _STD move(_Value);
         }
+
         _Throw_bad_expected_access();
     }
 #endif // !__cpp_explicit_this_parameter
 
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
-    _NODISCARD constexpr decltype(auto) error(this expected&& _Self) noexcept { // strengthened
-        return _STD forward<expected>(_Self)._Unexpected;
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
+    _NODISCARD constexpr decltype(auto) error(this auto&& _Self) noexcept { // strengthened
+        return (_STD forward<decltype(_Self)>(_Self)._Unexpected);
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Err& error() const& noexcept { // strengthened
@@ -632,7 +649,7 @@ public:
     }
 
     // [expected.object.eq]
-    template <_Weakly_equality_comparable_with<_Ty> _Uty, _Weakly_equality_comparable_with<_Err> _UErr>
+    template <class _Uty, class _UErr>
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
         noexcept(_Implicitly_convert_to<bool>(_Left._Value == *_Right)) && noexcept(
             _Implicitly_convert_to<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
@@ -645,12 +662,9 @@ public:
         }
     }
 
-    // clang-format off
     template <class _Uty>
-        requires (!same_as<_Uty, expected> && _Weakly_equality_comparable_with<_Ty, _Uty>)
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const _Uty& _Right) noexcept(
         noexcept(_Implicitly_convert_to<bool>(_Left._Value == _Right))) { // strengthened
-        // clang-format on
         if (!_Left._Has_value) {
             return false;
         } else {
@@ -658,7 +672,7 @@ public:
         }
     }
 
-    template <_Weakly_equality_comparable_with<_Err> _UErr>
+    template <class _UErr>
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
         noexcept(_Implicitly_convert_to<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
         if (_Left._Has_value) {
@@ -669,9 +683,9 @@ public:
     }
 
 private:
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
-    [[noreturn]] inline void _Throw_bad_expected_access(this expected&& _Self) {
-        _THROW(bad_expected_access{_STD forward<expected>(_Self)._Unexpected});
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
+    [[noreturn]] inline void _Throw_bad_expected_access(this auto&& _Self) {
+        _THROW(bad_expected_access{(_STD forward<decltype(_Self)>(_Self)._Unexpected)});
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     [[noreturn]] inline void _Throw_bad_expected_access() const& {
@@ -688,14 +702,14 @@ private:
     }
 #endif // !__cpp_explicit_this_parameter
 
-    bool _Has_value;
     union {
         _Ty _Value;
         _Err _Unexpected;
     };
+    bool _Has_value;
 };
 
-template <class _Ty, copy_constructible _Err> // TRANSITION, LWG-3688
+template <class _Ty, class _Err>
     requires is_void_v<_Ty>
 class expected<_Ty, _Err> {
 public:
@@ -710,7 +724,7 @@ public:
     constexpr expected() noexcept : _Has_value(true) {}
 
     // clang-format off
-    constexpr expected(const expected& _Other) noexcept(is_nothrow_copy_constructible_v<_Err>) /* strengthened */
+    constexpr expected(const expected& _Other) noexcept(is_nothrow_copy_constructible_v<_Err>) // strengthened
         requires (!is_trivially_copy_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
         if (!_Has_value) {
@@ -720,7 +734,7 @@ public:
 
     expected(const expected& ) requires is_trivially_copy_constructible_v<_Err> = default;
 
-    constexpr expected(expected&& _Other) noexcept(is_nothrow_move_constructible_v<_Err>) /* strengthened */
+    constexpr expected(expected&& _Other) noexcept(is_nothrow_move_constructible_v<_Err>) // strengthened
         requires (!is_trivially_move_constructible_v<_Err> && is_move_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
         if (!_Has_value) {
@@ -740,7 +754,7 @@ public:
     template <class _Uty, class _UErr>
         requires is_void_v<_Uty> && is_constructible_v<_Err, const _UErr&> && _Is_not_convertible<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<const _UErr&, _Err>) expected(const expected<_Uty, _UErr>& _Other) noexcept(
-        is_nothrow_constructible_v<_Err, const _UErr&>) /* strengthened */
+        is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
         : _Has_value(_Other._Has_value) {
         if (!_Has_value) {
             _Unexpected = _Other._Unexpected;
@@ -750,7 +764,7 @@ public:
     template <class _Uty, class _UErr>
         requires is_void_v<_Uty> && is_constructible_v<_Err, _UErr> && _Is_not_convertible<_Uty, _UErr>
     constexpr explicit(!is_convertible_v<_UErr, _Err>)
-        expected(expected<_Uty, _UErr>&& _Other) noexcept(is_nothrow_constructible_v<_Err, _UErr>) /* strengthened */
+        expected(expected<_Uty, _UErr>&& _Other) noexcept(is_nothrow_constructible_v<_Err, _UErr>) // strengthened
         : _Has_value(_Other._Has_value) {
         if (!_Has_value) {
             _Unexpected = _STD forward<_UErr>(_Other._Unexpected);
@@ -760,27 +774,27 @@ public:
     template <class _UErr>
         requires is_constructible_v<_Err, const _UErr&>
     constexpr expected(const unexpected<_UErr>& _Other) noexcept(
-        is_nothrow_constructible_v<_Err, const _UErr&>) /* strengthened */
-        : _Has_value(false), _Unexpected(_Other._Unexpected) {}
+        is_nothrow_constructible_v<_Err, const _UErr&>) // strengthened
+        : _Unexpected(_Other._Unexpected), _Has_value(false) {}
 
     template <class _UErr>
         requires is_constructible_v<_Err, _UErr>
-    constexpr expected(unexpected<_UErr>&& _Other) noexcept(is_nothrow_constructible_v<_Err, _UErr>) /* strengthened */
-        : _Has_value(false), _Unexpected(_STD forward<_UErr>(_Other._Unexpected)) {}
+    constexpr expected(unexpected<_UErr>&& _Other) noexcept(is_nothrow_constructible_v<_Err, _UErr>) // strengthened
+        : _Unexpected(_STD forward<_UErr>(_Other._Unexpected)), _Has_value(false) {}
 
     constexpr explicit expected(in_place_t) noexcept : _Has_value(true) {}
 
     template <class... _Args>
         requires is_constructible_v<_Err, _Args...>
     constexpr explicit expected(unexpect_t, _Args&&... _Vals) noexcept(
-        is_nothrow_constructible_v<_Err, _Args...>) /* strengthened */
-        : _Has_value(false), _Unexpected(_STD forward<_Args>(_Vals)...) {}
+        is_nothrow_constructible_v<_Err, _Args...>) // strengthened
+        : _Unexpected(_STD forward<_Args>(_Vals)...), _Has_value(false) {}
 
     template <class _Uty, class... _Args>
         requires is_constructible_v<_Err, _Args...>
     constexpr explicit expected(unexpect_t, initializer_list<_Uty> _Ilist, _Args&&... _Vals) noexcept(
-        is_nothrow_constructible_v<_Err, _Args...>) /* strengthened */
-        : _Has_value(false), _Unexpected(_Ilist, _STD forward<_Args>(_Vals)...) {}
+        is_nothrow_constructible_v<_Err, _Args...>) // strengthened
+        : _Unexpected(_Ilist, _STD forward<_Args>(_Vals)...), _Has_value(false) {}
 
 
     // [expected.void.dtor]
@@ -907,7 +921,7 @@ public:
         }
     }
 
-    // [expected.void.observe]
+    // [expected.void.obs]
     constexpr explicit operator bool() const noexcept {
         return _Has_value;
     }
@@ -916,10 +930,10 @@ public:
     }
 
     constexpr void operator*() const noexcept {}
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
-    _NODISCARD constexpr void value(this expected&& _Self) {
-        if (!_Has_value) {
-            _Throw_bad_expected_access();
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
+    _NODISCARD constexpr void value(this auto&& _Self) {
+        if (!_Self._Has_value) {
+            _STD forward<decltype(_Self)>(_Self)._Throw_bad_expected_access();
         }
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
@@ -945,9 +959,9 @@ public:
     }
 #endif // !__cpp_explicit_this_parameter
 
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
-    _NODISCARD constexpr decltype(auto) error(this expected&& _Self) noexcept { // strengthened
-        return _STD forward<expected>(_Self)._Unexpected;
+#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
+    _NODISCARD constexpr decltype(auto) error(this auto&& _Self) noexcept { // strengthened
+        return (_STD forward<decltype(_Self)>(_Self)._Unexpected);
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Err& error() const& noexcept { // strengthened
@@ -965,7 +979,7 @@ public:
 #endif // !__cpp_explicit_this_parameter
 
     // [expected.void.eq]
-    template <class _Uty, _Weakly_equality_comparable_with<_Err> _UErr>
+    template <class _Uty, class _UErr>
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
         noexcept(_Implicitly_convert_to<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
         if (_Left._Has_value != _Right.has_value()) {
@@ -975,7 +989,7 @@ public:
         }
     }
 
-    template <_Weakly_equality_comparable_with<_Err> _UErr>
+    template <class _UErr>
     _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const unexpected<_UErr>& _Right) noexcept(
         noexcept(_Implicitly_convert_to<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
         if (_Left._Has_value) {
@@ -987,8 +1001,8 @@ public:
 
 private:
 #ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
-    [[noreturn]] inline void _Throw_bad_expected_access(this expected&& _Self) {
-        _THROW(bad_expected_access{_STD forward<expected>(_Self)._Unexpected});
+    [[noreturn]] inline void _Throw_bad_expected_access(this auto&& _Self) {
+        _THROW(bad_expected_access{(_STD forward<decltype(_Self)>(_Self)._Unexpected)});
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     [[noreturn]] inline void _Throw_bad_expected_access() const& {
@@ -1005,10 +1019,10 @@ private:
     }
 #endif // !__cpp_explicit_this_parameter
 
-    bool _Has_value;
     union {
         _Err _Unexpected;
     };
+    bool _Has_value;
 };
 
 _STD_END

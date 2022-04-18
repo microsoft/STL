@@ -126,6 +126,10 @@ namespace test_unexpected {
         auto&& const_rvalue_error = move(as_const(in_place_ilist_lvalue_constructed)).error();
         assert(const_rvalue_error == test_error{1});
         static_assert(is_same_v<decltype(const_rvalue_error), const test_error&&>);
+
+        // deduction guide
+        auto deduced = std::unexpected(test_error{42});
+        static_assert(same_as<decltype(deduced), Unexpect>);
     }
 
     constexpr bool test_all() {
