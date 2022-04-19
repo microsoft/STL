@@ -412,14 +412,14 @@ namespace ranges {
     } // namespace _Iter_move
 
     inline namespace _Cpos {
-        inline constexpr _Iter_move::_Cpo iter_move;
+        _EXPORT_STD inline constexpr _Iter_move::_Cpo iter_move;
     }
 } // namespace ranges
 
 // iter_swap defined below since it depends on indirectly_movable_storable
 
 // clang-format off
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
     requires _Dereferenceable<_Ty> && requires(_Ty& __t) {
         { _RANGES iter_move(__t) } -> _Can_reference;
     }
@@ -436,15 +436,15 @@ concept _Indirectly_readable_impl = requires(const _It __i) {
   && common_reference_with<iter_reference_t<_It>&&, iter_rvalue_reference_t<_It>&&>
   && common_reference_with<iter_rvalue_reference_t<_It>&&, const iter_value_t<_It>&>;
 
-template <class _It>
+_EXPORT_STD template <class _It>
 concept indirectly_readable = _Indirectly_readable_impl<remove_cvref_t<_It>>;
 // clang-format on
 
-template <indirectly_readable _Ty>
+_EXPORT_STD template <indirectly_readable _Ty>
 using iter_common_reference_t = common_reference_t<iter_reference_t<_Ty>, iter_value_t<_Ty>&>;
 
-template <class _It, class _Ty>
-concept indirectly_writable = requires(_It&& __i, _Ty&& __t) {
+_EXPORT_STD template <class _It, class _Ty>
+concept indirectly_writable = requires(_It && __i, _Ty&& __t) {
     *__i                                                                = static_cast<_Ty&&>(__t);
     *static_cast<_It&&>(__i)                                            = static_cast<_Ty&&>(__t);
     const_cast<const iter_reference_t<_It>&&>(*__i)                     = static_cast<_Ty&&>(__t);
@@ -489,7 +489,7 @@ _NODISCARD constexpr auto _To_signed_like(const _Ty _Value) noexcept {
     return static_cast<_Make_signed_like_t<_Ty>>(_Value);
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 concept incrementable = regular<_Ty> && weakly_incrementable<_Ty> && requires(_Ty __t) {
     { __t++ } -> same_as<_Ty>;
 };
@@ -522,29 +522,29 @@ using _Iter_concept =
     typename _Iter_concept_impl1<_Has_member_iterator_concept<_Traits>>::template _Apply<_It, _Traits>;
 
 // clang-format off
-template <class _It>
+_EXPORT_STD template <class _It>
 concept input_iterator = input_or_output_iterator<_It> && indirectly_readable<_It>
     && requires { typename _Iter_concept<_It>; }
     && derived_from<_Iter_concept<_It>, input_iterator_tag>;
 
-template <class _It, class _Ty>
+_EXPORT_STD template <class _It, class _Ty>
 concept output_iterator = input_or_output_iterator<_It> && indirectly_writable<_It, _Ty>
     && requires(_It __i, _Ty&& __t) {
         *__i++ = static_cast<_Ty&&>(__t);
     };
 
-template <class _It>
+_EXPORT_STD template <class _It>
 concept forward_iterator = input_iterator<_It> && derived_from<_Iter_concept<_It>, forward_iterator_tag>
     && incrementable<_It> && sentinel_for<_It, _It>;
 
-template <class _It>
+_EXPORT_STD template <class _It>
 concept bidirectional_iterator = forward_iterator<_It> && derived_from<_Iter_concept<_It>, bidirectional_iterator_tag>
     && requires(_It __i) {
         { --__i } -> same_as<_It&>;
         { __i-- } -> same_as<_It>;
     };
 
-template <class _It>
+_EXPORT_STD template <class _It>
 concept random_access_iterator = bidirectional_iterator<_It>
     && derived_from<_Iter_concept<_It>, random_access_iterator_tag> && totally_ordered<_It>
     && sized_sentinel_for<_It, _It> && requires(_It __i, const _It __j, const iter_difference_t<_It> __n) {
@@ -556,7 +556,7 @@ concept random_access_iterator = bidirectional_iterator<_It>
         { __j[__n] } -> same_as<iter_reference_t<_It>>;
     };
 
-template <class _It>
+_EXPORT_STD template <class _It>
 concept contiguous_iterator = random_access_iterator<_It>
     && derived_from<_Iter_concept<_It>, contiguous_iterator_tag>
     && is_lvalue_reference_v<iter_reference_t<_It>>
@@ -565,7 +565,7 @@ concept contiguous_iterator = random_access_iterator<_It>
         { _STD to_address(__i) } -> same_as<add_pointer_t<iter_reference_t<_It>>>;
     };
 
-template <class _Fn, class _It>
+_EXPORT_STD template <class _Fn, class _It>
 concept indirectly_unary_invocable = indirectly_readable<_It>
     && copy_constructible<_Fn>
     && invocable<_Fn&, iter_value_t<_It>&>
@@ -575,7 +575,7 @@ concept indirectly_unary_invocable = indirectly_readable<_It>
         invoke_result_t<_Fn&, iter_value_t<_It>&>,
         invoke_result_t<_Fn&, iter_reference_t<_It>>>;
 
-template <class _Fn, class _It>
+_EXPORT_STD template <class _Fn, class _It>
 concept indirectly_regular_unary_invocable = indirectly_readable<_It>
     && copy_constructible<_Fn>
     && regular_invocable<_Fn&, iter_value_t<_It>&>
@@ -585,14 +585,14 @@ concept indirectly_regular_unary_invocable = indirectly_readable<_It>
         invoke_result_t<_Fn&, iter_value_t<_It>&>,
         invoke_result_t<_Fn&, iter_reference_t<_It>>>;
 
-template <class _Fn, class _It>
+_EXPORT_STD template <class _Fn, class _It>
 concept indirect_unary_predicate = indirectly_readable<_It>
     && copy_constructible<_Fn>
     && predicate<_Fn&, iter_value_t<_It>&>
     && predicate<_Fn&, iter_reference_t<_It>>
     && predicate<_Fn&, iter_common_reference_t<_It>>;
 
-template <class _Fn, class _It1, class _It2>
+_EXPORT_STD template <class _Fn, class _It1, class _It2>
 concept indirect_binary_predicate = indirectly_readable<_It1>
     && indirectly_readable<_It2>
     && copy_constructible<_Fn>
@@ -602,7 +602,7 @@ concept indirect_binary_predicate = indirectly_readable<_It1>
     && predicate<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
     && predicate<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
 
-template <class _Fn, class _It1, class _It2 = _It1>
+_EXPORT_STD template <class _Fn, class _It1, class _It2 = _It1>
 concept indirect_equivalence_relation = indirectly_readable<_It1>
     && indirectly_readable<_It2>
     && copy_constructible<_Fn>
@@ -612,7 +612,7 @@ concept indirect_equivalence_relation = indirectly_readable<_It1>
     && equivalence_relation<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
     && equivalence_relation<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
 
-template <class _Fn, class _It1, class _It2 = _It1>
+_EXPORT_STD template <class _Fn, class _It1, class _It2 = _It1>
 concept indirect_strict_weak_order = indirectly_readable<_It1>
     && indirectly_readable<_It2>
     && copy_constructible<_Fn>
@@ -622,13 +622,13 @@ concept indirect_strict_weak_order = indirectly_readable<_It1>
     && strict_weak_order<_Fn&, iter_reference_t<_It1>, iter_reference_t<_It2>>
     && strict_weak_order<_Fn&, iter_common_reference_t<_It1>, iter_common_reference_t<_It2>>;
 
-template <class _Fn, class... _Its>
+_EXPORT_STD template <class _Fn, class... _Its>
     requires (indirectly_readable<_Its> && ...)
         && invocable<_Fn, iter_reference_t<_Its>...>
 using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
 // clang-format on
 
-template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
+_EXPORT_STD template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
 struct projected {
     using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
     indirect_result_t<_Proj&, _It> operator*() const {
@@ -641,11 +641,11 @@ struct incrementable_traits<projected<_It, _Proj>> {
     using difference_type = iter_difference_t<_It>;
 };
 
-template <class _In, class _Out>
+_EXPORT_STD template <class _In, class _Out>
 concept indirectly_movable = indirectly_readable<_In> && indirectly_writable<_Out, iter_rvalue_reference_t<_In>>;
 
 // clang-format off
-template <class _In, class _Out>
+_EXPORT_STD template <class _In, class _Out>
 concept indirectly_movable_storable = indirectly_movable<_In, _Out>
     && indirectly_writable<_Out, iter_value_t<_In>>
     && movable<iter_value_t<_In>>
@@ -653,11 +653,11 @@ concept indirectly_movable_storable = indirectly_movable<_In, _Out>
     && assignable_from<iter_value_t<_In>&, iter_rvalue_reference_t<_In> >;
 // clang-format on
 
-template <class _In, class _Out>
+_EXPORT_STD template <class _In, class _Out>
 concept indirectly_copyable = indirectly_readable<_In> && indirectly_writable<_Out, iter_reference_t<_In>>;
 
 // clang-format off
-template <class _In, class _Out>
+_EXPORT_STD template <class _In, class _Out>
 concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
     && indirectly_writable<_Out, iter_value_t<_In>&>
     && indirectly_writable<_Out, const iter_value_t<_In>&>
@@ -744,12 +744,12 @@ namespace ranges {
     } // namespace _Iter_swap
 
     inline namespace _Cpos {
-        inline constexpr _Iter_swap::_Cpo iter_swap;
+        _EXPORT_STD inline constexpr _Iter_swap::_Cpo iter_swap;
     }
 } // namespace ranges
 
 // clang-format off
-template <class _It1, class _It2 = _It1>
+_EXPORT_STD template <class _It1, class _It2 = _It1>
 concept indirectly_swappable = indirectly_readable<_It1> && indirectly_readable<_It2>
     && requires(const _It1 __i1, const _It2 __i2) {
         _RANGES iter_swap(__i1, __i1);
@@ -759,24 +759,25 @@ concept indirectly_swappable = indirectly_readable<_It1> && indirectly_readable<
     };
 // clang-format on
 
-template <class _It1, class _It2, class _Rel, class _Proj1 = identity, class _Proj2 = identity>
+_EXPORT_STD template <class _It1, class _It2, class _Rel, class _Proj1 = identity, class _Proj2 = identity>
 concept indirectly_comparable = indirect_binary_predicate<_Rel, projected<_It1, _Proj1>, projected<_It2, _Proj2>>;
 
-template <class _It>
+_EXPORT_STD template <class _It>
 concept permutable = forward_iterator<_It> && indirectly_movable_storable<_It, _It> && indirectly_swappable<_It, _It>;
 
 namespace ranges {
-    struct less;
+    _EXPORT_STD struct less;
 }
 
-template <class _It1, class _It2, class _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
+_EXPORT_STD template <class _It1, class _It2, class _Out, class _Pr = ranges::less, class _Pj1 = identity,
+    class _Pj2 = identity>
 concept mergeable = input_iterator<_It1> && input_iterator<_It2> //
     && weakly_incrementable<_Out> //
     && indirectly_copyable<_It1, _Out> //
     && indirectly_copyable<_It2, _Out> //
     && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
 
-template <class _It, class _Pr = ranges::less, class _Proj = identity>
+_EXPORT_STD template <class _It, class _Pr = ranges::less, class _Proj = identity>
 concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
 
 template <class _Iter>
@@ -1128,7 +1129,7 @@ constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred
 #endif // _ITERATOR_DEBUG_LEVEL < 2
 
 // from <iterator>
-template <class _InIt, class _Diff>
+_EXPORT_STD template <class _InIt, class _Diff>
 _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by offset
     if constexpr (_Is_ranges_random_iter_v<_InIt>) {
         _Where += _Off;
@@ -1156,7 +1157,7 @@ _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by 
     }
 }
 
-template <class _InIt>
+_EXPORT_STD template <class _InIt>
 _NODISCARD _CONSTEXPR17 _Iter_diff_t<_InIt> distance(_InIt _First, _InIt _Last) {
     if constexpr (_Is_ranges_random_iter_v<_InIt>) {
         return _Last - _First; // assume the iterator will do debug checking
@@ -1178,7 +1179,7 @@ constexpr _InIt _Next_iter(_InIt _First) { // increment iterator
     return ++_First;
 }
 
-template <class _InIt>
+_EXPORT_STD template <class _InIt>
 _NODISCARD _CONSTEXPR17 _InIt next(_InIt _First, _Iter_diff_t<_InIt> _Off = 1) { // increment iterator
     static_assert(_Is_ranges_input_iter_v<_InIt>, "next requires input iterator");
 
@@ -1191,7 +1192,7 @@ constexpr _BidIt _Prev_iter(_BidIt _First) { // decrement iterator
     return --_First;
 }
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1) { // decrement iterator
     static_assert(_Is_ranges_bidi_iter_v<_BidIt>, "prev requires bidirectional iterator");
 
@@ -1206,7 +1207,7 @@ template <class _Iter, class _Pointer>
 _INLINE_VAR constexpr bool _Has_nothrow_operator_arrow<_Iter, _Pointer, false> = noexcept(
     _Fake_copy_init<_Pointer>(_STD declval<_Iter>().operator->()));
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 class reverse_iterator {
 public:
     using iterator_type = _BidIt;
@@ -1391,7 +1392,7 @@ protected:
     _BidIt current{};
 };
 
-template <class _BidIt1, class _BidIt2>
+_EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator==(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() == _Right._Get_current()))) /* strengthened */
@@ -1404,7 +1405,7 @@ _NODISCARD _CONSTEXPR17 bool
 #endif // __cpp_lib_concepts
 { return _Left._Get_current() == _Right._Get_current(); }
 
-template <class _BidIt1, class _BidIt2>
+_EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator!=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() != _Right._Get_current()))) /* strengthened */
@@ -1417,7 +1418,7 @@ _NODISCARD _CONSTEXPR17 bool
 #endif // __cpp_lib_concepts
 { return _Left._Get_current() != _Right._Get_current(); }
 
-template <class _BidIt1, class _BidIt2>
+_EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator<(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() > _Right._Get_current()))) /* strengthened */
@@ -1430,7 +1431,7 @@ _NODISCARD _CONSTEXPR17 bool
 #endif // __cpp_lib_concepts
 { return _Left._Get_current() > _Right._Get_current(); }
 
-template <class _BidIt1, class _BidIt2>
+_EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator>(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() < _Right._Get_current()))) /* strengthened */
@@ -1443,7 +1444,7 @@ _NODISCARD _CONSTEXPR17 bool
 #endif // __cpp_lib_concepts
 { return _Left._Get_current() < _Right._Get_current(); }
 
-template <class _BidIt1, class _BidIt2>
+_EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator<=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() >= _Right._Get_current()))) /* strengthened */
@@ -1456,7 +1457,7 @@ _NODISCARD _CONSTEXPR17 bool
 #endif // __cpp_lib_concepts
 { return _Left._Get_current() >= _Right._Get_current(); }
 
-template <class _BidIt1, class _BidIt2>
+_EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator>=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left._Get_current() <= _Right._Get_current()))) /* strengthened */
@@ -1470,7 +1471,7 @@ _NODISCARD _CONSTEXPR17 bool
 { return _Left._Get_current() <= _Right._Get_current(); }
 
 #ifdef __cpp_lib_concepts
-template <class _BidIt1, three_way_comparable_with<_BidIt1> _BidIt2>
+_EXPORT_STD template <class _BidIt1, three_way_comparable_with<_BidIt1> _BidIt2>
 _NODISCARD constexpr compare_three_way_result_t<_BidIt1, _BidIt2>
     operator<=>(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Right._Get_current() <=> _Left._Get_current())) /* strengthened */ {
@@ -1478,7 +1479,7 @@ _NODISCARD constexpr compare_three_way_result_t<_BidIt1, _BidIt2>
 }
 #endif // __cpp_lib_concepts
 
-template <class _BidIt1, class _BidIt2>
+_EXPORT_STD template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 auto
     operator-(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
         noexcept(_Right._Get_current() - _Left._Get_current())) /* strengthened */
@@ -1486,13 +1487,13 @@ _NODISCARD _CONSTEXPR17 auto
     return _Right._Get_current() - _Left._Get_current();
 }
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> operator+(typename reverse_iterator<_BidIt>::difference_type _Off,
     const reverse_iterator<_BidIt>& _Right) noexcept(noexcept(_Right + _Off)) /* strengthened */ {
     return _Right + _Off;
 }
 
-template <class _BidIt>
+_EXPORT_STD template <class _BidIt>
 _NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> make_reverse_iterator(_BidIt _Iter) noexcept(
     is_nothrow_move_constructible_v<_BidIt>) /* strengthened */ {
     return reverse_iterator<_BidIt>(_STD move(_Iter));
@@ -1506,123 +1507,123 @@ inline constexpr bool disable_sized_sentinel_for<reverse_iterator<_BidIt1>, reve
 // clang-format on
 #endif // __cpp_lib_concepts
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR17 auto begin(_Container& _Cont) noexcept(noexcept(_Cont.begin())) /* strengthened */
     -> decltype(_Cont.begin()) {
     return _Cont.begin();
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR17 auto begin(const _Container& _Cont) noexcept(noexcept(_Cont.begin())) /* strengthened */
     -> decltype(_Cont.begin()) {
     return _Cont.begin();
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR17 auto end(_Container& _Cont) noexcept(noexcept(_Cont.end())) /* strengthened */
     -> decltype(_Cont.end()) {
     return _Cont.end();
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR17 auto end(const _Container& _Cont) noexcept(noexcept(_Cont.end())) /* strengthened */
     -> decltype(_Cont.end()) {
     return _Cont.end();
 }
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty* begin(_Ty (&_Array)[_Size]) noexcept {
     return _Array;
 }
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty* end(_Ty (&_Array)[_Size]) noexcept {
     return _Array + _Size;
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD constexpr auto cbegin(const _Container& _Cont) noexcept(noexcept(_STD begin(_Cont)))
     -> decltype(_STD begin(_Cont)) {
     return _STD begin(_Cont);
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD constexpr auto cend(const _Container& _Cont) noexcept(noexcept(_STD end(_Cont)))
     -> decltype(_STD end(_Cont)) {
     return _STD end(_Cont);
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR17 auto rbegin(_Container& _Cont) noexcept(noexcept(_Cont.rbegin())) /* strengthened */
     -> decltype(_Cont.rbegin()) {
     return _Cont.rbegin();
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR17 auto rbegin(const _Container& _Cont) noexcept(noexcept(_Cont.rbegin())) /* strengthened */
     -> decltype(_Cont.rbegin()) {
     return _Cont.rbegin();
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR17 auto rend(_Container& _Cont) noexcept(noexcept(_Cont.rend())) /* strengthened */
     -> decltype(_Cont.rend()) {
     return _Cont.rend();
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR17 auto rend(const _Container& _Cont) noexcept(noexcept(_Cont.rend())) /* strengthened */
     -> decltype(_Cont.rend()) {
     return _Cont.rend();
 }
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR17 reverse_iterator<_Ty*> rbegin(_Ty (&_Array)[_Size]) noexcept /* strengthened */ {
     return reverse_iterator<_Ty*>(_Array + _Size);
 }
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD _CONSTEXPR17 reverse_iterator<_Ty*> rend(_Ty (&_Array)[_Size]) noexcept /* strengthened */ {
     return reverse_iterator<_Ty*>(_Array);
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD _CONSTEXPR17 reverse_iterator<const _Elem*> rbegin(initializer_list<_Elem> _Ilist) noexcept
 /* strengthened */ {
     return reverse_iterator<const _Elem*>(_Ilist.end());
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD _CONSTEXPR17 reverse_iterator<const _Elem*> rend(initializer_list<_Elem> _Ilist) noexcept
 /* strengthened */ {
     return reverse_iterator<const _Elem*>(_Ilist.begin());
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR17 auto crbegin(const _Container& _Cont) noexcept(noexcept(_STD rbegin(_Cont))) /* strengthened */
     -> decltype(_STD rbegin(_Cont)) {
     return _STD rbegin(_Cont);
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD _CONSTEXPR17 auto crend(const _Container& _Cont) noexcept(noexcept(_STD rend(_Cont))) /* strengthened */
     -> decltype(_STD rend(_Cont)) {
     return _STD rend(_Cont);
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD constexpr auto size(const _Container& _Cont) noexcept(noexcept(_Cont.size())) /* strengthened */
     -> decltype(_Cont.size()) {
     return _Cont.size();
 }
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr size_t size(const _Ty (&)[_Size]) noexcept {
     return _Size;
 }
 
 #if _HAS_CXX20
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD constexpr auto ssize(const _Container& _Cont) noexcept(noexcept(
     static_cast<common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>>>(_Cont.size()))) /* strengthened */
     -> common_type_t<ptrdiff_t, make_signed_t<decltype(_Cont.size())>> {
@@ -1630,47 +1631,47 @@ _NODISCARD constexpr auto ssize(const _Container& _Cont) noexcept(noexcept(
     return static_cast<_Common>(_Cont.size());
 }
 
-template <class _Ty, ptrdiff_t _Size>
+_EXPORT_STD template <class _Ty, ptrdiff_t _Size>
 _NODISCARD constexpr ptrdiff_t ssize(const _Ty (&)[_Size]) noexcept {
     return _Size;
 }
 #endif // _HAS_CXX20
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD_EMPTY_NON_MEMBER constexpr auto empty(const _Container& _Cont) noexcept(
     noexcept(_Cont.empty())) /* strengthened */
     -> decltype(_Cont.empty()) {
     return _Cont.empty();
 }
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD_EMPTY_NON_MEMBER constexpr bool empty(const _Ty (&)[_Size]) noexcept {
     return false;
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD_EMPTY_NON_MEMBER constexpr bool empty(initializer_list<_Elem> _Ilist) noexcept {
     return _Ilist.size() == 0;
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD constexpr auto data(_Container& _Cont) noexcept(noexcept(_Cont.data())) /* strengthened */
     -> decltype(_Cont.data()) {
     return _Cont.data();
 }
 
-template <class _Container>
+_EXPORT_STD template <class _Container>
 _NODISCARD constexpr auto data(const _Container& _Cont) noexcept(noexcept(_Cont.data())) /* strengthened */
     -> decltype(_Cont.data()) {
     return _Cont.data();
 }
 
-template <class _Ty, size_t _Size>
+_EXPORT_STD template <class _Ty, size_t _Size>
 _NODISCARD constexpr _Ty* data(_Ty (&_Array)[_Size]) noexcept {
     return _Array;
 }
 
-template <class _Elem>
+_EXPORT_STD template <class _Elem>
 _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept {
     return _Ilist.begin();
 }
@@ -2630,7 +2631,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Advance_fn advance{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Advance_fn advance{_Not_quite_object::_Construct_tag{}};
 
     class _Distance_fn : private _Not_quite_object {
     public:
@@ -2683,7 +2684,7 @@ namespace ranges {
         static constexpr bool _Nothrow_size<_Rng> = noexcept(_RANGES size(_STD declval<_Rng&>()));
     };
 
-    inline constexpr _Distance_fn distance{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Distance_fn distance{_Not_quite_object::_Construct_tag{}};
 
     class _Ssize_fn {
     public:
@@ -2730,7 +2731,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Next_fn next{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Next_fn next{_Not_quite_object::_Construct_tag{}};
 
     class _Prev_fn : private _Not_quite_object {
     public:
@@ -2757,7 +2758,7 @@ namespace ranges {
         }
     };
 
-    inline constexpr _Prev_fn prev{_Not_quite_object::_Construct_tag{}};
+    _EXPORT_STD inline constexpr _Prev_fn prev{_Not_quite_object::_Construct_tag{}};
 
     template <forward_iterator _It, sentinel_for<_It> _Se>
     _NODISCARD constexpr _It _Find_last_iterator(
@@ -3312,7 +3313,7 @@ struct _Iterator_base12;
 struct _Default_sentinel {}; // empty struct to serve as the end of a range
 
 #ifdef __cpp_lib_concepts
-template <semiregular>
+_EXPORT_STD template <semiregular>
 class move_sentinel;
 
 template <class>
@@ -3333,7 +3334,7 @@ struct _Move_iterator_category {
 };
 #endif // __cpp_lib_concepts
 
-template <class _Iter>
+_EXPORT_STD template <class _Iter>
 class move_iterator : public _Move_iterator_category<_Iter> {
 public:
     using iterator_type   = _Iter;
@@ -3590,7 +3591,7 @@ private:
     iterator_type _Current{};
 };
 
-template <class _Iter1, class _Iter2>
+_EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool
     operator==(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left.base() == _Right.base()))) /* strengthened */
@@ -3611,7 +3612,7 @@ _NODISCARD _CONSTEXPR17 bool operator!=(const move_iterator<_Iter1>& _Left,
 }
 #endif // !_HAS_CXX20
 
-template <class _Iter1, class _Iter2>
+_EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool
     operator<(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
         noexcept(_Fake_copy_init<bool>(_Left.base() < _Right.base()))) /* strengthened */
@@ -3624,7 +3625,7 @@ _NODISCARD _CONSTEXPR17 bool
 #endif // __cpp_lib_concepts
 { return _Left.base() < _Right.base(); }
 
-template <class _Iter1, class _Iter2>
+_EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator>(const move_iterator<_Iter1>& _Left,
     const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */
 #ifdef __cpp_lib_concepts
@@ -3634,7 +3635,7 @@ _NODISCARD _CONSTEXPR17 bool operator>(const move_iterator<_Iter1>& _Left,
 #endif // __cpp_lib_concepts
 { return _Right < _Left; }
 
-template <class _Iter1, class _Iter2>
+_EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator<=(const move_iterator<_Iter1>& _Left,
     const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */
 #ifdef __cpp_lib_concepts
@@ -3644,7 +3645,7 @@ _NODISCARD _CONSTEXPR17 bool operator<=(const move_iterator<_Iter1>& _Left,
 #endif // __cpp_lib_concepts
 { return !(_Right < _Left); }
 
-template <class _Iter1, class _Iter2>
+_EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left,
     const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left < _Right)) /* strengthened */
 #ifdef __cpp_lib_concepts
@@ -3655,21 +3656,21 @@ _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left,
 { return !(_Left < _Right); }
 
 #ifdef __cpp_lib_concepts
-template <class _Iter1, three_way_comparable_with<_Iter1> _Iter2>
+_EXPORT_STD template <class _Iter1, three_way_comparable_with<_Iter1> _Iter2>
 _NODISCARD constexpr compare_three_way_result_t<_Iter1, _Iter2> operator<=>(const move_iterator<_Iter1>& _Left,
     const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() <=> _Right.base())) /* strengthened */ {
     return _Left.base() <=> _Right.base();
 }
 #endif // __cpp_lib_concepts
 
-template <class _Iter1, class _Iter2>
+_EXPORT_STD template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 auto operator-(const move_iterator<_Iter1>& _Left,
     const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() - _Right.base())) /* strengthened */
     -> decltype(_Left.base() - _Right.base()) {
     return _Left.base() - _Right.base();
 }
 
-template <class _Iter>
+_EXPORT_STD template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter>
     operator+(typename move_iterator<_Iter>::difference_type _Off, const move_iterator<_Iter>& _Right) noexcept(
         noexcept(move_iterator<_Iter>(_Right.base() + _Off))) /* strengthened */
@@ -3682,18 +3683,18 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter>
 #endif // __cpp_lib_concepts
 { return move_iterator<_Iter>(_Right.base() + _Off); }
 
-template <class _Iter>
+_EXPORT_STD template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) noexcept(
     is_nothrow_move_constructible_v<_Iter>) /* strengthened */ {
     return move_iterator<_Iter>(_STD move(_It));
 }
 
 #ifdef __cpp_lib_concepts
-struct default_sentinel_t {};
+_EXPORT_STD struct default_sentinel_t {};
 
-inline constexpr default_sentinel_t default_sentinel{};
+_EXPORT_STD inline constexpr default_sentinel_t default_sentinel{};
 
-struct unreachable_sentinel_t;
+_EXPORT_STD struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
     struct _Base {
         template <weakly_incrementable _Winc>
@@ -3702,9 +3703,9 @@ namespace _Unreachable_sentinel_detail {
         }
     };
 } // namespace _Unreachable_sentinel_detail
-struct unreachable_sentinel_t : _Unreachable_sentinel_detail::_Base {}; // TRANSITION, /permissive-
+_EXPORT_STD struct unreachable_sentinel_t : _Unreachable_sentinel_detail::_Base {}; // TRANSITION, /permissive-
 
-inline constexpr unreachable_sentinel_t unreachable_sentinel{};
+_EXPORT_STD inline constexpr unreachable_sentinel_t unreachable_sentinel{};
 #endif // __cpp_lib_concepts
 
 // _Iterator_is_contiguous<_Iter> reports whether an iterator is known to be contiguous.
@@ -6094,7 +6095,8 @@ private:
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xruntime_error(_In_z_ const char*);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _XGetLastError();
 
-template <class _Category, class _Ty, class _Diff = ptrdiff_t, class _Pointer = _Ty*, class _Reference = _Ty&>
+_EXPORT_STD template <class _Category, class _Ty, class _Diff = ptrdiff_t, class _Pointer = _Ty*,
+    class _Reference = _Ty&>
 struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator classes
     using iterator_category = _Category;
     using value_type        = _Ty;
