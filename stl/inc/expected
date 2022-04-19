@@ -629,8 +629,7 @@ public:
 
     template <convertible_to<_Ty> _Uty>
     _NODISCARD constexpr _Ty value_or(_Uty&& _Other) const& noexcept(
-        is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) // strengthened
-        requires is_copy_constructible_v<_Ty> {
+        is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) { // strengthened
         if (_Has_value) {
             return _Value;
         } else {
@@ -639,8 +638,7 @@ public:
     }
     template <convertible_to<_Ty> _Uty>
     _NODISCARD constexpr _Ty value_or(_Uty&& _Other) && noexcept(
-        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) // strengthened
-        requires is_move_constructible_v<_Ty> {
+        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_convertible_v<_Uty, _Ty>) { // strengthened
         if (_Has_value) {
             return _STD move(_Value);
         } else {
