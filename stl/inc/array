@@ -253,6 +253,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR17 _Array_const_iterator operator+(
+        const ptrdiff_t _Off, _Array_const_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
 #if !_HAS_CXX20
     _NODISCARD _CONSTEXPR17 bool operator!=(const _Array_const_iterator& _Right) const noexcept {
         return !(*this == _Right);
@@ -280,13 +286,6 @@ constexpr void _Verify_range(
     _First._Verify_with(_Last);
 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-
-template <class _Ty, size_t _Size>
-_NODISCARD _CONSTEXPR17 _Array_const_iterator<_Ty, _Size> operator+(
-    const ptrdiff_t _Off, _Array_const_iterator<_Ty, _Size> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 #if _HAS_CXX20
 template <class _Ty, size_t _Size>
@@ -362,6 +361,11 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR17 _Array_iterator operator+(const ptrdiff_t _Off, _Array_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _CONSTEXPR17 _Array_iterator& operator-=(const ptrdiff_t _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
@@ -385,13 +389,6 @@ public:
         return const_cast<pointer>(_Mybase::_Unwrapped());
     }
 };
-
-template <class _Ty, size_t _Size>
-_NODISCARD _CONSTEXPR17 _Array_iterator<_Ty, _Size> operator+(
-    const ptrdiff_t _Off, _Array_iterator<_Ty, _Size> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 #if _HAS_CXX20
 template <class _Ty, size_t _Size>

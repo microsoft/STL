@@ -1043,6 +1043,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND constexpr _String_view_iterator operator+(
+        const difference_type _Off, _String_view_iterator _Right) noexcept {
+        _Right += _Off;
+        return _Right;
+    }
+
     constexpr _String_view_iterator& operator-=(const difference_type _Off) noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         if (_Off != 0) {
@@ -1171,14 +1177,6 @@ private:
     pointer _Myptr = nullptr;
 #endif // _ITERATOR_DEBUG_LEVEL
 };
-
-template <class _Traits>
-_NODISCARD constexpr _String_view_iterator<_Traits> operator+(
-    const typename _String_view_iterator<_Traits>::difference_type _Off,
-    _String_view_iterator<_Traits> _Right) noexcept {
-    _Right += _Off;
-    return _Right;
-}
 
 #if _HAS_CXX20
 template <class _Traits>
@@ -1988,6 +1986,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _String_const_iterator operator+(
+        const difference_type _Off, _String_const_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _CONSTEXPR20 _String_const_iterator& operator-=(const difference_type _Off) noexcept {
         return *this += -_Off;
     }
@@ -2070,13 +2074,6 @@ public:
 
     pointer _Ptr; // pointer to element in string
 };
-
-template <class _Mystr>
-_NODISCARD _CONSTEXPR20 _String_const_iterator<_Mystr> operator+(
-    typename _String_const_iterator<_Mystr>::difference_type _Off, _String_const_iterator<_Mystr> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 #if _HAS_CXX20
 template <class _Mystr>
@@ -2166,6 +2163,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _String_iterator operator+(
+        const difference_type _Off, _String_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _CONSTEXPR20 _String_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
@@ -2189,13 +2192,6 @@ public:
         return const_cast<value_type*>(_Unfancy(this->_Ptr));
     }
 };
-
-template <class _Mystr>
-_NODISCARD _CONSTEXPR20 _String_iterator<_Mystr> operator+(
-    typename _String_iterator<_Mystr>::difference_type _Off, _String_iterator<_Mystr> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 #if _HAS_CXX20
 template <class _Mystr>
