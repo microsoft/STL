@@ -301,7 +301,7 @@ _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
     }
 }
 
-struct identity {
+_EXPORT_STD struct identity {
     template <class _Ty>
     _NODISCARD constexpr _Ty&& operator()(_Ty&& _Left) const noexcept {
         return _STD forward<_Ty>(_Left);
@@ -2772,7 +2772,7 @@ namespace ranges {
         }
     }
 
-    struct equal_to {
+    _EXPORT_STD struct equal_to {
         // clang-format off
         template <class _Ty1, class _Ty2>
             requires equality_comparable_with<_Ty1, _Ty2>
@@ -2785,7 +2785,7 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    struct less {
+    _EXPORT_STD struct less {
         // clang-format off
         template <class _Ty1, class _Ty2>
             requires totally_ordered_with<_Ty1, _Ty2>
@@ -2798,7 +2798,7 @@ namespace ranges {
         using is_transparent = int;
     };
 
-    struct greater {
+    _EXPORT_STD struct greater {
         // clang-format off
         template <class _Ty1, class _Ty2>
             requires totally_ordered_with<_Ty1, _Ty2>
