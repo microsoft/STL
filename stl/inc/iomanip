@@ -191,6 +191,94 @@ struct _Quote_out { // store pointer/length for string
 
     _Quote_out(const _Quote_out&) = default;
 
+    template <class _OsTraits, class _QuTraits = _Traits>
+    friend basic_ostream<_Elem, _OsTraits>& operator<<(
+        basic_ostream<_Elem, _OsTraits>& _Ostr, const _Quote_out& _Manip) {
+        // put quoted string to output stream
+        static_assert(
+            is_void_v<_QuTraits> || is_same_v<_QuTraits, _OsTraits>, "quoted() traits must match basic_ostream traits");
+
+        using _Myos = basic_ostream<_Elem, _OsTraits>;
+
+        const _Elem* const _Last = _Manip._Ptr + _Manip._Size;
+
+        _Sizet _Size = _Manip._Size + 2; // allow for delimiters
+        for (const _Elem* _Ptr = _Manip._Ptr; _Ptr != _Last; ++_Ptr) {
+            if (_OsTraits::eq(*_Ptr, _Manip._Delim) || _OsTraits::eq(*_Ptr, _Manip._Escape)) {
+                ++_Size; // count escapes
+            }
+        }
+
+        ios_base::iostate _State = ios_base::goodbit;
+
+        _Sizet _Pad;
+        if (_Ostr.width() <= 0 || static_cast<_Sizet>(_Ostr.width()) <= _Size) {
+            _Pad = 0;
+        } else {
+            _Pad = static_cast<_Sizet>(_Ostr.width()) - _Size;
+        }
+
+        const typename _Myos::sentry _Ok(_Ostr);
+
+        if (!_Ok) {
+            _State |= ios_base::badbit;
+        } else { // state okay, insert characters
+            _TRY_IO_BEGIN
+            if ((_Ostr.flags() & ios_base::adjustfield) != ios_base::left) {
+                for (; 0 < _Pad; --_Pad) { // pad on left
+                    if (_OsTraits::eq_int_type(_OsTraits::eof(), _Ostr.rdbuf()->sputc(_Ostr.fill()))) {
+                        _State |= ios_base::badbit; // insertion failed, quit
+                        break;
+                    }
+                }
+            }
+
+            if (_State == ios_base::goodbit
+                && _OsTraits::eq_int_type(_OsTraits::eof(),
+                    _Ostr.rdbuf()->sputc(_Manip._Delim))) { // put delimiter
+                _State |= ios_base::badbit;
+            }
+
+            for (const _Elem* _Ptr = _Manip._Ptr; _Ptr != _Last; ++_Ptr) { // put (possibly escaped) element
+                if ((_OsTraits::eq(*_Ptr, _Manip._Delim) || _OsTraits::eq(*_Ptr, _Manip._Escape))
+                    && _State == ios_base::goodbit
+                    && _OsTraits::eq_int_type(_OsTraits::eof(),
+                        _Ostr.rdbuf()->sputc(_Manip._Escape))) { // put escape
+                    _State |= ios_base::badbit; // insertion failed, quit
+                    break;
+                }
+
+                if (_State == ios_base::goodbit
+                    && _OsTraits::eq_int_type(_OsTraits::eof(),
+                        _Ostr.rdbuf()->sputc(*_Ptr))) { // put element
+                    _State |= ios_base::badbit; // insertion failed, quit
+                    break;
+                }
+            }
+
+            if (_State == ios_base::goodbit
+                && _OsTraits::eq_int_type(_OsTraits::eof(),
+                    _Ostr.rdbuf()->sputc(_Manip._Delim))) { // put delimiter
+                _State |= ios_base::badbit;
+            }
+
+            if (_State == ios_base::goodbit) {
+                for (; 0 < _Pad; --_Pad) { // pad on right
+                    if (_OsTraits::eq_int_type(_OsTraits::eof(), _Ostr.rdbuf()->sputc(_Ostr.fill()))) {
+                        _State |= ios_base::badbit; // insertion failed, quit
+                        break;
+                    }
+                }
+            }
+
+            _Ostr.width(0);
+            _CATCH_IO_(ios_base, _Ostr)
+        }
+
+        _Ostr.setstate(_State);
+        return _Ostr;
+    }
+
     const _Elem* _Ptr; // pointer to string
     _Sizet _Size; // length of string
     _Elem _Delim; // delimiter element
@@ -236,92 +324,6 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _Quote_in<_Elem, _Traits, _Alloc> quoted(
     basic_string<_Elem, _Traits, _Alloc>& _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
     return {_Str, _Delim, _Escape};
-}
-
-template <class _Elem, class _Traits, class _QuTraits, class _Sizet>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const _Quote_out<_Elem, _QuTraits, _Sizet>& _Manip) { // put quoted string to output stream
-    static_assert(
-        is_void_v<_QuTraits> || is_same_v<_QuTraits, _Traits>, "quoted() traits must match basic_ostream traits");
-
-    using _Myos = basic_ostream<_Elem, _Traits>;
-
-    const _Elem* const _Last = _Manip._Ptr + _Manip._Size;
-
-    _Sizet _Size = _Manip._Size + 2; // allow for delimiters
-    for (const _Elem* _Ptr = _Manip._Ptr; _Ptr != _Last; ++_Ptr) {
-        if (_Traits::eq(*_Ptr, _Manip._Delim) || _Traits::eq(*_Ptr, _Manip._Escape)) {
-            ++_Size; // count escapes
-        }
-    }
-
-    ios_base::iostate _State = ios_base::goodbit;
-
-    _Sizet _Pad;
-    if (_Ostr.width() <= 0 || static_cast<_Sizet>(_Ostr.width()) <= _Size) {
-        _Pad = 0;
-    } else {
-        _Pad = static_cast<_Sizet>(_Ostr.width()) - _Size;
-    }
-
-    const typename _Myos::sentry _Ok(_Ostr);
-
-    if (!_Ok) {
-        _State |= ios_base::badbit;
-    } else { // state okay, insert characters
-        _TRY_IO_BEGIN
-        if ((_Ostr.flags() & ios_base::adjustfield) != ios_base::left) {
-            for (; 0 < _Pad; --_Pad) { // pad on left
-                if (_Traits::eq_int_type(_Traits::eof(), _Ostr.rdbuf()->sputc(_Ostr.fill()))) {
-                    _State |= ios_base::badbit; // insertion failed, quit
-                    break;
-                }
-            }
-        }
-
-        if (_State == ios_base::goodbit
-            && _Traits::eq_int_type(_Traits::eof(),
-                _Ostr.rdbuf()->sputc(_Manip._Delim))) { // put delimiter
-            _State |= ios_base::badbit;
-        }
-
-        for (const _Elem* _Ptr = _Manip._Ptr; _Ptr != _Last; ++_Ptr) { // put (possibly escaped) element
-            if ((_Traits::eq(*_Ptr, _Manip._Delim) || _Traits::eq(*_Ptr, _Manip._Escape)) && _State == ios_base::goodbit
-                && _Traits::eq_int_type(_Traits::eof(),
-                    _Ostr.rdbuf()->sputc(_Manip._Escape))) { // put escape
-                _State |= ios_base::badbit; // insertion failed, quit
-                break;
-            }
-
-            if (_State == ios_base::goodbit
-                && _Traits::eq_int_type(_Traits::eof(),
-                    _Ostr.rdbuf()->sputc(*_Ptr))) { // put element
-                _State |= ios_base::badbit; // insertion failed, quit
-                break;
-            }
-        }
-
-        if (_State == ios_base::goodbit
-            && _Traits::eq_int_type(_Traits::eof(),
-                _Ostr.rdbuf()->sputc(_Manip._Delim))) { // put delimiter
-            _State |= ios_base::badbit;
-        }
-
-        if (_State == ios_base::goodbit) {
-            for (; 0 < _Pad; --_Pad) { // pad on right
-                if (_Traits::eq_int_type(_Traits::eof(), _Ostr.rdbuf()->sputc(_Ostr.fill()))) {
-                    _State |= ios_base::badbit; // insertion failed, quit
-                    break;
-                }
-            }
-        }
-
-        _Ostr.width(0);
-        _CATCH_IO_(ios_base, _Ostr)
-    }
-
-    _Ostr.setstate(_State);
-    return _Ostr;
 }
 
 template <class _Elem, class _Traits, class _Alloc>
