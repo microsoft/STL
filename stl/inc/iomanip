@@ -294,6 +294,13 @@ struct _Quote_in { // store reference to string
     _Quote_in(_Mystr& _Str_obj, _Elem _Delim_obj, _Elem _Escape_obj)
         : _Str(_Str_obj), _Delim(_Delim_obj), _Escape(_Escape_obj) {}
 
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const _Quote_in& _Manip) {
+        // put quoted string to output stream
+        using _Out_type = _Quote_out<_Elem, _Traits, typename _Mystr::size_type>;
+
+        return _Ostr << _Out_type{_Manip._Str.c_str(), _Manip._Str.size(), _Manip._Delim, _Manip._Escape};
+    }
+
     _Mystr& _Str; // reference to string
     _Elem _Delim; // delimiter element
     _Elem _Escape; // escape element
@@ -324,15 +331,6 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _Quote_in<_Elem, _Traits, _Alloc> quoted(
     basic_string<_Elem, _Traits, _Alloc>& _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
     return {_Str, _Delim, _Escape};
-}
-
-template <class _Elem, class _Traits, class _Alloc>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const _Quote_in<_Elem, _Traits, _Alloc>& _Manip) { // put quoted string to output stream
-    using _Mystr = basic_string<_Elem, _Traits, _Alloc>;
-
-    const _Mystr& _Ref = _Manip._Str;
-    return _Ostr << _STD quoted(_Ref, _Manip._Delim, _Manip._Escape);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
