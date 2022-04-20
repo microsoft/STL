@@ -120,6 +120,55 @@ struct _Timeobj { // store reference to tm object and format
         }
     }
 
+    template <class _Elem2, class _Traits>
+    friend basic_istream<_Elem2, _Traits>& operator>>(basic_istream<_Elem2, _Traits>& _Istr, const _Timeobj& _Manip) {
+        // get time information from input stream
+        static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for get_time");
+
+        using _Myis   = basic_istream<_Elem, _Traits>;
+        using _Iter   = istreambuf_iterator<_Elem, _Traits>;
+        using _Mytget = time_get<_Elem, _Iter>;
+
+        ios_base::iostate _State = ios_base::goodbit;
+        const typename _Myis::sentry _Ok(_Istr);
+
+        if (_Ok) { // state okay, extract time amounts
+            const _Mytget& _Tget_fac = _STD use_facet<_Mytget>(_Istr.getloc());
+            _TRY_IO_BEGIN
+            _Tget_fac.get(
+                _Iter(_Istr.rdbuf()), _Iter(nullptr), _Istr, _State, _Manip._Tptr, _Manip._Fmtfirst, _Manip._Fmtlast);
+            _CATCH_IO_(ios_base, _Istr)
+        }
+
+        _Istr.setstate(_State);
+        return _Istr;
+    }
+
+    template <class _Elem2, class _Traits>
+    friend basic_ostream<_Elem2, _Traits>& operator<<(basic_ostream<_Elem2, _Traits>& _Ostr, const _Timeobj& _Manip) {
+        // put time information to output stream
+        static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for put_time");
+
+        using _Myos   = basic_ostream<_Elem, _Traits>;
+        using _Iter   = ostreambuf_iterator<_Elem, _Traits>;
+        using _Mytput = time_put<_Elem, _Iter>;
+
+        const typename _Myos::sentry _Ok(_Ostr);
+
+        if (_Ok) { // state okay, insert monetary amount
+            const _Mytput& _Tput_fac = _STD use_facet<_Mytput>(_Ostr.getloc());
+            _TRY_IO_BEGIN
+            if (_Tput_fac
+                    .put(_Iter(_Ostr.rdbuf()), _Ostr, _Ostr.fill(), _Manip._Tptr, _Manip._Fmtfirst, _Manip._Fmtlast)
+                    .failed()) {
+                _Ostr.setstate(ios_base::badbit);
+            }
+            _CATCH_IO_(ios_base, _Ostr)
+        }
+
+        return _Ostr;
+    }
+
     _Ptr _Tptr; // the tm struct pointer
     const _Elem* _Fmtfirst; // format string start
     const _Elem* _Fmtlast; // format string end
@@ -130,57 +179,9 @@ _NODISCARD _Timeobj<_Elem, tm*> get_time(tm* _Tptr_arg, const _Elem* _Fmt_arg) {
     return _Timeobj<_Elem, tm*>(_Tptr_arg, _Fmt_arg);
 }
 
-template <class _Elem, class _Traits, class _Elem2>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    const _Timeobj<_Elem2, tm*>& _Manip) { // get time information from input stream
-    using _Myis   = basic_istream<_Elem, _Traits>;
-    using _Iter   = istreambuf_iterator<_Elem, _Traits>;
-    using _Mytget = time_get<_Elem2, _Iter>;
-
-    static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for get_time");
-
-    ios_base::iostate _State = ios_base::goodbit;
-    const typename _Myis::sentry _Ok(_Istr);
-
-    if (_Ok) { // state okay, extract time amounts
-        const _Mytget& _Tget_fac = _STD use_facet<_Mytget>(_Istr.getloc());
-        _TRY_IO_BEGIN
-        _Tget_fac.get(
-            _Iter(_Istr.rdbuf()), _Iter(nullptr), _Istr, _State, _Manip._Tptr, _Manip._Fmtfirst, _Manip._Fmtlast);
-        _CATCH_IO_(ios_base, _Istr)
-    }
-
-    _Istr.setstate(_State);
-    return _Istr;
-}
-
 template <class _Elem>
 _NODISCARD _Timeobj<_Elem, const tm*> put_time(const tm* _Tptr_arg, const _Elem* _Fmt_arg) {
     return _Timeobj<_Elem, const tm*>(_Tptr_arg, _Fmt_arg);
-}
-
-template <class _Elem, class _Traits, class _Elem2>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const _Timeobj<_Elem2, const tm*>& _Manip) { // put time information to output stream
-    using _Myos   = basic_ostream<_Elem, _Traits>;
-    using _Iter   = ostreambuf_iterator<_Elem, _Traits>;
-    using _Mytput = time_put<_Elem2, _Iter>;
-
-    static_assert(is_same_v<_Elem, _Elem2>, "wrong character type for put_time");
-
-    const typename _Myos::sentry _Ok(_Ostr);
-
-    if (_Ok) { // state okay, insert monetary amount
-        const _Mytput& _Tput_fac = _STD use_facet<_Mytput>(_Ostr.getloc());
-        _TRY_IO_BEGIN
-        if (_Tput_fac.put(_Iter(_Ostr.rdbuf()), _Ostr, _Ostr.fill(), _Manip._Tptr, _Manip._Fmtfirst, _Manip._Fmtlast)
-                .failed()) {
-            _Ostr.setstate(ios_base::badbit);
-        }
-        _CATCH_IO_(ios_base, _Ostr)
-    }
-
-    return _Ostr;
 }
 
 template <class _Elem, class _Traits, class _Alloc>
