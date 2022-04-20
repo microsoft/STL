@@ -184,18 +184,6 @@ _NODISCARD _Timeobj<_Elem, const tm*> put_time(const tm* _Tptr_arg, const _Elem*
     return _Timeobj<_Elem, const tm*>(_Tptr_arg, _Fmt_arg);
 }
 
-template <class _Elem, class _Traits, class _Alloc>
-struct _Quote_in { // store reference to string
-    using _Mystr = basic_string<_Elem, _Traits, _Alloc>;
-
-    _Quote_in(_Mystr& _Str_obj, _Elem _Delim_obj, _Elem _Escape_obj)
-        : _Str(_Str_obj), _Delim(_Delim_obj), _Escape(_Escape_obj) {}
-
-    _Mystr& _Str; // reference to string
-    _Elem _Delim; // delimiter element
-    _Elem _Escape; // escape element
-};
-
 template <class _Elem, class _Traits, class _Sizet>
 struct _Quote_out { // store pointer/length for string
     _Quote_out(const _Elem* _Ptr_obj, _Sizet _Size_obj, _Elem _Delim_obj, _Elem _Escape_obj)
@@ -209,6 +197,18 @@ struct _Quote_out { // store pointer/length for string
     _Elem _Escape; // escape element
 
     _Quote_out& operator=(const _Quote_out&) = delete;
+};
+
+template <class _Elem, class _Traits, class _Alloc>
+struct _Quote_in { // store reference to string
+    using _Mystr = basic_string<_Elem, _Traits, _Alloc>;
+
+    _Quote_in(_Mystr& _Str_obj, _Elem _Delim_obj, _Elem _Escape_obj)
+        : _Str(_Str_obj), _Delim(_Delim_obj), _Escape(_Escape_obj) {}
+
+    _Mystr& _Str; // reference to string
+    _Elem _Delim; // delimiter element
+    _Elem _Escape; // escape element
 };
 
 template <class _Elem>
