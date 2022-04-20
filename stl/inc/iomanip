@@ -384,23 +384,23 @@ template <class _Arg>
 struct _Smanip { // store function pointer and argument value
     _Smanip(void(__cdecl* _Left)(ios_base&, _Arg), _Arg _Val) : _Pfun(_Left), _Manarg(_Val) {}
 
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, const _Smanip& _Manip) {
+        // extract by calling function with input stream and argument
+        (*_Manip._Pfun)(_Istr, _Manip._Manarg);
+        return _Istr;
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const _Smanip& _Manip) {
+        // insert by calling function with output stream and argument
+        (*_Manip._Pfun)(_Ostr, _Manip._Manarg);
+        return _Ostr;
+    }
+
     void(__cdecl* _Pfun)(ios_base&, _Arg); // the function pointer
     _Arg _Manarg; // the argument value
 };
-
-template <class _Elem, class _Traits, class _Arg>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    const _Smanip<_Arg>& _Manip) { // extract by calling function with input stream and argument
-    (*_Manip._Pfun)(_Istr, _Manip._Manarg);
-    return _Istr;
-}
-
-template <class _Elem, class _Traits, class _Arg>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const _Smanip<_Arg>& _Manip) { // insert by calling function with output stream and argument
-    (*_Manip._Pfun)(_Ostr, _Manip._Manarg);
-    return _Ostr;
-}
 
 _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl resetiosflags(ios_base::fmtflags);
 _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl setiosflags(ios_base::fmtflags);
