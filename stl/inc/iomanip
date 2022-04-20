@@ -55,6 +55,50 @@ template <class _Money>
 struct _Monobj { // store reference to monetary amount
     _Monobj(_Money& _Val_arg, bool _Intl_arg) : _Val(_Val_arg), _Intl(_Intl_arg) {}
 
+    template <class _Elem, class _Traits>
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, const _Monobj& _Manip) {
+        // get monetary amount from input stream
+        using _Myis   = basic_istream<_Elem, _Traits>;
+        using _Iter   = istreambuf_iterator<_Elem, _Traits>;
+        using _Mymget = money_get<_Elem, _Iter>;
+
+        ios_base::iostate _State = ios_base::goodbit;
+        const typename _Myis::sentry _Ok(_Istr);
+
+        if (_Ok) { // state okay, extract monetary amount
+            const _Mymget& _Mget_fac = _STD use_facet<_Mymget>(_Istr.getloc());
+            _TRY_IO_BEGIN
+            _Mget_fac.get(_Iter(_Istr.rdbuf()), _Iter(nullptr), _Manip._Intl, _Istr, _State, _Manip._Val);
+            _CATCH_IO_(ios_base, _Istr)
+        }
+
+        _Istr.setstate(_State);
+        return _Istr;
+    }
+
+    template <class _Elem, class _Traits>
+    friend basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr, const _Monobj& _Manip) {
+        // put monetary amount to output stream
+        using _Myos   = basic_ostream<_Elem, _Traits>;
+        using _Iter   = ostreambuf_iterator<_Elem, _Traits>;
+        using _Mymput = money_put<_Elem, _Iter>;
+
+        ios_base::iostate _State = ios_base::goodbit;
+        const typename _Myos::sentry _Ok(_Ostr);
+
+        if (_Ok) { // state okay, insert monetary amount
+            const _Mymput& _Mput_fac = _STD use_facet<_Mymput>(_Ostr.getloc());
+            _TRY_IO_BEGIN
+            if (_Mput_fac.put(_Iter(_Ostr.rdbuf()), _Manip._Intl, _Ostr, _Ostr.fill(), _Manip._Val).failed()) {
+                _State |= ios_base::badbit;
+            }
+            _CATCH_IO_(ios_base, _Ostr)
+        }
+
+        _Ostr.setstate(_State);
+        return _Ostr;
+    }
+
     _Money& _Val; // the monetary amount reference
     bool _Intl; // international flag
 };
@@ -64,53 +108,9 @@ _NODISCARD _Monobj<_Money> get_money(_Money& _Val_arg, bool _Intl_arg = false) {
     return _Monobj<_Money>(_Val_arg, _Intl_arg);
 }
 
-template <class _Elem, class _Traits, class _Money>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    const _Monobj<_Money>& _Manip) { // get monetary amount from input stream
-    using _Myis   = basic_istream<_Elem, _Traits>;
-    using _Iter   = istreambuf_iterator<_Elem, _Traits>;
-    using _Mymget = money_get<_Elem, _Iter>;
-
-    ios_base::iostate _State = ios_base::goodbit;
-    const typename _Myis::sentry _Ok(_Istr);
-
-    if (_Ok) { // state okay, extract monetary amount
-        const _Mymget& _Mget_fac = _STD use_facet<_Mymget>(_Istr.getloc());
-        _TRY_IO_BEGIN
-        _Mget_fac.get(_Iter(_Istr.rdbuf()), _Iter(nullptr), _Manip._Intl, _Istr, _State, _Manip._Val);
-        _CATCH_IO_(ios_base, _Istr)
-    }
-
-    _Istr.setstate(_State);
-    return _Istr;
-}
-
 template <class _Money>
 _NODISCARD _Monobj<const _Money> put_money(const _Money& _Val_arg, bool _Intl_arg = false) {
     return _Monobj<const _Money>(_Val_arg, _Intl_arg);
-}
-
-template <class _Elem, class _Traits, class _Money>
-basic_ostream<_Elem, _Traits>& operator<<(basic_ostream<_Elem, _Traits>& _Ostr,
-    const _Monobj<_Money>& _Manip) { // put monetary amount to output stream
-    using _Myos   = basic_ostream<_Elem, _Traits>;
-    using _Iter   = ostreambuf_iterator<_Elem, _Traits>;
-    using _Mymput = money_put<_Elem, _Iter>;
-
-    ios_base::iostate _State = ios_base::goodbit;
-    const typename _Myos::sentry _Ok(_Ostr);
-
-    if (_Ok) { // state okay, insert monetary amount
-        const _Mymput& _Mput_fac = _STD use_facet<_Mymput>(_Ostr.getloc());
-        _TRY_IO_BEGIN
-        if (_Mput_fac.put(_Iter(_Ostr.rdbuf()), _Manip._Intl, _Ostr, _Ostr.fill(), _Manip._Val).failed()) {
-            _State |= ios_base::badbit;
-        }
-        _CATCH_IO_(ios_base, _Ostr)
-    }
-
-    _Ostr.setstate(_State);
-    return _Ostr;
 }
 
 template <class _Elem, class _Ptr>
