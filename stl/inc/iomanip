@@ -301,6 +301,52 @@ struct _Quote_in { // store reference to string
         return _Ostr << _Out_type{_Manip._Str.c_str(), _Manip._Str.size(), _Manip._Delim, _Manip._Escape};
     }
 
+    friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr, const _Quote_in& _Manip) {
+        // get quoted string from input stream
+        ios_base::iostate _State = ios_base::goodbit;
+        const typename basic_istream<_Elem, _Traits>::sentry _Ok(_Istr);
+
+        if (_Ok) { // state okay, extract characters
+            _TRY_IO_BEGIN
+            const auto _Buf   = _Istr.rdbuf();
+            auto& _Str        = _Manip._Str;
+            const auto _Delim = _Traits::to_int_type(_Manip._Delim);
+            auto _Meta        = _Buf->sgetc();
+
+            if (!_Traits::eq_int_type(_Meta, _Delim)) { // no leading delimiter
+                return _Istr >> _Str;
+            }
+
+            const auto _Escape = _Traits::to_int_type(_Manip._Escape);
+            _Str.clear();
+            for (;;) {
+                _Meta = _Buf->snextc();
+                if (_Traits::eq_int_type(_Traits::eof(), _Meta)) { // no trailing delimiter; fail
+                    _State = ios_base::eofbit | ios_base::failbit;
+                    break;
+                } else if (_Traits::eq_int_type(_Meta, _Escape)) { // escape; read next character literally
+                    _Meta = _Buf->snextc();
+                    if (_Traits::eq_int_type(_Traits::eof(), _Meta)) { // bad escape; fail
+                        _State = ios_base::eofbit | ios_base::failbit;
+                        break;
+                    }
+                } else if (_Traits::eq_int_type(_Meta, _Delim)) { // found trailing delimiter
+                    if (_Traits::eq_int_type(_Traits::eof(), _Buf->sbumpc())) { // consume trailing delimiter
+                        _State = ios_base::eofbit;
+                    }
+
+                    break;
+                }
+
+                _Str.push_back(_Traits::to_char_type(_Meta));
+            }
+            _CATCH_IO_(ios_base, _Istr)
+        }
+
+        _Istr.setstate(_State);
+        return _Istr;
+    }
+
     _Mystr& _Str; // reference to string
     _Elem _Delim; // delimiter element
     _Elem _Escape; // escape element
@@ -331,53 +377,6 @@ template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _Quote_in<_Elem, _Traits, _Alloc> quoted(
     basic_string<_Elem, _Traits, _Alloc>& _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
     return {_Str, _Delim, _Escape};
-}
-
-template <class _Elem, class _Traits, class _Alloc>
-basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
-    const _Quote_in<_Elem, _Traits, _Alloc>& _Manip) { // get quoted string from input stream
-    ios_base::iostate _State = ios_base::goodbit;
-    const typename basic_istream<_Elem, _Traits>::sentry _Ok(_Istr);
-
-    if (_Ok) { // state okay, extract characters
-        _TRY_IO_BEGIN
-        const auto _Buf   = _Istr.rdbuf();
-        auto& _Str        = _Manip._Str;
-        const auto _Delim = _Traits::to_int_type(_Manip._Delim);
-        auto _Meta        = _Buf->sgetc();
-
-        if (!_Traits::eq_int_type(_Meta, _Delim)) { // no leading delimiter
-            return _Istr >> _Str;
-        }
-
-        const auto _Escape = _Traits::to_int_type(_Manip._Escape);
-        _Str.clear();
-        for (;;) {
-            _Meta = _Buf->snextc();
-            if (_Traits::eq_int_type(_Traits::eof(), _Meta)) { // no trailing delimiter; fail
-                _State = ios_base::eofbit | ios_base::failbit;
-                break;
-            } else if (_Traits::eq_int_type(_Meta, _Escape)) { // escape; read next character literally
-                _Meta = _Buf->snextc();
-                if (_Traits::eq_int_type(_Traits::eof(), _Meta)) { // bad escape; fail
-                    _State = ios_base::eofbit | ios_base::failbit;
-                    break;
-                }
-            } else if (_Traits::eq_int_type(_Meta, _Delim)) { // found trailing delimiter
-                if (_Traits::eq_int_type(_Traits::eof(), _Buf->sbumpc())) { // consume trailing delimiter
-                    _State = ios_base::eofbit;
-                }
-
-                break;
-            }
-
-            _Str.push_back(_Traits::to_char_type(_Meta));
-        }
-        _CATCH_IO_(ios_base, _Istr)
-    }
-
-    _Istr.setstate(_State);
-    return _Istr;
 }
 
 template <class _Arg>
