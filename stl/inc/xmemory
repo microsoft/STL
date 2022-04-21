@@ -2192,9 +2192,8 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
         const _Alloc& _Al;
         _Uty& _Ux;
 
-        using _Pair_t = remove_cv_t<_Ty>;
-
-        constexpr operator _Pair_t() const {
+        constexpr operator remove_cv_t<_Ty>() const {
+            using _Pair_t = remove_cv_t<_Ty>;
             static_assert(_Is_normally_bindable<_Pair_t, _Uty>,
                 "The argument must be bindable to a reference to the std::pair type.");
 
