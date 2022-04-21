@@ -207,10 +207,10 @@ _NODISCARD constexpr void* _Voidify_iter(_Iter _It) noexcept {
 
 #if _HAS_CXX20
 #ifdef __EDG__ // TRANSITION, DevCom-1691516
-template <class _Ty, class... _Types,
+_EXPORT_STD template <class _Ty, class... _Types,
     class = void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
 #else // ^^^ no workaround // workaround vvv
-template <class _Ty, class... _Types,
+_EXPORT_STD template <class _Ty, class... _Types,
     void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>* = nullptr>
 #endif // TRANSITION, DevCom-1691516
 constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
@@ -237,7 +237,7 @@ void _Default_construct_in_place(_Ty& _Obj) noexcept(is_nothrow_default_construc
     ::new (_Voidify_iter(_STD addressof(_Obj))) _Ty;
 }
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 struct pointer_traits {
     using pointer         = _Ty;
     using element_type    = typename _Get_element_type<_Ty>::type;
@@ -285,14 +285,14 @@ inline constexpr bool
     _Has_to_address<_Ty, void_t<decltype(pointer_traits<_Ty>::to_address(_STD declval<const _Ty&>()))>> = true;
 #endif // __cpp_lib_concepts
 
-template <class _Ty>
+_EXPORT_STD template <class _Ty>
 _NODISCARD constexpr _Ty* to_address(_Ty* const _Val) noexcept {
     static_assert(!is_function_v<_Ty>,
         "N4810 20.10.4 [pointer.conversion]/2: The program is ill-formed if T is a function type.");
     return _Val;
 }
 
-template <class _Ptr>
+_EXPORT_STD template <class _Ptr>
 _NODISCARD constexpr auto to_address(const _Ptr& _Val) noexcept {
     if constexpr (_Has_to_address<_Ptr>) {
         return pointer_traits<_Ptr>::to_address(_Val);
@@ -3035,13 +3035,13 @@ namespace ranges {
 
 // These declarations must be visible to qualified name lookup for _STD get in _Pair_like below, even if <tuple> hasn't
 // yet been included.
-template <size_t _Index, class... _Types>
+_EXPORT_STD template <size_t _Index, class... _Types>
 _NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>& get(tuple<_Types...>& _Tuple) noexcept;
-template <size_t _Index, class... _Types>
+_EXPORT_STD template <size_t _Index, class... _Types>
 _NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>& get(const tuple<_Types...>& _Tuple) noexcept;
-template <size_t _Index, class... _Types>
+_EXPORT_STD template <size_t _Index, class... _Types>
 _NODISCARD constexpr tuple_element_t<_Index, tuple<_Types...>>&& get(tuple<_Types...>&& _Tuple) noexcept;
-template <size_t _Index, class... _Types>
+_EXPORT_STD template <size_t _Index, class... _Types>
 _NODISCARD constexpr const tuple_element_t<_Index, tuple<_Types...>>&& get(const tuple<_Types...>&& _Tuple) noexcept;
 
 namespace ranges {
