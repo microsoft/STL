@@ -4435,6 +4435,7 @@ _FwdIt2 _Inclusive_scan_per_chunk(
     } else {
         _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), *_First));
     }
+
     for (;;) {
         *_Dest = _Val;
         ++_Dest;
@@ -4751,6 +4752,7 @@ _FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last,
     } else {
         _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), _Transform_op(*_First)));
     }
+
     for (;;) {
         *_Dest = _Val;
         ++_Dest;
