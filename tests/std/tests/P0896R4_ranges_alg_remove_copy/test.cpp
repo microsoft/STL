@@ -77,10 +77,9 @@ struct instantiator {
 using test::Common, test::Sized;
 
 template <class Category, Sized IsSized, Common IsCommon>
-using test_range =
-    test::range<Category, const P, IsSized, test::CanDifference{derived_from<Category, random_access_iterator_tag>},
-        IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag> || IsCommon == test::Common::yes},
-        test::ProxyRef::no>;
+using test_range = test::range<Category, const P, IsSized,
+    test::CanDifference{derived_from<Category, random_access_iterator_tag>}, IsCommon,
+    test::CanCompare{derived_from<Category, forward_iterator_tag> || IsCommon == Common::yes}, test::ProxyRef::no>;
 
 int main() {
 #ifdef TEST_EVERYTHING
