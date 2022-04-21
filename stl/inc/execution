@@ -4430,7 +4430,7 @@ _FwdIt2 _Inclusive_scan_per_chunk(
     // local-sum for parallel inclusive_scan; writes local inclusive prefix sums into _Dest and stores overall sum in
     // _Val.
     // pre: _Val is *uninitialized* && _First != _Last
-    if (!is_same_v<_No_init_tag, remove_const_t<remove_reference_t<_Ty_fwd>>>) {
+    if (is_same_v<_No_init_tag, remove_const_t<remove_reference_t<_Ty_fwd>>>) {
         _Construct_in_place(_Val, *_First);
     } else {
         _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), *_First));
