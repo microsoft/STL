@@ -884,6 +884,7 @@ class shared_future;
 template <class _Ty>
 class future : public _State_manager<_Ty> {
     // class that defines a non-copyable asynchronous return object that holds a value
+private:
     using _Mybase = _State_manager<_Ty>;
 
 public:
@@ -920,6 +921,7 @@ public:
 template <class _Ty>
 class future<_Ty&> : public _State_manager<_Ty*> {
     // class that defines a non-copyable asynchronous return object that holds a reference
+private:
     using _Mybase = _State_manager<_Ty*>;
 
 public:
@@ -953,6 +955,7 @@ public:
 template <>
 class future<void> : public _State_manager<int> {
     // class that defines a non-copyable asynchronous return object that does not hold a value
+private:
     using _Mybase = _State_manager<int>;
 
 public:
@@ -984,6 +987,7 @@ public:
 template <class _Ty>
 class shared_future : public _State_manager<_Ty> {
     // class that defines a copyable asynchronous return object that holds a value
+private:
     using _Mybase = _State_manager<_Ty>;
 
 public:
@@ -1019,6 +1023,7 @@ public:
 template <class _Ty>
 class shared_future<_Ty&> : public _State_manager<_Ty*> {
     // class that defines a copyable asynchronous return object that holds a reference
+private:
     using _Mybase = _State_manager<_Ty*>;
 
 public:
@@ -1051,6 +1056,7 @@ public:
 template <>
 class shared_future<void> : public _State_manager<int> {
     // class that defines a copyable asynchronous return object that does not hold a value
+private:
     using _Mybase = _State_manager<int>;
 
 public:
@@ -1473,6 +1479,7 @@ class _Fake_no_copy_callable_adapter {
     // std::function, which requires that things be copyable. We can't fix this in an
     // update, so this adapter turns copies into terminate(). When VSO-153581 is
     // fixed, remove this adapter.
+private:
     using _Storaget = tuple<decay_t<_Types>...>;
 
 public:

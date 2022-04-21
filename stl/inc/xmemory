@@ -1639,6 +1639,7 @@ namespace ranges {
 template <class _Alloc>
 class _NODISCARD _Uninitialized_backout_al {
     // struct to undo partially constructed ranges in _Uninitialized_xxx_al algorithms
+private:
     using pointer = _Alloc_ptr_t<_Alloc>;
 
 public:
