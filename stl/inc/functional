@@ -2145,16 +2145,16 @@ public:
         : _Mypair(_One_then_variadic_args_t{}, _STD forward<_FxInit>(_Func), _STD forward<_TypesInit>(_Args)...) {}
 
     template <class... _Unbound>
-    constexpr auto operator()(_Unbound&&... _Unbargs) & noexcept(noexcept(
-        _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
+    constexpr auto operator()(_Unbound&&... _Unbargs) & noexcept(
+        noexcept(_Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
         -> decltype(_Call_back_binder(
             _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
         return _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
     }
 
     template <class... _Unbound>
-    constexpr auto operator()(_Unbound&&... _Unbargs) const& noexcept(noexcept(
-        _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
+    constexpr auto operator()(_Unbound&&... _Unbargs) const& noexcept(
+        noexcept(_Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
         -> decltype(_Call_back_binder(
             _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
         return _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
@@ -2182,8 +2182,8 @@ template <class _Fx, class... _Types>
 _NODISCARD constexpr auto bind_back(_Fx&& _Func, _Types&&... _Args) {
     static_assert(is_constructible_v<decay_t<_Fx>, _Fx>,
         "std::bind_back requires the decayed callable to be constructible from an undecayed callable");
-    static_assert(is_move_constructible_v<decay_t<_Fx>>,
-        "std::bind_back requires the decayed callable to be move constructible");
+    static_assert(
+        is_move_constructible_v<decay_t<_Fx>>, "std::bind_back requires the decayed callable to be move constructible");
     static_assert(conjunction_v<is_constructible<decay_t<_Types>, _Types>...>,
         "std::bind_back requires the decayed bound arguments to be constructible from undecayed bound arguments");
     static_assert(conjunction_v<is_move_constructible<decay_t<_Types>>...>,
