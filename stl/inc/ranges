@@ -1442,8 +1442,8 @@ namespace ranges {
         void _Derived_from_range_adaptor_closure_impl(const volatile range_adaptor_closure<_Ty>&);
 
         template <class _Ty>
-        concept _Derived_from_range_adaptor_closure = requires(const volatile _Ty& _Obj) {
-            _Derived_from_range_adaptor_closure_impl(_Obj);
+        concept _Derived_from_range_adaptor_closure = requires(const volatile _Ty& __obj) {
+            _Derived_from_range_adaptor_closure_impl(__obj);
         };
 
         template <class _Ty>
@@ -1468,95 +1468,95 @@ namespace ranges {
     public:
         template <class _Other>
             requires _StdPipe::_Are_composable_range_adaptor_closures<_Derived&, _Other>
-        constexpr auto operator|(_Other&& __r) & noexcept(
-            noexcept(_StdPipe::_StdPipeline{static_cast<_Derived&>(*this), _STD forward<_Other>(__r)})) {
-            return _StdPipe::_StdPipeline{static_cast<_Derived&>(*this), _STD forward<_Other>(__r)};
+        constexpr auto operator|(_Other&& _Right) & noexcept(
+            noexcept(_StdPipe::_StdPipeline{static_cast<_Derived&>(*this), _STD forward<_Other>(_Right)})) {
+            return _StdPipe::_StdPipeline{static_cast<_Derived&>(*this), _STD forward<_Other>(_Right)};
         }
 
         template <class _Other>
             requires _StdPipe::_Are_composable_range_adaptor_closures<_Derived, _Other>
-        constexpr auto operator|(_Other&& __r) && noexcept(
-            noexcept(_StdPipe::_StdPipeline{static_cast<_Derived&&>(*this), _STD forward<_Other>(__r)})) {
-            return _StdPipe::_StdPipeline{static_cast<_Derived&&>(*this), _STD forward<_Other>(__r)};
+        constexpr auto operator|(_Other&& _Right) && noexcept(
+            noexcept(_StdPipe::_StdPipeline{static_cast<_Derived&&>(*this), _STD forward<_Other>(_Right)})) {
+            return _StdPipe::_StdPipeline{static_cast<_Derived&&>(*this), _STD forward<_Other>(_Right)};
         }
 
         template <class _Other>
             requires _StdPipe::_Are_composable_range_adaptor_closures<const _Derived&, _Other>
-        constexpr auto operator|(_Other&& __r) & noexcept(
-            noexcept(_StdPipe::_StdPipeline{static_cast<const _Derived&>(*this), _STD forward<_Other>(__r)})) {
-            return _StdPipe::_StdPipeline{static_cast<const _Derived&>(*this), _STD forward<_Other>(__r)};
+        constexpr auto operator|(_Other&& _Right) & noexcept(
+            noexcept(_StdPipe::_StdPipeline{static_cast<const _Derived&>(*this), _STD forward<_Other>(_Right)})) {
+            return _StdPipe::_StdPipeline{static_cast<const _Derived&>(*this), _STD forward<_Other>(_Right)};
         }
 
         template <class _Other>
             requires _StdPipe::_Are_composable_range_adaptor_closures<const _Derived, _Other>
-        constexpr auto operator|(_Other&& __r) const&& noexcept(
-            noexcept(_StdPipe::_StdPipeline{static_cast<const _Derived&&>(*this), _STD forward<_Other>(__r)})) {
-            return _StdPipe::_StdPipeline{static_cast<const _Derived&&>(*this), _STD forward<_Other>(__r)};
+        constexpr auto operator|(_Other&& _Right) const&& noexcept(
+            noexcept(_StdPipe::_StdPipeline{static_cast<const _Derived&&>(*this), _STD forward<_Other>(_Right)})) {
+            return _StdPipe::_StdPipeline{static_cast<const _Derived&&>(*this), _STD forward<_Other>(_Right)};
         }
 
-        template <_StdPipe::_Is_invocable_range_adaptor_closure<_Derived&> _Left>
-        friend constexpr auto operator|(_Left&& __l, _Derived& __r) noexcept(
-            noexcept(static_cast<_Derived&>(__r)(_STD forward<_Left>(__l)))) {
-            return static_cast<_Derived&>(__r)(_STD forward<_Left>(__l));
+        template <_StdPipe::_Is_invocable_range_adaptor_closure<_Derived&> _Rng>
+        friend constexpr auto operator|(_Rng&& _Left, _Derived& _Right) noexcept(
+            noexcept(static_cast<_Derived&>(_Right)(_STD forward<_Rng>(_Left)))) {
+            return static_cast<_Derived&>(_Right)(_STD forward<_Rng>(_Left));
         }
 
-        template <_StdPipe::_Is_invocable_range_adaptor_closure<_Derived&&> _Left>
-        friend constexpr auto operator|(_Left&& __l, _Derived&& __r) noexcept(
-            noexcept(static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l)))) {
-            return static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l));
+        template <_StdPipe::_Is_invocable_range_adaptor_closure<_Derived&&> _Rng>
+        friend constexpr auto operator|(_Rng&& _Left, _Derived&& _Right) noexcept(
+            noexcept(static_cast<_Derived&&>(_Right)(_STD forward<_Rng>(_Left)))) {
+            return static_cast<_Derived&&>(_Right)(_STD forward<_Rng>(_Left));
         }
 
-        template <_StdPipe::_Is_invocable_range_adaptor_closure<const _Derived&> _Left>
-        friend constexpr auto operator|(_Left&& __l, const _Derived& __r) noexcept(
-            noexcept(static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l)))) {
-            return static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l));
+        template <_StdPipe::_Is_invocable_range_adaptor_closure<const _Derived&> _Rng>
+        friend constexpr auto operator|(_Rng&& _Left, const _Derived& _Right) noexcept(
+            noexcept(static_cast<const _Derived&>(_Right)(_STD forward<_Rng>(_Left)))) {
+            return static_cast<const _Derived&>(_Right)(_STD forward<_Rng>(_Left));
         }
 
-        template <_StdPipe::_Is_invocable_range_adaptor_closure<const _Derived&&> _Left>
-        friend constexpr auto operator|(_Left&& __l, const _Derived&& __r) noexcept(
-            noexcept(static_cast<const _Derived&&>(__r)(_STD forward<_Left>(__l)))) {
-            return static_cast<const _Derived&&>(__r)(_STD forward<_Left>(__l));
+        template <_StdPipe::_Is_invocable_range_adaptor_closure<const _Derived&&> _Rng>
+        friend constexpr auto operator|(_Rng&& _Left, const _Derived&& _Right) noexcept(
+            noexcept(static_cast<const _Derived&&>(_Right)(_STD forward<_Rng>(_Left)))) {
+            return static_cast<const _Derived&&>(_Right)(_STD forward<_Rng>(_Left));
         }
     };
 
     namespace _StdPipe {
-        template <class _Left, class _Right>
-        struct _StdPipeline : range_adaptor_closure<_StdPipeline<_Left, _Right>> {
-            /* [[no_unique_address]] */ _Left __l;
-            /* [[no_unique_address]] */ _Right __r;
+        template <class _ClosureLeft, class _ClosureRight>
+        struct _StdPipeline : range_adaptor_closure<_StdPipeline<_ClosureLeft, _ClosureRight>> {
+            /* [[no_unique_address]] */ _ClosureLeft _Left;
+            /* [[no_unique_address]] */ _ClosureRight _Right;
 
             template <class _Ty1, class _Ty2>
             constexpr explicit _StdPipeline(_Ty1&& _Val1, _Ty2&& _Val2) noexcept(
-                is_nothrow_constructible_v<_Ty1, _Left>&& is_nothrow_constructible_v<_Ty2, _Right>)
-                : __l(_STD forward<_Ty1>(_Val1)), __r(_STD forward<_Ty2>(_Val2)) {}
+                is_nothrow_constructible_v<_Ty1, _ClosureLeft>&& is_nothrow_constructible_v<_Ty2, _ClosureRight>)
+                : _Left(_STD forward<_Ty1>(_Val1)), _Right(_STD forward<_Ty2>(_Val2)) {}
 
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Val) & noexcept(
-                noexcept(__r(__l(_STD forward<_Ty>(_Val))))) requires requires {
-                __r(__l(_STD forward<_Ty>(_Val)));
+                noexcept(_Right(_Left(_STD forward<_Ty>(_Val))))) requires requires {
+                _Right(_Left(_STD forward<_Ty>(_Val)));
             }
-            { return __r(__l(_STD forward<_Ty>(_Val))); }
+            { return _Right(_Left(_STD forward<_Ty>(_Val))); }
 
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Val) && noexcept(
-                noexcept(_STD move(__r)(_STD move(__l)(_STD forward<_Ty>(_Val))))) requires requires {
-                _STD move(__r)(_STD move(__l)(_STD forward<_Ty>(_Val)));
+                noexcept(_STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))))) requires requires {
+                _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val)));
             }
-            { return _STD move(__r)(_STD move(__l)(_STD forward<_Ty>(_Val))); }
+            { return _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))); }
 
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const& noexcept(
-                noexcept(__r(__l(_STD forward<_Ty>(_Val))))) requires requires {
-                __r(__l(_STD forward<_Ty>(_Val)));
+                noexcept(_Right(_Left(_STD forward<_Ty>(_Val))))) requires requires {
+                _Right(_Left(_STD forward<_Ty>(_Val)));
             }
-            { return __r(__l(_STD forward<_Ty>(_Val))); }
+            { return _Right(_Left(_STD forward<_Ty>(_Val))); }
 
             template <class _Ty>
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const&& noexcept(
-                noexcept(_STD move(__r)(_STD move(__l)(_STD forward<_Ty>(_Val))))) requires requires {
-                _STD move(__r)(_STD move(__l)(_STD forward<_Ty>(_Val)));
+                noexcept(_STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))))) requires requires {
+                _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val)));
             }
-            { return _STD move(__r)(_STD move(__l)(_STD forward<_Ty>(_Val))); }
+            { return _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))); }
         };
 
         template <class _Ty1, class _Ty2>
