@@ -514,7 +514,15 @@ STATIC_ASSERT(__cpp_lib_constexpr_iterator == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20
+#if _HAS_CXX23
+#ifndef __cpp_lib_constexpr_memory
+#error __cpp_lib_constexpr_memory is not defined
+#elif __cpp_lib_constexpr_memory != 202202L
+#error __cpp_lib_constexpr_memory is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_memory == 202202L);
+#endif
+#elif _HAS_CXX20
 #ifndef __cpp_lib_constexpr_memory
 #error __cpp_lib_constexpr_memory is not defined
 #elif __cpp_lib_constexpr_memory != 201811L
@@ -612,7 +620,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_vector == 201907L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang coroutine support
+#ifdef __cpp_impl_coroutine
 #ifndef __cpp_lib_coroutine
 #error __cpp_lib_coroutine is not defined
 #elif __cpp_lib_coroutine != 201902L
@@ -1341,6 +1349,20 @@ STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #else
 #ifdef __cpp_lib_ranges
 #error __cpp_lib_ranges is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_chunk_by
+#error __cpp_lib_ranges_chunk_by is not defined
+#elif __cpp_lib_ranges_chunk_by != 202202L
+#error __cpp_lib_ranges_chunk_by is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_chunk_by == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_chunk_by
+#error __cpp_lib_ranges_chunk_by is defined
 #endif
 #endif
 

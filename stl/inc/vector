@@ -2246,6 +2246,7 @@ public:
 template <class _Alvbase_wrapped>
 class _Vb_reference : public _Vb_iter_base<_Alvbase_wrapped> {
     // reference to a bit within a base word
+private:
     using _Mybase          = _Vb_iter_base<_Alvbase_wrapped>;
     using _Mycont          = typename _Mybase::_Mycont;
     using _Difference_type = typename _Mybase::_Difference_type;
@@ -2727,11 +2728,6 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mybase(_Al) {
-        _BConstruct(_First, _Last);
-    }
-
-    template <class _Iter>
-    _CONSTEXPR20 void _BConstruct(_Iter _First, _Iter _Last) {
         insert(begin(), _First, _Last);
     }
 
@@ -3197,7 +3193,9 @@ public:
                 _Xlen(); // result too long
             }
 
-            // worth doing
+#if _ITERATOR_DEBUG_LEVEL == 2
+            _Orphan_range(static_cast<size_type>(_Realloc ? 0 : _Off), this->_Mysize);
+#endif // _ITERATOR_DEBUG_LEVEL == 2
             this->_Myvec.resize(this->_Nw(size() + _Count), 0);
             if (empty()) {
                 this->_Mysize += _Count;
@@ -3206,10 +3204,6 @@ public:
                 this->_Mysize += _Count;
                 _STD copy_backward(begin() + _Off, _Oldend, end());
             }
-
-#if _ITERATOR_DEBUG_LEVEL == 2
-            _Orphan_range(static_cast<size_type>(_Realloc ? 0 : _Off), this->_Mysize);
-#endif // _ITERATOR_DEBUG_LEVEL == 2
         }
 
         return static_cast<size_type>(_Off);

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <version> // TRANSITION, P0912R5 Library Support For Coroutines
-#if defined(__cpp_lib_coroutine) && __cpp_lib_coroutine >= 201902L // TRANSITION, P0912R5 Library Support For Coroutines
+#include <version> // TRANSITION, Clang 14 coroutine support
+#ifdef __cpp_lib_coroutine // TRANSITION, Clang 14 coroutine support
 
 #include <assert.h>
 #include <coroutine>
@@ -183,4 +183,4 @@ int main() {
 
 #else // ^^^ test <coroutine> ^^^ / vvv don't test <coroutine> vvv
 int main() {}
-#endif // TRANSITION, P0912R5 Library Support For Coroutines
+#endif // TRANSITION, Clang 14 coroutine support

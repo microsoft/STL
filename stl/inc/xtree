@@ -826,6 +826,7 @@ struct _Tree_temp_node : _Tree_temp_node_alloc<_Alnode> {
 template <class _Traits>
 class _Tree { // ordered red-black tree for map/multimap/set/multiset
 public:
+    using key_type       = typename _Traits::key_type;
     using value_type     = typename _Traits::value_type;
     using allocator_type = typename _Traits::allocator_type;
 
@@ -842,7 +843,8 @@ protected:
             typename _Alty_traits::pointer, typename _Alty_traits::const_pointer, value_type&, const value_type&,
             _Nodeptr>>>;
 
-    static constexpr bool _Multi = _Traits::_Multi;
+    static constexpr bool _Multi  = _Traits::_Multi;
+    static constexpr bool _Is_set = is_same_v<key_type, value_type>;
 
     enum _Redbl { // colors for link to parent
         _Red,
@@ -850,7 +852,6 @@ protected:
     };
 
 public:
-    using key_type      = typename _Traits::key_type;
     using value_compare = typename _Traits::value_compare;
 
     using key_compare = typename _Traits::key_compare;
@@ -862,22 +863,18 @@ public:
     using reference       = value_type&;
     using const_reference = const value_type&;
 
-    using iterator =
-        conditional_t<is_same_v<key_type, value_type>, _Tree_const_iterator<_Scary_val>, _Tree_iterator<_Scary_val>>;
-    using const_iterator            = _Tree_const_iterator<_Scary_val>;
-    using _Unchecked_iterator       = conditional_t<is_same_v<key_type, value_type>,
-        _Tree_unchecked_const_iterator<_Scary_val>, _Tree_unchecked_iterator<_Scary_val>>;
+    using iterator       = conditional_t<_Is_set, _Tree_const_iterator<_Scary_val>, _Tree_iterator<_Scary_val>>;
+    using const_iterator = _Tree_const_iterator<_Scary_val>;
+    using _Unchecked_iterator =
+        conditional_t<_Is_set, _Tree_unchecked_const_iterator<_Scary_val>, _Tree_unchecked_iterator<_Scary_val>>;
     using _Unchecked_const_iterator = _Tree_unchecked_const_iterator<_Scary_val>;
 
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-    struct _Copy_tag {
-        explicit _Copy_tag() = default;
-    };
-
-    struct _Move_tag {
-        explicit _Move_tag() = default;
+    enum class _Strategy : bool {
+        _Copy,
+        _Move,
     };
 
     _Tree(const key_compare& _Parg) : _Mypair(_One_then_variadic_args_t{}, _Parg, _Zero_then_variadic_args_t{}) {
@@ -897,7 +894,7 @@ public:
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
         _Tree_head_scoped_ptr<_Alnode, _Scary_val> _Sentinel(_Getal(), *_Scary);
-        _Copy(_Right, _Copy_tag{});
+        _Copy<_Strategy::_Copy>(_Right);
         _Sentinel._Release();
         _Proxy._Release();
     }
@@ -916,7 +913,7 @@ private:
         const auto _Scary = _Get_scary();
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, *_Scary);
         _Tree_head_scoped_ptr<_Alnode, _Scary_val> _Sentinel(_Getal(), *_Scary);
-        _Copy(_Right, _Move_tag{});
+        _Copy<_Strategy::_Move>(_Right);
         _Sentinel._Release();
         _Proxy._Release();
     }
@@ -936,7 +933,6 @@ public:
         _Swap_val_excluding_comp(_Right);
     }
 
-public:
     _Tree& operator=(_Tree&& _Right) noexcept(
         _Choose_pocma_v<_Alnode> == _Pocma_values::_Equal_allocators && is_nothrow_move_assignable_v<key_compare>) {
         if (this == _STD addressof(_Right)) {
@@ -969,7 +965,7 @@ public:
             if (_Al != _Right_al) {
                 clear();
                 _Getcomp() = _Right._Getcomp(); // intentionally copy comparator, see LWG-2227
-                _Copy(_Right, _Move_tag{});
+                _Copy<_Strategy::_Move>(_Right);
                 return *this;
             }
         }
@@ -1110,7 +1106,7 @@ public:
                 _Scary->_Myhead = _Newhead;
                 _Proxy._Bind(_Alproxy, _Scary);
                 _Getcomp() = _Right._Getcomp();
-                _Copy(_Right, _Copy_tag{});
+                _Copy<_Strategy::_Copy>(_Right);
                 return *this;
             }
         }
@@ -1118,7 +1114,7 @@ public:
         clear();
         _Getcomp() = _Right._Getcomp();
         _Pocca(_Al, _Right_al);
-        _Copy(_Right, _Copy_tag{});
+        _Copy<_Strategy::_Copy>(_Right);
 
         return *this;
     }
@@ -1621,11 +1617,11 @@ protected:
         }
     }
 
-    template <class _Moveit>
-    void _Copy(const _Tree& _Right, _Moveit _Movefl) { // copy or move entire tree from _Right
+    template <_Strategy _Strat>
+    void _Copy(const _Tree& _Right) { // copy or move entire tree from _Right
         const auto _Scary        = _Get_scary();
         const auto _Right_scary  = _Right._Get_scary();
-        _Scary->_Myhead->_Parent = _Copy_nodes(_Right_scary->_Myhead->_Parent, _Scary->_Myhead, _Movefl);
+        _Scary->_Myhead->_Parent = _Copy_nodes<_Strat>(_Right_scary->_Myhead->_Parent, _Scary->_Myhead);
         _Scary->_Mysize          = _Right_scary->_Mysize;
         if (!_Scary->_Myhead->_Parent->_Isnil) { // nonempty tree, look for new smallest and largest
             _Scary->_Myhead->_Left  = _Scary_val::_Min(_Scary->_Myhead->_Parent);
@@ -1636,30 +1632,27 @@ protected:
         }
     }
 
-    template <class _Ty, class _Is_set>
-    _Nodeptr _Copy_or_move(_Ty& _Val, _Copy_tag, _Is_set) { // copy to new node
-        return _Buynode(_Val);
+    template <_Strategy _Strat, class _Ty>
+    _Nodeptr _Copy_or_move(_Ty& _Val) {
+        if constexpr (_Strat == _Strategy::_Copy) {
+            return _Buynode(_Val);
+        } else {
+            if constexpr (_Is_set) {
+                return _Buynode(_STD move(_Val));
+            } else {
+                return _Buynode(_STD move(const_cast<key_type&>(_Val.first)), _STD move(_Val.second));
+            }
+        }
     }
 
-    template <class _Ty>
-    _Nodeptr _Copy_or_move(_Ty& _Val, _Move_tag, true_type) { // move to new node -- set
-        return _Buynode(_STD move(_Val));
-    }
-
-    template <class _Ty>
-    _Nodeptr _Copy_or_move(_Ty& _Val, _Move_tag, false_type) { // move to new node -- map
-        return _Buynode(_STD move(const_cast<key_type&>(_Val.first)), _STD move(_Val.second));
-    }
-
-    template <class _Moveit>
-    _Nodeptr _Copy_nodes(_Nodeptr _Rootnode, _Nodeptr _Wherenode, _Moveit _Movefl) {
+    template <_Strategy _Strat>
+    _Nodeptr _Copy_nodes(_Nodeptr _Rootnode, _Nodeptr _Wherenode) {
         // copy entire subtree, recursively
         const auto _Scary = _Get_scary();
         _Nodeptr _Newroot = _Scary->_Myhead; // point at nil node
 
         if (!_Rootnode->_Isnil) { // copy or move a node, then any subtrees
-            bool_constant<is_same_v<key_type, value_type>> _Is_set;
-            _Nodeptr _Pnode = _Copy_or_move(_Rootnode->_Myval, _Movefl, _Is_set);
+            _Nodeptr _Pnode = _Copy_or_move<_Strat>(_Rootnode->_Myval);
             _Pnode->_Parent = _Wherenode;
             _Pnode->_Color  = _Rootnode->_Color;
             if (_Newroot->_Isnil) {
@@ -1667,8 +1660,8 @@ protected:
             }
 
             _TRY_BEGIN
-            _Pnode->_Left  = _Copy_nodes(_Rootnode->_Left, _Pnode, _Movefl);
-            _Pnode->_Right = _Copy_nodes(_Rootnode->_Right, _Pnode, _Movefl);
+            _Pnode->_Left  = _Copy_nodes<_Strat>(_Rootnode->_Left, _Pnode);
+            _Pnode->_Right = _Copy_nodes<_Strat>(_Rootnode->_Right, _Pnode);
             _CATCH_ALL
             _Scary->_Erase_tree_and_orphan(_Getal(), _Newroot); // subtree copy failed, bail out
             _RERAISE;

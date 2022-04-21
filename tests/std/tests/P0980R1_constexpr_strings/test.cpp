@@ -2384,8 +2384,7 @@ constexpr void test_all() {
 }
 
 #if _HAS_CXX23
-void test_gh_2524() // COMPILE-ONLY
-{
+void test_gh_2524() { // COMPILE-ONLY
     // resize_and_overwrite generates warning C4018 when Operation returns int
     string s;
     s.resize_and_overwrite(1, [](char* buffer, size_t) {
