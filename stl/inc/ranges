@@ -1452,7 +1452,7 @@ namespace ranges {
 
         template <class _Rng, class _Ty>
         concept _Is_invocable_range_adaptor_closure =
-            range<_Rng> && invocable<_Ty, _Rng> && _Is_range_adaptor_common<_Ty>;
+            range<_Rng> && _Pipe::_Can_pipe<_Rng, _Ty> && _Is_range_adaptor_common<_Ty>;
 
         template <class _Left, class _Right>
         concept _Are_composable_range_adaptor_closures =
