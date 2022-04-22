@@ -9,6 +9,35 @@ which ships as part of the MSVC toolset and the Visual Studio IDE.
 
 [![Build Status](https://dev.azure.com/vclibs/STL/_apis/build/status/microsoft.STL?branchName=main)][Pipelines]
 
+<details><summary>Table of Contents</summary>
+
+* [What This Repo Is Useful For](#what-this-repo-is-useful-for)
+* [GitHub Migration Status](#github-migration-status)
+* [Goals](#goals)
+* [Non-Goals](#non-goals)
+* [Reporting Issues](#reporting-issues)
+* [How To Build With The Visual Studio IDE](#how-to-build-with-the-visual-studio-ide)
+* [How To Build With A Native Tools Command Prompt](#how-to-build-with-a-native-tools-command-prompt)
+* [How To Consume](#how-to-consume)
+  * [Complete Example Using x64 DLL Flavor](#complete-example-using-x64-dll-flavor)
+* [How To Run The Tests With A Native Tools Command Prompt](#how-to-run-the-tests-with-a-native-tools-command-prompt)
+  * [Running All The Tests](#running-all-the-tests)
+  * [Running A Subset Of The Tests](#running-a-subset-of-the-tests)
+  * [Examples](#examples)
+  * [Interpreting The Results Of Tests](#interpreting-the-results-of-tests)
+    * [CTest](#ctest)
+    * [stl-lit](#stl-lit)
+    * [Result Code Values](#result-code-values)
+    * [Debugging Individual Tests](#debugging-individual-tests)
+* [Editing And Testing The Debugger Visualizer](#editing-and-testing-the-debugger-visualizer)
+    * [Modify The Visualizer](#modify-the-visualizer)
+    * [Test Your Changes](#test-your-changes)
+* [Block Diagram](#block-diagram)
+* [Contributing](#contributing)
+* [Code Of Conduct](#code-of-conduct)
+* [License](#license)
+</details>
+
 # What This Repo Is Useful For
 
 If you're a programmer who just wants to use the STL, you **don't** need this repo. Simply install the Visual Studio IDE
