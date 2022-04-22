@@ -106,26 +106,46 @@ struct ModelsRange : std::ranges::range_adaptor_closure<ModelsRange> {
 static_assert(does_not_satisfy_range_adaptor_closure<ModelsRange>());
 
 struct RangeAdaptorClosureMemberRefQualTest : std::ranges::range_adaptor_closure<RangeAdaptorClosureMemberRefQualTest> {
-    constexpr char operator()(const TestRange&) & {
-        return {};
+    constexpr std::ranges::empty_view<char> operator()(const auto&) & {
+        return std::views::empty<char>;
     }
 
-    constexpr short operator()(const TestRange&) && {
-        return {};
+    constexpr std::ranges::empty_view<short> operator()(const auto&) && {
+        return std::views::empty<short>;
     }
 
-    constexpr unsigned char operator()(const TestRange&) const& {
-        return {};
+    constexpr std::ranges::empty_view<float> operator()(const auto&) const& {
+        return std::views::empty<float>;
     }
 
-    constexpr unsigned short operator()(const TestRange&) const&& {
-        return {};
+    constexpr std::ranges::empty_view<double> operator()(const auto&) const&& {
+        return std::views::empty<double>;
     }
 };
-static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest&, char>);
-static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest&&, short>);
-static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest const&, unsigned char>);
-static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest const&&, unsigned short>);
+static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest&, std::ranges::empty_view<char>>);
+static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest&&, std::ranges::empty_view<short>>);
+static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest const&, std::ranges::empty_view<float>>);
+static_assert(CanPipe_R<TestRange, RangeAdaptorClosureMemberRefQualTest const&&, std::ranges::empty_view<double>>);
+
+using FirstIdentityThenMemberRefQualTest = decltype(
+    IdentityRangeAdaptorClosure{} | RangeAdaptorClosureMemberRefQualTest{});
+static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest&, std::ranges::empty_view<char>>);
+static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest&&, std::ranges::empty_view<short>>);
+static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest const&, std::ranges::empty_view<float>>);
+static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest const&&, std::ranges::empty_view<double>>);
+
+using FirstTransformThenMemberRefQualTest = decltype(
+    std::views::transform([](auto x) { return x; }) | RangeAdaptorClosureMemberRefQualTest{});
+static_assert(CanPipe_R<TestRange, FirstTransformThenMemberRefQualTest&, std::ranges::empty_view<char>>);
+static_assert(CanPipe_R<TestRange, FirstTransformThenMemberRefQualTest&&, std::ranges::empty_view<short>>);
+static_assert(CanPipe_R<TestRange, FirstTransformThenMemberRefQualTest const&, std::ranges::empty_view<float>>);
+static_assert(CanPipe_R<TestRange, FirstTransformThenMemberRefQualTest const&&, std::ranges::empty_view<double>>);
+
+using FirstMemberRefQualTestThenAll = decltype(RangeAdaptorClosureMemberRefQualTest{} | std::views::all);
+static_assert(CanPipe_R<TestRange, FirstMemberRefQualTestThenAll&, std::ranges::empty_view<char>>);
+static_assert(CanPipe_R<TestRange, FirstMemberRefQualTestThenAll&&, std::ranges::empty_view<short>>);
+static_assert(CanPipe_R<TestRange, FirstMemberRefQualTestThenAll const&, std::ranges::empty_view<float>>);
+static_assert(CanPipe_R<TestRange, FirstMemberRefQualTestThenAll const&&, std::ranges::empty_view<double>>);
 
 struct RangeAdaptorClosureParameterRefQualTest
     : std::ranges::range_adaptor_closure<RangeAdaptorClosureParameterRefQualTest> {
@@ -137,25 +157,18 @@ struct RangeAdaptorClosureParameterRefQualTest
         return {};
     }
 
-    constexpr unsigned char operator()(const TestRange&) {
+    constexpr float operator()(const TestRange&) {
         return {};
     }
 
-    constexpr unsigned short operator()(const TestRange&&) {
+    constexpr double operator()(const TestRange&&) {
         return {};
     }
 };
 static_assert(CanPipe_R<TestRange&, RangeAdaptorClosureParameterRefQualTest, char>);
 static_assert(CanPipe_R<TestRange&&, RangeAdaptorClosureParameterRefQualTest, short>);
-static_assert(CanPipe_R<const TestRange&, RangeAdaptorClosureParameterRefQualTest, unsigned char>);
-static_assert(CanPipe_R<const TestRange&&, RangeAdaptorClosureParameterRefQualTest, unsigned short>);
-
-using FirstIdentityThenMemberRefQualTest = decltype(
-    IdentityRangeAdaptorClosure{} | RangeAdaptorClosureMemberRefQualTest{});
-static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest&, char>);
-static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest&&, short>);
-static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest const&, unsigned char>);
-static_assert(CanPipe_R<TestRange, FirstIdentityThenMemberRefQualTest const&&, unsigned short>);
+static_assert(CanPipe_R<const TestRange&, RangeAdaptorClosureParameterRefQualTest, float>);
+static_assert(CanPipe_R<const TestRange&&, RangeAdaptorClosureParameterRefQualTest, double>);
 
 struct MoveOnlyRangeAdaptorClosure : std::ranges::range_adaptor_closure<MoveOnlyRangeAdaptorClosure> {
     MoveOnlyRangeAdaptorClosure()                                   = default;
@@ -187,7 +200,7 @@ public:
     }
 };
 
-constexpr bool test_constexpr() {
+constexpr bool test_user_defined_adaptors() {
     const std::array<int, 3> numbers{1, 2, 3};
     const std::array<int, 3> numbers_times_two{2, 4, 6};
     assert(std::ranges::equal(numbers_times_two, numbers | TimesTwoAdaptor{}));
@@ -200,7 +213,25 @@ constexpr bool test_constexpr() {
     return true;
 }
 
+constexpr bool test_mixing_of_range_adaptors() {
+    const std::array<int, 3> numbers{1, 2, 3};
+    assert(std::ranges::equal(
+        numbers, numbers | (TimesTwoAdaptor{} | std::views::transform([](int x) { return x / 2; }))));
+
+    const auto mixed_pipeline = TimesTwoAdaptor{} | std::views::reverse | DividedByTwoAdaptor{} | std::views::reverse;
+    assert(std::ranges::equal(mixed_pipeline(numbers), numbers));
+    assert(std::ranges::equal(numbers | mixed_pipeline, numbers));
+
+    auto factory_pipeline = std::views::iota(1) | TimesTwoAdaptor{} | std::views::take(3);
+    assert(std::ranges::equal(factory_pipeline, std::array{2, 4, 6}));
+
+    return true;
+}
+
 int main() {
-    assert(test_constexpr());
-    static_assert(test_constexpr());
+    assert(test_user_defined_adaptors());
+    static_assert(test_user_defined_adaptors());
+
+    assert(test_mixing_of_range_adaptors());
+    static_assert(test_mixing_of_range_adaptors());
 }
