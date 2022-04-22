@@ -816,7 +816,7 @@ namespace ranges {
     using _Range_Adaptor_Base = range_adaptor_closure<_Ty>;
 #else // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
     template <class _Ty>
-    using _Range_Adaptor_Base = _Pipe::Base<_Ty>;
+    using _Range_Adaptor_Base = _Pipe::_Base<_Ty>;
 #endif
 
     template <class _Fn, class... _Types>
