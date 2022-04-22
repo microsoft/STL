@@ -3936,7 +3936,7 @@ namespace ranges {
 #else // ^^^ no workaround / workaround vvv
                 auto _Match = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
                 auto _Begin = _Match.begin();
-                auto _End = _Match.end();
+                auto _End   = _Match.end();
 #endif // TRANSITION, DevCom-1559808
                 if (_Begin != _Last && _RANGES empty(_Parent->_Pattern)) {
                     ++_Begin;
@@ -3988,7 +3988,7 @@ namespace ranges {
 #else // ^^^ no workaround / workaround vvv
             auto _Match = _RANGES search(subrange{_It, _Last}, _Pattern);
             auto _Begin = _Match.begin();
-            auto _End = _Match.end();
+            auto _End   = _Match.end();
 #endif // TRANSITION, DevCom-1559808
             if (_Begin != _Last && _RANGES empty(_Pattern)) {
                 ++_Begin;
