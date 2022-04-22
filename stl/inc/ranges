@@ -1332,7 +1332,7 @@ namespace ranges {
         inline constexpr _Istream_fn<_Ty> istream;
     } // namespace views
 
-    namespace _StdPipe {
+    namespace _Pipe {
         template <class _Ty>
         void _Derived_from_range_adaptor_closure_impl(const volatile range_adaptor_closure<_Ty>&);
 
@@ -1365,28 +1365,28 @@ namespace ranges {
             _Is_range_adaptor_common<_Left> && _Is_range_adaptor_common<_Right> && _Can_compose<_Left, _Right>;
 
         template <class _Left, class _Right>
-        struct _StdPipeline;
-    } // namespace _StdPipe
+        struct _Pipeline;
+    } // namespace _Pipe
 
     template <class _Derived>
         requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
     class range_adaptor_closure {
     public:
         template <class _Other>
-            requires _StdPipe::_Are_composable_range_adaptor_closures<_Derived, _Other>
+            requires _Pipe::_Are_composable_range_adaptor_closures<_Derived, _Other>
         constexpr auto operator|(_Other&& _Right) && noexcept(
-            noexcept(_StdPipe::_StdPipeline{static_cast<_Derived&&>(*this), _STD forward<_Other>(_Right)})) {
-            return _StdPipe::_StdPipeline{static_cast<_Derived&&>(*this), _STD forward<_Other>(_Right)};
+            noexcept(_Pipe::_Pipeline{static_cast<_Derived&&>(*this), _STD forward<_Other>(_Right)})) {
+            return _Pipe::_Pipeline{static_cast<_Derived&&>(*this), _STD forward<_Other>(_Right)};
         }
 
         template <class _Other>
-            requires _StdPipe::_Are_composable_range_adaptor_closures<const _Derived&, _Other>
+            requires _Pipe::_Are_composable_range_adaptor_closures<const _Derived&, _Other>
         constexpr auto operator|(_Other&& _Right) const& noexcept(
-            noexcept(_StdPipe::_StdPipeline{static_cast<const _Derived&>(*this), _STD forward<_Other>(_Right)})) {
-            return _StdPipe::_StdPipeline{static_cast<const _Derived&>(*this), _STD forward<_Other>(_Right)};
+            noexcept(_Pipe::_Pipeline{static_cast<const _Derived&>(*this), _STD forward<_Other>(_Right)})) {
+            return _Pipe::_Pipeline{static_cast<const _Derived&>(*this), _STD forward<_Other>(_Right)};
         }
 
-        template <_StdPipe::_Is_invocable_range_adaptor_closure<_Derived&> _Rng>
+        template <_Pipe::_Is_invocable_range_adaptor_closure<_Derived&> _Rng>
         friend constexpr auto operator|(_Rng&& _Left, _Derived& _Right)
 #ifdef __EDG__ // TRANSITION, VSO-1222776
             noexcept(noexcept(_STD declval<_Derived&>()(_STD forward<_Rng>(_Left))))
@@ -1397,7 +1397,7 @@ namespace ranges {
             return static_cast<_Derived&>(_Right)(_STD forward<_Rng>(_Left));
         }
 
-        template <_StdPipe::_Is_invocable_range_adaptor_closure<_Derived&&> _Rng>
+        template <_Pipe::_Is_invocable_range_adaptor_closure<_Derived&&> _Rng>
         friend constexpr auto operator|(_Rng&& _Left, _Derived&& _Right)
 #ifdef __EDG__ // TRANSITION, VSO-1222776
             noexcept(noexcept(_STD declval<_Derived>()(_STD forward<_Rng>(_Left))))
@@ -1408,7 +1408,7 @@ namespace ranges {
             return static_cast<_Derived&&>(_Right)(_STD forward<_Rng>(_Left));
         }
 
-        template <_StdPipe::_Is_invocable_range_adaptor_closure<const _Derived&> _Rng>
+        template <_Pipe::_Is_invocable_range_adaptor_closure<const _Derived&> _Rng>
         friend constexpr auto operator|(_Rng&& _Left, const _Derived& _Right)
 #ifdef __EDG__ // TRANSITION, VSO-1222776
             noexcept(noexcept(_STD declval<const _Derived&>()(_STD forward<_Rng>(_Left))))
@@ -1419,7 +1419,7 @@ namespace ranges {
             return static_cast<const _Derived&>(_Right)(_STD forward<_Rng>(_Left));
         }
 
-        template <_StdPipe::_Is_invocable_range_adaptor_closure<const _Derived&&> _Rng>
+        template <_Pipe::_Is_invocable_range_adaptor_closure<const _Derived&&> _Rng>
         friend constexpr auto operator|(_Rng&& _Left, const _Derived&& _Right)
 #ifdef __EDG__ // TRANSITION, VSO-1222776
             noexcept(noexcept(_STD declval<const _Derived>()(_STD forward<_Rng>(_Left))))
@@ -1431,14 +1431,14 @@ namespace ranges {
         }
     };
 
-    namespace _StdPipe {
+    namespace _Pipe {
         template <class _ClosureLeft, class _ClosureRight>
-        struct _StdPipeline : range_adaptor_closure<_StdPipeline<_ClosureLeft, _ClosureRight>> {
+        struct _Pipeline : range_adaptor_closure<_Pipeline<_ClosureLeft, _ClosureRight>> {
             /* [[no_unique_address]] */ _ClosureLeft _Left;
             /* [[no_unique_address]] */ _ClosureRight _Right;
 
             template <class _Ty1, class _Ty2>
-            constexpr explicit _StdPipeline(_Ty1&& _Val1, _Ty2&& _Val2) noexcept(
+            constexpr explicit _Pipeline(_Ty1&& _Val1, _Ty2&& _Val2) noexcept(
                 is_nothrow_constructible_v<_Ty1, _ClosureLeft>&& is_nothrow_constructible_v<_Ty2, _ClosureRight>)
                 : _Left(_STD forward<_Ty1>(_Val1)), _Right(_STD forward<_Ty2>(_Val2)) {}
 
@@ -1472,9 +1472,9 @@ namespace ranges {
         };
 
         template <class _Ty1, class _Ty2>
-        _StdPipeline(_Ty1, _Ty2) -> _StdPipeline<_Ty1, _Ty2>;
+        _Pipeline(_Ty1, _Ty2) -> _Pipeline<_Ty1, _Ty2>;
 
-    } // namespace _StdPipe
+    } // namespace _Pipe
 
     template <range _Rng>
         requires is_object_v<_Rng>
