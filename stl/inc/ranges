@@ -72,6 +72,7 @@ namespace ranges {
         template <class _Derived>
         struct _Base;
     } // namespace _Pipe
+
     template <class _Ty>
     using _Range_Adaptor_Base = _Pipe::_Base<_Ty>;
 #endif
