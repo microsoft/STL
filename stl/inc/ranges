@@ -1467,13 +1467,6 @@ namespace ranges {
     class range_adaptor_closure {
     public:
         template <class _Other>
-            requires _StdPipe::_Are_composable_range_adaptor_closures<_Derived&, _Other>
-        constexpr auto operator|(_Other&& _Right) & noexcept(
-            noexcept(_StdPipe::_StdPipeline{static_cast<_Derived&>(*this), _STD forward<_Other>(_Right)})) {
-            return _StdPipe::_StdPipeline{static_cast<_Derived&>(*this), _STD forward<_Other>(_Right)};
-        }
-
-        template <class _Other>
             requires _StdPipe::_Are_composable_range_adaptor_closures<_Derived, _Other>
         constexpr auto operator|(_Other&& _Right) && noexcept(
             noexcept(_StdPipe::_StdPipeline{static_cast<_Derived&&>(*this), _STD forward<_Other>(_Right)})) {
@@ -1485,13 +1478,6 @@ namespace ranges {
         constexpr auto operator|(_Other&& _Right) const& noexcept(
             noexcept(_StdPipe::_StdPipeline{static_cast<const _Derived&>(*this), _STD forward<_Other>(_Right)})) {
             return _StdPipe::_StdPipeline{static_cast<const _Derived&>(*this), _STD forward<_Other>(_Right)};
-        }
-
-        template <class _Other>
-            requires _StdPipe::_Are_composable_range_adaptor_closures<const _Derived, _Other>
-        constexpr auto operator|(_Other&& _Right) const&& noexcept(
-            noexcept(_StdPipe::_StdPipeline{static_cast<const _Derived&&>(*this), _STD forward<_Other>(_Right)})) {
-            return _StdPipe::_StdPipeline{static_cast<const _Derived&&>(*this), _STD forward<_Other>(_Right)};
         }
 
         template <_StdPipe::_Is_invocable_range_adaptor_closure<_Derived&> _Rng>
