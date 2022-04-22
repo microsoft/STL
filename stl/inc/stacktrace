@@ -317,8 +317,7 @@ namespace pmr {
 
 template <>
 struct hash<stacktrace_entry> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef stacktrace_entry _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    // This is a C++23 feature, so argument_type and result_type are omitted.
 
     _NODISCARD size_t operator()(const stacktrace_entry& _Val) const noexcept {
         return _Hash_representation(_Val.native_handle());
@@ -327,8 +326,7 @@ struct hash<stacktrace_entry> {
 
 template <class _Alloc>
 struct hash<basic_stacktrace<_Alloc>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_stacktrace<_Alloc> _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    // This is a C++23 feature, so argument_type and result_type are omitted.
 
     _NODISCARD size_t operator()(const basic_stacktrace<_Alloc>& _Val) const noexcept {
         return _Val._Get_hash();
