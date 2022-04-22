@@ -1360,7 +1360,11 @@
 #define __cpp_lib_polymorphic_allocator   201902L
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
 #define __cpp_lib_ranges 202202L
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#define __cpp_lib_ranges 202110L
+#endif // _HAS_CXX23
 #endif // defined(__cpp_lib_concepts)
 
 #define __cpp_lib_remove_cvref            201711L
