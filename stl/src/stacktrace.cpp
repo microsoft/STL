@@ -6,7 +6,10 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
-#include <memory>
+#include <yvals.h>
+
+#include <cstdio>
+#include <cstdlib>
 
 // clang-format off
 #include <initguid.h> // should be before any header that includes <guiddef.h>
@@ -17,14 +20,14 @@
 #pragma comment(lib, "DbgEng.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
-// The below function pointer types must be in sync with <stacktrace>
-
-using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char* _Data, size_t _Size, void* _Context);
-
-using _Stacktrace_string_fill = size_t(__stdcall*)(
-    size_t _Size, void* _String, void* _Context, _Stacktrace_string_fill_callback _Callback);
-
 namespace {
+    // The below function pointer types must be in sync with <stacktrace>
+
+    using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char* _Data, size_t _Size, void* _Context);
+
+    using _Stacktrace_string_fill = size_t(__stdcall*)(
+        size_t _Size, void* _String, void* _Context, _Stacktrace_string_fill_callback _Callback);
+
     template <class F>
     size_t string_fill(const _Stacktrace_string_fill callback, const size_t size, void* const str, F f) {
         return callback(size, str, &f,
@@ -128,7 +131,7 @@ namespace {
             }
         }
 
-        if (atexit(uninitialize) != 0) {
+        if (std::atexit(uninitialize) != 0) {
             uninitialize();
             return false;
         }
@@ -147,7 +150,7 @@ namespace {
         for (;;) {
             ULONG new_size = 0;
 
-            size_t new_off = string_fill(
+            const size_t new_off = string_fill(
                 fill, off + size, str, [address, off, size, &new_size, &hr, &displacement](char* s, size_t) {
                     hr = debug_symbols->GetNameByOffset(reinterpret_cast<uintptr_t>(address), s + off,
                         static_cast<ULONG>(size + 1), &new_size, &displacement);
@@ -166,10 +169,10 @@ namespace {
         }
 
         if (displacement != 0) {
-            constexpr size_t max_disp_num = std::size("+0x1111222233334444") - 1; // maximum possible offset
+            constexpr size_t max_disp_num = sizeof("+0x1111222233334444") - 1; // maximum possible offset
 
             off = string_fill(fill, off + max_disp_num, str, [displacement, off](char* s, size_t) {
-                int ret = std::snprintf(s + off, max_disp_num, "+0x%llX", displacement);
+                const int ret = std::snprintf(s + off, max_disp_num, "+0x%llX", displacement);
                 _STL_VERIFY(ret > 0, "formatting error");
                 return off + ret;
             });
@@ -187,7 +190,7 @@ namespace {
         for (;;) {
             ULONG new_size = 0;
 
-            size_t new_off =
+            const size_t new_off =
                 string_fill(fill, off + size, str, [address, off, size, line, &new_size, &hr](char* s, size_t) {
                     hr = debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), line, s + off,
                         static_cast<ULONG>(size + 1), &new_size, nullptr);
@@ -230,10 +233,10 @@ namespace {
         off = source_file(address, str, off, &line, fill);
 
         if (line != 0) {
-            constexpr size_t max_line_num = std::size("(4294967295): ") - 1; // maximum possible line number
+            constexpr size_t max_line_num = sizeof("(4294967295): ") - 1; // maximum possible line number
 
             off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) {
-                int ret = std::snprintf(s + off, max_line_num, "(%u): ", line);
+                const int ret = std::snprintf(s + off, max_line_num, "(%u): ", line);
                 _STL_VERIFY(ret > 0, "formatting error");
                 return off + ret;
             });
@@ -278,7 +281,7 @@ void __stdcall __std_stacktrace_source_file(
     source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
-unsigned int __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept {
+[[nodiscard]] unsigned int __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept {
     const srw_lock_guard lock{srw};
 
     if (!try_initialize()) {
@@ -319,10 +322,10 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
             });
         }
 
-        constexpr size_t max_entry_num = std::size("65536> ") - 1; // maximum possible entry number
+        constexpr size_t max_entry_num = sizeof("65536> ") - 1; // maximum possible entry number
 
         off = string_fill(_Fill, off + max_entry_num, _Str, [off, i](char* s, size_t) {
-            int ret = std::snprintf(s + off, max_entry_num, "%u> ", static_cast<unsigned int>(i));
+            const int ret = std::snprintf(s + off, max_entry_num, "%u> ", static_cast<unsigned int>(i));
             _STL_VERIFY(ret > 0, "formatting error");
             return off + ret;
         });

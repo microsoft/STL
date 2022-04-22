@@ -47,6 +47,7 @@ int main() {
     test_regex();
     test_set();
     test_stack();
+    test_stacktrace();
     test_string();
     test_string_view();
     test_system_error();

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <version>
 #ifdef __cpp_lib_stacktrace
 
 #include <stacktrace>
@@ -9,6 +10,6 @@
 
 static_assert(std::is_eq(std::partial_ordering::equivalent));
 
-#endif
+#endif // __cpp_lib_stacktrace
 
 void test_stacktrace() {}

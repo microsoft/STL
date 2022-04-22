@@ -37,33 +37,29 @@ _NODISCARD unsigned short __stdcall __std_stacktrace_capture(unsigned long _Fram
 // Some of these functions may throw
 // (they would propagate bad_alloc potentially thrown from string::resize_and_overwrite)
 
-// clang-format off
 void __stdcall __std_stacktrace_address_to_string(
     const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
 
-void __stdcall __std_stacktrace_description(
+void __stdcall __std_stacktrace_description( //
     const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
 
-void __stdcall __std_stacktrace_source_file(
+void __stdcall __std_stacktrace_source_file( //
     const void* _Address, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
 
 _NODISCARD unsigned int __stdcall __std_stacktrace_source_line(const void* _Address) noexcept;
 
-void __stdcall __std_stacktrace_to_string(const void* _Addresses, size_t _Size, void* _Str,
-    _Stacktrace_string_fill) noexcept(false);
+void __stdcall __std_stacktrace_to_string(
+    const void* _Addresses, size_t _Size, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
 
 _NODISCARD void* __stdcall __std_stacktrace_get_debug_interface() noexcept;
-// clang-format on
 _END_EXTERN_C
 
 _STD_BEGIN
 inline size_t __stdcall _Stacktrace_string_fill_impl(
     const size_t _Size, void* const _String, void* const _Context, const _Stacktrace_string_fill_callback _Callback) {
     if (_Callback) {
-        static_cast<string*>(_String)->resize_and_overwrite(
-            _Size, [_Callback, _Context](char* _Data, size_t _Size) noexcept -> size_t {
-                return _Callback(_Data, _Size, _Context);
-            });
+        static_cast<string*>(_String)->resize_and_overwrite(_Size,
+            [_Callback, _Context](char* _Data, size_t _Size) noexcept { return _Callback(_Data, _Size, _Context); });
         return static_cast<string*>(_String)->size();
     } else {
         return static_cast<string*>(_String)->capacity();
@@ -126,8 +122,8 @@ public:
     using iterator               = const_iterator;
     using reverse_iterator       = _STD reverse_iterator<iterator>;
     using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
-    using difference_type        = ptrdiff_t;
-    using size_type              = size_t;
+    using difference_type        = typename _Frames_t::difference_type;
+    using size_type              = typename _Frames_t::size_type;
     using allocator_type         = _Alloc;
 
     // __declspec(noinline) to make the same behavior for debug and release.
@@ -243,7 +239,7 @@ public:
         }
 
 #ifdef __cpp_lib_concepts
-        return _Lhs._Frames <=> _Rhs._Frames;
+        return _STD lexicographical_compare_three_way(_Lhs.begin(), _Lhs.end(), _Rhs.begin(), _Rhs.end());
 #else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
         for (size_t _Ix = 0, _Mx = _Lhs._Frames.size(); _Ix != _Mx; ++_Ix) {
             if (_Lhs._Frames[_Ix] != _Rhs._Frames[_Ix]) {
@@ -257,7 +253,7 @@ public:
 
     void swap(basic_stacktrace& _Other) noexcept(allocator_traits<_Alloc>::propagate_on_container_swap::value
                                                  || allocator_traits<_Alloc>::is_always_equal::value) {
-        _STD swap(_Frames, _Other._Frames);
+        _Frames.swap(_Other._Frames);
         _STD swap(_Hash, _Other._Hash);
     }
 
@@ -275,7 +271,9 @@ private:
     static constexpr bool _Noex_move = allocator_traits<_Alloc>::propagate_on_container_move_assignment::value
                                     || allocator_traits<_Alloc>::is_always_equal::value;
 
-    struct _Internal_t {};
+    struct _Internal_t {
+        explicit _Internal_t() = default;
+    };
 
     basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al) : _Frames(_Max_depth, _Al) {}
 
@@ -285,8 +283,8 @@ private:
 
 using stacktrace = basic_stacktrace<allocator<stacktrace_entry>>;
 
-template <class _Al>
-void swap(basic_stacktrace<_Al>& _Ax, basic_stacktrace<_Al>& _Bx) noexcept(noexcept(_Ax.swap(_Bx))) {
+template <class _Alloc>
+void swap(basic_stacktrace<_Alloc>& _Ax, basic_stacktrace<_Alloc>& _Bx) noexcept(noexcept(_Ax.swap(_Bx))) {
     _Ax.swap(_Bx);
 }
 
@@ -296,20 +294,20 @@ _NODISCARD inline string to_string(const stacktrace_entry& _Fx) {
     return _Result;
 }
 
-template <class _Al>
-_NODISCARD string to_string(const basic_stacktrace<_Al>& _St) {
+template <class _Alloc>
+_NODISCARD string to_string(const basic_stacktrace<_Alloc>& _St) {
     string _Result;
     __std_stacktrace_to_string(_St._Data(), _St.size(), &_Result, _Stacktrace_string_fill_impl);
     return _Result;
 }
 
 template <class _CharT, class _Traits>
-basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const stacktrace_entry& _St) {
-    return _Os << _STD to_string(_St);
+basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const stacktrace_entry& _Fx) {
+    return _Os << _STD to_string(_Fx);
 }
 
-template <class _CharT, class _Traits, class _Al>
-basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const basic_stacktrace<_Al>& _St) {
+template <class _CharT, class _Traits, class _Alloc>
+basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const basic_stacktrace<_Alloc>& _St) {
     return _Os << _STD to_string(_St);
 }
 
@@ -319,14 +317,20 @@ namespace pmr {
 
 template <>
 struct hash<stacktrace_entry> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef stacktrace_entry _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+
     _NODISCARD size_t operator()(const stacktrace_entry& _Val) const noexcept {
         return _Hash_representation(_Val.native_handle());
     }
 };
 
-template <class _Al>
-struct hash<basic_stacktrace<_Al>> {
-    _NODISCARD size_t operator()(const basic_stacktrace<_Al>& _Val) const noexcept {
+template <class _Alloc>
+struct hash<basic_stacktrace<_Alloc>> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_stacktrace<_Alloc> _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+
+    _NODISCARD size_t operator()(const basic_stacktrace<_Alloc>& _Val) const noexcept {
         return _Val._Get_hash();
     }
 };
