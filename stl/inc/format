@@ -173,7 +173,7 @@ _NODISCARD constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wch
     if (_Val < 0xD800) {
         return _First + 1;
     } else if (_Val <= 0xDBFF) {
-        //  0xD800 <= _Val <= 0xDBFF: High surrogate
+        // 0xD800 <= _Val <= 0xDBFF: High surrogate
         if (_First + 1 == _Last) {
             _Val = 0xFFFD;
             return _Last;
@@ -200,7 +200,7 @@ _NODISCARD constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wch
 
 _NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_t& _Val) noexcept {
     _STL_INTERNAL_CHECK(_First < _Last);
-    // Decode a UTF-8 encoded code-point starting at _First and not exceeding _Last, returning
+    // Decode a UTF-8 encoded codepoint starting at _First and not exceeding _Last, returning
     // one past the end of the character decoded. Any invalid codepoints will result in
     // _Val == U+FFFD and _Decode_utf will return one past the
     // maximal subpart of the ill-formed subsequence. So, most invalid UTF-8 will result in
@@ -208,11 +208,11 @@ _NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _La
     // result in one U+FFFD for more than one input byte.
     _Val = static_cast<char32_t>(static_cast<unsigned char>(*_First));
 
-    // all UTF-8 text is at least one-byte
-    // the zero extended values of the "prefix" bytes for
+    // All UTF-8 text is at least one byte.
+    // The zero extended values of the "prefix" bytes for
     // a multi-byte sequence are the lowest numeric value (in two's complement)
     // that any leading byte could have for a code unit of that size, so
-    // we just sum the comparisons to get the number of trailing bytes
+    // we just sum the comparisons to get the number of trailing bytes.
     int _Num_bytes;
     if (_Val <= 0x7F) {
         return _First + 1;
@@ -229,10 +229,10 @@ _NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _La
     }
 
     if (_First + 1 == _Last) {
-        // we got a multibyte sequence and the next byte is off the end, we need
+        // We got a multibyte sequence and the next byte is off the end, we need
         // to check just the next byte here since we need to look for overlong sequences.
         // We want to return one past the end of a truncated sequence if everything is
-        // otherwise valid, so we can't check if _First + _Num_bytes is off the end
+        // otherwise valid, so we can't check if _First + _Num_bytes is off the end.
         _Val = 0xFFFD;
         return _Last;
     }
@@ -240,7 +240,7 @@ _NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _La
     switch (_Val) {
     case 0xE0:
         // we know _First[1] is in range because we just checked above,
-        // and a leader of 0xe0 implies _Num_bytes == 3
+        // and a leader of 0xE0 implies _Num_bytes == 3
         if (static_cast<unsigned char>(_First[1]) < 0xA0) {
             // note, we just increment forward one-byte,
             // even though _Num_bytes would imply the next
@@ -358,7 +358,7 @@ public:
 };
 
 
-// implements a DFA matching the regex on the left side of rule GB11. The DFA is:
+// Implements a DFA matching the regex on the left side of rule GB11. The DFA is:
 //
 // +---+   ExtPic      +---+    ZWJ        +---+
 // | 1 +---------------> 2 +---------------> 3 |
@@ -371,10 +371,14 @@ public:
 // transition back to state 1 and return true.
 class _GB11_LeftHand_regex {
 private:
-    enum { _Start, _ExtPic } _State = _Start;
+    enum _State_t : uint8_t { _Start, _ExtPic };
+
+    _State_t _State = _Start;
 
 public:
-    constexpr bool _Match(
+    _NODISCARD constexpr bool operator==(const _GB11_LeftHand_regex&) const noexcept = default;
+
+    _NODISCARD constexpr bool _Match(
         const _Grapheme_Break_property_values _Left_gbp, _Extended_Pictographic_property_values _Left_ExtPic) noexcept {
         switch (_State) {
         case _Start:
@@ -400,22 +404,19 @@ public:
 
 template <class _CharT>
 class _Grapheme_break_property_iterator {
+private:
     using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharT>;
 
     _Wrapped_iter_type _WrappedIter;
     _GB11_LeftHand_regex _GB11_rx;
 
-    _NODISCARD friend constexpr bool operator==(
-        const _Grapheme_break_property_iterator& _Lhs, default_sentinel_t) noexcept {
-        return _Lhs._WrappedIter == default_sentinel;
-    }
-    _NODISCARD friend constexpr bool operator==(
-        const _Grapheme_break_property_iterator& _Lhs, const _Grapheme_break_property_iterator& _Rhs) noexcept {
-        return _Lhs._WrappedIter == _Rhs._WrappedIter && _Lhs._Num_RIs == _Rhs._Num_RIs
-            && _Lhs._GB11_rx == _Rhs._GB11_rx;
+public:
+    _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
+        return _WrappedIter == default_sentinel;
     }
 
-public:
+    _NODISCARD constexpr bool operator==(const _Grapheme_break_property_iterator&) const noexcept = default;
+
     using difference_type = ptrdiff_t;
     using value_type      = iter_value_t<_Wrapped_iter_type>;
 
@@ -439,27 +440,31 @@ public:
             _Right_ExtPic = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
             // match GB11 now, so that we're sure to update it for every character, not just ones where
             // the GB11 rule is considered
-            bool _GB11_Match = _GB11_rx._Match(_Left_gbp, _Left_ExtPic);
+            const bool _GB11_Match = _GB11_rx._Match(_Left_gbp, _Left_ExtPic);
             // Also update the number of sequential RIs immediately
             if (_Left_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value) {
                 ++_Num_RIs;
             } else {
                 _Num_RIs = 0;
             }
+
             if (_Left_gbp == _Grapheme_Break_property_values::_CR_value
                 && _Right_gbp == _Grapheme_Break_property_values::_LF_value) {
                 continue; // GB3 CR x LF
             }
+
             if (_Left_gbp == _Grapheme_Break_property_values::_Control_value
                 || _Left_gbp == _Grapheme_Break_property_values::_CR_value
                 || _Left_gbp == _Grapheme_Break_property_values::_LF_value) {
                 return *this; // GB4 (Control | CR | LF) % Any
             }
+
             if (_Right_gbp == _Grapheme_Break_property_values::_Control_value
                 || _Right_gbp == _Grapheme_Break_property_values::_CR_value
                 || _Right_gbp == _Grapheme_Break_property_values::_LF_value) {
                 return *this; // GB5 Any % (Control | CR | LF)
             }
+
             if (_Left_gbp == _Grapheme_Break_property_values::_L_value
                 && (_Right_gbp == _Grapheme_Break_property_values::_L_value
                     || _Right_gbp == _Grapheme_Break_property_values::_V_value
@@ -467,30 +472,37 @@ public:
                     || _Right_gbp == _Grapheme_Break_property_values::_LVT_value)) {
                 continue; // GB6 L x (L | V | LV | LVT)
             }
+
             if ((_Left_gbp == _Grapheme_Break_property_values::_LV_value
                     || _Left_gbp == _Grapheme_Break_property_values::_V_value)
                 && (_Right_gbp == _Grapheme_Break_property_values::_V_value
                     || _Right_gbp == _Grapheme_Break_property_values::_T_value)) {
                 continue; // GB7 (LV | V) x (V | T)
             }
+
             if ((_Left_gbp == _Grapheme_Break_property_values::_LVT_value
                     || _Left_gbp == _Grapheme_Break_property_values::_T_value)
                 && _Right_gbp == _Grapheme_Break_property_values::_T_value) {
                 continue; // GB8 (LVT | T) x T
             }
+
             if (_Right_gbp == _Grapheme_Break_property_values::_Extend_value
                 || _Right_gbp == _Grapheme_Break_property_values::_ZWJ_value) {
                 continue; // GB9 x (Extend | ZWJ)
             }
+
             if (_Right_gbp == _Grapheme_Break_property_values::_SpacingMark_value) {
                 continue; // GB9a x SpacingMark
             }
+
             if (_Left_gbp == _Grapheme_Break_property_values::_Prepend_value) {
                 continue; // GB9b Prepend x
             }
+
             if (_GB11_Match && _Right_ExtPic == _Extended_Pictographic_property_values::_Extended_Pictographic_value) {
                 continue; // GB11 \p{ExtendedPictographic} Extend* ZWJ x \p{ExtendedPictographic}
             }
+
             if (_Left_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value
                 && _Right_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value && _Num_RIs % 2 != 0) {
                 continue; // GB12 and 13, do not break between RIs if there are an odd number of RIs before the
@@ -902,7 +914,7 @@ private:
     _NODISCARD static constexpr int _Utf8_code_units_in_next_character(
         const char* const _First, const char* const _Last) noexcept {
         char32_t _Ch;
-        const char* _Next = _Decode_utf(_First, _Last, _Ch);
+        const char* const _Next = _Decode_utf(_First, _Last, _Ch);
         _STL_INTERNAL_CHECK(_Next - _First <= 4);
         return static_cast<int>(_Next - _First);
     }
@@ -967,7 +979,7 @@ public:
     _NODISCARD constexpr int _Units_in_next_character(
         const wchar_t* _First, const wchar_t* const _Last) const noexcept {
         char32_t _Ch;
-        auto _Next = _Decode_utf(_First, _Last, _Ch);
+        const auto _Next = _Decode_utf(_First, _Last, _Ch);
         _STL_INTERNAL_CHECK(_Next - _First <= 2);
         return static_cast<int>(_Next - _First);
     }
@@ -1807,9 +1819,9 @@ private:
     static constexpr size_t _Storage_length = (_Traits::template _Storage_size<_Args> + ...);
 
     // The actual storage representation: _Num_args offsets into _Storage, followed immediately by the untyped
-    // _Storage which holds copies of the object representations of arguments (with no regard for alignment). These
-    // must be allocated consecutively, since basic_format_args thinks it can store a pointer to _Index_array and
-    // use arithmetic to access the bytes of _Storage.
+    // _Storage which holds copies of the object representations of arguments (with no regard for alignment).
+    // These must be allocated consecutively, since basic_format_args thinks it can store a pointer to
+    // _Index_array and use arithmetic to access the bytes of _Storage.
     _Format_arg_index _Index_array[_Num_args];
     unsigned char _Storage[_Storage_length];
 
@@ -2739,8 +2751,8 @@ _NODISCARD _OutputIt _Fmt_write(
     // We need 3 more characters for a potential negative sign, the zero integer part, and the decimal point.
     // Therefore, the precision can be clamped to 1074.
     // The largest number consumes 309 digits before the decimal point. With a precision of 1074, and it being
-    // negative, it would use a buffer of size 1074+309+2. We need to add an additional number to the max exponent
-    // to accommodate the ones place.
+    // negative, it would use a buffer of size 1074+309+2. We need to add an additional number to the max
+    // exponent to accommodate the ones place.
     constexpr auto _Max_precision = 1074;
     constexpr auto _Buffer_size   = _Max_precision + DBL_MAX_10_EXP + 3;
     char _Buffer[_Buffer_size];
@@ -2925,22 +2937,20 @@ _NODISCARD _OutputIt _Fmt_write(
     _OutputIt _Out, const _CharT* _Value, const _Basic_format_specs<_CharT>& _Specs, _Lazy_locale _Locale) {
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
+
 // width iterator for UTF-8 and UTF-16
 template <class _CharT>
 class _Measure_string_prefix_iterator_utf {
 private:
     _Grapheme_break_property_iterator<_CharT> _WrappedIter;
 
-    friend constexpr bool operator==(
-        const _Measure_string_prefix_iterator_utf& _Lhs, const _Measure_string_prefix_iterator_utf& _Rhs) noexcept {
-        return _Lhs._WrappedIter == _Rhs._WrappedIter;
-    }
-    friend constexpr bool operator==(const _Measure_string_prefix_iterator_utf& _Lhs, default_sentinel_t) noexcept {
-        return _Lhs._WrappedIter == default_sentinel;
-    }
-
-
 public:
+    _NODISCARD constexpr bool operator==(const _Measure_string_prefix_iterator_utf&) const noexcept = default;
+
+    _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
+        return _WrappedIter == default_sentinel;
+    }
+
     using difference_type = ptrdiff_t;
     using value_type      = int;
 
@@ -2949,7 +2959,7 @@ public:
 
     constexpr _Measure_string_prefix_iterator_utf() = default;
 
-    constexpr value_type operator*() const {
+    _NODISCARD constexpr value_type operator*() const {
         return _Unicode_width_estimate(*_WrappedIter);
     }
 
@@ -2964,7 +2974,7 @@ public:
         return _Old;
     }
 
-    constexpr const _CharT* _Position() const {
+    _NODISCARD constexpr const _CharT* _Position() const {
         return _WrappedIter._Position();
     }
 };
@@ -2977,15 +2987,6 @@ private:
     const char* _Last       = nullptr;
     int _Units              = 0;
 
-    _NODISCARD friend constexpr bool operator==(
-        const _Measure_string_prefix_iterator_legacy& _Lhs, default_sentinel_t) noexcept {
-        return _Lhs._First >= _Lhs._Last;
-    }
-    _NODISCARD friend constexpr bool operator==(const _Measure_string_prefix_iterator_legacy& _Lhs,
-        const _Measure_string_prefix_iterator_legacy& _Rhs) noexcept {
-        return _Lhs._First == _Rhs._First && _Lhs._Last == _Rhs._Last;
-    }
-
     void _Update_units() {
         if (_First < _Last) {
             _Units = _Codec._Units_in_next_character(_First, _Last);
@@ -2995,6 +2996,13 @@ private:
     }
 
 public:
+    _NODISCARD bool operator==(default_sentinel_t) const noexcept {
+        return _First >= _Last;
+    }
+    _NODISCARD bool operator==(const _Measure_string_prefix_iterator_legacy& _Rhs) const noexcept {
+        return _First == _Rhs._First && _Last == _Rhs._Last;
+    }
+
     using difference_type = ptrdiff_t;
     using value_type      = int;
 
@@ -3024,15 +3032,10 @@ public:
     }
 };
 
-template <class _CharT, bool _Statically_Utf8 = _Is_execution_charset_self_synchronizing()>
-struct _Measure_string_prefix_iterator : _Measure_string_prefix_iterator_utf<_CharT> {
-    using _Measure_string_prefix_iterator_utf<_CharT>::_Measure_string_prefix_iterator_utf;
-};
-
-template <>
-struct _Measure_string_prefix_iterator<char, false> : _Measure_string_prefix_iterator_legacy {
-    using _Measure_string_prefix_iterator_legacy::_Measure_string_prefix_iterator_legacy;
-};
+template <class _CharT>
+using _Measure_string_prefix_iterator =
+    conditional_t<is_same_v<_CharT, char> && !_Is_execution_charset_self_synchronizing(),
+        _Measure_string_prefix_iterator_legacy, _Measure_string_prefix_iterator_utf<_CharT>>;
 
 template <class _CharT>
 _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> _Value, int& _Width) {
@@ -3310,8 +3313,8 @@ _FORMAT_SPECIALIZE_FOR(unsigned char, _Basic_format_arg_type::_UInt_type);
 template <>
 struct formatter<wchar_t, wchar_t> : _Formatter_base<wchar_t, wchar_t, _Basic_format_arg_type::_Char_type> {};
 
-// We could use the macro for these specializations, but it's confusing to refer to symbols that are defined inside
-// the macro in the macro's "call".
+// We could use the macro for these specializations, but it's confusing to refer to symbols that are defined
+// inside the macro in the macro's "call".
 template <_Format_supported_charT _CharT>
 struct formatter<_CharT*, _CharT> : _Formatter_base<_CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
 

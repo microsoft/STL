@@ -1,9 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# we don't ship the unicode data source files
-# they can be downloaded from unicode.org
-# see documentation in each script for more info
+# We don't ship the Unicode data source files, but
+# they can be downloaded from unicode.org.
+# See the documentation in each script for more info.
 emoji-data.txt
 GraphemeBreakProperty.txt
 GraphemeBreakTest.txt

@@ -3,8 +3,7 @@
 
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Optional, TextIO, Union
-from enum import Enum
+from typing import Optional, TextIO
 from array import array
 
 
@@ -50,21 +49,21 @@ def parseBreakTestLine(input: TextIO) -> Optional[BreakTestItem]:
 
 
 cpp_template = """
-template<typename T>
+template <typename T>
 struct test_case_data {{
     vector<T> code_points;
     vector<size_t> breaks;
 }};
 
-template<typename T>
+template <typename T>
 const test_case_data<T> test_data[{0}];
 
-template<>
+template <>
 const test_case_data<char32_t> test_data<char32_t>[{0}] = {{
     {1}
 }};
 
-template<>
+template <>
 const test_case_data<char> test_data<char>[{0}] = {{
     {2}
 }};
@@ -74,33 +73,33 @@ cpp_test_data_line_template = "{{ {{{}}}, {{{}}} }}"
 
 def lineToCppDataLineUtf32(line: BreakTestItem) -> str:
     return cpp_test_data_line_template.format(','.join(
-        ["U'\\x" + format(x, 'x') + "'" for x in line.code_points]), ','.join(
+        [f"U'\\x{x:x}'" for x in line.code_points]), ','.join(
         [str(x) for x in line.breaks]))
 
 def lineToCppDataLineUtf8(line: BreakTestItem) -> str:
     utf8_rep = str(array('L', line.code_points),
                    encoding='utf-32').encode('utf-8')
     return cpp_test_data_line_template.format(','.join(
-        ["static_cast<char>(0x" + format(x, 'x') + ")" for x in utf8_rep]
+        [f"'\\x{x:x}'" for x in utf8_rep]
     ), ','.join([str(x) for x in line.breaks]))
 
 
 """
 Generate test data from "GraphemeBreakText.txt"
-This file can be downloaded from: https://www.unicode.org/Public/14.0.0/ucd/auxiliary/GraphemeBreakTest.txt.
+This file can be downloaded from: https://www.unicode.org/Public/14.0.0/ucd/auxiliary/GraphemeBreakTest.txt
 This script looks for GraphemeBreakTest.txt in same directory as this script
 """
 def generate_all() -> str:
     test_data_path = Path(__file__)
     test_data_path = test_data_path.absolute()
     test_data_path = test_data_path.with_name("GraphemeBreakTest.txt")
-    file = open(test_data_path, mode='rt', encoding='utf-8')
-    lines = list()
-    while line := parseBreakTestLine(file):
-        if len(line.code_points) > 0:
-            lines.append(line)
-    return cpp_template.format(len(lines), ','.join(map(lineToCppDataLineUtf32, lines)),
-          ','.join(map(lineToCppDataLineUtf8, lines)))
+    with open(test_data_path, mode='rt', encoding='utf-8') as file:
+        lines = list()
+        while line := parseBreakTestLine(file):
+            if len(line.code_points) > 0:
+                lines.append(line)
+        return cpp_template.format(len(lines), ','.join(map(lineToCppDataLineUtf32, lines)),
+            ','.join(map(lineToCppDataLineUtf8, lines)))
 
 if __name__ == "__main__":
     print(generate_all())
