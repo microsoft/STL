@@ -1481,26 +1481,46 @@ namespace ranges {
         }
 
         template <_StdPipe::_Is_invocable_range_adaptor_closure<_Derived&> _Rng>
-        friend constexpr auto operator|(_Rng&& _Left, _Derived& _Right) noexcept(
-            noexcept(static_cast<_Derived&>(_Right)(_STD forward<_Rng>(_Left)))) {
+        friend constexpr auto operator|(_Rng&& _Left, _Derived& _Right)
+#ifdef __EDG__ // TRANSITION, VSO-1222776
+            noexcept(noexcept(_STD declval<_Derived&>()(_STD forward<_Rng>(_Left))))
+#else // ^^^ workaround / no workaround vvv
+            noexcept(noexcept(static_cast<_Derived&>(_Right)(_STD forward<_Rng>(_Left))))
+#endif // TRANSITION, VSO-1222776
+        {
             return static_cast<_Derived&>(_Right)(_STD forward<_Rng>(_Left));
         }
 
         template <_StdPipe::_Is_invocable_range_adaptor_closure<_Derived&&> _Rng>
-        friend constexpr auto operator|(_Rng&& _Left, _Derived&& _Right) noexcept(
-            noexcept(static_cast<_Derived&&>(_Right)(_STD forward<_Rng>(_Left)))) {
+        friend constexpr auto operator|(_Rng&& _Left, _Derived&& _Right)
+#ifdef __EDG__ // TRANSITION, VSO-1222776
+            noexcept(noexcept(_STD declval<_Derived>()(_STD forward<_Rng>(_Left))))
+#else // ^^^ workaround / no workaround vvv
+            noexcept(noexcept(static_cast<_Derived&&>(_Right)(_STD forward<_Rng>(_Left))))
+#endif // TRANSITION, VSO-1222776
+        {
             return static_cast<_Derived&&>(_Right)(_STD forward<_Rng>(_Left));
         }
 
         template <_StdPipe::_Is_invocable_range_adaptor_closure<const _Derived&> _Rng>
-        friend constexpr auto operator|(_Rng&& _Left, const _Derived& _Right) noexcept(
-            noexcept(static_cast<const _Derived&>(_Right)(_STD forward<_Rng>(_Left)))) {
+        friend constexpr auto operator|(_Rng&& _Left, const _Derived& _Right)
+#ifdef __EDG__ // TRANSITION, VSO-1222776
+            noexcept(noexcept(_STD declval<const _Derived&>()(_STD forward<_Rng>(_Left))))
+#else // ^^^ workaround / no workaround vvv
+            noexcept(noexcept(static_cast<const _Derived&>(_Right)(_STD forward<_Rng>(_Left))))
+#endif // TRANSITION, VSO-1222776
+        {
             return static_cast<const _Derived&>(_Right)(_STD forward<_Rng>(_Left));
         }
 
         template <_StdPipe::_Is_invocable_range_adaptor_closure<const _Derived&&> _Rng>
-        friend constexpr auto operator|(_Rng&& _Left, const _Derived&& _Right) noexcept(
-            noexcept(static_cast<const _Derived&&>(_Right)(_STD forward<_Rng>(_Left)))) {
+        friend constexpr auto operator|(_Rng&& _Left, const _Derived&& _Right)
+#ifdef __EDG__ // TRANSITION, VSO-1222776
+            noexcept(noexcept(_STD declval<const _Derived>()(_STD forward<_Rng>(_Left))))
+#else // ^^^ workaround / no workaround vvv
+            noexcept(noexcept(static_cast<const _Derived&&>(_Right)(_STD forward<_Rng>(_Left))))
+#endif // TRANSITION, VSO-1222776
+        {
             return static_cast<const _Derived&&>(_Right)(_STD forward<_Rng>(_Left));
         }
     };
