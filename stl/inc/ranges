@@ -1350,7 +1350,7 @@ namespace ranges {
         template <class _Left, class _Right>
         concept _Can_compose = constructible_from<remove_cvref_t<_Left>, _Left>
             && constructible_from<remove_cvref_t<_Right>, _Right>;
-            // clang-format on
+        // clang-format on
 
         template <class _Ty>
         concept _Is_range_adaptor_common = derived_from<remove_cvref_t<_Ty>,
