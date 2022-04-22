@@ -1,14 +1,9 @@
-#// clang-format off
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 # we don't ship the unicode data source files
 # they can be downloaded from unicode.org
 # see documentation in each script for more info
-#
-# Also turn off clang format, which somehow thinks
-# this is a source code file, note the // is required
 emoji-data.txt
 GraphemeBreakProperty.txt
 GraphemeBreakTest.txt
-#// clang-format on

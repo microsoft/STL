@@ -195,6 +195,12 @@ extern "C" int wmain(int argc, wchar_t* argv[]) {
                     continue;
                 }
 
+                // <filesystem> intentionally reports that dotfiles (like .gitignore) are extensionless.
+                if (dirEntry.path().stem().native().starts_with(L"."sv)) {
+                    printf("Skipping dotfile %ls\n", dirEntry.path().c_str());
+                    continue;
+                }
+
                 schedule_command(p, commandPrefix, dirEntry.path().native());
             }
         }
