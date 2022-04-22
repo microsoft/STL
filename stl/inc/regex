@@ -169,18 +169,14 @@ struct _Cl_names { // structure to associate class name with mask value
     ctype_base::mask _Ctype;
 
     template <class _Elem>
-    const _Elem* _Get() const;
+    _NODISCARD const _Elem* _Get() const noexcept {
+        if constexpr (is_same_v<_Elem, char>) {
+            return _Narrow;
+        } else {
+            return _Wide;
+        }
+    }
 };
-
-template <>
-inline const char* _Cl_names::_Get<char>() const { // get narrow pointer
-    return _Narrow;
-}
-
-template <>
-inline const wchar_t* _Cl_names::_Get<wchar_t>() const { // get wide pointer
-    return _Wide;
-}
 
 template <class _RxTraits>
 struct _Cmp_cs { // functor to compare two character values for equality
