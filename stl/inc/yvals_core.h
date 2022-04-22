@@ -1358,15 +1358,6 @@
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
 #define __cpp_lib_polymorphic_allocator   201902L
-
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#if _HAS_CXX23
-#define __cpp_lib_ranges 202202L
-#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
-#define __cpp_lib_ranges 202110L
-#endif // _HAS_CXX23
-#endif // defined(__cpp_lib_concepts)
-
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_shift                   201806L
@@ -1456,6 +1447,14 @@
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
 #endif // _HAS_CXX17
+
+#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
+#define __cpp_lib_ranges 202202L
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#define __cpp_lib_ranges 202110L
+#endif // _HAS_CXX23
+#endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
