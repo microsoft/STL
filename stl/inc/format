@@ -371,7 +371,7 @@ public:
 // transition back to state 1 and return true.
 class _GB11_LeftHand_regex {
 private:
-    enum _State_t : uint8_t { _Start, _ExtPic };
+    enum _State_t : bool { _Start, _ExtPic };
 
     _State_t _State = _Start;
 
@@ -914,7 +914,7 @@ private:
     _NODISCARD static constexpr int _Utf8_code_units_in_next_character(
         const char* const _First, const char* const _Last) noexcept {
         char32_t _Ch;
-        const char* const _Next = _Decode_utf(_First, _Last, _Ch);
+        const auto _Next = _Decode_utf(_First, _Last, _Ch);
         _STL_INTERNAL_CHECK(_Next - _First <= 4);
         return static_cast<int>(_Next - _First);
     }
@@ -2997,7 +2997,7 @@ private:
 
 public:
     _NODISCARD bool operator==(default_sentinel_t) const noexcept {
-        return _First >= _Last;
+        return _First == _Last;
     }
     _NODISCARD bool operator==(const _Measure_string_prefix_iterator_legacy& _Rhs) const noexcept {
         return _First == _Rhs._First && _Last == _Rhs._Last;

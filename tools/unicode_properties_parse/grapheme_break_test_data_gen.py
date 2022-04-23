@@ -93,13 +93,13 @@ def generate_all() -> str:
     test_data_path = Path(__file__)
     test_data_path = test_data_path.absolute()
     test_data_path = test_data_path.with_name("GraphemeBreakTest.txt")
+    lines = list()
     with open(test_data_path, mode='rt', encoding='utf-8') as file:
-        lines = list()
         while line := parseBreakTestLine(file):
             if len(line.code_points) > 0:
                 lines.append(line)
-        return cpp_template.format(len(lines), ','.join(map(lineToCppDataLineUtf32, lines)),
-            ','.join(map(lineToCppDataLineUtf8, lines)))
+    return cpp_template.format(len(lines), ','.join(map(lineToCppDataLineUtf32, lines)),
+        ','.join(map(lineToCppDataLineUtf8, lines)))
 
 if __name__ == "__main__":
     print(generate_all())
