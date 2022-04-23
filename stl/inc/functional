@@ -656,26 +656,21 @@ struct _Unforced { // tag to distinguish bind() from bind<R>()
 };
 
 // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
-template <class _Rx, bool = is_void_v<_Rx>>
-struct _Invoker_ret { // selected for _Rx being cv void
-    template <class _Fx, class... _Valtys>
-    static _CONSTEXPR20 void _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
-        _Valtys...>::_Is_nothrow_invocable::value) { // INVOKE, "implicitly" converted to void
-        _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
-    }
-};
-
 template <class _Rx>
-struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and _Unforced
+struct _Invoker_ret {
     template <class _Fx, class... _Valtys>
     static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
-        _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted to _Rx
-        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        _Valtys...>::_Is_nothrow_invocable::value) { // INVOKE, implicitly converted
+        if constexpr (is_void_v<_Rx>) {
+            _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        } else {
+            return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        }
     }
 };
 
 template <>
-struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
+struct _Invoker_ret<_Unforced> { // selected for _Rx being _Unforced
     template <class _Fx, class... _Valtys>
     static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(
         _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
