@@ -598,8 +598,8 @@ protected:
 
 private:
     ios_base::iostate __CLRCALL_OR_CDECL _Getint(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int& _Val,
-        // TRANSITION, ABI
         const _Ctype& _Ctype_fac) const { // get integer in range [_Lo, _Hi] from [_First, _Last)
+        // TRANSITION, ABI
         int _Digits_read;
         return _Getint_v2(_First, _Last, _Lo, _Hi, _Val, _Digits_read, _Ctype_fac);
     }
