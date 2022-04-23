@@ -18,6 +18,7 @@ using namespace std;
 // DevDiv-821672 "<locale>: visual studio.net 2013 time libraries buggy (%x %X) - time_get"
 // DevDiv-836436 "<iomanip>: get_time()'s AM/PM parsing is broken"
 // DevDiv-872926 "<locale>: time_get::get parsing format string gets tm::tm_hour wrong [libcxx]"
+// DevDiv-1259138/GH-2618 "<xloctime>: get_time does not return correct year in tm.tm_year if year is 1"
 
 tm helper(const char* const s, const char* const fmt) {
     tm t{};
@@ -107,6 +108,7 @@ void test_locale_german();
 void test_locale_chinese();
 void test_invalid_argument();
 void test_buffer_resizing();
+void test_gh_2618();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -152,6 +154,7 @@ int main() {
     test_locale_chinese();
     test_invalid_argument();
     test_buffer_resizing();
+    test_gh_2618();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -820,4 +823,30 @@ void test_buffer_resizing() {
         ss << put_time(&currentTime, "%c");
         assert(ss.rdstate() == ios_base::goodbit);
     }
+}
+
+void test_gh_2618() {
+    auto test = [](const string& date) {
+        tm time{};
+        istringstream iss{date};
+        iss >> get_time(&time, "%Y");
+        return 1900 + time.tm_year;
+    };
+
+    assert(test("0001") == 1);
+    assert(test("0080") == 80);
+    assert(test("1995") == 1995);
+    assert(test("2022") == 2022);
+
+    assert(test("001") == 1);
+    assert(test("080") == 80);
+    assert(test("995") == 995);
+    assert(test("022") == 22);
+
+    assert(test("01") == 2001);
+    assert(test("80") == 1980);
+    assert(test("95") == 1995);
+    assert(test("22") == 2022);
+
+    assert(test("1") == 1);
 }
