@@ -662,6 +662,9 @@ struct _Invoker_ret { // selected for all _Rx other than _Unforced
     static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
         _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted
         if constexpr (is_void_v<_Rx>) {
+            _STL_INTERNAL_STATIC_ASSERT(
+                _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value
+                == _Select_invoke_traits<_Fx, _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value);
             _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
         } else {
             return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
