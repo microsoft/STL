@@ -2747,6 +2747,7 @@ using atomic_unsigned_lock_free = atomic_uintptr_t;
 
 #define ATOMIC_FLAG_INIT \
     {}
+
 struct atomic_flag { // flag with test-and-set semantics
 #if _HAS_CXX20
     _NODISCARD bool test(const memory_order _Order = memory_order_seq_cst) const noexcept {
