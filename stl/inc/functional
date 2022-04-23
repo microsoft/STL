@@ -657,7 +657,7 @@ struct _Unforced { // tag to distinguish bind() from bind<R>()
 
 // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
 template <class _Rx>
-struct _Invoker_ret {
+struct _Invoker_ret { // selected for all _Rx other than _Unforced
     template <class _Fx, class... _Valtys>
     static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
         _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted
