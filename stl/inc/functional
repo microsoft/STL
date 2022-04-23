@@ -660,7 +660,7 @@ template <class _Rx>
 struct _Invoker_ret {
     template <class _Fx, class... _Valtys>
     static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
-        _Valtys...>::_Is_nothrow_invocable::value) { // INVOKE, implicitly converted
+        _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted
         if constexpr (is_void_v<_Rx>) {
             _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
         } else {
