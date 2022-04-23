@@ -39,8 +39,8 @@ using TestRange = std::array<int, 1>;
 
 template <class T>
 constexpr bool does_not_satisfy_range_adaptor_closure() {
-    return !CanPipe<TestRange,
-               T&> && !CanPipe<TestRange, const T&> && !CanPipe<TestRange, T&&> && !CanPipe<TestRange, const T&&>;
+    return !CanPipe<TestRange, T&> && !CanPipe<TestRange, const T&> //
+        && !CanPipe<TestRange, T&&> && !CanPipe<TestRange, const T&&>;
 }
 
 struct IdentityRangeAdaptorClosure : std::ranges::range_adaptor_closure<IdentityRangeAdaptorClosure> {

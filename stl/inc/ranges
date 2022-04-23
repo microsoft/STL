@@ -1474,8 +1474,9 @@ namespace ranges {
         };
 
         template <class _Ty>
-        concept _Is_range_adaptor_common = derived_from<remove_cvref_t<_Ty>,
-            range_adaptor_closure<remove_cvref_t<_Ty>>> && _Derived_from_range_adaptor_closure<_Ty> && !range<_Ty>;
+        concept _Is_range_adaptor_common =
+            derived_from<remove_cvref_t<_Ty>, range_adaptor_closure<remove_cvref_t<_Ty>>> //
+            && _Derived_from_range_adaptor_closure<_Ty> && !range<_Ty>;
 
         template <class _Rng, class _Ty>
         concept _Is_invocable_range_adaptor_closure =
