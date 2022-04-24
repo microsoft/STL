@@ -231,7 +231,7 @@ class collate;
 #endif // defined(_DLL_CPPLIB)
 
 using ios                       = basic_ios<char, char_traits<char>>;
-using streambuf                 = basic_streambuf<char, char_traits<char>>;
+_EXPORT_STD using streambuf     = basic_streambuf<char, char_traits<char>>;
 _EXPORT_STD using istream       = basic_istream<char, char_traits<char>>;
 _EXPORT_STD using ostream       = basic_ostream<char, char_traits<char>>;
 _EXPORT_STD using iostream      = basic_iostream<char, char_traits<char>>;
@@ -255,7 +255,7 @@ _EXPORT_STD using spanstream  = basic_spanstream<char>;
 #endif // _HAS_CXX23
 
 using wios                       = basic_ios<wchar_t, char_traits<wchar_t>>;
-using wstreambuf                 = basic_streambuf<wchar_t, char_traits<wchar_t>>;
+_EXPORT_STD using wstreambuf     = basic_streambuf<wchar_t, char_traits<wchar_t>>;
 _EXPORT_STD using wistream       = basic_istream<wchar_t, char_traits<wchar_t>>;
 _EXPORT_STD using wostream       = basic_ostream<wchar_t, char_traits<wchar_t>>;
 _EXPORT_STD using wiostream      = basic_iostream<wchar_t, char_traits<wchar_t>>;
