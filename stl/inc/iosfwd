@@ -44,10 +44,10 @@ _STD_BEGIN
 #endif // _HAS_EXCEPTIONS
 
 // from <streambuf>
-using streamoff  = long long;
-using streamsize = long long;
+_EXPORT_STD using streamoff  = long long;
+_EXPORT_STD using streamsize = long long;
 
-template <class _Statetype>
+_EXPORT_STD template <class _Statetype>
 class fpos { // store arbitrary file position
 public:
     /* implicit */ fpos(streamoff _Off = 0) : _Myoff(_Off), _Fpos(0), _Mystate() {}
@@ -167,7 +167,7 @@ struct char_traits<unsigned short>;
 
 template <class _Ty>
 class allocator;
-class ios_base;
+_EXPORT_STD class ios_base;
 template <class _Elem, class _Traits = char_traits<_Elem>>
 class basic_ios;
 template <class _Elem, class _Traits = char_traits<_Elem>>
