@@ -28,7 +28,7 @@ stages:
             displayName: 'Setup TMP Directory'
           - checkout: self
             clean: true
-            submodules: false
+            submodules: true
           - script: |
               call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
                 -host_arch=amd64 -arch=amd64 -no_logo
