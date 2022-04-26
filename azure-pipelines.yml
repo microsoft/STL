@@ -51,7 +51,7 @@ stages:
           - task: Powershell@2
             displayName: 'Create Diff'
             inputs:
-              filePath: azure-pipelines/Create-PRDiff.ps1
+              filePath: azure-devops/Create-PRDiff.ps1
               arguments: '-DiffFile $(DiffFile)'
               pwsh: true
           - task: PublishBuildArtifacts@1
