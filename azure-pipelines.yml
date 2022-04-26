@@ -39,15 +39,11 @@ stages:
               cmake --build $(buildOutputLocation)
             displayName: 'Build Support Tools'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-          - task: BatchScript@1
+          - script: |
+              cmake --build $(buildOutputLocation) --target format
             displayName: 'Enforce clang-format'
             timeoutInMinutes: 60
             condition: succeededOrFailed()
-            inputs:
-              filename: 'azure-devops/enforce-clang-format.cmd'
-              failOnStandardError: true
-              arguments: '$(buildOutputLocation)/parallelize/parallelize.exe'
-            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - task: BatchScript@1
             displayName: 'Validate Files'
             timeoutInMinutes: 2
