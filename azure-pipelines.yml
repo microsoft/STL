@@ -17,7 +17,8 @@ stages:
         timeoutInMinutes: 90
         displayName: 'Validation'
         variables:
-          buildOutputLocation: 'D:\tools'
+          - name: DiffFile
+            value: '$(Build.ArtifactStagingDirectory)\format.diff'
         steps:
           - script: |
               if exist "$(tmpDir)" (
@@ -29,38 +30,36 @@ stages:
             clean: true
             submodules: false
           - script: |
-              if exist "$(buildOutputLocation)" (
-                rmdir /S /Q "$(buildOutputLocation)"
-              )
               call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
-              -host_arch=amd64 -arch=amd64 -no_logo
-              cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
-              -S $(Build.SourcesDirectory)\tools -B $(buildOutputLocation)
-              cmake --build $(buildOutputLocation)
-            displayName: 'Build Support Tools'
-            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-          - script: |
-              if exist "$(buildOutputLocation)" (
-                rmdir /S /Q "$(buildOutputLocation)"
-              )
-              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
-              -host_arch=amd64 -arch=amd64 -no_logo
+                -host_arch=amd64 -arch=amd64 -no_logo
               cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DERROR_ON_CLANG_FORMAT_NOT_FOUND=1 ^
-              -S $(Build.SourcesDirectory)\tools -B $(buildOutputLocation)
-              cmake --build $(buildOutputLocation) --target format
-            displayName: 'Enforce clang-format'
-            timeoutInMinutes: 60
+                -S $(Build.SourcesDirectory) -B $(tmpDir)\format-build
+              cmake --build $(tmpDir)\format-build --target format
+            displayName: 'clang-format'
+            timeoutInMinutes: 5
             condition: succeededOrFailed()
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - task: BatchScript@1
-            displayName: 'Validate Files'
-            timeoutInMinutes: 2
-            condition: succeededOrFailed()
             inputs:
               filename: 'azure-devops/validate-files.cmd'
               failOnStandardError: true
-              arguments: '$(buildOutputLocation)/validate/validate.exe'
+              arguments: '$(Build.SourcesDirectory)'
+            displayName: 'Validate Files'
+            timeoutInMinutes: 5
+            condition: succeededOrFailed()
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+          - task: Powershell@2
+            displayName: 'Create Diff'
+            inputs:
+              filePath: azure-pipelines/Create-PRDiff.ps1
+              arguments: '-DiffFile $(DiffFile)'
+              pwsh: true
+          - task: PublishBuildArtifacts@1
+            condition: failed()
+            displayName: 'Publish Format and Messages File Diff'
+            inputs:
+              PathtoPublish: '$(DiffFile)'
+              ArtifactName: 'format.diff'
 
   - stage: Build_And_Test_x64
     dependsOn: Code_Format
