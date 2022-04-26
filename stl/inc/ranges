@@ -4759,22 +4759,44 @@ namespace ranges {
 
     template <forward_range _Vw>
         requires view<_Vw>
-    class slide_view : public _Cached_position<_Vw, slide_view<_Vw>> {
+    class slide_view : public _Cached_position_t<!_Slide_caches_nothing<_Vw>, _Vw, slide_view<_Vw>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         range_difference_t<_Vw> _Count = 0;
 
+        template <class>
+        class _Iter_base {};
+
+        template <_Slide_caches_first _Base>
+        class _Iter_base<_Base> {
+        protected:
+            using _Base_iter = iterator_t<_Base>;
+            _Base_iter _Last_element{};
+
+        public:
+            _Iter_base() = default;
+            constexpr explicit _Iter_base(_Base_iter _Last_element_) noexcept(
+                is_nothrow_move_constructible_v<_Base_iter>)
+                : _Last_element{_STD move(_Last_element_)} {}
+
+
+            _NODISCARD constexpr const _Base_iter& _Get_last_element() const noexcept //
+                requires _Slide_caches_first<_Base> {
+                return _Last_element;
+            }
+        };
+
         template <bool _Const>
-        class _Iterator {
+        class _Iterator : public _Iter_base<_Maybe_const<_Const, _Vw>> {
         private:
             friend _Iterator;
             friend slide_view;
 
+            using _BaseTy    = _Iter_base<_Maybe_const<_Const, _Vw>>;
             using _Base      = _Maybe_const<_Const, _Vw>;
             using _Base_iter = iterator_t<_Base>;
 
             /* [[no_unique_address]] */ _Base_iter _Current{};
-            /* [[no_unique_address]] */ _Base_iter _Last_element{};
             range_difference_t<_Base> _Count = 0;
 
             // clang-format off
@@ -4789,7 +4811,7 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Base_iter>&&
                     is_nothrow_default_constructible_v<_Base_iter>) /* strengthened */
                 requires _Slide_caches_first<_Base>
-                : _Current(_STD move(_Current_)), _Last_element(_STD move(_Last_)), _Count(_Count_) {}
+                : _BaseTy(_STD move(_Last_)), _Current(_STD move(_Current_)), _Count(_Count_) {}
 
         public:
             using value_type        = decltype(_RANGES views::counted(_Current, _Count));
@@ -4811,18 +4833,10 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator++() noexcept(noexcept(_RANGES next(_Current))) /* strengthened */ {
-                if constexpr (random_access_range<_Base>) {
-                    ++_Current;
-                } else {
-                    _Current = _RANGES next(_Current);
-                }
+                ++_Current;
 
                 if constexpr (_Slide_caches_first<_Base>) {
-                    if constexpr (random_access_range<_Base>) {
-                        ++_Last_element;
-                    } else {
-                        _Last_element = _RANGES next(_Last_element);
-                    }
+                    ++this->_Last_element;
                 }
                 return *this;
             }
@@ -4836,18 +4850,10 @@ namespace ranges {
 
             constexpr _Iterator& operator--() noexcept(noexcept(_RANGES prev(_Current))) /* strengthened */
                 requires bidirectional_range<_Base> {
-                if constexpr (_Slide_caches_first<_Base>) {
-                    --_Current;
-                } else {
-                    _Current = _RANGES prev(_Current);
-                }
+                --_Current;
 
                 if constexpr (_Slide_caches_first<_Base>) {
-                    if constexpr (random_access_range<_Base>) {
-                        --_Last_element;
-                    } else {
-                        _Last_element = _RANGES prev(_Last_element);
-                    }
+                    --this->_Last_element;
                 }
                 return *this;
             }
@@ -4864,7 +4870,7 @@ namespace ranges {
                 _Current += _Off;
 
                 if constexpr (_Slide_caches_first<_Base>) {
-                    _Last_element += _Off;
+                    this->_Last_element += _Off;
                 }
                 return *this;
             }
@@ -4874,7 +4880,7 @@ namespace ranges {
                 _Current -= _Off;
 
                 if constexpr (_Slide_caches_first<_Base>) {
-                    _Last_element -= _Off;
+                    this->_Last_element -= _Off;
                 }
                 return *this;
             }
@@ -4956,11 +4962,6 @@ namespace ranges {
                 } else {
                     return _Left._Current - _Right._Current;
                 }
-            }
-
-            _NODISCARD constexpr const _Base_iter& _Get_last_element() const noexcept //
-                requires _Slide_caches_first<_Base> {
-                return _Last_element;
             }
         };
 
