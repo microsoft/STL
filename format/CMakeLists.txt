@@ -4,6 +4,12 @@ if(NOT DEFINED CLANG_FORMAT)
     set(did_search OFF)
 endif()
 
+if(ERROR_ON_CLANG_FORMAT_NOT_FOUND)
+    set(message_level FATAL_ERROR)
+else()
+    set(message_level WARNING)
+endif()
+
 find_program(CLANG_FORMAT
     NAMES clang-format
     PATHS "C:/Program Files/Microsoft Visual Studio/2022/Preview/VC/Tools/Llvm/bin"
@@ -34,7 +40,7 @@ if(CLANG_FORMAT)
     endforeach()
 
     if(NOT clang-format-files)
-        message(WARNING "Could not find any files to clang-format!")
+        message("${message_level}" "Could not find any files to clang-format!")
     endif()
 
     set(clang-format-targets "")
@@ -55,7 +61,7 @@ if(CLANG_FORMAT)
     set(CLANG_FORMAT_TARGETS "${clang-format-targets}" PARENT_SCOPE)
 else()
     if(did_search)
-        message(WARNING "Searching for VS clang-format - not found.")
+        message("${message_level}" "Searching for VS clang-format - not found.")
     endif()
     set(CLANG_FORMAT_TARGETS "" PARENT_SCOPE)
 endif()

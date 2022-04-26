@@ -40,10 +40,18 @@ stages:
             displayName: 'Build Support Tools'
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - script: |
+              if exist "$(buildOutputLocation)" (
+                rmdir /S /Q "$(buildOutputLocation)"
+              )
+              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+              -host_arch=amd64 -arch=amd64 -no_logo
+              cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DERROR_ON_CLANG_FORMAT_NOT_FOUND=1 ^
+              -S $(Build.SourcesDirectory)\tools -B $(buildOutputLocation)
               cmake --build $(buildOutputLocation) --target format
             displayName: 'Enforce clang-format'
             timeoutInMinutes: 60
             condition: succeededOrFailed()
+            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - task: BatchScript@1
             displayName: 'Validate Files'
             timeoutInMinutes: 2
