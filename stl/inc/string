@@ -84,7 +84,6 @@ basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>& _Istr,
 }
 
 _NODISCARD inline int stoi(const string& _Str, size_t* _Idx = nullptr, int _Base = 10) {
-    // convert string to int
     int& _Errno_ref  = errno; // Nonzero cost, pay it once
     const char* _Ptr = _Str.c_str();
     char* _Eptr;
@@ -107,7 +106,6 @@ _NODISCARD inline int stoi(const string& _Str, size_t* _Idx = nullptr, int _Base
 }
 
 _NODISCARD inline long stol(const string& _Str, size_t* _Idx = nullptr, int _Base = 10) {
-    // convert string to long
     int& _Errno_ref  = errno; // Nonzero cost, pay it once
     const char* _Ptr = _Str.c_str();
     char* _Eptr;
@@ -130,7 +128,6 @@ _NODISCARD inline long stol(const string& _Str, size_t* _Idx = nullptr, int _Bas
 }
 
 _NODISCARD inline unsigned long stoul(const string& _Str, size_t* _Idx = nullptr, int _Base = 10) {
-    // convert string to unsigned long
     int& _Errno_ref  = errno; // Nonzero cost, pay it once
     const char* _Ptr = _Str.c_str();
     char* _Eptr;
@@ -153,7 +150,6 @@ _NODISCARD inline unsigned long stoul(const string& _Str, size_t* _Idx = nullptr
 }
 
 _NODISCARD inline long long stoll(const string& _Str, size_t* _Idx = nullptr, int _Base = 10) {
-    // convert string to long long
     int& _Errno_ref  = errno; // Nonzero cost, pay it once
     const char* _Ptr = _Str.c_str();
     char* _Eptr;
@@ -176,7 +172,6 @@ _NODISCARD inline long long stoll(const string& _Str, size_t* _Idx = nullptr, in
 }
 
 _NODISCARD inline unsigned long long stoull(const string& _Str, size_t* _Idx = nullptr, int _Base = 10) {
-    // convert string to unsigned long long
     int& _Errno_ref  = errno; // Nonzero cost, pay it once
     const char* _Ptr = _Str.c_str();
     char* _Eptr;
@@ -198,7 +193,7 @@ _NODISCARD inline unsigned long long stoull(const string& _Str, size_t* _Idx = n
     return _Ans;
 }
 
-_NODISCARD inline float stof(const string& _Str, size_t* _Idx = nullptr) { // convert string to float
+_NODISCARD inline float stof(const string& _Str, size_t* _Idx = nullptr) {
     int& _Errno_ref  = errno; // Nonzero cost, pay it once
     const char* _Ptr = _Str.c_str();
     char* _Eptr;
@@ -220,7 +215,7 @@ _NODISCARD inline float stof(const string& _Str, size_t* _Idx = nullptr) { // co
     return _Ans;
 }
 
-_NODISCARD inline double stod(const string& _Str, size_t* _Idx = nullptr) { // convert string to double
+_NODISCARD inline double stod(const string& _Str, size_t* _Idx = nullptr) {
     int& _Errno_ref  = errno; // Nonzero cost, pay it once
     const char* _Ptr = _Str.c_str();
     char* _Eptr;
@@ -242,7 +237,7 @@ _NODISCARD inline double stod(const string& _Str, size_t* _Idx = nullptr) { // c
     return _Ans;
 }
 
-_NODISCARD inline long double stold(const string& _Str, size_t* _Idx = nullptr) { // convert string to long double
+_NODISCARD inline long double stold(const string& _Str, size_t* _Idx = nullptr) {
     int& _Errno_ref  = errno; // Nonzero cost, pay it once
     const char* _Ptr = _Str.c_str();
     char* _Eptr;
@@ -265,7 +260,6 @@ _NODISCARD inline long double stold(const string& _Str, size_t* _Idx = nullptr) 
 }
 
 _NODISCARD inline int stoi(const wstring& _Str, size_t* _Idx = nullptr, int _Base = 10) {
-    // convert wstring to int
     int& _Errno_ref     = errno; // Nonzero cost, pay it once
     const wchar_t* _Ptr = _Str.c_str();
     wchar_t* _Eptr;
@@ -288,7 +282,6 @@ _NODISCARD inline int stoi(const wstring& _Str, size_t* _Idx = nullptr, int _Bas
 }
 
 _NODISCARD inline long stol(const wstring& _Str, size_t* _Idx = nullptr, int _Base = 10) {
-    // convert wstring to long
     int& _Errno_ref     = errno; // Nonzero cost, pay it once
     const wchar_t* _Ptr = _Str.c_str();
     wchar_t* _Eptr;
@@ -311,7 +304,6 @@ _NODISCARD inline long stol(const wstring& _Str, size_t* _Idx = nullptr, int _Ba
 }
 
 _NODISCARD inline unsigned long stoul(const wstring& _Str, size_t* _Idx = nullptr, int _Base = 10) {
-    // convert wstring to unsigned long
     int& _Errno_ref     = errno; // Nonzero cost, pay it once
     const wchar_t* _Ptr = _Str.c_str();
     wchar_t* _Eptr;
@@ -334,7 +326,6 @@ _NODISCARD inline unsigned long stoul(const wstring& _Str, size_t* _Idx = nullpt
 }
 
 _NODISCARD inline long long stoll(const wstring& _Str, size_t* _Idx = nullptr, int _Base = 10) {
-    // convert wstring to long long
     int& _Errno_ref     = errno; // Nonzero cost, pay it once
     const wchar_t* _Ptr = _Str.c_str();
     wchar_t* _Eptr;
@@ -357,7 +348,6 @@ _NODISCARD inline long long stoll(const wstring& _Str, size_t* _Idx = nullptr, i
 }
 
 _NODISCARD inline unsigned long long stoull(const wstring& _Str, size_t* _Idx = nullptr, int _Base = 10) {
-    // convert wstring to unsigned long long
     int& _Errno_ref     = errno; // Nonzero cost, pay it once
     const wchar_t* _Ptr = _Str.c_str();
     wchar_t* _Eptr;
@@ -379,7 +369,7 @@ _NODISCARD inline unsigned long long stoull(const wstring& _Str, size_t* _Idx = 
     return _Ans;
 }
 
-_NODISCARD inline float stof(const wstring& _Str, size_t* _Idx = nullptr) { // convert wstring to float
+_NODISCARD inline float stof(const wstring& _Str, size_t* _Idx = nullptr) {
     int& _Errno_ref     = errno; // Nonzero cost, pay it once
     const wchar_t* _Ptr = _Str.c_str();
     wchar_t* _Eptr;
@@ -401,7 +391,7 @@ _NODISCARD inline float stof(const wstring& _Str, size_t* _Idx = nullptr) { // c
     return _Ans;
 }
 
-_NODISCARD inline double stod(const wstring& _Str, size_t* _Idx = nullptr) { // convert wstring to double
+_NODISCARD inline double stod(const wstring& _Str, size_t* _Idx = nullptr) {
     int& _Errno_ref     = errno; // Nonzero cost, pay it once
     const wchar_t* _Ptr = _Str.c_str();
     wchar_t* _Eptr;
@@ -423,7 +413,7 @@ _NODISCARD inline double stod(const wstring& _Str, size_t* _Idx = nullptr) { // 
     return _Ans;
 }
 
-_NODISCARD inline long double stold(const wstring& _Str, size_t* _Idx = nullptr) { // convert wstring to long double
+_NODISCARD inline long double stold(const wstring& _Str, size_t* _Idx = nullptr) {
     int& _Errno_ref     = errno; // Nonzero cost, pay it once
     const wchar_t* _Ptr = _Str.c_str();
     wchar_t* _Eptr;
