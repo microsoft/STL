@@ -4815,24 +4815,23 @@ namespace ranges {
 
         public:
             using value_type        = decltype(_RANGES views::counted(_Current, _Count));
-            using difference_type   = range_difference_t<_Vw>;
+            using difference_type   = range_difference_t<_Base>;
             using iterator_category = input_iterator_tag;
             using iterator_concept  = conditional_t<random_access_range<_Base>, random_access_iterator_tag,
                 conditional_t<bidirectional_range<_Base>, bidirectional_iterator_tag, forward_iterator_tag>>;
 
             _Iterator() = default;
 
-            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(is_nothrow_default_constructible_v<_Base_iter>&&
-                    is_nothrow_constructible_v<_Base_iter, iterator_t<_Vw>>) /* strengthened */
-                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iter> //
-                : _Current(_Other._Current), _Count(_Other._Count) {}
+            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(is_nothrow_move_constructible_v<_Base_iter>) //
+                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iter> /* strengthened */
+                : _Current(_STD move(_Other._Current)), _Count(_Other._Count) {}
 
             _NODISCARD constexpr value_type operator*() const
                 noexcept(noexcept(_RANGES views::counted(_Current, _Count))) /* strengthened */ {
                 return _RANGES views::counted(_Current, _Count);
             }
 
-            constexpr _Iterator& operator++() noexcept(noexcept(_RANGES next(_Current))) /* strengthened */ {
+            constexpr _Iterator& operator++() noexcept(noexcept(++_Current)) /* strengthened */ {
                 ++_Current;
 
                 if constexpr (_Slide_caches_first<_Base>) {
@@ -4842,13 +4841,13 @@ namespace ranges {
             }
 
             constexpr _Iterator operator++(int) noexcept(
-                is_nothrow_copy_constructible_v<_Base_iter>&& noexcept(_RANGES next(_Current))) /* strengthened */ {
+                is_nothrow_copy_constructible_v<_Base_iter>&& noexcept(++_Current)) /* strengthened */ {
                 auto _Tmp = *this;
                 ++*this;
                 return _Tmp;
             }
 
-            constexpr _Iterator& operator--() noexcept(noexcept(_RANGES prev(_Current))) /* strengthened */
+            constexpr _Iterator& operator--() noexcept(noexcept(--_Current)) /* strengthened */
                 requires bidirectional_range<_Base> {
                 --_Current;
 
@@ -4858,15 +4857,17 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr _Iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Base_iter>&& noexcept(
-                _RANGES prev(_Current))) /* strengthened */ requires bidirectional_range<_Base> {
+            constexpr _Iterator operator--(int) noexcept(
+                is_nothrow_copy_constructible_v<_Base_iter>&& noexcept(--_Current)) /* strengthened */
+                requires bidirectional_range<_Base> {
                 auto _Tmp = *this;
                 --*this;
                 return _Tmp;
             }
 
             constexpr _Iterator& operator+=(const difference_type _Off) noexcept(
-                noexcept(_Current += _Off)) /* strengthened */ requires random_access_range<_Base> {
+                noexcept(_Current += _Off)) /* strengthened */
+                requires random_access_range<_Base> {
                 _Current += _Off;
 
                 if constexpr (_Slide_caches_first<_Base>) {
@@ -4876,7 +4877,8 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator-=(const difference_type _Off) noexcept(
-                noexcept(_Current -= _Off)) /* strengthened */ requires random_access_range<_Base> {
+                noexcept(_Current -= _Off)) /* strengthened */
+                requires random_access_range<_Base> {
                 _Current -= _Off;
 
                 if constexpr (_Slide_caches_first<_Base>) {
@@ -4885,8 +4887,9 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr value_type operator[](const difference_type _Off) const noexcept(noexcept(_RANGES views::counted(
-                _Current + _Off, _Count))) /* strengthened */ requires random_access_range<_Base> {
+            _NODISCARD constexpr value_type operator[](const difference_type _Off) const
+                noexcept(noexcept(_RANGES views::counted(_Current + _Off, _Count))) /* strengthened */
+                requires random_access_range<_Base> {
                 return _RANGES views::counted(_Current + _Off, _Count);
             }
 
