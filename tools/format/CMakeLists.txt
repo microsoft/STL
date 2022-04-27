@@ -31,7 +31,7 @@ if(CLANG_FORMAT)
         message(STATUS "Searching for VS clang-format - found")
     endif()
 
-    file(GLOB_RECURSE maybe-clang-format-files
+    file(GLOB_RECURSE maybe-clang-format-files CONFIGURE_DEPENDS
         "../../stl/inc/*"
         "../../stl/src/*"
         "../../tests/*"
@@ -64,18 +64,14 @@ if(CLANG_FORMAT)
         list(APPEND clang-format-targets "${target_name}")
     endforeach()
 
-    if(PROJECT_IS_TOP_LEVEL)
-        add_custom_target(format ALL)
-        add_dependencies(format ${clang-format-targets})
-    else()
-        set(CLANG_FORMAT_TARGETS "${clang-format-targets}" PARENT_SCOPE)
+    if(clang-format-targets)
+        add_custom_target(clang-format-all ALL)
+        add_dependencies(clang-format-all ${clang-format-targets})
     endif()
 else()
     if(did_search)
         message("${message_level}" "Searching for VS clang-format - not found.")
     endif()
 
-    if(NOT PROJECT_IS_TOP_LEVEL)
-        set(CLANG_FORMAT_TARGETS "" PARENT_SCOPE)
-    endif()
+    set(CLANG_FORMAT_TARGETS "" PARENT_SCOPE)
 endif()

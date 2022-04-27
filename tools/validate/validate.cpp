@@ -198,10 +198,10 @@ int main() {
     };
 
     static constexpr array skipped_extensions{
+        L".diff"sv,
         L".dll"sv,
         L".exe"sv,
         L".obj"sv,
-        L".diff"sv,
     };
 
     static constexpr array tabby_filenames{
