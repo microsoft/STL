@@ -19,7 +19,7 @@ if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
         '    cmake --build <builddir> --target format'
         ''
     )
-    Write-Host ($msg -join '`n')
+    Write-Host ($msg -join "`n")
     Write-Host (Get-Content -LiteralPath $DiffFile)
     throw
 }
