@@ -250,16 +250,15 @@ template <class _Outer, class... _Inner>
 scoped_allocator_adaptor(_Outer, _Inner...) -> scoped_allocator_adaptor<_Outer, _Inner...>;
 #endif // _HAS_CXX17
 
-template <class _Outer1, class _Outer2, class _Inner1, class... _Inner>
-_NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1, _Inner1, _Inner...>& _Left,
-    const scoped_allocator_adaptor<_Outer2, _Inner1, _Inner...>& _Right) noexcept {
-    return _Left.outer_allocator() == _Right.outer_allocator() && _Left.inner_allocator() == _Right.inner_allocator();
-}
-
-template <class _Outer1, class _Outer2>
-_NODISCARD bool operator==(
-    const scoped_allocator_adaptor<_Outer1>& _Left, const scoped_allocator_adaptor<_Outer2>& _Right) noexcept {
-    return _Left.outer_allocator() == _Right.outer_allocator();
+template <class _Outer1, class _Outer2, class... _Inner>
+_NODISCARD bool operator==(const scoped_allocator_adaptor<_Outer1, _Inner...>& _Left,
+    const scoped_allocator_adaptor<_Outer2, _Inner...>& _Right) noexcept {
+    if constexpr (sizeof...(_Inner) == 0) {
+        return _Left.outer_allocator() == _Right.outer_allocator();
+    } else {
+        return _Left.outer_allocator() == _Right.outer_allocator()
+            && _Left.inner_allocator() == _Right.inner_allocator();
+    }
 }
 
 #if !_HAS_CXX20
