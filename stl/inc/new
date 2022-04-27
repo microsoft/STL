@@ -43,10 +43,7 @@ inline constexpr size_t hardware_destructive_interference_size  = 64;
 
 #endif // _HAS_CXX17
 
-#if !defined(_INC_NEW) || !defined(_MSC_EXTENSIONS)
-// handler for operator new failures
 using new_handler = void(__CLRCALL_PURE_OR_CDECL*)();
-#endif // !defined(_INC_NEW) || !defined(_MSC_EXTENSIONS)
 
 _CRTIMP2 new_handler __cdecl set_new_handler(_In_opt_ new_handler) noexcept;
 _NODISCARD _CRTIMP2 new_handler __cdecl get_new_handler() noexcept;
