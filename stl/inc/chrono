@@ -1610,6 +1610,11 @@ namespace chrono {
 #endif // ^^^ workaround ^^^
     };
 
+    template <class _Duration>
+    [[noreturn]] void _Throw_nonexistent_local_time(const local_time<_Duration>& _Tp, const local_info& _Info) {
+        _THROW((nonexistent_local_time{_Tp, _Info}));
+    }
+
     class ambiguous_local_time : public runtime_error {
     public:
         template <class _Duration>
@@ -1627,6 +1632,11 @@ namespace chrono {
         }
 #endif // ^^^ workaround ^^^
     };
+
+    template <class _Duration>
+    [[noreturn]] void _Throw_ambiguous_local_time(const local_time<_Duration>& _Tp, const local_info& _Info) {
+        _THROW((ambiguous_local_time{_Tp, _Info}));
+    }
 
     // [time.zone.timezone]
 
@@ -1715,9 +1725,9 @@ namespace chrono {
         _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(const local_time<_Duration>& _Local) const {
             const auto _Info = get_info(_Local);
             if (_Info.result == local_info::nonexistent) {
-                _THROW(nonexistent_local_time(_Local, _Info));
+                _Throw_nonexistent_local_time(_Local, _Info);
             } else if (_Info.result == local_info::ambiguous) {
-                _THROW(ambiguous_local_time(_Local, _Info));
+                _Throw_ambiguous_local_time(_Local, _Info);
             }
 
             return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch() - _Info.first.offset};
