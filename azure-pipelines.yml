@@ -18,7 +18,7 @@ stages:
         displayName: 'Validation'
         variables:
           - name: DiffFile
-            value: '$(Build.ArtifactStagingDirectory)\format.diff'
+            value: '$(Build.ArtifactStagingDirectory)/format.diff'
         steps:
           - script: |
               if exist "$(tmpDir)" (
@@ -28,13 +28,12 @@ stages:
             displayName: 'Setup TMP Directory'
           - checkout: self
             clean: true
-            submodules: true
+            submodules: false
           - script: |
               call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
                 -host_arch=amd64 -arch=amd64 -no_logo
-              cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release -DERROR_ON_CLANG_FORMAT_NOT_FOUND=1 ^
-                -S $(Build.SourcesDirectory) -B $(tmpDir)\format-build
-              cmake --build $(tmpDir)\format-build --target format
+              cmake -G Ninja -S $(Build.SourcesDirectory)/tools/format -B $(tmpDir)/format-build
+              cmake --build $(tmpDir)/format-build
             displayName: 'clang-format'
             timeoutInMinutes: 5
             condition: succeededOrFailed()
@@ -51,14 +50,14 @@ stages:
           - task: Powershell@2
             displayName: 'Create Diff'
             inputs:
-              filePath: azure-devops/Create-PRDiff.ps1
+              filePath: azure-devops/create-prdiff.ps1
               arguments: '-DiffFile $(DiffFile)'
-              pwsh: true
+              pwsh: false
           - task: PublishBuildArtifacts@1
             condition: failed()
             displayName: 'Publish Format and Messages File Diff'
             inputs:
-              PathtoPublish: '$(DiffFile)'
+              PathToPublish: '$(DiffFile)'
               ArtifactName: 'format.diff'
 
   - stage: Build_And_Test_x64

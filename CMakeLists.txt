@@ -87,7 +87,7 @@ if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
 
-add_subdirectory(format)
+add_subdirectory(tools/format)
 if(CLANG_FORMAT_TARGETS)
     add_custom_target(format)
     add_dependencies(format ${CLANG_FORMAT_TARGETS})

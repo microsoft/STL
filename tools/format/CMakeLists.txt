@@ -1,10 +1,13 @@
+cmake_minimum_required(VERSION 3.22)
+project(stl-format NONE)
+
 set(did_search ON)
 if(NOT DEFINED CLANG_FORMAT)
     message(STATUS "Searching for VS clang-format")
     set(did_search OFF)
 endif()
 
-if(ERROR_ON_CLANG_FORMAT_NOT_FOUND)
+if(PROJECT_IS_TOP_LEVEL)
     set(message_level FATAL_ERROR)
 else()
     set(message_level WARNING)
@@ -26,10 +29,10 @@ if(CLANG_FORMAT)
     endif()
 
     file(GLOB_RECURSE maybe-clang-format-files
-        "${PROJECT_SOURCE_DIR}/stl/inc/*"
-        "${PROJECT_SOURCE_DIR}/stl/src/*"
-        "${PROJECT_SOURCE_DIR}/tests/*"
-        "${PROJECT_SOURCE_DIR}/tools/*"
+        "../../stl/inc/*"
+        "../../stl/src/*"
+        "../../tests/*"
+        "../../tools/*"
     )
     set(clang-format-files "")
     foreach(maybe-file IN LISTS maybe-clang-format-files)
@@ -46,7 +49,7 @@ if(CLANG_FORMAT)
     set(clang-format-targets "")
     foreach(file IN LISTS clang-format-files)
         cmake_path(RELATIVE_PATH file
-            BASE_DIRECTORY "${PROJECT_SOURCE_DIR}"
+            BASE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../.."
             OUTPUT_VARIABLE relative-file
         )
         string(REPLACE "/" "_" relative-file "${relative-file}")
@@ -58,10 +61,18 @@ if(CLANG_FORMAT)
         list(APPEND clang-format-targets "${target_name}")
     endforeach()
 
-    set(CLANG_FORMAT_TARGETS "${clang-format-targets}" PARENT_SCOPE)
+    if(PROJECT_IS_TOP_LEVEL)
+        add_custom_target(format ALL)
+        add_dependencies(format ${clang-format-targets})
+    else()
+        set(CLANG_FORMAT_TARGETS "${clang-format-targets}" PARENT_SCOPE)
+    endif()
 else()
     if(did_search)
         message("${message_level}" "Searching for VS clang-format - not found.")
     endif()
-    set(CLANG_FORMAT_TARGETS "" PARENT_SCOPE)
+
+    if(NOT PROJECT_IS_TOP_LEVEL)
+        set(CLANG_FORMAT_TARGETS "" PARENT_SCOPE)
+    endif()
 endif()

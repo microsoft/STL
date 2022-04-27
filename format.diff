@@ -1,0 +1,13 @@
+diff --git a/azure-pipelines.yml b/azure-pipelines.yml
+index bd4d94b8..5f5c0e36 100644
+--- a/azure-pipelines.yml
++++ b/azure-pipelines.yml
+@@ -53,7 +53,7 @@ stages:
+             inputs:
+               filePath: azure-devops/Create-PRDiff.ps1
+               arguments: '-DiffFile $(DiffFile)'
+-              pwsh: true
++              pwsh: false
+           - task: PublishBuildArtifacts@1
+             condition: failed()
+             displayName: 'Publish Format and Messages File Diff'
