@@ -4892,7 +4892,6 @@ public:
         piecewise_linear_distribution& _Dist) { // read state from _Istr
         static_cast<piecewise_linear_distribution::_Mypbase&>(_Dist._Par)._Read(_Istr);
 
-
         _Dist._Par._Bvec.clear();
         for (size_t _Idx = _Dist._Par._Pvec.size(); 0 < _Idx; --_Idx) { // get a value and add to intervals vector
             double _Val;
