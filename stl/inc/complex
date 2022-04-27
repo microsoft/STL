@@ -1856,10 +1856,10 @@ _NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) {
 }
 
 template <class _Ty>
-_Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // Used by sqrt(), return magnitude and scale factor.
-                                                   // Returns a non-zero even integer in *_Pexp when _Left is finite
-                                                   // and non-zero.
-                                                   // Returns 0 in *_Pexp when _Left is zero, infinity, or NaN.
+_Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) {
+    // Used by sqrt(), return magnitude and scale factor.
+    // Returns a non-zero even integer in *_Pexp when _Left is finite and non-zero.
+    // Returns 0 in *_Pexp when _Left is zero, infinity, or NaN.
     *_Pexp  = 0;
     _Ty _Av = _Ctraits<_Ty>::_Abs(_STD real(_Left));
     _Ty _Bv = _Ctraits<_Ty>::_Abs(_STD imag(_Left));
