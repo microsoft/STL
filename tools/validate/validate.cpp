@@ -198,10 +198,15 @@ int main() {
     };
 
     static constexpr array skipped_extensions{
-        L".diff"sv,
         L".dll"sv,
         L".exe"sv,
         L".obj"sv,
+    };
+
+    // make sure someone doesn't accidentally include a diff in the tree
+    static constexpr array bad_extensions{
+        L".diff"sv,
+        L".patch"sv,
     };
 
     static constexpr array tabby_filenames{
@@ -210,6 +215,7 @@ int main() {
 
     static_assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
     static_assert(is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
+    static_assert(is_sorted(bad_extensions.begin(), bad_extensions.end()));
     static_assert(is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
 
     vector<unsigned char> buffer; // reused for performance
@@ -245,6 +251,8 @@ int main() {
 
         if (binary_search(skipped_extensions.begin(), skipped_extensions.end(), extension)) {
             continue;
+        } else if (binary_search(bad_extensions.begin(), bad_extensions.end(), extensions)) {
+            fwprintf(stderr, L"Validation failed: the file \"%ls\" should not be checked in.\n", filepath.c_str());
         }
 
         const TabPolicy tab_policy = binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)
