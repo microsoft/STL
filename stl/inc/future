@@ -96,7 +96,7 @@ _NODISCARD inline error_condition make_error_condition(future_errc _Errno) noexc
     return error_condition(static_cast<int>(_Errno), _STD future_category());
 }
 
-inline const char* _Future_error_map(int _Errcode) noexcept { // convert to name of future error
+_NODISCARD inline const char* _Future_error_map(int _Errcode) noexcept { // convert to name of future error
     switch (static_cast<future_errc>(_Errcode)) { // switch on error code value
     case future_errc::broken_promise:
         return "broken promise";
