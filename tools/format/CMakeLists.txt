@@ -64,13 +64,8 @@ if(CLANG_FORMAT)
         )
         add_dependencies(clang-format-all "${target_name}")
     endforeach()
-
-    if(clang_format_targets)
-    endif()
 else()
     if(did_search)
         message("${message_level}" "Searching for VS clang-format - not found.")
     endif()
-
-    set(CLANG_FORMAT_TARGETS "" PARENT_SCOPE)
 endif()
