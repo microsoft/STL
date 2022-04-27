@@ -2183,7 +2183,7 @@ namespace chrono {
     inline atomic<tzdb_list*> _Global_tzdb_list;
 
     _NODISCARD inline tzdb_list& get_tzdb_list() {
-        auto* _Tzdb_ptr = _Global_tzdb_list.load();
+        auto _Tzdb_ptr = _Global_tzdb_list.load();
         if (_Tzdb_ptr != nullptr) {
             return *_Tzdb_ptr;
         }
