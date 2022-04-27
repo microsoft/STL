@@ -31,26 +31,27 @@ if(CLANG_FORMAT)
         message(STATUS "Searching for VS clang-format - found")
     endif()
 
-    file(GLOB_RECURSE maybe-clang-format-files CONFIGURE_DEPENDS
+    file(GLOB_RECURSE maybe_clang_format_files CONFIGURE_DEPENDS
         "../../stl/inc/*"
         "../../stl/src/*"
         "../../tests/*"
         "../../tools/*"
     )
-    set(clang-format-files "")
-    foreach(maybe-file IN LISTS maybe-clang-format-files)
-        cmake_path(GET maybe-file EXTENSION LAST_ONLY extension)
-        if(extension MATCHES [[^(|\.cpp|\.h|\.hpp)$]] AND NOT maybe-file MATCHES [[^\.]])
-            list(APPEND clang-format-files "${maybe-file}")
+    set(clang_format_files "")
+    foreach(maybe_file IN LISTS maybe_clang_format_files)
+        cmake_path(GET maybe_file FILENAME filename)
+        cmake_path(GET maybe_file EXTENSION LAST_ONLY extension)
+        if(extension MATCHES [[^(|\.cpp|\.h|\.hpp)$]] AND NOT filename MATCHES [[^\.]])
+            list(APPEND clang_format_files "${maybe_file}")
         endif()
     endforeach()
 
-    if(NOT clang-format-files)
+    if(NOT clang_format_files)
         message("${message_level}" "Could not find any files to clang-format!")
     endif()
 
-    set(clang-format-targets "")
-    foreach(file IN LISTS clang-format-files)
+    add_custom_target(clang-format-all ALL)
+    foreach(file IN LISTS clang_format_files)
         cmake_path(RELATIVE_PATH file
             BASE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../.."
             OUTPUT_VARIABLE relative-file
@@ -61,12 +62,10 @@ if(CLANG_FORMAT)
             COMMAND "${CLANG_FORMAT}" -style=file -i "${file}"
             WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
         )
-        list(APPEND clang-format-targets "${target_name}")
+        add_dependencies(clang-format-all "${target_name}")
     endforeach()
 
-    if(clang-format-targets)
-        add_custom_target(clang-format-all ALL)
-        add_dependencies(clang-format-all ${clang-format-targets})
+    if(clang_format_targets)
     endif()
 else()
     if(did_search)

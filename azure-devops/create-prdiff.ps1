@@ -20,6 +20,6 @@ if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
         ''
     )
     Write-Host ($msg -join "`n")
-    Write-Host (Get-Content -LiteralPath $DiffFile)
+    Write-Host [string](Get-Content -LiteralPath $DiffFile)
     throw
 }
