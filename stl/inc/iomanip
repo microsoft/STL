@@ -213,11 +213,7 @@ struct _Quote_out { // store pointer/length for string
 template <class _Elem>
 _NODISCARD _Quote_out<_Elem, void, size_t> quoted(
     const _Elem* _Ptr, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
-    size_t _Size = 0;
-    while (_Ptr[_Size] != _Elem(0)) {
-        ++_Size;
-    }
-
+    const size_t _Size = char_traits<_Elem>::length(_Ptr);
     return {_Ptr, _Size, _Delim, _Escape};
 }
 
