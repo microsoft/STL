@@ -201,6 +201,7 @@ int main() {
         L".dll"sv,
         L".exe"sv,
         L".obj"sv,
+        L".diff"sv,
     };
 
     static constexpr array tabby_filenames{
