@@ -104,23 +104,23 @@ constexpr bool _Is_pow_2(const size_t _Value) noexcept {
 }
 
 #if defined(_M_IX86) || defined(_M_X64)
-constexpr size_t _Big_allocation_threshold = 4096;
-constexpr size_t _Big_allocation_alignment = 32;
+_INLINE_VAR constexpr size_t _Big_allocation_threshold = 4096;
+_INLINE_VAR constexpr size_t _Big_allocation_alignment = 32;
 
 static_assert(2 * sizeof(void*) <= _Big_allocation_alignment,
     "Big allocation alignment should at least match vector register alignment");
 static_assert(_Is_pow_2(_Big_allocation_alignment), "Big allocation alignment must be a power of two");
 
 #ifdef _DEBUG
-constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
+_INLINE_VAR constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
 #else // _DEBUG
-constexpr size_t _Non_user_size           = sizeof(void*) + _Big_allocation_alignment - 1;
+_INLINE_VAR constexpr size_t _Non_user_size           = sizeof(void*) + _Big_allocation_alignment - 1;
 #endif // _DEBUG
 
 #ifdef _WIN64
-constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
+_INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
 #else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
-constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
+_INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
 #endif // _WIN64
 
 template <class _Traits>
