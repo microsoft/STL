@@ -4218,10 +4218,8 @@ public:
         }
 
         void _Init(_Ty _Kx0, double _Px0) { // initialize
-            _STL_ASSERT(0.0 < _Kx0, "invalid max argument for "
-                                    "negative_binomial_distribution");
-            _STL_ASSERT(0.0 < _Px0 && _Px0 <= 1.0, "invalid probability argument for "
-                                                   "negative_binomial_distribution");
+            _STL_ASSERT(0.0 < _Kx0, "invalid max argument for negative_binomial_distribution");
+            _STL_ASSERT(0.0 < _Px0 && _Px0 <= 1.0, "invalid probability argument for negative_binomial_distribution");
             _Kx = _Kx0;
             _Px = _Px0;
         }
@@ -4799,16 +4797,13 @@ public:
                 } else { // normalize probabilities
                     double _Sum = 0;
 
-                    _STL_ASSERT(0.0 <= this->_Pvec[0], "invalid probability for "
-                                                       "piecewise_linear_distribution");
+                    _STL_ASSERT(0.0 <= this->_Pvec[0], "invalid probability for piecewise_linear_distribution");
                     for (_Idx = 1; _Idx < _Size; ++_Idx) { // sum all probabilities
-                        _STL_ASSERT(0.0 <= this->_Pvec[_Idx], "invalid probability for "
-                                                              "piecewise_linear_distribution");
+                        _STL_ASSERT(0.0 <= this->_Pvec[_Idx], "invalid probability for piecewise_linear_distribution");
                         _Sum += _Piece_probability(_Idx - 1);
                     }
 
-                    _STL_ASSERT(0.0 < _Sum, "invalid probability vector for "
-                                            "piecewise_linear_distribution");
+                    _STL_ASSERT(0.0 < _Sum, "invalid probability vector for piecewise_linear_distribution");
                     if (_Sum != 1.0) {
                         for (_Idx = 0; _Idx < _Size; ++_Idx) {
                             this->_Pvec[_Idx] /= _Sum;
