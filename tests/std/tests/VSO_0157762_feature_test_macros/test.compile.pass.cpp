@@ -1353,6 +1353,20 @@ STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_chunk
+#error __cpp_lib_ranges_chunk is not defined
+#elif __cpp_lib_ranges_chunk != 202202L
+#error __cpp_lib_ranges_chunk is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_chunk == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_chunk
+#error __cpp_lib_ranges_chunk is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_ranges_chunk_by
 #error __cpp_lib_ranges_chunk_by is not defined
 #elif __cpp_lib_ranges_chunk_by != 202202L
