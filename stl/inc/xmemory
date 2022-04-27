@@ -107,9 +107,11 @@ constexpr bool _Is_pow_2(const size_t _Value) noexcept {
 _INLINE_VAR constexpr size_t _Big_allocation_threshold = 4096;
 _INLINE_VAR constexpr size_t _Big_allocation_alignment = 32;
 
-static_assert(2 * sizeof(void*) <= _Big_allocation_alignment,
-    "Big allocation alignment should at least match vector register alignment");
-static_assert(_Is_pow_2(_Big_allocation_alignment), "Big allocation alignment must be a power of two");
+// Big allocation alignment should at least match vector register alignment
+_STL_INTERNAL_STATIC_ASSERT(2 * sizeof(void*) <= _Big_allocation_alignment);
+
+// Big allocation alignment must be a power of two
+_STL_INTERNAL_STATIC_ASSERT(_Is_pow_2(_Big_allocation_alignment));
 
 #ifdef _DEBUG
 _INLINE_VAR constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
