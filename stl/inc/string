@@ -23,9 +23,9 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 template <class _Elem, class _Traits, class _Alloc>
-basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>&& _Istr,
-    basic_string<_Elem, _Traits, _Alloc>& _Str,
-    const _Elem _Delim) { // get characters into string, discard delimiter
+basic_istream<_Elem, _Traits>& getline(
+    basic_istream<_Elem, _Traits>&& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str, const _Elem _Delim) {
+    // get characters into string, discard delimiter
     using _Myis = basic_istream<_Elem, _Traits>;
 
     typename _Myis::iostate _State = _Myis::goodbit;
@@ -66,20 +66,23 @@ basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>&& _Istr,
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>&& _Istr,
-    basic_string<_Elem, _Traits, _Alloc>& _Str) { // get characters into string, discard newline
+basic_istream<_Elem, _Traits>& getline(
+    basic_istream<_Elem, _Traits>&& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
+    // get characters into string, discard newline
     return getline(_Istr, _Str, _Istr.widen('\n'));
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str,
-    const _Elem _Delim) { // get characters into string, discard delimiter
+basic_istream<_Elem, _Traits>& getline(
+    basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str, const _Elem _Delim) {
+    // get characters into string, discard delimiter
     return getline(_STD move(_Istr), _Str, _Delim);
 }
 
 template <class _Elem, class _Traits, class _Alloc>
-basic_istream<_Elem, _Traits>& getline(basic_istream<_Elem, _Traits>& _Istr,
-    basic_string<_Elem, _Traits, _Alloc>& _Str) { // get characters into string, discard newline
+basic_istream<_Elem, _Traits>& getline(
+    basic_istream<_Elem, _Traits>& _Istr, basic_string<_Elem, _Traits, _Alloc>& _Str) {
+    // get characters into string, discard newline
     return getline(_STD move(_Istr), _Str, _Istr.widen('\n'));
 }
 
@@ -436,7 +439,8 @@ _NODISCARD inline long double stold(const wstring& _Str, size_t* _Idx = nullptr)
 }
 
 template <class _Elem, class _UTy>
-_NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // format _UVal into buffer *ending at* _RNext
+_NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) {
+    // format _UVal into buffer *ending at* _RNext
     static_assert(is_unsigned_v<_UTy>, "_UTy must be unsigned");
 
 #ifdef _WIN64
@@ -467,7 +471,8 @@ _NODISCARD _Elem* _UIntegral_to_buff(_Elem* _RNext, _UTy _UVal) { // format _UVa
 }
 
 template <class _Elem, class _Ty>
-_NODISCARD basic_string<_Elem> _Integral_to_string(const _Ty _Val) { // convert _Val to string
+_NODISCARD basic_string<_Elem> _Integral_to_string(const _Ty _Val) {
+    // convert _Val to string
     static_assert(is_integral_v<_Ty>, "_Ty must be integral");
     using _UTy = make_unsigned_t<_Ty>;
     _Elem _Buff[21]; // can hold -2^63 and 2^64 - 1, plus NUL
@@ -486,7 +491,8 @@ _NODISCARD basic_string<_Elem> _Integral_to_string(const _Ty _Val) { // convert 
 
 // TRANSITION, CUDA - warning: pointless comparison of unsigned integer with zero
 template <class _Elem, class _Ty>
-_NODISCARD basic_string<_Elem> _UIntegral_to_string(const _Ty _Val) { // convert _Val to string
+_NODISCARD basic_string<_Elem> _UIntegral_to_string(const _Ty _Val) {
+    // convert _Val to string
     static_assert(is_integral_v<_Ty>, "_Ty must be integral");
     static_assert(is_unsigned_v<_Ty>, "_Ty must be unsigned");
     _Elem _Buff[21]; // can hold 2^64 - 1, plus NUL
