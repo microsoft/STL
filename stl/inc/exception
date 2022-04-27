@@ -114,7 +114,6 @@ public:
 protected:
     virtual void __CLR_OR_THIS_CALL _Doraise() const {} // perform class-specific exception handling
 
-protected:
     const char* _Ptr; // the message pointer
 };
 
