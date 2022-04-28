@@ -85,12 +85,12 @@ struct is_error_code_enum<future_errc> : true_type {};
 
 _NODISCARD const error_category& future_category() noexcept;
 
-_NODISCARD inline error_code make_error_code(future_errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), _STD future_category());
+_NODISCARD inline error_code make_error_code(future_errc _Ec) noexcept {
+    return error_code(static_cast<int>(_Ec), _STD future_category());
 }
 
-_NODISCARD inline error_condition make_error_condition(future_errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), _STD future_category());
+_NODISCARD inline error_condition make_error_condition(future_errc _Ec) noexcept {
+    return error_condition(static_cast<int>(_Ec), _STD future_category());
 }
 
 inline const char* _Future_error_map(int _Errcode) noexcept { // convert to name of future error
@@ -117,7 +117,7 @@ public:
     explicit future_error(error_code _Errcode) // internal, TRANSITION, will be removed
         : logic_error(""), _Mycode(_Errcode) {}
 
-    explicit future_error(future_errc _Errno) : logic_error(""), _Mycode(_STD make_error_code(_Errno)) {}
+    explicit future_error(future_errc _Ec) : logic_error(""), _Mycode(_STD make_error_code(_Ec)) {}
 
     _NODISCARD const error_code& code() const noexcept {
         return _Mycode;
@@ -139,8 +139,8 @@ private:
 };
 
 // TRANSITION, ABI: remove `2` suffix
-[[noreturn]] inline void _Throw_future_error2(const future_errc _Errno) {
-    _THROW(future_error{_Errno});
+[[noreturn]] inline void _Throw_future_error2(const future_errc _Ec) {
+    _THROW(future_error{_Ec});
 }
 
 class _Future_error_category2 : public error_category { // categorize a future error
