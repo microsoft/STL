@@ -106,7 +106,7 @@ void _Uses_allocator_construct(
 }
 
 template <class _Ty1, class _Ty2, class _Outer_alloc, class _Inner_alloc, class _Uty,
-    enable_if_t<_Is_not_deducible_as_pair<_Uty>, int> = 0>
+    enable_if_t<!_Is_deducible_as_pair<_Uty>, int> = 0>
 void _Uses_allocator_construct(pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Uty&& _Ux) {
     // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, non-pair argument
     static_assert(_Is_normally_bindable<pair<_Ty1, _Ty2>, _Uty>,
