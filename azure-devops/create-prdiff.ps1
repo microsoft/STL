@@ -18,8 +18,8 @@ if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
         'Alternatively, you can run the `format` CMake target:'
         '    cmake --build <builddir> --target format'
         ''
+        Get-Content -LiteralPath $DiffFile -Raw
     )
-    Write-Host ($msg -join "`n")
-    Write-Host [string](Get-Content -LiteralPath $DiffFile)
-    throw
+    Write-Error ($msg -join "`n") -ErrorAction Continue
+    Write-Host '##vso[task.setvariable variable=diffWritten]true'
 }

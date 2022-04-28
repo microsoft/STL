@@ -251,8 +251,10 @@ int main() {
 
         if (binary_search(skipped_extensions.begin(), skipped_extensions.end(), extension)) {
             continue;
-        } else if (binary_search(bad_extensions.begin(), bad_extensions.end(), extension)) {
+        }
+        if (binary_search(bad_extensions.begin(), bad_extensions.end(), extension)) {
             fwprintf(stderr, L"Validation failed: the file \"%ls\" should not be checked in.\n", filepath.c_str());
+            continue;
         }
 
         const TabPolicy tab_policy = binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)

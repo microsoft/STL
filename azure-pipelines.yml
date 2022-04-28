@@ -54,7 +54,7 @@ stages:
               arguments: '-DiffFile $(DiffFile)'
               pwsh: false
           - task: PublishBuildArtifacts@1
-            condition: failed()
+            condition: eq(variables.diffWritten, 'true')
             displayName: 'Publish Format and Messages File Diff'
             inputs:
               PathToPublish: '$(DiffFile)'
