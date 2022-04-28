@@ -2549,7 +2549,7 @@ _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
     if (_Specs._Type == 'c') {
         if (!_In_bounds<_CharT>(_Value)) {
-            _Throw_format_error("integral cannot be stored in charT");
+            _Throw_format_error("integral cannot be stored in char/wchar_t");
         }
         _Specs._Alt = false;
         return _Fmt_write(_STD move(_Out), static_cast<_CharT>(_Value), _Specs, _Locale);
