@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _CRT_SECURE_NO_WARNINGS
+#include <algorithm>
 #include <array>
 #include <assert.h>
 #include <filesystem>
 #include <stdio.h>
-#include <algorithm>
 #include <stdlib.h>
 #include <string>
 #include <string_view>
