@@ -17,9 +17,16 @@ if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
         'and apply it with `git apply`.'
         'Alternatively, you can run the `format` CMake target:'
         '    cmake --build <builddir> --target format'
-        ''
-        Get-Content -LiteralPath $DiffFile -Raw
     )
-    Write-Error ($msg -join "`n") -ErrorAction Continue
-    Write-Host '##vso[task.setvariable variable=diffWritten]true'
+    Write-Host "##vso[error]$($msg -join "`n##vso[error]")"
+
+    Write-Host
+
+    Write-Host '##[group]Expected formatting - diff'
+    Write-Host (Get-Content -LiteralPath $DiffFile -Raw)
+    Write-Host '##[endgroup]'
+
+    Write-Host "##vso[artifact.upload artifactname=format.diff]$DiffFile"
+
+    Write-Host '##vso[task.complete result=Failed]DONE'
 }
