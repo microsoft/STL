@@ -826,27 +826,49 @@ void test_buffer_resizing() {
 }
 
 void test_gh_2618() {
-    auto test = [](const string& date) {
-        tm time{};
-        istringstream iss{date};
-        iss >> get_time(&time, "%Y");
-        return 1900 + time.tm_year;
+    auto TestTimeGetYear = [](const char* input, const int expected_y, const int expected_Y,
+                               const int expected_get_year) {
+        {
+            tm time{};
+            istringstream iss{input};
+            iss >> get_time(&time, "%y");
+            assert(time.tm_year + 1900 == expected_y);
+        }
+
+        {
+            tm time{};
+            istringstream iss{input};
+            iss >> get_time(&time, "%Y");
+            assert(time.tm_year + 1900 == expected_Y);
+        }
+
+        {
+            tm time{};
+            ios_base::iostate state{};
+            istringstream iss{input};
+            use_facet<time_get<char>>(iss.getloc()).get_year({iss}, {}, iss, state, &time);
+            assert(time.tm_year + 1900 == expected_get_year);
+        }
     };
 
-    assert(test("0001") == 1);
-    assert(test("0080") == 80);
-    assert(test("1995") == 1995);
-    assert(test("2022") == 2022);
+    // 4-digit strings: 'y' should only read the first two digits, 'Y' and  `get_year` should agree
+    TestTimeGetYear("0001", 2000, 1, 1);
+    TestTimeGetYear("0080", 2000, 80, 80);
+    TestTimeGetYear("1995", 2019, 1995, 1995);
+    TestTimeGetYear("2022", 2020, 2022, 2022);
+    TestTimeGetYear("8522", 1985, 8522, 8522);
 
-    assert(test("001") == 1);
-    assert(test("080") == 80);
-    assert(test("995") == 995);
-    assert(test("022") == 22);
+    // 3-digit strings: same as 4-digit
+    TestTimeGetYear("001", 2000, 1, 1);
+    TestTimeGetYear("080", 2008, 80, 80);
+    TestTimeGetYear("995", 1999, 995, 995);
 
-    assert(test("01") == 2001);
-    assert(test("80") == 1980);
-    assert(test("95") == 1995);
-    assert(test("22") == 2022);
+    // 2-digit strings: 'Y' should parse literally, `get_year` should behave as 'y'
+    TestTimeGetYear("01", 2001, 1, 2001);
+    TestTimeGetYear("80", 1980, 80, 1980);
+    TestTimeGetYear("95", 1995, 95, 1995);
+    TestTimeGetYear("22", 2022, 22, 2022);
 
-    assert(test("1") == 1);
+    // 1-digit strings: same as 2-digit
+    TestTimeGetYear("1", 2001, 1, 2001);
 }

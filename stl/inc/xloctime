@@ -416,7 +416,7 @@ protected:
 
         _State |= _Res; // pass on eofbit and failbit
         if (!(_Res & ios_base::failbit)) {
-            if (_Digits_read == 2) {
+            if (_Digits_read <= 2) {
                 if (_Ans < 69) {
                     _Pt->tm_year = _Ans + 100; // [00, 68] parsed as [2000, 2068]
                 } else if (_Ans < 100) {
@@ -555,7 +555,10 @@ protected:
             break;
 
         case 'Y':
-            _First = get_year(_First, _Last, _Iosbase, _State, _Pt);
+            _State |= _Getint(_First, _Last, 0, 9999, _Ans, _Ctype_fac);
+            if (!(_State & ios_base::failbit)) {
+                _Pt->tm_year = _Ans - 1900;
+            }
             break;
 
         default:
