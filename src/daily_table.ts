@@ -978,9 +978,10 @@ export const daily_table: DailyRow[] = [
     { date: '2022-04-20', merged: 26.34, pr: 53, cxx20: null, cxx23: 14, lwg: 5, issue: 410, bug: 140, avg_age: 266.39, avg_wait: 247.71, sum_age: 470.62, sum_wait: 437.62, },
     { date: '2022-04-21', merged: 26.14, pr: 56, cxx20: null, cxx23: 14, lwg: 5, issue: 410, bug: 140, avg_age: 253.09, avg_wait: 235.41, sum_age: 472.43, sum_wait: 439.44, },
     { date: '2022-04-22', merged: 24.94, pr: 58, cxx20: null, cxx23: 14, lwg: 5, issue: 411, bug: 140, avg_age: 245.34, avg_wait: 228.27, sum_age: 474.32, sum_wait: 441.32, },
-    { date: '2022-04-23', merged: 23.75, pr: 59, cxx20: null, cxx23: 14, lwg: 5, issue: 412, bug: 140, avg_age: 242.17, avg_wait: 225.40, sum_age: 476.27, sum_wait: 443.28, },
-    { date: '2022-04-24', merged: 22.46, pr: 60, cxx20: null, cxx23: 14, lwg: 5, issue: 412, bug: 140, avg_age: 239.14, avg_wait: 222.64, sum_age: 478.27, sum_wait: 445.28, },
-    { date: '2022-04-25', merged: 20.96, pr: 61, cxx20: null, cxx23: 14, lwg: 5, issue: 412, bug: 140, avg_age: 236.20, avg_wait: 219.98, sum_age: 480.28, sum_wait: 447.29, },
-    { date: '2022-04-26', merged: 21.66, pr: 60, cxx20: null, cxx23: 14, lwg: 5, issue: 412, bug: 140, avg_age: 236.70, avg_wait: 220.33, sum_age: 473.39, sum_wait: 440.65, },
+    { date: '2022-04-23', merged: 23.75, pr: 59, cxx20: null, cxx23: 14, lwg: 5, issue: 412, bug: 141, avg_age: 242.17, avg_wait: 225.40, sum_age: 476.27, sum_wait: 443.28, },
+    { date: '2022-04-24', merged: 22.46, pr: 60, cxx20: null, cxx23: 14, lwg: 5, issue: 412, bug: 141, avg_age: 239.14, avg_wait: 222.64, sum_age: 478.27, sum_wait: 445.28, },
+    { date: '2022-04-25', merged: 20.96, pr: 61, cxx20: null, cxx23: 14, lwg: 5, issue: 412, bug: 141, avg_age: 236.20, avg_wait: 219.98, sum_age: 480.28, sum_wait: 447.29, },
+    { date: '2022-04-26', merged: 21.66, pr: 60, cxx20: null, cxx23: 14, lwg: 5, issue: 412, bug: 142, avg_age: 236.70, avg_wait: 220.33, sum_age: 473.39, sum_wait: 440.66, },
+    { date: '2022-04-27', merged: 20.36, pr: 67, cxx20: null, cxx23: 14, lwg: 5, issue: 411, bug: 141, avg_age: 212.82, avg_wait: 198.09, sum_age: 475.31, sum_wait: 442.41, },
 ];
 // Generated file - DO NOT EDIT manually!
