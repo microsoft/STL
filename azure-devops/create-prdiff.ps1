@@ -18,7 +18,7 @@ if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
         'Alternatively, you can run the `format` CMake target:'
         '    cmake --build <builddir> --target format'
     )
-    Write-Host "##vso[error]$($msg -join "`n##vso[error]")"
+    Write-Host "##[error]$($msg -join "`n##[error]")"
 
     Write-Host
 
