@@ -280,9 +280,6 @@ std/utilities/utility/pairs/pairs.spec/three_way_comparison.pass.cpp:0 FAIL
 # DevCom-1626727: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
 std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
 
-# DevCom-1628714: C1XX refuses nullptr_t == reference-to-function in a requires expression
-std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
-
 # DevCom-1638496: C1XX doesn't properly reject int <=> unsigned
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:0 FAIL
 std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:0 FAIL
@@ -290,6 +287,9 @@ std/utilities/tuple/tuple.tuple/tuple.rel/three_way.pass.cpp:0 FAIL
 
 # DevCom-1638563: icky static analysis false positive
 std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
+
+# DevCom-10026599: conditional expression has two different types
+std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
