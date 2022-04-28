@@ -54,7 +54,8 @@ private:
 };
 
 int validation_failure(const filesystem::path& filepath, _Printf_format_string_ const wchar_t* format, ...) {
-    fwprintf(stderr, L"##vso[task.logissue type=error;sourcepath=%ls]Validation failed: ", filepath.c_str());
+    fwprintf(stderr, L"##vso[task.logissue type=error;sourcepath=%ls;linenumber=1;columnnumber=1]Validation failed: ",
+        filepath.c_str());
 
     va_list args;
     va_start(args, format);
@@ -291,8 +292,7 @@ int main() {
 
     if (any_errors) {
         fwprintf(
-            stderr, L"##vso[task.logissue type=warning]If your build fails here, you need to fix the listed issues.");
+            stderr, L"##vso[task.logissue type=warning]If your build fails here, you need to fix the listed issues.\n");
+        fwprintf(stderr, L"##vso[task.complete result=Failed]DONE\n");
     }
-
-    return any_errors ? 1 : 0;
 }
