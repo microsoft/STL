@@ -31,8 +31,8 @@ public:
     using iterator_category = random_access_iterator_tag;
     using value_type        = typename _Myvec::value_type;
     using difference_type   = typename _Myvec::difference_type;
-    using pointer           = typename _Myvec::const_pointer;
-    using reference         = const value_type&;
+    using pointer                   = typename _Myvec::const_pointer;
+    using reference = const value_type&;
 
     using _Tptr = typename _Myvec::pointer;
 
