@@ -205,48 +205,47 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(noexcept(as_const(r).size()));
     }
 
+    if (is_empty) {
+        return true;
+    }
+
     // Validate view_interface::data
     STATIC_ASSERT(!CanData<R>);
     STATIC_ASSERT(!CanData<const R>);
 
     // Validate view_interface::operator[]
     STATIC_ASSERT(CanIndex<R> == random_access_range<V>);
+    if constexpr (CanIndex<R>) {
+        assert(equal(r[0], expected[0]));
+    }
+
     STATIC_ASSERT(CanIndex<const R> == random_access_range<const V>);
-    if (!is_empty) {
-        if constexpr (CanIndex<R>) {
-            assert(equal(r[0], expected[0]));
-        }
-        if constexpr (CanIndex<const R>) {
-            assert(equal(as_const(r)[0], expected[0]));
-        }
+    if constexpr (CanIndex<const R>) {
+        assert(equal(as_const(r)[0], expected[0]));
     }
 
     // Validate view_interface::front
     STATIC_ASSERT(CanMemberFront<R>);
-    STATIC_ASSERT(CanMemberFront<const R> == caches_nothing_const);
-    if (!is_empty) {
-        assert(equal(r.front(), *begin(expected)));
+    assert(equal(r.front(), *begin(expected)));
 
-        if constexpr (CanMemberFront<const R>) {
-            assert(equal(as_const(r).front(), *begin(expected)));
-        }
+    STATIC_ASSERT(CanMemberFront<const R> == caches_nothing_const);
+    if constexpr (CanMemberFront<const R>) {
+        assert(equal(as_const(r).front(), *begin(expected)));
     }
 
     // Validate view_interface::back
     STATIC_ASSERT(CanMemberBack<R> == (bidirectional_range<V> && (!caches_first || common_range<V>) ));
-    STATIC_ASSERT(CanMemberBack<const R> == caches_nothing_const);
-    if (!is_empty) {
-        if constexpr (CanMemberBack<R>) {
-            assert(equal(r.back(), *prev(end(expected))));
-        }
+    if constexpr (CanMemberBack<R>) {
+        assert(equal(r.back(), *prev(end(expected))));
+    }
 
-        if constexpr (CanMemberBack<const R>) {
-            assert(equal(as_const(r).back(), *prev(end(expected))));
-        }
+    STATIC_ASSERT(CanMemberBack<const R> == caches_nothing_const);
+    if constexpr (CanMemberBack<const R>) {
+        assert(equal(as_const(r).back(), *prev(end(expected))));
     }
 
     // validate iterators
-    if (!is_empty) {
+    {
         [[maybe_unused]] const iterator_t<R> defaulted;
         same_as<iterator_t<R>> auto i = r.begin();
 
@@ -296,89 +295,94 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 assert(i <=> i2 == std::strong_ordering::less);
                 assert(i2 <=> i == std::strong_ordering::greater);
             }
+        }
 
-            if constexpr (!common_range<R>) {
-                const auto size = ranges::size(expected);
-                const auto sen  = r.end();
+        if constexpr (!common_range<R>) {
+            [[maybe_unused]] const sentinel_t<R> sentinel_defaulted;
 
-                assert(next(i, size) == sen);
-                assert(i != sen);
+            const auto i2   = r.begin();
+            const auto sen  = r.end();
+            const auto size = ranges::ssize(expected);
 
-                const same_as<ranges::range_difference_t<V>> auto diff1 = i - sen;
-                assert(diff1 == size);
+            assert(next(i2, size) == sen);
+            assert(i2 != sen);
 
-                const same_as<ranges::range_difference_t<V>> auto diff2 = sen - i;
-                assert(diff2 == -size);
+            if constexpr (sized_sentinel_for<sentinel_t<V>, iterator_t<V>>) {
+                const same_as<ranges::range_difference_t<V>> auto diff1 = i2 - sen;
+                assert(diff1 == -size);
 
-                [[maybe_unused]] const sentinel_t<R> defaulted;
+                const same_as<ranges::range_difference_t<V>> auto diff2 = sen - i2;
+                assert(diff2 == size);
+            }
+        }
+    }
+
+    if constexpr (CanMemberBegin<const R>) {
+        [[maybe_unused]] const iterator_t<const R> const_defaulted;
+        iterator_t<R> i = r.begin();
+        iterator_t<const R> ci{i};
+
+        assert(equal(*ci++, expected[0]));
+        assert(equal(*++ci, expected[2]));
+
+        if constexpr (bidirectional_range<const R>) {
+            assert(equal(*ci--, expected[2]));
+            assert(equal(*--ci, expected[0]));
+        }
+
+        if constexpr (random_access_range<const R>) {
+            ci += 2;
+            assert(equal(*ci, expected[2]));
+
+            ci -= 2;
+            assert(equal(*ci, expected[0]));
+
+            assert(equal(ci[2], expected[2]));
+
+            const same_as<iterator_t<const R>> auto ci2 = ci + 2;
+            assert(equal(*ci2, expected[2]));
+
+            const same_as<iterator_t<const R>> auto ci3 = 2 + ci;
+            assert(equal(*ci3, expected[2]));
+
+            const same_as<iterator_t<const R>> auto ci4 = ci3 - 2;
+            assert(equal(*ci4, expected[0]));
+
+            const same_as<ranges::range_difference_t<V>> auto diff1 = ci2 - ci;
+            assert(diff1 == 2);
+
+            const same_as<ranges::range_difference_t<V>> auto diff2 = ci - ci2;
+            assert(diff2 == -2);
+
+            // comparisons
+            assert(ci == ci4);
+            assert(ci != ci2);
+
+            assert(ci < ci2);
+            assert(ci <= ci2);
+            assert(ci2 > ci);
+            assert(ci2 >= ci);
+
+            // cross comparisons
+            assert(ci == i);
+            assert(ci2 != i);
+
+            assert(i < ci2);
+            assert(i <= ci2);
+            assert(ci2 > i);
+            assert(ci2 >= i);
+
+            if constexpr (three_way_comparable<iterator_t<const V>>) {
+                assert(ci <=> ci4 == std::strong_ordering::equal);
+                assert(ci <=> ci2 == std::strong_ordering::less);
+                assert(ci2 <=> ci == std::strong_ordering::greater);
             }
         }
 
-        if constexpr (CanMemberBegin<const R>) {
-            [[maybe_unused]] const iterator_t<const R> const_defaulted;
-            iterator_t<const R> ci{i};
+        if constexpr (!common_range<const R>) {
+            [[maybe_unused]] const sentinel_t<const R> defaulted;
 
-            assert(equal(*ci++, expected[0]));
-            assert(equal(*++ci, expected[2]));
-
-            if constexpr (bidirectional_range<const R>) {
-                assert(equal(*ci--, expected[2]));
-                assert(equal(*--ci, expected[0]));
-            }
-
-            if constexpr (random_access_range<const R>) {
-                ci += 2;
-                assert(equal(*ci, expected[2]));
-
-                ci -= 2;
-                assert(equal(*ci, expected[0]));
-
-                assert(equal(ci[2], expected[2]));
-
-                const same_as<iterator_t<const R>> auto ci2 = ci + 2;
-                assert(equal(*ci2, expected[2]));
-
-                const same_as<iterator_t<const R>> auto ci3 = 2 + ci;
-                assert(equal(*ci3, expected[2]));
-
-                const same_as<iterator_t<const R>> auto ci4 = ci3 - 2;
-                assert(equal(*ci4, expected[0]));
-
-                const same_as<ranges::range_difference_t<V>> auto diff1 = ci2 - ci;
-                assert(diff1 == 2);
-
-                const same_as<ranges::range_difference_t<V>> auto diff2 = ci - ci2;
-                assert(diff2 == -2);
-
-                // comparisons
-                assert(ci == ci4);
-                assert(ci != ci2);
-
-                assert(ci < ci2);
-                assert(ci <= ci2);
-                assert(ci2 > ci);
-                assert(ci2 >= ci);
-
-                // cross comparisons
-                assert(ci == i);
-                assert(ci2 != i);
-
-                assert(i < ci2);
-                assert(i <= ci2);
-                assert(ci2 > i);
-                assert(ci2 >= i);
-
-                if constexpr (three_way_comparable<iterator_t<const V>>) {
-                    assert(ci <=> ci4 == std::strong_ordering::equal);
-                    assert(ci <=> ci2 == std::strong_ordering::less);
-                    assert(ci2 <=> ci == std::strong_ordering::greater);
-                }
-
-                if constexpr (!common_range<const R>) {
-                    [[maybe_unused]] const sentinel_t<const R> defaulted;
-                    static_assert(!equality_comparable_with<sentinel_t<const R>, iterator_t<const R>>);
-                }
-            }
+            static_assert(!equality_comparable_with<sentinel_t<const R>, iterator_t<const R>>);
         }
     }
 
@@ -399,10 +403,10 @@ struct instantiator {
 };
 
 template <class Category, test::Common IsCommon, test::Sized IsSized>
-using test_range =
-    test::range<Category, const int, IsSized, test::CanDifference{derived_from<Category, random_access_iterator_tag>},
-        IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag> || IsCommon == test::Common::yes},
-        test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}>;
+using test_range = test::range<Category, const int, IsSized,
+    test::CanDifference{derived_from<Category, random_access_iterator_tag> || IsSized == test::Sized::yes}, IsCommon,
+    test::CanCompare{derived_from<Category, forward_iterator_tag> || IsCommon == test::Common::yes},
+    test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}>;
 
 constexpr void instantiation_test() {
 #ifdef TEST_EVERYTHING
@@ -430,9 +434,10 @@ constexpr void instantiation_test() {
 #endif // TEST_EVERYTHING
 }
 
-template <class Category, test::Common IsCommon, bool is_random = derived_from<Category, random_access_iterator_tag>>
-using move_only_view = test::range<Category, const int, test::Sized{is_random}, test::CanDifference{is_random},
-    IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag>},
+template <class Category, test::Common IsCommon, test::Sized IsSized,
+    bool is_random = derived_from<Category, random_access_iterator_tag>>
+using move_only_view = test::range<Category, const int, IsSized, test::CanDifference{is_random}, IsCommon,
+    test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
 
 int main() {
@@ -444,12 +449,19 @@ int main() {
     }
 
     { // ... move-only
-        test_one(move_only_view<forward_iterator_tag, test::Common::no>{some_ints}, slides_of_four);
-        test_one(move_only_view<forward_iterator_tag, test::Common::yes>{some_ints}, slides_of_four);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::no>{some_ints}, slides_of_four);
-        test_one(move_only_view<bidirectional_iterator_tag, test::Common::yes>{some_ints}, slides_of_four);
-        test_one(move_only_view<random_access_iterator_tag, test::Common::no>{some_ints}, slides_of_four);
-        test_one(move_only_view<random_access_iterator_tag, test::Common::yes>{some_ints}, slides_of_four);
+        using test::Common, test::Sized;
+        test_one(move_only_view<forward_iterator_tag, Common::no, Sized::yes>{some_ints}, slides_of_four);
+        test_one(move_only_view<forward_iterator_tag, Common::no, Sized::no>{some_ints}, slides_of_four);
+        test_one(move_only_view<forward_iterator_tag, Common::yes, Sized::yes>{some_ints}, slides_of_four);
+        test_one(move_only_view<forward_iterator_tag, Common::yes, Sized::no>{some_ints}, slides_of_four);
+        test_one(move_only_view<bidirectional_iterator_tag, Common::no, Sized::yes>{some_ints}, slides_of_four);
+        test_one(move_only_view<bidirectional_iterator_tag, Common::no, Sized::no>{some_ints}, slides_of_four);
+        test_one(move_only_view<bidirectional_iterator_tag, Common::yes, Sized::yes>{some_ints}, slides_of_four);
+        test_one(move_only_view<bidirectional_iterator_tag, Common::yes, Sized::no>{some_ints}, slides_of_four);
+        test_one(move_only_view<random_access_iterator_tag, Common::no, Sized::yes>{some_ints}, slides_of_four);
+        test_one(move_only_view<random_access_iterator_tag, Common::no, Sized::no>{some_ints}, slides_of_four);
+        test_one(move_only_view<random_access_iterator_tag, Common::yes, Sized::yes>{some_ints}, slides_of_four);
+        test_one(move_only_view<random_access_iterator_tag, Common::yes, Sized::no>{some_ints}, slides_of_four);
     }
 
     // Validate non-views
