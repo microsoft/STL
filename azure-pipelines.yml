@@ -59,6 +59,9 @@ stages:
             inputs:
               PathToPublish: '$(DiffFile)'
               ArtifactName: 'format.diff'
+          - script: 'exit 1'
+            condition: eq(variables.diffWritten, 'true')
+            displayName: 'Fail the pipeline if branch needs formatting'
 
   - stage: Build_And_Test_x64
     dependsOn: Code_Format
