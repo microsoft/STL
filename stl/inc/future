@@ -17,7 +17,7 @@
 #include <experimental/resumable>
 #endif // _RESUMABLE_FUNCTIONS_SUPPORTED
 
-#include <chrono>
+#include <__msvc_chrono.hpp>
 #include <condition_variable>
 #include <functional>
 #include <memory>
@@ -185,21 +185,34 @@ struct _State_deleter : _Deleter_base<_Ty> { // manage allocator and deletion st
 };
 
 template <class _Ty>
+union _Result_holder {
+    _Result_holder() {}
+    ~_Result_holder() {}
+
+    _Ty _Held_value;
+};
+
+template <class _Ty>
 class _Associated_state { // class for managing associated synchronous state
 public:
     using _State_type = _Ty;
     using _Mydel      = _Deleter_base<_Ty>;
 
+    // TRANSITION, incorrectly default constructs _Result when _Ty is default constructible
     _Associated_state(_Mydel* _Dp = nullptr)
         : _Refs(1), // non-atomic initialization
           _Exception(), _Retrieved(false), _Ready(false), _Ready_at_thread_exit(false), _Has_stored_result(false),
-          _Running(false), _Deleter(_Dp) {
-        // TRANSITION: _Associated_state ctor assumes _Ty is default constructible
-    }
+          _Running(false), _Deleter(_Dp) {}
 
     virtual ~_Associated_state() noexcept {
-        if (_Has_stored_result && !_Ready) { // registered for release at thread exit
+        if (_Already_has_stored_result() && !_Ready) { // registered for release at thread exit
             _Cond._Unregister(_Mtx);
+        }
+
+        if constexpr (!is_default_constructible_v<_Ty>) {
+            if (_Has_stored_result) {
+                _Result._Held_value.~_Ty();
+            }
         }
     }
 
@@ -272,6 +285,8 @@ public:
             _Rethrow_future_exception(_Exception);
         }
 
+        // TRANSITION: `_Retrieved` should be assigned before `_Exception` is thrown so that a `future::get`
+        // that throws a stored exception invalidates the future (N4901 [futures.unique.future]/17)
         _Retrieved = true;
         _Maybe_run_deferred_function(_Lock);
         while (!_Ready) {
@@ -282,7 +297,22 @@ public:
             _Rethrow_future_exception(_Exception);
         }
 
-        return _Result;
+        if constexpr (is_default_constructible_v<_Ty>) {
+            return _Result;
+        } else {
+            return _Result._Held_value;
+        }
+    }
+
+    template <class _Ty2>
+    void _Emplace_result(_Ty2&& _Val) {
+        // TRANSITION, incorrectly assigns _Result when _Ty is default constructible
+        if constexpr (is_default_constructible_v<_Ty>) {
+            _Result = _STD forward<_Ty2>(_Val);
+        } else {
+            ::new (static_cast<void*>(_STD addressof(_Result._Held_value))) _Ty(_STD forward<_Ty2>(_Val));
+            _Has_stored_result = true;
+        }
     }
 
     void _Set_value(const _Ty& _Val, bool _At_thread_exit) { // store a result
@@ -292,11 +322,11 @@ public:
 
     void _Set_value_raw(const _Ty& _Val, unique_lock<mutex>* _Lock,
         bool _At_thread_exit) { // store a result while inside a locked block
-        if (_Has_stored_result) {
+        if (_Already_has_stored_result()) {
             _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
         }
 
-        _Result = _Val;
+        _Emplace_result(_Val);
         _Do_notify(_Lock, _At_thread_exit);
     }
 
@@ -307,25 +337,11 @@ public:
 
     void _Set_value_raw(_Ty&& _Val, unique_lock<mutex>* _Lock,
         bool _At_thread_exit) { // store a result while inside a locked block
-        if (_Has_stored_result) {
+        if (_Already_has_stored_result()) {
             _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
         }
 
-        _Result = _STD forward<_Ty>(_Val);
-        _Do_notify(_Lock, _At_thread_exit);
-    }
-
-    void _Set_value(bool _At_thread_exit) { // store a (void) result
-        unique_lock<mutex> _Lock(_Mtx);
-        _Set_value_raw(&_Lock, _At_thread_exit);
-    }
-
-    void _Set_value_raw(
-        unique_lock<mutex>* _Lock, bool _At_thread_exit) { // store a (void) result while inside a locked block
-        if (_Has_stored_result) {
-            _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
-        }
-
+        _Emplace_result(_STD forward<_Ty>(_Val));
         _Do_notify(_Lock, _At_thread_exit);
     }
 
@@ -336,10 +352,12 @@ public:
 
     void _Set_exception_raw(exception_ptr _Exc, unique_lock<mutex>* _Lock,
         bool _At_thread_exit) { // store a result while inside a locked block
-        if (_Has_stored_result) {
+        if (_Already_has_stored_result()) {
             _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
         }
 
+        _STL_ASSERT(_Exc != nullptr, "promise<T>::set_exception/set_exception_at_thread_exit called with a null "
+                                     "std::exception_ptr, which is invalid per N4901 32.9.6 [futures.promise]/20");
         _Exception = _Exc;
         _Do_notify(_Lock, _At_thread_exit);
     }
@@ -352,8 +370,12 @@ public:
         return _Ready_at_thread_exit;
     }
 
-    bool _Already_has_stored_result() const {
-        return _Has_stored_result;
+    bool _Already_has_stored_result() const { // Has a result or an exception
+        if constexpr (is_default_constructible_v<_Ty>) {
+            return _Has_stored_result;
+        } else {
+            return _Has_stored_result || _Exception;
+        }
     }
 
     bool _Already_retrieved() const {
@@ -362,7 +384,7 @@ public:
 
     void _Abandon() { // abandon shared state
         unique_lock<mutex> _Lock(_Mtx);
-        if (!_Has_stored_result) { // queue exception
+        if (!_Already_has_stored_result()) { // queue exception
             future_error _Fut(make_error_code(future_errc::broken_promise));
             _Set_exception_raw(_STD make_exception_ptr(_Fut), &_Lock, false);
         }
@@ -383,7 +405,7 @@ protected:
     }
 
 public:
-    _Ty _Result;
+    conditional_t<is_default_constructible_v<_Ty>, _Ty, _Result_holder<_Ty>> _Result;
     exception_ptr _Exception;
     mutex _Mtx;
     condition_variable _Cond;
@@ -402,7 +424,10 @@ private:
 
     virtual void _Do_notify(unique_lock<mutex>* _Lock, bool _At_thread_exit) { // notify waiting threads
         // TRANSITION, ABI: This is virtual, but never overridden.
-        _Has_stored_result = true;
+        if constexpr (is_default_constructible_v<_Ty>) {
+            _Has_stored_result = true;
+        }
+
         if (_At_thread_exit) { // notify at thread exit
             _Cond._Register(*_Lock, &_Ready);
         } else { // notify immediately
@@ -859,6 +884,7 @@ class shared_future;
 template <class _Ty>
 class future : public _State_manager<_Ty> {
     // class that defines a non-copyable asynchronous return object that holds a value
+private:
     using _Mybase = _State_manager<_Ty>;
 
 public:
@@ -895,6 +921,7 @@ public:
 template <class _Ty>
 class future<_Ty&> : public _State_manager<_Ty*> {
     // class that defines a non-copyable asynchronous return object that holds a reference
+private:
     using _Mybase = _State_manager<_Ty*>;
 
 public:
@@ -928,6 +955,7 @@ public:
 template <>
 class future<void> : public _State_manager<int> {
     // class that defines a non-copyable asynchronous return object that does not hold a value
+private:
     using _Mybase = _State_manager<int>;
 
 public:
@@ -959,6 +987,7 @@ public:
 template <class _Ty>
 class shared_future : public _State_manager<_Ty> {
     // class that defines a copyable asynchronous return object that holds a value
+private:
     using _Mybase = _State_manager<_Ty>;
 
 public:
@@ -994,6 +1023,7 @@ public:
 template <class _Ty>
 class shared_future<_Ty&> : public _State_manager<_Ty*> {
     // class that defines a copyable asynchronous return object that holds a reference
+private:
     using _Mybase = _State_manager<_Ty*>;
 
 public:
@@ -1026,6 +1056,7 @@ public:
 template <>
 class shared_future<void> : public _State_manager<int> {
     // class that defines a copyable asynchronous return object that does not hold a value
+private:
     using _Mybase = _State_manager<int>;
 
 public:
@@ -1448,6 +1479,7 @@ class _Fake_no_copy_callable_adapter {
     // std::function, which requires that things be copyable. We can't fix this in an
     // update, so this adapter turns copies into terminate(). When VSO-153581 is
     // fixed, remove this adapter.
+private:
     using _Storaget = tuple<decay_t<_Types>...>;
 
 public:

@@ -2861,6 +2861,32 @@ namespace iter_ops {
         }
     };
 
+    template <class Element>
+    struct pointer_sentinel {
+        Element* ptr = nullptr;
+
+        pointer_sentinel() = default;
+        constexpr explicit pointer_sentinel(Element* const p) noexcept : ptr{p} {}
+
+        template <class T>
+        [[nodiscard]] constexpr bool operator==(T* that) const noexcept {
+            static_assert(std::same_as<T, Element>);
+            return ptr == that;
+        }
+
+        template <class T>
+        [[nodiscard]] friend constexpr std::ptrdiff_t operator-(T* x, const pointer_sentinel& y) noexcept {
+            static_assert(std::same_as<T, Element>);
+            return x - y.ptr;
+        }
+
+        template <class T>
+        [[nodiscard]] friend constexpr std::ptrdiff_t operator-(const pointer_sentinel& y, T* x) noexcept {
+            static_assert(std::same_as<T, Element>);
+            return y.ptr - x;
+        }
+    };
+
     constexpr bool test_distance() {
         using ranges::distance, ranges::size;
         using std::iter_difference_t, std::same_as;
@@ -2972,6 +2998,26 @@ namespace iter_ops {
             trace const expected{
                 .compares_ = sentinel_position + 1, .increments_ = sentinel_position, .begins_ = 1, .ends_ = 1};
             assert(r.t == expected);
+        }
+
+        {
+            // Call distance(i, s) with arrays which must be decayed to pointers.
+            // (This behavior was regressed by LWG-3392.)
+            int some_ints[] = {1, 2, 3};
+            assert(distance(some_ints, pointer_sentinel{some_ints + 1}) == 1);
+            STATIC_ASSERT(noexcept(distance(some_ints, pointer_sentinel{some_ints + 1})));
+            assert(distance(some_ints + 1, some_ints) == -1);
+            STATIC_ASSERT(noexcept(distance(some_ints + 1, some_ints)));
+            assert(distance(some_ints, some_ints) == 0);
+            STATIC_ASSERT(noexcept(distance(some_ints, some_ints)));
+
+            const auto& const_ints = some_ints;
+            assert(distance(const_ints, pointer_sentinel{const_ints + 1}) == 1);
+            STATIC_ASSERT(noexcept(distance(const_ints, pointer_sentinel{const_ints + 1})));
+            assert(distance(const_ints + 1, const_ints) == -1);
+            STATIC_ASSERT(noexcept(distance(const_ints + 1, const_ints)));
+            assert(distance(const_ints, const_ints) == 0);
+            STATIC_ASSERT(noexcept(distance(const_ints, const_ints)));
         }
 
         return true;

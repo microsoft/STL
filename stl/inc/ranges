@@ -9,9 +9,9 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_ranges
-#pragma message("The contents of <ranges> are available only in c++latest mode;")
-#pragma message("see https://github.com/microsoft/STL/issues/1814 for details.")
+#pragma message("The contents of <ranges> are available only with C++20 or later.")
 #else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
+#include <__msvc_int128.hpp>
 #include <iosfwd>
 #include <iterator>
 #include <limits>
@@ -77,45 +77,37 @@ namespace ranges {
 
         template <class _Derived>
         struct _Base {
-            // clang-format off
             template <class _Other>
                 requires _Can_compose<_Derived, _Other>
             constexpr auto operator|(_Base<_Other>&& __r) && noexcept(
                 noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)})) {
-                // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
                 return _Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)};
             }
 
-            // clang-format off
             template <class _Other>
                 requires _Can_compose<_Derived, const _Other&>
             constexpr auto operator|(const _Base<_Other>& __r) && noexcept(
                 noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)})) {
-                // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
                 return _Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)};
             }
 
-            // clang-format off
             template <class _Other>
                 requires _Can_compose<const _Derived&, _Other>
             constexpr auto operator|(_Base<_Other>&& __r) const& noexcept(
                 noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)})) {
-                // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
                 return _Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)};
             }
 
-            // clang-format off
             template <class _Other>
                 requires _Can_compose<const _Derived&, const _Other&>
             constexpr auto operator|(const _Base<_Other>& __r) const& noexcept(
                 noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)})) {
-                // clang-format on
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
                 _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
                 return _Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)};
@@ -279,17 +271,16 @@ namespace ranges {
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             : _Val(_STD forward<_Types>(_Args)...), _Engaged{true} {}
 
-        // clang-format off
-        ~_Copyable_box() requires is_trivially_destructible_v<_Ty> = default;
-        // clang-format on
-
         constexpr ~_Copyable_box() {
             if (_Engaged) {
                 _Val.~_Ty();
             }
         }
 
+        // TRANSITION, LLVM-46269, destructor order is significant
         // clang-format off
+        ~_Copyable_box() requires is_trivially_destructible_v<_Ty> = default;
+
         _Copyable_box(const _Copyable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
         // clang-format on
 
@@ -482,17 +473,16 @@ namespace ranges {
     public:
         constexpr _Defaultabox() noexcept {}
 
-        // clang-format off
-        ~_Defaultabox() requires is_trivially_destructible_v<_Ty> = default;
-        // clang-format on
-
         constexpr ~_Defaultabox() {
             if (_Engaged) {
                 _Val.~_Ty();
             }
         }
 
+        // TRANSITION, LLVM-46269, destructor order is significant
         // clang-format off
+        ~_Defaultabox() requires is_trivially_destructible_v<_Ty> = default;
+
         _Defaultabox(const _Defaultabox&)
             requires copy_constructible<_Ty> && is_trivially_copy_constructible_v<_Ty> = default;
         // clang-format on
@@ -510,6 +500,22 @@ namespace ranges {
         constexpr _Defaultabox(_Defaultabox&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
+            }
+        }
+
+        template <_Not_same_as<_Ty> _Uty>
+            requires convertible_to<const _Uty&, _Ty>
+        constexpr _Defaultabox(const _Defaultabox<_Uty>& _That) : _Engaged{_That} {
+            if (_That) {
+                _Construct_in_place(_Val, *_That);
+            }
+        }
+
+        template <_Not_same_as<_Ty> _Uty>
+            requires convertible_to<_Uty, _Ty>
+        constexpr _Defaultabox(_Defaultabox<_Uty>&& _That) : _Engaged{_That} {
+            if (_That) {
+                _Construct_in_place(_Val, _STD move(*_That));
             }
         }
 
@@ -621,12 +627,28 @@ namespace ranges {
         bool _Engaged = false;
     };
 
-    // clang-format off
     template <movable _Ty>
         requires default_initializable<_Ty>
     class _Defaultabox<_Ty> { // provide the same API more efficiently for default-constructible types
-        // clang-format on
     public:
+        _Defaultabox() = default;
+
+        template <_Not_same_as<_Ty> _Uty>
+            requires convertible_to<const _Uty&, _Ty>
+        constexpr _Defaultabox(const _Defaultabox<_Uty>& _That) {
+            if (_That) {
+                _Value = static_cast<_Ty>(*_That);
+            }
+        }
+
+        template <_Not_same_as<_Ty> _Uty>
+            requires convertible_to<_Uty, _Ty>
+        constexpr _Defaultabox(_Defaultabox<_Uty>&& _That) {
+            if (_That) {
+                _Value = static_cast<_Ty>(_STD move(*_That));
+            }
+        }
+
         constexpr _Defaultabox& operator=(const _Ty& _Right) noexcept(
             is_nothrow_copy_assignable_v<_Ty>) requires copyable<_Ty> {
             _Value = _Right;
@@ -669,6 +691,7 @@ namespace ranges {
             }
         }
 
+        // TRANSITION, LLVM-46269, destructor order is significant
         // clang-format off
         ~_Non_propagating_cache() requires is_trivially_destructible_v<_Ty> = default;
         // clang-format on
@@ -848,11 +871,9 @@ namespace ranges {
         tuple<_Types...> _Captures;
     };
 
-    // clang-format off
     template <class _Ty>
         requires is_object_v<_Ty>
     class empty_view : public view_interface<empty_view<_Ty>> {
-        // clang-format on
     public:
         _NODISCARD static constexpr _Ty* begin() noexcept {
             return nullptr;
@@ -875,16 +896,17 @@ namespace ranges {
         }
     };
 
+    template <class _Ty>
+    inline constexpr bool enable_borrowed_range<empty_view<_Ty>> = true;
+
     namespace views {
         template <class _Ty>
         inline constexpr empty_view<_Ty> empty;
     } // namespace views
 
-    // clang-format off
     template <copy_constructible _Ty>
         requires is_object_v<_Ty>
     class single_view : public view_interface<single_view<_Ty>> {
-        // clang-format on
     public:
         // clang-format off
         single_view() requires default_initializable<_Ty> = default;
@@ -895,12 +917,10 @@ namespace ranges {
         constexpr explicit single_view(_Ty&& _Val_) noexcept(is_nothrow_move_constructible_v<_Ty>) // strengthened
             : _Val{in_place, _STD move(_Val_)} {}
 
-        // clang-format off
         template <class... _Types>
             requires constructible_from<_Ty, _Types...>
         constexpr explicit single_view(in_place_t, _Types&&... _Args) noexcept(
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
-            // clang-format on
             : _Val{in_place, _STD forward<_Types>(_Args)...} {}
 
         _NODISCARD constexpr _Ty* begin() noexcept {
@@ -953,7 +973,9 @@ namespace ranges {
     } // namespace views
 
     template <class _Ty>
-    using _Iota_diff_t = conditional_t<is_integral_v<_Ty>, conditional_t<(sizeof(_Ty) < sizeof(int)), int, long long>,
+    using _Iota_diff_t = conditional_t<is_integral_v<_Ty>,
+        conditional_t<sizeof(_Ty) < sizeof(int), int,
+            conditional_t<sizeof(_Ty) < sizeof(long long), long long, _Signed128>>,
         iter_difference_t<_Ty>>;
 
     // clang-format off
@@ -976,22 +998,17 @@ namespace ranges {
     // clang-format on
 
     template <class _Wi>
-    struct _Ioterator_category_base {
-        _NODISCARD auto operator<=>(const _Ioterator_category_base&) const = default;
-    };
+    struct _Ioterator_category_base {};
 
     template <incrementable _Wi>
+        requires integral<_Iota_diff_t<_Wi>> // TRANSITION, LWG-3670
     struct _Ioterator_category_base<_Wi> {
         using iterator_category = input_iterator_tag;
-
-        _NODISCARD auto operator<=>(const _Ioterator_category_base&) const = default;
     };
 
-    // clang-format off
     template <weakly_incrementable _Wi>
         requires copyable<_Wi>
     struct _Ioterator : _Ioterator_category_base<_Wi> {
-        // clang-format on
         /* [[no_unique_address]] */ _Wi _Current{};
 
         using iterator_concept = conditional_t<_Advanceable<_Wi>, random_access_iterator_tag,
@@ -1112,62 +1129,74 @@ namespace ranges {
             }
         }
 
-        // clang-format off
-        _NODISCARD friend constexpr bool operator==(
-            const _Ioterator&, const _Ioterator&) requires equality_comparable<_Wi> = default;
-        // clang-format on
+        _NODISCARD_FRIEND constexpr bool operator==(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+            noexcept(_Left._Current == _Right._Current)) requires equality_comparable<_Wi> {
+            return _Left._Current == _Right._Current;
+        }
 
-        _NODISCARD friend constexpr bool operator<(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+        _NODISCARD_FRIEND constexpr bool operator<(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
             noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires totally_ordered<_Wi> {
             return _Left._Current < _Right._Current;
         }
-        _NODISCARD friend constexpr bool operator>(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+        _NODISCARD_FRIEND constexpr bool operator>(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
             noexcept(_Right._Current < _Left._Current)) /* strengthened */ requires totally_ordered<_Wi> {
             return _Right._Current < _Left._Current;
         }
-        _NODISCARD friend constexpr bool operator<=(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+        _NODISCARD_FRIEND constexpr bool operator<=(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
             noexcept(!(_Right._Current < _Left._Current))) /* strengthened */ requires totally_ordered<_Wi> {
             return !(_Right._Current < _Left._Current);
         }
-        _NODISCARD friend constexpr bool operator>=(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+        _NODISCARD_FRIEND constexpr bool operator>=(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
             noexcept(!(_Left._Current < _Right._Current))) /* strengthened */ requires totally_ordered<_Wi> {
             return !(_Left._Current < _Right._Current);
         }
 
-        // clang-format off
-        _NODISCARD friend constexpr auto operator<=>(const _Ioterator& _Left, const _Ioterator& _Right)
-            requires totally_ordered<_Wi> && three_way_comparable<_Wi> = default;
-        // clang-format on
+        _NODISCARD_FRIEND constexpr auto operator<=>(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
+            noexcept(_Left._Current <=> _Right._Current)) requires totally_ordered<_Wi> && three_way_comparable<_Wi> {
+            return _Left._Current <=> _Right._Current;
+        }
 
-        _NODISCARD friend constexpr _Ioterator operator+(_Ioterator _It, const difference_type _Off) noexcept(
+        _NODISCARD_FRIEND constexpr _Ioterator operator+(_Ioterator _It, const difference_type _Off) noexcept(
             is_nothrow_move_constructible_v<_Ioterator>&& noexcept(
                 _It += _Off)) /* strengthened */ requires _Advanceable<_Wi> {
             _It += _Off;
             return _It;
         }
-        _NODISCARD friend constexpr _Ioterator operator+(const difference_type _Off, _Ioterator _It) noexcept(
+        _NODISCARD_FRIEND constexpr _Ioterator operator+(const difference_type _Off, _Ioterator _It) noexcept(
             is_nothrow_move_constructible_v<_Wi>&& noexcept(
                 static_cast<_Wi>(_It._Current + _Off))) /* strengthened */ requires _Advanceable<_Wi> {
             return _Ioterator{static_cast<_Wi>(_It._Current + _Off)};
         }
-        _NODISCARD friend constexpr _Ioterator operator-(_Ioterator _It, const difference_type _Off) noexcept(
+
+        _NODISCARD_FRIEND constexpr _Ioterator operator-(_Ioterator _It, const difference_type _Off) noexcept(
             is_nothrow_move_constructible_v<_Ioterator>&& noexcept(
                 _It -= _Off)) /* strengthened */ requires _Advanceable<_Wi> {
             _It -= _Off;
             return _It;
         }
-        _NODISCARD friend constexpr difference_type
+
+        _NODISCARD_FRIEND constexpr difference_type
             operator-(const _Ioterator& _Left, const _Ioterator& _Right) noexcept(
                 noexcept(_Left._Current - _Right._Current)) /* strengthened */ requires _Advanceable<_Wi> {
-            return static_cast<difference_type>(_Left._Current - _Right._Current);
+            if constexpr (_Integer_like<_Wi>) {
+                if constexpr (_Signed_integer_like<_Wi>) {
+                    return static_cast<difference_type>(
+                        static_cast<difference_type>(_Left._Current) - static_cast<difference_type>(_Right._Current));
+                } else if (_Right._Current > _Left._Current) {
+                    return static_cast<difference_type>(
+                        -static_cast<difference_type>(_Right._Current - _Left._Current));
+                } else {
+                    return static_cast<difference_type>(_Left._Current - _Right._Current);
+                }
+            } else {
+                return static_cast<difference_type>(_Left._Current - _Right._Current);
+            }
         }
     };
 
-    // clang-format off
     template <weakly_incrementable _Wi, semiregular _Bo>
         requires _Weakly_equality_comparable_with<_Wi, _Bo> && copyable<_Wi>
     struct _Iotinel {
-        // clang-format on
     private:
         using _It = _Ioterator<_Wi>;
 
@@ -1184,27 +1213,25 @@ namespace ranges {
     public:
         /* [[no_unique_address]] */ _Bo _Last{};
 
-        _NODISCARD friend constexpr bool operator==(const _It& _Left, const _Iotinel& _Right) noexcept(
+        _NODISCARD_FRIEND constexpr bool operator==(const _It& _Left, const _Iotinel& _Right) noexcept(
             noexcept(_Right._Equal(_Left))) /* strengthened */ {
             return _Right._Equal(_Left);
         }
 
-        _NODISCARD friend constexpr iter_difference_t<_Wi> operator-(const _It& _Left, const _Iotinel& _Right) noexcept(
+        _NODISCARD_FRIEND constexpr iter_difference_t<_Wi> operator-(const _It& _Left, const _Iotinel& _Right) noexcept(
             noexcept(_Right._Delta(_Left))) /* strengthened */ requires sized_sentinel_for<_Bo, _Wi> {
             return -_Right._Delta(_Left);
         }
 
-        _NODISCARD friend constexpr iter_difference_t<_Wi> operator-(const _Iotinel& _Left, const _It& _Right) noexcept(
+        _NODISCARD_FRIEND constexpr iter_difference_t<_Wi> operator-(const _Iotinel& _Left, const _It& _Right) noexcept(
             noexcept(_Left._Delta(_Right))) /* strengthened */ requires sized_sentinel_for<_Bo, _Wi> {
             return _Left._Delta(_Right);
         }
     };
 
-    // clang-format off
     template <weakly_incrementable _Wi, semiregular _Bo = unreachable_sentinel_t>
         requires _Weakly_equality_comparable_with<_Wi, _Bo> && copyable<_Wi>
     class iota_view : public view_interface<iota_view<_Wi, _Bo>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Wi _Value{};
         /* [[no_unique_address]] */ _Bo _Bound{};
@@ -1262,7 +1289,7 @@ namespace ranges {
         // clang-format off
         _NODISCARD constexpr auto size() const noexcept(noexcept(_Bound - _Value)) /* strengthened */
             requires (same_as<_Wi, _Bo> && _Advanceable<_Wi>)
-                || (integral<_Wi> && integral<_Bo>)
+                || (_Integer_like<_Wi> && _Integer_like<_Bo>)
                 || sized_sentinel_for<_Bo, _Wi> {
             // clang-format on
             if constexpr (_Integer_like<_Wi> && _Integer_like<_Bo>) {
@@ -1312,11 +1339,9 @@ namespace ranges {
         __is >> __t;
     };
 
-    // clang-format off
     template <movable _Ty, class _Elem, class _Traits = char_traits<_Elem>>
         requires default_initializable<_Ty> && _Stream_extractable<_Ty, _Elem, _Traits>
     class basic_istream_view : public view_interface<basic_istream_view<_Ty, _Elem, _Traits>> {
-        // clang-format on
     private:
         class _Iterator {
         private:
@@ -1358,7 +1383,7 @@ namespace ranges {
                 return _Parent->_Val;
             }
 
-            _NODISCARD friend bool operator==(const _Iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
+            _NODISCARD_FRIEND bool operator==(const _Iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
                 return _Left._Parent->_Stream_at_end();
             }
         };
@@ -1602,11 +1627,9 @@ namespace ranges {
         using all_t = decltype(all(_STD declval<_Rng>()));
     } // namespace views
 
-    // clang-format off
     template <input_range _Vw, indirect_unary_predicate<iterator_t<_Vw>> _Pr>
         requires view<_Vw> && is_object_v<_Pr>
     class filter_view : public _Cached_position_t<forward_range<_Vw>, _Vw, filter_view<_Vw, _Pr>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
@@ -1723,7 +1746,7 @@ namespace ranges {
                 return _Tmp;
             }
 
-            _NODISCARD friend constexpr bool operator==(
+            _NODISCARD_FRIEND constexpr bool operator==(
                 const _Iterator& _Left, const _Iterator& _Right) requires equality_comparable<iterator_t<_Vw>> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(
@@ -1732,7 +1755,7 @@ namespace ranges {
                 return _Left._Current == _Right._Current;
             }
 
-            _NODISCARD friend constexpr range_rvalue_reference_t<_Vw> iter_move(const _Iterator& _It) noexcept(
+            _NODISCARD_FRIEND constexpr range_rvalue_reference_t<_Vw> iter_move(const _Iterator& _It) noexcept(
                 noexcept(_RANGES iter_move(_It._Current))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _It._Check_dereference();
@@ -1771,7 +1794,7 @@ namespace ranges {
                 return _Last;
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Iterator& _It, const _Sentinel& _Se) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _It, const _Sentinel& _Se) noexcept(
                 noexcept(_It._Equal(_Se._Last))) /* strengthened */ {
                 return _It._Equal(_Se._Last);
             }
@@ -1907,7 +1930,7 @@ namespace ranges {
             _Parent_t* _Parent{};
 
 #if _ITERATOR_DEBUG_LEVEL != 0
-            constexpr void _Check_dereference() const {
+            constexpr void _Check_dereference() const noexcept {
                 _STL_VERIFY(_Parent != nullptr, "cannot dereference value-initialized transform_view iterator");
                 _STL_VERIFY(_Current != _RANGES end(_Parent->_Range), "cannot dereference end transform_view iterator");
             }
@@ -1957,7 +1980,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr decltype(auto) operator*() const
-                _NOEXCEPT_IDL0(noexcept(_STD invoke(*_Parent->_Fun, *_Current))) /* strengthened */ {
+                noexcept(noexcept(_STD invoke(*_Parent->_Fun, *_Current))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Check_dereference();
                 _STL_VERIFY(
@@ -2065,7 +2088,7 @@ namespace ranges {
                 return _STD invoke(*_Parent->_Fun, _Current[_Idx]);
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current
                          == _Right._Current)) /* strengthened */ requires equality_comparable<iterator_t<_Base>> {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2074,27 +2097,27 @@ namespace ranges {
                 return _Left._Current == _Right._Current;
             }
 
-            _NODISCARD friend constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Left._Same_range(_Right);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 return _Left._Current < _Right._Current;
             }
-            _NODISCARD friend constexpr bool operator>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires random_access_range<_Base> {
                 return _Right < _Left;
             }
-            _NODISCARD friend constexpr bool operator<=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator<=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires random_access_range<_Base> {
                 return !(_Right < _Left);
             }
-            _NODISCARD friend constexpr bool operator>=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator>=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires random_access_range<_Base> {
                 return !(_Left < _Right);
             }
             // clang-format off
-            _NODISCARD friend constexpr auto operator<=>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current <=> _Right._Current)) /* strengthened */
                 requires random_access_range<_Base> && three_way_comparable<iterator_t<_Base>> {
                 // clang-format on
@@ -2104,7 +2127,7 @@ namespace ranges {
                 return _Left._Current <=> _Right._Current;
             }
 
-            _NODISCARD friend constexpr _Iterator operator+(_Iterator _It, difference_type _Off)
+            _NODISCARD_FRIEND constexpr _Iterator operator+(_Iterator _It, difference_type _Off)
                 _NOEXCEPT_IDL0(noexcept(_It._Current += _Off)) /* strengthened */ requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _It._Verify_offset(_Off);
@@ -2112,7 +2135,7 @@ namespace ranges {
                 _It._Current += _Off;
                 return _It;
             }
-            _NODISCARD friend constexpr _Iterator operator+(difference_type _Off, _Iterator _It)
+            _NODISCARD_FRIEND constexpr _Iterator operator+(difference_type _Off, _Iterator _It)
                 _NOEXCEPT_IDL0(noexcept(_It._Current += _Off)) /* strengthened */ requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _It._Verify_offset(_Off);
@@ -2121,7 +2144,7 @@ namespace ranges {
                 return _It;
             }
 
-            _NODISCARD friend constexpr _Iterator operator-(_Iterator _It, difference_type _Off)
+            _NODISCARD_FRIEND constexpr _Iterator operator-(_Iterator _It, difference_type _Off)
                 _NOEXCEPT_IDL0(noexcept(_It._Current -= _Off)) /* strengthened */ requires random_access_range<_Base> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _It._Verify_offset(-_Off);
@@ -2130,21 +2153,13 @@ namespace ranges {
                 return _It;
             }
 
-            _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left,
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left,
                 const _Iterator& _Right) noexcept(noexcept(_Left._Current - _Right._Current)) /* strengthened */
                 requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>> {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _Left._Same_range(_Right);
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 return _Left._Current - _Right._Current;
-            }
-
-            _NODISCARD friend constexpr decltype(auto) iter_move(const _Iterator& _It) noexcept(noexcept(*_It)) {
-                if constexpr (is_lvalue_reference_v<decltype(*_It)>) {
-                    return _STD move(*_It);
-                } else {
-                    return *_It;
-                }
             }
         };
 
@@ -2192,14 +2207,14 @@ namespace ranges {
             // clang-format off
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
-            _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
                 const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Left) == _Right._Last)) /* strengthened */ {
                 return _Get_current(_Left) == _Right._Last;
             }
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>>
+            _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>>
                 operator-(const _Iterator<_OtherConst>& _Left, const _Sentinel& _Right) noexcept(
                     noexcept(_Get_current(_Left) - _Right._Last)) /* strengthened */ {
                 return _Get_current(_Left) - _Right._Last;
@@ -2207,7 +2222,7 @@ namespace ranges {
 
             template <bool _OtherConst>
                 requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>>
+            _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>>
                 operator-(const _Sentinel& _Left, const _Iterator<_OtherConst>& _Right) noexcept(
                     noexcept(_Left._Last - _Get_current(_Right))) /* strengthened */ {
                 return _Left._Last - _Get_current(_Right);
@@ -2356,14 +2371,14 @@ namespace ranges {
                 return _Last;
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Counted_iter<_Const>& _Left, const _Sentinel& _Right) {
+            _NODISCARD_FRIEND constexpr bool operator==(const _Counted_iter<_Const>& _Left, const _Sentinel& _Right) {
                 return _Left.count() == 0 || _Left.base() == _Right._Last;
             }
 
             // clang-format off
             template <bool _OtherConst = !_Const>
                 requires sentinel_for<_Base_sentinel, _Base_iterator<_OtherConst>>
-            _NODISCARD friend constexpr bool operator==(
+            _NODISCARD_FRIEND constexpr bool operator==(
                 const _Counted_iter<_OtherConst>& _Left, const _Sentinel& _Right) {
                 // clang-format on
                 return _Left.count() == 0 || _Left.base() == _Right._Last;
@@ -2570,11 +2585,9 @@ namespace ranges {
         inline constexpr _Take_fn take;
     } // namespace views
 
-    // clang-format off
     template <view _Vw, class _Pr>
         requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
-    class take_while_view : public view_interface<take_while_view<_Vw, _Pr>>  {
-        // clang-format on
+    class take_while_view : public view_interface<take_while_view<_Vw, _Pr>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
@@ -2614,14 +2627,14 @@ namespace ranges {
                 return _Last;
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Base_iterator& _Left, const _Sentinel& _Right) {
+            _NODISCARD_FRIEND constexpr bool operator==(const _Base_iterator& _Left, const _Sentinel& _Right) {
                 return _Right._Last == _Left || !_STD invoke(*_Right._Pred, *_Left);
             }
 
             // clang-format off
             template <bool _OtherConst = !_Const>
                 requires sentinel_for<_Base_sentinel, _Maybe_const_iter<_OtherConst>>
-            _NODISCARD friend constexpr bool operator==(
+            _NODISCARD_FRIEND constexpr bool operator==(
                 const _Maybe_const_iter<_OtherConst>& _Left, const _Sentinel& _Right) {
                 // clang-format on
                 return _Right._Last == _Left || !_STD invoke(*_Right._Pred, *_Left);
@@ -2941,11 +2954,9 @@ namespace ranges {
         inline constexpr _Drop_fn drop;
     } // namespace views
 
-    // clang-format off
     template <view _Vw, class _Pr>
         requires input_range<_Vw> && is_object_v<_Pr> && indirect_unary_predicate<const _Pr, iterator_t<_Vw>>
     class drop_while_view : public _Cached_position_t<forward_range<_Vw>, _Vw, drop_while_view<_Vw, _Pr>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
@@ -3026,11 +3037,9 @@ namespace ranges {
         inline constexpr _Drop_while_fn drop_while;
     } // namespace views
 
-    // clang-format off
     template <input_range _Vw>
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
     class join_view;
-    // clang-format on
 
     template <class _Vw>
     class _Join_view_base : public view_interface<join_view<_Vw>> {
@@ -3129,7 +3138,7 @@ namespace ranges {
             constexpr void _Check_dereference() const noexcept {
                 _STL_VERIFY(_Parent != nullptr, "cannot dereference value-initialized join_view iterator");
                 _STL_VERIFY(_Outer != _RANGES end(_Parent->_Range), "cannot dereference join_view end iterator");
-                sentinel_t<_InnerRng<false>> _Last;
+                sentinel_t<_InnerRng<_Const>> _Last;
                 if constexpr (_Deref_is_glvalue) {
                     _Last = _RANGES end(*_Outer);
                 } else {
@@ -3155,7 +3164,7 @@ namespace ranges {
             using difference_type = common_type_t<range_difference_t<_Base>, range_difference_t<_InnerRng<_Const>>>;
 
             // clang-format off
-            _Iterator() requires default_initializable<_OuterIter> && default_initializable<_InnerIter> = default;
+            _Iterator() requires default_initializable<_OuterIter> = default; // per LWG-3569
             // clang-format on
 
             constexpr _Iterator(_Parent_t& _Parent_, _OuterIter _Outer_)
@@ -3246,7 +3255,7 @@ namespace ranges {
             }
 
             // clang-format off
-            _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Implicitly_convert_to<bool>(_Left._Outer == _Right._Outer
                     && _Left._Inner == _Right._Inner))) /* strengthened */
                 requires _Deref_is_glvalue && equality_comparable<_OuterIter> && equality_comparable<_InnerIter> {
@@ -3257,7 +3266,7 @@ namespace ranges {
                 return _Left._Outer == _Right._Outer && _Left._Inner == _Right._Inner;
             }
 
-            _NODISCARD friend constexpr decltype(auto) iter_move(const _Iterator& _It) noexcept(
+            _NODISCARD_FRIEND constexpr decltype(auto) iter_move(const _Iterator& _It) noexcept(
                 noexcept(_RANGES iter_move(*_It._Inner))) {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _It._Check_dereference();
@@ -3318,7 +3327,7 @@ namespace ranges {
 
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
-            _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
                 const _Sentinel& _Right) noexcept(noexcept(_Right._Equal(_Left))) /* strengthened */ {
                 // clang-format on
                 return _Right._Equal(_Left);
@@ -3404,6 +3413,9 @@ namespace ranges {
 
         inline constexpr _Join_fn join;
     } // namespace views
+
+    template <auto> // _Require_constant<E> is a valid template-id iff E is a constant expression of structural type
+    struct _Require_constant;
 
     // clang-format off
     template <class _Ty>
@@ -3582,11 +3594,11 @@ namespace ranges {
                 }
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Outer_iter& _Left, const _Outer_iter& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator==(const _Outer_iter& _Left, const _Outer_iter& _Right) noexcept(
                 noexcept(_Left._Current == _Right._Current)) /* strengthened */ requires forward_range<_BaseTy> {
                 return _Left._Current == _Right._Current && _Left._Trailing_empty == _Right._Trailing_empty;
             }
-            _NODISCARD friend constexpr bool operator==(const _Outer_iter& _Left, default_sentinel_t) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator==(const _Outer_iter& _Left, default_sentinel_t) noexcept(
                 noexcept(_Left._At_end())) /* strengthened */ {
                 return _Left._At_end() && !_Left._Trailing_empty;
             }
@@ -3710,16 +3722,16 @@ namespace ranges {
                 }
             }
 
-            _NODISCARD friend constexpr bool operator==(
+            _NODISCARD_FRIEND constexpr bool operator==(
                 const _Inner_iter& _Left, const _Inner_iter& _Right) requires forward_range<_BaseTy> {
                 return _Left._Equal(_Right);
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Inner_iter& _Left, default_sentinel_t) {
+            _NODISCARD_FRIEND constexpr bool operator==(const _Inner_iter& _Left, default_sentinel_t) {
                 return _Left._At_end();
             }
 
-            _NODISCARD friend constexpr decltype(auto) iter_move(const _Inner_iter& _Iter) noexcept(
+            _NODISCARD_FRIEND constexpr decltype(auto) iter_move(const _Inner_iter& _Iter) noexcept(
                 noexcept(_RANGES iter_move(_Iter._Get_current()))) {
                 return _RANGES iter_move(_Iter._Get_current());
             }
@@ -3770,15 +3782,11 @@ namespace ranges {
             }
         }
 
-        // clang-format off
         _NODISCARD constexpr auto begin() const requires forward_range<_Vw> && forward_range<const _Vw> {
-            // clang-format on
             return _Outer_iter<true>{*this, _RANGES begin(_Range)};
         }
 
-        // clang-format off
         _NODISCARD constexpr auto end() requires forward_range<_Vw> && common_range<_Vw> {
-            // clang-format on
             constexpr bool _Both_simple = _Simple_view<_Vw> && _Simple_view<_Pat>;
             return _Outer_iter<_Both_simple>{*this, _RANGES end(_Range)};
         }
@@ -3824,11 +3832,9 @@ namespace ranges {
         inline constexpr _Lazy_split_fn lazy_split;
     } // namespace views
 
-    // clang-format off
     template <forward_range _Vw, forward_range _Pat>
         requires view<_Vw> && view<_Pat> && indirectly_comparable<iterator_t<_Vw>, iterator_t<_Pat>, _RANGES equal_to>
     class split_view : public view_interface<split_view<_Vw, _Pat>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         /* [[no_unique_address]] */ _Pat _Pattern{};
@@ -3838,7 +3844,7 @@ namespace ranges {
 
         class _Iterator {
         private:
-            friend class _Sentinel;
+            friend _Sentinel;
 
             split_view* _Parent             = nullptr;
             iterator_t<_Vw> _Current        = {};
@@ -3904,7 +3910,7 @@ namespace ranges {
                 return _Tmp;
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current == _Right._Current)) /* strengthened */ {
                 return _Left._Current == _Right._Current && _Left._Trailing_empty == _Right._Trailing_empty;
             }
@@ -3926,7 +3932,7 @@ namespace ranges {
                 && is_nothrow_move_constructible_v<sentinel_t<_Vw>>) // strengthened
                 : _Last(_RANGES end(_Parent._Range)) {}
 
-            _NODISCARD friend constexpr bool operator==(const _Iterator& _It, const _Sentinel& _Se) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _It, const _Sentinel& _Se) noexcept(
                 noexcept(_Se._Equal(_It))) /* strengthened */ {
                 return _Se._Equal(_It);
             }
@@ -4026,20 +4032,24 @@ namespace ranges {
 
         class _Counted_fn {
         private:
-            enum class _St { _Span, _Subrange, _Subrange_counted };
+            enum class _St { _None, _Span, _Subrange, _Subrange_counted };
 
             template <class _It>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
-                _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_It>);
-                if constexpr (contiguous_iterator<_It>) {
-                    return {_St::_Span, noexcept(span(_STD to_address(_STD declval<_It>()), iter_difference_t<_It>{}))};
-                } else if constexpr (random_access_iterator<_It>) {
+                using _Decayed = decay_t<_It>;
+                _STL_INTERNAL_STATIC_ASSERT(input_or_output_iterator<_Decayed>);
+                if constexpr (contiguous_iterator<_Decayed>) {
+                    return {_St::_Span,
+                        noexcept(span(_STD to_address(_STD declval<_It>()), iter_difference_t<_Decayed>{}))};
+                } else if constexpr (random_access_iterator<_Decayed>) {
                     return {_St::_Subrange,
-                        noexcept(subrange(_STD declval<_It>(), _STD declval<_It>() + iter_difference_t<_It>{}))};
-                } else {
+                        noexcept(subrange(_STD declval<_It>(), _STD declval<_It>() + iter_difference_t<_Decayed>{}))};
+                } else if constexpr (constructible_from<_Decayed, _It>) {
                     return {_St::_Subrange_counted,
                         noexcept(subrange(
-                            counted_iterator(_STD declval<_It>(), iter_difference_t<_It>{}), default_sentinel))};
+                            counted_iterator(_STD declval<_It>(), iter_difference_t<_Decayed>{}), default_sentinel))};
+                } else {
+                    return {_St::_None};
                 }
             }
 
@@ -4049,12 +4059,12 @@ namespace ranges {
         public:
             // clang-format off
             template <class _It>
-                requires input_or_output_iterator<decay_t<_It>>
+                requires (input_or_output_iterator<decay_t<_It>> && _Choice<_It>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_It&& _First, const iter_difference_t<decay_t<_It>> _Count) const
-                noexcept(_Choice<decay_t<_It>>._No_throw) {
+                noexcept(_Choice<_It>._No_throw) {
                 // clang-format on
                 _STL_ASSERT(_Count >= 0, "The size passed to views::counted must be non-negative");
-                constexpr _St _Strat = _Choice<decay_t<_It>>._Strategy;
+                constexpr _St _Strat = _Choice<_It>._Strategy;
 
                 if constexpr (_Strat == _St::_Span) {
                     return span(_STD to_address(_STD forward<_It>(_First)), static_cast<size_t>(_Count));
@@ -4184,11 +4194,9 @@ namespace ranges {
         inline constexpr _Common_fn common;
     } // namespace views
 
-    // clang-format off
     template <view _Vw>
         requires bidirectional_range<_Vw>
     class reverse_view : public _Cached_position_t<!common_range<_Vw>, _Vw, reverse_view<_Vw>> {
-        // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
 
@@ -4507,38 +4515,38 @@ namespace ranges {
                 return static_cast<_ElemTy>(_STD get<_Index>(*(_Current + _Idx)));
             }
 
-            _NODISCARD friend constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current == _Right._Current)) /* strengthened */
                 requires equality_comparable<iterator_t<_Base>> {
                 return _Left._Current == _Right._Current;
             }
 
-            _NODISCARD friend constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires random_access_range<_Base> {
                 return _Left._Current < _Right._Current;
             }
-            _NODISCARD friend constexpr bool operator>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires random_access_range<_Base> {
                 return _Right < _Left;
             }
-            _NODISCARD friend constexpr bool operator<=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator<=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires random_access_range<_Base> {
                 return !(_Right < _Left);
             }
-            _NODISCARD friend constexpr bool operator>=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr bool operator>=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current < _Right._Current)) /* strengthened */ requires random_access_range<_Base> {
                 return !(_Left < _Right);
             }
 
             // clang-format off
-            _NODISCARD friend constexpr auto operator<=>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+            _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current <=> _Right._Current)) /* strengthened */
                 requires random_access_range<_Base> && three_way_comparable<iterator_t<_Base>> {
                 // clang-format on
                 return _Left._Current <=> _Right._Current;
             }
 
-            _NODISCARD friend constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off) noexcept(
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off) noexcept(
                 noexcept(_STD declval<iterator_t<_Base>&>() += _Off)
                 && is_nothrow_copy_constructible_v<iterator_t<_Base>>) /* strengthened */
                 requires random_access_range<_Base> {
@@ -4550,7 +4558,7 @@ namespace ranges {
                 return _Copy;
             }
 
-            _NODISCARD friend constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It) noexcept(
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It) noexcept(
                 noexcept(_STD declval<iterator_t<_Base>&>() += _Off)
                 && is_nothrow_copy_constructible_v<iterator_t<_Base>>) /* strengthened */
                 requires random_access_range<_Base> {
@@ -4562,7 +4570,7 @@ namespace ranges {
                 return _Copy;
             }
 
-            _NODISCARD friend constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off) noexcept(
+            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off) noexcept(
                 noexcept(_STD declval<iterator_t<_Base>&>() -= _Off)
                 && is_nothrow_copy_constructible_v<iterator_t<_Base>>) /* strengthened */
                 requires random_access_range<_Base> {
@@ -4574,7 +4582,7 @@ namespace ranges {
                 return _Copy;
             }
 
-            _NODISCARD friend constexpr difference_type operator-(const _Iterator& _Left,
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left,
                 const _Iterator& _Right) noexcept(noexcept(_Left._Current - _Right._Current)) /* strengthened */
                 requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>> {
                 return _Left._Current - _Right._Current;
@@ -4620,7 +4628,7 @@ namespace ranges {
             // clang-format off
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
-            _NODISCARD friend constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
                 const _Sentinel& _Right) noexcept(noexcept(_Get_current(_Left) == _Right._Last)) /* strengthened */ {
                 // clang-format on
                 return _Get_current(_Left) == _Right._Last;
@@ -4629,7 +4637,7 @@ namespace ranges {
             // clang-format off
             template <bool _OtherConst>
                 requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
+            _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
                 const _Iterator<_OtherConst>& _Left, const _Sentinel& _Right) noexcept(
                 noexcept(_Get_current(_Left) - _Right._Last)) /* strengthened */ {
                 // clang-format on
@@ -4639,7 +4647,7 @@ namespace ranges {
             // clang-format off
             template <bool _OtherConst>
                 requires sized_sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
-            _NODISCARD friend constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
+            _NODISCARD_FRIEND constexpr range_difference_t<_Maybe_const<_OtherConst, _Vw>> operator-(
                 const _Sentinel& _Left, const _Iterator<_OtherConst>& _Right) noexcept(
                 noexcept(_Left._Last - _Get_current(_Right))) /* strengthened */ {
                 // clang-format on
@@ -4738,6 +4746,190 @@ namespace ranges {
         inline constexpr auto keys   = elements<0>;
         inline constexpr auto values = elements<1>;
     } // namespace views
+
+#if _HAS_CXX23
+    template <forward_range _Vw, indirect_binary_predicate<iterator_t<_Vw>, iterator_t<_Vw>> _Pr>
+        requires view<_Vw> && is_object_v<_Pr>
+    class chunk_by_view : public _Cached_position<_Vw, chunk_by_view<_Vw, _Pr>> {
+    private:
+        /* [[no_unique_address]] */ _Vw _Range{};
+        /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
+
+        class _Iterator {
+        private:
+            friend chunk_by_view;
+
+            chunk_by_view* _Parent{};
+            /* [[no_unique_address]] */ iterator_t<_Vw> _Current{};
+            /* [[no_unique_address]] */ iterator_t<_Vw> _Next{};
+
+            constexpr _Iterator(chunk_by_view& _Parent_, iterator_t<_Vw> _Current_, iterator_t<_Vw> _Next_) noexcept(
+                is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
+                : _Parent(_STD addressof(_Parent_)), _Current(_STD move(_Current_)), _Next(_STD move(_Next_)) {}
+
+        public:
+            using value_type        = subrange<iterator_t<_Vw>>;
+            using difference_type   = range_difference_t<_Vw>;
+            using iterator_category = input_iterator_tag;
+            using iterator_concept =
+                conditional_t<bidirectional_range<_Vw>, bidirectional_iterator_tag, forward_iterator_tag>;
+
+            _Iterator() = default;
+
+            _NODISCARD constexpr value_type operator*() const
+                noexcept(is_nothrow_copy_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current != _Next, "cannot dereference chunk_by_view end iterator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                return subrange{_Current, _Next};
+            }
+
+            constexpr _Iterator& operator++() {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current != _Next, "cannot increment chunk_by_view iterator past end");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                _Current = _Next;
+                _Next    = _Parent->_Find_next(_Next);
+                return *this;
+            }
+
+            constexpr _Iterator operator++(int) {
+                auto _Tmp = *this;
+                ++*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator--() requires bidirectional_range<_Vw> {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Parent != nullptr, "cannot decrement value-initialized chunk_by_view iterator");
+                _STL_VERIFY(
+                    _Current != _RANGES begin(_Parent->_Range), "cannot decrement chunk_by_view iterator before begin");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                _Next    = _Current;
+                _Current = _Parent->_Find_prev(_Current);
+                return *this;
+            }
+
+            constexpr _Iterator operator--(int) requires bidirectional_range<_Vw> {
+                auto _Tmp = *this;
+                --*this;
+                return _Tmp;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Right._Current))) /* strengthened */ {
+                return _Left._Current == _Right._Current;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, default_sentinel_t) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Left._Next))) /* strengthened */ {
+                return _Left._Current == _Left._Next;
+            }
+        };
+
+        _NODISCARD constexpr iterator_t<_Vw> _Find_next(iterator_t<_Vw> _It) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Pred, "cannot increment a chunk_by_view iterator whose parent view has no predicate");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+            const auto _Not_pred = [&_Orig_pred = *_Pred]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) {
+                return !_STD invoke(_Orig_pred, _STD forward<_Ty1>(_Left), _STD forward<_Ty2>(_Right));
+            };
+            const auto _Before_next = _RANGES adjacent_find(_It, _RANGES end(_Range), _Not_pred);
+            return _RANGES next(_Before_next, 1, _RANGES end(_Range));
+        }
+
+        _NODISCARD constexpr iterator_t<_Vw> _Find_prev(iterator_t<_Vw> _It) {
+            _STL_INTERNAL_STATIC_ASSERT(bidirectional_range<_Vw>);
+#if _ITERATOR_DEBUG_LEVEL != 0
+            _STL_VERIFY(_Pred, "cannot decrement a chunk_by_view iterator whose parent view has no predicate");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+
+            reverse_view _Rv{subrange{_RANGES begin(_Range), _It}};
+            const auto _Rev_not_pred = [&_Orig_pred = *_Pred]<class _Ty1, class _Ty2>(_Ty1&& _Left, _Ty2&& _Right) {
+                return !_STD invoke(_Orig_pred, _STD forward<_Ty2>(_Right), _STD forward<_Ty1>(_Left));
+            };
+            const auto _After_prev = _RANGES adjacent_find(_Rv, _Rev_not_pred);
+            return _RANGES prev(_After_prev.base(), 1, _RANGES begin(_Range));
+        }
+
+    public:
+        // clang-format off
+        chunk_by_view() requires default_initializable<_Vw> && default_initializable<_Pr> = default;
+        // clang-format on
+
+        constexpr explicit chunk_by_view(_Vw _Range_, _Pr _Pred_) noexcept(
+            is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pr>) // strengthened
+            : _Range(_STD move(_Range_)), _Pred{in_place, _STD move(_Pred_)} {}
+
+        _NODISCARD constexpr _Vw base() const& noexcept(
+            is_nothrow_copy_constructible_v<_Vw>) /* strengthened */ requires copy_constructible<_Vw> {
+            return _Range;
+        }
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        _NODISCARD constexpr const _Pr& pred() const noexcept /* strengthened */ {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Pred, "chunk_by_view has no predicate");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+            return *_Pred;
+        }
+
+        _NODISCARD constexpr _Iterator begin() {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Pred, "cannot call begin on a chunk_by_view with no predicate");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+
+            const auto _First = _RANGES begin(_Range);
+            if (this->_Has_cache()) {
+                return _Iterator{*this, _First, this->_Get_cache(_Range)};
+            }
+
+            const auto _Result = _Find_next(_First);
+            this->_Set_cache(_Range, _Result);
+            return _Iterator{*this, _First, _Result};
+        }
+
+        _NODISCARD constexpr auto end() {
+            if constexpr (common_range<_Vw>) {
+                const auto _Last = _RANGES end(_Range);
+                return _Iterator{*this, _Last, _Last};
+            } else {
+                return default_sentinel;
+            }
+        }
+    };
+
+    template <class _Rng, class _Pr>
+    chunk_by_view(_Rng&&, _Pr) -> chunk_by_view<views::all_t<_Rng>, _Pr>;
+
+    namespace views {
+        struct _Chunk_by_fn {
+            // clang-format off
+            template <viewable_range _Rng, class _Pr>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pr&& _Pred) const noexcept(
+                noexcept(chunk_by_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred)))) requires requires {
+                chunk_by_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred));
+            } {
+                // clang-format on
+                return chunk_by_view(_STD forward<_Rng>(_Range), _STD forward<_Pr>(_Pred));
+            }
+
+            // clang-format off
+            template <class _Pr>
+                requires constructible_from<decay_t<_Pr>, _Pr>
+            _NODISCARD constexpr auto operator()(_Pr&& _Pred) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Pr>, _Pr>) {
+                // clang-format on
+                return _Range_closure<_Chunk_by_fn, decay_t<_Pr>>{_STD forward<_Pr>(_Pred)};
+            }
+        };
+
+        inline constexpr _Chunk_by_fn chunk_by;
+    } // namespace views
+#endif // _HAS_CXX23
 } // namespace ranges
 
 namespace views = ranges::views;

@@ -357,11 +357,13 @@ inline void swap(any& _Left, any& _Right) noexcept {
     _Left.swap(_Right);
 }
 
-template <class _ValueType, class... _Types>
+template <class _ValueType, class... _Types,
+    enable_if_t<is_constructible_v<any, in_place_type_t<_ValueType>, _Types...>, int> = 0>
 _NODISCARD any make_any(_Types&&... _Args) { // construct an any containing a _ValueType initialized with _Args...
     return any{in_place_type<_ValueType>, _STD forward<_Types>(_Args)...};
 }
-template <class _ValueType, class _Elem, class... _Types>
+template <class _ValueType, class _Elem, class... _Types,
+    enable_if_t<is_constructible_v<any, in_place_type_t<_ValueType>, initializer_list<_Elem>&, _Types...>, int> = 0>
 _NODISCARD any make_any(initializer_list<_Elem> _Ilist, _Types&&... _Args) {
     // construct an any containing a _ValueType initialized with _Ilist and _Args...
     return any{in_place_type<_ValueType>, _Ilist, _STD forward<_Types>(_Args)...};

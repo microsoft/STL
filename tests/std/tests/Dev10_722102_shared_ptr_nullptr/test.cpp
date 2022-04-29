@@ -207,7 +207,7 @@ namespace unique_ptr_ {
 
         void operator()(pointer ptr) const noexcept {
             assert(ptr.ptr_ != nullptr);
-            __analysis_assume(ptr.ptr_);
+            _Analysis_assume_(ptr.ptr_);
             assert(*ptr.ptr_ == 42);
             *ptr.ptr_ = 13;
         }

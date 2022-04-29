@@ -353,7 +353,7 @@ void test_VSO_101318_ECMAScript_identity_escapes_should_be_lax() {
     // Test the ambiguous cases that we now want to accept
     g_regexTester.should_match("z", "\\z");
     g_regexTester.should_match("\xB5", "\\\xB5"); // \xB5 is the micro symbol in Latin-1
-    // ES6 explicitly says "but not c" so this should explode
+    // ES6 explicitly says "but not c" so this should fail
     g_regexTester.should_throw("\\c", error_escape);
     // Make sure w s and d still do what they're supposed to
     g_regexTester.should_match("1", "\\d");
