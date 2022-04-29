@@ -1023,7 +1023,7 @@ bool test_lerp() {
     return true;
 }
 
-void test_GH_2112() {
+void test_gh_2112() {
     // <cmath>: std::lerp is missing Arithmetic overloads
     assert(lerp(int{}, int{}, int{}) == 0.0);
     STATIC_ASSERT(lerp(int{}, int{}, int{}) == 0.0);
@@ -1103,5 +1103,5 @@ int main() {
     test_lerp<double>();
     test_lerp<long double>();
 
-    test_GH_2112();
+    test_gh_2112();
 }
