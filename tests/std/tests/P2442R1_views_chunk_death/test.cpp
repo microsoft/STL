@@ -18,13 +18,13 @@ using test_range = test::range<input_iterator_tag, const int, test::Sized::yes, 
 static constexpr int some_ints[] = {0, 1, 2, 3};
 
 void test_view_negative_size_forward_range() {
-    auto r        = span<const int>{some_ints};
-    (void) auto v = chunk_view(r, -1); // chunk_view n_ must be positive
+    auto r                  = span<const int>{some_ints};
+    [[maybe_unused]] auto v = chunk_view(r, -1); // chunk_view n_ must be positive
 }
 
 void test_view_negative_size_input_range() {
-    auto r        = test_range{some_ints};
-    (void) auto v = chunk_view(r, -1); // chunk_view n_ must be positive
+    auto r                  = test_range{some_ints};
+    [[maybe_unused]] auto v = chunk_view(r, -1); // chunk_view n_ must be positive
 }
 
 void test_outer_iterator_preincrement_past_end() {
