@@ -4,10 +4,10 @@
 cmake_minimum_required(VERSION 3.22)
 project(msvc_standard_libraries_format NONE)
 
-set(did_search ON)
+set(did_search OFF)
 if(NOT DEFINED CLANG_FORMAT)
     message(STATUS "Searching for VS clang-format")
-    set(did_search OFF)
+    set(did_search ON)
 endif()
 
 if(PROJECT_IS_TOP_LEVEL)
@@ -31,7 +31,7 @@ if(CLANG_FORMAT)
         message(STATUS "Searching for VS clang-format - found")
     endif()
 
-    file(GLOB_RECURSE maybe_clang_format_files CONFIGURE_DEPENDS
+    file(GLOB_RECURSE maybe_clang_format_files
         "../../stl/inc/*"
         "../../stl/src/*"
         "../../tests/*"

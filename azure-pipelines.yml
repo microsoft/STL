@@ -38,11 +38,13 @@ stages:
             timeoutInMinutes: 5
             condition: succeededOrFailed()
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-          - task: BatchScript@1
-            inputs:
-              filename: 'azure-devops/validate-files.cmd'
-              failOnStandardError: true
-              arguments: '$(Build.SourcesDirectory)'
+          - script: |
+              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+                  -host_arch=amd64 -arch=amd64 -no_logo
+              cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
+                  -S $(Build.SourcesDirectory)/tools/validate -B $(tmpDir)/validate-build
+              cmake --build $(tmpDir)/validate-build
+              "$(tmpDir)\validate-build\validate.exe"
             displayName: 'Validate Files'
             timeoutInMinutes: 5
             condition: succeededOrFailed()
@@ -53,12 +55,7 @@ stages:
               filePath: azure-devops/create-prdiff.ps1
               arguments: '-DiffFile $(DiffFile)'
               pwsh: false
-          - task: PublishBuildArtifacts@1
-            condition: failed()
-            displayName: 'Publish Format and Messages File Diff'
-            inputs:
-              PathToPublish: '$(DiffFile)'
-              ArtifactName: 'format.diff'
+            condition: succeededOrFailed()
 
   - stage: Build_And_Test_x64
     dependsOn: Code_Format
