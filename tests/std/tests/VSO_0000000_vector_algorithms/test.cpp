@@ -12,6 +12,10 @@
 #include <type_traits>
 #include <vector>
 
+#ifdef __cpp_lib_concepts
+#include <concepts>
+#endif // __cpp_lib_concepts
+
 using namespace std;
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
@@ -184,6 +188,13 @@ void test_swap_arrays(mt19937_64& gen) {
 
     assert(equal(begin(left), end(left), origRight.begin(), origRight.end()));
     assert(equal(begin(right), end(right), origLeft.begin(), origLeft.end()));
+
+#ifdef __cpp_lib_concepts
+    ranges::swap(left, right);
+
+    assert(equal(begin(left), end(left), origLeft.begin(), origLeft.end()));
+    assert(equal(begin(right), end(right), origRight.begin(), origRight.end()));
+#endif // __cpp_lib_concepts
 }
 
 void test_vector_algorithms() {
