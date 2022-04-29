@@ -18,6 +18,39 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// Note: Defining _USE_STD_VECTOR_ALGORITHMS to 0 may be necessary to use "core" headers
+// without linking to the STL's separately compiled code.
+
+#if defined(_CRTBLD) && defined(CRTDLL2)
+// TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
+// the DLL. (We could additionally link them into the DLL - not as exports, just for internal usage - but we
+// haven't chosen to do that yet.) When we can break ABI and export the vector algorithms from the DLL,
+// this preprocessor case should be removed.
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 0
+#elif _USE_STD_VECTOR_ALGORITHMS
+#error Vector algorithms are not supported when building msvcp140.dll, but _USE_STD_VECTOR_ALGORITHMS is set.
+#endif // _USE_STD_VECTOR_ALGORITHMS
+#elif (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID) && !defined(_M_ARM64EC)
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 1
+#endif // _USE_STD_VECTOR_ALGORITHMS
+#else // ^^^ arch supports vector algorithms / no support for vector algorithms vvv
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 0
+#elif _USE_STD_VECTOR_ALGORITHMS
+#error Vector algorithms are not supported on this architecture, but _USE_STD_VECTOR_ALGORITHMS is set.
+#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ no support for vector algorithms ^^^
+
+#if _USE_STD_VECTOR_ALGORITHMS
+_EXTERN_C
+// See the important comment about the "noalias" attribute in <xutility>.
+__declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
+    void* _First1, void* _Last1, void* _First2) noexcept;
+_END_EXTERN_C
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
 _STD_BEGIN
 template <class _Ty, _Ty... _Vals>
 struct integer_sequence { // sequence of integer parameters
