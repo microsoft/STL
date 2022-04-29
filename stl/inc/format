@@ -1670,7 +1670,11 @@ public:
             }
 
             if (_Cat != _Presentation_type_category::_Char && _Cat != _Presentation_type_category::_Integer) {
-                _Throw_format_error("Invalid presentation type for char/wchar_t");
+                if constexpr (is_same_v<_CharT, char>) {
+                    _Throw_format_error("Invalid presentation type for char");
+                } else {
+                    _Throw_format_error("Invalid presentation type for wchar_t");
+                }
             }
             break;
         case _Basic_format_arg_type::_Int_type:
@@ -2549,7 +2553,11 @@ _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
     if (_Specs._Type == 'c') {
         if (!_In_bounds<_CharT>(_Value)) {
-            _Throw_format_error("integral cannot be stored in char/wchar_t");
+            if constexpr (is_same_v<_CharT, char>) {
+                _Throw_format_error("integral cannot be stored in char");
+            } else {
+                _Throw_format_error("integral cannot be stored in wchar_t");
+            }
         }
         _Specs._Alt = false;
         return _Fmt_write(_STD move(_Out), static_cast<_CharT>(_Value), _Specs, _Locale);
