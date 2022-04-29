@@ -222,6 +222,12 @@ void ensure_nonmember_calls_compile() {
     }
 }
 
+#ifndef __EDG__ // TRANSITION, DevCom-1656924
+// LWG-3661: constinit atomic<shared_ptr<T>> a(nullptr); should work
+constinit atomic<shared_ptr<bool>> a{};
+constinit atomic<shared_ptr<bool>> b{nullptr};
+#endif // __EDG__
+
 int main() {
     // These values for is_always_lock_free are not required by the standard, but they are true for our implementation.
     static_assert(atomic<shared_ptr<int>>::is_always_lock_free == false);

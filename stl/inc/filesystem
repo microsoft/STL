@@ -850,9 +850,7 @@ namespace filesystem {
         }
 
         path& operator+=(const path& _Added) { // concat _Added to native()
-            _Text._Orphan_all();
-            _Text += _Added._Text;
-            return *this;
+            return operator+=(_Added._Text);
         }
 
         path& operator+=(const string_type& _Added) { // concat _Added to native()
@@ -881,23 +879,23 @@ namespace filesystem {
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& operator+=(const _Src& _Added) { // concat _Added to native()
-            return operator+=(path(_Added));
+            return operator+=(path(_Added)._Text);
         }
 
         template <class _EcharT, enable_if_t<_Is_EcharT<_EcharT>, int> = 0>
         path& operator+=(const _EcharT _Added) { // concat _Added to native()
-            return operator+=(path(&_Added, &_Added + 1));
+            return operator+=(path(&_Added, &_Added + 1)._Text);
         }
 
         template <class _Src, enable_if_t<_Is_Source<_Src>, int> = 0>
         path& concat(const _Src& _Added) { // concat _Added to native()
-            return operator+=(path(_Added));
+            return operator+=(path(_Added)._Text);
         }
 
         template <class _InIt>
         path& concat(_InIt _First, _InIt _Last) { // concat [_First, _Last) to native()
             static_assert(_Is_EcharT<_Iter_value_t<_InIt>>, "invalid value_type, see N4810 29.11.4 [fs.req]/3");
-            return operator+=(path(_First, _Last));
+            return operator+=(path(_First, _Last)._Text);
         }
 
         void clear() noexcept { // set *this to the empty path
@@ -968,7 +966,7 @@ namespace filesystem {
                 _Text.push_back(L'.');
             }
 
-            return operator+=(_Replacement);
+            return operator+=(_Replacement._Text);
         }
 
         void swap(path& _Rhs) noexcept {
@@ -1397,37 +1395,37 @@ namespace filesystem {
             return _Istr;
         }
 
-        _NODISCARD friend bool operator==(const path& _Left, const path& _Right) noexcept {
-            return _Left.compare(_Right) == 0;
+        _NODISCARD_FRIEND bool operator==(const path& _Left, const path& _Right) noexcept {
+            return _Left.compare(_Right._Text) == 0;
         }
 
 #if _HAS_CXX20
-        _NODISCARD friend strong_ordering operator<=>(const path& _Left, const path& _Right) noexcept {
-            return _Left.compare(_Right) <=> 0;
+        _NODISCARD_FRIEND strong_ordering operator<=>(const path& _Left, const path& _Right) noexcept {
+            return _Left.compare(_Right._Text) <=> 0;
         }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        _NODISCARD friend bool operator!=(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD_FRIEND bool operator!=(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) != 0;
         }
 
-        _NODISCARD friend bool operator<(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD_FRIEND bool operator<(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) < 0;
         }
 
-        _NODISCARD friend bool operator>(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD_FRIEND bool operator>(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) > 0;
         }
 
-        _NODISCARD friend bool operator<=(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD_FRIEND bool operator<=(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) <= 0;
         }
 
-        _NODISCARD friend bool operator>=(const path& _Left, const path& _Right) noexcept {
+        _NODISCARD_FRIEND bool operator>=(const path& _Left, const path& _Right) noexcept {
             return _Left.compare(_Right) >= 0;
         }
 #endif // !_HAS_CXX20
 
-        _NODISCARD friend path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
+        _NODISCARD_FRIEND path operator/(const path& _Left, const path& _Right) { // append a pair of paths together
             path _Tmp = _Left;
             _Tmp /= _Right;
             return _Tmp;
@@ -1598,12 +1596,12 @@ namespace filesystem {
             return _Tmp;
         }
 
-        _NODISCARD friend bool operator==(const _Path_iterator& _Lhs, const _Path_iterator& _Rhs) {
+        _NODISCARD_FRIEND bool operator==(const _Path_iterator& _Lhs, const _Path_iterator& _Rhs) {
             return _Lhs._Position == _Rhs._Position;
         }
 
 #if !_HAS_CXX20
-        _NODISCARD friend bool operator!=(const _Path_iterator& _Lhs, const _Path_iterator& _Rhs) {
+        _NODISCARD_FRIEND bool operator!=(const _Path_iterator& _Lhs, const _Path_iterator& _Rhs) {
             return _Lhs._Position != _Rhs._Position;
         }
 #endif // !_HAS_CXX20
@@ -1974,7 +1972,7 @@ namespace filesystem {
         }
 
 #if _HAS_CXX20
-        _NODISCARD friend bool operator==(const file_status& _Lhs, const file_status& _Rhs) noexcept {
+        _NODISCARD_FRIEND bool operator==(const file_status& _Lhs, const file_status& _Rhs) noexcept {
             return _Lhs._Myftype == _Rhs._Myftype && _Lhs._Myperms == _Rhs._Myperms;
         }
 #endif // _HAS_CXX20
@@ -3632,7 +3630,7 @@ namespace filesystem {
         uintmax_t available;
 
 #if _HAS_CXX20
-        _NODISCARD friend constexpr bool operator==(const space_info&, const space_info&) noexcept = default;
+        _NODISCARD_FRIEND constexpr bool operator==(const space_info&, const space_info&) noexcept = default;
 #endif // _HAS_CXX20
     };
 
@@ -4337,6 +4335,15 @@ namespace filesystem {
         return _STD filesystem::copy(_From, _To, copy_options::none);
     }
 } // namespace filesystem
+
+template <>
+struct hash<filesystem::path> {
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef filesystem::path _ARGUMENT_TYPE_NAME;
+    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    _NODISCARD size_t operator()(const filesystem::path& _Path) const noexcept {
+        return _STD filesystem::hash_value(_Path);
+    }
+};
 
 #ifdef __cpp_lib_concepts
 namespace ranges {
