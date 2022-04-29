@@ -18,7 +18,7 @@ if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
         'Alternatively, you can run the `format` CMake target:'
         '    cmake --build <builddir> --target format'
         ''
-        '##[group]Expected formatting - diff'
+        '##[group]Expected formatting - click to expand diff'
         Get-Content -LiteralPath $DiffFile -Raw
         '##[endgroup]'
         "##vso[artifact.upload artifactname=format.diff]$DiffFile"
