@@ -13,7 +13,8 @@ Start-Process -FilePath 'git' -ArgumentList 'diff' `
 if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
     $message = @(
         '##vso[task.logissue type=error]The formatting of the files in the repo was not what we expected.'
-        'Please access the diff from format.diff in the build artifacts,'
+        'Please access the diff from format.diff in the build artifacts'
+        '(you can download it by clicking the three dots at the right)'
         'and apply it with `git apply`.'
         'Alternatively, you can run the `format` CMake target:'
         '    cmake --build <builddir> --target format'
