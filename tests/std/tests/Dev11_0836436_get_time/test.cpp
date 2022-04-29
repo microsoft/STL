@@ -18,7 +18,7 @@ using namespace std;
 // DevDiv-821672 "<locale>: visual studio.net 2013 time libraries buggy (%x %X) - time_get"
 // DevDiv-836436 "<iomanip>: get_time()'s AM/PM parsing is broken"
 // DevDiv-872926 "<locale>: time_get::get parsing format string gets tm::tm_hour wrong [libcxx]"
-// DevDiv-1259138/GH-2618 "<xloctime>: get_time does not return correct year in tm.tm_year if year is 1"
+// VSO-1259138/GH-2618 "<xloctime>: get_time does not return correct year in tm.tm_year if year is 1"
 
 tm helper(const char* const s, const char* const fmt) {
     tm t{};
@@ -851,7 +851,7 @@ void test_gh_2618() {
         }
     };
 
-    // 4-digit strings: 'y' should only read the first two digits, 'Y' and  `get_year` should agree
+    // 4-digit strings: 'y' should only read the first two digits, 'Y' and `get_year` should agree
     TestTimeGetYear("0001", 2000, 1, 1);
     TestTimeGetYear("0080", 2000, 80, 80);
     TestTimeGetYear("1995", 2019, 1995, 1995);
