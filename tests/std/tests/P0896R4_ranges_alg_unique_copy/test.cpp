@@ -143,7 +143,7 @@ constexpr bool run_tests() {
     return true;
 }
 
-void test_gh1932() {
+void test_gh_1932() {
     // Defend against regression of GH-1932, in which ranges::unique_copy instantiated
     // iter_value_t<I> for a non-input iterator I.
 
@@ -157,6 +157,6 @@ int main() {
     STATIC_ASSERT(run_tests());
     run_tests();
 
-    test_gh1932();
+    test_gh_1932();
 }
 #endif // TEST_EVERYTHING

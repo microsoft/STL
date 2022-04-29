@@ -647,7 +647,7 @@ struct WeirdDeleter {
 };
 static_assert(!is_nothrow_destructible_v<WeirdDeleter<int>>);
 
-void test_GH_1733() {
+void test_gh_1733() {
     // <memory>: error C2694 when calling make_shared on class with throwing destructor
     WeirdDeleter<NontrivialThrowingDtor> del;
     allocator<int> al;
@@ -692,5 +692,5 @@ int main() {
     test_allocate_shared_array_known_bounds();
     test_allocate_shared_array_unknown_bounds();
 
-    test_GH_1733();
+    test_gh_1733();
 }
