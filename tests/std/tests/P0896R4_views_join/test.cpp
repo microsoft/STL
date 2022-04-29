@@ -471,6 +471,38 @@ struct Immovable {
     Immovable& operator=(Immovable&&) = delete;
 };
 
+// Validate that the _Defaultabox primary template works when fed with a non-trivially-destructible type
+void test_non_trivially_destructible_type() { // COMPILE-ONLY
+    struct non_trivially_destructible_input_iterator {
+        using difference_type = int;
+        using value_type      = int;
+
+        ~non_trivially_destructible_input_iterator() {}
+
+        // To test the correct specialization of _Defaultabox, this type must not be default constructible.
+        non_trivially_destructible_input_iterator() = delete;
+
+        non_trivially_destructible_input_iterator& operator++() {
+            return *this;
+        }
+        void operator++(int) {}
+        int operator*() const {
+            return 0;
+        }
+        bool operator==(default_sentinel_t) const {
+            return true;
+        }
+    };
+
+    using Inner = ranges::subrange<non_trivially_destructible_input_iterator, default_sentinel_t>;
+
+    auto r = views::empty<Inner> | views::join;
+    (void) r.begin();
+
+    // Also validate _Non_propagating_cache
+    auto r2 = views::empty<Inner> | views::transform([](Inner& r) { return r; }) | views::join;
+}
+
 int main() {
     // Validate views
     constexpr string_view expected = "Hello World!"sv;
