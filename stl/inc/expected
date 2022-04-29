@@ -62,8 +62,8 @@ public:
 
     // [expected.un.obs]
 #ifdef __cpp_explicit_this_parameter // TRANSITION, P2549, P0847R7
-    _NODISCARD constexpr decltype(auto) error(this auto&& _Self) noexcept {
-        return (_STD forward<decltype(_Self)>(_Self)._Unexpected);
+    _NODISCARD constexpr auto&& error(this auto&& _Self) noexcept {
+        return _STD _Forward_as<unexpected, decltype(_Self)>(_Self)._Unexpected;
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Err& error() const& noexcept {
@@ -136,8 +136,8 @@ public:
         : _Unexpected(_STD move(_Unex)) {}
 
 #ifdef __cpp_explicit_this_parameter // TRANSITION, P2549, P0847R7
-    _NODISCARD decltype(auto) error(this auto&& _Self) noexcept {
-        return (_STD forward<decltype(_Self)>(_Self)._Unexpected);
+    _NODISCARD auto&& error(this auto&& _Self) noexcept {
+        return _STD _Forward_as<bad_expected_access, decltype(_Self)>(_Self)._Unexpected;
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD const _Err& error() const& noexcept {
@@ -185,7 +185,7 @@ public:
     // clang-format off
     constexpr expected(const expected& _Other) noexcept(
         is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_constructible_v<_Err>) // strengthened
-        requires (!is_trivially_copy_constructible_v<_Ty> && !is_trivially_copy_constructible_v<_Err>
+        requires (!(is_trivially_copy_constructible_v<_Ty> && is_trivially_copy_constructible_v<_Err>)
                  && is_copy_constructible_v<_Ty> && is_copy_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
         // clang-format on
@@ -197,12 +197,12 @@ public:
     }
 
     // clang-format off
-    expected(const expected& _Other) requires
+    expected(const expected&)  requires
         is_trivially_copy_constructible_v<_Ty> && is_trivially_copy_constructible_v<_Err> = default;
 
     constexpr expected(expected&& _Other) noexcept(
-        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_constructible_v<_Err>) // strengthened
-        requires (!is_trivially_move_constructible_v<_Ty> && !is_trivially_move_constructible_v<_Err>
+        is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_constructible_v<_Err>)
+        requires (!(is_trivially_move_constructible_v<_Ty> && is_trivially_move_constructible_v<_Err>)
                  && is_move_constructible_v<_Ty> && is_move_constructible_v<_Err>)
         : _Has_value(_Other._Has_value) {
         // clang-format on
@@ -211,7 +211,7 @@ public:
         } else {
             _STD construct_at(_STD addressof(_Unexpected), _STD move(_Other._Unexpected));
         }
-    };
+    }
 
     // clang-format off
     expected(expected&&) requires
@@ -253,15 +253,15 @@ public:
             is_nothrow_constructible_v<_Ty, _Uty>&& is_nothrow_constructible_v<_Err, _UErr>) // strengthened
         : _Has_value(_Other._Has_value) {
         if (_Has_value) {
-            _STD construct_at(_STD addressof(_Value), _STD forward<_Uty>(_Other._Value));
+            _STD construct_at(_STD addressof(_Value), _STD move(_Other._Value));
         } else {
-            _STD construct_at(_STD addressof(_Unexpected), _STD forward<_UErr>(_Other._Unexpected));
+            _STD construct_at(_STD addressof(_Unexpected), _STD move(_Other._Unexpected));
         }
     }
 
     // clang-format off
     template <class _Uty = _Ty>
-        requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected> //
+        requires (!is_same_v<remove_cvref_t<_Uty>, in_place_t> && !is_same_v<remove_cvref_t<_Uty>, expected>
                  && !_Is_specialization_v<remove_cvref_t<_Uty>, unexpected> && is_constructible_v<_Ty, _Uty>)
     constexpr explicit(!is_convertible_v<_Uty, _Ty>)
         expected(_Uty&& _Other) noexcept(is_nothrow_constructible_v<_Ty, _Uty>) // strengthened
@@ -317,6 +317,7 @@ public:
     }
 
     // clang-format off
+    // TRANSITION, LLVM-46269, destructor order is significant
     ~expected() requires is_trivially_destructible_v<_Ty> && is_trivially_destructible_v<_Err> = default;
     // clang-format on
 
@@ -544,8 +545,8 @@ public:
     }
 
 #ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
-    _NODISCARD constexpr decltype(auto) operator*(this auto&& _Self) noexcept {
-        return (_STD forward<decltype(_Self)>(_Self)._Value);
+    _NODISCARD constexpr auto&& operator*(this auto&& _Self) noexcept {
+        return _STD _Forward_as<expected, decltype(_Self)>(_Self)._Value;
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Ty& operator*() const& noexcept {
@@ -570,12 +571,12 @@ public:
     }
 
 #ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
-    _NODISCARD constexpr decltype(auto) value(this auto&& _Self) {
+    _NODISCARD constexpr auto&& value(this auto&& _Self) {
         if (_Self._Has_value) {
-            return (_STD forward<decltype(_Self)>(_Self)._Value);
+            return _STD _Forward_as<expected, decltype(_Self)>(_Self)._Value;
         }
 
-        _STD forward<decltype(_Self)>(_Self)._Throw_bad_expected_access();
+        _Forward_as<expected, decltype(_Self)>(_Self)._Throw_bad_expected_access();
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Ty& value() const& {
@@ -609,8 +610,8 @@ public:
 #endif // !__cpp_explicit_this_parameter
 
 #ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
-    _NODISCARD constexpr decltype(auto) error(this auto&& _Self) noexcept { // strengthened
-        return (_STD forward<decltype(_Self)>(_Self)._Unexpected);
+    _NODISCARD constexpr auto&& error(this auto&& _Self) noexcept { // strengthened
+        return _STD _Forward_as<expected, decltype(_Self)>(_Self)._Unexpected;
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Err& error() const& noexcept { // strengthened
@@ -683,7 +684,7 @@ public:
 private:
 #ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
     [[noreturn]] inline void _Throw_bad_expected_access(this auto&& _Self) {
-        _THROW(bad_expected_access{(_STD forward<decltype(_Self)>(_Self)._Unexpected)});
+        _THROW(bad_expected_access{_Forward_as<expected, decltype(_Self)>(_Self)._Unexpected});
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     [[noreturn]] inline void _Throw_bad_expected_access() const& {
@@ -931,7 +932,7 @@ public:
 #ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
     _NODISCARD constexpr void value(this auto&& _Self) {
         if (!_Self._Has_value) {
-            _STD forward<decltype(_Self)>(_Self)._Throw_bad_expected_access();
+            _Forward_as<expected, decltype(_Self)>(_Self)._Throw_bad_expected_access();
         }
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
@@ -958,8 +959,8 @@ public:
 #endif // !__cpp_explicit_this_parameter
 
 #ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
-    _NODISCARD constexpr decltype(auto) error(this auto&& _Self) noexcept { // strengthened
-        return (_STD forward<decltype(_Self)>(_Self)._Unexpected);
+    _NODISCARD constexpr auto&& error(this auto&& _Self) noexcept { // strengthened
+        return _STD _Forward_as<expected, decltype(_Self)>(_Self)._Unexpected;
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Err& error() const& noexcept { // strengthened
@@ -1000,7 +1001,7 @@ public:
 private:
 #ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
     [[noreturn]] inline void _Throw_bad_expected_access(this auto&& _Self) {
-        _THROW(bad_expected_access{(_STD forward<decltype(_Self)>(_Self)._Unexpected)});
+        _THROW(bad_expected_access{_Forward_as<expected, decltype(_Self)>(_Self)._Unexpected});
     }
 #else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     [[noreturn]] inline void _Throw_bad_expected_access() const& {

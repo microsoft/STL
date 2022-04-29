@@ -128,7 +128,7 @@ namespace test_unexpected {
         static_assert(is_same_v<decltype(const_rvalue_error), const test_error&&>);
 
         // deduction guide
-        auto deduced = std::unexpected(test_error{42});
+        std::unexpected deduced(test_error{42});
         static_assert(same_as<decltype(deduced), Unexpect>);
     }
 
@@ -211,11 +211,11 @@ namespace test_expected {
 
         struct payload_copy_constructor {
             payload_copy_constructor()        = default;
-            payload_copy_constructor& operator=(const payload_copy_constructor&)                           = delete;
-            constexpr payload_copy_constructor(const payload_copy_constructor&) requires should_be_trivial = default;
+            payload_copy_constructor& operator=(const payload_copy_constructor&) = delete;
             constexpr payload_copy_constructor(const payload_copy_constructor&) noexcept(should_be_noexcept) //
                 requires(!should_be_trivial)
                 : _val(42) {}
+            constexpr payload_copy_constructor(const payload_copy_constructor&) = default;
 
             [[nodiscard]] constexpr bool operator==(const int val) const noexcept {
                 return _val == val;
@@ -282,6 +282,15 @@ namespace test_expected {
             assert(from_error.error() == (should_be_trivial ? 0 : 42));
             static_assert(noexcept(Expected{with_error}) == should_be_noexcept);
         }
+
+        { // ensure we are not copy constructible if either the payload or the error are not
+            struct not_copy_constructible {
+                not_copy_constructible(const not_copy_constructible&) = delete;
+            };
+
+            static_assert(!is_copy_constructible_v<expected<not_copy_constructible, int>>);
+            static_assert(!is_copy_constructible_v<expected<int, not_copy_constructible>>);
+        }
     }
 
     template <IsTriviallyMoveConstructible triviallyMoveConstructible,
@@ -294,11 +303,11 @@ namespace test_expected {
         struct payload_move_constructor {
             payload_move_constructor()                                = default;
             payload_move_constructor(const payload_move_constructor&) = default;
-            payload_move_constructor& operator=(payload_move_constructor&&)                           = delete;
-            constexpr payload_move_constructor(payload_move_constructor&&) requires should_be_trivial = default;
+            payload_move_constructor& operator=(payload_move_constructor&&) = delete;
             constexpr payload_move_constructor(payload_move_constructor&&) noexcept(should_be_noexcept) //
                 requires(!should_be_trivial)
                 : _val(42) {}
+            constexpr payload_move_constructor(payload_move_constructor&&) = default;
 
             [[nodiscard]] constexpr bool operator==(const int val) const noexcept {
                 return _val == val;
@@ -364,6 +373,15 @@ namespace test_expected {
             assert(!from_error);
             assert(from_error.error() == (should_be_trivial ? 0 : 42));
             static_assert(noexcept(Expected{move(error_input)}) == should_be_noexcept);
+        }
+
+        { // ensure we are not move constructible if either the payload or the error are not
+            struct not_move_constructible {
+                not_move_constructible(not_move_constructible&&) = delete;
+            };
+
+            static_assert(!is_move_constructible_v<expected<not_move_constructible, int>>);
+            static_assert(!is_move_constructible_v<expected<int, not_move_constructible>>);
         }
     }
 
@@ -952,6 +970,39 @@ namespace test_expected {
             assign_error_to_error = Unexpected{42};
             assert(assign_error_to_error.error() == 42);
             static_assert(noexcept(assign_error_to_error = Unexpected{42}) == should_be_noexcept);
+        }
+
+        { // ensure we are not copy_assignable if either the payload or the error are not copy_assignable or the payload
+          // is not copy_constructible
+            struct not_copy_assignable {
+                not_copy_assignable& operator=(not_copy_assignable&&) = delete;
+            };
+
+            static_assert(!is_copy_assignable_v<expected<not_copy_assignable, int>>);
+            static_assert(!is_copy_assignable_v<expected<int, not_copy_assignable>>);
+
+            struct not_copy_constructible {
+                not_copy_constructible(const not_copy_constructible&) = delete;
+            };
+
+            static_assert(!is_copy_assignable_v<expected<not_copy_constructible, int>>);
+        }
+
+        { // ensure we are not move_assignable if either the payload or the error are not move_assignable or
+          // move_constructible
+            struct not_move_assignable {
+                not_move_assignable& operator=(not_move_assignable&&) = delete;
+            };
+
+            static_assert(!is_move_assignable_v<expected<not_move_assignable, int>>);
+            static_assert(!is_move_assignable_v<expected<int, not_move_assignable>>);
+
+            struct not_move_constructible {
+                not_move_constructible(not_move_constructible&&) = delete;
+            };
+
+            static_assert(!is_move_assignable_v<expected<not_move_constructible, int>>);
+            static_assert(!is_move_assignable_v<expected<int, not_move_constructible>>);
         }
     }
 
