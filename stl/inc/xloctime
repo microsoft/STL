@@ -47,9 +47,8 @@ ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int&
         }
     }
 
-    for (; _First != _Last && _Digits_read < _Hi_digits && _Ctype_fac.narrow(*_First) == '0';
-         ++_First) { // strip leading zeros
-        ++_Digits_read;
+    for (; _First != _Last && _Digits_read < _Hi_digits && _Ctype_fac.narrow(*_First) == '0'; ++_First) {
+        ++_Digits_read; // strip leading zeros
     }
 
     if (_Digits_read > 0) {
