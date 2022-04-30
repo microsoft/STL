@@ -311,6 +311,29 @@ constexpr bool test_lwg_3574() {
     return true;
 }
 
+// Validate that _Variantish works when fed with a non-trivially-destructible type
+void test_non_trivially_destructible_type() { // COMPILE-ONLY
+    struct non_trivially_destructible_input_iterator {
+        using difference_type = int;
+        using value_type      = int;
+
+        ~non_trivially_destructible_input_iterator() {}
+
+        non_trivially_destructible_input_iterator& operator++() {
+            return *this;
+        }
+        void operator++(int) {}
+        int operator*() const {
+            return 0;
+        }
+        bool operator==(default_sentinel_t) const {
+            return true;
+        }
+    };
+
+    common_iterator<non_trivially_destructible_input_iterator, default_sentinel_t> it;
+}
+
 int main() {
     with_writable_iterators<instantiator, P>::call();
     static_assert(with_writable_iterators<instantiator, P>::call());

@@ -253,7 +253,7 @@ _NODISCARD int _Checked_arm_arm64_countl_zero(const _Ty _Val) noexcept {
     }
 #else // ^^^ workaround / no workaround vvv
     if constexpr (_Digits <= 32) {
-        return static_cast<int>(_CountLeadingZeros(_Val));
+        return static_cast<int>(_CountLeadingZeros(_Val)) - (numeric_limits<unsigned long>::digits - _Digits);
     } else {
         return static_cast<int>(_CountLeadingZeros64(_Val));
     }

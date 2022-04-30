@@ -3387,14 +3387,16 @@ namespace chrono {
             if constexpr (_Can_rep_sec) {
                 if (_Used & _F_sec) {
                     if (_Subsecond) {
-                        using _CastedType = duration<int64_t, typename _DurationType::period>;
                         const _SubsecondType _Sub{*_Subsecond};
-                        if (treat_as_floating_point_v<_DurationType> //
-                            || _CHRONO duration_cast<_CastedType>(_Sub) == _Sub) {
-                            _Result += _CHRONO duration_cast<_DurationType>(_Sub);
-                        } else {
-                            return false;
+
+                        if constexpr (!treat_as_floating_point_v<typename _DurationType::rep>) {
+                            using _CastedType = duration<int64_t, typename _DurationType::period>;
+                            if (_CHRONO duration_cast<_CastedType>(_Sub) != _Sub) {
+                                return false;
+                            }
                         }
+
+                        _Result += _CHRONO duration_cast<_DurationType>(_Sub);
                     }
 
                     if (_Second) {
@@ -3947,8 +3949,11 @@ namespace chrono {
             const _Ctype& _Ctype_fac{_STD use_facet<_Ctype>(_Iosbase.getloc())};
             constexpr _InIt _Last{};
 
-            while (*_Fmt != '\0' && _First != _Last && _State == ios_base::goodbit) {
-                if (*_Fmt == '%') {
+            while (*_Fmt != '\0' && (_State & ~ios_base::eofbit) == ios_base::goodbit) {
+                if (_First == _Last) {
+                    _State |= ios_base::failbit | ios_base::eofbit;
+                    break;
+                } else if (*_Fmt == '%') {
                     _First = _Parse_time_field(_First, _Iosbase, _State, *++_Fmt, '\0', 0, _Subsecond_precision);
                 } else if (_Ctype_fac.narrow(*_First++) != *_Fmt) {
                     _State |= ios_base::failbit;
@@ -4181,7 +4186,7 @@ namespace chrono {
 
             if (_Ok) {
                 _TRY_IO_BEGIN
-                for (; _FmtFirst != _FmtLast && _State == ios_base::goodbit; ++_FmtFirst) {
+                for (; _FmtFirst != _FmtLast && (_State & ~ios_base::eofbit) == ios_base::goodbit; ++_FmtFirst) {
                     if (_First == _Last) {
                         // EOF is not an error if the remaining flags can match zero characters.
                         for (; _FmtFirst != _FmtLast; ++_FmtFirst) {
