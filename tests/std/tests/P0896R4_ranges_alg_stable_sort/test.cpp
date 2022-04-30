@@ -52,7 +52,7 @@ struct instantiator {
 };
 
 void test_gh_2187() {
-    // <algorithm>: ranges::stable_sort() neither sorts nor permutes
+    // GH-2187 <algorithm>: ranges::stable_sort() neither sorts nor permutes
     constexpr array orig{0, 1, 3, 2, 5, 6, 4, 7, 8, 12, 9, 10, 12, 11, 13, 14, 17, 15, 16, 24, 18, 21, 19, 20, 22, 25,
         23, 26, 27, 28, 29, 30, 31};
     auto v = orig;

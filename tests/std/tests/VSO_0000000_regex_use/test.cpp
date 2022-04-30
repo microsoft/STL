@@ -547,7 +547,7 @@ void test_VSO_226914_word_boundaries() {
 }
 
 void test_gh_993() {
-    // regex::icase is not handled correctly for some input.
+    // GH-993 regex::icase is not handled correctly for some input.
     {
         const wstring subject = L" Copyright";
         const test_wregex case_regex(&g_regexTester, LR"([a-z][a-z])", ECMAScript);
