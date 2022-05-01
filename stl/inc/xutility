@@ -211,7 +211,7 @@ struct _Get_rebind_alias<_Ty, _Other, void_t<typename _Ty::template rebind<_Othe
 #if _HAS_CXX23
 template <class _Raw, class _Source>
 _NODISCARD constexpr auto&& _Forward_as(auto&& _Val) noexcept {
-    _STL_INTERNAL_STATIC_ASSERT(same_as<_Source&, decltype(_Val)&>);
+    _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Source&, decltype(_Val)&>);
     using _Cooked = typename _Add_qualifiers<_Source&&>::template _Apply<_Raw>;
     return (_Cooked) _Val; // C-style cast used to bypass access control
 }
