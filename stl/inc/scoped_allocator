@@ -123,6 +123,7 @@ struct _Scoped_base<_Outer> : _Outer { // nest of allocators, one deep
 
 template <class _Outer, class... _Inner>
 class scoped_allocator_adaptor : public _Scoped_base<_Outer, _Inner...> { // nest of allocators
+private:
     using _Mybase       = _Scoped_base<_Outer, _Inner...>;
     using _Outer_traits = allocator_traits<_Outer>;
 

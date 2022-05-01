@@ -2675,7 +2675,7 @@ struct _Sort_operation { // context for background threads
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, const __std_PTP_WORK _Work) noexcept /* terminates */ {
-        auto* const _This = static_cast<_Sort_operation*>(_Context);
+        const auto _This  = static_cast<_Sort_operation*>(_Context);
         const auto _Basis = _This->_Basis;
         const auto _Pred  = _This->_Pred;
         auto& _Team       = _This->_Team;
