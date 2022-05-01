@@ -401,11 +401,11 @@ struct _Smanip { // store function pointer and argument value
     _Arg _Manarg; // the argument value
 };
 
-_EXPORT_STD _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl resetiosflags(ios_base::fmtflags);
-_EXPORT_STD _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl setiosflags(ios_base::fmtflags);
-_EXPORT_STD _NODISCARD _MRTIMP2 _Smanip<int> __cdecl setbase(int);
-_EXPORT_STD _NODISCARD _MRTIMP2 _Smanip<streamsize> __cdecl setprecision(streamsize);
-_EXPORT_STD _NODISCARD _MRTIMP2 _Smanip<streamsize> __cdecl setw(streamsize);
+_EXPORT_STD extern "C++" _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl resetiosflags(ios_base::fmtflags);
+_EXPORT_STD extern "C++" _NODISCARD _MRTIMP2 _Smanip<ios_base::fmtflags> __cdecl setiosflags(ios_base::fmtflags);
+_EXPORT_STD extern "C++" _NODISCARD _MRTIMP2 _Smanip<int> __cdecl setbase(int);
+_EXPORT_STD extern "C++" _NODISCARD _MRTIMP2 _Smanip<streamsize> __cdecl setprecision(streamsize);
+_EXPORT_STD extern "C++" _NODISCARD _MRTIMP2 _Smanip<streamsize> __cdecl setw(streamsize);
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

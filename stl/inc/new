@@ -99,8 +99,8 @@ _EXPORT_STD inline constexpr size_t hardware_destructive_interference_size  = 64
 
 _EXPORT_STD using new_handler = void(__CLRCALL_PURE_OR_CDECL*)();
 
-_EXPORT_STD _CRTIMP2 new_handler __cdecl set_new_handler(_In_opt_ new_handler) noexcept;
-_EXPORT_STD _NODISCARD _CRTIMP2 new_handler __cdecl get_new_handler() noexcept;
+_EXPORT_STD extern "C++" _CRTIMP2 new_handler __cdecl set_new_handler(_In_opt_ new_handler) noexcept;
+_EXPORT_STD extern "C++" _NODISCARD _CRTIMP2 new_handler __cdecl get_new_handler() noexcept;
 _STD_END
 
 #pragma pop_macro("new")

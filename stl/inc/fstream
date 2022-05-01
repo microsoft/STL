@@ -60,11 +60,11 @@ _INLINE_VAR constexpr bool _Is_any_path = _Is_any_of_v<_Ty
     >;
 // clang-format on
 
-_CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
-_CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
+extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
+extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
 
 #ifdef _CRTBLD
-_CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
+extern "C++" _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
 #endif // _CRTBLD
 
 template <class _Elem>

@@ -157,7 +157,7 @@ namespace regex_constants {
     };
 } // namespace regex_constants
 
-[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xregex_error(regex_constants::error_type _Code);
+extern "C++" [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xregex_error(regex_constants::error_type _Code);
 
 _EXPORT_STD template <class _Elem>
 class regex_traits;

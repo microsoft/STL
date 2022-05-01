@@ -472,8 +472,8 @@ protected:
     _THROW(system_error{_STD make_error_code(_Ec)});
 }
 
-_CRTIMP2_PURE const char* __CLRCALL_PURE_OR_CDECL _Syserror_map(int);
-_CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(int);
+extern "C++" _CRTIMP2_PURE const char* __CLRCALL_PURE_OR_CDECL _Syserror_map(int);
+extern "C++" _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Winerror_map(int);
 
 struct _System_error_message {
     char* _Str;

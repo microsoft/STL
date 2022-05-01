@@ -65,9 +65,9 @@ _INLINE_VAR constexpr long double _Exp1  = 2.71828182845904523536028747135266250
 _INLINE_VAR constexpr long double _Two32 = 4294967296.0L;
 _INLINE_VAR constexpr long double _Two31 = 2147483648.0L;
 
-_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float);
-_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double);
-_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double);
+extern "C++" _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _XLgamma(float);
+extern "C++" _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _XLgamma(double);
+extern "C++" _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _XLgamma(long double);
 
 _INLINE_VAR constexpr int _Nwords = 4;
 
@@ -335,10 +335,10 @@ _NODISCARD _Real _Nrand_impl(_Gen& _Gx) { // build a floating-point value from r
 _INLINE_VAR constexpr int _MP_len = 5;
 using _MP_arr                     = uint64_t[_MP_len];
 
-_NODISCARD _CRTIMP2_PURE uint64_t __CLRCALL_PURE_OR_CDECL _MP_Get(_MP_arr) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(_MP_arr, uint64_t) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(_MP_arr, uint64_t, uint64_t) noexcept;
-_CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(_MP_arr, uint64_t) noexcept;
+extern "C++" _NODISCARD _CRTIMP2_PURE uint64_t __CLRCALL_PURE_OR_CDECL _MP_Get(_MP_arr) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Add(_MP_arr, uint64_t) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Mul(_MP_arr, uint64_t, uint64_t) noexcept;
+extern "C++" _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _MP_Rem(_MP_arr, uint64_t) noexcept;
 
 template <class _Uint, _Uint _Ax, _Uint _Cx, _Uint _Mx>
 _NODISCARD _Uint _Next_linear_congruential_value(_Uint _Prev) noexcept {
@@ -4935,7 +4935,7 @@ _EXPORT_STD using knuth_b       = shuffle_order_engine<minstd_rand0, 256>;
 _EXPORT_STD using default_random_engine = mt19937;
 
 
-_CRTIMP2_PURE unsigned int __CLRCALL_PURE_OR_CDECL _Random_device();
+extern "C++" _CRTIMP2_PURE unsigned int __CLRCALL_PURE_OR_CDECL _Random_device();
 
 _EXPORT_STD class random_device { // class to generate random numbers (from hardware where available)
 public:

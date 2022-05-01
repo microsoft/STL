@@ -651,7 +651,7 @@ public:
     }
 };
 
-[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_function_call();
+extern "C++" [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_function_call();
 
 struct _Unforced { // tag to distinguish bind() from bind<R>()
     explicit _Unforced() = default;
