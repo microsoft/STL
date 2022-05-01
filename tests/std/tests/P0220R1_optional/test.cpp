@@ -7384,7 +7384,7 @@ namespace msvc {
     } // namespace vso614907
 
     namespace gh2458 {
-        // optional<const meow> o = std::move(lvalue_optional_const_meow);
+        // GH-2458: optional<const meow> o = std::move(lvalue_optional_const_meow);
         // was moving from the contained const object
         enum class action { none, copy, move };
         action last = action::none;

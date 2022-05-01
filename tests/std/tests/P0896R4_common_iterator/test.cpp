@@ -268,6 +268,7 @@ constexpr bool test_gh_2065() { // Guard against regression of GH-2065, for whic
 }
 
 constexpr bool test_lwg_3574() {
+    // LWG-3574: "common_iterator should be completely constexpr-able"
     int arr[]{11, 22, 33};
 
     {
