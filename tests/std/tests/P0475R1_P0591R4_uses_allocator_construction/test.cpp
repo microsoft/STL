@@ -174,7 +174,8 @@ constexpr bool test_P0591R4() {
     return true;
 }
 
-void test_GH_2021() { // COMPILE-ONLY
+void test_gh_2021() { // COMPILE-ONLY
+    // GH-2021 <map>: Using operator[] on a std::pmr::map fails to compile when the mapped type is a std::pair
     pmr::map<int, pair<int, int>> tags;
     tags[0];
 }
@@ -184,7 +185,8 @@ struct MoveOnlyType {
     MoveOnlyType(MoveOnlyType&&) = default;
 };
 
-void test_LWG3527() { // COMPILE-ONLY
+void test_lwg_3527() { // COMPILE-ONLY
+    // LWG-3527: "uses_allocator_construction_args handles rvalue pairs of rvalue references incorrectly"
     allocator<MoveOnlyType> alloc;
     MoveOnlyType obj;
     pair<MoveOnlyType&&, MoveOnlyType&&> p{move(obj), move(obj)};
