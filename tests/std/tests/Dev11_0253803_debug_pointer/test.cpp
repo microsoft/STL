@@ -321,9 +321,7 @@ int main() {
     copy(par, nil, nil, nil);
     copy_if(par, nil, nil, nil, pred);
     copy_n(par, nil, zero, nil);
-    copy_backward(par, nil, nil, nil);
     move(par, nil, nil, nil);
-    move_backward(par, nil, nil, nil);
     swap_ranges(par, nil, nil, nil);
     transform(par, nil, nil, nil, unop);
     transform(par, nil, nil, nil, nil, binop);

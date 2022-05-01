@@ -31,7 +31,7 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 inline constexpr char _Charconv_digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
     'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
-static_assert(_STD size(_Charconv_digits) == 36);
+_STL_INTERNAL_STATIC_ASSERT(_STD size(_Charconv_digits) == 36);
 
 template <class _RawTy>
 _NODISCARD to_chars_result _Integer_to_chars(
@@ -208,7 +208,7 @@ struct from_chars_result {
     const char* ptr;
     errc ec;
 #if _HAS_CXX20
-    _NODISCARD friend bool operator==(const from_chars_result&, const from_chars_result&) = default;
+    _NODISCARD_FRIEND bool operator==(const from_chars_result&, const from_chars_result&) = default;
 #endif // _HAS_CXX20
 };
 
@@ -226,7 +226,7 @@ _NODISCARD inline unsigned char _Digit_from_char(const char _Ch) noexcept {
         255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
         255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
         255, 255, 255, 255, 255, 255, 255, 255, 255};
-    static_assert(_STD size(_Digit_from_byte) == 256);
+    _STL_INTERNAL_STATIC_ASSERT(_STD size(_Digit_from_byte) == 256);
 
     return _Digit_from_byte[static_cast<unsigned char>(_Ch)];
 }
@@ -1032,10 +1032,6 @@ _NODISCARD inline uint64_t _Divide(_Big_integer_flt& _Numerator, const _Big_inte
     }
 
     // Trim the remainder:
-    for (uint32_t _Ix = _Max_numerator_element_index + 1; _Ix < _Numerator._Myused; ++_Ix) {
-        _Numerator._Mydata[_Ix] = 0;
-    }
-
     uint32_t _Used = _Max_numerator_element_index + 1;
 
     while (_Used != 0 && _Numerator._Mydata[_Used - 1] == 0) {

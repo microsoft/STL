@@ -268,6 +268,7 @@ constexpr bool test_gh_2065() { // Guard against regression of GH-2065, for whic
 }
 
 constexpr bool test_lwg_3574() {
+    // LWG-3574: "common_iterator should be completely constexpr-able"
     int arr[]{11, 22, 33};
 
     {
@@ -309,6 +310,29 @@ constexpr bool test_lwg_3574() {
     assert(arr[2] == 11);
 
     return true;
+}
+
+// Validate that _Variantish works when fed with a non-trivially-destructible type
+void test_non_trivially_destructible_type() { // COMPILE-ONLY
+    struct non_trivially_destructible_input_iterator {
+        using difference_type = int;
+        using value_type      = int;
+
+        ~non_trivially_destructible_input_iterator() {}
+
+        non_trivially_destructible_input_iterator& operator++() {
+            return *this;
+        }
+        void operator++(int) {}
+        int operator*() const {
+            return 0;
+        }
+        bool operator==(default_sentinel_t) const {
+            return true;
+        }
+    };
+
+    common_iterator<non_trivially_destructible_input_iterator, default_sentinel_t> it;
 }
 
 int main() {
