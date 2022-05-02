@@ -3082,12 +3082,12 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
-        difference_type _Off_ret = _Where - begin();
+        const difference_type _Off_ret = _Where - begin();
 
         if constexpr (_Is_fwd_iter_v<_Iter>) {
             _Adl_verify_range(_First, _Last);
-            auto _Count    = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-            size_type _Off = _Insert_x(_Where, _Count);
+            const auto _Count    = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+            const size_type _Off = _Insert_x(_Where, _Count);
             _Copy_unchecked(
                 _Get_unwrapped(_First), _Get_unwrapped(_Last), begin() + static_cast<difference_type>(_Off));
         } else {
