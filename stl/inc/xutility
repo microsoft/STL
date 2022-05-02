@@ -21,28 +21,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if defined(_CRTBLD) && defined(CRTDLL2)
-// TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
-// the DLL. (We could additionally link them into the DLL - not as exports, just for internal usage - but we
-// haven't chosen to do that yet.) When we can break ABI and export the vector algorithms from the DLL,
-// this preprocessor case should be removed.
-#ifndef _USE_STD_VECTOR_ALGORITHMS
-#define _USE_STD_VECTOR_ALGORITHMS 0
-#elif _USE_STD_VECTOR_ALGORITHMS
-#error Vector algorithms are not supported when building msvcp140.dll, but _USE_STD_VECTOR_ALGORITHMS is set.
-#endif // _USE_STD_VECTOR_ALGORITHMS
-#elif (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID) && !defined(_M_ARM64EC)
-#ifndef _USE_STD_VECTOR_ALGORITHMS
-#define _USE_STD_VECTOR_ALGORITHMS 1
-#endif // _USE_STD_VECTOR_ALGORITHMS
-#else // ^^^ arch supports vector algorithms / no support for vector algorithms vvv
-#ifndef _USE_STD_VECTOR_ALGORITHMS
-#define _USE_STD_VECTOR_ALGORITHMS 0
-#elif _USE_STD_VECTOR_ALGORITHMS
-#error Vector algorithms are not supported on this architecture, but _USE_STD_VECTOR_ALGORITHMS is set.
-#endif // _USE_STD_VECTOR_ALGORITHMS
-#endif // ^^^ no support for vector algorithms ^^^
-
 #ifdef __CUDACC__
 #define _CONSTEXPR_BIT_CAST inline
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
@@ -62,8 +40,6 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept;
-__declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
-    void* _First1, void* _Last1, void* _First2) noexcept;
 
 __declspec(noalias) size_t
     __stdcall __std_count_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
@@ -231,7 +207,7 @@ template <class _Ty, class... _Types,
     class = void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
 constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
     noexcept(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
-    return ::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...);
+    _MSVC_CONSTEXPR return ::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...);
 }
 #endif // _HAS_CXX20
 
@@ -1208,26 +1184,24 @@ concept indirectly_swappable = indirectly_readable<_It1> && indirectly_readable<
         _RANGES iter_swap(__i1, __i2);
         _RANGES iter_swap(__i2, __i1);
     };
+// clang-format on
 
 template <class _It1, class _It2, class _Rel, class _Proj1 = identity, class _Proj2 = identity>
-concept indirectly_comparable =
-    indirect_binary_predicate<_Rel,
-        projected<_It1, _Proj1>,
-        projected<_It2, _Proj2>>;
+concept indirectly_comparable = indirect_binary_predicate<_Rel, projected<_It1, _Proj1>, projected<_It2, _Proj2>>;
 
 template <class _It>
-concept permutable = forward_iterator<_It>
-    && indirectly_movable_storable<_It, _It>
-    && indirectly_swappable<_It, _It>;
+concept permutable = forward_iterator<_It> && indirectly_movable_storable<_It, _It> && indirectly_swappable<_It, _It>;
 
-namespace ranges { struct less; }
+namespace ranges {
+    struct less;
+}
+
 template <class _It1, class _It2, class _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
-concept mergeable = input_iterator<_It1> && input_iterator<_It2>
-    && weakly_incrementable<_Out>
-    && indirectly_copyable<_It1, _Out>
-    && indirectly_copyable<_It2, _Out>
+concept mergeable = input_iterator<_It1> && input_iterator<_It2> //
+    && weakly_incrementable<_Out> //
+    && indirectly_copyable<_It1, _Out> //
+    && indirectly_copyable<_It2, _Out> //
     && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
-// clang-format on
 
 template <class _It, class _Pr = ranges::less, class _Proj = identity>
 concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
@@ -6105,6 +6079,34 @@ template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // find first element not before _Val
     return _STD lower_bound(_First, _Last, _Val, less<>{});
+}
+
+template <class _FwdIt, class _Ty, class _Pr>
+_NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
+    // find first element that _Val is before
+    _Adl_verify_range(_First, _Last);
+    auto _UFirst                = _Get_unwrapped(_First);
+    _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
+
+    while (0 < _Count) { // divide and conquer, find half that contains answer
+        _Iter_diff_t<_FwdIt> _Count2 = _Count / 2;
+        const auto _UMid             = _STD next(_UFirst, _Count2);
+        if (_Pred(_Val, *_UMid)) {
+            _Count = _Count2;
+        } else { // try top half
+            _UFirst = _Next_iter(_UMid);
+            _Count -= _Count2 + 1;
+        }
+    }
+
+    _Seek_wrapped(_First, _UFirst);
+    return _First;
+}
+
+template <class _FwdIt, class _Ty>
+_NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+    // find first element that _Val is before
+    return _STD upper_bound(_First, _Last, _Val, less<>{});
 }
 
 template <class _FwdIt1, class _FwdIt2>

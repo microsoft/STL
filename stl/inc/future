@@ -80,23 +80,20 @@ enum class future_status { // names for timed wait function returns
     deferred
 };
 
-[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Throw_future_error(const error_code& _Code);
-[[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Rethrow_future_exception(exception_ptr _Ptr);
-
 template <>
 struct is_error_code_enum<future_errc> : true_type {};
 
 _NODISCARD const error_category& future_category() noexcept;
 
-_NODISCARD inline error_code make_error_code(future_errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), _STD future_category());
+_NODISCARD inline error_code make_error_code(future_errc _Ec) noexcept {
+    return error_code(static_cast<int>(_Ec), _STD future_category());
 }
 
-_NODISCARD inline error_condition make_error_condition(future_errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), _STD future_category());
+_NODISCARD inline error_condition make_error_condition(future_errc _Ec) noexcept {
+    return error_condition(static_cast<int>(_Ec), _STD future_category());
 }
 
-inline const char* _Future_error_map(int _Errcode) noexcept { // convert to name of future error
+_NODISCARD inline const char* _Future_error_map(int _Errcode) noexcept { // convert to name of future error
     switch (static_cast<future_errc>(_Errcode)) { // switch on error code value
     case future_errc::broken_promise:
         return "broken promise";
@@ -120,7 +117,7 @@ public:
     explicit future_error(error_code _Errcode) // internal, TRANSITION, will be removed
         : logic_error(""), _Mycode(_Errcode) {}
 
-    explicit future_error(future_errc _Errno) : logic_error(""), _Mycode(_STD make_error_code(_Errno)) {}
+    explicit future_error(future_errc _Ec) : logic_error(""), _Mycode(_STD make_error_code(_Ec)) {}
 
     _NODISCARD const error_code& code() const noexcept {
         return _Mycode;
@@ -140,6 +137,11 @@ protected:
 private:
     error_code _Mycode; // the stored error code
 };
+
+// TRANSITION, ABI: remove `2` suffix
+[[noreturn]] inline void _Throw_future_error2(const future_errc _Ec) {
+    _THROW(future_error{_Ec});
+}
 
 class _Future_error_category2 : public error_category { // categorize a future error
 public:
@@ -278,11 +280,11 @@ public:
     virtual _Ty& _Get_value(bool _Get_only_once) {
         unique_lock<mutex> _Lock(_Mtx);
         if (_Get_only_once && _Retrieved) {
-            _Throw_future_error(make_error_code(future_errc::future_already_retrieved));
+            _Throw_future_error2(future_errc::future_already_retrieved);
         }
 
         if (_Exception) {
-            _Rethrow_future_exception(_Exception);
+            _STD rethrow_exception(_Exception);
         }
 
         // TRANSITION: `_Retrieved` should be assigned before `_Exception` is thrown so that a `future::get`
@@ -294,7 +296,7 @@ public:
         }
 
         if (_Exception) {
-            _Rethrow_future_exception(_Exception);
+            _STD rethrow_exception(_Exception);
         }
 
         if constexpr (is_default_constructible_v<_Ty>) {
@@ -323,7 +325,7 @@ public:
     void _Set_value_raw(const _Ty& _Val, unique_lock<mutex>* _Lock,
         bool _At_thread_exit) { // store a result while inside a locked block
         if (_Already_has_stored_result()) {
-            _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
+            _Throw_future_error2(future_errc::promise_already_satisfied);
         }
 
         _Emplace_result(_Val);
@@ -338,7 +340,7 @@ public:
     void _Set_value_raw(_Ty&& _Val, unique_lock<mutex>* _Lock,
         bool _At_thread_exit) { // store a result while inside a locked block
         if (_Already_has_stored_result()) {
-            _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
+            _Throw_future_error2(future_errc::promise_already_satisfied);
         }
 
         _Emplace_result(_STD forward<_Ty>(_Val));
@@ -353,7 +355,7 @@ public:
     void _Set_exception_raw(exception_ptr _Exc, unique_lock<mutex>* _Lock,
         bool _At_thread_exit) { // store a result while inside a locked block
         if (_Already_has_stored_result()) {
-            _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
+            _Throw_future_error2(future_errc::promise_already_satisfied);
         }
 
         _STL_ASSERT(_Exc != nullptr, "promise<T>::set_exception/set_exception_at_thread_exit called with a null "
@@ -764,7 +766,7 @@ public:
 
     void wait() const { // wait for signal
         if (!valid()) {
-            _Throw_future_error(make_error_code(future_errc::no_state));
+            _Throw_future_error2(future_errc::no_state);
         }
 
         _Assoc_state->_Wait();
@@ -773,7 +775,7 @@ public:
     template <class _Rep, class _Per>
     future_status wait_for(const chrono::duration<_Rep, _Per>& _Rel_time) const { // wait for duration
         if (!valid()) {
-            _Throw_future_error(make_error_code(future_errc::no_state));
+            _Throw_future_error2(future_errc::no_state);
         }
 
         return _Assoc_state->_Wait_for(_Rel_time);
@@ -785,7 +787,7 @@ public:
         static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
 #endif // _HAS_CXX20
         if (!valid()) {
-            _Throw_future_error(make_error_code(future_errc::no_state));
+            _Throw_future_error2(future_errc::no_state);
         }
 
         return _Assoc_state->_Wait_until(_Abs_time);
@@ -793,7 +795,7 @@ public:
 
     _Ty& _Get_value() const {
         if (!valid()) {
-            _Throw_future_error(make_error_code(future_errc::no_state));
+            _Throw_future_error2(future_errc::no_state);
         }
 
         return _Assoc_state->_Get_value(_Get_only_once);
@@ -801,7 +803,7 @@ public:
 
     void _Set_value(const _Ty& _Val, bool _Defer) { // store a result
         if (!valid()) {
-            _Throw_future_error(make_error_code(future_errc::no_state));
+            _Throw_future_error2(future_errc::no_state);
         }
 
         _Assoc_state->_Set_value(_Val, _Defer);
@@ -809,7 +811,7 @@ public:
 
     void _Set_value(_Ty&& _Val, bool _Defer) { // store a result
         if (!valid()) {
-            _Throw_future_error(make_error_code(future_errc::no_state));
+            _Throw_future_error2(future_errc::no_state);
         }
 
         _Assoc_state->_Set_value(_STD forward<_Ty>(_Val), _Defer);
@@ -823,7 +825,7 @@ public:
 
     void _Set_exception(exception_ptr _Exc, bool _Defer) { // store a result
         if (!valid()) {
-            _Throw_future_error(make_error_code(future_errc::no_state));
+            _Throw_future_error2(future_errc::no_state);
         }
 
         _Assoc_state->_Set_exception(_Exc, _Defer);
@@ -1118,7 +1120,7 @@ public:
 
     _State_manager<_Ty>& _Get_state_for_set() {
         if (!_State.valid()) {
-            _Throw_future_error(make_error_code(future_errc::no_state));
+            _Throw_future_error2(future_errc::no_state);
         }
 
         return _State;
@@ -1126,11 +1128,11 @@ public:
 
     _State_manager<_Ty>& _Get_state_for_future() {
         if (!_State.valid()) {
-            _Throw_future_error(make_error_code(future_errc::no_state));
+            _Throw_future_error2(future_errc::no_state);
         }
 
         if (_Future_retrieved) {
-            _Throw_future_error(make_error_code(future_errc::future_already_retrieved));
+            _Throw_future_error2(future_errc::future_already_retrieved);
         }
 
         _Future_retrieved = true;
@@ -1401,7 +1403,7 @@ public:
 
     void operator()(_ArgTypes... _Args) {
         if (_MyPromise._Is_ready()) {
-            _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
+            _Throw_future_error2(future_errc::promise_already_satisfied);
         }
 
         _MyStateManagerType& _State = _MyPromise._Get_state_for_set();
@@ -1411,12 +1413,12 @@ public:
 
     void make_ready_at_thread_exit(_ArgTypes... _Args) {
         if (_MyPromise._Is_ready()) {
-            _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
+            _Throw_future_error2(future_errc::promise_already_satisfied);
         }
 
         _MyStateManagerType& _State = _MyPromise._Get_state_for_set();
         if (_State._Ptr()->_Already_has_stored_result()) {
-            _Throw_future_error(make_error_code(future_errc::promise_already_satisfied));
+            _Throw_future_error2(future_errc::promise_already_satisfied);
         }
 
         _MyStateType* _Ptr = static_cast<_MyStateType*>(_State._Ptr());
