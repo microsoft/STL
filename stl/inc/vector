@@ -3082,26 +3082,23 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
-        difference_type _Off = _Where - begin();
-        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>{});
-        return begin() + _Off;
-    }
+        difference_type _Off_ret = _Where - begin();
 
-    template <class _Iter>
-    _CONSTEXPR20 void _Insert(const_iterator _Where, _Iter _First, _Iter _Last, input_iterator_tag) {
-        difference_type _Off = _Where - begin();
+        if constexpr (_Is_fwd_iter_v<_Iter>) {
+            _Adl_verify_range(_First, _Last);
+            auto _Count    = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+            size_type _Off = _Insert_x(_Where, _Count);
+            _Copy_unchecked(
+                _Get_unwrapped(_First), _Get_unwrapped(_Last), begin() + static_cast<difference_type>(_Off));
+        } else {
+            difference_type _Off = _Off_ret;
 
-        for (; _First != _Last; ++_First, (void) ++_Off) {
-            insert(begin() + _Off, *_First);
+            for (; _First != _Last; ++_First, (void) ++_Off) {
+                insert(begin() + _Off, *_First);
+            }
         }
-    }
 
-    template <class _Iter>
-    _CONSTEXPR20 void _Insert(const_iterator _Where, _Iter _First, _Iter _Last, forward_iterator_tag) {
-        _Adl_verify_range(_First, _Last);
-        auto _Count    = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        size_type _Off = _Insert_x(_Where, _Count);
-        _Copy_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), begin() + static_cast<difference_type>(_Off));
+        return begin() + _Off_ret;
     }
 
     _CONSTEXPR20 iterator erase(const_iterator _Where_arg) noexcept /* strengthened */ {
