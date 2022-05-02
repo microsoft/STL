@@ -933,7 +933,7 @@ public:
     }
 
     void seed(_Ty _Value = default_seed) { // set initial values from specified seed value
-        this->_Seed<true>(_Value, false);
+        this->template _Seed<true>(_Value, false);
     }
 
     static constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
