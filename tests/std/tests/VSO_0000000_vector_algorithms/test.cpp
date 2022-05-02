@@ -3,11 +3,18 @@
 
 #include <algorithm>
 #include <assert.h>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <isa_availability.h>
 #include <list>
 #include <random>
+#include <type_traits>
 #include <vector>
+
+#ifdef __cpp_lib_concepts
+#include <concepts>
+#endif // __cpp_lib_concepts
 
 using namespace std;
 
@@ -20,6 +27,66 @@ void disable_instructions(ISA_AVAILABILITY isa) {
 #endif // (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
 
 constexpr size_t dataCount = 1024;
+
+template <class FwdIt, class T>
+inline ptrdiff_t last_known_good_count(FwdIt first, FwdIt last, T v) {
+    ptrdiff_t result = 0;
+    for (; first != last; ++first) {
+        result += (*first == v);
+    }
+    return result;
+}
+
+
+template <class T>
+void test_case_count(const vector<T>& input, T v) {
+    auto expected = last_known_good_count(input.begin(), input.end(), v);
+    auto actual   = count(input.begin(), input.end(), v);
+    assert(expected == actual);
+}
+
+template <class T>
+void test_count(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    binomial_distribution<TD> dis(10);
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_count(input, static_cast<T>(dis(gen)));
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+        test_case_count(input, static_cast<T>(dis(gen)));
+    }
+}
+
+template <class FwdIt, class T>
+inline auto last_known_good_find(FwdIt first, FwdIt last, T v) {
+    for (; first != last; ++first) {
+        if (*first == v) {
+            break;
+        }
+    }
+    return first;
+}
+
+template <class T>
+void test_case_find(const vector<T>& input, T v) {
+    auto expected = last_known_good_find(input.begin(), input.end(), v);
+    auto actual   = find(input.begin(), input.end(), v);
+    assert(expected == actual);
+}
+
+template <class T>
+void test_find(mt19937_64& gen) {
+    using TD = conditional_t<sizeof(T) == 1, int, T>;
+    binomial_distribution<TD> dis(10);
+    vector<T> input;
+    input.reserve(dataCount);
+    test_case_find(input, static_cast<T>(dis(gen)));
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(static_cast<T>(dis(gen)));
+        test_case_find(input, static_cast<T>(dis(gen)));
+    }
+}
 
 template <class BidIt>
 inline void last_known_good_reverse(BidIt first, BidIt last) {
@@ -105,8 +172,54 @@ void test_swap_ranges(mt19937_64& gen) {
     }
 }
 
+// GH-2683 "std::swap of arrays, why is there no specialization for trivial types"
+template <class T, size_t N>
+void test_swap_arrays(mt19937_64& gen) {
+    const auto fn = [&]() { return static_cast<T>(gen()); };
+    T left[N];
+    T right[N];
+    generate(begin(left), end(left), fn);
+    generate(begin(right), end(right), fn);
+
+    const vector<T> origLeft(begin(left), end(left));
+    const vector<T> origRight(begin(right), end(right));
+
+    swap(left, right);
+
+    assert(equal(begin(left), end(left), origRight.begin(), origRight.end()));
+    assert(equal(begin(right), end(right), origLeft.begin(), origLeft.end()));
+
+#ifdef __cpp_lib_concepts
+    ranges::swap(left, right);
+
+    assert(equal(begin(left), end(left), origLeft.begin(), origLeft.end()));
+    assert(equal(begin(right), end(right), origRight.begin(), origRight.end()));
+#endif // __cpp_lib_concepts
+}
+
 void test_vector_algorithms() {
     mt19937_64 gen(1729);
+
+    test_count<char>(gen);
+    test_count<signed char>(gen);
+    test_count<unsigned char>(gen);
+    test_count<short>(gen);
+    test_count<unsigned short>(gen);
+    test_count<int>(gen);
+    test_count<unsigned int>(gen);
+    test_count<long long>(gen);
+    test_count<unsigned long long>(gen);
+
+    test_find<char>(gen);
+    test_find<signed char>(gen);
+    test_find<unsigned char>(gen);
+    test_find<short>(gen);
+    test_find<unsigned short>(gen);
+    test_find<int>(gen);
+    test_find<unsigned int>(gen);
+    test_find<long long>(gen);
+    test_find<unsigned long long>(gen);
+
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
     test_reverse<unsigned char>(gen);
@@ -138,6 +251,21 @@ void test_vector_algorithms() {
     test_swap_ranges<int>(gen);
     test_swap_ranges<unsigned int>(gen);
     test_swap_ranges<unsigned long long>(gen);
+
+    test_swap_arrays<uint8_t, 1>(gen);
+    test_swap_arrays<uint16_t, 1>(gen);
+    test_swap_arrays<uint32_t, 1>(gen);
+    test_swap_arrays<uint64_t, 1>(gen);
+
+    test_swap_arrays<uint8_t, 47>(gen);
+    test_swap_arrays<uint16_t, 47>(gen);
+    test_swap_arrays<uint32_t, 47>(gen);
+    test_swap_arrays<uint64_t, 47>(gen);
+
+    test_swap_arrays<uint8_t, 512>(gen);
+    test_swap_arrays<uint16_t, 512>(gen);
+    test_swap_arrays<uint32_t, 512>(gen);
+    test_swap_arrays<uint64_t, 512>(gen);
 }
 
 template <typename Container1, typename Container2>

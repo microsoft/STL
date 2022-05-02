@@ -18,6 +18,39 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// Note: Defining _USE_STD_VECTOR_ALGORITHMS to 0 may be necessary to use "core" headers
+// without linking to the STL's separately compiled code.
+
+#if defined(_CRTBLD) && defined(CRTDLL2)
+// TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
+// the DLL. (We could additionally link them into the DLL - not as exports, just for internal usage - but we
+// haven't chosen to do that yet.) When we can break ABI and export the vector algorithms from the DLL,
+// this preprocessor case should be removed.
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 0
+#elif _USE_STD_VECTOR_ALGORITHMS
+#error Vector algorithms are not supported when building msvcp140.dll, but _USE_STD_VECTOR_ALGORITHMS is set.
+#endif // _USE_STD_VECTOR_ALGORITHMS
+#elif (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID) && !defined(_M_ARM64EC)
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 1
+#endif // _USE_STD_VECTOR_ALGORITHMS
+#else // ^^^ arch supports vector algorithms / no support for vector algorithms vvv
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 0
+#elif _USE_STD_VECTOR_ALGORITHMS
+#error Vector algorithms are not supported on this architecture, but _USE_STD_VECTOR_ALGORITHMS is set.
+#endif // _USE_STD_VECTOR_ALGORITHMS
+#endif // ^^^ no support for vector algorithms ^^^
+
+#if _USE_STD_VECTOR_ALGORITHMS
+_EXTERN_C
+// See the important comment about the "noalias" attribute in <xutility>.
+__declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
+    void* _First1, void* _Last1, void* _First2) noexcept;
+_END_EXTERN_C
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
 _STD_BEGIN
 template <class _Ty, _Ty... _Vals>
 struct integer_sequence { // sequence of integer parameters
@@ -330,6 +363,32 @@ struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
 
 template <class _From, class _To>
 _INLINE_VAR constexpr bool is_convertible_v = __is_convertible_to(_From, _To);
+
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
+template <class _Ty>
+struct is_convertible<_Ty&, volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<volatile _Ty&, volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<_Ty&, const volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<volatile _Ty&, const volatile _Ty&> : true_type {};
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<_Ty&, volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<_Ty&, const volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, const volatile _Ty&> = true;
+#endif // ^^^ workaround
 
 template <class _Ty>
 struct is_enum : bool_constant<__is_enum(_Ty)> {}; // determine whether _Ty is an enumerated type
@@ -1179,10 +1238,6 @@ struct basic_common_reference {};
 template <class _Ty>
 _Ty _Returns_exactly() noexcept; // not defined
 
-template <class _Ty1, class _Ty2>
-using _Cond_res = // N4810 [meta.trans.other]/2.4
-    decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
-
 template <class _From>
 struct _Copy_cv_impl {
     template <class _To>
@@ -1222,6 +1277,34 @@ struct _Add_qualifiers<_Ty1&&> {
     template <class _Ty2>
     using _Apply = add_rvalue_reference_t<_Copy_cv<_Ty1, _Ty2>>;
 };
+
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-876860
+template <class _Ty1, class _Ty2>
+using _Cond_res_if_right = // N4810 [meta.trans.other]/2.4
+    decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
+
+template <class _Ty>
+using _Is_scalar_or_array = disjunction<is_scalar<_Ty>, is_array<_Ty>>;
+
+template <class _Ty1, class _Ty2, class = void>
+struct _Cond_res_workaround {};
+
+template <class _Ty1, class _Ty2>
+struct _Cond_res_workaround<_Ty1, _Ty2, void_t<_Cond_res_if_right<_Ty1, _Ty2>>> {
+    using _Uty = remove_cvref_t<_Ty1>;
+    using type = conditional_t<conjunction_v<is_same<_Uty, remove_cvref_t<_Ty2>>, _Is_scalar_or_array<_Uty>,
+                                   disjunction<conjunction<is_lvalue_reference<_Ty1>, is_rvalue_reference<_Ty2>>,
+                                       conjunction<is_rvalue_reference<_Ty1>, is_lvalue_reference<_Ty2>>>>,
+        decay_t<_Copy_cv<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>>, _Cond_res_if_right<_Ty1, _Ty2>>;
+};
+
+template <class _Ty1, class _Ty2>
+using _Cond_res = typename _Cond_res_workaround<_Ty1, _Ty2>::type;
+#else // ^^^ workaround / no workaround vvv
+template <class _Ty1, class _Ty2>
+using _Cond_res = // N4810 [meta.trans.other]/2.4
+    decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
+#endif // ^^^ no workaround ^^^
 
 template <class...>
 struct common_reference;
@@ -1777,7 +1860,7 @@ using _Weak_types = conditional_t<is_function_v<remove_pointer_t<_Ty>>, _Functio
     conditional_t<is_member_function_pointer_v<_Ty>, _Is_memfunptr<remove_cv_t<_Ty>>, _Weak_binary_args<_Ty>>>;
 
 template <class _Ty>
-void _Refwrap_ctor_fun(_Identity_t<_Ty&>) noexcept;
+void _Refwrap_ctor_fun(_Identity_t<_Ty&>) noexcept; // not defined
 template <class _Ty>
 void _Refwrap_ctor_fun(_Identity_t<_Ty&&>) = delete;
 

@@ -83,21 +83,9 @@ public:
         return *this;
     }
 
-    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator+(const ptrdiff_t _Off) const noexcept {
-        _Array_const_iterator _Tmp = *this;
-        _Tmp += _Off;
-        return _Tmp;
-    }
-
     _CONSTEXPR17 _Array_const_iterator& operator-=(const ptrdiff_t _Off) noexcept {
         _Ptr -= _Off;
         return *this;
-    }
-
-    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator-(const ptrdiff_t _Off) const noexcept {
-        _Array_const_iterator _Tmp = *this;
-        _Tmp -= _Off;
-        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR17 ptrdiff_t operator-(const _Array_const_iterator& _Right) const noexcept {
@@ -117,24 +105,8 @@ public:
         return _Ptr <=> _Right._Ptr;
     }
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
-    _NODISCARD _CONSTEXPR17 bool operator!=(const _Array_const_iterator& _Right) const noexcept {
-        return !(*this == _Right);
-    }
-
     _NODISCARD _CONSTEXPR17 bool operator<(const _Array_const_iterator& _Right) const noexcept {
         return _Ptr < _Right._Ptr;
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator>(const _Array_const_iterator& _Right) const noexcept {
-        return _Right < *this;
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator<=(const _Array_const_iterator& _Right) const noexcept {
-        return !(_Right < *this);
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator>=(const _Array_const_iterator& _Right) const noexcept {
-        return !(*this < _Right);
     }
 #endif // !_HAS_CXX20
 
@@ -214,20 +186,8 @@ private:
         return *this;
     }
 
-    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator+(const ptrdiff_t _Off) const noexcept {
-        _Array_const_iterator _Tmp = *this;
-        _Tmp += _Off;
-        return _Tmp;
-    }
-
     _CONSTEXPR17 _Array_const_iterator& operator-=(const ptrdiff_t _Off) noexcept {
         return *this += -_Off;
-    }
-
-    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator-(const ptrdiff_t _Off) const noexcept {
-        _Array_const_iterator _Tmp = *this;
-        _Tmp -= _Off;
-        return _Tmp;
     }
 
     _NODISCARD _CONSTEXPR17 ptrdiff_t operator-(const _Array_const_iterator& _Right) const noexcept {
@@ -250,25 +210,9 @@ private:
         return _Idx <=> _Right._Idx;
     }
 #else // ^^^ _HAS_CXX20 ^^^ / vvv !_HAS_CXX20 vvv
-    _NODISCARD _CONSTEXPR17 bool operator!=(const _Array_const_iterator& _Right) const noexcept {
-        return !(*this == _Right);
-    }
-
     _NODISCARD _CONSTEXPR17 bool operator<(const _Array_const_iterator& _Right) const noexcept {
         _Compat(_Right);
         return _Idx < _Right._Idx;
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator>(const _Array_const_iterator& _Right) const noexcept {
-        return _Right < *this;
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator<=(const _Array_const_iterator& _Right) const noexcept {
-        return !(_Right < *this);
-    }
-
-    _NODISCARD _CONSTEXPR17 bool operator>=(const _Array_const_iterator& _Right) const noexcept {
-        return !(*this < _Right);
     }
 #endif // !_HAS_CXX20
 
@@ -295,6 +239,37 @@ private:
     pointer _Ptr; // beginning of array
     size_t _Idx; // offset into array
 #endif // _ITERATOR_DEBUG_LEVEL == 0
+
+public:
+    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator+(const ptrdiff_t _Off) const noexcept {
+        _Array_const_iterator _Tmp = *this;
+        _Tmp += _Off;
+        return _Tmp;
+    }
+
+    _NODISCARD _CONSTEXPR17 _Array_const_iterator operator-(const ptrdiff_t _Off) const noexcept {
+        _Array_const_iterator _Tmp = *this;
+        _Tmp -= _Off;
+        return _Tmp;
+    }
+
+#if !_HAS_CXX20
+    _NODISCARD _CONSTEXPR17 bool operator!=(const _Array_const_iterator& _Right) const noexcept {
+        return !(*this == _Right);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator>(const _Array_const_iterator& _Right) const noexcept {
+        return _Right < *this;
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator<=(const _Array_const_iterator& _Right) const noexcept {
+        return !(_Right < *this);
+    }
+
+    _NODISCARD _CONSTEXPR17 bool operator>=(const _Array_const_iterator& _Right) const noexcept {
+        return !(*this < _Right);
+    }
+#endif // !_HAS_CXX20
 };
 
 #if _ITERATOR_DEBUG_LEVEL != 0

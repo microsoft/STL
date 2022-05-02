@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 project(msvc_standard_libraries_tools LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -13,6 +13,6 @@ add_compile_options(/W4 /WX $<$<NOT:$<CONFIG:Debug>>:/Zi> /permissive-)
 
 include_directories(inc)
 
+add_subdirectory(format)
 add_subdirectory(jobify)
-add_subdirectory(parallelize)
 add_subdirectory(validate)

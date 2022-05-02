@@ -18,6 +18,7 @@ constexpr bool test_one_type() {
     // validate type properties
     using R = ranges::empty_view<T>;
     static_assert(ranges::view<R> && ranges::contiguous_range<R> && ranges::sized_range<R> && ranges::common_range<R>);
+    static_assert(ranges::borrowed_range<R>);
     static_assert(same_as<const R, decltype(views::empty<T>)>);
     auto& r = views::empty<T>;
 
