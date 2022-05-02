@@ -688,7 +688,7 @@ public:
 
     template <class _Gen>
     void seed(_Gen& _Gx, bool _Readcy = false) { // set initial values from range
-        _Seed<is_arithmetic<_Gen>::value>(_Gx, _Readcy);
+        _Seed<is_arithmetic_v<_Gen>>(_Gx, _Readcy);
     }
 
     _NODISCARD result_type(min)() const {
