@@ -756,7 +756,7 @@ public:
 
 protected:
     template <class _Gen>
-    void _Seed(_Gen& _Gx, bool _Readcy) { // reset sequence from generator
+    void _Seed(_Gen& _Gx, bool _Readcy) { // reset sequence from numeric value
         linear_congruential<_Seed_t, 40014U, 0U, 2147483563U> _Lc{_Gx == 0U ? default_seed : _Gx};
         _Reset(_Lc, _Readcy);
     }
