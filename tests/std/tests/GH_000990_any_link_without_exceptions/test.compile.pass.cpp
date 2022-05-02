@@ -6,6 +6,7 @@
 using namespace std;
 
 int test() {
+    // GH-990 <any>: std::any doesn't link when exceptions are disabled
     return any_cast<int>(any{});
 }
 
