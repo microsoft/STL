@@ -14,5 +14,4 @@ add_compile_options(/W4 /WX $<$<NOT:$<CONFIG:Debug>>:/Zi> /permissive-)
 include_directories(inc)
 
 add_subdirectory(format)
-add_subdirectory(jobify)
 add_subdirectory(validate)
