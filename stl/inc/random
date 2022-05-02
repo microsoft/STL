@@ -751,9 +751,9 @@ public:
     }
 
 protected:
-    template <bool _IsNumeric, class _Gen>
+    template <bool _IsArithmetic, class _Gen>
     void _Seed(_Gen& _Gx, bool _Readcy) { // reset sequence from numeric value or generator
-        if constexpr (_IsNumeric) {
+        if constexpr (_IsArithmetic) {
             linear_congruential<_Seed_t, 40014U, 0U, 2147483563U> _Lc{_Gx == 0U ? default_seed : _Gx};
             _Reset(_Lc, _Readcy);
         } else {
