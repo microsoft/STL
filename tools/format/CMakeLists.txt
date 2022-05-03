@@ -53,7 +53,7 @@ if(CLANG_FORMAT)
     add_custom_target(run-format)
     foreach(file IN LISTS clang_format_files)
         cmake_path(RELATIVE_PATH file
-	        BASE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../.."
+            BASE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../.."
             OUTPUT_VARIABLE relative-file
         )
         string(REPLACE "/" "_" relative-file "${relative-file}")
