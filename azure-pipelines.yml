@@ -36,11 +36,15 @@ stages:
             condition: succeededOrFailed()
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - script: |
+              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+                -host_arch=amd64 -arch=amd64 -no_logo
               cmake --build $(tmpDir)/format-validate-build --target run-format
             displayName: 'clang-format Files'
             timeoutInMinutes: 2
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - script: |
+              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+                -host_arch=amd64 -arch=amd64 -no_logo
               cmake --build $(tmpDir)/format-validate-build --target run-validate
             displayName: 'Validate Files'
             timeoutInMinutes: 2
