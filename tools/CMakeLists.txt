@@ -4,5 +4,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(msvc_standard_libraries_tools LANGUAGES CXX)
 
+message(FATAL_ERROR "test build tools error")
+
 add_subdirectory(format)
 add_subdirectory(validate)
