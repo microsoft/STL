@@ -306,7 +306,7 @@ private:
 };
 
 template <class _Elem, class _Traits, class _Alloc>
-void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) { // LWG-3616
+void swap(basic_syncbuf<_Elem, _Traits, _Alloc>& _Left, basic_syncbuf<_Elem, _Traits, _Alloc>& _Right) {
     _Left.swap(_Right);
 }
 
@@ -323,6 +323,7 @@ public:
     using syncbuf_type   = basic_syncbuf<_Elem, _Traits, _Alloc>;
 
     using _Mybase = basic_ostream<_Elem, _Traits>;
+    using _Myios  = basic_ios<_Elem, _Traits>;
 
     basic_osyncstream(streambuf_type* _Strbuf, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Sync_buf)), _Sync_buf(_Strbuf, _Al) {}
@@ -344,9 +345,18 @@ public:
     basic_osyncstream& operator=(basic_osyncstream&&) noexcept = default;
 
     void emit() {
-        if (!_Sync_buf.emit()) {
-            _Mybase::setstate(ios::badbit);
+        ios_base::iostate _State = ios_base::goodbit;
+        const typename _Mybase::sentry _Ok(*this);
+        if (!_Ok) {
+            _State |= ios_base::badbit;
+        } else {
+            _TRY_IO_BEGIN
+            if (!_Sync_buf.emit()) {
+                _State |= ios_base::badbit;
+            }
+            _CATCH_IO_END
         }
+        _Mybase::setstate(_State);
     }
     _NODISCARD streambuf_type* get_wrapped() const noexcept {
         return _Sync_buf.get_wrapped();

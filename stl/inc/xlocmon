@@ -41,7 +41,6 @@ class _Mpunct : public money_base { // common base class for moneypunct<_Elem, f
 public:
     friend _Tidy_guard<_Mpunct>;
 
-public:
     using char_type   = _Elem;
     using string_type = basic_string<_Elem, char_traits<_Elem>, allocator<_Elem>>;
 
@@ -303,6 +302,7 @@ protected:
 
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class money_get : public locale::facet { // facet for converting text to encoded monetary amounts
+private:
     using _Mypunct0 = moneypunct<_Elem, false>;
     using _Mypunct1 = moneypunct<_Elem, true>;
 
@@ -607,6 +607,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id money_get<_Elem, _InIt>::id;
 
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class money_put : public locale::facet { // facet for converting encoded monetary amounts to text
+private:
     using _Mypunct0 = moneypunct<_Elem, false>;
     using _Mypunct1 = moneypunct<_Elem, true>;
 

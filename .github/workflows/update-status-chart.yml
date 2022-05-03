@@ -12,26 +12,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout gh-pages
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: gh-pages
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: ">=16.0.0"
+          node-version: ">=17.8.0"
       - name: Install Packages
         run: |
           npm ci
-      - name: Compile gather_stats.ts
+      - name: Compile And Run gather_stats.ts
         run: |
-          npx tsc
-      - name: Run gather_stats.js
+          SECRET_GITHUB_PERSONAL_ACCESS_TOKEN="${{ github.token }}" npm run gather
+      - name: Compile And Bundle status_chart.ts
         run: |
-          SECRET_GITHUB_PERSONAL_ACCESS_TOKEN="${{ github.token }}" node built/gather_stats.js
+          npm run make
       - name: Commit Changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add daily_table.js monthly_table.js
+          git add src/daily_table.ts src/monthly_table.ts built/status_chart.mjs
           git diff-index --quiet HEAD || git commit -m "Automated update."
           git push origin gh-pages

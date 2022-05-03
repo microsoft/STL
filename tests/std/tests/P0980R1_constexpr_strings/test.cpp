@@ -668,7 +668,7 @@ constexpr bool test_interface() {
 
         str insert_initializer_list = get_literal_input<CharType>();
         const auto it_ilist         = insert_initializer_list.insert(insert_initializer_list.begin() + 6,
-            {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
+                    {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
         assert(it_ilist == insert_initializer_list.begin() + 6);
         assert(equalRanges(insert_initializer_list, "Hello cute fluffy kittens"sv));
 
@@ -2382,6 +2382,18 @@ constexpr void test_all() {
     static_assert(test_growth<CharType>());
     static_assert(test_allocator_awareness<CharType>());
 }
+
+#if _HAS_CXX23
+void test_gh_2524() { // COMPILE-ONLY
+    // GH-2524 resize_and_overwrite generates warning C4018 when Operation returns int
+    string s;
+    s.resize_and_overwrite(1, [](char* buffer, size_t) {
+        *buffer = 'x';
+        int i   = 1;
+        return i;
+    });
+}
+#endif // _HAS_CXX23
 
 int main() {
     test_all<char>();
