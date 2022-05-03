@@ -30,13 +30,7 @@ stages:
               call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
                 -host_arch=amd64 -arch=amd64 -no_logo
               cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B $(tmpDir)/format-validate-build
-              if %errorlevel% equ 0 cmake --build $(tmpDir)/format-validate-build
-              if %errorlevel% equ 0 (
-                echo ##vso[task.setvariable variable=succeededInBuildingTools]true
-              ) else (
-                echo ##vso[task.setvariable variable=succeededInBuildingTools]false
-                echo ##vso[task.logissue type=error]Failed to build the tools subproject
-              )
+              cmake --build $(tmpDir)/format-validate-build
             displayName: 'Build format and validation'
             timeoutInMinutes: 5
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
@@ -46,7 +40,6 @@ stages:
               cmake --build $(tmpDir)/format-validate-build --target run-format
             displayName: 'clang-format Files'
             timeoutInMinutes: 5
-            condition: eq(variables.succeededInBuildingTools, 'true')
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - script: |
               call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
@@ -54,7 +47,6 @@ stages:
               cmake --build $(tmpDir)/format-validate-build --target run-validate
             displayName: 'Validate Files'
             timeoutInMinutes: 2
-            condition: eq(variables.succeededInBuildingTools, 'true')
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
           - task: Powershell@2
             displayName: 'Create Diff'
