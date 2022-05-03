@@ -30,8 +30,8 @@ stages:
               call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
                 -host_arch=amd64 -arch=amd64 -no_logo
               cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B $(tmpDir)/format-validate-build
-              cmake --build $(tmpDir)/format-validate-build
-              if errorlevel 0 (
+              if %errorlevel% equ 0 cmake --build $(tmpDir)/format-validate-build
+              if %errorlevel% equ 0 (
                 echo ##vso[task.setvariable variable=succeededInBuildingTools]true
               ) else (
                 echo ##vso[task.setvariable variable=succeededInBuildingTools]false
