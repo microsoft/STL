@@ -1321,10 +1321,8 @@ _NODISCARD constexpr inline long double lerp(
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
 
-template <class _Ty>
-concept _Arithmetic = is_arithmetic_v<_Ty>;
-
-template <_Arithmetic _Ty1, _Arithmetic _Ty2, _Arithmetic _Ty3>
+template <class _Ty1, class _Ty2, class _Ty3,
+    enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>
 _NODISCARD constexpr auto lerp(const _Ty1 _ArgA, const _Ty2 _ArgB, const _Ty3 _ArgT) noexcept {
     using _Tgt = conditional_t<_Is_any_of_v<long double, _Ty1, _Ty2, _Ty3>, long double, double>;
     return _Common_lerp(static_cast<_Tgt>(_ArgA), static_cast<_Tgt>(_ArgB), static_cast<_Tgt>(_ArgT));
