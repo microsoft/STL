@@ -5,6 +5,19 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
+# add the tools subdirectory _before_ we change all the flags
+add_subdirectory(tools EXCLUDE_FROM_ALL)
+# these allow the targets to show up in the top-level
+# (as opposed to under the tools subdirectory)
+if(TARGET run-format)
+    add_custom_target(format)
+    add_dependencies(format run-format)
+endif()
+if(TARGET run-validate)
+    add_custom_target(validate)
+    add_dependencies(validate run-validate)
+endif()
+
 option(BUILD_TESTING "Enable testing" ON)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
@@ -85,10 +98,4 @@ add_subdirectory(stl)
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
-endif()
-
-add_subdirectory(tools/format EXCLUDE_FROM_ALL)
-if(TARGET clang-format-all)
-    add_custom_target(format)
-    add_dependencies(format clang-format-all)
 endif()
