@@ -1226,70 +1226,65 @@ _NODISCARD inline long double sph_neumannl(const unsigned int _Arg1, const long 
 _STD_END
 
 #define _GENERIC_MATH_SPECIAL1(NAME)                                                  \
-    _STD_BEGIN                                                                        \
     template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                  \
     _NODISCARD auto NAME(const _Ty _Arg) noexcept /* strengthened */ {                \
         using _Common = conditional_t<is_integral_v<_Ty>, double, _Ty>;               \
-        if constexpr (is_same_v<_Common, float>)                                      \
+        if constexpr (is_same_v<_Common, float>) {                                    \
             return __std_smf_##NAME##f(_Arg);                                         \
-        else                                                                          \
+        } else {                                                                      \
             return static_cast<_Common>(__std_smf_##NAME(static_cast<double>(_Arg))); \
-    }                                                                                 \
-    _STD_END
+        }                                                                             \
+    }
 
 #define _GENERIC_MATH_SPECIAL2(NAME)                                                                               \
-    _STD_BEGIN                                                                                                     \
     template <class _Ty1, class _Ty2, enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2>, int> = 0>        \
     _NODISCARD auto NAME(const _Ty1 _Arg1, const _Ty2 _Arg2) noexcept /* strengthened */ {                         \
         using _Common = _Common_float_type_t<_Ty1, _Ty2>;                                                          \
-        if constexpr (is_same_v<_Common, float>)                                                                   \
+        if constexpr (is_same_v<_Common, float>) {                                                                 \
             return __std_smf_##NAME##f(_Arg1, _Arg2);                                                              \
-        else                                                                                                       \
+        } else {                                                                                                   \
             return static_cast<_Common>(__std_smf_##NAME(static_cast<double>(_Arg1), static_cast<double>(_Arg2))); \
-    }                                                                                                              \
-    _STD_END
+        }                                                                                                          \
+    }
 
 #define _GENERIC_MATH_SPECIAL3(NAME)                                                                                   \
-    _STD_BEGIN                                                                                                         \
     template <class _Ty1, class _Ty2, class _Ty3,                                                                      \
         enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>                 \
     _NODISCARD auto NAME(const _Ty1 _Arg1, const _Ty2 _Arg2, const _Ty3 _Arg3) noexcept /* strengthened */ {           \
         using _Common = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>;                                  \
-        if constexpr (is_same_v<_Common, float>)                                                                       \
+        if constexpr (is_same_v<_Common, float>) {                                                                     \
             return __std_smf_##NAME##f(_Arg1, _Arg2, _Arg3);                                                           \
-        else                                                                                                           \
+        } else {                                                                                                       \
             return static_cast<_Common>(                                                                               \
                 __std_smf_##NAME(static_cast<double>(_Arg1), static_cast<double>(_Arg2), static_cast<double>(_Arg3))); \
-    }                                                                                                                  \
-    _STD_END
+        }                                                                                                              \
+    }
 
 #define _GENERIC_MATH_SPECIAL_UINT1(NAME)                                                         \
-    _STD_BEGIN                                                                                    \
     template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                              \
     _NODISCARD auto NAME(const unsigned int _Arg1, const _Ty _Arg2) noexcept /* strengthened */ { \
         using _Common = conditional_t<is_integral_v<_Ty>, double, _Ty>;                           \
-        if constexpr (is_same_v<_Common, float>)                                                  \
+        if constexpr (is_same_v<_Common, float>) {                                                \
             return __std_smf_##NAME##f(_Arg1, _Arg2);                                             \
-        else                                                                                      \
+        } else {                                                                                  \
             return static_cast<_Common>(__std_smf_##NAME(_Arg1, static_cast<double>(_Arg2)));     \
-    }                                                                                             \
-    _STD_END
+        }                                                                                         \
+    }
 
 #define _GENERIC_MATH_SPECIAL_UINT2(NAME)                                                                  \
-    _STD_BEGIN                                                                                             \
     template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                                       \
     _NODISCARD auto NAME(                                                                                  \
         const unsigned int _Arg1, const unsigned int _Arg2, const _Ty _Arg3) noexcept /* strengthened */ { \
         using _Common = conditional_t<is_integral_v<_Ty>, double, _Ty>;                                    \
-        if constexpr (is_same_v<_Common, float>)                                                           \
+        if constexpr (is_same_v<_Common, float>) {                                                         \
             return __std_smf_##NAME##f(_Arg1, _Arg2, _Arg3);                                               \
-        else                                                                                               \
+        } else {                                                                                           \
             return static_cast<_Common>(__std_smf_##NAME(_Arg1, _Arg2, static_cast<double>(_Arg3)));       \
-    }                                                                                                      \
-    _STD_END
+        }                                                                                                  \
+    }
 
-// TRANSITION, VSO-945789, LWG-3234, P1467R9, mathematical special functions should have additional overloads.
-// LWG-3693, no separated float/long double overloads are provided.
+// per LWG-3234 and LWG-3693
+_STD_BEGIN
 _GENERIC_MATH_SPECIAL_UINT2(assoc_laguerre)
 _GENERIC_MATH_SPECIAL_UINT2(assoc_legendre)
 _GENERIC_MATH_SPECIAL2(beta)
@@ -1311,6 +1306,7 @@ _GENERIC_MATH_SPECIAL1(riemann_zeta)
 _GENERIC_MATH_SPECIAL_UINT1(sph_bessel)
 _GENERIC_MATH_SPECIAL_UINT2(sph_legendre)
 _GENERIC_MATH_SPECIAL_UINT1(sph_neumann)
+_STD_END
 
 #undef _GENERIC_MATH_SPECIAL1
 #undef _GENERIC_MATH_SPECIAL2
