@@ -375,6 +375,16 @@ void parse_other_duration() {
     test_parse("00:34:04", "%T", time);
     assert(time == 34min + 4s);
 
+    // GH-2698: For duration parsing, ensure 60 seconds is allowed, even when hours and minutes don't equal 23 and 59.
+    test_parse("00:00:60", "%T", time);
+    assert(time == 60s);
+    test_parse("23:00:60", "%T", time);
+    assert(time == 23h + 60s);
+    test_parse("00:59:60", "%T", time);
+    assert(time == 59min + 60s);
+    test_parse("23:59:60", "%T", time);
+    assert(time == 23h + 59min + 60s);
+
     milliseconds time_milli;
     test_parse("12:34:56.789", "%T", time_milli);
     assert(time_milli == 12h + 34min + 56s + 789ms);
@@ -1066,6 +1076,9 @@ void parse_timepoints() {
     ut_ref = utc_clock::from_sys(sys_days{1d / July / 1992y}) - 1s;
     test_parse("june 30 23:59:60 1992", "%c", ut);
     assert(ut == ut_ref);
+    // GH-2698: leap second insertion should only be considered at 23:59.
+    fail_parse("june 30 23:00:60 1992", "%c", ut);
+    fail_parse("june 30 00:59:60 1992", "%c", ut);
 
     // not leap-second aware
     fail_parse("june 30 23:59:60 1972", "%c", st);

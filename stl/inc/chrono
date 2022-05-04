@@ -3385,9 +3385,10 @@ namespace chrono {
                                  | (_Can_rep_day ? _F_doy : 0)};
 
             const auto _Used{_Used_fields()};
-            const auto _Time_out_of_range{
-                _For_time_point
-                && (_Out_of_range(_Second, 0, 60) || _Out_of_range(_Minute, 0, 59) || _Out_of_range(_Hour_24, 0, 23))};
+            const auto _Max_seconds{(_Hour_24 == 23 && _Minute == 59) ? 60 : 59};
+            const auto _Time_out_of_range{_For_time_point
+                                          && (_Out_of_range(_Second, 0, _Max_seconds) || _Out_of_range(_Minute, 0, 59)
+                                              || _Out_of_range(_Hour_24, 0, 23))};
 
             if (_Time_out_of_range || !_Test_bits(_Used, _Required, _Optional)) {
                 return false;
