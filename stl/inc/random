@@ -687,7 +687,7 @@ public:
         _Reset(_Lc, _Readcy);
     }
 
-    template <class _Gen, enable_if_t<!is_arithmetic_v<_Gen>>>
+    template <class _Gen, enable_if_t<!is_arithmetic_v<_Gen>, int> = 0>
     void seed(_Gen& _Gx, bool _Readcy = false) { // set initial values from range
         _Reset(_Gx, _Readcy);
     }
@@ -924,7 +924,7 @@ public:
     }
 
     void seed(_Ty _Value = default_seed) { // set initial values from specified seed value
-        this->_Seed(_Value, false);
+        _Mybase::seed(_Value);
     }
 
     static constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
