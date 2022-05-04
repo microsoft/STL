@@ -545,7 +545,7 @@ void test_sph_neumann() {
     static_assert(is_same_v<decltype(sph_neumannf(0u, 0)), float>);
     static_assert(is_same_v<decltype(sph_neumannl(0u, 0)), long double>);
     static_assert(is_same_v<decltype(sph_neumann(0u, Ambiguous{})), Ambiguous>);
-    assert(expect_epsilons(sph_neumann(1, 1), -std::cos(1) - sin(1) / 1, 1));
+    assert(expect_epsilons(sph_neumann(1, 1), -std::cos(1) - sin(1), 2));
 }
 
 int main() {
