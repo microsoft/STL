@@ -38,6 +38,7 @@ if(TARGET run-validate)
 endif()
 
 option(BUILD_TESTING "Enable testing" ON)
+option(STL_BUILD_BENCHMARKING "Enable benchmarking" OFF)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
 set(CMAKE_CXX_FLAGS "")
@@ -120,4 +121,8 @@ add_subdirectory(stl)
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(STL_BUILD_BENCHMARKING)
+    add_subdirectory(benchmarks)
 endif()

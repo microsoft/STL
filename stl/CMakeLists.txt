@@ -460,15 +460,15 @@ endif()
 function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIONS GL_FLAG THIS_CONFIG_LINK_OPTIONS)
     # msvcp140.dll
     add_library(msvcp${D_SUFFIX}_objects OBJECT ${DLL_SOURCES} ${SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_objects PRIVATE "CRTDLL2;_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_definitions(msvcp${D_SUFFIX}_objects PRIVATE CRTDLL2 PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
     target_compile_options(msvcp${D_SUFFIX}_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
 
     add_library(msvcp${D_SUFFIX}_init_objects OBJECT ${INITIALIZER_SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_init_objects PRIVATE "CRTDLL2;_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_definitions(msvcp${D_SUFFIX}_init_objects PRIVATE CRTDLL2 PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
     target_compile_options(msvcp${D_SUFFIX}_init_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};/EHsc")
 
     add_library(msvcp${D_SUFFIX}_eha_objects OBJECT ${EHA_SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_eha_objects PRIVATE "CRTDLL2;_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_definitions(msvcp${D_SUFFIX}_eha_objects PRIVATE CRTDLL2 PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
     target_compile_options(msvcp${D_SUFFIX}_eha_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHa")
 
     add_library(msvcp${D_SUFFIX} SHARED)
@@ -480,16 +480,16 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
 
     # import library 'statics'
     add_library(msvcp${D_SUFFIX}_implib_objects OBJECT ${IMPLIB_SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PRIVATE "_DLL;${THIS_CONFIG_DEFINITIONS}")
-    target_compile_options(msvcp${D_SUFFIX}_implib_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};$<$<COMPILE_LANGUAGE:CXX>:/EHsc>") # No /GL!
+    target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
+    target_compile_options(msvcp${D_SUFFIX}_implib_objects PRIVATE ${THIS_CONFIG_COMPILE_OPTIONS} /EHsc) # No /GL!
 
     add_library(msvcp${D_SUFFIX}_satellite_objects OBJECT ${SATELLITE_DLL_SOURCES})
+    target_compile_definitions(msvcp${D_SUFFIX}_satellite_objects PRIVATE PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
     target_compile_options(msvcp${D_SUFFIX}_satellite_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
-    target_compile_definitions(msvcp${D_SUFFIX}_satellite_objects PRIVATE "_DLL;${THIS_CONFIG_DEFINITIONS}")
 
     # msvcp140_1.dll (the memory_resource satellite)
     add_library(msvcp_1${D_SUFFIX}_objects OBJECT ${SOURCES_SATELLITE_1})
-    target_compile_definitions(msvcp_1${D_SUFFIX}_objects PRIVATE "_BUILDING_SATELLITE_1;_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_definitions(msvcp_1${D_SUFFIX}_objects PRIVATE _BUILDING_SATELLITE_1 PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
     target_compile_options(msvcp_1${D_SUFFIX}_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
 
     add_library(msvcp_1${D_SUFFIX} SHARED)
@@ -501,7 +501,7 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
 
     # msvcp140_2.dll (the special math satellite)
     add_library(msvcp_2${D_SUFFIX}_objects OBJECT ${SOURCES_SATELLITE_2})
-    target_compile_definitions(msvcp_2${D_SUFFIX}_objects PRIVATE "_BUILDING_SATELLITE_2;_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_definitions(msvcp_2${D_SUFFIX}_objects PRIVATE _BUILDING_SATELLITE_2 PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
     target_compile_options(msvcp_2${D_SUFFIX}_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
     target_link_libraries(msvcp_2${D_SUFFIX}_objects PRIVATE Boost::math)
 
@@ -514,7 +514,7 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
 
     # msvcp140_atomic_wait.dll (the atomic wait satellite)
     add_library(msvcp${D_SUFFIX}_atomic_wait_objects OBJECT ${SOURCES_SATELLITE_ATOMIC_WAIT})
-    target_compile_definitions(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE "_BUILDING_SATELLITE_ATOMIC_WAIT;_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_definitions(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE _BUILDING_SATELLITE_ATOMIC_WAIT PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
     target_compile_options(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
 
     # generate the .def for msvcp140_atomic_wait.dll
@@ -536,7 +536,7 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
 
     # msvcp140_codecvt_ids.dll
     add_library(msvcp${D_SUFFIX}_codecvt_ids_objects OBJECT ${SOURCES_SATELLITE_CODECVT_IDS})
-    target_compile_definitions(msvcp${D_SUFFIX}_codecvt_ids_objects PRIVATE "_BUILDING_SATELLITE_CODECVT_IDS;_DLL;${THIS_CONFIG_DEFINITIONS}")
+    target_compile_definitions(msvcp${D_SUFFIX}_codecvt_ids_objects PRIVATE _BUILDING_SATELLITE_CODECVT_IDS PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
     target_compile_options(msvcp${D_SUFFIX}_codecvt_ids_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
 
     add_library(msvcp${D_SUFFIX}_codecvt_ids SHARED)
@@ -552,6 +552,15 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_atomic_wait msvcp${D_SUFFIX}_codecvt_ids)
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_atomic_wait>")
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES ARCHIVE_OUTPUT_NAME "msvcprt${D_SUFFIX}")
+
+    # HACK: for benchmarking, we need to export the standard library since we link google benchmark to the stl targets,
+    # and CMake requires all targets depended upon by exported targets to themselves be exported.
+    set(msvcp${D_SUFFIX}_all_targets
+        boost_math
+        stl_alias_objects
+        msvcp${D_SUFFIX}_implib
+        CACHE INTERNAL ""
+    )
 endfunction()
 
 add_stl_dlls("" "" "${VCLIBS_RELEASE_OPTIONS}" "/GL" "/LTCG;/opt:ref,icf")
@@ -559,13 +568,22 @@ add_stl_dlls("d" "_DEBUG" "${VCLIBS_DEBUG_OPTIONS}" "" "/opt:ref,noicf")
 
 function(add_stl_statics FLAVOR_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIONS)
     add_library(libcpmt${FLAVOR_SUFFIX}_eha OBJECT ${EHA_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE "${THIS_CONFIG_DEFINITIONS};_ANNOTATE_VECTOR;_ANNOTATE_STRING")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX}_eha PUBLIC ${THIS_CONFIG_DEFINITIONS} PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING)
     target_compile_options(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};/EHa")
-
     add_library(libcpmt${FLAVOR_SUFFIX} STATIC ${HEADERS} ${IMPLIB_SOURCES} ${SOURCES} ${INITIALIZER_SOURCES} ${STATIC_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_DEFINITIONS};_ANNOTATE_VECTOR;_ANNOTATE_STRING")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PUBLIC ${THIS_CONFIG_DEFINITIONS} PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING)
     target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};$<$<COMPILE_LANGUAGE:CXX>:/EHsc>")
     target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math stl_alias_objects libcpmt${FLAVOR_SUFFIX}_eha)
+
+    # HACK: for benchmarking, we need to export the standard library since we link google benchmark to the stl targets,
+    # and CMake requires all targets depended upon by exported targets to themselves be exported.
+    set(libcpmt${FLAVOR_SUFFIX}_all_targets
+        boost_math
+        stl_alias_objects
+        libcpmt${FLAVOR_SUFFIX}_eha
+        libcpmt${FLAVOR_SUFFIX}
+        CACHE INTERNAL ""
+    )
 endfunction()
 
 add_stl_statics("" "_ITERATOR_DEBUG_LEVEL=0" "${VCLIBS_RELEASE_OPTIONS}")
