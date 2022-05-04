@@ -363,8 +363,7 @@ void test_ellint_2() {
     assert(ellint_2(1, half_pi) == 1.0);
 }
 
-void test_ellint_3()
-{
+void test_ellint_3() {
     static_assert(is_same_v<decltype(ellint_3(false, 0.0f, 0.0f)), double>);
     static_assert(is_same_v<decltype(ellint_3('\0', 0.0f, 0.0f)), double>);
     static_assert(is_same_v<decltype(ellint_3(0u, 0.0f, 0.0f)), double>);
@@ -376,7 +375,7 @@ void test_ellint_3()
     static_assert(is_same_v<decltype(ellint_3(0.0f, 0.0f, 0.0f)), float>);
 
     static_assert(is_same_v<decltype(ellint_3(false, 0.0, 0.0)), double>);
-    static_assert(is_same_v<decltype(ellint_3('\0', 0.0, 0.0)), double >);
+    static_assert(is_same_v<decltype(ellint_3('\0', 0.0, 0.0)), double>);
     static_assert(is_same_v<decltype(ellint_3(0u, 0.0, 0.0)), double>);
     static_assert(is_same_v<decltype(ellint_3(0.0, 0, 0.0)), double>);
     static_assert(is_same_v<decltype(ellint_3(0.0, 0l, 0.0)), double>);
