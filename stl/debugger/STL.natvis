@@ -288,6 +288,16 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <!-- VC 2015 -->
+   <Type Name="std::unique_ptr&lt;void, *&gt;">
+      <SmartPointer Usage="Minimal">_Mypair._Myval2</SmartPointer>
+      <DisplayString Condition="_Mypair._Myval2 == 0">empty</DisplayString>
+      <DisplayString Condition="_Mypair._Myval2 != 0">unique_ptr void</DisplayString>
+      <Expand>
+          <Item Condition="_Mypair._Myval2 != 0" Name="[ptr]">_Mypair._Myval2</Item>
+          <Item Condition="_Mypair._Myval2 != 0" Name="[deleter]">_Mypair</Item>
+      </Expand>
+  </Type>
+
   <Type Name="std::unique_ptr&lt;*&gt;">
       <SmartPointer Usage="Minimal">_Mypair._Myval2</SmartPointer>
       <DisplayString Condition="_Mypair._Myval2 == 0">empty</DisplayString>
