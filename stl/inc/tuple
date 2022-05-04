@@ -93,7 +93,7 @@ _INLINE_VAR constexpr bool _Tuple_assignable_v0<true, tuple<_Dests...>, _Srcs...
 
 #if _HAS_CXX23
 template <class... _Dests, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_assignable_v0<true, const tuple<_Dests...>, _Srcs...> =
+inline constexpr bool _Tuple_assignable_v0<true, const tuple<_Dests...>, _Srcs...> =
     conjunction_v<is_assignable<const _Dests&, _Srcs>...>;
 #endif // _HAS_CXX23
 
@@ -113,7 +113,7 @@ _INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v0<true, tuple<_Dests...>, 
 
 #if _HAS_CXX23
 template <class... _Dests, class... _Srcs>
-_INLINE_VAR constexpr bool _Tuple_nothrow_assignable_v0<true, const tuple<_Dests...>, _Srcs...> =
+inline constexpr bool _Tuple_nothrow_assignable_v0<true, const tuple<_Dests...>, _Srcs...> =
     conjunction_v<is_nothrow_assignable<const _Dests&, _Srcs>...>;
 #endif // _HAS_CXX23
 
@@ -430,9 +430,7 @@ public:
         tuple(const tuple<_Other...>&& _Right) noexcept(
             _Tuple_nothrow_constructible_v<tuple, const _Other...>) // strengthened
         : tuple(_Unpack_tuple_t{}, _STD move(_Right)) {}
-#endif // _HAS_CXX23
 
-#if _HAS_CXX23
     template <class _First, class _Second, enable_if_t<_Tuple_constructible_v<tuple, _First&, _Second&>, int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _First&, _Second&>)
         tuple(pair<_First, _Second>& _Right) noexcept(
@@ -629,9 +627,7 @@ public:
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, const _Other...>)
         tuple(allocator_arg_t, const _Alloc& _Al, const tuple<_Other...>&& _Right)
         : tuple(_Alloc_unpack_tuple_t{}, _Al, _STD move(_Right)) {}
-#endif // _HAS_CXX23
 
-#if _HAS_CXX23
     template <class _Alloc, class _First, class _Second,
         enable_if_t<_Tuple_constructible_v<tuple, _First&, _Second&>, int> = 0>
     constexpr explicit(_Tuple_conditional_explicit_v<tuple, _First&, _Second&>)
@@ -825,7 +821,7 @@ public:
 
 #if _HAS_CXX23
     constexpr void swap(const tuple& _Right) const
-        noexcept(conjunction_v<_Is_nothrow_swappable<const _This>, _Is_nothrow_swappable<const _Rest>...>) {
+        noexcept(conjunction_v<is_nothrow_swappable<const _This>, is_nothrow_swappable<const _Rest>...>) {
         _Swap_adl(_Myfirst._Val, _Right._Myfirst._Val);
         _Mybase::swap(_Right._Get_rest());
     }
@@ -952,13 +948,13 @@ _NODISCARD constexpr bool operator<=(const tuple<_Types1...>& _Left, const tuple
 }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-template <class... _Types, enable_if_t<conjunction_v<_STD _Is_swappable<_Types>...>, int> = 0>
+template <class... _Types, enable_if_t<conjunction_v<_Is_swappable<_Types>...>, int> = 0>
 _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
     return _Left.swap(_Right);
 }
 
 #if _HAS_CXX23
-template <class... _Types, enable_if_t<conjunction_v<_STD _Is_swappable<const _Types>...>, int> = 0>
+template <class... _Types, enable_if_t<conjunction_v<is_swappable<const _Types>...>, int> = 0>
 constexpr void swap(const tuple<_Types...>& _Left, const tuple<_Types...>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
     return _Left.swap(_Right);
@@ -1181,7 +1177,7 @@ _NODISCARD constexpr _Ty make_from_tuple(_Tuple&& _Tpl) { // construct _Ty from 
 template <class... _Types, class _Alloc>
 struct uses_allocator<tuple<_Types...>, _Alloc> : true_type {}; // true_type if container allocator enabled
 
-#if _HAS_CXX23
+#ifdef __cpp_lib_concepts
 template <class... _TTypes, class... _UTypes, template <class> class _TQual, template <class> class _UQual>
     requires requires {
         typename tuple<common_reference_t<_TQual<_TTypes>, _UQual<_UTypes>>...>;
@@ -1197,7 +1193,7 @@ template <class... _TTypes, class... _UTypes>
 struct common_type<tuple<_TTypes...>, tuple<_UTypes...>> {
     using type = tuple<common_type_t<_TTypes, _UTypes>...>;
 };
-#endif // _HAS_CXX23
+#endif // __cpp_lib_concepts
 
 #if _HAS_TR1_NAMESPACE
 namespace _DEPRECATE_TR1_NAMESPACE tr1 {
