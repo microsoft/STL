@@ -3455,10 +3455,10 @@ namespace chrono {
         }
 
         enum class _LeapSecondRep : unsigned int {
-            _None, // tai_clock, gps_clock; oblivious to leap seconds
-            _Negative, // system_clock, observes negative, but not positive, leap seconds
+            _None, // system_clock, tai_clock, gps_clock; oblivious to leap seconds
+            _Negative, // TRANSITION, ABI: old value for system_clock
             _All, // utc_clock
-            _File_time // _Negative before 1 January 2017, _All afterwards.
+            _File_time // _None before 1 January 2017, _All afterwards.
         };
 
         template <class _DurationType>
@@ -3472,66 +3472,49 @@ namespace chrono {
             const _LeapSecondRep _Original_leap{_Leap};
             if (_Leap == _LeapSecondRep::_File_time) {
                 const int _Year{*_Century + *_Two_dig_year};
-                _Leap = _Year <= 2016 ? _LeapSecondRep::_Negative : _LeapSecondRep::_All;
+                _Leap = _Year <= 2016 ? _LeapSecondRep::_None : _LeapSecondRep::_All;
             }
 
             if (_Second > (_Leap == _LeapSecondRep::_All ? 60 : 59)) {
                 return false;
             }
 
-            // A distinction has to be made here between clocks that tick monotonically, even around a positive leap
-            // second (everything except system_clock) and ones that have a special representation for leap seconds
-            // (utc_clock and, for negative leap seconds, system_clock). gps_clock and tai_clock, in particular, always
-            // monotonically count 86,400 seconds/day. The correct tick count, therefore, can be determined without
+            // A distinction has to be made here between clocks that always count 86,400 seconds/day (system_clock,
+            // tai_clock, and gps_clock) and ones that count leap seconds (utc_clock and, since 2018-07-01, file_clock).
+            // The correct tick count for the clocks that always count 86,400 seconds/day can be determined without
             // knowing whether any leap seconds have occurred, and there aren't any invalid times due to negative leap
             // second deletions.
-            //
-            // system_clock also has 86,400 seconds/day, but observes negative leap seconds by skipping them in its tick
-            // count. So leap second data is needed to check for a valid time, but not to calculate the tick count.
 
-            if (_Leap != _LeapSecondRep::_None) {
-                if (_Hour_24 == 23 && _Minute == 59 && _Second >= 59) {
+            if (_Leap == _LeapSecondRep::_All) {
+                constexpr bool _Can_rep_sec = _Can_represent<_DurationType, seconds>();
+                if constexpr (_Can_rep_sec) {
                     // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
                     // leap second insertion or (b) _Seconds == 59 and there *is* a leap second subtraction.
-
-                    // Check for quick exit.
                     const auto& _Tzdb{_CHRONO get_tzdb()};
-                    if (_Leap == _LeapSecondRep::_Negative && _Tzdb._All_ls_positive) {
-                        return true;
-                    }
 
                     const bool _Possible_insertion{_Second == 60};
                     const sys_seconds _Target_sys_time{
-                        _CHRONO floor<seconds>(_Dur) + (_Possible_insertion ? seconds{0} : seconds{1})};
+                        _CHRONO floor<seconds>(_Dur) - (_Possible_insertion ? seconds{1} : seconds{0})};
                     const auto& _Ls_vector{_Tzdb.leap_seconds};
-                    const auto _It{_STD lower_bound(_Ls_vector.begin(), _Ls_vector.end(), _Target_sys_time)};
-                    const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time};
+                    const auto _It{_STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), _Target_sys_time)};
+                    const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time + seconds{1}};
 
-                    // Condition for a good parse: (_Seconds == 59 && !_Match_leap) || (_Match_leap &&
-                    // _It->_Is_positive()). Below is the inverse of this.
-                    if (!(_Match_leap ? _It->_Positive() : !_Possible_insertion)) {
+                    // Condition for a good parse: (_Second < 60 && !_Match_leap) || (_Match_leap && _It->_Positive())
+                    // || (_Second < 59 && _Match_leap && !_It->_Positive()). Below is the inverse of this.
+                    if (!(_Match_leap ? _It->_Positive() || _Second < 59 : !_Possible_insertion)) {
                         return false;
                     }
-                }
 
-                if (_Leap == _LeapSecondRep::_All) {
-                    constexpr bool _Can_rep_sec = _Can_represent<_DurationType, seconds>();
-                    if constexpr (_Can_rep_sec) {
-                        _Dur = utc_clock::from_sys(sys_time<_DurationType>{_Dur}).time_since_epoch();
-                        // If we parsed a positive leap second, then _Dur, interpreted as a system time, refers to the
-                        // second *after* insertion. Need to back up one second in this case.
-                        if (_Second == 60) {
-                            _Dur -= _CHRONO duration_cast<_DurationType>(seconds{1});
-                        }
+                    const auto _Offset = _It == _Ls_vector.begin() ? seconds{0} : _Prev_iter(_It)->_Elapsed();
+                    _Dur += _CHRONO duration_cast<_DurationType>(_Offset);
 
-                        if (_Original_leap == _LeapSecondRep::_File_time) {
-                            _Dur -= _CHRONO duration_cast<_DurationType>(
-                                filesystem::_File_time_clock::_Skipped_filetime_leap_seconds);
-                        }
-                    } else {
-                        // Error if _Dur can't represent the above adjustment.
-                        return false;
+                    if (_Original_leap == _LeapSecondRep::_File_time) {
+                        _Dur -= _CHRONO duration_cast<_DurationType>(
+                            filesystem::_File_time_clock::_Skipped_filetime_leap_seconds);
                     }
+                } else {
+                    // Error if _Dur can't represent the above adjustment.
+                    return false;
                 }
             }
 
@@ -4413,7 +4396,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_Negative)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
             _Tp = sys_time<_Duration>{_Dur};
         } else {
             _Istr.setstate(ios_base::failbit);
