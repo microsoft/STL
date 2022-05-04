@@ -1198,6 +1198,10 @@ void parse_timepoints() {
 
     // GH-2698: 00:00:60 incorrectly parsed
     fail_parse("2021-08-28 00:00:60", "%F %T", ut);
+
+    fail_parse("2017-01-01 05:29:60", "%F %T", ut);
+    test_parse("2017-01-01 05:29:60 +05:30", "%F %T %Ez", ut);
+    assert(ut == clock_cast<utc_clock>(sys_days{1d / January / 2017y}) - 1s);
 }
 
 template <class CharT, class CStringOrStdString>
