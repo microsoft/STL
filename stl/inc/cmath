@@ -1191,18 +1191,18 @@ _NODISCARD inline float sph_besself(const unsigned int _Arg1, const float _Arg2)
     return __std_smf_sph_besself(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double sph_bessell(
-    const unsigned int _Arg1, const long double _Arg2) noexcept /* strengthened */ {
+_NODISCARD inline long double sph_bessell(const unsigned int _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_sph_bessel(_Arg1, static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double sph_legendre(
-    const unsigned int _Arg1, const unsigned int _Arg2, const double _Theta) noexcept /* strengthened */ {
+_NODISCARD inline double sph_legendre(const unsigned int _Arg1, const unsigned int _Arg2, const double _Theta) noexcept
+/* strengthened */ {
     return __std_smf_sph_legendre(_Arg1, _Arg2, _Theta);
 }
 
-_NODISCARD inline float sph_legendref(
-    const unsigned int _Arg1, const unsigned int _Arg2, const float _Theta) noexcept /* strengthened */ {
+_NODISCARD inline float sph_legendref(const unsigned int _Arg1, const unsigned int _Arg2, const float _Theta) noexcept
+/* strengthened */ {
     return __std_smf_sph_legendref(_Arg1, _Arg2, _Theta);
 }
 
@@ -1249,18 +1249,18 @@ _STD_END
     }                                                                                                              \
     _STD_END
 
-#define _GENERIC_MATH_SPECIAL3(NAME)                                                                         \
-    _STD_BEGIN                                                                                               \
-    template <class _Ty1, class _Ty2, class _Ty3,                                                            \
-        enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>       \
-    _NODISCARD auto NAME(const _Ty1 _Arg1, const _Ty2 _Arg2, const _Ty3 _Arg3) noexcept /* strengthened */ { \
-        using _Common = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>;                        \
-        if constexpr (is_same_v<_Common, float>)                                                             \
-            return __std_smf_##NAME##f(_Arg1, _Arg2, _Arg3);                                                 \
-        else                                                                                                 \
-            return static_cast<_Common>(__std_smf_##NAME(                                                    \
-                static_cast<double>(_Arg1), static_cast<double>(_Arg2), static_cast<double>(_Arg3)));        \
-    }                                                                                                        \
+#define _GENERIC_MATH_SPECIAL3(NAME)                                                                                   \
+    _STD_BEGIN                                                                                                         \
+    template <class _Ty1, class _Ty2, class _Ty3,                                                                      \
+        enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>                 \
+    _NODISCARD auto NAME(const _Ty1 _Arg1, const _Ty2 _Arg2, const _Ty3 _Arg3) noexcept /* strengthened */ {           \
+        using _Common = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>;                                  \
+        if constexpr (is_same_v<_Common, float>)                                                                       \
+            return __std_smf_##NAME##f(_Arg1, _Arg2, _Arg3);                                                           \
+        else                                                                                                           \
+            return static_cast<_Common>(                                                                               \
+                __std_smf_##NAME(static_cast<double>(_Arg1), static_cast<double>(_Arg2), static_cast<double>(_Arg3))); \
+    }                                                                                                                  \
     _STD_END
 
 #define _GENERIC_MATH_SPECIAL_UINT1(NAME)                                                         \
