@@ -60,11 +60,13 @@ add_compile_options(/diagnostics:caret /W4 /WX /w14265 /w15038 /d1FastFail /guar
 
 set(VCLIBS_DEBUG_OPTIONS "/Od")
 
-# TRANSITION: potentially remove /Os if it results in speed improvements (requires benchmarking!)
-# in version 19.32.31328, /Os results in binary size savings of 102K in the release DLL
-# (that's 15.5% savings)
-# so make certain that that tradeoff is measured when removing `/Os`
-set(VCLIBS_RELEASE_OPTIONS "/O2;/Os")
+# TRANSITION: Potentially remove `/Os` if it results in speed improvements.
+# This requires benchmarking!
+# Note that in MSVC version 19.32.31328,
+# `/Os` results in a binary size difference of 102K
+# in the release DLL (a gain of 18.4%).
+# So, make certain that that tradeoff is considered when or if `/Os` is removed.
+set(VCLIBS_RELEASE_OPTIONS /O2 /Os)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
