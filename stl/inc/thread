@@ -8,7 +8,7 @@
 #define _THREAD_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <chrono>
+#include <__msvc_chrono.hpp>
 #include <memory>
 #include <process.h>
 #include <tuple>

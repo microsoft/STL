@@ -21,7 +21,7 @@ steps:
   inputs:
     targetType: inline
     script: |
-      $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
+      $testParallelism = $env:NUMBER_OF_PROCESSORS
       Write-Host "##vso[task.setvariable variable=testParallelism;]$testParallelism"
 - script: |
     if exist "$(${{ parameters.buildOutputLocationVar }})" (

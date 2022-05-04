@@ -1844,7 +1844,7 @@ public:
         _Fn1._Swap(_Fn2);
     }
 
-    _NODISCARD friend bool operator==(const move_only_function& _This, nullptr_t) noexcept {
+    _NODISCARD_FRIEND bool operator==(const move_only_function& _This, nullptr_t) noexcept {
         return _This._Is_null();
     }
 };
@@ -2171,48 +2171,47 @@ struct _Global_delete {
 };
 
 template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
-_CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
-    _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq, forward_iterator_tag, forward_iterator_tag) {
-    // find first [_First2, _Last2) satisfying _Eq, arbitrary iterators
-    for (;; ++_First1) { // loop until match or end of a sequence
-        _FwdItHaystack _Mid1 = _First1;
-        for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
-            if (_Mid2 == _Last2) {
-                return {_First1, _Mid1};
-            }
+_CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
+    _FwdItHaystack _First1, _FwdItHaystack _Last1, _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq) {
+    // find first [_First2, _Last2) satisfying _Eq
+    if constexpr (_Is_random_iter_v<_FwdItHaystack> && _Is_random_iter_v<_FwdItPat>) {
+        _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
+        _Iter_diff_t<_FwdItPat> _Count2      = _Last2 - _First2;
 
-            if (_Mid1 == _Last1) {
-                return {_Last1, _Last1};
-            }
+        for (; _Count2 <= _Count1; ++_First1, (void) --_Count1) { // room for match, try it
+            _FwdItHaystack _Mid1 = _First1;
+            for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
+                if (_Mid2 == _Last2) {
+                    return {_First1, _Mid1};
+                }
 
-            if (!_Eq(*_Mid1, *_Mid2)) {
-                break;
-            }
-        }
-    }
-}
-
-template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
-_CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
-    _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq, random_access_iterator_tag, random_access_iterator_tag) {
-    // find first [_First2, _Last2) satisfying _Eq, random-access iterators
-    _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
-    _Iter_diff_t<_FwdItPat> _Count2      = _Last2 - _First2;
-
-    for (; _Count2 <= _Count1; ++_First1, (void) --_Count1) { // room for match, try it
-        _FwdItHaystack _Mid1 = _First1;
-        for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
-            if (_Mid2 == _Last2) {
-                return {_First1, _Mid1};
-            }
-
-            if (!_Eq(*_Mid1, *_Mid2)) {
-                break;
+                if (!_Eq(*_Mid1, *_Mid2)) {
+                    break;
+                }
             }
         }
-    }
 
-    return {_Last1, _Last1};
+        return {_Last1, _Last1};
+    } else if constexpr (_Is_fwd_iter_v<_FwdItHaystack> && _Is_fwd_iter_v<_FwdItPat>) {
+        for (;; ++_First1) { // loop until match or end of a sequence
+            _FwdItHaystack _Mid1 = _First1;
+            for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
+                if (_Mid2 == _Last2) {
+                    return {_First1, _Mid1};
+                }
+
+                if (_Mid1 == _Last1) {
+                    return {_Last1, _Last1};
+                }
+
+                if (!_Eq(*_Mid1, *_Mid2)) {
+                    break;
+                }
+            }
+        }
+    } else {
+        static_assert(_Always_false<_FwdItHaystack>, "Iterators must be at least forward iterators");
+    }
 }
 
 template <class _FwdItPat, class _Pred_eq = equal_to<>>
@@ -2232,9 +2231,8 @@ public:
         const auto& _Eq  = _Data._Get_first();
         const auto& _Pat = _Data._Myval2;
         _Adl_verify_range(_Pat.first, _Pat.second); // check again to ensure container is not destroyed
-        const auto _Result =
-            _Search_pair_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Get_unwrapped(_Pat.first),
-                _Get_unwrapped(_Pat.second), _Eq, _Iter_cat_t<_FwdItHaystack>{}, _Iter_cat_t<_FwdItPat>{});
+        const auto _Result = _Search_pair_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last),
+            _Get_unwrapped(_Pat.first), _Get_unwrapped(_Pat.second), _Eq);
         _Seek_wrapped(_Last, _Result.second);
         _Seek_wrapped(_First, _Result.first);
         return {_First, _Last};

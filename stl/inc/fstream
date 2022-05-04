@@ -60,11 +60,11 @@ _INLINE_VAR constexpr bool _Is_any_path = _Is_any_of_v<_Ty
     >;
 // clang-format on
 
-extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
-extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
+_CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const char*, ios_base::openmode, int);
+_CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const wchar_t*, ios_base::openmode, int);
 
 #ifdef _NATIVE_WCHAR_T_DEFINED
-extern _CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
+_CRTIMP2_PURE FILE* __CLRCALL_PURE_OR_CDECL _Fiopen(const unsigned short*, ios_base::openmode, int);
 #endif // _NATIVE_WCHAR_T_DEFINED
 
 template <class _Elem>
@@ -556,8 +556,6 @@ protected:
         }
     }
 
-#pragma warning(push)
-#pragma warning(disable : 4127) // conditional expression is constant
     streamsize __CLR_OR_THIS_CALL xsgetn(_Elem* _Ptr, streamsize _Count) override {
         // get _Count characters from stream
         if constexpr (sizeof(_Elem) == 1) {
@@ -635,7 +633,6 @@ protected:
             return _Mysb::xsputn(_Ptr, _Count);
         }
     }
-#pragma warning(pop)
 
     pos_type __CLR_OR_THIS_CALL seekoff(off_type _Off, ios_base::seekdir _Way,
         ios_base::openmode = ios_base::in | ios_base::out) override { // change position by _Off
