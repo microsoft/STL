@@ -24,8 +24,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#pragma warning(disable : 4127) // conditional expression is constant
-
 _STD_BEGIN
 #define _RNG_PROHIBIT_CHAR(_CheckedType)               \
     static_assert(!_Is_character<_CheckedType>::value, \
@@ -684,13 +682,14 @@ public:
         seed(_Gx);
     }
 
-    void seed(_Seed_t _Value = default_seed) { // set initial values from specified seed value
-        _Seed(_Value, false, true_type{});
+    void seed(_Seed_t _Value = default_seed, bool _Readcy = false) { // set initial values from specified seed value
+        linear_congruential<_Seed_t, 40014U, 0U, 2147483563U> _Lc{_Value == 0U ? default_seed : _Value};
+        _Reset(_Lc, _Readcy);
     }
 
-    template <class _Gen>
+    template <class _Gen, enable_if_t<!is_arithmetic_v<_Gen>, int> = 0>
     void seed(_Gen& _Gx, bool _Readcy = false) { // set initial values from range
-        _Seed(_Gx, _Readcy, is_arithmetic<_Gen>{});
+        _Reset(_Gx, _Readcy);
     }
 
     _NODISCARD result_type(min)() const {
@@ -753,17 +752,6 @@ public:
     }
 
 protected:
-    template <class _Gen>
-    void _Seed(_Gen& _Gx, bool _Readcy, true_type) { // reset sequence from numeric value
-        linear_congruential<_Seed_t, 40014U, 0U, 2147483563U> _Lc(_Gx == 0U ? default_seed : _Gx);
-        _Reset(_Lc, _Readcy);
-    }
-
-    template <class _Gen>
-    void _Seed(_Gen& _Gx, bool _Readcy, false_type) { // reset sequence from generator
-        _Reset(_Gx, _Readcy);
-    }
-
     template <class _Gen>
     void _Reset(_Gen& _Gx, bool _Readcy) { // reset sequence
         _Carry     = _Swc_Traits::_Reset(_Gx, this->_Ax, _Readcy);
@@ -936,7 +924,7 @@ public:
     }
 
     void seed(_Ty _Value = default_seed) { // set initial values from specified seed value
-        this->_Seed(_Value, false, true_type{});
+        _Mybase::seed(_Value);
     }
 
     static constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
@@ -4220,10 +4208,8 @@ public:
         }
 
         void _Init(_Ty _Kx0, double _Px0) { // initialize
-            _STL_ASSERT(0.0 < _Kx0, "invalid max argument for "
-                                    "negative_binomial_distribution");
-            _STL_ASSERT(0.0 < _Px0 && _Px0 <= 1.0, "invalid probability argument for "
-                                                   "negative_binomial_distribution");
+            _STL_ASSERT(0.0 < _Kx0, "invalid max argument for negative_binomial_distribution");
+            _STL_ASSERT(0.0 < _Px0 && _Px0 <= 1.0, "invalid probability argument for negative_binomial_distribution");
             _Kx = _Kx0;
             _Px = _Px0;
         }
@@ -4801,16 +4787,13 @@ public:
                 } else { // normalize probabilities
                     double _Sum = 0;
 
-                    _STL_ASSERT(0.0 <= this->_Pvec[0], "invalid probability for "
-                                                       "piecewise_linear_distribution");
+                    _STL_ASSERT(0.0 <= this->_Pvec[0], "invalid probability for piecewise_linear_distribution");
                     for (_Idx = 1; _Idx < _Size; ++_Idx) { // sum all probabilities
-                        _STL_ASSERT(0.0 <= this->_Pvec[_Idx], "invalid probability for "
-                                                              "piecewise_linear_distribution");
+                        _STL_ASSERT(0.0 <= this->_Pvec[_Idx], "invalid probability for piecewise_linear_distribution");
                         _Sum += _Piece_probability(_Idx - 1);
                     }
 
-                    _STL_ASSERT(0.0 < _Sum, "invalid probability vector for "
-                                            "piecewise_linear_distribution");
+                    _STL_ASSERT(0.0 < _Sum, "invalid probability vector for piecewise_linear_distribution");
                     if (_Sum != 1.0) {
                         for (_Idx = 0; _Idx < _Size; ++_Idx) {
                             this->_Pvec[_Idx] /= _Sum;
@@ -4893,7 +4876,6 @@ public:
     friend basic_istream<_Elem, _Traits>& operator>>(basic_istream<_Elem, _Traits>& _Istr,
         piecewise_linear_distribution& _Dist) { // read state from _Istr
         static_cast<piecewise_linear_distribution::_Mypbase&>(_Dist._Par)._Read(_Istr);
-
 
         _Dist._Par._Bvec.clear();
         for (size_t _Idx = _Dist._Par._Pvec.size(); 0 < _Idx; --_Idx) { // get a value and add to intervals vector

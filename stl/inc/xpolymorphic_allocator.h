@@ -104,6 +104,24 @@ void _Uses_allocator_construct(
     _Uses_allocator_construct_pair(_Ptr, _Outer, _Inner, _STD forward_as_tuple(_STD forward<_Uty>(_Pair.first)),
         _STD forward_as_tuple(_STD forward<_Vty>(_Pair.second)));
 }
+
+template <class _Ty1, class _Ty2, class _Outer_alloc, class _Inner_alloc, class _Uty,
+    enable_if_t<!_Is_deducible_as_pair<_Uty>, int> = 0>
+void _Uses_allocator_construct(pair<_Ty1, _Ty2>* const _Ptr, _Outer_alloc& _Outer, _Inner_alloc& _Inner, _Uty&& _Ux) {
+    // uses-allocator construction of pair by alloc _Outer propagating alloc _Inner, non-pair argument
+    static_assert(_Is_normally_bindable<pair<_Ty1, _Ty2>, _Uty>,
+        "The argument must be bindable to a reference to the std::pair type.");
+
+    using _Pair_ref_t     = _Normally_bound_ref<pair<_Ty1, _Ty2>, _Uty>;
+    _Pair_ref_t _Pair_ref = _STD forward<_Uty>(_Ux);
+    if constexpr (is_same_v<_Pair_ref_t, const pair<_Ty1, _Ty2>&>) {
+        _Uses_allocator_construct_pair(
+            _Ptr, _Outer, _Inner, _STD forward_as_tuple(_Pair_ref.first), _STD forward_as_tuple(_Pair_ref.second));
+    } else {
+        _Uses_allocator_construct_pair(_Ptr, _Outer, _Inner, _STD forward_as_tuple(_STD forward<_Ty1>(_Pair_ref.first)),
+            _STD forward_as_tuple(_STD forward<_Ty2>(_Pair_ref.second)));
+    }
+}
 #endif // !_HAS_CXX20
 
 #if _HAS_CXX17

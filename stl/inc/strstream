@@ -18,11 +18,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-
-_CXX17_DEPRECATE_STRSTREAM typedef int _Header_strstream;
-using _Hdr_strstream = _Header_strstream;
-
-class strstreambuf : public streambuf { // stream buffer associated with static or allocated character array
+_STL_DISABLE_DEPRECATED_WARNING
+class _CXX17_DEPRECATE_STRSTREAM strstreambuf : public streambuf {
+    // stream buffer associated with static or allocated character array
 public:
     using _Mysb = streambuf;
     enum { // constants for bits in stream state
@@ -423,7 +421,8 @@ inline void swap(strstreambuf& _Left, strstreambuf& _Right) {
     _Left.swap(_Right);
 }
 
-class istrstream : public istream { // input stream associated with a character array
+class _CXX17_DEPRECATE_STRSTREAM istrstream : public istream {
+    // input stream associated with a character array
 public:
     using _Mybase = istream;
     using _Mysb   = strstreambuf;
@@ -486,7 +485,8 @@ inline void swap(istrstream& _Left, istrstream& _Right) {
     _Left.swap(_Right);
 }
 
-class ostrstream : public ostream { // output stream associated with a character array
+class _CXX17_DEPRECATE_STRSTREAM ostrstream : public ostream {
+    // output stream associated with a character array
 public:
     using _Mybase = ostream;
     using _Mysb   = strstreambuf;
@@ -548,7 +548,8 @@ inline void swap(ostrstream& _Left, ostrstream& _Right) {
     _Left.swap(_Right);
 }
 
-class strstream : public iostream { // input/output stream associated with character array buffer
+class _CXX17_DEPRECATE_STRSTREAM strstream : public iostream {
+    // input/output stream associated with character array buffer
 public:
     using _Mybase = iostream;
     using _Mysb   = strstreambuf;
@@ -614,6 +615,7 @@ private:
 inline void swap(strstream& _Left, strstream& _Right) {
     _Left.swap(_Right);
 }
+_STL_RESTORE_DEPRECATED_WARNING
 _STD_END
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
