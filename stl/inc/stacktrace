@@ -131,26 +131,38 @@ public:
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
         current(const allocator_type& _Al = allocator_type()) noexcept {
+        _TRY_BEGIN
         basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Al);
         _Result._Frames.resize(__std_stacktrace_capture(1, static_cast<unsigned long>(_Max_frames),
             reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
         return _Result;
+        _CATCH_ALL
+        return basic_stacktrace{};
+        _CATCH_END
     }
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
         current(size_type _Skip, const allocator_type& _Al = allocator_type()) noexcept {
+        _TRY_BEGIN
         basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Al);
         _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
             static_cast<unsigned long>(_Max_frames), reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
         return _Result;
+        _CATCH_ALL
+        return basic_stacktrace{};
+        _CATCH_END
     }
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
         current(size_type _Skip, size_type _Max_depth, const allocator_type& _Al = allocator_type()) noexcept {
+        _TRY_BEGIN
         basic_stacktrace _Result(_Internal_t{}, _Max_depth, _Al);
         _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
             static_cast<unsigned long>(_Max_depth), reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
         return _Result;
+        _CATCH_ALL
+        return basic_stacktrace{};
+        _CATCH_END
     }
 
     basic_stacktrace() noexcept(is_nothrow_default_constructible_v<allocator_type>) = default;
