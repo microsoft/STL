@@ -86,6 +86,9 @@ utilities\format\format.functions\vformat_to.pass.cpp
 utilities\format\format.functions\vformat.locale.pass.cpp
 utilities\format\format.functions\vformat.pass.cpp
 
+# libc++ doesn't implement P2321R2's changes to vector<bool>::reference
+containers\sequences\vector.bool\iterator_concept_conformance.compile.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -230,8 +233,6 @@ utilities\meta\meta.unary\meta.unary.prop\is_literal_type.deprecated.fail.cpp
 # P2321R2 zip
 language.support\support.limits\support.limits.general\tuple.version.pass.cpp
 language.support\support.limits\support.limits.general\utility.version.pass.cpp
-utilities\meta\meta.trans\meta.trans.other\common_reference.compile.pass.cpp
-utilities\meta\meta.trans\meta.trans.other\common_type.pass.cpp
 
 # P1328R1 constexpr type_info::operator==()
 language.support\support.limits\support.limits.general\typeinfo.version.pass.cpp
