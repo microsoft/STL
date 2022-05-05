@@ -3,9 +3,13 @@
 
 [CmdletBinding(PositionalBinding = $False)]
 Param(
-    [Parameter(Mandatory = $True)]
+    [Parameter()]
     [String]$DiffFile
 )
+
+if ([string]::IsNullOrEmpty($DiffFile)) {
+    $DiffFile = [System.IO.Path]::GetTempFileName()
+}
 
 Start-Process -FilePath 'git' -ArgumentList 'diff' `
     -NoNewWindow -Wait `
