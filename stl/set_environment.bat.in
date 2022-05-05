@@ -1,0 +1,6 @@
+:: Copyright (c) Microsoft Corporation.
+:: SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+@set PATH=%~dp0out\bin\@VCLIBS_I386_OR_AMD64@;%PATH%
+@set INCLUDE=%~dp0out\inc;%INCLUDE%
+@set LIB=%~dp0out\lib\@VCLIBS_I386_OR_AMD64@;%LIB%

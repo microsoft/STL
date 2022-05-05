@@ -39,12 +39,10 @@ steps:
     git remote get-url llvm
     if errorlevel 1 (
       git remote add llvm https://github.com/llvm/llvm-project.git
-      git config --local extensions.partialClone llvm
     )
 
     git fetch --filter=tree:0 --depth=1 llvm $(${{ parameters.llvmSHAVar }})
-    git sparse-checkout init --cone
-    git sparse-checkout set libcxx/test libcxx/utils/libcxx llvm/utils/lit
+    git sparse-checkout set --cone --sparse-index libcxx/test libcxx/utils/libcxx llvm/utils/lit
     git reset --quiet --hard FETCH_HEAD
     git clean --quiet -x -d -f
   displayName: "Checkout LLVM source"
@@ -63,7 +61,6 @@ steps:
     git remote get-url boostorg
     if errorlevel 1 (
       git remote add boostorg https://github.com/boostorg/math.git
-      git config --local extensions.partialClone boostorg
     )
 
     git fetch --filter=tree:0 --depth=1 boostorg $(${{ parameters.boostMathSHAVar }})

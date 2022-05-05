@@ -203,7 +203,7 @@ namespace _Float_multi_prec {
 #undef _FMP_USING_X86_X64_INTRINSICS
 #undef _FMP_USING_ARM64_INTRINSICS
 
-#define _FMP ::std::_Float_multi_prec::
+#define _FMP _STD _Float_multi_prec::
 
 // implements numerical algorithms for <complex>
 namespace _Math_algorithms {
@@ -258,7 +258,7 @@ namespace _Math_algorithms {
         }
 
         if (_Xval <= _Ty{-0.5} || _Ty{2.0} <= _Xval) { // naive formula is moderately accurate
-            if (_Xval == (numeric_limits<_Ty>::max) ()) { // avoid overflow
+            if (_Xval == (numeric_limits<_Ty>::max)()) { // avoid overflow
                 return _STD log(_Xval);
             }
 
@@ -371,11 +371,11 @@ public:
     }
 
     static constexpr _Ty _Flt_max() {
-        return (numeric_limits<_Ty>::max) ();
+        return (numeric_limits<_Ty>::max)();
     }
 
     static constexpr _Ty _Flt_norm_min() {
-        return (numeric_limits<_Ty>::min) () > 0 ? (numeric_limits<_Ty>::min) () : 0;
+        return (numeric_limits<_Ty>::min)() > 0 ? (numeric_limits<_Ty>::min)() : 0;
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -418,7 +418,7 @@ public:
     }
 
     static bool _Signbit(_Ty _Left) {
-        return (_STD signbit) (static_cast<double>(_Left));
+        return (_STD signbit)(static_cast<double>(_Left));
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -508,11 +508,11 @@ public:
     }
 
     static constexpr _Ty _Flt_max() {
-        return (numeric_limits<long double>::max) ();
+        return (numeric_limits<long double>::max)();
     }
 
     static constexpr _Ty _Flt_norm_min() {
-        return (numeric_limits<long double>::min) ();
+        return (numeric_limits<long double>::min)();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -561,7 +561,7 @@ public:
 
     static bool _Signbit(_Ty _Left) {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit) (_Left);
+        return (_STD signbit)(_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -651,11 +651,11 @@ public:
     }
 
     static constexpr _Ty _Flt_max() {
-        return (numeric_limits<double>::max) ();
+        return (numeric_limits<double>::max)();
     }
 
     static constexpr _Ty _Flt_norm_min() {
-        return (numeric_limits<double>::min) ();
+        return (numeric_limits<double>::min)();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -696,7 +696,7 @@ public:
 
     static bool _Signbit(_Ty _Left) {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit) (_Left);
+        return (_STD signbit)(_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -789,11 +789,11 @@ public:
     }
 
     static constexpr _Ty _Flt_max() {
-        return (numeric_limits<float>::max) ();
+        return (numeric_limits<float>::max)();
     }
 
     static constexpr _Ty _Flt_norm_min() {
-        return (numeric_limits<float>::min) ();
+        return (numeric_limits<float>::min)();
     }
 
     static _Ty _Abs(_Ty _Left) {
@@ -834,7 +834,7 @@ public:
 
     static bool _Signbit(_Ty _Left) {
         // testing _Left < 0 would be incorrect when _Left is -0.0
-        return (_STD signbit) (_Left);
+        return (_STD signbit)(_Left);
     }
 
     static _Ty _Sinh(_Ty _Left, _Ty _Right) { // return sinh(_Left) * _Right
@@ -1502,9 +1502,7 @@ template <class _Ty>
 _NODISCARD constexpr bool operator==(const _Ty& _Left, const complex<_Ty>& _Right) {
     return _Left == _Right.real() && 0 == _Right.imag();
 }
-#endif // !_HAS_CXX20
 
-#if !_HAS_CXX20
 template <class _Ty>
 _NODISCARD constexpr bool operator!=(const complex<_Ty>& _Left, const complex<_Ty>& _Right) {
     return !(_Left == _Right);
@@ -1856,10 +1854,10 @@ _NODISCARD complex<_Ty> exp(const complex<_Ty>& _Left) {
 }
 
 template <class _Ty>
-_Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) { // Used by sqrt(), return magnitude and scale factor.
-                                                   // Returns a non-zero even integer in *_Pexp when _Left is finite
-                                                   // and non-zero.
-                                                   // Returns 0 in *_Pexp when _Left is zero, infinity, or NaN.
+_Ty _Fabs(const complex<_Ty>& _Left, int* _Pexp) {
+    // Used by sqrt(), return magnitude and scale factor.
+    // Returns a non-zero even integer in *_Pexp when _Left is finite and non-zero.
+    // Returns 0 in *_Pexp when _Left is zero, infinity, or NaN.
     *_Pexp  = 0;
     _Ty _Av = _Ctraits<_Ty>::_Abs(_STD real(_Left));
     _Ty _Bv = _Ctraits<_Ty>::_Abs(_STD imag(_Left));
@@ -1932,7 +1930,7 @@ _NODISCARD inline float _Log_abs(const complex<float>& _Left) noexcept {
 
 template <class _Ty>
 _NODISCARD complex<_Ty> log(const complex<_Ty>& _Left) {
-    const _Ty _Log_abs_v = _STD _Log_abs(_Left); // get logarithm of magnitude
+    const _Ty _Log_abs_v = _Log_abs(_Left); // get logarithm of magnitude
     const _Ty _Theta     = _Ctraits<_Ty>::atan2(_STD imag(_Left), _STD real(_Left)); // get phase
     return complex<_Ty>(_Log_abs_v, _Theta);
 }
