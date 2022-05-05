@@ -151,22 +151,6 @@ namespace ranges {
             constexpr void operator()(_Ty1 (&__t)[_Size], _Ty2 (&__u)[_Size]) const
                 noexcept(noexcept((*this)(__t[0], __u[0])))
                 requires requires { (*this)(__t[0], __u[0]); } {
-#if _USE_STD_VECTOR_ALGORITHMS
-                if constexpr (is_same_v<_Ty1, _Ty2> && _Is_trivially_swappable_v<_Ty1>) {
-                    const auto _First1 = __t;
-                    const auto _First2 = __u;
-
-                    if (_First1 == _First2) {
-                        return;
-                    }
-
-                    if (!_STD is_constant_evaluated()) {
-                        __std_swap_ranges_trivially_swappable_noalias(_First1, _First1 + _Size, _First2);
-                        return;
-                    }
-                }
-#endif // _USE_STD_VECTOR_ALGORITHMS
-
                 for (size_t __i = 0; __i < _Size; ++__i) {
                     (*this)(__t[__i], __u[__i]);
                 }
