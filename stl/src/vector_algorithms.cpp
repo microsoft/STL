@@ -875,8 +875,8 @@ namespace {
                                 _Traits::_Cmp_eq(_H_min, _Cur_vals_min); // Mask of all elems eq to min
                             int _Mask = _mm_movemask_epi8(_Eq_mask);
                             // Indices of minimum elements or the greatest index if none
-                            const __m128i _Minus_one   = _mm_cmpeq_epi8(_mm_setzero_si128(), _mm_setzero_si128());
-                            const __m128i _Idx_min_val = _mm_blendv_epi8(_Minus_one, _Cur_idx_min, _Eq_mask);
+                            const __m128i _All_max     = _mm_set1_epi8(static_cast<char>(0xFF));
+                            const __m128i _Idx_min_val = _mm_blendv_epi8(_All_max, _Cur_idx_min, _Eq_mask);
                             __m128i _Idx_min           = _Traits::_H_min_u(_Idx_min_val); // The smallest indices
                             // Select the smallest vertical indices from the smallest element mask
                             _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_min, _Idx_min_val));
@@ -914,8 +914,8 @@ namespace {
                             } else {
                                 // Looking for the first occurence of maximum
                                 // Indices of maximum elements or the greatest index if none
-                                const __m128i _Minus_one   = _mm_cmpeq_epi8(_mm_setzero_si128(), _mm_setzero_si128());
-                                const __m128i _Idx_max_val = _mm_blendv_epi8(_Minus_one, _Cur_idx_max, _Eq_mask);
+                                const __m128i _All_max     = _mm_set1_epi8(static_cast<char>(0xFF));
+                                const __m128i _Idx_max_val = _mm_blendv_epi8(_All_max, _Cur_idx_max, _Eq_mask);
                                 const __m128i _Idx_max     = _Traits::_H_min_u(_Idx_max_val); // The smallest indices
                                 // Select the smallest vertical indices from the largest element mask
                                 _Mask &= _mm_movemask_epi8(_Traits::_Cmp_eq(_Idx_max, _Idx_max_val));
