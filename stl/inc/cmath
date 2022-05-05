@@ -693,7 +693,7 @@ _GENERIC_MATH2(fdim)
 _GENERIC_MATH2(fmax)
 _GENERIC_MATH2(fmin)
 // fma() is hand-crafted
-// lerp() should be exempt, LWG-3223
+// lerp() is hand-crafted
 // The "classification/comparison functions" (fpclassify(), etc.) are exempt, LWG-1327
 // TRANSITION, VSO-945789, Special Math shouldn't be exempt
 
@@ -1308,9 +1308,6 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
     }
 }
 
-// As of 2019-06-17 it is unclear whether the "sufficient additional overloads" clause is intended to target lerp;
-// LWG-3223 is pending.
-
 _NODISCARD constexpr inline float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
@@ -1322,6 +1319,13 @@ _NODISCARD constexpr inline double lerp(const double _ArgA, const double _ArgB, 
 _NODISCARD constexpr inline long double lerp(
     const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
+}
+
+template <class _Ty1, class _Ty2, class _Ty3,
+    enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>
+_NODISCARD constexpr auto lerp(const _Ty1 _ArgA, const _Ty2 _ArgB, const _Ty3 _ArgT) noexcept {
+    using _Tgt = conditional_t<_Is_any_of_v<long double, _Ty1, _Ty2, _Ty3>, long double, double>;
+    return _Common_lerp(static_cast<_Tgt>(_ArgA), static_cast<_Tgt>(_ArgB), static_cast<_Tgt>(_ArgT));
 }
 #endif // _HAS_CXX20
 _STD_END
