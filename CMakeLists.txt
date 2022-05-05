@@ -66,6 +66,7 @@ set(VCLIBS_DEBUG_OPTIONS "/Od")
 # `/Os` results in a binary size difference of 102K
 # in the release DLL (a gain of 18.4%).
 # So, make certain that that tradeoff is considered when or if `/Os` is removed.
+# See GH-2108 for more info.
 set(VCLIBS_RELEASE_OPTIONS /O2 /Os)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
