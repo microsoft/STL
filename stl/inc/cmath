@@ -1223,7 +1223,6 @@ _NODISCARD inline long double sph_neumannl(const unsigned int _Arg1, const long 
 /* strengthened */ {
     return __std_smf_sph_neumann(_Arg1, static_cast<double>(_Arg2));
 }
-_STD_END
 
 #define _GENERIC_MATH_SPECIAL1(NAME)                                                  \
     template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                  \
@@ -1284,7 +1283,6 @@ _STD_END
     }
 
 // per LWG-3234 and LWG-3693
-_STD_BEGIN
 _GENERIC_MATH_SPECIAL_UINT2(assoc_laguerre)
 _GENERIC_MATH_SPECIAL_UINT2(assoc_legendre)
 _GENERIC_MATH_SPECIAL2(beta)
@@ -1306,7 +1304,6 @@ _GENERIC_MATH_SPECIAL1(riemann_zeta)
 _GENERIC_MATH_SPECIAL_UINT1(sph_bessel)
 _GENERIC_MATH_SPECIAL_UINT2(sph_legendre)
 _GENERIC_MATH_SPECIAL_UINT1(sph_neumann)
-_STD_END
 
 #undef _GENERIC_MATH_SPECIAL1
 #undef _GENERIC_MATH_SPECIAL2
@@ -1314,7 +1311,6 @@ _STD_END
 #undef _GENERIC_MATH_SPECIAL_UINT1
 #undef _GENERIC_MATH_SPECIAL_UINT2
 
-_STD_BEGIN
 _NODISCARD inline double hypot(const double _Dx, const double _Dy, const double _Dz) {
     return __std_smf_hypot3(_Dx, _Dy, _Dz);
 }
