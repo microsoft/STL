@@ -163,17 +163,19 @@ public:
     }
 
 #ifdef _M_CEE_PURE
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(
-        basic_ostream&(__clrcall* _Pfn)(basic_ostream&) ) { // call basic_ostream manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(basic_ostream&(__clrcall* _Pfn)(basic_ostream&) ) {
+        // call basic_ostream manipulator
         return _Pfn(*this);
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(_Myios&(__clrcall* _Pfn)(_Myios&) ) { // call basic_ios manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(_Myios&(__clrcall* _Pfn)(_Myios&) ) {
+        // call basic_ios manipulator
         _Pfn(*this);
         return *this;
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(ios_base&(__clrcall* _Pfn)(ios_base&) ) { // call ios_base manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(ios_base&(__clrcall* _Pfn)(ios_base&) ) {
+        // call ios_base manipulator
         _Pfn(*this);
         return *this;
     }
@@ -184,12 +186,14 @@ public:
         return _Pfn(*this);
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(_Myios&(__cdecl* _Pfn)(_Myios&) ) { // call basic_ios manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(_Myios&(__cdecl* _Pfn)(_Myios&) ) {
+        // call basic_ios manipulator
         _Pfn(*this);
         return *this;
     }
 
-    basic_ostream& __CLR_OR_THIS_CALL operator<<(ios_base&(__cdecl* _Pfn)(ios_base&) ) { // call ios_base manipulator
+    basic_ostream& __CLR_OR_THIS_CALL operator<<(ios_base&(__cdecl* _Pfn)(ios_base&) ) {
+        // call ios_base manipulator
         _Pfn(*this);
         return *this;
     }

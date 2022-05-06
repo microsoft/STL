@@ -104,7 +104,7 @@ struct alignas(64) OverAlignedInt {
 };
 
 void test_gh_2362() {
-    // @hannes-harnisch suggests to add a debug-only nullptr assertion inside std::allocator<T>::deallocate, checking
+    // GH-2362 suggests to add a debug-only nullptr assertion inside std::allocator<T>::deallocate, checking
     // the pointer parameter. And deallocate must handle all return values of allocate, so if allocate(0) can return
     // nullptr, then deallocate(nullptr, 0) must work.
     {
