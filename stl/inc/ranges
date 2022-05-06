@@ -4758,14 +4758,97 @@ namespace ranges {
         return _Result;
     }
 
-    template <input_range _Vw>
-        requires view<_Vw>
+    template <view _Vw>
+        requires input_range<_Vw>
     class chunk_view : public view_interface<chunk_view<_Vw>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
         range_difference_t<_Vw> _Count     = 0;
         range_difference_t<_Vw> _Remainder = 0;
         _Non_propagating_cache<iterator_t<_Vw>> _Current{};
+
+        class _Outer_iterator;
+        class _Inner_iterator {
+        private:
+            friend struct _Outer_iterator::value_type;
+            chunk_view* _Parent{};
+
+            constexpr explicit _Inner_iterator(chunk_view& _Parent_) noexcept : _Parent(_STD addressof(_Parent_)) {}
+
+            _NODISCARD constexpr range_difference_t<_Vw> _Get_remainder() const noexcept {
+                return _Parent->_Remainder;
+            }
+
+            _NODISCARD constexpr range_difference_t<_Vw> _Get_size() const
+                noexcept(noexcept(_RANGES end(_Parent->_Range) - *_Parent->_Current)) {
+                return (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current);
+            }
+
+        public:
+            using iterator_concept = input_iterator_tag;
+            using difference_type  = range_difference_t<_Vw>;
+            using value_type       = range_value_t<_Vw>;
+
+            _Inner_iterator(_Inner_iterator&&) = default;
+            _Inner_iterator& operator=(_Inner_iterator&&) = default;
+
+            _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept /* strengthened */ {
+                return *_Parent->_Current;
+            }
+
+            _NODISCARD constexpr range_reference_t<_Vw> operator*() const
+                noexcept(noexcept(**_Parent->_Current)) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(*this != default_sentinel, "cannot dereference chunk_view end iterator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                return **_Parent->_Current;
+            }
+
+            constexpr _Inner_iterator& operator++() noexcept(noexcept(++*_Parent->_Current) && noexcept(
+                static_cast<bool>(*_Parent->_Current == _RANGES end(_Parent->_Range)))) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(*this != default_sentinel, "cannot increment chunk_view end iterator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                ++*_Parent->_Current;
+                if (*_Parent->_Current == _RANGES end(_Parent->_Range)) {
+                    _Parent->_Remainder = 0;
+                } else {
+                    --_Parent->_Remainder;
+                }
+
+                return *this;
+            }
+
+            constexpr void operator++(int) noexcept(noexcept(++*_Parent->_Current) && noexcept(
+                static_cast<bool>(*_Parent->_Current == _RANGES end(_Parent->_Range)))) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(*this != default_sentinel, "cannot increment chunk_view end iterator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                ++*_Parent->_Current;
+                if (*_Parent->_Current == _RANGES end(_Parent->_Range)) {
+                    _Parent->_Remainder = 0;
+                } else {
+                    --_Parent->_Remainder;
+                }
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator==(const _Inner_iterator& _Left, default_sentinel_t) noexcept
+            /* strengthened */ {
+                return _Left._Get_remainder() == 0;
+            }
+
+            _NODISCARD_FRIEND constexpr difference_type operator-(default_sentinel_t,
+                const _Inner_iterator& _Right) noexcept(noexcept(_Right._Get_size())) /* strengthened */
+                requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>> {
+                return _Right._Get_size();
+            }
+
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Inner_iterator& _Left,
+                default_sentinel_t) noexcept(noexcept(_Left._Get_size())) /* strengthened */
+                requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>> {
+                return -_Left._Get_size();
+            }
+        };
 
         class _Outer_iterator {
         private:
@@ -4798,99 +4881,14 @@ namespace ranges {
                 friend _Outer_iterator;
                 chunk_view* _Parent{};
 
-                class _Inner_iterator {
-                private:
-                    friend value_type;
-                    chunk_view* _Parent{};
-
-                    constexpr explicit _Inner_iterator(chunk_view& _Parent_) noexcept
-                        : _Parent(_STD addressof(_Parent_)) {}
-
-                    _NODISCARD constexpr range_difference_t<_Vw> _Get_remainder() const noexcept {
-                        return _Parent->_Remainder;
-                    }
-
-                    _NODISCARD constexpr range_difference_t<_Vw> _Get_size() const
-                        noexcept(noexcept(_RANGES end(_Parent->_Range) - *_Parent->_Current)) {
-                        return (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current);
-                    }
-
-                public:
-                    using iterator_concept = input_iterator_tag;
-                    using difference_type  = range_difference_t<_Vw>;
-                    using value_type       = range_value_t<_Vw>;
-
-                    _Inner_iterator(_Inner_iterator&&) = default;
-                    _Inner_iterator& operator=(_Inner_iterator&&) = default;
-
-                    _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept /* strengthened */ {
-                        return *_Parent->_Current;
-                    }
-
-                    _NODISCARD constexpr range_reference_t<_Vw> operator*() const
-                        noexcept(noexcept(**_Parent->_Current)) /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                        _STL_VERIFY(*this != default_sentinel, "cannot dereference chunk_view end iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-                        return **_Parent->_Current;
-                    }
-
-                    constexpr _Inner_iterator& operator++() noexcept(
-                        noexcept(++*_Parent->_Current) && noexcept(_Implicitly_convert_to<bool>(
-                            *_Parent->_Current == _RANGES end(_Parent->_Range)))) /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                        _STL_VERIFY(*this != default_sentinel, "cannot increment chunk_view end iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-                        ++*_Parent->_Current;
-                        if (*_Parent->_Current == _RANGES end(_Parent->_Range)) {
-                            _Parent->_Remainder = 0;
-                        } else {
-                            --_Parent->_Remainder;
-                        }
-
-                        return *this;
-                    }
-
-                    constexpr void operator++(int) noexcept(
-                        noexcept(++*_Parent->_Current) && noexcept(_Implicitly_convert_to<bool>(
-                            *_Parent->_Current == _RANGES end(_Parent->_Range)))) /* strengthened */ {
-#if _ITERATOR_DEBUG_LEVEL != 0
-                        _STL_VERIFY(*this != default_sentinel, "cannot increment chunk_view end iterator");
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-                        ++*_Parent->_Current;
-                        if (*_Parent->_Current == _RANGES end(_Parent->_Range)) {
-                            _Parent->_Remainder = 0;
-                        } else {
-                            --_Parent->_Remainder;
-                        }
-                    }
-
-                    _NODISCARD_FRIEND constexpr bool operator==(
-                        const _Inner_iterator& _Left, default_sentinel_t) noexcept /* strengthened */ {
-                        return _Left._Get_remainder() == 0;
-                    }
-
-                    _NODISCARD_FRIEND constexpr difference_type operator-(default_sentinel_t,
-                        const _Inner_iterator& _Right) noexcept(noexcept(_Right._Get_size())) /* strengthened */
-                        requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>> {
-                        return _Right._Get_size();
-                    }
-
-                    _NODISCARD_FRIEND constexpr difference_type operator-(const _Inner_iterator& _Left,
-                        default_sentinel_t) noexcept(noexcept(_Left._Get_size())) /* strengthened */
-                        requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>> {
-                        return -_Left._Get_size();
-                    }
-                };
-
                 constexpr explicit value_type(chunk_view& _Parent_) noexcept : _Parent(_STD addressof(_Parent_)) {}
 
             public:
-                _NODISCARD constexpr auto begin() const noexcept {
+                _NODISCARD constexpr _Inner_iterator begin() const noexcept {
                     return _Inner_iterator{*_Parent};
                 }
 
-                _NODISCARD constexpr auto end() const noexcept {
+                _NODISCARD constexpr default_sentinel_t end() const noexcept {
                     return default_sentinel;
                 }
 
@@ -4970,14 +4968,14 @@ namespace ranges {
             return _STD move(_Range);
         }
 
-        _NODISCARD constexpr auto begin() noexcept(
+        _NODISCARD constexpr _Outer_iterator begin() noexcept(
             noexcept(_RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
             _Current._Emplace(_RANGES begin(_Range));
             _Remainder = _Count;
             return _Outer_iterator{*this};
         }
 
-        _NODISCARD constexpr auto end() noexcept /* strengthened */ {
+        _NODISCARD constexpr default_sentinel_t end() noexcept /* strengthened */ {
             return default_sentinel;
         }
 
@@ -4992,8 +4990,8 @@ namespace ranges {
         }
     };
 
-    template <forward_range _Vw>
-        requires view<_Vw>
+    template <view _Vw>
+        requires forward_range<_Vw>
     class chunk_view<_Vw> : public view_interface<chunk_view<_Vw>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};

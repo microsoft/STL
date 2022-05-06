@@ -35,7 +35,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
     STATIC_ASSERT(random_access_range<R> == random_access_range<Rng>);
     // Validate borrowed_range
-    static_assert(ranges::borrowed_range<R> == (ranges::borrowed_range<V> && forward_range<V>) );
+    STATIC_ASSERT(ranges::borrowed_range<R> == (ranges::borrowed_range<V> && forward_range<V>) );
 
     // Validate range adaptor object and range adaptor closure
     constexpr auto closure = views::chunk(2);
