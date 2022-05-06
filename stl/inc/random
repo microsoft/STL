@@ -24,8 +24,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#pragma warning(disable : 4127) // conditional expression is constant
-
 _STD_BEGIN
 #define _RNG_PROHIBIT_CHAR(_CheckedType)               \
     static_assert(!_Is_character<_CheckedType>::value, \
@@ -684,13 +682,14 @@ public:
         seed(_Gx);
     }
 
-    void seed(_Seed_t _Value = default_seed) { // set initial values from specified seed value
-        _Seed(_Value, false, true_type{});
+    void seed(_Seed_t _Value = default_seed, bool _Readcy = false) { // set initial values from specified seed value
+        linear_congruential<_Seed_t, 40014U, 0U, 2147483563U> _Lc{_Value == 0U ? default_seed : _Value};
+        _Reset(_Lc, _Readcy);
     }
 
-    template <class _Gen>
+    template <class _Gen, enable_if_t<!is_arithmetic_v<_Gen>, int> = 0>
     void seed(_Gen& _Gx, bool _Readcy = false) { // set initial values from range
-        _Seed(_Gx, _Readcy, is_arithmetic<_Gen>{});
+        _Reset(_Gx, _Readcy);
     }
 
     _NODISCARD result_type(min)() const {
@@ -753,17 +752,6 @@ public:
     }
 
 protected:
-    template <class _Gen>
-    void _Seed(_Gen& _Gx, bool _Readcy, true_type) { // reset sequence from numeric value
-        linear_congruential<_Seed_t, 40014U, 0U, 2147483563U> _Lc(_Gx == 0U ? default_seed : _Gx);
-        _Reset(_Lc, _Readcy);
-    }
-
-    template <class _Gen>
-    void _Seed(_Gen& _Gx, bool _Readcy, false_type) { // reset sequence from generator
-        _Reset(_Gx, _Readcy);
-    }
-
     template <class _Gen>
     void _Reset(_Gen& _Gx, bool _Readcy) { // reset sequence
         _Carry     = _Swc_Traits::_Reset(_Gx, this->_Ax, _Readcy);
@@ -936,7 +924,7 @@ public:
     }
 
     void seed(_Ty _Value = default_seed) { // set initial values from specified seed value
-        this->_Seed(_Value, false, true_type{});
+        _Mybase::seed(_Value);
     }
 
     static constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
@@ -989,8 +977,8 @@ public:
         result_type _Buffer[_Nx];
         typename _Mybase::_Traits::_Cy_t _Carry_buf;
         const auto _Save_flags = _Istr.flags(ios_base::dec | ios_base::skipws);
-        for (size_t _Ix = 0; _Ix < _Nx; ++_Ix) {
-            _Istr >> _Buffer[_Ix];
+        for (auto& _Val : _Buffer) {
+            _Istr >> _Val;
         }
 
         _Istr >> _Carry_buf;
@@ -1217,9 +1205,8 @@ public:
     }
 
 protected:
-    _Post_satisfies_(this->_Idx == 0)
-
-        void _Refill_lower() { // compute values for the lower half of the history array
+    _Post_satisfies_(this->_Idx == 0) void _Refill_lower() {
+        // compute values for the lower half of the history array
         constexpr size_t _Wrap_bound_one = _Nx - _One_mod_n;
         constexpr size_t _Wrap_bound_m   = _Nx - _M_mod_n;
 
@@ -1722,8 +1709,9 @@ public:
     friend basic_istream<_Elem, _Traits>& operator>>(
         basic_istream<_Elem, _Traits>& _Istr, shuffle_order_engine& _Eng) { // read state from _Istr
         _Istr >> _Eng._Eng;
-        for (size_t _Idx = 0; _Idx < shuffle_order_engine::table_size; ++_Idx) {
-            _Istr >> _Eng._Arr[_Idx];
+
+        for (auto& _Val : _Eng._Arr) {
+            _Istr >> _Val;
         }
 
         return _Istr >> _Eng._Yx;
@@ -1733,8 +1721,9 @@ public:
     friend basic_ostream<_Elem, _Traits>& operator<<(
         basic_ostream<_Elem, _Traits>& _Ostr, const shuffle_order_engine& _Eng) { // write state to _Ostr
         _Ostr << _Eng._Eng;
-        for (size_t _Idx = 0; _Idx < shuffle_order_engine::table_size; ++_Idx) {
-            _Ostr << ' ' << _Eng._Arr[_Idx];
+
+        for (const auto& _Val : _Eng._Arr) {
+            _Ostr << ' ' << _Val;
         }
 
         return _Ostr << ' ' << _Eng._Yx;
@@ -1742,8 +1731,8 @@ public:
 
 private:
     void _Init() { // compute values for operator()
-        for (size_t _Idx = 0; _Idx < _Kx; ++_Idx) {
-            _Arr[_Idx] = _Eng();
+        for (auto& _Val : _Arr) {
+            _Val = _Eng();
         }
 
         _Yx = _Eng();
@@ -2220,15 +2209,13 @@ public:
 
     template <class _Engine>
     _NODISCARD _Ty operator()(_Engine& _Eng) const {
-        _Ty _Res;
-        _Ty1 _Val;
-        for (_Res = 0, _Val = 1.0;; ++_Res) { // count repetitions
+        _Ty1 _Val = 1.0;
+        for (_Ty _Res = 0;; ++_Res) { // count repetitions
             _Val *= _NRAND(_Eng, _Ty1);
             if (_Val <= _Gx0) {
-                break;
+                return _Res;
             }
         }
-        return _Res;
     }
 
     void _Init(const _Ty1& _Mean0) { // set internal state
@@ -4221,10 +4208,8 @@ public:
         }
 
         void _Init(_Ty _Kx0, double _Px0) { // initialize
-            _STL_ASSERT(0.0 < _Kx0, "invalid max argument for "
-                                    "negative_binomial_distribution");
-            _STL_ASSERT(0.0 < _Px0 && _Px0 <= 1.0, "invalid probability argument for "
-                                                   "negative_binomial_distribution");
+            _STL_ASSERT(0.0 < _Kx0, "invalid max argument for negative_binomial_distribution");
+            _STL_ASSERT(0.0 < _Px0 && _Px0 <= 1.0, "invalid probability argument for negative_binomial_distribution");
             _Kx = _Kx0;
             _Px = _Px0;
         }
@@ -4424,11 +4409,10 @@ public:
 
         template <class _Elem, class _Traits>
         basic_ostream<_Elem, _Traits>& _Write(basic_ostream<_Elem, _Traits>& _Ostr) const { // write state to _Ostr
-            const size_t _Nvals = _Pvec.size();
-            _Ostr << ' ' << _Nvals;
+            _Ostr << ' ' << _Pvec.size();
 
-            for (size_t _Idx = 0; _Idx < _Nvals; ++_Idx) {
-                _Out(_Ostr, _Pvec[_Idx]);
+            for (const auto& _Val : _Pvec) {
+                _Out(_Ostr, _Val);
             }
 
             return _Ostr;
@@ -4686,8 +4670,8 @@ public:
         const piecewise_constant_distribution& _Dist) { // write state to _Ostr
         static_cast<const piecewise_constant_distribution::_Mypbase&>(_Dist._Par)._Write(_Ostr);
 
-        for (size_t _Idx = 0; _Idx < _Dist._Par._Bvec.size(); ++_Idx) {
-            _Out(_Ostr, _Dist._Par._Bvec[_Idx]);
+        for (const auto& _Val : _Dist._Par._Bvec) {
+            _Out(_Ostr, _Val);
         }
 
         return _Ostr;
@@ -4803,16 +4787,13 @@ public:
                 } else { // normalize probabilities
                     double _Sum = 0;
 
-                    _STL_ASSERT(0.0 <= this->_Pvec[0], "invalid probability for "
-                                                       "piecewise_linear_distribution");
+                    _STL_ASSERT(0.0 <= this->_Pvec[0], "invalid probability for piecewise_linear_distribution");
                     for (_Idx = 1; _Idx < _Size; ++_Idx) { // sum all probabilities
-                        _STL_ASSERT(0.0 <= this->_Pvec[_Idx], "invalid probability for "
-                                                              "piecewise_linear_distribution");
+                        _STL_ASSERT(0.0 <= this->_Pvec[_Idx], "invalid probability for piecewise_linear_distribution");
                         _Sum += _Piece_probability(_Idx - 1);
                     }
 
-                    _STL_ASSERT(0.0 < _Sum, "invalid probability vector for "
-                                            "piecewise_linear_distribution");
+                    _STL_ASSERT(0.0 < _Sum, "invalid probability vector for piecewise_linear_distribution");
                     if (_Sum != 1.0) {
                         for (_Idx = 0; _Idx < _Size; ++_Idx) {
                             this->_Pvec[_Idx] /= _Sum;
@@ -4896,7 +4877,6 @@ public:
         piecewise_linear_distribution& _Dist) { // read state from _Istr
         static_cast<piecewise_linear_distribution::_Mypbase&>(_Dist._Par)._Read(_Istr);
 
-
         _Dist._Par._Bvec.clear();
         for (size_t _Idx = _Dist._Par._Pvec.size(); 0 < _Idx; --_Idx) { // get a value and add to intervals vector
             double _Val;
@@ -4912,8 +4892,8 @@ public:
         const piecewise_linear_distribution& _Dist) { // write state to _Ostr
         static_cast<const piecewise_linear_distribution::_Mypbase&>(_Dist._Par)._Write(_Ostr);
 
-        for (size_t _Idx = 0; _Idx < _Dist._Par._Bvec.size(); ++_Idx) {
-            _Out(_Ostr, _Dist._Par._Bvec[_Idx]);
+        for (const auto& _Val : _Dist._Par._Bvec) {
+            _Out(_Ostr, _Val);
         }
 
         return _Ostr;

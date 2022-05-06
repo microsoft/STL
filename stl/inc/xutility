@@ -21,7 +21,17 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID)
+#if defined(_CRTBLD) && defined(CRTDLL2)
+// TRANSITION, ABI: The vector algorithms are compiled into the import lib, so we disable their usage when building
+// the DLL. (We could additionally link them into the DLL - not as exports, just for internal usage - but we
+// haven't chosen to do that yet.) When we can break ABI and export the vector algorithms from the DLL,
+// this preprocessor case should be removed.
+#ifndef _USE_STD_VECTOR_ALGORITHMS
+#define _USE_STD_VECTOR_ALGORITHMS 0
+#elif _USE_STD_VECTOR_ALGORITHMS
+#error Vector algorithms are not supported when building msvcp140.dll, but _USE_STD_VECTOR_ALGORITHMS is set.
+#endif // _USE_STD_VECTOR_ALGORITHMS
+#elif (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE) && !defined(_M_HYBRID) && !defined(_M_ARM64EC)
 #ifndef _USE_STD_VECTOR_ALGORITHMS
 #define _USE_STD_VECTOR_ALGORITHMS 1
 #endif // _USE_STD_VECTOR_ALGORITHMS
@@ -54,7 +64,86 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_4(void* _Firs
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_8(void* _First, void* _Last) noexcept;
 __declspec(noalias) void __cdecl __std_swap_ranges_trivially_swappable_noalias(
     void* _First1, void* _Last1, void* _First2) noexcept;
+
+__declspec(noalias) size_t
+    __stdcall __std_count_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
+__declspec(noalias) size_t
+    __stdcall __std_count_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
+__declspec(noalias) size_t
+    __stdcall __std_count_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
+__declspec(noalias) size_t
+    __stdcall __std_count_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+
+const void* __stdcall __std_find_trivial_1(const void* _First, const void* _Last, uint8_t _Val) noexcept;
+const void* __stdcall __std_find_trivial_2(const void* _First, const void* _Last, uint16_t _Val) noexcept;
+const void* __stdcall __std_find_trivial_4(const void* _First, const void* _Last, uint32_t _Val) noexcept;
+const void* __stdcall __std_find_trivial_8(const void* _First, const void* _Last, uint64_t _Val) noexcept;
+
+const void* __stdcall __std_find_trivial_unsized_1(const void* _First, uint8_t _Val) noexcept;
+const void* __stdcall __std_find_trivial_unsized_2(const void* _First, uint16_t _Val) noexcept;
+const void* __stdcall __std_find_trivial_unsized_4(const void* _First, uint32_t _Val) noexcept;
+const void* __stdcall __std_find_trivial_unsized_8(const void* _First, uint64_t _Val) noexcept;
 _END_EXTERN_C
+
+template <class _Ty, class _TVal>
+__declspec(noalias) size_t __std_count_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
+    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+        return __std_count_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return __std_count_trivial_1(_First, _Last, static_cast<uint8_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return __std_count_trivial_2(_First, _Last, static_cast<uint16_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return __std_count_trivial_4(_First, _Last, static_cast<uint32_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return __std_count_trivial_8(_First, _Last, static_cast<uint64_t>(_Val));
+    } else {
+        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+    }
+}
+
+template <class _Ty, class _TVal>
+_Ty* __std_find_trivial(_Ty* _First, _Ty* _Last, const _TVal _Val) noexcept {
+    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+        return __std_find_trivial(_First, _Last, reinterpret_cast<uintptr_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_1(_First, _Last, static_cast<uint8_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_2(_First, _Last, static_cast<uint16_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_4(_First, _Last, static_cast<uint32_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_8(_First, _Last, static_cast<uint64_t>(_Val))));
+    } else {
+        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+    }
+}
+
+template <class _Ty, class _TVal>
+_Ty* __std_find_trivial_unsized(_Ty* _First, const _TVal _Val) noexcept {
+    if constexpr (_STD is_pointer_v<_TVal> || _STD is_null_pointer_v<_TVal>) {
+        return __std_find_trivial_unsized(_First, reinterpret_cast<uintptr_t>(_Val));
+    } else if constexpr (sizeof(_Ty) == 1) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_unsized_1(_First, static_cast<uint8_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 2) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_unsized_2(_First, static_cast<uint16_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 4) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_unsized_4(_First, static_cast<uint32_t>(_Val))));
+    } else if constexpr (sizeof(_Ty) == 8) {
+        return const_cast<_Ty*>(
+            static_cast<const _Ty*>(__std_find_trivial_unsized_8(_First, static_cast<uint64_t>(_Val))));
+    } else {
+        static_assert(_STD _Always_false<_Ty>, "Unexpected size");
+    }
+}
+
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
 _STD_BEGIN
@@ -133,7 +222,7 @@ template <class _Ty, class... _Types,
     class = void_t<decltype(::new (_STD declval<void*>()) _Ty(_STD declval<_Types>()...))>>
 constexpr _Ty* construct_at(_Ty* const _Location, _Types&&... _Args) noexcept(
     noexcept(::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
-    return ::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...);
+    _MSVC_CONSTEXPR return ::new (_Voidify_iter(_Location)) _Ty(_STD forward<_Types>(_Args)...);
 }
 #endif // _HAS_CXX20
 
@@ -337,13 +426,11 @@ concept _Destructible_object = is_object_v<_Ty> && destructible<_Ty>;
 template <class>
 struct incrementable_traits {};
 
-// clang-format off
 template <class _Ty>
     requires is_object_v<_Ty>
 struct incrementable_traits<_Ty*> {
     using difference_type = ptrdiff_t;
 };
-// clang-format on
 
 template <class _Ty>
 struct incrementable_traits<const _Ty> : incrementable_traits<_Ty> {};
@@ -379,13 +466,11 @@ using iter_difference_t = typename conditional_t<_Is_from_primary<iterator_trait
 template <class>
 struct _Cond_value_type {};
 
-// clang-format off
 template <class _Ty>
     requires is_object_v<_Ty>
 struct _Cond_value_type<_Ty> {
     using value_type = remove_cv_t<_Ty>;
 };
-// clang-format on
 
 template <class>
 struct indirectly_readable_traits {};
@@ -393,13 +478,11 @@ struct indirectly_readable_traits {};
 template <class _Ty>
 struct indirectly_readable_traits<_Ty*> : _Cond_value_type<_Ty> {};
 
-// clang-format off
 template <class _Ty>
     requires is_array_v<_Ty>
 struct indirectly_readable_traits<_Ty> {
     using value_type = remove_cv_t<remove_extent_t<_Ty>>;
 };
-// clang-format on
 
 template <class _Ty>
 struct indirectly_readable_traits<const _Ty> : indirectly_readable_traits<_Ty> {};
@@ -638,11 +721,9 @@ struct iterator_traits : _Iterator_traits_base<_Ty> {
     using _From_primary = iterator_traits;
 };
 
-// clang-format off
 template <class _Ty>
     requires is_object_v<_Ty>
 struct iterator_traits<_Ty*> {
-    // clang-format on
     using iterator_concept  = contiguous_iterator_tag;
     using iterator_category = random_access_iterator_tag;
     using value_type        = remove_cv_t<_Ty>;
@@ -846,11 +927,9 @@ struct _Iter_concept_impl2 {
 };
 template <>
 struct _Iter_concept_impl2<false> {
-    // clang-format off
     template <class _It, class _Traits>
         requires _Is_from_primary<iterator_traits<_It>>
     using _Apply = random_access_iterator_tag;
-    // clang-format on
 };
 
 template <bool _Iterator_concept_present>
@@ -1120,26 +1199,24 @@ concept indirectly_swappable = indirectly_readable<_It1> && indirectly_readable<
         _RANGES iter_swap(__i1, __i2);
         _RANGES iter_swap(__i2, __i1);
     };
+// clang-format on
 
 template <class _It1, class _It2, class _Rel, class _Proj1 = identity, class _Proj2 = identity>
-concept indirectly_comparable =
-    indirect_binary_predicate<_Rel,
-        projected<_It1, _Proj1>,
-        projected<_It2, _Proj2>>;
+concept indirectly_comparable = indirect_binary_predicate<_Rel, projected<_It1, _Proj1>, projected<_It2, _Proj2>>;
 
 template <class _It>
-concept permutable = forward_iterator<_It>
-    && indirectly_movable_storable<_It, _It>
-    && indirectly_swappable<_It, _It>;
+concept permutable = forward_iterator<_It> && indirectly_movable_storable<_It, _It> && indirectly_swappable<_It, _It>;
 
-namespace ranges { struct less; }
+namespace ranges {
+    struct less;
+}
+
 template <class _It1, class _It2, class _Out, class _Pr = ranges::less, class _Pj1 = identity, class _Pj2 = identity>
-concept mergeable = input_iterator<_It1> && input_iterator<_It2>
-    && weakly_incrementable<_Out>
-    && indirectly_copyable<_It1, _Out>
-    && indirectly_copyable<_It2, _Out>
+concept mergeable = input_iterator<_It1> && input_iterator<_It2> //
+    && weakly_incrementable<_Out> //
+    && indirectly_copyable<_It1, _Out> //
+    && indirectly_copyable<_It2, _Out> //
     && indirect_strict_weak_order<_Pr, projected<_It1, _Pj1>, projected<_It2, _Pj2>>;
-// clang-format on
 
 template <class _It, class _Pr = ranges::less, class _Proj = identity>
 concept sortable = permutable<_It> && indirect_strict_weak_order<_Pr, projected<_It, _Proj>>;
@@ -1684,7 +1761,7 @@ public:
     }
 
 #ifdef __cpp_lib_concepts
-    _NODISCARD friend constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
+    _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_BidIt> iter_move(const reverse_iterator& _It) noexcept(
         is_nothrow_copy_constructible_v<_BidIt>&& noexcept(_RANGES iter_move(--_STD declval<_BidIt&>()))) {
         auto _Tmp = _It.current;
         --_Tmp;
@@ -3738,23 +3815,23 @@ public:
 
 #ifdef __cpp_lib_concepts
     template <sentinel_for<_Iter> _Sent>
-    _NODISCARD friend constexpr bool operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
+    _NODISCARD_FRIEND constexpr bool operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
         return _Left._Current == _Right._Get_last();
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
-    _NODISCARD friend constexpr difference_type operator-(
+    _NODISCARD_FRIEND constexpr difference_type operator-(
         const move_sentinel<_Sent>& _Left, const move_iterator& _Right) {
         return _Left._Get_last() - _Right._Current;
     }
 
     template <sized_sentinel_for<_Iter> _Sent>
-    _NODISCARD friend constexpr difference_type operator-(
+    _NODISCARD_FRIEND constexpr difference_type operator-(
         const move_iterator& _Left, const move_sentinel<_Sent>& _Right) {
         return _Left._Current - _Right._Get_last();
     }
 
-    _NODISCARD friend constexpr reference iter_move(const move_iterator& _It)
+    _NODISCARD_FRIEND constexpr reference iter_move(const move_iterator& _It)
 #ifdef __EDG__ // TRANSITION, VSO-1222776
         noexcept(noexcept(_RANGES iter_move(_STD declval<const _Iter&>())))
 #else // ^^^ workaround / no workaround vvv
@@ -3914,7 +3991,7 @@ struct unreachable_sentinel_t;
 namespace _Unreachable_sentinel_detail {
     struct _Base {
         template <weakly_incrementable _Winc>
-        _NODISCARD friend constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
+        _NODISCARD_FRIEND constexpr bool operator==(const unreachable_sentinel_t&, const _Winc&) noexcept {
             return false;
         }
     };
@@ -4267,15 +4344,6 @@ _CONSTEXPR20 _BidIt2 copy_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest)
     return _Dest;
 }
 
-#if _HAS_CXX17
-template <class _ExPo, class _BidIt1, class _BidIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
-_BidIt2 copy_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noexcept /* terminates */ {
-    // copy [_First, _Last) backwards to [..., _Dest)
-    // not parallelized as benchmarks show it isn't worth it
-    return _STD copy_backward(_First, _Last, _Dest);
-}
-#endif // _HAS_CXX17
-
 template <class _InIt, class _OutIt>
 _CONSTEXPR20 _OutIt _Move_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
     // move [_First, _Last) to [_Dest, ...)
@@ -4348,15 +4416,6 @@ _CONSTEXPR20 _BidIt2 move_backward(_BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest)
     _Seek_wrapped(_Dest, _Move_backward_unchecked(_UFirst, _ULast, _UDest));
     return _Dest;
 }
-
-#if _HAS_CXX17
-template <class _ExPo, class _BidIt1, class _BidIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
-_BidIt2 move_backward(_ExPo&&, _BidIt1 _First, _BidIt1 _Last, _BidIt2 _Dest) noexcept /* terminates */ {
-    // move [_First, _Last) backwards to [..., _Dest)
-    // not parallelized as benchmarks show it isn't worth it
-    return _STD move_backward(_First, _Last, _Dest);
-}
-#endif // _HAS_CXX17
 
 
 template <class _Ty>
@@ -5116,75 +5175,92 @@ _NODISCARD constexpr auto lexicographical_compare_three_way(
 template <class _InIt, class _Ty>
 _NODISCARD constexpr bool _Within_limits(const _InIt&, const _Ty& _Val) {
     // check whether _Val is within the limits of _Elem
-    if constexpr (is_same_v<_Ty, bool>) {
-        return true;
-    }
+    if constexpr (disjunction_v<
 #ifdef __cpp_lib_byte
-    else if constexpr (is_same_v<_Ty, byte>) {
-        return true;
-    }
+                      is_same<_Ty, byte>,
 #endif // __cpp_lib_byte
-    else {
+                      is_same<_Ty, bool>, is_pointer<_Ty>, is_null_pointer<_Ty>>) {
+        return true;
+    } else {
         using _Elem = _Iter_value_t<_InIt>;
-        _STL_INTERNAL_STATIC_ASSERT(sizeof(_Elem) == 1);
         if constexpr (is_same_v<_Elem, bool>) {
             return _Val == true || _Val == false;
         } else if constexpr (is_signed_v<_Elem>) {
+            // use instead of numeric_limits::min/max; avoid <limits> dependency
+            constexpr _Elem _Min = static_cast<_Elem>(_Elem{1} << (sizeof(_Elem) * CHAR_BIT - 1));
+            constexpr _Elem _Max = static_cast<_Elem>(~_Min);
+
             if constexpr (is_signed_v<_Ty>) {
                 // signed _Elem, signed _Ty
-                return SCHAR_MIN <= _Val && _Val <= SCHAR_MAX;
+                return _Min <= _Val && _Val <= _Max;
             } else {
                 if constexpr (-1 == static_cast<_Ty>(-1)) {
                     // signed _Elem, unsigned _Ty, -1 == static_cast<_Ty>(-1)
-                    return _Val <= SCHAR_MAX || static_cast<_Ty>(SCHAR_MIN) <= _Val;
+                    return _Val <= _Max || static_cast<_Ty>(_Min) <= _Val;
                 } else {
                     // signed _Elem, unsigned _Ty, -1 != static_cast<_Ty>(-1)
-                    return _Val <= SCHAR_MAX;
+                    return _Val <= _Max;
                 }
             }
         } else {
+            constexpr _Elem _Max = static_cast<_Elem>(~_Elem{0});
+
             if constexpr (is_signed_v<_Ty>) {
                 // unsigned _Elem, signed _Ty
-                return 0 <= _Val && _Val <= UCHAR_MAX;
+                return 0 <= _Val && static_cast<make_unsigned_t<_Ty>>(_Val) <= _Max;
             } else {
                 // unsigned _Elem, unsigned _Ty
-                return _Val <= UCHAR_MAX;
+                return _Val <= _Max;
             }
         }
     }
 }
 
-template <class _Iter, class _Ty>
-_INLINE_VAR constexpr bool _Memchr_in_find_is_safe =
-    _Iterator_is_contiguous<_Iter>&&
-        disjunction_v<conjunction<is_integral<_Ty>, _Is_character_or_bool<_Iter_value_t<_Iter>>>
+template <class _Iter, class _Ty, class _Elem = _Iter_value_t<_Iter>>
+_INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe = // Can we activate the vector algorithms for find/count?
+    _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
+    && !_Iterator_is_volatile<_Iter> // The iterator must not be volatile.
+    && disjunction_v< // And one of the following conditions must be met:
 #ifdef __cpp_lib_byte
-            ,
-            conjunction<is_same<_Ty, byte>, is_same<_Iter_value_t<_Iter>, byte>>
+        conjunction<is_same<_Ty, byte>, is_same<_Elem, byte>>, // We're finding a std::byte in a range of std::byte.
 #endif // __cpp_lib_byte
-            > && !is_volatile_v<remove_reference_t<_Iter_ref_t<_Iter>>>;
+        conjunction<is_integral<_Ty>, is_integral<_Elem>>, // We're finding an integer in a range of integers.
+        // The integer types can be different, which requires careful handling.
+        conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>>; // We're finding a U* in a range of U* (identical types).
 
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
     // find first matching _Val; choose optimization
-    // activate optimization for contiguous iterators to (const) bytes and integral values
+    // activate optimization for contiguous iterators to most scalar types (possibly const-qualified)
+    if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
 #if _HAS_CXX20
-    if (!_STD is_constant_evaluated())
+        if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
-    {
-        if constexpr (_Memchr_in_find_is_safe<_InIt, _Ty>) {
-            // find first byte matching integral _Val
+        {
             if (!_Within_limits(_First, _Val)) {
                 return _Last;
             }
+#if _USE_STD_VECTOR_ALGORITHMS
             const auto _First_ptr = _To_address(_First);
-            const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_InIt>>*>(
-                _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
+            const auto _Result    = __std_find_trivial(_First_ptr, _To_address(_Last), _Val);
             if constexpr (is_pointer_v<_InIt>) {
-                return _Result ? _Result : _Last;
+                return _Result;
             } else {
-                return _Result ? _First + (_Result - _First_ptr) : _Last;
+                return _First + (_Result - _First_ptr);
             }
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^ / vvv not _USE_STD_VECTOR_ALGORITHMS vvv
+            if constexpr (sizeof(_Iter_value_t<_InIt>) == 1) {
+                const auto _First_ptr = _To_address(_First);
+                const auto _Result = static_cast<remove_reference_t<_Iter_ref_t<_InIt>>*>(
+                    _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), static_cast<size_t>(_Last - _First)));
+                if constexpr (is_pointer_v<_InIt>) {
+                    return _Result ? _Result : _Last;
+                } else {
+                    return _Result ? _First + (_Result - _First_ptr) : _Last;
+                }
+            }
+            // TRANSITION, DevCom-1614562: not trying wmemchr
+#endif // ^^^ not _USE_STD_VECTOR_ALGORITHMS ^^^
         }
     }
 
@@ -5229,7 +5305,7 @@ namespace ranges {
     _NODISCARD constexpr _It _Find_unchecked(_It _First, const _Se _Last, const _Ty& _Val, _Pj _Proj = {}) {
         // clang-format on
         constexpr bool _Is_sized = sized_sentinel_for<_Se, _It>;
-        if constexpr (_Memchr_in_find_is_safe<_It,
+        if constexpr (_Vector_alg_in_find_is_safe<_It,
                           _Ty> && _Sized_or_unreachable_sentinel_for<_Se, _It> && same_as<_Pj, identity>) {
             if (!_STD is_constant_evaluated()) {
                 if (!_Within_limits(_First, _Val)) {
@@ -5241,24 +5317,49 @@ namespace ranges {
                     }
                 }
 
-                size_t _Count;
+                using _Ptr_t = remove_reference_t<_Iter_ref_t<_It>>*;
+#if _USE_STD_VECTOR_ALGORITHMS
+                const auto _First_ptr = _To_address(_First);
+
+                _Ptr_t _Result;
+
                 if constexpr (_Is_sized) {
-                    _Count = static_cast<size_t>(_Last - _First);
+                    const auto _Last_ptr = _First_ptr + (_Last - _First);
+
+                    _Result = __std_find_trivial(_First_ptr, _Last_ptr, _Val);
                 } else {
-                    _Count = SIZE_MAX;
+                    _Result = __std_find_trivial_unsized(_First_ptr, _Val);
                 }
-                const auto _First_ptr = _STD to_address(_First);
-                const auto _Result    = static_cast<remove_reference_t<_Iter_ref_t<_It>>*>(
-                    _CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
-                if (_Result) {
-                    if constexpr (is_pointer_v<_It>) {
-                        return _Result;
+
+                if constexpr (is_pointer_v<_It>) {
+                    return _Result;
+                } else {
+                    return _RANGES next(_STD move(_First), _Result - _First_ptr);
+                }
+#else // ^^^ _USE_STD_VECTOR_ALGORITHMS ^^^ / vvv not _USE_STD_VECTOR_ALGORITHMS vvv
+                if constexpr (sizeof(_Iter_value_t<_It>) == 1 && _Is_sized /* TRANSITION, DevCom-1615707 */) {
+                    size_t _Count;
+                    if constexpr (_Is_sized) {
+                        _Count = static_cast<size_t>(_Last - _First);
                     } else {
-                        return _RANGES next(_STD move(_First), _Result - _First_ptr);
+                        _Count = SIZE_MAX;
                     }
-                } else {
-                    return _RANGES next(_STD move(_First), _Last);
+
+                    const auto _First_ptr = _STD to_address(_First);
+                    const auto _Result =
+                        static_cast<_Ptr_t>(_CSTD memchr(_First_ptr, static_cast<unsigned char>(_Val), _Count));
+                    if (_Result) {
+                        if constexpr (is_pointer_v<_It>) {
+                            return _Result;
+                        } else {
+                            return _RANGES next(_STD move(_First), _Result - _First_ptr);
+                        }
+                    } else {
+                        return _RANGES next(_STD move(_First), _Last);
+                    }
                 }
+                // TRANSITION, DevCom-1614562: not trying wmemchr
+#endif // ^^^ not _USE_STD_VECTOR_ALGORITHMS ^^^
             }
         }
 
@@ -5312,8 +5413,25 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_InIt> count(const _InIt _First, const _InI
     if constexpr (_Is_vb_iterator<_InIt> && is_same_v<_Ty, bool>) {
         return _Count_vbool(_First, _Last, _Val);
     } else {
-        auto _UFirst               = _Get_unwrapped(_First);
-        const auto _ULast          = _Get_unwrapped(_Last);
+        auto _UFirst      = _Get_unwrapped(_First);
+        const auto _ULast = _Get_unwrapped(_Last);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (_Vector_alg_in_find_is_safe<_InIt, _Ty>) {
+#if _HAS_CXX20
+            if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+            {
+                if (!_Within_limits(_UFirst, _Val)) {
+                    return 0;
+                }
+
+                return static_cast<_Iter_diff_t<_InIt>>(
+                    __std_count_trivial(_To_address(_UFirst), _To_address(_ULast), _Val));
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
         _Iter_diff_t<_InIt> _Count = 0;
 
         for (; _UFirst != _ULast; ++_UFirst) {
@@ -5752,6 +5870,57 @@ namespace ranges {
 
     inline constexpr _Find_if_not_fn find_if_not{_Not_quite_object::_Construct_tag{}};
 
+    class _Adjacent_find_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <forward_iterator _It, sentinel_for<_It> _Se, class _Pj = identity,
+            indirect_binary_predicate<projected<_It, _Pj>, projected<_It, _Pj>> _Pr = ranges::equal_to>
+        _NODISCARD constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            _Adl_verify_range(_First, _Last);
+
+            auto _UResult = _Adjacent_find_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            _Seek_wrapped(_First, _STD move(_UResult));
+            return _First;
+        }
+
+        template <forward_range _Rng, class _Pj = identity,
+            indirect_binary_predicate<projected<iterator_t<_Rng>, _Pj>, projected<iterator_t<_Rng>, _Pj>> _Pr =
+                ranges::equal_to>
+        _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+            auto _UResult = _Adjacent_find_unchecked(_Ubegin(_Range), _Uend(_Range), _Pass_fn(_Pred), _Pass_fn(_Proj));
+
+            return _Rewrap_iterator(_Range, _STD move(_UResult));
+        }
+
+    private:
+        template <class _It, class _Se, class _Pj, class _Pr>
+        _NODISCARD static constexpr _It _Adjacent_find_unchecked(_It _First, const _Se _Last, _Pr _Pred, _Pj _Proj) {
+            // find first satisfying _Pred with successor
+            _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(indirect_binary_predicate<_Pr, projected<_It, _Pj>, projected<_It, _Pj>>);
+
+            if (_First == _Last) {
+                return _First;
+            }
+
+            for (auto _Next = _First;; ++_First) {
+                if (++_Next == _Last) {
+                    return _Next;
+                }
+
+                if (_STD invoke(_Pred, _STD invoke(_Proj, *_First), _STD invoke(_Proj, *_Next))) {
+                    return _First;
+                }
+            }
+        }
+    };
+
+    inline constexpr _Adjacent_find_fn adjacent_find{_Not_quite_object::_Construct_tag{}};
+
     // clang-format off
     template <class _It1, class _It2, class _Se2, class _Pr, class _Pj1, class _Pj2>
     concept _Equal_rev_pred_can_memcmp = is_same_v<_Pj1, identity> && is_same_v<_Pj2, identity>
@@ -5925,6 +6094,34 @@ template <class _FwdIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _FwdIt lower_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
     // find first element not before _Val
     return _STD lower_bound(_First, _Last, _Val, less<>{});
+}
+
+template <class _FwdIt, class _Ty, class _Pr>
+_NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val, _Pr _Pred) {
+    // find first element that _Val is before
+    _Adl_verify_range(_First, _Last);
+    auto _UFirst                = _Get_unwrapped(_First);
+    _Iter_diff_t<_FwdIt> _Count = _STD distance(_UFirst, _Get_unwrapped(_Last));
+
+    while (0 < _Count) { // divide and conquer, find half that contains answer
+        _Iter_diff_t<_FwdIt> _Count2 = _Count / 2;
+        const auto _UMid             = _STD next(_UFirst, _Count2);
+        if (_Pred(_Val, *_UMid)) {
+            _Count = _Count2;
+        } else { // try top half
+            _UFirst = _Next_iter(_UMid);
+            _Count -= _Count2 + 1;
+        }
+    }
+
+    _Seek_wrapped(_First, _UFirst);
+    return _First;
+}
+
+template <class _FwdIt, class _Ty>
+_NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _Ty& _Val) {
+    // find first element that _Val is before
+    return _STD upper_bound(_First, _Last, _Val, less<>{});
 }
 
 template <class _FwdIt1, class _FwdIt2>
