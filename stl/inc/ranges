@@ -4749,8 +4749,13 @@ namespace ranges {
 
 #if _HAS_CXX23
     template <class _Size>
-    constexpr _Size _Div_ceil(_Size _Num, _Size _Denom) noexcept(noexcept((_Num + _Denom - 1) / _Denom)) {
-        return (_Num + _Denom - 1) / _Denom;
+    constexpr _Size _Div_ceil(_Size _Num, _Size _Denom) noexcept(
+        noexcept(_Num / _Denom) && noexcept(_Num % _Denom) && noexcept(++_Num)) {
+        _Size _Result = _Num / _Denom;
+        if (_Num % _Denom) {
+            ++_Result;
+        }
+        return _Result;
     }
 
     template <input_range _Vw>
@@ -4775,7 +4780,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr range_difference_t<_Vw> _Get_size() const
-                noexcept(noexcept(_RANGES end(_Parent->_Range) - *_Parent->_Current)) {
+                noexcept(noexcept(_Div_ceil(_RANGES end(_Parent->_Range) - *_Parent->_Current, _Parent->_Count))) {
                 const auto _Size = _RANGES end(_Parent->_Range) - *_Parent->_Current;
                 if (_Size < _Parent->_Remainder) {
                     return _Size == 0 ? 0 : 1;
@@ -5034,7 +5039,8 @@ namespace ranges {
                   _Count(_Other._Count),
                   _Missing(_Other._Missing) {}
 
-            _NODISCARD constexpr _Base_iter base() const noexcept(is_nothrow_copy_constructible_v<_Base_iter>) {
+            _NODISCARD constexpr _Base_iter base() const
+                noexcept(is_nothrow_copy_constructible_v<_Base_iter>) /* strengthened */ {
                 return _Current;
             }
 
@@ -5241,7 +5247,10 @@ namespace ranges {
             requires (!_Simple_view<_Vw>) {
             // clang-format on
             if constexpr (common_range<_Vw> && sized_range<_Vw>) {
-                const auto _Missing = (_Count - _RANGES distance(_Range) % _Count) % _Count;
+                const auto _Missing = _Count - _RANGES distance(_Range) % _Count;
+                if (_Missing == _Count) {
+                    return _Iterator<false>{this, _RANGES end(_Range)};
+                }
                 return _Iterator<false>{this, _RANGES end(_Range), _Missing};
             } else if constexpr (common_range<_Vw> && !bidirectional_range<_Vw>) {
                 return _Iterator<false>{this, _RANGES end(_Range)};
@@ -5257,7 +5266,10 @@ namespace ranges {
             requires forward_range<const _Vw> {
             // clang-format on
             if constexpr (common_range<const _Vw> && sized_range<const _Vw>) {
-                const auto _Missing = (_Count - _RANGES distance(_Range) % _Count) % _Count;
+                const auto _Missing = _Count - _RANGES distance(_Range) % _Count;
+                if (_Missing == _Count) {
+                    return _Iterator<true>{this, _RANGES end(_Range)};
+                }
                 return _Iterator<true>{this, _RANGES end(_Range), _Missing};
             } else if constexpr (common_range<const _Vw> && !bidirectional_range<const _Vw>) {
                 return _Iterator<true>{this, _RANGES end(_Range)};
@@ -5266,12 +5278,14 @@ namespace ranges {
             }
         }
 
-        _NODISCARD constexpr auto size() noexcept(noexcept(_RANGES distance(_Range))) /* strengthened */
+        _NODISCARD constexpr auto size() noexcept(
+            noexcept(_Div_ceil(_RANGES distance(_Range), _Count))) /* strengthened */
             requires sized_range<_Vw> {
             return _To_unsigned_like(_Div_ceil(_RANGES distance(_Range), _Count));
         }
 
-        _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES distance(_Range))) /* strengthened */
+        _NODISCARD constexpr auto size() const
+            noexcept(noexcept(_Div_ceil(_RANGES distance(_Range), _Count))) /* strengthened */
             requires sized_range<const _Vw> {
             return _To_unsigned_like(_Div_ceil(_RANGES distance(_Range), _Count));
         }
