@@ -9,8 +9,7 @@
 #include <yvals_core.h>
 
 #ifdef _ENFORCE_ONLY_CORE_HEADERS
-static_assert(false, "error STL2000: Tried to include a non-core C++ Standard Library header file with "
-                     "_ENFORCE_ONLY_CORE_HEADERS defined");
+#error STL1005: Tried to include a non-core C++ Standard Library header file with _ENFORCE_ONLY_CORE_HEADERS defined.
 #endif // _ENFORCE_ONLY_CORE_HEADERS
 
 #if _STL_COMPILER_PREPROCESSOR

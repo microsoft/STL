@@ -1140,8 +1140,7 @@
 #define _CXX20_DEPRECATE_IS_ALWAYS_EQUAL
 #endif // ^^^ warning disabled ^^^
 
-// next critical error number: STL1004
-// next error number: STL2001
+// next error number: STL1006
 // next warning number: STL4034
 
 // P0619R4 Removing C++17-Deprecated Features
