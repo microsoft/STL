@@ -54,6 +54,7 @@ __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcout;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcerr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wclog;
 
+#ifdef _CRTBLD // TRANSITION, ABI: _Winit appears to be unused
 class _CRTIMP2_PURE_IMPORT _Winit {
 public:
     __thiscall _Winit();
@@ -62,6 +63,8 @@ public:
 private:
     __PURE_APPDOMAIN_GLOBAL static int _Init_cnt;
 };
+#endif // _CRTBLD
+
 #endif // _M_CEE_PURE
 _STD_END
 #pragma pop_macro("new")

@@ -2614,7 +2614,7 @@ namespace msvc {
 #pragma clang diagnostic ignored "-Wself-move"
 #endif // __clang__
             void run_test() {
-                // test that self-move-assignment doesn't explode
+                // test that self-move-assignment doesn't fail
                 {
                     // empty
                     any a;
