@@ -302,6 +302,8 @@
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
+// P2321R2 zip
+//     (changes to pair, tuple, and vector<bool>::reference only)
 // P2441R2 views::join_with
 // P2443R1 views::chunk_by
 
@@ -610,7 +612,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202204L
+#define _MSVC_STL_UPDATE  202205L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)

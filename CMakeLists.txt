@@ -5,6 +5,19 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
+# add the tools subdirectory _before_ we change all the flags
+add_subdirectory(tools EXCLUDE_FROM_ALL)
+# these allow the targets to show up in the top-level
+# (as opposed to under the tools subdirectory)
+if(TARGET run-format)
+    add_custom_target(format)
+    add_dependencies(format run-format)
+endif()
+if(TARGET run-validate)
+    add_custom_target(validate)
+    add_dependencies(validate run-validate)
+endif()
+
 option(BUILD_TESTING "Enable testing" ON)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
@@ -59,7 +72,15 @@ add_compile_definitions(
 add_compile_options(/diagnostics:caret /W4 /WX /w14265 /w15038 /d1FastFail /guard:cf /Z7 /Gy /Zp8 /std:c++latest /permissive- /Zc:threadSafeInit- /Zl)
 
 set(VCLIBS_DEBUG_OPTIONS "/Od")
-set(VCLIBS_RELEASE_OPTIONS "/O2;/Os") # TRANSITION: Potentially remove /Os
+
+# TRANSITION: Potentially remove `/Os` if it results in speed improvements.
+# This requires benchmarking!
+# Note that in MSVC version 19.32.31328,
+# `/Os` results in a binary size difference of 102K
+# in the release DLL (a gain of 18.4%).
+# So, make certain that that tradeoff is considered when or if `/Os` is removed.
+# See GH-2108 for more info.
+set(VCLIBS_RELEASE_OPTIONS /O2 /Os)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
@@ -85,10 +106,4 @@ add_subdirectory(stl)
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
-endif()
-
-add_subdirectory(tools/format EXCLUDE_FROM_ALL)
-if(TARGET clang-format-all)
-    add_custom_target(format)
-    add_dependencies(format clang-format-all)
 endif()
