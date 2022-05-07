@@ -168,7 +168,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _ITERATOR_DEBUG_LEVEL != 0 && _CONTAINER_DEBUG_LEVEL == 0
 
 #ifndef _STL_CRT_SECURE_INVALID_PARAMETER
-#ifdef _DEBUG // avoid emitting unused long strings for function names; see GH-1956
+#ifdef _STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::abort()
+#elif defined(_DEBUG) // avoid emitting unused long strings for function names; see GH-1956
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
 #else // _DEBUG
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
@@ -212,11 +214,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _DEBUG
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
-#define _STL_INTERNAL_CHECK(...)         _STL_VERIFY(__VA_ARGS__, "STL internal check: " #__VA_ARGS__)
-#define _STL_INTERNAL_STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+#define _STL_INTERNAL_CHECK(...) _STL_VERIFY(__VA_ARGS__, "STL internal check: " #__VA_ARGS__)
 #else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_CHECK(...) _Analysis_assume_(__VA_ARGS__)
-#define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
 #ifndef _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
