@@ -201,7 +201,7 @@ void test_stability() {
 
 void test_after_skipping_in_position_overhaul() {
     g_max_memory = prohibit_attempts_to_allocate;
-    { // check that 1 element trivial cases don't explode
+    { // check that 1 element trivial cases don't fail
         array<int, 1> a = {{5}};
         inplace_merge(a.begin(), a.begin(), a.begin()); // empty degenerate case
         inplace_merge(a.begin(), a.begin(), a.end()); // first partition eliminates everything degenerate case

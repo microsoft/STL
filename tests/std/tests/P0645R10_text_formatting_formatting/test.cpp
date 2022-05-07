@@ -7,7 +7,6 @@
 #include <cstdio>
 #include <exception>
 #include <format>
-#include <iostream>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -632,7 +631,6 @@ void test_bool_specs() {
 
     test_type(STR("{:b}"), true);
     test_type(STR("{:B}"), true);
-    test_type(STR("{:c}"), true);
     test_type(STR("{:d}"), true);
     test_type(STR("{:o}"), true);
     test_type(STR("{:x}"), true);
@@ -640,7 +638,6 @@ void test_bool_specs() {
 
     test_type(STR("{:b}"), false);
     test_type(STR("{:B}"), false);
-    test_type(STR("{:c}"), false);
     test_type(STR("{:d}"), false);
     test_type(STR("{:o}"), false);
     test_type(STR("{:x}"), false);
@@ -818,18 +815,6 @@ void test_float_specs() {
         assert(format("{:.2000}", value) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::hex, 2000).ptr};
-
-        // TRANSITION, extra diagnostics for GH-2449:
-        if (const string str1 = format("{:.2000a}", value); str1 != expected) {
-            cerr << "Encountered sporadic failure GH-2449!\n";
-            cerr << "    str1: \"" << str1 << "\"\n";
-            cerr << "expected: \"" << expected << "\"\n";
-            cerr << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
-            cerr << "You must report it to the STL maintainers.\n";
-            assert(false);
-        }
-
-        // Keep the original assertion, just in case GH-2449 involves very specific codegen:
         assert(format("{:.2000a}", value) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), value, chars_format::scientific, 2000).ptr};
@@ -846,18 +831,6 @@ void test_float_specs() {
         assert(format("{:.2000}", 1.0) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::hex, 2000).ptr};
-
-        // TRANSITION, extra diagnostics for GH-2449:
-        if (const string str2 = format("{:.2000a}", 1.0); str2 != expected) {
-            cerr << "Encountered sporadic failure GH-2449!\n";
-            cerr << "    str2: \"" << str2 << "\"\n";
-            cerr << "expected: \"" << expected << "\"\n";
-            cerr << "DO NOT IGNORE/RERUN THIS FAILURE.\n";
-            cerr << "You must report it to the STL maintainers.\n";
-            assert(false);
-        }
-
-        // Keep the original assertion, just in case GH-2449 involves very specific codegen:
         assert(format("{:.2000a}", 1.0) == expected);
 
         expected = {buffer, to_chars(begin(buffer), end(buffer), 1.0, chars_format::scientific, 2000).ptr};
@@ -937,7 +910,7 @@ void test_pointer_specs() {
     throw_helper(STR("{:0}"), nullptr);
 
     // Width
-    assert(format(STR("{:5}"), nullptr) == STR("0x0  "));
+    assert(format(STR("{:5}"), nullptr) == STR("  0x0"));
 
     // Precision
     throw_helper(STR("{:.5}"), nullptr);
@@ -1322,8 +1295,7 @@ void libfmt_formatter_test_runtime_width() {
     assert(format(STR("{0:{1}}"), 42ull, 7) == STR("     42"));
     assert(format(STR("{0:{1}}"), -1.23, 8) == STR("   -1.23"));
     assert(format(STR("{0:{1}}"), -1.23l, 9) == STR("    -1.23"));
-    assert(format(STR("{0:{1}}"), reinterpret_cast<void*>(0xcafe), 10)
-           == STR("0xcafe    ")); // behavior differs from libfmt, but conforms
+    assert(format(STR("{0:{1}}"), reinterpret_cast<void*>(0xcafe), 10) == STR("    0xcafe"));
     assert(format(STR("{0:{1}}"), 'x', 11) == STR("x          "));
     assert(format(STR("{0:{1}}"), STR("str"), 12) == STR("str         "));
 }
@@ -1397,10 +1369,10 @@ void test_sane_c_specifier() {
     throw_helper(STR("{:+}"), true);
     throw_helper(STR("{:+c}"), true);
     assert(format(STR("{:^}"), true) == STR("true"));
-    assert(format(STR("{:^c}"), true) == STR("\x1"));
+    throw_helper(STR("{:^c}"), true);
     throw_helper(STR("{:0}"), true);
     throw_helper(STR("{:0c}"), true);
-    assert(format(STR("{:c}"), true) == STR("\x1"));
+    throw_helper(STR("{:c}"), true);
 
     throw_helper(STR("{:#}"), 'c');
     throw_helper(STR("{:#c}"), 'c');
@@ -1411,6 +1383,13 @@ void test_sane_c_specifier() {
     throw_helper(STR("{:0}"), 'c');
     throw_helper(STR("{:0c}"), 'c');
     assert(format(STR("{:c}"), 'c') == STR("c"));
+}
+
+template <class charT, class T>
+void test_localized_char() {
+    // L should be accepted and ignored for "integral types" charT and char
+    assert(format(STR("{:L}"), T('c')) == STR("c"));
+    assert(format(STR("{:Lc}"), T('c')) == STR("c"));
 }
 
 void test() {
@@ -1485,6 +1464,10 @@ void test() {
 
     test_sane_c_specifier<char>();
     test_sane_c_specifier<wchar_t>();
+
+    test_localized_char<char, char>();
+    test_localized_char<wchar_t, char>();
+    test_localized_char<wchar_t, wchar_t>();
 }
 
 int main() {

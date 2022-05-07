@@ -66,9 +66,9 @@ void __stdcall __std_execution_wake_by_address_all(_In_ const volatile void* _Ad
 _END_EXTERN_C
 
 _STD_BEGIN
-constexpr size_t _Oversubscription_multiplier = 32;
-constexpr size_t _Oversubmission_multiplier   = 4;
-constexpr size_t _Still_active                = static_cast<size_t>(-1);
+inline constexpr size_t _Oversubscription_multiplier = 32;
+inline constexpr size_t _Oversubmission_multiplier   = 4;
+inline constexpr size_t _Still_active                = static_cast<size_t>(-1);
 
 namespace execution {
     class sequenced_policy {
@@ -2675,7 +2675,7 @@ struct _Sort_operation { // context for background threads
 
     static void __stdcall _Threadpool_callback(
         __std_PTP_CALLBACK_INSTANCE, void* const _Context, const __std_PTP_WORK _Work) noexcept /* terminates */ {
-        auto* const _This = static_cast<_Sort_operation*>(_Context);
+        const auto _This  = static_cast<_Sort_operation*>(_Context);
         const auto _Basis = _This->_Basis;
         const auto _Pred  = _This->_Pred;
         auto& _Team       = _This->_Team;
@@ -4424,33 +4424,18 @@ _FwdIt2 exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdI
     return _Dest;
 }
 
-template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty>
-_FwdIt2 _Inclusive_scan_per_chunk(
-    _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val, _No_init_tag) {
-    // Local-sum for parallel inclusive_scan; writes local inclusive prefix sums into _Dest and stores overall sum in
-    // _Val.
-    // pre: _Val is *uninitialized* && _First != _Last
-    _Construct_in_place(_Val, *_First);
-    for (;;) {
-        *_Dest = _Val;
-        ++_Dest;
-        ++_First;
-        if (_First == _Last) {
-            return _Dest;
-        }
-
-        _Val = _Reduce_op(_STD move(_Val), *_First);
-    }
-}
-
-template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty, class _Ty_fwd,
-    enable_if_t<!is_same_v<_No_init_tag, remove_const_t<remove_reference_t<_Ty_fwd>>>, int> = 0>
+template <class _FwdIt1, class _FwdIt2, class _BinOp, class _Ty, class _Ty_fwd>
 _FwdIt2 _Inclusive_scan_per_chunk(
     _FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op, _Ty& _Val, _Ty_fwd&& _Predecessor) {
     // local-sum for parallel inclusive_scan; writes local inclusive prefix sums into _Dest and stores overall sum in
     // _Val.
     // pre: _Val is *uninitialized* && _First != _Last
-    _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), *_First));
+    if constexpr (is_same_v<_No_init_tag, remove_const_t<remove_reference_t<_Ty_fwd>>>) {
+        _Construct_in_place(_Val, *_First);
+    } else {
+        _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), *_First));
+    }
+
     for (;;) {
         *_Dest = _Val;
         ++_Dest;
@@ -4756,33 +4741,18 @@ _FwdIt2 transform_exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _L
     return _Dest;
 }
 
-template <class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp, class _Ty>
-_FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
-    _UnaryOp _Transform_op, _Ty& _Val, _No_init_tag) {
-    // Local-sum for parallel transform_inclusive_scan; writes local inclusive prefix sums into _Dest and stores overall
-    // sum in _Val.
-    // pre: _Val is *uninitialized* && _First != _Last
-    _Construct_in_place(_Val, _Transform_op(*_First));
-    for (;;) {
-        *_Dest = _Val;
-        ++_Dest;
-        ++_First;
-        if (_First == _Last) {
-            return _Dest;
-        }
-
-        _Val = _Reduce_op(_STD move(_Val), _Transform_op(*_First));
-    }
-}
-
-template <class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp, class _Ty, class _Ty_fwd,
-    enable_if_t<!is_same_v<_No_init_tag, remove_const_t<remove_reference_t<_Ty_fwd>>>, int> = 0>
+template <class _FwdIt1, class _FwdIt2, class _BinOp, class _UnaryOp, class _Ty, class _Ty_fwd>
 _FwdIt2 _Transform_inclusive_scan_per_chunk(_FwdIt1 _First, const _FwdIt1 _Last, _FwdIt2 _Dest, _BinOp _Reduce_op,
     _UnaryOp _Transform_op, _Ty& _Val, _Ty_fwd&& _Predecessor) {
     // local-sum for parallel transform_inclusive_scan; writes local inclusive prefix sums into _Dest and stores overall
     // sum in _Val
     // pre: _Val is *uninitialized* && _First != _Last
-    _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), _Transform_op(*_First)));
+    if constexpr (is_same_v<_No_init_tag, remove_const_t<remove_reference_t<_Ty_fwd>>>) {
+        _Construct_in_place(_Val, _Transform_op(*_First));
+    } else {
+        _Construct_in_place(_Val, _Reduce_op(_STD forward<_Ty_fwd>(_Predecessor), _Transform_op(*_First)));
+    }
+
     for (;;) {
         *_Dest = _Val;
         ++_Dest;

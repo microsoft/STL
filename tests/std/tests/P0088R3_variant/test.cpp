@@ -4693,13 +4693,13 @@ void test_T_ctor_basic() {
 }
 
 #if !_HAS_CXX20 // Narrowing check occurs with P0608R3
-struct BoomOnAnything {
+struct FailOnAnything {
   template <class T>
-  constexpr BoomOnAnything(T) { static_assert(!std::is_same<T, T>::value, ""); }
+  constexpr FailOnAnything(T) { static_assert(!std::is_same<T, T>::value, ""); }
 };
 
 void test_no_narrowing_check_for_class_types() {
-  using V = std::variant<int, BoomOnAnything>;
+  using V = std::variant<int, FailOnAnything>;
   V v(42);
   assert(v.index() == 0);
   assert(std::get<0>(v) == 42);

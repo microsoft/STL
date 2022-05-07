@@ -53,6 +53,7 @@ void t_del() { // test default_delete for scalars
 
     STD default_delete<derived> del1;
     STD default_delete<base> del2(del1);
+    (void) del2;
 }
 
 void t_del_arr() { // test default_delete for arrays
