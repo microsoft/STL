@@ -6,6 +6,7 @@
 
 using namespace std;
 
+// GH-2168 <regex>: integer overflow on large backreference value
 int main() {
     for (const char* regexString : {"\\3333333334", "\\2147483648"}) {
         try {
