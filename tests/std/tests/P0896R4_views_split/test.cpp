@@ -285,7 +285,7 @@ constexpr bool instantiation_test() {
     instantiator::call<test_range<forward_iterator_tag, Common::yes, CanView::yes, Copyability::copyable>>();
 
     { // ensure we get something contiguous
-        for (string_view sv : "127..0..0..1"sv | views::split(".."sv)) {
+        for (ranges::contiguous_range auto sv : "127..0..0..1"sv | views::split(".."sv)) {
             assert(!sv.empty());
         }
     }
@@ -329,6 +329,7 @@ constexpr bool test_devcom_1559808() {
 }
 
 constexpr bool test_LWG_3590() {
+    // LWG-3590: "split_view::base() const & is overconstrained"
     struct weird_view : ranges::view_interface<weird_view> {
         weird_view()                  = default;
         weird_view(const weird_view&) = default;

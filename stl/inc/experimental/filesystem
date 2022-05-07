@@ -9,8 +9,8 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#include <__msvc_chrono.hpp> // for chrono::time_point
 #include <algorithm> // for replace
-#include <chrono> // for chrono::time_point
 #include <codecvt> // for codecvt_utf8_*
 #include <list> // for recursive_directory_iterator stack
 #include <locale> // for wstring_convert
@@ -1468,7 +1468,7 @@ public:
 
         *_Mypdir = _Open_dir(_Dest, _Path.c_str(), _Errno, _Ftype);
         if (*_Mypdir) {
-            _Form_name(_Dest, _Ftype, _Prefix_directory());
+            _Form_name(_Dest, _Ftype);
         }
     }
 
@@ -1480,7 +1480,7 @@ public:
 
         *_Mypdir = _Open_dir(_Dest, _Path.c_str(), _Errno, _Ftype);
         if (*_Mypdir) {
-            _Form_name(_Dest, _Ftype, _Prefix_directory());
+            _Form_name(_Dest, _Ftype);
         }
 
         _Code = error_code(_Errno, _STD system_category());
@@ -1555,19 +1555,19 @@ private:
                 _Close_dir(*_Mypdir);
                 *_Mypdir = nullptr; // end of directory
             } else {
-                _Form_name(_Dest, _Ftype, _Prefix_directory());
+                _Form_name(_Dest, _Ftype);
             }
         }
     }
 
-    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype,
-        true_type) { // set entry to _Mydirpath/_Filename
-        _Myentry.assign(_Mydirpath / path(_Filename), file_status(_Ftype));
-    }
-
-    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype,
-        false_type) { // set entry to _Filename
-        _Myentry.assign(path(_Filename), file_status(_Ftype));
+    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype) {
+        if constexpr (_Prefix_directory::value) {
+            // set entry to _Mydirpath/_Filename
+            _Myentry.assign(_Mydirpath / path(_Filename), file_status(_Ftype));
+        } else {
+            // set entry to _Filename
+            _Myentry.assign(path(_Filename), file_status(_Ftype));
+        }
     }
 
     shared_ptr<void*> _Mypdir;
@@ -1914,6 +1914,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval, copy_options _Opts,
         _Oldstat = status(_Oldpval);
         _Newstat = status(_Newpval);
     }
+
     if (!exists(_Oldstat) || equivalent(_Oldpval, _Newpval, _Code2) || is_other(_Oldstat) || is_other(_Newstat)
         || (is_directory(_Oldstat) && is_regular_file(_Newstat))) {
         _Code = make_error_code(errc::operation_not_permitted);

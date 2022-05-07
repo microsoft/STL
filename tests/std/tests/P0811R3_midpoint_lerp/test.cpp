@@ -1024,7 +1024,7 @@ bool test_lerp() {
 }
 
 void test_GH_1917() {
-    // <cmath>: lerp(1e+308, 5e+307, 4.0) spuriously overflows
+    // GH-1917 <cmath>: lerp(1e+308, 5e+307, 4.0) spuriously overflows
     using bit_type = unsigned long long;
     STATIC_ASSERT(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
     {
@@ -1064,6 +1064,20 @@ void test_GH_1917() {
         assert(check_feexcept(FE_OVERFLOW));
     }
 #endif // _M_FP_STRICT
+}
+
+constexpr bool test_gh_2112() {
+    // GH-2112 <cmath>: std::lerp is missing Arithmetic overloads
+    assert(lerp(0, 0, 0) == 0.0);
+    assert(lerp(0.0f, 0.0f, 0.0) == 0.0);
+    assert(lerp(0.0L, 0, 0) == 0.0L);
+
+    STATIC_ASSERT(is_same_v<double, decltype(lerp(0, 0, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0.0L, 0, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0, 0.0L, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0, 0, 0.0L))>);
+
+    return true;
 }
 
 int main() {
@@ -1138,4 +1152,6 @@ int main() {
     test_lerp<long double>();
 
     test_GH_1917();
+    test_gh_2112();
+    STATIC_ASSERT(test_gh_2112());
 }
