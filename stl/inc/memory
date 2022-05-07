@@ -3341,7 +3341,6 @@ public:
     _CONSTEXPR23 unique_ptr(_Uty _Ptr, const _Dx& _Dt) noexcept : _Mypair(_One_then_variadic_args_t{}, _Dt, _Ptr) {
     }
 
-
 #if _USE_MEMORY_INT_0_SFINAE
     template <class _Uty, class _Dx2 = _Dx,
         enable_if_t<conjunction_v<negation<is_reference<_Dx2>>, is_constructible<_Dx2, _Dx2>>, int> = 0,
