@@ -156,23 +156,51 @@ struct _Optional_construct_base : _Optional_destruct_base<_Ty> {
 
     template <class _Self>
     _CONSTEXPR20 void _Construct_from(_Self&& _Right) noexcept(
-        is_nothrow_constructible_v<_Ty, decltype((_STD forward<_Self>(_Right)._Value))>) {
+        is_nothrow_constructible_v<_Ty, decltype(*_STD forward<_Self>(_Right))>) {
         // initialize contained value from _Right iff it contains a value
         if (_Right._Has_value) {
-            _Construct(_STD forward<_Self>(_Right)._Value);
+            _Construct(*_STD forward<_Self>(_Right));
         }
     }
 
     template <class _Self>
     _CONSTEXPR20 void _Assign_from(_Self&& _Right) noexcept(
-        is_nothrow_constructible_v<_Ty, decltype((_STD forward<_Self>(_Right)._Value))>&&
-            is_nothrow_assignable_v<_Ty&, decltype((_STD forward<_Self>(_Right)._Value))>) {
+        is_nothrow_constructible_v<_Ty, decltype(*_STD forward<_Self>(_Right))>&&
+            is_nothrow_assignable_v<_Ty&, decltype(*_STD forward<_Self>(_Right))>) {
         // assign/initialize/destroy contained value from _Right
         if (_Right._Has_value) {
-            _Assign(_STD forward<_Self>(_Right)._Value);
+            _Assign(*_STD forward<_Self>(_Right));
         } else {
             this->reset();
         }
+    }
+
+    _NODISCARD constexpr _Ty& operator*() & noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        return this->_Value;
+    }
+
+    _NODISCARD constexpr const _Ty& operator*() const& noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        return this->_Value;
+    }
+
+    _NODISCARD constexpr _Ty&& operator*() && noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        return _STD move(this->_Value);
+    }
+
+    _NODISCARD constexpr const _Ty&& operator*() const&& noexcept {
+#if _CONTAINER_DEBUG_LEVEL > 0
+        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        return _STD move(this->_Value);
     }
 };
 
@@ -379,30 +407,7 @@ public:
         return _STD addressof(this->_Value);
     }
 
-    _NODISCARD constexpr const _Ty& operator*() const& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-        return this->_Value;
-    }
-    _NODISCARD constexpr _Ty& operator*() & noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-        return this->_Value;
-    }
-    _NODISCARD constexpr _Ty&& operator*() && noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-        return _STD move(this->_Value);
-    }
-    _NODISCARD constexpr const _Ty&& operator*() const&& noexcept {
-#if _CONTAINER_DEBUG_LEVEL > 0
-        _STL_VERIFY(this->_Has_value, "Cannot access value of empty optional");
-#endif // _CONTAINER_DEBUG_LEVEL > 0
-        return _STD move(this->_Value);
-    }
+    using _Mybase::operator*;
 
     constexpr explicit operator bool() const noexcept {
         return this->_Has_value;
@@ -848,15 +853,16 @@ _CONSTEXPR20 void swap(optional<_Ty>& _Left, optional<_Ty>& _Right) noexcept(noe
     _Left.swap(_Right);
 }
 
-template <class _Ty>
+template <class _Ty, enable_if_t<is_constructible_v<decay_t<_Ty>, _Ty>, int> = 0> // LWG-3627
 _NODISCARD constexpr optional<decay_t<_Ty>> make_optional(_Ty&& _Value) {
     return optional<decay_t<_Ty>>{_STD forward<_Ty>(_Value)};
 }
-template <class _Ty, class... _Types>
+template <class _Ty, class... _Types, enable_if_t<is_constructible_v<_Ty, _Types...>, int> = 0>
 _NODISCARD constexpr optional<_Ty> make_optional(_Types&&... _Args) {
     return optional<_Ty>{in_place, _STD forward<_Types>(_Args)...};
 }
-template <class _Ty, class _Elem, class... _Types>
+template <class _Ty, class _Elem, class... _Types,
+    enable_if_t<is_constructible_v<_Ty, initializer_list<_Elem>&, _Types...>, int> = 0>
 _NODISCARD constexpr optional<_Ty> make_optional(initializer_list<_Elem> _Ilist, _Types&&... _Args) {
     return optional<_Ty>{in_place, _Ilist, _STD forward<_Types>(_Args)...};
 }

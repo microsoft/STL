@@ -40,7 +40,11 @@ concept derived_from = __is_base_of(_Base, _Derived)
     && __is_convertible_to(const volatile _Derived*, const volatile _Base*);
 
 template <class _From, class _To>
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
+concept convertible_to = is_convertible_v<_From, _To>
+#else // ^^^ workaround / no workaround vvv
 concept convertible_to = __is_convertible_to(_From, _To)
+#endif // ^^^ no workaround ^^^
     && requires {
         static_cast<_To>(_STD declval<_From>());
     };
@@ -63,7 +67,9 @@ concept common_with =
     requires {
         typename common_type_t<_Ty1, _Ty2>;
         typename common_type_t<_Ty2, _Ty1>;
-        requires same_as<common_type_t<_Ty1, _Ty2>, common_type_t<_Ty2, _Ty1>>;
+    }
+    && same_as<common_type_t<_Ty1, _Ty2>, common_type_t<_Ty2, _Ty1>>
+    && requires {
         static_cast<common_type_t<_Ty1, _Ty2>>(_STD declval<_Ty1>());
         static_cast<common_type_t<_Ty1, _Ty2>>(_STD declval<_Ty2>());
     }

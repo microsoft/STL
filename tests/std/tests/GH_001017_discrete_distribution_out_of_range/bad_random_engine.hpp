@@ -165,7 +165,7 @@ private:
                 }
             }
 
-            __analysis_assume(limit_dimension_ < Dimension);
+            _Analysis_assume_(limit_dimension_ < Dimension);
             generators_[limit_dimension_] = generator{};
 
             if (limit_dimension_ < Dimension - 1) {
