@@ -722,7 +722,6 @@ public:
         _Take_contents(_Right);
     }
 
-public:
     deque& operator=(deque&& _Right) noexcept(_Alty_traits::is_always_equal::value) {
         if (this == _STD addressof(_Right)) {
             return *this;
@@ -1220,6 +1219,31 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
+private:
+    enum class _Pop_direction : bool {
+        _Front,
+        _Back,
+    };
+
+    template <_Pop_direction _Direction>
+    struct _NODISCARD _Restore_old_size_guard {
+        deque* _Container;
+        const size_type _Oldsize;
+
+        ~_Restore_old_size_guard() { // restore old size, at least
+            if (_Container) {
+                while (_Oldsize < _Container->_Mysize()) {
+                    if constexpr (_Direction == _Pop_direction::_Front) {
+                        _Container->pop_front();
+                    } else {
+                        _Container->pop_back();
+                    }
+                }
+            }
+        }
+    };
+
+public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert [_First, _Last) at _Where, input iterators
@@ -1237,37 +1261,25 @@ public:
 
         if (_UFirst != _ULast) {
             if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
-                _TRY_BEGIN
+                _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
                 for (; _UFirst != _ULast; ++_UFirst) {
                     emplace_front(*_UFirst); // prepend flipped
                 }
 
-                _CATCH_ALL
-                while (_Oldsize < _Mysize()) {
-                    pop_front(); // restore old size, at least
-                }
-
-                _RERAISE;
-                _CATCH_END
+                _Guard._Container = nullptr;
 
                 size_type _Num = _Mysize() - _Oldsize;
                 _STD reverse(begin(), begin() + static_cast<difference_type>(_Num)); // flip new stuff in place
                 _STD rotate(begin(), begin() + static_cast<difference_type>(_Num),
                     begin() + static_cast<difference_type>(_Num + _Off));
             } else { // closer to back
-                _TRY_BEGIN
                 _Orphan_all();
+                _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
                 for (; _UFirst != _ULast; ++_UFirst) {
                     _Emplace_back_internal(*_UFirst);
                 }
 
-                _CATCH_ALL
-                while (_Oldsize < _Mysize()) {
-                    pop_back(); // restore old size, at least
-                }
-
-                _RERAISE;
-                _CATCH_END
+                _Guard._Container = nullptr;
 
                 _STD rotate(begin() + static_cast<difference_type>(_Off),
                     begin() + static_cast<difference_type>(_Oldsize), end());
@@ -1362,7 +1374,7 @@ private:
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
         if (_Off < _Rem) { // closer to front
-            _TRY_BEGIN
+            _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
             if (_Off < _Count) { // insert longer than prefix
                 for (_Num = _Count - _Off; 0 < _Num; --_Num) {
                     push_front(_Val); // push excess values
@@ -1385,15 +1397,9 @@ private:
                 _STD fill(begin() + static_cast<difference_type>(_Off), _Mid + static_cast<difference_type>(_Off),
                     _Tmp._Get_value()); // fill in values
             }
-            _CATCH_ALL
-            while (_Oldsize < _Mysize()) {
-                pop_front(); // restore old size, at least
-            }
-
-            _RERAISE;
-            _CATCH_END
+            _Guard._Container = nullptr;
         } else { // closer to back
-            _TRY_BEGIN
+            _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
             if (_Rem < _Count) { // insert longer than suffix
                 _Orphan_all();
                 for (_Num = _Count - _Rem; 0 < _Num; --_Num) {
@@ -1418,10 +1424,7 @@ private:
                 _STD fill(_Mid, _Mid + static_cast<difference_type>(_Count),
                     _Tmp._Get_value()); // fill in values
             }
-            _CATCH_ALL
-            _Erase_last_n(_Mysize() - _Oldsize);
-            _RERAISE;
-            _CATCH_END
+            _Guard._Container = nullptr;
         }
     }
 

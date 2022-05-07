@@ -111,6 +111,7 @@ struct lwg_2586 {
 };
 
 void test_case_LWG_2586() {
+    // LWG-2586: "Wrong value category used in scoped_allocator_adaptor::construct()"
     scoped_allocator_adaptor<allocator<lwg_2586>> sa;
     const auto ptr = sa.allocate(1);
     sa.construct(ptr);
@@ -124,6 +125,7 @@ void test_case_move_rebind_one_alloc() {
 }
 
 namespace test_LWG_2782 {
+    // LWG-2782: "scoped_allocator_adaptor constructors must be constrained"
     // Verify prerequisites
     STATIC_ASSERT(!is_constructible_v<allocator<int>, void*>);
     STATIC_ASSERT(!is_constructible_v<allocator<int>, min_alloc<int>>);

@@ -105,12 +105,12 @@ public:
     }
 
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD friend bool operator==(const fpos& _Left, const _Int _Right) {
+    _NODISCARD_FRIEND bool operator==(const fpos& _Left, const _Int _Right) {
         return static_cast<streamoff>(_Left) == _Right;
     }
 
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD friend bool operator==(const _Int _Left, const fpos& _Right) {
+    _NODISCARD_FRIEND bool operator==(const _Int _Left, const fpos& _Right) {
         return _Left == static_cast<streamoff>(_Right);
     }
 
@@ -119,12 +119,12 @@ public:
     }
 
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD friend bool operator!=(const fpos& _Left, const _Int _Right) {
+    _NODISCARD_FRIEND bool operator!=(const fpos& _Left, const _Int _Right) {
         return static_cast<streamoff>(_Left) != _Right;
     }
 
     template <class _Int, enable_if_t<is_integral_v<_Int>, int> = 0>
-    _NODISCARD friend bool operator!=(const _Int _Left, const fpos& _Right) {
+    _NODISCARD_FRIEND bool operator!=(const _Int _Left, const fpos& _Right) {
         return _Left != static_cast<streamoff>(_Right);
     }
 
