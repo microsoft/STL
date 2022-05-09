@@ -4755,7 +4755,7 @@ namespace ranges {
     concept _Slide_caches_last = !_Slide_caches_nothing<_Vw> && bidirectional_range<_Vw> && common_range<_Vw>;
 
     template <class _Vw>
-    concept _Slide_caches_first = (!_Slide_caches_nothing<_Vw> && !_Slide_caches_last<_Vw>);
+    concept _Slide_caches_first = !_Slide_caches_nothing<_Vw> && !_Slide_caches_last<_Vw>;
 
     template <forward_range _Vw>
         requires view<_Vw>
@@ -4780,8 +4780,7 @@ namespace ranges {
                 : _Last_element{_STD move(_Last_element_)} {}
 
 
-            _NODISCARD constexpr const _Base_iter& _Get_last_element() const noexcept //
-                requires _Slide_caches_first<_Base> {
+            _NODISCARD constexpr const _Base_iter& _Get_last_element() const noexcept {
                 return _Last_element;
             }
         };
@@ -4802,7 +4801,7 @@ namespace ranges {
             // clang-format off
             constexpr _Iterator(_Base_iter _Current_, range_difference_t<_Base> _Count_) noexcept(
                 is_nothrow_move_constructible_v<_Base_iter>&&
-                    is_nothrow_default_constructible_v<_Base_iter>) /* strengthened */
+                    ) /* strengthened */
                 requires (!_Slide_caches_first<_Base>)
                 : _Current(_STD move(_Current_)), _Count(_Count_) {}
             // clang-format on
@@ -4822,8 +4821,8 @@ namespace ranges {
 
             _Iterator() = default;
 
-            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(is_nothrow_move_constructible_v<_Base_iter>) //
-                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iter> /* strengthened */
+            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(is_nothrow_move_constructible_v<_Base_iter>) // strengthened
+                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iter> 
                 : _Current(_STD move(_Other._Current)), _Count(_Other._Count) {}
 
             _NODISCARD constexpr value_type operator*() const
@@ -4932,7 +4931,7 @@ namespace ranges {
                 return _Left._Current <=> _Right._Current;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator+(_Iterator _It, const difference_type _Off) noexcept(
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off) noexcept(
                 is_nothrow_copy_constructible_v<_Iterator>&& noexcept(_It._Current += _Off)) /* strengthened */
                 requires random_access_range<_Base> {
                 auto _Copy = _It;
@@ -4940,7 +4939,7 @@ namespace ranges {
                 return _Copy;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, _Iterator _It) noexcept(
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It) noexcept(
                 is_nothrow_copy_constructible_v<_Iterator>&& noexcept(_It._Current += _Off)) /* strengthened */
                 requires random_access_range<_Base> {
                 auto _Copy = _It;
@@ -4948,7 +4947,7 @@ namespace ranges {
                 return _Copy;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator-(_Iterator _It, const difference_type _Off) noexcept(
+            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off) noexcept(
                 is_nothrow_copy_constructible_v<_Iterator>&& noexcept(_It._Current -= _Off)) /* strengthened */
                 requires random_access_range<_Base> {
                 auto _Copy = _It;
