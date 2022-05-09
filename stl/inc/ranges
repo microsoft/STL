@@ -5247,7 +5247,7 @@ namespace ranges {
             requires (!_Simple_view<_Vw>) {
             // clang-format on
             if constexpr (common_range<_Vw> && sized_range<_Vw>) {
-                const auto _Missing = _Count - _RANGES distance(_Range) % _Count;
+                const auto _Missing = static_cast<range_difference_t<_Vw>>(_Count - _RANGES distance(_Range) % _Count);
                 if (_Missing == _Count) {
                     return _Iterator<false>{this, _RANGES end(_Range)};
                 }
@@ -5266,7 +5266,7 @@ namespace ranges {
             requires forward_range<const _Vw> {
             // clang-format on
             if constexpr (common_range<const _Vw> && sized_range<const _Vw>) {
-                const auto _Missing = _Count - _RANGES distance(_Range) % _Count;
+                const auto _Missing = static_cast<range_difference_t<_Vw>>(_Count - _RANGES distance(_Range) % _Count);
                 if (_Missing == _Count) {
                     return _Iterator<true>{this, _RANGES end(_Range)};
                 }
