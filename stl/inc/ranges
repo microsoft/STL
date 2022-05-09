@@ -4931,7 +4931,7 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off) noexcept(
-                noexcept(_STD declval<_Iterator>() += _Off)) /* strengthened */
+                noexcept(_STD declval<_Iterator&>() += _Off)) /* strengthened */
                 requires random_access_range<_Base> {
                 auto _Copy = _It;
                 _Copy += _Off;
@@ -4939,7 +4939,7 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It) noexcept(
-                noexcept(_STD declval<_Iterator>() += _Off)) /* strengthened */
+                noexcept(_STD declval<_Iterator&>() += _Off)) /* strengthened */
                 requires random_access_range<_Base> {
                 auto _Copy = _It;
                 _Copy += _Off;
@@ -4947,7 +4947,7 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off) noexcept(
-                noexcept(_STD declval<_Iterator>() -= _Off)) /* strengthened */
+                noexcept(_STD declval<_Iterator&>() -= _Off)) /* strengthened */
                 requires random_access_range<_Base> {
                 auto _Copy = _It;
                 _Copy -= _Off;
