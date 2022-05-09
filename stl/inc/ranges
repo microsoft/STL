@@ -4791,7 +4791,6 @@ namespace ranges {
             friend _Iterator;
             friend slide_view;
 
-            using _BaseTy    = _Iter_base<_Maybe_const<_Const, _Vw>>;
             using _Base      = _Maybe_const<_Const, _Vw>;
             using _Base_iter = iterator_t<_Base>;
 
@@ -4800,8 +4799,7 @@ namespace ranges {
 
             // clang-format off
             constexpr _Iterator(_Base_iter _Current_, range_difference_t<_Base> _Count_) noexcept(
-                is_nothrow_move_constructible_v<_Base_iter>&&
-                    ) /* strengthened */
+                is_nothrow_move_constructible_v<_Base_iter>) /* strengthened */
                 requires (!_Slide_caches_first<_Base>)
                 : _Current(_STD move(_Current_)), _Count(_Count_) {}
             // clang-format on
@@ -4810,7 +4808,7 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Base_iter>&&
                     is_nothrow_default_constructible_v<_Base_iter>) /* strengthened */
                 requires _Slide_caches_first<_Base>
-                : _BaseTy(_STD move(_Last_)), _Current(_STD move(_Current_)), _Count(_Count_) {}
+                : _Iter_base<_Base>(_STD move(_Last_)), _Current(_STD move(_Current_)), _Count(_Count_) {}
 
         public:
             using value_type        = decltype(_RANGES views::counted(_Current, _Count));
@@ -4821,8 +4819,9 @@ namespace ranges {
 
             _Iterator() = default;
 
-            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(is_nothrow_move_constructible_v<_Base_iter>) // strengthened
-                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iter> 
+            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(
+                is_nothrow_move_constructible_v<_Base_iter>) /* strengthened */
+                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iter> //
                 : _Current(_STD move(_Other._Current)), _Count(_Other._Count) {}
 
             _NODISCARD constexpr value_type operator*() const
@@ -4931,28 +4930,25 @@ namespace ranges {
                 return _Left._Current <=> _Right._Current;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off) noexcept(
-                is_nothrow_copy_constructible_v<_Iterator>&& noexcept(_It._Current += _Off)) /* strengthened */
+            _NODISCARD_FRIEND constexpr _Iterator operator+(_Iterator _It, const difference_type _Off) noexcept(
+                noexcept(_It._Current += _Off)) /* strengthened */
                 requires random_access_range<_Base> {
-                auto _Copy = _It;
-                _Copy += _Off;
-                return _Copy;
+                _It += _Off;
+                return _It;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It) noexcept(
-                is_nothrow_copy_constructible_v<_Iterator>&& noexcept(_It._Current += _Off)) /* strengthened */
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, _Iterator _It) noexcept(
+                noexcept(_It._Current += _Off)) /* strengthened */
                 requires random_access_range<_Base> {
-                auto _Copy = _It;
-                _Copy += _Off;
-                return _Copy;
+                _It += _Off;
+                return _It;
             }
 
-            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off) noexcept(
-                is_nothrow_copy_constructible_v<_Iterator>&& noexcept(_It._Current -= _Off)) /* strengthened */
+            _NODISCARD_FRIEND constexpr _Iterator operator-(_Iterator _It, const difference_type _Off) noexcept(
+                noexcept(_It._Current -= _Off)) /* strengthened */
                 requires random_access_range<_Base> {
-                auto _Copy = _It;
-                _Copy -= _Off;
-                return _Copy;
+                _It -= _Off;
+                return _It;
             }
 
 
@@ -5014,12 +5010,12 @@ namespace ranges {
             if constexpr (_Slide_caches_first<_Vw>) {
                 auto _First = _RANGES begin(_Range);
                 if (this->_Has_cache()) {
-                    return _Iterator<false>{_First, this->_Get_cache(_Range), _Count};
+                    return _Iterator<false>{_STD move(_First), this->_Get_cache(_Range), _Count};
                 }
 
-                auto _Result = _RANGES next(_First, _Count - 1, _RANGES end(_Range));
-                this->_Set_cache(_Range, _Result);
-                return _Iterator<false>{_First, _Result, _Count};
+                auto _Current_last = _RANGES next(_First, _Count - 1, _RANGES end(_Range));
+                this->_Set_cache(_Range, _Current_last);
+                return _Iterator<false>{_STD move(_First), _STD move(_Current_last), _Count};
             } else {
                 return _Iterator<false>{_RANGES begin(_Range), _Count};
             }
@@ -5046,9 +5042,9 @@ namespace ranges {
                     return _Iterator<false>{this->_Get_cache(_Range), _Count};
                 }
 
-                auto _Result = _RANGES prev(_RANGES end(_Range), _Count - 1, _RANGES begin(_Range));
-                this->_Set_cache(_Range, _Result);
-                return _Iterator<false>{_Result, _Count};
+                auto _Current_last = _RANGES prev(_RANGES end(_Range), _Count - 1, _RANGES begin(_Range));
+                this->_Set_cache(_Range, _Current_last);
+                return _Iterator<false>{_STD move(_Current_last), _Count};
             } else if constexpr (common_range<_Vw>) {
                 const auto _Last = _RANGES end(_Range);
                 return _Iterator<false>{_Last, _Last, _Count};
@@ -5070,9 +5066,9 @@ namespace ranges {
 
         _NODISCARD constexpr auto size() noexcept(noexcept(_RANGES distance(_Range))) /* strengthened */
             requires sized_range<_Vw> {
-            const auto _Size = _RANGES distance(_Range) - (_Count - 1);
+            auto _Size = _RANGES distance(_Range) - (_Count - 1);
             if (_Size < 0) {
-                return _To_unsigned_like(_Size - _Size);
+                _Size = 0;
             }
 
             return _To_unsigned_like(_Size);
@@ -5080,9 +5076,9 @@ namespace ranges {
 
         _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES distance(_Range))) /* strengthened */
             requires sized_range<const _Vw> {
-            const auto _Size = _RANGES distance(_Range) - (_Count - 1);
+            auto _Size = _RANGES distance(_Range) - (_Count - 1);
             if (_Size < 0) {
-                return _To_unsigned_like(_Size - _Size);
+                _Size = 0;
             }
             return _To_unsigned_like(_Size);
         }
