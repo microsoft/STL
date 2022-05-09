@@ -5160,27 +5160,24 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr _Iterator operator+(_Iterator _It, const difference_type _Off) noexcept(
-                is_nothrow_copy_constructible_v<_Iterator>&& noexcept(_It._Current += _Off)) /* strengthened */
+                noexcept(_It._Current += _Off)) /* strengthened */
                 requires random_access_range<_Base> {
-                auto _Copy = _It;
-                _Copy += _Off;
-                return _Copy;
+                _It += _Off;
+                return _It;
             }
 
             _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, _Iterator _It) noexcept(
-                is_nothrow_copy_constructible_v<_Iterator>&& noexcept(_It._Current += _Off)) /* strengthened */
+                noexcept(_It._Current += _Off)) /* strengthened */
                 requires random_access_range<_Base> {
-                auto _Copy = _It;
-                _Copy += _Off;
-                return _Copy;
+                _It += _Off;
+                return _It;
             }
 
             _NODISCARD_FRIEND constexpr _Iterator operator-(_Iterator _It, const difference_type _Off) noexcept(
-                is_nothrow_copy_constructible_v<_Iterator>&& noexcept(_It._Current -= _Off)) /* strengthened */
+                noexcept(_It._Current -= _Off)) /* strengthened */
                 requires random_access_range<_Base> {
-                auto _Copy = _It;
-                _Copy -= _Off;
-                return _Copy;
+                _It -= _Off;
+                return _It;
             }
 
             _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left,
@@ -5190,13 +5187,13 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr difference_type operator-(default_sentinel_t, const _Iterator& _Right) noexcept(
-                noexcept(_Right._End - _Right._Current)) /* strengthened */
+                noexcept(_Div_ceil(_Right._End - _Right._Current, _Right._Count))) /* strengthened */
                 requires sized_sentinel_for<_Base_sen, _Base_iter> {
                 return _Div_ceil(_Right._End - _Right._Current, _Right._Count);
             }
 
             _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left, default_sentinel_t) noexcept(
-                noexcept(_Left._End - _Left._Current)) /* strengthened */
+                noexcept(-_Div_ceil(_Left._End - _Left._Current, _Left._Count))) /* strengthened */
                 requires sized_sentinel_for<_Base_sen, _Base_iter> {
                 return -_Div_ceil(_Left._End - _Left._Current, _Left._Count);
             }
