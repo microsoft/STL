@@ -4749,8 +4749,7 @@ namespace ranges {
 
 #if _HAS_CXX23
     template <class _Size>
-    constexpr _Size _Div_ceil(_Size _Num, _Size _Denom) noexcept(
-        noexcept(_Num / _Denom) && noexcept(_Num % _Denom) && noexcept(++_Num)) {
+    constexpr _Size _Div_ceil(_Size _Num, _Size _Denom) noexcept {
         _Size _Result = _Num / _Denom;
         if (_Num % _Denom) {
             ++_Result;
@@ -5187,13 +5186,13 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr difference_type operator-(default_sentinel_t, const _Iterator& _Right) noexcept(
-                noexcept(_Div_ceil(_Right._End - _Right._Current, _Right._Count))) /* strengthened */
+                noexcept(_Right._End - _Right._Current)) /* strengthened */
                 requires sized_sentinel_for<_Base_sen, _Base_iter> {
                 return _Div_ceil(_Right._End - _Right._Current, _Right._Count);
             }
 
             _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left, default_sentinel_t) noexcept(
-                noexcept(-_Div_ceil(_Left._End - _Left._Current, _Left._Count))) /* strengthened */
+                noexcept(_Left._End - _Left._Current)) /* strengthened */
                 requires sized_sentinel_for<_Base_sen, _Base_iter> {
                 return -_Div_ceil(_Left._End - _Left._Current, _Left._Count);
             }
@@ -5273,14 +5272,12 @@ namespace ranges {
             }
         }
 
-        _NODISCARD constexpr auto size() noexcept(
-            noexcept(_Div_ceil(_RANGES distance(_Range), _Count))) /* strengthened */
+        _NODISCARD constexpr auto size() noexcept(noexcept(_RANGES distance(_Range))) /* strengthened */
             requires sized_range<_Vw> {
             return _To_unsigned_like(_Div_ceil(_RANGES distance(_Range), _Count));
         }
 
-        _NODISCARD constexpr auto size() const
-            noexcept(noexcept(_Div_ceil(_RANGES distance(_Range), _Count))) /* strengthened */
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES distance(_Range))) /* strengthened */
             requires sized_range<const _Vw> {
             return _To_unsigned_like(_Div_ceil(_RANGES distance(_Range), _Count));
         }
