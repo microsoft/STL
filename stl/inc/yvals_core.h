@@ -684,6 +684,10 @@
 #define _HAS_UNEXPECTED (!_HAS_CXX17)
 #endif // _HAS_UNEXPECTED
 
+#if _HAS_UNEXPECTED && _HAS_CXX23
+#error STL1004: C++98 unexpected() is incompatible with C++23 unexpected<E>.
+#endif // _HAS_UNEXPECTED && _HAS_CXX23
+
 // P0004R1 Removing Deprecated Iostreams Aliases
 #ifndef _HAS_OLD_IOSTREAMS_MEMBERS
 #define _HAS_OLD_IOSTREAMS_MEMBERS (!_HAS_CXX17)
