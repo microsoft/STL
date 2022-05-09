@@ -853,7 +853,6 @@ private:
     _Callable _Callee;
 };
 
-
 template <class _Ret, class... _Types>
 class _Func_class : public _Arg_types<_Types...> {
 public:
