@@ -885,7 +885,7 @@ namespace {
                         }
                     }
 
-                    if constexpr (_Mode & _Mode_max != 0) {
+                    if constexpr ((_Mode & _Mode_max) != 0) {
                         const __m128i _H_max =
                             _Traits::_H_max(_Cur_vals_max); // Vector populated by the largest element
                         const auto _H_max_val = _Traits::_Get_any(_H_max); // Get any element of it
