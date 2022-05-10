@@ -304,7 +304,8 @@
 // P2273R3 constexpr unique_ptr
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
-// P2442R1 views::chunk and views::slide
+// P2442R1 Windowing Range Adaptors: views::chunk, views::slide
+//     (views::chunk only)
 // P2443R1 views::chunk_by
 
 // Parallel Algorithms Notes

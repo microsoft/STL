@@ -7,6 +7,7 @@
 #include <ranges>
 #include <span>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <range_algorithm_support.hpp>
@@ -311,9 +312,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(i2 >= i);
 
             if constexpr (three_way_comparable<iterator_t<V>>) {
-                assert(i <=> i4 == std::strong_ordering::equal);
-                assert(i <=> i2 == std::strong_ordering::less);
-                assert(i2 <=> i == std::strong_ordering::greater);
+                assert(i <=> i4 == strong_ordering::equal);
+                assert(i <=> i2 == strong_ordering::less);
+                assert(i2 <=> i == strong_ordering::greater);
             }
         }
 
@@ -398,9 +399,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(ci2 >= i);
 
             if constexpr (three_way_comparable<iterator_t<const V>>) {
-                assert(ci <=> ci4 == std::strong_ordering::equal);
-                assert(ci <=> ci2 == std::strong_ordering::less);
-                assert(ci2 <=> ci == std::strong_ordering::greater);
+                assert(ci <=> ci4 == strong_ordering::equal);
+                assert(ci <=> ci2 == strong_ordering::less);
+                assert(ci2 <=> ci == strong_ordering::greater);
             }
         }
 
@@ -530,7 +531,7 @@ constexpr void instantiation_test() {
 #ifdef TEST_EVERYTHING
     test_in<instantiator, const int>();
 #else // ^^^ test all forward range permutations / test only "interesting" permutations vvv
-    // The view is sensitive to category, commonality and size, but oblivious to differencing, and proxyness.
+    // The view is sensitive to category, commonality, and size, but oblivious to differencing and proxyness.
     using test::CanDifference, test::Common, test::Sized;
 
     instantiator::call<test_input_range<CanDifference::yes>>();
