@@ -945,7 +945,7 @@ namespace {
                         _Cur_vals =
                             _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
 
-                        if constexpr (( _Mode & _Mode_min) != 0) {
+                        if constexpr ((_Mode & _Mode_min) != 0) {
                             _Cur_vals_min = _Cur_vals;
                             _Cur_idx_min  = _mm_setzero_si128();
                         }
