@@ -1142,10 +1142,10 @@
 #define _CXX20_DEPRECATE_IS_ALWAYS_EQUAL
 #endif // ^^^ warning disabled ^^^
 
-// STL4035 is used to warn about the contents of some header is available only with specific C++ standard or later. See
+// STL4037 is used to warn about the contents of some header is available only with specific C++ standard or later. See
 // example at stl/inc/any, line 13
 
-// next warning number: STL4036
+// next warning number: STL4038
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
