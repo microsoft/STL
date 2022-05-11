@@ -79,7 +79,7 @@ struct _Default_allocate_traits {
         return ::operator new(_Bytes);
     }
 
-#ifdef __cpp_aligned_new
+#if defined(__cpp_aligned_new) && _HAS_CXX17
     __declspec(allocator) static
 #ifdef __clang__ // Clang and MSVC implement P0784R7 differently; see GH-1532
         _CONSTEXPR20
@@ -168,7 +168,7 @@ inline void _Adjust_manually_vector_aligned(void*& _Ptr, size_t& _Bytes) {
 }
 #endif // defined(_M_IX86) || defined(_M_X64)
 
-#ifdef __cpp_aligned_new
+#if defined(__cpp_aligned_new) && _HAS_CXX17
 template <size_t _Align, class _Traits = _Default_allocate_traits,
     enable_if_t<(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__), int> = 0>
 __declspec(allocator) _CONSTEXPR20 void* _Allocate(const size_t _Bytes) {
@@ -1420,7 +1420,7 @@ pair<_Ty*, ptrdiff_t> _Get_temporary_buffer(ptrdiff_t _Count) noexcept {
         for (; 0 < _Count; _Count /= 2) {
             const auto _Size = static_cast<size_t>(_Count) * sizeof(_Ty);
             void* _Pbuf;
-#ifdef __cpp_aligned_new
+#if defined(__cpp_aligned_new) && _HAS_CXX17
             if constexpr (alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                 _Pbuf = ::operator new (_Size, align_val_t{alignof(_Ty)}, nothrow);
             } else
@@ -1440,7 +1440,7 @@ pair<_Ty*, ptrdiff_t> _Get_temporary_buffer(ptrdiff_t _Count) noexcept {
 
 template <class _Ty>
 void _Return_temporary_buffer(_Ty* const _Pbuf) noexcept {
-#ifdef __cpp_aligned_new
+#if defined(__cpp_aligned_new) && _HAS_CXX17
     if constexpr (alignof(_Ty) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete (_Pbuf, align_val_t{alignof(_Ty)});
     } else

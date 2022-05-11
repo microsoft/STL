@@ -168,7 +168,7 @@ namespace pmr {
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_get_default_resource() noexcept;
 
     _NODISCARD inline memory_resource* get_default_resource() noexcept {
-#ifdef __cpp_aligned_new
+#if defined(__cpp_aligned_new) && _HAS_CXX17
         return _Aligned_get_default_resource();
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
         return _Unaligned_get_default_resource();

@@ -22,7 +22,7 @@ struct alignas(2 * alignof(std::max_align_t)) overaligned_t {
         assert(this_ptr_value < storage_ptr_value || this_ptr_value >= storage_ptr_value + storage_size);
 
         // Before C++17, alignas isn't helpful for aligning allocations via "new"
-#ifdef __cpp_aligned_new
+#if defined(__cpp_aligned_new) && _HAS_CXX17
         assert(this_ptr_value % alignof(overaligned_t) == 0);
 #endif
     }
