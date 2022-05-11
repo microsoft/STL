@@ -4854,7 +4854,7 @@ namespace ranges {
             friend chunk_view;
             chunk_view* _Parent{};
 
-            constexpr explicit _Outer_iterator(chunk_view& _Parent_) noexcept : _Parent(_STD addressof(_Parent_)) {}
+            constexpr explicit _Outer_iterator(chunk_view* _Parent_) noexcept : _Parent(_Parent_) {}
 
             _NODISCARD constexpr bool _Is_end() const
                 noexcept(noexcept(_Implicitly_convert_to<bool>(*_Parent->_Current == _RANGES end(_Parent->_Range)))) {
@@ -4970,7 +4970,7 @@ namespace ranges {
             noexcept(_RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
             _Current._Emplace(_RANGES begin(_Range));
             _Remainder = _Count;
-            return _Outer_iterator{*this};
+            return _Outer_iterator{this};
         }
 
         _NODISCARD constexpr default_sentinel_t end() noexcept {
@@ -5086,7 +5086,7 @@ namespace ranges {
                 requires random_access_range<_Base> {
                 if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    _STL_VERIFY(_RANGES distance(_Current, _End) / _Count > _Off - 1,
+                    _STL_VERIFY(_RANGES distance(_Current, _End) > _Count * (_Off - 1),
                         "cannot advance chunk_view iterator past end");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                     _Missing = _RANGES advance(_Current, _Count * _Off, _End);
@@ -5103,7 +5103,7 @@ namespace ranges {
                 const difference_type _Off = -_Raw_off;
                 if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    _STL_VERIFY(_RANGES distance(_Current, _End) / _Count > _Off - 1,
+                    _STL_VERIFY(_RANGES distance(_Current, _End) > _Count * (_Off - 1),
                         "cannot advance chunk_view iterator past end");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                     _Missing = _RANGES advance(_Current, _Count * _Off, _End);
