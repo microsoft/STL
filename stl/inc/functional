@@ -1299,7 +1299,7 @@ inline void __stdcall _Function_deallocate_large_default_aligned(_Move_only_func
 
 template <size_t _Align>
 void __stdcall _Function_deallocate_large_overaligned(_Move_only_function_data& _Self) noexcept {
-#if defined(__cpp_aligned_new) && _HAS_CXX17
+#ifdef __cpp_aligned_new
     ::operator delete (_Self._Large_fn_ptr<void>(), align_val_t{_Align});
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
     _aligned_free(_Self._Large_fn_ptr<void>());
@@ -1313,7 +1313,7 @@ void __stdcall _Function_destroy_large(_Move_only_function_data& _Self) noexcept
     if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete(static_cast<void*>(_Pfn));
     } else {
-#if defined(__cpp_aligned_new) && _HAS_CXX17
+#ifdef __cpp_aligned_new
         ::operator delete (static_cast<void*>(_Pfn), align_val_t{alignof(_Vt)});
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
         _aligned_free(static_cast<void*>(_Pfn));
@@ -1338,7 +1338,7 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
                 if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                     ::operator delete(_Ptr);
                 } else {
-#if defined(__cpp_aligned_new) && _HAS_CXX17
+#ifdef __cpp_aligned_new
                     ::operator delete (_Ptr, align_val_t{alignof(_Vt)});
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
                     _aligned_free(_Ptr);
@@ -1352,7 +1352,7 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
     if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         _Ptr = ::operator new(sizeof(_Vt));
     } else {
-#if defined(__cpp_aligned_new) && _HAS_CXX17
+#ifdef __cpp_aligned_new
         _Ptr = ::operator new (sizeof(_Vt), align_val_t{alignof(_Vt)});
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
         _Ptr = _aligned_malloc(sizeof(_Vt), alignof(_Vt));

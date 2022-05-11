@@ -36,7 +36,7 @@ namespace pmr {
     extern "C" _CRT_SATELLITE_1 memory_resource* __cdecl _Unaligned_set_default_resource(memory_resource*) noexcept;
 
     inline memory_resource* set_default_resource(memory_resource* const _Resource) noexcept {
-#if defined(__cpp_aligned_new) && _HAS_CXX17
+#ifdef __cpp_aligned_new
         return _Aligned_set_default_resource(_Resource);
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
         return _Unaligned_set_default_resource(_Resource);
@@ -69,7 +69,7 @@ namespace pmr {
 
     extern "C" _CRT_SATELLITE_1 _Unaligned_new_delete_resource_impl* __cdecl _Unaligned_new_delete_resource() noexcept;
 
-#if defined(__cpp_aligned_new) && _HAS_CXX17
+#ifdef __cpp_aligned_new
     class _Aligned_new_delete_resource_impl final
         : public _Identity_equal_resource { // implementation for new_delete_resource with aligned new support
         void* do_allocate(const size_t _Bytes, const size_t _Align) override {

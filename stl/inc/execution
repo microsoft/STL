@@ -267,7 +267,7 @@ struct _Parallelism_allocate_traits {
         return _Result;
     }
 
-#if defined(__cpp_aligned_new) && _HAS_CXX17
+#ifdef __cpp_aligned_new
     __declspec(allocator) static void* _Allocate_aligned(const size_t _Bytes, const size_t _Align) {
         void* _Result = ::operator new (_Bytes, align_val_t{_Align}, nothrow);
         if (!_Result) {

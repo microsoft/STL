@@ -2098,7 +2098,7 @@ _NODISCARD size_t _Calculate_bytes_for_flexible_array(const size_t _Count) noexc
 template <class _Refc>
 _NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
     const size_t _Bytes = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
-#if defined(__cpp_aligned_new) && _HAS_CXX17
+#ifdef __cpp_aligned_new
     constexpr size_t _Align = alignof(_Refc);
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         return static_cast<_Refc*>(::operator new (_Bytes, align_val_t{_Align}));
@@ -2111,7 +2111,7 @@ _NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
 
 template <class _Refc>
 void _Deallocate_flexible_array(_Refc* const _Ptr) noexcept {
-#if defined(__cpp_aligned_new) && _HAS_CXX17
+#ifdef __cpp_aligned_new
     constexpr size_t _Align = alignof(_Refc);
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete (static_cast<void*>(_Ptr), align_val_t{_Align});
