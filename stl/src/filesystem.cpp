@@ -9,6 +9,7 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
+#include <algorithm>
 #include <clocale>
 #include <corecrt_terminate.h>
 #include <cstdlib>
@@ -829,8 +830,19 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
             // Check for file names that contain `?` or `*` (i.e., globbing characters).
             // These are invalid file names, and will give us the wrong answer with `FindFirstFileW`.
-            if (_CSTD wcspbrk(_Path, L"?*")) {
-                return __std_win_error{ERROR_INVALID_NAME};
+            {
+                const wchar_t* _Path_end           = _Path + _CSTD wcslen(_Path);
+                const wchar_t* _After_drive_prefix = _STD _Find_root_name_end(_Path, _Path_end);
+                // `?` is allowed in the drive prefix, but `*` is not.
+                if (_STD find(_Path, _After_drive_prefix, '*') != _After_drive_prefix) {
+                    return __std_win_error{ERROR_INVALID_NAME};
+                }
+
+                constexpr static auto _Is_globbing_character = [](wchar_t _Ch) { return _Ch == '*' || _Ch == '?'; };
+                // In the rest of the path, neither is allowed.
+                if (_STD find_if(_After_drive_prefix, _Path_end, _Is_globbing_character) != _Path_end) {
+                    return __std_win_error{ERROR_INVALID_NAME};
+                }
             }
 
             WIN32_FIND_DATAW _Data;
