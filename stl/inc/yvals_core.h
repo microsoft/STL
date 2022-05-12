@@ -1143,11 +1143,11 @@
 
 #if _HAS_CXX23 && !defined(_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
-#define _CXX23_DEPRECATE_ALIGNED_STORAGE                                              \
-    [[deprecated("warning STL4034: "                                                  \
-                 "std::aligned_storage is deprecated in C++23 by P1413R3. "           \
-                 "Prefer alignas(T) std::byte t_buff[sizeof(T)]."                     \
-                 "You can define _SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING " \
+#define _CXX23_DEPRECATE_ALIGNED_STORAGE                                                     \
+    [[deprecated("warning STL4034: "                                                         \
+                 "std::aligned_storage and std::aligned_storage_t are deprecated in C++23. " \
+                 "Prefer alignas(T) std::byte t_buff[sizeof(T)]. "                           \
+                 "You can define _SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING "        \
                  "or _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _CXX23_DEPRECATE_ALIGNED_STORAGE
@@ -1155,11 +1155,11 @@
 
 #if _HAS_CXX23 && !defined(_SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
-#define _CXX23_DEPRECATE_ALIGNED_UNION                                                \
-    [[deprecated("warning STL4035: "                                                  \
-                 "std::aligned_union is deprecated in C++23 by P1413R3. "             \
-                 "Prefer alignas(Ts...) std::byte t_buff[std::max({sizeof(Ts)...})]." \
-                 "You can define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING "   \
+#define _CXX23_DEPRECATE_ALIGNED_UNION                                                   \
+    [[deprecated("warning STL4035: "                                                     \
+                 "std::aligned_union and std::aligned_union_t are deprecated in C++23. " \
+                 "Prefer alignas(Ts...) std::byte t_buff[std::max({sizeof(Ts)...})]. "   \
+                 "You can define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING "      \
                  "or _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _CXX23_DEPRECATE_ALIGNED_UNION
