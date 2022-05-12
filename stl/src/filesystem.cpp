@@ -168,6 +168,10 @@ namespace {
 
         return __std_win_error{GetLastError()};
     }
+
+    [[nodiscard]] static unsigned long long _Merge_to_ull(unsigned long _High, unsigned long _Low) noexcept {
+        return static_cast<unsigned long long>(_Low) | (static_cast<unsigned long long>(_High) << 32);
+    }
 } // unnamed namespace
 
 _EXTERN_C
@@ -793,10 +797,6 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     return {_Size, __std_win_error::_Success};
 }
 
-static unsigned long long _Merge_to_ull(unsigned long _Low, unsigned long _High) noexcept {
-    return static_cast<unsigned long long>(_Low) | static_cast<unsigned long long>(_High) << 32;
-}
-
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_get_stats(_In_z_ const wchar_t* const _Path, __std_fs_stats* const _Stats,
         _In_ __std_fs_stats_flags _Flags, _In_ const __std_fs_file_attr _Symlink_attribute_hint) noexcept {
@@ -827,28 +827,30 @@ static unsigned long long _Merge_to_ull(unsigned long _Low, unsigned long _High)
             || !_Follow_symlinks) { // we might not be a symlink or not following symlinks, so FindFirstFileW
                                     // would return the right answer
 
-            // check for file names that contain `?` or `*` (globbing characters)
-            // these are invalid file names, and will give us the wrong answer with `FindFirstFile`
-            if (::wcspbrk(_Path, L"?*")) {
-                return __std_win_error(ERROR_INVALID_NAME);
+            // Check for file names that contain `?` or `*` (i.e., globbing characters).
+            // These are invalid file names, and will give us the wrong answer with `FindFirstFileW`.
+            if (_CSTD wcspbrk(_Path, L"?*")) {
+                return __std_win_error{ERROR_INVALID_NAME};
             }
 
             WIN32_FIND_DATAW _Data;
-            HANDLE _Find_handle = FindFirstFileW(_Path, &_Data);
-            if (_Find_handle == INVALID_HANDLE_VALUE) {
-                return __std_win_error(GetLastError());
+            {
+                HANDLE _Find_handle = FindFirstFileW(_Path, &_Data);
+                if (_Find_handle == INVALID_HANDLE_VALUE) {
+                    return __std_win_error{GetLastError()};
+                }
+                FindClose(_Find_handle);
             }
-            FindClose(_Find_handle);
 
-            auto _Attributes = static_cast<__std_fs_file_attr>(_Data.dwFileAttributes);
+            const __std_fs_file_attr _Attributes{_Data.dwFileAttributes};
             if (!_Follow_symlinks
                 || !_Bitmask_includes(_Attributes,
                     __std_fs_file_attr::_Reparse_point)) { // if we aren't following symlinks or can't be a
                                                            // symlink, that data was useful, record
                 _Stats->_Attributes      = _Attributes;
-                _Stats->_File_size       = _Merge_to_ull(_Data.nFileSizeLow, _Data.nFileSizeHigh);
+                _Stats->_File_size       = _Merge_to_ull(_Data.nFileSizeHigh, _Data.nFileSizeLow);
                 _Stats->_Last_write_time = static_cast<long long>(
-                    _Merge_to_ull(_Data.ftLastWriteTime.dwLowDateTime, _Data.ftLastWriteTime.dwHighDateTime));
+                    _Merge_to_ull(_Data.ftLastWriteTime.dwHighDateTime, _Data.ftLastWriteTime.dwLowDateTime));
 
                 _Flags &= ~_Get_file_attributes_data;
             }
