@@ -186,7 +186,7 @@ void* __cdecl __std_swap_ranges_trivially_swappable(void* _First1, void* _Last1,
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _First, void* _Last) noexcept {
     if (_Byte_length(_First, _Last) >= 64
 #if defined(_M_IX86) || defined(_VECTOR_X64)
-        &&  _Use_avx2()) {
+        && _Use_avx2()) {
         const __m256i _Reverse_char_lanes_avx = _mm256_set_epi8( //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, //
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
@@ -272,7 +272,7 @@ __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_1(void* _Firs
 __declspec(noalias) void __cdecl __std_reverse_trivially_swappable_2(void* _First, void* _Last) noexcept {
     if (_Byte_length(_First, _Last) >= 64
 #if defined(_M_IX86) || defined(_VECTOR_X64)
-        &&  _Use_avx2()) {
+        && _Use_avx2()) {
         const __m256i _Reverse_short_lanes_avx = _mm256_set_epi8( //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14, //
             1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14);
