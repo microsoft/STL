@@ -890,7 +890,8 @@ namespace {
                             _Traits::_H_max(_Cur_vals_max); // Vector populated by the largest element
                         const auto _H_max_val = _Traits::_Get_any(_H_max); // Get any element of it
 
-                        if (_Mode == _Mode_both ? _Cur_max_val <= _H_max_val : _Cur_max_val < _H_max_val) {
+                        if (_Mode == _Mode_both && _Cur_max_val <= _H_max_val
+                            || _Mode == _Mode_max && _Cur_max_val < _H_max_val) {
                             // max_element: current horizontal max is greater than the old, update max
                             // minmax_element: current horizontal max is not less than the old, update max
                             _Cur_max_val = _H_max_val;
