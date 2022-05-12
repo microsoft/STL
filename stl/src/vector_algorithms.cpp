@@ -763,10 +763,10 @@ namespace {
         }
 
         template <class _Fn>
-        static __m128i _H_func(const __m128i _Cur, _Fn Funct) noexcept {
+        static __m128i _H_func(const __m128i _Cur, _Fn _Funct) noexcept {
             _Signed_t _H_min_a = _Get_any(_Cur);
             _Signed_t _H_min_b = _Get_any(_mm_bsrli_si128(_Cur, 8));
-            if (Funct(_H_min_b, _H_min_a)) {
+            if (_Funct(_H_min_b, _H_min_a)) {
                 _H_min_a = _H_min_b;
             }
             return _mm_set1_epi64x(_H_min_a);
