@@ -972,7 +972,7 @@ namespace {
                     _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
                 }
 
-                if constexpr ((_Mode == _Mode_max) != 0) {
+                if constexpr (_Mode == _Mode_max != 0) {
                     // Looking for the first occurence of maximum, don't overwrite with newly found occurences
                     const __m128i _Is_greater = _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
                     _Cur_idx_max =
