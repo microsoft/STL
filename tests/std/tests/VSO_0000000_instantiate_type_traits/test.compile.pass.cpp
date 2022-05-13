@@ -299,10 +299,8 @@ void type_traits_test() {
         virtual ~F() {}
     };
     type_traits_ref_test_impl<F, C>();
-#ifdef _MSC_EXTENSIONS // TRANSITION, VSO-589178
     type_traits_ref_test_impl<pair<int, double>>();
     type_traits_ref_test_impl<tuple<int, int, int>>();
-#endif // TRANSITION, VSO-589178
 
     INSTANTIATE(make_integer_sequence<int, 0>);
     INSTANTIATE(index_sequence<1, 1, 2, 3, 5, 8, 13>);

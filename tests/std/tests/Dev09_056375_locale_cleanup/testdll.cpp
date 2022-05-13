@@ -15,7 +15,7 @@ ref struct Test {
     static
 #else
 extern "C" {
-_declspec(dllexport)
+__declspec(dllexport)
 #endif
 
         void

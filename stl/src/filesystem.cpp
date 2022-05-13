@@ -159,28 +159,13 @@ namespace {
         return _Last_error;
     }
 
-
-    struct _File_disposition_info_ex {
-        DWORD _Flags;
-    };
-
     [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
         __stdcall _Set_delete_flag(_In_ __std_fs_file_handle _Handle) {
-        // From newer Windows SDK than currently used to build vctools:
-        // #define FILE_DISPOSITION_FLAG_DELETE                     0x00000001
-        // #define FILE_DISPOSITION_FLAG_POSIX_SEMANTICS            0x00000002
 
-        // typedef struct _FILE_DISPOSITION_INFO_EX {
-        //     DWORD Flags;
-        // } FILE_DISPOSITION_INFO_EX, *PFILE_DISPOSITION_INFO_EX;
-
-        _File_disposition_info_ex _Info_ex{0x3};
-
-        // FileDispositionInfoEx isn't documented in MSDN at the time of this writing, but is present
-        // in minwinbase.h as of at least 10.0.16299.0
-        constexpr auto _FileDispositionInfoExClass = static_cast<FILE_INFO_BY_HANDLE_CLASS>(21);
+        // See minwinbase.h and WinBase.h.
+        FILE_DISPOSITION_INFO_EX _Info_ex{FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS};
         if (SetFileInformationByHandle(
-                reinterpret_cast<HANDLE>(_Handle), _FileDispositionInfoExClass, &_Info_ex, sizeof(_Info_ex))) {
+                reinterpret_cast<HANDLE>(_Handle), FileDispositionInfoEx, &_Info_ex, sizeof(_Info_ex))) {
             return __std_win_error::_Success;
         }
 
@@ -579,16 +564,11 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         return {false, _Translate_not_found_to_success(_Last_error)};
     }
 
-    // For Windows 10 1809 or later we have this flag -> FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE 0x10
-    // This flag also deletes read-only files.
-    // NOTE: This is currently undocumented in MSDN. Refer to WinBase.h for declarations.
-
-    // The following bits are set here
-    // FILE_DISPOSITION_FLAG_DELETE, FILE_DISPOSITION_FLAG_POSIX_SEMANTICS,
-    // FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE
-    _File_disposition_info_ex _Info_ex{0x3 | 0x10};
-    constexpr auto _FileDispositionInfoExClass = static_cast<FILE_INFO_BY_HANDLE_CLASS>(21);
-    if (SetFileInformationByHandle(_Handle._Get(), _FileDispositionInfoExClass, &_Info_ex, sizeof(_Info_ex))) {
+    // See minwinbase.h and WinBase.h.
+    // Windows 10 1809 added support for FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE.
+    FILE_DISPOSITION_INFO_EX _Info_ex{FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS
+                                      | FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE};
+    if (SetFileInformationByHandle(_Handle._Get(), FileDispositionInfoEx, &_Info_ex, sizeof(_Info_ex))) {
         return {true, __std_win_error::_Success};
     }
 
