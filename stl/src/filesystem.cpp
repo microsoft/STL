@@ -9,7 +9,6 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
-#include <algorithm>
 #include <clocale>
 #include <corecrt_terminate.h>
 #include <cstdlib>
@@ -126,6 +125,40 @@ namespace {
 
         return __std_win_error{GetLastError()};
     }
+
+    [[nodiscard]] __std_win_error __stdcall _Get_file_id_by_handle(
+        const HANDLE _Handle, _Out_ FILE_ID_INFO* const _Id) noexcept {
+        __std_win_error _Last_error;
+        if (GetFileInformationByHandleEx(_Handle, FileIdInfo, _Id, sizeof(*_Id)) != 0) {
+            // if we could get FILE_ID_INFO, use that as the source of truth
+            return __std_win_error::_Success;
+        }
+
+        _Last_error = __std_win_error{GetLastError()};
+        switch (_Last_error) {
+        case __std_win_error::_Not_supported:
+        case __std_win_error::_Invalid_parameter:
+            break; // try more things
+        default:
+            return _Last_error; // real error, bail to the caller
+        }
+
+#ifndef _CRT_APP
+        // try GetFileInformationByHandle as a fallback
+        BY_HANDLE_FILE_INFORMATION _Info;
+        if (GetFileInformationByHandle(_Handle, &_Info) != 0) {
+            _Id->VolumeSerialNumber = _Info.dwVolumeSerialNumber;
+            _CSTD memcpy(&_Id->FileId.Identifier[0], &_Info.nFileIndexHigh, 8);
+            _CSTD memset(&_Id->FileId.Identifier[8], 0, 8);
+            return __std_win_error::_Success;
+        }
+
+        _Last_error = __std_win_error{GetLastError()};
+#endif // _CRT_APP
+
+        return _Last_error;
+    }
+
 
     struct _File_disposition_info_ex {
         DWORD _Flags;
@@ -393,7 +426,7 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
                     return {false, _Last_error};
                 }
 
-                if (_Target_last_write_time < _Source_last_write_time) { // _Target is newer, so update_existing
+                if (_Target_last_write_time < _Source_last_write_time) { // _Source is newer, so update_existing
                     _Do_copy = true;
                 }
             }
@@ -402,16 +435,20 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
                 // We only need to test `equivalent()` if we _aren't_ going to `CopyFileW()`,
                 // since that call will fail with an `ERROR_SHARING_VIOLATION` anyways.
                 FILE_ID_INFO _Source_id;
-                if (!GetFileInformationByHandleEx(_Source_handle._Get(), FileIdInfo, &_Source_id, sizeof(_Source_id))) {
-                    return {false, __std_win_error{GetLastError()}};
+                _Last_error = _Get_file_id_by_handle(_Source_handle._Get(), &_Source_id);
+                if (_Last_error != __std_win_error::_Success) {
+                    return {false, _Last_error};
                 }
                 FILE_ID_INFO _Target_id;
-                if (!GetFileInformationByHandleEx(_Target_handle._Get(), FileIdInfo, &_Target_id, sizeof(_Target_id))) {
-                    return {false, __std_win_error{GetLastError()}};
+                _Last_error = _Get_file_id_by_handle(_Target_handle._Get(), &_Target_id);
+                if (_Last_error != __std_win_error::_Success) {
+                    return {false, _Last_error};
                 }
 
-                if (_Target_id.VolumeSerialNumber == _Source_id.VolumeSerialNumber
-                    && _RANGES equal(_Target_id.FileId.Identifier, _Source_id.FileId.Identifier)) {
+                if (_Source_id.VolumeSerialNumber == _Target_id.VolumeSerialNumber
+                    && _CSTD memcmp(_Source_id.FileId.Identifier, _Target_id.FileId.Identifier,
+                           sizeof(_Source_id.FileId.Identifier))
+                           == 0) {
                     // the files are equivalent
                     return {false, __std_win_error::_Sharing_violation};
                 }
@@ -442,35 +479,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
     static_assert(sizeof(FILE_ID_INFO) == sizeof(__std_fs_file_id));
     static_assert(alignof(FILE_ID_INFO) == alignof(__std_fs_file_id));
-    if (GetFileInformationByHandleEx(_Handle._Get(), FileIdInfo, reinterpret_cast<FILE_ID_INFO*>(_Id), sizeof(*_Id))
-        != 0) {
-        // if we could get FILE_ID_INFO, use that as the source of truth
-        return __std_win_error::_Success;
-    }
-
-    _Last_error = __std_win_error{GetLastError()};
-    switch (_Last_error) {
-    case __std_win_error::_Not_supported:
-    case __std_win_error::_Invalid_parameter:
-        break; // try more things
-    default:
-        return _Last_error; // real error, bail to the caller
-    }
-
-#ifndef _CRT_APP
-    // try GetFileInformationByHandle as a fallback
-    BY_HANDLE_FILE_INFORMATION _Info;
-    if (GetFileInformationByHandle(_Handle._Get(), &_Info) != 0) {
-        _Id->_Volume_serial_number = _Info.dwVolumeSerialNumber;
-        _CSTD memcpy(&_Id->_Id[0], &_Info.nFileIndexHigh, 8);
-        _CSTD memset(&_Id->_Id[8], 0, 8);
-        return __std_win_error::_Success;
-    }
-
-    _Last_error = __std_win_error{GetLastError()};
-#endif // _CRT_APP
-
-    return _Last_error;
+    return _Get_file_id_by_handle(_Handle._Get(), reinterpret_cast<FILE_ID_INFO*>(_Id));
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_directory_symbolic_link(
