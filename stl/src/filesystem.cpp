@@ -9,7 +9,6 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
-#include <algorithm>
 #include <clocale>
 #include <corecrt_terminate.h>
 #include <cstdlib>
@@ -170,8 +169,8 @@ namespace {
         return __std_win_error{GetLastError()};
     }
 
-    [[nodiscard]] static unsigned long long _Merge_to_ull(unsigned long _High, unsigned long _Low) noexcept {
-        return static_cast<unsigned long long>(_Low) | (static_cast<unsigned long long>(_High) << 32);
+    [[nodiscard]] unsigned long long _Merge_to_ull(unsigned long _High, unsigned long _Low) noexcept {
+        return (static_cast<unsigned long long>(_High) << 32) | static_cast<unsigned long long>(_Low);
     }
 } // unnamed namespace
 
@@ -821,37 +820,36 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
     constexpr auto _Get_file_attributes_data =
         __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Last_write_time;
-    if (_Bitmask_includes(
-            _Flags, _Get_file_attributes_data)) { // caller wants something GetFileAttributesExW might provide
+    if (_Bitmask_includes(_Flags,
+            _Get_file_attributes_data)) { // caller wants something GetFileAttributesExW/FindFirstFileW might provide
         if (_Symlink_attribute_hint == __std_fs_file_attr::_Invalid
             || !_Bitmask_includes(_Symlink_attribute_hint, __std_fs_file_attr::_Reparse_point)
-            || !_Follow_symlinks) { // we might not be a symlink or not following symlinks, so FindFirstFileW
-                                    // would return the right answer
+            || !_Follow_symlinks) { // we might not be a symlink or not following symlinks, so
+                                    // GetFileAttributesExW/FindFirstFileW would return the right answer
 
-            // Check for file names that contain `?` or `*` (i.e., globbing characters).
-            // These are invalid file names, and will give us the wrong answer with `FindFirstFileW`.
-            {
-                const wchar_t* _Path_end           = _Path + _CSTD wcslen(_Path);
-                const wchar_t* _After_drive_prefix = _STD _Find_root_name_end(_Path, _Path_end);
-                // `?` is allowed in the drive prefix, but `*` is not.
-                if (_STD find(_Path, _After_drive_prefix, '*') != _After_drive_prefix) {
-                    return __std_win_error{ERROR_INVALID_NAME};
+            WIN32_FILE_ATTRIBUTE_DATA _Data;
+            if (!GetFileAttributesExW(_Path, GetFileExInfoStandard, &_Data)) {
+                __std_win_error _Last_error{GetLastError()};
+                // In some cases, ERROR_SHARING_VIOLATION is returned from GetFileAttributesExW;
+                // FindFirstFileW will work in those cases if we have read permissions on the directory.
+                if (_Last_error != __std_win_error::_Sharing_violation) {
+                    return _Last_error;
                 }
 
-                constexpr static auto _Is_globbing_character = [](wchar_t _Ch) { return _Ch == '*' || _Ch == '?'; };
-                // In the rest of the path, neither is allowed.
-                if (_STD find_if(_After_drive_prefix, _Path_end, _Is_globbing_character) != _Path_end) {
-                    return __std_win_error{ERROR_INVALID_NAME};
-                }
-            }
-
-            WIN32_FIND_DATAW _Data;
-            {
-                HANDLE _Find_handle = FindFirstFileW(_Path, &_Data);
+                // Note that FindFirstFileW does allow globbing characters and has extra behavior with them
+                // that we don't want. However, GetFileAttributesExW would've failed with ERROR_INVALID_NAME
+                // if there were any globbing characters in _Path.
+                WIN32_FIND_DATAW _Find_data;
+                HANDLE _Find_handle = FindFirstFileW(_Path, &_Find_data);
                 if (_Find_handle == INVALID_HANDLE_VALUE) {
                     return __std_win_error{GetLastError()};
                 }
                 FindClose(_Find_handle);
+
+                _Data.dwFileAttributes = _Find_data.dwFileAttributes;
+                _Data.nFileSizeHigh    = _Find_data.nFileSizeHigh;
+                _Data.nFileSizeLow     = _Find_data.nFileSizeHigh;
+                _Data.ftLastWriteTime  = _Find_data.ftLastWriteTime;
             }
 
             const __std_fs_file_attr _Attributes{_Data.dwFileAttributes};
