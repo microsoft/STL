@@ -831,18 +831,18 @@ namespace {
         auto _Cur_max_val       = _Traits::_Init_max_val;
 
         if (_Byte_length(_First, _Last) >= 16 && _Use_sse42()) {
-            size_t _Portion_size = _Byte_length(_First, _Last) & ~size_t{0xF};
+            size_t _Portion_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
 
             if constexpr (_Traits::_Has_portion_max) {
                 // vector of indices will wrap around at exactly this size
-                constexpr size_t _Max_portion_size = _Traits::_Portion_max * 16;
-                if (_Portion_size > _Max_portion_size) {
-                    _Portion_size = _Max_portion_size;
+                constexpr size_t _Max_portion_byte_size = _Traits::_Portion_max * 16;
+                if (_Portion_byte_size > _Max_portion_byte_size) {
+                    _Portion_byte_size = _Max_portion_byte_size;
                 }
             }
 
             const void* _Stop_at = _First;
-            _Advance_bytes(_Stop_at, _Portion_size);
+            _Advance_bytes(_Stop_at, _Portion_byte_size);
 
             // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
             __m128i _Cur_vals = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
@@ -862,7 +862,7 @@ namespace {
                     // Reached end or indices wrap around point.
                     // Compute horizontal min and/or max. Determine horizontal and vertical position of it.
 
-                    if constexpr ((_Mode & _Mode_min) != 0) {
+                    if constexpr ((_Mode & _Mode_min) != 0) { // TRANSITION, 17.3 Preview 2
                         const __m128i _H_min =
                             _Traits::_H_min(_Cur_vals_min); // Vector populated by the smallest element
                         const auto _H_min_val = _Traits::_Get_any(_H_min); // Get any element of it
@@ -885,7 +885,7 @@ namespace {
                         }
                     }
 
-                    if constexpr ((_Mode & _Mode_max) != 0) {
+                    if constexpr ((_Mode & _Mode_max) != 0) { // TRANSITION, 17.3 Preview 2
                         const __m128i _H_max =
                             _Traits::_H_max(_Cur_vals_max); // Vector populated by the largest element
                         const auto _H_max_val = _Traits::_Get_any(_H_max); // Get any element of it
@@ -929,28 +929,28 @@ namespace {
 
                     if constexpr (_Traits::_Has_portion_max) {
                         // Either the last portion or wrapping point reached, need to determine
-                        _Portion_size = _Byte_length(_First, _Last) & ~size_t{0xF};
-                        if (_Portion_size == 0) {
+                        _Portion_byte_size = _Byte_length(_First, _Last) & ~size_t{0xF};
+                        if (_Portion_byte_size == 0) {
                             break; // That was the last portion
                         }
                         // Start next portion to handle the wrapping indices. Assume _Cur_idx is zero
-                        constexpr size_t _Max_portion_size = _Traits::_Portion_max * 16;
-                        if (_Portion_size > _Max_portion_size) {
-                            _Portion_size = _Max_portion_size;
+                        constexpr size_t _Max_portion_byte_size = _Traits::_Portion_max * 16;
+                        if (_Portion_byte_size > _Max_portion_byte_size) {
+                            _Portion_byte_size = _Max_portion_byte_size;
                         }
 
-                        _Advance_bytes(_Stop_at, _Portion_size);
+                        _Advance_bytes(_Stop_at, _Portion_byte_size);
                         // Indices will be relative to the new base
                         _Base = static_cast<const char*>(_First);
                         // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
                         _Cur_vals =
                             _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
 
-                        if constexpr ((_Mode & _Mode_min) != 0) {
+                        if constexpr ((_Mode & _Mode_min) != 0) { // TRANSITION, 17.3 Preview 2
                             _Cur_vals_min = _Cur_vals;
                             _Cur_idx_min  = _mm_setzero_si128();
                         }
-                        if constexpr ((_Mode & _Mode_max) != 0) {
+                        if constexpr ((_Mode & _Mode_max) != 0) { // TRANSITION, 17.3 Preview 2
                             _Cur_vals_max = _Cur_vals;
                             _Cur_idx_max  = _mm_setzero_si128();
                         }
@@ -965,14 +965,15 @@ namespace {
                 // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
                 _Cur_vals = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
 
-                if constexpr ((_Mode & _Mode_min) != 0) {
+                if constexpr ((_Mode & _Mode_min) != 0) { // TRANSITION, 17.3 Preview 2
+
                     // Looking for the first occurence of minimum, don't overwrite with newly found occurences
                     const __m128i _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
                     _Cur_idx_min = _mm_blendv_epi8(_Cur_idx_min, _Cur_idx, _Is_less); // Remember their vertical indices
                     _Cur_vals_min = _Traits::_Min(_Cur_vals_min, _Cur_vals, _Is_less); // Update the current minimum
                 }
 
-                if constexpr (_Mode == _Mode_max != 0) {
+                if constexpr (_Mode == _Mode_max) { // TRANSITION, 17.3 Preview 2
                     // Looking for the first occurence of maximum, don't overwrite with newly found occurences
                     const __m128i _Is_greater = _Traits::_Cmp_gt(_Cur_vals, _Cur_vals_max); // _Cur_vals > _Cur_vals_max
                     _Cur_idx_max =

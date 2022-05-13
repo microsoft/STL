@@ -9181,7 +9181,7 @@ namespace ranges {
 #endif // _HAS_CXX17
 
 template <class _Iter, class _Pr, class _Elem = _Iter_value_t<_Iter>>
-_INLINE_VAR constexpr bool _Is_min_max_optimization_safe_v = // Activate the vector algorithms for min_/max_element?
+_INLINE_VAR constexpr bool _Is_min_max_optimization_safe = // Activate the vector algorithms for min_/max_element?
     _Iterator_is_contiguous<_Iter> // The iterator must be contiguous so we can get raw pointers.
     && !_Iterator_is_volatile<_Iter> // The iterator must not be volatile.
     && conjunction_v<disjunction<is_integral<_Elem>, is_pointer<_Elem>>, // Element is of integral or pointer type.
@@ -9194,7 +9194,7 @@ _INLINE_VAR constexpr bool _Is_min_max_optimization_safe_v = // Activate the vec
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Max_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find largest element
 #if _USE_STD_VECTOR_ALGORITHMS && !defined(__CUDACC__)
-    if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
+    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _To_address(_First);
             const auto _Result    = __std_max_element(_First_ptr, _To_address(_Last));
@@ -9299,7 +9299,7 @@ namespace ranges {
 template <class _FwdIt, class _Pr>
 constexpr _FwdIt _Min_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) { // find smallest element
 #if _USE_STD_VECTOR_ALGORITHMS && !defined(__CUDACC__)
-    if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
+    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _To_address(_First);
             const auto _Result    = __std_min_element(_First_ptr, _To_address(_Last));
@@ -9404,7 +9404,7 @@ namespace ranges {
 template <class _FwdIt, class _Pr>
 constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
 #if _USE_STD_VECTOR_ALGORITHMS && !defined(__CUDACC__)
-    if constexpr (_Is_min_max_optimization_safe_v<_FwdIt, _Pr>) {
+    if constexpr (_Is_min_max_optimization_safe<_FwdIt, _Pr>) {
         if (!_Is_constant_evaluated()) {
             const auto _First_ptr = _To_address(_First);
             const auto _Result    = __std_minmax_element(_First_ptr, _To_address(_Last));
