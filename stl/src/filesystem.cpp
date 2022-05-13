@@ -9,6 +9,7 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
+#include <algorithm>
 #include <clocale>
 #include <corecrt_terminate.h>
 #include <cstdlib>
@@ -353,45 +354,68 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
             return _First_try_result;
         }
 
-        // At this point, the target exists, and we are skip_existing or update_existing. To resolve either,
-        // we need to open handles to test equivalent() and last_write_time().
-        // We test equivalent() not by directly doing what equivalent() does, but by opening the handles
-        // in exclusive mode, so a subsequent open will fail with ERROR_SHARING_VIOLATION.
+        // At this point, the target exists, and we are `skip_existing` or `update_existing`.
+        // To resolve either, we need to open handles to test `equivalent()` and `last_write_time()`.
+        // We allow other programs to have these files open in read-only mode,
+        // since that doesn't affect the last-write-check.
+        // We also allow `FILE_SHARE_WRITE` when `skip_existing`, since that doesn't affect anything.
         {
-            const _STD _Fs_file _Source_handle(__vcp_CreateFile(
-                _Source, FILE_READ_ATTRIBUTES | FILE_READ_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
+            DWORD _Share_mode = FILE_SHARE_READ;
+            if (_Options == __std_fs_copy_options::_Skip_existing) {
+                _Share_mode |= FILE_SHARE_WRITE;
+            }
+
+            const _STD _Fs_file _Source_handle(
+                __vcp_CreateFile(_Source, FILE_READ_ATTRIBUTES, _Share_mode, nullptr, OPEN_EXISTING, 0, nullptr));
             __std_win_error _Last_error = _Translate_CreateFile_last_error(_Source_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 return {false, _Last_error};
             }
 
-            const _STD _Fs_file _Target_handle(__vcp_CreateFile(
-                _Target, FILE_READ_ATTRIBUTES | FILE_WRITE_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
+            const _STD _Fs_file _Target_handle(
+                __vcp_CreateFile(_Target, FILE_READ_ATTRIBUTES, _Share_mode, nullptr, OPEN_EXISTING, 0, nullptr));
             _Last_error = _Translate_CreateFile_last_error(_Target_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
-                // Also handles the equivalent(from, to) error case
                 return {false, _Last_error};
             }
 
-            // If we get here, we did the equivalent(from, to) test. If we were only asked to skip existing, we're done
-            if (_Options == __std_fs_copy_options::_Skip_existing) {
-                return {false, __std_win_error::_Success};
+            bool _Do_copy = false;
+            if (_Options == __std_fs_copy_options::_Update_existing) {
+                long long _Source_last_write_time;
+                _Last_error = _Get_last_write_time_by_handle(_Source_handle._Get(), &_Source_last_write_time);
+                if (_Last_error != __std_win_error::_Success) {
+                    return {false, _Last_error};
+                }
+
+                long long _Target_last_write_time;
+                _Last_error = _Get_last_write_time_by_handle(_Target_handle._Get(), &_Target_last_write_time);
+                if (_Last_error != __std_win_error::_Success) {
+                    return {false, _Last_error};
+                }
+
+                if (_Target_last_write_time < _Source_last_write_time) { // _Target is newer, so update_existing
+                    _Do_copy = true;
+                }
             }
 
-            // Test for update_existing
-            long long _Source_last_write_time;
-            _Last_error = _Get_last_write_time_by_handle(_Source_handle._Get(), &_Source_last_write_time);
-            if (_Last_error != __std_win_error::_Success) {
-                return {false, _Last_error};
-            }
+            if (!_Do_copy) {
+                // We only need to test `equivalent()` if we _aren't_ going to `CopyFileW()`,
+                // since that call will fail with an `ERROR_SHARING_VIOLATION` anyways.
+                FILE_ID_INFO _Source_id;
+                if (!GetFileInformationByHandleEx(_Source_handle._Get(), FileIdInfo, &_Source_id, sizeof(_Source_id))) {
+                    return {false, __std_win_error{GetLastError()}};
+                }
+                FILE_ID_INFO _Target_id;
+                if (!GetFileInformationByHandleEx(_Target_handle._Get(), FileIdInfo, &_Target_id, sizeof(_Target_id))) {
+                    return {false, __std_win_error{GetLastError()}};
+                }
 
-            long long _Target_last_write_time;
-            _Last_error = _Get_last_write_time_by_handle(_Target_handle._Get(), &_Target_last_write_time);
-            if (_Last_error != __std_win_error::_Success) {
-                return {false, _Last_error};
-            }
+                if (_Target_id.VolumeSerialNumber == _Source_id.VolumeSerialNumber
+                    && _RANGES equal(_Target_id.FileId.Identifier, _Source_id.FileId.Identifier)) {
+                    // the files are equivalent
+                    return {false, __std_win_error::_Sharing_violation};
+                }
 
-            if (_Source_last_write_time <= _Target_last_write_time) { // _Target is newer, so don't update_existing
                 return {false, __std_win_error::_Success};
             }
 
