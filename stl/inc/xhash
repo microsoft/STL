@@ -2004,7 +2004,7 @@ template <class _Hasher>
 using _Is_hasher = negation<disjunction<is_integral<_Hasher>, _Is_allocator<_Hasher>>>;
 #endif // _HAS_CXX17
 
-template <class _Traits>
+_EXPORT_STD /* TRANSITION, VSO-1538698 */ template <class _Traits>
 _NODISCARD bool _Hash_equal(const _Hash<_Traits>& _Left, const _Hash<_Traits>& _Right) {
     if (_Left.size() != _Right.size()) {
         return false;
