@@ -76,10 +76,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
            $(LinkOutputFile);
            $(LinkProgramDataBaseFileName);
         "/>
-        <CopyFilesForNetFx Condition="'$(MsvcpFlavor)' == 'netfx'" Include="
-           $(LinkOutputFile);
-           $(LinkProgramDataBaseFileName);
-        "/>
     </ItemGroup>
 
     <Import Project="$(MSBuildThisFileDirectory)\stl_2.files.settings.targets"/>
