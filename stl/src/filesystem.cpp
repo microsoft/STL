@@ -810,10 +810,10 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
             WIN32_FILE_ATTRIBUTE_DATA _Data;
             if (!GetFileAttributesExW(_Path, GetFileExInfoStandard, &_Data)) {
-                __std_win_error _Last_error{GetLastError()};
                 // In some cases, ERROR_SHARING_VIOLATION is returned from GetFileAttributesExW;
                 // FindFirstFileW will work in those cases if we have read permissions on the directory.
-                if (_Last_error != __std_win_error::_Sharing_violation) {
+                if (const __std_win_error _Last_error{GetLastError()};
+                    _Last_error != __std_win_error::_Sharing_violation) {
                     return _Last_error;
                 }
 
@@ -821,11 +821,13 @@ _Success_(return == __std_win_error::_Success) __std_win_error
                 // that we don't want. However, GetFileAttributesExW would've failed with ERROR_INVALID_NAME
                 // if there were any globbing characters in _Path.
                 WIN32_FIND_DATAW _Find_data;
-                HANDLE _Find_handle = FindFirstFileW(_Path, &_Find_data);
-                if (_Find_handle == INVALID_HANDLE_VALUE) {
-                    return __std_win_error{GetLastError()};
+                {
+                    HANDLE _Find_handle = FindFirstFileW(_Path, &_Find_data);
+                    if (_Find_handle == INVALID_HANDLE_VALUE) {
+                        return __std_win_error{GetLastError()};
+                    }
+                    FindClose(_Find_handle);
                 }
-                FindClose(_Find_handle);
 
                 _Data.dwFileAttributes = _Find_data.dwFileAttributes;
                 _Data.nFileSizeHigh    = _Find_data.nFileSizeHigh;
