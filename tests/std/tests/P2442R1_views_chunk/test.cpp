@@ -530,13 +530,16 @@ using test_range =
 constexpr void instantiation_test() {
 #ifdef TEST_EVERYTHING
     test_in<instantiator, const int>();
-#else // ^^^ test all forward range permutations / test only "interesting" permutations vvv
-    // The view is sensitive to category, commonality, and size, but oblivious to differencing and proxyness.
+#else // ^^^ test all input range permutations / test only "interesting" permutations vvv
     using test::CanDifference, test::Common, test::Sized;
 
+    // When the base range is an input range,
+    // the view is sensitive to differencing.
     instantiator::call<test_input_range<CanDifference::yes>>();
     instantiator::call<test_input_range<CanDifference::no>>();
 
+    // When the base range is a forward range,
+    // the view is sensitive to category, commonality, and size, but oblivious to differencing and proxyness.
     instantiator::call<test_range<input_iterator_tag, Common::no, Sized::yes>>();
     instantiator::call<test_range<input_iterator_tag, Common::no, Sized::no>>();
     instantiator::call<test_range<forward_iterator_tag, Common::no, Sized::yes>>();

@@ -19,12 +19,12 @@ static constexpr int some_ints[] = {0, 1, 2, 3};
 
 void test_view_negative_size_forward_range() {
     auto r                  = span<const int>{some_ints};
-    [[maybe_unused]] auto v = chunk_view(r, -1); // chunk_view n_ must be positive
+    [[maybe_unused]] auto v = chunk_view(r, -1); // chunk size must be greater than 0
 }
 
 void test_view_negative_size_input_range() {
     auto r                  = test_range{some_ints};
-    [[maybe_unused]] auto v = chunk_view(r, -1); // chunk_view n_ must be positive
+    [[maybe_unused]] auto v = chunk_view(r, -1); // chunk size must be greater than 0
 }
 
 void test_outer_iterator_preincrement_past_end() {

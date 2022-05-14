@@ -4857,12 +4857,12 @@ namespace ranges {
             constexpr explicit _Outer_iterator(chunk_view* _Parent_) noexcept : _Parent(_Parent_) {}
 
             _NODISCARD constexpr bool _Is_end() const
-                noexcept(noexcept(_Implicitly_convert_to<bool>(*_Parent->_Current == _RANGES end(_Parent->_Range)))) {
+                noexcept(noexcept(*_Parent->_Current == _RANGES end(_Parent->_Range) && true)) {
                 return *_Parent->_Current == _RANGES end(_Parent->_Range) && _Parent->_Remainder != 0;
             }
 
             _NODISCARD constexpr range_difference_t<_Vw> _Get_size() const
-                noexcept(noexcept(_Div_ceil(_RANGES end(_Parent->_Range) - *_Parent->_Current, _Parent->_Count))) {
+                noexcept(noexcept(_RANGES end(_Parent->_Range) - *_Parent->_Current)) {
                 const auto _Size = _RANGES end(_Parent->_Range) - *_Parent->_Current;
                 if (_Size < _Parent->_Remainder) {
                     return _Size == 0 ? 0 : 1;
@@ -4953,7 +4953,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Count > 0, "n must be greater than 0");
+            _STL_VERIFY(_Count > 0, "chunk size must be greater than 0");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
@@ -4967,7 +4967,7 @@ namespace ranges {
         }
 
         _NODISCARD constexpr _Outer_iterator begin() noexcept(
-            noexcept(_RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */ {
+            noexcept(_Current._Emplace(_RANGES begin(_Range)))) /* strengthened */ {
             _Current._Emplace(_RANGES begin(_Range));
             _Remainder = _Count;
             return _Outer_iterator{this};
@@ -5000,19 +5000,20 @@ namespace ranges {
         private:
             friend chunk_view;
 
-            using _ParentTy  = _Maybe_const<_Const, chunk_view>;
-            using _Base      = _Maybe_const<_Const, _Vw>;
-            using _Base_iter = iterator_t<_Base>;
-            using _Base_sen  = sentinel_t<_Base>;
+            using _ParentTy      = _Maybe_const<_Const, chunk_view>;
+            using _Base          = _Maybe_const<_Const, _Vw>;
+            using _Base_iterator = iterator_t<_Base>;
+            using _Base_sentinel = sentinel_t<_Base>;
 
-            /* [[no_unique_address]] */ _Base_iter _Current{};
-            /* [[no_unique_address]] */ _Base_sen _End{};
+            /* [[no_unique_address]] */ _Base_iterator _Current{};
+            /* [[no_unique_address]] */ _Base_sentinel _End{};
             range_difference_t<_Base> _Count   = 0;
             range_difference_t<_Base> _Missing = 0;
 
-            constexpr _Iterator(_ParentTy* _Parent, _Base_iter _Current_, range_difference_t<_Base> _Missing_ = 0) //
-                noexcept(noexcept(_RANGES end(_Parent->_Range)) && is_nothrow_move_constructible_v<_Base_iter> //
-                         && is_nothrow_move_constructible_v<_Base_sen>) /* strengthened */
+            constexpr _Iterator(_ParentTy* _Parent, _Base_iterator _Current_, //
+                range_difference_t<_Base> _Missing_ = 0) //
+                noexcept(noexcept(_RANGES end(_Parent->_Range)) && is_nothrow_move_constructible_v<_Base_iterator> //
+                         && is_nothrow_move_constructible_v<_Base_sentinel>) /* strengthened */
                 : _Current(_STD move(_Current_)), _End(_RANGES end(_Parent->_Range)), _Count(_Parent->_Count),
                   _Missing(_Missing_) {}
 
@@ -5025,17 +5026,19 @@ namespace ranges {
 
             _Iterator() = default;
 
-            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(is_nothrow_move_constructible_v<_Base_iter>&&
-                    is_nothrow_move_constructible_v<_Base_sen>) /* strengthened */
-                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iter> //
-                && convertible_to<sentinel_t<_Vw>, _Base_sen> //
+            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(
+                is_nothrow_constructible_v<_Base_iterator, typename _Iterator<!_Const>::_Base_iterator> //
+                    && is_nothrow_constructible_v<_Base_sentinel, typename _Iterator<!_Const>::_Base_sentinel> //
+                ) /* strengthened */
+                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iterator> //
+                && convertible_to<sentinel_t<_Vw>, _Base_sentinel> //
                 : _Current(_STD move(_Other._Current)),
                   _End(_STD move(_Other._End)),
                   _Count(_Other._Count),
                   _Missing(_Other._Missing) {}
 
-            _NODISCARD constexpr _Base_iter base() const
-                noexcept(is_nothrow_copy_constructible_v<_Base_iter>) /* strengthened */ {
+            _NODISCARD constexpr _Base_iterator base() const
+                noexcept(is_nothrow_copy_constructible_v<_Base_iterator>) /* strengthened */ {
                 return _Current;
             }
 
@@ -5056,9 +5059,9 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr _Iterator operator++(int) noexcept(
-                is_nothrow_copy_constructible_v<_Base_iter>&& is_nothrow_copy_constructible_v<_Base_sen>&& noexcept(
-                    _RANGES advance(_Current, _Count, _End))) /* strengthened */ {
+            constexpr _Iterator operator++(int) noexcept(is_nothrow_copy_constructible_v<_Base_iterator> //
+                    && is_nothrow_copy_constructible_v<_Base_sentinel> //
+                        && noexcept(_RANGES advance(_Current, _Count, _End))) /* strengthened */ {
                 auto _Tmp = *this;
                 ++*this;
                 return _Tmp;
@@ -5072,9 +5075,9 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr _Iterator operator--(int) noexcept(
-                is_nothrow_copy_constructible_v<_Base_iter>&& is_nothrow_copy_constructible_v<_Base_sen>&& noexcept(
-                    _RANGES advance(_Current, _Missing - _Count))) /* strengthened */
+            constexpr _Iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Base_iterator> //
+                    && is_nothrow_copy_constructible_v<_Base_sentinel> //
+                        && noexcept(_RANGES advance(_Current, _Missing - _Count))) /* strengthened */
                 requires bidirectional_range<_Base> {
                 auto _Tmp = *this;
                 --*this;
@@ -5086,6 +5089,8 @@ namespace ranges {
                 requires random_access_range<_Base> {
                 if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
+                    _STL_VERIFY(_Off == 1 || _Count <= (numeric_limits<difference_type>::max)() / (_Off - 1),
+                        "cannot advance chunk_view iterator past end (integer overflow)");
                     _STL_VERIFY(_RANGES distance(_Current, _End) > _Count * (_Off - 1),
                         "cannot advance chunk_view iterator past end");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -5103,6 +5108,8 @@ namespace ranges {
                 const difference_type _Off = -_Raw_off;
                 if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
+                    _STL_VERIFY(_Off == 1 || _Count <= (numeric_limits<difference_type>::max)() / (_Off - 1),
+                        "cannot advance chunk_view iterator past end (integer overflow)");
                     _STL_VERIFY(_RANGES distance(_Current, _End) > _Count * (_Off - 1),
                         "cannot advance chunk_view iterator past end");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -5155,7 +5162,7 @@ namespace ranges {
 
             _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current <=> _Right._Current)) /* strengthened */
-                requires random_access_range<_Base> && three_way_comparable<_Base_iter> {
+                requires random_access_range<_Base> && three_way_comparable<_Base_iterator> {
                 return _Left._Current <=> _Right._Current;
             }
 
@@ -5188,19 +5195,19 @@ namespace ranges {
 
             _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left,
                 const _Iterator& _Right) noexcept(noexcept(_Left._Current - _Right._Current)) /* strengthened */
-                requires sized_sentinel_for<_Base_iter, _Base_iter> {
+                requires sized_sentinel_for<_Base_iterator, _Base_iterator> {
                 return (_Left._Current - _Right._Current + _Left._Missing - _Right._Missing) / _Left._Count;
             }
 
             _NODISCARD_FRIEND constexpr difference_type operator-(default_sentinel_t, const _Iterator& _Right) noexcept(
                 noexcept(_Right._End - _Right._Current)) /* strengthened */
-                requires sized_sentinel_for<_Base_sen, _Base_iter> {
+                requires sized_sentinel_for<_Base_sentinel, _Base_iterator> {
                 return _Div_ceil(_Right._End - _Right._Current, _Right._Count);
             }
 
             _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left, default_sentinel_t) noexcept(
                 noexcept(_Left._End - _Left._Current)) /* strengthened */
-                requires sized_sentinel_for<_Base_sen, _Base_iter> {
+                requires sized_sentinel_for<_Base_sentinel, _Base_iterator> {
                 return -_Div_ceil(_Left._End - _Left._Current, _Left._Count);
             }
         };
@@ -5214,7 +5221,7 @@ namespace ranges {
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {
 #if _CONTAINER_DEBUG_LEVEL > 0
-            _STL_VERIFY(_Count > 0, "n must be greater than 0");
+            _STL_VERIFY(_Count > 0, "chunk size must be greater than 0");
 #endif // _CONTAINER_DEBUG_LEVEL > 0
         }
 
