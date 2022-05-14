@@ -4907,8 +4907,7 @@ namespace ranges {
                 return value_type{_Parent};
             }
 
-            constexpr _Outer_iterator& operator++() noexcept(noexcept(_RANGES advance(
-                *_Parent->_Current, _Parent->_Remainder, _RANGES end(_Parent->_Range)))) /* strengthened */ {
+            constexpr _Outer_iterator& operator++() /* not strengthened, see _RANGES advance */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(*this != default_sentinel, "cannot increment chunk_view end iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -4917,8 +4916,7 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr void operator++(int) noexcept(noexcept(_RANGES advance(
-                *_Parent->_Current, _Parent->_Remainder, _RANGES end(_Parent->_Range)))) /* strengthened */ {
+            constexpr void operator++(int) /* not strengthened, see _RANGES advance */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(*this != default_sentinel, "cannot increment chunk_view end iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -5050,8 +5048,7 @@ namespace ranges {
                 return views::take(subrange(_Current, _End), _Count);
             }
 
-            constexpr _Iterator& operator++() noexcept(
-                noexcept(_RANGES advance(_Current, _Count, _End))) /* strengthened */ {
+            constexpr _Iterator& operator++() /* not strengthened, see _RANGES advance */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(_Current != _End, "cannot increment chunk_view end iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -5059,33 +5056,27 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr _Iterator operator++(int) noexcept(is_nothrow_copy_constructible_v<_Base_iterator> //
-                    && is_nothrow_copy_constructible_v<_Base_sentinel> //
-                        && noexcept(_RANGES advance(_Current, _Count, _End))) /* strengthened */ {
+            constexpr _Iterator operator++(int) /* not strengthened, see _RANGES advance */ {
                 auto _Tmp = *this;
                 ++*this;
                 return _Tmp;
             }
 
-            constexpr _Iterator& operator--() noexcept(
-                noexcept(_RANGES advance(_Current, _Missing - _Count))) /* strengthened */
+            constexpr _Iterator& operator--() /* not strengthened, see _RANGES advance */
                 requires bidirectional_range<_Base> {
                 _RANGES advance(_Current, _Missing - _Count);
                 _Missing = 0;
                 return *this;
             }
 
-            constexpr _Iterator operator--(int) noexcept(is_nothrow_copy_constructible_v<_Base_iterator> //
-                    && is_nothrow_copy_constructible_v<_Base_sentinel> //
-                        && noexcept(_RANGES advance(_Current, _Missing - _Count))) /* strengthened */
+            constexpr _Iterator operator--(int) /* not strengthened, see _RANGES advance */
                 requires bidirectional_range<_Base> {
                 auto _Tmp = *this;
                 --*this;
                 return _Tmp;
             }
 
-            constexpr _Iterator& operator+=(const difference_type _Off) noexcept(
-                noexcept(_RANGES advance(_Current, _Count* _Off, _End))) /* strengthened */
+            constexpr _Iterator& operator+=(const difference_type _Off) /* not strengthened, see _RANGES advance */
                 requires random_access_range<_Base> {
                 if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -5102,8 +5093,7 @@ namespace ranges {
                 return *this;
             }
 
-            constexpr _Iterator& operator-=(const difference_type _Raw_off) noexcept(
-                noexcept(_RANGES advance(_Current, -_Count* _Raw_off, _End))) /* strengthened */
+            constexpr _Iterator& operator-=(const difference_type _Raw_off) /* not strengthened, see _RANGES advance */
                 requires random_access_range<_Base> {
                 const difference_type _Off = -_Raw_off;
                 if (_Off > 0) {
