@@ -182,11 +182,6 @@ namespace pmr {
 #endif // _HAS_CXX20 && defined(__cpp_lib_byte)
     class polymorphic_allocator {
     public:
-        static_assert(!is_const_v<_Ty>, "The C++ Standard forbids containers of const elements "
-                                        "because polymorphic_allocator<const T> is ill-formed.");
-        static_assert(!is_volatile_v<_Ty>, "The C++ Standard forbids containers of volatile elements "
-                                           "because polymorphic_allocator<volatile T> is ill-formed.");
-
         template <class>
         friend class polymorphic_allocator;
 
