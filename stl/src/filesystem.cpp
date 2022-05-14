@@ -831,7 +831,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
                 _Data.dwFileAttributes = _Find_data.dwFileAttributes;
                 _Data.nFileSizeHigh    = _Find_data.nFileSizeHigh;
-                _Data.nFileSizeLow     = _Find_data.nFileSizeHigh;
+                _Data.nFileSizeLow     = _Find_data.nFileSizeLow;
                 _Data.ftLastWriteTime  = _Find_data.ftLastWriteTime;
             }
 
