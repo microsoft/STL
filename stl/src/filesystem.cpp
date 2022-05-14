@@ -801,8 +801,8 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
     constexpr auto _Get_file_attributes_data =
         __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Last_write_time;
-    if (_Bitmask_includes(_Flags,
-            _Get_file_attributes_data)) { // caller wants something GetFileAttributesExW/FindFirstFileW might provide
+    if (_Bitmask_includes(_Flags, _Get_file_attributes_data)) {
+        // caller wants something GetFileAttributesExW/FindFirstFileW might provide
         if (_Symlink_attribute_hint == __std_fs_file_attr::_Invalid
             || !_Bitmask_includes(_Symlink_attribute_hint, __std_fs_file_attr::_Reparse_point)
             || !_Follow_symlinks) { // we might not be a symlink or not following symlinks, so
@@ -834,10 +834,8 @@ _Success_(return == __std_win_error::_Success) __std_win_error
             }
 
             const __std_fs_file_attr _Attributes{_Data.dwFileAttributes};
-            if (!_Follow_symlinks
-                || !_Bitmask_includes(_Attributes,
-                    __std_fs_file_attr::_Reparse_point)) { // if we aren't following symlinks or can't be a
-                                                           // symlink, that data was useful, record
+            if (!_Follow_symlinks || !_Bitmask_includes(_Attributes, __std_fs_file_attr::_Reparse_point)) {
+                // if we aren't following symlinks or can't be a symlink, that data was useful, record
                 _Stats->_Attributes      = _Attributes;
                 _Stats->_File_size       = _Merge_to_ull(_Data.nFileSizeHigh, _Data.nFileSizeLow);
                 _Stats->_Last_write_time = static_cast<long long>(
