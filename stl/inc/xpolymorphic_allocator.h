@@ -212,7 +212,7 @@ namespace pmr {
         void deallocate(_Ty* const _Ptr, const size_t _Count) noexcept /* strengthened */ {
             // return space for _Count objects of type _Ty to _Resource
             // No need to verify that size_t can represent the size of _Ty[_Count].
-            _Resource->deallocate(_Ptr, _Count * sizeof(_Ty), alignof(_Ty));
+            _Resource->deallocate(const_cast<remove_cv_t<_Ty>*>(_Ptr), _Count * sizeof(_Ty), alignof(_Ty));
         }
 
 #if _HAS_CXX20
