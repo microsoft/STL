@@ -2675,11 +2675,11 @@ namespace filesystem {
         }
 
 #if _HAS_CXX20
-        // Assumes that FILETIME counts leap seconds only after the first 27 (i.e., after 1 January 2017), even though
-        // systems can opt out of this behavior.
+        // Assumes that FILETIME counts leap seconds since 2018-06-01 (i.e., after the first 27 leap seconds), even
+        // though systems can opt out of this behavior.
         static constexpr chrono::seconds _Skipped_filetime_leap_seconds{27};
         static constexpr chrono::sys_days _Cutoff{
-            chrono::year_month_day{chrono::year{2017}, chrono::January, chrono::day{1}}};
+            chrono::year_month_day{chrono::year{2018}, chrono::June, chrono::day{1}}};
 
         template <class _Duration>
         _NODISCARD static chrono::utc_time<common_type_t<_Duration, chrono::seconds>> to_utc(
@@ -3458,7 +3458,7 @@ namespace chrono {
             _None, // system_clock, tai_clock, gps_clock; oblivious to leap seconds
             _Negative, // TRANSITION, ABI: old value for system_clock
             _All, // utc_clock
-            _File_time // _None before 1 January 2017, _All afterwards.
+            _File_time // _None before 2018-06-01, _All afterwards.
         };
 
         template <class _DurationType>
@@ -3472,7 +3472,7 @@ namespace chrono {
             const _LeapSecondRep _Original_leap{_Leap};
             if (_Leap == _LeapSecondRep::_File_time) {
                 const int _Year{*_Century + *_Two_dig_year};
-                _Leap = _Year <= 2016 ? _LeapSecondRep::_None : _LeapSecondRep::_All;
+                _Leap = _Year < 2018 ? _LeapSecondRep::_None : _LeapSecondRep::_All;
             }
 
             if (_Second > (_Leap == _LeapSecondRep::_All ? 60 : 59)) {
@@ -3480,7 +3480,7 @@ namespace chrono {
             }
 
             // A distinction has to be made here between clocks that always count 86,400 seconds/day (system_clock,
-            // tai_clock, and gps_clock) and ones that count leap seconds (utc_clock and, since 2018-07-01, file_clock).
+            // tai_clock, and gps_clock) and ones that count leap seconds (utc_clock and, since 2018-06-01, file_clock).
             // The correct tick count for the clocks that always count 86,400 seconds/day can be determined without
             // knowing whether any leap seconds have occurred, and there aren't any invalid times due to negative leap
             // second deletions.
