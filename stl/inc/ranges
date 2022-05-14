@@ -4770,16 +4770,16 @@ namespace ranges {
         template <_Slide_caches_first _Base>
         class _Iter_base<_Base> {
         protected:
-            using _Base_iter = iterator_t<_Base>;
-            _Base_iter _Last_element{};
+            using _Base_iterator = iterator_t<_Base>;
+            _Base_iterator _Last_element{};
 
         public:
             _Iter_base() = default;
-            constexpr explicit _Iter_base(_Base_iter _Last_element_) noexcept(
-                is_nothrow_move_constructible_v<_Base_iter>)
+            constexpr explicit _Iter_base(_Base_iterator _Last_element_) noexcept(
+                is_nothrow_move_constructible_v<_Base_iterator>)
                 : _Last_element{_STD move(_Last_element_)} {}
 
-            _NODISCARD constexpr const _Base_iter& _Get_last_element() const noexcept {
+            _NODISCARD constexpr const _Base_iterator& _Get_last_element() const noexcept {
                 return _Last_element;
             }
         };
@@ -4789,21 +4789,21 @@ namespace ranges {
         private:
             friend slide_view;
 
-            using _Base      = _Maybe_const<_Const, _Vw>;
-            using _Base_iter = iterator_t<_Base>;
+            using _Base          = _Maybe_const<_Const, _Vw>;
+            using _Base_iterator = iterator_t<_Base>;
 
-            /* [[no_unique_address]] */ _Base_iter _Current{};
+            /* [[no_unique_address]] */ _Base_iterator _Current{};
             range_difference_t<_Base> _Count = 0;
 
             // clang-format off
-            constexpr _Iterator(_Base_iter _Current_, range_difference_t<_Base> _Count_) noexcept(
-                is_nothrow_move_constructible_v<_Base_iter>) /* strengthened */
+            constexpr _Iterator(_Base_iterator _Current_, range_difference_t<_Base> _Count_) noexcept(
+                is_nothrow_move_constructible_v<_Base_iterator>) /* strengthened */
                 requires (!_Slide_caches_first<_Base>)
                 : _Current(_STD move(_Current_)), _Count(_Count_) {}
             // clang-format on
 
-            constexpr _Iterator(_Base_iter _Current_, _Base_iter _Last_, range_difference_t<_Base> _Count_) noexcept(
-                is_nothrow_move_constructible_v<_Base_iter>) /* strengthened */
+            constexpr _Iterator(_Base_iterator _Current_, _Base_iterator _Last_, range_difference_t<_Base> _Count_) //
+                noexcept(is_nothrow_move_constructible_v<_Base_iterator>) /* strengthened */
                 requires _Slide_caches_first<_Base>
                 : _Iter_base<_Base>(_STD move(_Last_)), _Current(_STD move(_Current_)), _Count(_Count_) {}
 
@@ -4816,9 +4816,9 @@ namespace ranges {
 
             _Iterator() = default;
 
-            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(
-                is_nothrow_move_constructible_v<_Base_iter>) /* strengthened */
-                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iter> //
+            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(is_nothrow_constructible_v<_Base_iterator,
+                typename _Iterator<!_Const>::_Base_iterator>) /* strengthened */
+                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iterator> //
                 : _Current(_STD move(_Other._Current)), _Count(_Other._Count) {}
 
             _NODISCARD constexpr value_type operator*() const
@@ -4836,7 +4836,7 @@ namespace ranges {
             }
 
             constexpr _Iterator operator++(int) noexcept(
-                is_nothrow_copy_constructible_v<_Base_iter>&& noexcept(++_Current)) /* strengthened */ {
+                is_nothrow_copy_constructible_v<_Base_iterator>&& noexcept(++_Current)) /* strengthened */ {
                 auto _Tmp = *this;
                 ++*this;
                 return _Tmp;
@@ -4853,7 +4853,7 @@ namespace ranges {
             }
 
             constexpr _Iterator operator--(int) noexcept(
-                is_nothrow_copy_constructible_v<_Base_iter>&& noexcept(--_Current)) /* strengthened */
+                is_nothrow_copy_constructible_v<_Base_iterator>&& noexcept(--_Current)) /* strengthened */
                 requires bidirectional_range<_Base> {
                 auto _Tmp = *this;
                 --*this;
@@ -4923,7 +4923,7 @@ namespace ranges {
 
             _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
                 noexcept(_Left._Current <=> _Right._Current)) /* strengthened */
-                requires random_access_range<_Base> && three_way_comparable<_Base_iter> {
+                requires random_access_range<_Base> && three_way_comparable<_Base_iterator> {
                 return _Left._Current <=> _Right._Current;
             }
 
@@ -4953,7 +4953,7 @@ namespace ranges {
 
             _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left,
                 const _Iterator& _Right) noexcept(noexcept(_Left._Current - _Right._Current)) /* strengthened */
-                requires sized_sentinel_for<_Base_iter, _Base_iter> {
+                requires sized_sentinel_for<_Base_iterator, _Base_iterator> {
                 if constexpr (_Slide_caches_first<_Base>) {
                     return _Left._Last_element - _Right._Last_element;
                 } else {
