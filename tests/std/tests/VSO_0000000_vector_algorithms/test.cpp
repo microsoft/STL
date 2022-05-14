@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <array>
 #include <assert.h>
 #include <cstddef>
 #include <deque>
@@ -174,6 +175,50 @@ void test_min_max_element(mt19937_64& gen) {
     }
 }
 
+void test_min_max_element_special_cases() {
+    // multi portion and same vector cases tested explicitly
+    // made sure valid for vector sizes 128,256,512
+
+    array<uint8_t, 8192> test;
+
+    test.fill(1);
+    test.at(65) = 0;
+    test.at(66) = 0;
+    test.at(68) = 2;
+    test.at(69) = 2;
+
+    assert(min_element(test.begin(), test.end()) == test.begin() + 65);
+    assert(max_element(test.begin(), test.end()) == test.begin() + 68);
+    assert(minmax_element(test.begin(), test.end()).first == test.begin() + 65);
+    assert(minmax_element(test.begin(), test.end()).second == test.begin() + 69);
+
+    test.fill(1);
+    test.at(65 + 4096) = 0;
+    test.at(66 + 4096) = 0;
+    test.at(68 + 4096) = 2;
+    test.at(69 + 4096) = 2;
+
+    assert(min_element(test.begin(), test.end()) == test.begin() + 65 + 4096);
+    assert(max_element(test.begin(), test.end()) == test.begin() + 68 + 4096);
+    assert(minmax_element(test.begin(), test.end()).first == test.begin() + 65 + 4096);
+    assert(minmax_element(test.begin(), test.end()).second == test.begin() + 69 + 4096);
+
+    test.fill(1);
+    test.at(65)        = 0;
+    test.at(66)        = 0;
+    test.at(68)        = 2;
+    test.at(69)        = 2;
+    test.at(65 + 4096) = 0;
+    test.at(66 + 4096) = 0;
+    test.at(68 + 4096) = 2;
+    test.at(69 + 4096) = 2;
+
+    assert(min_element(test.begin(), test.end()) == test.begin() + 65);
+    assert(max_element(test.begin(), test.end()) == test.begin() + 68);
+    assert(minmax_element(test.begin(), test.end()).first == test.begin() + 65);
+    assert(minmax_element(test.begin(), test.end()).second == test.begin() + 69 + 4096);
+}
+
 template <class BidIt>
 inline void last_known_good_reverse(BidIt first, BidIt last) {
     for (; first != last && first != --last; ++first) {
@@ -293,6 +338,8 @@ void test_vector_algorithms() {
     test_min_max_element<float>(gen);
     test_min_max_element<double>(gen);
     test_min_max_element<long double>(gen);
+
+    test_min_max_element_special_cases();
 
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
