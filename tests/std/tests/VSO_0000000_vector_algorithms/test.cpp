@@ -182,6 +182,12 @@ void test_min_max_element_special_cases() {
     array<uint8_t, 8192> test;
 
     test.fill(1);
+    assert(min_element(test.begin(), test.end()) == test.begin() );
+    assert(max_element(test.begin(), test.end()) == test.begin());
+    assert(minmax_element(test.begin(), test.end()).first == test.begin());
+    assert(minmax_element(test.begin(), test.end()).second == test.begin() + 8191);
+
+    test.fill(1);
     test.at(65) = 0;
     test.at(66) = 0;
     test.at(68) = 2;
