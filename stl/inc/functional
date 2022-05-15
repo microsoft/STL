@@ -1302,7 +1302,7 @@ void __stdcall _Function_deallocate_large_overaligned(_Move_only_function_data& 
 #ifdef __cpp_aligned_new
     ::operator delete (_Self._Large_fn_ptr<void>(), align_val_t{_Align});
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
-    _aligned_free(_Self._Large_fn_ptr<void>());
+    _CSTD _aligned_free(_Self._Large_fn_ptr<void>());
 #endif // __cpp_aligned_new
 }
 
@@ -1316,7 +1316,7 @@ void __stdcall _Function_destroy_large(_Move_only_function_data& _Self) noexcept
 #ifdef __cpp_aligned_new
         ::operator delete (static_cast<void*>(_Pfn), align_val_t{alignof(_Vt)});
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
-        _aligned_free(static_cast<void*>(_Pfn));
+        _CSTD _aligned_free(static_cast<void*>(_Pfn));
 #endif // __cpp_aligned_new
     }
 }
@@ -1341,7 +1341,7 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
 #ifdef __cpp_aligned_new
                     ::operator delete (_Ptr, align_val_t{alignof(_Vt)});
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
-                    _aligned_free(_Ptr);
+                    _CSTD _aligned_free(_Ptr);
 #endif // __cpp_aligned_new
                 }
             }
@@ -1355,7 +1355,10 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
 #ifdef __cpp_aligned_new
         _Ptr = ::operator new (sizeof(_Vt), align_val_t{alignof(_Vt)});
 #else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
-        _Ptr = _aligned_malloc(sizeof(_Vt), alignof(_Vt));
+        _Ptr = _CSTD _aligned_malloc(sizeof(_Vt), alignof(_Vt));
+        if (!_Ptr) {
+            _Xbad_alloc();
+        }
 #endif // __cpp_aligned_new
     }
     _Guard_type _Guard{_Ptr};
