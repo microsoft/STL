@@ -440,7 +440,6 @@ add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS
 
 include_directories(BEFORE
     "${CMAKE_CURRENT_LIST_DIR}/inc"
-    "${TOOLSET_ROOT_DIR}/crt/src/concrt"
     "${TOOLSET_ROOT_DIR}/crt/src/vcruntime"
 )
 

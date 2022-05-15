@@ -126,27 +126,13 @@ namespace {
         return __std_win_error{GetLastError()};
     }
 
-    struct _File_disposition_info_ex {
-        DWORD _Flags;
-    };
-
     [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
         __stdcall _Set_delete_flag(_In_ __std_fs_file_handle _Handle) {
-        // From newer Windows SDK than currently used to build vctools:
-        // #define FILE_DISPOSITION_FLAG_DELETE                     0x00000001
-        // #define FILE_DISPOSITION_FLAG_POSIX_SEMANTICS            0x00000002
 
-        // typedef struct _FILE_DISPOSITION_INFO_EX {
-        //     DWORD Flags;
-        // } FILE_DISPOSITION_INFO_EX, *PFILE_DISPOSITION_INFO_EX;
-
-        _File_disposition_info_ex _Info_ex{0x3};
-
-        // FileDispositionInfoEx isn't documented in MSDN at the time of this writing, but is present
-        // in minwinbase.h as of at least 10.0.16299.0
-        constexpr auto _FileDispositionInfoExClass = static_cast<FILE_INFO_BY_HANDLE_CLASS>(21);
+        // See minwinbase.h and WinBase.h.
+        FILE_DISPOSITION_INFO_EX _Info_ex{FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS};
         if (SetFileInformationByHandle(
-                reinterpret_cast<HANDLE>(_Handle), _FileDispositionInfoExClass, &_Info_ex, sizeof(_Info_ex))) {
+                reinterpret_cast<HANDLE>(_Handle), FileDispositionInfoEx, &_Info_ex, sizeof(_Info_ex))) {
             return __std_win_error::_Success;
         }
 
@@ -546,16 +532,11 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         return {false, _Translate_not_found_to_success(_Last_error)};
     }
 
-    // For Windows 10 1809 or later we have this flag -> FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE 0x10
-    // This flag also deletes read-only files.
-    // NOTE: This is currently undocumented in MSDN. Refer to WinBase.h for declarations.
-
-    // The following bits are set here
-    // FILE_DISPOSITION_FLAG_DELETE, FILE_DISPOSITION_FLAG_POSIX_SEMANTICS,
-    // FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE
-    _File_disposition_info_ex _Info_ex{0x3 | 0x10};
-    constexpr auto _FileDispositionInfoExClass = static_cast<FILE_INFO_BY_HANDLE_CLASS>(21);
-    if (SetFileInformationByHandle(_Handle._Get(), _FileDispositionInfoExClass, &_Info_ex, sizeof(_Info_ex))) {
+    // See minwinbase.h and WinBase.h.
+    // Windows 10 1809 added support for FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE.
+    FILE_DISPOSITION_INFO_EX _Info_ex{FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS
+                                      | FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE};
+    if (SetFileInformationByHandle(_Handle._Get(), FileDispositionInfoEx, &_Info_ex, sizeof(_Info_ex))) {
         return {true, __std_win_error::_Success};
     }
 
@@ -888,12 +869,10 @@ struct alignas(long long) _Aligned_file_attrs {
         return _Last_error;
     }
 
-    constexpr auto _Basic_info_data = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Last_write_time;
-    constexpr auto _Attribute_tag_info_data = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
-    constexpr auto _Standard_info_data      = __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Link_count;
+    constexpr auto _Basic_info_data    = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Last_write_time;
+    constexpr auto _Standard_info_data = __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Link_count;
 
-    if (_Flags != _Attribute_tag_info_data && _Bitmask_includes(_Flags, _Basic_info_data)) {
-        // we have data FileBasicInfo can fill in, that FileAttributeTagInfo wouldn't exactly fill in
+    if (_Bitmask_includes(_Flags, _Basic_info_data | __std_fs_stats_flags::_Reparse_tag)) {
         FILE_BASIC_INFO _Info;
         if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Info, sizeof(_Info))) {
             return __std_win_error{GetLastError()};
@@ -902,17 +881,21 @@ struct alignas(long long) _Aligned_file_attrs {
         _Stats->_Attributes      = __std_fs_file_attr{_Info.FileAttributes};
         _Stats->_Last_write_time = _Info.LastWriteTime.QuadPart;
         _Flags &= ~_Basic_info_data;
-    }
+        if (_Bitmask_includes(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
+            // Calling GetFileInformationByHandleEx with FileAttributeTagInfo fails on FAT file system with
+            // ERROR_INVALID_PARAMETER. We avoid calling this for non-reparse-points.
+            if (_Info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+                FILE_ATTRIBUTE_TAG_INFO _TagInfo;
+                if (!GetFileInformationByHandleEx(_Handle._Get(), FileAttributeTagInfo, &_TagInfo, sizeof(_TagInfo))) {
+                    return __std_win_error{GetLastError()};
+                }
 
-    if (_Bitmask_includes(_Flags, _Attribute_tag_info_data)) {
-        FILE_ATTRIBUTE_TAG_INFO _Info;
-        if (!GetFileInformationByHandleEx(_Handle._Get(), FileAttributeTagInfo, &_Info, sizeof(_Info))) {
-            return __std_win_error{GetLastError()};
+                _Stats->_Reparse_point_tag = __std_fs_reparse_tag{_TagInfo.ReparseTag};
+            } else {
+                _Stats->_Reparse_point_tag = __std_fs_reparse_tag::_None;
+            }
+            _Flags &= ~__std_fs_stats_flags::_Reparse_tag;
         }
-
-        _Stats->_Attributes        = __std_fs_file_attr{_Info.FileAttributes};
-        _Stats->_Reparse_point_tag = __std_fs_reparse_tag{_Info.ReparseTag};
-        _Flags &= ~_Attribute_tag_info_data;
     }
 
     if (_Bitmask_includes(_Flags, _Standard_info_data)) {

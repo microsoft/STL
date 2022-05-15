@@ -302,6 +302,8 @@
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
+// P2321R2 zip
+//     (changes to pair, tuple, and vector<bool>::reference only)
 // P2443R1 views::chunk_by
 
 // Parallel Algorithms Notes
@@ -609,7 +611,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202204L
+#define _MSVC_STL_UPDATE  202205L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -681,6 +683,10 @@
 #ifndef _HAS_UNEXPECTED
 #define _HAS_UNEXPECTED (!_HAS_CXX17)
 #endif // _HAS_UNEXPECTED
+
+#if _HAS_UNEXPECTED && _HAS_CXX23
+#error STL1004: C++98 unexpected() is incompatible with C++23 unexpected<E>.
+#endif // _HAS_UNEXPECTED && _HAS_CXX23
 
 // P0004R1 Removing Deprecated Iostreams Aliases
 #ifndef _HAS_OLD_IOSTREAMS_MEMBERS
