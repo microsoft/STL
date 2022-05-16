@@ -154,6 +154,10 @@ namespace {
 
         return __std_win_error{GetLastError()};
     }
+
+    [[nodiscard]] unsigned long long _Merge_to_ull(unsigned long _High, unsigned long _Low) noexcept {
+        return (static_cast<unsigned long long>(_High) << 32) | static_cast<unsigned long long>(_Low);
+    }
 } // unnamed namespace
 
 _EXTERN_C
@@ -774,43 +778,9 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     return {_Size, __std_win_error::_Success};
 }
 
-// This structure is meant to be embedded into __std_fs_stats that properly aligned it,
-// so that 64-bit values are fully aligned. Note that _File_size fields are flipped to be in low:high order
-// and represented by __std_fs_filetime which is a pair of ulongs.
-// If this structure is used in GetFileAttributesEx, after successful read, File_size parts must be put in
-// low:high order, as GetFileAttributesEx returns them in high:low order.
-struct _File_attr_data { // typedef struct _WIN32_FILE_ATTRIBUTE_DATA {
-    __std_fs_file_attr _Attributes; //     DWORD dwFileAttributes;
-    __std_fs_filetime _Creation_time; //     FILETIME ftCreationTime;
-    __std_fs_filetime _Last_access_time; //     FILETIME ftLastAccessTime;
-    __std_fs_filetime _Last_write_time; //     FILETIME ftLastWriteTime;
-    unsigned long _File_size_high; //     DWORD nFileSizeHigh;
-    unsigned long _File_size_low; //     DWORD nFileSizeLow;
-}; // } WIN32_FILE_ATTRIBUTE_DATA, *LPWIN32_FILE_ATTRIBUTE_DATA;
-
-struct alignas(long long) _Aligned_file_attrs {
-    unsigned long _Padding; // align the __std_fs_filetime inside _Data to make the memcpy below an ordinary 64-bit load
-    _File_attr_data _Data;
-
-    [[nodiscard]] long long _Last_write_time() const noexcept {
-        long long _Result;
-        _CSTD memcpy(&_Result, &_Data._Last_write_time, sizeof(_Result));
-        return _Result;
-    }
-
-    [[nodiscard]] unsigned long long _File_size() const noexcept {
-        return (static_cast<unsigned long long>(_Data._File_size_high) << 32) + _Data._File_size_low;
-    }
-};
-
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_get_stats(_In_z_ const wchar_t* const _Path, __std_fs_stats* const _Stats,
         _In_ __std_fs_stats_flags _Flags, _In_ const __std_fs_file_attr _Symlink_attribute_hint) noexcept {
-    static_assert((offsetof(_Aligned_file_attrs, _Data._Last_write_time) % 8) == 0, "_Last_write_time not aligned");
-    static_assert(sizeof(_File_attr_data) == sizeof(WIN32_FILE_ATTRIBUTE_DATA));
-    static_assert(alignof(_File_attr_data) == alignof(WIN32_FILE_ATTRIBUTE_DATA));
-    static_assert(alignof(_File_attr_data) == 4);
-
     const bool _Follow_symlinks = _Bitmask_includes(_Flags, __std_fs_stats_flags::_Follow_symlinks);
     _Flags &= ~__std_fs_stats_flags::_Follow_symlinks;
     if (_Follow_symlinks && _Bitmask_includes(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
@@ -831,25 +801,48 @@ struct alignas(long long) _Aligned_file_attrs {
 
     constexpr auto _Get_file_attributes_data =
         __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Last_write_time;
-    if (_Bitmask_includes(
-            _Flags, _Get_file_attributes_data)) { // caller wants something GetFileAttributesExW might provide
+    if (_Bitmask_includes(_Flags, _Get_file_attributes_data)) {
+        // caller wants something GetFileAttributesExW/FindFirstFileW might provide
         if (_Symlink_attribute_hint == __std_fs_file_attr::_Invalid
             || !_Bitmask_includes(_Symlink_attribute_hint, __std_fs_file_attr::_Reparse_point)
-            || !_Follow_symlinks) { // we might not be a symlink or not following symlinks, so GetFileAttributesExW
-                                    // would return the right answer
-            _Aligned_file_attrs _Aligned_attrs;
-            auto& _Data = _Aligned_attrs._Data;
+            || !_Follow_symlinks) { // we might not be a symlink or not following symlinks, so
+                                    // GetFileAttributesExW/FindFirstFileW would return the right answer
+
+            WIN32_FILE_ATTRIBUTE_DATA _Data;
             if (!GetFileAttributesExW(_Path, GetFileExInfoStandard, &_Data)) {
-                return __std_win_error{GetLastError()};
+                // In some cases, ERROR_SHARING_VIOLATION is returned from GetFileAttributesExW;
+                // FindFirstFileW will work in those cases if we have read permissions on the directory.
+                if (const __std_win_error _Last_error{GetLastError()};
+                    _Last_error != __std_win_error::_Sharing_violation) {
+                    return _Last_error;
+                }
+
+                // Note that FindFirstFileW does allow globbing characters and has extra behavior with them
+                // that we don't want. However, GetFileAttributesExW would've failed with ERROR_INVALID_NAME
+                // if there were any globbing characters in _Path.
+                WIN32_FIND_DATAW _Find_data;
+                {
+                    HANDLE _Find_handle = FindFirstFileW(_Path, &_Find_data);
+                    if (_Find_handle == INVALID_HANDLE_VALUE) {
+                        return __std_win_error{GetLastError()};
+                    }
+                    FindClose(_Find_handle);
+                }
+
+                _Data.dwFileAttributes = _Find_data.dwFileAttributes;
+                _Data.nFileSizeHigh    = _Find_data.nFileSizeHigh;
+                _Data.nFileSizeLow     = _Find_data.nFileSizeLow;
+                _Data.ftLastWriteTime  = _Find_data.ftLastWriteTime;
             }
 
-            if (!_Follow_symlinks
-                || !_Bitmask_includes(_Data._Attributes,
-                    __std_fs_file_attr::_Reparse_point)) { // if we aren't following symlinks or can't be a
-                                                           // symlink, that data was useful, record
-                _Stats->_Attributes      = _Data._Attributes;
-                _Stats->_File_size       = _Aligned_attrs._File_size();
-                _Stats->_Last_write_time = _Aligned_attrs._Last_write_time();
+            const __std_fs_file_attr _Attributes{_Data.dwFileAttributes};
+            if (!_Follow_symlinks || !_Bitmask_includes(_Attributes, __std_fs_file_attr::_Reparse_point)) {
+                // if we aren't following symlinks or can't be a symlink, that data was useful, record
+                _Stats->_Attributes      = _Attributes;
+                _Stats->_File_size       = _Merge_to_ull(_Data.nFileSizeHigh, _Data.nFileSizeLow);
+                _Stats->_Last_write_time = static_cast<long long>(
+                    _Merge_to_ull(_Data.ftLastWriteTime.dwHighDateTime, _Data.ftLastWriteTime.dwLowDateTime));
+
                 _Flags &= ~_Get_file_attributes_data;
             }
         }
