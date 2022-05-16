@@ -306,7 +306,6 @@
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
-//     (views::slide only)
 // P2443R1 views::chunk_by
 
 // Parallel Algorithms Notes
@@ -1435,6 +1434,7 @@
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L

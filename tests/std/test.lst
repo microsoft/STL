@@ -475,6 +475,8 @@ tests\P2273R3_constexpr_unique_ptr
 tests\P2321R2_proxy_reference
 tests\P2401R0_conditional_noexcept_for_exchange
 tests\P2415R2_owning_view
+tests\P2442R1_views_chunk
+tests\P2442R1_views_chunk_death
 tests\P2442R1_views_slide
 tests\P2443R1_views_chunk_by
 tests\P2443R1_views_chunk_by_death
