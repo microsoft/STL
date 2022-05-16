@@ -28,7 +28,9 @@
 
 using namespace std;
 
+#ifdef __SANITIZE_ADDRESS__
 extern "C" int __sanitizer_verify_contiguous_container(const void* beg, const void* mid, const void* end) noexcept;
+#endif // ASan instrumentation enabled
 
 constexpr auto literal_input = "Hello fluffy kittens";
 #ifdef __cpp_char8_t
@@ -167,6 +169,7 @@ public:
 
 template <class CharType, class Alloc>
 bool verify_string(basic_string<CharType, char_traits<CharType>, Alloc>& str) {
+#ifdef __SANITIZE_ADDRESS__
     constexpr auto proxy_size = _Size_after_ebco_v<_Container_base>;
     if constexpr (proxy_size % _Asan_granularity != 0) { // If we have a misaligned SSO buffer we disable ASAN
         constexpr size_t max_sso_size = (16 / sizeof(CharType) < 1 ? 1 : 16 / sizeof(CharType)) - 1;
@@ -188,6 +191,10 @@ bool verify_string(basic_string<CharType, char_traits<CharType>, Alloc>& str) {
     const void* aligned_mid = mid > aligned_start ? mid : aligned_start;
 
     return __sanitizer_verify_contiguous_container(aligned_start, aligned_mid, end) != 0;
+#else // ^^^ ASan instrumentation enabled ^^^ // vvv ASan instrumentation disabled vvv
+    (void) str;
+    return true;
+#endif // ASan instrumentation disabled
 }
 
 // Note: This class does not satisfy all the allocator requirements but is sufficient for this test.
