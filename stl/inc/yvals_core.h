@@ -1249,10 +1249,6 @@
 #define _RESULT_TYPE_NAME          _Unnameable_result
 #endif // !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS
 
-#if !_HAS_DEPRECATED_ALLOCATOR_VOID && _HAS_DEPRECATED_ALLOCATOR_MEMBERS
-#error STL1005: removed members of the primary template of std::allocator are incompatible with std::allocator<void>.
-#endif // !_HAS_DEPRECATED_ALLOCATOR_VOID && _HAS_DEPRECATED_ALLOCATOR_MEMBERS
-
 // P1423R3 char8_t Backward Compatibility Remediation
 // Controls whether we allow the stream insertions this proposal forbids
 #ifndef _HAS_STREAM_INSERTION_OPERATORS_DELETED_IN_CXX20
