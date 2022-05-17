@@ -840,9 +840,19 @@
 #define _CXX17_DEPRECATE_NEGATORS
 #endif // ^^^ warning disabled ^^^
 
-// STL4009 was "std::allocator<void> is deprecated in C++17"
-
 // N4659 D.9 [depr.default.allocator]
+#if _HAS_CXX17 && !defined(_SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
+#define _CXX17_DEPRECATE_ALLOCATOR_VOID                                                  \
+    [[deprecated("warning STL4009: "                                                     \
+                 "The std::allocator<void> full specialization is deprecated in C++17. " \
+                 "It is not recommended to use. "                                        \
+                 "You can define _SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING "     \
+                 "or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX17_DEPRECATE_ALLOCATOR_VOID
+#endif // ^^^ warning disabled ^^^
+
 #if _HAS_CXX17 && !defined(_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
 #define _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS                                              \
@@ -1191,6 +1201,10 @@
 #define _HAS_DEPRECATED_ADAPTOR_TYPEDEFS (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_DEPRECATED_ADAPTOR_TYPEDEFS
 
+#ifndef _HAS_DEPRECATED_ALLOCATOR_VOID
+#define _HAS_DEPRECATED_ALLOCATOR_VOID (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_ALLOCATOR_VOID
+
 #ifndef _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 #define _HAS_DEPRECATED_ALLOCATOR_MEMBERS (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
@@ -1234,6 +1248,10 @@
 #define _SECOND_ARGUMENT_TYPE_NAME _Unnameable_second_argument
 #define _RESULT_TYPE_NAME          _Unnameable_result
 #endif // !_HAS_DEPRECATED_ADAPTOR_TYPEDEFS
+
+#if !_HAS_DEPRECATED_ALLOCATOR_VOID && _HAS_DEPRECATED_ALLOCATOR_MEMBERS
+#error STL1005: removed members of the primary template of std::allocator are incompatible with std::allocator<void>.
+#endif // !_HAS_DEPRECATED_ALLOCATOR_VOID && _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
 // P1423R3 char8_t Backward Compatibility Remediation
 // Controls whether we allow the stream insertions this proposal forbids
