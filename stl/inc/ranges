@@ -4748,6 +4748,372 @@ namespace ranges {
     } // namespace views
 
 #if _HAS_CXX23
+    template <class _Vw>
+    concept _Slide_caches_nothing = random_access_range<_Vw> && sized_range<_Vw>;
+
+    template <class _Vw>
+    concept _Slide_caches_last = !_Slide_caches_nothing<_Vw> && bidirectional_range<_Vw> && common_range<_Vw>;
+
+    template <class _Vw>
+    concept _Slide_caches_first = !_Slide_caches_nothing<_Vw> && !_Slide_caches_last<_Vw>;
+
+    template <forward_range _Vw>
+        requires view<_Vw>
+    class slide_view : public _Cached_position_t<!_Slide_caches_nothing<_Vw>, _Vw, slide_view<_Vw>> {
+    private:
+        /* [[no_unique_address]] */ _Vw _Range{};
+        range_difference_t<_Vw> _Count = 0;
+
+        template <class>
+        class _Iter_base {};
+
+        template <_Slide_caches_first _Base>
+        class _Iter_base<_Base> {
+        protected:
+            using _Base_iterator = iterator_t<_Base>;
+            _Base_iterator _Last_element{};
+
+        public:
+            _Iter_base() = default;
+            constexpr explicit _Iter_base(_Base_iterator _Last_element_) noexcept(
+                is_nothrow_move_constructible_v<_Base_iterator>)
+                : _Last_element{_STD move(_Last_element_)} {}
+
+            _NODISCARD constexpr const _Base_iterator& _Get_last_element() const noexcept {
+                return _Last_element;
+            }
+        };
+
+        template <bool _Const>
+        class _Iterator : public _Iter_base<_Maybe_const<_Const, _Vw>> {
+        private:
+            friend slide_view;
+
+            using _Base          = _Maybe_const<_Const, _Vw>;
+            using _Base_iterator = iterator_t<_Base>;
+
+            /* [[no_unique_address]] */ _Base_iterator _Current{};
+            range_difference_t<_Base> _Count = 0;
+
+            // clang-format off
+            constexpr _Iterator(_Base_iterator _Current_, range_difference_t<_Base> _Count_) noexcept(
+                is_nothrow_move_constructible_v<_Base_iterator>) /* strengthened */
+                requires (!_Slide_caches_first<_Base>)
+                : _Current(_STD move(_Current_)), _Count(_Count_) {}
+            // clang-format on
+
+            constexpr _Iterator(_Base_iterator _Current_, _Base_iterator _Last_, range_difference_t<_Base> _Count_) //
+                noexcept(is_nothrow_move_constructible_v<_Base_iterator>) /* strengthened */
+                requires _Slide_caches_first<_Base>
+                : _Iter_base<_Base>(_STD move(_Last_)), _Current(_STD move(_Current_)), _Count(_Count_) {}
+
+        public:
+            using value_type        = decltype(views::counted(_Current, _Count));
+            using difference_type   = range_difference_t<_Base>;
+            using iterator_category = input_iterator_tag;
+            using iterator_concept  = conditional_t<random_access_range<_Base>, random_access_iterator_tag,
+                conditional_t<bidirectional_range<_Base>, bidirectional_iterator_tag, forward_iterator_tag>>;
+
+            _Iterator() = default;
+
+            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(is_nothrow_constructible_v<_Base_iterator,
+                typename _Iterator<!_Const>::_Base_iterator>) /* strengthened */
+                requires _Const && convertible_to<iterator_t<_Vw>, _Base_iterator> //
+                : _Current(_STD move(_Other._Current)), _Count(_Other._Count) {}
+
+            _NODISCARD constexpr value_type operator*() const
+                noexcept(noexcept(views::counted(_Current, _Count))) /* strengthened */ {
+                return views::counted(_Current, _Count);
+            }
+
+            constexpr _Iterator& operator++() noexcept(noexcept(++_Current)) /* strengthened */ {
+                ++_Current;
+
+                if constexpr (_Slide_caches_first<_Base>) {
+                    ++this->_Last_element;
+                }
+                return *this;
+            }
+
+            constexpr _Iterator operator++(int) noexcept(
+                is_nothrow_copy_constructible_v<_Base_iterator>&& noexcept(++_Current)) /* strengthened */ {
+                auto _Tmp = *this;
+                ++*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator--() noexcept(noexcept(--_Current)) /* strengthened */
+                requires bidirectional_range<_Base> {
+                --_Current;
+
+                if constexpr (_Slide_caches_first<_Base>) {
+                    --this->_Last_element;
+                }
+                return *this;
+            }
+
+            constexpr _Iterator operator--(int) noexcept(
+                is_nothrow_copy_constructible_v<_Base_iterator>&& noexcept(--_Current)) /* strengthened */
+                requires bidirectional_range<_Base> {
+                auto _Tmp = *this;
+                --*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator+=(const difference_type _Off) noexcept(
+                noexcept(_Current += _Off)) /* strengthened */
+                requires random_access_range<_Base> {
+                _Current += _Off;
+
+                if constexpr (_Slide_caches_first<_Base>) {
+                    this->_Last_element += _Off;
+                }
+                return *this;
+            }
+
+            constexpr _Iterator& operator-=(const difference_type _Off) noexcept(
+                noexcept(_Current -= _Off)) /* strengthened */
+                requires random_access_range<_Base> {
+                _Current -= _Off;
+
+                if constexpr (_Slide_caches_first<_Base>) {
+                    this->_Last_element -= _Off;
+                }
+                return *this;
+            }
+
+            _NODISCARD constexpr value_type operator[](const difference_type _Off) const
+                noexcept(noexcept(views::counted(_Current + _Off, _Count))) /* strengthened */
+                requires random_access_range<_Base> {
+                return views::counted(_Current + _Off, _Count);
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Right._Current))) /* strengthened */ {
+                if constexpr (_Slide_caches_first<_Base>) {
+                    return _Left._Last_element == _Right._Last_element;
+                } else {
+                    return _Left._Current == _Right._Current;
+                }
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_Left._Current < _Right._Current))) /* strengthened */
+                requires random_access_range<_Base> {
+                return _Left._Current < _Right._Current;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_Right._Current < _Left._Current))) /* strengthened */
+                requires random_access_range<_Base> {
+                return _Right._Current < _Left._Current;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator<=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(!(_Right._Current < _Left._Current)))) /* strengthened */
+                requires random_access_range<_Base> {
+                return !(_Right._Current < _Left._Current);
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator>=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(!(_Left._Current < _Right._Current)))) /* strengthened */
+                requires random_access_range<_Base> {
+                return !(_Left._Current < _Right._Current);
+            }
+
+            _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Left._Current <=> _Right._Current)) /* strengthened */
+                requires random_access_range<_Base> && three_way_comparable<_Base_iterator> {
+                return _Left._Current <=> _Right._Current;
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off) noexcept(
+                noexcept(_STD declval<_Iterator&>() += _Off)) /* strengthened */
+                requires random_access_range<_Base> {
+                auto _Copy = _It;
+                _Copy += _Off;
+                return _Copy;
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It) noexcept(
+                noexcept(_STD declval<_Iterator&>() += _Off)) /* strengthened */
+                requires random_access_range<_Base> {
+                auto _Copy = _It;
+                _Copy += _Off;
+                return _Copy;
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off) noexcept(
+                noexcept(_STD declval<_Iterator&>() -= _Off)) /* strengthened */
+                requires random_access_range<_Base> {
+                auto _Copy = _It;
+                _Copy -= _Off;
+                return _Copy;
+            }
+
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left,
+                const _Iterator& _Right) noexcept(noexcept(_Left._Current - _Right._Current)) /* strengthened */
+                requires sized_sentinel_for<_Base_iterator, _Base_iterator> {
+                if constexpr (_Slide_caches_first<_Base>) {
+                    return _Left._Last_element - _Right._Last_element;
+                } else {
+                    return _Left._Current - _Right._Current;
+                }
+            }
+        };
+
+        class _Sentinel {
+        private:
+            friend slide_view;
+            /* [[no_unique_address]] */ sentinel_t<_Vw> _Last{};
+
+            constexpr explicit _Sentinel(sentinel_t<_Vw> _Last_) noexcept(
+                is_nothrow_move_constructible_v<sentinel_t<_Vw>>) /* strengthened */
+                : _Last(_STD move(_Last_)) {}
+
+        public:
+            _Sentinel() = default;
+
+            _NODISCARD_FRIEND constexpr bool
+                operator==(const _Iterator<false>& _Left, const _Sentinel& _Right) noexcept(noexcept(
+                    _Implicitly_convert_to<bool>(_Left._Get_last_element() == _Right._Last))) /* strengthened */ {
+                return _Left._Get_last_element() == _Right._Last;
+            }
+
+            _NODISCARD_FRIEND constexpr range_difference_t<_Vw> operator-(const _Iterator<false>& _Left,
+                const _Sentinel& _Right) noexcept(noexcept(_Left._Get_last_element() - _Right._Last)) /* strengthened */
+                requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>> {
+                return _Left._Get_last_element() - _Right._Last;
+            }
+
+            _NODISCARD_FRIEND constexpr range_difference_t<_Vw>
+                operator-(const _Sentinel& _Left, const _Iterator<false>& _Right) noexcept(
+                    noexcept(_Left._Last - _Right._Get_last_element())) /* strengthened */
+                requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>> {
+                return _Left._Last - _Right._Get_last_element();
+            }
+        };
+
+    public:
+        // clang-format off
+        slide_view() requires default_initializable<_Vw> = default;
+        // clang-format on
+
+        constexpr explicit slide_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
+            is_nothrow_move_constructible_v<_Vw>) /* strengthened */
+            : _Range(_STD move(_Range_)), _Count{_Count_} {}
+
+        // clang-format off
+        _NODISCARD constexpr auto begin() requires (!(_Simple_view<_Vw> && _Slide_caches_nothing<const _Vw>) ) {
+            // clang-format on
+            if constexpr (_Slide_caches_first<_Vw>) {
+                auto _First = _RANGES begin(_Range);
+                if (this->_Has_cache()) {
+                    return _Iterator<false>{_STD move(_First), this->_Get_cache(_Range), _Count};
+                }
+
+                auto _Current_last = _RANGES next(_First, _Count - 1, _RANGES end(_Range));
+                this->_Set_cache(_Range, _Current_last);
+                return _Iterator<false>{_STD move(_First), _STD move(_Current_last), _Count};
+            } else {
+                return _Iterator<false>{_RANGES begin(_Range), _Count};
+            }
+        }
+
+        _NODISCARD constexpr auto begin() const noexcept(
+            noexcept(_RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) /* strengthened */
+            requires _Slide_caches_nothing<const _Vw> {
+            return _Iterator<true>{_RANGES begin(_Range), _Count};
+        }
+
+        // clang-format off
+        _NODISCARD constexpr auto end() requires (!(_Simple_view<_Vw> && _Slide_caches_nothing<const _Vw>) ) {
+            // clang-format on
+            if constexpr (_Slide_caches_nothing<_Vw>) {
+                const auto _Size = _RANGES distance(_Range) - (_Count - 1);
+                if (_Size < 0) {
+                    return _Iterator<false>{_RANGES begin(_Range), _Count};
+                }
+
+                return _Iterator<false>{_RANGES begin(_Range) + _Size, _Count};
+            } else if constexpr (_Slide_caches_last<_Vw>) {
+                if (this->_Has_cache()) {
+                    return _Iterator<false>{this->_Get_cache(_Range), _Count};
+                }
+
+                auto _Current_last = _RANGES prev(_RANGES end(_Range), _Count - 1, _RANGES begin(_Range));
+                this->_Set_cache(_Range, _Current_last);
+                return _Iterator<false>{_STD move(_Current_last), _Count};
+            } else if constexpr (common_range<_Vw>) {
+                const auto _Last = _RANGES end(_Range);
+                return _Iterator<false>{_Last, _Last, _Count};
+            } else {
+                return _Sentinel{_RANGES end(_Range)};
+            }
+        }
+
+        _NODISCARD constexpr auto end() const noexcept(is_nothrow_move_constructible_v<iterator_t<_Vw>> //
+                && noexcept(_RANGES distance(_Range)) && noexcept(_RANGES begin(_Range) + _Count)) /* strengthened */
+            requires _Slide_caches_nothing<const _Vw> {
+            const auto _Size = _RANGES distance(_Range) - (_Count - 1);
+            if (_Size < 0) {
+                return _Iterator<true>{_RANGES begin(_Range), _Count};
+            }
+
+            return _Iterator<true>{_RANGES begin(_Range) + _Size, _Count};
+        }
+
+        _NODISCARD constexpr auto size() noexcept(noexcept(_RANGES distance(_Range))) /* strengthened */
+            requires sized_range<_Vw> {
+            auto _Size = _RANGES distance(_Range) - (_Count - 1);
+            if (_Size < 0) {
+                _Size = 0;
+            }
+
+            return _To_unsigned_like(_Size);
+        }
+
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES distance(_Range))) /* strengthened */
+            requires sized_range<const _Vw> {
+            auto _Size = _RANGES distance(_Range) - (_Count - 1);
+            if (_Size < 0) {
+                _Size = 0;
+            }
+            return _To_unsigned_like(_Size);
+        }
+    };
+
+    template <class _Rng>
+    slide_view(_Rng&&, range_difference_t<_Rng>) -> slide_view<views::all_t<_Rng>>;
+
+    template <class _Vw>
+    inline constexpr bool enable_borrowed_range<slide_view<_Vw>> = enable_borrowed_range<_Vw>;
+
+    namespace views {
+        struct _Slide_fn {
+            // clang-format off
+            template <viewable_range _Rng>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, const range_difference_t<_Rng> _Count) const noexcept(
+                noexcept(slide_view(_STD forward<_Rng>(_Range), _Count))) requires requires {
+                slide_view(_STD forward<_Rng>(_Range), _Count);
+            } {
+                // clang-format on
+                return slide_view(_STD forward<_Rng>(_Range), _Count);
+            }
+
+            // clang-format off
+            template <class _Ty>
+                requires constructible_from<decay_t<_Ty>, _Ty>
+            _NODISCARD constexpr auto operator()(_Ty&& _Count) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
+                // clang-format on
+                return _Range_closure<_Slide_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Count)};
+            }
+        };
+
+        inline constexpr _Slide_fn slide;
+    } // namespace views
+
     template <forward_range _Vw, indirect_binary_predicate<iterator_t<_Vw>, iterator_t<_Vw>> _Pr>
         requires view<_Vw> && is_object_v<_Pr>
     class chunk_by_view : public _Cached_position<_Vw, chunk_by_view<_Vw, _Pr>> {
