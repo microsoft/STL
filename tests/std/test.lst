@@ -187,6 +187,7 @@ tests\GH_001850_clog_tied_to_cout
 tests\GH_001858_iostream_exception
 tests\GH_001914_cached_position
 tests\GH_001964_constexpr_generate_canonical
+tests\GH_002030_asan_annotate_string
 tests\GH_002030_asan_annotate_vector
 tests\GH_002039_byte_is_not_trivially_swappable
 tests\GH_002058_debug_iterator_race
@@ -200,6 +201,7 @@ tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3121_constrained_tuple_forwarding_ctor
 tests\LWG3146_excessive_unwrapping_ref_cref
+tests\LWG3234_math_special_overloads
 tests\LWG3422_seed_seq_ctors
 tests\LWG3480_directory_iterator_range
 tests\LWG3610_iota_view_size_and_integer_class
@@ -471,8 +473,12 @@ tests\P2136R3_invoke_r
 tests\P2162R2_std_visit_for_derived_classes_from_variant
 tests\P2231R1_complete_constexpr_optional_variant
 tests\P2273R3_constexpr_unique_ptr
+tests\P2321R2_proxy_reference
 tests\P2401R0_conditional_noexcept_for_exchange
 tests\P2415R2_owning_view
+tests\P2442R1_views_chunk
+tests\P2442R1_views_chunk_death
+tests\P2442R1_views_slide
 tests\P2443R1_views_chunk_by
 tests\P2443R1_views_chunk_by_death
 tests\VSO_0000000_allocator_propagation

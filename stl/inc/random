@@ -682,13 +682,14 @@ public:
         seed(_Gx);
     }
 
-    void seed(_Seed_t _Value = default_seed) { // set initial values from specified seed value
-        _Seed(_Value, false, true_type{});
+    void seed(_Seed_t _Value = default_seed, bool _Readcy = false) { // set initial values from specified seed value
+        linear_congruential<_Seed_t, 40014U, 0U, 2147483563U> _Lc{_Value == 0U ? default_seed : _Value};
+        _Reset(_Lc, _Readcy);
     }
 
-    template <class _Gen>
+    template <class _Gen, enable_if_t<!is_arithmetic_v<_Gen>, int> = 0>
     void seed(_Gen& _Gx, bool _Readcy = false) { // set initial values from range
-        _Seed(_Gx, _Readcy, is_arithmetic<_Gen>{});
+        _Reset(_Gx, _Readcy);
     }
 
     _NODISCARD result_type(min)() const {
@@ -751,17 +752,6 @@ public:
     }
 
 protected:
-    template <class _Gen>
-    void _Seed(_Gen& _Gx, bool _Readcy, true_type) { // reset sequence from numeric value
-        linear_congruential<_Seed_t, 40014U, 0U, 2147483563U> _Lc(_Gx == 0U ? default_seed : _Gx);
-        _Reset(_Lc, _Readcy);
-    }
-
-    template <class _Gen>
-    void _Seed(_Gen& _Gx, bool _Readcy, false_type) { // reset sequence from generator
-        _Reset(_Gx, _Readcy);
-    }
-
     template <class _Gen>
     void _Reset(_Gen& _Gx, bool _Readcy) { // reset sequence
         _Carry     = _Swc_Traits::_Reset(_Gx, this->_Ax, _Readcy);
@@ -934,7 +924,7 @@ public:
     }
 
     void seed(_Ty _Value = default_seed) { // set initial values from specified seed value
-        this->_Seed(_Value, false, true_type{});
+        _Mybase::seed(_Value);
     }
 
     static constexpr int _Kx = (8 * sizeof(_Ty) + 31) / 32;
