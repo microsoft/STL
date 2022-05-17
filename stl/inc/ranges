@@ -3068,6 +3068,14 @@ namespace ranges {
         requires view<_Vw> && input_range<range_reference_t<_Vw>>
     class join_view : public _Join_view_base<_Vw> {
         // clang-format on
+
+#ifndef _USE_JOIN_VIEW_INPUT_RANGE
+        static_assert(forward_range<_Vw>,
+            "Using join_view with input-only ranges is temporarily disabled because of a bug that makes join_view "
+            "misbehave for certain ranges. See https://cplusplus.github.io/LWG/issue3698. You can define "
+            "_USE_JOIN_VIEW_INPUT_RANGE to suppress this diagnostic.");
+#endif // _USE_JOIN_VIEW_INPUT_RANGE
+
     private:
         template <bool _Const>
         using _InnerRng = range_reference_t<_Maybe_const<_Const, _Vw>>;
