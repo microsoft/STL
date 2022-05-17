@@ -868,7 +868,7 @@ public:
     static constexpr size_t _Minimum_allocation_alignment = _Asan_granularity;
 };
 
-#if _HAS_DEPRECATED_ALLOCATOR_VOID
+#if _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 template <>
 class _CXX17_DEPRECATE_ALLOCATOR_VOID allocator<void> {
 public:
@@ -883,7 +883,7 @@ public:
     };
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 };
-#endif // _HAS_DEPRECATED_ALLOCATOR_VOID
+#endif // _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
 template <class _Ty, class _Other>
 _NODISCARD _CONSTEXPR20 bool operator==(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
