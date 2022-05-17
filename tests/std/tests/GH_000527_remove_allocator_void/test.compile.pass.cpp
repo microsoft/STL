@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING
+#define _SILENCE_CXX20_IS_ALWAYS_EQUAL_DEPRECATION_WARNING
 
 #include <memory>
 #include <type_traits>
