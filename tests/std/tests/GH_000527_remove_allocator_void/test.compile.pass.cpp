@@ -12,34 +12,34 @@
 using namespace std;
 
 template <class T, class = void>
-inline constexpr bool has_member_size_type = false;
+constexpr bool has_member_size_type = false;
 
 template <class T>
-inline constexpr bool has_member_size_type<T, void_t<typename T::size_type>> = true;
+constexpr bool has_member_size_type<T, void_t<typename T::size_type>> = true;
 
 template <class T, class = void>
-inline constexpr bool has_member_difference_type = false;
+constexpr bool has_member_difference_type = false;
 
 template <class T>
-inline constexpr bool has_member_difference_type<T, void_t<typename T::difference_type>> = true;
+constexpr bool has_member_difference_type<T, void_t<typename T::difference_type>> = true;
 
 template <class T, class = void>
-inline constexpr bool has_member_pocma = false;
+constexpr bool has_member_pocma = false;
 
 template <class T>
-inline constexpr bool has_member_pocma<T, void_t<typename T::propagate_on_container_move_assignment>> = true;
+constexpr bool has_member_pocma<T, void_t<typename T::propagate_on_container_move_assignment>> = true;
 
 template <class T, class = void>
-inline constexpr bool has_member_is_always_equal = false;
+constexpr bool has_member_is_always_equal = false;
 
 template <class T>
-inline constexpr bool has_member_is_always_equal<T, void_t<typename T::is_always_equal>> = true;
+constexpr bool has_member_is_always_equal<T, void_t<typename T::is_always_equal>> = true;
 
 template <class T, class = void>
-inline constexpr bool can_allocate = false;
+constexpr bool can_allocate = false;
 
 template <class T>
-inline constexpr bool can_allocate<T, void_t<decltype(declval<T&>().allocate(size_t{}))>> = true;
+constexpr bool can_allocate<T, void_t<decltype(declval<T&>().allocate(size_t{}))>> = true;
 
 STATIC_ASSERT(has_member_size_type<allocator<int>>);
 STATIC_ASSERT(has_member_difference_type<allocator<int>>);
