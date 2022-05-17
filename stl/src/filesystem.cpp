@@ -126,6 +126,39 @@ namespace {
         return __std_win_error{GetLastError()};
     }
 
+    [[nodiscard]] __std_win_error __stdcall _Get_file_id_by_handle(
+        const HANDLE _Handle, _Out_ FILE_ID_INFO* const _Id) noexcept {
+        __std_win_error _Last_error;
+        if (GetFileInformationByHandleEx(_Handle, FileIdInfo, _Id, sizeof(*_Id)) != 0) {
+            // if we could get FILE_ID_INFO, use that as the source of truth
+            return __std_win_error::_Success;
+        }
+
+        _Last_error = __std_win_error{GetLastError()};
+        switch (_Last_error) {
+        case __std_win_error::_Not_supported:
+        case __std_win_error::_Invalid_parameter:
+            break; // try more things
+        default:
+            return _Last_error; // real error, bail to the caller
+        }
+
+#ifndef _CRT_APP
+        // try GetFileInformationByHandle as a fallback
+        BY_HANDLE_FILE_INFORMATION _Info;
+        if (GetFileInformationByHandle(_Handle, &_Info) != 0) {
+            _Id->VolumeSerialNumber = _Info.dwVolumeSerialNumber;
+            _CSTD memcpy(&_Id->FileId.Identifier[0], &_Info.nFileIndexHigh, 8);
+            _CSTD memset(&_Id->FileId.Identifier[8], 0, 8);
+            return __std_win_error::_Success;
+        }
+
+        _Last_error = __std_win_error{GetLastError()};
+#endif // _CRT_APP
+
+        return _Last_error;
+    }
+
     [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
         __stdcall _Set_delete_flag(_In_ __std_fs_file_handle _Handle) {
 
@@ -343,45 +376,72 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
             return _First_try_result;
         }
 
-        // At this point, the target exists, and we are skip_existing or update_existing. To resolve either,
-        // we need to open handles to test equivalent() and last_write_time().
-        // We test equivalent() not by directly doing what equivalent() does, but by opening the handles
-        // in exclusive mode, so a subsequent open will fail with ERROR_SHARING_VIOLATION.
+        // At this point, the target exists, and we are `skip_existing` or `update_existing`.
+        // To resolve either, we need to open handles to test `equivalent()` and `last_write_time()`.
+        // We allow other programs to have these files open in read-only mode,
+        // since that doesn't affect the last-write-check.
+        // We also allow `FILE_SHARE_WRITE` when `skip_existing`, since that doesn't affect anything.
         {
-            const _STD _Fs_file _Source_handle(__vcp_CreateFile(
-                _Source, FILE_READ_ATTRIBUTES | FILE_READ_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
+            DWORD _Share_mode = FILE_SHARE_READ;
+            if (_Options == __std_fs_copy_options::_Skip_existing) {
+                _Share_mode |= FILE_SHARE_WRITE;
+            }
+
+            const _STD _Fs_file _Source_handle(
+                __vcp_CreateFile(_Source, FILE_READ_ATTRIBUTES, _Share_mode, nullptr, OPEN_EXISTING, 0, nullptr));
             __std_win_error _Last_error = _Translate_CreateFile_last_error(_Source_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
                 return {false, _Last_error};
             }
 
-            const _STD _Fs_file _Target_handle(__vcp_CreateFile(
-                _Target, FILE_READ_ATTRIBUTES | FILE_WRITE_DATA, 0, nullptr, OPEN_EXISTING, 0, nullptr));
+            const _STD _Fs_file _Target_handle(
+                __vcp_CreateFile(_Target, FILE_READ_ATTRIBUTES, _Share_mode, nullptr, OPEN_EXISTING, 0, nullptr));
             _Last_error = _Translate_CreateFile_last_error(_Target_handle._Get());
             if (_Last_error != __std_win_error::_Success) {
-                // Also handles the equivalent(from, to) error case
                 return {false, _Last_error};
             }
 
-            // If we get here, we did the equivalent(from, to) test. If we were only asked to skip existing, we're done
-            if (_Options == __std_fs_copy_options::_Skip_existing) {
-                return {false, __std_win_error::_Success};
+            bool _Do_copy = false;
+            if (_Options == __std_fs_copy_options::_Update_existing) {
+                long long _Source_last_write_time;
+                _Last_error = _Get_last_write_time_by_handle(_Source_handle._Get(), &_Source_last_write_time);
+                if (_Last_error != __std_win_error::_Success) {
+                    return {false, _Last_error};
+                }
+
+                long long _Target_last_write_time;
+                _Last_error = _Get_last_write_time_by_handle(_Target_handle._Get(), &_Target_last_write_time);
+                if (_Last_error != __std_win_error::_Success) {
+                    return {false, _Last_error};
+                }
+
+                if (_Target_last_write_time < _Source_last_write_time) { // _Source is newer, so update_existing
+                    _Do_copy = true;
+                }
             }
 
-            // Test for update_existing
-            long long _Source_last_write_time;
-            _Last_error = _Get_last_write_time_by_handle(_Source_handle._Get(), &_Source_last_write_time);
-            if (_Last_error != __std_win_error::_Success) {
-                return {false, _Last_error};
-            }
+            if (!_Do_copy) {
+                // We only need to test `equivalent()` if we _aren't_ going to `CopyFileW()`,
+                // since that call will fail with an `ERROR_SHARING_VIOLATION` anyways.
+                FILE_ID_INFO _Source_id;
+                _Last_error = _Get_file_id_by_handle(_Source_handle._Get(), &_Source_id);
+                if (_Last_error != __std_win_error::_Success) {
+                    return {false, _Last_error};
+                }
+                FILE_ID_INFO _Target_id;
+                _Last_error = _Get_file_id_by_handle(_Target_handle._Get(), &_Target_id);
+                if (_Last_error != __std_win_error::_Success) {
+                    return {false, _Last_error};
+                }
 
-            long long _Target_last_write_time;
-            _Last_error = _Get_last_write_time_by_handle(_Target_handle._Get(), &_Target_last_write_time);
-            if (_Last_error != __std_win_error::_Success) {
-                return {false, _Last_error};
-            }
+                if (_Source_id.VolumeSerialNumber == _Target_id.VolumeSerialNumber
+                    && _CSTD memcmp(_Source_id.FileId.Identifier, _Target_id.FileId.Identifier,
+                           sizeof(_Source_id.FileId.Identifier))
+                           == 0) {
+                    // the files are equivalent
+                    return {false, __std_win_error::_Sharing_violation};
+                }
 
-            if (_Source_last_write_time <= _Target_last_write_time) { // _Target is newer, so don't update_existing
                 return {false, __std_win_error::_Success};
             }
 
@@ -408,35 +468,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
     static_assert(sizeof(FILE_ID_INFO) == sizeof(__std_fs_file_id));
     static_assert(alignof(FILE_ID_INFO) == alignof(__std_fs_file_id));
-    if (GetFileInformationByHandleEx(_Handle._Get(), FileIdInfo, reinterpret_cast<FILE_ID_INFO*>(_Id), sizeof(*_Id))
-        != 0) {
-        // if we could get FILE_ID_INFO, use that as the source of truth
-        return __std_win_error::_Success;
-    }
-
-    _Last_error = __std_win_error{GetLastError()};
-    switch (_Last_error) {
-    case __std_win_error::_Not_supported:
-    case __std_win_error::_Invalid_parameter:
-        break; // try more things
-    default:
-        return _Last_error; // real error, bail to the caller
-    }
-
-#ifndef _CRT_APP
-    // try GetFileInformationByHandle as a fallback
-    BY_HANDLE_FILE_INFORMATION _Info;
-    if (GetFileInformationByHandle(_Handle._Get(), &_Info) != 0) {
-        _Id->_Volume_serial_number = _Info.dwVolumeSerialNumber;
-        _CSTD memcpy(&_Id->_Id[0], &_Info.nFileIndexHigh, 8);
-        _CSTD memset(&_Id->_Id[8], 0, 8);
-        return __std_win_error::_Success;
-    }
-
-    _Last_error = __std_win_error{GetLastError()};
-#endif // _CRT_APP
-
-    return _Last_error;
+    return _Get_file_id_by_handle(_Handle._Get(), reinterpret_cast<FILE_ID_INFO*>(_Id));
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_create_directory_symbolic_link(
