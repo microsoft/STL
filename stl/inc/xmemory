@@ -833,8 +833,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
-        static_assert(
-            sizeof(value_type) > 0, "The allocate() member function requires value_type to be a complete object type.");
+        static_assert(sizeof(value_type) > 0, "value_type must be complete before calling allocate.");
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
@@ -870,7 +869,7 @@ public:
 
 #if _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 template <>
-class _CXX17_DEPRECATE_ALLOCATOR_VOID allocator<void> {
+class allocator<void> {
 public:
     using value_type = void;
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
