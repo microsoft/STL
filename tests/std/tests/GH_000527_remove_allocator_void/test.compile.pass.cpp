@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <type_traits>
+#include <utility>
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
