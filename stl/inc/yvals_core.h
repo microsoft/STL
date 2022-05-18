@@ -840,19 +840,9 @@
 #define _CXX17_DEPRECATE_NEGATORS
 #endif // ^^^ warning disabled ^^^
 
-// N4659 D.9 [depr.default.allocator]
-#if _HAS_CXX17 && !defined(_SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING) \
-    && !defined(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
-#define _CXX17_DEPRECATE_ALLOCATOR_VOID                                                  \
-    [[deprecated("warning STL4009: "                                                     \
-                 "The std::allocator<void> full specialization is deprecated in C++17. " \
-                 "It is not recommended to use. "                                        \
-                 "You can define _SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING "     \
-                 "or _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
-#else // ^^^ warning enabled / warning disabled vvv
-#define _CXX17_DEPRECATE_ALLOCATOR_VOID
-#endif // ^^^ warning disabled ^^^
+// STL4009 was "std::allocator<void> is deprecated in C++17"
 
+// N4659 D.9 [depr.default.allocator]
 #if _HAS_CXX17 && !defined(_SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
 #define _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS                                              \
