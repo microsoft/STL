@@ -3071,8 +3071,8 @@ namespace ranges {
 
 #ifndef _USE_JOIN_VIEW_INPUT_RANGE
         static_assert(forward_range<_Vw>,
-            "Using join_view with input-only ranges is temporarily disabled because of a bug that makes join_view "
-            "misbehave for certain ranges. See https://cplusplus.github.io/LWG/issue3698. You can define "
+            "Using join_view with input-only ranges is temporarily disabled because this can misbehave "
+            "for certain ranges. See https://cplusplus.github.io/LWG/issue3698. You can define "
             "_USE_JOIN_VIEW_INPUT_RANGE to suppress this diagnostic.");
 #endif // _USE_JOIN_VIEW_INPUT_RANGE
 
