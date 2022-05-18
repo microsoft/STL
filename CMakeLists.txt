@@ -6,11 +6,11 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
 include(CheckCXXSourceCompiles)
-check_cxx_source_compiles("
+check_cxx_source_compiles([=[
 #include <sdkddkver.h>
-static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_CO, \"Inspecting WDK_NTDDI_VERSION, the Windows SDK version.\");
+static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_CO, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
 int main() {}
-" WINDOWS_SDK_VERSION_CHECK)
+]=] WINDOWS_SDK_VERSION_CHECK)
 if(NOT WINDOWS_SDK_VERSION_CHECK)
     message(FATAL_ERROR "To build the STL, select the Windows 11 SDK (10.0.22000.0) in the VS Installer.")
 endif()
