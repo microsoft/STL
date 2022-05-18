@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _SILENCE_CXX17_ALLOCATOR_VOID_DEPRECATION_WARNING
 #define _SILENCE_CXX20_IS_ALWAYS_EQUAL_DEPRECATION_WARNING
 
 #include <memory>
 #include <type_traits>
 
-#define STATIC_ASSERT(E) static_assert(E, #E)
+#define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 using namespace std;
 
@@ -46,7 +45,7 @@ STATIC_ASSERT(has_member_difference_type<allocator<int>>);
 STATIC_ASSERT(has_member_pocma<allocator<int>>);
 STATIC_ASSERT(has_member_is_always_equal<allocator<int>>);
 STATIC_ASSERT(can_allocate<allocator<int>>);
-STATIC_ASSERT((is_convertible_v<allocator<void>, allocator<int>>) );
+STATIC_ASSERT((is_convertible_v<allocator<void>, allocator<int>>));
 
 #if _HAS_CXX20
 STATIC_ASSERT(has_member_size_type<allocator<void>>);
@@ -54,14 +53,14 @@ STATIC_ASSERT(has_member_difference_type<allocator<void>>);
 STATIC_ASSERT(has_member_pocma<allocator<void>>);
 STATIC_ASSERT(has_member_is_always_equal<allocator<void>>);
 STATIC_ASSERT(can_allocate<allocator<void>>);
-STATIC_ASSERT((is_convertible_v<allocator<int>, allocator<void>>) );
+STATIC_ASSERT((is_convertible_v<allocator<int>, allocator<void>>));
 #else
 STATIC_ASSERT(!has_member_size_type<allocator<void>>);
 STATIC_ASSERT(!has_member_difference_type<allocator<void>>);
 STATIC_ASSERT(!has_member_pocma<allocator<void>>);
 STATIC_ASSERT(!has_member_is_always_equal<allocator<void>>);
 STATIC_ASSERT(!can_allocate<allocator<void>>);
-STATIC_ASSERT(!(is_convertible_v<allocator<int>, allocator<void>>) );
+STATIC_ASSERT(!(is_convertible_v<allocator<int>, allocator<void>>));
 #endif
 
 int main() {} // COMPILE-ONLY
