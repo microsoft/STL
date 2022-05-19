@@ -6217,19 +6217,6 @@ private:
     _Udiff _Bmask; // 2^_Bits - 1
 };
 
-template <class _Ty, class _Alloc, class = void>
-struct _Has_allocator_type : false_type {}; // tests for suitable _Ty::allocator_type
-
-template <class _Ty, class _Alloc>
-struct _Has_allocator_type<_Ty, _Alloc, void_t<typename _Ty::allocator_type>>
-    : is_convertible<_Alloc, typename _Ty::allocator_type>::type {}; // tests for suitable _Ty::allocator_type
-
-struct allocator_arg_t { // tag type for added allocator argument
-    explicit allocator_arg_t() = default;
-};
-
-_INLINE_VAR constexpr allocator_arg_t allocator_arg{};
-
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xbad_alloc();
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xinvalid_argument(_In_z_ const char*);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xlength_error(_In_z_ const char*);
@@ -6237,14 +6224,6 @@ _INLINE_VAR constexpr allocator_arg_t allocator_arg{};
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xoverflow_error(_In_z_ const char*);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _Xruntime_error(_In_z_ const char*);
 [[noreturn]] _CRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL _XGetLastError();
-
-template <class _Ty, class _Alloc>
-struct uses_allocator : _Has_allocator_type<_Ty, _Alloc>::type {
-    // determine whether _Ty has an allocator_type member type
-};
-
-template <class _Ty, class _Alloc>
-_INLINE_VAR constexpr bool uses_allocator_v = uses_allocator<_Ty, _Alloc>::value;
 
 template <class _Category, class _Ty, class _Diff = ptrdiff_t, class _Pointer = _Ty*, class _Reference = _Ty&>
 struct _CXX17_DEPRECATE_ITERATOR_BASE_CLASS iterator { // base type for iterator classes
