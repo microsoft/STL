@@ -12,7 +12,7 @@ static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_CO, "Inspecting WDK_NTDDI_VERSION
 int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
 if(NOT WINDOWS_SDK_VERSION_CHECK)
-    message(FATAL_ERROR "To build the STL, select the Windows 11 SDK (10.0.22000.0) in the VS Installer.")
+    message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.22000.0) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
 endif()
 
 # add the tools subdirectory _before_ we change all the flags
