@@ -185,6 +185,7 @@ tests\GH_001541_case_sensitive_boolalpha
 tests\GH_001638_dllexport_derived_classes
 tests\GH_001850_clog_tied_to_cout
 tests\GH_001858_iostream_exception
+tests\GH_001912_random_distribution_operator()_const
 tests\GH_001914_cached_position
 tests\GH_001964_constexpr_generate_canonical
 tests\GH_002030_asan_annotate_string
