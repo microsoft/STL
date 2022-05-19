@@ -11,8 +11,10 @@ template <typename Dist>
 void test() {
     default_random_engine random;
     const Dist dist;
-    const auto res = dist(random);
-    (void) res;
+    const auto res1 = dist(random);
+    (void) res1;
+    const auto res2 = dist(random, {});
+    (void) res2;
 }
 
 // GH-1912 <random>: distribution::operator() is erroneously const
