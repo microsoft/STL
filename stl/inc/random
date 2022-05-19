@@ -4678,7 +4678,7 @@ public:
     }
 
     template <class _Engine>
-    result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
+    result_type _Eval(_Engine& _Eng, const param_type& _Par0) _CONST {
         size_t _Px = _Mybase::operator()(_Eng, _Par0);
         uniform_real<_Ty> _Dist(_Par0._Bvec[_Px], _Par0._Bvec[_Px + 1]);
         return _Dist(_Eng);
@@ -4900,7 +4900,7 @@ public:
     }
 
     template <class _Engine>
-    result_type _Eval(_Engine& _Eng, const param_type& _Par0) const {
+    result_type _Eval(_Engine& _Eng, const param_type& _Par0) _CONST {
         size_t _Px  = _Mybase::operator()(_Eng, _Par0);
         double _Px0 = _Par0._Pvec[_Px];
         double _Px1 = _Par0._Pvec[_Px + 1];
