@@ -61,11 +61,6 @@ public:
     // clang-format on
 
     // [expected.un.obs]
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549, P0847R7
-    _NODISCARD constexpr auto&& error(this auto&& _Self) noexcept {
-        return _STD _Forward_as<unexpected, decltype(_Self)>(_Self)._Unexpected;
-    }
-#else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Err& error() const& noexcept {
         return _Unexpected;
     }
@@ -78,7 +73,6 @@ public:
     _NODISCARD constexpr _Err&& error() && noexcept {
         return _STD move(_Unexpected);
     }
-#endif // !__cpp_explicit_this_parameter
 
     // [expected.un.swap]
     constexpr void swap(unexpected& _Other) noexcept(is_nothrow_swappable_v<_Err>) {
@@ -135,11 +129,6 @@ public:
     explicit bad_expected_access(_Err _Unex) noexcept(is_nothrow_move_constructible_v<_Err>) // strengthened
         : _Unexpected(_STD move(_Unex)) {}
 
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549, P0847R7
-    _NODISCARD auto&& error(this auto&& _Self) noexcept {
-        return _STD _Forward_as<bad_expected_access, decltype(_Self)>(_Self)._Unexpected;
-    }
-#else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD const _Err& error() const& noexcept {
         return _Unexpected;
     }
@@ -152,7 +141,6 @@ public:
     _NODISCARD _Err&& error() && noexcept {
         return _STD move(_Unexpected);
     }
-#endif // !__cpp_explicit_this_parameter
 
 private:
     _Err _Unexpected;
@@ -544,11 +532,6 @@ public:
         return _STD addressof(_Value);
     }
 
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
-    _NODISCARD constexpr auto&& operator*(this auto&& _Self) noexcept {
-        return _STD _Forward_as<expected, decltype(_Self)>(_Self)._Value;
-    }
-#else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Ty& operator*() const& noexcept {
         return _Value;
     }
@@ -561,7 +544,6 @@ public:
     _NODISCARD constexpr _Ty&& operator*() && noexcept {
         return _STD move(_Value);
     }
-#endif // !__cpp_explicit_this_parameter
 
     _NODISCARD constexpr explicit operator bool() const noexcept {
         return _Has_value;
@@ -570,15 +552,6 @@ public:
         return _Has_value;
     }
 
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
-    _NODISCARD constexpr auto&& value(this auto&& _Self) {
-        if (_Self._Has_value) {
-            return _STD _Forward_as<expected, decltype(_Self)>(_Self)._Value;
-        }
-
-        _Forward_as<expected, decltype(_Self)>(_Self)._Throw_bad_expected_access();
-    }
-#else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Ty& value() const& {
         if (_Has_value) {
             return _Value;
@@ -607,13 +580,7 @@ public:
 
         _Throw_bad_expected_access();
     }
-#endif // !__cpp_explicit_this_parameter
 
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
-    _NODISCARD constexpr auto&& error(this auto&& _Self) noexcept { // strengthened
-        return _STD _Forward_as<expected, decltype(_Self)>(_Self)._Unexpected;
-    }
-#else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Err& error() const& noexcept { // strengthened
         return _Unexpected;
     }
@@ -626,7 +593,6 @@ public:
     _NODISCARD constexpr _Err&& error() && noexcept { // strengthened
         return _STD move(_Unexpected);
     }
-#endif // !__cpp_explicit_this_parameter
 
     template <convertible_to<_Ty> _Uty>
     _NODISCARD constexpr _Ty value_or(_Uty&& _Other) const& noexcept(
@@ -682,11 +648,6 @@ public:
     }
 
 private:
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
-    [[noreturn]] inline void _Throw_bad_expected_access(this auto&& _Self) {
-        _THROW(bad_expected_access{_Forward_as<expected, decltype(_Self)>(_Self)._Unexpected});
-    }
-#else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     [[noreturn]] inline void _Throw_bad_expected_access() const& {
         _THROW(bad_expected_access{_Unexpected});
     }
@@ -699,7 +660,6 @@ private:
     [[noreturn]] inline void _Throw_bad_expected_access() && {
         _THROW(bad_expected_access{_STD move(_Unexpected)});
     }
-#endif // !__cpp_explicit_this_parameter
 
     union {
         _Ty _Value;
@@ -929,13 +889,7 @@ public:
     }
 
     constexpr void operator*() const noexcept {}
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
-    _NODISCARD constexpr void value(this auto&& _Self) {
-        if (!_Self._Has_value) {
-            _Forward_as<expected, decltype(_Self)>(_Self)._Throw_bad_expected_access();
-        }
-    }
-#else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
+
     _NODISCARD constexpr void value() const& {
         if (!_Has_value) {
             _Throw_bad_expected_access();
@@ -956,13 +910,7 @@ public:
             _Throw_bad_expected_access();
         }
     }
-#endif // !__cpp_explicit_this_parameter
 
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P0847R7
-    _NODISCARD constexpr auto&& error(this auto&& _Self) noexcept { // strengthened
-        return _STD _Forward_as<expected, decltype(_Self)>(_Self)._Unexpected;
-    }
-#else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     _NODISCARD constexpr const _Err& error() const& noexcept { // strengthened
         return _Unexpected;
     }
@@ -975,7 +923,6 @@ public:
     _NODISCARD constexpr _Err&& error() && noexcept { // strengthened
         return _STD move(_Unexpected);
     }
-#endif // !__cpp_explicit_this_parameter
 
     // [expected.void.eq]
     template <class _Uty, class _UErr>
@@ -999,11 +946,6 @@ public:
     }
 
 private:
-#ifdef __cpp_explicit_this_parameter // TRANSITION, P2549
-    [[noreturn]] inline void _Throw_bad_expected_access(this auto&& _Self) {
-        _THROW(bad_expected_access{_Forward_as<expected, decltype(_Self)>(_Self)._Unexpected});
-    }
-#else // ^^^ __cpp_explicit_this_parameter ^^^ / vvv !__cpp_explicit_this_parameter vvv
     [[noreturn]] inline void _Throw_bad_expected_access() const& {
         _THROW(bad_expected_access{_Unexpected});
     }
@@ -1016,7 +958,6 @@ private:
     [[noreturn]] inline void _Throw_bad_expected_access() && {
         _THROW(bad_expected_access{_STD move(_Unexpected)});
     }
-#endif // !__cpp_explicit_this_parameter
 
     union {
         _Err _Unexpected;
