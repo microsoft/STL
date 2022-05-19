@@ -455,7 +455,7 @@ namespace ranges {
         requires (_Idx < 2)
     _NODISCARD constexpr auto get(subrange<_It, _Se, _Ki>&& _Val);
     // clang-format on
-}
+} // namespace ranges
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 template <class, class = void>
 struct _Iterator_traits_base {}; // empty for non-iterators
@@ -466,19 +466,19 @@ struct _Iterator_traits_base<_Iter,
         typename _Iter::pointer, typename _Iter::reference>> {
     // defined if _Iter::* types exist
     using iterator_category = typename _Iter::iterator_category;
-    using value_type = typename _Iter::value_type;
-    using difference_type = typename _Iter::difference_type;
-    using pointer = typename _Iter::pointer;
-    using reference = typename _Iter::reference;
+    using value_type        = typename _Iter::value_type;
+    using difference_type   = typename _Iter::difference_type;
+    using pointer           = typename _Iter::pointer;
+    using reference         = typename _Iter::reference;
 };
 
 template <class _Ty, bool = is_object_v<_Ty>>
 struct _Iterator_traits_pointer_base { // iterator properties for pointers to object
     using iterator_category = random_access_iterator_tag;
-    using value_type = remove_cv_t<_Ty>;
-    using difference_type = ptrdiff_t;
-    using pointer = _Ty*;
-    using reference = _Ty&;
+    using value_type        = remove_cv_t<_Ty>;
+    using difference_type   = ptrdiff_t;
+    using pointer           = _Ty*;
+    using reference         = _Ty&;
 };
 
 template <class _Ty>
