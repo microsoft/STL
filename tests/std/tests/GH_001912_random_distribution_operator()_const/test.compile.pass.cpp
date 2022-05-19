@@ -15,6 +15,8 @@ void test() {
     (void) res;
 }
 
+// GH-1912 <random>: distribution::operator() is erroneously const
+// we test that escape hatch macro works.
 void test_every_distribution() {
     test<uniform_int_distribution<int>>();
     test<uniform_real_distribution<double>>();
