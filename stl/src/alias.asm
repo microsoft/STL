@@ -6,19 +6,24 @@
 ; Note that while this is a masm file, it contains no code
 ; masm does generate a .text section with zero size
 
-IFDEF RAX ; note: this only works with ifdef, not ifndef
-ELSE
-.MODEL FLAT, STDCALL
-ENDIF
+mangle MACRO name, sz
+    IFDEF RAX
+        EXITM <name>
+    ELSE
+        EXITM <_&name&@&sz&>
+    ENDIF
+ENDM
 
-EXTERN __imp_InitOnceBeginInitialize :PROTO :PTR PTR VOID, :DWORD, :PTR DWORD, :PTR PTR VOID
-EXTERN __imp_InitOnceComplete :PROTO :PTR PTR VOID, :DWORD, :PTR VOID
+imp_name MACRO name, sz
+    EXITM @CatStr(__imp_, mangle(name, sz))
+ENDM
 
-IFDEF RAX
-ALIAS <__imp___std_init_once_begin_initialize>=<__imp_InitOnceBeginInitialize>
-ALIAS <__imp___std_init_once_complete>=<__imp_InitOnceComplete>
-ELSE
-ALIAS <__imp____std_init_once_begin_initialize@16>=<__imp_InitOnceBeginInitialize>
-ALIAS <__imp____std_init_once_complete@12>=<__imp_InitOnceComplete>
-ENDIF
+create_alias MACRO oldname, newname, size
+    EXTERN imp_name(newname, size) : PROC
+    ALIAS imp_name(oldname, size)=imp_name(newname,size)
+ENDM
+
+create_alias __std_init_once_begin_initialize, InitOnceBeginInitialize, 16
+create_alias __std_init_once_complete, InitOnceComplete, 12
+
 END
