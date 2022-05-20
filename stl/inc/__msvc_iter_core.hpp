@@ -456,6 +456,31 @@ namespace ranges {
     _NODISCARD constexpr auto get(subrange<_It, _Se, _Ki>&& _Val);
     // clang-format on
 } // namespace ranges
+
+using ranges::get;
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+struct tuple_size<ranges::subrange<_It, _Se, _Ki>> : integral_constant<size_t, 2> {};
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+struct tuple_element<0, ranges::subrange<_It, _Se, _Ki>> {
+    using type = _It;
+};
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+struct tuple_element<1, ranges::subrange<_It, _Se, _Ki>> {
+    using type = _Se;
+};
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+struct tuple_element<0, const ranges::subrange<_It, _Se, _Ki>> {
+    using type = _It;
+};
+
+template <class _It, class _Se, ranges::subrange_kind _Ki>
+struct tuple_element<1, const ranges::subrange<_It, _Se, _Ki>> {
+    using type = _Se;
+};
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
 template <class, class = void>
 struct _Iterator_traits_base {}; // empty for non-iterators
