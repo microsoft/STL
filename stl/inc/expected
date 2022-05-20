@@ -973,16 +973,16 @@ public:
         }
     }
 
-    _NODISCARD constexpr const _Err& error() const& noexcept { // strengthened
+    _NODISCARD constexpr const _Err& error() const& noexcept {
         return _Unexpected;
     }
-    _NODISCARD constexpr _Err& error() & noexcept { // strengthened
+    _NODISCARD constexpr _Err& error() & noexcept {
         return _Unexpected;
     }
-    _NODISCARD constexpr const _Err&& error() const&& noexcept { // strengthened
+    _NODISCARD constexpr const _Err&& error() const&& noexcept {
         return _STD move(_Unexpected);
     }
-    _NODISCARD constexpr _Err&& error() && noexcept { // strengthened
+    _NODISCARD constexpr _Err&& error() && noexcept {
         return _STD move(_Unexpected);
     }
 
