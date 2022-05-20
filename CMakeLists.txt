@@ -5,6 +5,14 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
+if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
+    set(VCLIBS_TARGET_ARCHITECTURE "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}")
+endif()
+
+if(VCLIBS_TARGET_ARCHITECTURE MATCHES "[xX]64|[xX]86")
+    enable_language(ASM_MASM)
+endif()
+
 # add the tools subdirectory _before_ we change all the flags
 add_subdirectory(tools EXCLUDE_FROM_ALL)
 # these allow the targets to show up in the top-level
@@ -21,10 +29,6 @@ endif()
 option(BUILD_TESTING "Enable testing" ON)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
-if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
-    set(VCLIBS_TARGET_ARCHITECTURE "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}")
-endif()
-
 set(CMAKE_CXX_FLAGS "")
 set(CMAKE_CXX_FLAGS_DEBUG "")
 set(CMAKE_CXX_FLAGS_RELEASE "")
@@ -39,7 +43,7 @@ if("${VCLIBS_TARGET_ARCHITECTURE}" MATCHES "^[xX]86$")
     # Note that we set _WIN32_WINNT to a high level to make declarations available, but still engage downlevel
     # runtime dynamic linking by setting our own _STL_WIN32_WINNT back to Windows XP.
     add_compile_definitions(_X86_ _VCRT_WIN32_WINNT=0x0501 _STL_WIN32_WINNT=0x0501)
-    add_compile_options(/arch:IA32)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/arch:IA32>)
 elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^[xX]64$")
     set(VCLIBS_TARGET_ARCHITECTURE "x64")
     set(VCLIBS_I386_OR_AMD64 "amd64")
@@ -65,9 +69,12 @@ add_compile_definitions(
     _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH WIN32_LEAN_AND_MEAN STRICT _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS
     _CRT_DECLARE_NONSTDC_NAMES=1 _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_CO)
 
-add_compile_options(/diagnostics:caret /W4 /WX /w14265 /w15038 /d1FastFail /guard:cf /Z7 /Gy /Zp8 /std:c++latest /permissive- /Zc:threadSafeInit- /Zl)
+add_compile_options(/WX /Gy
+    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/d1FastFail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
+    # note that /Zi generates debug info inside the object file, it's the same as /Z7 for msvc
+    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/Zi;/W3;/nologo>")
 
-set(VCLIBS_DEBUG_OPTIONS "/Od")
+set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
 
 # TRANSITION: Potentially remove `/Os` if it results in speed improvements.
 # This requires benchmarking!
@@ -76,7 +83,7 @@ set(VCLIBS_DEBUG_OPTIONS "/Od")
 # in the release DLL (a gain of 18.4%).
 # So, make certain that that tradeoff is considered when or if `/Os` is removed.
 # See GH-2108 for more info.
-set(VCLIBS_RELEASE_OPTIONS /O2 /Os)
+set(VCLIBS_RELEASE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/O2;/Os>")
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")

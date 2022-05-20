@@ -262,6 +262,7 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xonce2.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/alias.asm
 )
 
 # The following files are linked in msvcp140[d][_clr].dll.
@@ -467,7 +468,7 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     # import library 'statics'
     add_library(msvcp${D_SUFFIX}_implib_objects OBJECT ${IMPLIB_SOURCES})
     target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PRIVATE "_DLL;${THIS_CONFIG_DEFINITIONS}")
-    target_compile_options(msvcp${D_SUFFIX}_implib_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};/EHsc") # No /GL!
+    target_compile_options(msvcp${D_SUFFIX}_implib_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};$<$<COMPILE_LANGUAGE:CXX>:/EHsc>") # No /GL!
 
     add_library(msvcp${D_SUFFIX}_satellite_objects OBJECT ${SATELLITE_DLL_SOURCES})
     target_compile_options(msvcp${D_SUFFIX}_satellite_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
@@ -550,7 +551,7 @@ function(add_stl_statics FLAVOR_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPI
 
     add_library(libcpmt${FLAVOR_SUFFIX} STATIC ${HEADERS} ${IMPLIB_SOURCES} ${SOURCES} ${INITIALIZER_SOURCES} ${STATIC_SOURCES})
     target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_DEFINITIONS};_ANNOTATE_VECTOR;_ANNOTATE_STRING")
-    target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};/EHsc")
+    target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};$<$<COMPILE_LANGUAGE:CXX>:/EHsc>")
     target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math libcpmt${FLAVOR_SUFFIX}_eha)
 endfunction()
 
