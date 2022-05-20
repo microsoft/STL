@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <cassert>
+#include <concepts>
+#include <exception>
 #include <expected>
 #include <initializer_list>
+#include <type_traits>
+#include <utility>
 
 using namespace std;
 
@@ -85,9 +89,15 @@ namespace test_unexpected {
 
         Unexpect base_error_constructed{test_error{3}};
         static_assert(noexcept(Unexpect{test_error{3}}) == move_construction_is_noexcept);
+        assert(base_error_constructed.error()._val == 3);
 
         Unexpect conversion_error_constructed{convertible{4}};
         static_assert(noexcept(Unexpect{convertible{4}}) == move_construction_is_noexcept);
+        assert(conversion_error_constructed.error()._val == 4);
+
+        Unexpect brace_error_constructed{{5}};
+        static_assert(noexcept(Unexpect{{5}}) == move_construction_is_noexcept);
+        assert(brace_error_constructed.error()._val == 5);
 
         // [expected.un.eq]
         assert(in_place_lvalue_constructed == in_place_lvalue_constructed);
@@ -104,13 +114,15 @@ namespace test_unexpected {
         // [expected.un.swap]
         in_place_lvalue_constructed.swap(in_place_rvalue_constructed);
         assert(in_place_lvalue_constructed == Unexpect{test_error{42}});
-        assert(in_place_ilist_lvalue_constructed == Unexpect{test_error{1}});
+        assert(in_place_rvalue_constructed == Unexpect{test_error{1}});
+        static_assert(noexcept(in_place_lvalue_constructed.swap(in_place_rvalue_constructed)));
 
         swap(base_error_constructed, conversion_error_constructed);
         assert(base_error_constructed == Unexpect{test_error{4}});
         assert(conversion_error_constructed == Unexpect{test_error{3}});
+        static_assert(noexcept(swap(base_error_constructed, conversion_error_constructed)));
 
-        // [expected.un.observe]
+        // [expected.un.obs]
         auto&& lvalue_error = base_error_constructed.error();
         assert(lvalue_error == test_error{4});
         static_assert(is_same_v<decltype(lvalue_error), test_error&>);
@@ -198,6 +210,7 @@ namespace test_expected {
 
         if constexpr (should_be_defaultable) {
             const expected<payload_default_constructor, int> defaulted;
+            assert(defaulted);
             assert(defaulted.value() == 42);
         }
     }
@@ -290,6 +303,7 @@ namespace test_expected {
 
             static_assert(!is_copy_constructible_v<expected<not_copy_constructible, int>>);
             static_assert(!is_copy_constructible_v<expected<int, not_copy_constructible>>);
+            static_assert(!is_copy_constructible_v<expected<void, not_copy_constructible>>);
         }
     }
 
@@ -382,6 +396,7 @@ namespace test_expected {
 
             static_assert(!is_move_constructible_v<expected<not_move_constructible, int>>);
             static_assert(!is_move_constructible_v<expected<int, not_move_constructible>>);
+            static_assert(!is_move_constructible_v<expected<void, not_move_constructible>>);
         }
     }
 
@@ -496,6 +511,11 @@ namespace test_expected {
             assert(move_constructed_value);
             assert(move_constructed_value.value() == 42);
             static_assert(noexcept(Expected{Input{}}) == should_be_noexcept);
+
+            const Expected brace_constructed_value{{}};
+            assert(brace_constructed_value);
+            assert(brace_constructed_value.value() == 0);
+            static_assert(noexcept(Expected{{}}));
         }
 
         { // converting from different expected
@@ -707,21 +727,25 @@ namespace test_expected {
 
             Expected assign_value_to_value{in_place, 1};
             assign_value_to_value = input_value;
+            assert(assign_value_to_value);
             assert(assign_value_to_value.value() == 42);
             static_assert(noexcept(assign_value_to_value = input_value) == should_be_noexcept);
 
             Expected assign_error_to_value{in_place, 1};
             assign_error_to_value = input_error;
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 1337);
             static_assert(noexcept(assign_error_to_value = input_error) == should_be_noexcept);
 
             Expected assign_value_to_error{unexpect, 1};
             assign_value_to_error = input_value;
+            assert(assign_value_to_error);
             assert(assign_value_to_error.value() == 42);
             static_assert(noexcept(assign_value_to_error = input_value) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = input_error;
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 1337);
             static_assert(noexcept(assign_error_to_error = input_error) == should_be_noexcept);
         }
@@ -734,24 +758,29 @@ namespace test_expected {
 
             Expected assign_value_to_value{in_place, 1};
             assign_value_to_value = input_value;
+            assert(assign_value_to_value);
             assert(assign_value_to_value.value() == 42);
             static_assert(noexcept(assign_value_to_value = input_value) == should_be_noexcept);
 
             Expected assign_error_to_value{in_place, 1};
             assign_error_to_value = input_error;
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 1337);
             static_assert(noexcept(assign_error_to_value = input_error) == should_be_noexcept);
 
             Expected assign_value_to_error{unexpect, 1};
             assign_value_to_error = input_value;
+            assert(assign_value_to_error);
             assert(assign_value_to_error.value() == 42);
             static_assert(noexcept(assign_value_to_error = input_value) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = input_error;
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 1337);
             static_assert(noexcept(assign_error_to_error = input_error) == should_be_noexcept);
         }
+
         { // assign same expected<void> as const ref check error
             constexpr bool should_be_noexcept = nothrow_copy_constructible && nothrow_copy_assignable;
             using Expected                    = expected<void, payload_assign>;
@@ -760,19 +789,23 @@ namespace test_expected {
 
             Expected assign_value_to_value{in_place};
             assign_value_to_value = input_value;
+            assert(assign_value_to_value);
             static_assert(noexcept(assign_value_to_value = input_value) == should_be_noexcept);
 
             Expected assign_error_to_value{in_place};
             assign_error_to_value = input_error;
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 1337);
             static_assert(noexcept(assign_error_to_value = input_error) == should_be_noexcept);
 
             Expected assign_value_to_error{unexpect, 1};
             assign_value_to_error = input_value;
+            assert(assign_value_to_error);
             static_assert(noexcept(assign_value_to_error = input_value) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = input_error;
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 1337);
             static_assert(noexcept(assign_error_to_error = input_error) == should_be_noexcept);
         }
@@ -783,21 +816,25 @@ namespace test_expected {
 
             Expected assign_value_to_value{in_place, 1};
             assign_value_to_value = Expected{in_place, 42};
+            assert(assign_value_to_value);
             assert(assign_value_to_value.value() == 42);
             static_assert(noexcept(assign_value_to_value = Expected{in_place, 42}) == should_be_noexcept);
 
             Expected assign_error_to_value{in_place, 1};
             assign_error_to_value = Expected{unexpect, 1337};
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 1337);
             static_assert(noexcept(assign_error_to_value = Expected{unexpect, 1337}) == should_be_noexcept);
 
             Expected assign_value_to_error{unexpect, 1};
             assign_value_to_error = Expected{in_place, 42};
+            assert(assign_value_to_error);
             assert(assign_value_to_error.value() == 42);
             static_assert(noexcept(assign_value_to_error = Expected{in_place, 42}) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = Expected{unexpect, 1337};
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 1337);
             static_assert(noexcept(assign_error_to_error = Expected{unexpect, 1337}) == should_be_noexcept);
         }
@@ -808,43 +845,52 @@ namespace test_expected {
 
             Expected assign_value_to_value{in_place, 1};
             assign_value_to_value = Expected{in_place, 42};
+            assert(assign_value_to_value);
             assert(assign_value_to_value.value() == 42);
             static_assert(noexcept(assign_value_to_value = Expected{in_place, 42}) == should_be_noexcept);
 
             Expected assign_error_to_value{in_place, 1};
             assign_error_to_value = Expected{unexpect, 1337};
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 1337);
             static_assert(noexcept(assign_error_to_value = Expected{unexpect, 1337}) == should_be_noexcept);
 
             Expected assign_value_to_error{unexpect, 1};
             assign_value_to_error = Expected{in_place, 42};
+            assert(assign_value_to_error);
             assert(assign_value_to_error.value() == 42);
             static_assert(noexcept(assign_value_to_error = Expected{in_place, 42}) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = Expected{unexpect, 1337};
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 1337);
             static_assert(noexcept(assign_error_to_error = Expected{unexpect, 1337}) == should_be_noexcept);
         }
+
         { // assign same expected<void> as rvalue check error
             constexpr bool should_be_noexcept = nothrow_move_constructible && nothrow_move_assignable;
             using Expected                    = expected<void, payload_assign>;
 
             Expected assign_value_to_value{in_place};
             assign_value_to_value = Expected{in_place};
+            assert(assign_value_to_value);
             static_assert(noexcept(assign_value_to_value = Expected{in_place}) == should_be_noexcept);
 
             Expected assign_error_to_value{in_place};
             assign_error_to_value = Expected{unexpect, 1337};
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 1337);
             static_assert(noexcept(assign_error_to_value = Expected{unexpect, 1337}) == should_be_noexcept);
 
             Expected assign_value_to_error{unexpect, 1};
             assign_value_to_error = Expected{in_place};
+            assert(assign_value_to_error);
             static_assert(noexcept(assign_value_to_error = Expected{in_place}) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = Expected{unexpect, 1337};
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 1337);
             static_assert(noexcept(assign_error_to_error = Expected{unexpect, 1337}) == should_be_noexcept);
         }
@@ -856,11 +902,13 @@ namespace test_expected {
 
             Expected assign_value_to_value{in_place, 1};
             assign_value_to_value = input_value;
+            assert(assign_value_to_value);
             assert(assign_value_to_value.value() == 42);
             static_assert(noexcept(assign_value_to_value = input_value) == should_be_noexcept);
 
             Expected assign_value_to_error{unexpect, 1};
             assign_value_to_error = input_value;
+            assert(assign_value_to_error);
             assert(assign_value_to_error.value() == 42);
             static_assert(noexcept(assign_value_to_error = input_value) == should_be_noexcept);
         }
@@ -871,13 +919,32 @@ namespace test_expected {
 
             Expected assign_value_to_value{in_place, 1};
             assign_value_to_value = payload_assign{42};
+            assert(assign_value_to_value);
             assert(assign_value_to_value.value() == 42);
-            static_assert(noexcept(assign_value_to_value = convertible{42}) == should_be_noexcept);
+            static_assert(noexcept(assign_value_to_value = payload_assign{42}) == should_be_noexcept);
 
             Expected assign_value_to_error{unexpect, 1};
             assign_value_to_error = payload_assign{42};
+            assert(assign_value_to_error);
             assert(assign_value_to_error.value() == 42);
-            static_assert(noexcept(assign_value_to_error = convertible{42}) == should_be_noexcept);
+            static_assert(noexcept(assign_value_to_error = payload_assign{42}) == should_be_noexcept);
+        }
+
+        { // assign base type braces
+            constexpr bool should_be_noexcept = nothrow_move_constructible && nothrow_move_assignable;
+            using Expected                    = expected<payload_assign, int>;
+
+            Expected assign_value_to_value{in_place, 1};
+            assign_value_to_value = {42};
+            assert(assign_value_to_value);
+            assert(assign_value_to_value.value() == 42);
+            static_assert(noexcept(assign_value_to_value = {42}) == should_be_noexcept);
+
+            Expected assign_value_to_error{unexpect, 1};
+            assign_value_to_error = {42};
+            assert(assign_value_to_error);
+            assert(assign_value_to_error.value() == 42);
+            static_assert(noexcept(assign_value_to_error = {42}) == should_be_noexcept);
         }
 
         { // assign convertible type const ref
@@ -887,11 +954,13 @@ namespace test_expected {
 
             Expected assign_value_to_value{in_place, 1};
             assign_value_to_value = input_value;
+            assert(assign_value_to_value);
             assert(assign_value_to_value.value() == 42);
             static_assert(noexcept(assign_value_to_value = input_value) == should_be_noexcept);
 
             Expected assign_value_to_error{unexpect, 1};
             assign_value_to_error = input_value;
+            assert(assign_value_to_error);
             assert(assign_value_to_error.value() == 42);
             static_assert(noexcept(assign_value_to_error = input_value) == should_be_noexcept);
         }
@@ -902,11 +971,13 @@ namespace test_expected {
 
             Expected assign_value_to_value{in_place, 1};
             assign_value_to_value = convertible{42};
+            assert(assign_value_to_value);
             assert(assign_value_to_value.value() == 42);
             static_assert(noexcept(assign_value_to_value = convertible{42}) == should_be_noexcept);
 
             Expected assign_value_to_error{unexpect, 1};
             assign_value_to_error = convertible{42};
+            assert(assign_value_to_error);
             assert(assign_value_to_error.value() == 42);
             static_assert(noexcept(assign_value_to_error = convertible{42}) == should_be_noexcept);
         }
@@ -919,11 +990,13 @@ namespace test_expected {
 
             Expected assign_error_to_value{in_place, 1};
             assign_error_to_value = input_error;
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 42);
             static_assert(noexcept(assign_error_to_value = input_error) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = input_error;
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 42);
             static_assert(noexcept(assign_error_to_error = input_error) == should_be_noexcept);
         }
@@ -936,11 +1009,13 @@ namespace test_expected {
 
             Expected assign_error_to_value{in_place};
             assign_error_to_value = input_error;
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 42);
             static_assert(noexcept(assign_error_to_value = input_error) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = input_error;
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 42);
             static_assert(noexcept(assign_error_to_error = input_error) == should_be_noexcept);
         }
@@ -952,11 +1027,13 @@ namespace test_expected {
 
             Expected assign_error_to_value{in_place, 1};
             assign_error_to_value = Unexpected{42};
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 42);
             static_assert(noexcept(assign_error_to_value = Unexpected{42}) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = Unexpected{42};
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 42);
             static_assert(noexcept(assign_error_to_error = Unexpected{42}) == should_be_noexcept);
         }
@@ -968,11 +1045,13 @@ namespace test_expected {
 
             Expected assign_error_to_value{in_place};
             assign_error_to_value = Unexpected{42};
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 42);
             static_assert(noexcept(assign_error_to_value = Unexpected{42}) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = Unexpected{42};
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 42);
             static_assert(noexcept(assign_error_to_error = Unexpected{42}) == should_be_noexcept);
         }
@@ -985,11 +1064,13 @@ namespace test_expected {
 
             Expected assign_error_to_value{in_place, 1};
             assign_error_to_value = input_error;
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 42);
             static_assert(noexcept(assign_error_to_value = input_error) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = input_error;
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 42);
             static_assert(noexcept(assign_error_to_error = input_error) == should_be_noexcept);
         }
@@ -1002,11 +1083,13 @@ namespace test_expected {
 
             Expected assign_error_to_value{in_place};
             assign_error_to_value = input_error;
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 42);
             static_assert(noexcept(assign_error_to_value = input_error) == should_be_noexcept);
 
-            Expected assign_error_to_error{unexpect};
+            Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = input_error;
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 42);
             static_assert(noexcept(assign_error_to_error = input_error) == should_be_noexcept);
         }
@@ -1018,11 +1101,13 @@ namespace test_expected {
 
             Expected assign_error_to_value{in_place, 1};
             assign_error_to_value = Unexpected{42};
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 42);
             static_assert(noexcept(assign_error_to_value = Unexpected{42}) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = Unexpected{42};
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 42);
             static_assert(noexcept(assign_error_to_error = Unexpected{42}) == should_be_noexcept);
         }
@@ -1034,11 +1119,13 @@ namespace test_expected {
 
             Expected assign_error_to_value{in_place};
             assign_error_to_value = Unexpected{42};
+            assert(!assign_error_to_value);
             assert(assign_error_to_value.error() == 42);
             static_assert(noexcept(assign_error_to_value = Unexpected{42}) == should_be_noexcept);
 
             Expected assign_error_to_error{unexpect, 1};
             assign_error_to_error = Unexpected{42};
+            assert(!assign_error_to_error);
             assert(assign_error_to_error.error() == 42);
             static_assert(noexcept(assign_error_to_error = Unexpected{42}) == should_be_noexcept);
         }
@@ -1051,6 +1138,7 @@ namespace test_expected {
 
             static_assert(!is_copy_assignable_v<expected<not_copy_assignable, int>>);
             static_assert(!is_copy_assignable_v<expected<int, not_copy_assignable>>);
+            static_assert(!is_copy_assignable_v<expected<void, not_copy_assignable>>);
 
             struct not_copy_constructible {
                 not_copy_constructible(const not_copy_constructible&) = delete;
@@ -1067,6 +1155,7 @@ namespace test_expected {
 
             static_assert(!is_move_assignable_v<expected<not_move_assignable, int>>);
             static_assert(!is_move_assignable_v<expected<int, not_move_assignable>>);
+            static_assert(!is_move_assignable_v<expected<void, not_move_assignable>>);
 
             struct not_move_constructible {
                 not_move_constructible(not_move_constructible&&) = delete;
@@ -1074,6 +1163,7 @@ namespace test_expected {
 
             static_assert(!is_move_assignable_v<expected<not_move_constructible, int>>);
             static_assert(!is_move_assignable_v<expected<int, not_move_constructible>>);
+            static_assert(!is_move_assignable_v<expected<void, not_move_constructible>>);
         }
     }
 
@@ -1140,6 +1230,7 @@ namespace test_expected {
             Expected emplaced_lvalue(destructor_called);
             emplaced_lvalue.emplace(destructor_called, input);
             assert(destructor_called);
+            assert(emplaced_lvalue);
             assert(emplaced_lvalue.value() == 3);
         }
 
@@ -1149,6 +1240,7 @@ namespace test_expected {
             Expected emplaced_lvalue(unexpect);
             emplaced_lvalue.emplace(destructor_called, input);
             assert(!destructor_called);
+            assert(emplaced_lvalue);
             assert(emplaced_lvalue.value() == 3);
         }
 
@@ -1157,6 +1249,7 @@ namespace test_expected {
             Expected emplaced_rvalue(destructor_called);
             emplaced_rvalue.emplace(destructor_called, convertible{});
             assert(destructor_called);
+            assert(emplaced_rvalue);
             assert(emplaced_rvalue.value() == 42);
         }
 
@@ -1165,6 +1258,7 @@ namespace test_expected {
             Expected emplaced_rvalue(unexpect);
             emplaced_rvalue.emplace(destructor_called, convertible{});
             assert(!destructor_called);
+            assert(emplaced_rvalue);
             assert(emplaced_rvalue.value() == 42);
         }
 
@@ -1173,6 +1267,7 @@ namespace test_expected {
             Expected emplaced_ilist(destructor_called);
             emplaced_ilist.emplace({1}, destructor_called, convertible{});
             assert(destructor_called);
+            assert(emplaced_ilist);
             assert(emplaced_ilist.value() == 1337);
         }
 
@@ -1181,6 +1276,7 @@ namespace test_expected {
             Expected emplaced_ilist(unexpect);
             emplaced_ilist.emplace({1}, destructor_called, convertible{});
             assert(!destructor_called);
+            assert(emplaced_ilist);
             assert(emplaced_ilist.value() == 1337);
         }
 
@@ -1435,25 +1531,20 @@ namespace test_expected {
 
     constexpr void test_access() noexcept {
         struct payload_access {
-            constexpr payload_access() noexcept : _val(this) {}
-            constexpr payload_access* operator&() noexcept {
-                return nullptr;
-            }
-            constexpr payload_access* operator&() const noexcept {
-                return nullptr;
-            }
+            payload_access* operator&()             = delete;
+            const payload_access* operator&() const = delete;
 
-            payload_access* _val;
+            int x = 17;
+            int y = 29;
         };
 
         { // operator->()
             using Expected = expected<payload_access, int>;
             Expected val;
-            assert(val.value()._val == val.operator->());
-            assert(&val.value() == nullptr);
+            assert(val->x == 17);
 
             const Expected const_val;
-            assert(&const_val.value() == nullptr);
+            assert(const_val->y == 29);
         }
 
         { // operator*()
@@ -1577,27 +1668,27 @@ namespace test_expected {
                 Expected rvalue{unexpect, 42};
                 [[maybe_unused]] auto&& from_rvalue = move(rvalue).value();
                 assert(false);
-            } catch (bad_expected_access<convertible>& with_error) {
+            } catch (const bad_expected_access<convertible>& with_error) {
                 assert(with_error.error() == 42);
-                static_assert(is_same_v<decltype(with_error.error()), convertible&>);
+                static_assert(is_same_v<decltype(with_error.error()), const convertible&>);
             }
 
             try {
                 const Expected const_lvalue{unexpect, 1337};
-                [[maybe_unused]] auto&& from_rvalue = const_lvalue.value();
+                [[maybe_unused]] auto&& from_const_lvalue = const_lvalue.value();
                 assert(false);
             } catch (bad_expected_access<convertible>& with_error) {
-                assert(with_error.error() == 1337);
-                static_assert(is_same_v<decltype(with_error.error()), convertible&>);
+                assert(move(with_error).error() == 1337);
+                static_assert(is_same_v<decltype(move(with_error).error()), convertible&&>);
             }
 
             try {
                 const Expected const_rvalue{unexpect, -42};
                 [[maybe_unused]] auto&& from_const_rvalue = move(const_rvalue).value();
                 assert(false);
-            } catch (bad_expected_access<convertible>& with_error) {
-                assert(with_error.error() == -42);
-                static_assert(is_same_v<decltype(with_error.error()), convertible&>);
+            } catch (const bad_expected_access<convertible>& with_error) {
+                assert(move(with_error).error() == -42);
+                static_assert(is_same_v<decltype(move(with_error).error()), const convertible&&>);
             }
         }
 
@@ -1607,36 +1698,32 @@ namespace test_expected {
                 Expected lvalue{unexpect, 1};
                 lvalue.value();
                 assert(false);
-            } catch (bad_expected_access<convertible>& with_error) {
+            } catch (const bad_expected_access<convertible>& with_error) {
                 assert(with_error.error() == 1);
-                static_assert(is_same_v<decltype(with_error.error()), convertible&>);
             }
 
             try {
                 Expected rvalue{unexpect, 42};
                 move(rvalue).value();
                 assert(false);
-            } catch (bad_expected_access<convertible>& with_error) {
+            } catch (const bad_expected_access<convertible>& with_error) {
                 assert(with_error.error() == 42);
-                static_assert(is_same_v<decltype(with_error.error()), convertible&>);
             }
 
             try {
                 const Expected const_lvalue{unexpect, 1337};
                 const_lvalue.value();
                 assert(false);
-            } catch (bad_expected_access<convertible>& with_error) {
+            } catch (const bad_expected_access<convertible>& with_error) {
                 assert(with_error.error() == 1337);
-                static_assert(is_same_v<decltype(with_error.error()), convertible&>);
             }
 
             try {
                 const Expected const_rvalue{unexpect, -42};
                 move(const_rvalue).value();
                 assert(false);
-            } catch (bad_expected_access<convertible>& with_error) {
+            } catch (const bad_expected_access<convertible>& with_error) {
                 assert(with_error.error() == -42);
-                static_assert(is_same_v<decltype(with_error.error()), convertible&>);
             }
         }
 
@@ -1870,7 +1957,7 @@ namespace test_expected {
             static_assert(noexcept(with_error != Base{1337}) == should_be_noexcept);
         }
 
-        { // compare against unexpect with same base
+        { // compare against unexpected with same base
             using Base       = payload_equality;
             using Unexpected = std::unexpected<Base>;
             using Expected   = expected<int, Base>;
@@ -1889,7 +1976,7 @@ namespace test_expected {
             static_assert(noexcept(with_error != Base{1337}) == should_be_noexcept);
         }
 
-        { // expected<void> compare against unexpect with same base
+        { // expected<void> compare against unexpected with same base
             using Base       = payload_equality;
             using Unexpected = std::unexpected<Base>;
             using Expected   = expected<void, Base>;
@@ -1905,7 +1992,7 @@ namespace test_expected {
             static_assert(noexcept(with_error != Unexpected{42}) == should_be_noexcept);
         }
 
-        { // compare against unexpect with different base
+        { // compare against unexpected with different base
             using Base       = payload_equality;
             using Unexpected = std::unexpected<int>;
             using Expected   = expected<int, Base>;
@@ -1924,7 +2011,7 @@ namespace test_expected {
             static_assert(noexcept(with_error != Base{1337}) == should_be_noexcept);
         }
 
-        { // expected<void> compare against unexpect with different base
+        { // expected<void> compare against unexpected with different base
             using Base       = payload_equality;
             using Unexpected = std::unexpected<int>;
             using Expected   = expected<void, Base>;
@@ -1966,4 +2053,12 @@ int main() {
     static_assert(test_unexpected::test_all());
     test_expected::test_all();
     static_assert(test_expected::test_all());
+
+    static_assert(is_base_of_v<bad_expected_access<void>, bad_expected_access<int>>);
+    static_assert(is_base_of_v<exception, bad_expected_access<void>>);
+    static_assert(is_base_of_v<exception, bad_expected_access<int>>);
+
+    static_assert(is_convertible_v<bad_expected_access<int>*, bad_expected_access<void>*>);
+    static_assert(is_convertible_v<bad_expected_access<void>*, exception*>);
+    static_assert(is_convertible_v<bad_expected_access<int>*, exception*>);
 }
