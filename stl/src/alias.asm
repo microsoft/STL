@@ -19,6 +19,6 @@ ALIAS <__imp___std_init_once_begin_initialize>=<__imp_InitOnceBeginInitialize>
 ALIAS <__imp___std_init_once_complete>=<__imp_InitOnceComplete>
 ELSE
 ALIAS <__imp____std_init_once_begin_initialize@16>=<__imp_InitOnceBeginInitialize>
-ALIAS <__imp____std_init_once_complete@16>=<__imp_InitOnceComplete>
+ALIAS <__imp____std_init_once_complete@12>=<__imp_InitOnceComplete>
 ENDIF
 END
