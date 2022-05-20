@@ -11,10 +11,8 @@ template <typename Dist>
 void test() {
     default_random_engine random;
     const Dist dist;
-    const auto res1 = dist(random);
-    (void) res1;
-    const auto res2 = dist(random, {});
-    (void) res2;
+    (void) dist(random);
+    (void) dist(random, {});
 }
 
 // GH-1912 <random>: distribution::operator() is erroneously const
@@ -31,7 +29,7 @@ void test_every_distribution() {
     test<gamma_distribution<double>>();
     test<weibull_distribution<double>>();
     test<extreme_value_distribution<double>>();
-    // normal_distribution doesn't have const operator()
+    // normal_distribution never has const operator()
     test<lognormal_distribution<double>>();
     test<chi_squared_distribution<double>>();
     test<cauchy_distribution<double>>();

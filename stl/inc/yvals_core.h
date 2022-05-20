@@ -751,12 +751,6 @@
     "Either use a Standard specialization or define _ENFORCE_FACET_SPECIALIZATIONS=0 " \
     "to suppress this diagnostic."
 
-#ifdef _ALLOW_RANDOM_DISTRIBUTION_CONST_OPERATOR
-#define _CONST const
-#else // ^^^ _ALLOW_CONST_OPERATOR / !_ALLOW_CONST_OPERATOR vvv
-#define _CONST
-#endif // _ALLOW_CONST_OPERATOR
-
 // To improve compiler throughput, use 'hidden friend' operators in <system_error> instead of non-members that are
 // depicted in the Standard.
 #ifndef _STL_OPTIMIZE_SYSTEM_ERROR_OPERATORS
