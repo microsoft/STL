@@ -49,19 +49,16 @@ STATIC_ASSERT(can_allocate<allocator<int>>);
 STATIC_ASSERT(is_convertible_v<allocator<void>, allocator<int>>);
 
 #if _HAS_CXX20
-STATIC_ASSERT(has_member_size_type<allocator<void>>);
-STATIC_ASSERT(has_member_difference_type<allocator<void>>);
-STATIC_ASSERT(has_member_pocma<allocator<void>>);
-STATIC_ASSERT(has_member_is_always_equal<allocator<void>>);
-STATIC_ASSERT(can_allocate<allocator<void>>);
-STATIC_ASSERT(is_convertible_v<allocator<int>, allocator<void>>);
+constexpr bool has_cxx20 = true;
 #else
-STATIC_ASSERT(!has_member_size_type<allocator<void>>);
-STATIC_ASSERT(!has_member_difference_type<allocator<void>>);
-STATIC_ASSERT(!has_member_pocma<allocator<void>>);
-STATIC_ASSERT(!has_member_is_always_equal<allocator<void>>);
-STATIC_ASSERT(!can_allocate<allocator<void>>);
-STATIC_ASSERT(!is_convertible_v<allocator<int>, allocator<void>>);
+constexpr bool has_cxx20 = false;
 #endif
+
+STATIC_ASSERT(has_cxx20 == has_member_size_type<allocator<void>>);
+STATIC_ASSERT(has_cxx20 == has_member_difference_type<allocator<void>>);
+STATIC_ASSERT(has_cxx20 == has_member_pocma<allocator<void>>);
+STATIC_ASSERT(has_cxx20 == has_member_is_always_equal<allocator<void>>);
+STATIC_ASSERT(has_cxx20 == can_allocate<allocator<void>>);
+STATIC_ASSERT(has_cxx20 == is_convertible_v<allocator<int>, allocator<void>>);
 
 int main() {} // COMPILE-ONLY
