@@ -145,14 +145,14 @@ namespace test_unexpected {
     }
 
     constexpr bool test_all() {
-        test<IsNothrowCopyConstructible::Not, IsNothrowMoveConstructible::Not, IsNothrowComparable::Yes>();
-        test<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Not, IsNothrowComparable::Yes>();
-        test<IsNothrowCopyConstructible::Not, IsNothrowMoveConstructible::Yes, IsNothrowComparable::Yes>();
-        test<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Yes, IsNothrowComparable::Yes>();
         test<IsNothrowCopyConstructible::Not, IsNothrowMoveConstructible::Not, IsNothrowComparable::Not>();
-        test<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Not, IsNothrowComparable::Not>();
+        test<IsNothrowCopyConstructible::Not, IsNothrowMoveConstructible::Not, IsNothrowComparable::Yes>();
         test<IsNothrowCopyConstructible::Not, IsNothrowMoveConstructible::Yes, IsNothrowComparable::Not>();
+        test<IsNothrowCopyConstructible::Not, IsNothrowMoveConstructible::Yes, IsNothrowComparable::Yes>();
+        test<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Not, IsNothrowComparable::Not>();
+        test<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Not, IsNothrowComparable::Yes>();
         test<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Yes, IsNothrowComparable::Not>();
+        test<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Yes, IsNothrowComparable::Yes>();
 
         return true;
     }
@@ -453,21 +453,21 @@ namespace test_expected {
     }
 
     constexpr void test_special_members() {
-        test_default_constructors<IsDefaultConstructible::Yes>();
         test_default_constructors<IsDefaultConstructible::Not>();
+        test_default_constructors<IsDefaultConstructible::Yes>();
 
-        test_copy_constructors<IsTriviallyCopyConstructible::Yes, IsNothrowCopyConstructible::Yes>();
-        test_copy_constructors<IsTriviallyCopyConstructible::Yes, IsNothrowCopyConstructible::Not>();
-        test_copy_constructors<IsTriviallyCopyConstructible::Not, IsNothrowCopyConstructible::Yes>();
         test_copy_constructors<IsTriviallyCopyConstructible::Not, IsNothrowCopyConstructible::Not>();
+        test_copy_constructors<IsTriviallyCopyConstructible::Not, IsNothrowCopyConstructible::Yes>();
+        test_copy_constructors<IsTriviallyCopyConstructible::Yes, IsNothrowCopyConstructible::Not>();
+        test_copy_constructors<IsTriviallyCopyConstructible::Yes, IsNothrowCopyConstructible::Yes>();
 
-        test_move_constructors<IsTriviallyMoveConstructible::Yes, IsNothrowMoveConstructible::Yes>();
-        test_move_constructors<IsTriviallyMoveConstructible::Yes, IsNothrowMoveConstructible::Not>();
-        test_move_constructors<IsTriviallyMoveConstructible::Not, IsNothrowMoveConstructible::Yes>();
         test_move_constructors<IsTriviallyMoveConstructible::Not, IsNothrowMoveConstructible::Not>();
+        test_move_constructors<IsTriviallyMoveConstructible::Not, IsNothrowMoveConstructible::Yes>();
+        test_move_constructors<IsTriviallyMoveConstructible::Yes, IsNothrowMoveConstructible::Not>();
+        test_move_constructors<IsTriviallyMoveConstructible::Yes, IsNothrowMoveConstructible::Yes>();
 
-        test_destructors<IsTriviallyDestructible::Yes>();
         test_destructors<IsTriviallyDestructible::Not>();
+        test_destructors<IsTriviallyDestructible::Yes>();
     }
 
     template <IsNothrowConstructible nothrowConstructible, IsExplicitConstructible explicitConstructible>
@@ -672,10 +672,10 @@ namespace test_expected {
     }
 
     constexpr void test_constructors() noexcept {
-        test_constructors<IsNothrowConstructible::Yes, IsExplicitConstructible::Yes>();
+        test_constructors<IsNothrowConstructible::Not, IsExplicitConstructible::Not>();
         test_constructors<IsNothrowConstructible::Not, IsExplicitConstructible::Yes>();
         test_constructors<IsNothrowConstructible::Yes, IsExplicitConstructible::Not>();
-        test_constructors<IsNothrowConstructible::Not, IsExplicitConstructible::Not>();
+        test_constructors<IsNothrowConstructible::Yes, IsExplicitConstructible::Yes>();
     }
 
     template <IsNothrowCopyConstructible nothrowCopyConstructible, IsNothrowMoveConstructible nothrowMoveConstructible,
@@ -1173,22 +1173,22 @@ namespace test_expected {
         using NCA = IsNothrowCopyAssignable;
         using NMA = IsNothrowMoveAssignable;
 
-        test_assignment<NCC::Yes, NMC::Yes, NCA::Yes, NMA::Yes>();
-        test_assignment<NCC::Yes, NMC::Yes, NCA::Yes, NMA::Not>();
-        test_assignment<NCC::Yes, NMC::Yes, NCA::Not, NMA::Yes>();
-        test_assignment<NCC::Yes, NMC::Yes, NCA::Not, NMA::Not>();
-        test_assignment<NCC::Yes, NMC::Not, NCA::Yes, NMA::Yes>();
-        test_assignment<NCC::Yes, NMC::Not, NCA::Yes, NMA::Not>();
-        test_assignment<NCC::Yes, NMC::Not, NCA::Not, NMA::Yes>();
-        test_assignment<NCC::Yes, NMC::Not, NCA::Not, NMA::Not>();
-        test_assignment<NCC::Not, NMC::Yes, NCA::Yes, NMA::Yes>();
-        test_assignment<NCC::Not, NMC::Yes, NCA::Yes, NMA::Not>();
-        test_assignment<NCC::Not, NMC::Yes, NCA::Not, NMA::Yes>();
-        test_assignment<NCC::Not, NMC::Yes, NCA::Not, NMA::Not>();
-        test_assignment<NCC::Not, NMC::Not, NCA::Yes, NMA::Yes>();
-        test_assignment<NCC::Not, NMC::Not, NCA::Yes, NMA::Not>();
-        test_assignment<NCC::Not, NMC::Not, NCA::Not, NMA::Yes>();
         test_assignment<NCC::Not, NMC::Not, NCA::Not, NMA::Not>();
+        test_assignment<NCC::Not, NMC::Not, NCA::Not, NMA::Yes>();
+        test_assignment<NCC::Not, NMC::Not, NCA::Yes, NMA::Not>();
+        test_assignment<NCC::Not, NMC::Not, NCA::Yes, NMA::Yes>();
+        test_assignment<NCC::Not, NMC::Yes, NCA::Not, NMA::Not>();
+        test_assignment<NCC::Not, NMC::Yes, NCA::Not, NMA::Yes>();
+        test_assignment<NCC::Not, NMC::Yes, NCA::Yes, NMA::Not>();
+        test_assignment<NCC::Not, NMC::Yes, NCA::Yes, NMA::Yes>();
+        test_assignment<NCC::Yes, NMC::Not, NCA::Not, NMA::Not>();
+        test_assignment<NCC::Yes, NMC::Not, NCA::Not, NMA::Yes>();
+        test_assignment<NCC::Yes, NMC::Not, NCA::Yes, NMA::Not>();
+        test_assignment<NCC::Yes, NMC::Not, NCA::Yes, NMA::Yes>();
+        test_assignment<NCC::Yes, NMC::Yes, NCA::Not, NMA::Not>();
+        test_assignment<NCC::Yes, NMC::Yes, NCA::Not, NMA::Yes>();
+        test_assignment<NCC::Yes, NMC::Yes, NCA::Yes, NMA::Not>();
+        test_assignment<NCC::Yes, NMC::Yes, NCA::Yes, NMA::Yes>();
     }
 
     constexpr void test_emplace() noexcept {
@@ -1512,10 +1512,10 @@ namespace test_expected {
     }
 
     constexpr void test_swap() noexcept {
-        test_swap<IsNothrowMoveConstructible::Yes, IsNothrowSwappable::Yes>();
+        test_swap<IsNothrowMoveConstructible::Not, IsNothrowSwappable::Not>();
         test_swap<IsNothrowMoveConstructible::Not, IsNothrowSwappable::Yes>();
         test_swap<IsNothrowMoveConstructible::Yes, IsNothrowSwappable::Not>();
-        test_swap<IsNothrowMoveConstructible::Not, IsNothrowSwappable::Not>();
+        test_swap<IsNothrowMoveConstructible::Yes, IsNothrowSwappable::Yes>();
     }
 
     constexpr void test_access() noexcept {
@@ -1845,10 +1845,10 @@ namespace test_expected {
     }
 
     constexpr void test_monadic() noexcept {
-        test_monadic<IsNothrowConstructible::Yes, IsNothrowConvertible::Yes>();
+        test_monadic<IsNothrowConstructible::Not, IsNothrowConvertible::Not>();
         test_monadic<IsNothrowConstructible::Not, IsNothrowConvertible::Yes>();
         test_monadic<IsNothrowConstructible::Yes, IsNothrowConvertible::Not>();
-        test_monadic<IsNothrowConstructible::Not, IsNothrowConvertible::Not>();
+        test_monadic<IsNothrowConstructible::Yes, IsNothrowConvertible::Yes>();
     }
 
     template <IsNothrowComparable nothrowComparable>
@@ -2018,8 +2018,8 @@ namespace test_expected {
     }
 
     constexpr void test_equality() noexcept {
-        test_equality<IsNothrowComparable::Yes>();
         test_equality<IsNothrowComparable::Not>();
+        test_equality<IsNothrowComparable::Yes>();
     }
 
     constexpr bool test_all() noexcept {
