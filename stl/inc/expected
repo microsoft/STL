@@ -425,8 +425,8 @@ public:
 
     // clang-format off
     template <class _UErr>
-        requires (is_constructible_v<_Err, const _UErr&>&& is_assignable_v<_Err&, const _UErr&> //
-                 && (is_nothrow_constructible_v<_Err, const _UErr&> || is_nothrow_move_constructible_v<_Ty> //
+        requires (is_constructible_v<_Err, const _UErr&>&& is_assignable_v<_Err&, const _UErr&>
+                 && (is_nothrow_constructible_v<_Err, const _UErr&> || is_nothrow_move_constructible_v<_Ty>
                      || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(const unexpected<_UErr>& _Other) noexcept(
         is_nothrow_constructible_v<_Err, const _UErr&>&& is_nothrow_assignable_v<_Err&, const _UErr&>) { // strengthened
@@ -444,7 +444,7 @@ public:
     // clang-format off
     template <class _UErr>
         requires (is_constructible_v<_Err, _UErr>&& is_assignable_v<_Err&, _UErr>
-                 && (is_nothrow_constructible_v<_Err, _UErr> || is_nothrow_move_constructible_v<_Ty> //
+                 && (is_nothrow_constructible_v<_Err, _UErr> || is_nothrow_move_constructible_v<_Ty>
                      || is_nothrow_move_constructible_v<_Err>) )
     constexpr expected& operator=(unexpected<_UErr>&& _Other) noexcept(
         is_nothrow_constructible_v<_Err, _UErr>&& is_nothrow_assignable_v<_Err&, _UErr>) { // strengthened
