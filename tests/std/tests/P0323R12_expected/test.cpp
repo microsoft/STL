@@ -1168,38 +1168,27 @@ namespace test_expected {
     }
 
     constexpr void test_assignment() noexcept {
-        test_assignment<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Yes, //
-            IsNothrowCopyAssignable::Yes, IsNothrowMoveAssignable::Yes>();
-        test_assignment<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Yes, //
-            IsNothrowCopyAssignable::Yes, IsNothrowMoveAssignable::No>();
-        test_assignment<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Yes, //
-            IsNothrowCopyAssignable::No, IsNothrowMoveAssignable::Yes>();
-        test_assignment<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::Yes, //
-            IsNothrowCopyAssignable::No, IsNothrowMoveAssignable::No>();
-        test_assignment<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::No, //
-            IsNothrowCopyAssignable::Yes, IsNothrowMoveAssignable::Yes>();
-        test_assignment<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::No, //
-            IsNothrowCopyAssignable::Yes, IsNothrowMoveAssignable::No>();
-        test_assignment<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::No, //
-            IsNothrowCopyAssignable::No, IsNothrowMoveAssignable::Yes>();
-        test_assignment<IsNothrowCopyConstructible::Yes, IsNothrowMoveConstructible::No, //
-            IsNothrowCopyAssignable::No, IsNothrowMoveAssignable::No>();
-        test_assignment<IsNothrowCopyConstructible::No, IsNothrowMoveConstructible::Yes, //
-            IsNothrowCopyAssignable::Yes, IsNothrowMoveAssignable::Yes>();
-        test_assignment<IsNothrowCopyConstructible::No, IsNothrowMoveConstructible::Yes, //
-            IsNothrowCopyAssignable::Yes, IsNothrowMoveAssignable::No>();
-        test_assignment<IsNothrowCopyConstructible::No, IsNothrowMoveConstructible::Yes, //
-            IsNothrowCopyAssignable::No, IsNothrowMoveAssignable::Yes>();
-        test_assignment<IsNothrowCopyConstructible::No, IsNothrowMoveConstructible::Yes, //
-            IsNothrowCopyAssignable::No, IsNothrowMoveAssignable::No>();
-        test_assignment<IsNothrowCopyConstructible::No, IsNothrowMoveConstructible::No, //
-            IsNothrowCopyAssignable::Yes, IsNothrowMoveAssignable::Yes>();
-        test_assignment<IsNothrowCopyConstructible::No, IsNothrowMoveConstructible::No, //
-            IsNothrowCopyAssignable::Yes, IsNothrowMoveAssignable::No>();
-        test_assignment<IsNothrowCopyConstructible::No, IsNothrowMoveConstructible::No, //
-            IsNothrowCopyAssignable::No, IsNothrowMoveAssignable::Yes>();
-        test_assignment<IsNothrowCopyConstructible::No, IsNothrowMoveConstructible::No, //
-            IsNothrowCopyAssignable::No, IsNothrowMoveAssignable::No>();
+        using NCC = IsNothrowCopyConstructible;
+        using NMC = IsNothrowMoveConstructible;
+        using NCA = IsNothrowCopyAssignable;
+        using NMA = IsNothrowMoveAssignable;
+
+        test_assignment<NCC::Yes, NMC::Yes, NCA::Yes, NMA::Yes>();
+        test_assignment<NCC::Yes, NMC::Yes, NCA::Yes, NMA::No>();
+        test_assignment<NCC::Yes, NMC::Yes, NCA::No, NMA::Yes>();
+        test_assignment<NCC::Yes, NMC::Yes, NCA::No, NMA::No>();
+        test_assignment<NCC::Yes, NMC::No, NCA::Yes, NMA::Yes>();
+        test_assignment<NCC::Yes, NMC::No, NCA::Yes, NMA::No>();
+        test_assignment<NCC::Yes, NMC::No, NCA::No, NMA::Yes>();
+        test_assignment<NCC::Yes, NMC::No, NCA::No, NMA::No>();
+        test_assignment<NCC::No, NMC::Yes, NCA::Yes, NMA::Yes>();
+        test_assignment<NCC::No, NMC::Yes, NCA::Yes, NMA::No>();
+        test_assignment<NCC::No, NMC::Yes, NCA::No, NMA::Yes>();
+        test_assignment<NCC::No, NMC::Yes, NCA::No, NMA::No>();
+        test_assignment<NCC::No, NMC::No, NCA::Yes, NMA::Yes>();
+        test_assignment<NCC::No, NMC::No, NCA::Yes, NMA::No>();
+        test_assignment<NCC::No, NMC::No, NCA::No, NMA::Yes>();
+        test_assignment<NCC::No, NMC::No, NCA::No, NMA::No>();
     }
 
     constexpr void test_emplace() noexcept {
