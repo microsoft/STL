@@ -961,10 +961,12 @@ public:
     }
 
     // [expected.void.eq]
+    // clang-format off
     template <class _Uty, class _UErr>
-    requires is_void_v<_Uty> //
-        _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) //
-        noexcept(noexcept(_Implicitly_convert_to<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
+        requires is_void_v<_Uty>
+    _NODISCARD_FRIEND constexpr bool operator==(const expected& _Left, const expected<_Uty, _UErr>& _Right) noexcept(
+        noexcept(_Implicitly_convert_to<bool>(_Left._Unexpected == _Right.error()))) { // strengthened
+        // clang-format on
         if (_Left._Has_value != _Right.has_value()) {
             return false;
         } else {
