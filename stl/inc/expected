@@ -318,9 +318,13 @@ public:
     // [expected.object.dtor]
     constexpr ~expected() noexcept {
         if (_Has_value) {
-            _Value.~_Ty();
+            if constexpr (!is_trivially_destructible_v<_Ty>) {
+                _Value.~_Ty();
+            }
         } else {
-            _Unexpected.~_Err();
+            if constexpr (!is_trivially_destructible_v<_Err>) {
+                _Unexpected.~_Err();
+            }
         }
     }
 
@@ -506,7 +510,9 @@ public:
         } else if (_Has_value) {
             if constexpr (is_nothrow_move_constructible_v<_Err>) {
                 _Err _Tmp(_STD move(_Other._Unexpected));
-                _Other._Unexpected.~_Err();
+                if constexpr (!is_trivially_destructible_v<_Err>) {
+                    _Other._Unexpected.~_Err();
+                }
 
                 if constexpr (is_nothrow_move_constructible_v<_Ty>) {
                     _STD construct_at(_STD addressof(_Other._Value), _STD move(_Value));
@@ -516,17 +522,23 @@ public:
                     _Guard._Target = nullptr;
                 }
 
-                _Value.~_Ty();
+                if constexpr (!is_trivially_destructible_v<_Ty>) {
+                    _Value.~_Ty();
+                }
                 _STD construct_at(_STD addressof(_Unexpected), _STD move(_Tmp));
             } else {
                 _Ty _Tmp(_STD move(_Value));
-                _Value.~_Ty();
+                if constexpr (!is_trivially_destructible_v<_Ty>) {
+                    _Value.~_Ty();
+                }
 
                 _GuardTy<_Ty> _Guard{_STD addressof(_Value), _STD addressof(_Tmp)};
                 _STD construct_at(_STD addressof(_Unexpected), _STD move(_Other._Unexpected));
                 _Guard._Target = nullptr;
 
-                _Other._Unexpected.~_Err();
+                if constexpr (!is_trivially_destructible_v<_Err>) {
+                    _Other._Unexpected.~_Err();
+                }
                 _STD construct_at(_STD addressof(_Other._Value), _STD move(_Tmp));
             }
 
@@ -823,7 +835,9 @@ public:
             _STD construct_at(_STD addressof(_Unexpected), _Other._Unexpected);
             _Has_value = false;
         } else if (_Other._Has_value) {
-            _Unexpected.~_Err();
+            if constexpr (!is_trivially_destructible_v<_Err>) {
+                _Unexpected.~_Err();
+            }
             _Has_value = true;
         } else {
             _Unexpected = _Other._Unexpected;
@@ -841,7 +855,9 @@ public:
             _STD construct_at(_STD addressof(_Unexpected), _STD move(_Other._Unexpected));
             _Has_value = false;
         } else if (_Other._Has_value) {
-            _Unexpected.~_Err();
+            if constexpr (!is_trivially_destructible_v<_Err>) {
+                _Unexpected.~_Err();
+            }
             _Has_value = true;
         } else {
             _Unexpected = _STD move(_Other._Unexpected);
@@ -880,7 +896,9 @@ public:
 
     constexpr void emplace() noexcept {
         if (!_Has_value) {
-            _Unexpected.~_Err();
+            if constexpr (!is_trivially_destructible_v<_Err>) {
+                _Unexpected.~_Err();
+            }
             _Has_value = true;
         }
     }
@@ -893,12 +911,16 @@ public:
             // nothing
         } else if (_Has_value) {
             _STD construct_at(_STD addressof(_Unexpected), _STD move(_Other._Unexpected));
-            _Other._Unexpected.~_Err();
+            if constexpr (!is_trivially_destructible_v<_Err>) {
+                _Other._Unexpected.~_Err();
+            }
             _Has_value        = false;
             _Other._Has_value = true;
         } else if (_Other._Has_value) {
             _STD construct_at(_STD addressof(_Other._Unexpected), _STD move(_Unexpected));
-            _Unexpected.~_Err();
+            if constexpr (!is_trivially_destructible_v<_Err>) {
+                _Unexpected.~_Err();
+            }
             _Has_value        = true;
             _Other._Has_value = false;
         } else {
@@ -913,12 +935,16 @@ public:
             // nothing
         } else if (_Left._Has_value) {
             _STD construct_at(_STD addressof(_Left._Unexpected), _STD move(_Right._Unexpected));
-            _Right._Unexpected.~_Err();
+            if constexpr (!is_trivially_destructible_v<_Err>) {
+                _Right._Unexpected.~_Err();
+            }
             _Left._Has_value  = false;
             _Right._Has_value = true;
         } else if (_Right._Has_value) {
             _STD construct_at(_STD addressof(_Right._Unexpected), _STD move(_Left._Unexpected));
-            _Left._Unexpected.~_Err();
+            if constexpr (!is_trivially_destructible_v<_Err>) {
+                _Left._Unexpected.~_Err();
+            }
             _Left._Has_value  = true;
             _Right._Has_value = false;
         } else {
