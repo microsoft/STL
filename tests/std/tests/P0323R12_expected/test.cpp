@@ -1781,28 +1781,6 @@ namespace test_expected {
             static_assert(noexcept(with_value1 != error1) == should_be_noexcept);
         }
 
-        { // expected<void> compare against different expected
-            using Expected      = expected<void, payload_equality>;
-            using OtherExpected = expected<payload_equality, int>;
-
-            const Expected with_value1{in_place};
-            const OtherExpected with_value2{in_place, 1337};
-            assert(with_value1 == with_value1);
-            assert(!(with_value1 != with_value2));
-            static_assert(noexcept(with_value1 == with_value1) == should_be_noexcept);
-            static_assert(noexcept(with_value1 != with_value2) == should_be_noexcept);
-
-            const Expected error1{unexpect, 42};
-            const OtherExpected error2{unexpect, 1337};
-            assert(error1 == error1);
-            assert(error1 != error2);
-            static_assert(noexcept(error1 == error1) == should_be_noexcept);
-            static_assert(noexcept(error1 != error2) == should_be_noexcept);
-
-            assert(with_value1 != error1);
-            static_assert(noexcept(with_value1 != error1) == should_be_noexcept);
-        }
-
         { // compare against base type
             using Base     = payload_equality;
             using Expected = expected<Base, int>;
