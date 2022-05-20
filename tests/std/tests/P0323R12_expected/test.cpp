@@ -27,6 +27,11 @@ enum class IsNothrowSwappable : bool { Not, Yes };
 
 enum class IsExplicitConstructible : bool { Not, Yes };
 
+template <typename E>
+[[nodiscard]] constexpr bool IsYes(const E e) noexcept {
+    return e == E::Yes;
+}
+
 struct convertible {
     constexpr convertible() = default;
     constexpr convertible(const int val) noexcept : _val(val) {}
@@ -42,9 +47,9 @@ namespace test_unexpected {
     template <IsNothrowCopyConstructible nothrowCopyConstructible, IsNothrowMoveConstructible nothrowMoveConstructible,
         IsNothrowComparable nothrowComparable>
     constexpr void test() {
-        constexpr bool copy_construction_is_noexcept = nothrowCopyConstructible == IsNothrowCopyConstructible::Yes;
-        constexpr bool move_construction_is_noexcept = nothrowMoveConstructible == IsNothrowMoveConstructible::Yes;
-        constexpr bool compare_is_noexcept           = nothrowComparable == IsNothrowComparable::Yes;
+        constexpr bool copy_construction_is_noexcept = IsYes(nothrowCopyConstructible);
+        constexpr bool move_construction_is_noexcept = IsYes(nothrowMoveConstructible);
+        constexpr bool compare_is_noexcept           = IsYes(nothrowComparable);
 
         struct test_error {
             constexpr test_error(const int& val) noexcept(copy_construction_is_noexcept) : _val(val) {}
@@ -191,7 +196,7 @@ namespace test_expected {
 
     template <IsDefaultConstructible defaultConstructible>
     constexpr void test_default_constructors() {
-        constexpr bool should_be_defaultable = defaultConstructible == IsDefaultConstructible::Yes;
+        constexpr bool should_be_defaultable = IsYes(defaultConstructible);
 
         struct payload_default_constructor {
             constexpr payload_default_constructor() requires(should_be_defaultable) : _val(42) {}
@@ -218,9 +223,8 @@ namespace test_expected {
     template <IsTriviallyCopyConstructible triviallyCopyConstructible,
         IsNothrowCopyConstructible nothrowCopyConstructible>
     constexpr void test_copy_constructors() {
-        constexpr bool should_be_trivial = triviallyCopyConstructible == IsTriviallyCopyConstructible::Yes;
-        constexpr bool should_be_noexcept =
-            should_be_trivial || nothrowCopyConstructible == IsNothrowCopyConstructible::Yes;
+        constexpr bool should_be_trivial  = IsYes(triviallyCopyConstructible);
+        constexpr bool should_be_noexcept = should_be_trivial || IsYes(nothrowCopyConstructible);
 
         struct payload_copy_constructor {
             payload_copy_constructor()        = default;
@@ -310,9 +314,8 @@ namespace test_expected {
     template <IsTriviallyMoveConstructible triviallyMoveConstructible,
         IsNothrowMoveConstructible nothrowMoveConstructible>
     constexpr void test_move_constructors() {
-        constexpr bool should_be_trivial = triviallyMoveConstructible == IsTriviallyMoveConstructible::Yes;
-        constexpr bool should_be_noexcept =
-            should_be_trivial || nothrowMoveConstructible == IsNothrowMoveConstructible::Yes;
+        constexpr bool should_be_trivial  = IsYes(triviallyMoveConstructible);
+        constexpr bool should_be_noexcept = should_be_trivial || IsYes(nothrowMoveConstructible);
 
         struct payload_move_constructor {
             payload_move_constructor()                                = default;
@@ -417,7 +420,7 @@ namespace test_expected {
     };
     template <IsTriviallyDestructible triviallyDestructible>
     constexpr void test_destructors() {
-        constexpr bool is_trivial = triviallyDestructible == IsTriviallyDestructible::Yes;
+        constexpr bool is_trivial = IsYes(triviallyDestructible);
         bool destructor_called    = false;
         { // Check payload
             using Expected = expected<payload_destructor<triviallyDestructible>, int>;
@@ -472,19 +475,19 @@ namespace test_expected {
 
     template <IsNothrowConstructible nothrowConstructible, IsExplicitConstructible explicitConstructible>
     constexpr void test_constructors() noexcept {
-        constexpr bool should_be_noexcept = nothrowConstructible == IsNothrowConstructible::Yes;
-        constexpr bool should_be_explicit = explicitConstructible == IsExplicitConstructible::Yes;
+        constexpr bool should_be_noexcept = IsYes(nothrowConstructible);
+        constexpr bool should_be_explicit = IsYes(explicitConstructible);
 
         struct payload_constructors {
             payload_constructors() = default;
             // Note clang does not accept local variables in explicit
-            constexpr explicit(explicitConstructible == IsExplicitConstructible::Yes)
+            constexpr explicit(IsYes(explicitConstructible))
                 payload_constructors(const convertible&) noexcept(should_be_noexcept)
                 : _val(3) {}
-            constexpr explicit(explicitConstructible == IsExplicitConstructible::Yes)
+            constexpr explicit(IsYes(explicitConstructible))
                 payload_constructors(convertible&&) noexcept(should_be_noexcept)
                 : _val(42) {}
-            constexpr explicit(explicitConstructible == IsExplicitConstructible::Yes)
+            constexpr explicit(IsYes(explicitConstructible))
                 payload_constructors(initializer_list<int>&, convertible) noexcept(should_be_noexcept)
                 : _val(1337) {}
 
@@ -681,10 +684,10 @@ namespace test_expected {
     template <IsNothrowCopyConstructible nothrowCopyConstructible, IsNothrowMoveConstructible nothrowMoveConstructible,
         IsNothrowCopyAssignable nothrowCopyAssignable, IsNothrowMoveAssignable nothrowMoveAssignable>
     constexpr void test_assignment() noexcept {
-        constexpr bool nothrow_copy_constructible = nothrowCopyConstructible == IsNothrowCopyConstructible::Yes;
-        constexpr bool nothrow_move_constructible = nothrowMoveConstructible == IsNothrowMoveConstructible::Yes;
-        constexpr bool nothrow_copy_assignable    = nothrowCopyAssignable == IsNothrowCopyAssignable::Yes;
-        constexpr bool nothrow_move_assignable    = nothrowMoveAssignable == IsNothrowMoveAssignable::Yes;
+        constexpr bool nothrow_copy_constructible = IsYes(nothrowCopyConstructible);
+        constexpr bool nothrow_move_constructible = IsYes(nothrowMoveConstructible);
+        constexpr bool nothrow_copy_assignable    = IsYes(nothrowCopyAssignable);
+        constexpr bool nothrow_move_assignable    = IsYes(nothrowMoveAssignable);
 
         struct payload_assign {
             payload_assign() = default;
@@ -1285,12 +1288,10 @@ namespace test_expected {
     struct payload_swap {
         constexpr payload_swap(const int val) noexcept : _val(val) {}
         constexpr payload_swap(const payload_swap&) noexcept = default;
-        constexpr payload_swap(payload_swap&& other) noexcept(
-            nothrowMoveConstructible == IsNothrowMoveConstructible::Yes)
+        constexpr payload_swap(payload_swap&& other) noexcept(IsYes(nothrowMoveConstructible))
             : _val(other._val + 42) {}
         // Note: cannot declare friends of function local structs
-        constexpr friend void swap(payload_swap& left, payload_swap& right) noexcept(
-            nothrowSwappable == IsNothrowSwappable::Yes) {
+        constexpr friend void swap(payload_swap& left, payload_swap& right) noexcept(IsYes(nothrowSwappable)) {
             left._val = exchange(right._val, left._val);
         }
 
@@ -1303,8 +1304,8 @@ namespace test_expected {
 
     template <IsNothrowMoveConstructible nothrowMoveConstructible, IsNothrowSwappable nothrowSwappable>
     constexpr void test_swap() noexcept {
-        constexpr bool nothrow_move_constructible = nothrowMoveConstructible == IsNothrowMoveConstructible::Yes;
-        constexpr bool should_be_noexcept = nothrow_move_constructible && nothrowSwappable == IsNothrowSwappable::Yes;
+        constexpr bool nothrow_move_constructible = IsYes(nothrowMoveConstructible);
+        constexpr bool should_be_noexcept         = nothrow_move_constructible && IsYes(nothrowSwappable);
 
         { // Check payload member
             using Expected = expected<payload_swap<nothrowMoveConstructible, nothrowSwappable>, int>;
@@ -1765,8 +1766,8 @@ namespace test_expected {
 
     template <IsNothrowConstructible nothrowConstructible, IsNothrowConvertible nothrowConvertible>
     constexpr void test_monadic() {
-        constexpr bool construction_is_noexcept = nothrowConstructible == IsNothrowConstructible::Yes;
-        constexpr bool conversion_is_noexcept   = nothrowConvertible == IsNothrowConvertible::Yes;
+        constexpr bool construction_is_noexcept = IsYes(nothrowConstructible);
+        constexpr bool conversion_is_noexcept   = IsYes(nothrowConvertible);
         constexpr bool should_be_noexcept       = construction_is_noexcept && conversion_is_noexcept;
 
         struct payload_monadic {
@@ -1853,7 +1854,7 @@ namespace test_expected {
 
     template <IsNothrowComparable nothrowComparable>
     constexpr void test_equality() noexcept {
-        constexpr bool should_be_noexcept = nothrowComparable == IsNothrowComparable::Yes;
+        constexpr bool should_be_noexcept = IsYes(nothrowComparable);
 
         struct payload_equality {
             constexpr payload_equality(const int val) noexcept : _val(val) {}
