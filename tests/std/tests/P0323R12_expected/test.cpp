@@ -578,6 +578,77 @@ namespace test_expected {
             assert(ilist_value_constructed.error() == 1337);
             static_assert(noexcept(Expected{unexpect, {1}, convertible{}}) == should_be_noexcept);
         }
+
+        { // expected<void, E>: converting from different expected
+            using Input    = expected<void, convertible>;
+            using Expected = expected<void, payload_constructors>;
+            static_assert(is_convertible_v<const Input&, Expected> != should_be_explicit);
+            static_assert(is_convertible_v<Input, Expected> != should_be_explicit);
+
+            const Input const_input_value{};
+            const Expected copy_constructed_value{const_input_value};
+            assert(copy_constructed_value);
+            copy_constructed_value.value();
+            static_assert(noexcept(Expected{const_input_value}) == should_be_noexcept);
+
+            const Expected move_constructed_value{Input{in_place}};
+            assert(move_constructed_value);
+            move_constructed_value.value();
+            static_assert(noexcept(Expected{Input{in_place}}) == should_be_noexcept);
+
+            const Input const_input_error{unexpect};
+            const Expected copy_constructed_error{const_input_error};
+            assert(!copy_constructed_error);
+            assert(copy_constructed_error.error() == 3);
+            static_assert(noexcept(Expected{const_input_error}) == should_be_noexcept);
+
+            const Expected move_constructed_error{Input{unexpect}};
+            assert(!move_constructed_error);
+            assert(move_constructed_error.error() == 42);
+            static_assert(noexcept(Expected{Input{unexpect}}) == should_be_noexcept);
+        }
+
+        { // expected<void, E>: converting from unexpected
+            using Input    = std::unexpected<convertible>;
+            using Expected = expected<void, payload_constructors>;
+
+            const Input const_input{in_place};
+            const Expected copy_constructed{const_input};
+            assert(!copy_constructed);
+            assert(copy_constructed.error() == 3);
+            static_assert(noexcept(Expected{const_input}) == should_be_noexcept);
+
+            const Expected move_constructed{Input{in_place}};
+            assert(!move_constructed);
+            assert(move_constructed.error() == 42);
+            static_assert(noexcept(Expected{Input{in_place}}) == should_be_noexcept);
+        }
+
+        { // expected<void, E>: in place payload
+            using Expected = expected<void, int>;
+            const Expected default_constructed{in_place};
+            assert(default_constructed);
+            default_constructed.value();
+            static_assert(noexcept(Expected{in_place}));
+        }
+
+        { // expected<void, E>: in place error
+            using Expected = expected<void, payload_constructors>;
+            const Expected default_constructed{unexpect};
+            assert(!default_constructed);
+            assert(default_constructed.error() == 0);
+            static_assert(noexcept(Expected{unexpect}));
+
+            const Expected value_constructed{unexpect, convertible{}};
+            assert(!value_constructed);
+            assert(value_constructed.error() == 42);
+            static_assert(noexcept(Expected{unexpect, convertible{}}) == should_be_noexcept);
+
+            const Expected ilist_value_constructed{unexpect, {1}, convertible{}};
+            assert(!ilist_value_constructed);
+            assert(ilist_value_constructed.error() == 1337);
+            static_assert(noexcept(Expected{unexpect, {1}, convertible{}}) == should_be_noexcept);
+        }
     }
 
     constexpr void test_constructors() noexcept {
