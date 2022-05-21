@@ -1,13 +1,13 @@
-; weak symbol aliases
-
 ; Copyright (c) Microsoft Corporation.
 ; SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+; weak symbol aliases
 
 ; Note that while this is a masm file, it contains no code
 ; masm does generate a .text section with zero size
 
 ; mangle identifiers for stdcall calling convention
-; on x86_64 this does nothing, on x86 it adds a leading
+; on x64 this does nothing, on x86 it adds a leading
 ; underscore and @sz, sz should be the size of the parameters
 mangle MACRO name, sz
     ; This checks if we're in x64 mode (using ml64).
