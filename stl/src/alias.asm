@@ -3,12 +3,12 @@
 
 ; weak symbol aliases
 
-; Note that while this is a masm file, it contains no code
-; masm does generate a .text section with zero size
+; Note that while this is a masm file, it contains no code.
+; masm does generate a .text section with zero size.
 
-; mangle identifiers for stdcall calling convention
-; on x64 this does nothing, on x86 it adds a leading
-; underscore and @sz, sz should be the size of the parameters
+; Mangle identifiers for stdcall calling convention.
+; On x64 this does nothing, on x86 it adds a leading
+; underscore and trailing @sz, where sz should be the size of the parameters.
 mangle MACRO name, sz
     ; This checks if we're in x64 mode (using ml64).
     ; Note that RAX isn't really an assembler symbol,
@@ -17,7 +17,7 @@ mangle MACRO name, sz
     ; IFDEF RAX
     ;   meow
     ; ENDIF
-    ; will expand to meow on only x64 system, however:
+    ; will expand to meow on only x64 systems, however:
     ; IFNDEF RAX
     ;   meow
     ; ENDIF
@@ -35,7 +35,7 @@ imp_name MACRO name, sz
 ENDM
 
 create_alias MACRO oldname, newname, size
-    ; use "EXTERN name : PROC" instead of "EXTERN name : PROTO ..."
+    ; Use "EXTERN name : PROC" instead of "EXTERN name : PROTO ..."
     ; to avoid masm adding underscores to the names of (object) symbols.
     ; Note that the MASM symbol always has the name that appears in
     ; the source file (after macro expansion), but when _using_ the symbol
