@@ -28,7 +28,7 @@ import <coroutine>;
 import <deque>;
 import <exception>;
 import <execution>;
-#if 0 // TRANSITION, VSO-1543660
+#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, VSO-1543660 fixed in 17.3 Preview 3
 import <expected>;
 #endif // ^^^ no workaround ^^^
 import <filesystem>;
@@ -294,7 +294,7 @@ int main() {
         assert(count(execution::par, begin(arr), end(arr), 0) == 4);
     }
 
-#if 0 // TRANSITION, VSO-1543660
+#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, VSO-1543660 fixed in 17.3 Preview 3
     {
         puts("Testing <expected>.");
         constexpr expected<double, int> test{unexpect, 42};
