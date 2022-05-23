@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _CONTAINER_DEBUG_LEVEL 1
+
 #include <cassert>
 #include <concepts>
 #include <exception>
@@ -2038,6 +2040,29 @@ namespace test_expected {
     }
 } // namespace test_expected
 
+void test_reinit_regression() {
+    // _Reinit_expected had a bug in its conditional noexcept that would terminate the program
+    // when switching from error state to value state when the value type is nothrow-movable
+    // but the conversion throws.
+
+    constexpr int magic = 1729;
+
+    struct throwing_int_conversion {
+        [[noreturn]] operator int() const {
+            throw magic;
+        }
+    };
+
+    expected<int, bool> e{unexpect, false};
+
+    try {
+        e = throwing_int_conversion{};
+        assert(false);
+    } catch (const int& i) {
+        assert(i == magic);
+    }
+}
+
 int main() {
     test_unexpected::test_all();
     static_assert(test_unexpected::test_all());
@@ -2051,4 +2076,6 @@ int main() {
     static_assert(is_convertible_v<bad_expected_access<int>*, bad_expected_access<void>*>);
     static_assert(is_convertible_v<bad_expected_access<void>*, exception*>);
     static_assert(is_convertible_v<bad_expected_access<int>*, exception*>);
+
+    test_reinit_regression();
 }
