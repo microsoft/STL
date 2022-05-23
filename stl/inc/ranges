@@ -3070,7 +3070,7 @@ namespace ranges {
         // clang-format on
 
 #ifndef _USE_JOIN_VIEW_INPUT_RANGE
-        static_assert(forward_range<_Vw> || borrowed_range<_Vw>,
+        static_assert(forward_range<_Vw>,
             "Due to a design flaw, join_view can misbehave "
             "with some input-only ranges (see https://wg21.link/lwg3698). "
             "We believe that WG21 will be unable to fix this problem without breaking ABI. "
