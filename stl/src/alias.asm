@@ -10,7 +10,7 @@
 ; IFDEF RAX
 ;   meow
 ; ENDIF
-; will expand to meow on only x64 system, however:
+; will expand to meow on only x64 systems, however:
 ; IFNDEF RAX
 ;   meow
 ; ENDIF
