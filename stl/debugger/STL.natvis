@@ -247,6 +247,45 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
+  <Type Name="std::unexpected&lt;*&gt;">
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString>{unex()}</DisplayString>
+      <Expand>
+          <Item Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::bad_expected_access&lt;*&gt;">
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString>{unex()}</DisplayString>
+      <Expand>
+          <Item Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::expected&lt;*,*&gt;">
+      <Intrinsic Name="has_value" Expression="_Has_value"/>
+      <Intrinsic Name="value" Expression="_Value"/>
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString Condition="has_value()">{value()}</DisplayString>
+      <DisplayString Condition="!has_value()">{unex()}</DisplayString>
+      <Expand>
+          <Item Condition="has_value()" Name="value">value()</Item>
+          <Item Condition="!has_value()" Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::expected&lt;void,*&gt;">
+      <Intrinsic Name="has_value" Expression="_Has_value"/>
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString Condition="has_value()">void</DisplayString>
+      <DisplayString Condition="!has_value()">{unex()}</DisplayString>
+      <Expand>
+          <Item Condition="!has_value()" Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+
   <Type Name="std::bitset&lt;*&gt;">
       <DisplayString>{{ size={$T1} }}</DisplayString>
       <Expand>

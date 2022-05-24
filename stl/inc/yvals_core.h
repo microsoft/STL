@@ -281,6 +281,7 @@
 
 // _HAS_CXX23 directly controls:
 // P0288R9 move_only_function
+// P0323R12 <expected>
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0448R4 <spanstream>
 // P0627R6 unreachable()
@@ -307,6 +308,7 @@
 //     (changes to pair, tuple, and vector<bool>::reference only)
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
+// P2549R0 unexpected<E>::error()
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1438,9 +1440,14 @@
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_byteswap                          202110L
-#define __cpp_lib_invoke_r                          202106L
-#define __cpp_lib_is_scoped_enum                    202011L
-#define __cpp_lib_move_only_function                202110L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_expected 202202L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_invoke_r           202106L
+#define __cpp_lib_is_scoped_enum     202011L
+#define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
