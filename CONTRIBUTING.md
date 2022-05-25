@@ -10,44 +10,43 @@ provided by the bot. You will only need to do this once across all repos using o
 
 # Types of Contributions
 
-## Submit a pull request that aligns with our goals and priorities
-The STL repo has many filed issues that track work to be completed.
-If you're unsure of where to start, you may want to start by:
- * Looking for pinned issues
+## Submitting a Pull Request
+The STL repo has many open issues that track work which needs to be completed.
+If you're unsure of where to start, you may want to:
+ * look for pinned issues, or
  * Checking issues under the labels `high priority` and `help wanted`
- * New contributors may also look into issues labeled `good first issue`
 
-## Review a pull request
+## Reviewing a Pull Request
 
-We welcome code reviews from contributors! Reviews from other contributors can often accelerate the reviewing process
-by helping a PR reach a more finished state before maintainers review the changes.  As a result, such a PR may require
-fewer maintainer review iterations before reaching a "Ready to Merge" state!
-To gain insight into our Code Review process, you may want to view:
- * Ongoing reviews in [Pull Requests List](https://github.com/microsoft/STL/pulls)
+We love code reviews from contributors! Reviews from other contributors can often accelerate the reviewing process
+by helping a PR reach a more finished state before maintainers review the changes. As a result, such a PR may require
+fewer maintainer review iterations before reaching a "Ready to Merge" state.
+
+To gain insight into our Code Review process, you can check out:
+ * pull requests which are [undergoing review][review:changes-requested],
  * [Advice for Reviewing Pull Requests](https://github.com/microsoft/STL/wiki/Advice-for-Reviewing-Pull-Requests).
  * [Code Review Videos](https://github.com/microsoft/STL/wiki/Code-Review-Videos!)
 
 # PR Checklist
 
-Before submitting a pull request, please ensure that:
+Before submitting a pull request, please ensure:
 
-* Identifiers in product code changes are properly `_Ugly` as per
-  [[lex.name]/3.1](https://eel.is/c++draft/lex.name#3.1)
-  or there are no product code changes.
+1. Any non-standard identifiers in product code (including local variables, exposition-only members, etc.)
+   begin with an underscore and a capital letter, as per [\[lex.name\]p3.1][]
 
-* These changes introduce no known ABI breaks (adding members, renaming
-  members, adding virtual functions, changing whether a type is an aggregate
+2. Your changes don't introduce change ABI for any type or function that a user may use (including adding or removing non-static data
+  members, adding or removing virtual member functions, changing whether a type is an aggregate
   or trivially copyable, etc.).
 
-* Your changes are written from scratch using only acceptable sources:
-   * this repository
-   * the C++ Working Draft (including any cited standards)
+3. Your changes are written from scratch using only acceptable sources:
+   * this repository,
+   * the C++ Working Draft (including any cited standards),
    * other WG21 papers (excluding
-  reference implementations outside of proposed standard wording)
-   * LWG issues as reference material
-   * a project listed in NOTICE.txt (please cite the project in the PR description)
-  If your changes are derived from any other project, you *must* mention it
-  here, so we can determine whether the license is compatible and whether any other
+  reference implementations outside of proposed standard wording),
+   * LWG issues,
+   * a project listed in [NOTICE.txt][] (make sure to cite the project in the PR description!).
+  If your changes are derived from any other project, you _must_ mention it
+  in the pull request description, so we can determine whether the license is compatible and whether any other
   steps need to be taken.
 
 # Code of Conduct
