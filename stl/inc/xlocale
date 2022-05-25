@@ -687,7 +687,11 @@ constexpr bool _One_byte_char_like<char8_t>() {
 
 template <class _Elem, class _Byte>
 constexpr bool _Codecvt_do_always_noconv() {
-    return is_same_v<_Byte, _Elem> || (_One_byte_char_like<_Elem>() && _One_byte_char_like<_Byte>());
+    if constexpr (is_same_v<_Byte, _Elem> || (_One_byte_char_like<_Elem>() && _One_byte_char_like<_Byte>())) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 template <class _Elem, class _Byte, class _Statype>
