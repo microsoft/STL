@@ -56,7 +56,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-[label:"good first issue"]: 
+[label:"good first issue"]:
    https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22
 [label:"high priority"]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3A%22high+priority%22
 [label:"help wanted"]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22
