@@ -14,7 +14,7 @@ provided by the bot. You will only need to do this once across all repos using o
 The STL repo has many open issues that track work which needs to be completed.
 If you're unsure of where to start, you may want to:
  * look for pinned issues, or
- * check issues under the labels [`good first issue`][label:"good first issue"], 
+ * check issues under the labels [`good first issue`][label:"good first issue"],
   [`high priority`][label:"high priority"], or [`help wanted`][label:"help wanted"].
 
 ### Reviewing a Pull Request
@@ -35,7 +35,7 @@ Before submitting a pull request, please ensure:
 1. Any non-standard identifiers in product code (including local variables, exposition-only members, etc.)
    begin with an underscore and a capital letter, as per [[lex.name]/3.1](https://eel.is/c++draft/lex.name#3.1)
 
-2. Your changes don't introduce change ABI for any type or function that a user may use (including adding or removing 
+2. Your changes don't introduce change ABI for any type or function that a user may use (including adding or removing
   non-static data members, adding or removing virtual member functions, changing whether a type is an aggregate
   or trivially copyable, etc.).
 
