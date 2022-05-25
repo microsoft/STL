@@ -651,6 +651,16 @@ protected:
     }
 };
 
+template <class _Elem, class _Byte>
+_INLINE_VAR constexpr bool _Codecvt_do_always_noconv = ((sizeof(_Byte) == 1) && (sizeof(_Elem) == 1) &&
+#ifdef __cpp_lib_byte
+                                                           (is_integral_v<_Byte> || is_same_v<_Byte, byte>) && //
+                                                           (is_integral_v<_Elem> || is_same_v<_Elem, byte>) )
+#else // ^^ __cpp_lib_byte / !__cpp_lib_byte vv
+                                                           is_integral_v<_Byte> && is_integral_v<_Elem>)
+#endif // __cpp_lib_byte
+                                                    || is_same_v<_Byte, _Elem>;
+
 template <class _Elem, class _Byte, class _Statype>
 class codecvt : public codecvt_base { // facet for converting between _Elem and _Byte sequences
 public:
@@ -716,14 +726,14 @@ protected:
 
     bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
         // return true if conversions never change input (from codecvt)
-        return is_same_v<_Byte, _Elem>;
+        return _Codecvt_do_always_noconv<_Elem, _Byte>;
     }
 
     virtual result __CLR_OR_THIS_CALL do_in(_Statype&, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,
         _Elem* _First2, _Elem* _Last2, _Elem*& _Mid2) const { // convert bytes [_First1, _Last1) to [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if constexpr (is_same_v<_Byte, _Elem>) {
+        if constexpr (_Codecvt_do_always_noconv<_Elem, _Byte>) {
             return noconv; // convert nothing
         } else {
             // types differ, copy one for one
@@ -742,7 +752,7 @@ protected:
         _Byte* _First2, _Byte* _Last2, _Byte*& _Mid2) const { // convert [_First1, _Last1) to bytes [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if constexpr (is_same_v<_Byte, _Elem>) {
+        if constexpr (_Codecvt_do_always_noconv<_Elem, _Byte>) {
             return noconv; // convert nothing
         } else {
             // types differ, copy one for one
