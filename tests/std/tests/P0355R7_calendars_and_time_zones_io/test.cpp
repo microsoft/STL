@@ -127,7 +127,7 @@ void test_duration_output() {
 
 
 template <class CharT, class CStringOrStdString, class Parsable>
-void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
+ios_base::iostate parse_state(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
@@ -157,41 +157,19 @@ void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
         }
     }
 
-    assert(sstr);
+    return sstr.rdstate();
+}
+
+template <class CharT, class CStringOrStdString, class Parsable>
+void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
+    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) == ios_base::goodbit);
 }
 
 template <class CharT, class CStringOrStdString, class Parsable>
 void fail_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
     type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
-    p = Parsable{};
-    if (abbrev) {
-        if constexpr (is_same_v<CharT, char>) {
-            *abbrev = "!";
-        } else {
-            *abbrev = L"!";
-        }
-    }
-
-    if (offset) {
-        *offset = minutes::min();
-    }
-
-    basic_stringstream<CharT> sstr{str};
-    if (abbrev) {
-        if (offset) {
-            sstr >> parse(fmt, p, *abbrev, *offset);
-        } else {
-            sstr >> parse(fmt, p, *abbrev);
-        }
-    } else {
-        if (offset) {
-            sstr >> parse(fmt, p, *offset);
-        } else {
-            sstr >> parse(fmt, p);
-        }
-    }
-
-    assert(!sstr);
+    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) != ios_base::goodbit);
 }
 
 template <class TimeType, class IntType = int>
@@ -280,6 +258,10 @@ void parse_seconds() {
     duration<int64_t, atto> time_atto;
     test_parse("0.400000000000000002", "%S", time_atto);
     assert((time_atto == duration<int64_t, deci>{4} + duration<int64_t, atto>{2}));
+
+    duration<float, ratio<1, 25>> time_float;
+    test_parse("0.33", "%S", time_float);
+    assert((time_float == duration<float, ratio<1, 25>>{8.25f}));
 
     fail_parse("1.2 1.3", "%S %S", time_ms);
     fail_parse("1.2 2.2", "%S %S", time_ms);
@@ -878,6 +860,32 @@ void parse_other_week_date() {
     assert(ymd == 2022y / January / 1d);
 }
 
+void parse_incomplete() {
+    // Parsing should fail if the input is insufficient to supply all fields of the format string, even if the input is
+    // sufficient to supply all fields of the parsable.
+    // Check both explicit and shorthand format strings, since the code path is different.
+    year_month ym;
+    assert(parse_state("2021-01", "%Y-%m-%d", ym) == (ios_base::eofbit | ios_base::failbit));
+    assert(parse_state("2022-02", "%F", ym) == (ios_base::eofbit | ios_base::failbit));
+    assert(parse_state("2021-", "%Y-%m-%d", ym) == (ios_base::eofbit | ios_base::failbit));
+    assert(parse_state("2022-", "%F", ym) == (ios_base::eofbit | ios_base::failbit));
+
+    seconds time;
+    fail_parse("01:59", "%H:%M:%S", time);
+    fail_parse("03:23", "%T", time);
+    fail_parse("04", "%R", time);
+
+    // Check for parsing of whitespace fields after other fields.  More whitespace tests below.
+    test_parse("15:19", "%H:%M%t", time);
+    test_parse("15:19", "%R%t", time);
+    fail_parse("15:19", "%H:%M%n", time);
+    fail_parse("15:19", "%R%n", time);
+
+    // However, it is OK to omit seconds from the format when parsing a duration to seconds precision.
+    test_parse("05:24", "%H:%M", time);
+    test_parse("06:25", "%R", time);
+}
+
 void parse_whitespace() {
     seconds time;
     fail_parse("ab", "a%nb", time);
@@ -916,6 +924,7 @@ void insert_leap_second(const sys_days& date, const seconds& value) {
 }
 
 void test_gh_1952() {
+    // GH-1952 <chrono>: parse ignores subseconds when the underlying type supports it
     const auto time_str{"2021-06-02T17:51:05.696028Z"};
     const auto fmt{"%FT%TZ"};
     const auto utc_ref = clock_cast<utc_clock>(sys_days{2021y / June / 2d} + 17h + 51min + 5s + 696028us);
@@ -1213,6 +1222,7 @@ void test_parse() {
     parse_calendar_types_basic();
     parse_iso_week_date();
     parse_other_week_date();
+    parse_incomplete();
     parse_whitespace();
     parse_timepoints();
     test_io_manipulator<char, const char*>();

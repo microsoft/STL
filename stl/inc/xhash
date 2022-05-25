@@ -104,6 +104,8 @@ struct _Uhash_choose_transparency<_Kty, _Hasher, _Keyeq,
     // transparency selector for transparent hashed containers
     template <class _Keyty>
     using _Deduce_key = const _Keyty&;
+
+    using _Transparent = void;
 };
 #endif // _HAS_CXX20
 
@@ -185,18 +187,12 @@ struct _Reinterpret_move_iter {
 
     // post ++ intentionally omitted
 
-#ifndef __CUDACC__ // TRANSITION, VSO-568006
-    _NODISCARD
-#endif // TRANSITION, VSO-568006
-    friend bool operator==(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
+    _NODISCARD_FRIEND bool operator==(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
         return _Lhs._Base == _Rhs._Base;
     }
 
 #if !_HAS_CXX20
-#ifndef __CUDACC__ // TRANSITION, VSO-568006
-    _NODISCARD
-#endif // TRANSITION, VSO-568006
-    friend bool operator!=(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
+    _NODISCARD_FRIEND bool operator!=(const _Reinterpret_move_iter& _Lhs, const _Reinterpret_move_iter& _Rhs) {
         return _Lhs._Base != _Rhs._Base;
     }
 #endif // !_HAS_CXX20
@@ -269,7 +265,7 @@ struct _Hash_vec {
     }
 
     _NODISCARD size_type max_size() const noexcept {
-        return (_STD min) (static_cast<size_type>((numeric_limits<difference_type>::max) ()),
+        return (_STD min)(static_cast<size_type>((numeric_limits<difference_type>::max)()),
             _Aliter_traits::max_size(_Mypair._Get_first()));
     }
 
@@ -898,13 +894,13 @@ public:
     }
 
     void max_load_factor(float _Newmax) noexcept /* strengthened */ {
-        _STL_ASSERT(!(_CSTD isnan) (_Newmax) && _Newmax > 0, "invalid hash load factor");
+        _STL_ASSERT(!(_CSTD isnan)(_Newmax) && _Newmax > 0, "invalid hash load factor");
         _Max_bucket_size() = _Newmax;
     }
 
     void rehash(size_type _Buckets) { // rebuild table with at least _Buckets buckets
         // don't violate a.bucket_count() >= a.size() / a.max_load_factor() invariant:
-        _Buckets = (_STD max) (_Min_load_factor_buckets(_List.size()), _Buckets);
+        _Buckets = (_STD max)(_Min_load_factor_buckets(_List.size()), _Buckets);
         if (_Buckets <= _Maxidx) { // we already have enough buckets; nothing to do
             return;
         }
@@ -1069,24 +1065,14 @@ private:
         return _Last;
     }
 
-public:
-    template <class _Iter = iterator, enable_if_t<!is_same_v<_Iter, const_iterator>, int> = 0>
-    iterator erase(iterator _Plist) noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
-        return _List._Make_iter(_Unchecked_erase(_Plist._Ptr));
+    template <class _Kx>
+    static constexpr bool _Noexcept_heterogeneous_erasure() {
+        return _Nothrow_hash<_Traits, _Kx> //
+            && (!_Multi || (_Nothrow_compare<_Traits, key_type, _Kx> && _Nothrow_compare<_Traits, _Kx, key_type>) );
     }
 
-    iterator erase(const_iterator _Plist) noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
-        return _List._Make_iter(_Unchecked_erase(_Plist._Ptr));
-    }
-
-    iterator erase(const_iterator _First, const_iterator _Last) noexcept(
-        _Nothrow_hash<_Traits, key_type>) /* strengthened */ {
-        return _List._Make_iter(_Unchecked_erase(_First._Ptr, _Last._Ptr));
-    }
-
-    size_type erase(const key_type& _Keyval) noexcept(
-        _Nothrow_hash<_Traits, key_type> //
-        && (!_Multi || _Nothrow_compare<_Traits, key_type, key_type>) ) /* strengthened */ {
+    template <class _Keytype>
+    size_type _Erase(const _Keytype& _Keyval) noexcept(_Noexcept_heterogeneous_erasure<_Keytype>()) /* strengthened */ {
         const size_t _Hashval = _Traitsobj(_Keyval);
         if constexpr (_Multi) {
             const auto _Where = _Equal_range(_Keyval, _Hashval);
@@ -1103,6 +1089,33 @@ public:
             return 0;
         }
     }
+
+public:
+    template <class _Iter = iterator, enable_if_t<!is_same_v<_Iter, const_iterator>, int> = 0>
+    iterator erase(iterator _Plist) noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
+        return _List._Make_iter(_Unchecked_erase(_Plist._Ptr));
+    }
+
+    iterator erase(const_iterator _Plist) noexcept(_Nothrow_hash<_Traits, key_type>) /* strengthened */ {
+        return _List._Make_iter(_Unchecked_erase(_Plist._Ptr));
+    }
+
+    iterator erase(const_iterator _First, const_iterator _Last) noexcept(
+        _Nothrow_hash<_Traits, key_type>) /* strengthened */ {
+        return _List._Make_iter(_Unchecked_erase(_First._Ptr, _Last._Ptr));
+    }
+
+    size_type erase(const key_type& _Keyval) noexcept(noexcept(_Erase(_Keyval))) /* strengthened */ {
+        return _Erase(_Keyval);
+    }
+
+#if _HAS_CXX23
+    template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
+        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
+    size_type erase(_Kx&& _Keyval) noexcept(noexcept(_Erase(_Keyval))) /* strengthened */ {
+        return _Erase(_Keyval);
+    }
+#endif // _HAS_CXX23
 
     void clear() noexcept {
         // TRANSITION, ABI:
@@ -1336,6 +1349,19 @@ public:
         return node_type::_Make(_Ptr, _List._Getal());
     }
 
+#if _HAS_CXX23
+    template <class _Kx, class _Mytraits = _Traits, class = typename _Mytraits::_Transparent,
+        enable_if_t<!disjunction_v<is_convertible<_Kx, const_iterator>, is_convertible<_Kx, iterator>>, int> = 0>
+    node_type extract(_Kx&& _Keyval) {
+        const auto _Ptr = _Extract(_Keyval);
+        if (!_Ptr) {
+            return node_type{};
+        }
+
+        return node_type::_Make(_Ptr, _List._Getal());
+    }
+#endif // _HAS_CXX23
+
     iterator insert(const_iterator _Hint, node_type&& _Handle) {
         if (_Handle.empty()) {
             return end();
@@ -1442,7 +1468,8 @@ protected:
         return _List._Mypair._Myval2._Unlinknode(_Where._Ptr);
     }
 
-    _Nodeptr _Extract(const key_type& _Keyval) {
+    template <class _Kx>
+    _Nodeptr _Extract(const _Kx& _Keyval) {
         const size_t _Hashval = _Traitsobj(_Keyval);
         _Nodeptr _Target;
         if constexpr (_Traits::_Multi) {
@@ -1629,7 +1656,7 @@ protected:
 
     _NODISCARD size_type _Desired_grow_bucket_count(const size_type _For_size) const noexcept {
         const size_type _Old_buckets = bucket_count();
-        const size_type _Req_buckets = (_STD max) (_Min_buckets, _Min_load_factor_buckets(_For_size));
+        const size_type _Req_buckets = (_STD max)(_Min_buckets, _Min_load_factor_buckets(_For_size));
         if (_Old_buckets >= _Req_buckets) {
             // we already have enough buckets so there's no need to change the count
             return _Old_buckets;

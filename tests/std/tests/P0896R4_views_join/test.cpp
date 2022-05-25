@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _USE_JOIN_VIEW_INPUT_RANGE
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -471,6 +473,38 @@ struct Immovable {
     Immovable& operator=(Immovable&&) = delete;
 };
 
+// Validate that the _Defaultabox primary template works when fed with a non-trivially-destructible type
+void test_non_trivially_destructible_type() { // COMPILE-ONLY
+    struct non_trivially_destructible_input_iterator {
+        using difference_type = int;
+        using value_type      = int;
+
+        ~non_trivially_destructible_input_iterator() {}
+
+        // To test the correct specialization of _Defaultabox, this type must not be default constructible.
+        non_trivially_destructible_input_iterator() = delete;
+
+        non_trivially_destructible_input_iterator& operator++() {
+            return *this;
+        }
+        void operator++(int) {}
+        int operator*() const {
+            return 0;
+        }
+        bool operator==(default_sentinel_t) const {
+            return true;
+        }
+    };
+
+    using Inner = ranges::subrange<non_trivially_destructible_input_iterator, default_sentinel_t>;
+
+    auto r = views::empty<Inner> | views::join;
+    (void) r.begin();
+
+    // Also validate _Non_propagating_cache
+    auto r2 = views::empty<Inner> | views::transform([](Inner& r) { return r; }) | views::join;
+}
+
 int main() {
     // Validate views
     constexpr string_view expected = "Hello World!"sv;
@@ -559,6 +593,14 @@ int main() {
         constexpr auto ToArrayOfImmovable = [](int) { return array<Immovable, 3>{}; };
         assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
         static_assert(ranges::distance(views::iota(0, 2) | views::transform(ToArrayOfImmovable) | views::join) == 6);
+    }
+
+    { // Joining a non-const view without const qualified begin and end methods
+        vector<vector<int>> nested_vectors = {{0}, {1, 2, 3}, {99}, {4, 5, 6, 7}, {}, {8, 9, 10}};
+        auto RemoveSmallVectors            = [](const vector<int>& inner_vector) { return inner_vector.size() > 2; };
+        auto filtered_and_joined           = nested_vectors | views::filter(RemoveSmallVectors) | views::join;
+        static constexpr int result[]      = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        assert(ranges::equal(filtered_and_joined, result));
     }
 
     STATIC_ASSERT(instantiation_test());

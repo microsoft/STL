@@ -11,15 +11,18 @@
 using namespace std;
 using P = pair<int, int>;
 
-// clang-format off
 template <class Iter>
 concept CanDifference = requires(Iter it) {
-    { it - it };
+    {it - it};
 };
 
 template <class Iter>
 concept HasProxy = !is_reference_v<iter_reference_t<Iter>>;
-// clang-format on
+
+template <class Iter>
+concept CanArrow = requires(const Iter& i) {
+    {i.operator->()};
+};
 
 struct instantiator {
     template <input_or_output_iterator Iter>
@@ -49,8 +52,8 @@ struct instantiator {
                 }
 
                 using ipointer = typename iterator_traits<Cit>::pointer;
-                if constexpr (_Has_member_arrow<Iter>) {
-                    STATIC_ASSERT(same_as<ipointer, decltype(declval<const Iter&>().operator->())>);
+                if constexpr (CanArrow<Cit>) {
+                    STATIC_ASSERT(same_as<ipointer, decltype(declval<const Cit&>().operator->())>);
                 } else {
                     STATIC_ASSERT(same_as<ipointer, void>);
                 }
@@ -172,7 +175,7 @@ struct instantiator {
     }
 };
 
-bool test_operator_arrow() {
+constexpr bool test_operator_arrow() {
     P input[3] = {{0, 1}, {0, 2}, {0, 3}};
 
     using pointerTest = common_iterator<P*, void*>;
@@ -226,6 +229,10 @@ using ICID = iterator_traits<common_iterator<input_copy_but_no_eq, default_senti
 STATIC_ASSERT(same_as<typename ICID::iterator_category, input_iterator_tag>);
 
 struct poor_sentinel {
+    poor_sentinel() = default;
+    constexpr poor_sentinel(const poor_sentinel&) {} // non-trivial copy constructor, to test _Variantish behavior
+    poor_sentinel& operator=(const poor_sentinel&) = default;
+
     template <weakly_incrementable Winc>
     [[nodiscard]] constexpr bool operator==(const Winc&) const noexcept {
         return true;
@@ -242,7 +249,7 @@ struct poor_sentinel {
     }
 };
 
-void test_gh_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
+constexpr bool test_gh_2065() { // Guard against regression of GH-2065, for which we previously stumbled over CWG-1699.
     {
         int x = 42;
         common_iterator<int*, unreachable_sentinel_t> it1{&x};
@@ -256,12 +263,88 @@ void test_gh_2065() { // Guard against regression of GH-2065, for which we previ
         common_iterator<const int*, poor_sentinel> it2{&i};
         assert(it1 - it2 == 0);
     }
+
+    return true;
+}
+
+constexpr bool test_lwg_3574() {
+    // LWG-3574: "common_iterator should be completely constexpr-able"
+    int arr[]{11, 22, 33};
+
+    {
+        common_iterator<int*, const int*> x{arr};
+        common_iterator<int*, const int*> y{arr + 2};
+        assert(y - x == 2);
+    }
+
+    { // test that copy construction is constexpr, even when the sentinel isn't trivially copy constructible
+        common_iterator<int*, poor_sentinel> a{arr};
+        common_iterator<int*, poor_sentinel> b{a}; // copy-construct with a stored iterator
+        common_iterator<int*, poor_sentinel> x{poor_sentinel{}};
+        common_iterator<int*, poor_sentinel> y{x}; // copy-construct with a stored sentinel
+        assert(b - a == 0);
+    }
+
+    common_iterator<int*, unreachable_sentinel_t> i{arr};
+    common_iterator<const int*, unreachable_sentinel_t> ci{arr + 1};
+
+    assert(*ci == 22);
+    assert(*as_const(ci) == 22);
+    assert(ci.operator->() == arr + 1);
+
+    ci = i;
+    assert(*ci == 11);
+    assert(ci == i);
+
+    assert(*++ci == 22);
+    assert(ci != i);
+
+    assert(*ci++ == 22);
+    assert(*ci == 33);
+
+    assert(iter_move(i) == 11);
+
+    common_iterator<int*, unreachable_sentinel_t> k{arr + 2};
+    iter_swap(i, k);
+    assert(arr[0] == 33);
+    assert(arr[2] == 11);
+
+    return true;
+}
+
+// Validate that _Variantish works when fed with a non-trivially-destructible type
+void test_non_trivially_destructible_type() { // COMPILE-ONLY
+    struct non_trivially_destructible_input_iterator {
+        using difference_type = int;
+        using value_type      = int;
+
+        ~non_trivially_destructible_input_iterator() {}
+
+        non_trivially_destructible_input_iterator& operator++() {
+            return *this;
+        }
+        void operator++(int) {}
+        int operator*() const {
+            return 0;
+        }
+        bool operator==(default_sentinel_t) const {
+            return true;
+        }
+    };
+
+    common_iterator<non_trivially_destructible_input_iterator, default_sentinel_t> it;
 }
 
 int main() {
     with_writable_iterators<instantiator, P>::call();
+    static_assert(with_writable_iterators<instantiator, P>::call());
 
     test_operator_arrow();
+    static_assert(test_operator_arrow());
 
     test_gh_2065();
+    static_assert(test_gh_2065());
+
+    test_lwg_3574();
+    static_assert(test_lwg_3574());
 }
