@@ -263,7 +263,8 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xonce2.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/alias.asm
+    ${CMAKE_CURRENT_LIST_DIR}/src/alias_init_once_begin_initialize.asm
+    ${CMAKE_CURRENT_LIST_DIR}/src/alias_init_once_complete.asm
 )
 
 # The following files are linked in msvcp140[d][_clr].dll.
