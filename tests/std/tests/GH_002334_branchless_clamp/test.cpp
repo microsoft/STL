@@ -31,9 +31,9 @@ int main() {
     assert(clamp(6, 4, 7, std::less<long long>{}) == 6);
     assert(clamp(8, 4, 7, std::less<long long>{}) == 7);
 
-    assert(clamp<string>("apple", "banana", "cococnut") == "banana");
-    assert(clamp<string>("blueberry", "banana", "cococnut") == "blueberry");
-    assert(clamp<string>("cucumber", "banana", "cococnut") == "cococnut");
+    assert(clamp<string>("apple", "banana", "coconut") == "banana");
+    assert(clamp<string>("blueberry", "banana", "coconut") == "blueberry");
+    assert(clamp<string>("cucumber", "banana", "coconut") == "coconut");
 
 #if _ITERATOR_DEBUG_LEVEL < 2
     // make sure we keep early return for generic cases:
@@ -41,7 +41,10 @@ int main() {
     // for _ITERATOR_DEBUG_LEVEL == 2 we validate predicate, so make extra comparisons
 
     int comparisons        = 0;
-    const auto counted_cmp = [&comparisons](auto a, auto b) { return ++comparisons, a < b; };
+    const auto counted_cmp = [&comparisons](auto a, auto b) {
+        ++comparisons;
+        return a < b;
+    };
 
     assert(clamp(2, 4, 7, counted_cmp) == 4);
     assert(clamp(6, 4, 7, counted_cmp) == 6);
@@ -49,9 +52,9 @@ int main() {
     assert(comparisons == 5);
 
     comparisons = 0;
-    assert(clamp<string>("apple", "banana", "cococnut", counted_cmp) == "banana");
-    assert(clamp<string>("blueberry", "banana", "cococnut", counted_cmp) == "blueberry");
-    assert(clamp<string>("cucumber", "banana", "cococnut", counted_cmp) == "cococnut");
+    assert(clamp<string>("apple", "banana", "coconut", counted_cmp) == "banana");
+    assert(clamp<string>("blueberry", "banana", "coconut", counted_cmp) == "blueberry");
+    assert(clamp<string>("cucumber", "banana", "coconut", counted_cmp) == "coconut");
     assert(comparisons == 5);
 #endif // _ITERATOR_DEBUG_LEVEL < 2
 }
