@@ -16,14 +16,10 @@
 ; ENDIF
 ; will expand to meow on _BOTH_ x64 and x86 systems.
 IFDEF RAX
-    EXTERN __imp_InitOnceBeginInitialize : PROC
     EXTERN __imp_InitOnceComplete : PROC
-    ALIAS <__imp___std_init_once_begin_initialize> = <__imp_InitOnceBeginInitialize>
     ALIAS <__imp___std_init_once_complete> = <__imp_InitOnceComplete>
 ELSE
-    EXTERN __imp__InitOnceBeginInitialize@16 : PROC
     EXTERN __imp__InitOnceComplete@12 : PROC
-    ALIAS <__imp____std_init_once_begin_initialize@16> = <__imp__InitOnceBeginInitialize@16>
     ALIAS <__imp____std_init_once_complete@12> = <__imp__InitOnceComplete@12>
 ENDIF
 
