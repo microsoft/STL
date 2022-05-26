@@ -917,6 +917,31 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
     return static_cast<size_t>(-1); // no match
 }
 
+template <class>
+_INLINE_VAR constexpr bool _Is_EcharT = false;
+template <>
+_INLINE_VAR constexpr bool _Is_EcharT<char> = true;
+template <>
+_INLINE_VAR constexpr bool _Is_EcharT<wchar_t> = true;
+#ifdef __cpp_char8_t
+template <>
+_INLINE_VAR constexpr bool _Is_EcharT<char8_t> = true;
+#endif // __cpp_char8_t
+template <>
+_INLINE_VAR constexpr bool _Is_EcharT<char16_t> = true;
+template <>
+_INLINE_VAR constexpr bool _Is_EcharT<char32_t> = true;
+
+template <class _Alloc, class _Elem>
+_INLINE_VAR constexpr bool _Is_enabled_allocator_for = false;
+
+template <class _Elem>
+_INLINE_VAR constexpr bool _Is_enabled_allocator_for<allocator<_Elem>, _Elem> = true;
+
+#if _HAS_CXX17
+template <class _Elem>
+inline constexpr bool _Is_enabled_allocator_for<pmr::polymorphic_allocator<_Elem>, _Elem> = true;
+#endif // _HAS_CXX17
 
 #if _HAS_CXX17
 template <class _Elem, class _Traits = char_traits<_Elem>>
@@ -1825,11 +1850,10 @@ using wstring_view   = basic_string_view<wchar_t>;
 
 
 template <class _Elem, class _Traits>
-struct hash<basic_string_view<_Elem, _Traits>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string_view<_Elem, _Traits> _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
-
-    _NODISCARD size_t operator()(const basic_string_view<_Elem, _Traits> _Keyval) const noexcept {
+struct hash<basic_string_view<_Elem, _Traits>>
+    : _Conditionally_enabled_hash<basic_string_view<_Elem, _Traits>,
+          _Is_EcharT<_Elem> && is_same_v<_Traits, char_traits<_Elem>>> {
+    _NODISCARD static size_t _Do_hash()(const basic_string_view<_Elem, _Traits> _Keyval) noexcept {
         return _Hash_array_representation(_Keyval.data(), _Keyval.size());
     }
 };
@@ -5192,11 +5216,10 @@ using u16string = basic_string<char16_t, char_traits<char16_t>, allocator<char16
 using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32_t>>;
 
 template <class _Elem, class _Traits, class _Alloc>
-struct hash<basic_string<_Elem, _Traits, _Alloc>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef basic_string<_Elem, _Traits, _Alloc> _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
-
-    _NODISCARD size_t operator()(const basic_string<_Elem, _Traits, _Alloc>& _Keyval) const noexcept {
+struct hash<basic_string<_Elem, _Traits, _Alloc>>
+    ：_Conditionally_enabled_hash<basic_string<_Elem, _Traits, _Alloc>,
+          _Is_EcharT<_Elem> && is_same_v<_Traits, char_traits<_Elem>> && _Is_enabled_allocator_for<_Alloc, _Elem>> {
+    _NODISCARD static size_t _Do_hash()(const basic_string<_Elem, _Traits, _Alloc>& _Keyval) noexcept {
         return _Hash_array_representation(_Keyval.c_str(), _Keyval.size());
     }
 };
