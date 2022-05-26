@@ -917,20 +917,12 @@ constexpr size_t _Traits_rfind_not_ch(_In_reads_(_Hay_size) const _Traits_ptr_t<
     return static_cast<size_t>(-1); // no match
 }
 
-template <class>
-_INLINE_VAR constexpr bool _Is_EcharT = false;
-template <>
-_INLINE_VAR constexpr bool _Is_EcharT<char> = true;
-template <>
-_INLINE_VAR constexpr bool _Is_EcharT<wchar_t> = true;
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_EcharT = _Is_any_of_v<_Ty, char, wchar_t,
 #ifdef __cpp_char8_t
-template <>
-_INLINE_VAR constexpr bool _Is_EcharT<char8_t> = true;
+    char8_t,
 #endif // __cpp_char8_t
-template <>
-_INLINE_VAR constexpr bool _Is_EcharT<char16_t> = true;
-template <>
-_INLINE_VAR constexpr bool _Is_EcharT<char32_t> = true;
+    char16_t, char32_t>;
 
 template <class _Alloc, class _Elem>
 _INLINE_VAR constexpr bool _Is_enabled_allocator_for = false;
