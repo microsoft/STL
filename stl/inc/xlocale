@@ -665,7 +665,6 @@ template <class _Elem, class _Byte>
 _INLINE_VAR constexpr bool _Is_codecvt_do_always_noconv_v =
     is_same_v<_Byte, _Elem> || (_Is_one_byte_char_like_v<_Byte> && _Is_one_byte_char_like_v<_Elem>);
 
-
 template <class _Elem, class _Byte, class _Statype>
 class codecvt : public codecvt_base { // facet for converting between _Elem and _Byte sequences
 public:
