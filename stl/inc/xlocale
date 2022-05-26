@@ -652,10 +652,9 @@ protected:
 };
 
 template <class _Ty>
-_INLINE_VAR constexpr bool _One_byte_char_like = _Is_any_of_v<_Ty, signed char,
-    unsigned char
+_INLINE_VAR constexpr bool _One_byte_char_like = _Is_any_of_v<_Ty, signed char, unsigned char,
 #ifdef __cpp_lib_byte
-        byte,
+    byte,
 #endif // __cpp_lib_byte
 #ifdef __cpp_char8_t
     char8_t,
