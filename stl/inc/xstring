@@ -1841,10 +1841,9 @@ using u32string_view = basic_string_view<char32_t>;
 using wstring_view   = basic_string_view<wchar_t>;
 
 
-template <class _Elem, class _Traits>
-struct hash<basic_string_view<_Elem, _Traits>> : _Conditionally_enabled_hash<basic_string_view<_Elem, _Traits>,
-                                                     _Is_EcharT<_Elem> && is_same_v<_Traits, char_traits<_Elem>>> {
-    _NODISCARD static size_t _Do_hash(const basic_string_view<_Elem, _Traits> _Keyval) noexcept {
+template <class _Elem>
+struct hash<basic_string_view<_Elem>> : _Conditionally_enabled_hash<basic_string_view<_Elem>, _Is_EcharT<_Elem>> {
+    _NODISCARD static size_t _Do_hash(const basic_string_view<_Elem> _Keyval) noexcept {
         return _Hash_array_representation(_Keyval.data(), _Keyval.size());
     }
 };
@@ -5206,11 +5205,11 @@ using u8string = basic_string<char8_t, char_traits<char8_t>, allocator<char8_t>>
 using u16string = basic_string<char16_t, char_traits<char16_t>, allocator<char16_t>>;
 using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32_t>>;
 
-template <class _Elem, class _Traits, class _Alloc>
-struct hash<basic_string<_Elem, _Traits, _Alloc>>
-    : _Conditionally_enabled_hash<basic_string<_Elem, _Traits, _Alloc>,
-          _Is_EcharT<_Elem> && is_same_v<_Traits, char_traits<_Elem>> && _Is_enabled_allocator_for<_Alloc, _Elem>> {
-    _NODISCARD static size_t _Do_hash(const basic_string<_Elem, _Traits, _Alloc>& _Keyval) noexcept {
+template <class _Elem, class _Alloc>
+struct hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>>
+    : _Conditionally_enabled_hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>,
+          _Is_EcharT<_Elem> && _Is_enabled_allocator_for<_Alloc, _Elem>> {
+    _NODISCARD static size_t _Do_hash(const basic_string<_Elem, char_traits<_Elem>, _Alloc>& _Keyval) noexcept {
         return _Hash_array_representation(_Keyval.c_str(), _Keyval.size());
     }
 };
