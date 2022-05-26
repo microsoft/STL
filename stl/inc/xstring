@@ -1850,9 +1850,8 @@ using wstring_view   = basic_string_view<wchar_t>;
 
 
 template <class _Elem, class _Traits>
-struct hash<basic_string_view<_Elem, _Traits>>
-    : _Conditionally_enabled_hash<basic_string_view<_Elem, _Traits>,
-          _Is_EcharT<_Elem> && is_same_v<_Traits, char_traits<_Elem>>> {
+struct hash<basic_string_view<_Elem, _Traits>> : _Conditionally_enabled_hash<basic_string_view<_Elem, _Traits>,
+                                                     _Is_EcharT<_Elem> && is_same_v<_Traits, char_traits<_Elem>>> {
     _NODISCARD static size_t _Do_hash()(const basic_string_view<_Elem, _Traits> _Keyval) noexcept {
         return _Hash_array_representation(_Keyval.data(), _Keyval.size());
     }
