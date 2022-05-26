@@ -501,12 +501,7 @@ public:
     }
 
     _NODISCARD string message(int _Errcode) const override {
-        // TRANSITION, GH-2561, move the logic to syserror.cpp
-        if (_Errcode == 0) {
-            return "success";
-        } else {
-            return _Syserror_map(_Errcode);
-        }
+        return _Syserror_map(_Errcode);
     }
 };
 
