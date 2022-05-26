@@ -112,6 +112,7 @@ namespace {
 
     constexpr _Sys_errtab_t _Sys_errtab[] = {
         // table of Posix code/name pairs
+        {static_cast<errc>(0), "success"},
         {errc::address_family_not_supported, "address family not supported"},
         {errc::address_in_use, "address in use"},
         {errc::address_not_available, "address not available"},
@@ -218,10 +219,6 @@ _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Winerror_message(
 }
 
 _CRTIMP2_PURE const char* __CLRCALL_PURE_OR_CDECL _Syserror_map(int _Errcode) { // convert to name of generic error
-    if (_Errcode == 0) {
-        return "success";
-    }
-
     for (const auto& _Entry : _Sys_errtab) {
         if (static_cast<int>(_Entry._Errcode) == _Errcode) {
             return _Entry._Name;
