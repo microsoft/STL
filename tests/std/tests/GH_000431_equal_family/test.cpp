@@ -786,7 +786,8 @@ struct pointer_traits<gh1523_iter> {
 };
 static_assert(contiguous_iterator<gh1523_iter>);
 
-void test_gh1523() { // COMPILE-ONLY
+void test_gh_1523() { // COMPILE-ONLY
+    // GH-1523 Some StdLib algorithms fail /std:c++latest compilation with custom contiguous iterators
     (void) equal(gh1523_iter{}, gh1523_iter{}, gh1523_iter{}, gh1523_iter{});
 }
 #endif // __cpp_lib_concepts

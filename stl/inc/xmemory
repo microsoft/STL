@@ -104,23 +104,25 @@ constexpr bool _Is_pow_2(const size_t _Value) noexcept {
 }
 
 #if defined(_M_IX86) || defined(_M_X64)
-constexpr size_t _Big_allocation_threshold = 4096;
-constexpr size_t _Big_allocation_alignment = 32;
+_INLINE_VAR constexpr size_t _Big_allocation_threshold = 4096;
+_INLINE_VAR constexpr size_t _Big_allocation_alignment = 32;
 
-static_assert(2 * sizeof(void*) <= _Big_allocation_alignment,
-    "Big allocation alignment should at least match vector register alignment");
-static_assert(_Is_pow_2(_Big_allocation_alignment), "Big allocation alignment must be a power of two");
+// Big allocation alignment should at least match vector register alignment
+_STL_INTERNAL_STATIC_ASSERT(2 * sizeof(void*) <= _Big_allocation_alignment);
+
+// Big allocation alignment must be a power of two
+_STL_INTERNAL_STATIC_ASSERT(_Is_pow_2(_Big_allocation_alignment));
 
 #ifdef _DEBUG
-constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
+_INLINE_VAR constexpr size_t _Non_user_size = 2 * sizeof(void*) + _Big_allocation_alignment - 1;
 #else // _DEBUG
-constexpr size_t _Non_user_size           = sizeof(void*) + _Big_allocation_alignment - 1;
+_INLINE_VAR constexpr size_t _Non_user_size           = sizeof(void*) + _Big_allocation_alignment - 1;
 #endif // _DEBUG
 
 #ifdef _WIN64
-constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
+_INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAFAFAFAFAULL;
 #else // ^^^ _WIN64 ^^^ // vvv !_WIN64 vvv
-constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
+_INLINE_VAR constexpr size_t _Big_allocation_sentinel = 0xFAFAFAFAUL;
 #endif // _WIN64
 
 template <class _Traits>
@@ -831,6 +833,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
+        static_assert(sizeof(value_type) > 0, "value_type must be complete before calling allocate.");
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
@@ -864,6 +867,7 @@ public:
     static constexpr size_t _Minimum_allocation_alignment = _Asan_granularity;
 };
 
+#if _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 template <>
 class allocator<void> {
 public:
@@ -871,21 +875,22 @@ public:
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef void* pointer;
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const void* const_pointer;
-#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
-    using size_type       = size_t;
-    using difference_type = ptrdiff_t;
-
-    using propagate_on_container_move_assignment           = true_type;
-    using is_always_equal _CXX20_DEPRECATE_IS_ALWAYS_EQUAL = true_type;
-
-#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     template <class _Other>
     struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
         using other = allocator<_Other>;
     };
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
+
+#if _HAS_CXX20
+    using size_type       = size_t;
+    using difference_type = ptrdiff_t;
+
+    using propagate_on_container_move_assignment           = true_type;
+    using is_always_equal _CXX20_DEPRECATE_IS_ALWAYS_EQUAL = true_type;
+#endif // _HAS_CXX20
 };
+#endif // _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
 template <class _Ty, class _Other>
 _NODISCARD _CONSTEXPR20 bool operator==(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
@@ -2067,6 +2072,30 @@ typename _Container::size_type _Erase_nodes_if(_Container& _Cont, _Pr _Pred) {
     return _Old_size - _Cont.size();
 }
 
+template <class _Ty1, class _Ty2>
+void _Deduce_as_pair(const pair<_Ty1, _Ty2>&); // not defined
+
+template <class _Ty, class = void>
+_INLINE_VAR constexpr bool _Is_deducible_as_pair = false;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_deducible_as_pair<_Ty, decltype(_Deduce_as_pair(_STD declval<_Ty>()))> = true;
+
+template <class _Ty>
+const _Ty& _Normally_bind(_Identity_t<const _Ty&>); // not defined
+
+template <class _Ty>
+_Ty&& _Normally_bind(_Identity_t<_Ty&&>); // not defined
+
+template <class _Ty, class _Uty>
+using _Normally_bound_ref = decltype(_Normally_bind<_Ty>(_STD declval<_Uty>()));
+
+template <class _Ty, class _Uty, class = void>
+_INLINE_VAR constexpr bool _Is_normally_bindable = false;
+
+template <class _Ty, class _Uty>
+_INLINE_VAR constexpr bool _Is_normally_bindable<_Ty, _Uty, void_t<_Normally_bound_ref<_Ty, _Uty>>> = true;
+
 #if _HAS_CXX20
 template <class _Ty, class _Alloc, class... _Types, enable_if_t<!_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Types&&... _Args) noexcept {
@@ -2093,11 +2122,26 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al) no
 template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty1&& _Val1, _Uty2&& _Val2) noexcept;
 
+#if _HAS_CXX23
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>& _Pair) noexcept;
+#endif // _HAS_CXX23
+
 template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept;
 
 template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>&& _Pair) noexcept;
+
+#if _HAS_CXX23
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(
+    const _Alloc& _Al, const pair<_Uty1, _Uty2>&& _Pair) noexcept;
+#endif // _HAS_CXX23
+
+template <class _Ty, class _Alloc, class _Uty,
+    enable_if_t<_Is_specialization_v<_Ty, pair> && !_Is_deducible_as_pair<_Uty&>, int> = 0>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept;
 
 template <class _Ty, class _Alloc, class _Tuple1, class _Tuple2, enable_if_t<_Is_specialization_v<_Ty, pair>, int> = 0>
 _NODISCARD constexpr auto uses_allocator_construction_args(
@@ -2135,6 +2179,18 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _U
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD forward<_Uty2>(_Val2)));
 }
 
+#if _HAS_CXX23
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pair<_Uty1, _Uty2>& _Pair) noexcept {
+    // equivalent to
+    // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    //     _STD forward_as_tuple(_Pair.first), _STD forward_as_tuple(_Pair.second));
+    return _STD make_tuple(piecewise_construct,
+        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _Pair.first),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _Pair.second));
+}
+#endif // _HAS_CXX23
+
 template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
 _NODISCARD constexpr auto uses_allocator_construction_args(
     const _Alloc& _Al, const pair<_Uty1, _Uty2>& _Pair) noexcept {
@@ -2154,6 +2210,56 @@ _NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, pa
     return _STD make_tuple(piecewise_construct,
         _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD get<0>(_STD move(_Pair))),
         _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD get<1>(_STD move(_Pair))));
+}
+
+#if _HAS_CXX23
+template <class _Ty, class _Alloc, class _Uty1, class _Uty2, enable_if_t<_Is_specialization_v<_Ty, pair>, int>>
+_NODISCARD constexpr auto uses_allocator_construction_args(
+    const _Alloc& _Al, const pair<_Uty1, _Uty2>&& _Pair) noexcept {
+    // equivalent to
+    // return _STD uses_allocator_construction_args<_Ty>(_Al, piecewise_construct,
+    //     _STD forward_as_tuple(_STD get<0>(_STD move(_Pair)), _STD forward_as_tuple(_STD get<1>(_STD move(_Pair)));
+    return _STD make_tuple(piecewise_construct,
+        _STD uses_allocator_construction_args<typename _Ty::first_type>(_Al, _STD get<0>(_STD move(_Pair))),
+        _STD uses_allocator_construction_args<typename _Ty::second_type>(_Al, _STD get<1>(_STD move(_Pair))));
+}
+#endif // _HAS_CXX23
+
+template <class _Ty, class _Alloc, class _Uty,
+    enable_if_t<_Is_specialization_v<_Ty, pair> && !_Is_deducible_as_pair<_Uty&>, int>>
+_NODISCARD constexpr auto uses_allocator_construction_args(const _Alloc& _Al, _Uty&& _Ux) noexcept {
+    struct _Pair_remaker {
+        const _Alloc& _Al;
+        _Uty& _Ux;
+
+        constexpr operator remove_cv_t<_Ty>() const {
+            using _Pair_t = remove_cv_t<_Ty>;
+            static_assert(_Is_normally_bindable<_Pair_t, _Uty>,
+                "The argument must be bindable to a reference to the std::pair type.");
+
+            using _Pair_first_t   = typename _Pair_t::first_type;
+            using _Pair_second_t  = typename _Pair_t::second_type;
+            using _Pair_ref_t     = _Normally_bound_ref<_Pair_t, _Uty>;
+            _Pair_ref_t _Pair_ref = _STD forward<_Uty>(_Ux);
+            if constexpr (is_same_v<_Pair_ref_t, const _Pair_t&>) {
+                // equivalent to
+                // return _STD make_obj_using_allocator<_Pair_t>(_Al, _Pair_ref);
+                return _Pair_t{piecewise_construct,
+                    _STD uses_allocator_construction_args<_Pair_first_t>(_Al, _Pair_ref.first),
+                    _STD uses_allocator_construction_args<_Pair_second_t>(_Al, _Pair_ref.second)};
+            } else {
+                // equivalent to
+                // return _STD make_obj_using_allocator<_Pair_t>(_Al, _STD move(_Pair_ref));
+                return _Pair_t{piecewise_construct,
+                    _STD uses_allocator_construction_args<_Pair_first_t>(_Al, _STD get<0>(_STD move(_Pair_ref))),
+                    _STD uses_allocator_construction_args<_Pair_second_t>(_Al, _STD get<1>(_STD move(_Pair_ref)))};
+            }
+        }
+    };
+
+    // equivalent to
+    // return _STD make_tuple(_Pair_remaker{_Al, _Ux});
+    return tuple<_Pair_remaker>({_Al, _Ux});
 }
 
 template <class _Ty, class _Alloc, class... _Types>

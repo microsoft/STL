@@ -74,9 +74,13 @@ constexpr bool test_P0591R4() {
     using ConstAllocatorConstructArgs    = tuple<const int&, const allocator<int>&>;
     using MovedAllocatorArgConstructArgs = tuple<allocator_arg_t, const allocator<int>&, int&&>;
     using MovedAllocatorConstructArgs    = tuple<int&&, const allocator<int>&>;
-    using OnlyAllocatorArgConstructArgs  = tuple<allocator_arg_t, const allocator<int>&>;
-    using OnlyAllocatorConstructArgs     = tuple<const allocator<int>&>;
-    using DefaultConstructArgs           = tuple<>;
+#if _HAS_CXX23
+    using MovedConstAllocatorArgConstructArgs = tuple<allocator_arg_t, const allocator<int>&, const int&&>;
+    using MovedConstAllocatorConstructArgs    = tuple<const int&&, const allocator<int>&>;
+#endif // _HAS_CXX23
+    using OnlyAllocatorArgConstructArgs = tuple<allocator_arg_t, const allocator<int>&>;
+    using OnlyAllocatorConstructArgs    = tuple<const allocator<int>&>;
+    using DefaultConstructArgs          = tuple<>;
 
     { // non-pair overload
         auto tuple1 = uses_allocator_construction_args<int>(alloc, i);
@@ -121,12 +125,31 @@ constexpr bool test_P0591R4() {
         static_assert(is_same_v<decltype(tuple9), tuple<piecewise_construct_t, AllocatorConstructArgs, tuple<int&>>>);
     }
 
-    { // pair(const pair&) overload
+    { // pair(const pair&) overload before C++23; pair(pair&) overload since C++23
         auto tuple10 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, p);
+#if _HAS_CXX23
+        static_assert(
+            is_same_v<decltype(tuple10), tuple<piecewise_construct_t, tuple<int&>, AllocatorArgConstructArgs>>);
+#else // _HAS_CXX23
+        static_assert(is_same_v<decltype(tuple10),
+            tuple<piecewise_construct_t, tuple<const int&>, ConstAllocatorArgConstructArgs>>);
+#endif // _HAS_CXX23
+
+        auto tuple11 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, p);
+#if _HAS_CXX23
+        static_assert(is_same_v<decltype(tuple11), tuple<piecewise_construct_t, AllocatorConstructArgs, tuple<int&>>>);
+#else // _HAS_CXX23
+        static_assert(
+            is_same_v<decltype(tuple11), tuple<piecewise_construct_t, ConstAllocatorConstructArgs, tuple<const int&>>>);
+#endif // _HAS_CXX23
+    }
+
+    { // pair(const pair&) overload
+        auto tuple10 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, as_const(p));
         static_assert(is_same_v<decltype(tuple10),
             tuple<piecewise_construct_t, tuple<const int&>, ConstAllocatorArgConstructArgs>>);
 
-        auto tuple11 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, p);
+        auto tuple11 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, as_const(p));
         static_assert(
             is_same_v<decltype(tuple11), tuple<piecewise_construct_t, ConstAllocatorConstructArgs, tuple<const int&>>>);
     }
@@ -140,6 +163,18 @@ constexpr bool test_P0591R4() {
         static_assert(
             is_same_v<decltype(tuple13), tuple<piecewise_construct_t, MovedAllocatorConstructArgs, tuple<int&&>>>);
     }
+
+#if _HAS_CXX23
+    { // pair(const pair&&) overload
+        auto tuple12 = uses_allocator_construction_args<pair<int, AllocatorArgConstructible>>(alloc, move(as_const(p)));
+        static_assert(is_same_v<decltype(tuple12),
+            tuple<piecewise_construct_t, tuple<const int&&>, MovedConstAllocatorArgConstructArgs>>);
+
+        auto tuple13 = uses_allocator_construction_args<pair<AllocatorConstructible, int>>(alloc, move(as_const(p)));
+        static_assert(is_same_v<decltype(tuple13),
+            tuple<piecewise_construct_t, MovedConstAllocatorConstructArgs, tuple<const int&&>>>);
+    }
+#endif // _HAS_CXX23
 
     {
         auto obj1 = make_obj_using_allocator<AllocatorArgConstructible>(alloc, i);
@@ -174,7 +209,8 @@ constexpr bool test_P0591R4() {
     return true;
 }
 
-void test_GH_2021() { // COMPILE-ONLY
+void test_gh_2021() { // COMPILE-ONLY
+    // GH-2021 <map>: Using operator[] on a std::pmr::map fails to compile when the mapped type is a std::pair
     pmr::map<int, pair<int, int>> tags;
     tags[0];
 }
@@ -184,7 +220,8 @@ struct MoveOnlyType {
     MoveOnlyType(MoveOnlyType&&) = default;
 };
 
-void test_LWG3527() { // COMPILE-ONLY
+void test_lwg_3527() { // COMPILE-ONLY
+    // LWG-3527: "uses_allocator_construction_args handles rvalue pairs of rvalue references incorrectly"
     allocator<MoveOnlyType> alloc;
     MoveOnlyType obj;
     pair<MoveOnlyType&&, MoveOnlyType&&> p{move(obj), move(obj)};
