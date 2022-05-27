@@ -96,7 +96,7 @@ namespace {
 
     bool try_initialize() {
         if (!initialize_attempted) {
-            dbgeng             = LoadLibraryW(L"dbgeng.dll");
+            dbgeng = LoadLibraryW(L"dbgeng.dll");
 
             if (dbgeng != nullptr) {
                 auto* debug_create = reinterpret_cast<decltype(&DebugCreate)>(GetProcAddress(dbgeng, "DebugCreate"));
