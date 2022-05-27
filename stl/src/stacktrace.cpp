@@ -58,6 +58,7 @@ namespace {
     IDebugControl* debug_control   = nullptr;
     bool attached                  = false;
     bool initialize_attempted      = false;
+    HMODULE dbgeng                 = nullptr;
     SRWLOCK srw                    = SRWLOCK_INIT;
 
     void uninitialize() {
@@ -85,49 +86,61 @@ namespace {
             debug_symbols = nullptr;
         }
 
+        if (dbgeng != nullptr) {
+            FreeLibrary(dbgeng);
+            dbgeng = nullptr;
+        }
+
         initialize_attempted = false;
     }
 
     bool try_initialize() {
         if (!initialize_attempted) {
-            // Deliberately not calling CoInitialize[Ex]
-            // DbgEng.h API works fine without it. COM initialization may have undesired interference with user's code
+            dbgeng             = LoadLibraryW(L"dbgeng.dll");
 
-            if (SUCCEEDED(DebugCreate(IID_IDebugClient, reinterpret_cast<void**>(&debug_client)))
-                && SUCCEEDED(debug_client->QueryInterface(IID_IDebugSymbols, reinterpret_cast<void**>(&debug_symbols)))
-                && SUCCEEDED(
-                    debug_client->QueryInterface(IID_IDebugControl, reinterpret_cast<void**>(&debug_control)))) {
-                attached = SUCCEEDED(debug_client->AttachProcess(
-                    0, GetCurrentProcessId(), DEBUG_ATTACH_NONINVASIVE | DEBUG_ATTACH_NONINVASIVE_NO_SUSPEND));
-                if (attached) {
-                    (void) debug_control->WaitForEvent(0, INFINITE);
+            if (dbgeng != nullptr) {
+                auto* debug_create = reinterpret_cast<decltype(&DebugCreate)>(GetProcAddress(dbgeng, "DebugCreate"));
+
+                // Deliberately not calling CoInitialize[Ex]. DbgEng.h API works fine without it.
+                // COM initialization may have undesired interference with user's code.
+                if (debug_create != nullptr
+                    && SUCCEEDED(debug_create(IID_IDebugClient, reinterpret_cast<void**>(&debug_client)))
+                    && SUCCEEDED(
+                        debug_client->QueryInterface(IID_IDebugSymbols, reinterpret_cast<void**>(&debug_symbols)))
+                    && SUCCEEDED(
+                        debug_client->QueryInterface(IID_IDebugControl, reinterpret_cast<void**>(&debug_control)))) {
+                    attached = SUCCEEDED(debug_client->AttachProcess(
+                        0, GetCurrentProcessId(), DEBUG_ATTACH_NONINVASIVE | DEBUG_ATTACH_NONINVASIVE_NO_SUSPEND));
+                    if (attached) {
+                        (void) debug_control->WaitForEvent(0, INFINITE);
+                    }
+
+                    // If this fails, will use IDebugSymbols
+                    (void) debug_symbols->QueryInterface(IID_IDebugSymbols3, reinterpret_cast<void**>(&debug_symbols3));
+
+                    // clang-format off
+                    constexpr ULONG add_options = 0x1     /* SYMOPT_CASE_INSENSITIVE */
+                                                | 0x2     /* SYMOPT_UNDNAME */
+                                                | 0x4     /* SYMOPT_DEFERRED_LOADS */
+                                                | 0x10    /* SYMOPT_LOAD_LINES */
+                                                | 0x20    /* SYMOPT_OMAP_FIND_NEAREST */
+                                                | 0x100   /* SYMOPT_FAIL_CRITICAL_ERRORS */
+                                                | 0x10000 /* SYMOPT_AUTO_PUBLICS */
+                                                | 0x80000 /* SYMOPT_NO_PROMPTS */;
+
+                    constexpr ULONG remove_options = 0x8     /* SYMOPT_NO_CPP */
+                                                   | 0x40    /* SYMOPT_LOAD_ANYTHING */
+                                                   | 0x100   /* SYMOPT_NO_UNQUALIFIED_LOADS */
+                                                   | 0x400   /* SYMOPT_EXACT_SYMBOLS */
+                                                   | 0x1000  /* SYMOPT_IGNORE_NT_SYMPATH */
+                                                   | 0x4000  /* SYMOPT_PUBLICS_ONLY */
+                                                   | 0x8000  /* SYMOPT_NO_PUBLICS */
+                                                   | 0x20000 /* SYMOPT_NO_IMAGE_SEARCH */;
+                    // clang-format on
+
+                    (void) debug_symbols->AddSymbolOptions(add_options);
+                    (void) debug_symbols->RemoveSymbolOptions(remove_options);
                 }
-
-                // If this fails, will use IDebugSymbols
-                (void) debug_symbols->QueryInterface(IID_IDebugSymbols3, reinterpret_cast<void**>(&debug_symbols3));
-
-                // clang-format off
-                constexpr ULONG add_options = 0x1     /* SYMOPT_CASE_INSENSITIVE */
-                                            | 0x2     /* SYMOPT_UNDNAME */
-                                            | 0x4     /* SYMOPT_DEFERRED_LOADS */
-                                            | 0x10    /* SYMOPT_LOAD_LINES */
-                                            | 0x20    /* SYMOPT_OMAP_FIND_NEAREST */
-                                            | 0x100   /* SYMOPT_FAIL_CRITICAL_ERRORS */
-                                            | 0x10000 /* SYMOPT_AUTO_PUBLICS */
-                                            | 0x80000 /* SYMOPT_NO_PROMPTS */;
-
-                constexpr ULONG remove_options = 0x8     /* SYMOPT_NO_CPP */
-                                               | 0x40    /* SYMOPT_LOAD_ANYTHING */
-                                               | 0x100   /* SYMOPT_NO_UNQUALIFIED_LOADS */
-                                               | 0x400   /* SYMOPT_EXACT_SYMBOLS */
-                                               | 0x1000  /* SYMOPT_IGNORE_NT_SYMPATH */
-                                               | 0x4000  /* SYMOPT_PUBLICS_ONLY */
-                                               | 0x8000  /* SYMOPT_NO_PUBLICS */
-                                               | 0x20000 /* SYMOPT_NO_IMAGE_SEARCH */;
-                // clang-format on
-
-                (void) debug_symbols->AddSymbolOptions(add_options);
-                (void) debug_symbols->RemoveSymbolOptions(remove_options);
             }
         }
 
