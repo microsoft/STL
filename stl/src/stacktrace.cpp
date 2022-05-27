@@ -87,7 +87,7 @@ namespace {
         }
 
         if (dbgeng != nullptr) {
-            FreeLibrary(dbgeng);
+            (void) FreeLibrary(dbgeng);
             dbgeng = nullptr;
         }
 
@@ -96,10 +96,11 @@ namespace {
 
     bool try_initialize() {
         if (!initialize_attempted) {
-            dbgeng = LoadLibraryW(L"dbgeng.dll");
+            dbgeng = LoadLibraryExW(L"dbgeng.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 
             if (dbgeng != nullptr) {
-                auto* debug_create = reinterpret_cast<decltype(&DebugCreate)>(GetProcAddress(dbgeng, "DebugCreate"));
+                const auto debug_create =
+                    reinterpret_cast<decltype(&DebugCreate)>(GetProcAddress(dbgeng, "DebugCreate"));
 
                 // Deliberately not calling CoInitialize[Ex]. DbgEng.h API works fine without it.
                 // COM initialization may have undesired interference with user's code.
