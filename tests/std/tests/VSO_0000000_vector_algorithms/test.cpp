@@ -182,8 +182,8 @@ void test_min_max_element_special_cases() {
     constexpr size_t array_size             = num_blocks * block_size_in_elements + tail_size;
     constexpr size_t last_block_first_elem  = (num_blocks - 1) * block_size_in_elements;
     constexpr size_t last_vector_first_elem = (block_size_in_vectors - 1) * VectorSize;
-    
-    vector<ElementType> v(array_size); // not array to avoid large data on stack 
+
+    vector<ElementType> v(array_size); // not array to avoid large data on stack
 
     // all equal
     fill(v.begin(), v.end(), ElementType{1});
