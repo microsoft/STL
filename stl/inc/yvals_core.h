@@ -603,6 +603,13 @@
 #endif // _STL_DISABLE_DEPRECATED_WARNING
 // clang-format on
 
+#if defined(__clang__) || defined(__CUDACC__) || defined(__INTEL_COMPILER)
+#define _STL_DECLSPEC_NOINITALL
+#else // ^^^ not MSVC/ MSVC vvv
+#define _STL_DECLSPEC_NOINITALL \
+    __pragma(warning(push)) __pragma(warning(disable : 4845)) __declspec(no_init_all) __pragma(warning(pop))
+#endif // ^^^ MSVC ^^^
+
 #ifndef _STL_RESTORE_DEPRECATED_WARNING
 #ifdef __clang__
 #define _STL_RESTORE_DEPRECATED_WARNING _Pragma("clang diagnostic pop")

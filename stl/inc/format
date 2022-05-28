@@ -3347,7 +3347,7 @@ struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
 
 template <class _CharT, class... _Args>
-struct _Basic_format_string {
+struct _STL_DECLSPEC_NOINITALL _Basic_format_string { // TRANSITION, VSO-1444086 (remove _STL_DECLSPEC_NOINITALL)
     basic_string_view<_CharT> _Str;
 
     template <class _Ty>
