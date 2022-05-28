@@ -9,6 +9,7 @@
 #include <list>
 #include <random>
 #include <type_traits>
+#include <vector>
 
 using namespace std;
 
