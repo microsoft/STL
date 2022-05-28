@@ -185,6 +185,35 @@ namespace Concurrency {
             new (p) stl_condition_variable_win7;
         }
 
+// TEMPORARY VERIFICATION OF EXACT VALUES:
+#ifdef _WIN64
+        static_assert(sizeof(stl_critical_section_vista) == 48, "Verifying exact values.");
+        static_assert(sizeof(stl_condition_variable_vista) == 16, "Verifying exact values.");
+        static_assert(alignof(stl_critical_section_vista) == 8, "Verifying exact values.");
+        static_assert(alignof(stl_condition_variable_vista) == 8, "Verifying exact values.");
+
+        static_assert(sizeof(stl_critical_section_win7) == 16, "Verifying exact values.");
+        static_assert(sizeof(stl_condition_variable_win7) == 16, "Verifying exact values.");
+        static_assert(alignof(stl_critical_section_win7) == 8, "Verifying exact values.");
+        static_assert(alignof(stl_condition_variable_win7) == 8, "Verifying exact values.");
+#else // ^^^ 64-bit / 32-bit vvv
+        static_assert(sizeof(stl_critical_section_vista) == 28, "Verifying exact values.");
+        static_assert(sizeof(stl_condition_variable_vista) == 8, "Verifying exact values.");
+        static_assert(alignof(stl_critical_section_vista) == 4, "Verifying exact values.");
+        static_assert(alignof(stl_condition_variable_vista) == 4, "Verifying exact values.");
+
+        static_assert(sizeof(stl_critical_section_win7) == 8, "Verifying exact values.");
+        static_assert(sizeof(stl_condition_variable_win7) == 8, "Verifying exact values.");
+        static_assert(alignof(stl_critical_section_win7) == 4, "Verifying exact values.");
+        static_assert(alignof(stl_condition_variable_win7) == 4, "Verifying exact values.");
+#endif // ^^^ 32-bit ^^^
+
+        // TEMPORARY VERIFICATION OF SIZE FOR !defined(_CRT_WINDOWS) && !defined(_STL_CONCRT_SUPPORT) BELOW:
+        static_assert(sizeof(stl_critical_section_vista) >= sizeof(stl_critical_section_win7),
+            "Verifying sizeof(vista) >= sizeof(win7).");
+        static_assert(sizeof(stl_condition_variable_vista) >= sizeof(stl_condition_variable_win7),
+            "Verifying sizeof(vista) >= sizeof(win7).");
+
 #if defined _CRT_WINDOWS
         const size_t stl_critical_section_max_size        = sizeof(stl_critical_section_win7);
         const size_t stl_condition_variable_max_size      = sizeof(stl_condition_variable_win7);
@@ -216,6 +245,21 @@ namespace Concurrency {
         const size_t stl_condition_variable_max_alignment =
             __max(__max(alignof_stl_condition_variable_concrt, alignof(stl_condition_variable_vista)),
                 alignof(stl_condition_variable_win7));
+
+        // TEMPORARY VERIFICATION OF SIZE:
+        static_assert(stl_critical_section_max_size == sizeof_stl_critical_section_concrt,
+            "Verifying that concrt is the maximum size.");
+        static_assert(stl_condition_variable_max_size == sizeof_stl_condition_variable_concrt,
+            "Verifying that concrt is the maximum size.");
+
+        // TEMPORARY VERIFICATION OF ALIGNMENT:
+        static_assert(alignof_stl_critical_section_concrt == alignof(void*), "Verifying pointer alignment.");
+        static_assert(alignof_stl_condition_variable_concrt == alignof(void*), "Verifying pointer alignment.");
+        static_assert(alignof(stl_critical_section_vista) == alignof(void*), "Verifying pointer alignment.");
+        static_assert(alignof(stl_condition_variable_vista) == alignof(void*), "Verifying pointer alignment.");
+        static_assert(alignof(stl_critical_section_win7) == alignof(void*), "Verifying pointer alignment.");
+        static_assert(alignof(stl_condition_variable_win7) == alignof(void*), "Verifying pointer alignment.");
+
 #else
         const size_t stl_critical_section_max_size =
             __max(sizeof(stl_critical_section_vista), sizeof(stl_critical_section_win7));
