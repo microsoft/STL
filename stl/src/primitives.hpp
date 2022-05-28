@@ -9,10 +9,6 @@
 
 #include "awint.hpp"
 
-enum class __stl_sync_api_modes_enum { normal, win7, vista, concrt };
-
-extern __stl_sync_api_modes_enum __stl_sync_api_impl_mode;
-
 namespace Concurrency {
     namespace details {
         class __declspec(novtable) stl_critical_section_interface {
