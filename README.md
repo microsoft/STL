@@ -140,7 +140,8 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.2 Preview 2 or later.
+1. Install Visual Studio 2022 17.3 Preview 1 or later.
+    * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.22 or later, and [Ninja][] 1.10.2 or later.
@@ -155,7 +156,8 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.2 Preview 2 or later.
+1. Install Visual Studio 2022 17.3 Preview 1 or later.
+    * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
     * Otherwise, install [CMake][] 3.22 or later, and [Ninja][] 1.10.2 or later.

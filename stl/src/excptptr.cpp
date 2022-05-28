@@ -55,7 +55,7 @@ namespace {
         _Constexpr_excptptr_immortalize_impl(const _Constexpr_excptptr_immortalize_impl&) = delete;
         _Constexpr_excptptr_immortalize_impl& operator=(const _Constexpr_excptptr_immortalize_impl&) = delete;
 
-        [[msvc::noop_dtor]] ~_Constexpr_excptptr_immortalize_impl() {
+        _MSVC_NOOP_DTOR ~_Constexpr_excptptr_immortalize_impl() {
             // do nothing, allowing _Ty to be used during shutdown
         }
     };

@@ -320,7 +320,7 @@ void test_weak_ptr_construction() {
 
     int i = 42;
     shared_ptr<int> x(shared_ptr<int>{}, &i);
-    const auto all_zero = [](const auto* const ptr) {
+    const auto all_zero = [](const auto ptr) {
         const auto first = reinterpret_cast<const char*>(ptr);
         const auto last  = reinterpret_cast<const char*>(ptr + 1);
         return all_of(first, last, [](const auto x) { return x == 0; });

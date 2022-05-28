@@ -31,6 +31,7 @@
 
 #define _HAS_DEPRECATED_IS_LITERAL_TYPE 1
 #define _SILENCE_CXX17_IS_LITERAL_TYPE_DEPRECATION_WARNING
+#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 #include <stdlib.h>

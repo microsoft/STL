@@ -1610,6 +1610,11 @@ namespace chrono {
 #endif // ^^^ workaround ^^^
     };
 
+    template <class _Duration>
+    [[noreturn]] void _Throw_nonexistent_local_time(const local_time<_Duration>& _Tp, const local_info& _Info) {
+        _THROW((nonexistent_local_time{_Tp, _Info}));
+    }
+
     class ambiguous_local_time : public runtime_error {
     public:
         template <class _Duration>
@@ -1627,6 +1632,11 @@ namespace chrono {
         }
 #endif // ^^^ workaround ^^^
     };
+
+    template <class _Duration>
+    [[noreturn]] void _Throw_ambiguous_local_time(const local_time<_Duration>& _Tp, const local_info& _Info) {
+        _THROW((ambiguous_local_time{_Tp, _Info}));
+    }
 
     // [time.zone.timezone]
 
@@ -1715,9 +1725,9 @@ namespace chrono {
         _NODISCARD sys_time<common_type_t<_Duration, seconds>> to_sys(const local_time<_Duration>& _Local) const {
             const auto _Info = get_info(_Local);
             if (_Info.result == local_info::nonexistent) {
-                _THROW(nonexistent_local_time(_Local, _Info));
+                _Throw_nonexistent_local_time(_Local, _Info);
             } else if (_Info.result == local_info::ambiguous) {
-                _THROW(ambiguous_local_time(_Local, _Info));
+                _Throw_ambiguous_local_time(_Local, _Info);
             }
 
             return sys_time<common_type_t<_Duration, seconds>>{_Local.time_since_epoch() - _Info.first.offset};
@@ -2183,7 +2193,7 @@ namespace chrono {
     inline atomic<tzdb_list*> _Global_tzdb_list;
 
     _NODISCARD inline tzdb_list& get_tzdb_list() {
-        auto* _Tzdb_ptr = _Global_tzdb_list.load();
+        auto _Tzdb_ptr = _Global_tzdb_list.load();
         if (_Tzdb_ptr != nullptr) {
             return *_Tzdb_ptr;
         }
@@ -3387,14 +3397,16 @@ namespace chrono {
             if constexpr (_Can_rep_sec) {
                 if (_Used & _F_sec) {
                     if (_Subsecond) {
-                        using _CastedType = duration<int64_t, typename _DurationType::period>;
                         const _SubsecondType _Sub{*_Subsecond};
-                        if (treat_as_floating_point_v<_DurationType> //
-                            || _CHRONO duration_cast<_CastedType>(_Sub) == _Sub) {
-                            _Result += _CHRONO duration_cast<_DurationType>(_Sub);
-                        } else {
-                            return false;
+
+                        if constexpr (!treat_as_floating_point_v<typename _DurationType::rep>) {
+                            using _CastedType = duration<int64_t, typename _DurationType::period>;
+                            if (_CHRONO duration_cast<_CastedType>(_Sub) != _Sub) {
+                                return false;
+                            }
                         }
+
+                        _Result += _CHRONO duration_cast<_DurationType>(_Sub);
                     }
 
                     if (_Second) {
@@ -4644,7 +4656,7 @@ public:
     // same as _Specs_setter
     constexpr void _On_fill(basic_string_view<_CharT> _Sv) {
         if (_Sv.size() > _STD size(_Specs._Fill)) {
-            _THROW(format_error("Invalid fill (too long)."));
+            _Throw_format_error("Invalid fill (too long).");
         }
 
         const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
@@ -4685,11 +4697,11 @@ public:
     constexpr void _On_conversion_spec(char _Modifier, _CharT _Type) {
         // NOTE: same performance note from _Basic_format_specs also applies here
         if (_Modifier != '\0' && _Modifier != 'E' && _Modifier != 'O') {
-            _THROW(format_error("Invalid modifier specification."));
+            _Throw_format_error("Invalid modifier specification.");
         }
 
         if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
-            _THROW(format_error("Invalid type specification."));
+            _Throw_format_error("Invalid type specification.");
         }
 
         _Chrono_spec<_CharT> _Conv_spec{._Modifier = _Modifier, ._Type = static_cast<char>(_Type)};
@@ -4707,7 +4719,7 @@ private:
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
         if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
-            _THROW(format_error("Dynamic width or precision index too large."));
+            _Throw_format_error("Dynamic width or precision index too large.");
         }
 
         return static_cast<int>(_Idx);
@@ -4719,7 +4731,7 @@ template <class _CharT, _Chrono_parse_spec_callbacks<_CharT> _Callbacks_type>
 _NODISCARD constexpr const _CharT* _Parse_conversion_specs(
     const _CharT* _Begin, const _CharT* _End, _Callbacks_type&& _Callbacks) {
     if (_Begin == _End || *_Begin == '}') {
-        _THROW(format_error("Invalid format string."));
+        _Throw_format_error("Invalid format string.");
     }
 
     char _Mod  = '\0';
@@ -4729,7 +4741,7 @@ _NODISCARD constexpr const _CharT* _Parse_conversion_specs(
         _Mod = static_cast<char>(_Ch);
         ++_Begin;
         if (_Begin == _End || *_Begin == '}') {
-            _THROW(format_error("Invalid format string - missing type after modifier."));
+            _Throw_format_error("Invalid format string - missing type after modifier.");
         }
     }
 
@@ -4772,14 +4784,14 @@ _NODISCARD constexpr const _CharT* _Parse_chrono_format_specs(
     }
 
     if (*_Begin != '}' && *_Begin != '%') {
-        _THROW(format_error("Invalid format string - chrono-specs must begin with conversion-spec"));
+        _Throw_format_error("Invalid format string - chrono-specs must begin with conversion-spec");
     }
 
     // chrono-spec
     while (_Begin != _End && *_Begin != '}') {
         if (*_Begin == '%') { // conversion-spec
             if (++_Begin == _End) {
-                _THROW(format_error("Invalid format string - missing type after %"));
+                _Throw_format_error("Invalid format string - missing type after %");
             }
 
             switch (*_Begin) {
@@ -5176,7 +5188,7 @@ namespace chrono {
             const auto _Res_iter = _Parse_ctx.begin() + (_It - _Parse_ctx._Unchecked_begin());
 
             if (_It != _Parse_ctx._Unchecked_end() && *_It != '}') {
-                _THROW(format_error("Missing '}' in format string."));
+                _Throw_format_error("Missing '}' in format string.");
             }
 
             if constexpr (_Is_specialization_v<_Ty, duration>) {
@@ -5195,7 +5207,7 @@ namespace chrono {
 
             for (const auto& _Spec : _Specs._Chrono_specs_list) {
                 if (_Spec._Type != '\0' && !_Is_valid_type<_Ty>(_Spec._Type)) {
-                    _THROW(format_error("Invalid type."));
+                    _Throw_format_error("Invalid type.");
                 }
                 _Check_modifier(_Spec._Type, _Spec._Modifier);
             }
@@ -5245,7 +5257,7 @@ namespace chrono {
                 }
             }
 
-            _THROW(format_error("Incompatible modifier for type"));
+            _Throw_format_error("Incompatible modifier for type");
         }
 
         template <class _Ty>
@@ -5343,7 +5355,7 @@ namespace chrono {
             basic_ostream<_CharT>& _Os, const _Chrono_spec<_CharT>& _Spec, const tm& _Time, const _Ty& _Val) const {
             if constexpr (is_same_v<_Ty, local_info>) {
                 if (_Val.result != local_info::unique) {
-                    _THROW(format_error("Cannot print non-unique local_info"));
+                    _Throw_format_error("Cannot print non-unique local_info");
                 }
             }
 
@@ -5356,7 +5368,7 @@ namespace chrono {
                 // Most months have a proper last day, but February depends on the year.
                 if constexpr (is_same_v<_Ty, month_day_last>) {
                     if (_Val.month() == February) {
-                        _THROW(format_error("Cannot print the last day of February without a year"));
+                        _Throw_format_error("Cannot print the last day of February without a year");
                     }
 
                     if (!_Val.ok()) {
@@ -5377,12 +5389,12 @@ namespace chrono {
             case 'G':
                 if constexpr (is_same_v<_Ty, year_month>) {
                     if (_Val.month() == January || _Val.month() == December) {
-                        _THROW(format_error(
-                            "The ISO week-based year for a year_month of January or December is ambiguous."));
+                        _Throw_format_error(
+                            "The ISO week-based year for a year_month of January or December is ambiguous.");
                     }
 
                     if (!_Val.ok()) {
-                        _THROW(format_error("The ISO week-based year for an out-of-bounds year_month is ambiguous."));
+                        _Throw_format_error("The ISO week-based year for an out-of-bounds year_month is ambiguous.");
                     }
 
                     const char _Gregorian_type = _Spec._Type == 'g' ? 'y' : 'Y';
@@ -5491,7 +5503,7 @@ namespace chrono {
                     _Os << _Widen_string<_CharT>(_Val.first.abbrev);
                 } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
                     if (_Val._Abbrev == nullptr) {
-                        _THROW(format_error("Cannot print local-time-format-t with null abbrev."));
+                        _Throw_format_error("Cannot print local-time-format-t with null abbrev.");
                     }
                     _Os << _Widen_string<_CharT>(*_Val._Abbrev);
                 } else {
@@ -5508,7 +5520,7 @@ namespace chrono {
                         _Offset = hh_mm_ss<seconds>{_Val.first.offset};
                     } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
                         if (_Val._Offset_sec == nullptr) {
-                            _THROW(format_error("Cannot print local-time-format-t with null offset_sec."));
+                            _Throw_format_error("Cannot print local-time-format-t with null offset_sec.");
                         }
                         _Offset = hh_mm_ss<seconds>{*_Val._Offset_sec};
                     } else {
@@ -5537,7 +5549,7 @@ namespace chrono {
 
             if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                 if (_Spec._Type == 'H' && _Val.hours() >= hours{24}) {
-                    _THROW(format_error("Cannot localize hh_mm_ss with an absolute value of 24 hours or more."));
+                    _Throw_format_error("Cannot localize hh_mm_ss with an absolute value of 24 hours or more.");
                 }
                 return;
             }
@@ -5609,7 +5621,7 @@ namespace chrono {
                 case 'j':
                     if constexpr (is_same_v<_Ty, month_day>) {
                         if (_Val.month() > February) {
-                            _THROW(format_error("The day of year for a month_day past February is ambiguous."));
+                            _Throw_format_error("The day of year for a month_day past February is ambiguous.");
                         }
                         return true;
                     } else if constexpr (is_same_v<_Ty, month_day_last>) {
@@ -5643,7 +5655,7 @@ namespace chrono {
                 return false;
             };
             if (!_Validate()) {
-                _THROW(format_error("Cannot localize out-of-bounds time point."));
+                _Throw_format_error("Cannot localize out-of-bounds time point.");
             }
         }
 

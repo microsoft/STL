@@ -1023,6 +1023,20 @@ bool test_lerp() {
     return true;
 }
 
+constexpr bool test_gh_2112() {
+    // GH-2112 <cmath>: std::lerp is missing Arithmetic overloads
+    assert(lerp(0, 0, 0) == 0.0);
+    assert(lerp(0.0f, 0.0f, 0.0) == 0.0);
+    assert(lerp(0.0L, 0, 0) == 0.0L);
+
+    STATIC_ASSERT(is_same_v<double, decltype(lerp(0, 0, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0.0L, 0, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0, 0.0L, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0, 0, 0.0L))>);
+
+    return true;
+}
+
 int main() {
     test_constants<float>();
     test_constants<double>();
@@ -1093,4 +1107,7 @@ int main() {
     test_lerp<float>();
     test_lerp<double>();
     test_lerp<long double>();
+
+    test_gh_2112();
+    STATIC_ASSERT(test_gh_2112());
 }

@@ -385,20 +385,20 @@ _NODISCARD inline error_condition error_code::default_error_condition() const no
     return category().default_error_condition(value());
 }
 
-_NODISCARD inline error_code make_error_code(errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), _STD generic_category());
+_NODISCARD inline error_code make_error_code(errc _Ec) noexcept {
+    return error_code(static_cast<int>(_Ec), _STD generic_category());
 }
 
-_NODISCARD inline error_code make_error_code(io_errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), _STD iostream_category());
+_NODISCARD inline error_code make_error_code(io_errc _Ec) noexcept {
+    return error_code(static_cast<int>(_Ec), _STD iostream_category());
 }
 
-_NODISCARD inline error_condition make_error_condition(errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), _STD generic_category());
+_NODISCARD inline error_condition make_error_condition(errc _Ec) noexcept {
+    return error_condition(static_cast<int>(_Ec), _STD generic_category());
 }
 
-_NODISCARD inline error_condition make_error_condition(io_errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), _STD iostream_category());
+_NODISCARD inline error_condition make_error_condition(io_errc _Ec) noexcept {
+    return error_condition(static_cast<int>(_Ec), _STD iostream_category());
 }
 
 template <>
@@ -470,8 +470,8 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-[[noreturn]] inline void _Throw_system_error(const errc _Errno) {
-    _THROW(system_error{_STD make_error_code(_Errno)});
+[[noreturn]] inline void _Throw_system_error(const errc _Ec) {
+    _THROW(system_error{_STD make_error_code(_Ec)});
 }
 
 _CRTIMP2_PURE const char* __CLRCALL_PURE_OR_CDECL _Syserror_map(int);
@@ -623,7 +623,7 @@ struct _Constexpr_immortalize_impl {
     _Constexpr_immortalize_impl(const _Constexpr_immortalize_impl&) = delete;
     _Constexpr_immortalize_impl& operator=(const _Constexpr_immortalize_impl&) = delete;
 
-    [[msvc::noop_dtor]] ~_Constexpr_immortalize_impl() {
+    _MSVC_NOOP_DTOR ~_Constexpr_immortalize_impl() {
         // do nothing, allowing _Ty to be used during shutdown
     }
 };
