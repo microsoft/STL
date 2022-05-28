@@ -277,7 +277,7 @@ namespace pmr {
             _Pools.clear();
             _Pools.shrink_to_fit();
 
-            auto* _Ptr = _Chunks._Head._Next;
+            auto _Ptr = _Chunks._Head._Next;
             _Chunks._Clear();
             memory_resource* const _Resource = upstream_resource();
             while (_Ptr != &_Chunks._Head) {

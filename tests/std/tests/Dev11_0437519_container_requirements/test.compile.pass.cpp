@@ -5,9 +5,6 @@ int main() {} // COMPILE-ONLY
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-// Work around VSO-119998 "/Za's elided-copy-ctor check is still bogus".
-#ifdef _MSC_EXTENSIONS
-
 // This test program verifies all of the container requirements for the Standard Library containers,
 // including the four non-array sequence containers (deque, forward_list, list, vector), the four
 // associative containers (map, multimap, multiset, and set), and the four unordered associative
@@ -3042,4 +3039,3 @@ void assert_all() {
     assert_container<tag_unordered_multiset>();
     assert_container<tag_unordered_set>();
 }
-#endif // _MSC_EXTENSIONS

@@ -649,6 +649,14 @@ struct is_assignable : bool_constant<__is_assignable(_To, _From)> {}; // determi
 template <class _To, class _From>
 _INLINE_VAR constexpr bool is_assignable_v = __is_assignable(_To, _From);
 
+#if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+template <class _To, class _From>
+struct _Is_assignable_no_precondition_check : bool_constant<__is_assignable_no_precondition_check(_To, _From)> {};
+#else // ^^^ Use intrinsic / intrinsic not supported vvv
+template <class _To, class _From>
+using _Is_assignable_no_precondition_check = is_assignable<_To, _From>;
+#endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+
 template <class _Ty>
 struct is_copy_assignable
     : bool_constant<__is_assignable(add_lvalue_reference_t<_Ty>, add_lvalue_reference_t<const _Ty>)> {
@@ -1047,15 +1055,24 @@ struct _Aligned<_Len, _Align, char, false> {
     using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
+// TRANSITION, ABI: Internal non-deprecated version to avoid ABI changes due to deprecation
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
-struct aligned_storage { // define type with size _Len and alignment _Align
+struct _Aligned_storage { // define type with size _Len and alignment _Align
     using _Next                 = char;
     static constexpr bool _Fits = _Align <= alignof(_Next);
     using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
-using aligned_storage_t = typename aligned_storage<_Len, _Align>::type;
+using _Aligned_storage_t = typename _Aligned_storage<_Len, _Align>::type;
+
+template <size_t _Len, size_t _Align = alignof(max_align_t)>
+struct _CXX23_DEPRECATE_ALIGNED_STORAGE aligned_storage { // define type with size _Len and alignment _Align
+    using type = _Aligned_storage_t<_Len, _Align>;
+};
+
+template <size_t _Len, size_t _Align = alignof(max_align_t)>
+using aligned_storage_t _CXX23_DEPRECATE_ALIGNED_STORAGE = _Aligned_storage_t<_Len, _Align>;
 
 template <size_t... _Vals>
 struct _Maximum;
@@ -1072,15 +1089,18 @@ struct _Maximum<_First, _Second, _Rest...> : _Maximum<(_First < _Second ? _Secon
 };
 
 template <size_t _Len, class... _Types>
-struct aligned_union { // define type with size at least _Len, for storing anything in _Types
+struct _CXX23_DEPRECATE_ALIGNED_UNION aligned_union {
+    // define type with size at least _Len, for storing anything in _Types
     static constexpr size_t _Max_len        = _Maximum<_Len, sizeof(_Types)...>::value; // NOT sizeof...(_Types)
     static constexpr size_t alignment_value = _Maximum<alignof(_Types)...>::value;
 
-    using type = aligned_storage_t<_Max_len, alignment_value>;
+    using type = _Aligned_storage_t<_Max_len, alignment_value>;
 };
 
+_STL_DISABLE_DEPRECATED_WARNING
 template <size_t _Len, class... _Types>
-using aligned_union_t = typename aligned_union<_Len, _Types...>::type;
+using aligned_union_t _CXX23_DEPRECATE_ALIGNED_UNION = typename aligned_union<_Len, _Types...>::type;
+_STL_RESTORE_DEPRECATED_WARNING
 
 template <class _Ty, bool = is_enum_v<_Ty>>
 struct _Underlying_type {
@@ -1827,7 +1847,7 @@ using _Weak_types = conditional_t<is_function_v<remove_pointer_t<_Ty>>, _Functio
     conditional_t<is_member_function_pointer_v<_Ty>, _Is_memfunptr<remove_cv_t<_Ty>>, _Weak_binary_args<_Ty>>>;
 
 template <class _Ty>
-void _Refwrap_ctor_fun(_Identity_t<_Ty&>) noexcept;
+void _Refwrap_ctor_fun(_Identity_t<_Ty&>) noexcept; // not defined
 template <class _Ty>
 void _Refwrap_ctor_fun(_Identity_t<_Ty&&>) = delete;
 
