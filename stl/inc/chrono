@@ -3471,8 +3471,7 @@ namespace chrono {
 
             const _LeapSecondRep _Original_leap{_Leap};
             if (_Leap == _LeapSecondRep::_File_time) {
-                const int _Year{*_Century + *_Two_dig_year};
-                _Leap = _Year < 2018 ? _LeapSecondRep::_None : _LeapSecondRep::_All;
+                _Leap = _Dur < file_clock::_Cutoff.time_since_epoch() ? _LeapSecondRep::_None : _LeapSecondRep::_All;
             }
 
             if (_Second > (_Leap == _LeapSecondRep::_All ? 60 : 59)) {
