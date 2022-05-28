@@ -73,15 +73,13 @@ extern "C" int __crt_IsPackagedAppHelper() {
         L"appmodel.dll" // LNM implementation DLL
     };
 
-    wchar_t const* const* const first_possible_apiset = possible_apisets;
-    wchar_t const* const* const last_possible_apiset  = possible_apisets + _countof(possible_apisets);
-    for (wchar_t const* const* it = first_possible_apiset; it != last_possible_apiset; ++it) {
-        HMODULEHandle const apiset(LoadLibraryExW(*it, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+    for (auto& dll : possible_apisets) {
+        HMODULEHandle const apiset(LoadLibraryExW(dll, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
         if (!apiset.IsValid()) {
             continue;
         }
 
-        PFNGETCURRENTPACKAGEID const get_current_package_id =
+        auto const get_current_package_id =
             reinterpret_cast<PFNGETCURRENTPACKAGEID>(GetProcAddress(apiset.Get(), "GetCurrentPackageId"));
 
         if (!get_current_package_id) {
