@@ -253,7 +253,7 @@ foreach(header ${HEADERS})
 endforeach()
 
 # Objs that implement aliases; these are completely independent of the configuration
-set(ALIAS_SOURCES
+set(ALIAS_SOURCES_X86_X64
     ${CMAKE_CURRENT_LIST_DIR}/src/alias_init_once_begin_initialize.asm
     ${CMAKE_CURRENT_LIST_DIR}/src/alias_init_once_complete.asm
 )
@@ -450,7 +450,11 @@ include_directories(BEFORE
     "${TOOLSET_ROOT_DIR}/crt/src/vcruntime"
 )
 
-add_library(stl_alias_objects OBJECT ${ALIAS_SOURCES})
+if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x86|x64)$")
+    add_library(stl_alias_objects OBJECT ${ALIAS_SOURCES_X86_X64})
+else()
+    add_library(stl_alias_objects INTERFACE)
+endif()
 
 function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIONS GL_FLAG THIS_CONFIG_LINK_OPTIONS)
     # msvcp140.dll
@@ -560,7 +564,7 @@ function(add_stl_statics FLAVOR_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPI
     add_library(libcpmt${FLAVOR_SUFFIX} STATIC ${HEADERS} ${IMPLIB_SOURCES} ${SOURCES} ${INITIALIZER_SOURCES} ${STATIC_SOURCES})
     target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_DEFINITIONS};_ANNOTATE_VECTOR;_ANNOTATE_STRING")
     target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};$<$<COMPILE_LANGUAGE:CXX>:/EHsc>")
-    target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE stl_alias_objects Boost::math libcpmt${FLAVOR_SUFFIX}_eha)
+    target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math stl_alias_objects libcpmt${FLAVOR_SUFFIX}_eha)
 endfunction()
 
 add_stl_statics("" "_ITERATOR_DEBUG_LEVEL=0" "${VCLIBS_RELEASE_OPTIONS}")
