@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <array>
 #include <assert.h>
 #include <cstddef>
 #include <deque>
@@ -10,7 +9,6 @@
 #include <list>
 #include <random>
 #include <type_traits>
-#include <vector>
 
 using namespace std;
 
@@ -175,54 +173,52 @@ void test_min_max_element(mt19937_64& gen) {
     }
 }
 
+template <class ElementType, size_t VectorSize>
 void test_min_max_element_special_cases() {
-    // multi portion and same vector cases tested explicitly
-    // made sure valid for vector sizes 128,256,512
+    constexpr size_t block_size_in_vectors  = 1 << (sizeof(ElementType) * CHAR_BIT);
+    constexpr size_t block_size_in_elements = block_size_in_vectors * VectorSize;
+    constexpr size_t num_blocks             = 4;
+    constexpr size_t tail_size              = 13;
+    constexpr size_t array_size             = num_blocks * block_size_in_elements + tail_size;
+    constexpr size_t last_block_first_elem  = (num_blocks - 1) * block_size_in_elements;
+    constexpr size_t last_vector_first_elem = (block_size_in_vectors - 1) * VectorSize;
+    
+    vector<ElementType> v(array_size); // not array to avoid large data on stack 
 
-    array<uint8_t, 8192> test;
+    // all equal
+    fill(v.begin(), v.end(), ElementType{1});
+    assert(min_element(v.begin(), v.end()) == v.begin());
+    assert(max_element(v.begin(), v.end()) == v.begin());
+    assert(minmax_element(v.begin(), v.end()).first == v.begin());
+    assert(minmax_element(v.begin(), v.end()).second == v.end() - 1);
 
-    test.fill(1);
-    assert(min_element(test.begin(), test.end()) == test.begin());
-    assert(max_element(test.begin(), test.end()) == test.begin());
-    assert(minmax_element(test.begin(), test.end()).first == test.begin());
-    assert(minmax_element(test.begin(), test.end()).second == test.begin() + 8191);
+    // same position in different blocks
+    fill(v.begin(), v.end(), ElementType{1});
+    for (size_t block_pos = 0; block_pos != num_blocks; ++block_pos) {
+        v.at(block_pos * block_size_in_elements + 20 * VectorSize + 2) = 0;
+        v.at(block_pos * block_size_in_elements + 20 * VectorSize + 5) = 0;
+        v.at(block_pos * block_size_in_elements + 25 * VectorSize + 6) = 2;
+        v.at(block_pos * block_size_in_elements + 25 * VectorSize + 9) = 2;
+    }
+    assert(min_element(v.begin(), v.end()) == v.begin() + 20 * VectorSize + 2);
+    assert(max_element(v.begin(), v.end()) == v.begin() + 25 * VectorSize + 6);
+    assert(minmax_element(v.begin(), v.end()).first == v.begin() + 20 * VectorSize + 2);
+    assert(minmax_element(v.begin(), v.end()).second == v.begin() + last_block_first_elem + 25 * VectorSize + 9);
 
-    test.fill(1);
-    test.at(65) = 0;
-    test.at(66) = 0;
-    test.at(68) = 2;
-    test.at(69) = 2;
 
-    assert(min_element(test.begin(), test.end()) == test.begin() + 65);
-    assert(max_element(test.begin(), test.end()) == test.begin() + 68);
-    assert(minmax_element(test.begin(), test.end()).first == test.begin() + 65);
-    assert(minmax_element(test.begin(), test.end()).second == test.begin() + 69);
-
-    test.fill(1);
-    test.at(65 + 4096) = 0;
-    test.at(66 + 4096) = 0;
-    test.at(68 + 4096) = 2;
-    test.at(69 + 4096) = 2;
-
-    assert(min_element(test.begin(), test.end()) == test.begin() + 65 + 4096);
-    assert(max_element(test.begin(), test.end()) == test.begin() + 68 + 4096);
-    assert(minmax_element(test.begin(), test.end()).first == test.begin() + 65 + 4096);
-    assert(minmax_element(test.begin(), test.end()).second == test.begin() + 69 + 4096);
-
-    test.fill(1);
-    test.at(65)        = 0;
-    test.at(66)        = 0;
-    test.at(68)        = 2;
-    test.at(69)        = 2;
-    test.at(65 + 4096) = 0;
-    test.at(66 + 4096) = 0;
-    test.at(68 + 4096) = 2;
-    test.at(69 + 4096) = 2;
-
-    assert(min_element(test.begin(), test.end()) == test.begin() + 65);
-    assert(max_element(test.begin(), test.end()) == test.begin() + 68);
-    assert(minmax_element(test.begin(), test.end()).first == test.begin() + 65);
-    assert(minmax_element(test.begin(), test.end()).second == test.begin() + 69 + 4096);
+    // same block in different vectors
+    fill(v.begin(), v.end(), ElementType{1});
+    for (size_t vector_pos = 0; vector_pos != block_size_in_vectors; ++vector_pos) {
+        v.at(2 * block_size_in_elements + vector_pos * VectorSize + 2) = 0;
+        v.at(2 * block_size_in_elements + vector_pos * VectorSize + 5) = 0;
+        v.at(2 * block_size_in_elements + vector_pos * VectorSize + 6) = 2;
+        v.at(2 * block_size_in_elements + vector_pos * VectorSize + 9) = 2;
+    }
+    assert(min_element(v.begin(), v.end()) == v.begin() + 2 * block_size_in_elements + 2);
+    assert(max_element(v.begin(), v.end()) == v.begin() + 2 * block_size_in_elements + 6);
+    assert(minmax_element(v.begin(), v.end()).first == v.begin() + 2 * block_size_in_elements + 2);
+    assert(minmax_element(v.begin(), v.end()).second
+           == v.begin() + 2 * block_size_in_elements + last_vector_first_elem + 9);
 }
 
 template <class BidIt>
@@ -345,7 +341,9 @@ void test_vector_algorithms() {
     test_min_max_element<double>(gen);
     test_min_max_element<long double>(gen);
 
-    test_min_max_element_special_cases();
+    test_min_max_element_special_cases<int8_t, 16>(); // SSE2 vectors
+    test_min_max_element_special_cases<int8_t, 32>(); // AVX2 vectors
+    test_min_max_element_special_cases<int8_t, 64>(); // AVX512 vectors
 
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
