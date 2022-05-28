@@ -613,13 +613,6 @@
 #endif // ^^^ MSVC ^^^
 #endif // _STL_RESTORE_DEPRECATED_WARNING
 
-#if defined(__clang__) || defined(__CUDACC__) || defined(__INTEL_COMPILER) || defined(__EDG__)
-#define _STL_DECLSPEC_NOINITALL
-#else // ^^^ not MSVC/ MSVC vvv
-#define _STL_DECLSPEC_NOINITALL \
-    __pragma(warning(push)) __pragma(warning(disable : 4845)) __declspec(no_init_all) __pragma(warning(pop))
-#endif // ^^^ MSVC ^^^
-
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
 #define _MSVC_STL_UPDATE  202205L
