@@ -34,6 +34,7 @@
 #define _HAS_DEPRECATED_RESULT_OF       1
 #define _SILENCE_CXX17_IS_LITERAL_TYPE_DEPRECATION_WARNING
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
+#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 #include <stdlib.h>
@@ -7384,7 +7385,7 @@ namespace msvc {
     } // namespace vso614907
 
     namespace gh2458 {
-        // optional<const meow> o = std::move(lvalue_optional_const_meow);
+        // GH-2458: optional<const meow> o = std::move(lvalue_optional_const_meow);
         // was moving from the contained const object
         enum class action { none, copy, move };
         action last = action::none;

@@ -16,8 +16,6 @@ PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /w14640 
 PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
 PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /permissive /w14640 /Zc:threadSafeInit-"
 PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /permissive- /analyze:only /analyze:autolog- /w14640 /Zc:threadSafeInit-"
-PM_CL="/Za /EHsc /MD /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
-PM_CL="/Za /EHsc /MDd /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
 PM_CL="/clr /MD /std:c++17 /w14640 /Zc:threadSafeInit-"
 PM_CL="/clr /MDd /std:c++17 /w14640 /Zc:threadSafeInit-"
 PM_CL="/clr:pure /MD /std:c++14"

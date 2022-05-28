@@ -474,7 +474,7 @@ namespace ranges {
             noexcept(noexcept(::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
                     _Ty(_STD forward<_Types>(_Args)...))) /* strengthened */ {
             // clang-format on
-            return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
+            _MSVC_CONSTEXPR return ::new (const_cast<void*>(static_cast<const volatile void*>(_Location)))
                 _Ty(_STD forward<_Types>(_Args)...);
         }
     };
@@ -2097,9 +2097,9 @@ _NODISCARD size_t _Calculate_bytes_for_flexible_array(const size_t _Count) noexc
 
 template <class _Refc>
 _NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
-    const size_t _Bytes     = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
-    constexpr size_t _Align = alignof(_Refc);
+    const size_t _Bytes = _Calculate_bytes_for_flexible_array<_Refc, _Check_overflow::_Yes>(_Count);
 #ifdef __cpp_aligned_new
+    constexpr size_t _Align = alignof(_Refc);
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         return static_cast<_Refc*>(::operator new (_Bytes, align_val_t{_Align}));
     } else
@@ -2111,8 +2111,8 @@ _NODISCARD _Refc* _Allocate_flexible_array(const size_t _Count) {
 
 template <class _Refc>
 void _Deallocate_flexible_array(_Refc* const _Ptr) noexcept {
-    constexpr size_t _Align = alignof(_Refc);
 #ifdef __cpp_aligned_new
+    constexpr size_t _Align = alignof(_Refc);
     if constexpr (_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete (static_cast<void*>(_Ptr), align_val_t{_Align});
     } else
@@ -3448,13 +3448,14 @@ void make_unique(_Types&&...) = delete;
 
 #if _HAS_CXX20
 template <class _Ty, enable_if_t<!is_array_v<_Ty>, int> = 0>
-_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite() { // make a unique_ptr with default initialization
+_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite() {
+    // make a unique_ptr with default initialization
     return unique_ptr<_Ty>(new _Ty);
 }
 
 template <class _Ty, enable_if_t<is_unbounded_array_v<_Ty>, int> = 0>
-_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite(
-    const size_t _Size) { // make a unique_ptr with default initialization
+_NODISCARD _CONSTEXPR23 unique_ptr<_Ty> make_unique_for_overwrite(const size_t _Size) {
+    // make a unique_ptr with default initialization
     using _Elem = remove_extent_t<_Ty>;
     return unique_ptr<_Ty>(new _Elem[_Size]);
 }
@@ -3849,9 +3850,10 @@ class alignas(2 * sizeof(void*)) _Atomic_ptr_base {
 protected:
     constexpr _Atomic_ptr_base() noexcept = default;
 
-    _Atomic_ptr_base(_Ty* const _Px, _Ref_count_base* const _Ref) noexcept : _Ptr(_Px), _Repptr(_Ref) {}
+    _Atomic_ptr_base(remove_extent_t<_Ty>* const _Px, _Ref_count_base* const _Ref) noexcept
+        : _Ptr(_Px), _Repptr(_Ref) {}
 
-    void _Wait(_Ty* _Old, memory_order) const noexcept {
+    void _Wait(remove_extent_t<_Ty>* _Old, memory_order) const noexcept {
         for (;;) {
             auto _Rep   = _Repptr._Lock_and_load();
             bool _Equal = _Ptr.load(memory_order_relaxed) == _Old;
@@ -3871,7 +3873,7 @@ protected:
         _Ptr.notify_all();
     }
 
-    atomic<_Ty*> _Ptr{nullptr};
+    atomic<remove_extent_t<_Ty>*> _Ptr{nullptr};
     mutable _Locked_pointer<_Ref_count_base> _Repptr;
 };
 
@@ -3891,9 +3893,9 @@ public:
 
     void store(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_store_memory_order(_Order);
-        const auto _Rep = this->_Repptr._Lock_and_load();
-        _Ty* const _Tmp = _Value._Ptr;
-        _Value._Ptr     = this->_Ptr.load(memory_order_relaxed);
+        const auto _Rep                  = this->_Repptr._Lock_and_load();
+        remove_extent_t<_Ty>* const _Tmp = _Value._Ptr;
+        _Value._Ptr                      = this->_Ptr.load(memory_order_relaxed);
         this->_Ptr.store(_Tmp, memory_order_relaxed);
         this->_Repptr._Store_and_unlock(_Value._Rep);
         _Value._Rep = _Rep;
@@ -3946,8 +3948,8 @@ public:
         _Check_memory_order(_Order);
         auto _Rep = this->_Repptr._Lock_and_load();
         if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
-            _Ty* const _Tmp = _Desired._Ptr;
-            _Desired._Ptr   = this->_Ptr.load(memory_order_relaxed);
+            remove_extent_t<_Ty>* const _Tmp = _Desired._Ptr;
+            _Desired._Ptr                    = this->_Ptr.load(memory_order_relaxed);
             this->_Ptr.store(_Tmp, memory_order_relaxed);
             _STD swap(_Rep, _Desired._Rep);
             this->_Repptr._Store_and_unlock(_Rep);
@@ -4010,9 +4012,9 @@ public:
 
     void store(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         _Check_store_memory_order(_Order);
-        const auto _Rep = this->_Repptr._Lock_and_load();
-        _Ty* const _Tmp = _Value._Ptr;
-        _Value._Ptr     = this->_Ptr.load(memory_order_relaxed);
+        const auto _Rep                  = this->_Repptr._Lock_and_load();
+        remove_extent_t<_Ty>* const _Tmp = _Value._Ptr;
+        _Value._Ptr                      = this->_Ptr.load(memory_order_relaxed);
         this->_Ptr.store(_Tmp, memory_order_relaxed);
         this->_Repptr._Store_and_unlock(_Value._Rep);
         _Value._Rep = _Rep;
@@ -4065,8 +4067,8 @@ public:
         _Check_memory_order(_Order);
         auto _Rep = this->_Repptr._Lock_and_load();
         if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
-            _Ty* const _Tmp = _Desired._Ptr;
-            _Desired._Ptr   = this->_Ptr.load(memory_order_relaxed);
+            remove_extent_t<_Ty>* const _Tmp = _Desired._Ptr;
+            _Desired._Ptr                    = this->_Ptr.load(memory_order_relaxed);
             this->_Ptr.store(_Tmp, memory_order_relaxed);
             _STD swap(_Rep, _Desired._Rep);
             this->_Repptr._Store_and_unlock(_Rep);

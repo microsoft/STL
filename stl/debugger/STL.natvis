@@ -247,6 +247,45 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
+  <Type Name="std::unexpected&lt;*&gt;">
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString>{unex()}</DisplayString>
+      <Expand>
+          <Item Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::bad_expected_access&lt;*&gt;">
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString>{unex()}</DisplayString>
+      <Expand>
+          <Item Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::expected&lt;*,*&gt;">
+      <Intrinsic Name="has_value" Expression="_Has_value"/>
+      <Intrinsic Name="value" Expression="_Value"/>
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString Condition="has_value()">{value()}</DisplayString>
+      <DisplayString Condition="!has_value()">{unex()}</DisplayString>
+      <Expand>
+          <Item Condition="has_value()" Name="value">value()</Item>
+          <Item Condition="!has_value()" Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+  <Type Name="std::expected&lt;void,*&gt;">
+      <Intrinsic Name="has_value" Expression="_Has_value"/>
+      <Intrinsic Name="unex" Expression="_Unexpected"/>
+      <DisplayString Condition="has_value()">void</DisplayString>
+      <DisplayString Condition="!has_value()">{unex()}</DisplayString>
+      <Expand>
+          <Item Condition="!has_value()" Name="unex">unex()</Item>
+      </Expand>
+  </Type>
+
+
   <Type Name="std::bitset&lt;*&gt;">
       <DisplayString>{{ size={$T1} }}</DisplayString>
       <Expand>
@@ -288,6 +327,16 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <!-- VC 2015 -->
+   <Type Name="std::unique_ptr&lt;void, *&gt;">
+      <SmartPointer Usage="Minimal">_Mypair._Myval2</SmartPointer>
+      <DisplayString Condition="_Mypair._Myval2 == 0">empty</DisplayString>
+      <DisplayString Condition="_Mypair._Myval2 != 0">unique_ptr void</DisplayString>
+      <Expand>
+          <Item Condition="_Mypair._Myval2 != 0" Name="[ptr]">_Mypair._Myval2</Item>
+          <Item Condition="_Mypair._Myval2 != 0" Name="[deleter]">_Mypair</Item>
+      </Expand>
+  </Type>
+
   <Type Name="std::unique_ptr&lt;*&gt;">
       <SmartPointer Usage="Minimal">_Mypair._Myval2</SmartPointer>
       <DisplayString Condition="_Mypair._Myval2 == 0">empty</DisplayString>
@@ -388,6 +437,24 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <!-- Do not dereference _Ptr when type is void -->
+  <Type Name="std::shared_ptr&lt;void&gt;">
+    <SmartPointer Usage="Minimal">_Ptr</SmartPointer>
+      <DisplayString Condition="_Rep == 0">empty</DisplayString>
+      <DisplayString IncludeView="ptr" Condition="_Ptr == 0">nullptr</DisplayString>
+      <DisplayString IncludeView="ptr" Condition="_Ptr != 0">void</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 1)   &amp;&amp; (_Rep-&gt;_Weaks == 1)"  >shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 1)   &amp;&amp; (_Rep-&gt;_Weaks == 2)"  >shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong ref, {_Rep-&gt;_Weaks - 1} weak ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 1)   &amp;&amp; (_Rep-&gt;_Weaks &gt; 2)">shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong ref, {_Rep-&gt;_Weaks - 1} weak refs] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks == 1)"  >shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks == 2)"  >shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs, {_Rep-&gt;_Weaks - 1} weak ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks &gt; 2)">shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs, {_Rep-&gt;_Weaks - 1} weak refs] [{*_Rep}]</DisplayString>
+      <Expand>
+          <Item Condition="_Rep != 0" Name="[ptr]">_Ptr</Item>
+          <Item Condition="_Rep != 0" Name="[control block]">*_Rep</Item>
+      </Expand>
+  </Type>
+
   <Type Name="std::shared_ptr&lt;*&gt;">
       <SmartPointer Usage="Minimal">_Ptr</SmartPointer>
       <DisplayString Condition="_Rep == 0">empty</DisplayString>
@@ -401,6 +468,23 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks &gt; 2)">shared_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs, {_Rep-&gt;_Weaks - 1} weak refs] [{*_Rep}]</DisplayString>
       <Expand>
           <Item Condition="_Rep != 0" Name="[ptr]">_Ptr</Item>
+          <Item Condition="_Rep != 0" Name="[control block]">*_Rep</Item>
+      </Expand>
+  </Type>
+
+  <!-- Do not dereference _Ptr when type is void -->
+  <Type Name="std::weak_ptr&lt;void&gt;">
+      <DisplayString Condition="_Rep == 0">empty</DisplayString>
+      <DisplayString IncludeView="ptr" Condition="_Ptr == 0">nullptr</DisplayString>
+      <DisplayString IncludeView="ptr" Condition="_Ptr != 0">void</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 0)   &amp;&amp; (_Rep-&gt;_Weaks == 1)"  >expired [{_Rep-&gt;_Weaks} weak ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 0)   &amp;&amp; (_Rep-&gt;_Weaks &gt; 1)">expired [{_Rep-&gt;_Weaks} weak refs] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 1)   &amp;&amp; (_Rep-&gt;_Weaks == 2)"  >weak_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong ref, {_Rep-&gt;_Weaks - 1} weak ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses == 1)   &amp;&amp; (_Rep-&gt;_Weaks &gt; 2)">weak_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong ref, {_Rep-&gt;_Weaks - 1} weak refs] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks == 2)"  >weak_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs, {_Rep-&gt;_Weaks - 1} weak ref] [{*_Rep}]</DisplayString>
+      <DisplayString Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 1) &amp;&amp; (_Rep-&gt;_Weaks &gt; 2)">weak_ptr {*this,view(ptr)} [{_Rep-&gt;_Uses} strong refs, {_Rep-&gt;_Weaks - 1} weak refs] [{*_Rep}]</DisplayString>
+      <Expand>
+          <Item Condition="(_Rep != 0) &amp;&amp; (_Rep-&gt;_Uses &gt; 0)" Name="[ptr]">_Ptr</Item>
           <Item Condition="_Rep != 0" Name="[control block]">*_Rep</Item>
       </Expand>
   </Type>
