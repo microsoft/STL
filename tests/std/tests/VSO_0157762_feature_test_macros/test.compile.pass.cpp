@@ -364,7 +364,7 @@ STATIC_ASSERT(__cpp_lib_byteswap == 202110L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_char8_t)
+#if _HAS_CXX17 && defined(__cpp_char8_t)
 #ifndef __cpp_lib_char8_t
 #error __cpp_lib_char8_t is not defined
 #elif __cpp_lib_char8_t != 201907L
