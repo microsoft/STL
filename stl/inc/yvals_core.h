@@ -1306,9 +1306,6 @@
 #if _HAS_STD_BYTE
 #define __cpp_lib_byte 201603L
 #endif // _HAS_STD_BYTE
-#ifdef __cpp_char8_t
-#define __cpp_lib_char8_t 201907L
-#endif // __cpp_char8_t
 #define __cpp_lib_clamp                             201603L
 #define __cpp_lib_filesystem                        201703L
 #define __cpp_lib_gcd_lcm                           201606L
@@ -1341,6 +1338,10 @@
 #ifdef __cpp_impl_coroutine
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
+
+#ifdef __cpp_char8_t
+#define __cpp_lib_char8_t 201907L
+#endif // __cpp_char8_t
 
 #if _HAS_CXX20
 #define __cpp_lib_assume_aligned                201811L
