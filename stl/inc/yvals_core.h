@@ -1306,6 +1306,9 @@
 #if _HAS_STD_BYTE
 #define __cpp_lib_byte 201603L
 #endif // _HAS_STD_BYTE
+#ifdef __cpp_char8_t
+#define __cpp_lib_char8_t 201907L
+#endif // __cpp_char8_t
 #define __cpp_lib_clamp                             201603L
 #define __cpp_lib_filesystem                        201703L
 #define __cpp_lib_gcd_lcm                           201606L
@@ -1352,10 +1355,6 @@
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-
-#ifdef __cpp_char8_t
-#define __cpp_lib_char8_t 201907L
-#endif // __cpp_char8_t
 
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
 #define __cpp_lib_concepts 202002L
