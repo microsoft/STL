@@ -5,7 +5,7 @@
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/w14640 /Zc:threadSafeInit- /EHsc /std:c++latest /permissive- /D_HAS_CXX23"
+PM_CL="/w14640 /Zc:threadSafeInit- /EHsc /std:c++latest /permissive-"
 RUNALL_CROSSLIST
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /Zc:noexceptTypes-"
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=1"
@@ -20,8 +20,6 @@ PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=0 /fp:strict"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=1"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=2"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=2 /analyze:only /analyze:autolog-"
-PM_CL="/Za /MD"
-PM_CL="/Za /MDd"
 # PM_CL="/BE /c /MD"
 # PM_CL="/BE /c /MTd"
 PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /MD"
