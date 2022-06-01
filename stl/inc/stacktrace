@@ -25,6 +25,18 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+// The separately compiled part of <stacktrace> implementation calls a function pointer of _Stacktrace_string_fill type
+// to allocate a buffer for string output.  The called function does the buffer allocation and calls a function pointer
+// of _Stacktrace_string_fill_callback type to fill the buffer. This is needed to type-erase <string> or <ostream>, and
+// make it possible to keep the separately compiled implementation in the import library. 
+//
+// Additionally, _Stacktrace_string_fill can be called with nullptr string parameter to determine already reserved
+// string buffer for cases when the size is not known before an attempt to fill it -- this potentially avoids both extra
+// fill attempt and extra allocation if the reserved size is enough.
+//
+// Currently, _Stacktrace_string_fill implementation is based on string::resize_and_overwrite, and for ostream it uses
+// temporary string, but it could be different, e.g avoid building a complete string and output to stream by portions.
+
 using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char* _Data, size_t _Size, void* _Context);
 
 using _Stacktrace_string_fill = size_t(__stdcall*)(
