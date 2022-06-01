@@ -52,78 +52,67 @@ namespace {
         SRWLOCK* const locked;
     };
 
-    IDebugClient* debug_client     = nullptr;
-    IDebugSymbols* debug_symbols   = nullptr;
-    IDebugSymbols3* debug_symbols3 = nullptr;
-    IDebugControl* debug_control   = nullptr;
-    bool attached                  = false;
-    bool initialize_attempted      = false;
-    HMODULE dbgeng                 = nullptr;
-    SRWLOCK srw                    = SRWLOCK_INIT;
+    void lock_and_uninitialize();
 
-    void uninitialize_nolock() {
-        // "Phoenix singleton" - destroy and set to null, so that it can be initialized later again
+    struct dbg_eng_data {
+        static void uninitialize() {
+            // "Phoenix singleton" - destroy and set to null, so that it can be initialized later again
 
-        if (debug_client != nullptr) {
-            if (attached) {
-                (void) debug_client->DetachProcesses();
-                attached = false;
+            if (debug_client != nullptr) {
+                if (attached) {
+                    (void) debug_client->DetachProcesses();
+                    attached = false;
+                }
+
+                debug_client->Release();
+                debug_client = nullptr;
             }
 
-            debug_client->Release();
-            debug_client = nullptr;
-        }
+            if (debug_control != nullptr) {
+                debug_control->Release();
+                debug_control = nullptr;
+            }
 
-        if (debug_control != nullptr) {
-            debug_control->Release();
-            debug_control = nullptr;
-        }
-
-        if (debug_symbols != nullptr) {
-            debug_symbols->Release();
-            debug_symbols = nullptr;
-        }
-
-        if (dbgeng != nullptr) {
-            (void) FreeLibrary(dbgeng);
-            dbgeng = nullptr;
-        }
-
-        initialize_attempted = false;
-    }
-
-    void uninitialize() {
-        srw_lock_guard lock{srw};
-
-        uninitialize_nolock();
-    }
-
-    bool try_initialize_nolock() {
-        if (!initialize_attempted) {
-            dbgeng = LoadLibraryExW(L"dbgeng.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+            if (debug_symbols != nullptr) {
+                debug_symbols->Release();
+                debug_symbols = nullptr;
+            }
 
             if (dbgeng != nullptr) {
-                const auto debug_create =
-                    reinterpret_cast<decltype(&DebugCreate)>(GetProcAddress(dbgeng, "DebugCreate"));
+                (void) FreeLibrary(dbgeng);
+                dbgeng = nullptr;
+            }
 
-                // Deliberately not calling CoInitialize[Ex]. DbgEng.h API works fine without it.
-                // COM initialization may have undesired interference with user's code.
-                if (debug_create != nullptr
-                    && SUCCEEDED(debug_create(IID_IDebugClient, reinterpret_cast<void**>(&debug_client)))
-                    && SUCCEEDED(
-                        debug_client->QueryInterface(IID_IDebugSymbols, reinterpret_cast<void**>(&debug_symbols)))
-                    && SUCCEEDED(
-                        debug_client->QueryInterface(IID_IDebugControl, reinterpret_cast<void**>(&debug_control)))) {
-                    attached = SUCCEEDED(debug_client->AttachProcess(
-                        0, GetCurrentProcessId(), DEBUG_ATTACH_NONINVASIVE | DEBUG_ATTACH_NONINVASIVE_NO_SUSPEND));
-                    if (attached) {
-                        (void) debug_control->WaitForEvent(0, INFINITE);
-                    }
+            initialize_attempted = false;
+        }
 
-                    // If this fails, will use IDebugSymbols
-                    (void) debug_symbols->QueryInterface(IID_IDebugSymbols3, reinterpret_cast<void**>(&debug_symbols3));
+        static bool try_initialize() {
+            if (!initialize_attempted) {
+                dbgeng = LoadLibraryExW(L"dbgeng.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 
-                    // clang-format off
+                if (dbgeng != nullptr) {
+                    const auto debug_create =
+                        reinterpret_cast<decltype(&DebugCreate)>(GetProcAddress(dbgeng, "DebugCreate"));
+
+                    // Deliberately not calling CoInitialize[Ex]. DbgEng.h API works fine without it.
+                    // COM initialization may have undesired interference with user's code.
+                    if (debug_create != nullptr
+                        && SUCCEEDED(debug_create(IID_IDebugClient, reinterpret_cast<void**>(&debug_client)))
+                        && SUCCEEDED(
+                            debug_client->QueryInterface(IID_IDebugSymbols, reinterpret_cast<void**>(&debug_symbols)))
+                        && SUCCEEDED(debug_client->QueryInterface(
+                            IID_IDebugControl, reinterpret_cast<void**>(&debug_control)))) {
+                        attached = SUCCEEDED(debug_client->AttachProcess(
+                            0, GetCurrentProcessId(), DEBUG_ATTACH_NONINVASIVE | DEBUG_ATTACH_NONINVASIVE_NO_SUSPEND));
+                        if (attached) {
+                            (void) debug_control->WaitForEvent(0, INFINITE);
+                        }
+
+                        // If this fails, will use IDebugSymbols
+                        (void) debug_symbols->QueryInterface(
+                            IID_IDebugSymbols3, reinterpret_cast<void**>(&debug_symbols3));
+
+                        // clang-format off
                     constexpr ULONG add_options = 0x1     /* SYMOPT_CASE_INSENSITIVE */
                                                 | 0x2     /* SYMOPT_UNDNAME */
                                                 | 0x4     /* SYMOPT_DEFERRED_LOADS */
@@ -141,129 +130,147 @@ namespace {
                                                    | 0x4000  /* SYMOPT_PUBLICS_ONLY */
                                                    | 0x8000  /* SYMOPT_NO_PUBLICS */
                                                    | 0x20000 /* SYMOPT_NO_IMAGE_SEARCH */;
-                    // clang-format on
+                        // clang-format on
 
-                    (void) debug_symbols->AddSymbolOptions(add_options);
-                    (void) debug_symbols->RemoveSymbolOptions(remove_options);
+                        (void) debug_symbols->AddSymbolOptions(add_options);
+                        (void) debug_symbols->RemoveSymbolOptions(remove_options);
+                    }
                 }
             }
-        }
 
-        if (std::atexit(uninitialize) != 0) {
-            uninitialize_nolock();
-            return false;
-        }
-
-        initialize_attempted = true;
-
-        return debug_symbols != nullptr;
-    }
-
-    size_t get_description_nolock(
-        const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
-        // Initially pass the current capacity, will retry with bigger buffer if it fails.
-        size_t size          = fill(0, str, nullptr, nullptr) - off;
-        HRESULT hr           = E_UNEXPECTED;
-        ULONG64 displacement = 0;
-
-        for (;;) {
-            ULONG new_size = 0;
-
-            const size_t new_off = string_fill(
-                fill, off + size, str, [address, off, size, &new_size, &hr, &displacement](char* s, size_t) {
-                    hr = debug_symbols->GetNameByOffset(reinterpret_cast<uintptr_t>(address), s + off,
-                        static_cast<ULONG>(size + 1), &new_size, &displacement);
-
-                    return (hr == S_OK) ? off + new_size - 1 : off;
-                });
-
-            if (hr == S_OK) {
-                off = new_off;
-                break;
-            } else if (hr == S_FALSE) {
-                size = new_size - 1; // retry with bigger buffer
-            } else {
-                return off;
+            if (std::atexit(lock_and_uninitialize) != 0) {
+                uninitialize();
+                return false;
             }
+
+            initialize_attempted = true;
+
+            return debug_symbols != nullptr;
         }
 
-        if (displacement != 0) {
-            constexpr size_t max_disp_num = sizeof("+0x1111222233334444") - 1; // maximum possible offset
+        static size_t get_description(
+            const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
+            // Initially pass the current capacity, will retry with bigger buffer if it fails.
+            size_t size          = fill(0, str, nullptr, nullptr) - off;
+            HRESULT hr           = E_UNEXPECTED;
+            ULONG64 displacement = 0;
 
-            off = string_fill(fill, off + max_disp_num, str, [displacement, off](char* s, size_t) {
-                const int ret = std::snprintf(s + off, max_disp_num, "+0x%llX", displacement);
-                _STL_VERIFY(ret > 0, "formatting error");
-                return off + ret;
-            });
-        }
+            for (;;) {
+                ULONG new_size = 0;
 
-        return off;
-    }
+                const size_t new_off = string_fill(
+                    fill, off + size, str, [address, off, size, &new_size, &hr, &displacement](char* s, size_t) {
+                        hr = debug_symbols->GetNameByOffset(reinterpret_cast<uintptr_t>(address), s + off,
+                            static_cast<ULONG>(size + 1), &new_size, &displacement);
 
-    size_t source_file_nolock(
-        const void* const address, void* const str, size_t off, ULONG* const line, const _Stacktrace_string_fill fill) {
-        // Initially pass the current capacity, will retry with bigger buffer if fails.
-        size_t size = fill(0, str, nullptr, nullptr) - off;
-        HRESULT hr  = E_UNEXPECTED;
+                        return (hr == S_OK) ? off + new_size - 1 : off;
+                    });
 
-        for (;;) {
-            ULONG new_size = 0;
-
-            const size_t new_off =
-                string_fill(fill, off + size, str, [address, off, size, line, &new_size, &hr](char* s, size_t) {
-                    hr = debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), line, s + off,
-                        static_cast<ULONG>(size + 1), &new_size, nullptr);
-
-                    return (hr == S_OK) ? off + new_size - 1 : off;
-                });
-
-            if (hr == S_OK) {
-                off = new_off;
-                break;
-            } else if (hr == S_FALSE) {
-                size = new_size - 1; // retry with bigger buffer
-            } else {
-                if (line) {
-                    *line = 0;
+                if (hr == S_OK) {
+                    off = new_off;
+                    break;
+                } else if (hr == S_FALSE) {
+                    size = new_size - 1; // retry with bigger buffer
+                } else {
+                    return off;
                 }
-
-                return off;
             }
+
+            if (displacement != 0) {
+                constexpr size_t max_disp_num = sizeof("+0x1111222233334444") - 1; // maximum possible offset
+
+                off = string_fill(fill, off + max_disp_num, str, [displacement, off](char* s, size_t) {
+                    const int ret = std::snprintf(s + off, max_disp_num, "+0x%llX", displacement);
+                    _STL_VERIFY(ret > 0, "formatting error");
+                    return off + ret;
+                });
+            }
+
+            return off;
         }
 
-        return off;
-    }
+        static size_t source_file(const void* const address, void* const str, size_t off, ULONG* const line,
+            const _Stacktrace_string_fill fill) {
+            // Initially pass the current capacity, will retry with bigger buffer if fails.
+            size_t size = fill(0, str, nullptr, nullptr) - off;
+            HRESULT hr  = E_UNEXPECTED;
 
-    [[nodiscard]] unsigned int source_line_nolock(const void* const address) {
-        ULONG line = 0;
+            for (;;) {
+                ULONG new_size = 0;
 
-        if (FAILED(debug_symbols->GetLineByOffset(
-                reinterpret_cast<uintptr_t>(address), &line, nullptr, 0, nullptr, nullptr))) {
-            return 0;
+                const size_t new_off =
+                    string_fill(fill, off + size, str, [address, off, size, line, &new_size, &hr](char* s, size_t) {
+                        hr = debug_symbols->GetLineByOffset(reinterpret_cast<uintptr_t>(address), line, s + off,
+                            static_cast<ULONG>(size + 1), &new_size, nullptr);
+
+                        return (hr == S_OK) ? off + new_size - 1 : off;
+                    });
+
+                if (hr == S_OK) {
+                    off = new_off;
+                    break;
+                } else if (hr == S_FALSE) {
+                    size = new_size - 1; // retry with bigger buffer
+                } else {
+                    if (line) {
+                        *line = 0;
+                    }
+
+                    return off;
+                }
+            }
+
+            return off;
         }
 
-        return line;
-    }
+        [[nodiscard]] static unsigned int source_line(const void* const address) {
+            ULONG line = 0;
 
-    size_t address_to_string_nolock(
-        const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
-        ULONG line = 0;
+            if (FAILED(debug_symbols->GetLineByOffset(
+                    reinterpret_cast<uintptr_t>(address), &line, nullptr, 0, nullptr, nullptr))) {
+                return 0;
+            }
 
-        off = source_file_nolock(address, str, off, &line, fill);
-
-        if (line != 0) {
-            constexpr size_t max_line_num = sizeof("(4294967295): ") - 1; // maximum possible line number
-
-            off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) {
-                const int ret = std::snprintf(s + off, max_line_num, "(%u): ", line);
-                _STL_VERIFY(ret > 0, "formatting error");
-                return off + ret;
-            });
+            return line;
         }
 
-        return get_description_nolock(address, str, off, fill);
-    }
+        static size_t address_to_string(
+            const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
+            ULONG line = 0;
 
+            off = source_file(address, str, off, &line, fill);
+
+            if (line != 0) {
+                constexpr size_t max_line_num = sizeof("(4294967295): ") - 1; // maximum possible line number
+
+                off = string_fill(fill, off + max_line_num, str, [line, off](char* s, size_t) {
+                    const int ret = std::snprintf(s + off, max_line_num, "(%u): ", line);
+                    _STL_VERIFY(ret > 0, "formatting error");
+                    return off + ret;
+                });
+            }
+
+            return get_description(address, str, off, fill);
+        }
+
+    public:
+        inline static SRWLOCK srw;
+
+    private:
+        inline static IDebugClient* debug_client     = nullptr;
+        inline static IDebugSymbols* debug_symbols   = nullptr;
+        inline static IDebugSymbols3* debug_symbols3 = nullptr;
+        inline static IDebugControl* debug_control   = nullptr;
+        inline static bool attached                  = false;
+        inline static bool initialize_attempted      = false;
+        inline static HMODULE dbgeng                 = nullptr;
+    };
+
+    void lock_and_uninitialize() {
+        const srw_lock_guard lock{dbg_eng_data::srw};
+
+        dbg_eng_data::uninitialize();
+    }
 } // namespace
 
 _EXTERN_C
@@ -280,52 +287,52 @@ _EXTERN_C
 
 void __stdcall __std_stacktrace_description(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
-    const srw_lock_guard lock{srw};
+    const srw_lock_guard lock{dbg_eng_data::srw};
 
-    if (!try_initialize_nolock()) {
+    if (!dbg_eng_data::try_initialize()) {
         return;
     }
 
-    get_description_nolock(_Address, _Str, 0, _Fill);
+    dbg_eng_data::get_description(_Address, _Str, 0, _Fill);
 }
 
 void __stdcall __std_stacktrace_source_file(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
-    const srw_lock_guard lock{srw};
+    const srw_lock_guard lock{dbg_eng_data::srw};
 
-    if (!try_initialize_nolock()) {
+    if (!dbg_eng_data::try_initialize()) {
         return;
     }
 
-    source_file_nolock(_Address, _Str, 0, nullptr, _Fill);
+    dbg_eng_data::source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
 [[nodiscard]] unsigned int __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept {
-    const srw_lock_guard lock{srw};
+    const srw_lock_guard lock{dbg_eng_data::srw};
 
-    if (!try_initialize_nolock()) {
+    if (!dbg_eng_data::try_initialize()) {
         return 0;
     }
 
-    return source_line_nolock(_Address);
+    return dbg_eng_data::source_line(_Address);
 }
 
 void __stdcall __std_stacktrace_address_to_string(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
-    const srw_lock_guard lock{srw};
+    const srw_lock_guard lock{dbg_eng_data::srw};
 
-    if (!try_initialize_nolock()) {
+    if (!dbg_eng_data::try_initialize()) {
         return;
     }
 
-    address_to_string_nolock(_Address, _Str, 0, _Fill);
+    dbg_eng_data::address_to_string(_Address, _Str, 0, _Fill);
 }
 
 void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const size_t _Size, void* const _Str,
     const _Stacktrace_string_fill _Fill) noexcept(false) {
-    const srw_lock_guard lock{srw};
+    const srw_lock_guard lock{dbg_eng_data::srw};
 
-    if (!try_initialize_nolock()) {
+    if (!dbg_eng_data::try_initialize()) {
         return;
     }
 
@@ -349,7 +356,7 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
             return off + ret;
         });
 
-        off = address_to_string_nolock(data[i], _Str, off, _Fill);
+        off = dbg_eng_data::address_to_string(data[i], _Str, off, _Fill);
     }
 }
 _END_EXTERN_C
