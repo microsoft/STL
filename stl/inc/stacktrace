@@ -142,8 +142,9 @@ public:
         current(const allocator_type& _Al = allocator_type()) noexcept {
         _TRY_BEGIN
         basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Al);
-        _Result._Frames.resize(__std_stacktrace_capture(1, static_cast<unsigned long>(_Max_frames),
-            reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
+        const unsigned short _Actual_size =
+            __std_stacktrace_capture(1, static_cast<unsigned long>(_Max_frames), _To_voidptr_array(), &_Result._Hash);
+        _Result._Frames.resize(_Actual_size);
         return _Result;
         _CATCH_ALL
         return basic_stacktrace{};
@@ -154,8 +155,9 @@ public:
         current(size_type _Skip, const allocator_type& _Al = allocator_type()) noexcept {
         _TRY_BEGIN
         basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Al);
-        _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
-            static_cast<unsigned long>(_Max_frames), reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
+        const unsigned short _Actual_size = __std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
+            static_cast<unsigned long>(_Max_frames), _To_voidptr_array(), &_Result._Hash);
+        _Result._Frames.resize(_Actual_size);
         return _Result;
         _CATCH_ALL
         return basic_stacktrace{};
@@ -166,8 +168,8 @@ public:
         current(size_type _Skip, size_type _Max_depth, const allocator_type& _Al = allocator_type()) noexcept {
         _TRY_BEGIN
         basic_stacktrace _Result(_Internal_t{}, _Max_depth, _Al);
-        _Result._Frames.resize(__std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
-            static_cast<unsigned long>(_Max_depth), reinterpret_cast<void**>(_Result._Frames.data()), &_Result._Hash));
+        const unsigned short _Actual_size = __std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
+            static_cast<unsigned long>(_Max_depth), _To_voidptr_array(), &_Result._Hash);
         return _Result;
         _CATCH_ALL
         return basic_stacktrace{};
@@ -297,6 +299,12 @@ private:
     };
 
     basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al) : _Frames(_Max_depth, _Al) {}
+
+    void** _To_voidptr_array() {
+        _STL_INTERNAL_STATIC_ASSERT(sizeof(void*) == sizeof(*this));
+        _STL_INTERNAL_STATIC_ASSERT(alignof(void*) == alignof(*this));
+        return reinterpret_cast<void**>(_Result._Frames.data());
+    }
 
     _Frames_t _Frames;
     unsigned long _Hash = 0;
