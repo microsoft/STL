@@ -826,6 +826,7 @@ void test_buffer_resizing() {
 }
 
 void test_gh_2618() {
+    // GH-2618 <xloctime>: get_time does not return correct year in tm.tm_year if year is 1
     auto TestTimeGetYear = [](const char* input, const int expected_y, const int expected_Y,
                                const int expected_get_year) {
         {

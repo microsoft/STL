@@ -42,6 +42,12 @@ namespace Meow {
 
         constexpr Evil() noexcept : data(1701) {}
 
+        template <int = 0>
+        const Evil& operator=(const Evil&) const {
+            // provide an Evil operator= for std::tuple::swap
+            return *this;
+        }
+
         int func() const {
             return 1729;
         }

@@ -35,6 +35,7 @@
 #endif // TRANSITION, OS-17090155 (UCRT)
 
 #define _SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING
+#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
@@ -87,6 +88,7 @@
 #include <complex>
 #include <deque>
 #include <exception>
+#include <expected>
 #include <filesystem>
 #include <format>
 #include <forward_list>

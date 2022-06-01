@@ -455,7 +455,21 @@ void __cdecl __sanitizer_annotate_contiguous_container(
 extern const bool _Asan_vector_should_annotate;
 }
 
-#if defined(_M_IX86)
+#if defined(_M_ARM64EC)
+#pragma comment(linker, \
+    "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, \
+    "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:#_Asan_vector_should_annotate=#_Asan_vector_should_annotate_default")
+#pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
+#elif defined(_M_HYBRID)
+#pragma comment(linker, \
+    "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, \
+    "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:#_Asan_vector_should_annotate=#_Asan_vector_should_annotate_default")
+#pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
+#elif defined(_M_IX86)
 #pragma comment(linker, \
     "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
@@ -463,7 +477,9 @@ extern const bool _Asan_vector_should_annotate;
 #pragma comment(linker, \
     "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
 #pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
-#endif
+#else // ^^^ known architecture / unknown architecture vvv
+#error Unknown architecture
+#endif // ^^^ unknown architecture ^^^
 
 template <class _Vec, class = void>
 _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment = alignof(typename _Vec::value_type) >= _Asan_granularity;
@@ -2274,6 +2290,18 @@ public:
         return *this;
     }
 
+#if _HAS_CXX23
+    constexpr const _Vb_reference& operator=(bool _Val) const noexcept {
+        if (_Val) {
+            *const_cast<_Vbase*>(_Getptr()) |= _Mask();
+        } else {
+            *const_cast<_Vbase*>(_Getptr()) &= ~_Mask();
+        }
+
+        return *this;
+    }
+#endif // _HAS_CXX23
+
     _CONSTEXPR20 void flip() noexcept {
         *const_cast<_Vbase*>(_Getptr()) ^= _Mask();
     }
@@ -3082,26 +3110,23 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
-        difference_type _Off = _Where - begin();
-        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>{});
-        return begin() + _Off;
-    }
+        const difference_type _Saved_offset = _Where - begin();
 
-    template <class _Iter>
-    _CONSTEXPR20 void _Insert(const_iterator _Where, _Iter _First, _Iter _Last, input_iterator_tag) {
-        difference_type _Off = _Where - begin();
+        if constexpr (_Is_fwd_iter_v<_Iter>) {
+            _Adl_verify_range(_First, _Last);
+            const auto _Count    = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+            const size_type _Off = _Insert_x(_Where, _Count);
+            _Copy_unchecked(
+                _Get_unwrapped(_First), _Get_unwrapped(_Last), begin() + static_cast<difference_type>(_Off));
+        } else {
+            difference_type _Off = _Saved_offset;
 
-        for (; _First != _Last; ++_First, (void) ++_Off) {
-            insert(begin() + _Off, *_First);
+            for (; _First != _Last; ++_First, (void) ++_Off) {
+                insert(begin() + _Off, *_First);
+            }
         }
-    }
 
-    template <class _Iter>
-    _CONSTEXPR20 void _Insert(const_iterator _Where, _Iter _First, _Iter _Last, forward_iterator_tag) {
-        _Adl_verify_range(_First, _Last);
-        auto _Count    = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        size_type _Off = _Insert_x(_Where, _Count);
-        _Copy_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), begin() + static_cast<difference_type>(_Off));
+        return begin() + _Saved_offset;
     }
 
     _CONSTEXPR20 iterator erase(const_iterator _Where_arg) noexcept /* strengthened */ {
