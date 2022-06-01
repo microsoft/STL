@@ -300,6 +300,8 @@ private:
     basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al) : _Frames(_Max_depth, _Al) {}
 
     void** _To_voidptr_array() {
+        _STL_INTERNAL_STATIC_ASSERT(sizeof(void*) == sizeof(stacktrace_entry));
+        _STL_INTERNAL_STATIC_ASSERT(alignof(void*) == alignof(stacktrace_entry));
         return reinterpret_cast<void**>(_Frames.data());
     }
 
