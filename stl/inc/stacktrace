@@ -59,8 +59,6 @@ _NODISCARD unsigned int __stdcall __std_stacktrace_source_line(const void* _Addr
 
 void __stdcall __std_stacktrace_to_string(
     const void* _Addresses, size_t _Size, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
-
-_NODISCARD void* __stdcall __std_stacktrace_get_debug_interface() noexcept;
 _END_EXTERN_C
 
 _STD_BEGIN
