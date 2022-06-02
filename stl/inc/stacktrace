@@ -150,11 +150,11 @@ public:
     }
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
-        current(size_type _Skip, const allocator_type& _Al = allocator_type()) noexcept {
+        current(const size_type _Skip, const allocator_type& _Al = allocator_type()) noexcept {
         _TRY_BEGIN
         basic_stacktrace _Result(_Internal_t{}, _Max_frames, _Al);
-        const unsigned short _Actual_size = __std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
-            static_cast<unsigned long>(_Max_frames), _Result._To_voidptr_array(), &_Result._Hash);
+        const unsigned short _Actual_size = __std_stacktrace_capture(
+            _Adjust_skip(_Skip), static_cast<unsigned long>(_Max_frames), _Result._To_voidptr_array(), &_Result._Hash);
         _Result._Frames.resize(_Actual_size);
         return _Result;
         _CATCH_ALL
@@ -163,11 +163,16 @@ public:
     }
 
     _NODISCARD __declspec(noinline) static basic_stacktrace
-        current(size_type _Skip, size_type _Max_depth, const allocator_type& _Al = allocator_type()) noexcept {
+        current(const size_type _Skip, size_type _Max_depth, const allocator_type& _Al = allocator_type()) noexcept {
         _TRY_BEGIN
         basic_stacktrace _Result(_Internal_t{}, _Max_depth, _Al);
-        const unsigned short _Actual_size = __std_stacktrace_capture(static_cast<unsigned long>(_Skip + 1),
-            static_cast<unsigned long>(_Max_depth), _Result._To_voidptr_array(), &_Result._Hash);
+
+        if (_Max_depth > _Max_frames) {
+            _Max_depth = _Max_frames;
+        }
+
+        const unsigned short _Actual_size = __std_stacktrace_capture(
+            _Adjust_skip(_Skip), static_cast<unsigned long>(_Max_depth), _Result._To_voidptr_array(), &_Result._Hash);
         _Result._Frames.resize(_Actual_size);
         return _Result;
         _CATCH_ALL
@@ -303,6 +308,11 @@ private:
         _STL_INTERNAL_STATIC_ASSERT(sizeof(void*) == sizeof(stacktrace_entry));
         _STL_INTERNAL_STATIC_ASSERT(alignof(void*) == alignof(stacktrace_entry));
         return reinterpret_cast<void**>(_Frames.data());
+    }
+
+    unsigned long _Adjust_skip(size_t _Skip) {
+        _Skip += 1; // Skip current frame
+        return _Skip < ULONG_MAX ? static_cast<unsigned long>(_Skip) : ULONG_MAX;
     }
 
     _Frames_t _Frames;
