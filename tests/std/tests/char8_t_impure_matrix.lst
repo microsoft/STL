@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# This is usual_matrix.lst, but without /clr:pure configurations.
+# This is char8_t_matrix.lst, but without /clr:pure configurations.
 # Without /clr:pure, we can factor out "/w14640 /Zc:threadSafeInit-" to simplify.
 
 RUNALL_INCLUDE .\prefix.lst

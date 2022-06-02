@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #
-# When updating this list, update VSO_0157762_feature_test_macros\env.lst consistently.
+# This is usual_matrix.lst, but with /std:c++14 /Zc:char8_t and /std:c++17 /Zc:char8_t
 #
 
 RUNALL_INCLUDE .\prefix.lst
