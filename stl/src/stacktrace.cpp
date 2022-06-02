@@ -20,18 +20,18 @@
 #pragma comment(lib, "DbgEng.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
+// The below function pointer types must be in sync with <stacktrace>
+
+using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char* _Data, size_t _Size, void* _Context) _NOEXCEPT_FNPTR;
+
+using _Stacktrace_string_fill = size_t(__stdcall*)(
+    size_t _Size, void* _String, void* _Context, _Stacktrace_string_fill_callback _Callback);
+
 namespace {
-    // The below function pointer types must be in sync with <stacktrace>
-
-    using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char* _Data, size_t _Size, void* _Context);
-
-    using _Stacktrace_string_fill = size_t(__stdcall*)(
-        size_t _Size, void* _String, void* _Context, _Stacktrace_string_fill_callback _Callback);
-
     template <class F>
     size_t string_fill(const _Stacktrace_string_fill callback, const size_t size, void* const str, F f) {
         return callback(size, str, &f,
-            [](char* s, size_t sz, void* context) -> size_t { return (*static_cast<F*>(context))(s, sz); });
+            [](char* s, size_t sz, void* context) noexcept -> size_t { return (*static_cast<F*>(context))(s, sz); });
     }
 
     // TRANSITION, GH-2285. Use SRWLOCK instead of std::mutex to avoid nontrivial constructor and nontrivial destructor
