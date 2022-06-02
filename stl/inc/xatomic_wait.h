@@ -9,7 +9,7 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <xatomic.h>
 
 #pragma pack(push, _CRT_PACKING)

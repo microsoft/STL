@@ -3,6 +3,8 @@
 
 // _Stoul function
 
+#include <yvals.h>
+
 #include <cctype>
 #include <cerrno>
 #include <climits>
@@ -10,15 +12,12 @@
 #include <cstdlib>
 #include <cstring>
 
-
 _EXTERN_C_UNLESS_PURE
 
-// macros
 constexpr int _Base_max = 36; // largest valid base
 
 // static data
-static const char digits[] = // valid digits
-    "0123456789abcdefghijklmnopqrstuvwxyz";
+static const char digits[] = "0123456789abcdefghijklmnopqrstuvwxyz"; // valid digits
 
 // 32-bits!
 static const char ndigs[_Base_max + 1] = {0, 0, 33, 21, 17, 14, 13, 12, 11, 11, 10, 10, 9, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8,

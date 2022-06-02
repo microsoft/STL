@@ -6,10 +6,13 @@
 #pragma once
 #ifndef _XKEYCHECK_H
 #define _XKEYCHECK_H
-#include <yvals_core.h>
+
+// xkeycheck.h assumes that it's being included by yvals_core.h in a specific order.
+// Nothing else should include xkeycheck.h.
+
 #if _STL_COMPILER_PREPROCESSOR
 
-#if defined(__cplusplus) && !defined(_ALLOW_KEYWORD_MACROS) && !defined(__INTELLISENSE__)
+#if !defined(_ALLOW_KEYWORD_MACROS) && !defined(__INTELLISENSE__)
 
 // clang-format off
 // #if defined($KEYWORD)
@@ -581,7 +584,7 @@ Enable warning C4005 to find the forbidden define.
 
 // not checking "unlikely" because it is commonly defined as a function-like macro
 
-#endif // defined(__cplusplus) && !defined(_ALLOW_KEYWORD_MACROS) && !defined(__INTELLISENSE__)
+#endif // !defined(_ALLOW_KEYWORD_MACROS) && !defined(__INTELLISENSE__)
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _XKEYCHECK_H

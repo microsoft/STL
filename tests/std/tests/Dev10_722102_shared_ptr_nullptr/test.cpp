@@ -207,10 +207,18 @@ namespace unique_ptr_ {
 
         void operator()(pointer ptr) const noexcept {
             assert(ptr.ptr_ != nullptr);
-            __analysis_assume(ptr.ptr_);
+            _Analysis_assume_(ptr.ptr_);
             assert(*ptr.ptr_ == 42);
             *ptr.ptr_ = 13;
         }
+
+        // Also test LWG-3548 "shared_ptr construction from unique_ptr should move (not copy) the deleter".
+        fancy_deleter()                = default;
+        fancy_deleter(fancy_deleter&&) = default;
+
+        fancy_deleter(const fancy_deleter&) = delete;
+        fancy_deleter& operator=(fancy_deleter&&) = delete;
+        fancy_deleter& operator=(const fancy_deleter&) = delete;
     };
 
     template <class>
@@ -285,7 +293,7 @@ namespace unique_ptr_ {
     }
 
     void test_lwg_2415() {
-        // per LWG-2415
+        // per LWG-2415: "Inconsistency between unique_ptr and shared_ptr"
         assert(AssertDeleter::count == 0);
         unique_ptr<int, AssertDeleter> up{nullptr};
         assert(AssertDeleter::count == 1);

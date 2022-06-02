@@ -5,6 +5,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -38,14 +39,14 @@ struct instantiator {
         }
 
         { // Validate range overload, empty haystack
-            Haystack haystack{};
+            Haystack haystack{span<const P, 0>{}};
             Needle needle{needle_elements};
             const same_as<bool> auto result = includes(haystack, needle, ranges::less{}, get_first, add_one);
             assert(!result);
         }
         { // Validate iterator overload, empty needle
             Haystack haystack{haystack_elements};
-            Needle needle{};
+            Needle needle{span<const int, 0>{}};
             const same_as<bool> auto result = includes(
                 haystack.begin(), haystack.end(), needle.begin(), needle.end(), ranges::less{}, get_first, add_one);
             assert(result);

@@ -1,4 +1,4 @@
-// cwctype standard header
+// cwctype standard header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -6,7 +6,7 @@
 #pragma once
 #ifndef _CWCTYPE_
 #define _CWCTYPE_
-#include <yvals.h>
+#include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <wctype.h>
@@ -18,7 +18,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-// remove any (improper) macro overrides
+// TRANSITION, /clr:pure (see corecrt_wctype.h): remove any (improper) macro overrides
 #undef iswalnum
 #undef iswalpha
 #undef iswblank

@@ -66,7 +66,7 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_assoc_laguerre(
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_assoc_laguerre(
     const unsigned int _Pn, const unsigned int _Pm, const double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
@@ -75,7 +75,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_assoc_laguerre(
     return _Boost_call([=] { return ::boost::math::laguerre(_Pn, _Pm, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_assoc_laguerref(
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_assoc_laguerref(
     const unsigned int _Pn, const unsigned int _Pm, const float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
@@ -84,7 +84,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_assoc_laguerref(
     return _Boost_call([=] { return ::boost::math::laguerre(_Pn, _Pm, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_assoc_legendre(
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_assoc_legendre(
     const unsigned int _Pl, const unsigned int _Pm, const double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
@@ -100,7 +100,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_assoc_legendre(
     });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_assoc_legendref(
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_assoc_legendref(
     const unsigned int _Pl, const unsigned int _Pm, const float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
@@ -116,23 +116,23 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_assoc_legendref(
     });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_beta(const double _Px, const double _Py) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_beta(const double _Px, const double _Py) noexcept {
     return _Boost_call([=] { return ::boost::math::beta(_Px, _Py); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_betaf(const float _Px, const float _Py) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_betaf(const float _Px, const float _Py) noexcept {
     return _Boost_call([=] { return ::boost::math::beta(_Px, _Py); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_comp_ellint_1(const double _Pk) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_comp_ellint_1(const double _Pk) noexcept {
     return _Boost_call([=] { return ::boost::math::ellint_1(_Pk); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_comp_ellint_1f(const float _Pk) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_comp_ellint_1f(const float _Pk) noexcept {
     return _Boost_call([=] { return ::boost::math::ellint_1(_Pk); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_comp_ellint_2(const double _Pk) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_comp_ellint_2(const double _Pk) noexcept {
     if (_STD isnan(_Pk)) {
         return _Pk;
     }
@@ -140,7 +140,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_comp_ellint_2(const doubl
     return _Boost_call([=] { return ::boost::math::ellint_2(_Pk); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_comp_ellint_2f(const float _Pk) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_comp_ellint_2f(const float _Pk) noexcept {
     if (_STD isnan(_Pk)) {
         return _Pk;
     }
@@ -148,7 +148,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_comp_ellint_2f(const float
     return _Boost_call([=] { return ::boost::math::ellint_2(_Pk); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_comp_ellint_3(const double _Pk, const double _Pnu) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_comp_ellint_3(const double _Pk, const double _Pnu) noexcept {
     if (_STD isnan(_Pk)) {
         return _Pk;
     }
@@ -160,7 +160,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_comp_ellint_3(const doubl
     return _Boost_call([=] { return ::boost::math::ellint_3(_Pk, _Pnu); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_comp_ellint_3f(const float _Pk, const float _Pnu) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_comp_ellint_3f(const float _Pk, const float _Pnu) noexcept {
     if (_STD isnan(_Pk)) {
         return _Pk;
     }
@@ -172,7 +172,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_comp_ellint_3f(const float
     return _Boost_call([=] { return ::boost::math::ellint_3(_Pk, _Pnu); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_cyl_bessel_i(const double _Pnu, const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_cyl_bessel_i(const double _Pnu, const double _Px) noexcept {
     if (_STD isnan(_Pnu)) {
         return _Pnu;
     }
@@ -184,7 +184,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_cyl_bessel_i(const double
     return _Boost_call([=] { return ::boost::math::cyl_bessel_i(_Pnu, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_cyl_bessel_if(const float _Pnu, const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_cyl_bessel_if(const float _Pnu, const float _Px) noexcept {
     if (_STD isnan(_Pnu)) {
         return _Pnu;
     }
@@ -196,7 +196,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_cyl_bessel_if(const float 
     return _Boost_call([=] { return ::boost::math::cyl_bessel_i(_Pnu, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_cyl_bessel_j(const double _Pnu, const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_cyl_bessel_j(const double _Pnu, const double _Px) noexcept {
     if (_STD isnan(_Pnu)) {
         return _Pnu;
     }
@@ -208,7 +208,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_cyl_bessel_j(const double
     return _Boost_call([=] { return ::boost::math::cyl_bessel_j(_Pnu, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_cyl_bessel_jf(const float _Pnu, const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_cyl_bessel_jf(const float _Pnu, const float _Px) noexcept {
     if (_STD isnan(_Pnu)) {
         return _Pnu;
     }
@@ -220,7 +220,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_cyl_bessel_jf(const float 
     return _Boost_call([=] { return ::boost::math::cyl_bessel_j(_Pnu, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_cyl_bessel_k(const double _Pnu, const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_cyl_bessel_k(const double _Pnu, const double _Px) noexcept {
     if (_STD isnan(_Pnu)) {
         return _Pnu;
     }
@@ -232,7 +232,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_cyl_bessel_k(const double
     return _Boost_call([=] { return ::boost::math::cyl_bessel_k(_Pnu, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_cyl_bessel_kf(const float _Pnu, const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_cyl_bessel_kf(const float _Pnu, const float _Px) noexcept {
     if (_STD isnan(_Pnu)) {
         return _Pnu;
     }
@@ -244,7 +244,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_cyl_bessel_kf(const float 
     return _Boost_call([=] { return ::boost::math::cyl_bessel_k(_Pnu, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_cyl_neumann(const double _Pnu, const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_cyl_neumann(const double _Pnu, const double _Px) noexcept {
     if (_STD isnan(_Pnu)) {
         return _Pnu;
     }
@@ -256,7 +256,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_cyl_neumann(const double 
     return _Boost_call([=] { return ::boost::math::cyl_neumann(_Pnu, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_cyl_neumannf(const float _Pnu, const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_cyl_neumannf(const float _Pnu, const float _Px) noexcept {
     if (_STD isnan(_Pnu)) {
         return _Pnu;
     }
@@ -268,7 +268,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_cyl_neumannf(const float _
     return _Boost_call([=] { return ::boost::math::cyl_neumann(_Pnu, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_ellint_1(const double _Pk, const double _Pphi) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_ellint_1(const double _Pk, const double _Pphi) noexcept {
     if (_STD isnan(_Pk)) {
         return _Pk;
     }
@@ -280,7 +280,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_ellint_1(const double _Pk
     return _Boost_call([=] { return ::boost::math::ellint_1(_Pk, _Pphi); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_ellint_1f(const float _Pk, const float _Pphi) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_ellint_1f(const float _Pk, const float _Pphi) noexcept {
     if (_STD isnan(_Pk)) {
         return _Pk;
     }
@@ -292,7 +292,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_ellint_1f(const float _Pk,
     return _Boost_call([=] { return ::boost::math::ellint_1(_Pk, _Pphi); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_ellint_2(const double _Pk, const double _Pphi) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_ellint_2(const double _Pk, const double _Pphi) noexcept {
     if (_STD isnan(_Pk)) {
         return _Pk;
     }
@@ -304,7 +304,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_ellint_2(const double _Pk
     return _Boost_call([=] { return ::boost::math::ellint_2(_Pk, _Pphi); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_ellint_2f(const float _Pk, const float _Pphi) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_ellint_2f(const float _Pk, const float _Pphi) noexcept {
     if (_STD isnan(_Pk)) {
         return _Pk;
     }
@@ -316,7 +316,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_ellint_2f(const float _Pk,
     return _Boost_call([=] { return ::boost::math::ellint_2(_Pk, _Pphi); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_ellint_3(
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_ellint_3(
     const double _Pk, const double _Pnu, const double _Pphi) noexcept {
     if (_STD isnan(_Pk)) {
         return _Pk;
@@ -333,7 +333,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_ellint_3(
     return _Boost_call([=] { return ::boost::math::ellint_3(_Pk, _Pnu, _Pphi); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_ellint_3f(
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_ellint_3f(
     const float _Pk, const float _Pnu, const float _Pphi) noexcept {
     if (_STD isnan(_Pk)) {
         return _Pk;
@@ -350,7 +350,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_ellint_3f(
     return _Boost_call([=] { return ::boost::math::ellint_3(_Pk, _Pnu, _Pphi); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_expint(const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_expint(const double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -358,7 +358,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_expint(const double _Px) 
     return _Boost_call([=] { return ::boost::math::expint(_Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_expintf(const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_expintf(const float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -366,7 +366,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_expintf(const float _Px) n
     return _Boost_call([=] { return ::boost::math::expint(_Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_hermite(const unsigned int _Pn, const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_hermite(const unsigned int _Pn, const double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -374,7 +374,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_hermite(const unsigned in
     return _Boost_call([=] { return ::boost::math::hermite(_Pn, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_hermitef(const unsigned int _Pn, const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_hermitef(const unsigned int _Pn, const float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -382,7 +382,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_hermitef(const unsigned in
     return _Boost_call([=] { return ::boost::math::hermite(_Pn, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_laguerre(const unsigned int _Pn, const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_laguerre(const unsigned int _Pn, const double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -390,7 +390,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_laguerre(const unsigned i
     return _Boost_call([=] { return ::boost::math::laguerre(_Pn, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_laguerref(const unsigned int _Pn, const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_laguerref(const unsigned int _Pn, const float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -398,7 +398,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_laguerref(const unsigned i
     return _Boost_call([=] { return ::boost::math::laguerre(_Pn, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_legendre(const unsigned int _Pl, const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_legendre(const unsigned int _Pl, const double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -406,7 +406,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_legendre(const unsigned i
     return _Boost_call([=] { return ::boost::math::legendre_p(_Pl, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_legendref(const unsigned int _Pl, const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_legendref(const unsigned int _Pl, const float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -414,7 +414,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_legendref(const unsigned i
     return _Boost_call([=] { return ::boost::math::legendre_p(_Pl, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_riemann_zeta(const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_riemann_zeta(const double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -422,7 +422,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_riemann_zeta(const double
     return _Boost_call([=] { return ::boost::math::zeta(_Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_riemann_zetaf(const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_riemann_zetaf(const float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -430,7 +430,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_riemann_zetaf(const float 
     return _Boost_call([=] { return ::boost::math::zeta(_Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_sph_bessel(const unsigned int _Pn, const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_sph_bessel(const unsigned int _Pn, const double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -438,7 +438,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_sph_bessel(const unsigned
     return _Boost_call([=] { return ::boost::math::sph_bessel(_Pn, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_sph_besself(const unsigned int _Pn, const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_sph_besself(const unsigned int _Pn, const float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -446,7 +446,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_sph_besself(const unsigned
     return _Boost_call([=] { return ::boost::math::sph_bessel(_Pn, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_sph_legendre(
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_sph_legendre(
     const unsigned int _Pl, const unsigned int _Pm, const double _Ptheta) noexcept {
     if (_STD isnan(_Ptheta)) {
         return _Ptheta;
@@ -455,7 +455,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_sph_legendre(
     return _Boost_call([=] { return ::boost::math::spherical_harmonic_r(_Pl, _Pm, _Ptheta, 0.0); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_sph_legendref(
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_sph_legendref(
     const unsigned int _Pl, const unsigned int _Pm, const float _Ptheta) noexcept {
     if (_STD isnan(_Ptheta)) {
         return _Ptheta;
@@ -464,7 +464,7 @@ _CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_sph_legendref(
     return _Boost_call([=] { return ::boost::math::spherical_harmonic_r(_Pl, _Pm, _Ptheta, 0.0f); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_sph_neumann(const unsigned int _Pn, const double _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_sph_neumann(const unsigned int _Pn, const double _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -472,7 +472,7 @@ _CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_sph_neumann(const unsigne
     return _Boost_call([=] { return ::boost::math::sph_neumann(_Pn, _Px); });
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_sph_neumannf(const unsigned int _Pn, const float _Px) noexcept {
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_sph_neumannf(const unsigned int _Pn, const float _Px) noexcept {
     if (_STD isnan(_Px)) {
         return _Px;
     }
@@ -515,12 +515,12 @@ namespace {
 } // unnamed namespace
 
 _EXTERN_C
-_CRT_SATELLITE_2 _NODISCARD double __stdcall __std_smf_hypot3(
+_NODISCARD _CRT_SATELLITE_2 double __stdcall __std_smf_hypot3(
     const double _Dx, const double _Dy, const double _Dz) noexcept {
     return _Hypot3(_Dx, _Dy, _Dz);
 }
 
-_CRT_SATELLITE_2 _NODISCARD float __stdcall __std_smf_hypot3f(
+_NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_hypot3f(
     const float _Dx, const float _Dy, const float _Dz) noexcept {
     return _Hypot3(_Dx, _Dy, _Dz);
 }

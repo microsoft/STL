@@ -10,8 +10,6 @@
 #include <climits>
 #include <cstdlib>
 
-#include "xmath.hpp"
-
 _EXTERN_C_UNLESS_PURE
 
 _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(const char*, char**, int, int*);

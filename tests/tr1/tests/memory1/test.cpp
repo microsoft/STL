@@ -13,6 +13,9 @@
 #include <sstream>
 #include <string>
 
+// TRANSITION, VSO-1281038: False C6287 for C++20 synthesized operators
+#pragma warning(disable : 6287) // Redundant code:  the left and right sub-expressions are identical.
+
 static void t_bad_weak_ptr() { // test bad_weak_ptr
     STD bad_weak_ptr ptr;
     STD exception* eptr = &ptr;

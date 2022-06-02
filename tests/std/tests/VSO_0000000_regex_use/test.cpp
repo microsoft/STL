@@ -353,7 +353,7 @@ void test_VSO_101318_ECMAScript_identity_escapes_should_be_lax() {
     // Test the ambiguous cases that we now want to accept
     g_regexTester.should_match("z", "\\z");
     g_regexTester.should_match("\xB5", "\\\xB5"); // \xB5 is the micro symbol in Latin-1
-    // ES6 explicitly says "but not c" so this should explode
+    // ES6 explicitly says "but not c" so this should fail
     g_regexTester.should_throw("\\c", error_escape);
     // Make sure w s and d still do what they're supposed to
     g_regexTester.should_match("1", "\\d");
@@ -546,6 +546,41 @@ void test_VSO_226914_word_boundaries() {
     aWordAny.should_search_fail("aa", match_not_bow | match_not_eow);
 }
 
+void test_gh_993() {
+    // GH-993 regex::icase is not handled correctly for some input.
+    {
+        const wstring subject = L" Copyright";
+        const test_wregex case_regex(&g_regexTester, LR"([a-z][a-z])", ECMAScript);
+        const test_wregex icase_regex(&g_regexTester, LR"([a-z][a-z])", ECMAScript | icase);
+
+        case_regex.should_search_match(subject, L"op");
+        icase_regex.should_search_match(subject, L"Co");
+    }
+
+    {
+        const wstring subject = L"blahZblah";
+        const test_wregex Z_case_regex(&g_regexTester, LR"([Z])", ECMAScript);
+        const test_wregex Z_icase_regex(&g_regexTester, LR"([Z])", ECMAScript | icase);
+        const test_wregex z_case_regex(&g_regexTester, LR"([z])", ECMAScript);
+        const test_wregex z_icase_regex(&g_regexTester, LR"([z])", ECMAScript | icase);
+
+        Z_case_regex.should_search_match(subject, L"Z");
+        Z_icase_regex.should_search_match(subject, L"Z");
+        z_icase_regex.should_search_match(subject, L"Z");
+
+        z_case_regex.should_search_fail(subject);
+        z_case_regex.should_search_fail(subject, match_not_bow);
+        z_case_regex.should_search_fail(subject, match_not_eow);
+        z_case_regex.should_search_fail(subject, match_not_bow | match_not_eow);
+
+        const wstring lowercase_subject = L"hungry_zombies";
+        Z_case_regex.should_search_fail(lowercase_subject);
+        Z_icase_regex.should_search_match(lowercase_subject, L"z");
+        z_case_regex.should_search_match(lowercase_subject, L"z");
+        z_icase_regex.should_search_match(lowercase_subject, L"z");
+    }
+}
+
 int main() {
     test_dev10_449367_case_insensitivity_should_work();
     test_dev11_462743_regex_collate_should_not_disable_regex_icase();
@@ -572,6 +607,7 @@ int main() {
     test_VSO_225160_match_bol_flag();
     test_VSO_225160_match_eol_flag();
     test_VSO_226914_word_boundaries();
+    test_gh_993();
 
     return g_regexTester.result();
 }

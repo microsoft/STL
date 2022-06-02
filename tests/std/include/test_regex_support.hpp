@@ -240,3 +240,64 @@ public:
         }
     }
 };
+
+class test_wregex {
+    regex_fixture* const fixture;
+    const std::wstring pattern;
+    const std::regex_constants::syntax_option_type syntax;
+    const std::wregex r;
+
+public:
+    test_wregex(regex_fixture* fixture, const std::wstring& pattern,
+        std::regex_constants::syntax_option_type syntax = std::regex_constants::ECMAScript)
+        : fixture(fixture), pattern(pattern), syntax(syntax), r(pattern, syntax) {}
+
+    test_wregex(const test_wregex&) = delete;
+    test_wregex& operator=(const test_wregex&) = delete;
+
+    void should_search_match(const std::wstring& subject, const std::wstring& expected,
+        const std::regex_constants::match_flag_type match_flags = std::regex_constants::match_default) const {
+        std::wsmatch mr;
+        try {
+            const bool search_result = std::regex_search(subject, mr, r, match_flags);
+            if (!search_result || mr[0] != expected) {
+                wprintf(LR"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to find "%s", )", subject.c_str(),
+                    pattern.c_str(), static_cast<unsigned int>(syntax), static_cast<unsigned int>(match_flags),
+                    expected.c_str());
+                if (search_result) {
+                    wprintf(LR"(but it matched "%s")"
+                            "\n",
+                        mr.str().c_str());
+                } else {
+                    puts("but it failed to match");
+                }
+
+                fixture->fail_regex();
+            }
+        } catch (const std::regex_error& e) {
+            wprintf(LR"(Failed to regex_search("%s", regex("%s", 0x%X), 0x%X): regex_error: )", subject.c_str(),
+                pattern.c_str(), static_cast<unsigned int>(syntax), static_cast<unsigned int>(match_flags));
+            printf("\"%s\"\n", e.what());
+            fixture->fail_regex();
+        }
+    }
+
+    void should_search_fail(const std::wstring& subject,
+        const std::regex_constants::match_flag_type match_flags = std::regex_constants::match_default) const {
+        std::wsmatch mr;
+        try {
+            if (std::regex_search(subject, mr, r, match_flags)) {
+                wprintf(LR"(Expected regex_search("%s", regex("%s", 0x%X), 0x%X) to not match, but it found "%s")"
+                        "\n",
+                    subject.c_str(), pattern.c_str(), static_cast<unsigned int>(syntax),
+                    static_cast<unsigned int>(match_flags), mr.str().c_str());
+                fixture->fail_regex();
+            }
+        } catch (const std::regex_error& e) {
+            wprintf(LR"(Failed to regex_search("%s", regex("%s", 0x%X), 0x%X): regex_error: )", subject.c_str(),
+                pattern.c_str(), static_cast<unsigned int>(syntax), static_cast<unsigned int>(match_flags));
+            printf("\"%s\"\n", e.what());
+            fixture->fail_regex();
+        }
+    }
+};

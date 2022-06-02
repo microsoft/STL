@@ -43,7 +43,7 @@ void test_atomic_wait_func_impl(UnderlyingType& old_value, const UnderlyingType 
         // timing assumption that the main thread evaluates the `wait(old_value)` before this timeout expires
         std::this_thread::sleep_for(waiting_duration);
         add_seq('6');
-#endif // CAN_FAIL_ON_TIMING_ASSUMPTION
+#endif
     });
 
     a.wait(old_value);
@@ -108,7 +108,8 @@ void test_notify_all_notifies_all(UnderlyingType old_value, const UnderlyingType
 template <class UnderlyingType>
 void test_notify_all_notifies_all_ptr(UnderlyingType old_value, const UnderlyingType new_value,
     const std::chrono::steady_clock::duration waiting_duration) {
-    test_notify_all_notifies_all_impl<std::atomic, UnderlyingType>(old_value, new_value, waiting_duration);
+    // increased waiting_duration because timing assumption might not hold for atomic smart pointers
+    test_notify_all_notifies_all_impl<std::atomic, UnderlyingType>(old_value, new_value, 3 * waiting_duration);
 }
 
 
@@ -187,6 +188,8 @@ struct big_char_like {
     friend bool operator==(big_char_like, big_char_like) = delete;
 };
 
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
 template <size_t size>
 struct with_padding_bits {
     alignas(size) char value;
@@ -197,6 +200,7 @@ struct with_padding_bits {
 
     friend bool operator==(with_padding_bits, with_padding_bits) = delete;
 };
+#pragma warning(pop)
 
 inline void test_atomic_wait() {
     // wait for all the threads to be waiting; if this value is too small the test might be ineffective but should not
@@ -225,6 +229,21 @@ inline void test_atomic_wait() {
     test_atomic_wait_func_ptr(std::make_shared<int>('a'), std::make_shared<int>('a'), waiting_duration);
     test_atomic_wait_func_ptr(
         std::weak_ptr{std::make_shared<int>('a')}, std::weak_ptr{std::make_shared<int>('a')}, waiting_duration);
+    test_atomic_wait_func_ptr(std::make_shared<int[]>(0), std::make_shared<int[]>(0), waiting_duration);
+    test_atomic_wait_func_ptr(
+        std::weak_ptr{std::make_shared<int[]>(0)}, std::weak_ptr{std::make_shared<int[]>(0)}, waiting_duration);
+    test_atomic_wait_func_ptr(std::make_shared<int[]>(1), std::make_shared<int[]>(1), waiting_duration);
+    test_atomic_wait_func_ptr(
+        std::weak_ptr{std::make_shared<int[]>(1)}, std::weak_ptr{std::make_shared<int[]>(1)}, waiting_duration);
+    test_atomic_wait_func_ptr(std::make_shared<int[2]>(), std::make_shared<int[2]>(), waiting_duration);
+    test_atomic_wait_func_ptr(
+        std::weak_ptr{std::make_shared<int[2]>()}, std::weak_ptr{std::make_shared<int[2]>()}, waiting_duration);
+    test_atomic_wait_func_ptr(std::make_shared<int[][2]>(2), std::make_shared<int[][2]>(2), waiting_duration);
+    test_atomic_wait_func_ptr(
+        std::weak_ptr{std::make_shared<int[][2]>(2)}, std::weak_ptr{std::make_shared<int[][2]>(2)}, waiting_duration);
+    test_atomic_wait_func_ptr(std::make_shared<int[2][2]>(), std::make_shared<int[2][2]>(), waiting_duration);
+    test_atomic_wait_func_ptr(
+        std::weak_ptr{std::make_shared<int[2][2]>()}, std::weak_ptr{std::make_shared<int[2][2]>()}, waiting_duration);
 
     test_notify_all_notifies_all<char>(1, 2, waiting_duration);
     test_notify_all_notifies_all<signed char>(1, 2, waiting_duration);
@@ -245,11 +264,32 @@ inline void test_atomic_wait() {
     test_notify_all_notifies_all(three_chars{1, 1, 3}, three_chars{1, 2, 3}, waiting_duration);
     test_notify_all_notifies_all(big_char_like{'a'}, big_char_like{'b'}, waiting_duration);
 
+    test_notify_all_notifies_all_ptr(std::make_shared<int>('a'), std::make_shared<int>('a'), waiting_duration);
+    test_notify_all_notifies_all_ptr(
+        std::weak_ptr{std::make_shared<int>('a')}, std::weak_ptr{std::make_shared<int>('a')}, waiting_duration);
+    test_notify_all_notifies_all_ptr(std::make_shared<int[]>(0), std::make_shared<int[]>(0), waiting_duration);
+    test_notify_all_notifies_all_ptr(
+        std::weak_ptr{std::make_shared<int[]>(0)}, std::weak_ptr{std::make_shared<int[]>(0)}, waiting_duration);
+    test_notify_all_notifies_all_ptr(std::make_shared<int[]>(1), std::make_shared<int[]>(1), waiting_duration);
+    test_notify_all_notifies_all_ptr(
+        std::weak_ptr{std::make_shared<int[]>(1)}, std::weak_ptr{std::make_shared<int[]>(1)}, waiting_duration);
+    test_notify_all_notifies_all_ptr(std::make_shared<int[2]>(), std::make_shared<int[2]>(), waiting_duration);
+    test_notify_all_notifies_all_ptr(
+        std::weak_ptr{std::make_shared<int[2]>()}, std::weak_ptr{std::make_shared<int[2]>()}, waiting_duration);
+    test_notify_all_notifies_all_ptr(std::make_shared<int[][2]>(2), std::make_shared<int[][2]>(2), waiting_duration);
+    test_notify_all_notifies_all_ptr(
+        std::weak_ptr{std::make_shared<int[][2]>(2)}, std::weak_ptr{std::make_shared<int[][2]>(2)}, waiting_duration);
+    test_notify_all_notifies_all_ptr(std::make_shared<int[2][2]>(), std::make_shared<int[2][2]>(), waiting_duration);
+    test_notify_all_notifies_all_ptr(
+        std::weak_ptr{std::make_shared<int[2][2]>()}, std::weak_ptr{std::make_shared<int[2][2]>()}, waiting_duration);
+
 #ifndef __clang__ // TRANSITION, LLVM-46685
     test_pad_bits<with_padding_bits<2>>(waiting_duration);
     test_pad_bits<with_padding_bits<4>>(waiting_duration);
     test_pad_bits<with_padding_bits<8>>(waiting_duration);
+#ifndef _M_ARM
     test_pad_bits<with_padding_bits<16>>(waiting_duration);
     test_pad_bits<with_padding_bits<32>>(waiting_duration);
+#endif // ^^^ !ARM ^^^
 #endif // __clang__, TRANSITION, LLVM-46685
 }

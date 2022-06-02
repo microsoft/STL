@@ -7,6 +7,7 @@
 #include <concepts>
 #include <numeric>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -66,7 +67,7 @@ struct instantiator {
 
             { // Validate iterator overload, empty range
                 nontrivial_int output[3];
-                In wrapped_input{};
+                In wrapped_input{span<const nontrivial_int, 0>{}};
                 const same_as<reverse_copy_result<iterator_t<In>, Out>> auto result =
                     reverse_copy(wrapped_input.begin(), wrapped_input.end(), Out{output});
                 assert(result.in == wrapped_input.end());
@@ -74,7 +75,7 @@ struct instantiator {
             }
             { // Validate range overload, empty range
                 nontrivial_int output[3];
-                In wrapped_input{};
+                In wrapped_input{span<const nontrivial_int, 0>{}};
                 const same_as<reverse_copy_result<iterator_t<In>, Out>> auto result =
                     reverse_copy(wrapped_input, Out{output});
                 assert(result.in == wrapped_input.end());
@@ -129,7 +130,7 @@ struct test_vector {
 
         { // Validate iterator overload, vectorizable empty
             range_value_t<In> output[3];
-            In wrapped_input{};
+            In wrapped_input{span<range_value_t<In>, 0>{}};
             const same_as<reverse_copy_result<iterator_t<In>, Out>> auto result =
                 reverse_copy(wrapped_input.begin(), wrapped_input.end(), Out{output});
             assert(result.in == wrapped_input.end());
@@ -137,7 +138,7 @@ struct test_vector {
         }
         { // Validate range overload, vectorizable empty
             range_value_t<In> output[3];
-            In wrapped_input{};
+            In wrapped_input{span<range_value_t<In>, 0>{}};
             const same_as<reverse_copy_result<iterator_t<In>, Out>> auto result =
                 reverse_copy(wrapped_input, Out{output});
             assert(result.in == wrapped_input.end());

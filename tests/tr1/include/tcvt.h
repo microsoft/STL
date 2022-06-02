@@ -92,7 +92,7 @@ bool test_read(const char* fname, const Mystring& mystring) { // read sequences 
 
     MYWCHAR ch;
     for (size_t idx = 0; idx < mystring.size(); ++idx) { // read a wide char and test for expected value
-        ch = (MYWCHAR)(-1);
+        ch = (MYWCHAR) (-1);
         if (mystr.read(&ch, 1) && ch == mystring[idx])
             CHECK(1);
         else { // read failed, quit

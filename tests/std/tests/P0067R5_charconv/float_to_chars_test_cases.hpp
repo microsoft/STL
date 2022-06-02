@@ -36,7 +36,8 @@
 // (Keep the cgmanifest.json commitHash in sync.)
 
 
-#pragma once
+#ifndef FLOAT_TO_CHARS_TEST_CASES_HPP
+#define FLOAT_TO_CHARS_TEST_CASES_HPP
 
 #include <charconv>
 
@@ -140,7 +141,7 @@ inline constexpr FloatToCharsTestCase float_to_chars_test_cases[] = {
     {6.0898e-39f, chars_format::scientific, "6.0898e-39"},
     {0.0010310042f, chars_format::scientific, "1.0310042e-03"},
     {2.8823261e17f, chars_format::scientific, "2.882326e+17"},
-    {0x1.5c87fap-84f, chars_format::scientific, "7.038531e-26"}, // TRANSITION, VSO-629490, should be 7.038531e-26f
+    {7.038531e-26f, chars_format::scientific, "7.038531e-26"},
     {9.2234038e17f, chars_format::scientific, "9.223404e+17"},
     {6.7108872e7f, chars_format::scientific, "6.710887e+07"},
     {1.0e-44f, chars_format::scientific, "1e-44"},
@@ -544,3 +545,5 @@ inline constexpr FloatToCharsTestCase float_to_chars_test_cases[] = {
     {0x1p87f, chars_format::scientific, "1.5474251e+26"},
     {0x1p-96f, chars_format::scientific, "1.2621775e-29"},
 };
+
+#endif // FLOAT_TO_CHARS_TEST_CASES_HPP

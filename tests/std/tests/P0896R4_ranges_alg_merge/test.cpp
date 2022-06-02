@@ -5,6 +5,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -74,7 +75,7 @@ struct instantiator {
 
         { // Validate range overload, empty range1
             P output[size(elements2)]{};
-            R1 range1{};
+            R1 range1{span<const P, 0>{}};
             R2 range2{elements2};
             size_t counter = 0;
 
@@ -89,7 +90,7 @@ struct instantiator {
         { // Validate iterator overload, empty range2
             P output[size(elements1)]{};
             R1 range1{elements1};
-            R2 range2{};
+            R2 range2{span<const P, 0>{}};
             size_t counter = 0;
 
             const same_as<merge_result<iterator_t<R1>, iterator_t<R2>, O>> auto result =

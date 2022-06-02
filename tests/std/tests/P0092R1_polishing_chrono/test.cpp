@@ -208,7 +208,7 @@ int main() {
     assert(duration_cast<duration<long long>>(d).count() == 17);
 
 
-    // DevDiv-742944 "non conforming return value for std::chrono::duration::operator%()"
+    // DevDiv-742944 "non-conforming return value for std::chrono::duration::operator%()"
     assert((milliseconds(1050) % seconds(1)).count() == 50);
 
     assert((milliseconds(1729) / 10).count() == 172);

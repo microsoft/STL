@@ -45,10 +45,11 @@ def nullContext(value):
 def makeReport(cmd, out, err, rc):
     report = "Command: \"%s\"\n" % "\" \"".join(cmd)
     report += "Exit Code: %d\n" % rc
+    # Replacing CRLFs with LFs avoids ugly double newlines when this is displayed in Azure Pipelines.
     if out:
-        report += "Standard Output:\n--\n%s--\n" % out
+        report += "Standard Output:\n--\n%s--\n" % out.replace("\r\n", "\n")
     if err:
-        report += "Standard Error:\n--\n%s--\n" % err
+        report += "Standard Error:\n--\n%s--\n" % err.replace("\r\n", "\n")
     report += '\n'
     return report
 
@@ -68,6 +69,16 @@ class ExecuteCommandTimeoutException(Exception):
 # Close extra file handles on UNIX (on Windows this cannot be done while
 # also redirecting input).
 kUseCloseFDs = not (platform.system() == 'Windows')
+
+
+def decodeOutput(bytes):
+    # MSVC's output is encoded in the active code page
+    # EDG's (`cl /BE`) output is encoded in UTF-8
+    try:
+        return bytes.decode()
+    except UnicodeError:
+        import locale
+        return bytes.decode(locale.getpreferredencoding(do_setlocale=False))
 
 
 def executeCommand(command, cwd=None, env=None, input=None, timeout=0):
@@ -118,8 +129,8 @@ def executeCommand(command, cwd=None, env=None, input=None, timeout=0):
             timerObject.cancel()
 
     # Ensure the resulting output is always of string type.
-    out = out.decode()
-    err = err.decode()
+    out = decodeOutput(out)
+    err = decodeOutput(err)
 
     if hitTimeOut:
         raise ExecuteCommandTimeoutException(
@@ -142,8 +153,6 @@ def killProcessAndChildren(pid):
     running children (recursively). It is currently implemented
     using the psutil module which provides a simple platform
     neutral implementation.
-
-    TRANSITION: Jobify this
     """
     if platform.system() == 'AIX':
         subprocess.call('kill -kill $(ps -o pid= -L{})'.format(pid),

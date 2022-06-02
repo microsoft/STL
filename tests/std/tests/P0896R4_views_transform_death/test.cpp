@@ -287,29 +287,9 @@ void test_iter_move_value_initialized_iterator() {
     (void) ranges::iter_move(i); // cannot dereference value-initialized transform_view iterator
 }
 
-void test_iter_swap_value_initialized_iterators() {
-    ranges::iterator_t<TV> i0{};
-    ranges::iterator_t<TV> i1{};
-    (void) ranges::iter_swap(i0, i1); // cannot dereference value-initialized transform_view iterator
-}
-
-void test_iter_swap_value_initialized_iterator_left() {
-    ranges::iterator_t<TV> i0{};
-    TV r{some_ints, lambda};
-    ranges::iterator_t<TV> i1 = r.begin();
-    (void) ranges::iter_swap(i0, i1); // cannot dereference value-initialized transform_view iterator
-}
-
-void test_iter_swap_value_initialized_iterator_right() {
-    TV r{some_ints, lambda};
-    ranges::iterator_t<TV> i0 = r.begin();
-    ranges::iterator_t<TV> i1{};
-    (void) ranges::iter_swap(i0, i1); // cannot dereference value-initialized transform_view iterator
-}
-
 void test_sentinel_compare_value_initialized() {
     auto r = ranges::subrange{counted_iterator{some_ints, ranges::distance(some_ints)}, default_sentinel}
-             | views::transform(lambda);
+           | views::transform(lambda);
     using R = decltype(r);
     static_assert(!ranges::common_range<R>);
     (void) (ranges::iterator_t<R>{} == r.end());
@@ -317,7 +297,7 @@ void test_sentinel_compare_value_initialized() {
 
 void test_sentinel_difference_value_initialized() {
     auto r = ranges::subrange{counted_iterator{some_ints, ranges::distance(some_ints)}, default_sentinel}
-             | views::transform(lambda);
+           | views::transform(lambda);
     using R = decltype(r);
     static_assert(!ranges::common_range<R>);
     static_assert(sized_sentinel_for<ranges::sentinel_t<R>, ranges::iterator_t<R>>);
@@ -326,7 +306,7 @@ void test_sentinel_difference_value_initialized() {
 
 void test_flipped_sentinel_difference_value_initialized() {
     auto r = ranges::subrange{counted_iterator{some_ints, ranges::distance(some_ints)}, default_sentinel}
-             | views::transform(lambda);
+           | views::transform(lambda);
     using R = decltype(r);
     static_assert(!ranges::common_range<R>);
     static_assert(sized_sentinel_for<ranges::sentinel_t<R>, ranges::iterator_t<R>>);
@@ -334,7 +314,7 @@ void test_flipped_sentinel_difference_value_initialized() {
 }
 
 int main(int argc, char* argv[]) {
-    std_testing::death_test_executive exec([] {});
+    std_testing::death_test_executive exec;
 
 #if _ITERATOR_DEBUG_LEVEL != 0
     exec.add_death_tests({
@@ -382,9 +362,6 @@ int main(int argc, char* argv[]) {
         test_operator_minus_incompatible_different,
         test_operator_minus_incompatible_value_initialized,
         test_iter_move_value_initialized_iterator,
-        test_iter_swap_value_initialized_iterators,
-        test_iter_swap_value_initialized_iterator_left,
-        test_iter_swap_value_initialized_iterator_right,
         test_sentinel_compare_value_initialized,
         test_sentinel_difference_value_initialized,
         test_flipped_sentinel_difference_value_initialized,

@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <stdint.h>
+#include <cstdint>
 #include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
@@ -19,9 +19,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-inline constexpr size_t __std_fs_max_path                      = 260; // #define MAX_PATH          260
-inline constexpr size_t __std_fs_temp_path_max                 = __std_fs_max_path + 1;
-inline constexpr long long __std_fs_file_time_epoch_adjustment = 0x19DB1DED53E8000LL; // TRANSITION, ABI
+inline constexpr size_t __std_fs_max_path      = 260; // #define MAX_PATH          260
+inline constexpr size_t __std_fs_temp_path_max = __std_fs_max_path + 1;
 
 enum class __std_win_error : unsigned long {
     _Success                   = 0, // #define ERROR_SUCCESS                    0L
@@ -45,7 +44,6 @@ enum class __std_win_error : unsigned long {
     _Max                       = ~0UL // sentinel not used by Win32
 };
 
-// FUNCTION __std_is_file_not_found
 #pragma warning(push)
 #pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
 _NODISCARD inline bool __std_is_file_not_found(const __std_win_error _Error) noexcept {
@@ -206,7 +204,7 @@ _BITMASK_OPS(__std_fs_file_flags)
 
 enum class __std_fs_file_handle : intptr_t { _Invalid = -1 };
 
-enum class __std_code_page : unsigned int { _Utf8 = 65001 };
+enum class __std_code_page : unsigned int { _Acp = 0, _Utf8 = 65001 };
 
 struct __std_fs_convert_result {
     int _Len;
@@ -362,7 +360,6 @@ struct _Fs_file {
     }
 };
 
-// FUNCTION OBJECT _Is_slash
 struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
     _NODISCARD constexpr bool operator()(
         const wchar_t _Ch) const { // test if _Ch is a preferred-separator or fallback-separator

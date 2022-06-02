@@ -18,7 +18,7 @@
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <atomic>
-#include <limits.h>
+#include <climits>
 #include <type_traits>
 #include <xmemory>
 

@@ -20,13 +20,12 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 
-// ALIAS TEMPLATE _SMF_control_copy
 template <class _Base>
 struct _Non_trivial_copy : _Base { // non-trivial copy construction facade
     using _Base::_Base;
 
     _Non_trivial_copy() = default;
-    _Non_trivial_copy(const _Non_trivial_copy& _That) noexcept(
+    _CONSTEXPR20 _Non_trivial_copy(const _Non_trivial_copy& _That) noexcept(
         noexcept(_Base::_Construct_from(static_cast<const _Base&>(_That)))) {
         _Base::_Construct_from(static_cast<const _Base&>(_That));
     }
@@ -41,7 +40,6 @@ using _SMF_control_copy = conditional_t<
     _Non_trivial_copy<_Base>, _Base>;
 
 
-// ALIAS TEMPLATE _SMF_control_move
 template <class _Base, class... _Types>
 struct _Non_trivial_move : _SMF_control_copy<_Base, _Types...> { // non-trivial move construction facade
     using _Mybase = _SMF_control_copy<_Base, _Types...>;
@@ -49,7 +47,7 @@ struct _Non_trivial_move : _SMF_control_copy<_Base, _Types...> { // non-trivial 
 
     _Non_trivial_move()                         = default;
     _Non_trivial_move(const _Non_trivial_move&) = default;
-    _Non_trivial_move(_Non_trivial_move&& _That) noexcept(
+    _CONSTEXPR20 _Non_trivial_move(_Non_trivial_move&& _That) noexcept(
         noexcept(_Mybase::_Construct_from(static_cast<_Base&&>(_That)))) {
         _Mybase::_Construct_from(static_cast<_Base&&>(_That));
     }
@@ -63,7 +61,6 @@ using _SMF_control_move = conditional_t<
     _Non_trivial_move<_Base, _Types...>, _SMF_control_copy<_Base, _Types...>>;
 
 
-// ALIAS TEMPLATE _SMF_control_copy_assign
 template <class _Base, class... _Types>
 struct _Non_trivial_copy_assign : _SMF_control_move<_Base, _Types...> { // non-trivial copy assignment facade
     using _Mybase = _SMF_control_move<_Base, _Types...>;
@@ -73,7 +70,7 @@ struct _Non_trivial_copy_assign : _SMF_control_move<_Base, _Types...> { // non-t
     _Non_trivial_copy_assign(const _Non_trivial_copy_assign&) = default;
     _Non_trivial_copy_assign(_Non_trivial_copy_assign&&)      = default;
 
-    _Non_trivial_copy_assign& operator=(const _Non_trivial_copy_assign& _That) noexcept(
+    _CONSTEXPR20 _Non_trivial_copy_assign& operator=(const _Non_trivial_copy_assign& _That) noexcept(
         noexcept(_Mybase::_Assign_from(static_cast<const _Base&>(_That)))) {
         _Mybase::_Assign_from(static_cast<const _Base&>(_That));
         return *this;
@@ -102,7 +99,6 @@ using _SMF_control_copy_assign =
             _Non_trivial_copy_assign<_Base, _Types...>, _Deleted_copy_assign<_Base, _Types...>>>;
 
 
-// ALIAS TEMPLATE _SMF_control_move_assign
 template <class _Base, class... _Types>
 struct _Non_trivial_move_assign : _SMF_control_copy_assign<_Base, _Types...> { // non-trivial move assignment facade
     using _Mybase = _SMF_control_copy_assign<_Base, _Types...>;
@@ -113,7 +109,7 @@ struct _Non_trivial_move_assign : _SMF_control_copy_assign<_Base, _Types...> { /
     _Non_trivial_move_assign(_Non_trivial_move_assign&&)      = default;
     _Non_trivial_move_assign& operator=(const _Non_trivial_move_assign&) = default;
 
-    _Non_trivial_move_assign& operator=(_Non_trivial_move_assign&& _That) noexcept(
+    _CONSTEXPR20 _Non_trivial_move_assign& operator=(_Non_trivial_move_assign&& _That) noexcept(
         noexcept(_Mybase::_Assign_from(static_cast<_Base&&>(_That)))) {
         _Mybase::_Assign_from(static_cast<_Base&&>(_That));
         return *this;
@@ -141,7 +137,6 @@ using _SMF_control_move_assign =
             _Non_trivial_move_assign<_Base, _Types...>, _Deleted_move_assign<_Base, _Types...>>>;
 
 
-// ALIAS TEMPLATE _SMF_control
 template <class _Base, class... _Types>
 using _SMF_control = _SMF_control_move_assign<_Base, _Types...>;
 

@@ -42,16 +42,16 @@ Mystring mymake() {
     // First set of two byte characters with odd first bytes
     for (unsigned long ch = 0x8100; ch <= 0xa000; ch += 0x0200) {
         for (unsigned long offset = 0x40; offset < 0x7f; ++offset) {
-            string buf = myconv.to_bytes((MYWCHAR)(ch + offset));
+            string buf = myconv.to_bytes((MYWCHAR) (ch + offset));
             if (0 < buf.size() && (ch + offset) != static_cast<unsigned long>(WEOF)) {
-                mystring.insert(mystring.end(), (MYWCHAR)(ch + offset));
+                mystring.insert(mystring.end(), (MYWCHAR) (ch + offset));
             }
         }
 
         for (unsigned long offset = 0x8A; offset < 0x9f; ++offset) {
-            string buf = myconv.to_bytes((MYWCHAR)(ch + offset));
+            string buf = myconv.to_bytes((MYWCHAR) (ch + offset));
             if (0 < buf.size() && (ch + offset) != static_cast<unsigned long>(WEOF)) {
-                mystring.insert(mystring.end(), (MYWCHAR)(ch + offset));
+                mystring.insert(mystring.end(), (MYWCHAR) (ch + offset));
             }
         }
     }
@@ -59,9 +59,9 @@ Mystring mymake() {
     // First set of two byte characters with even first bytes
     for (unsigned long ch = 0x8200; ch <= 0xa000; ch += 0x0200) {
         for (unsigned long offset = 0x9f; offset < 0xfd; ++offset) {
-            string buf = myconv.to_bytes((MYWCHAR)(ch + offset));
+            string buf = myconv.to_bytes((MYWCHAR) (ch + offset));
             if (0 < buf.size() && (ch + offset) != static_cast<unsigned long>(WEOF)) {
-                mystring.insert(mystring.end(), (MYWCHAR)(ch + offset));
+                mystring.insert(mystring.end(), (MYWCHAR) (ch + offset));
             }
         }
     }
@@ -69,16 +69,16 @@ Mystring mymake() {
     // Second set of two byte characters with odd first bytes
     for (unsigned long ch = 0xe100; ch <= 0xf000; ch += 0x0200) {
         for (unsigned long offset = 0x40; offset < 0x7f; ++offset) {
-            string buf = myconv.to_bytes((MYWCHAR)(ch + offset));
+            string buf = myconv.to_bytes((MYWCHAR) (ch + offset));
             if (0 < buf.size() && (ch + offset) != static_cast<unsigned long>(WEOF)) {
-                mystring.insert(mystring.end(), (MYWCHAR)(ch + offset));
+                mystring.insert(mystring.end(), (MYWCHAR) (ch + offset));
             }
         }
 
         for (unsigned long offset = 0x8A; offset < 0x9f; ++offset) {
-            string buf = myconv.to_bytes((MYWCHAR)(ch + offset));
+            string buf = myconv.to_bytes((MYWCHAR) (ch + offset));
             if (0 < buf.size() && (ch + offset) != static_cast<unsigned long>(WEOF)) {
-                mystring.insert(mystring.end(), (MYWCHAR)(ch + offset));
+                mystring.insert(mystring.end(), (MYWCHAR) (ch + offset));
             }
         }
     }
@@ -86,9 +86,9 @@ Mystring mymake() {
     // Second set of two byte characters with even first bytes
     for (unsigned long ch = 0xe000; ch <= 0xf000; ch += 0x0200) {
         for (unsigned long offset = 0x9f; offset < 0xfd; ++offset) {
-            string buf = myconv.to_bytes((MYWCHAR)(ch + offset));
+            string buf = myconv.to_bytes((MYWCHAR) (ch + offset));
             if (0 < buf.size() && (ch + offset) != static_cast<unsigned long>(WEOF)) {
-                mystring.insert(mystring.end(), (MYWCHAR)(ch + offset));
+                mystring.insert(mystring.end(), (MYWCHAR) (ch + offset));
             }
         }
     }

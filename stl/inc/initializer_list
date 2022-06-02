@@ -18,7 +18,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
-// CLASS TEMPLATE initializer_list
 template <class _Elem>
 class initializer_list {
 public:
@@ -52,13 +51,11 @@ private:
     const _Elem* _Last;
 };
 
-// FUNCTION TEMPLATE begin
 template <class _Elem>
 _NODISCARD constexpr const _Elem* begin(initializer_list<_Elem> _Ilist) noexcept {
     return _Ilist.begin();
 }
 
-// FUNCTION TEMPLATE end
 template <class _Elem>
 _NODISCARD constexpr const _Elem* end(initializer_list<_Elem> _Ilist) noexcept {
     return _Ilist.end();

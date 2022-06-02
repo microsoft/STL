@@ -6,7 +6,9 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -23,39 +25,46 @@ struct instantiator {
 
     template <ranges::random_access_range R>
     static constexpr void call() {
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-        if constexpr (!ranges::contiguous_range<R>)
-#endif // TRANSITION, VSO-938163
-        {
-            using ranges::sort, ranges::is_sorted, ranges::iterator_t, ranges::less;
+        using ranges::sort, ranges::is_sorted, ranges::iterator_t, ranges::less;
 
-            { // Validate range overload
-                auto buff = input;
-                const R range{buff};
-                const same_as<iterator_t<R>> auto result = sort(range, less{}, get_first);
-                assert(result == range.end());
-                assert(is_sorted(range, less{}, get_first));
-            }
+        { // Validate range overload
+            auto buff = input;
+            const R range{buff};
+            const same_as<iterator_t<R>> auto result = sort(range, less{}, get_first);
+            assert(result == range.end());
+            assert(is_sorted(range, less{}, get_first));
+        }
 
-            { // Validate iterator overload
-                auto buff = input;
-                const R range{buff};
-                const same_as<iterator_t<R>> auto result = sort(range.begin(), range.end(), less{}, get_first);
-                assert(result == range.end());
-                assert(is_sorted(range.begin(), range.end(), less{}, get_first));
-            }
+        { // Validate iterator overload
+            auto buff = input;
+            const R range{buff};
+            const same_as<iterator_t<R>> auto result = sort(range.begin(), range.end(), less{}, get_first);
+            assert(result == range.end());
+            assert(is_sorted(range.begin(), range.end(), less{}, get_first));
+        }
 
-            { // Validate empty range
-                const R range{};
-                const same_as<iterator_t<R>> auto result = sort(range, less{}, get_first);
-                assert(result == range.end());
-                assert(is_sorted(range, less{}, get_first));
-            }
+        { // Validate empty range
+            const R range{span<P, 0>{}};
+            const same_as<iterator_t<R>> auto result = sort(range, less{}, get_first);
+            assert(result == range.end());
+            assert(is_sorted(range, less{}, get_first));
         }
     }
 };
 
+constexpr void test_devcom_1559808() {
+    // Regression test for DevCom-1559808, a bad interaction between constexpr vector and the use of structured bindings
+    // in the implementation of ranges::sort.
+
+    vector<int> vec(33, 42); // NB: 33 > std::_ISORT_MAX
+    ranges::sort(vec);
+    assert(vec.back() == 42);
+}
+
 int main() {
     STATIC_ASSERT((test_random<instantiator, P>(), true));
     test_random<instantiator, P>();
+
+    STATIC_ASSERT((test_devcom_1559808(), true));
+    test_devcom_1559808();
 }

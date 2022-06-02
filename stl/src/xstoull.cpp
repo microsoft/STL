@@ -3,6 +3,8 @@
 
 // _Stoull function
 
+#include <yvals.h>
+
 #include <cctype>
 #include <cerrno>
 #include <climits>

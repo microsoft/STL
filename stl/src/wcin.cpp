@@ -11,7 +11,6 @@
 static std::_Init_locks initlocks;
 
 _STD_BEGIN
-// OBJECT DECLARATIONS
 
 __PURE_APPDOMAIN_GLOBAL static wfilebuf wfin(_cpp_stdin);
 #if defined(_M_CEE_PURE)
@@ -20,7 +19,6 @@ __PURE_APPDOMAIN_GLOBAL extern wistream wcin(&wfin);
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wistream wcin(&wfin);
 #endif
 
-// INITIALIZATION CODE
 struct _Init_wcin { // ensures that wcin is initialized
     __CLR_OR_THIS_CALL _Init_wcin() { // initialize wcin
         _Ptr_wcin = &wcin;

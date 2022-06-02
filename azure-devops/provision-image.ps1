@@ -50,54 +50,98 @@ Function Get-TempFilePath {
   return Join-Path $tempPath $tempName
 }
 
+<#
+.SYNOPSIS
+Downloads and extracts a ZIP file to a newly created temporary subdirectory.
+
+.DESCRIPTION
+DownloadAndExtractZip returns a path containing the extracted contents.
+
+.PARAMETER Url
+The URL of the ZIP file to download.
+#>
+Function DownloadAndExtractZip {
+  Param(
+    [String]$Url
+  )
+
+  if ([String]::IsNullOrWhiteSpace($Url)) {
+    throw 'Missing Url'
+  }
+
+  $ZipPath = Get-TempFilePath -Extension 'zip'
+  & curl.exe -L -o $ZipPath -s -S $Url
+  $TempSubdirPath = Get-TempFilePath -Extension 'dir'
+  Expand-Archive -Path $ZipPath -DestinationPath $TempSubdirPath -Force
+
+  return $TempSubdirPath
+}
+
 $TranscriptPath = 'C:\provision-image-transcript.txt'
 
 if ([string]::IsNullOrEmpty($AdminUserPassword)) {
-  Start-Transcript -Path $TranscriptPath
+  Start-Transcript -Path $TranscriptPath -UseMinimalHeader
 } else {
   Write-Host 'AdminUser password supplied; switching to AdminUser.'
-  $PsExecPath = Get-TempFilePath -Extension 'exe'
-  Write-Host "Downloading psexec to: $PsExecPath"
-  & curl.exe -L -o $PsExecPath -s -S https://live.sysinternals.com/PsExec64.exe
+
+  # https://docs.microsoft.com/en-us/sysinternals/downloads/psexec
+  $PsToolsZipUrl = 'https://download.sysinternals.com/files/PSTools.zip'
+  Write-Host "Downloading: $PsToolsZipUrl"
+  $ExtractedPsToolsPath = DownloadAndExtractZip -Url $PsToolsZipUrl
+  $PsExecPath = Join-Path $ExtractedPsToolsPath 'PsExec64.exe'
+
+  # https://github.com/PowerShell/PowerShell/releases/latest
+  $PowerShellZipUrl = 'https://github.com/PowerShell/PowerShell/releases/download/v7.2.4/PowerShell-7.2.4-win-x64.zip'
+  Write-Host "Downloading: $PowerShellZipUrl"
+  $ExtractedPowerShellPath = DownloadAndExtractZip -Url $PowerShellZipUrl
+  $PwshPath = Join-Path $ExtractedPowerShellPath 'pwsh.exe'
+
   $PsExecArgs = @(
     '-u',
     'AdminUser',
     '-p',
-    $AdminUserPassword,
+    'AdminUserPassword_REDACTED',
     '-accepteula',
+    '-i',
     '-h',
-    'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe',
+    $PwshPath,
     '-ExecutionPolicy',
     'Unrestricted',
     '-File',
     $PSCommandPath
   )
-
   Write-Host "Executing: $PsExecPath $PsExecArgs"
+  $PsExecArgs[3] = $AdminUserPassword
 
   $proc = Start-Process -FilePath $PsExecPath -ArgumentList $PsExecArgs -Wait -PassThru
   Write-Host 'Reading transcript...'
   Get-Content -Path $TranscriptPath
   Write-Host 'Cleaning up...'
-  Remove-Item $PsExecPath
+  Remove-Item -Recurse -Path $ExtractedPsToolsPath
+  Remove-Item -Recurse -Path $ExtractedPowerShellPath
   exit $proc.ExitCode
 }
 
 $Workloads = @(
+  'Microsoft.VisualStudio.Component.VC.ASAN',
   'Microsoft.VisualStudio.Component.VC.CLI.Support',
   'Microsoft.VisualStudio.Component.VC.CMake.Project',
   'Microsoft.VisualStudio.Component.VC.CoreIde',
   'Microsoft.VisualStudio.Component.VC.Llvm.Clang',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.ARM.Spectre',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.ARM64.Spectre',
+  'Microsoft.VisualStudio.Component.VC.Runtimes.x86.x64.Spectre',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM',
   'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
+  'Microsoft.VisualStudio.Component.VC.Tools.ARM64EC',
   'Microsoft.VisualStudio.Component.VC.Tools.x86.x64',
-  'Microsoft.VisualStudio.Component.Windows10SDK.19041'
+  'Microsoft.VisualStudio.Component.Windows11SDK.22000'
 )
 
 $ReleaseInPath = 'Preview'
 $Sku = 'Enterprise'
-$VisualStudioBootstrapperUrl = 'https://aka.ms/vs/16/pre/vs_enterprise.exe'
-$PythonUrl = 'https://www.python.org/ftp/python/3.8.5/python-3.8.5-amd64.exe'
+$VisualStudioBootstrapperUrl = 'https://aka.ms/vs/17/pre/vs_enterprise.exe'
+$PythonUrl = 'https://www.python.org/ftp/python/3.10.4/python-3.10.4-amd64.exe'
 
 $CudaUrl = `
   'https://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.243_426.00_win10.exe'
@@ -279,7 +323,7 @@ Function PipInstall {
 
   try {
     Write-Host "Installing or upgrading $Package..."
-    python.exe -m pip install --upgrade $Package
+    python.exe -m pip install --progress-bar off --upgrade $Package
     Write-Host "Done installing or upgrading $Package."
   }
   catch {
@@ -288,6 +332,9 @@ Function PipInstall {
 }
 
 Write-Host 'AdminUser password not supplied; assuming already running as AdminUser.'
+
+# Print the Windows version, so we can verify whether Patch Tuesday has been picked up.
+cmd /c ver
 
 Write-Host 'Configuring AntiVirus exclusions...'
 Add-MpPreference -ExclusionPath C:\agent
@@ -305,19 +352,30 @@ InstallCuda -Url $CudaUrl -Features $CudaFeatures
 Write-Host 'Updating PATH...'
 
 # Step 1: Read the system path, which was just updated by installing Python.
-$environmentKey = Get-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' -Name Path
+$currentSystemPath = [Environment]::GetEnvironmentVariable('Path', 'Machine')
 
 # Step 2: Update the local path (for this running script), so PipInstall can run python.exe.
 # Additional directories can be added here (e.g. if we extracted a zip file
 # or installed something that didn't update the system path).
-$Env:PATH="$($environmentKey.Path)"
+$Env:PATH="$($currentSystemPath)"
 
 # Step 3: Update the system path, permanently recording any additional directories that were added in the previous step.
-Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment' `
-  -Name Path `
-  -Value "$Env:PATH"
+[Environment]::SetEnvironmentVariable('Path', "$Env:PATH", 'Machine')
 
 Write-Host 'Finished updating PATH!'
 
+Write-Host 'Running PipInstall...'
+
 PipInstall pip
 PipInstall psutil
+
+Write-Host 'Finished running PipInstall!'
+
+Write-Host 'Setting other environment variables...'
+
+# The STL's PR/CI builds are totally unrepresentative of customer usage.
+[Environment]::SetEnvironmentVariable('VSCMD_SKIP_SENDTELEMETRY', '1', 'Machine')
+
+Write-Host 'Finished setting other environment variables!'
+
+Write-Host 'Done!'

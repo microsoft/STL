@@ -31,7 +31,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #define __PURE_APPDOMAIN_GLOBAL
 #endif
 
-// CURRENT DLL NAMES
 #ifndef _CRT_MSVCP_CURRENT
 #ifdef _CRT_WINDOWS
 // Windows
@@ -130,7 +129,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #endif // _ITERATOR_DEBUG_LEVEL
 
-#ifdef __cplusplus
 #ifndef _ALLOW_MSC_VER_MISMATCH
 #pragma detect_mismatch("_MSC_VER", "1900")
 #endif // _ALLOW_MSC_VER_MISMATCH
@@ -150,7 +148,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma detect_mismatch("RuntimeLibrary", "MDd_DynamicDebug")
 #endif // defined(_DLL) etc.
 #endif // _ALLOW_RUNTIME_LIBRARY_MISMATCH
-#endif // __cplusplus
 
 #ifndef _CONTAINER_DEBUG_LEVEL
 #if _ITERATOR_DEBUG_LEVEL == 0
@@ -164,10 +161,20 @@ _STL_DISABLE_CLANG_WARNINGS
 #error _ITERATOR_DEBUG_LEVEL != 0 must imply _CONTAINER_DEBUG_LEVEL == 1.
 #endif // _ITERATOR_DEBUG_LEVEL != 0 && _CONTAINER_DEBUG_LEVEL == 0
 
-#define _STL_REPORT_ERROR(mesg)              \
-    do {                                     \
-        _RPTF0(_CRT_ASSERT, mesg);           \
-        _CRT_SECURE_INVALID_PARAMETER(mesg); \
+#ifndef _STL_CRT_SECURE_INVALID_PARAMETER
+#ifdef _STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::abort()
+#elif defined(_DEBUG) // avoid emitting unused long strings for function names; see GH-1956
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
+#else // _DEBUG
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
+#endif // _DEBUG
+#endif // _STL_CRT_SECURE_INVALID_PARAMETER
+
+#define _STL_REPORT_ERROR(mesg)                  \
+    do {                                         \
+        _RPTF0(_CRT_ASSERT, mesg);               \
+        _STL_CRT_SECURE_INVALID_PARAMETER(mesg); \
     } while (false)
 
 #ifdef __clang__
@@ -201,11 +208,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _DEBUG
 
 #ifdef _ENABLE_STL_INTERNAL_CHECK
-#define _STL_INTERNAL_CHECK(...)         _STL_VERIFY(__VA_ARGS__, "STL internal check: " #__VA_ARGS__)
-#define _STL_INTERNAL_STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
+#define _STL_INTERNAL_CHECK(...) _STL_VERIFY(__VA_ARGS__, "STL internal check: " #__VA_ARGS__)
 #else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_CHECK(...) _Analysis_assume_(__VA_ARGS__)
-#define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
 #ifndef _ENABLE_ATOMIC_REF_ALIGNMENT_CHECK
@@ -307,14 +312,12 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif
 #endif // _CRTDATA2_IMPORT
 
-// INTEGER PROPERTIES
+// integer properties
 #define _MAX_EXP_DIG    8 // for parsing numerics
 #define _MAX_INT_DIG    32
 #define _MAX_SIG_DIG_V1 36 // TRANSITION, ABI
 #define _MAX_SIG_DIG_V2 768
 
-// MULTITHREAD PROPERTIES
-// LOCK MACROS
 #define _LOCK_LOCALE         0
 #define _LOCK_MALLOC         1
 #define _LOCK_STREAM         2
@@ -337,13 +340,11 @@ _STL_DISABLE_CLANG_WARNINGS
 #error _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 requires 64-bit.
 #endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 && !defined(_WIN64)
 
-#ifdef __cplusplus
 _STD_BEGIN
 enum _Uninitialized { // tag for suppressing initialization
     _Noinit
 };
 
-// CLASS _Lockit
 class _CRTIMP2_PURE_IMPORT _Lockit { // lock while object in existence -- MUST NEST
 public:
 #ifdef _M_CEE_PURE
@@ -475,7 +476,6 @@ private:
     static void __cdecl _Init_locks_dtor(_Init_locks*) noexcept;
 };
 
-// EXCEPTION MACROS
 #if _HAS_EXCEPTIONS
 #define _TRY_BEGIN try {
 #define _CATCH(x) \
@@ -513,7 +513,6 @@ private:
 #define _THROW(x) x._Raise()
 #endif // _HAS_EXCEPTIONS
 _STD_END
-#endif // __cplusplus
 
 #ifndef _RELIABILITY_CONTRACT
 #define _RELIABILITY_CONTRACT

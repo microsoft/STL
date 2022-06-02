@@ -30,7 +30,7 @@ struct empty_test {
         // Validate empty ranges
         using ranges::partition_point;
 
-        const Range range{};
+        const Range range{span<P, 0>{}};
         ASSERT(partition_point(range, is_even, get_first) == range.end());
         ASSERT(partition_point(range.begin(), range.end(), is_even, get_first) == range.end());
     }

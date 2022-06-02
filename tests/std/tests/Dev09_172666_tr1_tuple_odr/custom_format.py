@@ -1,23 +1,24 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-from pathlib import Path
+import os
 
 from stl.test.format import STLTestFormat, TestStep
+from stl.test.tests import TestType
 
 
 class CustomTestFormat(STLTestFormat):
-    def getBuildSteps(self, test, lit_config, shared):
-        shared.exec_dir = test.getExecDir()
-        exe_source = Path(test.getSourcePath())
-        test2_source = exe_source.parent / 'test2.cpp'
-        output_base = test.getOutputBaseName()
-        output_dir = test.getOutputDir()
+    def getBuildSteps(self, test, litConfig, shared):
+        exeSource = test.getSourcePath()
+        test2Source = os.path.join(os.path.dirname(exeSource), 'test2.cpp')
 
-        cmd, out_files, shared.exec_file = \
-            test.cxx.executeBasedOnFlagsCmd([exe_source, test2_source],
-                                            output_dir, shared.exec_dir,
-                                            output_base, [], [], [])
+        outputDir, outputBase = test.getTempPaths()
 
-        yield TestStep(cmd, shared.exec_dir, [exe_source, test2_source],
-                       test.cxx.compile_env)
+        if TestType.COMPILE in test.testType:
+            cmd = [test.cxx, '/c', exeSource, test2Source, *test.flags, *test.compileFlags]
+        elif TestType.RUN in test.testType:
+            shared.execFile = outputBase + '.exe'
+            cmd = [test.cxx, exeSource, test2Source, *test.flags, *test.compileFlags, '/Fe' + shared.execFile,
+                   '/link', *test.linkFlags]
+
+        yield TestStep(cmd, shared.execDir, shared.env, False)

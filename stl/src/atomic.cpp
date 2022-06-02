@@ -8,7 +8,6 @@
 #include <synchapi.h>
 
 namespace {
-    // MUTEX FOR shared_ptr ATOMIC OPERATIONS
     SRWLOCK _Shared_ptr_lock = SRWLOCK_INIT;
 } // unnamed namespace
 

@@ -9,6 +9,7 @@
 #include <concepts>
 #include <numeric>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -31,16 +32,16 @@ struct empty_test {
         // Validate empty ranges
         using ranges::is_partitioned, ranges::partition, ranges::partition_point;
         {
-            Range range{};
+            Range range{span<P, 0>{}};
             ASSERT(is_partitioned(range, is_even, get_first));
         }
         {
-            Range range{};
+            Range range{span<P, 0>{}};
             ASSERT(is_partitioned(range.begin(), range.end(), is_even, get_first));
         }
 
         if constexpr (ranges::forward_range<Range>) {
-            const Range range{};
+            const Range range{span<P, 0>{}};
             {
                 const auto result = partition(range, is_even, get_first);
                 ASSERT(result.begin() == range.end());
@@ -76,42 +77,35 @@ struct partition_test {
             }
         }
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-        if (!is_constant_evaluated())
-#endif // TRANSITION, VSO-938163
-        {
-            if constexpr (ranges::forward_range<Range>) {
-                { // Validate range overloads of partition, is_partitioned, partition_point
-                    auto pairs = elements;
-                    const Range range{pairs};
-                    const auto mid = ranges::next(range.begin(), 4);
+        if constexpr (ranges::forward_range<Range>) {
+            { // Validate range overloads of partition, is_partitioned, partition_point
+                auto pairs = elements;
+                const Range range{pairs};
+                const auto mid = ranges::next(range.begin(), 4);
 
-                    {
-                        auto result = partition(range, is_even, get_first);
-                        ASSERT(result.begin() == mid);
-                        ASSERT(result.end() == range.end());
-                    }
-                    ASSERT(
-                        is_permutation(subrange{range.begin(), mid}, array{0, 2, 4, 6}, ranges::equal_to{}, get_first));
-                    ASSERT(is_partitioned(range, is_even, get_first));
-                    ASSERT(partition_point(range, is_even, get_first) == mid);
+                {
+                    auto result = partition(range, is_even, get_first);
+                    ASSERT(result.begin() == mid);
+                    ASSERT(result.end() == range.end());
                 }
+                ASSERT(is_permutation(subrange{range.begin(), mid}, array{0, 2, 4, 6}, ranges::equal_to{}, get_first));
+                ASSERT(is_partitioned(range, is_even, get_first));
+                ASSERT(partition_point(range, is_even, get_first) == mid);
+            }
 
-                { // Validate iterator overloads of partition, is_partitioned, partition_point
-                    auto pairs = elements;
-                    const Range range{pairs};
-                    const auto mid = ranges::next(range.begin(), 4);
+            { // Validate iterator overloads of partition, is_partitioned, partition_point
+                auto pairs = elements;
+                const Range range{pairs};
+                const auto mid = ranges::next(range.begin(), 4);
 
-                    {
-                        auto result = partition(range.begin(), range.end(), is_even, get_first);
-                        ASSERT(result.begin() == mid);
-                        ASSERT(result.end() == range.end());
-                    }
-                    ASSERT(
-                        is_permutation(subrange{range.begin(), mid}, array{0, 2, 4, 6}, ranges::equal_to{}, get_first));
-                    ASSERT(is_partitioned(range.begin(), range.end(), is_even, get_first));
-                    ASSERT(partition_point(range.begin(), range.end(), is_even, get_first) == mid);
+                {
+                    auto result = partition(range.begin(), range.end(), is_even, get_first);
+                    ASSERT(result.begin() == mid);
+                    ASSERT(result.end() == range.end());
                 }
+                ASSERT(is_permutation(subrange{range.begin(), mid}, array{0, 2, 4, 6}, ranges::equal_to{}, get_first));
+                ASSERT(is_partitioned(range.begin(), range.end(), is_even, get_first));
+                ASSERT(partition_point(range.begin(), range.end(), is_even, get_first) == mid);
             }
         }
     }

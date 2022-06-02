@@ -13,13 +13,11 @@
 
 _STD_BEGIN
 
-// OBJECT DECLARATIONS
 __PURE_APPDOMAIN_GLOBAL extern istream* _Ptr_cin  = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern ostream* _Ptr_cout = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern ostream* _Ptr_cerr = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern ostream* _Ptr_clog = nullptr;
 
-// WIDE OBJECTS
 __PURE_APPDOMAIN_GLOBAL extern wistream* _Ptr_wcin  = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcout = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern wostream* _Ptr_wcerr = nullptr;

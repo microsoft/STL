@@ -100,6 +100,20 @@ struct throwing_test {
     }
 };
 
+struct memset_test {
+    static constexpr int expected[] = {0, 0, 0};
+
+    static void call() {
+        { // Validate only range overload
+            int input[3];
+
+            const auto result = ranges::uninitialized_value_construct_n(begin(input), 3);
+            assert(result == end(input));
+            assert(ranges::equal(input, expected));
+        }
+    }
+};
+
 using test_range = test::range<test::fwd, int_wrapper, test::Sized::no, test::CanDifference::no, test::Common::no,
     test::CanCompare::yes, test::ProxyRef::no>;
 
@@ -109,4 +123,5 @@ int main() {
 
     instantiator::call<test_range>();
     throwing_test::call<test_range>();
+    memset_test::call();
 }

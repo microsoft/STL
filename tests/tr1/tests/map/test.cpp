@@ -320,7 +320,7 @@ void test_map() { // test map
     }
 
     {
-        STD initializer_list<Myval> init(xarr, xarr + 3);
+        STD initializer_list<Myval> init{xarr[0], xarr[1], xarr[2]};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11.begin()->first, 'a');
@@ -590,7 +590,7 @@ void test_multimap() { // test multimap
     }
 
     {
-        STD initializer_list<Myval> init(xarr, xarr + 3);
+        STD initializer_list<Myval> init{xarr[0], xarr[1], xarr[2]};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11.begin()->first, 'a');

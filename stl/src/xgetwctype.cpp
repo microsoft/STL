@@ -5,8 +5,8 @@
 
 #include <yvals.h>
 
+#include <__msvc_xlocinfo_types.hpp>
 #include <cwchar>
-#include <xlocinfo.h>
 
 #include "awint.hpp"
 

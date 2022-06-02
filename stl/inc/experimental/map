@@ -22,7 +22,6 @@ _STD_BEGIN
 namespace experimental {
     inline namespace fundamentals_v2 {
 
-        // FUNCTION TEMPLATE erase_if
         template <class _Kty, class _Ty, class _Keylt, class _Alloc, class _Pr>
         _DEPRECATE_EXPERIMENTAL_ERASE void erase_if(map<_Kty, _Ty, _Keylt, _Alloc>& _Cont, _Pr _Pred) {
             _Erase_nodes_if(_Cont, _Pass_fn(_Pred));

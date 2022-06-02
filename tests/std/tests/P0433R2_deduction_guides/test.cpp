@@ -38,6 +38,7 @@
 #endif // _M_CEE_PURE
 
 #ifndef _M_CEE
+#include <future>
 #include <mutex>
 #include <shared_mutex>
 #endif // _M_CEE
@@ -91,14 +92,12 @@ long add(short x, int y) {
     return x + y;
 }
 
-struct UniqueTagCanDeduceFrom {}; // TRANSITION, VSO-587956
-
 template <typename Void, template <typename...> class ClassTemplate, typename... CtorArgs>
 struct CanDeduceFromHelper : false_type {};
 
 template <template <typename...> class ClassTemplate, typename... CtorArgs>
-struct CanDeduceFromHelper<void_t<UniqueTagCanDeduceFrom, decltype(ClassTemplate(declval<CtorArgs>()...))>,
-    ClassTemplate, CtorArgs...> : true_type {};
+struct CanDeduceFromHelper<void_t<decltype(ClassTemplate(declval<CtorArgs>()...))>, ClassTemplate, CtorArgs...>
+    : true_type {};
 
 template <template <typename...> class ClassTemplate, typename... CtorArgs>
 constexpr bool CanDeduceFrom = CanDeduceFromHelper<void, ClassTemplate, CtorArgs...>::value;
@@ -295,34 +294,40 @@ void test_transparent_operator_functors() {
     static_assert(is_same_v<decltype(greater{}), greater<>>);
 }
 
-void test_function() {
-    function<short(int, long)> f1{};
-    function f2(f1);
+template <template <typename> typename F>
+void test_function_wrapper() {
+    F<short(int, long)> f1{};
 
-    static_assert(is_same_v<decltype(f2), function<short(int, long)>>);
+    if constexpr (is_copy_constructible_v<F<short(int, long)>>) {
+        F f2copy(f1);
+        static_assert(is_same_v<decltype(f2copy), F<short(int, long)>>);
+    }
 
-    function f3(nothing);
-    function f4(&nothing);
-    function f5(square);
-    function f6(&square);
-    function f7(add);
-    function f8(&add);
+    F f2(move(f1));
+    static_assert(is_same_v<decltype(f2), F<short(int, long)>>);
 
-    static_assert(is_same_v<decltype(f3), function<void()>>);
-    static_assert(is_same_v<decltype(f4), function<void()>>);
-    static_assert(is_same_v<decltype(f5), function<int(int)>>);
-    static_assert(is_same_v<decltype(f6), function<int(int)>>);
-    static_assert(is_same_v<decltype(f7), function<long(short, int)>>);
-    static_assert(is_same_v<decltype(f8), function<long(short, int)>>);
+    F f3(nothing);
+    F f4(&nothing);
+    F f5(square);
+    F f6(&square);
+    F f7(add);
+    F f8(&add);
+
+    static_assert(is_same_v<decltype(f3), F<void()>>);
+    static_assert(is_same_v<decltype(f4), F<void()>>);
+    static_assert(is_same_v<decltype(f5), F<int(int)>>);
+    static_assert(is_same_v<decltype(f6), F<int(int)>>);
+    static_assert(is_same_v<decltype(f7), F<long(short, int)>>);
+    static_assert(is_same_v<decltype(f8), F<long(short, int)>>);
 
     int n      = 0;
     auto accum = [&n](int x, int y) { return n += x + y; };
 
-    function f9(plus<double>{});
-    function f10(accum);
+    F f9(plus<double>{});
+    F f10(accum);
 
-    static_assert(is_same_v<decltype(f9), function<double(const double&, const double&)>>);
-    static_assert(is_same_v<decltype(f10), function<int(int, int)>>);
+    static_assert(is_same_v<decltype(f9), F<double(const double&, const double&)>>);
+    static_assert(is_same_v<decltype(f10), F<int(int, int)>>);
 }
 
 void test_searchers() {
@@ -929,7 +934,12 @@ int main() {
     test_scoped_allocator_adaptor();
     test_reference_wrapper();
     test_transparent_operator_functors();
-    test_function();
+
+    test_function_wrapper<function>();
+#ifndef _M_CEE
+    test_function_wrapper<packaged_task>();
+#endif // _M_CEE
+
     test_searchers();
     test_duration_and_time_point();
     test_basic_string();

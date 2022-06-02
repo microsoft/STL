@@ -17,9 +17,9 @@
 #pragma message("The contents of <semaphore> are available only with C++20 or later.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
+#include <__msvc_chrono.hpp>
 #include <atomic>
-#include <chrono>
-#include <limits.h>
+#include <climits>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -177,6 +177,7 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
         ptrdiff_t _Current = _Counter.load(memory_order_relaxed);
         for (;;) {
             while (_Current == 0) {
@@ -239,7 +240,7 @@ public:
                 break;
             }
             _STL_VERIFY(_Prev == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
-                                    "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                                    "possibly caused by memory corruption");
             _Counter.wait(0, memory_order_relaxed);
         }
     }
@@ -248,7 +249,7 @@ public:
         // TRANSITION, GH-1133: should be memory_order_acquire
         unsigned char _Prev = _Counter.exchange(0);
         _STL_VERIFY((_Prev & ~1) == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
-                                       "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                                       "possibly caused by memory corruption");
         return reinterpret_cast<const bool&>(_Prev);
     }
 
@@ -263,7 +264,7 @@ public:
                 return true;
             }
             _STL_VERIFY(_Prev == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
-                                    "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                                    "possibly caused by memory corruption");
             const auto _Remaining_timeout = __std_atomic_wait_get_remaining_timeout(_Deadline);
             if (_Remaining_timeout == 0) {
                 return false;
@@ -274,6 +275,7 @@ public:
 
     template <class _Clock, class _Duration>
     _NODISCARD bool try_acquire_until(const chrono::time_point<_Clock, _Duration>& _Abs_time) {
+        static_assert(chrono::is_clock_v<_Clock>, "Clock type required");
         for (;;) {
             // "happens after release" ordering is provided by this exchange, so loads and waits can be relaxed
             // TRANSITION, GH-1133: should be memory_order_acquire
@@ -282,7 +284,7 @@ public:
                 return true;
             }
             _STL_VERIFY(_Prev == 0, "Invariant: semaphore counter is non-negative and doesn't exceed max(), "
-                                    "possibly caused by preconditions violation (N4861 [thread.sema.cnt]/8)");
+                                    "possibly caused by memory corruption");
 
             const unsigned long _Remaining_timeout = _Semaphore_remaining_timeout(_Abs_time);
             if (_Remaining_timeout == 0) {

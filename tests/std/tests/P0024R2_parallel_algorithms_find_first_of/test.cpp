@@ -26,7 +26,8 @@ void test_case_find_first_of_parallel(const size_t testSize) {
     iota(candidates.begin(), candidates.end(), 0);
     auto expected        = tmp.begin();
     auto candidatesBegin = candidates.begin();
-    for (size_t idx = 0; idx < testSize; ++idx) {
+    const auto limit     = std::min(testSize, quadratic_complexity_case_limit);
+    for (size_t idx = 0; idx < limit; ++idx) {
         assert(expected == find_first_of(par, tmp.begin(), tmp.end(), candidatesBegin, candidates.end()));
         ++candidatesBegin;
         ++expected;

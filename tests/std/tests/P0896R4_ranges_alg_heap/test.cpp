@@ -9,6 +9,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -35,7 +36,7 @@ struct empty_ranges {
     template <ranges::random_access_range Range>
     static constexpr void call() {
         // Validate empty ranges (only make_heap and sort_heap accept empty ranges)
-        const Range range{};
+        const Range range{span<P, 0>{}};
 
         ASSERT(ranges::make_heap(range, ranges::less{}, get_first) == ranges::end(range));
         ASSERT(ranges::make_heap(ranges::begin(range), ranges::end(range), ranges::less{}, get_first)
@@ -108,16 +109,11 @@ struct make_and_sort_heap_test {
 
             ASSERT(!is_heap(wrapped, less{}, get_first));
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-            if constexpr (!ranges::contiguous_range<Range>)
-#endif // TRANSITION, VSO-938163
-            {
-                make_heap(wrapped, less{}, get_first);
-                ASSERT(is_heap(wrapped, less{}, get_first));
+            make_heap(wrapped, less{}, get_first);
+            ASSERT(is_heap(wrapped, less{}, get_first));
 
-                sort_heap(wrapped, less{}, get_first);
-                ASSERT(is_sorted(wrapped, less{}, get_first));
-            }
+            sort_heap(wrapped, less{}, get_first);
+            ASSERT(is_sorted(wrapped, less{}, get_first));
         }
 
         {
@@ -126,16 +122,11 @@ struct make_and_sort_heap_test {
 
             ASSERT(!is_heap(wrapped.begin(), wrapped.end(), less{}, get_first));
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-            if constexpr (!ranges::contiguous_range<Range>)
-#endif // TRANSITION, VSO-938163
-            {
-                make_heap(wrapped.begin(), wrapped.end(), less{}, get_first);
-                ASSERT(is_heap(wrapped.begin(), wrapped.end(), less{}, get_first));
+            make_heap(wrapped.begin(), wrapped.end(), less{}, get_first);
+            ASSERT(is_heap(wrapped.begin(), wrapped.end(), less{}, get_first));
 
-                sort_heap(wrapped.begin(), wrapped.end(), less{}, get_first);
-                ASSERT(is_sorted(wrapped.begin(), wrapped.end(), less{}, get_first));
-            }
+            sort_heap(wrapped.begin(), wrapped.end(), less{}, get_first);
+            ASSERT(is_sorted(wrapped.begin(), wrapped.end(), less{}, get_first));
         }
     }
 };
@@ -192,34 +183,24 @@ struct push_and_pop_heap_test {
             auto buff = initial_values;
             const Range wrapped{buff};
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-            if constexpr (!ranges::contiguous_range<Range>)
-#endif // TRANSITION, VSO-938163
-            {
-                pop_heap(wrapped, less{}, get_first);
-                ASSERT(equal(wrapped, expectedPopped));
+            pop_heap(wrapped, less{}, get_first);
+            ASSERT(equal(wrapped, expectedPopped));
 
-                push_heap(wrapped, less{}, get_first);
-                ASSERT(equal(wrapped, expectedPushed));
-            }
+            push_heap(wrapped, less{}, get_first);
+            ASSERT(equal(wrapped, expectedPushed));
         }
 
         {
             auto buff = initial_values;
             const Range wrapped{buff};
 
-#if !defined(__clang__) && !defined(__EDG__) // TRANSITION, VSO-938163
-            if constexpr (!ranges::contiguous_range<Range>)
-#endif // TRANSITION, VSO-938163
-            {
-                pop_heap(wrapped.begin(), wrapped.end(), less{}, get_first);
-                ASSERT(is_heap(expectedPopped.begin(), expectedPopped.end() - 1, less{}, get_first));
-                ASSERT(equal(wrapped.begin(), wrapped.end(), expectedPopped.begin(), expectedPopped.end()));
+            pop_heap(wrapped.begin(), wrapped.end(), less{}, get_first);
+            ASSERT(is_heap(expectedPopped.begin(), expectedPopped.end() - 1, less{}, get_first));
+            ASSERT(equal(wrapped.begin(), wrapped.end(), expectedPopped.begin(), expectedPopped.end()));
 
-                push_heap(wrapped.begin(), wrapped.end(), less{}, get_first);
-                ASSERT(is_heap(expectedPushed, less{}, get_first));
-                ASSERT(equal(wrapped.begin(), wrapped.end(), expectedPushed.begin(), expectedPushed.end()));
-            }
+            push_heap(wrapped.begin(), wrapped.end(), less{}, get_first);
+            ASSERT(is_heap(expectedPushed, less{}, get_first));
+            ASSERT(equal(wrapped.begin(), wrapped.end(), expectedPushed.begin(), expectedPushed.end()));
         }
     }
 };

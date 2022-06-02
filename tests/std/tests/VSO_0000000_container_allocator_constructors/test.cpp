@@ -22,7 +22,7 @@ using namespace std;
 
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
-// Break std::allocator by making calling new explode
+// Break std::allocator by making calling new fail
 
 void* operator new(size_t) {
     abort();

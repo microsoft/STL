@@ -1,28 +1,41 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+import os
 import site
 site.addsitedir("@STL_TEST_UTILS_DIR@")
+site.addsitedir(os.path.join("@LIBCXX_SOURCE_DIR@", "utils"))
+import stl.test.config
+import stl.test.features
+import stl.test.file_parsing
+import stl.test.format
+import stl.test.params
 
-config.configuration_variant       = "stl"
-config.cxx_archive_root            = "@CMAKE_ARCHIVE_OUTPUT_DIRECTORY@"
-config.cxx_headers                 = "@STL_TESTED_HEADERS_DIR@"
-config.cxx_library_root            = "@CMAKE_LIBRARY_OUTPUT_DIRECTORY@"
-config.cxx_runtime_root            = "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@"
-config.envlst_path                 = "@LIBCXX_ENVLST@"
-config.expected_results_list_path  = "@LIBCXX_EXPECTED_RESULTS@"
-config.format_name                 = "LibcxxTestFormat"
-config.include_dirs                = ["@LIBCXX_SOURCE_DIR@/test/support"]
-config.libcxx_obj_root             = "@LIBCXX_TEST_OUTPUT_DIR@"
-config.msvc_toolset_libs_root      = "@TOOLSET_LIB@"
-config.stl_build_root              = "@STL_BUILD_ROOT@"
-config.stl_src_root                = "@STL_SOURCE_DIR@"
-config.target_arch                 = "@VCLIBS_TARGET_ARCHITECTURE@"
-config.test_subdirs                = ["@LIBCXX_SOURCE_DIR@/test/std"]
+config.envlst_path      = '@LIBCXX_ENVLST@'
+config.name             = 'libc++'
+config.suffixes         = ['[.]pass[.]cpp$', '[.]fail[.]cpp$']
+config.test_exec_root   = '@LIBCXX_TEST_OUTPUT_DIR@'
+config.test_format      = stl.test.format.LibcxxTestFormat()
+config.test_source_root = '@LIBCXX_SOURCE_DIR@/test'
 
-lit_config.params['use_old_format'] = True
-config.loaded_site_config = True
-lit_config.load_config(config, "@LIBCXX_SOURCE_DIR@/test/lit.cfg")
+lit_config.expected_results = getattr(lit_config, 'expected_results', dict())
+lit_config.include_dirs     = getattr(lit_config, 'include_dirs', dict())
+lit_config.library_dirs     = getattr(lit_config, 'library_dirs', dict())
+lit_config.test_subdirs     = getattr(lit_config, 'test_subdirs', dict())
 
-config.suffixes                    = [".pass.cpp", ".fail.cpp"]
-config.test_exec_root              = "@LIBCXX_TEST_OUTPUT_DIR@"
+lit_config.expected_results[config.name] = stl.test.file_parsing.parse_result_file('@LIBCXX_EXPECTED_RESULTS@')
+lit_config.include_dirs[config.name]     = ['@STL_TESTED_HEADERS_DIR@', '@LIBCXX_SOURCE_DIR@/test/support']
+lit_config.library_dirs[config.name]     = ['@CMAKE_LIBRARY_OUTPUT_DIRECTORY@', '@TOOLSET_LIB@']
+lit_config.test_subdirs[config.name]     = ['@LIBCXX_SOURCE_DIR@/test/std']
+
+lit_config.cxx_runtime = '@CMAKE_RUNTIME_OUTPUT_DIRECTORY@'
+lit_config.target_arch = '@VCLIBS_TARGET_ARCHITECTURE@'
+lit_config.build_only  = '@TESTS_BUILD_ONLY@'.lower() in ['1', 'true', 'on']
+
+# Add parameters and features to the config
+stl.test.config.configure(
+    stl.test.params.getDefaultParameters(config, lit_config),
+    stl.test.features.getDefaultFeatures(config, lit_config),
+    config,
+    lit_config
+)

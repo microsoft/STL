@@ -980,11 +980,9 @@ void test_reference_wrapper_invocation() {
 
     assert(i == 10);
 
-#ifndef __EDG__ // TRANSITION, DevCom-939485
     const auto noexcept_lambda     = []() noexcept {};
     const auto noexcept_lambda_ref = ref(noexcept_lambda);
     STATIC_ASSERT(noexcept(noexcept_lambda_ref())); // strengthened
-#endif // __EDG__
 
     reference_wrapper<int(int)> rw_fxn(quadruple);
     assert(rw_fxn(9) == 36);
@@ -1055,12 +1053,18 @@ constexpr bool test_invoke_constexpr() {
     auto p = &thing;
 
     assert(&invoke(&Thing::m_x, *p) == &p->m_x);
-    // assert(&invoke(&Thing::m_x, ref(*sp)) == &sp->m_x); TRANSITION, P1065R2
+#if _HAS_CXX20
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-1419425 "constexpr PMD emits bogus error C2131"
+    assert(&invoke(&Thing::m_x, ref(*p)) == &p->m_x);
+#endif // ^^^ no workaround ^^^
+#endif // _HAS_CXX20
     assert(&invoke(&Thing::m_x, p) == &p->m_x);
 
 #ifndef _M_CEE // TRANSITION, DevCom-939490
     assert(invoke(&Thing::sum, *p, 3) == 1023);
-    // assert(invoke(&Thing::sum, ref(*sp), 4) == 1024); TRANSITION, P1065R2
+#if _HAS_CXX20
+    assert(invoke(&Thing::sum, ref(*p), 4) == 1024);
+#endif // _HAS_CXX20
     assert(invoke(&Thing::sum, p, 5) == 1025);
 #endif // _M_CEE
 
@@ -1753,30 +1757,29 @@ void test_function() {
         assert(cf(10) == 40);
 
         // swap() must be noexcept.
-        struct Explosive {
+        struct Puppy {
             int m_i;
             const bool* m_p;
 
-            Explosive(int i, const bool* p) noexcept : m_i(i), m_p(p) {}
+            Puppy(int i, const bool* p) noexcept : m_i(i), m_p(p) {}
 
-            Explosive(const Explosive& other) noexcept(false) : m_i(other.m_i), m_p(other.m_p) {
-
+            Puppy(const Puppy& other) noexcept(false) : m_i(other.m_i), m_p(other.m_p) {
                 if (*m_p) {
-                    throw string("boom");
+                    throw string("BARK");
                 }
             }
 
-            Explosive& operator=(const Explosive&) = delete;
+            Puppy& operator=(const Puppy&) = delete;
 
             int operator()() const noexcept {
                 return m_i;
             }
         };
 
-        bool explode       = false;
-        function<int()> f1 = Explosive(300, &explode);
-        function<int()> f2 = Explosive(9999, &explode);
-        explode            = true;
+        bool bark          = false;
+        function<int()> f1 = Puppy(300, &bark);
+        function<int()> f2 = Puppy(9999, &bark);
+        bark               = true;
         assert(f1() == 300);
         assert(f2() == 9999);
         f1.swap(f2);

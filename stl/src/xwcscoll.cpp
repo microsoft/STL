@@ -3,11 +3,11 @@
 
 // Compare two wchar_t strings using the locale LC_COLLATE information.
 
+#include <__msvc_xlocinfo_types.hpp>
 #include <cerrno>
 #include <clocale>
 #include <cstdlib>
-#include <cstring> // for wmemcmp
-#include <xlocinfo.h> // for _Collvec, _Wcscoll
+#include <cwchar>
 
 #include "awint.hpp"
 
