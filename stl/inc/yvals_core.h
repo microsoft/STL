@@ -1335,13 +1335,13 @@
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
-#ifdef __cpp_impl_coroutine
-#define __cpp_lib_coroutine 201902L
-#endif // __cpp_impl_coroutine
-
 #ifdef __cpp_char8_t
 #define __cpp_lib_char8_t 201907L
 #endif // __cpp_char8_t
+
+#ifdef __cpp_impl_coroutine
+#define __cpp_lib_coroutine 201902L
+#endif // __cpp_impl_coroutine
 
 #if _HAS_CXX20
 #define __cpp_lib_assume_aligned                201811L
