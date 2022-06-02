@@ -253,6 +253,12 @@ foreach(header ${HEADERS})
     configure_file("${header}" "${PROJECT_BINARY_DIR}/out/inc/${_header_path}" COPYONLY)
 endforeach()
 
+# Objs that implement aliases; these are completely independent of the configuration
+set(ALIAS_SOURCES_X86_X64
+    ${CMAKE_CURRENT_LIST_DIR}/src/alias_init_once_begin_initialize.asm
+    ${CMAKE_CURRENT_LIST_DIR}/src/alias_init_once_complete.asm
+)
+
 # Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib.
 set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/asan_noop.cpp
@@ -264,8 +270,6 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xonce2.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/alias_init_once_begin_initialize.asm
-    ${CMAKE_CURRENT_LIST_DIR}/src/alias_init_once_complete.asm
 )
 
 # The following files are linked in msvcp140[d][_clr].dll.
@@ -447,6 +451,12 @@ include_directories(BEFORE
     "${TOOLSET_ROOT_DIR}/crt/src/vcruntime"
 )
 
+if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^(x86|x64)$")
+    add_library(stl_alias_objects OBJECT ${ALIAS_SOURCES_X86_X64})
+else()
+    add_library(stl_alias_objects INTERFACE)
+endif()
+
 function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIONS GL_FLAG THIS_CONFIG_LINK_OPTIONS)
     # msvcp140.dll
     add_library(msvcp${D_SUFFIX}_objects OBJECT ${DLL_SOURCES} ${SOURCES})
@@ -538,7 +548,7 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
 
     # import library
     add_library(msvcp${D_SUFFIX}_implib STATIC ${HEADERS})
-    target_link_libraries(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX}_implib_objects)
+    target_link_libraries(msvcp${D_SUFFIX}_implib stl_alias_objects msvcp${D_SUFFIX}_implib_objects)
     add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_atomic_wait msvcp${D_SUFFIX}_codecvt_ids)
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_atomic_wait>")
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES ARCHIVE_OUTPUT_NAME "msvcprt${D_SUFFIX}")
@@ -555,7 +565,7 @@ function(add_stl_statics FLAVOR_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPI
     add_library(libcpmt${FLAVOR_SUFFIX} STATIC ${HEADERS} ${IMPLIB_SOURCES} ${SOURCES} ${INITIALIZER_SOURCES} ${STATIC_SOURCES})
     target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_DEFINITIONS};_ANNOTATE_VECTOR;_ANNOTATE_STRING")
     target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};$<$<COMPILE_LANGUAGE:CXX>:/EHsc>")
-    target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math libcpmt${FLAVOR_SUFFIX}_eha)
+    target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math stl_alias_objects libcpmt${FLAVOR_SUFFIX}_eha)
 endfunction()
 
 add_stl_statics("" "_ITERATOR_DEBUG_LEVEL=0" "${VCLIBS_RELEASE_OPTIONS}")
