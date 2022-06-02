@@ -20,7 +20,7 @@ $ErrorActionPreference = 'Stop'
 # https://aka.ms/azps-changewarnings
 $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
-$Location = 'westus2'
+$Location = 'northeurope'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd-THHmm')
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
