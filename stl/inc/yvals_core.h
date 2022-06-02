@@ -989,7 +989,7 @@
 #endif // ^^^ warning disabled ^^^
 
 // N4810 D.17 [depr.fs.path.factory]
-#if _HAS_CXX20 && !defined(_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING) \
+#if _HAS_CXX20 && defined(__cpp_char8_t) && !defined(_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
 #define _CXX20_DEPRECATE_U8PATH                                                                                      \
     [[deprecated("warning STL4021: "                                                                                 \
