@@ -49,6 +49,7 @@
 #include <numbers>
 #include <ratio>
 #include <source_location>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <version>
@@ -129,7 +130,6 @@
 #include <strstream>
 #include <syncstream>
 #include <system_error>
-#include <tuple>
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
