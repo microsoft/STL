@@ -651,23 +651,14 @@ struct _MSVC_KNOWN_SEMANTICS tuple_element<_Idx, pair<_Ty1, _Ty2>> {
     using type = conditional_t<_Idx == 0, _Ty1, _Ty2>;
 };
 
-template <class _Ret, class _Pair>
-constexpr _Ret _Pair_get(_Pair& _Pr, integral_constant<size_t, 0>) noexcept {
-    // get reference to element 0 in pair _Pr
-    return _Pr.first;
-}
-
-template <class _Ret, class _Pair>
-constexpr _Ret _Pair_get(_Pair& _Pr, integral_constant<size_t, 1>) noexcept {
-    // get reference to element 1 in pair _Pr
-    return _Pr.second;
-}
-
 template <size_t _Idx, class _Ty1, class _Ty2>
 _NODISCARD constexpr tuple_element_t<_Idx, pair<_Ty1, _Ty2>>& get(pair<_Ty1, _Ty2>& _Pr) noexcept {
     // get reference to element at _Idx in pair _Pr
-    using _Rtype = tuple_element_t<_Idx, pair<_Ty1, _Ty2>>&;
-    return _Pair_get<_Rtype>(_Pr, integral_constant<size_t, _Idx>{});
+    if constexpr (_Idx == 0) {
+        return _Pr.first;
+    } else {
+        return _Pr.second;
+    }
 }
 
 template <class _Ty1, class _Ty2>
@@ -685,8 +676,11 @@ _NODISCARD constexpr _Ty2& get(pair<_Ty1, _Ty2>& _Pr) noexcept {
 template <size_t _Idx, class _Ty1, class _Ty2>
 _NODISCARD constexpr const tuple_element_t<_Idx, pair<_Ty1, _Ty2>>& get(const pair<_Ty1, _Ty2>& _Pr) noexcept {
     // get const reference to element at _Idx in pair _Pr
-    using _Ctype = const tuple_element_t<_Idx, pair<_Ty1, _Ty2>>&;
-    return _Pair_get<_Ctype>(_Pr, integral_constant<size_t, _Idx>{});
+    if constexpr (_Idx == 0) {
+        return _Pr.first;
+    } else {
+        return _Pr.second;
+    }
 }
 
 template <class _Ty1, class _Ty2>
