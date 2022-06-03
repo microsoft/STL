@@ -995,20 +995,22 @@ protected:
                 this->_Val[_RE] = _Myctraits::_Infv();
             } else if (this->_Val[_RE] == 0) {
                 this->_Val[_RE] = -_Myctraits::_Nanv();
-            } else if (_STD isnan(this->_Val[_RE])) {
-                this->_Val[_RE] = _Myctraits::_Nanv();
-            } else {
+            } else if (this->_Val[_RE] < 0) {
                 this->_Val[_RE] = -_Myctraits::_Infv();
+            } else {
+                // this->_Val[_RE] is NAN
+                this->_Val[_RE] = _Myctraits::_Nanv();
             }
 
             if (this->_Val[_IM] > 0) {
                 this->_Val[_IM] = _Myctraits::_Infv();
             } else if (this->_Val[_IM] == 0) {
                 this->_Val[_IM] = -_Myctraits::_Nanv();
-            } else if (_STD isnan(this->_Val[_IM])) {
-                this->_Val[_IM] = _Myctraits::_Nanv();
-            } else {
+            } else if (this->_Val[_IM] < 0) {
                 this->_Val[_IM] = -_Myctraits::_Infv();
+            } else {
+                // this->_Val[_IM] is NAN
+                this->_Val[_IM] = _Myctraits::_Nanv();
             }
         } else { // 0 < |_Right.real()| <= |_Right.imag()|
             _Ty _Wr = _Rightreal / _Rightimag;
