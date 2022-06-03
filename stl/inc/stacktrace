@@ -299,7 +299,7 @@ private:
                                     || allocator_traits<_Alloc>::is_always_equal::value;
 
     struct _Internal_t {
-        explicit _Internal_t() = default;
+        explicit _Internal_t() noexcept = default;
     };
 
     basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al) : _Frames(_Max_depth, _Al) {}

@@ -32,7 +32,7 @@ namespace {
     }
 
     // TRANSITION, GH-2285. Use SRWLOCK instead of std::mutex to avoid nontrivial constructor and nontrivial destructor
-    void lock_and_uninitialize();
+    void lock_and_uninitialize() noexcept;
 
     class _NODISCARD dbg_eng_data {
     public:
@@ -47,7 +47,7 @@ namespace {
         dbg_eng_data(const dbg_eng_data&) = delete;
         dbg_eng_data& operator=(const dbg_eng_data&) = delete;
 
-        void uninitialize() {
+        void uninitialize() noexcept {
             // "Phoenix singleton" - destroy and set to null, so that it can be initialized later again
 
             if (debug_client != nullptr) {
@@ -78,7 +78,7 @@ namespace {
             initialize_attempted = false;
         }
 
-        bool try_initialize() {
+        bool try_initialize() noexcept {
             if (!initialize_attempted) {
                 dbgeng = LoadLibraryExW(L"dbgeng.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 
@@ -209,7 +209,7 @@ namespace {
             return off;
         }
 
-        [[nodiscard]] unsigned int source_line(const void* const address) {
+        [[nodiscard]] unsigned int source_line(const void* const address) noexcept {
             ULONG line = 0;
 
             if (FAILED(debug_symbols->GetLineByOffset(
@@ -249,7 +249,7 @@ namespace {
         inline static HMODULE dbgeng               = nullptr;
     };
 
-    void lock_and_uninitialize() {
+    void lock_and_uninitialize() noexcept {
         dbg_eng_data locked_data;
 
         locked_data.uninitialize();
