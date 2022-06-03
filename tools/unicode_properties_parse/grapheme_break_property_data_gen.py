@@ -34,6 +34,26 @@ def parsePropertyLine(inputLine: str) -> Optional[PropertyRange]:
     else:
         return None
 
+def compactPropertyRange(input: list[PropertyRange]) -> list[PropertyRange]:
+    """
+    Merges consecutive ranges with the same property to one range.
+
+    Merging the ranges results in less ranges in the output table. Reducing the
+    size of the binary and improving the performance of the loookup.
+    """
+    result = list()
+    for x in input:
+        if (
+            len(result)
+            and result[-1].prop == x.prop
+            and result[-1].upper + 1 == x.lower
+        ):
+            result[-1].upper = x.upper
+            continue
+        result.append(x)
+    return result
+
+
 PROP_VALUE_ENUMERATOR_TEMPLATE = "_{}_value"
 PROP_VALUE_ENUM_TEMPLATE = """
 enum class _{prop_name}_property_values : uint8_t {{
@@ -234,9 +254,9 @@ def generate_data_tables() -> str:
     gbp_ranges = list()
     emoji_ranges = list()
     with gbp_data_path.open(encoding='utf-8') as f:
-        gbp_ranges = [x for line in f if (x := parsePropertyLine(line))]
+        gbp_ranges = compactPropertyRange([x for line in f if (x := parsePropertyLine(line))])
     with emoji_data_path.open(encoding='utf-8') as f:
-        emoji_ranges = [x for line in f if (x := parsePropertyLine(line))]
+        emoji_ranges = compactPropertyRange([x for line in f if (x := parsePropertyLine(line))])
     gpb_cpp_data = generate_cpp_data("Grapheme_Break", gbp_ranges)
     emoji_cpp_data = generate_cpp_data("Extended_Pictographic", [
         x for x in emoji_ranges if x.prop == "Extended_Pictographic"])
