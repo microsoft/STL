@@ -47,6 +47,57 @@ bool nearly_equal_partwise(const complex<T> actual, const complex<T> expected) {
     return nearly_equal(actual.real(), expected.real()) && nearly_equal(actual.imag(), expected.imag());
 }
 
+// Also test GH-2728 <complex>: Implementation divergence for division by zero
+void test_gh_2728() {
+    const complex<double> zero{0, 0};
+    {
+        const complex<double> test_one_one = complex<double>{1, 1} / zero;
+        assert(isinf(test_one_one.real()) && test_one_one.real() > 0);
+        assert(isinf(test_one_one.imag()) && test_one_one.imag() > 0);
+    }
+    {
+        const complex<double> test_one_zero = complex<double>{1, 0} / zero;
+        assert(isinf(test_one_zero.real()) && test_one_zero.real() > 0);
+        assert(isnan(test_one_zero.imag()));
+    }
+    {
+        const complex<double> test_one_minus_one = complex<double>{1, -1} / zero;
+        assert(isinf(test_one_minus_one.real()) && test_one_minus_one.real() > 0);
+        assert(isinf(test_one_minus_one.imag()) && test_one_minus_one.imag() < 0);
+    }
+    {
+        const complex<double> test_zero_one = complex<double>{0, 1} / zero;
+        assert(isnan(test_zero_one.real()));
+        assert(isinf(test_zero_one.imag()) && test_zero_one.imag() > 0);
+    }
+    {
+        const complex<double> test_zero_zero = complex<double>{0, 0} / zero;
+        assert(isnan(test_zero_zero.real()));
+        assert(isnan(test_zero_zero.imag()));
+    }
+    {
+        const complex<double> test_zero_minus_one = complex<double>{0, -1} / zero;
+        assert(isnan(test_zero_minus_one.real()));
+        assert(isinf(test_zero_minus_one.imag()) && test_zero_minus_one.imag() < 0);
+    }
+    {
+        const complex<double> test_minus_one_one = complex<double>{-1, 1} / zero;
+        assert(isinf(test_minus_one_one.real()) && test_minus_one_one.real() < 0);
+        assert(isinf(test_minus_one_one.imag()) && test_minus_one_one.imag() > 0);
+    }
+    {
+        const complex<double> test_minus_one_zero = complex<double>{-1, 0} / zero;
+        assert(isinf(test_minus_one_zero.real()) && test_minus_one_zero.real() < 0);
+        assert(isnan(test_minus_one_zero.imag()));
+    }
+    {
+        const complex<double> test_minus_one_minus_one = complex<double>{-1, -1} / zero;
+        assert(isinf(test_minus_one_minus_one.real()) && test_minus_one_minus_one.real() < 0);
+        assert(isinf(test_minus_one_minus_one.imag()) && test_minus_one_minus_one.imag() < 0);
+    }
+}
+
+
 int main() {
     complex<float> f(1, 2);
 
@@ -148,4 +199,6 @@ int main() {
     constexpr double inf = numeric_limits<double>::infinity();
     assert((proj(inf) == complex<double>{inf, 0.0}));
     assert((proj(-inf) == complex<double>{inf, 0.0}));
+
+    test_gh_2728();
 }
