@@ -993,7 +993,7 @@ protected:
         } else if (_Rightimag == 0) { // _Right.real() = 0 && _Right.imag() = 0
             if (this->_Val[_RE] > 0) {
                 this->_Val[_RE] = _Myctraits::_Infv();
-            } else if (this->_Val[_RE] == 0) {
+            } else if (this->_Val[_RE] == 0 || _STD isnan(this->_Val[_RE])) {
                 this->_Val[_RE] = _Myctraits::_Nanv();
             } else {
                 this->_Val[_RE] = -_Myctraits::_Infv();
@@ -1001,7 +1001,7 @@ protected:
 
             if (this->_Val[_IM] > 0) {
                 this->_Val[_IM] = _Myctraits::_Infv();
-            } else if (this->_Val[_IM] == 0) {
+            } else if (this->_Val[_IM] == 0 || _STD isnan(this->_Val[_IM])) {
                 this->_Val[_IM] = _Myctraits::_Nanv();
             } else {
                 this->_Val[_IM] = -_Myctraits::_Infv();
