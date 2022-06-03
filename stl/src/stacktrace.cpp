@@ -105,10 +105,6 @@ namespace {
                             (void) debug_control->WaitForEvent(0, INFINITE);
                         }
 
-                        // If this fails, will use IDebugSymbols
-                        (void) debug_symbols->QueryInterface(
-                            IID_IDebugSymbols3, reinterpret_cast<void**>(&debug_symbols3));
-
                         // clang-format off
                     constexpr ULONG add_options = 0x1     /* SYMOPT_CASE_INSENSITIVE */
                                                 | 0x2     /* SYMOPT_UNDNAME */
@@ -254,13 +250,12 @@ namespace {
         inline static SRWLOCK srw = SRWLOCK_INIT;
 
     private:
-        inline static IDebugClient* debug_client     = nullptr;
-        inline static IDebugSymbols* debug_symbols   = nullptr;
-        inline static IDebugSymbols3* debug_symbols3 = nullptr;
-        inline static IDebugControl* debug_control   = nullptr;
-        inline static bool attached                  = false;
-        inline static bool initialize_attempted      = false;
-        inline static HMODULE dbgeng                 = nullptr;
+        inline static IDebugClient* debug_client   = nullptr;
+        inline static IDebugSymbols* debug_symbols = nullptr;
+        inline static IDebugControl* debug_control = nullptr;
+        inline static bool attached                = false;
+        inline static bool initialize_attempted    = false;
+        inline static HMODULE dbgeng               = nullptr;
     };
 
     void lock_and_uninitialize() {
