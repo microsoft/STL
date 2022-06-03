@@ -17,9 +17,6 @@
 #include <Shlwapi.h>
 // clang-format on
 
-#pragma comment(lib, "DbgEng.lib")
-#pragma comment(lib, "Shlwapi.lib")
-
 // The below function pointer types must be in sync with <stacktrace>
 
 using _Stacktrace_string_fill_callback = size_t(__stdcall*)(char* _Data, size_t _Size, void* _Context) _NOEXCEPT_FNPTR;
