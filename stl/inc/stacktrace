@@ -306,13 +306,13 @@ private:
 
     basic_stacktrace(_Internal_t, const allocator_type& _Al) noexcept : _Frames(_Al) {}
 
-    void** _To_voidptr_array() {
+    _NODISCARD void** _To_voidptr_array() noexcept {
         _STL_INTERNAL_STATIC_ASSERT(sizeof(void*) == sizeof(stacktrace_entry));
         _STL_INTERNAL_STATIC_ASSERT(alignof(void*) == alignof(stacktrace_entry));
         return reinterpret_cast<void**>(_Frames.data());
     }
 
-    static unsigned long _Adjust_skip(size_t _Skip) {
+    _NODISCARD static unsigned long _Adjust_skip(size_t _Skip) noexcept {
         _Skip += 1; // Skip current frame
         return _Skip < ULONG_MAX ? static_cast<unsigned long>(_Skip) : ULONG_MAX;
     }
