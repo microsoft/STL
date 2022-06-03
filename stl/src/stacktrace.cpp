@@ -251,7 +251,7 @@ namespace {
         }
 
     public:
-        inline static SRWLOCK srw;
+        inline static SRWLOCK srw = SRWLOCK_INIT;
 
     private:
         inline static IDebugClient* debug_client     = nullptr;
