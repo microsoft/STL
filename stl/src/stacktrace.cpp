@@ -32,27 +32,22 @@ namespace {
     }
 
     // TRANSITION, GH-2285. Use SRWLOCK instead of std::mutex to avoid nontrivial constructor and nontrivial destructor
-    class _NODISCARD srw_lock_guard {
-    public:
-        explicit srw_lock_guard(SRWLOCK& locked_) noexcept : locked(&locked_) {
-            AcquireSRWLockExclusive(locked);
-        }
-
-        ~srw_lock_guard() {
-            ReleaseSRWLockExclusive(locked);
-        }
-
-        srw_lock_guard(const srw_lock_guard&) = delete;
-        srw_lock_guard& operator=(const srw_lock_guard&) = delete;
-
-    private:
-        SRWLOCK* const locked;
-    };
-
     void lock_and_uninitialize();
 
-    struct dbg_eng_data {
-        static void uninitialize() {
+    class _NODISCARD dbg_eng_data {
+    public:
+        dbg_eng_data() noexcept {
+            AcquireSRWLockExclusive(&srw);
+        }
+
+        ~dbg_eng_data() {
+            ReleaseSRWLockExclusive(&srw);
+        }
+
+        dbg_eng_data(const dbg_eng_data&) = delete;
+        dbg_eng_data& operator=(const dbg_eng_data&) = delete;
+
+        void uninitialize() {
             // "Phoenix singleton" - destroy and set to null, so that it can be initialized later again
 
             if (debug_client != nullptr) {
@@ -83,7 +78,7 @@ namespace {
             initialize_attempted = false;
         }
 
-        static bool try_initialize() {
+        bool try_initialize() {
             if (!initialize_attempted) {
                 dbgeng = LoadLibraryExW(L"dbgeng.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 
@@ -139,7 +134,7 @@ namespace {
             return debug_symbols != nullptr;
         }
 
-        static size_t get_description(
+        size_t get_description(
             const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
             // Initially pass the current capacity, will retry with bigger buffer if it fails.
             size_t size          = fill(0, str, nullptr, nullptr) - off;
@@ -180,7 +175,7 @@ namespace {
             return off;
         }
 
-        static size_t source_file(const void* const address, void* const str, size_t off, ULONG* const line,
+        size_t source_file(const void* const address, void* const str, size_t off, ULONG* const line,
             const _Stacktrace_string_fill fill) {
             // Initially pass the current capacity, will retry with bigger buffer if fails.
             size_t size = fill(0, str, nullptr, nullptr) - off;
@@ -214,7 +209,7 @@ namespace {
             return off;
         }
 
-        [[nodiscard]] static unsigned int source_line(const void* const address) {
+        [[nodiscard]] unsigned int source_line(const void* const address) {
             ULONG line = 0;
 
             if (FAILED(debug_symbols->GetLineByOffset(
@@ -225,7 +220,7 @@ namespace {
             return line;
         }
 
-        static size_t address_to_string(
+        size_t address_to_string(
             const void* const address, void* const str, size_t off, const _Stacktrace_string_fill fill) {
             ULONG line = 0;
 
@@ -244,10 +239,8 @@ namespace {
             return get_description(address, str, off, fill);
         }
 
-    public:
-        inline static SRWLOCK srw = SRWLOCK_INIT;
-
     private:
+        inline static SRWLOCK srw                  = SRWLOCK_INIT;
         inline static IDebugClient* debug_client   = nullptr;
         inline static IDebugSymbols* debug_symbols = nullptr;
         inline static IDebugControl* debug_control = nullptr;
@@ -257,9 +250,9 @@ namespace {
     };
 
     void lock_and_uninitialize() {
-        const srw_lock_guard lock{dbg_eng_data::srw};
+        dbg_eng_data locked_data;
 
-        dbg_eng_data::uninitialize();
+        locked_data.uninitialize();
     }
 } // namespace
 
@@ -277,52 +270,52 @@ _EXTERN_C
 
 void __stdcall __std_stacktrace_description(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
-    const srw_lock_guard lock{dbg_eng_data::srw};
+    dbg_eng_data locked_data;
 
-    if (!dbg_eng_data::try_initialize()) {
+    if (!locked_data.try_initialize()) {
         return;
     }
 
-    dbg_eng_data::get_description(_Address, _Str, 0, _Fill);
+    locked_data.get_description(_Address, _Str, 0, _Fill);
 }
 
 void __stdcall __std_stacktrace_source_file(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
-    const srw_lock_guard lock{dbg_eng_data::srw};
+    dbg_eng_data locked_data;
 
-    if (!dbg_eng_data::try_initialize()) {
+    if (!locked_data.try_initialize()) {
         return;
     }
 
-    dbg_eng_data::source_file(_Address, _Str, 0, nullptr, _Fill);
+    locked_data.source_file(_Address, _Str, 0, nullptr, _Fill);
 }
 
 [[nodiscard]] unsigned int __stdcall __std_stacktrace_source_line(const void* const _Address) noexcept {
-    const srw_lock_guard lock{dbg_eng_data::srw};
+    dbg_eng_data locked_data;
 
-    if (!dbg_eng_data::try_initialize()) {
+    if (!locked_data.try_initialize()) {
         return 0;
     }
 
-    return dbg_eng_data::source_line(_Address);
+    return locked_data.source_line(_Address);
 }
 
 void __stdcall __std_stacktrace_address_to_string(
     const void* const _Address, void* const _Str, const _Stacktrace_string_fill _Fill) noexcept(false) {
-    const srw_lock_guard lock{dbg_eng_data::srw};
+    dbg_eng_data locked_data;
 
-    if (!dbg_eng_data::try_initialize()) {
+    if (!locked_data.try_initialize()) {
         return;
     }
 
-    dbg_eng_data::address_to_string(_Address, _Str, 0, _Fill);
+    locked_data.address_to_string(_Address, _Str, 0, _Fill);
 }
 
 void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const size_t _Size, void* const _Str,
     const _Stacktrace_string_fill _Fill) noexcept(false) {
-    const srw_lock_guard lock{dbg_eng_data::srw};
+    dbg_eng_data locked_data;
 
-    if (!dbg_eng_data::try_initialize()) {
+    if (!locked_data.try_initialize()) {
         return;
     }
 
@@ -346,7 +339,7 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
             return off + ret;
         });
 
-        off = dbg_eng_data::address_to_string(data[i], _Str, off, _Fill);
+        off = locked_data.address_to_string(data[i], _Str, off, _Fill);
     }
 }
 _END_EXTERN_C
