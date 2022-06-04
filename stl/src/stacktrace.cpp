@@ -80,6 +80,12 @@ namespace {
 
         bool try_initialize() noexcept {
             if (!initialize_attempted) {
+                initialize_attempted = true;
+
+                if (std::atexit(lock_and_uninitialize) != 0) {
+                    return false;
+                }
+
                 dbgeng = LoadLibraryExW(L"dbgeng.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 
                 if (dbgeng != nullptr) {
@@ -123,13 +129,6 @@ namespace {
                     }
                 }
             }
-
-            if (std::atexit(lock_and_uninitialize) != 0) {
-                uninitialize();
-                return false;
-            }
-
-            initialize_attempted = true;
 
             return debug_symbols != nullptr;
         }
