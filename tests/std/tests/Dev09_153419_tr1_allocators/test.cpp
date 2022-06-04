@@ -395,7 +395,7 @@ int main() {
 #endif // _HAS_FUNCTION_ALLOCATOR_SUPPORT
 
     {
-        // Test Dev10#531321 "function: tr1::function memory leak".
+        // Test Dev10-531321 "function: tr1::function memory leak".
 
         Big b(10, 20, 30, 40);
         function<ull_t()> f;

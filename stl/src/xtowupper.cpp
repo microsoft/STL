@@ -3,8 +3,8 @@
 
 // _Towupper -- convert wchar_t to upper case
 
-#include <wchar.h>
-#include <xlocinfo.h>
+#include <__msvc_xlocinfo_types.hpp>
+#include <cwchar>
 
 #include "awint.hpp"
 

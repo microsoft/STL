@@ -3,7 +3,7 @@
 
 // Derived from: qa/VC/LibsWin/devcrt/tests/C/Dev14_845312_accurate_fp_parsing
 
-// Basic regression test for DevDiv2 #845312: Floating point conversion accuracy
+// Basic regression test for DevDiv-845312: Floating point conversion accuracy
 // improvements. This test verifies scanf-printf round-tripping of a set of
 // diverse floating point values (both single and double precision).
 

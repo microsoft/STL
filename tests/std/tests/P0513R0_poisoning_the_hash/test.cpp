@@ -36,11 +36,11 @@ struct hash_callable<T, void_t<decltype(declval<hash<T>>()(declval<const T&>()))
 template <typename T>
 constexpr bool hash_disabled() {
     return !is_default_constructible_v<hash<T>> //
-           && !is_copy_constructible_v<hash<T>> //
-           && !is_move_constructible_v<hash<T>> //
-           && !is_copy_assignable_v<hash<T>> //
-           && !is_move_assignable_v<hash<T>> //
-           && !hash_callable<T>::value;
+        && !is_copy_constructible_v<hash<T>> //
+        && !is_move_constructible_v<hash<T>> //
+        && !is_copy_assignable_v<hash<T>> //
+        && !is_move_assignable_v<hash<T>> //
+        && !hash_callable<T>::value;
 }
 
 template <typename T, bool NoExcept = true>
@@ -48,17 +48,17 @@ constexpr bool standard_hash_enabled() {
     // technically the standard doesn't require triviality here, but it's easy
     // for us to provide, so we should do that.
     return is_trivially_default_constructible_v<hash<T>> //
-           && is_trivially_copy_constructible_v<hash<T>> //
-           && is_trivially_move_constructible_v<hash<T>> //
-           && is_trivially_copy_assignable_v<hash<T>> //
-           && is_trivially_move_assignable_v<hash<T>> //
-           && is_trivial_v<hash<T>> // as a consequence of the above
-           && is_same_v<typename hash<T>::argument_type, T> //
-           && is_same_v<typename hash<T>::result_type, size_t> //
-           && (noexcept(hash<T>{}(declval<const T&>())) == NoExcept) //
-           && hash_disabled<const T>() //
-           && hash_disabled<volatile T>() //
-           && hash_disabled<const volatile T>();
+        && is_trivially_copy_constructible_v<hash<T>> //
+        && is_trivially_move_constructible_v<hash<T>> //
+        && is_trivially_copy_assignable_v<hash<T>> //
+        && is_trivially_move_assignable_v<hash<T>> //
+        && is_trivial_v<hash<T>> // as a consequence of the above
+        && is_same_v<typename hash<T>::argument_type, T> //
+        && is_same_v<typename hash<T>::result_type, size_t> //
+        && (noexcept(hash<T>{}(declval<const T&>())) == NoExcept) //
+        && hash_disabled<const T>() //
+        && hash_disabled<volatile T>() //
+        && hash_disabled<const volatile T>();
 }
 
 STATIC_ASSERT(standard_hash_enabled<bool>());
@@ -105,11 +105,11 @@ namespace std {
 
     template <>
     struct hash<Hashable> {
-        hash() { // non trivial
+        hash() { // non-trivial
         }
-        hash(const hash&) { // non trivial
+        hash(const hash&) { // non-trivial
         }
-        hash& operator=(const hash&) { // non trivial
+        hash& operator=(const hash&) { // non-trivial
             return *this;
         }
         size_t operator()(Hashable) {

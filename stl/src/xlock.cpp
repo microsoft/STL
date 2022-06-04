@@ -5,8 +5,8 @@
 
 #include <yvals.h>
 
-#include <locale.h>
-#include <stdlib.h>
+#include <clocale>
+#include <cstdlib>
 
 #include "xmtx.hpp"
 

@@ -17,7 +17,7 @@ int __cdecl _New_handler_interface(size_t) { // interface to existing Microsoft 
     return 1;
 }
 
-_CRTIMP2 new_handler __cdecl set_new_handler(new_handler pnew) noexcept { // remove current handler
+_CRTIMP2 new_handler __cdecl set_new_handler(_In_opt_ new_handler pnew) noexcept { // remove current handler
     _BEGIN_LOCK(_LOCK_MALLOC) // lock thread to ensure atomicity
     new_handler pold = _New_handler;
     _New_handler     = pnew;

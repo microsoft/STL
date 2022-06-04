@@ -78,7 +78,7 @@ int main() {
     vector<int> vec(begin_arr, end_arr);
 }
 
-// DevDiv#557214 "std::forward_iterator_tag derives from std::output_iterator_tag"
+// DevDiv-557214 "std::forward_iterator_tag derives from std::output_iterator_tag"
 STATIC_ASSERT(is_base_of_v<input_iterator_tag, forward_iterator_tag>);
 STATIC_ASSERT(is_base_of_v<forward_iterator_tag, bidirectional_iterator_tag>);
 STATIC_ASSERT(is_base_of_v<bidirectional_iterator_tag, random_access_iterator_tag>);

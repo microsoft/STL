@@ -25,7 +25,7 @@ inline std::string get_test_directory_subname(const char* const testName, const 
 
 inline std::experimental::filesystem::path get_test_directory(const char* const testName) {
     return std::experimental::filesystem::temp_directory_path()
-           / get_test_directory_subname(testName, strlen(testName));
+         / get_test_directory_subname(testName, strlen(testName));
 }
 
 #if _HAS_CXX17

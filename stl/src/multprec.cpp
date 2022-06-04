@@ -112,7 +112,12 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
     v[0]        = v0 & mask;
     v[1]        = v0 >> shift;
     const int n = limit(v, 2);
+    _Analysis_assume_(n > 0);
+    _Analysis_assume_(n <= 2);
     const int m = limit(u, _MP_len) - n;
+    _Analysis_assume_(m > 0);
+    _Analysis_assume_(m <= _MP_len - n);
+
 
     // Knuth, vol. 2, p. 272, Algorithm D
     // D1: [Normalize.]
@@ -130,6 +135,7 @@ void __CLRCALL_PURE_OR_CDECL _MP_Rem(
 
         unsigned long long rh = ((u[j + n] << shift) + u[j + n - 1]) % v[n - 1];
         for (;;) {
+#pragma warning(suppress : 6385) // TRANSITION, GH-1008
             if (qh < maxVal && qh * v[n - 2] <= (rh << shift) + u[j + n - 2]) {
                 break;
             } else { // reduce tentative value and retry

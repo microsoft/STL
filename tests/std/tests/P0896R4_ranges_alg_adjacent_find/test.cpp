@@ -6,6 +6,7 @@
 #include <cassert>
 #include <concepts>
 #include <ranges>
+#include <span>
 #include <utility>
 
 #include <range_algorithm_support.hpp>
@@ -53,8 +54,10 @@ int main() {
 }
 
 struct instantiator {
+    static constexpr int some_ints[] = {1, 2, 3};
     template <class Fwd>
-    static void call(Fwd&& fwd = {}) {
+    static void call() {
+        Fwd fwd{std::span{some_ints}};
         using ranges::adjacent_find, ranges::iterator_t;
 
         (void) adjacent_find(fwd);

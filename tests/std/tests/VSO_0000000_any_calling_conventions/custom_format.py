@@ -1,52 +1,44 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-from pathlib import Path
+import itertools
+import os
 
 from stl.test.format import STLTestFormat, TestStep
-from stl.test.tests import STLTest
+from stl.test.tests import STLTest, TestType
 
 
 class CustomTest(STLTest):
-    def __init__(self, suite, path_in_suite, lit_config, test_config,
-                 envlst_entry, env_num, default_cxx, file_path=None):
-        STLTest.__init__(self, suite, path_in_suite, lit_config, test_config,
-                         envlst_entry, env_num, default_cxx, file_path)
-        self.calling_convention_a = \
-            envlst_entry.getEnvVal('CALLING_CONVENTION_A')
-        self.calling_convention_b = \
-            envlst_entry.getEnvVal('CALLING_CONVENTION_B')
+    def __init__(self, suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum):
+        STLTest.__init__(self, suite, pathInSuite, litConfig, testConfig, envlstEntry, envNum)
+        self.callingConventionA = envlstEntry.getEnvVal('CALLING_CONVENTION_A')
+        self.callingConventionB = envlstEntry.getEnvVal('CALLING_CONVENTION_B')
 
 
 class CustomTestFormat(STLTestFormat):
-    def getTestsInDirectory(self, testSuite, path_in_suite,
-                            litConfig, localConfig, test_class=CustomTest):
-        return super().getTestsInDirectory(testSuite, path_in_suite, litConfig,
-                                           localConfig, test_class)
+    def getTestsInDirectory(self, testSuite, pathInSuite, litConfig, localConfig, testClass=CustomTest):
+        return super().getTestsInDirectory(testSuite, pathInSuite, litConfig, localConfig, testClass)
 
-    def getBuildSteps(self, test, lit_config, shared):
-        shared.exec_dir = test.getExecDir()
-        exe_source = Path(test.getSourcePath())
-        a_source = exe_source.parent / 'a.cpp'
-        output_base = test.getOutputBaseName()
-        output_dir = test.getOutputDir()
+    def getBuildSteps(self, test, litConfig, shared):
+        exeSource = test.getSourcePath()
+        aSource = os.path.join(os.path.dirname(exeSource), 'a.cpp')
 
-        a_compile_cmd, out_files, exec_file = \
-            test.cxx.executeBasedOnFlagsCmd([a_source], output_dir,
-                                            shared.exec_dir, 'a',
-                                            [test.calling_convention_a, '/c'],
-                                            [], [])
+        outputDir, outputBase = test.getTempPaths()
+        aObj = os.path.join(outputDir, 'a.obj')
 
-        yield TestStep(a_compile_cmd, shared.exec_dir, [a_source],
-                       test.cxx.compile_env)
+        cmd = [test.cxx, aSource, test.callingConventionA, *test.flags, '/c', *test.compileFlags, '/Fo' + aObj]
 
-        a_output = output_dir / 'a.obj'
+        yield TestStep(cmd, shared.execDir, shared.env, False)
 
-        exe_compile_cmd, out_files, shared.exec_file = \
-            test.cxx.executeBasedOnFlagsCmd([exe_source], output_dir,
-                                            shared.exec_dir, output_base,
-                                            [test.calling_convention_b,
-                                            str(a_output)], [], [])
+        shared.execFile = outputBase + '.exe'
+        cmd = [test.cxx, exeSource, aObj, test.callingConventionB, *test.flags, *test.compileFlags,
+               '/Fe' + shared.execFile, '/link', *test.linkFlags]
 
-        yield TestStep(exe_compile_cmd, shared.exec_dir,
-                       [a_output, exe_source], test.cxx.compile_env)
+        if TestType.COMPILE in test.testType:
+            cmd = [test.cxx, '/c', exeSource, aObj, test.callingConventionB, *test.flags, *test.compileFlags]
+        elif TestType.RUN in test.testType:
+            shared.execFile = outputBase + '.exe'
+            cmd = [test.cxx, exeSource, aObj, test.callingConventionB, *test.flags, *test.compileFlags,
+                   '/Fe' + shared.execFile, '/link', *test.linkFlags]
+
+        yield TestStep(cmd, shared.execDir, shared.env, False)

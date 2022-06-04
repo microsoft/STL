@@ -12,7 +12,7 @@ struct X : enable_shared_from_this<X> {
 };
 
 int main() {
-    // Test DDB#196243 "TR1 VC9 SP1: enable_shared_from_this's copy ctor and copy assignment operator do too much work".
+    // Test DDB-196243 "TR1 VC9 SP1: enable_shared_from_this's copy ctor and copy assignment operator do too much work".
     {
         const shared_ptr<X> sp1(new X(11));
         const shared_ptr<X> sp2(new X(22));
@@ -37,7 +37,7 @@ int main() {
         assert(raw2->shared_from_this() != sp1);
     }
 
-    // Test DDB#197048 "[VS2008 / TR1] still got problems with shared_ptr<const T>".
+    // Test DDB-197048 "[VS2008 / TR1] still got problems with shared_ptr<const T>".
     {
         shared_ptr<const int> sp1(static_cast<const int*>(new int(6)));
         shared_ptr<volatile int> sp2(static_cast<volatile int*>(new int(7)));
@@ -48,7 +48,7 @@ int main() {
         assert(*sp3 == 8);
     }
 
-    // Test Dev10#654944 "shared_ptr: assignment is messed up".
+    // Test Dev10-654944 "shared_ptr: assignment is messed up".
     {
         shared_ptr<int> p(new int(1729));
         shared_ptr<int> z;
@@ -63,7 +63,7 @@ int main() {
         assert(!z);
     }
 
-    // Test DevDiv#1178296 "<memory>: shared_ptr<volatile X> doesn't work with enable_shared_from_this<X>".
+    // Test DevDiv-1178296 "<memory>: shared_ptr<volatile X> doesn't work with enable_shared_from_this<X>".
     {
         const auto sp1 = make_shared<const X>(100);
         const auto sp2 = make_shared<volatile X>(200);

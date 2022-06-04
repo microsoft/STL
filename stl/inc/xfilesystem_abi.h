@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
-#include <stdint.h>
+#include <cstdint>
 #include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
@@ -19,9 +19,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-inline constexpr size_t __std_fs_max_path                      = 260; // #define MAX_PATH          260
-inline constexpr size_t __std_fs_temp_path_max                 = __std_fs_max_path + 1;
-inline constexpr long long __std_fs_file_time_epoch_adjustment = 0x19DB1DED53E8000LL; // TRANSITION, ABI
+inline constexpr size_t __std_fs_max_path      = 260; // #define MAX_PATH          260
+inline constexpr size_t __std_fs_temp_path_max = __std_fs_max_path + 1;
 
 enum class __std_win_error : unsigned long {
     _Success                   = 0, // #define ERROR_SUCCESS                    0L
@@ -45,7 +44,6 @@ enum class __std_win_error : unsigned long {
     _Max                       = ~0UL // sentinel not used by Win32
 };
 
-// FUNCTION __std_is_file_not_found
 #pragma warning(push)
 #pragma warning(disable : 4061) // enumerator not explicitly handled by switch label
 _NODISCARD inline bool __std_is_file_not_found(const __std_win_error _Error) noexcept {
@@ -206,7 +204,7 @@ _BITMASK_OPS(__std_fs_file_flags)
 
 enum class __std_fs_file_handle : intptr_t { _Invalid = -1 };
 
-enum class __std_code_page : unsigned int { _Utf8 = 65001 };
+enum class __std_code_page : unsigned int { _Acp = 0, _Utf8 = 65001 };
 
 struct __std_fs_convert_result {
     int _Len;
@@ -239,8 +237,9 @@ _NODISCARD __std_win_error __stdcall __std_fs_open_handle(_Out_ __std_fs_file_ha
 
 void __stdcall __std_fs_close_handle(__std_fs_file_handle _Handle) noexcept;
 
-_NODISCARD __std_win_error __stdcall __std_fs_get_file_attributes_by_handle(
-    _In_ __std_fs_file_handle _Handle, _Out_ unsigned long* _File_attributes) noexcept;
+_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_fs_get_file_attributes_by_handle(
+        _In_ __std_fs_file_handle _Handle, _Out_ unsigned long* _File_attributes) noexcept;
 
 _NODISCARD __std_ulong_and_error __stdcall __std_fs_get_final_path_name_by_handle(_In_ __std_fs_file_handle _Handle,
     _Out_writes_z_(_Target_size) wchar_t* _Target, _In_ unsigned long _Target_size,
@@ -259,9 +258,9 @@ _NODISCARD __std_win_error __stdcall __std_fs_directory_iterator_open(_In_z_ con
 
 void __stdcall __std_fs_directory_iterator_close(_In_ __std_fs_dir_handle _Handle) noexcept;
 
-_NODISCARD __std_win_error __stdcall __std_fs_get_stats(_In_z_ const wchar_t* _Path, _Out_ __std_fs_stats* _Stats,
-    _In_ __std_fs_stats_flags _Flags,
-    _In_ __std_fs_file_attr _Symlink_attribute_hint = __std_fs_file_attr::_Invalid) noexcept;
+_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_fs_get_stats(_In_z_ const wchar_t* _Path, __std_fs_stats* _Stats, _In_ __std_fs_stats_flags _Flags,
+        _In_ __std_fs_file_attr _Symlink_attribute_hint = __std_fs_file_attr::_Invalid) noexcept;
 
 _NODISCARD __std_win_error __stdcall __std_fs_directory_iterator_advance(
     _In_ __std_fs_dir_handle _Handle, _Out_ __std_fs_find_data* _Results) noexcept;
@@ -276,8 +275,12 @@ _NODISCARD __std_fs_convert_result __stdcall __std_fs_convert_wide_to_narrow(_In
     _In_reads_(_Input_len) const wchar_t* _Input_str, _In_ int _Input_len,
     _Out_writes_opt_(_Output_len) char* _Output_str, _In_ int _Output_len) noexcept;
 
-_NODISCARD __std_win_error __stdcall __std_fs_get_file_id(
-    _Out_ __std_fs_file_id* _Id, _In_z_ const wchar_t* _Path) noexcept;
+_NODISCARD __std_fs_convert_result __stdcall __std_fs_convert_wide_to_narrow_replace_chars(
+    _In_ __std_code_page _Code_page, _In_reads_(_Input_len) const wchar_t* _Input_str, _In_ int _Input_len,
+    _Out_writes_opt_(_Output_len) char* _Output_str, _In_ int _Output_len) noexcept;
+
+_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_fs_get_file_id(_Out_ __std_fs_file_id* _Id, _In_z_ const wchar_t* _Path) noexcept;
 
 _NODISCARD __std_win_error __stdcall __std_fs_set_last_write_time(
     _In_ long long _Last_write_filetime, _In_z_ const wchar_t* _Path) noexcept;
@@ -285,11 +288,12 @@ _NODISCARD __std_win_error __stdcall __std_fs_set_last_write_time(
 _NODISCARD __std_win_error __stdcall __std_fs_change_permissions(
     _In_z_ const wchar_t* _Path, _In_ bool _Follow_symlinks, _In_ bool _Readonly) noexcept;
 
-_NODISCARD __std_ulong_and_error __stdcall __std_fs_get_temp_path(
-    _Out_writes_z_(__std_fs_temp_path_max) wchar_t* _Target) noexcept;
+_NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
+    __stdcall __std_fs_get_temp_path(_Out_writes_z_(__std_fs_temp_path_max) wchar_t* _Target) noexcept;
 
-_NODISCARD __std_ulong_and_error __stdcall __std_fs_get_current_path(
-    _In_ unsigned long _Target_size, _Out_writes_z_(_Target_size) wchar_t* _Target) noexcept;
+_NODISCARD _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
+    __stdcall __std_fs_get_current_path(
+        _In_ unsigned long _Target_size, _Out_writes_z_(_Target_size) wchar_t* _Target) noexcept;
 
 _NODISCARD __std_win_error __stdcall __std_fs_set_current_path(_In_z_ const wchar_t* _Target) noexcept;
 
@@ -305,8 +309,9 @@ _NODISCARD __std_win_error __stdcall __std_fs_create_symbolic_link(
 _NODISCARD __std_win_error __stdcall __std_fs_read_reparse_data_buffer(_In_ __std_fs_file_handle _Handle,
     _Out_writes_bytes_(_Buffer_size) void* _Buffer, _In_ unsigned long _Buffer_size) noexcept;
 
-_NODISCARD __std_win_error __stdcall __std_fs_read_name_from_reparse_data_buffer(
-    _In_ __std_fs_reparse_data_buffer* _Handle, _Out_ wchar_t** _Offset, _Out_ unsigned short* _Length) noexcept;
+_NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
+    __stdcall __std_fs_read_name_from_reparse_data_buffer(
+        _In_ __std_fs_reparse_data_buffer* _Handle, _Out_ wchar_t** _Offset, _Out_ unsigned short* _Length) noexcept;
 
 struct __std_fs_create_directory_result {
     bool _Created;
@@ -355,7 +360,6 @@ struct _Fs_file {
     }
 };
 
-// FUNCTION OBJECT _Is_slash
 struct _Is_slash_oper { // predicate testing if input is a preferred-separator or fallback-separator
     _NODISCARD constexpr bool operator()(
         const wchar_t _Ch) const { // test if _Ch is a preferred-separator or fallback-separator

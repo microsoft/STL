@@ -3,12 +3,19 @@
 
 #ifndef _XMATH
 #define _XMATH
-#include <errno.h>
-#include <math.h>
-#include <stddef.h>
+#include <cerrno>
+#include <cmath>
+#include <limits>
 #include <ymath.h>
 
-// FLOAT PROPERTIES
+// macros for _Feraise argument
+#define _FE_DIVBYZERO 0x04
+#define _FE_INEXACT   0x20
+#define _FE_INVALID   0x01
+#define _FE_OVERFLOW  0x08
+#define _FE_UNDERFLOW 0x10
+
+// float properties
 #define _D0 3 // little-endian, small long doubles
 #define _D1 2
 #define _D2 1
@@ -49,11 +56,15 @@
 _EXTERN_C_UNLESS_PURE
 
 int _Stopfx(const char**, char**);
-int _Stoflt(const char*, const char*, char**, long[], int);
-int _Stoxflt(const char*, const char*, char**, long[], int);
+_In_range_(0, maxsig) int _Stoflt(
+    const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
+_In_range_(0, maxsig) int _Stoxflt(
+    const char*, const char*, char**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
 int _WStopfx(const wchar_t**, wchar_t**);
-int _WStoflt(const wchar_t*, const wchar_t*, wchar_t**, long[], int);
-int _WStoxflt(const wchar_t*, const wchar_t*, wchar_t**, long[], int);
+_In_range_(0, maxsig) int _WStoflt(
+    const wchar_t*, const wchar_t*, wchar_t**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
+_In_range_(0, maxsig) int _WStoxflt(
+    const wchar_t*, const wchar_t*, wchar_t**, _Out_writes_(maxsig) long[], _In_range_(1, 4) int maxsig);
 
 // double declarations
 union _Dval { // pun floating type as integer array
@@ -154,5 +165,28 @@ long double* _LXp_invx(long double*, int, long double*);
 long double* _LXp_sqrtx(long double*, int, long double*);
 
 _END_EXTERN_C_UNLESS_PURE
+
+// raise IEEE 754 exceptions
+#ifndef _M_CEE_PURE
+#pragma float_control(except, on, push)
+#endif
+
+template <typename T>
+_NODISCARD T _Xfe_overflow(const T sign) noexcept {
+    static_assert(_STD is_floating_point_v<T>, "Expected is_floating_point_v<T>.");
+    constexpr T huge = _STD numeric_limits<T>::max();
+    return _STD copysign(huge, sign) * huge;
+}
+
+template <typename T>
+_NODISCARD T _Xfe_underflow(const T sign) noexcept {
+    static_assert(_STD is_floating_point_v<T>, "Expected is_floating_point_v<T>.");
+    constexpr T tiny = _STD numeric_limits<T>::min();
+    return _STD copysign(tiny, sign) * tiny;
+}
+
+#ifndef _M_CEE_PURE
+#pragma float_control(pop)
+#endif
 
 #endif // _XMATH

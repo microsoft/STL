@@ -24,7 +24,6 @@ namespace stdext {
 
 #define _ESC_CODE 0x1b
 
-        // CLASS TEMPLATE codecvt_jis_0208
         template <class _Elem, unsigned long _Maxcode = 0x7e7e>
         class codecvt_jis_0208
             : public _STD codecvt<_Elem, char, _Statype> { // facet for converting between JIS-X0208 _Elem and JIS bytes
@@ -38,10 +37,10 @@ namespace stdext {
 
             explicit codecvt_jis_0208(size_t _Refs = 0) : _Mybase(_Refs) {}
 
-            virtual ~codecvt_jis_0208() noexcept {}
+            ~codecvt_jis_0208() noexcept override {}
 
         protected:
-            virtual result do_in(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,
+            result do_in(_Statype& _State, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,
                 _Elem* _First2, _Elem* _Last2, _Elem*& _Mid2) const override {
                 // convert bytes [_First1, _Last1) to [_First2, _Last)
                 char* _Pstate = reinterpret_cast<char*>(&_State);
@@ -108,7 +107,7 @@ namespace stdext {
                 return _Ans;
             }
 
-            virtual result do_out(_Statype& _State, const _Elem* _First1, const _Elem* _Last1, const _Elem*& _Mid1,
+            result do_out(_Statype& _State, const _Elem* _First1, const _Elem* _Last1, const _Elem*& _Mid1,
                 _Byte* _First2, _Byte* _Last2, _Byte*& _Mid2) const override {
                 // convert [_First1, _Last1) to bytes [_First2, _Last)
                 char* _Pstate = reinterpret_cast<char*>(&_State);
@@ -174,7 +173,7 @@ namespace stdext {
                 return _First1 == _Mid1 ? _Mybase::partial : _Mybase::ok;
             }
 
-            virtual result do_unshift(_Statype& _State, _Byte* _First2, _Byte*, _Byte*& _Mid2) const override {
+            result do_unshift(_Statype& _State, _Byte* _First2, _Byte*, _Byte*& _Mid2) const override {
                 // generate bytes to return to default shift state
                 char* _Pstate = reinterpret_cast<char*>(&_State);
 
@@ -200,7 +199,7 @@ namespace stdext {
                 return _Mybase::partial;
             }
 
-            virtual int do_length(
+            int do_length(
                 _Statype& _State, const _Byte* _First1, const _Byte* _Last1, size_t _Count) const noexcept override {
                 // return min(_Count, converted length of bytes [_First1, _Last1))
                 size_t _Wchars    = 0;
@@ -211,8 +210,8 @@ namespace stdext {
                     _Elem* _Mid2;
                     _Elem _Ch;
 
-                    switch (do_in(_Mystate, _First1, _Last1, _Mid1, &_Ch, &_Ch + 1,
-                        _Mid2)) { // test result of single wide-char conversion
+                    // test result of single wide-char conversion
+                    switch (do_in(_Mystate, _First1, _Last1, _Mid1, &_Ch, &_Ch + 1, _Mid2)) {
                     case _Mybase::noconv:
                         return static_cast<int>(_Wchars + (_Last1 - _First1));
 
@@ -232,15 +231,15 @@ namespace stdext {
                 return static_cast<int>(_Wchars);
             }
 
-            virtual bool do_always_noconv() const noexcept override { // return true if conversions never change input
+            bool do_always_noconv() const noexcept override { // return true if conversions never change input
                 return false;
             }
 
-            virtual int do_max_length() const noexcept override { // return maximum length required for a conversion
+            int do_max_length() const noexcept override { // return maximum length required for a conversion
                 return 5;
             }
 
-            virtual int do_encoding() const noexcept override { // return length of code sequence (from codecvt)
+            int do_encoding() const noexcept override { // return length of code sequence (from codecvt)
                 return 0; // 0 => varying length
             }
         };

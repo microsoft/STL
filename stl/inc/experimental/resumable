@@ -15,8 +15,8 @@
 #if _HAS_EXCEPTIONS
 #include <exception>
 #endif
+#include <cstdint>
 #include <experimental/coroutine>
-#include <stdint.h>
 #include <type_traits>
 
 #pragma pack(push, _CRT_PACKING)
@@ -30,11 +30,9 @@ _STD_BEGIN
 
 namespace experimental {
 
-#if !defined(__EDG__) && _MSC_VER >= 1928
-    // STRUCT noop_coroutine_promise
+#ifndef __EDG__
     struct noop_coroutine_promise {};
 
-    // STRUCT coroutine_handle<noop_coroutine_promise>
     template <>
     struct coroutine_handle<noop_coroutine_promise> : coroutine_handle<> {
         friend coroutine_handle noop_coroutine() noexcept;
@@ -67,15 +65,13 @@ namespace experimental {
         }
     };
 
-    // ALIAS noop_coroutine_handle
     using noop_coroutine_handle = coroutine_handle<noop_coroutine_promise>;
 
-    // FUNCTION noop_coroutine
     _NODISCARD inline noop_coroutine_handle noop_coroutine() noexcept {
         // Returns a handle to a coroutine that has no observable effects when resumed or destroyed.
         return noop_coroutine_handle{};
     }
-#endif // !defined(__EDG__) && _MSC_VER >= 1928
+#endif // ^^^ !defined(__EDG__) ^^^
 } // namespace experimental
 
 _STD_END

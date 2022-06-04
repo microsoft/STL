@@ -55,15 +55,15 @@ static STD error_code rtr(STD future_errc::future_already_retrieved);
 static STD error_code sat(STD future_errc::promise_already_satisfied);
 static STD error_code nst(STD future_errc::no_state);
 
-static bool check_future_errc(std::future_errc) { // bind to future_errc values
+static bool check_future_errc(STD future_errc) { // bind to future_errc values
     return 1;
 }
 
-static bool check_launch(std::launch) { // bind to launch values
+static bool check_launch(STD launch) { // bind to launch values
     return 1;
 }
 
-static bool check_future_status(std::future_status) { // bind to future_status values
+static bool check_future_status(STD future_status) { // bind to future_status values
     return 1;
 }
 
@@ -268,13 +268,13 @@ static void call_promise_setter(STD promise<Ty>* pr, int which) { // try to set 
         pr->set_value(3);
         break;
     case 1:
-        pr->set_exception(STD exception_ptr());
+        pr->set_exception(STD make_exception_ptr(0));
         break;
     case 2:
         pr->set_value_at_thread_exit(3);
         break;
     case 3:
-        pr->set_exception_at_thread_exit(STD exception_ptr());
+        pr->set_exception_at_thread_exit(STD make_exception_ptr(0));
         break;
     }
 }

@@ -35,7 +35,8 @@ void test_case_is_heap_parallel(const size_t testSize) {
     v[0] = 0;
 
     // (0, testSize - 1]
-    for (auto i = 1U; i < testSize; ++i) {
+    const auto limit = std::min(testSize, quadratic_complexity_case_limit);
+    for (auto i = 1U; i < limit; ++i) {
         v[i] = 1;
         assert(!is_heap(par, v.begin(), v.end()));
         assert(is_heap_until(par, v.begin(), v.end()) == v.begin() + static_cast<int>(i));
@@ -79,7 +80,7 @@ void test_case_is_heap_parallel(const size_t testSize) {
     assert(is_heap_until(par, v.begin(), v.end(), greater()) == secondElement);
     v[1] = 2;
 
-    for (auto i = 2U; i < testSize; ++i) {
+    for (auto i = 2U; i < limit; ++i) {
         const auto old = v[i];
         v[i]           = 0;
         assert(!is_heap(par, v.begin(), v.end()));
@@ -105,7 +106,7 @@ void test_case_is_heap_parallel(const size_t testSize) {
     assert(is_heap_until(par, v.begin(), v.end(), greater()) == v.begin() + 3);
     v[0] = testSize;
 
-    for (auto i = 1U; i < testSize; ++i) {
+    for (auto i = 1U; i < limit; ++i) {
         const auto old = v[i];
         v[i]           = 0;
         if (i < testSize / 2) {

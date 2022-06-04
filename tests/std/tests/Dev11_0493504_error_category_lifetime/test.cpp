@@ -10,7 +10,7 @@
 #include <future>
 #endif // _M_CEE
 
-#include <test_windows.hpp>
+#include <Windows.h>
 
 using namespace std;
 
@@ -28,8 +28,19 @@ struct Global {
 
 Global global;
 
+// Also test LWG-3598: system_category().default_error_condition(0) has a generic category.
+void test_lwg_3598() {
+    error_condition cond = system_category().default_error_condition(0);
+
+    assert(cond.category() == generic_category());
+    assert(cond.message() == "success");
+    assert(cond.value() == 0);
+
+    assert(error_code() == error_condition());
+}
+
 int main() {
-    // Also test DevDiv#781294 "<system_error>: Visual C++ 2013 RC system_category().equivalent function does not work".
+    // Also test DevDiv-781294 "<system_error>: Visual C++ 2013 RC system_category().equivalent function does not work".
     const error_code code(ERROR_NOT_ENOUGH_MEMORY, system_category());
 
     const error_condition cond = make_error_condition(errc::not_enough_memory);
@@ -44,10 +55,12 @@ int main() {
     // Also test VSO-649432 <system_error> system_category().message() ends with extra newlines
     const auto msg = code.message();
     assert(!msg.empty() && msg.back() != '\0' && !isspace(static_cast<unsigned char>(msg.back())));
+
+    test_lwg_3598();
 }
 
 
-// Also test DevDiv#833886 "<system_error>: comparisons should be free functions".
+// Also test DevDiv-833886 "<system_error>: comparisons should be free functions".
 bool test_code(const io_errc l, const error_code& r) {
     return l == r && l != r && l < r;
 }

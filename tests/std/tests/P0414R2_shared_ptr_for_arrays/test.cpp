@@ -939,7 +939,7 @@ void test_LWG_2996() {
     assert(sp1.use_count() == 1);
     assert(sp1.get() == pz);
 
-    shared_ptr<const BaseX> sp2(move(sp1)); // converting move ctor, old
+    shared_ptr<const BaseX> sp2(move(sp1)); // move converting ctor, old
     assert(sp1.use_count() == 0);
     assert(sp1.get() == nullptr);
     assert(sp2.use_count() == 1);

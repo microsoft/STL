@@ -18,7 +18,7 @@ using namespace std::placeholders;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-// DevDiv#235721 "<future>: async() and packaged_task don't compile for void and T& return types"
+// DevDiv-235721 "<future>: async() and packaged_task don't compile for void and T& return types"
 
 void test_DevDiv_235721() {
     auto void_lambda = []() {};
@@ -52,7 +52,7 @@ void test_DevDiv_235721() {
 }
 
 
-// DevDiv#586551 "<future>: future_errc message() and what() don't work"
+// DevDiv-586551 "<future>: future_errc message() and what() don't work"
 
 void test_message(const future_errc fe, const string& s) {
     assert(make_error_code(fe).message() == s);
@@ -70,7 +70,7 @@ void test_DevDiv_586551() {
 }
 
 
-// DevDiv#725337 "<future>: std::packaged_task<T> where T is void or a reference class are not movable"
+// DevDiv-725337 "<future>: std::packaged_task<T> where T is void or a reference class are not movable"
 
 void test_DevDiv_725337() {
     auto void_lambda = []() {};

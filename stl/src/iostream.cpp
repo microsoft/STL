@@ -6,7 +6,6 @@
 #include <iostream>
 _STD_BEGIN
 
-// OBJECT DECLARATIONS
 __PURE_APPDOMAIN_GLOBAL int ios_base::Init::_Init_cnt = -1;
 int& ios_base::Init::_Init_cnt_func() {
     return ios_base::Init::_Init_cnt;

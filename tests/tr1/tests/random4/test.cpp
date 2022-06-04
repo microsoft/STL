@@ -57,7 +57,7 @@ static void tseed_seq() { // test class seed_seq
     seq1.generate(&arr2[0], &arr2[4]);
     CHECK_INT(arr2[3], 3734116661U);
 
-    STD seed_seq seq2(STD initializer_list<Uint32>(&arr1[0], &arr1[5]));
+    STD seed_seq seq2({arr1[0], arr1[1], arr1[2], arr1[3], arr1[4]});
     CHECK_INT(seq2.size(), 5);
     seq2.param(&arr2[0]);
     CHECK_INT(arr2[0], 'a');

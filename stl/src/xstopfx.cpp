@@ -3,7 +3,7 @@
 
 // _Stopfx function
 
-#include <ctype.h>
+#include <cctype>
 
 #include "xmath.hpp"
 

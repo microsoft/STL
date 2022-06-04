@@ -11,47 +11,27 @@ system. See https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/ov
 for more information.
 
 This script assumes you have installed Azure tools into PowerShell by following the instructions
-at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-3.6.1
+at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps
 or are running from Azure Cloud Shell.
 #>
 
-$Location = 'westus2'
-$Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd')
-$VMSize = 'Standard_F16s_v2'
+$ErrorActionPreference = 'Stop'
+
+# https://aka.ms/azps-changewarnings
+$Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
+
+$Location = 'northeurope'
+$Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd-THHmm')
+$VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
-$WindowsServerSku = '2019-Datacenter'
+$ImagePublisher = 'MicrosoftWindowsServer'
+$ImageOffer = 'WindowsServer'
+$ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 11
+$TotalProgress = 14
 $CurrentProgress = 1
-
-<#
-.SYNOPSIS
-Returns whether there's a name collision in the resource group.
-
-.DESCRIPTION
-Find-ResourceGroupNameCollision takes a list of resources, and checks if $Test
-collides names with any of the resources.
-
-.PARAMETER Test
-The name to test.
-
-.PARAMETER Resources
-The list of resources.
-#>
-function Find-ResourceGroupNameCollision {
-  [CmdletBinding()]
-  Param([string]$Test, $Resources)
-
-  foreach ($resource in $Resources) {
-    if ($resource.ResourceGroupName -eq $Test) {
-      return $true
-    }
-  }
-
-  return $false
-}
 
 <#
 .SYNOPSIS
@@ -69,10 +49,10 @@ function Find-ResourceGroupName {
   [CmdletBinding()]
   Param([string] $Prefix)
 
-  $resources = Get-AzResourceGroup
+  $existingNames = (Get-AzResourceGroup).ResourceGroupName
   $result = $Prefix
   $suffix = 0
-  while (Find-ResourceGroupNameCollision -Test $result -Resources $resources) {
+  while ($result -in $existingNames) {
     $suffix++
     $result = "$Prefix-$suffix"
   }
@@ -96,7 +76,7 @@ function New-Password {
 
   # This 64-character alphabet generates 6 bits of entropy per character.
   # The power-of-2 alphabet size allows us to select a character by masking a random Byte with bitwise-AND.
-  $alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
+  $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-'
   $mask = 63
   if ($alphabet.Length -ne 64) {
     throw 'Bad alphabet length'
@@ -151,11 +131,20 @@ function Wait-Shutdown {
       }
     }
 
-    Write-Host "... not stopped yet, sleeping for 10 seconds"
+    Write-Host '... not stopped yet, sleeping for 10 seconds'
     Start-Sleep -Seconds 10
   }
 }
 
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Setting the subscription context' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+Set-AzContext -SubscriptionName CPP_STL_GitHub | Out-Null
+az account set --subscription CPP_STL_GitHub
 
 ####################################################################################################
 Write-Progress `
@@ -165,9 +154,9 @@ Write-Progress `
 
 $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
-New-AzResourceGroup -Name $ResourceGroupName -Location $Location
+New-AzResourceGroup -Name $ResourceGroupName -Location $Location | Out-Null
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
-$Credential = New-Object System.Management.Automation.PSCredential ("AdminUser", $AdminPWSecure)
+$Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
 ####################################################################################################
 Write-Progress `
@@ -181,11 +170,23 @@ $allowHttp = New-AzNetworkSecurityRuleConfig `
   -Access Allow `
   -Protocol Tcp `
   -Direction Outbound `
-  -Priority 1008 `
+  -Priority 1000 `
   -SourceAddressPrefix * `
   -SourcePortRange * `
   -DestinationAddressPrefix * `
   -DestinationPortRange @(80, 443)
+
+$allowQuic = New-AzNetworkSecurityRuleConfig `
+  -Name AllowQUIC `
+  -Description 'Allow QUIC' `
+  -Access Allow `
+  -Protocol Udp `
+  -Direction Outbound `
+  -Priority 1010 `
+  -SourceAddressPrefix * `
+  -SourcePortRange * `
+  -DestinationAddressPrefix * `
+  -DestinationPortRange 443
 
 $allowDns = New-AzNetworkSecurityRuleConfig `
   -Name AllowDNS `
@@ -193,7 +194,7 @@ $allowDns = New-AzNetworkSecurityRuleConfig `
   -Access Allow `
   -Protocol * `
   -Direction Outbound `
-  -Priority 1009 `
+  -Priority 1020 `
   -SourceAddressPrefix * `
   -SourcePortRange * `
   -DestinationAddressPrefix * `
@@ -205,39 +206,40 @@ $denyEverythingElse = New-AzNetworkSecurityRuleConfig `
   -Access Deny `
   -Protocol * `
   -Direction Outbound `
-  -Priority 1010 `
+  -Priority 2000 `
   -SourceAddressPrefix * `
   -SourcePortRange * `
   -DestinationAddressPrefix * `
   -DestinationPortRange *
 
-$NetworkSecurityGroupName = $ResourceGroupName + 'NetworkSecurity'
+$NetworkSecurityGroupName = $ResourceGroupName + '-NetworkSecurity'
 $NetworkSecurityGroup = New-AzNetworkSecurityGroup `
   -Name $NetworkSecurityGroupName `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
-  -SecurityRules @($allowHttp, $allowDns, $denyEverythingElse)
+  -SecurityRules @($allowHttp, $allowQuic, $allowDns, $denyEverythingElse)
 
-$SubnetName = $ResourceGroupName + 'Subnet'
+$SubnetName = $ResourceGroupName + '-Subnet'
 $Subnet = New-AzVirtualNetworkSubnetConfig `
   -Name $SubnetName `
-  -AddressPrefix "10.0.0.0/16" `
+  -AddressPrefix '10.0.0.0/16' `
   -NetworkSecurityGroup $NetworkSecurityGroup
 
-$VirtualNetworkName = $ResourceGroupName + 'Network'
+$VirtualNetworkName = $ResourceGroupName + '-Network'
 $VirtualNetwork = New-AzVirtualNetwork `
   -Name $VirtualNetworkName `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
-  -AddressPrefix "10.0.0.0/16" `
+  -AddressPrefix '10.0.0.0/16' `
   -Subnet $Subnet
 
 ####################################################################################################
 Write-Progress `
-  -Activity 'Creating prototype VM' `
+  -Activity $ProgressActivity `
+  -Status 'Creating prototype VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$NicName = $ResourceGroupName + 'NIC'
+$NicName = $ResourceGroupName + '-NIC'
 $Nic = New-AzNetworkInterface `
   -Name $NicName `
   -ResourceGroupName $ResourceGroupName `
@@ -255,16 +257,16 @@ $VM = Set-AzVMOperatingSystem `
 $VM = Add-AzVMNetworkInterface -VM $VM -Id $Nic.Id
 $VM = Set-AzVMSourceImage `
   -VM $VM `
-  -PublisherName 'MicrosoftWindowsServer' `
-  -Offer 'WindowsServer' `
-  -Skus $WindowsServerSku `
+  -PublisherName $ImagePublisher `
+  -Offer $ImageOffer `
+  -Skus $ImageSku `
   -Version latest
 
 $VM = Set-AzVMBootDiagnostic -VM $VM -Disable
 New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
-  -VM $VM
+  -VM $VM | Out-Null
 
 ####################################################################################################
 Write-Progress `
@@ -272,12 +274,14 @@ Write-Progress `
   -Status 'Running provisioning script provision-image.ps1 in VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Invoke-AzVMRunCommand `
+$ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\provision-image.ps1" `
   -Parameter @{AdminUserPassword = $AdminPW }
+
+Write-Host "provision-image.ps1 output: $($ProvisionImageResult.value.Message)"
 
 ####################################################################################################
 Write-Progress `
@@ -285,7 +289,17 @@ Write-Progress `
   -Status 'Restarting VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName | Out-Null
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Sleeping after restart' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+# The VM appears to be busy immediately after restarting.
+# This workaround waits for a minute before attempting to run sysprep.ps1.
+Start-Sleep -Seconds 60
 
 ####################################################################################################
 Write-Progress `
@@ -297,7 +311,7 @@ Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
-  -ScriptPath "$PSScriptRoot\sysprep.ps1"
+  -ScriptPath "$PSScriptRoot\sysprep.ps1" | Out-Null
 
 ####################################################################################################
 Write-Progress `
@@ -316,16 +330,16 @@ Write-Progress `
 Stop-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
-  -Force
+  -Force | Out-Null
 
 Set-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
-  -Generalized
+  -Generalized | Out-Null
 
 $VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
-$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID
+$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID -HyperVGeneration 'V2'
 $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
 
 ####################################################################################################
@@ -334,8 +348,11 @@ Write-Progress `
   -Status 'Deleting unused VM and disk' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-Remove-AzVM -Id $VM.ID -Force
-Remove-AzDisk -ResourceGroupName $ResourceGroupName -DiskName $PrototypeOSDiskName -Force
+Remove-AzVM -Id $VM.ID -Force | Out-Null
+Remove-AzDisk `
+  -ResourceGroupName $ResourceGroupName `
+  -DiskName $PrototypeOSDiskName `
+  -Force | Out-Null
 
 ####################################################################################################
 Write-Progress `
@@ -343,9 +360,9 @@ Write-Progress `
   -Status 'Creating scale set' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$VmssIpConfigName = $ResourceGroupName + 'VmssIpConfig'
+$VmssIpConfigName = $ResourceGroupName + '-VmssIpConfig'
 $VmssIpConfig = New-AzVmssIpConfig -SubnetId $Nic.IpConfigurations[0].Subnet.Id -Primary -Name $VmssIpConfigName
-$VmssName = $ResourceGroupName + 'Vmss'
+$VmssName = $ResourceGroupName + '-Vmss'
 $Vmss = New-AzVmssConfig `
   -Location $Location `
   -SkuCapacity 0 `
@@ -378,15 +395,49 @@ $Vmss = Set-AzVmssStorageProfile `
   -OsDiskCaching ReadWrite `
   -ImageReferenceId $Image.Id
 
-New-AzVmss `
+$Vmss = New-AzVmss `
   -ResourceGroupName $ResourceGroupName `
   -Name $VmssName `
   -VirtualMachineScaleSet $Vmss
 
 ####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Enabling VMSS diagnostic logs' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+$StorageAccountName = 'stlvmssdiaglogssa'
+
+$ExpirationDate = (Get-Date -AsUTC).AddYears(1).ToString('yyyy-MM-ddTHH:mmZ')
+
+$StorageAccountSASToken = $(az storage account generate-sas `
+  --account-name $StorageAccountName `
+  --expiry $ExpirationDate `
+  --permissions acuw `
+  --resource-types co `
+  --services bt `
+  --https-only `
+  --output tsv `
+  2> $null)
+
+$DiagnosticsDefaultConfig = $(az vmss diagnostics get-default-config --is-windows-os 2> $null). `
+  Replace('__DIAGNOSTIC_STORAGE_ACCOUNT__', $StorageAccountName). `
+  Replace('__VM_OR_VMSS_RESOURCE_ID__', $Vmss.Id)
+
+Out-File -FilePath "$PSScriptRoot\vmss-config.json" -InputObject $DiagnosticsDefaultConfig
+
+$DiagnosticsProtectedSettings = "{'storageAccountName': '$StorageAccountName', "
+$DiagnosticsProtectedSettings += "'storageAccountSasToken': '?$StorageAccountSASToken'}"
+
+az vmss diagnostics set `
+  --resource-group $ResourceGroupName `
+  --vmss-name $VmssName `
+  --settings "$PSScriptRoot\vmss-config.json" `
+  --protected-settings "$DiagnosticsProtectedSettings" `
+  --output none
+
+####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
 Write-Host "Location: $Location"
 Write-Host "Resource group name: $ResourceGroupName"
-Write-Host "User name: AdminUser"
-Write-Host "Using generated password: $AdminPW"
 Write-Host 'Finished!'

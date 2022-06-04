@@ -33,7 +33,6 @@ namespace stdext {
     using _STD _Swap_adl;
     using _STD _Xout_of_range;
 
-    // CLASS TEMPLATE _Hmap_traits
     template <class _Kty, // key type
         class _Ty, // mapped type
         class _Tr, // comparator predicate type
@@ -84,20 +83,21 @@ namespace stdext {
         };
 
         template <class _Ty1, class _Ty2>
-        static const _Kty& _Kfn(const pair<_Ty1, _Ty2>& _Val) noexcept { // extract key from element value
+        _NODISCARD static const _Kty& _Kfn(const pair<_Ty1, _Ty2>& _Val) noexcept { // extract key from element value
             return _Val.first;
         }
 
         template <class _Ty1, class _Ty2>
-        static const _Ty2& _Nonkfn(const pair<_Ty1, _Ty2>& _Val) noexcept { // extract non-key from element value
+        _NODISCARD static const _Ty2& _Nonkfn(const pair<_Ty1, _Ty2>& _Val) noexcept {
+            // extract non-key from element value
             return _Val.second;
         }
 
-        float& _Get_max_bucket_size() noexcept {
+        _NODISCARD float& _Get_max_bucket_size() noexcept {
             return _Max_buckets;
         }
 
-        const float& _Get_max_bucket_size() const noexcept {
+        _NODISCARD const float& _Get_max_bucket_size() const noexcept {
             return _Max_buckets;
         }
 
@@ -109,7 +109,6 @@ namespace stdext {
         float _Max_buckets = 0.0F; // current maximum bucket size
     };
 
-    // CLASS TEMPLATE hash_map
     template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, less<_Kty>>,
         class _Alloc = allocator<pair<const _Kty, _Ty>>>
     class hash_map : public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, false>> {
@@ -224,7 +223,7 @@ namespace stdext {
             return this->_Try_emplace(_Keyval).first->_Myval.second;
         }
 
-        mapped_type& at(const key_type& _Keyval) {
+        _NODISCARD mapped_type& at(const key_type& _Keyval) {
             const auto _Target = this->_Find_last(_Keyval, this->_Traitsobj(_Keyval));
             if (_Target._Duplicate) {
                 return _Target._Duplicate->_Myval.second;
@@ -233,7 +232,7 @@ namespace stdext {
             _Xout_of_range("invalid hash_map<K, T> key");
         }
 
-        const mapped_type& at(const key_type& _Keyval) const {
+        _NODISCARD const mapped_type& at(const key_type& _Keyval) const {
             const auto _Target = this->_Find_last(_Keyval, this->_Traitsobj(_Keyval));
             if (_Target._Duplicate) {
                 return _Target._Duplicate->_Myval.second;
@@ -245,27 +244,27 @@ namespace stdext {
         using reverse_iterator       = _STD reverse_iterator<iterator>;
         using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-        reverse_iterator rbegin() noexcept {
+        _NODISCARD reverse_iterator rbegin() noexcept {
             return reverse_iterator(this->end());
         }
 
-        const_reverse_iterator rbegin() const noexcept {
+        _NODISCARD const_reverse_iterator rbegin() const noexcept {
             return const_reverse_iterator(this->end());
         }
 
-        reverse_iterator rend() noexcept {
+        _NODISCARD reverse_iterator rend() noexcept {
             return reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator rend() const noexcept {
+        _NODISCARD const_reverse_iterator rend() const noexcept {
             return const_reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator crbegin() const noexcept {
+        _NODISCARD const_reverse_iterator crbegin() const noexcept {
             return rbegin();
         }
 
-        const_reverse_iterator crend() const noexcept {
+        _NODISCARD const_reverse_iterator crend() const noexcept {
             return rend();
         }
 
@@ -299,7 +298,6 @@ namespace stdext {
         return !(_Left == _Right);
     }
 
-    // CLASS TEMPLATE hash_multimap
     template <class _Kty, class _Ty, class _Tr = hash_compare<_Kty, less<_Kty>>,
         class _Alloc = allocator<pair<const _Kty, _Ty>>>
     class hash_multimap : public _Hash<_Hmap_traits<_Kty, _Ty, _Tr, _Alloc, true>> {
@@ -406,27 +404,27 @@ namespace stdext {
         using reverse_iterator       = _STD reverse_iterator<iterator>;
         using const_reverse_iterator = _STD reverse_iterator<const_iterator>;
 
-        reverse_iterator rbegin() noexcept {
+        _NODISCARD reverse_iterator rbegin() noexcept {
             return reverse_iterator(this->end());
         }
 
-        const_reverse_iterator rbegin() const noexcept {
+        _NODISCARD const_reverse_iterator rbegin() const noexcept {
             return const_reverse_iterator(this->end());
         }
 
-        reverse_iterator rend() noexcept {
+        _NODISCARD reverse_iterator rend() noexcept {
             return reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator rend() const noexcept {
+        _NODISCARD const_reverse_iterator rend() const noexcept {
             return const_reverse_iterator(this->begin());
         }
 
-        const_reverse_iterator crbegin() const noexcept {
+        _NODISCARD const_reverse_iterator crbegin() const noexcept {
             return rbegin();
         }
 
-        const_reverse_iterator crend() const noexcept {
+        _NODISCARD const_reverse_iterator crend() const noexcept {
             return rend();
         }
 

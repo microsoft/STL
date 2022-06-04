@@ -38,7 +38,7 @@ vector<string> prepare_alpha_strings(const size_t testSize) {
 }
 
 const auto maxAlphaStrings = prepare_alpha_strings(max_parallel_test_case_n);
-const auto removeOne       = [](std::string str) {
+const auto removeOne       = [](string str) {
     str.pop_back();
     return str;
 };

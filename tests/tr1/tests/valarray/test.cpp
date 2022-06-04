@@ -74,7 +74,7 @@ void test_math() { // test valarray math functions
 }
 
 Mytype inc_val(Mytype val) { // increment operand
-    return (Mytype)(val + 1);
+    return (Mytype) (val + 1);
 }
 
 void test_main() { // test basic workings of valarray definitions
@@ -166,8 +166,7 @@ void test_main() { // test basic workings of valarray definitions
     }
 
     {
-        const char* data = "abc";
-        STD initializer_list<char> init(data, data + CSTD strlen(data));
+        STD initializer_list<char> init{'a', 'b', 'c'};
         Mycont v11(init);
         CHECK_INT(v11.size(), 3);
         CHECK_INT(v11[2], 'c');
@@ -340,6 +339,25 @@ void test_main() { // test basic workings of valarray definitions
     CHECK_INT(v0.sum(), 9);
     CHECK_INT(v0.max(), 4);
     CHECK_INT(v0.min(), 2);
+
+    // test range-based for
+    v0 = Mycont();
+    for (char c : v0) {
+        (void) c;
+        CHECK(false);
+    }
+
+    v0 = Mycont("\1\1\1", 3);
+    for (char c : v0) {
+        CHECK_INT(c, 1);
+    }
+
+    v0  = Mycont("\1\2\3", 3);
+    val = 0;
+    for (char c : v0) {
+        val += c;
+    }
+    CHECK_INT(val, 6);
 
     test_math();
 }

@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <locale>
 
-#include <test_windows.hpp>
+#include <Windows.h>
 
 using namespace std;
 
@@ -15,7 +15,7 @@ ref struct Test {
     static
 #else
 extern "C" {
-_declspec(dllexport)
+__declspec(dllexport)
 #endif
 
         void

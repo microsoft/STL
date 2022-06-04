@@ -6,6 +6,7 @@
 #include <array>
 #include <assert.h>
 #include <filesystem>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -13,6 +14,8 @@
 #include <utility>
 #include <vector>
 using namespace std;
+
+constexpr size_t max_line_length = 120;
 
 class BinaryFile {
 public:
@@ -50,9 +53,26 @@ private:
     FILE* m_file{nullptr};
 };
 
+int validation_failure(
+    bool& any_errors, const filesystem::path& filepath, _Printf_format_string_ const wchar_t* format, ...) {
+    any_errors = true;
+
+    fwprintf(stderr, L"##vso[task.logissue type=error;sourcepath=%ls;linenumber=1;columnnumber=1]Validation failed: ",
+        filepath.c_str());
+
+    va_list args;
+    va_start(args, format);
+    const int result = vfwprintf(stderr, format, args);
+    va_end(args);
+
+    fwprintf(stderr, L"\n");
+    return result;
+}
+
 enum class TabPolicy : bool { Forbidden, Allowed };
 
-void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vector<unsigned char>& buffer) {
+void scan_file(
+    bool& any_errors, const filesystem::path& filepath, const TabPolicy tab_policy, vector<unsigned char>& buffer) {
     constexpr char CR = '\r';
     constexpr char LF = '\n';
 
@@ -61,6 +81,7 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
     bool has_crlf     = false;
     bool has_utf8_bom = false;
 
+    size_t overlength_lines          = 0;
     size_t disallowed_characters     = 0;
     size_t tab_characters            = 0;
     size_t trailing_whitespace_lines = 0;
@@ -68,6 +89,8 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
     unsigned char prev      = '@';
     unsigned char previous2 = '@';
     unsigned char previous3 = '@';
+
+    size_t columns = 0;
 
     for (BinaryFile binary_file{filepath}; binary_file.read_next_block(buffer);) {
         for (const auto& ch : buffer) {
@@ -95,15 +118,23 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
                 ++disallowed_characters;
                 constexpr size_t MaxErrorsForDisallowedCharacters = 10;
                 if (disallowed_characters <= MaxErrorsForDisallowedCharacters) {
-                    fwprintf(stderr, L"Validation failed: %ls contains disallowed character 0x%02X.\n",
-                        filepath.c_str(), static_cast<unsigned int>(ch));
+                    validation_failure(any_errors, filepath, L"file contains disallowed character 0x%02X.",
+                        static_cast<unsigned int>(ch));
                 }
             }
 
-            if ((prev == ' ' || prev == '\t') && (ch == CR || ch == LF)) {
-                ++trailing_whitespace_lines;
-            }
+            if (ch == CR || ch == LF) {
+                if (prev == ' ' || prev == '\t') {
+                    ++trailing_whitespace_lines;
+                }
 
+                if (columns > max_line_length) {
+                    ++overlength_lines;
+                }
+                columns = 0;
+            } else {
+                ++columns;
+            }
             previous3 = exchange(previous2, exchange(prev, ch));
         }
     }
@@ -113,41 +144,59 @@ void scan_file(const filesystem::path& filepath, const TabPolicy tab_policy, vec
     }
 
     if (has_cr) {
-        fwprintf(
-            stderr, L"Validation failed: %ls contains CR line endings (possibly damaged CRLF).\n", filepath.c_str());
+        validation_failure(any_errors, filepath, L"file contains CR line endings (possibly damaged CRLF).");
     } else if (has_lf && has_crlf) {
-        fwprintf(stderr, L"Validation failed: %ls contains mixed line endings (both LF and CRLF).\n", filepath.c_str());
+        validation_failure(any_errors, filepath, L"file contains mixed line endings (both LF and CRLF).");
     } else if (has_lf) {
-        fwprintf(stderr, L"Validation failed: %ls contains LF line endings.", filepath.c_str());
+        validation_failure(any_errors, filepath, L"file contains LF line endings.");
 
         if (prev != LF) {
-            fwprintf(stderr, L" Also, it doesn't end with a newline.\n");
+            validation_failure(any_errors, filepath, L"file doesn't end with a newline.");
         } else if (previous2 == LF) {
-            fwprintf(stderr, L" Also, it ends with multiple newlines.\n");
-        } else {
-            fwprintf(stderr, L"\n");
+            validation_failure(any_errors, filepath, L"file ends with multiple newlines.");
         }
     } else if (has_crlf) {
         if (previous2 != CR || prev != LF) {
-            fwprintf(stderr, L"Validation failed: %ls doesn't end with a newline.\n", filepath.c_str());
+            validation_failure(any_errors, filepath, L"file doesn't end with a newline.");
         } else if (previous3 == LF) {
-            fwprintf(stderr, L"Validation failed: %ls ends with multiple newlines.\n", filepath.c_str());
+            validation_failure(any_errors, filepath, L"file ends with multiple newlines.");
         }
     } else {
-        fwprintf(stderr, L"Validation failed: %ls doesn't contain any newlines.\n", filepath.c_str());
+        validation_failure(any_errors, filepath, L"file doesn't contain any newlines.");
     }
 
     if (has_utf8_bom) {
-        fwprintf(stderr, L"Validation failed: %ls contains UTF-8 BOM characters.\n", filepath.c_str());
+        validation_failure(any_errors, filepath, L"file contains UTF-8 BOM characters.");
     }
 
     if (tab_policy == TabPolicy::Forbidden && tab_characters != 0) {
-        fwprintf(stderr, L"Validation failed: %ls contains %zu tab characters.\n", filepath.c_str(), tab_characters);
+        validation_failure(any_errors, filepath, L"file contains %zu tab characters.", tab_characters);
     }
 
     if (trailing_whitespace_lines != 0) {
-        fwprintf(stderr, L"Validation failed: %ls contains %zu lines with trailing whitespace.\n", filepath.c_str(),
-            trailing_whitespace_lines);
+        validation_failure(
+            any_errors, filepath, L"file contains %zu lines with trailing whitespace.", trailing_whitespace_lines);
+    }
+
+    if (overlength_lines != 0) {
+        static constexpr array checked_extensions{
+            // line length should be capped in files with these extensions:
+            L""sv,
+            L".cmd"sv,
+            L".cpp"sv,
+            L".h"sv,
+            L".hpp"sv,
+            L".md"sv,
+            L".ps1"sv,
+            L".py"sv,
+            L".yml"sv,
+        };
+        static_assert(is_sorted(checked_extensions.begin(), checked_extensions.end()));
+
+        if (binary_search(checked_extensions.begin(), checked_extensions.end(), filepath.extension().wstring())) {
+            validation_failure(any_errors, filepath, L"file contains %zu lines with more than %zu columns.\n",
+                overlength_lines, max_line_length);
+        }
     }
 }
 
@@ -157,10 +206,10 @@ int main() {
         L".vs"sv,
         L".vscode"sv,
         L"__pycache__"sv,
+        L"boost-math"sv,
         L"build"sv,
         L"llvm-project"sv,
         L"out"sv,
-        L"vcpkg"sv,
     };
 
     static constexpr array skipped_extensions{
@@ -169,15 +218,23 @@ int main() {
         L".obj"sv,
     };
 
+    // make sure someone doesn't accidentally include a diff in the tree
+    static constexpr array bad_extensions{
+        L".diff"sv,
+        L".patch"sv,
+    };
+
     static constexpr array tabby_filenames{
         L".gitmodules"sv,
     };
 
     static_assert(is_sorted(skipped_directories.begin(), skipped_directories.end()));
     static_assert(is_sorted(skipped_extensions.begin(), skipped_extensions.end()));
+    static_assert(is_sorted(bad_extensions.begin(), bad_extensions.end()));
     static_assert(is_sorted(tabby_filenames.begin(), tabby_filenames.end()));
 
     vector<unsigned char> buffer; // reused for performance
+    bool any_errors = false;
 
     for (filesystem::recursive_directory_iterator rdi{"."}, last; rdi != last; ++rdi) {
         const filesystem::path& filepath = rdi->path();
@@ -198,12 +255,12 @@ int main() {
 
         constexpr size_t maximum_relative_path_length = 120;
         if (relative_path.size() > maximum_relative_path_length) {
-            fwprintf(stderr, L"Validation failed: the path \"%ls\" is too long (%zu characters; the limit is %zu).\n",
-                filepath.c_str(), relative_path.size(), maximum_relative_path_length);
+            validation_failure(any_errors, filepath, L"filepath is too long (%zu characters; the limit is %zu).",
+                relative_path.size(), maximum_relative_path_length);
         }
 
         if (relative_path.find(L' ') != wstring::npos) {
-            fwprintf(stderr, L"Validation failed: the path \"%ls\" contains spaces.\n", filepath.c_str());
+            validation_failure(any_errors, filepath, L"filepath contains spaces.");
         }
 
         const wstring extension = filepath.extension().wstring();
@@ -212,10 +269,21 @@ int main() {
             continue;
         }
 
-        const TabPolicy tab_policy = binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)
-                                         ? TabPolicy::Allowed
-                                         : TabPolicy::Forbidden;
+        if (binary_search(bad_extensions.begin(), bad_extensions.end(), extension)) {
+            validation_failure(any_errors, filepath, L"file should not be checked in.");
+            continue;
+        }
 
-        scan_file(filepath, tab_policy, buffer);
+        const TabPolicy tab_policy = binary_search(tabby_filenames.begin(), tabby_filenames.end(), filename)
+                                       ? TabPolicy::Allowed
+                                       : TabPolicy::Forbidden;
+
+        scan_file(any_errors, filepath, tab_policy, buffer);
+    }
+
+    if (any_errors) {
+        fwprintf(
+            stderr, L"##vso[task.logissue type=warning]If your build fails here, you need to fix the listed issues.\n");
+        fwprintf(stderr, L"##vso[task.complete result=Failed]DONE\n");
     }
 }

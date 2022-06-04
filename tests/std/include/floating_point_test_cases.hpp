@@ -62,13 +62,13 @@ constexpr std::pair<const char*, uint64_t> floating_point_test_cases_double[] = 
     {"2.2250738585072004e-308", 0x000FFFFFFFFFFFFEULL},
     {"2.2250738585072010e-308", 0x000FFFFFFFFFFFFFULL},
 
-    // DevDiv#576315 "I/O library incorrect rounds floating point numbers on input"
-    // DevDiv#616647 "Visual C++ 11: iostream bug: incorrect input streaming of the smallest normal double and some
+    // DevDiv-576315 "I/O library incorrect rounds floating point numbers on input"
+    // DevDiv-616647 "Visual C++ 11: iostream bug: incorrect input streaming of the smallest normal double and some
     // denormals"
-    // DevDiv#730414 "iostreams is still misparsing floating-point"
-    // DevDiv#938627 "parsing float values using std::istream gives results inconsistent with sscanf() and with C++
+    // DevDiv-730414 "iostreams is still misparsing floating-point"
+    // DevDiv-938627 "parsing float values using std::istream gives results inconsistent with sscanf() and with C++
     // compiler"
-    // DevDiv#961116 "floating point string conversion accuracy"
+    // DevDiv-961116 "floating point string conversion accuracy"
     {"2.2250738585072014e-308", 0x0010000000000000ULL}, // DBL_MIN
     {"1.7976931348623158e+308", 0x7FEFFFFFFFFFFFFFULL}, // DBL_MAX
     {"4.26144921954407e-309", 0x00031076B2F00000ULL},
@@ -257,13 +257,13 @@ constexpr std::pair<const char*, uint32_t> floating_point_test_cases_float[] = {
     {"1.1754940705625946e-38", 0x007FFFFEU},
     {"1.1754942106924411e-38", 0x007FFFFFU},
 
-    // DevDiv#576315 "I/O library incorrect rounds floating point numbers on input"
-    // DevDiv#616647 "Visual C++ 11: iostream bug: incorrect input streaming of the smallest normal double and some
+    // DevDiv-576315 "I/O library incorrect rounds floating point numbers on input"
+    // DevDiv-616647 "Visual C++ 11: iostream bug: incorrect input streaming of the smallest normal double and some
     // denormals"
-    // DevDiv#730414 "iostreams is still misparsing floating-point"
-    // DevDiv#938627 "parsing float values using std::istream gives results inconsistent with sscanf() and with C++
+    // DevDiv-730414 "iostreams is still misparsing floating-point"
+    // DevDiv-938627 "parsing float values using std::istream gives results inconsistent with sscanf() and with C++
     // compiler"
-    // DevDiv#961116 "floating point string conversion accuracy"
+    // DevDiv-961116 "floating point string conversion accuracy"
     {"1.175494351e-38", 0x00800000U}, // FLT_MIN
     {"3.402823466e+38", 0x7F7FFFFFU}, // FLT_MAX
     {"179.9999999999999855", 0x43340000U},

@@ -1,4 +1,4 @@
-// cctype standard header
+// cctype standard header (core)
 
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
@@ -6,7 +6,7 @@
 #pragma once
 #ifndef _CCTYPE_
 #define _CCTYPE_
-#include <yvals.h>
+#include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
 #include <ctype.h>
@@ -17,22 +17,6 @@
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
-
-// remove any (improper) macro overrides
-#undef isalnum
-#undef isalpha
-#undef isblank
-#undef iscntrl
-#undef isdigit
-#undef isgraph
-#undef islower
-#undef isprint
-#undef ispunct
-#undef isspace
-#undef isupper
-#undef isxdigit
-#undef tolower
-#undef toupper
 
 _STD_BEGIN
 using _CSTD isalnum;

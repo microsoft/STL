@@ -481,7 +481,7 @@ void test_main() { // test basic workings of string definitions
         bool ok        = false;
         STD wstring str(L"x");
         try {
-            STD stoi(str, &idx);
+            (void) STD stoi(str, &idx);
         } catch (STD invalid_argument) {
             ok = true;
         } catch (...) {
@@ -491,7 +491,7 @@ void test_main() { // test basic workings of string definitions
         CHECK_SIZE_T(idx, 0);
 
         try {
-            STD stoi(L"0xfffffffff", &idx, 0);
+            (void) STD stoi(L"0xfffffffff", &idx, 0);
         } catch (STD out_of_range) {
             ok = true;
         } catch (...) {
@@ -528,8 +528,7 @@ void test_main() { // test basic workings of string definitions
     }
 
     {
-        const wchar_t* data = L"abc";
-        STD initializer_list<wchar_t> init(data, data + CSTD wcslen(data));
+        STD initializer_list<wchar_t> init{L'a', L'b', L'c'};
         STD wstring s11(init);
         CHECK_SIZE_T(s11.size(), 3);
         CHECK_INT(s11[2], L'c');
@@ -554,7 +553,7 @@ void test_main() { // test basic workings of string definitions
         CHECK_SIZE_T(s11.size(), 3);
         CHECK_INT(s11[2], L'c');
 
-        CHECK_INT(*s11.insert(s11.begin() + 1, init), data[0]);
+        CHECK_INT(*s11.insert(s11.begin() + 1, init), *init.begin());
         CHECK_SIZE_T(s11.size(), 6);
         CHECK_INT(s11[2], L'b');
 

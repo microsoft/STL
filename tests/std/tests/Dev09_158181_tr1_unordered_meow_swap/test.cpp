@@ -30,7 +30,7 @@ void assert_throws(Fx fn) noexcept {
     }
 }
 
-// Test DDB#158181. unordered_set.swap() was O(N), throwing, and invalidating iterators, which was bad.
+// Test DDB-158181. unordered_set.swap() was O(N), throwing, and invalidating iterators, which was bad.
 void test_ddb_158181() {
     unordered_set<int> x;
     x.insert(11);

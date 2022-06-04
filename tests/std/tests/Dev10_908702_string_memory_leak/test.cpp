@@ -36,7 +36,7 @@ int main() {
     assert(!_CrtDumpMemoryLeaks());
 #endif
 
-    // Also test DevDiv#846054 "<locale>: Spurious memory leaks".
+    // Also test DevDiv-846054 "<locale>: Spurious memory leaks".
     locale::global(locale(""));
 
 #ifdef _DEBUG
@@ -44,7 +44,7 @@ int main() {
 #endif
 }
 
-// Also test DevDiv#810608 "<xlocale>: [torino][boost]error C2665:
+// Also test DevDiv-810608 "<xlocale>: [torino][boost]error C2665:
 // 'std::_Crt_new_delete::operator new' : none of the 2 overloads could convert all the argument types".
 void meow(void* pv) {
     // Saying "new" instead of "::new" is intentional here.

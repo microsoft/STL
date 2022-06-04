@@ -128,6 +128,7 @@ void __CLRCALL_PURE_OR_CDECL locale::_Locimp::_Locimp_Addfac(
         }
     }
     ptrfac->_Incref();
+#pragma warning(suppress : 6001) // PREfast isn't following through _realloc_crt here
     if (_This->_Facetvec[id] != nullptr) {
         delete _This->_Facetvec[id]->_Decref();
     }

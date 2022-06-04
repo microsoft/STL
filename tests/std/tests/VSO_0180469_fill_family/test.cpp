@@ -10,17 +10,19 @@
 // calls std::fill and std::uninitialized_fill with (signed*, signed*, unsigned)
 #include <algorithm>
 #include <assert.h>
+#include <cmath>
 #include <cstddef>
 #include <memory>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 using namespace std;
 
 // This thing is a workaround for C4309 "truncation of constant value"
 template <typename T, typename U>
-T cast(U i) {
-    return static_cast<T>(i);
+remove_volatile_t<T> cast(U i) {
+    return static_cast<remove_volatile_t<T>>(i);
 }
 
 // Tests that `fillCall`(buffer, value, startIndex, endIndex) fills [startIndex, endIndex) with `value`
@@ -131,9 +133,62 @@ int main() {
     test_fill<int, char>();
     test_fill<char, int>();
 
+    test_fill<volatile char, char>(); // Test GH-1183
+#ifdef __cpp_lib_byte
+    test_fill<volatile byte, byte>(); // Test GH-1556
+#endif // __cpp_lib_byte
+
     test_uninitialized_fill(
         [](count_copies* buff, size_t n, const count_copies& src) { uninitialized_fill(buff, buff + n, src); });
 
     test_uninitialized_fill(
         [](count_copies* buff, size_t n, const count_copies& src) { uninitialized_fill_n(buff, n, src); });
+
+    // Validate int is properly converted to bool
+    {
+        bool output[] = {false, true, false};
+        fill(output, output + 3, 5);
+        for (const bool& elem : output) {
+            assert(elem == true);
+        }
+    }
+    {
+        bool output[] = {false, true, false};
+        fill_n(output, 3, 5);
+        for (const bool& elem : output) {
+            assert(elem == true);
+        }
+    }
+    {
+        bool output[] = {false, true, false};
+        uninitialized_fill(output, output + 3, 5);
+        for (const bool& elem : output) {
+            assert(elem == true);
+        }
+    }
+    {
+        bool output[] = {false, true, false};
+        uninitialized_fill_n(output, 3, 5);
+        for (const bool& elem : output) {
+            assert(elem == true);
+        }
+    }
+
+    // Test floating-point negative zero
+    {
+        float output[] = {1.0f, 2.0f, 3.0f};
+        fill(output, output + 3, -0.0f);
+        for (const float& elem : output) {
+            assert(elem == 0.0f); // elem is positive or negative zero
+            assert(signbit(elem)); // elem is negative
+        }
+    }
+
+    // Test (indirectly) _Uninitialized_fill_n with zero
+    {
+        vector<void*> vec(43, nullptr);
+        for (const auto& p : vec) {
+            assert(p == nullptr);
+        }
+    }
 }

@@ -138,6 +138,8 @@ struct simple_input_iter {
     using value_type      = double;
     using difference_type = long;
 
+    explicit simple_input_iter(int); // not default constructible
+
     value_type operator*() const;
     simple_input_iter& operator++();
     simple_input_iter operator++(int);
@@ -306,18 +308,18 @@ struct destructible_archetype<0> {
 inline constexpr std::size_t destructible_archetype_max = 1;
 
 // clang-format off
-#define SEMIREGULAR_OPS(prefix)                                                 \
-    prefix##_archetype() requires (I != 1);                                     \
-    prefix##_archetype(prefix##_archetype const&) requires (I != 2);            \
-    prefix##_archetype(prefix##_archetype&&) requires (I == 3) = delete;        \
+#define COPYABLE_OPS(prefix)                                                    \
+    prefix##_archetype(prefix##_archetype const&) requires (I != 1);            \
+    prefix##_archetype(prefix##_archetype&&) requires (I == 2) = delete;        \
                                                                                 \
-    prefix##_archetype& operator=(prefix##_archetype const&) requires (I != 4); \
-    prefix##_archetype& operator=(prefix##_archetype&&) requires (I == 5) = delete
+    prefix##_archetype& operator=(prefix##_archetype const&) requires (I != 3); \
+    prefix##_archetype& operator=(prefix##_archetype&&) requires (I == 4) = delete
 // clang-format on
 
 template <std::size_t I>
 struct semiregular_archetype : destructible_archetype<I> {
-    SEMIREGULAR_OPS(semiregular);
+    semiregular_archetype() requires(I != 5);
+    COPYABLE_OPS(semiregular);
 };
 
 inline constexpr std::size_t semiregular_archetype_max = 6;
@@ -327,23 +329,23 @@ struct weakly_incrementable_archetype_dt {
     using difference_type = int;
 };
 template <>
-struct weakly_incrementable_archetype_dt<6> {};
+struct weakly_incrementable_archetype_dt<5> {};
 template <>
-struct weakly_incrementable_archetype_dt<7> {
+struct weakly_incrementable_archetype_dt<6> {
     using difference_type = void;
 };
 template <>
-struct weakly_incrementable_archetype_dt<8> {
+struct weakly_incrementable_archetype_dt<7> {
     using difference_type = unsigned int;
 };
 
 template <std::size_t I, class Derived, class Post = void>
 struct increment_ops {
     // clang-format off
-    void operator++() requires (I == 9);
-    Derived operator++() requires (I == 10);
-    Derived& operator++() requires (I < 9 || I >= 11);
-    Post operator++(int) requires (I != 11);
+    void operator++() requires (I == 8);
+    Derived operator++() requires (I == 9);
+    Derived& operator++() requires (I < 8 || I >= 10);
+    Post operator++(int) requires (I != 10);
     // clang-format on
 };
 
@@ -352,27 +354,27 @@ struct weakly_incrementable_archetype : destructible_archetype<I>,
                                         weakly_incrementable_archetype_dt<I>,
                                         increment_ops<I, weakly_incrementable_archetype<I>, void> {
     // clang-format off
-    weakly_incrementable_archetype() requires (I != 1) {}
     weakly_incrementable_archetype(weakly_incrementable_archetype const&)                       = delete;
-    weakly_incrementable_archetype(weakly_incrementable_archetype&&) requires (I < 2 || I >= 4) = default;
+    weakly_incrementable_archetype(weakly_incrementable_archetype&&) requires (I < 1 || I >= 3) = default;
 
     weakly_incrementable_archetype& operator=(weakly_incrementable_archetype const&) = delete;
-    weakly_incrementable_archetype& operator=(weakly_incrementable_archetype&&) requires (I < 4 || I >= 6) = default;
+    weakly_incrementable_archetype& operator=(weakly_incrementable_archetype&&) requires (I < 3 || I >= 5) = default;
     // clang-format on
 };
 
-inline constexpr std::size_t weakly_incrementable_archetype_max = 12;
+inline constexpr std::size_t weakly_incrementable_archetype_max = 11;
 
 template <std::size_t I>
 struct incrementable_archetype : weakly_incrementable_archetype<I>,
                                  increment_ops<I, incrementable_archetype<I>, incrementable_archetype<I>> {
-    SEMIREGULAR_OPS(incrementable);
+    incrementable_archetype() requires(I != 11);
+    COPYABLE_OPS(incrementable);
     using increment_ops<I, incrementable_archetype<I>, incrementable_archetype<I>>::operator++;
 
     // clang-format off
-    bool operator==(incrementable_archetype const&) const requires (I != weakly_incrementable_archetype_max);
+    bool operator==(incrementable_archetype const&) const requires (I != 12);
     bool operator!=(incrementable_archetype const&) const
-        requires (I == weakly_incrementable_archetype_max + 1) = delete;
+        requires (I == 13) = delete;
     // clang-format on
 };
 
@@ -380,22 +382,23 @@ inline constexpr std::size_t incrementable_archetype_max = 14;
 
 template <std::size_t I>
 struct iterator_archetype : weakly_incrementable_archetype<I> {
-    SEMIREGULAR_OPS(iterator);
+    COPYABLE_OPS(iterator);
 
     // clang-format off
-    iterator_archetype& operator++() requires (I > 10);
-    void operator++(int) requires (I != 11);
+    iterator_archetype& operator++() requires (I > 9);
+    void operator++(int) requires (I != 10);
 
-    void operator*() requires (I == 12);
-    int operator*() requires (I != 12);
+    void operator*() requires (I == 11);
+    int operator*() requires (I != 11);
     // clang-format on
 };
 
-inline constexpr std::size_t iterator_archetype_max = 13;
+inline constexpr std::size_t iterator_archetype_max = 12;
 
 template <std::size_t I>
 struct sentinel_archetype : semiregular_archetype<I> {
-    SEMIREGULAR_OPS(sentinel);
+    sentinel_archetype() requires(I != 5);
+    COPYABLE_OPS(sentinel);
 
     // clang-format off
     template <std::size_t J>
@@ -408,7 +411,8 @@ inline constexpr std::size_t sentinel_archetype_max = 7;
 
 template <std::size_t I>
 struct sized_sentinel_archetype : sentinel_archetype<I> {
-    SEMIREGULAR_OPS(sized_sentinel);
+    sized_sentinel_archetype() requires(I != 5);
+    COPYABLE_OPS(sized_sentinel);
 };
 
 // clang-format off
@@ -439,38 +443,38 @@ inline constexpr std::size_t sized_sentinel_archetype_max = 12;
 template <std::size_t I>
 struct output_iterator_archetype : iterator_archetype<I>,
                                    increment_ops<I, output_iterator_archetype<I>, output_iterator_archetype<I>&> {
-    SEMIREGULAR_OPS(output_iterator);
+    COPYABLE_OPS(output_iterator);
     using increment_ops<I, output_iterator_archetype<I>, output_iterator_archetype<I>&>::operator++;
 
     // clang-format off
     // dereference ops from iterator_archetype
-    void operator*() requires (I == 12);
-    output_iterator_archetype& operator*() requires (I != 12);
+    void operator*() requires (I == 11);
+    output_iterator_archetype& operator*() requires (I != 11);
 
     // indirectly_writable requirements
-    void operator=(int) requires (I != 13);
+    void operator=(int) requires (I != 12);
     // clang-format on
 };
 
-inline constexpr std::size_t output_iterator_archetype_max = 14;
+inline constexpr std::size_t output_iterator_archetype_max = 13;
 
 template <std::size_t>
 struct input_iterator_archetype_types {
     using value_type = int;
 };
 template <>
-struct input_iterator_archetype_types<13> {};
+struct input_iterator_archetype_types<12> {};
 template <>
-struct input_iterator_archetype_types<14> {
+struct input_iterator_archetype_types<13> {
     using value_type = void;
 };
 template <>
-struct input_iterator_archetype_types<15> {
+struct input_iterator_archetype_types<14> {
     using iterator_category = void;
     using value_type        = int;
 };
 template <>
-struct input_iterator_archetype_types<16> {
+struct input_iterator_archetype_types<15> {
     using iterator_concept = void;
     using value_type       = int;
 };
@@ -479,27 +483,28 @@ template <std::size_t I>
 struct input_iterator_archetype : iterator_archetype<I>,
                                   input_iterator_archetype_types<I>,
                                   increment_ops<I, input_iterator_archetype<I>, void> {
-    SEMIREGULAR_OPS(input_iterator);
+    COPYABLE_OPS(input_iterator);
     using increment_ops<I, input_iterator_archetype<I>, void>::operator++;
 
     // clang-format off
     // dereference ops from iterator_archetype
-    void operator*() const requires (I == 12);
-    int& operator*() const requires (I != 12);
+    void operator*() const requires (I == 11);
+    int& operator*() const requires (I != 11);
     // clang-format on
 };
 
-inline constexpr std::size_t input_iterator_archetype_max = 17;
+inline constexpr std::size_t input_iterator_archetype_max = 16;
 
 template <std::size_t I>
 struct forward_iterator_archetype : input_iterator_archetype<I>,
                                     increment_ops<I, forward_iterator_archetype<I>, forward_iterator_archetype<I>> {
-    SEMIREGULAR_OPS(forward_iterator);
+    forward_iterator_archetype() requires(I != 16);
+    COPYABLE_OPS(forward_iterator);
     using increment_ops<I, forward_iterator_archetype<I>, forward_iterator_archetype<I>>::operator++;
 
     // clang-format off
-    bool operator==(forward_iterator_archetype const&) const requires (I != input_iterator_archetype_max);
-    bool operator!=(forward_iterator_archetype const&) const requires (I == input_iterator_archetype_max + 1) = delete;
+    bool operator==(forward_iterator_archetype const&) const requires (I != 17);
+    bool operator!=(forward_iterator_archetype const&) const requires (I == 18) = delete;
     // clang-format on
 };
 
@@ -519,7 +524,8 @@ template <std::size_t I>
 struct bidi_iterator_archetype : forward_iterator_archetype<I>,
                                  increment_ops<I, bidi_iterator_archetype<I>, bidi_iterator_archetype<I>>,
                                  decrement_ops<I, bidi_iterator_archetype<I>> {
-    SEMIREGULAR_OPS(bidi_iterator);
+    bidi_iterator_archetype() requires(I != 16);
+    COPYABLE_OPS(bidi_iterator);
     using increment_ops<I, bidi_iterator_archetype<I>, bidi_iterator_archetype<I>>::operator++;
 };
 
@@ -529,14 +535,15 @@ template <std::size_t I>
 struct random_iterator_archetype : bidi_iterator_archetype<I>,
                                    increment_ops<I, random_iterator_archetype<I>, random_iterator_archetype<I>>,
                                    decrement_ops<I, random_iterator_archetype<I>> {
-    SEMIREGULAR_OPS(random_iterator);
+    random_iterator_archetype() requires(I != 16);
+    COPYABLE_OPS(random_iterator);
     using increment_ops<I, random_iterator_archetype<I>, random_iterator_archetype<I>>::operator++;
     using decrement_ops<I, random_iterator_archetype<I>>::operator--;
 
     // clang-format off
     std::strong_ordering operator<=>(random_iterator_archetype const&) const requires (I != 22);
 
-    int operator-(random_iterator_archetype const&) const requires (I != 6 && I != 23);
+    int operator-(random_iterator_archetype const&) const requires (I != 5 && I != 23);
 
     random_iterator_archetype& operator+=(int) requires (I != 24);
     random_iterator_archetype operator+(int) const requires (I != 25);
@@ -560,7 +567,7 @@ struct contig_iterator_archetype_types : random_iterator_archetype<I> {
 };
 // clang-format off
 template <std::size_t I>
-    requires (I == 15 || I == 16 || I == 31)
+    requires (I == 14 || I == 15 || I == 31)
 struct contig_iterator_archetype_types<I> : random_iterator_archetype<I> {};
 // clang-format on
 template <>
@@ -577,12 +584,13 @@ template <std::size_t I>
 struct contig_iterator_archetype : increment_ops<I, contig_iterator_archetype<I>, contig_iterator_archetype<I>>,
                                    decrement_ops<I, contig_iterator_archetype<I>>,
                                    contig_iterator_archetype_types<I> {
-    SEMIREGULAR_OPS(contig_iterator);
+    contig_iterator_archetype() requires(I != 16);
+    COPYABLE_OPS(contig_iterator);
     using increment_ops<I, contig_iterator_archetype<I>, contig_iterator_archetype<I>>::operator++;
     using decrement_ops<I, contig_iterator_archetype<I>>::operator--;
 
     // clang-format off
-    int operator-(contig_iterator_archetype const&) const requires (I != 6 && I != 23);
+    int operator-(contig_iterator_archetype const&) const requires (I != 5 && I != 23);
 
     contig_iterator_archetype& operator+=(int) requires (I != 24);
     contig_iterator_archetype operator+(int) const requires (I != 25);
@@ -1123,7 +1131,7 @@ namespace iterator_cust_swap_test {
         void iter_swap(T, U) = delete;
 
         template <class T, class U = T>
-        concept bullet1 = requires(T&& t, U&& u) {
+        concept bullet1 = requires(T && t, U && u) {
             iter_swap(std::forward<T>(t), std::forward<U>(u));
         };
     } // namespace adl_barrier
@@ -1173,9 +1181,7 @@ namespace iterator_cust_swap_test {
         STATIC_ASSERT(noexcept(ranges::iter_swap(&i0, &i1)));
         return true;
     }
-#ifdef __clang__ // TRANSITION, VSO-938163
     STATIC_ASSERT(test());
-#endif // TRANSITION, VSO-938163
 
     template <int>
     struct swap_proxy_ref {
@@ -1267,11 +1273,25 @@ namespace iterator_cust_swap_test {
         // clang-format on
 
         constexpr bool test() {
-            int i0 = 42, i1 = 13;
-            S s0{i0}, s1{i1};
-            ranges::iter_swap(s0, s1);
-            assert(i0 == 13);
-            assert(i1 == 42);
+            {
+                int i0 = 42;
+                int i1 = 13;
+                S s0{i0};
+                S s1{i1};
+                ranges::iter_swap(s0, s1);
+                assert(i0 == 13);
+                assert(i1 == 42);
+            }
+
+            {
+                // Validate iter_swap bullet 3 to defend against regression of GH-1067 "ranges::iter_swap is broken"
+                int i  = 42;
+                long l = 13;
+                ranges::iter_swap(&i, &l);
+                assert(i == 13);
+                assert(l == 42);
+            }
+
             return true;
         }
         STATIC_ASSERT(test());
@@ -1785,7 +1805,7 @@ namespace unreachable_sentinel_test {
 
 namespace unwrap_move_only {
     // Validate the iterator unwrapping machinery works with move-only iterators, and that move-only iterators are not
-    // C++17 iterators (per the proposed resolution of LWG-3283)
+    // C++17 iterators
 
     template <class T, bool IsWrapped>
     struct iter {
@@ -1829,7 +1849,6 @@ namespace unwrap_move_only {
     STATIC_ASSERT(!std::_Unwrappable_for_offset_v<iter<int, true> const&>);
     STATIC_ASSERT(std::_Unwrappable_for_offset_v<iter<int, true>>);
     STATIC_ASSERT(!std::_Unwrappable_for_offset_v<iter<int, true> const>);
-    STATIC_ASSERT(std::same_as<std::_Unwrapped_n_t<iter<int, true>>, iter<int, false>>);
 
     STATIC_ASSERT(!std::_Wrapped_seekable_v<iter<int, true>, iter<int, false>&>);
     STATIC_ASSERT(!std::_Wrapped_seekable_v<iter<int, true>, iter<int, false> const&>);
@@ -1858,10 +1877,11 @@ namespace iter_ops {
 
     enum class sized { no, yes };
     enum class assign { no, yes };
+    enum class nothrow { no, yes };
 
     static constexpr int sentinel_position = 42;
 
-    template <class Category, sized Sized = sized::no, assign Assign = assign::no>
+    template <class Category, sized Sized = sized::no, assign Assign = assign::no, nothrow NoThrow = nothrow::no>
     struct trace_iterator {
         using value_type      = int;
         using difference_type = int;
@@ -1872,13 +1892,15 @@ namespace iter_ops {
         static constexpr bool is_sized   = Sized == sized::yes;
 
         trace_iterator() = default;
-        constexpr explicit trace_iterator(trace& t) : trace_{&t} {}
-        constexpr explicit trace_iterator(int const pos, trace& t) : trace_{&t}, pos_{pos} {}
+        constexpr explicit trace_iterator(trace& t) noexcept(NoThrow == nothrow::yes) : trace_{&t} {}
+        constexpr explicit trace_iterator(int const pos, trace& t) noexcept(NoThrow == nothrow::yes)
+            : trace_{&t}, pos_{pos} {}
 
         trace_iterator(trace_iterator const&) requires is_forward = default;
         trace_iterator(trace_iterator&&)                          = default;
 
-        constexpr trace_iterator& operator=(trace_iterator const& that) requires is_forward {
+        constexpr trace_iterator& operator=(trace_iterator const& that) noexcept(
+            NoThrow == nothrow::yes) requires is_forward {
             if (!trace_) {
                 trace_ = that.trace_;
             }
@@ -1886,7 +1908,7 @@ namespace iter_ops {
             pos_ = that.pos_;
             return *this;
         }
-        constexpr trace_iterator& operator=(trace_iterator&& that) {
+        constexpr trace_iterator& operator=(trace_iterator&& that) noexcept(NoThrow == nothrow::yes) {
             if (!trace_) {
                 trace_ = that.trace_;
             }
@@ -1896,65 +1918,71 @@ namespace iter_ops {
         }
 
         // clang-format off
-        constexpr trace_iterator& operator=(default_sentinel_t) requires (Assign == assign::yes) {
+        constexpr trace_iterator& operator=(default_sentinel_t) noexcept(NoThrow == nothrow::yes)
+            requires (Assign == assign::yes) {
             ++trace_->assignments_;
             pos_ = sentinel_position;
             return *this;
         }
         // clang-format on
 
-        int operator*() const;
+        int operator*() const noexcept(NoThrow == nothrow::yes);
 
-        constexpr trace_iterator& operator++() {
+        constexpr trace_iterator& operator++() noexcept(NoThrow == nothrow::yes) {
             ++trace_->increments_;
             ++pos_;
             return *this;
         }
-        trace_iterator operator++(int);
+        trace_iterator operator++(int) noexcept(NoThrow == nothrow::yes);
 
-        constexpr bool operator==(default_sentinel_t) const {
+        constexpr bool operator==(default_sentinel_t) const noexcept(NoThrow == nothrow::yes) {
             ++trace_->compares_;
             return pos_ == sentinel_position;
         }
-        constexpr int operator-(default_sentinel_t) const requires is_sized {
+        constexpr int operator-(default_sentinel_t) const noexcept(NoThrow == nothrow::yes) requires is_sized {
             ++trace_->differences_;
             return pos_ - sentinel_position;
         }
-        friend constexpr int operator-(default_sentinel_t, trace_iterator const& i) requires is_sized {
+        friend constexpr int operator-(default_sentinel_t, trace_iterator const& i) noexcept(
+            NoThrow == nothrow::yes) requires is_sized {
             return -(i - default_sentinel);
         }
 
-        constexpr bool operator==(trace_iterator const& that) const requires is_forward {
+        constexpr bool operator==(trace_iterator const& that) const
+            noexcept(NoThrow == nothrow::yes) requires is_forward {
             ++trace_->compares_;
             return pos_ == that.pos_;
         }
 
-        constexpr trace_iterator& operator--() requires is_bidi {
+        constexpr trace_iterator& operator--() noexcept(NoThrow == nothrow::yes) requires is_bidi {
             ++trace_->decrements_;
             --pos_;
             return *this;
         }
-        trace_iterator operator--(int) requires is_bidi;
+        trace_iterator operator--(int) noexcept(NoThrow == nothrow::yes) requires is_bidi;
 
-        std::strong_ordering operator<=>(trace_iterator const&) const requires is_random;
+        std::strong_ordering operator<=>(trace_iterator const&) const
+            noexcept(NoThrow == nothrow::yes) requires is_random;
 
-        constexpr trace_iterator& operator+=(int const n) requires is_random {
+        constexpr trace_iterator& operator+=(int const n) noexcept(NoThrow == nothrow::yes) requires is_random {
             ++trace_->seeks_;
             pos_ += n;
             return *this;
         }
-        trace_iterator operator+(int) const requires is_random;
-        friend trace_iterator operator+(int, trace_iterator const&) requires is_random {}
+        trace_iterator operator+(int) const noexcept(NoThrow == nothrow::yes) requires is_random;
+        friend trace_iterator operator+(int, trace_iterator const&) noexcept(
+            NoThrow == nothrow::yes) requires is_random {}
 
-        trace_iterator& operator-=(int) requires is_random;
-        trace_iterator operator-(int) const requires is_random;
+        trace_iterator& operator-=(int) noexcept(NoThrow == nothrow::yes) requires is_random;
+        trace_iterator operator-(int) const noexcept(NoThrow == nothrow::yes) requires is_random;
 
-        constexpr int operator-(trace_iterator const& that) const requires is_random || is_sized {
+        constexpr int operator-(trace_iterator const& that) const
+            noexcept(NoThrow == nothrow::yes) requires is_random || is_sized {
             ++trace_->differences_;
             return pos_ - that.pos_;
         }
 
-        int operator[](int) const;
+        int operator[](int) const noexcept(NoThrow == nothrow::yes);
 
         trace* trace_ = nullptr;
         int pos_      = 0;
@@ -2807,27 +2835,55 @@ namespace iter_ops {
     }
     STATIC_ASSERT(test_iter_count_sentinel_forms());
 
+    template <nothrow NoThrow = nothrow::no>
     struct sized_test_range {
         mutable trace t{};
 
-        constexpr unsigned char size() const {
+        constexpr unsigned char size() const noexcept(NoThrow == nothrow::yes) {
             ++t.sizes_;
             return 42;
         }
-        int* begin() const;
-        int* end() const;
+        int* begin() const noexcept(NoThrow == nothrow::yes);
+        int* end() const noexcept(NoThrow == nothrow::yes);
     };
 
+    template <nothrow NoThrow = nothrow::no>
     struct unsized_test_range {
         mutable trace t{};
 
-        constexpr trace_iterator<forward_iterator_tag> begin() const {
+        constexpr trace_iterator<forward_iterator_tag> begin() const noexcept(NoThrow == nothrow::yes) {
             ++t.begins_;
             return trace_iterator<forward_iterator_tag>{t};
         }
-        constexpr std::default_sentinel_t end() const {
+        constexpr std::default_sentinel_t end() const noexcept(NoThrow == nothrow::yes) {
             ++t.ends_;
             return {};
+        }
+    };
+
+    template <class Element>
+    struct pointer_sentinel {
+        Element* ptr = nullptr;
+
+        pointer_sentinel() = default;
+        constexpr explicit pointer_sentinel(Element* const p) noexcept : ptr{p} {}
+
+        template <class T>
+        [[nodiscard]] constexpr bool operator==(T* that) const noexcept {
+            static_assert(std::same_as<T, Element>);
+            return ptr == that;
+        }
+
+        template <class T>
+        [[nodiscard]] friend constexpr std::ptrdiff_t operator-(T* x, const pointer_sentinel& y) noexcept {
+            static_assert(std::same_as<T, Element>);
+            return x - y.ptr;
+        }
+
+        template <class T>
+        [[nodiscard]] friend constexpr std::ptrdiff_t operator-(const pointer_sentinel& y, T* x) noexcept {
+            static_assert(std::same_as<T, Element>);
+            return y.ptr - x;
         }
     };
 
@@ -2838,49 +2894,130 @@ namespace iter_ops {
         {
             // Call distance(i, s) with: sized_sentinel_for<S, I> && input_iterator<I> && last - first > 0
             // Validate return is last - first
-            using I = trace_iterator<input_iterator_tag, sized::yes>;
+            using I = trace_iterator<input_iterator_tag, sized::yes, assign::no, nothrow::no>;
             trace t{};
-            auto const result = distance(I{t}, default_sentinel);
-            STATIC_ASSERT(same_as<decltype(result), iter_difference_t<I> const>);
+            I first{t};
+            same_as<iter_difference_t<I>> auto const result = distance(first, default_sentinel);
+            STATIC_ASSERT(!noexcept(distance(first, default_sentinel)));
             assert(result == sentinel_position);
+            assert((t == trace{.differences_ = 1}));
+        }
+        {
+            // Call distance(i, s) with: sized_sentinel_for<S, I> && input_iterator<I> && last - first > 0
+            // Validate return is last - first
+            using I = trace_iterator<input_iterator_tag, sized::yes, assign::no, nothrow::yes>;
+            trace t{};
+            I first{t};
+            same_as<iter_difference_t<I>> auto const result = distance(first, default_sentinel);
+            STATIC_ASSERT(noexcept(distance(first, default_sentinel)));
+            assert(result == sentinel_position);
+            assert((t == trace{.differences_ = 1}));
+        }
+
+        {
+            // Call distance(i, s) with:
+            //   sized_sentinel_for<S, I> && forward_iterator<I> && same_as<S, I> && last - first < 0
+            // Validate return is last - first
+            using I = trace_iterator<forward_iterator_tag, sized::yes, assign::no, nothrow::no>;
+            trace t{};
+            I first{sentinel_position, t};
+            I last{t};
+            same_as<iter_difference_t<I>> auto const result = distance(first, last);
+            STATIC_ASSERT(!noexcept(distance(first, last)));
+            assert(result == -sentinel_position);
             assert((t == trace{.differences_ = 1}));
         }
         {
             // Call distance(i, s) with:
             //   sized_sentinel_for<S, I> && forward_iterator<I> && same_as<S, I> && last - first < 0
             // Validate return is last - first
-            using I = trace_iterator<forward_iterator_tag, sized::yes>;
+            using I = trace_iterator<forward_iterator_tag, sized::yes, assign::no, nothrow::yes>;
             trace t{};
-            auto const result = distance(I{sentinel_position, t}, I{t});
-            STATIC_ASSERT(same_as<decltype(result), iter_difference_t<I> const>);
+            I first{sentinel_position, t};
+            I last{t};
+            same_as<iter_difference_t<I>> auto const result = distance(first, last);
+            STATIC_ASSERT(noexcept(distance(first, last)));
             assert(result == -sentinel_position);
             assert((t == trace{.differences_ = 1}));
         }
+
         {
             // Call distance(i, s) with: !sized_sentinel_for<S, I> && input_iterator<I> && last - first > 0
             // Validate return is last - first, and increment is called last - first times
-            using I = trace_iterator<input_iterator_tag>;
+            using I = trace_iterator<input_iterator_tag, sized::no, assign::no, nothrow::no>;
             trace t{};
-            auto const result = distance(I{t}, default_sentinel);
-            STATIC_ASSERT(same_as<decltype(result), iter_difference_t<I> const>);
+            I first{t};
+            same_as<iter_difference_t<I>> auto const result = distance(move(first), default_sentinel);
+            STATIC_ASSERT(!noexcept(distance(move(first), default_sentinel)));
             assert(result == sentinel_position);
             assert((t == trace{.compares_ = sentinel_position + 1, .increments_ = sentinel_position}));
         }
         {
+            // Call distance(i, s) with: !sized_sentinel_for<S, I> && input_iterator<I> && last - first > 0
+            // Validate return is last - first, and increment is called last - first times
+            using I = trace_iterator<input_iterator_tag, sized::no, assign::no, nothrow::yes>;
+            trace t{};
+            I first{t};
+            same_as<iter_difference_t<I>> auto const result = distance(move(first), default_sentinel);
+            STATIC_ASSERT(!noexcept(distance(move(first), default_sentinel))); // No conditional noexcept
+            assert(result == sentinel_position);
+            assert((t == trace{.compares_ = sentinel_position + 1, .increments_ = sentinel_position}));
+        }
+
+        {
             // Call distance(r) with: sized_range<R>, validate that begin and end are not called
-            sized_test_range r{};
-            auto const result = distance(r);
-            STATIC_ASSERT(same_as<decltype(result), std::ptrdiff_t const>);
+            sized_test_range<nothrow::no> r{};
+            same_as<ptrdiff_t> auto const result = distance(r);
+            STATIC_ASSERT(!noexcept(distance(r)));
             assert(result == 42);
             assert((r.t == trace{.sizes_ = 1}));
         }
         {
+            // Call distance(r) with: sized_range<R>, validate that begin and end are not called
+            sized_test_range<nothrow::yes> r{};
+            same_as<ptrdiff_t> auto const result = distance(r);
+            STATIC_ASSERT(noexcept(distance(r)));
+            assert(result == 42);
+            assert((r.t == trace{.sizes_ = 1}));
+        }
+
+        {
             // Call distance(r) with: !sized_range<R>, validate that begin and end are called
-            unsized_test_range r{};
+            unsized_test_range<nothrow::no> r{};
             assert(distance(r) == sentinel_position);
+            STATIC_ASSERT(!noexcept(distance(r)));
             trace const expected{
                 .compares_ = sentinel_position + 1, .increments_ = sentinel_position, .begins_ = 1, .ends_ = 1};
             assert(r.t == expected);
+        }
+        {
+            // Call distance(r) with: !sized_range<R>, validate that begin and end are called
+            unsized_test_range<nothrow::yes> r{};
+            assert(distance(r) == sentinel_position);
+            STATIC_ASSERT(!noexcept(distance(r))); // No conditional noexcept
+            trace const expected{
+                .compares_ = sentinel_position + 1, .increments_ = sentinel_position, .begins_ = 1, .ends_ = 1};
+            assert(r.t == expected);
+        }
+
+        {
+            // Call distance(i, s) with arrays which must be decayed to pointers.
+            // (This behavior was regressed by LWG-3392.)
+            int some_ints[] = {1, 2, 3};
+            assert(distance(some_ints, pointer_sentinel{some_ints + 1}) == 1);
+            STATIC_ASSERT(noexcept(distance(some_ints, pointer_sentinel{some_ints + 1})));
+            assert(distance(some_ints + 1, some_ints) == -1);
+            STATIC_ASSERT(noexcept(distance(some_ints + 1, some_ints)));
+            assert(distance(some_ints, some_ints) == 0);
+            STATIC_ASSERT(noexcept(distance(some_ints, some_ints)));
+
+            const auto& const_ints = some_ints;
+            assert(distance(const_ints, pointer_sentinel{const_ints + 1}) == 1);
+            STATIC_ASSERT(noexcept(distance(const_ints, pointer_sentinel{const_ints + 1})));
+            assert(distance(const_ints + 1, const_ints) == -1);
+            STATIC_ASSERT(noexcept(distance(const_ints + 1, const_ints)));
+            assert(distance(const_ints, const_ints) == 0);
+            STATIC_ASSERT(noexcept(distance(const_ints, const_ints)));
         }
 
         return true;
@@ -2901,14 +3038,8 @@ namespace insert_iterators {
     template <class Container>
     constexpr bool test() {
         using std::back_insert_iterator, std::front_insert_iterator, std::insert_iterator;
-        using std::default_initializable, std::is_nothrow_default_constructible_v, std::iter_difference_t,
-            std::ptrdiff_t, std::same_as;
+        using std::iter_difference_t, std::ptrdiff_t, std::same_as;
 
-        STATIC_ASSERT(default_initializable<back_insert_iterator<Container>>);
-        STATIC_ASSERT(is_nothrow_default_constructible_v<back_insert_iterator<Container>>);
-        STATIC_ASSERT(default_initializable<front_insert_iterator<Container>>);
-        STATIC_ASSERT(is_nothrow_default_constructible_v<front_insert_iterator<Container>>);
-        STATIC_ASSERT(default_initializable<insert_iterator<Container>>);
         STATIC_ASSERT(same_as<iter_difference_t<back_insert_iterator<Container>>, ptrdiff_t>);
         STATIC_ASSERT(same_as<iter_difference_t<front_insert_iterator<Container>>, ptrdiff_t>);
         STATIC_ASSERT(same_as<iter_difference_t<insert_iterator<Container>>, ptrdiff_t>);
@@ -2918,6 +3049,35 @@ namespace insert_iterators {
 
     STATIC_ASSERT(test<std::list<double>>());
     STATIC_ASSERT(test<std::vector<int>>());
+
+    struct container {
+        using value_type = int;
+
+        constexpr int* begin() {
+            return &value;
+        }
+        constexpr int* end() {
+            return &value + 1;
+        }
+        constexpr int* insert(int* ptr, int i) {
+            assert(ptr == &value);
+            value = i;
+            return &value;
+        }
+
+        int value;
+    };
+
+    constexpr bool test_insert_relaxation() {
+        // Verify that insert_iterator correctly does not require a nested `iterator` typename
+        container c;
+        std::insert_iterator i(c, c.begin());
+        *i = 42;
+        assert(c.value == 42);
+        return true;
+    }
+
+    STATIC_ASSERT(test_insert_relaxation());
 } // namespace insert_iterators
 
 namespace reverse_iterator_test {
@@ -3040,11 +3200,10 @@ namespace move_iterator_test {
 
     template <bool CanCopy>
     struct input_iter {
-        using iterator_concept  = input_iterator_tag;
-        using iterator_category = void;
-        using value_type        = int;
-        using difference_type   = int;
-        using pointer           = void;
+        using iterator_concept = input_iterator_tag;
+        using value_type       = int;
+        using difference_type  = int;
+        using pointer          = void;
 
         struct reference {
             operator int() const;
@@ -3066,7 +3225,7 @@ namespace move_iterator_test {
         input_iter& operator++();
         void operator++(int);
 
-        constexpr friend rvalue_reference iter_move(input_iter const&) noexcept {
+        friend constexpr rvalue_reference iter_move(input_iter const&) noexcept {
             return {};
         }
         friend void iter_swap(input_iter const&, input_iter const&) noexcept {}
@@ -3122,6 +3281,8 @@ namespace move_iterator_test {
     STATIC_ASSERT(same_as<move_iterator<simple_forward_iter<>>::iterator_category, forward_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
+    STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<true>>>);
+    STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<false>>>);
 
     // Validate that move_iterator<some_proxy_iterator>::reference is iter_rvalue_reference_t<some_proxy_iterator>
     STATIC_ASSERT(same_as<move_iterator<input_iter<false>>::reference, input_iter<false>::rvalue_reference>);
@@ -3248,6 +3409,81 @@ namespace move_iterator_test {
     }
     STATIC_ASSERT(test());
 } // namespace move_iterator_test
+
+namespace counted_iterator_test {
+    using std::bidirectional_iterator_tag, std::default_sentinel_t, std::forward_iterator_tag, std::input_iterator_tag,
+        std::iterator_traits, std::counted_iterator, std::random_access_iterator_tag, std::same_as, std::string,
+        std::three_way_comparable, std::three_way_comparable_with;
+
+    // Validate the iterator_concept/iterator_category metaprogramming
+    STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_contiguous_iter<>>>::iterator_category,
+        random_access_iterator_tag>);
+    STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_random_iter<>>>::iterator_category,
+        random_access_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<simple_bidi_iter<>>>::iterator_category, bidirectional_iterator_tag>);
+    STATIC_ASSERT(
+        same_as<iterator_traits<counted_iterator<simple_forward_iter<>>>::iterator_category, forward_iterator_tag>);
+    STATIC_ASSERT(same_as<iterator_traits<counted_iterator<simple_input_iter>>::iterator_category, input_iterator_tag>);
+
+    // Validate postincrement
+    STATIC_ASSERT(same_as<decltype(std::declval<counted_iterator<simple_input_iter>&>()++), simple_input_iter>);
+    STATIC_ASSERT(
+        same_as<decltype(counted_iterator<simple_forward_iter<>> {} ++), counted_iterator<simple_forward_iter<>>>);
+
+    // Validate comparison constraints
+    STATIC_ASSERT(has_eq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_less<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_greater<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<simple_input_iter>>);
+    STATIC_ASSERT(three_way_comparable<counted_iterator<simple_input_iter>>);
+
+    STATIC_ASSERT(has_eq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_less<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_greater<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<simple_forward_iter<>>>);
+    STATIC_ASSERT(three_way_comparable<counted_iterator<simple_forward_iter<>>>);
+
+    STATIC_ASSERT(has_eq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_less<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_greater<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<simple_random_iter<>>>);
+    STATIC_ASSERT(three_way_comparable<counted_iterator<simple_random_iter<>>, std::strong_ordering>);
+
+    STATIC_ASSERT(has_eq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_neq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_less<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_greater<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_less_eq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(has_greater_eq<counted_iterator<int*>, counted_iterator<int const*>>);
+    STATIC_ASSERT(
+        three_way_comparable_with<counted_iterator<int*>, counted_iterator<int const*>, std::strong_ordering>);
+
+    STATIC_ASSERT(!has_eq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_neq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_less<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_greater<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_less_eq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!has_greater_eq<counted_iterator<int*>, counted_iterator<string*>>);
+    STATIC_ASSERT(!three_way_comparable_with<counted_iterator<int*>, counted_iterator<string*>>);
+
+    // Validate default_sentinel_t comparisons and difference
+    STATIC_ASSERT(has_eq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(has_neq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_less<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_greater<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_less_eq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!has_greater_eq<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(!three_way_comparable_with<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(has_difference<counted_iterator<simple_input_iter>, default_sentinel_t>);
+    STATIC_ASSERT(has_difference<default_sentinel_t, counted_iterator<simple_input_iter>>);
+} // namespace counted_iterator_test
 
 namespace lwg3420 {
     // Validate that we can ask for the iterator_traits of a type with no operator* for which checking copyability

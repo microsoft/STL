@@ -8,7 +8,7 @@
 #define __MSVC_SYSTEM_ERROR_ABI_HPP
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <stddef.h>
+#include <cstddef>
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)

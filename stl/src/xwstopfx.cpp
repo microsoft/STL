@@ -3,7 +3,7 @@
 
 // _WStopfx function
 
-#include <wctype.h>
+#include <cwctype>
 
 #include "xmath.hpp"
 

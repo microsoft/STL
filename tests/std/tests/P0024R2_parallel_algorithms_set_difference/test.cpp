@@ -95,6 +95,7 @@ void test_case_set_difference_parallel(const size_t testSize) {
     assert(rb == compare_result);
 
     // === Overlapping but not equal lists, no direct containment ===
+    auto remainingAttempts    = quadratic_complexity_case_limit;
     auto overlappingListBegin = lb;
     auto overlappingListEnd   = overlappingListBegin + shortListSize;
     for (auto overlappingPoint = sb; overlappingPoint < se; ++overlappingPoint) {
@@ -102,6 +103,9 @@ void test_case_set_difference_parallel(const size_t testSize) {
         assert(equal(rb, compare_result, sb, overlappingPoint));
         ++overlappingListBegin;
         ++overlappingListEnd;
+        if (--remainingAttempts == 0) {
+            break;
+        }
     }
 
     // shortList is a subset of longList, containing every other element of longList
@@ -140,6 +144,7 @@ void test_case_set_difference_parallel(const size_t testSize) {
     assert(rb == compare_result);
 
     // === Overlapping but not equal lists, no direct containment ===
+    remainingAttempts    = quadratic_complexity_case_limit;
     overlappingListBegin = lb + oddLength;
     overlappingListEnd   = overlappingListBegin + shortListSize;
     for (int overlappingPoint = 0; overlappingPoint < shortListSize; ++overlappingPoint) {
@@ -147,6 +152,9 @@ void test_case_set_difference_parallel(const size_t testSize) {
         assert(equal(rb, compare_result, sb + overlappingPoint, se));
         ++overlappingListBegin;
         ++overlappingListEnd;
+        if (--remainingAttempts == 0) {
+            break;
+        }
     }
 
     // test randomized input ranges

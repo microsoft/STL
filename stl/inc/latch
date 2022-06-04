@@ -1,0 +1,101 @@
+// latch standard header
+
+// Copyright (c) Microsoft Corporation.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+#pragma once
+#ifndef _LATCH_
+#define _LATCH_
+#include <yvals.h>
+#if _STL_COMPILER_PREPROCESSOR
+
+#ifdef _M_CEE_PURE
+#error <latch> is not supported when compiling with /clr:pure.
+#endif // _M_CEE_PURE
+
+#if !_HAS_CXX20
+#pragma message("The contents of <latch> are available only with C++20 or later.")
+#else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
+
+#include <atomic>
+#include <climits>
+
+#pragma pack(push, _CRT_PACKING)
+#pragma warning(push, _STL_WARNING_LEVEL)
+#pragma warning(disable : _STL_DISABLED_WARNINGS)
+_STL_DISABLE_CLANG_WARNINGS
+#pragma push_macro("new")
+#undef new
+
+_STD_BEGIN
+
+class latch {
+public:
+    _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
+        return (1ULL << (sizeof(ptrdiff_t) * CHAR_BIT - 1)) - 1;
+    }
+
+    constexpr explicit latch(const ptrdiff_t _Expected) noexcept /* strengthened */ : _Counter{_Expected} {
+        _STL_VERIFY(_Expected >= 0, "Precondition: expected >= 0 (N4861 [thread.latch.class]/4)");
+    }
+
+    latch(const latch&) = delete;
+    latch& operator=(const latch&) = delete;
+
+    void count_down(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {
+        _STL_VERIFY(_Update >= 0, "Precondition: update >= 0 (N4861 [thread.latch.class]/7)");
+        // TRANSITION, GH-1133: should be memory_order_release
+        const ptrdiff_t _Current = _Counter.fetch_sub(_Update) - _Update;
+        if (_Current == 0) {
+            _Counter.notify_all();
+        } else {
+            _STL_VERIFY(_Current >= 0, "Precondition: update <= counter (N4861 [thread.latch.class]/7)");
+        }
+    }
+
+    _NODISCARD bool try_wait() const noexcept {
+        // TRANSITION, GH-1133: should be memory_order_acquire
+        return _Counter.load() == 0;
+    }
+
+    void wait() const noexcept /* strengthened */ {
+        for (;;) {
+            // TRANSITION, GH-1133: should be memory_order_acquire
+            const ptrdiff_t _Current = _Counter.load();
+            if (_Current == 0) {
+                return;
+            } else {
+                _STL_VERIFY(_Current > 0, "Invariant counter >= 0, possibly caused by preconditions violation "
+                                          "(N4861 [thread.latch.class]/7)");
+            }
+            _Counter.wait(_Current, memory_order_relaxed);
+        }
+    }
+
+    void arrive_and_wait(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {
+        _STL_VERIFY(_Update >= 0, "Precondition: update >= 0 (N4861 [thread.latch.class]/7)");
+        // TRANSITION, GH-1133: should be memory_order_acq_rel
+        const ptrdiff_t _Current = _Counter.fetch_sub(_Update) - _Update;
+        if (_Current == 0) {
+            _Counter.notify_all();
+        } else {
+            _STL_VERIFY(_Current > 0, "Precondition: update <= counter (N4861 [thread.latch.class]/7)");
+            _Counter.wait(_Current, memory_order_relaxed);
+            wait();
+        }
+    }
+
+private:
+    atomic<ptrdiff_t> _Counter;
+};
+
+_STD_END
+
+#pragma pop_macro("new")
+_STL_RESTORE_CLANG_WARNINGS
+#pragma warning(pop)
+#pragma pack(pop)
+#endif // ^^^ _HAS_CXX20 ^^^
+
+#endif // _STL_COMPILER_PREPROCESSOR
+#endif // _LATCH_

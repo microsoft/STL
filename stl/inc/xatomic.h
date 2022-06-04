@@ -23,14 +23,18 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _CONCAT(x, y)  _CONCATX(x, y)
 
 // Interlocked intrinsic mapping for _nf/_acq/_rel
-#if defined(_M_CEE_PURE) || defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_CEE_PURE) || defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
 #define _INTRIN_RELAXED(x) x
 #define _INTRIN_ACQUIRE(x) x
 #define _INTRIN_RELEASE(x) x
 #define _INTRIN_ACQ_REL(x) x
+#ifdef _M_CEE_PURE
 #define _YIELD_PROCESSOR()
+#else // ^^^ _M_CEE_PURE / !_M_CEE_PURE vvv
+#define _YIELD_PROCESSOR() _mm_pause()
+#endif // ^^^ !_M_CEE_PURE ^^^
 
-#elif defined(_M_ARM) || defined(_M_ARM64)
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _INTRIN_RELAXED(x) _CONCAT(x, _nf)
 #define _INTRIN_ACQUIRE(x) _CONCAT(x, _acq)
 #define _INTRIN_RELEASE(x) _CONCAT(x, _rel)
@@ -49,7 +53,6 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 #if _HAS_CXX20
-// ENUM CLASS memory_order
 enum class memory_order : int {
     relaxed,
     consume,
@@ -73,7 +76,6 @@ inline constexpr memory_order memory_order_release = memory_order::release;
 inline constexpr memory_order memory_order_acq_rel = memory_order::acq_rel;
 inline constexpr memory_order memory_order_seq_cst = memory_order::seq_cst;
 #else // _HAS_CXX20
-// ENUM memory_order
 enum memory_order {
     memory_order_relaxed,
     memory_order_consume,
@@ -86,7 +88,6 @@ enum memory_order {
 
 using _Atomic_counter_t = unsigned long;
 
-// FUNCTION TEMPLATE _Atomic_address_as
 template <class _Integral, class _Ty>
 _NODISCARD volatile _Integral* _Atomic_address_as(_Ty& _Source) noexcept {
     // gets a pointer to the argument as an integral type (to pass to intrinsics)

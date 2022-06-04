@@ -36,9 +36,7 @@ constexpr bool assert_constexpr() {
     assert_equal(to_array("meow"), array<char, 5>{'m', 'e', 'o', 'w', '\0'});
     assert_equal(to_array({1, 2}), array<int, 2>{1, 2});
 
-#ifndef __EDG__ // TRANSITION, VSO-985022
     assert_equal(to_array<long>({1, 2}), array<long, 2>{1, 2});
-#endif // __EDG__
     assert_equal(to_array(a), array<int, 3>{0, 0, 0});
     assert_equal(to_array(const_a), array<int, 3>{0, 0, 0});
     assert_equal(to_array(move(a)), array<int, 3>{0, 0, 0});

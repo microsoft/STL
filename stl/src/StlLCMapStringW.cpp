@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <internal_shared.h>
-#include <locale.h>
+#include <cstring> // for wcsnlen
 
 #include "awint.hpp"
 
@@ -31,8 +30,9 @@
 //                 else
 //                    number of wide characters written to destination (including null terminator)
 //        Failure: 0
-extern "C" int __cdecl __crtLCMapStringW(LPCWSTR const locale_name, DWORD const map_flags, LPCWSTR const source,
-    int source_count, LPWSTR const destination, int const destination_count) {
+extern "C" int __cdecl __crtLCMapStringW(_In_opt_z_ LPCWSTR const locale_name, _In_ DWORD const map_flags,
+    _In_reads_(source_count) LPCWSTR const source, _In_ int source_count,
+    _Out_writes_opt_(destination_count) wchar_t* const destination, _In_ int const destination_count) {
     // LCMapString will map past the null terminator.  We must find the null terminator if it occurs in the string
     // before source_count characters and cap the number of characters to be considered.
     if (source_count > 0) {
@@ -46,5 +46,6 @@ extern "C" int __cdecl __crtLCMapStringW(LPCWSTR const locale_name, DWORD const 
         }
     }
 
-    return __crtLCMapStringEx(locale_name, map_flags, source, source_count, destination, destination_count);
+    return LCMapStringEx(
+        locale_name, map_flags, source, source_count, destination, destination_count, nullptr, nullptr, 0);
 }

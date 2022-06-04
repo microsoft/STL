@@ -168,6 +168,14 @@ STATIC_ASSERT(is_member_function_pointer_v<decltype(&Cat::e)>);
 STATIC_ASSERT(is_member_function_pointer_v<decltype(&Cat::f)>);
 STATIC_ASSERT(is_member_function_pointer_v<decltype(&Cat::g)>);
 
+STATIC_ASSERT(is_member_pointer_v<decltype(&Cat::a)>);
+STATIC_ASSERT(is_member_pointer_v<decltype(&Cat::b)>);
+STATIC_ASSERT(is_member_pointer_v<decltype(&Cat::c)>);
+STATIC_ASSERT(is_member_pointer_v<decltype(&Cat::d)>);
+STATIC_ASSERT(is_member_pointer_v<decltype(&Cat::e)>);
+STATIC_ASSERT(is_member_pointer_v<decltype(&Cat::f)>);
+STATIC_ASSERT(is_member_pointer_v<decltype(&Cat::g)>);
+
 STATIC_ASSERT(is_function_v<decltype(u)>);
 STATIC_ASSERT(is_function_v<decltype(v)>);
 STATIC_ASSERT(is_function_v<decltype(w)>);

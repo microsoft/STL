@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING
+#define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
+
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -358,8 +361,8 @@ namespace {
                     for (std::size_t size : allocation_sizes) {
                         for (auto align = 1_zu; align <= 512_zu && size % align == 0_zu; align *= 2_zu) {
                             auto ptr = (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
-                                           ? ::operator new(size)
-                                           : ::operator new (size, std::align_val_t{align});
+                                         ? ::operator new(size)
+                                         : ::operator new (size, std::align_val_t{align});
                             ndr.deallocate(ptr, size, align);
                         }
                     }
@@ -399,8 +402,8 @@ namespace {
                     for (std::size_t size : allocation_sizes) {
                         for (auto align = 1_zu; align <= 512_zu && size % align == 0_zu; align *= 2_zu) {
                             void* ptr = align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__
-                                            ? ::operator new(size)
-                                            : ::operator new (size, std::align_val_t{align});
+                                          ? ::operator new(size)
+                                          : ::operator new (size, std::align_val_t{align});
                             nmr.deallocate(ptr, size, align);
                             if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                                 ::operator delete(ptr, size);
@@ -942,6 +945,29 @@ namespace {
                 CHECK(a != c);
             }
         } // namespace eq
+
+        namespace destroy {
+            void test() {
+                bool destroyed = false;
+                struct S {
+                    bool& destroy_ref;
+
+                    explicit S(bool& _destroy_ref_) : destroy_ref{_destroy_ref_} {}
+                    ~S() {
+                        destroy_ref = true;
+                    }
+                    S(const S&) = delete;
+                    S& operator=(const S&) = delete;
+                };
+                std::pmr::polymorphic_allocator<S> a{};
+                S* ptr = a.allocate(1);
+                a.construct(ptr, destroyed);
+                CHECK(destroyed == false);
+                a.destroy(ptr);
+                CHECK(destroyed == true);
+                a.deallocate(ptr, 1);
+            }
+        } // namespace destroy
     } // namespace polymorphic_allocator
 
     namespace monotonic {
@@ -1426,6 +1452,35 @@ namespace {
             pmr_container_test<std::pmr::wsmatch>();
         }
     } // namespace containers
+
+    namespace map_containers {
+        template <class T>
+        void pair_conversion_test() {
+            struct pair_conv {
+                operator std::pair<const int, int>() const {
+                    return {};
+                }
+            };
+
+            struct mem_pair_conv {
+                std::pair<const int, int> pair_{1, 42};
+                operator const std::pair<const int, int>&() const {
+                    return pair_;
+                }
+            };
+
+            T cont;
+            cont.emplace(pair_conv{});
+            cont.emplace(mem_pair_conv{});
+        }
+
+        void test() {
+            pair_conversion_test<std::pmr::map<int, int>>();
+            pair_conversion_test<std::pmr::multimap<int, int>>();
+            pair_conversion_test<std::pmr::unordered_map<int, int>>();
+            pair_conversion_test<std::pmr::unordered_multimap<int, int>>();
+        }
+    } // namespace map_containers
 } // unnamed namespace
 
 int main() {
@@ -1450,6 +1505,7 @@ int main() {
     polymorphic_allocator::mem::select_on_container_copy_construction::test();
     polymorphic_allocator::mem::resource::test();
     polymorphic_allocator::eq::test();
+    polymorphic_allocator::destroy::test();
 
     monotonic::ctor::buffer_upstream::test();
     monotonic::ctor::size_upstream::test();
@@ -1465,4 +1521,6 @@ int main() {
     pool::allocate_deallocate::test();
 
     containers::test();
+
+    map_containers::test();
 }

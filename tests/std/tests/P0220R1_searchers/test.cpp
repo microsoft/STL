@@ -433,7 +433,7 @@ void test_case_randomized_cases() {
 
     if (elapsed > 10s) {
         cout << "test_case_randomized_cases() took " << duration_cast<milliseconds>(elapsed).count() << " ms.\n";
-        cout << "Consider retuning Needles and Haystacks.\n";
+        cout << "Consider tuning Needles and Haystacks to test fewer cases.\n";
     }
 }
 

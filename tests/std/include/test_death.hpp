@@ -9,10 +9,9 @@
 #include <string>
 #include <vector>
 
-#include <test_windows.hpp>
+#include <Windows.h>
 
 namespace std_testing {
-
     constexpr int internal_failure = 103;
     using normal_function_t        = void (*)();
     using death_function_t         = void (*)();
@@ -22,7 +21,6 @@ namespace std_testing {
         printf("%s failed; LastError: 0x%08X\n", api_name, last_error);
         abort();
     }
-
 
     class death_test_executive {
         const normal_function_t run_normal_tests;
@@ -81,9 +79,16 @@ namespace std_testing {
                     // buffer was not big enough
                     const size_t str_max_size    = result.max_size();
                     const size_t result_max_size = str_max_size - str_max_size / 2;
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
+#endif // __clang__
                     if (result_size >= result_max_size) {
                         api_unexpected("GetModuleFileNameW");
                     }
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
 
                     result.resize(result_size + result_size / 2);
                 } else if (result_size == 0) {
@@ -98,9 +103,10 @@ namespace std_testing {
         }
 
     public:
+        death_test_executive() : run_normal_tests(nullptr) {}
+
         explicit death_test_executive(const normal_function_t normal_tests_function)
             : run_normal_tests(normal_tests_function) {}
-
 
         template <size_t TestsCount>
         void add_death_tests(const death_function_t (&tests)[TestsCount]) {
@@ -111,7 +117,9 @@ namespace std_testing {
             if (argc == 1) {
                 // first pass, run normal tests and sub-process loop
                 printf("running normal tests...");
-                run_normal_tests();
+                if (run_normal_tests != nullptr) {
+                    run_normal_tests();
+                }
                 puts(" passed!");
 
                 ::SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);

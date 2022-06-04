@@ -12,6 +12,7 @@
 #include <fstream>
 #include <functional>
 #include <limits>
+#include <locale>
 #include <optional>
 #include <random>
 #include <set>
@@ -44,6 +45,7 @@
 #include "float_hex_precision_to_chars_test_cases.hpp"
 #include "float_scientific_precision_to_chars_test_cases.hpp"
 #include "float_to_chars_test_cases.hpp"
+#include "wchar_test_cases.hpp"
 #include <floating_point_test_cases.hpp>
 
 using namespace std;
@@ -101,7 +103,8 @@ void initialize_randomness(mt19937_64& mt64, const int argc, char** const argv) 
 
     puts("Successfully seeded mt64. First three values:");
     for (int i = 0; i < 3; ++i) {
-        printf("0x%016llX\n", mt64());
+        // libc++ uses long for 64-bit values.
+        printf("0x%016llX\n", static_cast<unsigned long long>(mt64()));
     }
 }
 
@@ -125,10 +128,10 @@ void test_common_to_chars(
 
     constexpr size_t BufferPrefix = 20; // detect buffer underruns (specific value isn't important)
 
-    constexpr size_t Space =
-        is_integral_v<T> ? 1 + 64 // worst case: -2^63 in binary
-                         : is_same_v<T, float> ? 1 + 151 // worst case: negative min subnormal float, fixed notation
-                                               : 1 + 1076; // worst case: negative min subnormal double, fixed notation
+    constexpr size_t Space = is_integral_v<T> ? 1 + 64 // worst case: -2^63 in binary
+                           : is_same_v<T, float>
+                               ? 1 + 151 // worst case: negative min subnormal float, fixed notation
+                               : 1 + 1076; // worst case: negative min subnormal double, fixed notation
 
     constexpr size_t BufferSuffix = 30; // detect buffer overruns (specific value isn't important)
 
@@ -209,39 +212,39 @@ constexpr const char* output_max_digit[] = {"skip0", "skip1", "11", "12", "13", 
 // https://www.wolframalpha.com : Table[BaseForm[k, n], {k, {MEOW, MEOW, MEOW}}, {n, 2, 36}]
 constexpr uint64_t stress_chunks_positive                          = 12000000345000678900ULL;
 constexpr pair<uint64_t, array<const char*, 37>> output_positive[] = {
-    {123, {{"skip0", "skip1", "1111011", "11120", "1323", "443", "323", "234", "173", "146", "123", "102", "a3", "96",
-              "8b", "83", "7b", "74", "6f", "69", "63", "5i", "5d", "58", "53", "4n", "4j", "4f", "4b", "47", "43",
-              "3u", "3r", "3o", "3l", "3i", "3f"}}},
-    {INT8_MAX, {{"skip0", "skip1", "1111111", "11201", "1333", "1002", "331", "241", "177", "151", "127", "106", "a7",
-                   "9a", "91", "87", "7f", "78", "71", "6d", "67", "61", "5h", "5c", "57", "52", "4n", "4j", "4f", "4b",
-                   "47", "43", "3v", "3s", "3p", "3m", "3j"}}},
-    {161, {{"skip0", "skip1", "10100001", "12222", "2201", "1121", "425", "320", "241", "188", "161", "137", "115",
-              "c5", "b7", "ab", "a1", "98", "8h", "89", "81", "7e", "77", "70", "6h", "6b", "65", "5q", "5l", "5g",
-              "5b", "56", "51", "4t", "4p", "4l", "4h"}}},
+    {123U, {{"skip0", "skip1", "1111011", "11120", "1323", "443", "323", "234", "173", "146", "123", "102", "a3", "96",
+               "8b", "83", "7b", "74", "6f", "69", "63", "5i", "5d", "58", "53", "4n", "4j", "4f", "4b", "47", "43",
+               "3u", "3r", "3o", "3l", "3i", "3f"}}},
+    {uint64_t{INT8_MAX}, {{"skip0", "skip1", "1111111", "11201", "1333", "1002", "331", "241", "177", "151", "127",
+                             "106", "a7", "9a", "91", "87", "7f", "78", "71", "6d", "67", "61", "5h", "5c", "57", "52",
+                             "4n", "4j", "4f", "4b", "47", "43", "3v", "3s", "3p", "3m", "3j"}}},
+    {161U, {{"skip0", "skip1", "10100001", "12222", "2201", "1121", "425", "320", "241", "188", "161", "137", "115",
+               "c5", "b7", "ab", "a1", "98", "8h", "89", "81", "7e", "77", "70", "6h", "6b", "65", "5q", "5l", "5g",
+               "5b", "56", "51", "4t", "4p", "4l", "4h"}}},
     {UINT8_MAX, {{"skip0", "skip1", "11111111", "100110", "3333", "2010", "1103", "513", "377", "313", "255", "212",
                     "193", "168", "143", "120", "ff", "f0", "e3", "d8", "cf", "c3", "bd", "b2", "af", "a5", "9l", "9c",
                     "93", "8n", "8f", "87", "7v", "7o", "7h", "7a", "73"}}},
-    {1729, {{"skip0", "skip1", "11011000001", "2101001", "123001", "23404", "12001", "5020", "3301", "2331", "1729",
-               "1332", "1001", "a30", "8b7", "7a4", "6c1", "5gc", "561", "4f0", "469", "3j7", "3cd", "364", "301",
-               "2j4", "2ed", "2a1", "25l", "21i", "1rj", "1oo", "1m1", "1jd", "1gt", "1ee", "1c1"}}},
-    {INT16_MAX, {{"skip0", "skip1", "111111111111111", "1122221121", "13333333", "2022032", "411411", "164350", "77777",
-                    "48847", "32767", "22689", "16b67", "11bb7", "bd27", "9a97", "7fff", "6b68", "5b27", "4eeb", "41i7",
-                    "3b67", "31f9", "2flf", "28l7", "22ah", "1mc7", "1hpg", "1dm7", "19rq", "16c7", "1330", "vvv",
-                    "u2v", "sbp", "qq7", "pa7"}}},
-    {57494, {{"skip0", "skip1", "1110000010010110", "2220212102", "32002112", "3314434", "1122102", "326423", "160226",
-                "86772", "57494", "3a218", "29332", "20228", "16d4a", "1207e", "e096", "bbg0", "9f82", "8750", "73ee",
-                "647h", "58h8", "4gfh", "43je", "3goj", "3718", "2onb", "2h9a", "2aag", "23qe", "1spk", "1o4m", "1jq8",
-                "1fp0", "1bwo", "18d2"}}},
+    {1729U, {{"skip0", "skip1", "11011000001", "2101001", "123001", "23404", "12001", "5020", "3301", "2331", "1729",
+                "1332", "1001", "a30", "8b7", "7a4", "6c1", "5gc", "561", "4f0", "469", "3j7", "3cd", "364", "301",
+                "2j4", "2ed", "2a1", "25l", "21i", "1rj", "1oo", "1m1", "1jd", "1gt", "1ee", "1c1"}}},
+    {uint64_t{INT16_MAX}, {{"skip0", "skip1", "111111111111111", "1122221121", "13333333", "2022032", "411411",
+                              "164350", "77777", "48847", "32767", "22689", "16b67", "11bb7", "bd27", "9a97", "7fff",
+                              "6b68", "5b27", "4eeb", "41i7", "3b67", "31f9", "2flf", "28l7", "22ah", "1mc7", "1hpg",
+                              "1dm7", "19rq", "16c7", "1330", "vvv", "u2v", "sbp", "qq7", "pa7"}}},
+    {57494U, {{"skip0", "skip1", "1110000010010110", "2220212102", "32002112", "3314434", "1122102", "326423", "160226",
+                 "86772", "57494", "3a218", "29332", "20228", "16d4a", "1207e", "e096", "bbg0", "9f82", "8750", "73ee",
+                 "647h", "58h8", "4gfh", "43je", "3goj", "3718", "2onb", "2h9a", "2aag", "23qe", "1spk", "1o4m", "1jq8",
+                 "1fp0", "1bwo", "18d2"}}},
     {UINT16_MAX, {{"skip0", "skip1", "1111111111111111", "10022220020", "33333333", "4044120", "1223223", "362031",
                      "177777", "108806", "65535", "45268", "31b13", "23aa2", "19c51", "14640", "ffff", "d5d0", "b44f",
                      "9aa4", "83gf", "71cf", "638j", "58k8", "4hif", "44la", "3iof", "38o6", "2rgf", "2jqo", "2cof",
                      "2661", "1vvv", "1r5u", "1mnh", "1ihf", "1ekf"}}},
-    {71125478, {{"skip0", "skip1", "100001111010100100111100110", "11221211112210222", "10033110213212", "121202003403",
-                   "11020244342", "1522361624", "417244746", "157745728", "71125478", "3716a696", "1b9a06b2",
-                   "11973ba8", "9636514", "639e338", "43d49e6", "2g19gfb", "21b9d18", "19dec94", "124addi", "h8f25b",
-                   "dhdfa6", "b13hg2", "8m91he", "7720j3", "5pgj58", "4pmelq", "43k17i", "3dg8ek", "2ro898", "2f0et8",
-                   "23qif6", "1qw5lh", "1j7l7s", "1cdvli", "16cgrq"}}},
-    {INT32_MAX,
+    {71125478U, {{"skip0", "skip1", "100001111010100100111100110", "11221211112210222", "10033110213212",
+                    "121202003403", "11020244342", "1522361624", "417244746", "157745728", "71125478", "3716a696",
+                    "1b9a06b2", "11973ba8", "9636514", "639e338", "43d49e6", "2g19gfb", "21b9d18", "19dec94", "124addi",
+                    "h8f25b", "dhdfa6", "b13hg2", "8m91he", "7720j3", "5pgj58", "4pmelq", "43k17i", "3dg8ek", "2ro898",
+                    "2f0et8", "23qif6", "1qw5lh", "1j7l7s", "1cdvli", "16cgrq"}}},
+    {uint64_t{INT32_MAX},
         {{"skip0", "skip1", "1111111111111111111111111111111", "12112122212110202101", "1333333333333333",
             "13344223434042", "553032005531", "104134211161", "17777777777", "5478773671", "2147483647", "a02220281",
             "4bb2308a7", "282ba4aaa", "1652ca931", "c87e66b7", "7fffffff", "53g7f548", "3928g3h1", "27c57h32",
@@ -267,7 +270,7 @@ constexpr pair<uint64_t, array<const char*, 37>> output_positive[] = {
             "4d0d5e232c53", "2d63h403i580", "1bf5h8185hdj", "kc3g550fkcg", "d41id5k9984", "8ef5n0him4g", "5i2dijfe1la",
             "3me22fm5fhi", "2hfmhgg73kd", "1ngpfabr53c", "18i7220bh11", "rm0lcjngpa", "kk1elesni1", "fgfge3c3fg",
             "bp4q5l6bjg", "8xna46jp0k", "6wejomvji5", "5di2s1qhv4"}}},
-    {INT64_MAX,
+    {uint64_t{INT64_MAX},
         {{"skip0", "skip1", "111111111111111111111111111111111111111111111111111111111111111",
             "2021110011022210012102010021220101220221", "13333333333333333333333333333333",
             "1104332401304422434310311212", "1540241003031030222122211", "22341010611245052052300",
@@ -575,7 +578,8 @@ void assert_message_bits(const bool b, const char* const msg, const uint32_t bit
 
 void assert_message_bits(const bool b, const char* const msg, const uint64_t bits) {
     if (!b) {
-        fprintf(stderr, "%s failed for 0x%016llX\n", msg, bits);
+        // libc++ uses long for 64-bit values.
+        fprintf(stderr, "%s failed for 0x%016llX\n", msg, static_cast<unsigned long long>(bits));
         fprintf(stderr, "This is a randomized test.\n");
         fprintf(stderr, "DO NOT IGNORE/RERUN THIS FAILURE.\n");
         fprintf(stderr, "You must report it to the STL maintainers.\n");
@@ -595,8 +599,8 @@ constexpr uint32_t PrefixesToTest = 100; // Tunable for test coverage vs. perfor
 static_assert(PrefixesToTest >= 1, "Must test at least 1 prefix.");
 
 constexpr uint32_t PrefixLimit = 2 // sign bit
-                                 * 255 // non-INF/NAN exponents for float
-                                 * (1U << (23 - FractionBits)); // fraction bits in prefix
+                               * 255 // non-INF/NAN exponents for float
+                               * (1U << (23 - FractionBits)); // fraction bits in prefix
 static_assert(PrefixesToTest <= PrefixLimit, "Too many prefixes.");
 
 template <bool IsDouble>
@@ -701,9 +705,9 @@ void test_floating_precision_prefix(const conditional_t<IsDouble, uint64_t, uint
 
     // Size for fixed notation. (More than enough for scientific notation.)
     constexpr size_t charconv_buffer_size = 1 // negative sign
-                                            + max_integer_length // integer digits
-                                            + 1 // decimal point
-                                            + precision; // fractional digits
+                                          + max_integer_length // integer digits
+                                          + 1 // decimal point
+                                          + precision; // fractional digits
     char charconv_buffer[charconv_buffer_size];
 
     constexpr size_t stdio_buffer_size = charconv_buffer_size + 1; // null terminator
@@ -1059,6 +1063,62 @@ void all_floating_tests(mt19937_64& mt64) {
     }
 }
 
+void test_right_shift_64_bits_with_rounding() {
+    // Directly test _Right_shift_with_rounding for the case of _Shift == 64 && _Value >= 2^63.
+    // We were unable to actually exercise this codepath with the public interface of from_chars,
+    // but were equally unable to prove that it can never ever be executed.
+    assert(_Right_shift_with_rounding(0x0000'0000'0000'0000ULL, 64, true) == 0);
+    assert(_Right_shift_with_rounding(0x0000'0000'0000'0000ULL, 64, false) == 0);
+    assert(_Right_shift_with_rounding(0x0000'0000'0000'0001ULL, 64, true) == 0);
+    assert(_Right_shift_with_rounding(0x0000'0000'0000'0001ULL, 64, false) == 0);
+    assert(_Right_shift_with_rounding(0x7fff'ffff'ffff'ffffULL, 64, true) == 0);
+    assert(_Right_shift_with_rounding(0x7fff'ffff'ffff'ffffULL, 64, false) == 0);
+    assert(_Right_shift_with_rounding(0x8000'0000'0000'0000ULL, 64, true) == 0);
+    assert(_Right_shift_with_rounding(0x8000'0000'0000'0000ULL, 64, false) == 1);
+    assert(_Right_shift_with_rounding(0x8000'0000'0000'0001ULL, 64, true) == 1);
+    assert(_Right_shift_with_rounding(0x8000'0000'0000'0001ULL, 64, false) == 1);
+    assert(_Right_shift_with_rounding(0xffff'ffff'ffff'ffffULL, 64, true) == 1);
+    assert(_Right_shift_with_rounding(0xffff'ffff'ffff'ffffULL, 64, false) == 1);
+}
+
+void wchar_tests() {
+    static_assert(size(__DIGIT_TABLE<char>) == size(__DIGIT_TABLE<wchar_t>));
+    auto& fac = use_facet<ctype<wchar_t>>(locale{});
+    for (size_t i = 0; i < size(__DIGIT_TABLE<char>); ++i) {
+        assert(fac.widen(__DIGIT_TABLE<char>[i]) == __DIGIT_TABLE<wchar_t>[i]);
+    }
+
+    wchar_t buffer[32];
+    for (const auto& t : double_to_wide_test_cases) {
+        const auto result = __d2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
+        assert(result.second == errc{});
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+
+    for (const auto& t : float_to_wide_test_cases) {
+        const auto result = __f2s_buffered_n(begin(buffer), end(buffer), t.value, t.fmt);
+        assert(result.second == errc{});
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+
+    for (const auto& t : wide_digit_pairs_test_cases) {
+        const auto result =
+            __d2fixed_buffered_n(begin(buffer), end(buffer), t.value, static_cast<uint32_t>(t.precision));
+        assert(result.second == errc{});
+        const wstring_view sv(t.correct);
+        assert(equal(buffer, result.first, sv.begin(), sv.end()));
+    }
+}
+
+// GH-1569 - Test instantiation of wchar_t helpers.
+template pair<wchar_t*, errc> std::__to_chars(
+    wchar_t* const, wchar_t* const, const __floating_decimal_32, chars_format, const uint32_t, const uint32_t);
+template pair<wchar_t*, errc> std::__to_chars(
+    wchar_t* const, wchar_t* const, const __floating_decimal_64, chars_format, const double);
+template pair<wchar_t*, errc> std::__d2fixed_buffered_n(wchar_t*, wchar_t* const, const double, const uint32_t);
+
 int main(int argc, char** argv) {
     const auto start = chrono::steady_clock::now();
 
@@ -1070,6 +1130,10 @@ int main(int argc, char** argv) {
 
     all_floating_tests(mt64);
 
+    test_right_shift_64_bits_with_rounding();
+
+    wchar_tests();
+
     const auto finish  = chrono::steady_clock::now();
     const long long ms = chrono::duration_cast<chrono::milliseconds>(finish - start).count();
 
@@ -1078,8 +1142,8 @@ int main(int argc, char** argv) {
     printf("Total time: %lld ms\n", ms);
 
     if (ms < 3'000) {
-        puts("That was fast. Consider retuning PrefixesToTest and FractionBits.");
+        puts("That was fast. Consider tuning PrefixesToTest and FractionBits to test more cases.");
     } else if (ms > 30'000) {
-        puts("That was slow. Consider retuning PrefixesToTest and FractionBits.");
+        puts("That was slow. Consider tuning PrefixesToTest and FractionBits to test fewer cases.");
     }
 }

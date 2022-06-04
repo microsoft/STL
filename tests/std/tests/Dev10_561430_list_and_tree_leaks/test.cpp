@@ -24,14 +24,18 @@
 
 int g_mallocs = 0;
 
-// Also test DevDiv#483844 and DevDiv#781187, minimal allocator requirements.
+// Also test DevDiv-483844 and DevDiv-781187, minimal allocator requirements.
 template <typename T>
 struct Mallocator {
     typedef T value_type;
 
-    Mallocator() {}
+    Mallocator()                  = default;
+    Mallocator(const Mallocator&) = default;
+
     template <typename U>
     Mallocator(const Mallocator<U>&) {}
+
+    Mallocator& operator=(const Mallocator&) = delete;
 
     bool operator==(const Mallocator&) const {
         return true;
@@ -63,8 +67,6 @@ struct Mallocator {
 
         free(p);
     }
-
-    Mallocator& operator=(const Mallocator&) = delete;
 };
 
 template <typename C>
@@ -192,7 +194,7 @@ int main() {
 }
 
 
-// Also test DevDiv#819467 "<memory>: Custom allocator with virtual max_size function causes infinite recursion".
+// Also test DevDiv-819467 "<memory>: Custom allocator with virtual max_size function causes infinite recursion".
 
 template <typename T>
 struct WeirdAllocator {
