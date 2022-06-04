@@ -34,7 +34,7 @@ namespace {
     // TRANSITION, GH-2285. Use SRWLOCK instead of std::mutex to avoid nontrivial constructor and nontrivial destructor
     void lock_and_uninitialize() noexcept;
 
-    class _NODISCARD dbg_eng_data {
+    class [[nodiscard]] dbg_eng_data {
     public:
         dbg_eng_data() noexcept {
             AcquireSRWLockExclusive(&srw);
@@ -78,7 +78,7 @@ namespace {
             initialize_attempted = false;
         }
 
-        bool try_initialize() noexcept {
+        [[nodiscard]] bool try_initialize() noexcept {
             if (!initialize_attempted) {
                 initialize_attempted = true;
 
