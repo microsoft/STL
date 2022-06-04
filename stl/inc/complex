@@ -1313,8 +1313,6 @@ public:
         this->_Val[_IM] = _Ty();
         return *this;
     }
-    
-    constexpr complex(const complex<_Ty>& _Right) = default;
 
     _DEPRECATE_NONFLOATING_COMPLEX
     template <class _Other>
