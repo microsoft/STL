@@ -130,7 +130,7 @@ namespace {
                 }
             }
 
-            return debug_symbols != nullptr;
+            return attached;
         }
 
         size_t get_description(
