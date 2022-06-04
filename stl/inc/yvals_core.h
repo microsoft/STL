@@ -1179,8 +1179,7 @@
                  "You can define _SILENCE_CXX20_CISO646_REMOVED_WARNING " \
                  "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
-
-#define _DEPRECATE_NONFLOATING_COMPLEX
+#define _CXX20_REMOVE_CISO646
 #endif // ^^^ warning disabled ^^^
 
 #if !defined(_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING)
