@@ -50,6 +50,8 @@ bool nearly_equal_partwise(const complex<T> actual, const complex<T> expected) {
 // Also test GH-2728 <complex>: Implementation divergence for division by zero
 void test_gh_2728() {
     const complex<double> zero{0, 0};
+    constexpr double inf = numeric_limits<double>::infinity();
+    constexpr double nan = numeric_limits<double>::quiet_NaN();
     {
         const complex<double> test_one_one = complex<double>{1, 1} / zero;
         assert(isinf(test_one_one.real()) && test_one_one.real() > 0);
@@ -96,32 +98,32 @@ void test_gh_2728() {
         assert(isinf(test_minus_one_minus_one.imag()) && test_minus_one_minus_one.imag() < 0);
     }
     {
-        const complex<double> test_inf_inf = complex<double>{INFINITY, INFINITY} / zero;
+        const complex<double> test_inf_inf = complex<double>{inf, inf} / zero;
         assert(isinf(test_inf_inf.real()) && test_inf_inf.real() > 0);
         assert(isinf(test_inf_inf.imag()) && test_inf_inf.imag() > 0);
     }
     {
-        const complex<double> test_inf_minus_inf = complex<double>{INFINITY, -INFINITY} / zero;
+        const complex<double> test_inf_minus_inf = complex<double>{inf, -inf} / zero;
         assert(isinf(test_inf_minus_inf.real()) && test_inf_minus_inf.real() > 0);
         assert(isinf(test_inf_minus_inf.imag()) && test_inf_minus_inf.imag() < 0);
     }
     {
-        const complex<double> test_minus_inf_minus_inf = complex<double>{-INFINITY, -INFINITY} / zero;
+        const complex<double> test_minus_inf_minus_inf = complex<double>{-inf, -inf} / zero;
         assert(isinf(test_minus_inf_minus_inf.real()) && test_minus_inf_minus_inf.real() < 0);
         assert(isinf(test_minus_inf_minus_inf.imag()) && test_minus_inf_minus_inf.imag() < 0);
     }
     {
-        const complex<double> test_one_nan = complex<double>{1, NAN} / zero;
+        const complex<double> test_one_nan = complex<double>{1, nan} / zero;
         assert(isinf(test_one_nan.real()) && test_one_nan.real() > 0);
         assert(isnan(test_one_nan.imag()));
     }
     {
-        const complex<double> test_nan_one = complex<double>{NAN, 1} / zero;
+        const complex<double> test_nan_one = complex<double>{nan, 1} / zero;
         assert(isnan(test_nan_one.real()));
         assert(isinf(test_nan_one.imag()) && test_nan_one.imag() > 0);
     }
     {
-        const complex<double> test_nan_nan = complex<double>{NAN, NAN} / zero;
+        const complex<double> test_nan_nan = complex<double>{nan, nan} / zero;
         assert(isnan(test_nan_nan.real()));
         assert(isnan(test_nan_nan.imag()));
     }

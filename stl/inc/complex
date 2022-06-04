@@ -990,27 +990,25 @@ protected:
                 this->_Val[_IM] = (this->_Val[_IM] - this->_Val[_RE] * _Wr) / _Wd;
                 this->_Val[_RE] = _Tmp;
             }
-        } else if (_Rightimag == 0) { // _Right.real() = 0 && _Right.imag() = 0
-            if (this->_Val[_RE] > 0) {
+        } else if (_Rightimag == 0) { // _Right.real() == 0 && _Right.imag() == 0
+            if (_Myctraits::_Isnan(this->_Val[_RE])) {
+                this->_Val[_RE] = _Myctraits::_Nanv();
+            } else if (this->_Val[_RE] > 0) {
                 this->_Val[_RE] = _Myctraits::_Infv();
             } else if (this->_Val[_RE] == 0) {
                 this->_Val[_RE] = -_Myctraits::_Nanv();
-            } else if (this->_Val[_RE] < 0) {
+            } else { // this->_Val[_RE] < 0
                 this->_Val[_RE] = -_Myctraits::_Infv();
-            } else {
-                // this->_Val[_RE] is NAN
-                this->_Val[_RE] = _Myctraits::_Nanv();
             }
 
-            if (this->_Val[_IM] > 0) {
+            if (_Myctraits::_Isnan(this->_Val[_IM])) {
+                this->_Val[_IM] = _Myctraits::_Nanv();
+            } else if (this->_Val[_IM] > 0) {
                 this->_Val[_IM] = _Myctraits::_Infv();
             } else if (this->_Val[_IM] == 0) {
                 this->_Val[_IM] = -_Myctraits::_Nanv();
-            } else if (this->_Val[_IM] < 0) {
+            } else { // this->_Val[_IM] < 0
                 this->_Val[_IM] = -_Myctraits::_Infv();
-            } else {
-                // this->_Val[_IM] is NAN
-                this->_Val[_IM] = _Myctraits::_Nanv();
             }
         } else { // 0 < |_Right.real()| <= |_Right.imag()|
             _Ty _Wr = _Rightreal / _Rightimag;
