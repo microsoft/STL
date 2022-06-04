@@ -1314,6 +1314,7 @@ public:
         return *this;
     }
 
+    _DEPRECATE_NONFLOATING_COMPLEX
     template <class _Other>
     constexpr complex(const complex<_Other>& _Right)
         : _Mybase(static_cast<_Ty>(_Right.real()), static_cast<_Ty>(_Right.imag())) {}
