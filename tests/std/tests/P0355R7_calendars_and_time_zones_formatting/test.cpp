@@ -634,6 +634,9 @@ void test_year_month_day_formatter() {
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 29) == STR("10 2010 52 52 52"));
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 30) == STR("10 2010 52 52 52"));
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / December / 31) == STR("10 2010 52 52 52"));
+
+    // GH-2761, formatter<chrono::year_month_day> is not fully implemented
+    assert(format(STR("{:%x}"), year_month_day{year{2010}, month{5}, day{6}}) == STR("05/06/10"));
 }
 
 template <typename CharT>

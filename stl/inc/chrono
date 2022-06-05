@@ -5281,8 +5281,8 @@ namespace chrono {
             } else if constexpr (_Is_any_of_v<_Ty, year_month_day, year_month_day_last, year_month_weekday,
                                      year_month_weekday_last>) {
                 return _Type == 'D' || _Type == 'F' || _Type == 'g' || _Type == 'G' || _Type == 'j' || _Type == 'U'
-                    || _Type == 'V' || _Type == 'W' || _Is_valid_type<year>(_Type) || _Is_valid_type<month>(_Type)
-                    || _Is_valid_type<day>(_Type) || _Is_valid_type<weekday>(_Type);
+                    || _Type == 'V' || _Type == 'W' || _Type == 'x' || _Is_valid_type<year>(_Type)
+                    || _Is_valid_type<month>(_Type) || _Is_valid_type<day>(_Type) || _Is_valid_type<weekday>(_Type);
             } else if constexpr (_Is_specialization_v<_Ty, hh_mm_ss>) {
                 return _Type == 'H' || _Type == 'I' || _Type == 'M' || _Type == 'S' || _Type == 'r' || _Type == 'R'
                     || _Type == 'T' || _Type == 'p';
@@ -5294,7 +5294,7 @@ namespace chrono {
                         return true;
                     }
                 }
-                return _Type == 'c' || _Type == 'x' || _Type == 'X' || _Is_valid_type<year_month_day>(_Type)
+                return _Type == 'c' || _Type == 'X' || _Is_valid_type<year_month_day>(_Type)
                     || _Is_valid_type<hh_mm_ss<seconds>>(_Type);
             } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
                 return _Type == 'z' || _Type == 'Z' || _Is_valid_type<decltype(_Ty::_Time)>(_Type);
