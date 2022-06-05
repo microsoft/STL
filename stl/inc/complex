@@ -991,25 +991,8 @@ protected:
                 this->_Val[_RE] = _Tmp;
             }
         } else if (_Rightimag == 0) { // _Right.real() == 0 && _Right.imag() == 0
-            if (_Myctraits::_Isnan(this->_Val[_RE])) {
-                this->_Val[_RE] = _Myctraits::_Nanv();
-            } else if (this->_Val[_RE] > 0) {
-                this->_Val[_RE] = _Myctraits::_Infv();
-            } else if (this->_Val[_RE] == 0) {
-                this->_Val[_RE] = -_Myctraits::_Nanv();
-            } else { // this->_Val[_RE] < 0
-                this->_Val[_RE] = -_Myctraits::_Infv();
-            }
-
-            if (_Myctraits::_Isnan(this->_Val[_IM])) {
-                this->_Val[_IM] = _Myctraits::_Nanv();
-            } else if (this->_Val[_IM] > 0) {
-                this->_Val[_IM] = _Myctraits::_Infv();
-            } else if (this->_Val[_IM] == 0) {
-                this->_Val[_IM] = -_Myctraits::_Nanv();
-            } else { // this->_Val[_IM] < 0
-                this->_Val[_IM] = -_Myctraits::_Infv();
-            }
+            this->_Val[_RE] /= _Rightreal;
+            this->_Val[_IM] /= _Rightreal;
         } else { // 0 < |_Right.real()| <= |_Right.imag()|
             _Ty _Wr = _Rightreal / _Rightimag;
             _Ty _Wd = _Rightimag + _Wr * _Rightreal;
