@@ -664,13 +664,13 @@ _NODISCARD constexpr tuple_element_t<_Idx, pair<_Ty1, _Ty2>>& get(pair<_Ty1, _Ty
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr _Ty1& get(pair<_Ty1, _Ty2>& _Pr) noexcept {
     // get reference to element _Ty1 in pair _Pr
-    return _STD get<0>(_Pr);
+    return _Pr.first;
 }
 
 template <class _Ty2, class _Ty1>
 _NODISCARD constexpr _Ty2& get(pair<_Ty1, _Ty2>& _Pr) noexcept {
     // get reference to element _Ty2 in pair _Pr
-    return _STD get<1>(_Pr);
+    return _Pr.second;
 }
 
 template <size_t _Idx, class _Ty1, class _Ty2>
@@ -686,51 +686,57 @@ _NODISCARD constexpr const tuple_element_t<_Idx, pair<_Ty1, _Ty2>>& get(const pa
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr const _Ty1& get(const pair<_Ty1, _Ty2>& _Pr) noexcept {
     // get const reference to element _Ty1 in pair _Pr
-    return _STD get<0>(_Pr);
+    return _Pr.first;
 }
 
 template <class _Ty2, class _Ty1>
 _NODISCARD constexpr const _Ty2& get(const pair<_Ty1, _Ty2>& _Pr) noexcept {
     // get const reference to element _Ty2 in pair _Pr
-    return _STD get<1>(_Pr);
+    return _Pr.second;
 }
 
 template <size_t _Idx, class _Ty1, class _Ty2>
 _NODISCARD constexpr tuple_element_t<_Idx, pair<_Ty1, _Ty2>>&& get(pair<_Ty1, _Ty2>&& _Pr) noexcept {
     // get rvalue reference to element at _Idx in pair _Pr
-    using _RRtype = tuple_element_t<_Idx, pair<_Ty1, _Ty2>>&&;
-    return _STD forward<_RRtype>(_STD get<_Idx>(_Pr));
+    if constexpr (_Idx == 0) {
+        return _STD forward<_Ty1>(_Pr.first);
+    } else {
+        return _STD forward<_Ty2>(_Pr.second);
+    }
 }
 
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr _Ty1&& get(pair<_Ty1, _Ty2>&& _Pr) noexcept {
     // get rvalue reference to element _Ty1 in pair _Pr
-    return _STD get<0>(_STD move(_Pr));
+    return _STD forward<_Ty1>(_Pr.first);
 }
 
 template <class _Ty2, class _Ty1>
 _NODISCARD constexpr _Ty2&& get(pair<_Ty1, _Ty2>&& _Pr) noexcept {
     // get rvalue reference to element _Ty2 in pair _Pr
-    return _STD get<1>(_STD move(_Pr));
+    return _STD forward<_Ty2>(_Pr.second);
 }
 
 template <size_t _Idx, class _Ty1, class _Ty2>
 _NODISCARD constexpr const tuple_element_t<_Idx, pair<_Ty1, _Ty2>>&& get(const pair<_Ty1, _Ty2>&& _Pr) noexcept {
     // get const rvalue reference to element at _Idx in pair _Pr
-    using _RRtype = const tuple_element_t<_Idx, pair<_Ty1, _Ty2>>&&;
-    return _STD forward<_RRtype>(_STD get<_Idx>(_Pr));
+    if constexpr (_Idx == 0) {
+        return _STD forward<const _Ty1>(_Pr.first);
+    } else {
+        return _STD forward<const _Ty2>(_Pr.second);
+    }
 }
 
 template <class _Ty1, class _Ty2>
 _NODISCARD constexpr const _Ty1&& get(const pair<_Ty1, _Ty2>&& _Pr) noexcept {
     // get const rvalue reference to element _Ty1 in pair _Pr
-    return _STD get<0>(_STD move(_Pr));
+    return _STD forward<const _Ty1>(_Pr.first);
 }
 
 template <class _Ty2, class _Ty1>
 _NODISCARD constexpr const _Ty2&& get(const pair<_Ty1, _Ty2>&& _Pr) noexcept {
     // get const rvalue reference to element _Ty2 in pair _Pr
-    return _STD get<1>(_STD move(_Pr));
+    return _STD forward<const _Ty2>(_Pr.second);
 }
 
 template <class _Ty, class _Other = _Ty>
