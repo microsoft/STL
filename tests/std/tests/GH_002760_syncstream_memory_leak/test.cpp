@@ -11,7 +11,7 @@
 #include <syncstream>
 
 using namespace std;
-
+// GH-2760, <syncstream>: std::osyncstream memory leak
 int main() {
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     _CrtMemState start, end, diff;
