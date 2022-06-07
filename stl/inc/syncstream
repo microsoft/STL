@@ -223,7 +223,9 @@ protected:
 
         _Elem* const _New_ptr = _Unfancy(_Al.allocate(_New_capacity));
         _Traits::copy(_New_ptr, _Old_ptr, _Old_data_size);
-        _Al.deallocate(_Refancy<_Pointer>(_Old_ptr), _Old_data_size);
+        if (0 < _Buf_size) {
+            _Al.deallocate(_Refancy<_Pointer>(_Old_ptr), _Buf_size);
+        }
 
         streambuf_type::setp(_New_ptr, _New_ptr + _Old_data_size, _New_ptr + _New_capacity);
         streambuf_type::sputc(_Traits::to_char_type(_Current_elem));
