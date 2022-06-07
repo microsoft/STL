@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\crt-common.settings.targets" />
 
-    <ItemGroup Condition="'$(BuildExePhase)' == '1'">
+    <ItemGroup>
         <ProjectFile Include="msvcp_post_app\msvcp_post.nativeproj" />
         <ProjectFile Include="msvcp_post_kernel32\msvcp_post.nativeproj" Condition="'$(BuildVCKernel32)' == 'true'" />
         <ProjectFile Include="msvcp_post_onecore\msvcp_post.nativeproj" />
