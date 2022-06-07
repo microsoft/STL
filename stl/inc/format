@@ -3286,11 +3286,18 @@ struct _Formatter_base {
                 _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
         }
 
-        return _STD visit_format_arg(
-            _Arg_formatter<typename _FormatContext::iterator, _CharT>{
-                ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
-            basic_format_arg<_FormatContext>{
-                static_cast<typename _Format_arg_traits<_FormatContext>::template _Storage_type<_Ty>>(_Val)});
+        using _Storage_type = typename _Format_arg_traits<_FormatContext>::template _Storage_type<_Ty>;
+        if constexpr (is_same_v<typename basic_format_arg<_FormatContext>::handle, _Storage_type>) {
+            return _STD visit_format_arg(
+                _Arg_formatter<typename _FormatContext::iterator, _CharT>{
+                    ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
+                basic_format_arg<_FormatContext>{_Val});
+        } else {
+            return _STD visit_format_arg(
+                _Arg_formatter<typename _FormatContext::iterator, _CharT>{
+                    ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
+                basic_format_arg<_FormatContext>{static_cast<_Storage_type>(_Val)});
+        }
     }
 
 private:
