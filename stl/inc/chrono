@@ -3454,27 +3454,27 @@ namespace chrono {
             return false;
         }
 
-        enum class _LeapSecondRep : unsigned int {
+        enum class _Leap_second_rep : unsigned int {
             _None, // system_clock, tai_clock, gps_clock; oblivious to leap seconds
-            _Negative, // TRANSITION, ABI: old value for system_clock
             _All, // utc_clock
             _File_time // _None before 2018-06-01, _All afterwards.
         };
 
         template <class _DurationType>
-        _NODISCARD bool _Make_time_point(_DurationType& _Dur, _LeapSecondRep _Leap) {
+        _NODISCARD bool _Make_time_point(_DurationType& _Dur, _Leap_second_rep _Leap) {
 
             const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields() && _Calculate_ymd()};
             if (!_Consistent || !_Apply_duration_fields<_Parse_tp_or_duration::_Time_point>(_Dur)) {
                 return false;
             }
 
-            const _LeapSecondRep _Original_leap{_Leap};
-            if (_Leap == _LeapSecondRep::_File_time) {
-                _Leap = _Dur < file_clock::_Cutoff.time_since_epoch() ? _LeapSecondRep::_None : _LeapSecondRep::_All;
+            const _Leap_second_rep _Original_leap{_Leap};
+            if (_Leap == _Leap_second_rep::_File_time) {
+                _Leap =
+                    _Dur < file_clock::_Cutoff.time_since_epoch() ? _Leap_second_rep::_None : _Leap_second_rep::_All;
             }
 
-            if (_Second > (_Leap == _LeapSecondRep::_All ? 60 : 59)) {
+            if (_Second > (_Leap == _Leap_second_rep::_All ? 60 : 59)) {
                 return false;
             }
 
@@ -3484,7 +3484,7 @@ namespace chrono {
             // knowing whether any leap seconds have occurred, and there aren't any invalid times due to negative leap
             // second deletions.
 
-            if (_Leap == _LeapSecondRep::_All) {
+            if (_Leap == _Leap_second_rep::_All) {
                 constexpr bool _Can_rep_sec = _Can_represent<_DurationType, seconds>();
                 if constexpr (_Can_rep_sec) {
                     // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
@@ -3513,7 +3513,7 @@ namespace chrono {
                     const auto _Offset = _It == _Ls_vector.begin() ? seconds{0} : _Prev_iter(_It)->_Elapsed();
                     _Dur += _CHRONO duration_cast<_DurationType>(_Offset);
 
-                    if (_Original_leap == _LeapSecondRep::_File_time) {
+                    if (_Original_leap == _Leap_second_rep::_File_time) {
                         _Dur -= _CHRONO duration_cast<_DurationType>(
                             filesystem::_File_time_clock::_Skipped_filetime_leap_seconds);
                     }
@@ -4386,7 +4386,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_All)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_All)) {
             _Tp = utc_time<_Duration>{_Dur};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4401,7 +4401,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
             _Tp = sys_time<_Duration>{_Dur};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4416,7 +4416,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
             _Tp = tai_time<_Duration>{_Dur + _CHRONO duration_cast<_Duration>(days{4383})};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4431,7 +4431,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
             _Tp = gps_time<_Duration>{_Dur - _CHRONO duration_cast<_Duration>(days{3657})};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4446,7 +4446,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_File_time)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_File_time)) {
             constexpr auto _File_clock_adj{_CHRONO duration_cast<_Duration>(
                 filesystem::_File_time_clock::duration{filesystem::__std_fs_file_time_epoch_adjustment})};
             _Tp = file_time<_Duration>{_Dur} + _File_clock_adj;
@@ -4465,7 +4465,7 @@ namespace chrono {
         // *_Offset is not subtracted from local_time, see N4885 [time.clock.local]/4.
         _Time._Utc_offset.reset();
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
             _Tp = local_time<_Duration>{_Dur};
         } else {
             _Istr.setstate(ios_base::failbit);
