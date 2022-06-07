@@ -7,16 +7,6 @@
 #include <iterator>
 #include <list>
 #include <vector>
-#include <version>
-
-#if __cpp_lib_shift >= 202202L
-// Test ranges::shift_left, ranges::shift_right from P2440R1
-//#define TEST_RANGES
-/*
- * Disabled until `forward_list::_Unchecked_end` is fixed to return the same type as `forward_list::end()._Unwrapped()`
- * to work with `_Uend` in <xutility>
- */
-#endif // __cpp_lib_shift >= 202202L
 
 using namespace std;
 
@@ -111,13 +101,11 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
     Container tmp;
     fill_iota(tmp, tmpSize);
 
-    test_iota(tmp.begin(), shift_left(tmp.begin(), tmp.end(), -1), 1, tmpSize);
-
     for (ptrdiff_t pos_to_shift = 0; pos_to_shift < tmpSize; ++pos_to_shift) {
         fill_iota(tmp, tmpSize);
         test_iota(tmp.begin(), shift_left(tmp.begin(), tmp.end(), pos_to_shift), pos_to_shift + 1, tmpSize);
 
-#ifdef TEST_RANGES
+#if __cpp_lib_shift >= 202202L
         {
             fill_iota(tmp, tmpSize);
             auto [first, last] = ranges::shift_left(tmp.begin(), tmp.end(), pos_to_shift);
@@ -131,7 +119,7 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
             assert(first == tmp.begin());
             test_iota(first, last, pos_to_shift + 1, tmpSize);
         }
-#endif // TEST_RANGES
+#endif // __cpp_lib_shift >= 202202L
     }
 
     fill_iota(tmp, tmpSize);
@@ -139,7 +127,7 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
         test_iota(shift_left(tmp.begin(), tmp.end(), tmpSize + i), tmp.end(), 1, tmpSize);
     }
 
-#ifdef TEST_RANGES
+#if __cpp_lib_shift >= 202202L
     fill_iota(tmp, tmpSize);
     for (int i = 0; i < 3; ++i) {
         auto [first, last] = ranges::shift_left(tmp.begin(), tmp.end(), tmpSize + i);
@@ -153,7 +141,7 @@ void test_case_shift_left(const ptrdiff_t tmpSize) {
         assert(first == tmp.begin());
         test_iota(last, tmp.end(), 1, tmpSize);
     }
-#endif // TEST_RANGES
+#endif // __cpp_lib_shift >= 202202L
 }
 
 template <typename Container>
@@ -161,31 +149,11 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
     Container tmp;
     fill_iota(tmp, tmpSize);
 
-    test_iota(shift_right(tmp.begin(), tmp.end(), -1), tmp.end(), 1, tmpSize);
-
-#ifdef TEST_RANGES
-    {
-        fill_iota(tmp, tmpSize);
-
-        auto [first, last] = ranges::shift_right(tmp.begin(), tmp.end(), -1);
-        assert(last == tmp.end());
-        test_iota(first, last, 1, tmpSize);
-    }
-
-    {
-        fill_iota(tmp, tmpSize);
-
-        auto [first, last] = ranges::shift_right(tmp, -1);
-        assert(last == tmp.end());
-        test_iota(first, last, 1, tmpSize);
-    }
-#endif // TEST_RANGES
-
     for (ptrdiff_t pos_to_shift = 0; pos_to_shift < tmpSize; ++pos_to_shift) {
         fill_iota(tmp, tmpSize);
         test_iota(shift_right(tmp.begin(), tmp.end(), pos_to_shift), tmp.end(), 1, tmpSize - pos_to_shift);
 
-#ifdef TEST_RANGES
+#if __cpp_lib_shift >= 202202L
         {
             fill_iota(tmp, tmpSize);
             auto [first, last] = ranges::shift_right(tmp.begin(), tmp.end(), pos_to_shift);
@@ -199,7 +167,7 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
             assert(last == tmp.end());
             test_iota(first, last, 1, tmpSize - pos_to_shift);
         }
-#endif // TEST_RANGES
+#endif // __cpp_lib_shift >= 202202L
     }
 
     fill_iota(tmp, tmpSize);
@@ -207,7 +175,7 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
         test_iota(tmp.begin(), shift_right(tmp.begin(), tmp.end(), tmpSize + i), 1, tmpSize);
     }
 
-#ifdef TEST_RANGES
+#if __cpp_lib_shift >= 202202L
     fill_iota(tmp, tmpSize);
     for (int i = 0; i < 3; ++i) {
         auto [first, last] = ranges::shift_right(tmp.begin(), tmp.end(), tmpSize + i);
@@ -221,7 +189,7 @@ void test_case_shift_right(const ptrdiff_t tmpSize) {
         assert(last == tmp.end());
         test_iota(tmp.begin(), first, 1, tmpSize);
     }
-#endif // TEST_RANGES
+#endif // __cpp_lib_shift >= 202202L
 }
 
 int main() {

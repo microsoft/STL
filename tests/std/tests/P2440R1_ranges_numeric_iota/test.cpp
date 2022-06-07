@@ -11,7 +11,7 @@
 
 using namespace std;
 
-// Validate that move_result aliases in_out_result
+// Validate that iota_result aliases out_value_result
 STATIC_ASSERT(same_as<ranges::iota_result<int*, long>, ranges::out_value_result<int*, long>>);
 
 // Validate dangling story
@@ -21,13 +21,12 @@ STATIC_ASSERT(same_as<decltype(ranges::iota(borrowed<true>{}, 0L)), ranges::iota
 struct instantiator {
     template <ranges::output_range<const int&> Out>
     static constexpr void call() {
-        using ranges::iterator_t, ranges::iota_result;
+        using ranges::iterator_t, ranges::iota, ranges::iota_result;
 
         {
             int output[] = {13, 42, 1367};
             Out out_wrapper{output};
-            auto result = ranges::iota(out_wrapper, 0L);
-            STATIC_ASSERT(same_as<decltype(result), iota_result<iterator_t<Out>, long>>);
+            same_as<iota_result<iterator_t<Out>, long>> auto result = iota(out_wrapper, 0L);
             assert(result.out == out_wrapper.end());
             assert(result.value == 3L);
             for (int i = 0; i < 3; ++i) {
@@ -37,8 +36,7 @@ struct instantiator {
         {
             int output[] = {13, 42, 1367};
             Out out_wrapper{output};
-            auto result = ranges::iota(out_wrapper.begin(), out_wrapper.end(), 0L);
-            STATIC_ASSERT(same_as<decltype(result), iota_result<iterator_t<Out>, long>>);
+            same_as<iota_result<iterator_t<Out>, long>> auto result = iota(out_wrapper.begin(), out_wrapper.end(), 0L);
             assert(result.out == out_wrapper.end());
             assert(result.value == 3L);
             for (int i = 0; i < 3; ++i) {

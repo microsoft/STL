@@ -23,66 +23,60 @@ struct int_wrapper {
     auto operator<=>(const int_wrapper&) const = default;
 };
 
-
 // Validate dangling story
 STATIC_ASSERT(same_as<decltype(ranges::shift_right(borrowed<false>{}, 1)), ranges::dangling>);
 STATIC_ASSERT(same_as<decltype(ranges::shift_right(borrowed<true>{}, 1)), ranges::subrange<int*>>);
 
-
 struct instantiator {
     template <ranges::forward_range Rng>
-        requires permutable<ranges::iterator_t<Rng>>
     static constexpr void call() {
-        using ranges::equal, ranges::iterator_t, ranges::begin, ranges::end, ranges::size;
-        {
-            int_wrapper io[5] = {13, 55, 44, 12345, 3333};
-            Rng range(io);
+        if constexpr (permutable<ranges::iterator_t<Rng>>) {
+            using ranges::equal, ranges::iterator_t, ranges::begin, ranges::end;
+            {
+                int_wrapper io[5] = {13, 55, 44, 12345, 3333};
+                Rng range(io);
 
-            auto result = ranges::shift_right(range, 2);
-            STATIC_ASSERT(same_as<decltype(result), ranges::subrange<iterator_t<Rng>>>);
+                auto result = ranges::shift_right(range, 2);
+                STATIC_ASSERT(same_as<decltype(result), ranges::subrange<iterator_t<Rng>>>);
 
-            int_wrapper expected_result[3] = {13, 55, 44};
-            int_wrapper expected_io[5]     = {-1, -1, 13, 55, 44};
-            assert(equal(result, expected_result));
-            assert(equal(io, expected_io));
+                int_wrapper expected_result[3] = {13, 55, 44};
+                int_wrapper expected_io[5]     = {-1, -1, 13, 55, 44};
+                assert(equal(result, expected_result));
+                assert(equal(io, expected_io));
+            }
+            {
+                int_wrapper io[5] = {13, 55, 44, 12345, 3333};
+                Rng range(io);
+
+                auto result = ranges::shift_right(begin(range), end(range), 2);
+                STATIC_ASSERT(same_as<decltype(result), ranges::subrange<iterator_t<Rng>>>);
+
+                int_wrapper expected_result[3] = {13, 55, 44};
+                int_wrapper expected_io[5]     = {-1, -1, 13, 55, 44};
+                assert(equal(result, expected_result));
+                assert(equal(io, expected_io));
+            }
+            {
+                int_wrapper io[5] = {13, 55, 44, 12345, 3333};
+                Rng range(io);
+
+                auto result = ranges::shift_right(begin(range), end(range), 5);
+
+                int_wrapper expected_io[5] = {13, 55, 44, 12345, 3333};
+                assert(equal(result, ranges::empty_view<int_wrapper>{}));
+                assert(equal(io, expected_io));
+            }
+            {
+                int_wrapper io[7] = {13, 55, 44, 12345, 3333, 5555, 7777};
+                Rng range(io);
+
+                auto result = ranges::shift_right(begin(range), end(range), 2);
+
+                int_wrapper expected_result[5] = {13, 55, 44, 12345, 3333};
+                assert(equal(result, expected_result));
+                assert(equal(begin(io) + 2, end(io), begin(expected_result), end(expected_result)));
+            }
         }
-        {
-            int_wrapper io[5] = {13, 55, 44, 12345, 3333};
-            Rng range(io);
-
-            auto result = ranges::shift_right(begin(range), end(range), 2);
-            STATIC_ASSERT(same_as<decltype(result), ranges::subrange<iterator_t<Rng>>>);
-
-            int_wrapper expected_result[3] = {13, 55, 44};
-            int_wrapper expected_io[5]     = {-1, -1, 13, 55, 44};
-            assert(equal(result, expected_result));
-            assert(equal(io, expected_io));
-        }
-        {
-            int_wrapper io[5] = {13, 55, 44, 12345, 3333};
-            Rng range(io);
-
-            auto result = ranges::shift_right(begin(range), end(range), 5);
-
-            int_wrapper expected_io[5] = {13, 55, 44, 12345, 3333};
-            assert(equal(result, ranges::empty_view<int_wrapper>{}));
-            assert(equal(io, expected_io));
-        }
-        {
-            int_wrapper io[7] = {13, 55, 44, 12345, 3333, 5555, 7777};
-            Rng range(io);
-
-            auto result = ranges::shift_right(begin(range), end(range), 2);
-
-            int_wrapper expected_result[5] = {13, 55, 44, 12345, 3333};
-            assert(equal(result, expected_result));
-            assert(equal(begin(io) + 2, end(io), begin(expected_result), end(expected_result)));
-        }
-    }
-
-    template <ranges::forward_range Rng>
-    static constexpr void call() {
-        // not permutable
     }
 };
 

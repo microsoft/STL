@@ -1344,20 +1344,6 @@ STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 #endif
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
-#ifndef __cpp_lib_ranges_starts_ends_with
-#error __cpp_lib_ranges_starts_ends_with is not defined
-#elif __cpp_lib_ranges_starts_ends_with != 202106L
-#error __cpp_lib_ranges_starts_ends_with is not 202106L
-#else
-STATIC_ASSERT(__cpp_lib_ranges_starts_ends_with == 202106L);
-#endif
-#else
-#ifdef __cpp_lib_ranges_starts_ends_with
-#error __cpp_lib_ranges_starts_ends_with is defined
-#endif
-#endif
-
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
 #ifndef __cpp_lib_ranges_iota
 #error __cpp_lib_ranges_iota is not defined
@@ -1369,6 +1355,20 @@ STATIC_ASSERT(__cpp_lib_ranges_iota == 202202L);
 #else
 #ifdef __cpp_lib_ranges_iota
 #error __cpp_lib_ranges_iota is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_starts_ends_with
+#error __cpp_lib_ranges_starts_ends_with is not defined
+#elif __cpp_lib_ranges_starts_ends_with != 202106L
+#error __cpp_lib_ranges_starts_ends_with is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_starts_ends_with == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_starts_ends_with
+#error __cpp_lib_ranges_starts_ends_with is defined
 #endif
 #endif
 
