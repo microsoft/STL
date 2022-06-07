@@ -663,6 +663,9 @@ void test_year_month_day_last_formatter() {
     throw_helper(STR("{:%j}"), year{1900} / month{13} / last);
 
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / last) == STR("10 2010 22 22 22"));
+
+    // GH-2761, formatter<chrono::year_month_day> is not fully implemented
+    assert(format(STR("{:%x}"), ymdl1) == STR("04/30/21"));
 }
 
 template <typename CharT>
@@ -694,6 +697,9 @@ void test_year_month_weekday_formatter() {
     throw_helper(STR("{:%j}"), invalid1);
 
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / Monday[5]) == STR("10 2010 22 22 22"));
+
+    // GH-2761, formatter<chrono::year_month_day> is not fully implemented
+    assert(format(STR("{:%x}"), ymwd1) == STR("04/30/21"));
 }
 
 template <typename CharT>
@@ -723,6 +729,9 @@ void test_year_month_weekday_last_formatter() {
     throw_helper(STR("{:%j}"), invalid1);
 
     assert(format(STR("{:%g %G %U %V %W}"), 2010y / May / Monday[last]) == STR("10 2010 22 22 22"));
+
+    // GH-2761, formatter<chrono::year_month_day> is not fully implemented
+    assert(format(STR("{:%x}"), ymwdl1) == STR("04/30/21"));
 }
 
 template <typename CharT>
