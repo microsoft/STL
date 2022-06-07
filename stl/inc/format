@@ -3289,7 +3289,8 @@ struct _Formatter_base {
         return _STD visit_format_arg(
             _Arg_formatter<typename _FormatContext::iterator, _CharT>{
                 ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
-            basic_format_arg<_FormatContext>{_Val});
+            basic_format_arg<_FormatContext>{
+                static_cast<typename _Format_arg_traits<_FormatContext>::template _Storage_type<_Ty>>(_Val)});
     }
 
 private:
