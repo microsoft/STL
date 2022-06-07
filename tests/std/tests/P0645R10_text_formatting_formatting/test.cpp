@@ -1485,7 +1485,7 @@ struct std::formatter<Box<T>, CharT> : std::formatter<T, CharT> {
 
 // Also test GH-2765 "<format>: Cannot format a long value with formatter"
 void test_gh_2765() {
-    Box<long> v = {42};
+    Box<long> v = {42L};
     assert(format("{:#x}", v) == "0x2a"s);
 }
 
