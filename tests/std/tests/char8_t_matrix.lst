@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# This is usual_matrix.lst, but with /std:c++14 /Zc:char8_t and /std:c++17 /Zc:char8_t
+# This is usual_matrix.lst, but with additional `/std:c++14 /Zc:char8_t` and `/std:c++17 /Zc:char8_t` configurations.
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
