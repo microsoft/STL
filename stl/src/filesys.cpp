@@ -416,17 +416,20 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t* _Fname1, const wchar_
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t* _Fname, uintmax_t _Newsize) { // change file size
-    bool _Ok = false;
 
     HANDLE _Handle = _FilesysOpenFile(_Fname, FILE_GENERIC_WRITE, 0);
 
-    if (_Handle != INVALID_HANDLE_VALUE) { // set file pointer to new size and trim
-        LARGE_INTEGER _Large;
-        _Large.QuadPart = _Newsize;
-        _Ok             = SetFilePointerEx(_Handle, _Large, nullptr, FILE_BEGIN) != 0 && SetEndOfFile(_Handle) != 0;
-        CloseHandle(_Handle);
+    if (_Handle == INVALID_HANDLE_VALUE) {
+        return GetLastError();
     }
-    return _Ok ? 0 : GetLastError();
+
+    FILE_END_OF_FILE_INFO _File_info;
+    _File_info.EndOfFile.QuadPart = static_cast<LONGLONG>(_Newsize);
+
+    const auto _Ok = SetFileInformationByHandle(_Handle, FileEndOfFileInfo, &_File_info, sizeof(_File_info));
+
+    CloseHandle(_Handle);
+    return _Ok != 0 ? 0 : GetLastError();
 }
 
 

@@ -693,13 +693,14 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         return _Err;
     }
 
-    LARGE_INTEGER _Large;
-    _Large.QuadPart = _New_size;
-    if (SetFilePointerEx(_Handle._Get(), _Large, nullptr, FILE_BEGIN) == 0 || SetEndOfFile(_Handle._Get()) == 0) {
-        return __std_win_error{GetLastError()};
+    FILE_END_OF_FILE_INFO _File_info;
+    _File_info.EndOfFile.QuadPart = static_cast<LONGLONG>(_New_size);
+
+    if (SetFileInformationByHandle(_Handle._Get(), FileEndOfFileInfo, &_File_info, sizeof(_File_info)) != 0) {
+        return __std_win_error::_Success;
     }
 
-    return __std_win_error::_Success;
+    return __std_win_error{GetLastError()};
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_space(_In_z_ const wchar_t* const _Target,
