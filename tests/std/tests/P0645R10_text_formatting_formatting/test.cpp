@@ -1392,6 +1392,26 @@ void test_localized_char() {
     assert(format(STR("{:Lc}"), T('c')) == STR("c"));
 }
 
+template <class T>
+struct Box {
+    T value;
+};
+
+template <class T, class charT>
+struct std::formatter<Box<T>, charT> : std::formatter<T, charT> {
+    template <class FormatContext>
+    auto format(Box<T> t, FormatContext& fc) const {
+        return formatter<T, charT>::format(t.value, fc);
+    }
+};
+
+// Also test GH-2765 "<format>: Cannot format a long value with formatter"
+template <class charT>
+void test_gh_2765() {
+    Box<long> v = {42L};
+    assert(format(STR("{:#x}"), v) == STR("0x2a"));
+}
+
 void test() {
     test_simple_formatting<char>();
     test_simple_formatting<wchar_t>();
@@ -1468,29 +1488,11 @@ void test() {
     test_localized_char<char, char>();
     test_localized_char<wchar_t, char>();
     test_localized_char<wchar_t, wchar_t>();
-}
 
-template <class T>
-struct Box {
-    T value;
-};
-
-template <class T, class CharT>
-struct std::formatter<Box<T>, CharT> : std::formatter<T, CharT> {
-    template <class FormatContext>
-    auto format(Box<T> t, FormatContext& fc) const {
-        return formatter<T, CharT>::format(t.value, fc);
-    }
-};
-
-// Also test GH-2765 "<format>: Cannot format a long value with formatter"
-void test_gh_2765() {
-    Box<long> v = {42L};
-    assert(format("{:#x}", v) == "0x2a"s);
+    test_gh_2765<char>();
+    test_gh_2765<wchar_t>();
 }
 
 int main() {
     test();
-
-    test_gh_2765();
 }
