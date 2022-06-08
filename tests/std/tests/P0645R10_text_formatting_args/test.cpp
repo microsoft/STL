@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <format>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <variant>
@@ -211,6 +212,9 @@ void test_format_arg_store() {
 
 static_assert(sizeof(_Format_arg_index) == sizeof(size_t));
 static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<void*>, const void*>);
+
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<string>, string_view>);
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<const string>, string_view>);
 
 template <class Context>
 void test_visit_monostate() {

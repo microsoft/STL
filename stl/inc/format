@@ -1776,7 +1776,7 @@ struct _Format_arg_traits {
         -> basic_string_view<_Char_type>; // not defined
 
     template <class _Traits, class _Alloc>
-    static auto _Phony_basic_format_arg_constructor(const basic_string<_Char_type, _Traits, _Alloc>&)
+    static auto _Phony_basic_format_arg_constructor(basic_string<_Char_type, _Traits, _Alloc>)
         -> basic_string_view<_Char_type>; // not defined
 
     static auto _Phony_basic_format_arg_constructor(nullptr_t) -> const void*; // not defined
