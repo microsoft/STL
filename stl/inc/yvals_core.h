@@ -140,6 +140,11 @@
 // P0618R0 Deprecating <codecvt>
 // Other C++17 deprecation warnings
 
+// Implemented when char8_t is available (C++14/17 with /Zc:char8_t, C++20 without /Zc:char8_t-):
+// P0482R6 Library Support For char8_t
+//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
+// P1423R3 char8_t Backward Compatibility Remediation
+
 // _HAS_CXX20 directly controls:
 // P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
@@ -161,8 +166,6 @@
 // P0466R5 Layout-Compatibility And Pointer-Interconvertibility Traits
 // P0475R1 Guaranteed Copy Elision For Piecewise Construction
 // P0476R2 <bit> bit_cast
-// P0482R6 Library Support For char8_t
-//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 // P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
@@ -220,7 +223,6 @@
 // P1357R1 is_bounded_array, is_unbounded_array
 // P1391R4 Range Constructor For string_view
 // P1394R4 Range Constructor For span
-// P1423R3 char8_t Backward Compatibility Remediation
 // P1456R1 Move-Only Views
 // P1474R1 Helpful Pointers For contiguous_iterator
 // P1522R1 Iterator Difference Type And Integer Overflow
