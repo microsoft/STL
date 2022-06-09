@@ -10,7 +10,7 @@
 
 using namespace std;
 
-size_t fancy_counter{};
+size_t fancy_counter = 0;
 
 template <class T>
 class counting_ptr {
