@@ -17,7 +17,7 @@ class counting_ptr {
 private:
     T* p_;
 
-    counting_ptr(T* raw_ptr) noexcept : p_(raw_ptr) {
+    explicit counting_ptr(T* raw_ptr) noexcept : p_(raw_ptr) {
         ++fancy_counter;
     }
 
@@ -25,14 +25,14 @@ private:
     friend struct ptr_counting_allocator;
 
 public:
+#ifdef __cpp_lib_concepts
+    using iterator_concept = contiguous_iterator_tag;
+#endif // __cpp_lib_concepts
+    using iterator_category = random_access_iterator_tag;
     using value_type        = T;
     using difference_type   = ptrdiff_t;
     using pointer           = T*;
     using reference         = add_lvalue_reference_t<T>;
-    using iterator_category = random_access_iterator_tag;
-#ifdef __cpp_lib_concepts
-    using iterator_concept = contiguous_iterator_tag;
-#endif // __cpp_lib_concepts
 
     counting_ptr(nullptr_t) noexcept : counting_ptr{static_cast<T*>(nullptr)} {}
 
@@ -117,7 +117,7 @@ public:
     template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
     friend counting_ptr operator+(I n, const counting_ptr& p) noexcept {
         auto tmp = p;
-        p += n;
+        tmp += n;
         return tmp;
     }
 
@@ -192,8 +192,7 @@ struct ptr_counting_allocator {
     constexpr ptr_counting_allocator(ptr_counting_allocator<U>) noexcept {}
 
     pointer allocate(size_type n) {
-        void* p = allocator<T>{}.allocate(n);
-        return pointer{static_cast<T*>(p)};
+        return pointer{allocator<T>{}.allocate(n)};
     }
 
     void deallocate(pointer p, size_type n) {
