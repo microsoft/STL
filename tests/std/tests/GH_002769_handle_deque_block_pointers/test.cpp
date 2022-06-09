@@ -90,33 +90,39 @@ public:
         return tmp;
     }
 
-    T& operator[](ptrdiff_t n) const noexcept {
+    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    T& operator[](I n) const noexcept {
         return p_[n];
     }
 
-    counting_ptr& operator+=(ptrdiff_t n) noexcept {
+    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    counting_ptr& operator+=(I n) noexcept {
         p_ += n;
         return *this;
     }
 
-    counting_ptr& operator-=(ptrdiff_t n) noexcept {
+    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    counting_ptr& operator-=(I n) noexcept {
         p_ -= n;
         return *this;
     }
 
-    friend counting_ptr operator+(const counting_ptr& p, ptrdiff_t n) noexcept {
+    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    friend counting_ptr operator+(const counting_ptr& p, I n) noexcept {
         auto tmp = p;
         tmp += n;
         return tmp;
     }
 
-    friend counting_ptr operator+(ptrdiff_t n, const counting_ptr& p) noexcept {
+    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    friend counting_ptr operator+(I n, const counting_ptr& p) noexcept {
         auto tmp = p;
         p += n;
         return tmp;
     }
 
-    friend counting_ptr operator-(const counting_ptr& p, ptrdiff_t n) noexcept {
+    template <class I = ptrdiff_t, enable_if_t<is_integral_v<I>, int> = 0>
+    friend counting_ptr operator-(const counting_ptr& p, I n) noexcept {
         auto tmp = p;
         tmp -= n;
         return tmp;
@@ -152,7 +158,7 @@ public:
     }
 
     friend bool operator!=(const counting_ptr& lhs, const counting_ptr& rhs) noexcept {
-        return !(lhs == rhs)
+        return !(lhs == rhs);
     }
 
     friend bool operator<(const counting_ptr& lhs, const counting_ptr& rhs) noexcept {
