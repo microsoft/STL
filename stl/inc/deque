@@ -1466,8 +1466,8 @@ private:
             _Uninitialized_value_construct_n_unchecked1(_Myptr, _Count); // clear rest to initial block
         }
 
-        _Destroy_range(_Map(), _Map() + _Mapsize());
         if (_Map() != _Mapptr()) {
+            _Destroy_range(_Map(), _Map() + _Mapsize());
             _Almap.deallocate(_Map(), _Mapsize()); // free storage for old
         }
 
@@ -1483,14 +1483,14 @@ private:
             pop_back();
         }
 
-        for (size_type _Block = _Mapsize(); 0 < _Block;) { // free storage for a block and destroy pointer
-            if (_Map()[--_Block]) { // free block
-                _Getal().deallocate(_Map()[_Block], _Block_size);
-            }
-            _Destroy_in_place(_Map()[_Block]); // destroy pointer to block
-        }
-
         if (_Map() != _Mapptr()) {
+            for (size_type _Block = _Mapsize(); 0 < _Block;) { // free storage for a block and destroy pointer
+                if (_Map()[--_Block]) { // free block
+                    _Getal().deallocate(_Map()[_Block], _Block_size);
+                }
+                _Destroy_in_place(_Map()[_Block]); // destroy pointer to block
+            }
+
             _Almap.deallocate(_Map(), _Mapsize()); // free storage for map
         }
 
