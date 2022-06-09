@@ -693,7 +693,7 @@ private:
 
     void _Construct_n(size_type _Count, const _Ty& _Val) { // construct from _Count * _Val
         _Tidy_guard<deque> _Guard{this};
-        for (; 0 < _Count; --_Count) {
+        for (; _Count > 0; --_Count) {
             _Emplace_back_internal(_Val);
         }
 
@@ -964,7 +964,7 @@ public:
             _Newcapacity = _Block_size * _Minimum_map_size;
         }
 
-        if ((empty() && 0 < _Mapsize())
+        if ((empty() && _Mapsize() > 0)
             || (!empty() && size() <= _Newcapacity && _Newcapacity < _Oldcapacity)) { // worth shrinking, do it
             deque _Tmp(_STD make_move_iterator(begin()), _STD make_move_iterator(end()));
             swap(_Tmp);
@@ -976,7 +976,7 @@ public:
             emplace_back();
         }
 
-        while (_Newsize < _Mysize()) {
+        while (_Mysize() > _Newsize) {
             pop_back();
         }
     }
@@ -987,7 +987,7 @@ public:
             _Emplace_back_internal(_Val);
         }
 
-        while (_Newsize < _Mysize()) {
+        while (_Mysize() > _Newsize) {
             pop_back();
         }
     }
@@ -1181,7 +1181,7 @@ public:
         auto _Myfirst       = _Unchecked_begin();
         const auto _Oldsize = _Mysize();
         auto _Assign_count  = (_STD min)(_Count, _Oldsize);
-        for (; 0 < _Assign_count; --_Assign_count) {
+        for (; _Assign_count > 0; --_Assign_count) {
             *_Myfirst = _Val;
             ++_Myfirst;
         }
@@ -1189,7 +1189,7 @@ public:
         const auto _Shrink_by = _Oldsize - _Assign_count;
         auto _Extend_by       = _Count - _Assign_count;
         _Erase_last_n(_Shrink_by);
-        for (; 0 < _Extend_by; --_Extend_by) {
+        for (; _Extend_by > 0; --_Extend_by) {
             _Emplace_back_internal(_Val);
         }
     }
@@ -1304,7 +1304,7 @@ public:
 
         auto _Off   = static_cast<size_type>(_First - begin());
         auto _Count = static_cast<size_type>(_Last - _First);
-        bool _Moved = 0 < _Off && _Off + _Count < _Mysize();
+        bool _Moved = _Off > 0 && _Off + _Count < _Mysize();
 
 #else // _ITERATOR_DEBUG_LEVEL == 2
         auto _Off   = static_cast<size_type>(_First - begin());
@@ -1317,12 +1317,12 @@ public:
 
         if (_Off < static_cast<size_type>(end() - _Last)) { // closer to front
             _STD move_backward(begin(), _First, _Last); // copy over hole
-            for (; 0 < _Count; --_Count) {
+            for (; _Count > 0; --_Count) {
                 pop_front(); // pop copied elements
             }
         } else { // closer to back
             _STD move(_Last, end(), _First); // copy over hole
-            for (; 0 < _Count; --_Count) {
+            for (; _Count > 0; --_Count) {
                 pop_back(); // pop copied elements
             }
         }
@@ -1338,7 +1338,7 @@ public:
 
 private:
     void _Erase_last_n(size_type _Count) noexcept {
-        for (; 0 < _Count; --_Count) {
+        for (; _Count > 0; --_Count) {
             pop_back();
         }
     }
@@ -1376,17 +1376,17 @@ private:
         if (_Off < _Rem) { // closer to front
             _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
             if (_Off < _Count) { // insert longer than prefix
-                for (_Num = _Count - _Off; 0 < _Num; --_Num) {
+                for (_Num = _Count - _Off; _Num > 0; --_Num) {
                     push_front(_Val); // push excess values
                 }
-                for (_Num = _Off; 0 < _Num; --_Num) {
+                for (_Num = _Off; _Num > 0; --_Num) {
                     push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push prefix
                 }
 
                 _Mid = begin() + static_cast<difference_type>(_Count);
                 _STD fill(_Mid, _Mid + static_cast<difference_type>(_Off), _Val); // fill in rest of values
             } else { // insert not longer than prefix
-                for (_Num = _Count; 0 < _Num; --_Num) {
+                for (_Num = _Count; _Num > 0; --_Num) {
                     push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push part of prefix
                 }
 
@@ -1402,7 +1402,7 @@ private:
             _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
             if (_Rem < _Count) { // insert longer than suffix
                 _Orphan_all();
-                for (_Num = _Count - _Rem; 0 < _Num; --_Num) {
+                for (_Num = _Count - _Rem; _Num > 0; --_Num) {
                     _Emplace_back_internal(_Val); // push excess values
                 }
                 for (_Num = 0; _Num < _Rem; ++_Num) {
@@ -1437,10 +1437,10 @@ private:
     }
 
     void _Growmap(size_type _Count) { // grow map by at least _Count pointers, _Mapsize() a power of 2
-        static_assert(1 < _Minimum_map_size, "The _Xlen() test should always be performed.");
+        static_assert(_Minimum_map_size > 1, "The _Xlen() test should always be performed.");
 
         _Alpty _Almap(_Getal());
-        size_type _Newsize = 0 < _Mapsize() ? _Mapsize() : 1;
+        size_type _Newsize = _Mapsize() > 0 ? _Mapsize() : 1;
         while (_Newsize - _Mapsize() < _Count || _Newsize < _Minimum_map_size) {
             // scale _Newsize to 2^N >= _Mapsize() + _Count
             if (max_size() / _Block_size - _Newsize < _Newsize) {
@@ -1484,7 +1484,7 @@ private:
         }
 
         if (_Map() != _Mapptr()) {
-            for (size_type _Block = _Mapsize(); 0 < _Block;) { // free storage for a block and destroy pointer
+            for (size_type _Block = _Mapsize(); _Block > 0;) { // free storage for a block and destroy pointer
                 if (_Map()[--_Block]) { // free block
                     _Getal().deallocate(_Map()[_Block], _Block_size);
                 }
