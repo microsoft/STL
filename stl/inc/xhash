@@ -286,7 +286,7 @@ struct _Hash_vec {
             const auto _Oldcapacity = capacity();
             if (_Oldcapacity != 0) {
                 _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
-                _Alvec.deallocate(_Mypair._Myval2._Myfirst, _Old_capacity);
+                _Alvec.deallocate(_Mypair._Myval2._Myfirst, _Oldcapacity);
             }
 
             _Mypair._Myval2._Myfirst = _Newvec;
