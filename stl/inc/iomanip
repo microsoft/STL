@@ -57,8 +57,6 @@ struct _Monobj { // store reference to monetary amount
 
     _Money& _Val; // the monetary amount reference
     bool _Intl; // international flag
-
-    _Monobj& operator=(const _Monobj&) = delete;
 };
 
 template <class _Money>
@@ -195,14 +193,14 @@ struct _Quote_in { // store reference to string
     _Mystr& _Str; // reference to string
     _Elem _Delim; // delimiter element
     _Elem _Escape; // escape element
-
-    _Quote_in& operator=(const _Quote_in&) = delete;
 };
 
 template <class _Elem, class _Traits, class _Sizet>
 struct _Quote_out { // store pointer/length for string
     _Quote_out(const _Elem* _Ptr_obj, _Sizet _Size_obj, _Elem _Delim_obj, _Elem _Escape_obj)
         : _Ptr(_Ptr_obj), _Size(_Size_obj), _Delim(_Delim_obj), _Escape(_Escape_obj) {}
+
+    _Quote_out(const _Quote_out&) = default;
 
     const _Elem* _Ptr; // pointer to string
     _Sizet _Size; // length of string
@@ -215,34 +213,28 @@ struct _Quote_out { // store pointer/length for string
 template <class _Elem>
 _NODISCARD _Quote_out<_Elem, void, size_t> quoted(
     const _Elem* _Ptr, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
-    size_t _Size = 0;
-    while (_Ptr[_Size] != _Elem(0)) {
-        ++_Size;
-    }
-
-    return _Quote_out<_Elem, void, size_t>(_Ptr, _Size, _Delim, _Escape);
+    const size_t _Size = char_traits<_Elem>::length(_Ptr);
+    return {_Ptr, _Size, _Delim, _Escape};
 }
 
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _Quote_out<_Elem, _Traits, typename basic_string<_Elem, _Traits, _Alloc>::size_type> quoted(
     const basic_string<_Elem, _Traits, _Alloc>& _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
-    using _Qobj = _Quote_out<_Elem, _Traits, typename basic_string<_Elem, _Traits, _Alloc>::size_type>;
-    return _Qobj(_Str.c_str(), _Str.size(), _Delim, _Escape);
+    return {_Str.c_str(), _Str.size(), _Delim, _Escape};
 }
 
 #if _HAS_CXX17
 template <class _Elem, class _Traits>
 _NODISCARD _Quote_out<_Elem, _Traits, size_t> quoted(
     const basic_string_view<_Elem, _Traits> _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
-    using _Qobj = _Quote_out<_Elem, _Traits, size_t>;
-    return _Qobj(_Str.data(), _Str.size(), _Delim, _Escape);
+    return {_Str.data(), _Str.size(), _Delim, _Escape};
 }
 #endif // _HAS_CXX17
 
 template <class _Elem, class _Traits, class _Alloc>
 _NODISCARD _Quote_in<_Elem, _Traits, _Alloc> quoted(
     basic_string<_Elem, _Traits, _Alloc>& _Str, _Elem _Delim = _Elem('"'), _Elem _Escape = _Elem('\\')) {
-    return _Quote_in<_Elem, _Traits, _Alloc>(_Str, _Delim, _Escape);
+    return {_Str, _Delim, _Escape};
 }
 
 template <class _Elem, class _Traits, class _QuTraits, class _Sizet>

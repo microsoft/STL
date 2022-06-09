@@ -1,11 +1,9 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# When updating this file, also update tests\P0645R10_text_formatting_legacy_text_encoding\env.lst to match
-
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/w14640 /Zc:threadSafeInit- /EHsc /std:c++latest /D_HAS_CXX23"
+PM_CL="/w14640 /Zc:threadSafeInit- /EHsc /std:c++latest"
 RUNALL_CROSSLIST
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=0 /permissive- /Zc:noexceptTypes-"
 PM_CL="/MD /D_ITERATOR_DEBUG_LEVEL=1 /permissive-"
@@ -20,8 +18,6 @@ PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=0 /permissive- /fp:strict"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=1 /permissive-"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=2 /permissive"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=2 /permissive- /analyze:only /analyze:autolog-"
-PM_CL="/permissive- /Za /MD"
-PM_CL="/permissive- /Za /MDd"
 # PM_CL="/permissive- /BE /c /MD"
 # PM_CL="/permissive- /BE /c /MTd"
 PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /permissive- /MD"

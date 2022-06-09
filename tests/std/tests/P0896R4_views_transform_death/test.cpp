@@ -287,26 +287,6 @@ void test_iter_move_value_initialized_iterator() {
     (void) ranges::iter_move(i); // cannot dereference value-initialized transform_view iterator
 }
 
-void test_iter_swap_value_initialized_iterators() {
-    ranges::iterator_t<TV> i0{};
-    ranges::iterator_t<TV> i1{};
-    (void) ranges::iter_swap(i0, i1); // cannot dereference value-initialized transform_view iterator
-}
-
-void test_iter_swap_value_initialized_iterator_left() {
-    ranges::iterator_t<TV> i0{};
-    TV r{some_ints, lambda};
-    ranges::iterator_t<TV> i1 = r.begin();
-    (void) ranges::iter_swap(i0, i1); // cannot dereference value-initialized transform_view iterator
-}
-
-void test_iter_swap_value_initialized_iterator_right() {
-    TV r{some_ints, lambda};
-    ranges::iterator_t<TV> i0 = r.begin();
-    ranges::iterator_t<TV> i1{};
-    (void) ranges::iter_swap(i0, i1); // cannot dereference value-initialized transform_view iterator
-}
-
 void test_sentinel_compare_value_initialized() {
     auto r = ranges::subrange{counted_iterator{some_ints, ranges::distance(some_ints)}, default_sentinel}
            | views::transform(lambda);
@@ -382,9 +362,6 @@ int main(int argc, char* argv[]) {
         test_operator_minus_incompatible_different,
         test_operator_minus_incompatible_value_initialized,
         test_iter_move_value_initialized_iterator,
-        test_iter_swap_value_initialized_iterators,
-        test_iter_swap_value_initialized_iterator_left,
-        test_iter_swap_value_initialized_iterator_right,
         test_sentinel_compare_value_initialized,
         test_sentinel_difference_value_initialized,
         test_flipped_sentinel_difference_value_initialized,

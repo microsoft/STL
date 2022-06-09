@@ -3,12 +3,16 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <functional>
+#include <limits>
 #include <ranges>
 #include <type_traits>
 #include <utility>
 
 using namespace std;
+
+static_assert(ranges::_Advanceable<long long>);
 
 template <class W, class B>
 concept CanViewIota = requires(W w, B b) {
@@ -49,8 +53,10 @@ constexpr void test_integral() {
 
         if constexpr (sizeof(T) < sizeof(int)) {
             static_assert(same_as<ranges::range_difference_t<R>, int>);
-        } else {
+        } else if constexpr (sizeof(T) < sizeof(long long)) {
             static_assert(same_as<ranges::range_difference_t<R>, long long>);
+        } else {
+            static_assert(same_as<ranges::range_difference_t<R>, std::_Signed128>);
         }
 
         // iota_view is always a simple-view, i.e., const and non-const are always valid ranges with the same iterators:
@@ -73,7 +79,9 @@ constexpr void test_integral() {
 
         using I = ranges::iterator_t<R>;
         static_assert(same_as<typename I::iterator_concept, random_access_iterator_tag>);
-        static_assert(same_as<typename iterator_traits<I>::iterator_category, input_iterator_tag>);
+        if constexpr (integral<iter_difference_t<I>>) {
+            static_assert(same_as<typename iterator_traits<I>::iterator_category, input_iterator_tag>);
+        }
 
         assert(I{} == I{T{0}});
         static_assert(is_nothrow_default_constructible_v<I>);
@@ -211,8 +219,10 @@ constexpr void test_integral() {
 
         if constexpr (sizeof(T) < sizeof(int)) {
             static_assert(same_as<ranges::range_difference_t<R>, int>);
-        } else {
+        } else if constexpr (sizeof(T) < sizeof(long long)) {
             static_assert(same_as<ranges::range_difference_t<R>, long long>);
+        } else {
+            static_assert(same_as<ranges::range_difference_t<R>, std::_Signed128>);
         }
 
         {
@@ -229,6 +239,59 @@ constexpr void test_integral() {
 
         static_assert(!CanSize<ranges::iota_view<T>>);
     }
+}
+
+template <class W>
+constexpr void test_one_difference() {
+    ranges::iota_view r{numeric_limits<W>::min(), numeric_limits<W>::max()};
+    using Diff = conditional_t<sizeof(W) >= sizeof(long long), _Signed128,
+        conditional_t<sizeof(W) >= sizeof(int), long long, int>>;
+    static_assert(same_as<decltype(r.end() - r.begin()), Diff>);
+    static_assert(noexcept(r.end() - r.begin()));
+    constexpr auto n = (Diff{1} << (numeric_limits<W>::digits + (signed_integral<W> ? 1 : 0))) - 1;
+    assert(r.end() - r.begin() == n); // left > right
+    assert(r.begin() - r.end() == -n); // right > left
+}
+
+constexpr bool test_difference() {
+    // Ensure we have full coverage of all branches in `operator-(i, s)`
+
+    // signed integer-like, sizeof(W) < sizeof(int)
+    test_one_difference<signed char>();
+    test_one_difference<short>();
+
+    // unsigned integer-like, sizeof(W) < sizeof(int)
+    test_one_difference<unsigned char>();
+    test_one_difference<unsigned short>();
+
+    // signed integer-like, sizeof(int) <= sizeof(W) < sizeof(long long)
+    test_one_difference<int>();
+    test_one_difference<long>();
+
+    // unsigned integer-like, sizeof(int) <= sizeof(W) < sizeof(long long)
+    test_one_difference<unsigned int>();
+    test_one_difference<unsigned long>();
+
+    // signed integer-like, sizeof(long long) <= sizeof(W)
+    test_one_difference<long long>();
+
+    // unsigned integer-like, sizeof(long long) <= sizeof(W)
+    test_one_difference<unsigned long long>();
+
+    // non-integer-like
+    {
+        using Diff       = ptrdiff_t;
+        constexpr Diff n = 128 * 1024;
+        char* some_chars = new char[n];
+        ranges::iota_view r{some_chars + 0, some_chars + n};
+        static_assert(same_as<decltype(r.end() - r.begin()), Diff>);
+        static_assert(noexcept(r.end() - r.begin()));
+        assert(r.end() - r.begin() == n); // left > right
+        assert(r.begin() - r.end() == -n); // right > left
+        delete[] some_chars;
+    }
+
+    return true;
 }
 
 int main() {
@@ -296,4 +359,7 @@ int main() {
 
         assert(ranges::equal(r, even_ints, ranges::equal_to{}, deref));
     }
+
+    test_difference();
+    static_assert(test_difference());
 }

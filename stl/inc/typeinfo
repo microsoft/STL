@@ -25,11 +25,11 @@ _STL_DISABLE_CLANG_WARNINGS
 _STD_BEGIN
 
 // size in pointers of std::function and std::any (roughly 3 pointers larger than std::string when building debug)
-constexpr int _Small_object_num_ptrs = 6 + 16 / sizeof(void*);
+_INLINE_VAR constexpr int _Small_object_num_ptrs = 6 + 16 / sizeof(void*);
 
 #if !_HAS_EXCEPTIONS
 
-class _CRTIMP2_IMPORT bad_cast : public exception { // base of all bad cast exceptions
+class bad_cast : public exception { // base of all bad cast exceptions
 public:
     bad_cast(const char* _Message = "bad cast") noexcept : exception(_Message) {}
 
@@ -41,7 +41,7 @@ protected:
     }
 };
 
-class _CRTIMP2_IMPORT bad_typeid : public exception { // base of all bad typeid exceptions
+class bad_typeid : public exception { // base of all bad typeid exceptions
 public:
     bad_typeid(const char* _Message = "bad typeid") noexcept : exception(_Message) {}
 
@@ -53,7 +53,7 @@ protected:
     }
 };
 
-class _CRTIMP2_IMPORT __non_rtti_object : public bad_typeid { // report a non-RTTI object
+class __non_rtti_object : public bad_typeid { // report a non-RTTI object
 public:
     __non_rtti_object(const char* _Message) : bad_typeid(_Message) {}
 };

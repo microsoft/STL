@@ -331,6 +331,32 @@ struct is_convertible : bool_constant<__is_convertible_to(_From, _To)> {
 template <class _From, class _To>
 _INLINE_VAR constexpr bool is_convertible_v = __is_convertible_to(_From, _To);
 
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-1627396
+template <class _Ty>
+struct is_convertible<_Ty&, volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<volatile _Ty&, volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<_Ty&, const volatile _Ty&> : true_type {};
+
+template <class _Ty>
+struct is_convertible<volatile _Ty&, const volatile _Ty&> : true_type {};
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<_Ty&, volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<_Ty&, const volatile _Ty&> = true;
+
+template <class _Ty>
+_INLINE_VAR constexpr bool is_convertible_v<volatile _Ty&, const volatile _Ty&> = true;
+#endif // ^^^ workaround
+
 template <class _Ty>
 struct is_enum : bool_constant<__is_enum(_Ty)> {}; // determine whether _Ty is an enumerated type
 
@@ -622,6 +648,14 @@ struct is_assignable : bool_constant<__is_assignable(_To, _From)> {}; // determi
 
 template <class _To, class _From>
 _INLINE_VAR constexpr bool is_assignable_v = __is_assignable(_To, _From);
+
+#if defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
+template <class _To, class _From>
+struct _Is_assignable_no_precondition_check : bool_constant<__is_assignable_no_precondition_check(_To, _From)> {};
+#else // ^^^ Use intrinsic / intrinsic not supported vvv
+template <class _To, class _From>
+using _Is_assignable_no_precondition_check = is_assignable<_To, _From>;
+#endif // defined(_IS_ASSIGNABLE_NOCHECK_SUPPORTED) && !defined(__CUDACC__)
 
 template <class _Ty>
 struct is_copy_assignable
@@ -1021,15 +1055,24 @@ struct _Aligned<_Len, _Align, char, false> {
     using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
+// TRANSITION, ABI: Internal non-deprecated version to avoid ABI changes due to deprecation
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
-struct aligned_storage { // define type with size _Len and alignment _Align
+struct _Aligned_storage { // define type with size _Len and alignment _Align
     using _Next                 = char;
     static constexpr bool _Fits = _Align <= alignof(_Next);
     using type                  = typename _Aligned<_Len, _Align, _Next, _Fits>::type;
 };
 
 template <size_t _Len, size_t _Align = alignof(max_align_t)>
-using aligned_storage_t = typename aligned_storage<_Len, _Align>::type;
+using _Aligned_storage_t = typename _Aligned_storage<_Len, _Align>::type;
+
+template <size_t _Len, size_t _Align = alignof(max_align_t)>
+struct _CXX23_DEPRECATE_ALIGNED_STORAGE aligned_storage { // define type with size _Len and alignment _Align
+    using type = _Aligned_storage_t<_Len, _Align>;
+};
+
+template <size_t _Len, size_t _Align = alignof(max_align_t)>
+using aligned_storage_t _CXX23_DEPRECATE_ALIGNED_STORAGE = _Aligned_storage_t<_Len, _Align>;
 
 template <size_t... _Vals>
 struct _Maximum;
@@ -1046,15 +1089,18 @@ struct _Maximum<_First, _Second, _Rest...> : _Maximum<(_First < _Second ? _Secon
 };
 
 template <size_t _Len, class... _Types>
-struct aligned_union { // define type with size at least _Len, for storing anything in _Types
+struct _CXX23_DEPRECATE_ALIGNED_UNION aligned_union {
+    // define type with size at least _Len, for storing anything in _Types
     static constexpr size_t _Max_len        = _Maximum<_Len, sizeof(_Types)...>::value; // NOT sizeof...(_Types)
     static constexpr size_t alignment_value = _Maximum<alignof(_Types)...>::value;
 
-    using type = aligned_storage_t<_Max_len, alignment_value>;
+    using type = _Aligned_storage_t<_Max_len, alignment_value>;
 };
 
+_STL_DISABLE_DEPRECATED_WARNING
 template <size_t _Len, class... _Types>
-using aligned_union_t = typename aligned_union<_Len, _Types...>::type;
+using aligned_union_t _CXX23_DEPRECATE_ALIGNED_UNION = typename aligned_union<_Len, _Types...>::type;
+_STL_RESTORE_DEPRECATED_WARNING
 
 template <class _Ty, bool = is_enum_v<_Ty>>
 struct _Underlying_type {
@@ -1179,10 +1225,6 @@ struct basic_common_reference {};
 template <class _Ty>
 _Ty _Returns_exactly() noexcept; // not defined
 
-template <class _Ty1, class _Ty2>
-using _Cond_res = // N4810 [meta.trans.other]/2.4
-    decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
-
 template <class _From>
 struct _Copy_cv_impl {
     template <class _To>
@@ -1222,6 +1264,34 @@ struct _Add_qualifiers<_Ty1&&> {
     template <class _Ty2>
     using _Apply = add_rvalue_reference_t<_Copy_cv<_Ty1, _Ty2>>;
 };
+
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-876860
+template <class _Ty1, class _Ty2>
+using _Cond_res_if_right = // N4810 [meta.trans.other]/2.4
+    decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
+
+template <class _Ty>
+using _Is_scalar_or_array = disjunction<is_scalar<_Ty>, is_array<_Ty>>;
+
+template <class _Ty1, class _Ty2, class = void>
+struct _Cond_res_workaround {};
+
+template <class _Ty1, class _Ty2>
+struct _Cond_res_workaround<_Ty1, _Ty2, void_t<_Cond_res_if_right<_Ty1, _Ty2>>> {
+    using _Uty = remove_cvref_t<_Ty1>;
+    using type = conditional_t<conjunction_v<is_same<_Uty, remove_cvref_t<_Ty2>>, _Is_scalar_or_array<_Uty>,
+                                   disjunction<conjunction<is_lvalue_reference<_Ty1>, is_rvalue_reference<_Ty2>>,
+                                       conjunction<is_rvalue_reference<_Ty1>, is_lvalue_reference<_Ty2>>>>,
+        decay_t<_Copy_cv<remove_reference_t<_Ty1>, remove_reference_t<_Ty2>>>, _Cond_res_if_right<_Ty1, _Ty2>>;
+};
+
+template <class _Ty1, class _Ty2>
+using _Cond_res = typename _Cond_res_workaround<_Ty1, _Ty2>::type;
+#else // ^^^ workaround / no workaround vvv
+template <class _Ty1, class _Ty2>
+using _Cond_res = // N4810 [meta.trans.other]/2.4
+    decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
+#endif // ^^^ no workaround ^^^
 
 template <class...>
 struct common_reference;
@@ -1317,7 +1387,7 @@ struct _Identity {
     using type = _Ty;
 };
 template <class _Ty>
-using _Identity_t = typename _Identity<_Ty>::type;
+using _Identity_t _MSVC_KNOWN_SEMANTICS = typename _Identity<_Ty>::type;
 
 #if _HAS_CXX20
 template <class _Ty>
@@ -1367,8 +1437,6 @@ class reference_wrapper;
 // (WG21-N4842 [constexpr.functions]/1), yet both std::apply and std::visit are required to be constexpr and have
 // invoke-like behavior. As a result, we've chosen to apply the part of P1065R2 resolving LWG-2894 as a defect report.
 
-#pragma warning(push) // TRANSITION, DevCom-936696
-#pragma warning(disable : 28278) // Function '%s' appears with no prototype in scope
 enum class _Invoker_strategy {
     _Functor,
     _Pmf_object,
@@ -1503,7 +1571,6 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
         return (*static_cast<_Ty1&&>(_Arg1)).*_Obj;
     }
 }
-#pragma warning(pop) // TRANSITION, DevCom-936696
 
 #pragma warning(push)
 #pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data (/Wall)
@@ -1780,7 +1847,7 @@ using _Weak_types = conditional_t<is_function_v<remove_pointer_t<_Ty>>, _Functio
     conditional_t<is_member_function_pointer_v<_Ty>, _Is_memfunptr<remove_cv_t<_Ty>>, _Weak_binary_args<_Ty>>>;
 
 template <class _Ty>
-void _Refwrap_ctor_fun(_Identity_t<_Ty&>) noexcept;
+void _Refwrap_ctor_fun(_Identity_t<_Ty&>) noexcept; // not defined
 template <class _Ty>
 void _Refwrap_ctor_fun(_Identity_t<_Ty&&>) = delete;
 
@@ -1845,7 +1912,7 @@ void ref(const _Ty&&) = delete;
 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<_Ty> ref(reference_wrapper<_Ty> _Val) noexcept {
-    return _STD ref(_Val.get());
+    return _Val;
 }
 
 template <class _Ty>
@@ -1858,7 +1925,7 @@ void cref(const _Ty&&) = delete;
 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 reference_wrapper<const _Ty> cref(reference_wrapper<_Ty> _Val) noexcept {
-    return _STD cref(_Val.get());
+    return _Val;
 }
 
 #if _HAS_CXX20

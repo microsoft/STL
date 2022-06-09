@@ -110,6 +110,20 @@ STATIC_ASSERT(__cpp_lib_array_constexpr == 201803L);
 STATIC_ASSERT(__cpp_lib_as_const == 201510L);
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_associative_heterogeneous_erasure
+#error __cpp_lib_associative_heterogeneous_erasure is not defined
+#elif __cpp_lib_associative_heterogeneous_erasure != 202110L
+#error __cpp_lib_associative_heterogeneous_erasure is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_associative_heterogeneous_erasure == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_associative_heterogeneous_erasure
+#error __cpp_lib_associative_heterogeneous_erasure is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_assume_aligned
 #error __cpp_lib_assume_aligned is not defined
@@ -336,6 +350,20 @@ STATIC_ASSERT(__cpp_lib_byte == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_byteswap
+#error __cpp_lib_byteswap is not defined
+#elif __cpp_lib_byteswap != 202110L
+#error __cpp_lib_byteswap is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_byteswap == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_byteswap
+#error __cpp_lib_byteswap is defined
+#endif
+#endif
+
 #if _HAS_CXX20 && defined(__cpp_char8_t)
 #ifndef __cpp_lib_char8_t
 #error __cpp_lib_char8_t is not defined
@@ -405,10 +433,10 @@ STATIC_ASSERT(__cpp_lib_complex_udls == 201309L);
 #if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_concepts
 #error __cpp_lib_concepts is not defined
-#elif __cpp_lib_concepts != 201907L
-#error __cpp_lib_concepts is not 201907L
+#elif __cpp_lib_concepts != 202002L
+#error __cpp_lib_concepts is not 202002L
 #else
-STATIC_ASSERT(__cpp_lib_concepts == 201907L);
+STATIC_ASSERT(__cpp_lib_concepts == 202002L);
 #endif
 #else
 #ifdef __cpp_lib_concepts
@@ -486,7 +514,15 @@ STATIC_ASSERT(__cpp_lib_constexpr_iterator == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20
+#if _HAS_CXX23
+#ifndef __cpp_lib_constexpr_memory
+#error __cpp_lib_constexpr_memory is not defined
+#elif __cpp_lib_constexpr_memory != 202202L
+#error __cpp_lib_constexpr_memory is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_memory == 202202L);
+#endif
+#elif _HAS_CXX20
 #ifndef __cpp_lib_constexpr_memory
 #error __cpp_lib_constexpr_memory is not defined
 #elif __cpp_lib_constexpr_memory != 201811L
@@ -584,7 +620,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_vector == 201907L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang coroutine support
+#ifdef __cpp_impl_coroutine
 #ifndef __cpp_lib_coroutine
 #error __cpp_lib_coroutine is not defined
 #elif __cpp_lib_coroutine != 201902L
@@ -678,6 +714,20 @@ STATIC_ASSERT(__cpp_lib_execution == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_expected
+#error __cpp_lib_expected is not defined
+#elif __cpp_lib_expected != 202202L
+#error __cpp_lib_expected is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_expected == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_expected
+#error __cpp_lib_expected is defined
+#endif
+#endif
+
 #ifndef __cpp_lib_experimental_erase_if
 #error __cpp_lib_experimental_erase_if is not defined
 #elif __cpp_lib_experimental_erase_if != 201411L
@@ -708,13 +758,13 @@ STATIC_ASSERT(__cpp_lib_filesystem == 201703L);
 #endif
 #endif
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_format
 #error __cpp_lib_format is not defined
-#elif __cpp_lib_format != 201907L
-#error __cpp_lib_format is not 201907L
+#elif __cpp_lib_format != 202110L
+#error __cpp_lib_format is not 202110L
 #else
-STATIC_ASSERT(__cpp_lib_format == 201907L);
+STATIC_ASSERT(__cpp_lib_format == 202110L);
 #endif
 #else
 #ifdef __cpp_lib_format
@@ -1164,6 +1214,20 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_move_only_function
+#error __cpp_lib_move_only_function is not defined
+#elif __cpp_lib_move_only_function != 202110L
+#error __cpp_lib_move_only_function is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_move_only_function == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_move_only_function
+#error __cpp_lib_move_only_function is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_node_extract
 #error __cpp_lib_node_extract is not defined
@@ -1208,7 +1272,15 @@ STATIC_ASSERT(__cpp_lib_not_fn == 201603L);
 STATIC_ASSERT(__cpp_lib_null_iterators == 201304L);
 #endif
 
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_optional
+#error __cpp_lib_optional is not defined
+#elif __cpp_lib_optional != 202110L
+#error __cpp_lib_optional is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_optional == 202110L);
+#endif
+#elif _HAS_CXX20
 #ifndef __cpp_lib_optional
 #error __cpp_lib_optional is not defined
 #elif __cpp_lib_optional != 202106L
@@ -1280,17 +1352,73 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #endif
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
-#elif __cpp_lib_ranges != 202106L
-#error __cpp_lib_ranges is not 202106L
+#elif __cpp_lib_ranges != 202110L
+#error __cpp_lib_ranges is not 202110L
 #else
-STATIC_ASSERT(__cpp_lib_ranges == 202106L);
+STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 #else
 #ifdef __cpp_lib_ranges
 #error __cpp_lib_ranges is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_chunk
+#error __cpp_lib_ranges_chunk is not defined
+#elif __cpp_lib_ranges_chunk != 202202L
+#error __cpp_lib_ranges_chunk is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_chunk == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_chunk
+#error __cpp_lib_ranges_chunk is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_chunk_by
+#error __cpp_lib_ranges_chunk_by is not defined
+#elif __cpp_lib_ranges_chunk_by != 202202L
+#error __cpp_lib_ranges_chunk_by is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_chunk_by == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_chunk_by
+#error __cpp_lib_ranges_chunk_by is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_slide
+#error __cpp_lib_ranges_slide is not defined
+#elif __cpp_lib_ranges_slide != 202202L
+#error __cpp_lib_ranges_slide is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_slide == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_slide
+#error __cpp_lib_ranges_slide is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_starts_ends_with
+#error __cpp_lib_ranges_starts_ends_with is not defined
+#elif __cpp_lib_ranges_starts_ends_with != 202106L
+#error __cpp_lib_ranges_starts_ends_with is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_starts_ends_with == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_starts_ends_with
+#error __cpp_lib_ranges_starts_ends_with is defined
 #endif
 #endif
 
@@ -1488,6 +1616,20 @@ STATIC_ASSERT(__cpp_lib_span == 202002L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_spanstream
+#error __cpp_lib_spanstream is not defined
+#elif __cpp_lib_spanstream != 202106L
+#error __cpp_lib_spanstream is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_spanstream == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_spanstream
+#error __cpp_lib_spanstream is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_ssize
 #error __cpp_lib_ssize is not defined
@@ -1541,6 +1683,20 @@ STATIC_ASSERT(__cpp_lib_string_contains == 202011L);
 #else
 #ifdef __cpp_lib_string_contains
 #error __cpp_lib_string_contains is defined
+#endif
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_string_resize_and_overwrite
+#error __cpp_lib_string_resize_and_overwrite is not defined
+#elif __cpp_lib_string_resize_and_overwrite != 202110L
+#error __cpp_lib_string_resize_and_overwrite is not 202110L
+#else
+STATIC_ASSERT(__cpp_lib_string_resize_and_overwrite == 202110L);
+#endif
+#else
+#ifdef __cpp_lib_string_resize_and_overwrite
+#error __cpp_lib_string_resize_and_overwrite is defined
 #endif
 #endif
 
@@ -1720,6 +1876,20 @@ STATIC_ASSERT(__cpp_lib_uncaught_exceptions == 201411L);
 STATIC_ASSERT(__cpp_lib_unordered_map_try_emplace == 201411L);
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_unreachable
+#error __cpp_lib_unreachable is not defined
+#elif __cpp_lib_unreachable != 202202L
+#error __cpp_lib_unreachable is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_unreachable == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_unreachable
+#error __cpp_lib_unreachable is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_unwrap_ref
 #error __cpp_lib_unwrap_ref is not defined
@@ -1734,7 +1904,7 @@ STATIC_ASSERT(__cpp_lib_unwrap_ref == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20 && (defined(__clang__) || defined(__EDG__)) // TRANSITION, DevCom-1331017
+#if _HAS_CXX20
 #ifndef __cpp_lib_variant
 #error __cpp_lib_variant is not defined
 #elif __cpp_lib_variant != 202106L

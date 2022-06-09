@@ -55,7 +55,7 @@ namespace {
         _Constexpr_excptptr_immortalize_impl(const _Constexpr_excptptr_immortalize_impl&) = delete;
         _Constexpr_excptptr_immortalize_impl& operator=(const _Constexpr_excptptr_immortalize_impl&) = delete;
 
-        [[msvc::noop_dtor]] ~_Constexpr_excptptr_immortalize_impl() {
+        _MSVC_NOOP_DTOR ~_Constexpr_excptptr_immortalize_impl() {
             // do nothing, allowing _Ty to be used during shutdown
         }
     };
@@ -142,7 +142,7 @@ namespace {
 
         // copy the number of parameters in use
         constexpr auto _Max_parameters = static_cast<DWORD>(EXCEPTION_MAXIMUM_PARAMETERS);
-        const auto _In_use             = (_STD min) (_Parameters, _Max_parameters);
+        const auto _In_use             = (_STD min)(_Parameters, _Max_parameters);
         _CSTD memcpy(_Dest.ExceptionInformation, _Src.ExceptionInformation, _In_use * sizeof(ULONG_PTR));
         _CSTD memset(&_Dest.ExceptionInformation[_In_use], 0, (_Max_parameters - _In_use) * sizeof(ULONG_PTR));
     }
