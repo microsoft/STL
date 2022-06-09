@@ -42,15 +42,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+        <ProjectReference
             Include="$(CrtRoot)\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)\msvcp.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+        <ProjectReference
             Include="$(CrtRoot)\github\stl\msbuild\stl_1\$(CrtBuildModel)\msvcp_1_$(MsvcpFlavor)\msvcp_1.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+        <ProjectReference
             Include="$(CrtRoot)\github\stl\msbuild\stl_2\$(CrtBuildModel)\msvcp_2_$(MsvcpFlavor)\msvcp_2.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+        <ProjectReference
             Include="$(CrtRoot)\github\stl\msbuild\stl_codecvt_ids\$(CrtBuildModel)\msvcp_codecvt_ids_$(MsvcpFlavor)\msvcp_codecvt_ids.nativeproj"/>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true'"
+        <ProjectReference
             Include="$(CrtRoot)\github\stl\msbuild\stl_atomic_wait\$(CrtBuildModel)\msvcp_atomic_wait_$(MsvcpFlavor)\msvcp_atomic_wait.nativeproj"/>
         <Lib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib">
             <IncludeInChameleonLib>false</IncludeInChameleonLib>

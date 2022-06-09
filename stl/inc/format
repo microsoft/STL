@@ -3346,8 +3346,16 @@ template <_Format_supported_charT _CharT, class _Traits>
 struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
 
+// TRANSITION, VSO-1444086 (remove _STL_DECLSPEC_NOINITALL)
+#if defined(__clang__) || defined(__CUDACC__) || defined(__INTEL_COMPILER) || defined(__EDG__)
+#define _STL_DECLSPEC_NOINITALL
+#else // ^^^ not MSVC / MSVC vvv
+#define _STL_DECLSPEC_NOINITALL \
+    _Pragma("warning(push)") _Pragma("warning(disable : 4845)") __declspec(no_init_all) _Pragma("warning(pop)")
+#endif // ^^^ MSVC ^^^
+
 template <class _CharT, class... _Args>
-struct _Basic_format_string {
+struct _STL_DECLSPEC_NOINITALL _Basic_format_string {
     basic_string_view<_CharT> _Str;
 
     template <class _Ty>
@@ -3358,6 +3366,8 @@ struct _Basic_format_string {
         }
     }
 };
+
+#undef _STL_DECLSPEC_NOINITALL
 
 template <class... _Args>
 using _Fmt_string = _Basic_format_string<char, type_identity_t<_Args>...>;

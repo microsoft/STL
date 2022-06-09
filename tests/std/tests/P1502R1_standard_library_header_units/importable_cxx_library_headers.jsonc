@@ -21,6 +21,7 @@
     "deque",
     "exception",
     "execution",
+    "expected",
     "filesystem",
     "format",
     "forward_list",
