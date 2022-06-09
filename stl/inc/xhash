@@ -269,6 +269,12 @@ struct _Hash_vec {
             _Aliter_traits::max_size(_Mypair._Get_first()));
     }
 
+    _NODISCARD size_type capacity() const noexcept {
+        // This implementation never has capacity() differ from size(), but the previous implementation could.
+        // We need to handle that situation gracefully since we may link to old code.
+        return static_cast<size_type>(_Mypair._Myval2._Myend - _Mypair._Myval2._Myfirst);
+    }
+
     void _Assign_grow(const size_type _Cells, const value_type _Val) {
         // set the elements stored here to _Cells copies of _Val, leaving the value unchanged if an exception is thrown
         const auto _Oldsize = size();
@@ -279,7 +285,7 @@ struct _Hash_vec {
             // nothrow hereafter
             if (_Oldsize != 0) {
                 _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
-                _Alvec.deallocate(_Mypair._Myval2._Myfirst, _Oldsize);
+                _Alvec.deallocate(_Mypair._Myval2._Myfirst, capacity());
             }
 
             _Mypair._Myval2._Myfirst = _Newvec;
@@ -294,7 +300,7 @@ struct _Hash_vec {
 
     void _Tidy() noexcept {
         _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
-        _Mypair._Get_first().deallocate(_Mypair._Myval2._Myfirst, size());
+        _Mypair._Get_first().deallocate(_Mypair._Myval2._Myfirst, capacity());
         _Mypair._Myval2._Myfirst = nullptr;
         _Mypair._Myval2._Mylast  = nullptr;
         _Mypair._Myval2._Myend   = nullptr;
