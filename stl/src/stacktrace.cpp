@@ -256,13 +256,12 @@ namespace {
 } // namespace
 
 _EXTERN_C
+#pragma optimize("", off) // inhibit tail call optimization to have consistent _Frames_to_skip adjustment here
 [[nodiscard]] unsigned short __stdcall __std_stacktrace_capture(unsigned long _Frames_to_skip,
     const unsigned long _Frames_to_capture, void** const _Back_trace, unsigned long* const _Back_trace_hash) noexcept {
-#ifdef _DEBUG
-    _Frames_to_skip += 1; // compensate for absence of tail call optimization here
-#endif
-    return CaptureStackBackTrace(_Frames_to_skip, _Frames_to_capture, _Back_trace, _Back_trace_hash);
+    return CaptureStackBackTrace(_Frames_to_skip + 1, _Frames_to_capture, _Back_trace, _Back_trace_hash);
 }
+#pragma optimize("", on) // end inhibit tail call optimization
 
 // Some of these functions may throw (They would propagate bad_alloc potentially thrown from
 // string::resize_and_overwrite)
