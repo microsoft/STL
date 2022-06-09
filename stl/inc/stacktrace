@@ -313,8 +313,7 @@ private:
     }
 
     _NODISCARD static unsigned long _Adjust_skip(size_t _Skip) noexcept {
-        _Skip += 1; // Skip current frame
-        return _Skip < ULONG_MAX ? static_cast<unsigned long>(_Skip) : ULONG_MAX;
+       return _Skip < ULONG_MAX - 1 ? static_cast<unsigned long>(_Skip + 1) : ULONG_MAX;
     }
 
     _Frames_t _Frames;
