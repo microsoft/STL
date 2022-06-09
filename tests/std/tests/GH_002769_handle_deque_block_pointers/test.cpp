@@ -41,7 +41,7 @@ public:
     counting_ptr(const counting_ptr& other) noexcept : counting_ptr{other.p_} {}
 
     counting_ptr& operator=(const counting_ptr&) = default;
-    
+
     counting_ptr& operator=(nullptr_t) noexcept {
         p_ = nullptr;
         return *this;
