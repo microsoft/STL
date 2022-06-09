@@ -22,7 +22,7 @@ private:
     }
 
     template <class U>
-    friend class ptr_counting_allocator;
+    friend struct ptr_counting_allocator;
 
 public:
     using value_type        = T;
@@ -30,9 +30,9 @@ public:
     using pointer           = T*;
     using reference         = add_lvalue_reference_t<T>;
     using iterator_category = random_access_iterator_tag;
-#ifdef _HAS_CXX20
+#ifdef __cpp_lib_concepts
     using iterator_concept = contiguous_iterator_tag;
-#endif // _HAS_CXX20
+#endif // __cpp_lib_concepts
 
     counting_ptr(nullptr_t) noexcept : counting_ptr{static_cast<T*>(nullptr)} {}
 
