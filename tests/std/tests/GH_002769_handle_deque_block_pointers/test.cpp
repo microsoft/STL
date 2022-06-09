@@ -214,8 +214,8 @@ int main() {
     assert(fancy_counter == 0);
 
     {
-        deque<int, ptr_counting_allocator<int>> dq(97, 93);
-        dq.insert(dq.begin(), 238, 462);
+        deque<int, ptr_counting_allocator<int>> dq(979, 323);
+        dq.insert(dq.begin(), 84, 62);
         dq.erase(dq.begin() + 64, dq.begin() + 338);
     }
     assert(fancy_counter == 0);
