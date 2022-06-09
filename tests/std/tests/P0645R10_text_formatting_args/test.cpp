@@ -218,6 +218,12 @@ static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<const 
 static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<char*>, const char*>);
 static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<const char*>, const char*>);
 
+// we rely on the _Storage_type<long> to be int in:
+// explicit basic_format_arg(const long _Val) noexcept
+//     : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<long>, int>);
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<unsigned long>, unsigned int>);
+
 template <class Context>
 void test_visit_monostate() {
     assert(visit_format_arg(visitor<Context>, basic_format_arg<Context>()) == Arg_type::none);
