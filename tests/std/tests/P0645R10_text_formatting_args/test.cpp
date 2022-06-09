@@ -215,6 +215,8 @@ static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<void*>
 
 static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<string>, string_view>);
 static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<const string>, string_view>);
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<char*>, const char*>);
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<const char*>, const char*>);
 
 template <class Context>
 void test_visit_monostate() {

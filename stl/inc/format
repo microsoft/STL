@@ -666,6 +666,10 @@ public:
         : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
     explicit basic_format_arg(const unsigned int _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
+    explicit basic_format_arg(const long _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
+    explicit basic_format_arg(const unsigned long _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
     explicit basic_format_arg(const long long _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Long_long_type), _Long_long_state(_Val) {}
     explicit basic_format_arg(const unsigned long long _Val) noexcept
@@ -1769,6 +1773,7 @@ struct _Format_arg_traits {
     static auto _Phony_basic_format_arg_constructor(double) -> double; // not defined
     static auto _Phony_basic_format_arg_constructor(long double) -> long double; // not defined
 
+    static auto _Phony_basic_format_arg_constructor(_Char_type*) -> const _Char_type*; // not defined
     static auto _Phony_basic_format_arg_constructor(const _Char_type*) -> const _Char_type*; // not defined
 
     template <class _Traits>
@@ -3286,15 +3291,10 @@ struct _Formatter_base {
                 _FormatCtx.arg(static_cast<size_t>(_Specs._Dynamic_precision_index)));
         }
 
-        _Arg_formatter<typename _FormatContext::iterator, _CharT> _Arg_fmt{
-            ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)};
-
-        using _Storage_type = typename _Format_arg_traits<_FormatContext>::template _Storage_type<_Ty>;
-        if constexpr (is_same_v<typename basic_format_arg<_FormatContext>::handle, _Storage_type>) {
-            return _STD visit_format_arg(_Arg_fmt, basic_format_arg<_FormatContext>{_Val});
-        } else {
-            return _STD visit_format_arg(_Arg_fmt, basic_format_arg<_FormatContext>{static_cast<_Storage_type>(_Val)});
-        }
+        return _STD visit_format_arg(
+            _Arg_formatter<typename _FormatContext::iterator, _CharT>{
+                ._Ctx = _STD addressof(_FormatCtx), ._Specs = _STD addressof(_Format_specs)},
+            basic_format_arg<_FormatContext>{_Val});
     }
 
 private:
