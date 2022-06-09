@@ -57,7 +57,7 @@ public:
     }
 
     static counting_ptr pointer_to(T& obj) noexcept {
-        return {addressof(obj)};
+        return counting_ptr{addressof(obj)};
     }
 
     T& operator*() const noexcept {
