@@ -58,7 +58,7 @@ void __stdcall __std_stacktrace_source_file( //
 _NODISCARD unsigned int __stdcall __std_stacktrace_source_line(const void* _Address) noexcept;
 
 void __stdcall __std_stacktrace_to_string(
-    const void* _Addresses, size_t _Size, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
+    const void* const* _Addresses, size_t _Size, void* _Str, _Stacktrace_string_fill _Fill) noexcept(false);
 _END_EXTERN_C
 
 _STD_BEGIN
@@ -288,8 +288,15 @@ public:
         return _Hash;
     }
 
-    _NODISCARD const void* _Data() const noexcept {
-        return _Frames.data();
+    _STL_INTERNAL_STATIC_ASSERT(sizeof(void*) == sizeof(stacktrace_entry));
+    _STL_INTERNAL_STATIC_ASSERT(alignof(void*) == alignof(stacktrace_entry));
+
+    _NODISCARD const void* const* _To_voidptr_array() const noexcept {
+        return reinterpret_cast<const void* const*>(_Frames.data());
+    }
+
+    _NODISCARD void** _To_voidptr_array() noexcept {
+        return reinterpret_cast<void**>(_Frames.data());
     }
 
 private:
@@ -303,12 +310,6 @@ private:
     };
 
     basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al) : _Frames(_Max_depth, _Al) {}
-
-    _NODISCARD void** _To_voidptr_array() noexcept {
-        _STL_INTERNAL_STATIC_ASSERT(sizeof(void*) == sizeof(stacktrace_entry));
-        _STL_INTERNAL_STATIC_ASSERT(alignof(void*) == alignof(stacktrace_entry));
-        return reinterpret_cast<void**>(_Frames.data());
-    }
 
     _NODISCARD static unsigned long _Adjust_skip(size_t _Skip) noexcept {
         return _Skip < ULONG_MAX - 1 ? static_cast<unsigned long>(_Skip + 1) : ULONG_MAX;
@@ -334,7 +335,7 @@ _NODISCARD inline string to_string(const stacktrace_entry& _Fx) {
 template <class _Alloc>
 _NODISCARD string to_string(const basic_stacktrace<_Alloc>& _St) {
     string _Result;
-    __std_stacktrace_to_string(_St._Data(), _St.size(), &_Result, _Stacktrace_string_fill_impl);
+    __std_stacktrace_to_string(_St._To_voidptr_array(), _St.size(), &_Result, _Stacktrace_string_fill_impl);
     return _Result;
 }
 

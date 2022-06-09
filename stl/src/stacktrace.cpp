@@ -309,15 +309,13 @@ void __stdcall __std_stacktrace_address_to_string(
     locked_data.address_to_string(_Address, _Str, 0, _Fill);
 }
 
-void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const size_t _Size, void* const _Str,
+void __stdcall __std_stacktrace_to_string(const void* const* const _Addresses, const size_t _Size, void* const _Str,
     const _Stacktrace_string_fill _Fill) noexcept(false) {
     dbg_eng_data locked_data;
 
     if (!locked_data.try_initialize()) {
         return;
     }
-
-    const auto data = reinterpret_cast<const void* const*>(_Addresses);
 
     size_t off = 0;
 
@@ -337,7 +335,7 @@ void __stdcall __std_stacktrace_to_string(const void* const _Addresses, const si
             return off + ret;
         });
 
-        off = locked_data.address_to_string(data[i], _Str, off, _Fill);
+        off = locked_data.address_to_string(_Addresses[i], _Str, off, _Fill);
     }
 }
 _END_EXTERN_C
