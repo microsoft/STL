@@ -165,11 +165,11 @@ public:
     _NODISCARD __declspec(noinline) static basic_stacktrace
         current(const size_type _Skip, size_type _Max_depth, const allocator_type& _Al = allocator_type()) noexcept {
         _TRY_BEGIN
-        basic_stacktrace _Result{_Internal_t{}, _Max_depth, _Al};
-
         if (_Max_depth > _Max_frames) {
             _Max_depth = _Max_frames;
         }
+
+        basic_stacktrace _Result{_Internal_t{}, _Max_depth, _Al};
 
         const unsigned short _Actual_size = __std_stacktrace_capture(
             _Adjust_skip(_Skip), static_cast<unsigned long>(_Max_depth), _Result._To_voidptr_array(), &_Result._Hash);
