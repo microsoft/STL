@@ -143,7 +143,6 @@
 // Implemented when char8_t is available (C++14/17 with /Zc:char8_t, C++20 without /Zc:char8_t-):
 // P0482R6 Library Support For char8_t
 //     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
-// P1423R3 char8_t Backward Compatibility Remediation
 
 // _HAS_CXX20 directly controls:
 // P0019R8 atomic_ref
@@ -223,6 +222,7 @@
 // P1357R1 is_bounded_array, is_unbounded_array
 // P1391R4 Range Constructor For string_view
 // P1394R4 Range Constructor For span
+// P1423R3 char8_t Backward Compatibility Remediation
 // P1456R1 Move-Only Views
 // P1474R1 Helpful Pointers For contiguous_iterator
 // P1522R1 Iterator Difference Type And Integer Overflow
