@@ -162,7 +162,7 @@ namespace {
             }
 
             if (displacement != 0) {
-                constexpr size_t max_disp_num = sizeof("+0x1111222233334444") - 1; // maximum possible offset
+                constexpr size_t max_disp_num = sizeof("+0x1122334455667788") - 1; // maximum possible offset
 
                 off = string_fill(fill, off + max_disp_num, str, [displacement, off](char* s, size_t) {
                     const int ret = std::snprintf(s + off, max_disp_num, "+0x%llX", displacement);
