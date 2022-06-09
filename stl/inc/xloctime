@@ -106,8 +106,7 @@ private:
     friend _Tidy_guard<time_get>;
 
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type = _Elem;
     using iter_type = _InIt;
@@ -649,8 +648,7 @@ protected:
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put : public locale::facet { // facet for converting encoded times to text
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type = _Elem;
     using iter_type = _OutIt;
