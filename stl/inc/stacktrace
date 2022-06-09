@@ -145,7 +145,7 @@ public:
         _Result._Frames.resize(_Actual_size);
         return _Result;
         _CATCH_ALL
-        return basic_stacktrace{_Internal_t{}, _Al};
+        return basic_stacktrace{_Al};
         _CATCH_END
     }
 
@@ -158,7 +158,7 @@ public:
         _Result._Frames.resize(_Actual_size);
         return _Result;
         _CATCH_ALL
-        return basic_stacktrace{_Internal_t{}, _Al};
+        return basic_stacktrace{_Al};
         _CATCH_END
     }
 
@@ -176,7 +176,7 @@ public:
         _Result._Frames.resize(_Actual_size);
         return _Result;
         _CATCH_ALL
-        return basic_stacktrace{_Internal_t{}, _Al};
+        return basic_stacktrace{_Al};
         _CATCH_END
     }
 
@@ -304,8 +304,6 @@ private:
 
     basic_stacktrace(_Internal_t, size_type _Max_depth, const allocator_type& _Al) : _Frames(_Max_depth, _Al) {}
 
-    basic_stacktrace(_Internal_t, const allocator_type& _Al) noexcept : _Frames(_Al) {}
-
     _NODISCARD void** _To_voidptr_array() noexcept {
         _STL_INTERNAL_STATIC_ASSERT(sizeof(void*) == sizeof(stacktrace_entry));
         _STL_INTERNAL_STATIC_ASSERT(alignof(void*) == alignof(stacktrace_entry));
@@ -313,7 +311,7 @@ private:
     }
 
     _NODISCARD static unsigned long _Adjust_skip(size_t _Skip) noexcept {
-       return _Skip < ULONG_MAX - 1 ? static_cast<unsigned long>(_Skip + 1) : ULONG_MAX;
+        return _Skip < ULONG_MAX - 1 ? static_cast<unsigned long>(_Skip + 1) : ULONG_MAX;
     }
 
     _Frames_t _Frames;
