@@ -701,7 +701,7 @@ public:
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
 #ifdef __cpp_lib_concepts
         } else if constexpr (forward_iterator<_Iter>) {
-            const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_RANGES distance(_UFirst, _ULast)));
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES distance(_UFirst, _ULast)));
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
 #endif // __cpp_lib_concepts
         } else {
@@ -1078,7 +1078,7 @@ private:
         size_type _Count;
 #ifdef __cpp_lib_concepts
         if constexpr (forward_iterator<_Iter>) {
-            _Count = _Convert_size<size_type>(static_cast<size_t>(_RANGES distance(_First, _Last)));
+            _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES distance(_First, _Last)));
         } else
 #endif // __cpp_lib_concepts
         {
@@ -1308,7 +1308,7 @@ private:
         size_type _Newsize;
 #ifdef __cpp_lib_concepts
         if constexpr (forward_iterator<_Iter>) {
-            _Newsize = _Convert_size<size_type>(static_cast<size_t>(_RANGES distance(_First, _Last)));
+            _Newsize = _Convert_size<size_type>(_To_unsigned_like(_RANGES distance(_First, _Last)));
         } else
 #endif // __cpp_lib_concepts
         {
