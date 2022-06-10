@@ -63,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Condition="'$(CanSkipProjectReferenceForTargetLib)' != 'true' and ('$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd')" Include="$(VCToolsRootPath)\crt\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)$(CrtSpectreSuffix)\msvcp.nativeproj"/>
+        <ProjectReference Condition="'$(CrtBuildModel)'=='md' or '$(CrtBuildModel)'=='xmd'" Include="$(VCToolsRootPath)\crt\github\stl\msbuild\stl_base\$(CrtBuildModel)\msvcp_$(MsvcpFlavor)$(CrtSpectreSuffix)\msvcp.nativeproj"/>
         <TargetLib Include="$(CrtLibPath)\msvcprt_base$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\msvcrt$(BuildSuffix)$(ClrLibSuffix).lib"/>
         <TargetLib Include="$(CrtLibPath)\vcruntime$(BuildSuffix)$(ClrLibSuffix).lib"/>
@@ -73,10 +73,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <!-- Copy the output dll and pdb to various destinations -->
     <ItemGroup>
         <CopyFilesForCrossTools Condition="'$(MsvcpFlavor)' == 'kernel32'" Include="
-           $(LinkOutputFile);
-           $(LinkProgramDataBaseFileName);
-        "/>
-        <CopyFilesForNetFx Condition="'$(MsvcpFlavor)' == 'netfx'" Include="
            $(LinkOutputFile);
            $(LinkProgramDataBaseFileName);
         "/>

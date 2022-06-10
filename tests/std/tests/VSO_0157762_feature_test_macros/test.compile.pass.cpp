@@ -514,7 +514,15 @@ STATIC_ASSERT(__cpp_lib_constexpr_iterator == 201811L);
 #endif
 #endif
 
-#if _HAS_CXX20
+#if _HAS_CXX23
+#ifndef __cpp_lib_constexpr_memory
+#error __cpp_lib_constexpr_memory is not defined
+#elif __cpp_lib_constexpr_memory != 202202L
+#error __cpp_lib_constexpr_memory is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_memory == 202202L);
+#endif
+#elif _HAS_CXX20
 #ifndef __cpp_lib_constexpr_memory
 #error __cpp_lib_constexpr_memory is not defined
 #elif __cpp_lib_constexpr_memory != 201811L
@@ -612,7 +620,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_vector == 201907L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_impl_coroutine) // TRANSITION, Clang coroutine support
+#ifdef __cpp_impl_coroutine
 #ifndef __cpp_lib_coroutine
 #error __cpp_lib_coroutine is not defined
 #elif __cpp_lib_coroutine != 201902L
@@ -703,6 +711,20 @@ STATIC_ASSERT(__cpp_lib_execution == 201603L);
 #else
 #ifdef __cpp_lib_execution
 #error __cpp_lib_execution is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_expected
+#error __cpp_lib_expected is not defined
+#elif __cpp_lib_expected != 202202L
+#error __cpp_lib_expected is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_expected == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_expected
+#error __cpp_lib_expected is defined
 #endif
 #endif
 
@@ -1355,6 +1377,48 @@ STATIC_ASSERT(__cpp_lib_ranges_iota == 202202L);
 #else
 #ifdef __cpp_lib_ranges_iota
 #error __cpp_lib_ranges_iota is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_chunk
+#error __cpp_lib_ranges_chunk is not defined
+#elif __cpp_lib_ranges_chunk != 202202L
+#error __cpp_lib_ranges_chunk is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_chunk == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_chunk
+#error __cpp_lib_ranges_chunk is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_chunk_by
+#error __cpp_lib_ranges_chunk_by is not defined
+#elif __cpp_lib_ranges_chunk_by != 202202L
+#error __cpp_lib_ranges_chunk_by is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_chunk_by == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_chunk_by
+#error __cpp_lib_ranges_chunk_by is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_slide
+#error __cpp_lib_ranges_slide is not defined
+#elif __cpp_lib_ranges_slide != 202202L
+#error __cpp_lib_ranges_slide is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_slide == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_slide
+#error __cpp_lib_ranges_slide is defined
 #endif
 #endif
 

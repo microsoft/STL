@@ -87,7 +87,7 @@ struct _CRTIMP2_PURE_IMPORT _Crt_new_delete { // base class for marking allocati
 #endif // _DEBUG
 };
 
-class locale : public _Locbase<int>, public _Crt_new_delete { // nonmutable collection of facets that describe a locale
+class locale : public _Locbase<int>, public _Crt_new_delete {
 public:
     using category = int;
 
@@ -651,6 +651,20 @@ protected:
     }
 };
 
+template <class _Ty>
+_INLINE_VAR constexpr bool _Is_one_byte_char_like_v = _Is_any_of_v<remove_cv_t<_Ty>, signed char, unsigned char,
+#ifdef __cpp_lib_byte
+    byte,
+#endif // __cpp_lib_byte
+#ifdef __cpp_char8_t
+    char8_t,
+#endif // __cpp_char8_t
+    char>;
+
+template <class _Elem, class _Byte>
+_INLINE_VAR constexpr bool _Is_codecvt_do_always_noconv_v =
+    is_same_v<_Byte, _Elem> || (_Is_one_byte_char_like_v<_Byte> && _Is_one_byte_char_like_v<_Elem>);
+
 template <class _Elem, class _Byte, class _Statype>
 class codecvt : public codecvt_base { // facet for converting between _Elem and _Byte sequences
 public:
@@ -716,14 +730,14 @@ protected:
 
     bool __CLR_OR_THIS_CALL do_always_noconv() const noexcept override {
         // return true if conversions never change input (from codecvt)
-        return is_same_v<_Byte, _Elem>;
+        return _Is_codecvt_do_always_noconv_v<_Elem, _Byte>;
     }
 
     virtual result __CLR_OR_THIS_CALL do_in(_Statype&, const _Byte* _First1, const _Byte* _Last1, const _Byte*& _Mid1,
         _Elem* _First2, _Elem* _Last2, _Elem*& _Mid2) const { // convert bytes [_First1, _Last1) to [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if constexpr (is_same_v<_Byte, _Elem>) {
+        if constexpr (_Is_codecvt_do_always_noconv_v<_Elem, _Byte>) {
             return noconv; // convert nothing
         } else {
             // types differ, copy one for one
@@ -742,7 +756,7 @@ protected:
         _Byte* _First2, _Byte* _Last2, _Byte*& _Mid2) const { // convert [_First1, _Last1) to bytes [_First2, _Last2)
         _Mid1 = _First1;
         _Mid2 = _First2;
-        if constexpr (is_same_v<_Byte, _Elem>) {
+        if constexpr (_Is_codecvt_do_always_noconv_v<_Elem, _Byte>) {
             return noconv; // convert nothing
         } else {
             // types differ, copy one for one

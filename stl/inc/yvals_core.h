@@ -162,7 +162,7 @@
 // P0475R1 Guaranteed Copy Elision For Piecewise Construction
 // P0476R2 <bit> bit_cast
 // P0482R6 Library Support For char8_t
-//     (mbrtoc8 and c8rtomb not yet implemented)
+//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 // P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
@@ -281,6 +281,7 @@
 
 // _HAS_CXX23 directly controls:
 // P0288R9 move_only_function
+// P0323R12 <expected>
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0448R4 <spanstream>
 // P0627R6 unreachable()
@@ -291,6 +292,7 @@
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
 // P1272R4 byteswap()
+// P1413R3 Deprecate aligned_storage And aligned_union
 // P1425R4 Iterator Pair Constructors For stack And queue
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
@@ -301,7 +303,13 @@
 // P2136R3 invoke_r()
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
+// P2273R3 constexpr unique_ptr
+// P2321R2 zip
+//     (changes to pair, tuple, and vector<bool>::reference only)
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
+// P2442R1 Windowing Range Adaptors: views::chunk, views::slide
+// P2443R1 views::chunk_by
+// P2549R0 unexpected<E>::error()
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -434,17 +442,41 @@
 #define _NODISCARD_FRIEND _NODISCARD friend
 #endif // TRANSITION, VSO-568006
 
-// Determine if we should use [[msvc::known_semantics]] to communicate to the compiler
-// that certain type trait specializations have the standard-mandated semantics
+#pragma push_macro("msvc")
+#pragma push_macro("known_semantics")
+#pragma push_macro("noop_dtor")
+#undef msvc
+#undef known_semantics
+#undef noop_dtor
+
 #ifndef __has_cpp_attribute
-#define _MSVC_KNOWN_SEMANTICS
+#define _HAS_MSVC_ATTRIBUTE(x) 0
 #elif defined(__CUDACC__) // TRANSITION, CUDA - warning: attribute namespace "msvc" is unrecognized
-#define _MSVC_KNOWN_SEMANTICS
-#elif __has_cpp_attribute(msvc::known_semantics)
+#define _HAS_MSVC_ATTRIBUTE(x) 0
+#else
+#define _HAS_MSVC_ATTRIBUTE(x) __has_cpp_attribute(msvc::x)
+#endif
+
+// Should we use [[msvc::known_semantics]] to tell the compiler that certain
+// type trait specializations have the standard-mandated semantics?
+#if _HAS_MSVC_ATTRIBUTE(known_semantics)
 #define _MSVC_KNOWN_SEMANTICS [[msvc::known_semantics]]
 #else
 #define _MSVC_KNOWN_SEMANTICS
 #endif
+
+// Should we use [[msvc::noop_dtor]] to tell the compiler that some non-trivial
+// destructors have no effects?
+#if _HAS_MSVC_ATTRIBUTE(noop_dtor)
+#define _MSVC_NOOP_DTOR [[msvc::noop_dtor]]
+#else
+#define _MSVC_NOOP_DTOR
+#endif
+
+#undef _HAS_MSVC_ATTRIBUTE
+#pragma pop_macro("noop_dtor")
+#pragma pop_macro("known_semantics")
+#pragma pop_macro("msvc")
 
 // Controls whether the STL uses "conditional explicit" internally
 #ifndef _HAS_CONDITIONAL_EXPLICIT
@@ -584,7 +616,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202202L
+#define _MSVC_STL_UPDATE  202205L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -600,8 +632,8 @@
 #error STL1000: Unexpected compiler version, expected Clang 13.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1931 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.31 or newer.
+#if _MSC_VER < 1932 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.32 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -633,6 +665,13 @@
 #define _CONSTEXPR20 inline
 #endif // ^^^ inline (not constexpr) in C++17 and earlier ^^^
 
+// Functions that became constexpr in C++23
+#if _HAS_CXX23
+#define _CONSTEXPR23 constexpr
+#else // ^^^ constexpr in C++23 and later / inline (not constexpr) in C++20 and earlier vvv
+#define _CONSTEXPR23 inline
+#endif // ^^^ inline (not constexpr) in C++20 and earlier ^^^
+
 // P0607R0 Inline Variables For The STL
 #if _HAS_CXX17
 #define _INLINE_VAR inline
@@ -649,6 +688,10 @@
 #ifndef _HAS_UNEXPECTED
 #define _HAS_UNEXPECTED (!_HAS_CXX17)
 #endif // _HAS_UNEXPECTED
+
+#if _HAS_UNEXPECTED && _HAS_CXX23
+#error STL1004: C++98 unexpected() is incompatible with C++23 unexpected<E>.
+#endif // _HAS_UNEXPECTED && _HAS_CXX23
 
 // P0004R1 Removing Deprecated Iostreams Aliases
 #ifndef _HAS_OLD_IOSTREAMS_MEMBERS
@@ -1106,7 +1149,41 @@
 #define _CXX20_DEPRECATE_IS_ALWAYS_EQUAL
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4034
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+#define _CXX23_DEPRECATE_ALIGNED_STORAGE                                                     \
+    [[deprecated("warning STL4034: "                                                         \
+                 "std::aligned_storage and std::aligned_storage_t are deprecated in C++23. " \
+                 "Prefer alignas(T) std::byte t_buff[sizeof(T)]. "                           \
+                 "You can define _SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING "        \
+                 "or _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX23_DEPRECATE_ALIGNED_STORAGE
+#endif // ^^^ warning disabled ^^^
+
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+#define _CXX23_DEPRECATE_ALIGNED_UNION                                                   \
+    [[deprecated("warning STL4035: "                                                     \
+                 "std::aligned_union and std::aligned_union_t are deprecated in C++23. " \
+                 "Prefer alignas(Ts...) std::byte t_buff[std::max({sizeof(Ts)...})]. "   \
+                 "You can define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING "      \
+                 "or _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX23_DEPRECATE_ALIGNED_UNION
+#endif // ^^^ warning disabled ^^^
+
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_CISO646_REMOVED_WARNING) && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_REMOVE_CISO646                                             \
+    [[deprecated("warning STL4036: "                                      \
+                 "<ciso646> is removed in C++20. "                        \
+                 "You can define _SILENCE_CXX20_CISO646_REMOVED_WARNING " \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_REMOVE_CISO646
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4037
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1120,6 +1197,10 @@
 #ifndef _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 #define _HAS_DEPRECATED_ALLOCATOR_MEMBERS (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
+
+#ifndef _HAS_DEPRECATED_ALLOCATOR_VOID
+#define _HAS_DEPRECATED_ALLOCATOR_VOID (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_ALLOCATOR_VOID
 
 #ifndef _HAS_DEPRECATED_IS_LITERAL_TYPE
 #define _HAS_DEPRECATED_IS_LITERAL_TYPE (_HAS_FEATURES_REMOVED_IN_CXX20)
@@ -1286,7 +1367,6 @@
 #define __cpp_lib_constexpr_dynamic_alloc 201907L
 #define __cpp_lib_constexpr_functional    201907L
 #define __cpp_lib_constexpr_iterator      201811L
-#define __cpp_lib_constexpr_memory        201811L
 #define __cpp_lib_constexpr_numeric       201911L
 #define __cpp_lib_constexpr_string        201907L
 #define __cpp_lib_constexpr_string_view   201811L
@@ -1370,12 +1450,20 @@
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_byteswap                          202110L
-#define __cpp_lib_invoke_r                          202106L
-#define __cpp_lib_is_scoped_enum                    202011L
-#define __cpp_lib_move_only_function                202110L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_expected 202202L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_invoke_r           202106L
+#define __cpp_lib_is_scoped_enum     202011L
+#define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_chunk            202202L
+#define __cpp_lib_ranges_chunk_by         202202L
+#define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #define __cpp_lib_ranges_iota             202202L
 #endif // __cpp_lib_concepts
@@ -1402,6 +1490,12 @@
 #else // _HAS_CXX17
 #define __cpp_lib_chrono 201510L // P0092R1 <chrono> floor(), ceil(), round(), abs()
 #endif // _HAS_CXX17
+
+#if _HAS_CXX23
+#define __cpp_lib_constexpr_memory 202202L // P2273R3 constexpr unique_ptr
+#elif _HAS_CXX20
+#define __cpp_lib_constexpr_memory 201811L // P1006R1 constexpr For pointer_traits<T*>::pointer_to()
+#endif // _HAS_CXX20
 
 #ifndef _M_CEE
 #if _HAS_CXX20
@@ -1477,7 +1571,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #error In yvals_core.h, defined(MRTDLL) implies defined(_M_CEE_PURE); !defined(_M_CEE_PURE) implies !defined(MRTDLL)
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
-#define _STL_WIN32_WINNT_WINXP   0x0501 // _WIN32_WINNT_WINXP from sdkddkver.h
 #define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
 #define _STL_WIN32_WINNT_WINBLUE 0x0603 // _WIN32_WINNT_WINBLUE from sdkddkver.h
@@ -1514,6 +1607,10 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
+
+#ifndef _MSVC_CONSTEXPR // TRANSITION, VS2022v17.3p2
+#define _MSVC_CONSTEXPR
+#endif
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

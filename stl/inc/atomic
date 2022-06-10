@@ -168,7 +168,7 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
         return;
     }
 
-#if defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
     _Compiler_barrier();
     if (_Order == memory_order_seq_cst) {
         volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
@@ -182,9 +182,9 @@ extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
         (void) _InterlockedIncrement(&_Guard);
         _Compiler_barrier();
     }
-#elif defined(_M_ARM) || defined(_M_ARM64)
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
     _Memory_barrier();
-#else // ^^^ ARM32/ARM64 / unsupported hardware vvv
+#else // ^^^ ARM32/ARM64/ARM64EC / unsupported hardware vvv
 #error Unsupported hardware
 #endif // unsupported hardware
 }
@@ -468,11 +468,11 @@ inline bool __stdcall _Atomic_wait_compare_16_bytes(const void* _Storage, void* 
     const auto _Dest              = static_cast<long long*>(const_cast<void*>(_Storage));
     const auto _Cmp               = static_cast<const long long*>(_Comparand);
     alignas(16) long long _Tmp[2] = {_Cmp[0], _Cmp[1]};
-#ifdef _M_X64
+#if defined(_M_X64) && !defined(_M_ARM64EC)
     return _STD_COMPARE_EXCHANGE_128(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
-#else // ^^^ _M_X64 / ARM64 vvv
+#else // ^^^ _M_X64 / ARM64, _M_ARM64EC vvv
     return _InterlockedCompareExchange128_nf(_Dest, _Tmp[1], _Tmp[0], _Tmp) != 0;
-#endif // ^^^ ARM64 ^^^
+#endif // ^^^ ARM64, _M_ARM64EC ^^^
 }
 #endif // _WIN64
 #endif // _HAS_CXX20
@@ -633,7 +633,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
         _Memory_barrier();
         __iso_volatile_store8(_Mem, _As_bytes);
         _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
+#else // ^^^ ARM32/ARM64/ARM64EC hardware / x86/x64 hardware vvv
         (void) _InterlockedExchange8(_Mem, _As_bytes);
 #endif // hardware
     }
@@ -754,7 +754,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
         _Memory_barrier();
         __iso_volatile_store16(_Mem, _As_bytes);
         _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
+#else // ^^^ ARM32/ARM64/ARM64EC hardware / x86/x64 hardware vvv
         (void) _InterlockedExchange16(_Mem, _As_bytes);
 #endif // hardware
     }
@@ -872,7 +872,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
         _Memory_barrier();
         __iso_volatile_store32(_Atomic_address_as<int>(_Storage), _Atomic_reinterpret_as<int>(_Value));
         _Memory_barrier();
-#else // ^^^ ARM32/ARM64 hardware / x86/x64 hardware vvv
+#else // ^^^ ARM32/ARM64/ARM64EC hardware / x86/x64 hardware vvv
         (void) _InterlockedExchange(_Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Value));
 #endif // hardware
     }
@@ -992,13 +992,13 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
         _Compiler_barrier();
         __iso_volatile_store64(_Mem, _As_bytes);
         _STD atomic_thread_fence(memory_order_seq_cst);
-#elif defined(_M_ARM64)
+#elif defined(_M_ARM64) || defined(_M_ARM64EC)
         _Memory_barrier();
         __iso_volatile_store64(_Mem, _As_bytes);
         _Memory_barrier();
-#else // ^^^ _M_ARM64 / ARM32, x64 vvv
+#else // ^^^ _M_ARM64, _M_ARM64EC / ARM32, x64 vvv
         (void) _InterlockedExchange64(_Mem, _As_bytes);
-#endif // _M_ARM64
+#endif // ^^^ ARM32, x64 ^^^
     }
 
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
@@ -1170,10 +1170,10 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
         }
 
         return reinterpret_cast<_TVal&>(_Result);
-#else // ^^^ _M_ARM64 / _M_X64 vvv
+#else // ^^^ _M_ARM64, _M_ARM64EC / _M_X64 vvv
         _Check_load_memory_order(_Order);
         return load();
-#endif // _M_ARM64
+#endif // ^^^ _M_X64 ^^^
     }
 
     _TVal exchange(const _TVal _Value) noexcept { // exchange with sequential consistency
@@ -1212,11 +1212,11 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
                 _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedCompareExchange128,
                     _Atomic_address_as<long long>(_Storage), _Desired_bytes._High, _Desired_bytes._Low,
                     &_Expected_temp._Low);
-#else // ^^^ _M_ARM64 / _M_X64 vvv
+#else // ^^^ _M_ARM64, _M_ARM64EC / _M_X64 vvv
                 (void) _Order;
                 _Result = _STD_COMPARE_EXCHANGE_128(&reinterpret_cast<long long&>(_Storage), _Desired_bytes._High,
                     _Desired_bytes._Low, &_Expected_temp._Low);
-#endif // _M_ARM64
+#endif // ^^^ _M_X64 ^^^
                 if (_Result) {
                     return true;
                 }
@@ -1237,11 +1237,11 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
         _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedCompareExchange128,
             _Atomic_address_as<long long>(_Storage), _Desired_bytes._High, _Desired_bytes._Low, &_Expected_temp._Low);
-#else // ^^^ _M_ARM64 / _M_X64 vvv
+#else // ^^^ _M_ARM64, _M_ARM64EC / _M_X64 vvv
         (void) _Order;
         _Result = _STD_COMPARE_EXCHANGE_128(
             &reinterpret_cast<long long&>(_Storage), _Desired_bytes._High, _Desired_bytes._Low, &_Expected_temp._Low);
-#endif // _M_ARM64
+#endif // ^^^ _M_X64 ^^^
         if (_Result == 0) {
             _CSTD memcpy(_STD addressof(_Expected), &_Expected_temp, sizeof(_TVal));
         }
@@ -2747,6 +2747,7 @@ using atomic_unsigned_lock_free = atomic_uintptr_t;
 
 #define ATOMIC_FLAG_INIT \
     {}
+
 struct atomic_flag { // flag with test-and-set semantics
 #if _HAS_CXX20
     _NODISCARD bool test(const memory_order _Order = memory_order_seq_cst) const noexcept {
