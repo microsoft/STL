@@ -1415,12 +1415,6 @@
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
-#define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
-#else
-#define __cpp_lib_shift 201806L
-#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
-
 #ifdef __cpp_consteval
 #define __cpp_lib_source_location 201907L
 #endif // __cpp_consteval
@@ -1517,6 +1511,12 @@
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
 #else // _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
+#endif // _HAS_CXX20
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#define __cpp_lib_shift 201806L // P0769R2 shift_left(), shift_right()
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20
