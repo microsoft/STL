@@ -211,21 +211,6 @@ namespace filesystem {
         }
     }
 
-    template <class>
-    inline constexpr bool _Is_EcharT = false;
-    template <>
-    inline constexpr bool _Is_EcharT<char> = true;
-    template <>
-    inline constexpr bool _Is_EcharT<wchar_t> = true;
-#ifdef __cpp_char8_t
-    template <>
-    inline constexpr bool _Is_EcharT<char8_t> = true;
-#endif // __cpp_char8_t
-    template <>
-    inline constexpr bool _Is_EcharT<char16_t> = true;
-    template <>
-    inline constexpr bool _Is_EcharT<char32_t> = true;
-
     template <class _Ty, class = void>
     inline constexpr bool _Is_Source_impl = false;
 
