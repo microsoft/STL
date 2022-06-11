@@ -86,9 +86,21 @@ template <typename T>
 constexpr bool test_rotl() {
     constexpr int digits  = numeric_limits<T>::digits;
     constexpr auto maxval = numeric_limits<T>::max();
+
+    constexpr T every_fourth[4] = {
+        static_cast<T>(0x1111'1111'1111'1111ULL),
+        static_cast<T>(0x2222'2222'2222'2222ULL),
+        static_cast<T>(0x4444'4444'4444'4444ULL),
+        static_cast<T>(0x8888'8888'8888'8888ULL),
+    };
+
     for (int i = 0; i < digits * 2; ++i) {
         assert(rotl(maxval, i) == maxval);
         assert(rotl(T{0}, i) == 0);
+
+        for (int j = 0; j < 4; ++j) {
+            assert(rotl(every_fourth[j], i) == every_fourth[(i + j) % 4]);
+        }
     }
     return true;
 }
@@ -97,9 +109,21 @@ template <typename T>
 constexpr bool test_rotr() {
     constexpr int digits  = numeric_limits<T>::digits;
     constexpr auto maxval = numeric_limits<T>::max();
+
+    constexpr T every_fourth[4] = {
+        static_cast<T>(0x1111'1111'1111'1111ULL),
+        static_cast<T>(0x2222'2222'2222'2222ULL),
+        static_cast<T>(0x4444'4444'4444'4444ULL),
+        static_cast<T>(0x8888'8888'8888'8888ULL),
+    };
+
     for (int i = 0; i < digits * 2; ++i) {
         assert(rotr(maxval, i) == maxval);
         assert(rotr(T{0}, i) == 0);
+
+        for (int j = 0; j < 4; ++j) {
+            assert(rotr(every_fourth[(i + j) % 4], i) == every_fourth[j]);
+        }
     }
     return true;
 }

@@ -33,9 +33,6 @@ jobs:
     displayName: 'Setup TMP Directory'
 
   - template: checkout-sources.yml
-  - template: vcpkg-dependencies.yml
-    parameters:
-      targetPlatform: ${{ parameters.targetPlatform }}
   - template: cmake-configure-build.yml
     parameters:
       targetPlatform: ${{ parameters.targetPlatform }}
@@ -48,4 +45,3 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       targetArch: ${{ parameters.vsDevCmdArch }}
       displayName: 'Build Tests'
-      publishArtifact: false # disabled due to GH-1653

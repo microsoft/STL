@@ -17,9 +17,10 @@ using namespace std::chrono;
 
 class Transition {
 public:
-    constexpr Transition(
-        string_view name, seconds offset, minutes save, string_view abbrev, sys_seconds sys_begin, sys_seconds sys_end)
-        : _name(name), _offset(offset), _save(save), _abbrev(abbrev), _begin(sys_begin), _end(sys_end) {}
+    constexpr Transition(string_view name, seconds offset, minutes save, string_view abbrev, string_view abbrev_alt,
+        sys_seconds sys_begin, sys_seconds sys_end)
+        : _name(name), _offset(offset), _save(save), _abbrev(abbrev), _abbrev_alt(abbrev_alt), _begin(sys_begin),
+          _end(sys_end) {}
 
     constexpr string_view name() const {
         return _name;
@@ -35,6 +36,10 @@ public:
 
     constexpr string_view abbrev() const {
         return _abbrev;
+    }
+
+    constexpr string_view abbrev_alt() const {
+        return _abbrev_alt;
     }
 
     constexpr bool is_daylight() const {
@@ -66,6 +71,7 @@ private:
     seconds _offset;
     minutes _save;
     string_view _abbrev;
+    string_view _abbrev_alt;
     sys_seconds _begin;
     sys_seconds _end;
 };
@@ -89,8 +95,10 @@ constexpr local_time<Duration> get_danger_end(const Transition& first, const Tra
 // Daylight time (AEDT : UTC+11) +1 @ 2am
 namespace Sydney {
     inline constexpr string_view Tz_name{"Australia/Sydney"sv};
-    inline constexpr string_view Standard_abbrev{"GMT+10"sv}; // IANA database == "AEST"
-    inline constexpr string_view Daylight_abbrev{"GMT+11"sv}; // IANA database == "AEDT"
+    inline constexpr string_view Standard_abbrev{"AEST"sv};
+    inline constexpr string_view Daylight_abbrev{"AEDT"sv};
+    inline constexpr string_view Standard_abbrev_alt{"GMT+10"sv};
+    inline constexpr string_view Daylight_abbrev_alt{"GMT+11"sv};
     inline constexpr seconds Standard_offset{hours{10}};
     inline constexpr seconds Daylight_offset{hours{11}};
     inline constexpr auto Daylight_begin_2019 =
@@ -102,12 +110,12 @@ namespace Sydney {
     inline constexpr auto Standard_begin_2021 =
         sys_seconds{sys_days{year{2021} / April / day{4}}} + hours{3} - Daylight_offset;
 
-    inline constexpr Transition Day_1{
-        Tz_name, Daylight_offset, hours{1}, Daylight_abbrev, Daylight_begin_2019, Standard_begin_2020};
-    inline constexpr Transition Std_1{
-        Tz_name, Standard_offset, hours{0}, Standard_abbrev, Standard_begin_2020, Daylight_begin_2020};
-    inline constexpr Transition Day_2{
-        Tz_name, Daylight_offset, hours{1}, Daylight_abbrev, Daylight_begin_2020, Standard_begin_2021};
+    inline constexpr Transition Day_1{Tz_name, Daylight_offset, hours{1}, Daylight_abbrev, Daylight_abbrev_alt,
+        Daylight_begin_2019, Standard_begin_2020};
+    inline constexpr Transition Std_1{Tz_name, Standard_offset, hours{0}, Standard_abbrev, Standard_abbrev_alt,
+        Standard_begin_2020, Daylight_begin_2020};
+    inline constexpr Transition Day_2{Tz_name, Daylight_offset, hours{1}, Daylight_abbrev, Daylight_abbrev_alt,
+        Daylight_begin_2020, Standard_begin_2021};
 
     inline constexpr pair<Transition, Transition> Day_to_Std{Day_1, Std_1};
     inline constexpr pair<Transition, Transition> Std_to_Day{Std_1, Day_2};
@@ -121,6 +129,8 @@ namespace LA {
     inline constexpr string_view Tz_name{"America/Los_Angeles"sv};
     inline constexpr string_view Standard_abbrev{"PST"sv};
     inline constexpr string_view Daylight_abbrev{"PDT"sv};
+    inline constexpr string_view Standard_abbrev_alt{"GMT-8"sv};
+    inline constexpr string_view Daylight_abbrev_alt{"GMT-7"sv};
     inline constexpr seconds Standard_offset{hours{-8}};
     inline constexpr seconds Daylight_offset{hours{-7}};
     inline constexpr auto Daylight_begin_2020 =
@@ -132,12 +142,12 @@ namespace LA {
     inline constexpr auto Standard_begin_2021 =
         sys_seconds{sys_days{year{2021} / November / day{7}}} + hours{2} - Daylight_offset;
 
-    inline constexpr Transition Day_1{
-        Tz_name, Daylight_offset, hours{1}, Daylight_abbrev, Daylight_begin_2020, Standard_begin_2020};
-    inline constexpr Transition Std_1{
-        Tz_name, Standard_offset, hours{0}, Standard_abbrev, Standard_begin_2020, Daylight_begin_2021};
-    inline constexpr Transition Day_2{
-        Tz_name, Daylight_offset, hours{1}, Daylight_abbrev, Daylight_begin_2021, Standard_begin_2021};
+    inline constexpr Transition Day_1{Tz_name, Daylight_offset, hours{1}, Daylight_abbrev, Daylight_abbrev_alt,
+        Daylight_begin_2020, Standard_begin_2020};
+    inline constexpr Transition Std_1{Tz_name, Standard_offset, hours{0}, Standard_abbrev, Standard_abbrev_alt,
+        Standard_begin_2020, Daylight_begin_2021};
+    inline constexpr Transition Day_2{Tz_name, Daylight_offset, hours{1}, Daylight_abbrev, Daylight_abbrev_alt,
+        Daylight_begin_2021, Standard_begin_2021};
 
     inline constexpr pair<Transition, Transition> Day_to_Std{Day_1, Std_1};
     inline constexpr pair<Transition, Transition> Std_to_Day{Std_1, Day_2};
@@ -147,7 +157,7 @@ namespace LA {
 template <class TestFunction>
 void run_tz_test(TestFunction test_function) {
     try {
-#ifdef MSVC_INTERNAL_TESTING
+#ifdef _MSVC_INTERNAL_TESTING
         try {
             (void) get_tzdb();
         } catch (const system_error& ex) {
@@ -158,7 +168,7 @@ void run_tz_test(TestFunction test_function) {
 
             throw; // Report any other errors.
         }
-#endif // MSVC_INTERNAL_TESTING
+#endif // _MSVC_INTERNAL_TESTING
 
         test_function();
 

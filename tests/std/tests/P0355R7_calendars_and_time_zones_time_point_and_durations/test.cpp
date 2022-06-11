@@ -21,17 +21,15 @@ DURATION_TEST(weeks, 22, ratio_multiply<ratio<7>, days::period>)
 DURATION_TEST(months, 20, ratio_divide<years::period, ratio<12>>)
 DURATION_TEST(years, 17, ratio_multiply<ratio<146097, 400>, days::period>)
 
-// clang-format off
-static_assert(is_same_v<sys_seconds, time_point<system_clock, seconds>>,
+static_assert(is_same_v<sys_seconds, time_point<system_clock, seconds>>, //
     "sys_seconds is not time_point<system_clock, seconds>.");
-static_assert(is_same_v<sys_days, time_point<system_clock, days>>,
+static_assert(is_same_v<sys_days, time_point<system_clock, days>>, //
     "sys_days is not time_point<system_clock, days>.");
 
-static_assert(is_same_v<local_seconds, time_point<local_t, seconds>>,
+static_assert(is_same_v<local_seconds, time_point<local_t, seconds>>, //
     "local_seconds is not time_point<local_t, seconds>.");
-static_assert(is_same_v<local_days, time_point<local_t, days>>,
+static_assert(is_same_v<local_days, time_point<local_t, days>>, //
     "local_days is not time_point<local_t, days>.");
-// clang-format on
 
 constexpr bool test() {
     steady_clock::time_point tp1;

@@ -10,6 +10,14 @@
 
 using namespace std;
 
+// clang-format off
+template <class I>
+concept Countable = requires { typename iter_difference_t<remove_cvref_t<I>>; }
+    && requires(I&& i, iter_difference_t<remove_cvref_t<I>> n) {
+        views::counted(forward<I>(i), n);
+    };
+// clang-format on
+
 template <input_or_output_iterator Iter>
 struct convertible_difference {
     constexpr convertible_difference(const int _val_) noexcept : _val(_val_) {}
@@ -31,6 +39,9 @@ struct instantiator {
             ranges::subrange;
         int input[] = {13, 42, 1729, -1, -1};
 
+        STATIC_ASSERT(Countable<Iter>);
+        STATIC_ASSERT(Countable<const Iter&> == copy_constructible<Iter>);
+
         auto result = ranges::views::counted(Iter{input}, convertible_difference<Iter>{3});
         if constexpr (contiguous_iterator<Iter>) {
             STATIC_ASSERT(same_as<decltype(result), span<remove_reference_t<iter_reference_t<Iter>>, dynamic_extent>>);
@@ -47,6 +58,6 @@ struct instantiator {
 };
 
 int main() {
-    STATIC_ASSERT((with_writable_iterators<instantiator, int>::call(), true));
+    STATIC_ASSERT(with_writable_iterators<instantiator, int>::call());
     with_writable_iterators<instantiator, int>::call();
 }

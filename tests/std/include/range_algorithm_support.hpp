@@ -156,7 +156,6 @@ namespace test {
         }
     };
 
-    // clang-format off
     template <class T, class U>
     concept CanEq = requires(T const& t, U const& u) {
         { t == u } -> convertible_to<bool>;
@@ -186,7 +185,6 @@ namespace test {
     concept CanGtE = requires(T const& t, U const& u) {
         { t >= u } -> convertible_to<bool>;
     };
-    // clang-format on
 
     template <class Category, class Element>
     class proxy_reference {
@@ -455,11 +453,11 @@ namespace test {
             ++ptr_;
         }
 
-        [[nodiscard]] constexpr friend Element&& iter_move(iterator const& i) requires at_least<input> {
+        [[nodiscard]] friend constexpr Element&& iter_move(iterator const& i) requires at_least<input> {
             return std::move(*i.ptr_);
         }
 
-        constexpr friend void iter_swap(iterator const& x, iterator const& y)
+        friend constexpr void iter_swap(iterator const& x, iterator const& y)
             noexcept(std::is_nothrow_swappable_v<Element>) requires at_least<input> && std::swappable<Element> {
             ranges::swap(*x.ptr_, *y.ptr_);
         }
@@ -592,19 +590,36 @@ namespace test {
         }
     };
     // clang-format on
+
+    template <class Category, bool IsForward, bool IsProxy, bool EqAndCopy>
+    struct iterator_traits_base {};
+
+    template <class Category>
+    struct iterator_traits_base<Category, true, false, true> {
+        using iterator_category = Category;
+    };
+
+    template <class Category>
+    struct iterator_traits_base<Category, true, true, true> {
+        using iterator_category = input;
+    };
+
+    template <class Category, bool IsProxy>
+    struct iterator_traits_base<Category, false, IsProxy, true> {
+        using iterator_category = input;
+    };
 } // namespace test
 
 template <class Category, class Element, ::test::CanDifference Diff, ::test::CanCompare Eq, ::test::ProxyRef Proxy,
     ::test::IsWrapped Wrapped>
-struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>> {
-    using iterator_concept  = Category;
-    using iterator_category = conditional_t<derived_from<Category, forward_iterator_tag>, //
-        conditional_t<Proxy == ::test::ProxyRef::no, Category, input_iterator_tag>, //
-        conditional_t<static_cast<bool>(Eq), Category, void>>; // TRANSITION, LWG-3289
-    using value_type        = remove_cv_t<Element>;
-    using difference_type   = ptrdiff_t;
-    using pointer           = conditional_t<derived_from<Category, contiguous_iterator_tag>, Element*, void>;
-    using reference         = iter_reference_t<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>;
+struct std::iterator_traits<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>
+    : ::test::iterator_traits_base<Category, derived_from<Category, forward_iterator_tag>,
+          Proxy == ::test::ProxyRef::yes, Eq == ::test::CanCompare::yes> {
+    using iterator_concept = Category;
+    using value_type       = remove_cv_t<Element>;
+    using difference_type  = ptrdiff_t;
+    using pointer          = conditional_t<derived_from<Category, contiguous_iterator_tag>, Element*, void>;
+    using reference        = iter_reference_t<::test::iterator<Category, Element, Diff, Eq, Proxy, Wrapped>>;
 };
 
 template <class Element, ::test::CanDifference Diff, ::test::IsWrapped Wrapped>
@@ -876,7 +891,7 @@ struct with_output_iterators {
 template <class Continuation, class Element>
 struct with_writable_iterators {
     template <class... Args>
-    static constexpr void call() {
+    static constexpr bool call() {
         using namespace test;
         using test::iterator;
 
@@ -887,6 +902,8 @@ struct with_writable_iterators {
             iterator<input, Element, CanDifference::no, CanCompare::no, ProxyRef::yes>>();
 
         with_output_iterators<Continuation, Element>::template call<Args...>();
+
+        return true;
     }
 };
 
@@ -1323,7 +1340,7 @@ struct get_nth_fn {
         test::proxy_reference<T, Elem> r) const noexcept requires requires {
         (*this)(r.peek());
     }
-    { return (*this) (r.peek()); }
+    { return (*this)(r.peek()); }
 };
 inline constexpr get_nth_fn<0> get_first;
 inline constexpr get_nth_fn<1> get_second;
@@ -1433,4 +1450,9 @@ concept CanIndex = requires(R&& r, const ranges::range_difference_t<R> i) {
 template <class R>
 concept CanBool = requires(R&& r) {
     std::forward<R>(r) ? true : false;
+};
+
+template <class I>
+concept CanIterSwap = requires(I&& i1, I&& i2) {
+    ranges::iter_swap(std::forward<I>(i1), std::forward<I>(i2));
 };

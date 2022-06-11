@@ -88,8 +88,9 @@ namespace experimental {
             return _Ptr;
         }
 
-        __declspec(
-            deprecated("is deprecated. Use coroutine_handle::address() instead")) void* to_address() const noexcept {
+        [[deprecated("coroutine_handle::to_address() is deprecated. "
+                     "Use coroutine_handle::address() instead.")]] void*
+            to_address() const noexcept {
             return _Ptr;
         }
 
@@ -131,8 +132,9 @@ namespace experimental {
     struct coroutine_handle : coroutine_handle<> { // general form
         using coroutine_handle<>::coroutine_handle;
 
-        __declspec(deprecated("with pointer parameter is deprecated. Use coroutine_handle::from_promise(T&) "
-                              "instead")) static coroutine_handle from_promise(_PromiseT* _Prom) noexcept {
+        [[deprecated("coroutine_handle::from_promise(T*) with pointer parameter is deprecated. "
+                     "Use coroutine_handle::from_promise(T&) instead.")]] static coroutine_handle
+            from_promise(_PromiseT* _Prom) noexcept {
             return from_promise(*_Prom);
         }
 

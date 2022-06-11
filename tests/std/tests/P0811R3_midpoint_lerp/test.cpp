@@ -114,12 +114,9 @@ constexpr float mint_nan<float>(const bool sign, const unsigned long long payloa
     const unsigned int filteredPayload = payload & 0x3F'FFFFu; // bottom 22 bits
     assert(filteredPayload == payload); // if this assert fails, payload didn't fit
 
-    // clang-format off
-    const unsigned int result =
-        (static_cast<unsigned int>(sign) << 31)
-        | 0x7FC0'0000u // turn on all exponent bits and the qNaN bit
-        | filteredPayload;
-    // clang-format on
+    const unsigned int result = (static_cast<unsigned int>(sign) << 31)
+                              | 0x7FC0'0000u // turn on all exponent bits and the qNaN bit
+                              | filteredPayload;
 
     return bit_cast<float>(result);
 }
@@ -129,12 +126,9 @@ constexpr double mint_nan<double>(const bool sign, const unsigned long long payl
     const unsigned long long filteredPayload = payload & 0x7'FFFF'FFFF'FFFFllu; // bottom 51 bits
     assert(filteredPayload == payload); // if this assert fails, payload didn't fit
 
-    // clang-format off
-    const unsigned long long result =
-        (static_cast<unsigned long long>(sign) << 63)
-        | 0x7FF8'0000'0000'0000u // turn on all exponent bits and the qNaN bit
-        | filteredPayload;
-    // clang-format on
+    const unsigned long long result = (static_cast<unsigned long long>(sign) << 63)
+                                    | 0x7FF8'0000'0000'0000u // turn on all exponent bits and the qNaN bit
+                                    | filteredPayload;
 
     return bit_cast<double>(result);
 }
@@ -1029,6 +1023,20 @@ bool test_lerp() {
     return true;
 }
 
+constexpr bool test_gh_2112() {
+    // GH-2112 <cmath>: std::lerp is missing Arithmetic overloads
+    assert(lerp(0, 0, 0) == 0.0);
+    assert(lerp(0.0f, 0.0f, 0.0) == 0.0);
+    assert(lerp(0.0L, 0, 0) == 0.0L);
+
+    STATIC_ASSERT(is_same_v<double, decltype(lerp(0, 0, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0.0L, 0, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0, 0.0L, 0))>);
+    STATIC_ASSERT(is_same_v<long double, decltype(lerp(0, 0, 0.0L))>);
+
+    return true;
+}
+
 int main() {
     test_constants<float>();
     test_constants<double>();
@@ -1099,4 +1107,7 @@ int main() {
     test_lerp<float>();
     test_lerp<double>();
     test_lerp<long double>();
+
+    test_gh_2112();
+    STATIC_ASSERT(test_gh_2112());
 }

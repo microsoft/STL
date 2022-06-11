@@ -554,6 +554,7 @@ void test_main() { // test basic workings of string definitions
         hash_val        = STD hash<STD wstring>()(STD wstring(L"abc"));
         hash_val        = STD hash<STD u16string>()(STD u16string(3, 'x'));
         hash_val        = STD hash<STD u32string>()(STD u32string(3, 'x'));
+        (void) hash_val;
     }
 
     {

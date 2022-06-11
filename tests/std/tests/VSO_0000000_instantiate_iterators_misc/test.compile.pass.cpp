@@ -11,7 +11,6 @@
 #define _SILENCE_CXX17_NEGATORS_DEPRECATION_WARNING
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
 #define _SILENCE_CXX17_RAW_STORAGE_ITERATOR_DEPRECATION_WARNING
-#define _SILENCE_CXX17_STRSTREAM_DEPRECATION_WARNING
 #define _SILENCE_CXX17_TEMPORARY_BUFFER_DEPRECATION_WARNING
 #define _SILENCE_CXX20_ATOMIC_INIT_DEPRECATION_WARNING
 #define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING
@@ -23,7 +22,7 @@
 #define _USE_NAMED_IDL_NAMESPACE 1
 
 #include <algorithm>
-//#include <any> // All templates instantiated in P0220R1_any
+// #include <any> // All templates instantiated in P0220R1_any
 #include <array>
 #include <cassert>
 #include <ccomplex>
@@ -33,7 +32,6 @@
 #include <cfloat>
 #include <chrono>
 #include <cinttypes>
-#include <ciso646>
 #include <climits>
 #include <clocale>
 #include <cmath>
@@ -73,7 +71,7 @@
 #include <memory>
 #include <new>
 #include <numeric>
-//#include <optional> // All templates instantiated in P0220R1_optional
+// #include <optional> // All templates instantiated in P0220R1_optional
 #include <ostream>
 #include <random>
 #include <ratio>
@@ -89,7 +87,7 @@
 #include <typeindex>
 #include <typeinfo>
 #include <utility>
-//#include <variant> // All templates instantiated in P0088R3_variant
+// #include <variant> // All templates instantiated in P0088R3_variant
 #include <vector>
 
 // Headers not allowed with /clr:pure
@@ -335,7 +333,7 @@ void exception_test_impl(const ThrowingFunction& tf) {
         try {
             tf();
         } catch (...) {
-            throw_with_nested("BOOMx2");
+            throw_with_nested("WOOFx2");
         }
     } catch (const exception& e) {
         check_nested_exception_impl(e);
@@ -347,7 +345,7 @@ void exception_test() {
     exception_ptr e_ptr = make_exception_ptr(e);
 
     exception_test_impl([]() { throw 23; }); // can't nest
-    exception_test_impl([]() { throw runtime_error("BOOM"); }); // can nest
+    exception_test_impl([]() { throw runtime_error("WOOF"); }); // can nest
 }
 
 template <typename CharType>
@@ -958,6 +956,7 @@ void memory_test() {
     };
     my_shared_from_this msft{};
     default_delete<void> dd0{default_delete<int>{}};
+    (void) dd0;
     default_delete<int[]> dd1{default_delete<int[]>{}};
     dd1(new int[5]);
 

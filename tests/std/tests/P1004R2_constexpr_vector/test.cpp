@@ -236,7 +236,6 @@ constexpr bool test_interface() {
         static_assert(is_same_v<remove_const_t<decltype(cb2)>, vec::const_iterator>);
         assert(*cb2 == 0);
 
-#if !(defined(__EDG__) && defined(_M_X64)) // TRANSITION, VSO-1356637
         const auto e = range_constructed.end();
         static_assert(is_same_v<remove_const_t<decltype(e)>, vec::iterator>);
         assert(*prev(e) == 5);
@@ -248,7 +247,6 @@ constexpr bool test_interface() {
         const auto ce2 = const_range_constructed.end();
         static_assert(is_same_v<remove_const_t<decltype(ce2)>, vec::const_iterator>);
         assert(*prev(ce2) == 5);
-#endif // TRANSITION, VSO-1356637
 
         const auto rb = range_constructed.rbegin();
         static_assert(is_same_v<remove_const_t<decltype(rb)>, reverse_iterator<vec::iterator>>);
@@ -315,7 +313,6 @@ constexpr bool test_interface() {
         static_assert(is_same_v<remove_const_t<decltype(cf)>, int>);
         assert(cf == 0);
 
-#if !(defined(__EDG__) && defined(_M_X64)) // TRANSITION, VSO-1356637
         const auto b = range_constructed.back();
         static_assert(is_same_v<remove_const_t<decltype(b)>, int>);
         assert(b == 5);
@@ -323,7 +320,6 @@ constexpr bool test_interface() {
         const auto cb = const_range_constructed.back();
         static_assert(is_same_v<remove_const_t<decltype(cb)>, int>);
         assert(cb == 5);
-#endif // TRANSITION, VSO-1356637
 
         const auto d = range_constructed.data();
         static_assert(is_same_v<remove_const_t<decltype(d)>, int*>);
@@ -555,7 +551,6 @@ constexpr bool test_iterators() {
         assert(*cit == 4);
     }
 
-#if !(defined(__EDG__) && defined(_M_X64)) // TRANSITION, VSO-1356637
     { // advance back
         auto it = range_constructed.end() - 2;
         assert(*it == 4);
@@ -567,7 +562,6 @@ constexpr bool test_iterators() {
         cit -= 2;
         assert(*cit == 2);
     }
-#endif // TRANSITION, VSO-1356637
 
     { // difference
         const auto it1 = range_constructed.begin();

@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#define _FORMAT_CODEPAGE (__std_code_page{932})
-
 #include <cassert>
 #include <clocale>
 #include <format>
@@ -14,7 +12,7 @@ using namespace std;
 
 void test_multibyte_format_strings() {
     const auto s = "\x93\xfa\x96{\x92\x6e\x90}"sv; // Note the use of `{` and `}` as continuation bytes (from GH-1576)
-    assert(format(s) == s);
+    assert(format("\x93\xfa\x96{\x92\x6e\x90}"sv) == s);
 
     assert(format("{:.2}", s) == "\x93\xfa"sv);
     assert(format("{:4.2}", s) == "\x93\xfa  "sv);
