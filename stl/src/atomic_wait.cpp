@@ -266,6 +266,7 @@ void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noex
     if (_Context == nullptr) {
         return;
     }
+
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
             // Can't move wake outside SRWLOCKed section: SRWLOCK also protects the _Context itself
@@ -282,6 +283,7 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     if (_Context == nullptr) {
         return;
     }
+
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
             // Can't move wake outside SRWLOCKed section: SRWLOCK also protects the _Context itself
@@ -299,6 +301,7 @@ int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand,
         _Entry._Wait_list_head._Next = &_Entry._Wait_list_head;
         _Entry._Wait_list_head._Prev = &_Entry._Wait_list_head;
     }
+
     _Guarded_wait_context _Context{_Storage, &_Entry._Wait_list_head};
     for (;;) {
         if (!_Are_equal(_Storage, _Comparand, _Size, _Param)) { // note: under lock to prevent lost wakes
