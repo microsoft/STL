@@ -291,6 +291,7 @@ struct _List_node { // list node
     _Nodeptr _Prev; // predecessor node, or last element if head
     _Value_type _Myval; // the stored value, unused if head
 
+    _List_node()                  = default;
     _List_node(const _List_node&) = delete;
     _List_node& operator=(const _List_node&) = delete;
 

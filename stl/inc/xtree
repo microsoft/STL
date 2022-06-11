@@ -335,6 +335,7 @@ struct _Tree_node {
         _Black
     };
 
+    _Tree_node()                  = default;
     _Tree_node(const _Tree_node&) = delete;
     _Tree_node& operator=(const _Tree_node&) = delete;
 

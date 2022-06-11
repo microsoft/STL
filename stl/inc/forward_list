@@ -244,6 +244,7 @@ struct _Flist_node { // forward_list node
     _Nodeptr _Next; // successor node
     _Value_type _Myval; // the stored value
 
+    _Flist_node()                   = default;
     _Flist_node(const _Flist_node&) = delete;
     _Flist_node& operator=(const _Flist_node&) = delete;
 
