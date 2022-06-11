@@ -184,7 +184,6 @@ public:
             // the buffer is full
             _Result.assign(_View._Ptr, _View._Size);
         } else {
-            _Traits::assign(_View._Ptr[_View._Size], _Elem());
             if (_Result._Move_assign_from_buffer(_View._Ptr, _View._Size, _View._Res)) {
                 _Mystate &= ~_Allocated;
             }
@@ -428,9 +427,8 @@ protected:
             _Xbad_alloc();
         }
 
-        if (_Count != 0
-            && (_State & (_Noread | _Constant))
-                   != (_Noread | _Constant)) { // finite buffer that can be read or written, set it up
+        if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
+            // finite buffer that can be read or written, set it up
             const auto _Pnew = _Unfancy(_Al.allocate(_Count));
             _Traits::copy(_Pnew, _Ptr, _Count);
             _Seekhigh = _Pnew + _Count;

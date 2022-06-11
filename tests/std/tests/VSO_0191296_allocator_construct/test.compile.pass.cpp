@@ -3,8 +3,6 @@
 
 int main() {} // COMPILE-ONLY
 
-// Work around VSO-119998 "/Za's elided-copy-ctor check is still bogus":
-#ifdef _MSC_EXTENSIONS
 // This test is loosely derived from dev11_437519_container_requirements, except the specific condition tested for is
 // use of allocator::construct rather than constructing actual temporaries everywhere. Parts of
 // dev11_437519_container_requirements where regressions of this kind are unlikely and testing of them is very difficult
@@ -1729,4 +1727,3 @@ void assert_all() {
     assert_container<tag_unordered_multiset>();
     assert_container<tag_unordered_set>();
 }
-#endif // _MSC_EXTENSIONS
