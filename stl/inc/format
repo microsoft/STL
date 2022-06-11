@@ -43,12 +43,14 @@
 #pragma message("The contents of <format> are available only with C++20 or later.")
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
+#include <__msvc_format_ucd_tables.hpp>
 #include <algorithm>
 #include <charconv>
 #include <concepts>
 #include <cstdint>
 #include <exception>
 #include <iterator>
+#include <limits>
 #include <locale>
 #include <mutex>
 #include <stdexcept>
@@ -74,6 +76,10 @@ class vector;
 class format_error : public runtime_error {
     using runtime_error::runtime_error;
 };
+
+[[noreturn]] inline void _Throw_format_error(const char* const _Message) {
+    _THROW(format_error{_Message});
+}
 
 enum class _Fmt_align : uint8_t { _None, _Left, _Right, _Center };
 
@@ -164,6 +170,366 @@ concept _Parse_spec_callbacks = _Parse_align_callbacks<_Ty, _CharT>
 };
 // clang-format on
 
+// _Decode_utf decodes UTF-8 or UTF-16 encoded unsigned char or wchar_t strings respectively
+_NODISCARD constexpr const wchar_t* _Decode_utf(const wchar_t* _First, const wchar_t* _Last, char32_t& _Val) noexcept {
+    _STL_INTERNAL_CHECK(_First < _Last);
+    _Val = static_cast<char32_t>(*_First);
+    if (_Val < 0xD800) {
+        return _First + 1;
+    } else if (_Val <= 0xDBFF) {
+        // 0xD800 <= _Val <= 0xDBFF: High surrogate
+        if (_First + 1 == _Last) {
+            _Val = 0xFFFD;
+            return _Last;
+        }
+
+        if (_First[1] < 0xDC00 || _First[1] > 0xDFFF) {
+            // unpaired high surrogate
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+
+        _Val = (_Val - 0xD800) << 10;
+        _Val += _First[1] - 0xDC00;
+        _Val += 0x10000;
+        return _First + 2;
+    } else if (_Val <= 0xDFFF) {
+        // unpaired low surrogate
+        _Val = 0xFFFD;
+        return _First + 1;
+    }
+
+    return _First + 1;
+}
+
+_NODISCARD constexpr const char* _Decode_utf(const char* _First, const char* _Last, char32_t& _Val) noexcept {
+    _STL_INTERNAL_CHECK(_First < _Last);
+    // Decode a UTF-8 encoded codepoint starting at _First and not exceeding _Last, returning
+    // one past the end of the character decoded. Any invalid codepoints will result in
+    // _Val == U+FFFD and _Decode_utf will return one past the
+    // maximal subpart of the ill-formed subsequence. So, most invalid UTF-8 will result in
+    // one U+FFFD for each byte of invalid data. Truncated but otherwise valid UTF-8 may
+    // result in one U+FFFD for more than one input byte.
+    _Val = static_cast<char32_t>(static_cast<unsigned char>(*_First));
+
+    // All UTF-8 text is at least one byte.
+    // The zero extended values of the "prefix" bytes for
+    // a multi-byte sequence are the lowest numeric value (in two's complement)
+    // that any leading byte could have for a code unit of that size, so
+    // we just sum the comparisons to get the number of trailing bytes.
+    int _Num_bytes;
+    if (_Val <= 0x7F) {
+        return _First + 1;
+    } else if (_Val >= 0xC2 && _Val <= 0xDF) {
+        _Num_bytes = 2;
+    } else if (_Val >= 0xE0 && _Val <= 0xEF) {
+        _Num_bytes = 3;
+    } else if (_Val >= 0xF0 && _Val <= 0xF4) {
+        _Num_bytes = 4;
+    } else {
+        // definitely not valid
+        _Val = 0xFFFD;
+        return _First + 1;
+    }
+
+    if (_First + 1 == _Last) {
+        // We got a multibyte sequence and the next byte is off the end, we need
+        // to check just the next byte here since we need to look for overlong sequences.
+        // We want to return one past the end of a truncated sequence if everything is
+        // otherwise valid, so we can't check if _First + _Num_bytes is off the end.
+        _Val = 0xFFFD;
+        return _Last;
+    }
+
+    switch (_Val) {
+    case 0xE0:
+        // we know _First[1] is in range because we just checked above,
+        // and a leader of 0xE0 implies _Num_bytes == 3
+        if (static_cast<unsigned char>(_First[1]) < 0xA0) {
+            // note, we just increment forward one-byte,
+            // even though _Num_bytes would imply the next
+            // codepoint starts at _First + 2, this is because
+            // we don't consume trailing bytes of ill-formed subsequences
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+        break;
+    case 0xED:
+        if (static_cast<unsigned char>(_First[1]) > 0x9F) {
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+        break;
+    case 0xF0:
+        if (static_cast<unsigned char>(_First[1]) < 0x90) {
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+        break;
+    case 0xF4:
+        if (static_cast<unsigned char>(_First[1]) > 0x8F) {
+            _Val = 0xFFFD;
+            return _First + 1;
+        }
+        break;
+    }
+
+    // mask out the "value bits" in the leading byte,
+    // for one-byte codepoints there is no leader,
+    // two-byte codepoints have the same number of value
+    // bits as trailing bytes (including the leading zero)
+    switch (_Num_bytes) {
+    case 2:
+        _Val &= 0b1'1111u;
+        break;
+    case 3:
+        _Val &= 0b1111u;
+        break;
+    case 4:
+        _Val &= 0b111u;
+        break;
+    }
+
+    for (int _Idx = 1; _Idx < _Num_bytes; ++_Idx) {
+        if (_First + _Idx >= _Last || static_cast<unsigned char>(_First[_Idx]) < 0x80
+            || static_cast<unsigned char>(_First[_Idx]) > 0xBF) {
+            // truncated sequence
+            _Val = 0xFFFD;
+            return _First + _Idx;
+        }
+        // we know we're always in range due to the above check.
+        _Val = (_Val << 6) | (static_cast<unsigned char>(_First[_Idx]) & 0b11'1111u);
+    }
+    return _First + _Num_bytes;
+}
+
+_NODISCARD constexpr const char32_t* _Decode_utf(
+    const char32_t* _First, const char32_t* _Last, char32_t& _Val) noexcept {
+    _STL_INTERNAL_CHECK(_First < _Last);
+    (void) _Last;
+    _Val = *_First;
+    return _First + 1;
+}
+
+template <class _CharT>
+class _Unicode_codepoint_iterator {
+private:
+    const _CharT* _First = nullptr;
+    const _CharT* _Last  = nullptr;
+    const _CharT* _Next  = nullptr;
+    char32_t _Val        = 0;
+
+public:
+    using value_type      = char32_t;
+    using difference_type = ptrdiff_t;
+
+    constexpr _Unicode_codepoint_iterator(const _CharT* _First_val, const _CharT* _Last_val) noexcept
+        : _First(_First_val), _Last(_Last_val) {
+        _Next = _Decode_utf(_First, _Last, _Val);
+    }
+
+    constexpr _Unicode_codepoint_iterator() = default;
+
+    constexpr _Unicode_codepoint_iterator& operator++() noexcept {
+        _First = _Next;
+        if (_First != _Last) {
+            _Next = _Decode_utf(_First, _Last, _Val);
+        }
+
+        return *this;
+    }
+    constexpr _Unicode_codepoint_iterator operator++(int) noexcept {
+        auto _Old = *this;
+        ++*this;
+        return _Old;
+    }
+
+    _NODISCARD constexpr value_type operator*() const noexcept {
+        return _Val;
+    }
+
+    _NODISCARD constexpr const _CharT* _Position() const noexcept {
+        return _First;
+    }
+
+    _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
+        return _First == _Last;
+    }
+    _NODISCARD constexpr bool operator==(const _Unicode_codepoint_iterator& _Other) const noexcept {
+        _STL_INTERNAL_CHECK(_Last == _Other._Last);
+        return _First == _Other._First && _Last == _Other._Last;
+    }
+};
+
+
+// Implements a DFA matching the regex on the left side of rule GB11. The DFA is:
+//
+// +---+   ExtPic      +---+    ZWJ        +---+
+// | 1 +---------------> 2 +---------------> 3 |
+// +---+               ++-^+               +---+
+//                      | |
+//                      +-+
+//                      Extend
+//
+// Note state 3 is never explicitly transitioned to, since it's the "accept" state, we just
+// transition back to state 1 and return true.
+class _GB11_LeftHand_regex {
+private:
+    enum _State_t : bool { _Start, _ExtPic };
+
+    _State_t _State = _Start;
+
+public:
+    _NODISCARD constexpr bool operator==(const _GB11_LeftHand_regex&) const noexcept = default;
+
+    _NODISCARD constexpr bool _Match(
+        const _Grapheme_Break_property_values _Left_gbp, _Extended_Pictographic_property_values _Left_ExtPic) noexcept {
+        switch (_State) {
+        case _Start:
+            if (_Left_ExtPic == _Extended_Pictographic_property_values::_Extended_Pictographic_value) {
+                _State = _ExtPic;
+            }
+            return false;
+        case _ExtPic:
+            if (_Left_gbp == _Grapheme_Break_property_values::_ZWJ_value) {
+                _State = _Start;
+                return true;
+            } else if (_Left_gbp != _Grapheme_Break_property_values::_Extend_value) {
+                _State = _Start;
+                return false;
+            }
+            return false;
+        default:
+            _STL_INTERNAL_CHECK(false);
+            return false;
+        }
+    }
+};
+
+template <class _CharT>
+class _Grapheme_break_property_iterator {
+private:
+    using _Wrapped_iter_type = _Unicode_codepoint_iterator<_CharT>;
+
+    _Wrapped_iter_type _WrappedIter;
+    _GB11_LeftHand_regex _GB11_rx;
+
+public:
+    _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
+        return _WrappedIter == default_sentinel;
+    }
+
+    _NODISCARD constexpr bool operator==(const _Grapheme_break_property_iterator&) const noexcept = default;
+
+    using difference_type = ptrdiff_t;
+    using value_type      = iter_value_t<_Wrapped_iter_type>;
+
+    constexpr _Grapheme_break_property_iterator(const _CharT* _First, const _CharT* _Last)
+        : _WrappedIter(_First, _Last) {}
+
+    constexpr _Grapheme_break_property_iterator() = default;
+
+    constexpr _Grapheme_break_property_iterator& operator++() noexcept {
+        auto _Left_gbp     = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
+        auto _Left_ExtPic  = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
+        auto _Right_gbp    = _Grapheme_Break_property_values::_No_value;
+        auto _Right_ExtPic = _Extended_Pictographic_property_values::_No_value;
+        size_t _Num_RIs    = 0;
+        for (;; _Left_gbp = _Right_gbp, _Left_ExtPic = _Right_ExtPic) {
+            ++_WrappedIter;
+            if (_WrappedIter == default_sentinel) {
+                return *this; // GB2 Any % eot
+            }
+            _Right_gbp    = _Grapheme_Break_property_data._Get_property_for_codepoint(*_WrappedIter);
+            _Right_ExtPic = _Extended_Pictographic_property_data._Get_property_for_codepoint(*_WrappedIter);
+            // match GB11 now, so that we're sure to update it for every character, not just ones where
+            // the GB11 rule is considered
+            const bool _GB11_Match = _GB11_rx._Match(_Left_gbp, _Left_ExtPic);
+            // Also update the number of sequential RIs immediately
+            if (_Left_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value) {
+                ++_Num_RIs;
+            } else {
+                _Num_RIs = 0;
+            }
+
+            if (_Left_gbp == _Grapheme_Break_property_values::_CR_value
+                && _Right_gbp == _Grapheme_Break_property_values::_LF_value) {
+                continue; // GB3 CR x LF
+            }
+
+            if (_Left_gbp == _Grapheme_Break_property_values::_Control_value
+                || _Left_gbp == _Grapheme_Break_property_values::_CR_value
+                || _Left_gbp == _Grapheme_Break_property_values::_LF_value) {
+                return *this; // GB4 (Control | CR | LF) % Any
+            }
+
+            if (_Right_gbp == _Grapheme_Break_property_values::_Control_value
+                || _Right_gbp == _Grapheme_Break_property_values::_CR_value
+                || _Right_gbp == _Grapheme_Break_property_values::_LF_value) {
+                return *this; // GB5 Any % (Control | CR | LF)
+            }
+
+            if (_Left_gbp == _Grapheme_Break_property_values::_L_value
+                && (_Right_gbp == _Grapheme_Break_property_values::_L_value
+                    || _Right_gbp == _Grapheme_Break_property_values::_V_value
+                    || _Right_gbp == _Grapheme_Break_property_values::_LV_value
+                    || _Right_gbp == _Grapheme_Break_property_values::_LVT_value)) {
+                continue; // GB6 L x (L | V | LV | LVT)
+            }
+
+            if ((_Left_gbp == _Grapheme_Break_property_values::_LV_value
+                    || _Left_gbp == _Grapheme_Break_property_values::_V_value)
+                && (_Right_gbp == _Grapheme_Break_property_values::_V_value
+                    || _Right_gbp == _Grapheme_Break_property_values::_T_value)) {
+                continue; // GB7 (LV | V) x (V | T)
+            }
+
+            if ((_Left_gbp == _Grapheme_Break_property_values::_LVT_value
+                    || _Left_gbp == _Grapheme_Break_property_values::_T_value)
+                && _Right_gbp == _Grapheme_Break_property_values::_T_value) {
+                continue; // GB8 (LVT | T) x T
+            }
+
+            if (_Right_gbp == _Grapheme_Break_property_values::_Extend_value
+                || _Right_gbp == _Grapheme_Break_property_values::_ZWJ_value) {
+                continue; // GB9 x (Extend | ZWJ)
+            }
+
+            if (_Right_gbp == _Grapheme_Break_property_values::_SpacingMark_value) {
+                continue; // GB9a x SpacingMark
+            }
+
+            if (_Left_gbp == _Grapheme_Break_property_values::_Prepend_value) {
+                continue; // GB9b Prepend x
+            }
+
+            if (_GB11_Match && _Right_ExtPic == _Extended_Pictographic_property_values::_Extended_Pictographic_value) {
+                continue; // GB11 \p{ExtendedPictographic} Extend* ZWJ x \p{ExtendedPictographic}
+            }
+
+            if (_Left_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value
+                && _Right_gbp == _Grapheme_Break_property_values::_Regional_Indicator_value && _Num_RIs % 2 != 0) {
+                continue; // GB12 and 13, do not break between RIs if there are an odd number of RIs before the
+                          // breakpoint
+            }
+            return *this;
+        }
+    }
+    constexpr _Grapheme_break_property_iterator operator++(int) noexcept {
+        auto _Old = *this;
+        ++*this;
+        return _Old;
+    }
+
+    _NODISCARD constexpr const _CharT* _Position() const noexcept {
+        return _WrappedIter._Position();
+    }
+
+    _NODISCARD constexpr value_type operator*() const noexcept {
+        return *_WrappedIter;
+    }
+};
+
 template <class _Ty, class _CharT>
 concept _CharT_or_bool = same_as<_Ty, _CharT> || same_as<_Ty, bool>;
 
@@ -224,7 +590,7 @@ public:
     // _Next_arg_id < 0 means manual
     _NODISCARD constexpr size_t next_arg_id() {
         if (_Next_arg_id < 0) {
-            _THROW(format_error("Can not switch from manual to automatic indexing"));
+            _Throw_format_error("Can not switch from manual to automatic indexing");
         }
 
         if (_STD is_constant_evaluated()) {
@@ -244,7 +610,7 @@ public:
         }
 
         if (_Next_arg_id > 0) {
-            _THROW(format_error("Can not switch from automatic to manual indexing"));
+            _Throw_format_error("Can not switch from automatic to manual indexing");
         }
         _Next_arg_id = -1;
     }
@@ -404,7 +770,7 @@ _NODISCARD constexpr const _CharT* _Parse_nonnegative_integer(
     } while (_First != _Last && '0' <= *_First && *_First <= '9');
 
     if (_Value > _Max_int) {
-        _THROW(format_error("Number is too big"));
+        _Throw_format_error("Number is too big");
     }
 
     return _First;
@@ -447,14 +813,14 @@ _NODISCARD constexpr const _CharT* _Parse_arg_id(
         // The only things permitted after the index are the end of the replacement field ('}')
         // or the beginning of the format spec (':').
         if (_First == _Last || (*_First != '}' && *_First != ':')) {
-            _THROW(format_error("Invalid format string."));
+            _Throw_format_error("Invalid format string.");
         }
 
         _Callbacks._On_manual_id(_Index);
         return _First;
     }
     // This is where we would parse named arg ids if std::format were to support them.
-    _THROW(format_error("Invalid format string."));
+    _Throw_format_error("Invalid format string.");
 }
 
 _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
@@ -487,18 +853,15 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
 #endif // ^^^ EDG workaround ^^^
 }
 
-inline constexpr char16_t _Width_estimate_low_intervals[] = { // Per N4885 [format.string.std]/11
+inline constexpr char32_t _Width_estimate_intervals[] = { // Per N4885 [format.string.std]/11
     0x1100u, 0x1160u, 0x2329u, 0x232Bu, 0x2E80u, 0x303Fu, 0x3040u, 0xA4D0u, 0xAC00u, 0xD7A4u, 0xF900u, 0xFB00u, 0xFE10u,
-    0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u};
+    0xFE1Au, 0xFE30u, 0xFE70u, 0xFF00u, 0xFF61u, 0xFFE0u, 0xFFE7u, 0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u,
+    0x2FFFEu, 0x30000u, 0x3FFFEu};
 
-inline constexpr char32_t _Width_estimate_high_intervals[] = { // Per N4885 [format.string.std]/11
-    0x1F300u, 0x1F650u, 0x1F900u, 0x1FA00u, 0x20000u, 0x2FFFEu, 0x30000u, 0x3FFFEu};
-
-template <auto& _Bounds>
 _NODISCARD constexpr int _Unicode_width_estimate(const char32_t _Ch) noexcept {
     // Computes the width estimation for Unicode characters from N4885 [format.string.std]/11
     int _Result = 1;
-    for (const auto& _Bound : _Bounds) {
+    for (const auto& _Bound : _Width_estimate_intervals) {
         if (_Ch < _Bound) {
             return _Result;
         }
@@ -521,7 +884,7 @@ protected:
 
     _NODISCARD int _Double_byte_encoding_code_units_in_next_character(
         const char* const _First, const char* const _Last) const {
-        // Returns a count of the number of code units that compose the first encoded character in [_First, _Last),
+        // Returns the number of code units that compose the first encoded character in [_First, _Last),
         // or -1 if [_First, _Last) doesn't contain an entire encoded character or *_First is not a valid lead byte.
         wchar_t _Wide;
         mbstate_t _St{};
@@ -554,62 +917,38 @@ class _Fmt_codec<char, _Statically_Utf8> : private _Fmt_codec_base<_Statically_U
 private:
     _NODISCARD static constexpr int _Utf8_code_units_in_next_character(
         const char* const _First, const char* const _Last) noexcept {
-        // Returns a count of the number of UTF-8 code units that compose the first encoded character in [_First,
-        // _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or *_First is not a valid lead
-        // byte.
-        const auto _Ch = static_cast<unsigned char>(*_First);
-        if (_Ch < 0b1000'0000u) {
-            return 1;
-        }
-
-        const auto _Len = static_cast<size_t>(_Last - _First);
-
-        if (_Ch < 0b1110'0000u) {
-            // check for non-lead byte or partial 2-byte encoded character
-            return (_Ch >= 0b1100'0000u && _Len >= 2) ? 2 : -1;
-        }
-
-        if (_Ch < 0b1111'0000u) {
-            // check for partial 3-byte encoded character
-            return (_Len >= 3) ? 3 : -1;
-        }
-
-        // check for partial 4-byte encoded character
-        return (_Len >= 4) ? 4 : -1;
-    }
-
-    _NODISCARD static constexpr int _Estimate_utf8_character_width(const char* const _Ptr, const int _Units) noexcept {
-        // Return an estimate for the width of the character composed of _Units code units,
-        // whose first code unit is denoted by _Ptr.
-        auto _Ch = static_cast<char32_t>(*_Ptr);
-        switch (_Units) {
-        default:
-        case 1:
-        case 2:
-            return 1;
-        case 3:
-            _Ch &= 0b1111u;
-            break;
-        case 4:
-            _Ch &= 0b111u;
-            break;
-        }
-
-        for (int _Idx = 1; _Idx < _Units; ++_Idx) {
-            _Ch = _Ch << 6 | (_Ptr[_Idx] & 0b11'1111u);
-        }
-
-        if (_Units == 3) {
-            return _Unicode_width_estimate<_Width_estimate_low_intervals>(_Ch);
-        }
-
-        return _Unicode_width_estimate<_Width_estimate_high_intervals>(_Ch);
+        char32_t _Ch;
+        const auto _Next = _Decode_utf(_First, _Last, _Ch);
+        _STL_INTERNAL_CHECK(_Next - _First <= 4);
+        return static_cast<int>(_Next - _First);
     }
 
 public:
+    _NODISCARD constexpr const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
+        // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
+        // continuation byte) in [_First, _Last).
+        if constexpr (_Statically_Utf8) {
+            return _Find_unchecked(_First, _Last, _Val);
+        } else {
+            if (this->_Cvt._Mbcurmax == 1 || this->_Cvt._Mbcurmax == 4) {
+                // As above and in _Mbrtowc, assume 4-byte encodings are UTF-8
+                return _Find_unchecked(_First, _Last, _Val);
+            }
+
+            while (_First != _Last && *_First != _Val) {
+                const int _Units = this->_Double_byte_encoding_code_units_in_next_character(_First, _Last);
+                if (_Units < 0) {
+                    _Throw_format_error("Invalid encoded character in format string.");
+                }
+                _First += _Units;
+            }
+
+            return _First;
+        }
+    }
     _NODISCARD constexpr int _Units_in_next_character(
         const char* const _First, const char* const _Last) const noexcept {
-        // Returns a count of the number of code units that compose the first encoded character in
+        // Returns the number of code units that compose the first encoded character in
         // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
         // *_First is not a valid lead byte.
         _STL_INTERNAL_CHECK(_First < _Last);
@@ -632,90 +971,21 @@ public:
             }
         }
     }
-
-    _NODISCARD constexpr const char* _Find_encoded(const char* _First, const char* const _Last, const char _Val) const {
-        // Returns the first occurrence of _Val as an encoded character (and not, for example, as a
-        // continuation byte) in [_First, _Last).
-        if constexpr (_Statically_Utf8) {
-            return _Find_unchecked(_First, _Last, _Val);
-        } else {
-            if (this->_Cvt._Mbcurmax == 1 || this->_Cvt._Mbcurmax == 4) {
-                // As above and in _Mbrtowc, assume 4-byte encodings are UTF-8
-                return _Find_unchecked(_First, _Last, _Val);
-            }
-
-            while (_First != _Last && *_First != _Val) {
-                const int _Units = _Units_in_next_character(_First, _Last);
-                if (_Units < 0) {
-                    _THROW(format_error("Invalid encoded character in format string."));
-                }
-                _First += _Units;
-            }
-
-            return _First;
-        }
-    }
-
-    _NODISCARD constexpr int _Estimate_width(const char* const _Ptr, const int _Units) const {
-        // Return an estimate for the width of the character composed of _Units code units,
-        // whose first code unit is denoted by _Ptr.
-        if constexpr (_Statically_Utf8) {
-            return _Estimate_utf8_character_width(_Ptr, _Units);
-        } else {
-            if (this->_Cvt._Mbcurmax != 4) {
-                // not a Unicode encoding; estimate width == number of code units
-                return _Units;
-            }
-
-            // assume UTF-8
-            return _Estimate_utf8_character_width(_Ptr, _Units);
-        }
-    }
 };
 
 template <bool _Statically_Utf8>
 class _Fmt_codec<wchar_t, _Statically_Utf8> {
 public:
-    _NODISCARD constexpr int _Units_in_next_character(
-        const wchar_t* _First, const wchar_t* const _Last) const noexcept {
-        // Returns a count of the number of code units that compose the first encoded character in
-        // [_First, _Last), or -1 if [_First, _Last) doesn't contain an entire encoded character or
-        // *_First is an unpaired surrogate.
-        _STL_INTERNAL_CHECK(_First < _Last);
-
-        if (*_First < 0xD800u || *_First >= 0xE000u) {
-            return 1;
-        }
-
-        if (*_First >= 0xDC00u) { // unpaired low surrogate
-            return -1;
-        }
-
-        if (++_First == _Last || *_First < 0xDC00u || *_First >= 0xE000u) { // unpaired high surrogate
-            return -1;
-        }
-
-        return 2; // surrogate pair
-    }
-
     _NODISCARD constexpr const wchar_t* _Find_encoded(
         const wchar_t* const _First, const wchar_t* const _Last, const wchar_t _Val) const {
         return _Find_unchecked(_First, _Last, _Val);
     }
-
-    _NODISCARD constexpr int _Estimate_width(const wchar_t* const _Ptr, const int _Units) const {
-        // Return an estimate for the width of the character composed of _Units code units,
-        // whose first code unit is denoted by _Ptr.
-        auto _Ch = static_cast<char32_t>(*_Ptr);
-        if (_Units == 1) {
-            return _Unicode_width_estimate<_Width_estimate_low_intervals>(_Ch);
-        }
-
-        // surrogate pair
-        _Ch = (_Ch - 0xD800u) << 10;
-        _Ch += static_cast<char32_t>(_Ptr[1]) - 0xDC00u;
-        _Ch += 0x10000u;
-        return _Unicode_width_estimate<_Width_estimate_high_intervals>(_Ch);
+    _NODISCARD constexpr int _Units_in_next_character(
+        const wchar_t* _First, const wchar_t* const _Last) const noexcept {
+        char32_t _Ch;
+        const auto _Next = _Decode_utf(_First, _Last, _Ch);
+        _STL_INTERNAL_CHECK(_Next - _First <= 2);
+        return static_cast<int>(_Next - _First);
     }
 };
 
@@ -748,7 +1018,7 @@ _NODISCARD constexpr const _CharT* _Parse_align(
 
     const int _Units = _Get_fmt_codec<_CharT>()._Units_in_next_character(_First, _Last);
     if (_Units < 0) { // invalid fill character encoding
-        _THROW(format_error("Invalid format string."));
+        _Throw_format_error("Invalid format string.");
     }
     auto _Align_pt = _First + _Units;
 
@@ -772,7 +1042,7 @@ _NODISCARD constexpr const _CharT* _Parse_align(
         if (_Parsed_align != _Fmt_align::_None) {
             if (_Align_pt != _First) {
                 if (*_First == '{') {
-                    _THROW(format_error("invalid fill character '{'"));
+                    _Throw_format_error("invalid fill character '{'");
                 }
                 _Callbacks._On_fill({_First, static_cast<size_t>(_Align_pt - _First)});
                 _First = _Align_pt + 1;
@@ -857,7 +1127,7 @@ _NODISCARD constexpr const _CharT* _Parse_width(
         }
 
         if (_First == _Last || *_First != '}') {
-            _THROW(format_error("Invalid format string."));
+            _Throw_format_error("Invalid format string.");
         }
         ++_First;
     }
@@ -884,11 +1154,11 @@ _NODISCARD constexpr const _CharT* _Parse_precision(
         }
 
         if (_First == _Last || *_First != '}') {
-            _THROW(format_error("Invalid format string."));
+            _Throw_format_error("Invalid format string.");
         }
         ++_First;
     } else {
-        _THROW(format_error("Missing precision specifier."));
+        _Throw_format_error("Missing precision specifier.");
     }
 
     return _First;
@@ -979,7 +1249,7 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
     const _CharT* _First, const _CharT* _Last, _HandlerT&& _Handler) {
     ++_First;
     if (_First == _Last) {
-        _THROW(format_error("Invalid format string."));
+        _Throw_format_error("Invalid format string.");
     }
 
     if (*_First == '}') {
@@ -1001,10 +1271,10 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
         } else if (_Ch == ':') {
             _First = _Handler._On_format_specs(_Adapter._Arg_id, _First + 1, _Last);
             if (_First == _Last || *_First != '}') {
-                _THROW(format_error("Unknown format specifier."));
+                _Throw_format_error("Unknown format specifier.");
             }
         } else {
-            _THROW(format_error("Missing '}' in format string."));
+            _Throw_format_error("Missing '}' in format string.");
         }
     }
 
@@ -1035,7 +1305,7 @@ constexpr void _Parse_format_string(basic_string_view<_CharT> _Format_str, _Hand
                 // the above condition was not met.
                 ++_ClosingCurl;
                 if (_ClosingCurl == _OpeningCurl || *_ClosingCurl != '}') {
-                    _THROW(format_error("Unmatched '}' in format string."));
+                    _Throw_format_error("Unmatched '}' in format string.");
                 }
                 // We found two closing curls, so output only one of them
                 _Handler._On_text(_First, _ClosingCurl);
@@ -1090,7 +1360,7 @@ public:
 
     constexpr void _On_fill(const basic_string_view<_CharT> _Sv) {
         if (_Sv.size() > _STD size(_Specs._Fill)) {
-            _THROW(format_error("Invalid fill (too long)."));
+            _Throw_format_error("Invalid fill (too long).");
         }
 
         const auto _Pos = _STD _Copy_unchecked(_Sv._Unchecked_begin(), _Sv._Unchecked_end(), _Specs._Fill);
@@ -1137,7 +1407,7 @@ _NODISCARD constexpr basic_format_arg<_Context> _Get_arg(const _Context& _Ctx, c
     // id or a named id (which we do not support in std::format)
     auto _Arg = _Ctx.arg(_Arg_id);
     if (!_Arg) {
-        _THROW(format_error("Argument not found."));
+        _Throw_format_error("Argument not found.");
     }
 
     return _Arg;
@@ -1158,11 +1428,11 @@ public:
             }
 
             if (!_Positive) {
-                _THROW(format_error("width is not positive."));
+                _Throw_format_error("width is not positive.");
             }
             return static_cast<unsigned long long>(_Value);
         } else {
-            _THROW(format_error("Width is not an integer."));
+            _Throw_format_error("Width is not an integer.");
         }
     }
 };
@@ -1176,12 +1446,12 @@ public:
         if constexpr (is_integral_v<_Ty>) {
             if constexpr (is_signed_v<_Ty>) {
                 if (_Value < 0) {
-                    _THROW(format_error("Negative precision."));
+                    _Throw_format_error("Negative precision.");
                 }
             }
             return static_cast<unsigned long long>(_Value);
         } else {
-            _THROW(format_error("Precision is not an integer."));
+            _Throw_format_error("Precision is not an integer.");
         }
     }
 };
@@ -1194,7 +1464,7 @@ _NODISCARD constexpr int _Get_dynamic_specs(const _FormatArg _Arg) {
     _STL_INTERNAL_STATIC_ASSERT(_Is_any_of_v<_Handler, _Width_checker, _Precision_checker>);
     const unsigned long long _Val = _STD visit_format_arg(_Handler{}, _Arg);
     if (_Val > static_cast<unsigned long long>((numeric_limits<int>::max)())) {
-        _THROW(format_error("Number is too big."));
+        _Throw_format_error("Number is too big.");
     }
 
     return static_cast<int>(_Val);
@@ -1268,7 +1538,7 @@ private:
 
     _NODISCARD static constexpr int _Verify_dynamic_arg_index_in_range(const size_t _Idx) {
         if (_Idx > static_cast<size_t>((numeric_limits<int>::max)())) {
-            _THROW(format_error("Dynamic width or precision index too large."));
+            _Throw_format_error("Dynamic width or precision index too large.");
         }
 
         return static_cast<int>(_Idx);
@@ -1293,13 +1563,13 @@ public:
 
     constexpr void _Require_numeric_argument() const {
         if (!_Is_arithmetic_fmt_type(_Arg_type)) {
-            _THROW(format_error("Format specifier requires numeric argument."));
+            _Throw_format_error("Format specifier requires numeric argument.");
         }
     }
 
     constexpr void _Check_precision() const {
         if (_Is_integral_fmt_type(_Arg_type) || _Arg_type == _Basic_format_arg_type::_Pointer_type) {
-            _THROW(format_error("Precision not allowed for this argument type."));
+            _Throw_format_error("Precision not allowed for this argument type.");
         }
     }
 
@@ -1342,7 +1612,7 @@ public:
     template <class _CharT>
     constexpr void _On_type(_CharT _Type) {
         if (_Type < 0 || _Type > (numeric_limits<signed char>::max)()) {
-            _THROW(format_error("Invalid type specification."));
+            _Throw_format_error("Invalid type specification.");
         }
         const char _Narrow_type = static_cast<char>(_Type);
         enum class _Presentation_type_category { _Default, _Integer, _Floating, _String, _Pointer, _Char };
@@ -1378,7 +1648,7 @@ public:
             _Cat = _Presentation_type_category::_Pointer;
             break;
         default:
-            _THROW(format_error("Invalid presentation type specifier"));
+            _Throw_format_error("Invalid presentation type specifier");
         }
 
         switch (_Arg_type) {
@@ -1391,7 +1661,7 @@ public:
             }
             // note, we don't get a call if there isn't a type, but none is valid for everything.
             if (_Cat != _Presentation_type_category::_String && _Cat != _Presentation_type_category::_Integer) {
-                _THROW(format_error("Invalid presentation type for bool"));
+                _Throw_format_error("Invalid presentation type for bool");
             }
             break;
         case _Basic_format_arg_type::_Char_type:
@@ -1400,7 +1670,11 @@ public:
             }
 
             if (_Cat != _Presentation_type_category::_Char && _Cat != _Presentation_type_category::_Integer) {
-                _THROW(format_error("Invalid presentation type for char/wchar_t"));
+                if constexpr (is_same_v<_CharT, char>) {
+                    _Throw_format_error("Invalid presentation type for char");
+                } else {
+                    _Throw_format_error("Invalid presentation type for wchar_t");
+                }
             }
             break;
         case _Basic_format_arg_type::_Int_type:
@@ -1412,7 +1686,7 @@ public:
             }
 
             if (_Cat != _Presentation_type_category::_Integer && _Cat != _Presentation_type_category::_Char) {
-                _THROW(format_error("Invalid presentation type for integer"));
+                _Throw_format_error("Invalid presentation type for integer");
             }
             break;
         case _Basic_format_arg_type::_Float_type:
@@ -1423,7 +1697,7 @@ public:
             }
 
             if (_Cat != _Presentation_type_category::_Floating) {
-                _THROW(format_error("Invalid presentation type for floating-point"));
+                _Throw_format_error("Invalid presentation type for floating-point");
             }
             break;
         case _Basic_format_arg_type::_CString_type:
@@ -1433,7 +1707,7 @@ public:
             }
 
             if (_Cat != _Presentation_type_category::_String) {
-                _THROW(format_error("Invalid presentation type for string"));
+                _Throw_format_error("Invalid presentation type for string");
             }
             break;
         case _Basic_format_arg_type::_Pointer_type:
@@ -1442,7 +1716,7 @@ public:
             }
 
             if (_Cat != _Presentation_type_category::_Pointer) {
-                _THROW(format_error("Invalid presentation type for pointer"));
+                _Throw_format_error("Invalid presentation type for pointer");
             }
             break;
         case _Basic_format_arg_type::_Custom_type:
@@ -1454,7 +1728,7 @@ public:
 
         if (_Need_arithmetic_presentation_type && _Cat != _Presentation_type_category::_Integer
             && _Cat != _Presentation_type_category::_Floating) {
-            _THROW(format_error("Modifier requires an integer presentation type for bool"));
+            _Throw_format_error("Modifier requires an integer presentation type for bool");
         }
         _Handler::_On_type(_Type);
     }
@@ -2068,7 +2342,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const void* const _Value) {
 template <class _CharT, class _OutputIt>
 _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _CharT* _Value) {
     if (!_Value) {
-        _THROW(format_error("String pointer is null."));
+        _Throw_format_error("String pointer is null.");
     }
 
     while (*_Value) {
@@ -2279,7 +2553,11 @@ _NODISCARD _OutputIt _Write_integral(
     _OutputIt _Out, const _Integral _Value, _Basic_format_specs<_CharT> _Specs, _Lazy_locale _Locale) {
     if (_Specs._Type == 'c') {
         if (!_In_bounds<_CharT>(_Value)) {
-            _THROW(format_error("integral cannot be stored in charT"));
+            if constexpr (is_same_v<_CharT, char>) {
+                _Throw_format_error("integral cannot be stored in char");
+            } else {
+                _Throw_format_error("integral cannot be stored in wchar_t");
+            }
         }
         _Specs._Alt = false;
         return _Fmt_write(_STD move(_Out), static_cast<_CharT>(_Value), _Specs, _Locale);
@@ -2672,32 +2950,130 @@ _NODISCARD _OutputIt _Fmt_write(
     return _Fmt_write(_STD move(_Out), basic_string_view<_CharT>{_Value}, _Specs, _Locale);
 }
 
+// width iterator for UTF-8 and UTF-16
+template <class _CharT>
+class _Measure_string_prefix_iterator_utf {
+private:
+    _Grapheme_break_property_iterator<_CharT> _WrappedIter;
+
+public:
+    _NODISCARD constexpr bool operator==(const _Measure_string_prefix_iterator_utf&) const noexcept = default;
+
+    _NODISCARD constexpr bool operator==(default_sentinel_t) const noexcept {
+        return _WrappedIter == default_sentinel;
+    }
+
+    using difference_type = ptrdiff_t;
+    using value_type      = int;
+
+    constexpr _Measure_string_prefix_iterator_utf(const _CharT* _First, const _CharT* _Last)
+        : _WrappedIter(_First, _Last) {}
+
+    constexpr _Measure_string_prefix_iterator_utf() = default;
+
+    _NODISCARD constexpr value_type operator*() const {
+        return _Unicode_width_estimate(*_WrappedIter);
+    }
+
+    constexpr _Measure_string_prefix_iterator_utf& operator++() noexcept {
+        ++_WrappedIter;
+        return *this;
+    }
+
+    constexpr _Measure_string_prefix_iterator_utf operator++(int) noexcept {
+        auto _Old = *this;
+        ++*this;
+        return _Old;
+    }
+
+    _NODISCARD constexpr const _CharT* _Position() const {
+        return _WrappedIter._Position();
+    }
+};
+
+
+class _Measure_string_prefix_iterator_legacy {
+private:
+    _Fmt_codec<char> _Codec = _Get_fmt_codec<char>();
+    const char* _First      = nullptr;
+    const char* _Last       = nullptr;
+    int _Units              = 0;
+
+    void _Update_units() {
+        if (_First < _Last) {
+            _Units = _Codec._Units_in_next_character(_First, _Last);
+        } else {
+            _Units = -1;
+        }
+    }
+
+public:
+    _NODISCARD bool operator==(default_sentinel_t) const noexcept {
+        return _First == _Last;
+    }
+    _NODISCARD bool operator==(const _Measure_string_prefix_iterator_legacy& _Rhs) const noexcept {
+        return _First == _Rhs._First && _Last == _Rhs._Last;
+    }
+
+    using difference_type = ptrdiff_t;
+    using value_type      = int;
+
+    _Measure_string_prefix_iterator_legacy(const char* _First_val, const char* _Last_val)
+        : _First(_First_val), _Last(_Last_val) {
+        _Update_units();
+    }
+
+    _Measure_string_prefix_iterator_legacy() = default;
+
+    _Measure_string_prefix_iterator_legacy& operator++() noexcept {
+        _First += _Units;
+        _Update_units();
+        return *this;
+    }
+    _Measure_string_prefix_iterator_legacy operator++(int) noexcept {
+        auto _Old = *this;
+        ++*this;
+        return _Old;
+    }
+    _NODISCARD value_type operator*() const noexcept {
+        return _Units;
+    }
+
+    _NODISCARD const char* _Position() const noexcept {
+        return _First;
+    }
+};
+
+template <class _CharT>
+using _Measure_string_prefix_iterator =
+    conditional_t<is_same_v<_CharT, char> && !_Is_execution_charset_self_synchronizing(),
+        _Measure_string_prefix_iterator_legacy, _Measure_string_prefix_iterator_utf<_CharT>>;
+
 template <class _CharT>
 _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> _Value, int& _Width) {
     // Returns a pointer past-the-end of the largest prefix of _Value that fits in _Width, or all
     // of _Value if _Width is negative. Updates _Width to the estimated width of that prefix.
-    const int _Max_width    = _Width;
-    auto _Pos               = _Value.data();
-    const auto _Last        = _Pos + _Value.size();
-    int _Estimated_width    = 0; // the estimated width of [_Value.data(), _Pos)
-    const auto& _Codec      = _Get_fmt_codec<_CharT>();
+    const int _Max_width = _Width;
+    const auto _First    = _Value.data();
+    const auto _Last     = _First + _Value.size();
+    _Measure_string_prefix_iterator<_CharT> _Pfx_iter(_First, _Last);
+    int _Estimated_width = 0; // the estimated width of [_First, _Pfx_iter)
+
     constexpr auto _Max_int = (numeric_limits<int>::max)();
 
-    while (_Pos != _Last) {
+    while (_Pfx_iter != default_sentinel) {
         if (_Estimated_width == _Max_width && _Max_width >= 0) {
             // We're at our maximum length
             break;
         }
 
-        // TRANSITION, extended grapheme clustering
-        const int _Units           = _Codec._Units_in_next_character(_Pos, _Last);
-        const int _Character_width = _Codec._Estimate_width(_Pos, _Units);
+        const int _Character_width = *_Pfx_iter;
 
         if (_Max_int - _Character_width < _Estimated_width) { // avoid overflow
             // Either _Max_width isn't set, or adding this character will exceed it.
             if (_Max_width < 0) { // unset; saturate width estimate and take all characters
-                _Estimated_width = _Max_int;
-                _Pos             = _Last;
+                _Width = _Max_int;
+                return _Last;
             }
             break;
         }
@@ -2708,12 +3084,11 @@ _NODISCARD const _CharT* _Measure_string_prefix(const basic_string_view<_CharT> 
             _Estimated_width -= _Character_width;
             break;
         }
-
-        _Pos += _Units;
+        ++_Pfx_iter;
     }
 
     _Width = _Estimated_width;
-    return _Pos;
+    return _Pfx_iter._Position();
 }
 
 template <class _CharT, class _OutputIt>
@@ -2867,7 +3242,7 @@ struct _Format_handler {
             _Arg._Active_state);
         _First = _Parse_format_specs(_First, _Last, _Handler);
         if (_First == _Last || *_First != '}') {
-            _THROW(format_error("Missing '}' in format string."));
+            _Throw_format_error("Missing '}' in format string.");
         }
 
         _Ctx.advance_to(_STD visit_format_arg(
@@ -2893,7 +3268,7 @@ struct _Formatter_base {
         _Specs_checker<_Dynamic_specs_handler<_Pc>> _Handler(_Dynamic_specs_handler<_Pc>{_Specs, _ParseCtx}, _ArgType);
         const auto _It = _Parse_format_specs(_ParseCtx._Unchecked_begin(), _ParseCtx._Unchecked_end(), _Handler);
         if (_It != _ParseCtx._Unchecked_end() && *_It != '}') {
-            _THROW(format_error("Missing '}' in format string."));
+            _Throw_format_error("Missing '}' in format string.");
         }
         return _ParseCtx.begin() + (_It - _ParseCtx._Unchecked_begin());
     }
@@ -2971,8 +3346,16 @@ template <_Format_supported_charT _CharT, class _Traits>
 struct formatter<basic_string_view<_CharT, _Traits>, _CharT>
     : _Formatter_base<basic_string_view<_CharT, _Traits>, _CharT, _Basic_format_arg_type::_String_type> {};
 
+// TRANSITION, VSO-1444086 (remove _STL_DECLSPEC_NOINITALL)
+#if defined(__clang__) || defined(__CUDACC__) || defined(__INTEL_COMPILER) || defined(__EDG__)
+#define _STL_DECLSPEC_NOINITALL
+#else // ^^^ not MSVC / MSVC vvv
+#define _STL_DECLSPEC_NOINITALL \
+    _Pragma("warning(push)") _Pragma("warning(disable : 4845)") __declspec(no_init_all) _Pragma("warning(pop)")
+#endif // ^^^ MSVC ^^^
+
 template <class _CharT, class... _Args>
-struct _Basic_format_string {
+struct _STL_DECLSPEC_NOINITALL _Basic_format_string {
     basic_string_view<_CharT> _Str;
 
     template <class _Ty>
@@ -2983,6 +3366,8 @@ struct _Basic_format_string {
         }
     }
 };
+
+#undef _STL_DECLSPEC_NOINITALL
 
 template <class... _Args>
 using _Fmt_string = _Basic_format_string<char, type_identity_t<_Args>...>;

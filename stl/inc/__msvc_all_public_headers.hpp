@@ -35,7 +35,7 @@
 #endif // TRANSITION, OS-17090155 (UCRT)
 
 #define _SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING
-#define _SILENCE_CXX17_STRSTREAM_DEPRECATION_WARNING
+#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
@@ -49,6 +49,7 @@
 #include <numbers>
 #include <ratio>
 #include <source_location>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <version>
@@ -88,6 +89,7 @@
 #include <complex>
 #include <deque>
 #include <exception>
+#include <expected>
 #include <filesystem>
 #include <format>
 #include <forward_list>
@@ -127,7 +129,6 @@
 #include <strstream>
 #include <syncstream>
 #include <system_error>
-#include <tuple>
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>

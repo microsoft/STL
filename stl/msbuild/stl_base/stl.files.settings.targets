@@ -176,6 +176,19 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         </BuildFiles>
     </ItemGroup>
 
+    <ItemGroup Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'amd64'">
+        <!-- Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib
+             (controlled by IncludeInLink and IncludeInImportLib). -->
+        <BuildFiles Include="
+            $(CrtRoot)\github\stl\src\alias_init_once_begin_initialize.asm;
+            $(CrtRoot)\github\stl\src\alias_init_once_complete.asm;
+            ">
+            <BuildAs>asm</BuildAs>
+            <IncludeInLink>false</IncludeInLink>
+            <IncludeInImportLib>true</IncludeInImportLib>
+        </BuildFiles>
+    </ItemGroup>
+
     <ItemGroup Condition="'$(CrtBuildModelIsDll)' == 'true'">
         <!-- The following files are linked in msvcpXXX[d][_clr].dll. -->
         <BuildFiles Include="
