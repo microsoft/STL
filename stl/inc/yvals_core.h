@@ -443,7 +443,7 @@
 #define _NODISCARD_CTOR
 #define _NODISCARD_CTOR_MSG(_Msg)
 #elif __has_cpp_attribute(nodiscard) >= 201907L
-#define _NODISCARD_CTOR _NODISCARD
+#define _NODISCARD_CTOR           _NODISCARD
 #define _NODISCARD_CTOR_MSG(_Msg) _NODISCARD_MSG(_Msg)
 #else
 #define _NODISCARD_CTOR
@@ -1540,9 +1540,9 @@
 #define __cpp_lib_expected 202202L
 #endif // __cpp_lib_concepts
 
-#define __cpp_lib_invoke_r                          202106L
-#define __cpp_lib_is_scoped_enum                    202011L
-#define __cpp_lib_move_only_function                202110L
+#define __cpp_lib_invoke_r           202106L
+#define __cpp_lib_is_scoped_enum     202011L
+#define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
