@@ -961,12 +961,16 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _L
     }
 }
 
-template <class _Size_type>
-_NODISCARD constexpr _Size_type _Convert_size(const size_t _Len) noexcept(is_same_v<_Size_type, size_t>) {
-    // convert size_t to _Size_type, avoiding truncation
-    if constexpr (!is_same_v<_Size_type, size_t>) {
+template <class _Size_type, class _Unsigned_type>
+_NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len) noexcept(
+    sizeof(_Unsigned_type) <= sizeof(_Size_type)) {
+    // convert _Unsigned_type to _Size_type, avoiding truncation
+    _STL_INTERNAL_STATIC_ASSERT(_Unsigned_type(-1) > 0);
+    _STL_INTERNAL_STATIC_ASSERT(_Size_type(-1) > 0);
+
+    if constexpr (sizeof(_Unsigned_type) > sizeof(_Size_type)) {
         if (_Len > (numeric_limits<_Size_type>::max)()) {
-            _Xlength_error("size_t too long for _Size_type");
+            _Xlength_error("size is too long for _Size_type");
         }
     }
 
