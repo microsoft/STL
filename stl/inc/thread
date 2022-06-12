@@ -145,8 +145,7 @@ public:
 
     _NODISCARD id get_id() const noexcept;
 
-    _NODISCARD native_handle_type native_handle() noexcept
-    /* strengthened */ { // return Win32 HANDLE as void *
+    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ { // return Win32 HANDLE as void *
         return _Thr._Hnd;
     }
 
