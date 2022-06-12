@@ -1751,8 +1751,7 @@ public:
         return _My_data._Myfirst[_Pos];
     }
 
-    _NODISCARD _CONSTEXPR20 const _Ty& operator[](const size_type _Pos) const noexcept
-    /* strengthened */ {
+    _NODISCARD _CONSTEXPR20 const _Ty& operator[](const size_type _Pos) const noexcept /* strengthened */ {
         auto& _My_data = _Mypair._Myval2;
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(
