@@ -1644,6 +1644,20 @@ STATIC_ASSERT(__cpp_lib_ssize == 201902L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_stacktrace
+#error __cpp_lib_stacktrace is not defined
+#elif __cpp_lib_stacktrace != 202011L
+#error __cpp_lib_stacktrace is not 202011L
+#else
+STATIC_ASSERT(__cpp_lib_stacktrace == 202011L);
+#endif
+#else
+#ifdef __cpp_lib_stacktrace
+#error __cpp_lib_stacktrace is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_starts_ends_with
 #error __cpp_lib_starts_ends_with is not defined

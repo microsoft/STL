@@ -286,6 +286,7 @@
 // P0448R4 <spanstream>
 // P0627R6 unreachable()
 // P0798R8 Monadic Operations For optional
+// P0881R7 <stacktrace>
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1072R10 basic_string::resize_and_overwrite
@@ -1462,6 +1463,7 @@
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L
+#define __cpp_lib_stacktrace                  202011L
 #define __cpp_lib_stdatomic_h                 202011L
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
