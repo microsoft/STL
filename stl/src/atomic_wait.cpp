@@ -62,7 +62,9 @@ namespace {
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
     struct alignas(_STD hardware_destructive_interference_size) _Wait_table_entry {
-        SRWLOCK _Lock                 = SRWLOCK_INIT;
+        SRWLOCK _Lock = SRWLOCK_INIT;
+        // Initialize to all zeros, self-link lazily to optimize for space.
+        // Whole zero _Wait_table_entry avoids the need to be stored in the binary and the need to relocate.
         _Wait_context _Wait_list_head = {nullptr, nullptr, nullptr, CONDITION_VARIABLE_INIT};
 
         constexpr _Wait_table_entry() noexcept = default;
@@ -263,6 +265,7 @@ void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noex
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     _SrwLock_guard _Guard(_Entry._Lock);
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
+
     if (_Context == nullptr) {
         return;
     }
@@ -280,6 +283,7 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     _SrwLock_guard _Guard(_Entry._Lock);
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
+
     if (_Context == nullptr) {
         return;
     }
@@ -297,6 +301,7 @@ int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand,
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
 
     _SrwLock_guard _Guard(_Entry._Lock);
+
     if (_Entry._Wait_list_head._Next == nullptr) {
         _Entry._Wait_list_head._Next = &_Entry._Wait_list_head;
         _Entry._Wait_list_head._Prev = &_Entry._Wait_list_head;
