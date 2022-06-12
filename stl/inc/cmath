@@ -75,8 +75,7 @@ _NODISCARD _Check_return_ inline float ceil(_In_ float _Xx) noexcept /* strength
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD _Check_return_ inline float copysign(_In_ float _Number, _In_ float _Sign) noexcept
-/* strengthened */ {
+_NODISCARD _Check_return_ inline float copysign(_In_ float _Number, _In_ float _Sign) noexcept /* strengthened */ {
 #if _HAS_CMATH_INTRINSICS
     return __copysignf(_Number, _Sign);
 #elif defined(__clang__)
@@ -132,8 +131,7 @@ _NODISCARD _Check_return_ inline float floor(_In_ float _Xx) noexcept /* strengt
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD _Check_return_ inline float fma(_In_ float _Xx, _In_ float _Yx, _In_ float _Zx) noexcept
-/* strengthened */ {
+_NODISCARD _Check_return_ inline float fma(_In_ float _Xx, _In_ float _Yx, _In_ float _Zx) noexcept /* strengthened */ {
     return _CSTD fmaf(_Xx, _Yx, _Zx);
 }
 
@@ -217,8 +215,7 @@ _NODISCARD _Check_return_ inline float nextafter(_In_ float _Xx, _In_ float _Yx)
     return _CSTD nextafterf(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline float nexttoward(_In_ float _Xx, _In_ long double _Yx) noexcept
-/* strengthened */ {
+_NODISCARD _Check_return_ inline float nexttoward(_In_ float _Xx, _In_ long double _Yx) noexcept /* strengthened */ {
     return _CSTD nexttowardf(_Xx, _Yx);
 }
 
@@ -424,8 +421,7 @@ _NODISCARD _Check_return_ inline int ilogb(_In_ long double _Xx) noexcept /* str
     return _CSTD ilogbl(_Xx);
 }
 
-_NODISCARD _Check_return_ inline long double ldexp(_In_ long double _Xx, _In_ int _Yx) noexcept
-/* strengthened */ {
+_NODISCARD _Check_return_ inline long double ldexp(_In_ long double _Xx, _In_ int _Yx) noexcept /* strengthened */ {
     return _CSTD ldexpl(_Xx, _Yx);
 }
 
@@ -515,13 +511,11 @@ _NODISCARD _Check_return_ inline long double round(_In_ long double _Xx) noexcep
 #endif // ^^^ intrinsics unavailable ^^^
 }
 
-_NODISCARD _Check_return_ inline long double scalbln(_In_ long double _Xx, _In_ long _Yx) noexcept
-/* strengthened */ {
+_NODISCARD _Check_return_ inline long double scalbln(_In_ long double _Xx, _In_ long _Yx) noexcept /* strengthened */ {
     return _CSTD scalblnl(_Xx, _Yx);
 }
 
-_NODISCARD _Check_return_ inline long double scalbn(_In_ long double _Xx, _In_ int _Yx) noexcept
-/* strengthened */ {
+_NODISCARD _Check_return_ inline long double scalbn(_In_ long double _Xx, _In_ int _Yx) noexcept /* strengthened */ {
     return _CSTD scalbnl(_Xx, _Yx);
 }
 
