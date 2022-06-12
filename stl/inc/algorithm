@@ -5955,8 +5955,7 @@ template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _RanIt is_heap_until(_ExPo&& _Exec, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept; // terminates
 
 template <class _ExPo, class _RanIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool is_heap(_ExPo&& _Exec, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept
-/* terminates */ {
+_NODISCARD bool is_heap(_ExPo&& _Exec, _RanIt _First, _RanIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if range is a heap
     return _STD is_heap_until(_STD forward<_ExPo>(_Exec), _First, _Last, _Pass_fn(_Pred)) == _Last;
 }
@@ -9527,8 +9526,7 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-        _NODISCARD constexpr range_value_t<_Rng> operator()(
-            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
@@ -9938,8 +9936,7 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _FwdIt is_sorted_until(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD bool is_sorted(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept
-/* terminates */ {
+_NODISCARD bool is_sorted(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // test if range is ordered by predicate
     return _STD is_sorted_until(_STD forward<_ExPo>(_Exec), _First, _Last, _Pass_fn(_Pred)) == _Last;
 }
