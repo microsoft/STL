@@ -1444,14 +1444,25 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <!-- VC 2015 - must have higher priority -->
+  <Type Name="stdext::hash_map&lt;*&gt;" Priority="Medium">
+      <AlternativeType Name="stdext::hash_multimap&lt;*&gt;" />
+      <AlternativeType Name="stdext::hash_set&lt;*&gt;" />
+      <AlternativeType Name="stdext::hash_multiset&lt;*&gt;" />
+      <DisplayString>{_List}</DisplayString>
+      <Expand>
+          <Item Name="[bucket_count]" IncludeView="detailed">_Maxidx</Item>
+          <Item Name="[load_factor]" IncludeView="detailed">((float)_List._Mypair._Myval2._Mysize) / ((float)_Maxidx)</Item>
+          <Item Name="[max_load_factor]" IncludeView="detailed">_Traitsobj._Max_buckets</Item>
+          <Item Name="[allocator]" ExcludeView="simple">_List._Mypair</Item>
+          <ExpandedItem>_List,view(simple)</ExpandedItem>
+      </Expand>
+  </Type>
+
+  <!-- VC 2015 - must have higher priority -->
   <Type Name="std::unordered_map&lt;*&gt;" Priority="Medium">
       <AlternativeType Name="std::unordered_multimap&lt;*&gt;" />
       <AlternativeType Name="std::unordered_set&lt;*&gt;" />
       <AlternativeType Name="std::unordered_multiset&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_map&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_multimap&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_set&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_multiset&lt;*&gt;" />
       <DisplayString>{_List}</DisplayString>
       <Expand>
           <Item Name="[bucket_count]" IncludeView="detailed">_Maxidx</Item>
