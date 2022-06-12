@@ -7,17 +7,15 @@ variables:
   tmpDir: 'D:\Temp'
   buildOutputLocation: 'D:\build'
 
-pool: 'StlBuild-2022-03-17-T1445'
+pool: 'StlBuild-2022-06-01-T1839'
 
 stages:
   - stage: Code_Format
     displayName: 'Code Format'
     jobs:
       - job: Code_Format_Validation
-        timeoutInMinutes: 90
+        timeoutInMinutes: 20
         displayName: 'Validation'
-        variables:
-          buildOutputLocation: 'D:\tools'
         steps:
           - script: |
               if exist "$(tmpDir)" (
@@ -29,33 +27,33 @@ stages:
             clean: true
             submodules: false
           - script: |
-              if exist "$(buildOutputLocation)" (
-                rmdir /S /Q "$(buildOutputLocation)"
-              )
               call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
-              -host_arch=amd64 -arch=amd64 -no_logo
-              cmake -G Ninja -DCMAKE_CXX_COMPILER=cl -DCMAKE_BUILD_TYPE=Release ^
-              -S $(Build.SourcesDirectory)\tools -B $(buildOutputLocation)
-              cmake --build $(buildOutputLocation)
-            displayName: 'Build Support Tools'
+                -host_arch=amd64 -arch=amd64 -no_logo
+              cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B $(tmpDir)/format-validate-build
+              cmake --build $(tmpDir)/format-validate-build
+            displayName: 'Build format and validation'
+            timeoutInMinutes: 5
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-          - task: BatchScript@1
-            displayName: 'Enforce clang-format'
-            timeoutInMinutes: 60
-            condition: succeededOrFailed()
-            inputs:
-              filename: 'azure-devops/enforce-clang-format.cmd'
-              failOnStandardError: true
-              arguments: '$(buildOutputLocation)/parallelize/parallelize.exe'
+          - script: |
+              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+                -host_arch=amd64 -arch=amd64 -no_logo
+              cmake --build $(tmpDir)/format-validate-build --target run-format
+            displayName: 'clang-format Files'
+            timeoutInMinutes: 5
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
-          - task: BatchScript@1
+          - script: |
+              call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
+                -host_arch=amd64 -arch=amd64 -no_logo
+              cmake --build $(tmpDir)/format-validate-build --target run-validate
             displayName: 'Validate Files'
             timeoutInMinutes: 2
-            condition: succeededOrFailed()
+            env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
+          - task: Powershell@2
+            displayName: 'Create Diff'
             inputs:
-              filename: 'azure-devops/validate-files.cmd'
-              failOnStandardError: true
-              arguments: '$(buildOutputLocation)/validate/validate.exe'
+              filePath: azure-devops/create-prdiff.ps1
+              pwsh: false
+            condition: succeededOrFailed()
             env: { TMP: $(tmpDir), TEMP: $(tmpDir) }
 
   - stage: Build_And_Test_x64

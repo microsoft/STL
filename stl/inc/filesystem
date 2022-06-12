@@ -211,21 +211,6 @@ namespace filesystem {
         }
     }
 
-    template <class>
-    inline constexpr bool _Is_EcharT = false;
-    template <>
-    inline constexpr bool _Is_EcharT<char> = true;
-    template <>
-    inline constexpr bool _Is_EcharT<wchar_t> = true;
-#ifdef __cpp_char8_t
-    template <>
-    inline constexpr bool _Is_EcharT<char8_t> = true;
-#endif // __cpp_char8_t
-    template <>
-    inline constexpr bool _Is_EcharT<char16_t> = true;
-    template <>
-    inline constexpr bool _Is_EcharT<char32_t> = true;
-
     template <class _Ty, class = void>
     inline constexpr bool _Is_Source_impl = false;
 
@@ -2019,8 +2004,8 @@ namespace filesystem {
         perms _Myperms     = perms::unknown;
     };
 
-    _NODISCARD inline bool exists(
-        const file_status _Status) noexcept { // tests whether _Status indicates an existing file
+    _NODISCARD inline bool exists(const file_status _Status) noexcept {
+        // tests whether _Status indicates an existing file
         switch (_Status.type()) {
         case file_type::none:
         case file_type::not_found:
@@ -3449,7 +3434,8 @@ namespace filesystem {
         return _Error;
     }
 
-    _NODISCARD inline uintmax_t hard_link_count(const path& _Target) { // get the number of hard links to _Target
+    _NODISCARD inline uintmax_t hard_link_count(const path& _Target) {
+        // get the number of hard links to _Target
         uintmax_t _Result;
         const auto _Err = _Hard_link_count(_Target.c_str(), _Result);
         if (_Err != __std_win_error::_Success) {
@@ -3488,7 +3474,8 @@ namespace filesystem {
         return false; // note status sets _Ec to an error on nonexistent input
     }
 
-    _NODISCARD inline bool is_directory(const path& _Path) { // tests whether _Path is a directory
+    _NODISCARD inline bool is_directory(const path& _Path) {
+        // tests whether _Path is a directory
         return _STD filesystem::is_directory(_STD filesystem::status(_Path));
     }
 
@@ -3538,7 +3525,8 @@ namespace filesystem {
         return false; // note status sets _Ec to an error on nonexistent input
     }
 
-    _NODISCARD inline bool is_other(const path& _Path) { // tests whether _Path is an other file (such as a junction)
+    _NODISCARD inline bool is_other(const path& _Path) {
+        // tests whether _Path is an other file (such as a junction)
         return _STD filesystem::is_other(_STD filesystem::status(_Path));
     }
 
@@ -3547,7 +3535,8 @@ namespace filesystem {
         return _STD filesystem::is_other(_STD filesystem::status(_Path, _Ec));
     }
 
-    _NODISCARD inline bool is_regular_file(const path& _Path) { // tests whether _Path is a regular file
+    _NODISCARD inline bool is_regular_file(const path& _Path) {
+        // tests whether _Path is a regular file
         return _STD filesystem::is_regular_file(_STD filesystem::status(_Path));
     }
 
@@ -3567,11 +3556,13 @@ namespace filesystem {
         return false; // note status sets _Ec to an error on nonexistent input
     }
 
-    _NODISCARD inline bool is_symlink(const path& _Path) { // tests whether _Path is a symlink
+    _NODISCARD inline bool is_symlink(const path& _Path) {
+        // tests whether _Path is a symlink
         return _STD filesystem::is_symlink(_STD filesystem::symlink_status(_Path));
     }
 
-    _NODISCARD inline bool is_symlink(const path& _Path, error_code& _Ec) noexcept { // tests whether _Path is a symlink
+    _NODISCARD inline bool is_symlink(const path& _Path, error_code& _Ec) noexcept {
+        // tests whether _Path is a symlink
         return _STD filesystem::is_symlink(_STD filesystem::symlink_status(_Path, _Ec));
     }
 
@@ -3846,7 +3837,8 @@ namespace filesystem {
         }
     }
 
-    inline uintmax_t remove_all(const path& _Path, error_code& _Ec) { // remove _Path, including any contents
+    inline uintmax_t remove_all(const path& _Path, error_code& _Ec) {
+        // remove _Path, including any contents
         _Ec.clear(); // for exception safety
         const auto _First_remove_result = __std_fs_remove(_Path.c_str());
         uintmax_t _Removed_count        = _First_remove_result._Removed;

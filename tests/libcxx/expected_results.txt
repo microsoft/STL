@@ -86,6 +86,9 @@ std/utilities/format/format.functions/vformat_to.pass.cpp FAIL
 std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
 std/utilities/format/format.functions/vformat.pass.cpp FAIL
 
+# libc++ doesn't implement P2321R2's changes to vector<bool>::reference
+std/containers/sequences/vector.bool/iterator_concept_conformance.compile.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -218,11 +221,11 @@ std/containers/unord/unord.set/max_size.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.apply/apply_large_arity.pass.cpp SKIPPED
 std/utilities/tuple/tuple.tuple/tuple.cnstr/recursion_depth.pass.cpp SKIPPED
 
-# Deprecation is a mess. We disable all deprecations in msvc_stdlib_force_include.hpp to allow libc++ tests for
-# deprecated features to pass, which breaks when libc++ deprecates the feature and adds two tests that (1) pass
-# with deprecation suppressed, and (2) fail without deprecation suppression. We should instead translate libc++
-# un-deprecation macros to STL un-deprecation macros in the force-include header, and just skip tests when we
-# deprecate before they do.
+# Deprecation is a mess. We disable all deprecations in llvm-project/libcxx/test/support/msvc_stdlib_force_include.h
+# (external to this repo) to allow libc++ tests for deprecated features to pass, which breaks when libc++ deprecates
+# the feature and adds two tests that (1) pass with deprecation suppressed, and (2) fail without deprecation suppression.
+# We should instead translate libc++ un-deprecation macros to STL un-deprecation macros in the force-include header,
+# and just skip tests when we deprecate before they do.
 std/utilities/meta/meta.unary/meta.unary.prop/is_literal_type.deprecated.fail.cpp FAIL
 
 
@@ -230,8 +233,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_literal_type.deprecated.fail.cp
 # P2321R2 zip
 std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
-std/utilities/meta/meta.trans/meta.trans.other/common_reference.compile.pass.cpp FAIL
-std/utilities/meta/meta.trans/meta.trans.other/common_type.pass.cpp FAIL
 
 # P1328R1 constexpr type_info::operator==()
 std/language.support/support.limits/support.limits.general/typeinfo.version.pass.cpp FAIL
@@ -267,7 +268,8 @@ std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort/partial_sort_comp.pass.cpp:0 FAIL
 
 # DevCom-1559808: (structured bindings for `subrange` in a constant expression)
-std/ranges/range.utility/range.subrange/structured_bindings.pass.cpp:0 FAIL
+# Skipped as this sometimes emits "fatal error C1001: Internal compiler error." with a crash dialog.
+std/ranges/range.utility/range.subrange/structured_bindings.pass.cpp:0 SKIPPED
 
 # DevCom-1626139 "compile-time NaN comparison"
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp:0 FAIL
@@ -279,12 +281,6 @@ std/utilities/utility/pairs/pairs.spec/three_way_comparison.pass.cpp:0 FAIL
 # DevCom-1626727: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
 std/algorithms/robust_re_difference_type.compile.pass.cpp:0 FAIL
 
-# DevCom-1628714: C1XX refuses nullptr_t == reference-to-function in a requires expression
-std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
-
-# DevCom-1629961: ICE testing if function lvalues are comparable with the spaceship operator
-std/language.support/cmp/cmp.concept/three_way_comparable.compile.pass.cpp:0 FAIL
-
 # DevCom-1638496: C1XX doesn't properly reject int <=> unsigned
 std/language.support/cmp/cmp.concept/three_way_comparable_with.compile.pass.cpp:0 FAIL
 std/language.support/cmp/cmp.result/compare_three_way_result.compile.pass.cpp:0 FAIL
@@ -292,6 +288,9 @@ std/utilities/tuple/tuple.tuple/tuple.rel/three_way.pass.cpp:0 FAIL
 
 # DevCom-1638563: icky static analysis false positive
 std/language.support/support.coroutines/end.to.end/go.pass.cpp:0 FAIL
+
+# DevCom-10026599: conditional expression has two different types
+std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable_with.compile.pass.cpp:0 FAIL
 
 
 # *** CLANG COMPILER BUGS ***
@@ -412,10 +411,6 @@ std/diagnostics/syserr/syserr.errcat/syserr.errcat.nonvirtuals/default_ctor.pass
 
 # GH-1190 <future>: incorrectly used copy assignment instead of copy construction in set_value
 std/thread/futures/futures.promise/set_value_const.pass.cpp FAIL
-
-# GH-757 <xstring>: Too many enabled hash specializations
-std/strings/basic.string.hash/char_type_hash.fail.cpp FAIL
-std/strings/string.view/string.view.hash/char_type.hash.fail.cpp FAIL
 
 # GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
 std/utilities/meta/meta.trans/meta.trans.other/aligned_storage.pass.cpp FAIL
@@ -566,6 +561,14 @@ std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp FA
 std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dis/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp FAIL
 
+# Assertion failed: invalid min and max arguments for uniform_real
+# `param_type p(5);` is a precondition violation.
+std/numerics/rand/rand.dis/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
+
+# Assertion failed: invalid beta argument for gamma_distribution
+# test4() constructs a negative_binomial_distribution from (40, 1); [rand.dist.bern.negbin] says p == 1 generates undefined probabilities.
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
+
 # Assertion failed: (std::lerp(T(2.3), T(2.3), inf) == T(2.3))
 # Asserts `(std::lerp(T(2.3), T(2.3), inf) == T(2.3))` and `std::isnan(std::lerp(T( 0), T( 0), inf))`
 # They shouldn't behave differently. Both of them should probably return NaN.
@@ -713,26 +716,6 @@ std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass
 
 
 # *** LIKELY STL BUGS ***
-# Not yet analyzed, likely STL bugs. Assertions and other runtime failures.
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.PR44847.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval_param.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp FAIL
-std/numerics/rand/rand.dis/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
-
 # Not yet analyzed, likely STL bugs. Various assertions.
 std/re/re.alg/re.alg.match/awk.pass.cpp FAIL
 std/re/re.alg/re.alg.match/basic.pass.cpp FAIL
@@ -939,6 +922,27 @@ std/ranges/range.access/empty.pass.cpp:1 FAIL
 std/ranges/range.access/size.pass.cpp:1 FAIL
 std/ranges/range.access/ssize.pass.cpp:1 FAIL
 std/utilities/memory/unique.ptr/iterator_concept_conformance.compile.pass.cpp:1 SKIPPED
+
+# Not yet analyzed. Assertion failed: std::abs((kurtosis - x_kurtosis) / x_kurtosis) < VARIOUS_VALUES
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.PR44847.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.geo/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.lognormal/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.norm/rand.dist.norm.t/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.extreme/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.gamma/eval.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp FAIL
+
+# Not yet analyzed. Assertion failed: std::abs((skew - x_skew) / x_skew) < 0.01
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval_param.pass.cpp FAIL
+std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.bin/eval.pass.cpp FAIL
+
 
 # *** XFAILs WHICH PASS ***
 # Nothing here! :-)

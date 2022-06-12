@@ -656,26 +656,24 @@ struct _Unforced { // tag to distinguish bind() from bind<R>()
 };
 
 // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
-template <class _Rx, bool = is_void_v<_Rx>>
-struct _Invoker_ret { // selected for _Rx being cv void
-    template <class _Fx, class... _Valtys>
-    static _CONSTEXPR20 void _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
-        _Valtys...>::_Is_nothrow_invocable::value) { // INVOKE, "implicitly" converted to void
-        _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
-    }
-};
-
 template <class _Rx>
-struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and _Unforced
+struct _Invoker_ret { // selected for all _Rx other than _Unforced
     template <class _Fx, class... _Valtys>
     static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
-        _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted to _Rx
-        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted
+        if constexpr (is_void_v<_Rx>) {
+            _STL_INTERNAL_STATIC_ASSERT(
+                _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value
+                == _Select_invoke_traits<_Fx, _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value);
+            _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        } else {
+            return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        }
     }
 };
 
 template <>
-struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
+struct _Invoker_ret<_Unforced> { // selected for _Rx being _Unforced
     template <class _Fx, class... _Valtys>
     static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(
         _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
@@ -1301,17 +1299,25 @@ inline void __stdcall _Function_deallocate_large_default_aligned(_Move_only_func
 
 template <size_t _Align>
 void __stdcall _Function_deallocate_large_overaligned(_Move_only_function_data& _Self) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+#ifdef __cpp_aligned_new
     ::operator delete (_Self._Large_fn_ptr<void>(), align_val_t{_Align});
+#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
+    ::operator delete(_Self._Large_fn_ptr<void>());
+#endif // __cpp_aligned_new
 }
 
 template <class _Vt>
 void __stdcall _Function_destroy_large(_Move_only_function_data& _Self) noexcept {
     const auto _Pfn = _Self._Large_fn_ptr<_Vt>();
     _Pfn->~_Vt();
-    if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        ::operator delete(static_cast<void*>(_Pfn));
-    } else {
+#ifdef __cpp_aligned_new
+    if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete (static_cast<void*>(_Pfn), align_val_t{alignof(_Vt)});
+    } else
+#endif // __cpp_aligned_new
+    {
+        ::operator delete(static_cast<void*>(_Pfn));
     }
 }
 
@@ -1329,20 +1335,26 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
             // _Ptr is not nullptr only if an exception is thrown as a result of _Vt construction.
             // Check _Ptr before calling operator delete to save the call in the common case.
             if (_Ptr) {
-                if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-                    ::operator delete(_Ptr);
-                } else {
+#ifdef __cpp_aligned_new
+                if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                     ::operator delete (_Ptr, align_val_t{alignof(_Vt)});
+                } else
+#endif // __cpp_aligned_new
+                {
+                    ::operator delete(_Ptr);
                 }
             }
         }
     };
 
     void* _Ptr;
-    if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        _Ptr = ::operator new(sizeof(_Vt));
-    } else {
+#ifdef __cpp_aligned_new
+    if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         _Ptr = ::operator new (sizeof(_Vt), align_val_t{alignof(_Vt)});
+    } else
+#endif // __cpp_aligned_new
+    {
+        _Ptr = ::operator new(sizeof(_Vt));
     }
     _Guard_type _Guard{_Ptr};
     ::new (_Ptr) _Vt(_STD forward<_CTypes>(_Args)...);

@@ -9,6 +9,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <FinalBinary>p</FinalBinary>
 
         <DependsOnVCStartupLib>$(MsvcpFlavor)</DependsOnVCStartupLib>
+        <DependsOnVCRuntimeLib>$(MsvcpFlavor)</DependsOnVCRuntimeLib>
         <DependsOnConcRT Condition="'$(MsvcpFlavor)' == 'kernel32'">true</DependsOnConcRT>
 
         <TargetAppFamily Condition="'$(MsvcpFlavor)' == 'app'">true</TargetAppFamily>
@@ -50,6 +51,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <LinkAdditionalOptions Condition="$(DebugBuild) == 'true'">-opt:ref,noicf $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:libcpmt$(BuildSuffix).lib $(LinkAdditionalOptions)</LinkAdditionalOptions>
         <LinkAdditionalOptions>-nodefaultlib:$(LibOutputFile) $(LinkAdditionalOptions)</LinkAdditionalOptions>
+        <LinkingWithMinCore Condition="'$(MsvcpFlavor)' == 'app' or '$(MsvcpFlavor)' == 'onecore'">true</LinkingWithMinCore>
+        <LinkAdditionalOptions Condition="'$(LinkingWithMinCore)' != 'true'">ole32.lib $(LinkAdditionalOptions)</LinkAdditionalOptions>
 
         <LinkGenerateMapFile>true</LinkGenerateMapFile>
         <LinkRelease>true</LinkRelease>
@@ -76,10 +79,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <!-- Copy the output dll and pdb to various destinations -->
     <ItemGroup>
         <CopyFilesForCrossTools Condition="'$(MsvcpFlavor)' == 'kernel32'" Include="
-           $(LinkOutputFile);
-           $(LinkProgramDataBaseFileName);
-        "/>
-        <CopyFilesForNetFx Condition="'$(MsvcpFlavor)' == 'netfx'" Include="
            $(LinkOutputFile);
            $(LinkProgramDataBaseFileName);
         "/>

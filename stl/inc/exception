@@ -40,7 +40,8 @@ using ::terminate;
 using ::set_terminate;
 using ::terminate_handler;
 
-_NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept { // get current terminate handler
+_NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept {
+    // get current terminate handler
     return _get_terminate();
 }
 #endif // _M_CEE_PURE
@@ -52,7 +53,8 @@ using ::unexpected;
 using ::set_unexpected;
 using ::unexpected_handler;
 
-_NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept { // get current unexpected handler
+_NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept {
+    // get current unexpected handler
     return _get_unexpected();
 }
 #endif // _M_CEE_PURE
@@ -114,7 +116,6 @@ public:
 protected:
     virtual void __CLR_OR_THIS_CALL _Doraise() const {} // perform class-specific exception handling
 
-protected:
     const char* _Ptr; // the message pointer
 };
 
@@ -159,28 +160,33 @@ _STDEXT_END
 _STD_BEGIN
 using terminate_handler = void(__cdecl*)();
 
-inline terminate_handler __CRTDECL set_terminate(terminate_handler) noexcept { // register a terminate handler
+inline terminate_handler __CRTDECL set_terminate(terminate_handler) noexcept {
+    // register a terminate handler
     return nullptr;
 }
 
-[[noreturn]] inline void __CRTDECL terminate() noexcept { // handle exception termination
+[[noreturn]] inline void __CRTDECL terminate() noexcept {
+    // handle exception termination
     _CSTD abort();
 }
 
-_NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept { // get current terminate handler
+_NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept {
+    // get current terminate handler
     return nullptr;
 }
 
 #if _HAS_UNEXPECTED
 using unexpected_handler = void(__cdecl*)();
 
-inline unexpected_handler __CRTDECL set_unexpected(unexpected_handler) noexcept { // register an unexpected handler
+inline unexpected_handler __CRTDECL set_unexpected(unexpected_handler) noexcept {
+    // register an unexpected handler
     return nullptr;
 }
 
 inline void __CRTDECL unexpected() {} // handle unexpected exception
 
-_NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept { // get current unexpected handler
+_NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept {
+    // get current unexpected handler
     return nullptr;
 }
 #endif // _HAS_UNEXPECTED
@@ -349,7 +355,8 @@ struct _With_nested : _Uty, nested_exception { // glue user exception to nested_
 };
 
 template <class _Ty>
-[[noreturn]] void throw_with_nested(_Ty&& _Arg) { // throw user exception, glued to nested_exception if possible
+[[noreturn]] void throw_with_nested(_Ty&& _Arg) {
+    // throw user exception, glued to nested_exception if possible
     using _Uty = decay_t<_Ty>;
 
     if constexpr (is_class_v<_Uty> && !is_base_of_v<nested_exception, _Uty> && !is_final_v<_Uty>) {
@@ -364,7 +371,8 @@ template <class _Ty>
 
 #ifdef _CPPRTTI
 template <class _Ty>
-void rethrow_if_nested(const _Ty& _Arg) { // detect nested_exception inheritance
+void rethrow_if_nested(const _Ty& _Arg) {
+    // detect nested_exception inheritance
     constexpr bool _Can_use_dynamic_cast =
         is_polymorphic_v<_Ty> && (!is_base_of_v<nested_exception, _Ty> || is_convertible_v<_Ty*, nested_exception*>);
 
