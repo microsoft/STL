@@ -1185,7 +1185,18 @@
 #define _CXX20_REMOVE_CISO646
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4037
+#if !defined(_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING)
+#define _DEPRECATE_NONFLOATING_COMPLEX                                                 \
+    [[deprecated("warning STL4037: "                                                   \
+                 "The effect of instantiating the template std::complex for any "      \
+                 "type other than float, double, or long double is unspecified. "      \
+                 "You can define _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING to " \
+                 "acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_NONFLOATING_COMPLEX
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4038
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
