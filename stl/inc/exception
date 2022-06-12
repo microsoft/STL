@@ -40,7 +40,7 @@ using ::terminate;
 using ::set_terminate;
 using ::terminate_handler;
 
-_NODISCARD_PURE_FN inline terminate_handler __CRTDECL get_terminate() noexcept { // get current terminate handler
+_NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept { // get current terminate handler
     return _get_terminate();
 }
 #endif // _M_CEE_PURE
@@ -52,7 +52,7 @@ using ::unexpected;
 using ::set_unexpected;
 using ::unexpected_handler;
 
-_NODISCARD_PURE_FN inline unexpected_handler __CRTDECL get_unexpected() noexcept { // get current unexpected handler
+_NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept { // get current unexpected handler
     return _get_unexpected();
 }
 #endif // _M_CEE_PURE
@@ -98,8 +98,7 @@ public:
 
     virtual __CLR_OR_THIS_CALL ~exception() noexcept {}
 
-    _NODISCARD_PURE_MTHD virtual const char* __CLR_OR_THIS_CALL
-        what() const noexcept { // return pointer to message string
+    _NODISCARD virtual const char* __CLR_OR_THIS_CALL what() const noexcept { // return pointer to message string
         return _Ptr ? _Ptr : "unknown exception";
     }
 
@@ -168,7 +167,7 @@ inline terminate_handler __CRTDECL set_terminate(terminate_handler) noexcept { /
     _CSTD abort();
 }
 
-_NODISCARD_PURE_FN inline terminate_handler __CRTDECL get_terminate() noexcept { // get current terminate handler
+_NODISCARD inline terminate_handler __CRTDECL get_terminate() noexcept { // get current terminate handler
     return nullptr;
 }
 
@@ -181,7 +180,7 @@ inline unexpected_handler __CRTDECL set_unexpected(unexpected_handler) noexcept 
 
 inline void __CRTDECL unexpected() {} // handle unexpected exception
 
-_NODISCARD_PURE_FN inline unexpected_handler __CRTDECL get_unexpected() noexcept { // get current unexpected handler
+_NODISCARD inline unexpected_handler __CRTDECL get_unexpected() noexcept { // get current unexpected handler
     return nullptr;
 }
 #endif // _HAS_UNEXPECTED
@@ -299,7 +298,7 @@ private:
 #endif // __clang__
 };
 
-_NODISCARD_PURE_FN inline exception_ptr current_exception() noexcept {
+_NODISCARD inline exception_ptr current_exception() noexcept {
     return exception_ptr::_Current_exception();
 }
 
@@ -335,7 +334,7 @@ public:
         }
     }
 
-    _NODISCARD_PURE_MTHD exception_ptr nested_ptr() const noexcept { // return wrapped exception_ptr
+    _NODISCARD exception_ptr nested_ptr() const noexcept { // return wrapped exception_ptr
         return _Exc;
     }
 

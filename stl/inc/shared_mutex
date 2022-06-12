@@ -60,7 +60,7 @@ public:
         _Smtx_unlock_shared(&_Myhandle);
     }
 
-    _NODISCARD_ACCESS_MTHD native_handle_type native_handle() noexcept /* strengthened */ { // get native handle
+    _NODISCARD native_handle_type native_handle() noexcept /* strengthened */ { // get native handle
         return &_Myhandle;
     }
 
@@ -346,7 +346,7 @@ public:
         return _Res;
     }
 
-    _NODISCARD_PURE_MTHD bool owns_lock() const noexcept {
+    _NODISCARD bool owns_lock() const noexcept {
         return _Owns;
     }
 
@@ -354,7 +354,7 @@ public:
         return _Owns;
     }
 
-    _NODISCARD_PURE_MTHD mutex_type* mutex() const noexcept {
+    _NODISCARD mutex_type* mutex() const noexcept {
         return _Pmtx;
     }
 

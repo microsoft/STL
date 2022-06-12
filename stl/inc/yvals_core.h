@@ -450,34 +450,6 @@
 #define _NODISCARD_FRIEND _NODISCARD friend
 #endif // TRANSITION, VSO-568006
 
-#define _NODISCARD_PURE_ALG                                                                                        \
-    _NODISCARD_MSG("This algorithm is not intended to have side effects; it is not useful to call this algorithm " \
-                   "and discard the return value")
-
-#define _NODISCARD_PURE_FN                                                                                        \
-    _NODISCARD_MSG("This function is pure, i.e. has no side effects; it is not useful to call this function and " \
-                   "discard the return value")
-
-#define _NODISCARD_PURE_MTHD                                                                                       \
-    _NODISCARD_MSG("This method is pure observer, i.e. has no side effects; it is not useful to call this method " \
-                   "and discard the return value")
-
-#define _NODISCARD_PURE_OP                                                                                     \
-    _NODISCARD_MSG("This operator is pure obeserver, i.e. has no side effects; it is not useful to call this " \
-                   "operator and discard the return value")
-
-#define _NODISCARD_ACCESS_FN                                                                                          \
-    _NODISCARD_MSG("This function returns a value that provides access to the passed object and has no side effects " \
-                   "otherwise; it is not useful to call this function and discard the return value")
-
-#define _NODISCARD_ACCESS_MTHD                                                                                       \
-    _NODISCARD_MSG("This method returns an object that can access the state of the current object and has no other " \
-                   "side effects; it is not useful to call this method and discard the return value")
-
-#define _NODISCARD_ACCESS_OP                                                                                           \
-    _NODISCARD_MSG("This operator provides an access to the state of the current object via the return value and has " \
-                   "no other side effects; it is not useful to call this operator and discard the return value")
-
 #define _NODISCARD_REMOVE_ALG                                                                                   \
     _NODISCARD_MSG(                                                                                             \
         "The 'remove' and 'remove_if' algorithms return the iterator past the last non-removed element. "       \

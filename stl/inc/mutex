@@ -68,7 +68,7 @@ public:
 
     using native_handle_type = void*;
 
-    _NODISCARD_ACCESS_MTHD native_handle_type native_handle() {
+    _NODISCARD native_handle_type native_handle() {
         return _Mtx_getconcrtcs(_Mymtx());
     }
 
@@ -245,7 +245,7 @@ public:
         return _Res;
     }
 
-    _NODISCARD_PURE_MTHD bool owns_lock() const noexcept {
+    _NODISCARD bool owns_lock() const noexcept {
         return _Owns;
     }
 
@@ -253,7 +253,7 @@ public:
         return _Owns;
     }
 
-    _NODISCARD_PURE_MTHD _Mutex* mutex() const noexcept {
+    _NODISCARD _Mutex* mutex() const noexcept {
         return _Pmtx;
     }
 
@@ -685,7 +685,7 @@ public:
         return _Wait_until1(_Lck, _Abs_time, _Pred);
     }
 
-    _NODISCARD_ACCESS_MTHD native_handle_type native_handle() {
+    _NODISCARD native_handle_type native_handle() {
         return _Mycnd();
     }
 

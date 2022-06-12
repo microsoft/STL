@@ -58,7 +58,7 @@ inline constexpr ptrdiff_t _Semaphore_max = (1ULL << (sizeof(ptrdiff_t) * CHAR_B
 template <ptrdiff_t _Least_max_value = _Semaphore_max>
 class counting_semaphore {
 public:
-    _NODISCARD_PURE_MTHD static constexpr ptrdiff_t(max)() noexcept {
+    _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
         return _Least_max_value;
     }
 
@@ -207,7 +207,7 @@ private:
 template <>
 class counting_semaphore<1> {
 public:
-    _NODISCARD_PURE_MTHD static constexpr ptrdiff_t(max)() noexcept {
+    _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
         return 1;
     }
 
