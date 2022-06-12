@@ -204,6 +204,7 @@ tests\GH_002558_format_presetPadding
 tests\GH_002581_common_reference_workaround
 tests\GH_002655_alternate_name_broke_linker
 tests\GH_002711_Zc_alignedNew-
+tests\GH_002760_syncstream_memory_leak
 tests\GH_002769_handle_deque_block_pointers
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
@@ -325,6 +326,7 @@ tests\P0784R7_library_machinery
 tests\P0784R7_library_support_for_more_constexpr_containers
 tests\P0798R8_monadic_operations_for_std_optional
 tests\P0811R3_midpoint_lerp
+tests\P0881R7_stacktrace
 tests\P0896R4_common_iterator
 tests\P0896R4_common_iterator_death
 tests\P0896R4_counted_iterator

@@ -190,6 +190,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/spanstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/sstream
     ${CMAKE_CURRENT_LIST_DIR}/inc/stack
+    ${CMAKE_CURRENT_LIST_DIR}/inc/stacktrace
     ${CMAKE_CURRENT_LIST_DIR}/inc/stdatomic.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/stdexcept
     ${CMAKE_CURRENT_LIST_DIR}/inc/stop_token
@@ -267,6 +268,7 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/locale0_implib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/nothrow.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/sharedmutex.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/stacktrace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xonce2.cpp

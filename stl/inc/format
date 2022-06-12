@@ -666,6 +666,10 @@ public:
         : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
     explicit basic_format_arg(const unsigned int _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
+    explicit basic_format_arg(const long _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
+    explicit basic_format_arg(const unsigned long _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
     explicit basic_format_arg(const long long _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Long_long_type), _Long_long_state(_Val) {}
     explicit basic_format_arg(const unsigned long long _Val) noexcept
@@ -1769,6 +1773,7 @@ struct _Format_arg_traits {
     static auto _Phony_basic_format_arg_constructor(double) -> double; // not defined
     static auto _Phony_basic_format_arg_constructor(long double) -> long double; // not defined
 
+    static auto _Phony_basic_format_arg_constructor(_Char_type*) -> const _Char_type*; // not defined
     static auto _Phony_basic_format_arg_constructor(const _Char_type*) -> const _Char_type*; // not defined
 
     template <class _Traits>
@@ -1776,7 +1781,7 @@ struct _Format_arg_traits {
         -> basic_string_view<_Char_type>; // not defined
 
     template <class _Traits, class _Alloc>
-    static auto _Phony_basic_format_arg_constructor(const basic_string<_Char_type, _Traits, _Alloc>&)
+    static auto _Phony_basic_format_arg_constructor(basic_string<_Char_type, _Traits, _Alloc>)
         -> basic_string_view<_Char_type>; // not defined
 
     static auto _Phony_basic_format_arg_constructor(nullptr_t) -> const void*; // not defined

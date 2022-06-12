@@ -699,6 +699,11 @@ public:
         if constexpr (_Is_fwd_iter_v<_Iter>) {
             const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
+#ifdef __cpp_lib_concepts
+        } else if constexpr (forward_iterator<_Iter>) {
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES distance(_UFirst, _ULast)));
+            _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
+#endif // __cpp_lib_concepts
         } else {
             auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
             _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
@@ -1041,7 +1046,7 @@ public:
 
 private:
     template <class _Iter>
-    _CONSTEXPR20 void _Insert_range(const_iterator _Where, _Iter _First, _Iter _Last, input_iterator_tag) {
+    _CONSTEXPR20 void _Insert_input_range(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert input range [_First, _Last) at _Where
         if (_First == _Last) {
             return; // nothing to do, avoid invalidating iterators
@@ -1067,10 +1072,18 @@ private:
     }
 
     template <class _Iter>
-    _CONSTEXPR20 void _Insert_range(const_iterator _Where, _Iter _First, _Iter _Last, forward_iterator_tag) {
+    _CONSTEXPR20 void _Insert_forward_range(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert forward range [_First, _Last) at _Where
         const pointer _Whereptr = _Where._Ptr;
-        const auto _Count       = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+        size_type _Count;
+#ifdef __cpp_lib_concepts
+        if constexpr (forward_iterator<_Iter>) {
+            _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES distance(_First, _Last)));
+        } else
+#endif // __cpp_lib_concepts
+        {
+            _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+        }
 
         auto& _Al        = _Getal();
         auto& _My_data   = _Mypair._Myval2;
@@ -1195,7 +1208,16 @@ public:
 
         _Adl_verify_range(_First, _Last);
         const auto _Whereoff = static_cast<size_type>(_Whereptr - _Oldfirst);
-        _Insert_range(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+#ifdef __cpp_lib_concepts
+        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter> || forward_iterator<_Iter>;
+#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
+        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter>;
+#endif // ^^^ !__cpp_lib_concepts ^^^
+        if constexpr (_Is_fwd) {
+            _Insert_forward_range(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+        } else {
+            _Insert_input_range(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+        }
         return _Make_iterator_offset(_Whereoff);
     }
 
@@ -1250,7 +1272,7 @@ public:
 
 private:
     template <class _Iter>
-    _CONSTEXPR20 void _Assign_range(_Iter _First, _Iter _Last, input_iterator_tag) {
+    _CONSTEXPR20 void _Assign_input_range(_Iter _First, _Iter _Last) {
         // assign input range [_First, _Last)
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
@@ -1281,14 +1303,22 @@ private:
     }
 
     template <class _Iter>
-    _CONSTEXPR20 void _Assign_range(_Iter _First, _Iter _Last, forward_iterator_tag) {
+    _CONSTEXPR20 void _Assign_forward_range(_Iter _First, _Iter _Last) {
         // assign forward range [_First, _Last)
-        const auto _Newsize = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        auto& _Al           = _Getal();
-        auto& _My_data      = _Mypair._Myval2;
-        pointer& _Myfirst   = _My_data._Myfirst;
-        pointer& _Mylast    = _My_data._Mylast;
-        pointer& _Myend     = _My_data._Myend;
+        size_type _Newsize;
+#ifdef __cpp_lib_concepts
+        if constexpr (forward_iterator<_Iter>) {
+            _Newsize = _Convert_size<size_type>(_To_unsigned_like(_RANGES distance(_First, _Last)));
+        } else
+#endif // __cpp_lib_concepts
+        {
+            _Newsize = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+        }
+        auto& _Al         = _Getal();
+        auto& _My_data    = _Mypair._Myval2;
+        pointer& _Myfirst = _My_data._Myfirst;
+        pointer& _Mylast  = _My_data._Mylast;
+        pointer& _Myend   = _My_data._Myend;
 
         constexpr bool _Nothrow_construct = conjunction_v<is_nothrow_constructible<_Ty, _Iter_ref_t<_Iter>>,
             _Uses_default_construct<_Alloc, _Ty*, _Iter_ref_t<_Iter>>>;
@@ -1334,11 +1364,20 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 void assign(_Iter _First, _Iter _Last) {
         _Adl_verify_range(_First, _Last);
-        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+#ifdef __cpp_lib_concepts
+        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter> || forward_iterator<_Iter>;
+#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
+        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter>;
+#endif // ^^^ !__cpp_lib_concepts ^^^
+        if constexpr (_Is_fwd) {
+            _Assign_forward_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        } else {
+            _Assign_input_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        }
     }
 
     _CONSTEXPR20 void assign(initializer_list<_Ty> _Ilist) {
-        _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
+        _Assign_forward_range(_Ilist.begin(), _Ilist.end());
     }
 
 public:
@@ -1364,7 +1403,7 @@ public:
     }
 
     _CONSTEXPR20 vector& operator=(initializer_list<_Ty> _Ilist) {
-        _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
+        _Assign_forward_range(_Ilist.begin(), _Ilist.end());
         return *this;
     }
 
