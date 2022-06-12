@@ -398,8 +398,7 @@ template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_E
 _NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept; // terminates
 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last) noexcept
-/* terminates */ {
+_NODISCARD _FwdIt adjacent_find(_ExPo&& _Exec, const _FwdIt _First, const _FwdIt _Last) noexcept /* terminates */ {
     // find first matching successor
     return _STD adjacent_find(_STD forward<_ExPo>(_Exec), _First, _Last, equal_to{});
 }
@@ -423,8 +422,7 @@ namespace ranges {
 
         template <input_range _Rng, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
-        _NODISCARD constexpr range_difference_t<_Rng> operator()(
-            _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
+        _NODISCARD constexpr range_difference_t<_Rng> operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
             return _Count_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _Pass_fn(_Proj));
         }
         // clang-format on
@@ -683,8 +681,8 @@ namespace ranges {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
-            _Pr _Pred = {},_Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UFirst1 = _Get_unwrapped(_STD move(_First1));
@@ -2036,8 +2034,8 @@ namespace ranges {
         template <forward_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pr = ranges::equal_to,
             class _Pj = identity>
             requires indirectly_comparable<_It, const _Ty*, _Pr, _Pj>
-        _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last,
-            const iter_difference_t<_It> _Count, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr subrange<_It> operator()(_It _First, _Se _Last, const iter_difference_t<_It> _Count,
+            const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
 
             if (_Count <= 0) {
@@ -2061,8 +2059,8 @@ namespace ranges {
 
         template <forward_range _Rng, class _Ty, class _Pr = ranges::equal_to, class _Pj = identity>
             requires indirectly_comparable<iterator_t<_Rng>, const _Ty*, _Pr, _Pj>
-        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range,
-            const range_difference_t<_Rng> _Count, const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, const range_difference_t<_Rng> _Count,
+            const _Ty& _Val, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _First = _RANGES begin(_Range);
 
             if (_Count <= 0) {
@@ -2196,8 +2194,8 @@ namespace ranges {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, input_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
-            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {}, 
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
@@ -2262,8 +2260,8 @@ namespace ranges {
             requires (forward_iterator<_It1> || sized_sentinel_for<_Se1, _It1>)
                   && (forward_iterator<_It2> || sized_sentinel_for<_Se2, _It2>)
                   && indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
-            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD constexpr bool operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             // clang-format on
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
@@ -2694,8 +2692,8 @@ namespace ranges {
         template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2,
-            _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD constexpr subrange<_It1> operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
+            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
             auto _UFirst1 = _Get_unwrapped(_First1);
@@ -2783,9 +2781,8 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _
     const _FwdIt2 _Last2, _Pr _Pred) noexcept; // terminates
 
 template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _FwdIt1 find_first_of(
-    _ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2, const _FwdIt2 _Last2) noexcept
-/* terminates */ { // look for one of [_First2, _Last2) that matches element
+_NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2,
+    const _FwdIt2 _Last2) noexcept /* terminates */ { // look for one of [_First2, _Last2) that matches element
     return _STD find_first_of(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
@@ -2800,8 +2797,8 @@ namespace ranges {
         template <input_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
             class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
             requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
-        _NODISCARD constexpr _It1 operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2,
-            _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+        _NODISCARD constexpr _It1 operator()(_It1 _First1, _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {},
+            _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
             _Adl_verify_range(_First1, _Last1);
             _Adl_verify_range(_First2, _Last2);
 
@@ -9095,8 +9092,7 @@ _NODISCARD constexpr _FwdIt max_element(_FwdIt _First, _FwdIt _Last) { // find l
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept
-/* terminates */ {
+_NODISCARD _FwdIt max_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find largest element
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD max_element(_First, _Last, _Pass_fn(_Pred));
@@ -9187,8 +9183,7 @@ _NODISCARD constexpr _FwdIt min_element(_FwdIt _First, _FwdIt _Last) { // find s
 
 #if _HAS_CXX17
 template <class _ExPo, class _FwdIt, class _Pr, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept
-/* terminates */ {
+_NODISCARD _FwdIt min_element(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Pr _Pred) noexcept /* terminates */ {
     // find smallest element
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD min_element(_First, _Last, _Pass_fn(_Pred));
@@ -9317,8 +9312,7 @@ _NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _L
 }
 
 template <class _ExPo, class _FwdIt, _Enable_if_execution_policy_t<_ExPo> = 0>
-_NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept
-/* terminates */ {
+_NODISCARD pair<_FwdIt, _FwdIt> minmax_element(_ExPo&&, _FwdIt _First, _FwdIt _Last) noexcept /* terminates */ {
     // find smallest and largest elements
     // not parallelized at present, parallelism expected to be feasible in a future release
     return _STD minmax_element(_First, _Last);
@@ -9463,8 +9457,7 @@ namespace ranges {
         template <input_range _Rng, class _Pj = identity,
             indirect_strict_weak_order<projected<iterator_t<_Rng>, _Pj>> _Pr = ranges::less>
             requires indirectly_copyable_storable<iterator_t<_Rng>, range_value_t<_Rng>*>
-        _NODISCARD constexpr range_value_t<_Rng> operator()(
-            _Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
+        _NODISCARD constexpr range_value_t<_Rng> operator()(_Rng&& _Range, _Pr _Pred = {}, _Pj _Proj = {}) const {
             auto _UFirst = _Ubegin(_Range);
             auto _ULast  = _Uend(_Range);
             _STL_ASSERT(
