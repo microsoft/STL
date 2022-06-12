@@ -990,9 +990,9 @@ protected:
                 this->_Val[_IM] = (this->_Val[_IM] - this->_Val[_RE] * _Wr) / _Wd;
                 this->_Val[_RE] = _Tmp;
             }
-        } else if (_Rightimag == 0) { // set NaN result
-            this->_Val[_RE] = _Myctraits::_Nanv();
-            this->_Val[_IM] = this->_Val[_RE];
+        } else if (_Rightimag == 0) { // _Right.real() == 0 && _Right.imag() == 0
+            this->_Val[_RE] /= _Rightreal;
+            this->_Val[_IM] /= _Rightreal;
         } else { // 0 < |_Right.real()| <= |_Right.imag()|
             _Ty _Wr = _Rightreal / _Rightimag;
             _Ty _Wd = _Rightimag + _Wr * _Rightreal;
