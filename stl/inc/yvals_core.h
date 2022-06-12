@@ -140,6 +140,10 @@
 // P0618R0 Deprecating <codecvt>
 // Other C++17 deprecation warnings
 
+// Implemented when char8_t is available (C++14/17 with /Zc:char8_t, C++20 without /Zc:char8_t-):
+// P0482R6 Library Support For char8_t
+//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
+
 // _HAS_CXX20 directly controls:
 // P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
@@ -161,8 +165,6 @@
 // P0466R5 Layout-Compatibility And Pointer-Interconvertibility Traits
 // P0475R1 Guaranteed Copy Elision For Piecewise Construction
 // P0476R2 <bit> bit_cast
-// P0482R6 Library Support For char8_t
-//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 // P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
@@ -990,7 +992,7 @@
 #endif // ^^^ warning disabled ^^^
 
 // N4810 D.17 [depr.fs.path.factory]
-#if _HAS_CXX20 && !defined(_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING) \
+#if _HAS_CXX20 && defined(__cpp_char8_t) && !defined(_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
 #define _CXX20_DEPRECATE_U8PATH                                                                                      \
     [[deprecated("warning STL4021: "                                                                                 \
@@ -1336,6 +1338,10 @@
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
+#ifdef __cpp_char8_t
+#define __cpp_lib_char8_t 201907L
+#endif // __cpp_char8_t
+
 #ifdef __cpp_impl_coroutine
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
@@ -1353,10 +1359,6 @@
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-
-#ifdef __cpp_char8_t
-#define __cpp_lib_char8_t 201907L
-#endif // __cpp_char8_t
 
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
 #define __cpp_lib_concepts 202002L
