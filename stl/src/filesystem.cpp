@@ -133,7 +133,7 @@ namespace {
             return __std_win_error::_Success;
         }
 
-        __std_win_error _Last_error = __std_win_error{GetLastError()};
+        __std_win_error _Last_error{GetLastError()};
 
 #ifndef _CRT_APP
         switch (_Last_error) {
