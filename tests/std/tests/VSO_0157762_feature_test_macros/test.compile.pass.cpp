@@ -1366,20 +1366,6 @@ STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
-#ifndef __cpp_lib_ranges_iota
-#error __cpp_lib_ranges_iota is not defined
-#elif __cpp_lib_ranges_iota != 202202L
-#error __cpp_lib_ranges_iota is not 202202L
-#else
-STATIC_ASSERT(__cpp_lib_ranges_iota == 202202L);
-#endif
-#else
-#ifdef __cpp_lib_ranges_iota
-#error __cpp_lib_ranges_iota is defined
-#endif
-#endif
-
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_ranges_chunk
 #error __cpp_lib_ranges_chunk is not defined
@@ -1405,6 +1391,20 @@ STATIC_ASSERT(__cpp_lib_ranges_chunk_by == 202202L);
 #else
 #ifdef __cpp_lib_ranges_chunk_by
 #error __cpp_lib_ranges_chunk_by is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#ifndef __cpp_lib_ranges_iota
+#error __cpp_lib_ranges_iota is not defined
+#elif __cpp_lib_ranges_iota != 202202L
+#error __cpp_lib_ranges_iota is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_iota == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_iota
+#error __cpp_lib_ranges_iota is defined
 #endif
 #endif
 
