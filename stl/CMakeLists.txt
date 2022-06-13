@@ -552,15 +552,6 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     add_dependencies(msvcp${D_SUFFIX}_implib msvcp${D_SUFFIX} msvcp_1${D_SUFFIX} msvcp_2${D_SUFFIX} msvcp${D_SUFFIX}_atomic_wait msvcp${D_SUFFIX}_codecvt_ids)
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES STATIC_LIBRARY_OPTIONS "/NOLOGO;/NODEFAULTLIB;/IGNORE:4006;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_1${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp_2${D_SUFFIX}>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_codecvt_ids>;$<TARGET_LINKER_FILE:msvcp${D_SUFFIX}_atomic_wait>")
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES ARCHIVE_OUTPUT_NAME "msvcprt${D_SUFFIX}")
-
-    # HACK: for benchmarking, we need to export the standard library since we link google benchmark to the stl targets,
-    # and CMake requires all targets depended upon by exported targets to themselves be exported.
-    set(msvcp${D_SUFFIX}_all_targets
-        boost_math
-        stl_alias_objects
-        msvcp${D_SUFFIX}_implib
-        CACHE INTERNAL ""
-    )
 endfunction()
 
 add_stl_dlls("" "" "${VCLIBS_RELEASE_OPTIONS}" "/GL" "/LTCG;/opt:ref,icf")
@@ -574,16 +565,6 @@ function(add_stl_statics FLAVOR_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPI
     target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PUBLIC ${THIS_CONFIG_DEFINITIONS} PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING)
     target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};$<$<COMPILE_LANGUAGE:CXX>:/EHsc>")
     target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math stl_alias_objects libcpmt${FLAVOR_SUFFIX}_eha)
-
-    # HACK: for benchmarking, we need to export the standard library since we link google benchmark to the stl targets,
-    # and CMake requires all targets depended upon by exported targets to themselves be exported.
-    set(libcpmt${FLAVOR_SUFFIX}_all_targets
-        boost_math
-        stl_alias_objects
-        libcpmt${FLAVOR_SUFFIX}_eha
-        libcpmt${FLAVOR_SUFFIX}
-        CACHE INTERNAL ""
-    )
 endfunction()
 
 add_stl_statics("" "_ITERATOR_DEBUG_LEVEL=0" "${VCLIBS_RELEASE_OPTIONS}")

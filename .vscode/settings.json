@@ -10,6 +10,7 @@
     },
     "files.eol": "\r\n",
     "files.exclude": {
+        "benchmarks/google-benchmark": true,
         "llvm-project": true,
         "stl/msbuild": true,
         "boost-math": true

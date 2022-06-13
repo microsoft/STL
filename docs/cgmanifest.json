@@ -44,15 +44,6 @@
                     "commitHash": "59661c3f883dfd39cef6dc8eaf2fcbaae53597e8"
                 }
             }
-        },
-        {
-            "component": {
-                "type": "git",
-                "git": {
-                    "repositoryUrl": "https://github.com/google/benchmark",
-                    "commitHash": "0d98dba29d66e93259db7daa53a9327df767a415"
-                }
-            }
         }
     ],
     "Version": 1
