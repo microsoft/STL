@@ -206,6 +206,7 @@ tests\GH_002655_alternate_name_broke_linker
 tests\GH_002711_Zc_alignedNew-
 tests\GH_002760_syncstream_memory_leak
 tests\GH_002769_handle_deque_block_pointers
+tests\GH_002789_Hash_vec_Tidy
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3121_constrained_tuple_forwarding_ctor
