@@ -8,6 +8,9 @@ parameters:
 - name: boostMathSHAVar
   type: string
   default: boostMathSHA
+- name: googleBenchmarkSHAVar
+  type: string
+  default: googleBenchmarkSHA
 steps:
 - checkout: self
   clean: true
