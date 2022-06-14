@@ -3514,12 +3514,6 @@ namespace ranges {
         private:
             friend join_with_view;
 
-            template <bool>
-            friend class _Iterator;
-
-            template <bool>
-            friend class _Sentinel;
-
             using _Parent_t    = _Maybe_const<_Const, join_with_view>;
             using _Base        = _Maybe_const<_Const, _Vw>;
             using _PatternBase = _Maybe_const<_Const, _Pat>;

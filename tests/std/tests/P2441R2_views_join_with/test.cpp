@@ -36,9 +36,9 @@ using delimiter_view_t =
 
 template <ranges::input_range Outer, class Delimiter, ranges::forward_range Expected>
 constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected) {
-    using ranges::join_with_view, ranges::begin, ranges::end, ranges::next, ranges::prev, ranges::input_range,
-        ranges::forward_range, ranges::bidirectional_range, ranges::common_range, ranges::borrowed_range,
-        ranges::iterator_t, ranges::sentinel_t, ranges::range_value_t, ranges::range_reference_t;
+    using ranges::join_with_view, ranges::begin, ranges::end, ranges::prev, ranges::input_range, ranges::forward_range,
+        ranges::bidirectional_range, ranges::common_range, ranges::iterator_t, ranges::sentinel_t,
+        ranges::range_value_t, ranges::range_reference_t;
 
     using Inner                     = range_value_t<Outer>;
     constexpr bool deref_is_glvalue = is_reference_v<range_reference_t<Outer>>;
@@ -147,7 +147,7 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
     if (forward_range<R>) { // intentionally not if constexpr
         const auto i = r.begin();
         if (!is_empty) {
-            assert(*i == *ranges::begin(expected));
+            assert(*i == *begin(expected));
         }
 
         if constexpr (copy_constructible<R>) {
@@ -206,8 +206,8 @@ constexpr void test_one(Outer&& rng, Delimiter&& delimiter, Expected&& expected)
                 assert(*prev(cs) == *prev(end(expected)));
 
                 if constexpr (copyable<V>) {
-                    const auto r2                                       = r;
-                    const same_as<ranges::sentinel_t<const R>> auto cs2 = r2.end();
+                    const auto r2                               = r;
+                    const same_as<sentinel_t<const R>> auto cs2 = r2.end();
                     assert(*prev(cs2) == *prev(end(expected)));
                 }
             }
