@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <new>
 #include <unordered_set>
 
 using namespace std;
@@ -61,8 +62,8 @@ struct countdown_alloc {
 
 int main() {
     try {
-        (void) unordered_set<int, hash<int>, equal_to<int>, countdown_alloc<int>>();
+        (void) unordered_set<int, hash<int>, equal_to<int>, countdown_alloc<int>>{};
         assert(false);
-    } catch (const std::bad_alloc&) {
+    } catch (const bad_alloc&) {
     }
 }
