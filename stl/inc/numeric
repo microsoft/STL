@@ -559,7 +559,7 @@ namespace ranges {
             for (; _First != _Last; ++_First, (void) ++_Val) {
                 *_First = _Const_val;
             }
-            return _STD move(_First);
+            return _First;
         }
     };
 

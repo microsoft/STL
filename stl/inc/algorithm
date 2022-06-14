@@ -186,9 +186,9 @@ namespace ranges {
         // clang-format on
         // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]
         auto _ULast = _Get_unwrapped(_STD forward<_Se>(_Last));
-        if constexpr (is_same_v<_Se, _Wrapped>) {
+        if constexpr (is_same_v<remove_cvref_t<_Se>, _Wrapped>) {
             return _ULast;
-        } else if constexpr (sized_sentinel_for<_Se, _Wrapped>) {
+        } else if constexpr (sized_sentinel_for<remove_cvref_t<_Se>, _Wrapped>) {
             return _RANGES next(_UFirst, _ULast - _UFirst);
         } else {
             return _RANGES next(_UFirst, _STD move(_ULast));
@@ -5122,10 +5122,10 @@ namespace ranges {
             _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
 
             _Adl_verify_range(_First, _Last);
-            auto _UFirst = _Get_unwrapped(_First);
-            auto _ULast  = _Get_unwrapped(_Last);
-            auto _Size   = _Size_helper(_UFirst, _ULast);
-            auto _Result = _Shift_right_impl(_STD move(_UFirst), _STD move(_ULast), _Pos_to_shift, _Size);
+            auto _UFirst     = _Get_unwrapped(_First);
+            auto _ULast      = _Get_unwrapped(_Last);
+            const auto _Size = _Size_helper(_UFirst, _ULast);
+            auto _Result     = _Shift_right_impl(_STD move(_UFirst), _STD move(_ULast), _Pos_to_shift, _Size);
             _Seek_wrapped(_First, _Result.begin());
             auto _Final = _First;
             _Seek_wrapped(_Final, _Result.end());
@@ -5137,10 +5137,10 @@ namespace ranges {
         constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, range_difference_t<_Rng> _Pos_to_shift) const {
             _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
 
-            auto _Size   = _Size_helper(_Range);
-            auto _Result = _Shift_right_impl(_Ubegin(_Range), _Uend(_Range), _Pos_to_shift, _Size);
-            auto _First  = _Rewrap_iterator(_Range, _Result.begin());
-            auto _Final  = _Rewrap_iterator(_Range, _Result.end());
+            const auto _Size = _Size_helper(_Range);
+            auto _Result     = _Shift_right_impl(_Ubegin(_Range), _Uend(_Range), _Pos_to_shift, _Size);
+            auto _First      = _Rewrap_iterator(_Range, _Result.begin());
+            auto _Final      = _Rewrap_iterator(_Range, _Result.end());
             return {_STD move(_First), _STD move(_Final)};
         }
 
