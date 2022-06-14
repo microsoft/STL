@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.22)
 project(msvc_standard_libraries_format NONE)
 
 set(did_search OFF)
+
 if(NOT DEFINED CLANG_FORMAT)
     message(STATUS "Searching for VS clang-format")
     set(did_search ON)
@@ -26,21 +27,26 @@ find_program(CLANG_FORMAT
     NO_SYSTEM_ENVIRONMENT_PATH
     NO_CMAKE_SYSTEM_PATH
 )
+
 if(CLANG_FORMAT)
     if(did_search)
         message(STATUS "Searching for VS clang-format - found")
     endif()
 
     file(GLOB_RECURSE maybe_clang_format_files
+        "../../benchmarks/inc/*"
+        "../../benchmarks/src/*"
         "../../stl/inc/*"
         "../../stl/src/*"
         "../../tests/*"
         "../../tools/*"
     )
     set(clang_format_files "")
+
     foreach(maybe_file IN LISTS maybe_clang_format_files)
         cmake_path(GET maybe_file FILENAME filename)
         cmake_path(GET maybe_file EXTENSION LAST_ONLY extension)
+
         if(extension MATCHES [[^(|\.cpp|\.h|\.hpp)$]] AND NOT filename MATCHES [[^\.]])
             list(APPEND clang_format_files "${maybe_file}")
         endif()
@@ -51,6 +57,7 @@ if(CLANG_FORMAT)
     endif()
 
     add_custom_target(run-format)
+
     foreach(file IN LISTS clang_format_files)
         cmake_path(RELATIVE_PATH file
             BASE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../.."

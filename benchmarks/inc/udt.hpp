@@ -9,12 +9,12 @@ struct trivial {
 };
 
 template <typename Contained>
-inline bool operator==(const trivial<Contained>& lhs, const trivial<Contained>& rhs) {
+bool operator==(const trivial<Contained>& lhs, const trivial<Contained>& rhs) {
     return lhs.c == rhs.c;
 }
 
 template <typename Contained>
-inline bool operator!=(const trivial<Contained>& lhs, const trivial<Contained>& rhs) {
+bool operator!=(const trivial<Contained>& lhs, const trivial<Contained>& rhs) {
     return lhs.c != rhs.c;
 }
 
@@ -35,11 +35,11 @@ struct non_trivial {
 };
 
 template <typename Contained>
-inline bool operator==(const non_trivial<Contained>& lhs, const non_trivial<Contained>& rhs) {
+bool operator==(const non_trivial<Contained>& lhs, const non_trivial<Contained>& rhs) {
     return lhs.c == rhs.c;
 }
 
 template <typename Contained>
-inline bool operator!=(const non_trivial<Contained>& lhs, const non_trivial<Contained>& rhs) {
+bool operator!=(const non_trivial<Contained>& lhs, const non_trivial<Contained>& rhs) {
     return lhs.c != rhs.c;
 }
