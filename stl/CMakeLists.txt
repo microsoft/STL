@@ -477,7 +477,6 @@ endif()
 
 add_compile_options(/WX /Gy
     "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/d1FastFail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
-
     # note that /Zi generates debug info inside the object file, it's the same as /Z7 for msvc
     "$<$<COMPILE_LANGUAGE:ASM_MASM>:/Zi;/W3;/nologo>"
 )

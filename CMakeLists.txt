@@ -11,7 +11,6 @@ check_cxx_source_compiles([=[
 static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_CO, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
 int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
-
 if(NOT WINDOWS_SDK_VERSION_CHECK)
     message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.22000.0) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
 endif()
@@ -19,7 +18,6 @@ endif()
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
     set(VCLIBS_TARGET_ARCHITECTURE "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}")
 endif()
-
 string(TOLOWER "${VCLIBS_TARGET_ARCHITECTURE}" VCLIBS_TARGET_ARCHITECTURE)
 
 if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^x64$|^x86$")
@@ -28,14 +26,12 @@ endif()
 
 # add the tools subdirectory _before_ we change all the flags
 add_subdirectory(tools EXCLUDE_FROM_ALL)
-
 # these allow the targets to show up in the top-level
 # (as opposed to under the tools subdirectory)
 if(TARGET run-format)
     add_custom_target(format)
     add_dependencies(format run-format)
 endif()
-
 if(TARGET run-validate)
     add_custom_target(validate)
     add_dependencies(validate run-validate)
@@ -49,7 +45,6 @@ if("${VCLIBS_TARGET_ARCHITECTURE}" MATCHES "^x86$")
     set(VCLIBS_TARGET_ARCHITECTURE "x86")
     set(VCLIBS_I386_OR_AMD64 "i386")
     set(VCLIBS_X86_OR_X64 "x86")
-
     # Note that we set _WIN32_WINNT to a high level to make declarations available, but still engage downlevel
     # runtime dynamic linking by setting our own _STL_WIN32_WINNT back to Windows XP.
     add_compile_definitions(_X86_ _VCRT_WIN32_WINNT=0x0501 _STL_WIN32_WINNT=0x0501)
@@ -79,13 +74,10 @@ get_filename_component(TOOLSET_BINARIES_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY) #
 get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_BINARIES_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin\Hostx86
 get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin
 get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931
-
 set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
-
 set(STL_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
 set(STL_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
 set(STL_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR_AMD64}")
-
 add_compile_definitions(
     _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH WIN32_LEAN_AND_MEAN STRICT _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS
     _CRT_DECLARE_NONSTDC_NAMES=1 _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_CO)
@@ -108,7 +100,6 @@ if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()
-
 if(STL_BUILD_BENCHMARKING)
     add_subdirectory(benchmarks)
 endif()
