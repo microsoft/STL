@@ -442,9 +442,34 @@ set(STATIC_SOURCES
 # Objs that exist in all satellite DLLs
 set(SATELLITE_DLL_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/dllmain_satellite.cpp
-    )
+)
 
 add_compile_definitions(_CRTBLD _VCRT_ALLOW_INTERNALS _HAS_OLD_IOSTREAMS_MEMBERS=1 _STL_CONCRT_SUPPORT)
+
+set(CMAKE_CXX_FLAGS "")
+set(CMAKE_CXX_FLAGS_DEBUG "")
+set(CMAKE_CXX_FLAGS_RELEASE "")
+set(CMAKE_CXX_STANDARD_LIBRARIES "kernel32.lib")
+set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "kernel32.lib")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "")
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR_AMD64}")
+
+set(CMAKE_STATIC_LINKER_FLAGS "/WX")
+set(CMAKE_STATIC_LINKER_FLAGS_DEBUG "")
+set(CMAKE_STATIC_LINKER_FLAGS_RELEASE "")
+set(CMAKE_SHARED_LINKER_FLAGS "/DEBUG:FULL /WX /RELEASE /SUBSYSTEM:Console /NODEFAULTLIB /INCREMENTAL:NO /MANIFEST:NO /DLL /profile /guard:cf /DEBUGTYPE:cv,fixup /LARGEADDRESSAWARE")
+set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
+set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
+
+get_filename_component(TOOLSET_BINARIES_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY) # Example: $\VC\Tools\MSVC\14.23.27931\bin\Hostx86\x86
+get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_BINARIES_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin\Hostx86
+get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin
+get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931
+
+set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
 
 include_directories(BEFORE
     "${CMAKE_CURRENT_LIST_DIR}/inc"
@@ -457,19 +482,40 @@ else()
     add_library(stl_alias_objects INTERFACE)
 endif()
 
-function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIONS GL_FLAG THIS_CONFIG_LINK_OPTIONS)
+add_compile_options(/WX /Gy
+    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/d1FastFail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
+
+    # note that /Zi generates debug info inside the object file, it's the same as /Z7 for msvc
+    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/Zi;/W3;/nologo>"
+)
+
+function(target_stl_compile_options tgt rel_or_dbg)
+    if(rel_or_dbg STREQUAL "Release")
+        target_compile_options(${tgt} PRIVATE ${VCLIBS_RELEASE_OPTIONS})
+    elseif(rel_or_dbg STREQUAL "Debug")
+        target_compile_options(${tgt} PRIVATE ${VCLIBS_DEBUG_OPTIONS})
+        target_compile_definitions(${tgt} PRIVATE "_DEBUG")
+    else()
+        message(FATAL_ERROR "INTERNAL ERROR: unexpected value for rel_or_dbg: '${rel_or_dbg}'")
+    endif()
+endfunction()
+
+function(add_stl_dlls D_SUFFIX REL_OR_DBG GL_FLAG THIS_CONFIG_LINK_OPTIONS)
     # msvcp140.dll
     add_library(msvcp${D_SUFFIX}_objects OBJECT ${DLL_SOURCES} ${SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_objects PRIVATE CRTDLL2 PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
-    target_compile_options(msvcp${D_SUFFIX}_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
+    target_compile_definitions(msvcp${D_SUFFIX}_objects PRIVATE CRTDLL2 _DLL)
+    target_compile_options(msvcp${D_SUFFIX}_objects PRIVATE ${GL_FLAG} /EHsc)
+    target_stl_compile_options(msvcp${D_SUFFIX}_objects ${REL_OR_DBG})
 
     add_library(msvcp${D_SUFFIX}_init_objects OBJECT ${INITIALIZER_SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_init_objects PRIVATE CRTDLL2 PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
-    target_compile_options(msvcp${D_SUFFIX}_init_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};/EHsc")
+    target_compile_definitions(msvcp${D_SUFFIX}_init_objects PRIVATE CRTDLL2 _DLL)
+    target_compile_options(msvcp${D_SUFFIX}_init_objects PRIVATE /EHsc)
+    target_stl_compile_options(msvcp${D_SUFFIX}_init_objects ${REL_OR_DBG})
 
     add_library(msvcp${D_SUFFIX}_eha_objects OBJECT ${EHA_SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_eha_objects PRIVATE CRTDLL2 PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
-    target_compile_options(msvcp${D_SUFFIX}_eha_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHa")
+    target_compile_definitions(msvcp${D_SUFFIX}_eha_objects PRIVATE CRTDLL2 _DLL)
+    target_compile_options(msvcp${D_SUFFIX}_eha_objects PRIVATE ${GL_FLAG} /EHa)
+    target_stl_compile_options(msvcp${D_SUFFIX}_eha_objects ${REL_OR_DBG})
 
     add_library(msvcp${D_SUFFIX} SHARED)
     target_link_libraries(msvcp${D_SUFFIX} PRIVATE msvcp${D_SUFFIX}_eha_objects msvcp${D_SUFFIX}_objects msvcp${D_SUFFIX}_init_objects "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib" "ole32.lib")
@@ -480,17 +526,20 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
 
     # import library 'statics'
     add_library(msvcp${D_SUFFIX}_implib_objects OBJECT ${IMPLIB_SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
-    target_compile_options(msvcp${D_SUFFIX}_implib_objects PRIVATE ${THIS_CONFIG_COMPILE_OPTIONS} /EHsc) # No /GL!
+    target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PUBLIC _DLL)
+    target_compile_options(msvcp${D_SUFFIX}_implib_objects PRIVATE /EHsc) # No /GL!
+    target_stl_compile_options(msvcp${D_SUFFIX}_implib_objects ${REL_OR_DBG})
 
     add_library(msvcp${D_SUFFIX}_satellite_objects OBJECT ${SATELLITE_DLL_SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_satellite_objects PRIVATE PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
-    target_compile_options(msvcp${D_SUFFIX}_satellite_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
+    target_compile_definitions(msvcp${D_SUFFIX}_satellite_objects PRIVATE _DLL)
+    target_compile_options(msvcp${D_SUFFIX}_satellite_objects PRIVATE ${GL_FLAG} /EHsc)
+    target_stl_compile_options(msvcp${D_SUFFIX}_satellite_objects ${REL_OR_DBG})
 
     # msvcp140_1.dll (the memory_resource satellite)
     add_library(msvcp_1${D_SUFFIX}_objects OBJECT ${SOURCES_SATELLITE_1})
-    target_compile_definitions(msvcp_1${D_SUFFIX}_objects PRIVATE _BUILDING_SATELLITE_1 PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
-    target_compile_options(msvcp_1${D_SUFFIX}_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
+    target_compile_definitions(msvcp_1${D_SUFFIX}_objects PRIVATE _BUILDING_SATELLITE_1 _DLL)
+    target_compile_options(msvcp_1${D_SUFFIX}_objects PRIVATE ${GL_FLAG} /EHsc)
+    target_stl_compile_options(msvcp_1${D_SUFFIX}_objects ${REL_OR_DBG})
 
     add_library(msvcp_1${D_SUFFIX} SHARED)
     target_link_libraries(msvcp_1${D_SUFFIX} PRIVATE msvcp_1${D_SUFFIX}_objects msvcp${D_SUFFIX}_satellite_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
@@ -501,9 +550,10 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
 
     # msvcp140_2.dll (the special math satellite)
     add_library(msvcp_2${D_SUFFIX}_objects OBJECT ${SOURCES_SATELLITE_2})
-    target_compile_definitions(msvcp_2${D_SUFFIX}_objects PRIVATE _BUILDING_SATELLITE_2 PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
-    target_compile_options(msvcp_2${D_SUFFIX}_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
+    target_compile_definitions(msvcp_2${D_SUFFIX}_objects PRIVATE _BUILDING_SATELLITE_2 _DLL)
+    target_compile_options(msvcp_2${D_SUFFIX}_objects PRIVATE ${GL_FLAG} /EHsc)
     target_link_libraries(msvcp_2${D_SUFFIX}_objects PRIVATE Boost::math)
+    target_stl_compile_options(msvcp_2${D_SUFFIX}_objects ${REL_OR_DBG})
 
     add_library(msvcp_2${D_SUFFIX} SHARED)
     target_link_libraries(msvcp_2${D_SUFFIX} PRIVATE msvcp_2${D_SUFFIX}_objects msvcp${D_SUFFIX}_satellite_objects msvcp${D_SUFFIX}_implib_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
@@ -514,8 +564,9 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
 
     # msvcp140_atomic_wait.dll (the atomic wait satellite)
     add_library(msvcp${D_SUFFIX}_atomic_wait_objects OBJECT ${SOURCES_SATELLITE_ATOMIC_WAIT})
-    target_compile_definitions(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE _BUILDING_SATELLITE_ATOMIC_WAIT PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
-    target_compile_options(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
+    target_compile_definitions(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE _BUILDING_SATELLITE_ATOMIC_WAIT _DLL)
+    target_compile_options(msvcp${D_SUFFIX}_atomic_wait_objects PRIVATE ${GL_FLAG} /EHsc)
+    target_stl_compile_options(msvcp${D_SUFFIX}_atomic_wait_objects ${REL_OR_DBG})
 
     # generate the .def for msvcp140_atomic_wait.dll
     set(_ATOMIC_WAIT_OUTPUT_NAME "msvcp140${D_SUFFIX}_atomic_wait${VCLIBS_SUFFIX}")
@@ -538,6 +589,7 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     add_library(msvcp${D_SUFFIX}_codecvt_ids_objects OBJECT ${SOURCES_SATELLITE_CODECVT_IDS})
     target_compile_definitions(msvcp${D_SUFFIX}_codecvt_ids_objects PRIVATE _BUILDING_SATELLITE_CODECVT_IDS PUBLIC _DLL ${THIS_CONFIG_DEFINITIONS})
     target_compile_options(msvcp${D_SUFFIX}_codecvt_ids_objects PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};${GL_FLAG};/EHsc")
+    target_stl_compile_options(msvcp${D_SUFFIX}_codecvt_ids_objects ${REL_OR_DBG})
 
     add_library(msvcp${D_SUFFIX}_codecvt_ids SHARED)
     target_link_libraries(msvcp${D_SUFFIX}_codecvt_ids PRIVATE msvcp${D_SUFFIX}_codecvt_ids_objects msvcp${D_SUFFIX}_satellite_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
@@ -554,24 +606,27 @@ function(add_stl_dlls D_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIO
     set_target_properties(msvcp${D_SUFFIX}_implib PROPERTIES ARCHIVE_OUTPUT_NAME "msvcprt${D_SUFFIX}")
 endfunction()
 
-add_stl_dlls("" "" "${VCLIBS_RELEASE_OPTIONS}" "/GL" "/LTCG;/opt:ref,icf")
-add_stl_dlls("d" "_DEBUG" "${VCLIBS_DEBUG_OPTIONS}" "" "/opt:ref,noicf")
+add_stl_dlls("" Release "/GL" "/LTCG;/opt:ref,icf")
+add_stl_dlls("d" Debug "${VCLIBS_DEBUG_OPTIONS}" "" "/opt:ref,noicf")
 
-function(add_stl_statics FLAVOR_SUFFIX THIS_CONFIG_DEFINITIONS THIS_CONFIG_COMPILE_OPTIONS)
+function(add_stl_statics FLAVOR_SUFFIX REL_OR_DBG ITERATOR_DEBUG_LEVEL)
     add_library(libcpmt${FLAVOR_SUFFIX}_eha OBJECT ${EHA_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX}_eha PUBLIC ${THIS_CONFIG_DEFINITIONS} PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING)
-    target_compile_options(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};/EHa")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING "-D_ITERATOR_DEBUG_LEVEL=${ITERATOR_DEBUG_LEVEL}")
+    target_compile_options(libcpmt${FLAVOR_SUFFIX}_eha PRIVATE /EHa)
+    target_stl_compile_options(libcpmt${FLAVOR_SUFFIX}_eha ${REL_OR_DBG})
+
     add_library(libcpmt${FLAVOR_SUFFIX} STATIC ${HEADERS} ${IMPLIB_SOURCES} ${SOURCES} ${INITIALIZER_SOURCES} ${STATIC_SOURCES})
-    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PUBLIC ${THIS_CONFIG_DEFINITIONS} PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING)
-    target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "${THIS_CONFIG_COMPILE_OPTIONS};$<$<COMPILE_LANGUAGE:CXX>:/EHsc>")
+    target_compile_definitions(libcpmt${FLAVOR_SUFFIX} PRIVATE _ANNOTATE_VECTOR _ANNOTATE_STRING "-D_ITERATOR_DEBUG_LEVEL=${ITERATOR_DEBUG_LEVEL}")
+    target_compile_options(libcpmt${FLAVOR_SUFFIX} PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/EHsc>")
     target_link_libraries(libcpmt${FLAVOR_SUFFIX} PRIVATE Boost::math stl_alias_objects libcpmt${FLAVOR_SUFFIX}_eha)
+    target_stl_compile_options(libcpmt${FLAVOR_SUFFIX} ${REL_OR_DBG})
 endfunction()
 
-add_stl_statics("" "_ITERATOR_DEBUG_LEVEL=0" "${VCLIBS_RELEASE_OPTIONS}")
-add_stl_statics("1" "_ITERATOR_DEBUG_LEVEL=1" "${VCLIBS_RELEASE_OPTIONS}")
-add_stl_statics("d" "_DEBUG;_ITERATOR_DEBUG_LEVEL=2" "${VCLIBS_DEBUG_OPTIONS}")
-add_stl_statics("d1" "_DEBUG;_ITERATOR_DEBUG_LEVEL=1" "${VCLIBS_DEBUG_OPTIONS}")
-add_stl_statics("d0" "_DEBUG;_ITERATOR_DEBUG_LEVEL=0" "${VCLIBS_DEBUG_OPTIONS}")
+add_stl_statics("" Release 0)
+add_stl_statics("1" Release 1)
+add_stl_statics("d" Debug 2)
+add_stl_statics("d1" Debug 1)
+add_stl_statics("d0" Debug 0)
 
 add_library(stl_asan STATIC ${ASAN_SOURCES})
 
