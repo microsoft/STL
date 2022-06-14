@@ -453,9 +453,9 @@ set(CMAKE_CXX_STANDARD_LIBRARIES "kernel32.lib")
 set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "kernel32.lib")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "")
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR_AMD64}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${STL_ARCHIVE_OUTPUT_DIRECTORY}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${STL_LIBRARY_OUTPUT_DIRECTORY}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${STL_RUNTIME_OUTPUT_DIRECTORY}")
 
 set(CMAKE_STATIC_LINKER_FLAGS "/WX")
 set(CMAKE_STATIC_LINKER_FLAGS_DEBUG "")
@@ -463,13 +463,6 @@ set(CMAKE_STATIC_LINKER_FLAGS_RELEASE "")
 set(CMAKE_SHARED_LINKER_FLAGS "/DEBUG:FULL /WX /RELEASE /SUBSYSTEM:Console /NODEFAULTLIB /INCREMENTAL:NO /MANIFEST:NO /DLL /profile /guard:cf /DEBUGTYPE:cv,fixup /LARGEADDRESSAWARE")
 set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
-
-get_filename_component(TOOLSET_BINARIES_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY) # Example: $\VC\Tools\MSVC\14.23.27931\bin\Hostx86\x86
-get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_BINARIES_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin\Hostx86
-get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin
-get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931
-
-set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
 
 include_directories(BEFORE
     "${CMAKE_CURRENT_LIST_DIR}/inc"
@@ -526,7 +519,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG GL_FLAG THIS_CONFIG_LINK_OPTIONS)
 
     # import library 'statics'
     add_library(msvcp${D_SUFFIX}_implib_objects OBJECT ${IMPLIB_SOURCES})
-    target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PUBLIC _DLL)
+    target_compile_definitions(msvcp${D_SUFFIX}_implib_objects PRIVATE _DLL)
     target_compile_options(msvcp${D_SUFFIX}_implib_objects PRIVATE /EHsc) # No /GL!
     target_stl_compile_options(msvcp${D_SUFFIX}_implib_objects ${REL_OR_DBG})
 
@@ -556,7 +549,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG GL_FLAG THIS_CONFIG_LINK_OPTIONS)
     target_stl_compile_options(msvcp_2${D_SUFFIX}_objects ${REL_OR_DBG})
 
     add_library(msvcp_2${D_SUFFIX} SHARED)
-    target_link_libraries(msvcp_2${D_SUFFIX} PRIVATE msvcp_2${D_SUFFIX}_objects msvcp${D_SUFFIX}_satellite_objects msvcp${D_SUFFIX}_implib_objects "msvcp${D_SUFFIX}" "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
+    target_link_libraries(msvcp_2${D_SUFFIX} PRIVATE msvcp_2${D_SUFFIX}_objects msvcp${D_SUFFIX}_satellite_objects msvcp${D_SUFFIX}_implib_objects msvcp${D_SUFFIX} "${TOOLSET_LIB}/vcruntime${D_SUFFIX}.lib" "${TOOLSET_LIB}/msvcrt${D_SUFFIX}.lib" "ucrt${D_SUFFIX}.lib")
     set_target_properties(msvcp_2${D_SUFFIX} PROPERTIES ARCHIVE_OUTPUT_NAME "msvcp140_2${D_SUFFIX}${VCLIBS_SUFFIX}")
     set_target_properties(msvcp_2${D_SUFFIX} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     set_target_properties(msvcp_2${D_SUFFIX} PROPERTIES OUTPUT_NAME "msvcp140_2${D_SUFFIX}${VCLIBS_SUFFIX}")
