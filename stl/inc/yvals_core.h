@@ -1614,9 +1614,5 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
-#ifndef _MSVC_CONSTEXPR // TRANSITION, VS2022v17.3p2
-#define _MSVC_CONSTEXPR
-#endif
-
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
