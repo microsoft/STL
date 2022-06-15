@@ -4,42 +4,23 @@
 #pragma once
 
 template <typename Contained>
-struct trivial {
+struct aggregate {
     Contained c;
+
+    friend bool operator==(const aggregate& lhs, const aggregate& rhs) = default;
 };
-
-template <typename Contained>
-bool operator==(const trivial<Contained>& lhs, const trivial<Contained>& rhs) {
-    return lhs.c == rhs.c;
-}
-
-template <typename Contained>
-bool operator!=(const trivial<Contained>& lhs, const trivial<Contained>& rhs) {
-    return lhs.c != rhs.c;
-}
 
 template <typename Contained>
 struct non_trivial {
     Contained c;
-    non_trivial() : c() { /* user provided */
-    }
+    non_trivial() : c() {}
     non_trivial(const Contained& src) : c(src) {}
     non_trivial(const non_trivial& other) : c(other.c) {}
     non_trivial& operator=(const non_trivial& other) {
         c = other.c;
         return *this;
     }
+    ~non_trivial() {}
 
-    ~non_trivial() { /* user provided */
-    }
+    friend bool operator==(const non_trivial& lhs, const non_trivial& rhs) = default;
 };
-
-template <typename Contained>
-bool operator==(const non_trivial<Contained>& lhs, const non_trivial<Contained>& rhs) {
-    return lhs.c == rhs.c;
-}
-
-template <typename Contained>
-bool operator!=(const non_trivial<Contained>& lhs, const non_trivial<Contained>& rhs) {
-    return lhs.c != rhs.c;
-}
