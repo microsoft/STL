@@ -5119,8 +5119,6 @@ namespace ranges {
 
         template <permutable _It, sentinel_for<_It> _Se>
         constexpr subrange<_It> operator()(_It _First, const _Se _Last, iter_difference_t<_It> _Pos_to_shift) const {
-            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
-
             _Adl_verify_range(_First, _Last);
             auto _UFirst     = _Get_unwrapped(_First);
             auto _ULast      = _Get_unwrapped(_Last);
@@ -5135,8 +5133,6 @@ namespace ranges {
         template <forward_range _Rng>
             requires permutable<iterator_t<_Rng>>
         constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, range_difference_t<_Rng> _Pos_to_shift) const {
-            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
-
             const auto _Size = _Size_helper(_Range);
             auto _Result     = _Shift_right_impl(_Ubegin(_Range), _Uend(_Range), _Pos_to_shift, _Size);
             auto _First      = _Rewrap_iterator(_Range, _Result.begin());
@@ -5182,6 +5178,7 @@ namespace ranges {
             _It _First, _Se _Last, iter_difference_t<_It> _Pos_to_shift, const _SizeTy _Size) {
             _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
             _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
 
             if (_Pos_to_shift == 0) {
                 return {_First, _RANGES next(_First, _Last)};
@@ -5233,6 +5230,7 @@ namespace ranges {
                         return {_Buf, _Move_n_helper(_First, _Size - _Pos_to_shift, _Buf)};
                     }
                 }
+
                 auto _Lead = _Buf;
                 if constexpr (_Is_sized) {
                     // We validated above that the length of the range is at least 2 * _Pos_to_shift
