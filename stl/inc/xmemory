@@ -1230,7 +1230,7 @@ _CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked_v3() noexcept {
     }
 
     // proxy allocated, drain it
-    for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) {
+    for (auto _Pnext = _STD exchange(_Myproxy->_Myfirstiter, nullptr); _Pnext; _Pnext = _Pnext->_Mynextiter) {
         _Pnext->_Myproxy = nullptr;
     }
 }
