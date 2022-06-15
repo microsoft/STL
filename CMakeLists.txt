@@ -5,6 +5,10 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
+message(STATUS "cmake cxx flags: ${CMAKE_CXX_FLAGS}")
+message(STATUS "debug flags    : ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "release flags  : ${CMAKE_CXX_FLAGS_RELEASE}")
+
 include(CheckCXXSourceCompiles)
 check_cxx_source_compiles([=[
 #include <sdkddkver.h>
