@@ -1233,7 +1233,6 @@ _CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked_v3() noexcept {
     for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) {
         _Pnext->_Myproxy = nullptr;
     }
-    _Myproxy->_Myfirstiter = nullptr;
 }
 
 _CONSTEXPR20 void _Container_base12::_Orphan_all() noexcept {
