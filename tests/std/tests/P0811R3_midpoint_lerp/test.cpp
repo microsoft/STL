@@ -1025,12 +1025,20 @@ bool test_lerp() {
 
 void test_gh_1917() {
     // GH-1917 <cmath>: lerp(1e+308, 5e+307, 4.0) spuriously overflows
-    using bit_type = unsigned long long;
+    using bit_type       = unsigned long long;
+    using float_bit_type = unsigned int;
     STATIC_ASSERT(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
     {
         ExceptGuard except;
 
         assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(0));
+    }
+    STATIC_ASSERT(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+    {
+        ExceptGuard except;
+
+        assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
         assert(check_feexcept(0));
     }
 #ifdef _M_FP_STRICT
@@ -1043,9 +1051,23 @@ void test_gh_1917() {
     }
     {
         ExceptGuard except;
+        RoundGuard round{FE_UPWARD};
+
+        assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
         RoundGuard round{FE_DOWNWARD};
 
         assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
+        RoundGuard round{FE_DOWNWARD};
+
+        assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
         assert(check_feexcept(0));
     }
     {
@@ -1057,10 +1079,25 @@ void test_gh_1917() {
     }
     {
         ExceptGuard except;
-        int r = feraiseexcept(FE_OVERFLOW);
+        RoundGuard round{FE_TOWARDZERO};
+
+        assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
+        assert(check_feexcept(0));
+    }
+    {
+        ExceptGuard except;
+        const int r = feraiseexcept(FE_OVERFLOW);
 
         assert(r == 0);
         assert(bit_cast<bit_type>(lerp(1e+308, 5e+307, 4.0)) == bit_cast<bit_type>(-1e+308));
+        assert(check_feexcept(FE_OVERFLOW));
+    }
+    {
+        ExceptGuard except;
+        const int r = feraiseexcept(FE_OVERFLOW);
+
+        assert(r == 0);
+        assert(bit_cast<float_bit_type>(lerp(2e+38f, 1e+38f, 4.0f)) == bit_cast<float_bit_type>(-2e+38f));
         assert(check_feexcept(FE_OVERFLOW));
     }
 #endif // _M_FP_STRICT
