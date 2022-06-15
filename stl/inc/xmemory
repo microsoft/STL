@@ -833,6 +833,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 __declspec(allocator) _Ty* allocate(_CRT_GUARDOVERFLOW const size_t _Count) {
+        static_assert(sizeof(value_type) > 0, "value_type must be complete before calling allocate.");
         return static_cast<_Ty*>(_Allocate<_New_alignof<_Ty>>(_Get_size_of_n<sizeof(_Ty)>(_Count)));
     }
 
@@ -866,6 +867,7 @@ public:
     static constexpr size_t _Minimum_allocation_alignment = _Asan_granularity;
 };
 
+#if _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 template <>
 class allocator<void> {
 public:
@@ -873,21 +875,22 @@ public:
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef void* pointer;
     _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const void* const_pointer;
-#endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
-    using size_type       = size_t;
-    using difference_type = ptrdiff_t;
-
-    using propagate_on_container_move_assignment           = true_type;
-    using is_always_equal _CXX20_DEPRECATE_IS_ALWAYS_EQUAL = true_type;
-
-#if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
     template <class _Other>
     struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
         using other = allocator<_Other>;
     };
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
+
+#if _HAS_CXX20
+    using size_type       = size_t;
+    using difference_type = ptrdiff_t;
+
+    using propagate_on_container_move_assignment           = true_type;
+    using is_always_equal _CXX20_DEPRECATE_IS_ALWAYS_EQUAL = true_type;
+#endif // _HAS_CXX20
 };
+#endif // _HAS_DEPRECATED_ALLOCATOR_VOID || _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
 template <class _Ty, class _Other>
 _NODISCARD _CONSTEXPR20 bool operator==(const allocator<_Ty>&, const allocator<_Other>&) noexcept {
@@ -958,12 +961,16 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _L
     }
 }
 
-template <class _Size_type>
-_NODISCARD constexpr _Size_type _Convert_size(const size_t _Len) noexcept(is_same_v<_Size_type, size_t>) {
-    // convert size_t to _Size_type, avoiding truncation
-    if constexpr (!is_same_v<_Size_type, size_t>) {
+template <class _Size_type, class _Unsigned_type>
+_NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len) noexcept(
+    sizeof(_Unsigned_type) <= sizeof(_Size_type)) {
+    // convert _Unsigned_type to _Size_type, avoiding truncation
+    _STL_INTERNAL_STATIC_ASSERT(_Unsigned_type(-1) > 0);
+    _STL_INTERNAL_STATIC_ASSERT(_Size_type(-1) > 0);
+
+    if constexpr (sizeof(_Unsigned_type) > sizeof(_Size_type)) {
         if (_Len > (numeric_limits<_Size_type>::max)()) {
-            _Xlength_error("size_t too long for _Size_type");
+            _Xlength_error("size is too long for _Size_type");
         }
     }
 

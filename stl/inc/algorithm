@@ -90,7 +90,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
 
     _Ty* _Data; // points to heap memory iff _Capacity > _Optimistic_count
     ptrdiff_t _Capacity;
-    aligned_union_t<0, _Ty> _Stack_space[_Optimistic_count];
+    _Aligned_storage_t<sizeof(_Ty), alignof(_Ty)> _Stack_space[_Optimistic_count];
 };
 
 #ifdef __cpp_lib_concepts
@@ -10013,15 +10013,22 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-    if (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) {
-        return _Max_val;
-    }
+    if constexpr (conjunction_v<is_scalar<_Ty>, disjunction<is_same<_Pr, less<>>, is_same<_Pr, less<_Ty>>>>) {
+        // Avoid early return to promote branchless code generation; see GH-2334
+        const _Ty& _Tmp = _DEBUG_LT_PRED(_Pred, _Val, _Min_val) ? _Min_val : _Val;
+        return _DEBUG_LT_PRED(_Pred, _Max_val, _Val) ? _Max_val : _Tmp;
+    } else {
 
-    if (_DEBUG_LT_PRED(_Pred, _Val, _Min_val)) {
-        return _Min_val;
-    }
+        if (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) {
+            return _Max_val;
+        }
 
-    return _Val;
+        if (_DEBUG_LT_PRED(_Pred, _Val, _Min_val)) {
+            return _Min_val;
+        }
+
+        return _Val;
+    }
 }
 
 template <class _Ty>

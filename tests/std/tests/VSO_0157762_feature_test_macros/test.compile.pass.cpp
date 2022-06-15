@@ -364,7 +364,7 @@ STATIC_ASSERT(__cpp_lib_byteswap == 202110L);
 #endif
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_char8_t)
+#if defined(__cpp_char8_t)
 #ifndef __cpp_lib_char8_t
 #error __cpp_lib_char8_t is not defined
 #elif __cpp_lib_char8_t != 201907L
@@ -711,6 +711,20 @@ STATIC_ASSERT(__cpp_lib_execution == 201603L);
 #else
 #ifdef __cpp_lib_execution
 #error __cpp_lib_execution is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_expected
+#error __cpp_lib_expected is not defined
+#elif __cpp_lib_expected != 202202L
+#error __cpp_lib_expected is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_expected == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_expected
+#error __cpp_lib_expected is defined
 #endif
 #endif
 
@@ -1353,6 +1367,20 @@ STATIC_ASSERT(__cpp_lib_ranges == 202110L);
 #endif
 
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_chunk
+#error __cpp_lib_ranges_chunk is not defined
+#elif __cpp_lib_ranges_chunk != 202202L
+#error __cpp_lib_ranges_chunk is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_chunk == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_chunk
+#error __cpp_lib_ranges_chunk is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_ranges_chunk_by
 #error __cpp_lib_ranges_chunk_by is not defined
 #elif __cpp_lib_ranges_chunk_by != 202202L
@@ -1363,6 +1391,20 @@ STATIC_ASSERT(__cpp_lib_ranges_chunk_by == 202202L);
 #else
 #ifdef __cpp_lib_ranges_chunk_by
 #error __cpp_lib_ranges_chunk_by is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_slide
+#error __cpp_lib_ranges_slide is not defined
+#elif __cpp_lib_ranges_slide != 202202L
+#error __cpp_lib_ranges_slide is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_slide == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_slide
+#error __cpp_lib_ranges_slide is defined
 #endif
 #endif
 
@@ -1599,6 +1641,20 @@ STATIC_ASSERT(__cpp_lib_ssize == 201902L);
 #else
 #ifdef __cpp_lib_ssize
 #error __cpp_lib_ssize is defined
+#endif
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_stacktrace
+#error __cpp_lib_stacktrace is not defined
+#elif __cpp_lib_stacktrace != 202011L
+#error __cpp_lib_stacktrace is not 202011L
+#else
+STATIC_ASSERT(__cpp_lib_stacktrace == 202011L);
+#endif
+#else
+#ifdef __cpp_lib_stacktrace
+#error __cpp_lib_stacktrace is defined
 #endif
 #endif
 
