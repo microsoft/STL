@@ -17,8 +17,8 @@ _STD_END
 #define wostream    ushostream
 #define wfilebuf    ushfilebuf
 #define _Init_wcout _Init_ushcout
-#define _Winit      _UShinit
 #define init_wcout  init_ushcout
+#define _Winit      _UShinit
 
 #include "wcout.cpp"
 #include <iostream>

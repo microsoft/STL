@@ -17,8 +17,8 @@ _STD_END
 #define wostream   ushostream
 #define wfilebuf   ushfilebuf
 #define _Init_wcin _Init_ushcin
-#define _Winit     _UShinit
 #define init_wcin  init_ushcin
+#define _Winit     _UShinit
 
 #include "wcin.cpp"
 #include <iostream>

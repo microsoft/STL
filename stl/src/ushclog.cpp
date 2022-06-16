@@ -17,8 +17,8 @@ _STD_END
 #define wostream    ushostream
 #define wfilebuf    ushfilebuf
 #define _Init_wclog _Init_ushclog
-#define _Winit      _UShinit
 #define init_wclog  init_ushclog
+#define _Winit      _UShinit
 
 #include "wclog.cpp"
 #include <iostream>
