@@ -64,7 +64,9 @@ namespace {
     struct alignas(_STD hardware_destructive_interference_size) _Wait_table_entry {
         SRWLOCK _Lock = SRWLOCK_INIT;
         // Initialize to all zeros, self-link lazily to optimize for space.
-        // Whole zero _Wait_table_entry avoids the need to be stored in the binary and the need to relocate.
+        // Since _Wait_table_entry is initialized to all zero bytes,
+        // _Atomic_wait_table_entry::wait_table will also be all zero bytes.
+        // It can thus can be stored in the .bss section, and not in the actual binary.
         _Wait_context _Wait_list_head = {nullptr, nullptr, nullptr, CONDITION_VARIABLE_INIT};
 
         constexpr _Wait_table_entry() noexcept = default;
