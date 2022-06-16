@@ -315,8 +315,8 @@ namespace pmr {
         }
 
     private:
-        struct _Oversized_header
-            : _Double_link<> { // tracks an allocation that was obtained directly from the upstream resource
+        struct _Oversized_header : _Double_link<> {
+            // tracks an allocation that was obtained directly from the upstream resource
             size_t _Size;
             size_t _Align;
 
@@ -383,8 +383,8 @@ namespace pmr {
         }
 
         struct _Pool { // manager for a collection of chunks comprised of blocks of a single size
-            struct _Chunk
-                : _Single_link<> { // a memory allocation consisting of a number of fixed-size blocks to be parceled out
+            struct _Chunk : _Single_link<> {
+                // a memory allocation consisting of a number of fixed-size blocks to be parceled out
                 _Intrusive_stack<_Single_link<>> _Free_blocks{}; // list of free blocks
                 size_t _Free_count; // # of unallocated blocks
                 size_t _Capacity; // total # of blocks
