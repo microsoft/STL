@@ -3,7 +3,8 @@
 
 RUNALL_INCLUDE ..\universal_prefix.lst
 RUNALL_CROSSLIST
-PM_CL="/EHsc /MTd /std:c++latest /permissive- /FImsvc_stdlib_force_include.h /wd4643"
+# TRANSITION, LLVM-53957: _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS belongs to llvm-project/libcxx/test/support/msvc_stdlib_force_include.h
+PM_CL="/EHsc /MTd /std:c++latest /permissive- /FImsvc_stdlib_force_include.h /wd4643 /D_STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER /D_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS /D_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING /D_USE_JOIN_VIEW_INPUT_RANGE"
 RUNALL_CROSSLIST
 PM_CL="/analyze:autolog- /Zc:preprocessor"
-PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /D_HAS_CXX23"
+PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing"

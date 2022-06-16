@@ -259,6 +259,10 @@ void parse_seconds() {
     test_parse("0.400000000000000002", "%S", time_atto);
     assert((time_atto == duration<int64_t, deci>{4} + duration<int64_t, atto>{2}));
 
+    duration<float, ratio<1, 25>> time_float;
+    test_parse("0.33", "%S", time_float);
+    assert((time_float == duration<float, ratio<1, 25>>{8.25f}));
+
     fail_parse("1.2 1.3", "%S %S", time_ms);
     fail_parse("1.2 2.2", "%S %S", time_ms);
 }
@@ -920,6 +924,7 @@ void insert_leap_second(const sys_days& date, const seconds& value) {
 }
 
 void test_gh_1952() {
+    // GH-1952 <chrono>: parse ignores subseconds when the underlying type supports it
     const auto time_str{"2021-06-02T17:51:05.696028Z"};
     const auto fmt{"%FT%TZ"};
     const auto utc_ref = clock_cast<utc_clock>(sys_days{2021y / June / 2d} + 17h + 51min + 5s + 696028us);

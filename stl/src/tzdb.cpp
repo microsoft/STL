@@ -385,7 +385,7 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
 
     for (size_t _Name_idx = 0; _Name_idx < _Info->_Num_time_zones; ++_Name_idx) {
         int32_t _Elem_len{};
-        const auto* const _Elem = __icu_uenum_unext(_Enum.get(), &_Elem_len, &_UErr);
+        const auto _Elem = __icu_uenum_unext(_Enum.get(), &_Elem_len, &_UErr);
         if (U_FAILURE(_UErr) || _Elem == nullptr) {
             return _Report_error(_Info, __std_tzdb_error::_Icu_error);
         }
