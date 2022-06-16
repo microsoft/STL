@@ -5,8 +5,6 @@
 
 #include <fstream>
 
-#include <Windows.h>
-
 _STD_BEGIN
 
 FILE* _Xfsopen(_In_z_ const char* filename, _In_ int mode, _In_ int prot) {
