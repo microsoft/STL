@@ -622,10 +622,8 @@
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 10      \
-    || (__CUDACC_VER_MAJOR__ == 10 \
-        && (__CUDACC_VER_MINOR__ < 1 || (__CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ < 243)))
-#error STL1002: Unexpected compiler version, expected CUDA 10.1 Update 2 or newer.
+#if __CUDACC_VER_MAJOR__ < 11 || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ < 6)
+#error STL1002: Unexpected compiler version, expected CUDA 11.6 or newer.
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -1615,10 +1613,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
-
-#ifndef _MSVC_CONSTEXPR // TRANSITION, VS2022v17.3p2
-#define _MSVC_CONSTEXPR
-#endif
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_

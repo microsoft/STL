@@ -1209,8 +1209,7 @@ private:
         // adopted, remove self from list
         _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
         while (*_Pnext && *_Pnext != this) {
-            const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
-            _Pnext           = &_Temp->_Mynextiter;
+            _Pnext = &(*_Pnext)->_Mynextiter;
         }
 
         _STL_VERIFY(*_Pnext, "ITERATOR LIST CORRUPTED!");
@@ -1231,10 +1230,9 @@ _CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked_v3() noexcept {
     }
 
     // proxy allocated, drain it
-    for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
+    for (auto _Pnext = _STD exchange(_Myproxy->_Myfirstiter, nullptr); _Pnext; _Pnext = _Pnext->_Mynextiter) {
         _Pnext->_Myproxy = nullptr;
     }
-    _Myproxy->_Myfirstiter = nullptr;
 }
 
 _CONSTEXPR20 void _Container_base12::_Orphan_all() noexcept {
