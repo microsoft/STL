@@ -41,7 +41,8 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.vsDevCmdArch }}
-      cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON -DSTL_BUILD_BENCHMARKING=$(buildBenchmarks)'
+      buildBenchmarks: '${{ parameters.buildBenchmarks }}'
+      cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
   - template: run-tests.yml
     parameters:
       hostArch: ${{ parameters.hostArch }}

@@ -35,7 +35,7 @@ steps:
     cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
-    -DSTL_BUILD_BENCHMARKING=$(buildBenchmarks) ^
+    -DSTL_BUILD_BENCHMARKING=${{ parameters.buildBenchmarks }} ^
     -DLIT_FLAGS=$(litFlags) ^
     -S $(Build.SourcesDirectory) -B $(${{ parameters.buildOutputLocationVar }})
   displayName: 'Configure the STL'
