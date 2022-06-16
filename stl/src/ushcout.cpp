@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-// initialize standard wide error stream (unsigned short version)
+// initialize standard wide output stream (unsigned short version)
 
 #include <fstream>
 
