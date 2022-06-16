@@ -254,7 +254,7 @@ namespace filesystem {
     _NODISCARD wstring _Convert_stringoid_to_wide(const wstring_view _Input, _Conversion) {
         static_assert(
             is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
-        return wstring(_Input);
+        return wstring{_Input};
     }
 
 #ifdef __cpp_char8_t
@@ -271,7 +271,7 @@ namespace filesystem {
     _NODISCARD wstring _Convert_stringoid_to_wide(const u16string_view _Input, _Conversion) {
         static_assert(
             is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
-        return wstring(_Input.data(), _Input.data() + _Input.size());
+        return wstring{_Input.data(), _Input.data() + _Input.size()};
     }
 
     template <class _Conversion>
