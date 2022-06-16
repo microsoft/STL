@@ -592,6 +592,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_tuple == 201811L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_constexpr_typeinfo
+#error __cpp_lib_constexpr_typeinfo is not defined
+#elif __cpp_lib_constexpr_typeinfo != 202106L
+#error __cpp_lib_constexpr_typeinfo is not 202106L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_typeinfo == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_typeinfo
+#error __cpp_lib_constexpr_typeinfo is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_utility
 #error __cpp_lib_constexpr_utility is not defined

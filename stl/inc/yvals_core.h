@@ -295,6 +295,7 @@
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
 // P1272R4 byteswap()
+// P1328R1 constexpr type_info::operator==()
 // P1413R3 Deprecate aligned_storage And aligned_union
 // P1425R4 Iterator Pair Constructors For stack And queue
 // P1659R3 ranges::starts_with, ranges::ends_with
@@ -1456,6 +1457,7 @@
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_expected 202202L
