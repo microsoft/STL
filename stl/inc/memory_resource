@@ -204,7 +204,7 @@ namespace pmr {
 
         constexpr void _Remove(_Ty* const _Item) noexcept {
             const auto _Ptr = _As_link(_Item);
-            for (_Link_type** _Foo = _STD addressof(_Head); *_Foo; _Foo = _STD addressof((*_Foo)->_Next)) {
+            for (_Link_type** _Foo = &_Head; *_Foo; _Foo = &(*_Foo)->_Next) {
                 if (*_Foo == _Ptr) {
                     *_Foo = _Ptr->_Next;
                     break;
