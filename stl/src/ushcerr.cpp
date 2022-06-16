@@ -3,7 +3,6 @@
 
 // initialize standard wide error stream (unsigned short version)
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
 #include <fstream>
 
 _STD_BEGIN
@@ -31,4 +30,3 @@ _STD_END
 
 #include "wcerr.cpp"
 #include <iostream>
-#endif
