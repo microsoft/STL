@@ -481,17 +481,6 @@
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("msvc")
 
-// Controls whether the STL uses "conditional explicit" internally
-#ifndef _HAS_CONDITIONAL_EXPLICIT
-#ifdef __cpp_conditional_explicit
-#define _HAS_CONDITIONAL_EXPLICIT 1
-#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, CUDA/ICC
-#else // vvv C1XX or Clang or IntelliSense vvv
-#define _HAS_CONDITIONAL_EXPLICIT 1
-#endif // ^^^ C1XX or Clang or IntelliSense ^^^
-#endif // _HAS_CONDITIONAL_EXPLICIT
-
 // warning C4577: 'noexcept' used with no exception handling mode specified;
 // termination on exception is not guaranteed. Specify /EHsc (/Wall)
 #if _HAS_EXCEPTIONS
@@ -508,11 +497,11 @@
 #endif // !_HAS_CXX17
 
 // warning C5053: support for 'explicit(<expr>)' in C++17 and earlier is a vendor extension
-#if !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
+#if !_HAS_CXX20
 #define _STL_DISABLED_WARNING_C5053 5053
-#else // !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
+#else // !_HAS_CXX20
 #define _STL_DISABLED_WARNING_C5053
-#endif // !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
+#endif // !_HAS_CXX20
 
 #ifndef _STL_EXTRA_DISABLED_WARNINGS
 #define _STL_EXTRA_DISABLED_WARNINGS
