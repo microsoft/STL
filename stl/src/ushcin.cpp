@@ -21,4 +21,3 @@ _STD_END
 #define _Winit     _UShinit
 
 #include "wcin.cpp"
-#include <iostream>
