@@ -13,7 +13,6 @@ using ushfilebuf = basic_filebuf<unsigned short, char_traits<unsigned short>>;
 
 _STD_END
 
-#ifndef wistream
 #define wistream    ushistream
 #define wostream    ushostream
 #define wfilebuf    ushfilebuf
@@ -26,7 +25,6 @@ _STD_END
 #define init_wclog  init_ushclog
 #define init_wcin   init_ushcin
 #define _Winit      _UShinit
-#endif
 
 #include "wcerr.cpp"
 #include <iostream>
