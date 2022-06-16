@@ -990,9 +990,9 @@ protected:
                 this->_Val[_IM] = (this->_Val[_IM] - this->_Val[_RE] * _Wr) / _Wd;
                 this->_Val[_RE] = _Tmp;
             }
-        } else if (_Rightimag == 0) { // set NaN result
-            this->_Val[_RE] = _Myctraits::_Nanv();
-            this->_Val[_IM] = this->_Val[_RE];
+        } else if (_Rightimag == 0) { // _Right.real() == 0 && _Right.imag() == 0
+            this->_Val[_RE] /= _Rightreal;
+            this->_Val[_IM] /= _Rightreal;
         } else { // 0 < |_Right.real()| <= |_Right.imag()|
             _Ty _Wr = _Rightreal / _Rightimag;
             _Ty _Wd = _Rightimag + _Wr * _Rightreal;
@@ -1305,6 +1305,7 @@ class complex : public _Complex_base<_Ty, _Complex_value<_Ty>> {
 public:
     using _Mybase = _Complex_base<_Ty, _Complex_value<_Ty>>;
 
+    _DEPRECATE_NONFLOATING_COMPLEX
     constexpr complex(const _Ty& _Realval = _Ty(), const _Ty& _Imagval = _Ty()) : _Mybase(_Realval, _Imagval) {}
 
     _CONSTEXPR20 complex& operator=(const _Ty& _Right) {
@@ -1314,7 +1315,7 @@ public:
     }
 
     template <class _Other>
-    constexpr complex(const complex<_Other>& _Right)
+    _DEPRECATE_NONFLOATING_COMPLEX constexpr complex(const complex<_Other>& _Right)
         : _Mybase(static_cast<_Ty>(_Right.real()), static_cast<_Ty>(_Right.imag())) {}
 
     template <class _Other>
