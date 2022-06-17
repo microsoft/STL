@@ -341,10 +341,10 @@ struct char_traits<char32_t> : _Char_traits<char32_t, unsigned int> {};
 template <>
 struct char_traits<wchar_t> : _WChar_traits<wchar_t> {};
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
+#ifdef _CRTBLD
 template <>
 struct char_traits<unsigned short> : _WChar_traits<unsigned short> {};
-#endif // _NATIVE_WCHAR_T_DEFINED
+#endif // _CRTBLD
 
 #if defined(__cpp_char8_t) && !defined(__EDG__) && !defined(__clang__)
 #define _HAS_U8_INTRINSICS 1
@@ -2324,8 +2324,9 @@ public:
     size_type _Myres  = 0; // current storage reserved for string
 };
 
+// get _Ty's size after being EBCO'd
 template <class _Ty>
-constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty); // get _Ty's size after being EBCO'd
+_INLINE_VAR constexpr size_t _Size_after_ebco_v = is_empty_v<_Ty> ? 0 : sizeof(_Ty);
 
 struct _String_constructor_concat_tag {
     // tag to select constructors used by basic_string's concatenation operators (operator+)

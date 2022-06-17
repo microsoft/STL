@@ -26,8 +26,7 @@ _STD_BEGIN
 template <class _Elem>
 class collate : public locale::facet { // facet for ordering sequences of elements
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type   = _Elem;
     using string_type = basic_string<_Elem, char_traits<_Elem>, allocator<_Elem>>;

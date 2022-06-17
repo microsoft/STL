@@ -1856,8 +1856,6 @@ namespace ranges {
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
-                    _STL_INTERNAL_STATIC_ASSERT(same_as<decltype(_STD declval<_Ty>()._Unchecked_end()),
-                        decltype(_Get_unwrapped(_RANGES end(_STD declval<_Ty>())))>);
                     return {_St::_Member, noexcept(_STD declval<_Ty>()._Unchecked_end())};
                 } else if constexpr (_Can_end<_Ty>) {
                     return {_St::_Unwrap, noexcept(_Get_unwrapped(_RANGES end(_STD declval<_Ty>())))};
@@ -3705,6 +3703,24 @@ namespace ranges {
             return {_STD move(in), _STD move(out)};
         }
     };
+
+#if _HAS_CXX23
+    template <class _Out, class _Ty>
+    struct out_value_result {
+        /* [[no_unique_address]] */ _Out out;
+        /* [[no_unique_address]] */ _Ty value;
+
+        template <_Convertible_from<const _Out&> _OOut, _Convertible_from<const _Ty&> _TTy>
+        constexpr operator out_value_result<_OOut, _TTy>() const& {
+            return {out, value};
+        }
+
+        template <_Convertible_from<_Out> _OOut, _Convertible_from<_Ty> _TTy>
+        constexpr operator out_value_result<_OOut, _TTy>() && {
+            return {_STD move(out), _STD move(value)};
+        }
+    };
+#endif // _HAS_CXX23
 
     template <class _In, class _Out>
     using copy_result = in_out_result<_In, _Out>;

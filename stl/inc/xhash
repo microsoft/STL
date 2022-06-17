@@ -300,11 +300,13 @@ struct _Hash_vec {
     }
 
     void _Tidy() noexcept {
-        _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
-        _Mypair._Get_first().deallocate(_Mypair._Myval2._Myfirst, capacity());
-        _Mypair._Myval2._Myfirst = nullptr;
-        _Mypair._Myval2._Mylast  = nullptr;
-        _Mypair._Myval2._Myend   = nullptr;
+        if (_Mypair._Myval2._Myfirst != nullptr) {
+            _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
+            _Mypair._Get_first().deallocate(_Mypair._Myval2._Myfirst, capacity());
+            _Mypair._Myval2._Myfirst = nullptr;
+            _Mypair._Myval2._Mylast  = nullptr;
+            _Mypair._Myval2._Myend   = nullptr;
+        }
     }
 
     ~_Hash_vec() {
