@@ -3486,7 +3486,7 @@ namespace chrono {
 
             if (_Leap == _Leap_second_rep::_All) {
                 if constexpr (!_Can_represent<_DurationType, seconds>()) {
-                    // Error if _Dur can't represent the above adjustment.
+                    // Error if _Dur can't represent the adjustment below.
                     return false;
                 } else {
                     // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
