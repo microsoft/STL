@@ -23,8 +23,6 @@
 #endif // _HAS_CMATH_INTRINSICS
 
 #if _HAS_CXX20
-#include <cfloat>
-#include <type_traits>
 #include <xutility>
 #endif // _HAS_CXX20
 
@@ -1338,18 +1336,6 @@ _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
 
 #if _HAS_CXX20
 template <class _Ty>
-inline constexpr _Ty _Floating_max;
-
-template <>
-inline constexpr float _Floating_max<float> = FLT_MAX;
-
-template <>
-inline constexpr double _Floating_max<double> = DBL_MAX;
-
-template <>
-inline constexpr long double _Floating_max<long double> = LDBL_MAX;
-
-template <class _Ty>
 _NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) {
     if (_STD is_constant_evaluated()) {
         auto _Smaller     = _ArgT;
@@ -1361,7 +1347,10 @@ _NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, cons
             _STD swap(_Abs_smaller, _Abs_larger);
         }
 
-        if (_Abs_smaller > 1 && _Abs_larger > _Floating_max<remove_cv_t<_Ty>> / _Abs_smaller) {
+        // _Larger is too large to be subnormal, so scaling by 0.5 is exact, and the product _Smaller * _Larger is large
+        // enough that if _ArgA is subnormal, it will be too small to contribute anyway and this way can sometimes avoid
+        // overflow problems
+        if (_Abs_smaller > 1) {
             return 2 * (_Ty{0.5} * _ArgA + _Smaller * (_Ty{0.5} * _Larger));
         } else {
             return _ArgA + _Smaller * _Larger;
