@@ -3488,37 +3488,37 @@ namespace chrono {
                 if constexpr (!_Can_represent<_DurationType, seconds>()) {
                     // Error if _Dur can't represent the above adjustment.
                     return false;
-                }
+                } else {
+                    // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
+                    // leap second insertion or (b) _Seconds >= 59 and there *is* a leap second subtraction.
+                    const auto& _Tzdb{_CHRONO get_tzdb()};
 
-                // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
-                // leap second insertion or (b) _Seconds >= 59 and there *is* a leap second subtraction.
-                const auto& _Tzdb{_CHRONO get_tzdb()};
+                    const bool _Possible_insertion{_Second == 60};
+                    const sys_seconds _Target_sys_time{
+                        _CHRONO floor<seconds>(_Dur) - (_Possible_insertion ? seconds{1} : seconds{0})};
+                    const auto& _Ls_vector{_Tzdb.leap_seconds};
+                    const auto _It{_STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), _Target_sys_time)};
+                    const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time + seconds{1}};
 
-                const bool _Possible_insertion{_Second == 60};
-                const sys_seconds _Target_sys_time{
-                    _CHRONO floor<seconds>(_Dur) - (_Possible_insertion ? seconds{1} : seconds{0})};
-                const auto& _Ls_vector{_Tzdb.leap_seconds};
-                const auto _It{_STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), _Target_sys_time)};
-                const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time + seconds{1}};
-
-                if (_Match_leap) {
-                    if (!_It->_Positive()) { // negative leap second
-                        if (_Second >= 59) {
+                    if (_Match_leap) {
+                        if (!_It->_Positive()) { // negative leap second
+                            if (_Second >= 59) {
+                                return false;
+                            }
+                        }
+                    } else { // no leap second
+                        if (_Possible_insertion) {
                             return false;
                         }
                     }
-                } else { // no leap second
-                    if (_Possible_insertion) {
-                        return false;
+
+                    const auto _Offset = _It == _Ls_vector.begin() ? seconds{0} : _Prev_iter(_It)->_Elapsed();
+                    _Dur += _CHRONO duration_cast<_DurationType>(_Offset);
+
+                    if (_Original_leap == _Leap_second_rep::_File_time) {
+                        _Dur -= _CHRONO duration_cast<_DurationType>(
+                            filesystem::_File_time_clock::_Skipped_filetime_leap_seconds);
                     }
-                }
-
-                const auto _Offset = _It == _Ls_vector.begin() ? seconds{0} : _Prev_iter(_It)->_Elapsed();
-                _Dur += _CHRONO duration_cast<_DurationType>(_Offset);
-
-                if (_Original_leap == _Leap_second_rep::_File_time) {
-                    _Dur -= _CHRONO duration_cast<_DurationType>(
-                        filesystem::_File_time_clock::_Skipped_filetime_leap_seconds);
                 }
             }
 
