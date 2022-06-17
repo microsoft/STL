@@ -1690,9 +1690,9 @@ namespace filesystem {
 
     _NODISCARD inline bool _Relative_path_contains_root_name(const path& _Path) {
         const auto& _Native = _Path.native();
-        auto _First      = _Native.data();
-        const auto _Last = _First + _Native.size();
-        _First           = _Find_relative_path(_First, _Last);
+        auto _First         = _Native.data();
+        const auto _Last    = _First + _Native.size();
+        _First              = _Find_relative_path(_First, _Last);
         while (_First != _Last) {
             const auto _Next = _STD find_if(_First, _Last, _Is_slash);
             if (_Starts_with_root_name(_First, _Next)) {
