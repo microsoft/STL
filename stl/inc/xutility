@@ -693,8 +693,7 @@ concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
 
 namespace ranges {
     namespace _Iter_swap {
-        template <class _Ty1, class _Ty2>
-        void iter_swap(_Ty1, _Ty2) = delete;
+        void iter_swap();
 
         // clang-format off
         template <class _Ty1, class _Ty2>
@@ -1640,10 +1639,7 @@ namespace ranges {
     concept _Should_range_access = is_lvalue_reference_v<_Rng> || enable_borrowed_range<remove_cvref_t<_Rng>>;
 
     namespace _Begin {
-        template <class _Ty>
-        void begin(_Ty&) = delete;
-        template <class _Ty>
-        void begin(const _Ty&) = delete;
+        void begin();
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
@@ -1764,10 +1760,7 @@ namespace ranges {
     }
 
     namespace _End {
-        template <class _Ty>
-        void end(_Ty&) = delete;
-        template <class _Ty>
-        void end(const _Ty&) = delete;
+        void end();
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
@@ -1945,10 +1938,7 @@ namespace ranges {
     }
 
     namespace _Rbegin {
-        template <class _Ty>
-        void rbegin(_Ty&) = delete;
-        template <class _Ty>
-        void rbegin(const _Ty&) = delete;
+        void rbegin();
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
@@ -2013,10 +2003,7 @@ namespace ranges {
     }
 
     namespace _Rend {
-        template <class _Ty>
-        void rend(_Ty&) = delete;
-        template <class _Ty>
-        void rend(const _Ty&) = delete;
+        void rend();
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
@@ -2115,10 +2102,7 @@ namespace ranges {
     inline constexpr bool disable_sized_range = false;
 
     namespace _Size {
-        template <class _Ty>
-        void size(_Ty&) = delete;
-        template <class _Ty>
-        void size(const _Ty&) = delete;
+        void size();
 
         template <class _Ty, class _UnCV>
         concept _Has_member = !disable_sized_range<_UnCV> && requires(_Ty __t) {
