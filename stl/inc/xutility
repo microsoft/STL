@@ -693,7 +693,8 @@ concept indirectly_copyable_storable = indirectly_copyable<_In, _Out>
 
 namespace ranges {
     namespace _Iter_swap {
-        void iter_swap();
+        template <class _Ty1, class _Ty2>
+        void iter_swap(_Ty1, _Ty2) = delete;
 
         // clang-format off
         template <class _Ty1, class _Ty2>
