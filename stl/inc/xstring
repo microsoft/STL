@@ -2282,6 +2282,17 @@ public:
         return _BUF_SIZE <= _Myres;
     }
 
+    constexpr void _Activate_SSO_buffer() {
+        // begin the lifetime of the array elements (e.g., before copying into them)
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            for (size_type _Idx = 0; _Idx < _BUF_SIZE; ++_Idx) {
+                _Bx._Buf[_Idx] = value_type();
+            }
+        }
+#endif // _HAS_CXX20
+    }
+
     _CONSTEXPR20 void _Check_offset(const size_type _Off) const {
         // checks whether _Off is in the bounds of [0, size()]
         if (_Mysize < _Off) {
@@ -2669,6 +2680,8 @@ private:
     enum class _Construct_strategy : uint8_t { _From_char, _From_ptr, _From_string };
     template <_Construct_strategy _Strat, class _Char_or_ptr>
     _CONSTEXPR20 void _Construct(const _Char_or_ptr _Arg, _CRT_GUARDOVERFLOW const size_type _Count) {
+        // Pre: *this is in SSO mode; the lifetime of the SSO elements has already begun
+
         if constexpr (_Strat == _Construct_strategy::_From_char) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Char_or_ptr, _Elem>);
         } else {
@@ -2685,12 +2698,6 @@ private:
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
         if (_Count < _BUF_SIZE) {
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) {
-                _Construct_in_place(_My_data._Bx);
-            }
-#endif // _HAS_CXX20
-
             _My_data._Mysize = _Count;
             _My_data._Myres  = _BUF_SIZE - 1;
             if constexpr (_Strat == _Construct_strategy::_From_char) {
@@ -2741,6 +2748,8 @@ private:
 
     template <class _Iter>
     _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Iter _Last) {
+        // Pre: *this is in SSO mode; the lifetime of the SSO elements has already begun
+
         auto& _My_data  = _Mypair._Myval2;
         auto& _Al       = _Getal();
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
@@ -2748,11 +2757,6 @@ private:
 
         _My_data._Mysize = 0;
         _My_data._Myres  = _BUF_SIZE - 1;
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _Construct_in_place(_My_data._Bx);
-        }
-#endif // _HAS_CXX20
 
         if constexpr (_Is_fwd_iter_v<_Iter>) {
             const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
@@ -3116,11 +3120,7 @@ private:
             _Right_data._Bx._Ptr = nullptr;
             _Swap_proxy_and_iterators(_Right);
         } else { // copy small string buffer
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
-                _Construct_in_place(_Mypair._Myval2._Bx);
-            }
-#endif // _HAS_CXX20
+            _Mypair._Myval2._Activate_SSO_buffer();
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
             _Right_data._Orphan_all();
         }
@@ -4237,11 +4237,7 @@ public:
         // exchange a string in large mode with one in small mode
         const pointer _Ptr = _Starts_large._Bx._Ptr;
         _Destroy_in_place(_Starts_large._Bx._Ptr);
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _Construct_in_place(_Starts_large._Bx);
-        }
-#endif // _HAS_CXX20
+        _Starts_large._Activate_SSO_buffer();
         _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _BUF_SIZE);
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);
     }
@@ -4810,11 +4806,7 @@ private:
         const pointer _Ptr = _My_data._Bx._Ptr;
         auto& _Al          = _Getal();
         _Destroy_in_place(_My_data._Bx._Ptr);
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
-            _Construct_in_place(_Mypair._Myval2._Bx);
-        }
-#endif // _HAS_CXX20
+        _Mypair._Myval2._Activate_SSO_buffer();
         _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), _My_data._Mysize + 1);
         _Al.deallocate(_Ptr, _My_data._Myres + 1);
         _My_data._Myres = _BUF_SIZE - 1;
@@ -4830,11 +4822,7 @@ private:
         auto& _My_data   = _Mypair._Myval2;
         _My_data._Mysize = 0;
         _My_data._Myres  = _BUF_SIZE - 1;
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
-            _Construct_in_place(_My_data._Bx);
-        }
-#endif // _HAS_CXX20
+        _My_data._Activate_SSO_buffer();
 
         // the _Traits::assign is last so the codegen doesn't think the char write can alias this
         _Traits::assign(_My_data._Bx._Buf[0], _Elem());
@@ -4849,11 +4837,7 @@ private:
             const pointer _Ptr = _My_data._Bx._Ptr;
             auto& _Al          = _Getal();
             _Destroy_in_place(_My_data._Bx._Ptr);
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
-                _Construct_in_place(_My_data._Bx);
-            }
-#endif // _HAS_CXX20
+            _My_data._Activate_SSO_buffer();
             _Al.deallocate(_Ptr, _My_data._Myres + 1);
         }
 
