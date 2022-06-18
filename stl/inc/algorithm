@@ -61,10 +61,7 @@ template <class _Ty>
 _Ty* __std_min_element(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
-    if constexpr (_STD is_pointer_v<_Ty> || _STD is_null_pointer_v<_Ty>) {
-        return const_cast<_Ty*>(reinterpret_cast<const _Ty*>(
-            __std_min_element(reinterpret_cast<const uintptr_t*>(_First), reinterpret_cast<const uintptr_t*>(_Last))));
-    } else if constexpr (sizeof(_Ty) == 1) {
+    if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(__std_min_element_1(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 2) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(__std_min_element_2(_First, _Last, _Signed)));
@@ -81,10 +78,7 @@ template <class _Ty>
 _Ty* __std_max_element(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
-    if constexpr (_STD is_pointer_v<_Ty> || _STD is_null_pointer_v<_Ty>) {
-        return const_cast<_Ty*>(reinterpret_cast<const _Ty*>(
-            __std_max_element(reinterpret_cast<const uintptr_t*>(_First), reinterpret_cast<const uintptr_t*>(_Last))));
-    } else if constexpr (sizeof(_Ty) == 1) {
+    if constexpr (sizeof(_Ty) == 1) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(__std_max_element_1(_First, _Last, _Signed)));
     } else if constexpr (sizeof(_Ty) == 2) {
         return const_cast<_Ty*>(static_cast<const _Ty*>(__std_max_element_2(_First, _Last, _Signed)));
@@ -101,30 +95,21 @@ template <class _Ty>
 _STD pair<_Ty*, _Ty*> __std_minmax_element(_Ty* _First, _Ty* _Last) noexcept {
     constexpr bool _Signed = _STD is_signed_v<_Ty>;
 
-    if constexpr (_STD is_pointer_v<_Ty> || _STD is_null_pointer_v<_Ty>) {
-        auto _Res =
-            __std_minmax_element(reinterpret_cast<const uintptr_t*>(_First), reinterpret_cast<const uintptr_t*>(_Last));
-        return {const_cast<_Ty*>(reinterpret_cast<const _Ty*>(_Res.first)),
-            const_cast<_Ty*>(reinterpret_cast<const _Ty*>(_Res.second))};
-    } else if constexpr (sizeof(_Ty) == 1) {
-        auto _Res = __std_minmax_element_1(_First, _Last, _Signed);
-        return {
-            const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
+    _Min_max_element_t _Res;
+
+    if constexpr (sizeof(_Ty) == 1) {
+        _Res = __std_minmax_element_1(_First, _Last, _Signed);
     } else if constexpr (sizeof(_Ty) == 2) {
-        auto _Res = __std_minmax_element_2(_First, _Last, _Signed);
-        return {
-            const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
+        _Res = __std_minmax_element_2(_First, _Last, _Signed);
     } else if constexpr (sizeof(_Ty) == 4) {
-        auto _Res = __std_minmax_element_4(_First, _Last, _Signed);
-        return {
-            const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
+        _Res = __std_minmax_element_4(_First, _Last, _Signed);
     } else if constexpr (sizeof(_Ty) == 8) {
-        auto _Res = __std_minmax_element_8(_First, _Last, _Signed);
-        return {
-            const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
+        _Res = __std_minmax_element_8(_First, _Last, _Signed);
     } else {
         static_assert(_STD _Always_false<_Ty>, "Unexpected size");
     }
+
+    return {const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Min)), const_cast<_Ty*>(static_cast<const _Ty*>(_Res._Max))};
 }
 #endif // _USE_STD_VECTOR_ALGORITHMS
 
@@ -9617,7 +9602,7 @@ constexpr pair<_FwdIt, _FwdIt> _Minmax_element_unchecked(_FwdIt _First, _FwdIt _
             const auto _First_ptr = _To_address(_First);
             const auto _Result    = __std_minmax_element(_First_ptr, _To_address(_Last));
             if constexpr (is_pointer_v<_FwdIt>) {
-                return {_Result.first, _Result.second};
+                return _Result;
             } else {
                 return {_First + (_Result.first - _First_ptr), _First + (_Result.second - _First_ptr)};
             }

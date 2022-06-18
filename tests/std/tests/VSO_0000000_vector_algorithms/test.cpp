@@ -84,7 +84,7 @@ void test_find(mt19937_64& gen) {
 }
 
 template <class FwdIt>
-FwdIt last_good_known_min_element(FwdIt first, FwdIt last) {
+FwdIt last_known_good_min_element(FwdIt first, FwdIt last) {
     FwdIt result = first;
 
     for (; first != last; ++first) {
@@ -97,7 +97,7 @@ FwdIt last_good_known_min_element(FwdIt first, FwdIt last) {
 }
 
 template <class FwdIt>
-FwdIt last_good_known_max_element(FwdIt first, FwdIt last) {
+FwdIt last_known_good_max_element(FwdIt first, FwdIt last) {
     FwdIt result = first;
 
     for (; first != last; ++first) {
@@ -110,7 +110,7 @@ FwdIt last_good_known_max_element(FwdIt first, FwdIt last) {
 }
 
 template <class FwdIt>
-std::pair<FwdIt, FwdIt> last_good_known_minmax_element(FwdIt first, FwdIt last) {
+pair<FwdIt, FwdIt> last_known_good_minmax_element(FwdIt first, FwdIt last) {
     // find smallest and largest elements
     pair<FwdIt, FwdIt> found(first, first);
 
@@ -128,6 +128,7 @@ std::pair<FwdIt, FwdIt> last_good_known_minmax_element(FwdIt first, FwdIt last) 
                     if (*next < *found.first) {
                         found.first = next;
                     }
+
                     if (!(*first < *found.second)) {
                         found.second = first;
                     }
@@ -135,6 +136,7 @@ std::pair<FwdIt, FwdIt> last_good_known_minmax_element(FwdIt first, FwdIt last) 
                     if (*first < *found.first) {
                         found.first = first;
                     }
+
                     if (!(*next < *found.second)) {
                         found.second = next;
                     }
@@ -149,9 +151,9 @@ std::pair<FwdIt, FwdIt> last_good_known_minmax_element(FwdIt first, FwdIt last) 
 
 template <class T>
 void test_case_min_max_element(const vector<T>& input) {
-    auto expected_min    = last_good_known_min_element(input.begin(), input.end());
-    auto expected_max    = last_good_known_max_element(input.begin(), input.end());
-    auto expected_minmax = last_good_known_minmax_element(input.begin(), input.end());
+    auto expected_min    = last_known_good_min_element(input.begin(), input.end());
+    auto expected_max    = last_known_good_max_element(input.begin(), input.end());
+    auto expected_minmax = last_known_good_minmax_element(input.begin(), input.end());
     auto actual_min      = min_element(input.begin(), input.end());
     auto actual_max      = max_element(input.begin(), input.end());
     auto actual_minmax   = minmax_element(input.begin(), input.end());
@@ -162,14 +164,30 @@ void test_case_min_max_element(const vector<T>& input) {
 
 template <class T>
 void test_min_max_element(mt19937_64& gen) {
-    auto dis = conditional_t<is_floating_point_v<T>, uniform_real_distribution<T>,
-        conditional_t<(sizeof(T) > 1), uniform_int_distribution<T>, uniform_int_distribution<int>>>(1, 20);
+    using Distribution = conditional_t<is_floating_point_v<T>, uniform_real_distribution<T>,
+        conditional_t<(sizeof(T) > 1), uniform_int_distribution<T>, uniform_int_distribution<int>>>;
+
+    Distribution dis(1, 20);
 
     vector<T> input;
     input.reserve(dataCount);
     test_case_min_max_element(input);
     for (size_t attempts = 0; attempts < dataCount; ++attempts) {
         input.push_back(static_cast<T>(dis(gen)));
+        test_case_min_max_element(input);
+    }
+}
+
+void test_min_max_element_pointers(mt19937_64& gen) {
+    const short arr[20]{};
+
+    uniform_int_distribution<size_t> dis(0, size(arr) - 1);
+
+    vector<const short*> input;
+    input.reserve(dataCount);
+    test_case_min_max_element(input);
+    for (size_t attempts = 0; attempts < dataCount; ++attempts) {
+        input.push_back(arr + dis(gen));
         test_case_min_max_element(input);
     }
 }
@@ -196,10 +214,10 @@ void test_min_max_element_special_cases() {
     // same position in different blocks
     fill(v.begin(), v.end(), ElementType{1});
     for (size_t block_pos = 0; block_pos != num_blocks; ++block_pos) {
-        v.at(block_pos * block_size_in_elements + 20 * VectorSize + 2) = 0;
-        v.at(block_pos * block_size_in_elements + 20 * VectorSize + 5) = 0;
-        v.at(block_pos * block_size_in_elements + 25 * VectorSize + 6) = 2;
-        v.at(block_pos * block_size_in_elements + 25 * VectorSize + 9) = 2;
+        v[block_pos * block_size_in_elements + 20 * VectorSize + 2] = 0;
+        v[block_pos * block_size_in_elements + 20 * VectorSize + 5] = 0;
+        v[block_pos * block_size_in_elements + 25 * VectorSize + 6] = 2;
+        v[block_pos * block_size_in_elements + 25 * VectorSize + 9] = 2;
     }
     assert(min_element(v.begin(), v.end()) == v.begin() + 20 * VectorSize + 2);
     assert(max_element(v.begin(), v.end()) == v.begin() + 25 * VectorSize + 6);
@@ -210,10 +228,10 @@ void test_min_max_element_special_cases() {
     // same block in different vectors
     fill(v.begin(), v.end(), ElementType{1});
     for (size_t vector_pos = 0; vector_pos != block_size_in_vectors; ++vector_pos) {
-        v.at(2 * block_size_in_elements + vector_pos * VectorSize + 2) = 0;
-        v.at(2 * block_size_in_elements + vector_pos * VectorSize + 5) = 0;
-        v.at(2 * block_size_in_elements + vector_pos * VectorSize + 6) = 2;
-        v.at(2 * block_size_in_elements + vector_pos * VectorSize + 9) = 2;
+        v[2 * block_size_in_elements + vector_pos * VectorSize + 2] = 0;
+        v[2 * block_size_in_elements + vector_pos * VectorSize + 5] = 0;
+        v[2 * block_size_in_elements + vector_pos * VectorSize + 6] = 2;
+        v[2 * block_size_in_elements + vector_pos * VectorSize + 9] = 2;
     }
     assert(min_element(v.begin(), v.end()) == v.begin() + 2 * block_size_in_elements + 2);
     assert(max_element(v.begin(), v.end()) == v.begin() + 2 * block_size_in_elements + 6);
@@ -341,6 +359,8 @@ void test_vector_algorithms() {
     test_min_max_element<float>(gen);
     test_min_max_element<double>(gen);
     test_min_max_element<long double>(gen);
+
+    test_min_max_element_pointers(gen);
 
     test_min_max_element_special_cases<int8_t, 16>(); // SSE2 vectors
     test_min_max_element_special_cases<int8_t, 32>(); // AVX2 vectors
