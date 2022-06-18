@@ -140,6 +140,10 @@
 // P0618R0 Deprecating <codecvt>
 // Other C++17 deprecation warnings
 
+// Implemented when char8_t is available (C++14/17 with /Zc:char8_t, C++20 without /Zc:char8_t-):
+// P0482R6 Library Support For char8_t
+//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
+
 // _HAS_CXX20 directly controls:
 // P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
@@ -161,8 +165,6 @@
 // P0466R5 Layout-Compatibility And Pointer-Interconvertibility Traits
 // P0475R1 Guaranteed Copy Elision For Piecewise Construction
 // P0476R2 <bit> bit_cast
-// P0482R6 Library Support For char8_t
-//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 // P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
@@ -281,16 +283,19 @@
 
 // _HAS_CXX23 directly controls:
 // P0288R9 move_only_function
+// P0323R12 <expected>
 // P0401R6 Providing Size Feedback In The Allocator Interface
 // P0448R4 <spanstream>
 // P0627R6 unreachable()
 // P0798R8 Monadic Operations For optional
+// P0881R7 <stacktrace>
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1072R10 basic_string::resize_and_overwrite
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
 // P1272R4 byteswap()
+// P1413R3 Deprecate aligned_storage And aligned_union
 // P1425R4 Iterator Pair Constructors For stack And queue
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
@@ -304,7 +309,10 @@
 // P2273R3 constexpr unique_ptr
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
+// P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
+// P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
+// P2549R0 unexpected<E>::error()
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -611,14 +619,12 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202205L
+#define _MSVC_STL_UPDATE  202206L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 10      \
-    || (__CUDACC_VER_MAJOR__ == 10 \
-        && (__CUDACC_VER_MINOR__ < 1 || (__CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ < 243)))
-#error STL1002: Unexpected compiler version, expected CUDA 10.1 Update 2 or newer.
+#if __CUDACC_VER_MAJOR__ < 11 || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ < 6)
+#error STL1002: Unexpected compiler version, expected CUDA 11.6 or newer.
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -683,6 +689,10 @@
 #ifndef _HAS_UNEXPECTED
 #define _HAS_UNEXPECTED (!_HAS_CXX17)
 #endif // _HAS_UNEXPECTED
+
+#if _HAS_UNEXPECTED && _HAS_CXX23
+#error STL1004: C++98 unexpected() is incompatible with C++23 unexpected<E>.
+#endif // _HAS_UNEXPECTED && _HAS_CXX23
 
 // P0004R1 Removing Deprecated Iostreams Aliases
 #ifndef _HAS_OLD_IOSTREAMS_MEMBERS
@@ -981,7 +991,7 @@
 #endif // ^^^ warning disabled ^^^
 
 // N4810 D.17 [depr.fs.path.factory]
-#if _HAS_CXX20 && !defined(_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING) \
+#if _HAS_CXX20 && defined(__cpp_char8_t) && !defined(_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
 #define _CXX20_DEPRECATE_U8PATH                                                                                      \
     [[deprecated("warning STL4021: "                                                                                 \
@@ -1140,7 +1150,52 @@
 #define _CXX20_DEPRECATE_IS_ALWAYS_EQUAL
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4034
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+#define _CXX23_DEPRECATE_ALIGNED_STORAGE                                                     \
+    [[deprecated("warning STL4034: "                                                         \
+                 "std::aligned_storage and std::aligned_storage_t are deprecated in C++23. " \
+                 "Prefer alignas(T) std::byte t_buff[sizeof(T)]. "                           \
+                 "You can define _SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING "        \
+                 "or _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX23_DEPRECATE_ALIGNED_STORAGE
+#endif // ^^^ warning disabled ^^^
+
+#if _HAS_CXX23 && !defined(_SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING) \
+    && !defined(_SILENCE_ALL_CXX23_DEPRECATION_WARNINGS)
+#define _CXX23_DEPRECATE_ALIGNED_UNION                                                   \
+    [[deprecated("warning STL4035: "                                                     \
+                 "std::aligned_union and std::aligned_union_t are deprecated in C++23. " \
+                 "Prefer alignas(Ts...) std::byte t_buff[std::max({sizeof(Ts)...})]. "   \
+                 "You can define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING "      \
+                 "or _SILENCE_ALL_CXX23_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX23_DEPRECATE_ALIGNED_UNION
+#endif // ^^^ warning disabled ^^^
+
+#if _HAS_CXX20 && !defined(_SILENCE_CXX20_CISO646_REMOVED_WARNING) && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
+#define _CXX20_REMOVE_CISO646                                             \
+    [[deprecated("warning STL4036: "                                      \
+                 "<ciso646> is removed in C++20. "                        \
+                 "You can define _SILENCE_CXX20_CISO646_REMOVED_WARNING " \
+                 "or _SILENCE_ALL_CXX20_DEPRECATION_WARNINGS to acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _CXX20_REMOVE_CISO646
+#endif // ^^^ warning disabled ^^^
+
+#if !defined(_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING)
+#define _DEPRECATE_NONFLOATING_COMPLEX                                                 \
+    [[deprecated("warning STL4037: "                                                   \
+                 "The effect of instantiating the template std::complex for any "      \
+                 "type other than float, double, or long double is unspecified. "      \
+                 "You can define _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING to " \
+                 "acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_NONFLOATING_COMPLEX
+#endif // ^^^ warning disabled ^^^
+
+// next warning number: STL4038
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1154,6 +1209,10 @@
 #ifndef _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 #define _HAS_DEPRECATED_ALLOCATOR_MEMBERS (_HAS_FEATURES_REMOVED_IN_CXX20)
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
+
+#ifndef _HAS_DEPRECATED_ALLOCATOR_VOID
+#define _HAS_DEPRECATED_ALLOCATOR_VOID (_HAS_FEATURES_REMOVED_IN_CXX20)
+#endif // _HAS_DEPRECATED_ALLOCATOR_VOID
 
 #ifndef _HAS_DEPRECATED_IS_LITERAL_TYPE
 #define _HAS_DEPRECATED_IS_LITERAL_TYPE (_HAS_FEATURES_REMOVED_IN_CXX20)
@@ -1289,6 +1348,10 @@
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
+#ifdef __cpp_char8_t
+#define __cpp_lib_char8_t 201907L
+#endif // __cpp_char8_t
+
 #ifdef __cpp_impl_coroutine
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
@@ -1306,10 +1369,6 @@
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-
-#ifdef __cpp_char8_t
-#define __cpp_lib_char8_t 201907L
-#endif // __cpp_char8_t
 
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
 #define __cpp_lib_concepts 202002L
@@ -1366,7 +1425,6 @@
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
-#define __cpp_lib_shift                   201806L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
 
 #ifdef __cpp_consteval
@@ -1398,17 +1456,26 @@
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_byteswap                          202110L
-#define __cpp_lib_invoke_r                          202106L
-#define __cpp_lib_is_scoped_enum                    202011L
-#define __cpp_lib_move_only_function                202110L
+
+#ifdef __cpp_lib_concepts
+#define __cpp_lib_expected 202202L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_invoke_r           202106L
+#define __cpp_lib_is_scoped_enum     202011L
+#define __cpp_lib_move_only_function 202110L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
+#define __cpp_lib_ranges_iota             202202L
+#define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L
+#define __cpp_lib_stacktrace                  202011L
 #define __cpp_lib_stdatomic_h                 202011L
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
@@ -1457,6 +1524,12 @@
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
 #else // _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
+#endif // _HAS_CXX20
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#define __cpp_lib_shift 201806L // P0769R2 shift_left(), shift_right()
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20
@@ -1547,10 +1620,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
-
-#ifndef _MSVC_CONSTEXPR // TRANSITION, VS2022v17.3p2
-#define _MSVC_CONSTEXPR
-#endif
 
 #ifdef __CUDACC__ // TRANSITION, CUDA
 #define _USE_INT_0_SFINAE 0
