@@ -40,7 +40,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_format
-#pragma message(_WARNING_MESSAGE("STL4037", "The contents of <format> are available only with C++20 or later."))
+#pragma message(_WARNING_MESSAGE("STL4038", "The contents of <format> are available only with C++20 or later."))
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
 #include <__msvc_format_ucd_tables.hpp>
@@ -560,7 +560,7 @@ public:
         const basic_string_view<_CharT> _Fmt, const size_t _Num_args_ = 0) noexcept
         : _Format_string(_Fmt), _Num_args(_Num_args_) {}
 
-    basic_format_parse_context(const basic_format_parse_context&) = delete;
+    basic_format_parse_context(const basic_format_parse_context&)            = delete;
     basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
 
     _NODISCARD constexpr const_iterator begin() const noexcept {
@@ -665,6 +665,10 @@ public:
     explicit basic_format_arg(const int _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
     explicit basic_format_arg(const unsigned int _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
+    explicit basic_format_arg(const long _Val) noexcept
+        : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
+    explicit basic_format_arg(const unsigned long _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_UInt_type), _UInt_state(_Val) {}
     explicit basic_format_arg(const long long _Val) noexcept
         : _Active_state(_Basic_format_arg_type::_Long_long_type), _Long_long_state(_Val) {}
@@ -1769,6 +1773,7 @@ struct _Format_arg_traits {
     static auto _Phony_basic_format_arg_constructor(double) -> double; // not defined
     static auto _Phony_basic_format_arg_constructor(long double) -> long double; // not defined
 
+    static auto _Phony_basic_format_arg_constructor(_Char_type*) -> const _Char_type*; // not defined
     static auto _Phony_basic_format_arg_constructor(const _Char_type*) -> const _Char_type*; // not defined
 
     template <class _Traits>
@@ -1776,7 +1781,7 @@ struct _Format_arg_traits {
         -> basic_string_view<_Char_type>; // not defined
 
     template <class _Traits, class _Alloc>
-    static auto _Phony_basic_format_arg_constructor(const basic_string<_Char_type, _Traits, _Alloc>&)
+    static auto _Phony_basic_format_arg_constructor(basic_string<_Char_type, _Traits, _Alloc>)
         -> basic_string_view<_Char_type>; // not defined
 
     static auto _Phony_basic_format_arg_constructor(nullptr_t) -> const void*; // not defined
@@ -2076,7 +2081,7 @@ protected:
 public:
     using value_type = _Ty;
 
-    _Fmt_buffer(const _Fmt_buffer&) = delete;
+    _Fmt_buffer(const _Fmt_buffer&)    = delete;
     void operator=(const _Fmt_buffer&) = delete;
 
     _NODISCARD _Ty* begin() noexcept {
@@ -3255,8 +3260,8 @@ struct _Format_handler {
 // makes it "disabled" as per N4885 [format.formatter.spec]/5
 template <class _Ty, class _CharT>
 struct formatter {
-    formatter()                 = delete;
-    formatter(const formatter&) = delete;
+    formatter()                           = delete;
+    formatter(const formatter&)           = delete;
     formatter operator=(const formatter&) = delete;
 };
 

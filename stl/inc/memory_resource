@@ -11,7 +11,7 @@
 
 #if !_HAS_CXX17
 #pragma message( \
-    _WARNING_MESSAGE("STL4037", "The contents of <memory_resource> are available only with C++17 or later."))
+    _WARNING_MESSAGE("STL4038", "The contents of <memory_resource> are available only with C++17 or later."))
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <vector>
 #include <xbit_ops.h>
@@ -118,7 +118,7 @@ namespace pmr {
             // initialize this list to the empty state
         }
 
-        _Intrusive_list(const _Intrusive_list&) = delete;
+        _Intrusive_list(const _Intrusive_list&)            = delete;
         _Intrusive_list& operator=(const _Intrusive_list&) = delete;
 
         static constexpr _Link_type* _As_link(_Ty* const _Ptr) noexcept {
@@ -252,7 +252,7 @@ namespace pmr {
             _Setup_options();
         }
 
-        unsynchronized_pool_resource(const unsynchronized_pool_resource&) = delete;
+        unsynchronized_pool_resource(const unsynchronized_pool_resource&)            = delete;
         unsynchronized_pool_resource& operator=(const unsynchronized_pool_resource&) = delete;
 
         ~unsynchronized_pool_resource() noexcept override {
@@ -399,7 +399,7 @@ namespace pmr {
                     // initialize a chunk of _Capacity blocks, all initially free
                 }
 
-                _Chunk(const _Chunk&) = delete;
+                _Chunk(const _Chunk&)            = delete;
                 _Chunk& operator=(const _Chunk&) = delete;
             };
 
@@ -626,7 +626,7 @@ namespace pmr {
             release();
         }
 
-        monotonic_buffer_resource(const monotonic_buffer_resource&) = delete;
+        monotonic_buffer_resource(const monotonic_buffer_resource&)            = delete;
         monotonic_buffer_resource& operator=(const monotonic_buffer_resource&) = delete;
 
         void release() noexcept /* strengthened */ {

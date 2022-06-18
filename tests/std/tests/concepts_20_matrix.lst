@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# When updating this file, also update tests\P0645R10_text_formatting_legacy_text_encoding\env.lst to match
+# When updating this file, also update tests\P0645R10_text_formatting_legacy_text_encoding\env.lst
+# and tests\GH_002558_format_presetPadding\env.lst to match
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST

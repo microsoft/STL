@@ -14,7 +14,7 @@
 #endif // _M_CEE_PURE
 
 #if !_HAS_CXX20
-#pragma message(_WARNING_MESSAGE("STL4037", "The contents of <barrier> are available only with C++20 or later."))
+#pragma message(_WARNING_MESSAGE("STL4038", "The contents of <barrier> are available only with C++20 or later."))
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <atomic>
@@ -85,7 +85,7 @@ public:
             "Precondition: expected >= 0 and expected <= max() (N4861 [thread.barrier.class]/9)");
     }
 
-    barrier(const barrier&) = delete;
+    barrier(const barrier&)            = delete;
     barrier& operator=(const barrier&) = delete;
 
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {
