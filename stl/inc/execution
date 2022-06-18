@@ -193,7 +193,7 @@ public:
         }
     }
 
-    _Work_ptr(const _Work_ptr&)            = delete;
+    _Work_ptr(const _Work_ptr&) = delete;
     _Work_ptr& operator=(const _Work_ptr&) = delete;
 
     ~_Work_ptr() noexcept {
@@ -548,8 +548,8 @@ class alignas(hardware_destructive_interference_size) _Work_stealing_deque {
     // of the queue, and any thread access to the "top" of the queue. Originally described in the paper
     // "Dynamic Circular Work-Stealing Deque" by David Chase and Yossi Lev
 public:
-    _Work_stealing_deque()                                       = default;
-    _Work_stealing_deque(const _Work_stealing_deque&)            = delete;
+    _Work_stealing_deque()                            = default;
+    _Work_stealing_deque(const _Work_stealing_deque&) = delete;
     _Work_stealing_deque& operator=(const _Work_stealing_deque&) = delete;
 
     ~_Work_stealing_deque() noexcept {

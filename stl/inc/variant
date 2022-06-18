@@ -480,9 +480,9 @@ public:
         is_nothrow_constructible_v<_Variant_storage<_Rest...>, integral_constant<size_t, _Idx - 1>, _Types...>)
         : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) {} // initialize _Tail (recurse)
 
-    _Variant_storage_(_Variant_storage_&&)                 = default;
-    _Variant_storage_(const _Variant_storage_&)            = default;
-    _Variant_storage_& operator=(_Variant_storage_&&)      = default;
+    _Variant_storage_(_Variant_storage_&&)      = default;
+    _Variant_storage_(const _Variant_storage_&) = default;
+    _Variant_storage_& operator=(_Variant_storage_&&) = default;
     _Variant_storage_& operator=(const _Variant_storage_&) = default;
 
     _NODISCARD constexpr _First& _Get() & noexcept {
@@ -537,9 +537,9 @@ public:
         is_nothrow_constructible_v<_Variant_storage<_Rest...>, integral_constant<size_t, _Idx - 1>, _Types...>)
         : _Tail(integral_constant<size_t, _Idx - 1>{}, static_cast<_Types&&>(_Args)...) {} // initialize _Tail (recurse)
 
-    _Variant_storage_(_Variant_storage_&&)                 = default;
-    _Variant_storage_(const _Variant_storage_&)            = default;
-    _Variant_storage_& operator=(_Variant_storage_&&)      = default;
+    _Variant_storage_(_Variant_storage_&&)      = default;
+    _Variant_storage_(const _Variant_storage_&) = default;
+    _Variant_storage_& operator=(_Variant_storage_&&) = default;
     _Variant_storage_& operator=(const _Variant_storage_&) = default;
 
     _NODISCARD constexpr _First ^ &_Get() & noexcept {
@@ -918,11 +918,11 @@ struct _Variant_destroy_layer_ : _Variant_base<_Types...> { // destruction behav
         this->_Destroy();
     }
 
-    _Variant_destroy_layer_()                                          = default;
-    _Variant_destroy_layer_(const _Variant_destroy_layer_&)            = default;
-    _Variant_destroy_layer_(_Variant_destroy_layer_&&)                 = default;
+    _Variant_destroy_layer_()                               = default;
+    _Variant_destroy_layer_(const _Variant_destroy_layer_&) = default;
+    _Variant_destroy_layer_(_Variant_destroy_layer_&&)      = default;
     _Variant_destroy_layer_& operator=(const _Variant_destroy_layer_&) = default;
-    _Variant_destroy_layer_& operator=(_Variant_destroy_layer_&&)      = default;
+    _Variant_destroy_layer_& operator=(_Variant_destroy_layer_&&) = default;
 };
 
 template <class... _Types>
@@ -943,7 +943,7 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 #if _HAS_CXX20
 // build Ti x[] = {std::forward<T>(t)};
 template <size_t _Idx, class _TargetType>
-auto _Construct_array(_TargetType (&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
+auto _Construct_array(_TargetType(&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
 
 template <size_t _Idx, class _TargetType, class _InitializerType>
 using _Variant_type_resolver = decltype(_Construct_array<_Idx, _TargetType>({_STD declval<_InitializerType>()}));
