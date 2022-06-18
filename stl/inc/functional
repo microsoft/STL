@@ -1036,11 +1036,7 @@ public:
         this->_Reset_copy(_Right);
     }
 
-#if _USE_INT_0_SFINAE
     template <class _Fx, typename _Mybase::template _Enable_if_callable_t<_Fx, function> = 0>
-#else // ^^^ _USE_INT_0_SFINAE // !_USE_INT_0_SFINAE vvv
-    template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<_Fx, function>>
-#endif // _USE_INT_0_SFINAE
     function(_Fx&& _Func) {
         this->_Reset(_STD forward<_Fx>(_Func));
     }
@@ -1057,11 +1053,7 @@ public:
         this->_Reset_alloc(_Right, _Ax);
     }
 
-#if _USE_INT_0_SFINAE
     template <class _Fx, class _Alloc, typename _Mybase::template _Enable_if_callable_t<_Fx, function> = 0>
-#else // ^^^ _USE_INT_0_SFINAE // !_USE_INT_0_SFINAE vvv
-    template <class _Fx, class _Alloc, class = typename _Mybase::template _Enable_if_callable_t<_Fx, function>>
-#endif // _USE_INT_0_SFINAE
     function(allocator_arg_t, const _Alloc& _Ax, _Fx&& _Func) {
         this->_Reset_alloc(_STD forward<_Fx>(_Func), _Ax);
     }
@@ -1091,11 +1083,7 @@ public:
         return *this;
     }
 
-#if _USE_INT_0_SFINAE
     template <class _Fx, typename _Mybase::template _Enable_if_callable_t<_Fx, function> = 0>
-#else // ^^^ _USE_INT_0_SFINAE // !_USE_INT_0_SFINAE vvv
-    template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<_Fx, function>>
-#endif // _USE_INT_0_SFINAE
     function& operator=(_Fx&& _Func) {
         function(_STD forward<_Fx>(_Func)).swap(*this);
         return *this;

@@ -1621,11 +1621,5 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
 
-#ifdef __CUDACC__ // TRANSITION, CUDA
-#define _USE_INT_0_SFINAE 0
-#else
-#define _USE_INT_0_SFINAE 1
-#endif // __CUDACC__
-
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
