@@ -179,13 +179,16 @@ namespace ranges {
         }
     };
 
-    template <forward_iterator _Wrapped, sentinel_for<_Wrapped> _Se>
+    // clang-format off
+    template <forward_iterator _Wrapped, class _Se>
+        requires sentinel_for<remove_cvref_t<_Se>, _Wrapped>
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
+        // clang-format on
         // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]
-        auto _ULast = _Get_unwrapped(_STD move(_Last));
-        if constexpr (is_same_v<_Se, _Wrapped>) {
+        auto _ULast = _Get_unwrapped(_STD forward<_Se>(_Last));
+        if constexpr (is_same_v<remove_cvref_t<_Se>, _Wrapped>) {
             return _ULast;
-        } else if constexpr (sized_sentinel_for<_Se, _Wrapped>) {
+        } else if constexpr (sized_sentinel_for<remove_cvref_t<_Se>, _Wrapped>) {
             return _RANGES next(_UFirst, _ULast - _UFirst);
         } else {
             return _RANGES next(_UFirst, _STD move(_ULast));
@@ -196,7 +199,11 @@ namespace ranges {
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(_Rng& _Range) {
         // find the (unwrapped) iterator in _Range which equals _Uend(_Range) [possibly O(N)]
         if constexpr (common_range<_Rng>) {
-            return _Uend(_Range);
+            if constexpr (same_as<_Unwrapped_t<_RANGES iterator_t<_Rng>>, decltype(_Uend(_Range))>) {
+                return _Uend(_Range);
+            } else {
+                return _Get_unwrapped(_RANGES end(_Range));
+            }
         } else if constexpr (sized_range<_Rng>) {
             return _RANGES next(_Ubegin(_Range), _RANGES distance(_Range));
         } else {
@@ -4920,9 +4927,11 @@ template <class _FwdIt>
 constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) left by _Pos_to_shift
     // positions; returns the end of the resulting range
+    _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/1)");
+
     _Adl_verify_range(_First, _Last);
 
-    if (_Pos_to_shift <= 0) {
+    if (_Pos_to_shift == 0) {
         return _Last;
     }
 
@@ -4959,9 +4968,11 @@ template <class _FwdIt>
 constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) right by _Pos_to_shift
     // positions; returns the beginning of the resulting range
+    _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
+
     _Adl_verify_range(_First, _Last);
 
-    if (_Pos_to_shift <= 0) {
+    if (_Pos_to_shift == 0) {
         return _First;
     }
 
@@ -5034,6 +5045,236 @@ _FwdIt shift_right(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Iter_diff_t<_FwdIt> _P
     return _STD shift_right(_First, _Last, _Pos_to_shift);
 }
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+namespace ranges {
+    class _Shift_left_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <permutable _It, sentinel_for<_It> _Se>
+        constexpr subrange<_It> operator()(_It _First, const _Se _Last, iter_difference_t<_It> _Pos_to_shift) const {
+            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/1)");
+
+            _Adl_verify_range(_First, _Last);
+            auto _Result = _First;
+            _Unwrapped_t<_It> _UResult;
+
+            if (_Pos_to_shift == 0) {
+                _UResult = _Get_final_iterator_unwrapped<_It>(_Get_unwrapped(_Result), _Last);
+            } else {
+                _UResult = _Shift_left_impl(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Pos_to_shift);
+            }
+            _Seek_wrapped(_Result, _UResult);
+            return {_STD move(_First), _STD move(_Result)};
+        }
+
+        template <forward_range _Rng>
+            requires permutable<iterator_t<_Rng>>
+        constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, range_difference_t<_Rng> _Pos_to_shift) const {
+            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/1)");
+
+            if (_Pos_to_shift == 0) {
+                auto _Last = _Rewrap_iterator(_Range, _Get_final_iterator_unwrapped(_Range));
+                return {_RANGES begin(_Range), _STD move(_Last)};
+            }
+
+            if constexpr (sized_range<_Rng>) {
+                auto _First = _RANGES begin(_Range);
+                if (_RANGES distance(_Range) <= _Pos_to_shift) {
+                    return {_First, _First};
+                }
+
+                auto _UFirst   = _Get_unwrapped(_First);
+                auto _Start_at = _RANGES next(_UFirst, _Pos_to_shift);
+                auto _Result   = _RANGES _Move_unchecked(_STD move(_Start_at), _Uend(_Range), _UFirst).out;
+                return {_STD move(_First), _Rewrap_iterator(_Range, _STD move(_Result))};
+            } else {
+                auto _Result = _Shift_left_impl(_Ubegin(_Range), _Uend(_Range), _Pos_to_shift);
+                return {_RANGES begin(_Range), _Rewrap_iterator(_Range, _STD move(_Result))};
+            }
+        }
+
+    private:
+        template <class _It, class _Se>
+        _NODISCARD static constexpr _It _Shift_left_impl(_It _First, _Se _Last, iter_difference_t<_It> _Pos_to_shift) {
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_CHECK(_Pos_to_shift > 0);
+
+            auto _Start_at = _First;
+            if (_RANGES advance(_Start_at, _Pos_to_shift, _Last) != 0) {
+                return _First;
+            }
+
+            return _RANGES _Move_unchecked(_STD move(_Start_at), _STD move(_Last), _STD move(_First)).out;
+        }
+    };
+
+    inline constexpr _Shift_left_fn shift_left{_Not_quite_object::_Construct_tag{}};
+
+    class _Shift_right_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <permutable _It, sentinel_for<_It> _Se>
+        constexpr subrange<_It> operator()(_It _First, const _Se _Last, iter_difference_t<_It> _Pos_to_shift) const {
+            _Adl_verify_range(_First, _Last);
+            auto _UFirst     = _Get_unwrapped(_First);
+            auto _ULast      = _Get_unwrapped(_Last);
+            const auto _Size = _Size_helper(_UFirst, _ULast);
+            auto _Result     = _Shift_right_impl(_STD move(_UFirst), _STD move(_ULast), _Pos_to_shift, _Size);
+            _Seek_wrapped(_First, _Result.begin());
+            auto _Final = _First;
+            _Seek_wrapped(_Final, _Result.end());
+            return {_STD move(_First), _STD move(_Final)};
+        }
+
+        template <forward_range _Rng>
+            requires permutable<iterator_t<_Rng>>
+        constexpr borrowed_subrange_t<_Rng> operator()(_Rng&& _Range, range_difference_t<_Rng> _Pos_to_shift) const {
+            const auto _Size = _Size_helper(_Range);
+            auto _Result     = _Shift_right_impl(_Ubegin(_Range), _Uend(_Range), _Pos_to_shift, _Size);
+            auto _First      = _Rewrap_iterator(_Range, _Result.begin());
+            auto _Final      = _Rewrap_iterator(_Range, _Result.end());
+            return {_STD move(_First), _STD move(_Final)};
+        }
+
+    private:
+        struct _Unsized {};
+
+        template <range _Rng>
+        _NODISCARD static constexpr auto _Size_helper(_Rng&& _Range) {
+            if constexpr (sized_range<_Rng>) {
+                return _RANGES distance(_Range);
+            } else {
+                return _Unsized{};
+            }
+        }
+
+        template <class _It, sentinel_for<_It> _Se>
+        _NODISCARD static constexpr auto _Size_helper(const _It& _First, const _Se& _Last) {
+            if constexpr (sized_sentinel_for<_Se, _It>) {
+                return _Last - _First;
+            } else {
+                return _Unsized{};
+            }
+        }
+
+        // clang-format off
+        template <input_iterator _It, weakly_incrementable _Out>
+            requires indirectly_movable<_It, _Out>
+        _NODISCARD static constexpr _Out _Move_n_helper(_It _First, iter_difference_t<_It> _Count, _Out _Result) {
+            // clang-format on
+            for (; _Count > 0; ++_First, (void) --_Count, ++_Result) {
+                *_Result = _RANGES iter_move(_First);
+            }
+
+            return _Result;
+        }
+
+        template <class _It, class _Se, class _SizeTy>
+        _NODISCARD static constexpr subrange<_It> _Shift_right_impl(
+            _It _First, _Se _Last, iter_difference_t<_It> _Pos_to_shift, const _SizeTy _Size) {
+            _STL_INTERNAL_STATIC_ASSERT(permutable<_It>);
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
+
+            if (_Pos_to_shift == 0) {
+                return {_First, _RANGES next(_First, _Last)};
+            }
+
+            constexpr bool _Is_sized = !same_as<_SizeTy, _Unsized>;
+
+            if constexpr (_Is_sized) {
+                if (_Pos_to_shift >= _Size) {
+                    if constexpr (same_as<_It, _Se>) {
+                        return {_Last, _Last};
+                    } else if constexpr (random_access_iterator<_It>) {
+                        _First += _Size;
+                        return {_First, _First};
+                    } else {
+                        _RANGES advance(_First, _Last);
+                        return {_First, _First};
+                    }
+                }
+            }
+
+            if constexpr (_Bidi_common<_It, _Se>) {
+                auto _Mid = _Last;
+                if constexpr (_Is_sized) {
+                    // We validated above that the length of the range is more than _Pos_to_shift
+                    _RANGES advance(_Mid, -_Pos_to_shift);
+                } else {
+                    if (_RANGES advance(_Mid, -_Pos_to_shift, _First) != 0) {
+                        return {_Last, _Last};
+                    }
+                }
+                return {_RANGES _Move_backward_common(_STD move(_First), _STD move(_Mid), _Last), _Last};
+            } else if constexpr (_Is_sized && random_access_iterator<_It>) {
+                auto _Final = _First + _Size;
+                auto _Mid   = _Final - _Pos_to_shift;
+                return {_RANGES _Move_backward_common(_STD move(_First), _STD move(_Mid), _Final), _Final};
+            } else {
+                auto _Buf = _First;
+                if constexpr (_Is_sized) {
+                    _RANGES advance(_Buf, _Pos_to_shift);
+                } else {
+                    if (_RANGES advance(_Buf, _Pos_to_shift, _Last) != 0) {
+                        return {_Buf, _Buf};
+                    }
+                }
+
+                if constexpr (_Is_sized) {
+                    if (_Size < 2 * _Pos_to_shift) {
+                        return {_Buf, _Move_n_helper(_First, _Size - _Pos_to_shift, _Buf)};
+                    }
+                }
+
+                auto _Lead = _Buf;
+                if constexpr (_Is_sized) {
+                    // We validated above that the length of the range is at least 2 * _Pos_to_shift
+                    _RANGES advance(_Lead, _Pos_to_shift);
+                } else {
+                    if (auto _Rem = _RANGES advance(_Lead, _Pos_to_shift, _Last); _Rem != 0) {
+                        return {_Buf, _Move_n_helper(_First, _Pos_to_shift - _Rem, _Buf)};
+                    }
+                }
+
+                auto _Trail = _Buf;
+
+                // The range is now partitioned like:
+                //
+                // | _Pos_to_shift elements |           | _Pos_to_shift elements |
+                // |------------------------|-----------|------------------------|------------|
+                // ^_First              _Buf^     _Trail^                   _Lead^       _Last^
+                //
+                // From now on, _Mid repeatedly cycles through the [_First, _Buf) window while the
+                // [_Trail, _Lead) window advances toward _Last.
+
+                for (;;) {
+                    for (auto _Mid = _First; _Mid != _Buf; ++_Mid, (void) ++_Trail, ++_Lead) {
+                        if (_Lead == _Last) {
+                            // The leading edge of the [_Trail, _Lead) window has hit the end of
+                            // the range, so we have only the final _Pos_to_shift elements to process.
+                            // Their original values are lost - shifted off the end of the range -
+                            // so we only need to fill them with new values from [_First, _Buf).
+                            _Trail = _RANGES _Move_unchecked(_Mid, _Buf, _STD move(_Trail)).out;
+                            _Trail = _RANGES _Move_unchecked(_First, _Mid, _STD move(_Trail)).out;
+                            _STL_INTERNAL_CHECK(_Trail == _Lead);
+                            return {_STD move(_Buf), _STD move(_Trail)};
+                        }
+
+                        _RANGES iter_swap(_Mid, _Trail);
+                    }
+                }
+            }
+        }
+    };
+
+    inline constexpr _Shift_right_fn shift_right{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class _FwdIt, class _Pr>
 _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
@@ -7736,7 +7977,6 @@ void stable_sort(_ExPo&& _Exec, _BidIt _First, _BidIt _Last) noexcept /* termina
 }
 #endif // _HAS_CXX17
 
-
 #ifdef __cpp_lib_concepts
 namespace ranges {
     class _Stable_sort_fn : private _Not_quite_object {
@@ -10013,15 +10253,22 @@ _NODISCARD constexpr const _Ty& clamp(const _Ty& _Val, const _Ty& _Min_val, cons
     }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-    if (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) {
-        return _Max_val;
-    }
+    if constexpr (conjunction_v<is_scalar<_Ty>, disjunction<is_same<_Pr, less<>>, is_same<_Pr, less<_Ty>>>>) {
+        // Avoid early return to promote branchless code generation; see GH-2334
+        const _Ty& _Tmp = _DEBUG_LT_PRED(_Pred, _Val, _Min_val) ? _Min_val : _Val;
+        return _DEBUG_LT_PRED(_Pred, _Max_val, _Val) ? _Max_val : _Tmp;
+    } else {
 
-    if (_DEBUG_LT_PRED(_Pred, _Val, _Min_val)) {
-        return _Min_val;
-    }
+        if (_DEBUG_LT_PRED(_Pred, _Max_val, _Val)) {
+            return _Max_val;
+        }
 
-    return _Val;
+        if (_DEBUG_LT_PRED(_Pred, _Val, _Min_val)) {
+            return _Min_val;
+        }
+
+        return _Val;
+    }
 }
 
 template <class _Ty>

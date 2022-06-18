@@ -140,6 +140,10 @@
 // P0618R0 Deprecating <codecvt>
 // Other C++17 deprecation warnings
 
+// Implemented when char8_t is available (C++14/17 with /Zc:char8_t, C++20 without /Zc:char8_t-):
+// P0482R6 Library Support For char8_t
+//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
+
 // _HAS_CXX20 directly controls:
 // P0019R8 atomic_ref
 // P0020R6 atomic<float>, atomic<double>, atomic<long double>
@@ -161,8 +165,6 @@
 // P0466R5 Layout-Compatibility And Pointer-Interconvertibility Traits
 // P0475R1 Guaranteed Copy Elision For Piecewise Construction
 // P0476R2 <bit> bit_cast
-// P0482R6 Library Support For char8_t
-//     (mbrtoc8 and c8rtomb not yet implemented, see GH-2207)
 // P0487R1 Fixing operator>>(basic_istream&, CharT*)
 // P0528R3 Atomic Compare-And-Exchange With Padding Bits
 // P0550R2 remove_cvref
@@ -286,6 +288,7 @@
 // P0448R4 <spanstream>
 // P0627R6 unreachable()
 // P0798R8 Monadic Operations For optional
+// P0881R7 <stacktrace>
 // P0943R6 Supporting C Atomics In C++
 // P1048R1 is_scoped_enum
 // P1072R10 basic_string::resize_and_overwrite
@@ -306,6 +309,7 @@
 // P2273R3 constexpr unique_ptr
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
+// P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
 // P2549R0 unexpected<E>::error()
@@ -615,14 +619,12 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202205L
+#define _MSVC_STL_UPDATE  202206L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 10      \
-    || (__CUDACC_VER_MAJOR__ == 10 \
-        && (__CUDACC_VER_MINOR__ < 1 || (__CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ < 243)))
-#error STL1002: Unexpected compiler version, expected CUDA 10.1 Update 2 or newer.
+#if __CUDACC_VER_MAJOR__ < 11 || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ < 6)
+#error STL1002: Unexpected compiler version, expected CUDA 11.6 or newer.
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -989,7 +991,7 @@
 #endif // ^^^ warning disabled ^^^
 
 // N4810 D.17 [depr.fs.path.factory]
-#if _HAS_CXX20 && !defined(_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING) \
+#if _HAS_CXX20 && defined(__cpp_char8_t) && !defined(_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING) \
     && !defined(_SILENCE_ALL_CXX20_DEPRECATION_WARNINGS)
 #define _CXX20_DEPRECATE_U8PATH                                                                                      \
     [[deprecated("warning STL4021: "                                                                                 \
@@ -1182,8 +1184,19 @@
 #define _CXX20_REMOVE_CISO646
 #endif // ^^^ warning disabled ^^^
 
+#if !defined(_SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING)
+#define _DEPRECATE_NONFLOATING_COMPLEX                                                 \
+    [[deprecated("warning STL4037: "                                                   \
+                 "The effect of instantiating the template std::complex for any "      \
+                 "type other than float, double, or long double is unspecified. "      \
+                 "You can define _SILENCE_NONFLOATING_COMPLEX_DEPRECATION_WARNING to " \
+                 "acknowledge that you have received this warning.")]]
+#else // ^^^ warning enabled / warning disabled vvv
+#define _DEPRECATE_NONFLOATING_COMPLEX
+#endif // ^^^ warning disabled ^^^
+
 // next error number: STL1006
-// next warning number: STL4037
+// next warning number: STL4038
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1336,6 +1349,10 @@
 // C++20
 #define __cpp_lib_atomic_value_initialization 201911L
 
+#ifdef __cpp_char8_t
+#define __cpp_lib_char8_t 201907L
+#endif // __cpp_char8_t
+
 #ifdef __cpp_impl_coroutine
 #define __cpp_lib_coroutine 201902L
 #endif // __cpp_impl_coroutine
@@ -1353,10 +1370,6 @@
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-
-#ifdef __cpp_char8_t
-#define __cpp_lib_char8_t 201907L
-#endif // __cpp_char8_t
 
 #if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
 #define __cpp_lib_concepts 202002L
@@ -1413,7 +1426,6 @@
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
-#define __cpp_lib_shift                   201806L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
 
 #ifdef __cpp_consteval
@@ -1458,11 +1470,13 @@
 #define __cpp_lib_out_ptr                 202106L
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
+#define __cpp_lib_ranges_iota             202202L
 #define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L
+#define __cpp_lib_stacktrace                  202011L
 #define __cpp_lib_stdatomic_h                 202011L
 #define __cpp_lib_string_contains             202011L
 #define __cpp_lib_string_resize_and_overwrite 202110L
@@ -1511,6 +1525,12 @@
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
 #else // _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
+#endif // _HAS_CXX20
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#define __cpp_lib_shift 201806L // P0769R2 shift_left(), shift_right()
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20
@@ -1601,10 +1621,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
-
-#ifndef _MSVC_CONSTEXPR // TRANSITION, VS2022v17.3p2
-#define _MSVC_CONSTEXPR
-#endif
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
