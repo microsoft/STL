@@ -961,12 +961,16 @@ _CONSTEXPR20 void _Destroy_range(_NoThrowFwdIt _First, const _NoThrowSentinel _L
     }
 }
 
-template <class _Size_type>
-_NODISCARD constexpr _Size_type _Convert_size(const size_t _Len) noexcept(is_same_v<_Size_type, size_t>) {
-    // convert size_t to _Size_type, avoiding truncation
-    if constexpr (!is_same_v<_Size_type, size_t>) {
+template <class _Size_type, class _Unsigned_type>
+_NODISCARD constexpr _Size_type _Convert_size(const _Unsigned_type _Len) noexcept(
+    sizeof(_Unsigned_type) <= sizeof(_Size_type)) {
+    // convert _Unsigned_type to _Size_type, avoiding truncation
+    _STL_INTERNAL_STATIC_ASSERT(_Unsigned_type(-1) > 0);
+    _STL_INTERNAL_STATIC_ASSERT(_Size_type(-1) > 0);
+
+    if constexpr (sizeof(_Unsigned_type) > sizeof(_Size_type)) {
         if (_Len > (numeric_limits<_Size_type>::max)()) {
-            _Xlength_error("size_t too long for _Size_type");
+            _Xlength_error("size is too long for _Size_type");
         }
     }
 
@@ -1205,8 +1209,7 @@ private:
         // adopted, remove self from list
         _Iterator_base12** _Pnext = &_Myproxy->_Myfirstiter;
         while (*_Pnext && *_Pnext != this) {
-            const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
-            _Pnext           = &_Temp->_Mynextiter;
+            _Pnext = &(*_Pnext)->_Mynextiter;
         }
 
         _STL_VERIFY(*_Pnext, "ITERATOR LIST CORRUPTED!");
@@ -1227,10 +1230,9 @@ _CONSTEXPR20 void _Container_base12::_Orphan_all_unlocked_v3() noexcept {
     }
 
     // proxy allocated, drain it
-    for (auto& _Pnext = _Myproxy->_Myfirstiter; _Pnext; _Pnext = _Pnext->_Mynextiter) { // TRANSITION, VSO-1269037
+    for (auto _Pnext = _STD exchange(_Myproxy->_Myfirstiter, nullptr); _Pnext; _Pnext = _Pnext->_Mynextiter) {
         _Pnext->_Myproxy = nullptr;
     }
-    _Myproxy->_Myfirstiter = nullptr;
 }
 
 _CONSTEXPR20 void _Container_base12::_Orphan_all() noexcept {

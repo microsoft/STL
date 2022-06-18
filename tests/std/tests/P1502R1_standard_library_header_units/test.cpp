@@ -71,6 +71,7 @@ import <span>;
 import <spanstream>;
 import <sstream>;
 import <stack>;
+import <stacktrace>;
 import <stdexcept>;
 import <stop_token>;
 import <streambuf>;
@@ -110,7 +111,8 @@ constexpr bool test_source_location() {
     return true;
 }
 
-int main() {
+__declspec(dllexport) // for <stacktrace> test export main to have it named even without debug info
+    int main() {
     {
         puts("Testing <algorithm>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
@@ -341,7 +343,6 @@ int main() {
         static_assert(b(3) == 33);
     }
 
-#if defined(_MSVC_INTERNAL_TESTING) || defined(TEST_TOPO_SORT) // TRANSITION, VSO-1496084 fixed in 17.3 Preview 2
     {
         puts("Testing <future>.");
         promise<int> p{};
@@ -351,7 +352,6 @@ int main() {
         assert(f.wait_for(chrono::seconds{0}) == future_status::ready);
         assert(f.get() == 1729);
     }
-#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <initializer_list>.");
@@ -768,6 +768,21 @@ int main() {
     }
 
     {
+        puts("Testing <stacktrace>.");
+        auto desc = stacktrace::current().at(0).description();
+
+        if (auto pos = desc.find("!"); pos != string::npos) {
+            desc = desc.substr(pos + 1);
+        }
+
+        if (auto pos = desc.find("+"); pos != string::npos) {
+            desc.resize(pos);
+        }
+
+        assert(desc == "main");
+    }
+
+    {
         puts("Testing <stdexcept>.");
         bool caught_puppies = false;
 
@@ -782,7 +797,6 @@ int main() {
         assert(caught_puppies);
     }
 
-#if defined(_MSVC_INTERNAL_TESTING) || defined(TEST_TOPO_SORT) // TRANSITION, VSO-1496084 fixed in 17.3 Preview 2
     {
         puts("Testing <stop_token>.");
         vector<int> vec;
@@ -818,7 +832,6 @@ int main() {
             160, 80, 40, 20, 10, 5, 16, 8, 4, 2, 1, -1000};
         assert(equal(vec.begin(), vec.end(), begin(expected_val), end(expected_val)));
     }
-#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <streambuf>.");
