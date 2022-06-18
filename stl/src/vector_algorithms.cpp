@@ -494,26 +494,26 @@ namespace {
     template <_Min_max_mode _Mode, class _STy, class _UTy>
     auto _Minmax_tail(const void* _First, const void* _Last, _Min_max_element_t& _Res, bool _Sign, _UTy _Cur_min,
         _UTy _Cur_max) noexcept {
-        constexpr _UTy _Cor = _UTy{1} << (sizeof(_UTy) * 8 - 1);
+        constexpr _UTy _Correction = _UTy{1} << (sizeof(_UTy) * 8 - 1);
 
         if constexpr (_Mode == _Mode_min) {
             if (_Sign) {
                 return _Min_tail(_First, _Last, _Res._Min, static_cast<_STy>(_Cur_min));
             } else {
-                return _Min_tail(_First, _Last, _Res._Min, static_cast<_UTy>(_Cur_min + _Cor));
+                return _Min_tail(_First, _Last, _Res._Min, static_cast<_UTy>(_Cur_min + _Correction));
             }
         } else if constexpr (_Mode == _Mode_max) {
             if (_Sign) {
                 return _Max_tail(_First, _Last, _Res._Max, static_cast<_STy>(_Cur_max));
             } else {
-                return _Max_tail(_First, _Last, _Res._Max, static_cast<_UTy>(_Cur_max + _Cor));
+                return _Max_tail(_First, _Last, _Res._Max, static_cast<_UTy>(_Cur_max + _Correction));
             }
         } else {
             if (_Sign) {
                 return _Both_tail(_First, _Last, _Res, static_cast<_STy>(_Cur_min), static_cast<_STy>(_Cur_max));
             } else {
-                return _Both_tail(
-                    _First, _Last, _Res, static_cast<_UTy>(_Cur_min + _Cor), static_cast<_UTy>(_Cur_max + _Cor));
+                return _Both_tail(_First, _Last, _Res, static_cast<_UTy>(_Cur_min + _Correction),
+                    static_cast<_UTy>(_Cur_max + _Correction));
             }
         }
     }
@@ -528,10 +528,10 @@ namespace {
         static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7F);
         static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x80);
 
-        static __m128i _Sign_cor(const __m128i _Val, const bool _Sign) noexcept {
-            alignas(16) static constexpr _Unsigned_t _Sign_cors[2][16] = {
+        static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
+            alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][16] = {
                 {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}, {}};
-            return _mm_sub_epi8(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
+            return _mm_sub_epi8(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
         }
 
         static __m128i _Inc(__m128i _Idx) noexcept {
@@ -602,10 +602,10 @@ namespace {
         static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF);
         static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000);
 
-        static __m128i _Sign_cor(const __m128i _Val, const bool _Sign) noexcept {
-            alignas(16) static constexpr _Unsigned_t _Sign_cors[2][8] = {
+        static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
+            alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][8] = {
                 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, 0x8000, {}};
-            return _mm_sub_epi16(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
+            return _mm_sub_epi16(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
         }
 
         static __m128i _Inc(__m128i _Idx) noexcept {
@@ -681,10 +681,10 @@ namespace {
         static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFFUL);
         static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000UL);
 
-        static __m128i _Sign_cor(const __m128i _Val, const bool _Sign) noexcept {
-            alignas(16) static constexpr _Unsigned_t _Sign_cors[2][4] = {
+        static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) noexcept {
+            alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][4] = {
                 0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, 0x8000'0000UL, {}};
-            return _mm_sub_epi32(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
+            return _mm_sub_epi32(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
         }
 
         static __m128i _Inc(__m128i _Idx) noexcept {
@@ -751,10 +751,10 @@ namespace {
         static constexpr _Signed_t _Init_min_val = static_cast<_Signed_t>(0x7FFF'FFFF'FFFF'FFFFULL);
         static constexpr _Signed_t _Init_max_val = static_cast<_Signed_t>(0x8000'0000'0000'0000ULL);
 
-        static __m128i _Sign_cor(const __m128i _Val, const bool _Sign) {
-            alignas(16) static constexpr _Unsigned_t _Sign_cors[2][2] = {
+        static __m128i _Sign_correction(const __m128i _Val, const bool _Sign) {
+            alignas(16) static constexpr _Unsigned_t _Sign_corrections[2][2] = {
                 0x8000'0000'0000'0000ULL, 0x8000'0000'0000'0000ULL, {}};
-            return _mm_sub_epi64(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_cors[_Sign])));
+            return _mm_sub_epi64(_Val, _mm_load_si128(reinterpret_cast<const __m128i*>(_Sign_corrections[_Sign])));
         }
 
         static __m128i _Inc(__m128i _Idx) noexcept {
@@ -845,7 +845,8 @@ namespace {
             _Advance_bytes(_Stop_at, _Portion_byte_size);
 
             // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
-            __m128i _Cur_vals = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
+            __m128i _Cur_vals =
+                _Traits::_Sign_correction(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
             __m128i _Cur_vals_min = _Cur_vals; // vector of vertical minimum values
             __m128i _Cur_idx_min  = _mm_setzero_si128(); // vector of vertical minimum indices
             __m128i _Cur_vals_max = _Cur_vals; // vector of vertical maximum values
@@ -944,7 +945,7 @@ namespace {
                         _Base = static_cast<const char*>(_First);
                         // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
                         _Cur_vals =
-                            _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
+                            _Traits::_Sign_correction(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
 
                         if constexpr (_Mode & _Mode_min) {
                             _Cur_vals_min = _Cur_vals;
@@ -964,7 +965,7 @@ namespace {
                 // This is the main part, finding vertical minimum/maximum
 
                 // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
-                _Cur_vals = _Traits::_Sign_cor(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
+                _Cur_vals = _Traits::_Sign_correction(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
 
                 if constexpr (_Mode & _Mode_min) {
                     // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
