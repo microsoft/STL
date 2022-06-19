@@ -54,7 +54,7 @@ void test_case_operator_dereference_sentinel() {
 }
 
 void test_case_operator_dereference_valueless() {
-    CIT cit{_Common_iterator_construct_tag{}};
+    CIT cit{_Variantish_empty_tag{}};
     (void) (*cit); // common_iterator can only be dereferenced if it holds an iterator
 }
 
@@ -64,7 +64,7 @@ void test_case_operator_dereference_const_sentinel() {
 }
 
 void test_case_operator_dereference_const_valueless() {
-    const CIT cit{_Common_iterator_construct_tag{}};
+    const CIT cit{_Variantish_empty_tag{}};
     (void) (*cit); // common_iterator can only be dereferenced if it holds an iterator
 }
 
@@ -73,7 +73,7 @@ void test_case_operator_arrow_sentinel() {
     (void) (cit.operator->()); // common_iterator can only be dereferenced if it holds an iterator
 }
 void test_case_operator_arrow_valueless() {
-    CIT cit{_Common_iterator_construct_tag{}};
+    CIT cit{_Variantish_empty_tag{}};
     (void) (cit.operator->()); // common_iterator can only be dereferenced if it holds an iterator
 }
 
@@ -83,7 +83,7 @@ void test_case_operator_preincrement_sentinel() {
 }
 
 void test_case_operator_preincrement_valueless() {
-    CIT cit{_Common_iterator_construct_tag{}};
+    CIT cit{_Variantish_empty_tag{}};
     ++cit; // common_iterator can only be preincremented if it holds an iterator
 }
 
@@ -93,31 +93,31 @@ void test_case_operator_postincrement_sentinel() {
 }
 
 void test_case_operator_postincrement_valueless() {
-    CIT cit{_Common_iterator_construct_tag{}};
+    CIT cit{_Variantish_empty_tag{}};
     cit++; // common_iterator can only be postincremented if it holds an iterator
 }
 
 void test_case_equality_left_valueless() {
-    CIT cit1{_Common_iterator_construct_tag{}};
+    CIT cit1{_Variantish_empty_tag{}};
     CIT cit2{};
     (void) (cit1 == cit2); // common_iterator can only be compared if it holds a value
 }
 
 void test_case_equality_right_valueless() {
     CIT cit1{};
-    CIT cit2{_Common_iterator_construct_tag{}};
+    CIT cit2{_Variantish_empty_tag{}};
     (void) (cit1 == cit2); // common_iterator can only be compared if it holds a value
 }
 
 void test_case_difference_left_valueless() {
-    CIT cit1{_Common_iterator_construct_tag{}};
+    CIT cit1{_Variantish_empty_tag{}};
     CIT cit2{};
     (void) (cit1 - cit2); // common_iterator can only be subtracted if it holds a value
 }
 
 void test_case_difference_right_valueless() {
     CIT cit1{};
-    CIT cit2{_Common_iterator_construct_tag{}};
+    CIT cit2{_Variantish_empty_tag{}};
     (void) (cit1 - cit2); // common_iterator can only be subtracted if it holds a value
 }
 
@@ -127,7 +127,7 @@ void test_case_iter_move_sentinel() {
 }
 
 void test_case_iter_move_valueless() {
-    CIT cit{_Common_iterator_construct_tag{}};
+    CIT cit{_Variantish_empty_tag{}};
     (void) ranges::iter_move(cit); // can only iter_move from common_iterator if it holds an iterator
 }
 
@@ -138,7 +138,7 @@ void test_case_iter_swap_sentinel_left_sentinel() {
 }
 
 void test_case_iter_swap_sentinel_left_valueless() {
-    CIT cit1{_Common_iterator_construct_tag{}};
+    CIT cit1{_Variantish_empty_tag{}};
     CIT cit2{};
     (void) ranges::iter_swap(cit1, cit2); // can only iter_swap common_iterators if both hold iterators
 }
@@ -151,7 +151,7 @@ void test_case_iter_swap_sentinel_right_sentinel() {
 
 void test_case_iter_swap_sentinel_right_valueless() {
     CIT cit1{};
-    CIT cit2{_Common_iterator_construct_tag{}};
+    CIT cit2{_Variantish_empty_tag{}};
     (void) ranges::iter_swap(cit1, cit2); // can only iter_swap common_iterators if both hold iterators
 }
 

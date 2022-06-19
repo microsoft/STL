@@ -537,14 +537,14 @@ private:
 #ifdef __cpp_lib_concepts
 enum class _Variantish_state : unsigned char { _Nothing, _Holds_first, _Holds_second };
 
-struct _Common_iterator_construct_tag {
-    explicit _Common_iterator_construct_tag() = default;
+struct _Variantish_empty_tag {
+    explicit _Variantish_empty_tag() = default;
 };
 
 template <class _Ty1, class _Ty2>
 class _Variantish {
 public:
-    constexpr explicit _Variantish(_Common_iterator_construct_tag) noexcept : _Contains{_Variantish_state::_Nothing} {}
+    constexpr explicit _Variantish(_Variantish_empty_tag) noexcept : _Contains{_Variantish_state::_Nothing} {}
 
     constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_Ty1>) requires default_initializable<_Ty1>
         : _First{}, _Contains{_Variantish_state::_Holds_first} {}
@@ -855,7 +855,7 @@ public:
     constexpr common_iterator(_Se _Right) noexcept(is_nothrow_move_constructible_v<_Se>) // strengthened
         : _Val{in_place_type<_Se>, _STD move(_Right)} {}
 
-    constexpr explicit common_iterator(_Common_iterator_construct_tag _Tag) noexcept : _Val{_Tag} {}
+    constexpr explicit common_iterator(_Variantish_empty_tag _Tag) noexcept : _Val{_Tag} {}
 
     // clang-format off
     template <class _OIter, class _OSe>

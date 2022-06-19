@@ -3434,9 +3434,6 @@ namespace ranges {
         && common_reference_with<range_reference_t<_Rng>, range_reference_t<_Pat>> //
         && common_reference_with<range_rvalue_reference_t<_Rng>, range_rvalue_reference_t<_Pat>>;
 
-    template <class _Rng>
-    concept _Bidirectional_common = bidirectional_range<_Rng> && common_range<_Rng>;
-
     template <class _Rng, class _Pat> // TRANSITION, LLVM-47414
     concept _Can_const_join_with =
         input_range<const _Rng> && forward_range<const _Pat> && is_reference_v<range_reference_t<const _Rng>>;
@@ -3595,13 +3592,12 @@ namespace ranges {
         public:
             using iterator_concept = //
                 conditional_t<_Deref_is_glvalue && bidirectional_range<_Base> //
-                                  && _Bidirectional_common<_InnerRng<_Const>> && _Bidirectional_common<_PatternBase>,
+                                  && _Bidi_common_range<_InnerRng<_Const>> && _Bidi_common_range<_PatternBase>,
                     bidirectional_iterator_tag,
                     conditional_t<_Deref_is_glvalue && forward_range<_Base> && forward_range<_InnerRng<_Const>>,
                         forward_iterator_tag, input_iterator_tag>>;
             using value_type      = common_type_t<iter_value_t<_InnerIter>, iter_value_t<_PatternIter>>;
-            using difference_type = common_type_t<iter_difference_t<_OuterIter>, iter_difference_t<_InnerIter>,
-                iter_difference_t<_PatternIter>>;
+            using difference_type = _Common_diff_t<_OuterIter, _InnerIter, _PatternIter>;
 
             // clang-format off
             _Iterator() requires default_initializable<_OuterIter> = default;
@@ -3610,7 +3606,7 @@ namespace ranges {
             constexpr _Iterator(_Iterator<!_Const> _It) requires _Const //
                 && convertible_to<iterator_t<_Vw>, _OuterIter> //
                 && convertible_to<iterator_t<_InnerRng<false>>, _InnerIter> //
-                && convertible_to<iterator_t<_Pat>, _OuterIter> //
+                && convertible_to<iterator_t<_Pat>, _PatternIter> //
                 : _Outer_it{_STD move(_It._Outer_it)}, _Parent{_It._Parent} {
                 switch (_It._Inner_it._Contains) {
                 case _Variantish_state::_Holds_first:
@@ -3656,7 +3652,7 @@ namespace ranges {
             }
 
             constexpr _Iterator& operator--() requires _Deref_is_glvalue && bidirectional_range<_Base> //
-                && _Bidirectional_common<_InnerRng<_Const>> && _Bidirectional_common<_PatternBase> {
+                && _Bidi_common_range<_InnerRng<_Const>> && _Bidi_common_range<_PatternBase> {
                 if (_Outer_it == _RANGES end(_Parent->_Range)) {
                     --_Outer_it;
                     auto&& _Inner = *_Outer_it;
@@ -3700,7 +3696,7 @@ namespace ranges {
             }
 
             constexpr _Iterator operator--(int) requires _Deref_is_glvalue && bidirectional_range<_Base> //
-                && _Bidirectional_common<_InnerRng<_Const>> && _Bidirectional_common<_PatternBase> {
+                && _Bidi_common_range<_InnerRng<_Const>> && _Bidi_common_range<_PatternBase> {
                 auto _Tmp = *this;
                 --*this;
                 return _Tmp;
