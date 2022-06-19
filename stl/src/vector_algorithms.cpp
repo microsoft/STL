@@ -863,7 +863,7 @@ namespace {
                     // Reached end or indices wrap around point.
                     // Compute horizontal min and/or max. Determine horizontal and vertical position of it.
 
-                    if constexpr (_Mode & _Mode_min) {
+                    if constexpr ((_Mode & _Mode_min) != 0) {
                         const __m128i _H_min =
                             _Traits::_H_min(_Cur_vals_min); // Vector populated by the smallest element
                         const auto _H_min_val = _Traits::_Get_any(_H_min); // Get any element of it
@@ -886,7 +886,7 @@ namespace {
                         }
                     }
 
-                    if constexpr (_Mode & _Mode_max) {
+                    if constexpr ((_Mode & _Mode_max) != 0) {
                         const __m128i _H_max =
                             _Traits::_H_max(_Cur_vals_max); // Vector populated by the largest element
                         const auto _H_max_val = _Traits::_Get_any(_H_max); // Get any element of it
@@ -947,12 +947,12 @@ namespace {
                         _Cur_vals =
                             _Traits::_Sign_correction(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
 
-                        if constexpr (_Mode & _Mode_min) {
+                        if constexpr ((_Mode & _Mode_min) != 0) {
                             _Cur_vals_min = _Cur_vals;
                             _Cur_idx_min  = _mm_setzero_si128();
                         }
 
-                        if constexpr (_Mode & _Mode_max) {
+                        if constexpr ((_Mode & _Mode_max) != 0) {
                             _Cur_vals_max = _Cur_vals;
                             _Cur_idx_max  = _mm_setzero_si128();
                         }
@@ -967,7 +967,7 @@ namespace {
                 // Load values and if unsigned adjust them to be signed (for signed vector comparisons)
                 _Cur_vals = _Traits::_Sign_correction(_mm_loadu_si128(reinterpret_cast<const __m128i*>(_First)), _Sign);
 
-                if constexpr (_Mode & _Mode_min) {
+                if constexpr ((_Mode & _Mode_min) != 0) {
                     // Looking for the first occurrence of minimum, don't overwrite with newly found occurrences
                     const __m128i _Is_less = _Traits::_Cmp_gt(_Cur_vals_min, _Cur_vals); // _Cur_vals < _Cur_vals_min
                     _Cur_idx_min = _mm_blendv_epi8(_Cur_idx_min, _Cur_idx, _Is_less); // Remember their vertical indices
