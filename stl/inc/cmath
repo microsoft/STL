@@ -1336,6 +1336,31 @@ _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
 
 #if _HAS_CXX20
 template <class _Ty>
+_NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) {
+    if (_STD is_constant_evaluated()) {
+        auto _Smaller     = _ArgT;
+        auto _Larger      = _ArgB - _ArgA;
+        auto _Abs_smaller = _Float_abs(_Smaller);
+        auto _Abs_larger  = _Float_abs(_Larger);
+        if (_Abs_larger < _Abs_smaller) {
+            _STD swap(_Smaller, _Larger);
+            _STD swap(_Abs_smaller, _Abs_larger);
+        }
+
+        if (_Abs_smaller > 1) {
+            // _Larger is too large to be subnormal, so scaling by 0.5 is exact, and the product _Smaller * _Larger is
+            // large enough that if _ArgA is subnormal, it will be too small to contribute anyway and this way can
+            // sometimes avoid overflow problems.
+            return 2 * (_Ty{0.5} * _ArgA + _Smaller * (_Ty{0.5} * _Larger));
+        } else {
+            return _ArgA + _Smaller * _Larger;
+        }
+    }
+
+    return _STD fma(_ArgT, _ArgB - _ArgA, _ArgA);
+}
+
+template <class _Ty>
 _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
     // on a line intersecting {(0.0, _ArgA), (1.0, _ArgB)}, return the Y value for X == _ArgT
 
@@ -1353,7 +1378,7 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
         }
 
         // exact at _ArgT == 0, monotonic except near _ArgT == 1, bounded, determinate, and consistent:
-        const auto _Candidate = _ArgA + _ArgT * (_ArgB - _ArgA);
+        const auto _Candidate = _Linear_for_lerp(_ArgA, _ArgB, _ArgT);
         // monotonic near _ArgT == 1:
         if ((_ArgT > 1) == (_ArgB > _ArgA)) {
             if (_ArgB > _Candidate) {
