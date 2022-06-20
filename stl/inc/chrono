@@ -4608,9 +4608,9 @@ concept _Has_ok = requires(_Ty _At) {
 // A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
 template <class _CharT>
 struct _Chrono_spec {
-    _CharT _Lit_char = _CharT{'\0'}; // any character other than '{', '}', or '%'
-    char _Modifier   = '\0'; // either 'E' or 'O'
-    char _Type       = '\0';
+    _CharT _Lit_char{'\0'}; // any character other than '{', '}', or '%'
+    char _Modifier = '\0'; // either 'E' or 'O'
+    char _Type     = '\0';
 };
 
 template <class _CharT>

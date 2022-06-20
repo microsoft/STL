@@ -201,15 +201,15 @@ protected:
     }
 
     virtual string __CLR_OR_THIS_CALL do_grouping() const {
-        return string(_Grouping);
+        return string{_Grouping};
     }
 
     virtual string_type __CLR_OR_THIS_CALL do_falsename() const {
-        return string_type(_Falsename);
+        return string_type{_Falsename};
     }
 
     virtual string_type __CLR_OR_THIS_CALL do_truename() const {
-        return string_type(_Truename);
+        return string_type{_Truename};
     }
 
 private:

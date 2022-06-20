@@ -950,14 +950,14 @@ _NODISCARD constexpr bool operator<=(const tuple<_Types1...>& _Left, const tuple
 
 template <class... _Types, enable_if_t<conjunction_v<_Is_swappable<_Types>...>, int> = 0>
 _CONSTEXPR20 void swap(tuple<_Types...>& _Left, tuple<_Types...>& _Right) noexcept(noexcept(_Left.swap(_Right))) {
-    return _Left.swap(_Right);
+    _Left.swap(_Right);
 }
 
 #if _HAS_CXX23
 template <class... _Types, enable_if_t<conjunction_v<is_swappable<const _Types>...>, int> = 0>
 constexpr void swap(const tuple<_Types...>& _Left, const tuple<_Types...>& _Right) noexcept(
     noexcept(_Left.swap(_Right))) {
-    return _Left.swap(_Right);
+    _Left.swap(_Right);
 }
 #endif // _HAS_CXX23
 

@@ -1264,8 +1264,8 @@ _NODISCARD constexpr const _CharT* _Parse_replacement_field(
         _Handler._On_text(_First, _First + 1);
     } else {
         _Id_adapter<_CharT> _Adapter{_Handler._Parse_context};
-        _First     = _Parse_arg_id(_First, _Last, _Adapter);
-        _CharT _Ch = _CharT{};
+        _First = _Parse_arg_id(_First, _Last, _Adapter);
+        _CharT _Ch{};
         if (_First != _Last) {
             _Ch = *_First;
         }

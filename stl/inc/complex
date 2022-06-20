@@ -315,8 +315,8 @@ namespace _Math_algorithms {
         }
 
         if (_Hypot_leg_tiny<_Ty> < _Av && _Av < _Hypot_leg_huge<_Ty>) { // no overflow or harmful underflow
-            constexpr _Ty _Norm_small = _Ty{0.5};
-            constexpr _Ty _Norm_big   = _Ty{3.0};
+            constexpr _Ty _Norm_small{0.5};
+            constexpr _Ty _Norm_big{3.0};
 
             const _Ty _Bv_sqr = _Bv * _Bv;
 

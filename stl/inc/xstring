@@ -4570,7 +4570,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 basic_string substr(const size_type _Off = 0, const size_type _Count = npos) const {
         // return [_Off, _Off + _Count) as new string
-        return basic_string(*this, _Off, _Count, get_allocator());
+        return basic_string{*this, _Off, _Count, get_allocator()};
     }
 
     _CONSTEXPR20 bool _Equal(const basic_string& _Right) const noexcept {
@@ -5193,25 +5193,25 @@ inline namespace literals {
 #endif // ^^^ no workaround ^^^
 
         _NODISCARD _CONSTEXPR20_STRING_LITERALS string operator"" s(const char* _Str, size_t _Len) {
-            return string(_Str, _Len);
+            return string{_Str, _Len};
         }
 
         _NODISCARD _CONSTEXPR20_STRING_LITERALS wstring operator"" s(const wchar_t* _Str, size_t _Len) {
-            return wstring(_Str, _Len);
+            return wstring{_Str, _Len};
         }
 
 #ifdef __cpp_char8_t
         _NODISCARD _CONSTEXPR20_STRING_LITERALS basic_string<char8_t> operator"" s(const char8_t* _Str, size_t _Len) {
-            return basic_string<char8_t>(_Str, _Len);
+            return basic_string<char8_t>{_Str, _Len};
         }
 #endif // __cpp_char8_t
 
         _NODISCARD _CONSTEXPR20_STRING_LITERALS u16string operator"" s(const char16_t* _Str, size_t _Len) {
-            return u16string(_Str, _Len);
+            return u16string{_Str, _Len};
         }
 
         _NODISCARD _CONSTEXPR20_STRING_LITERALS u32string operator"" s(const char32_t* _Str, size_t _Len) {
-            return u32string(_Str, _Len);
+            return u32string{_Str, _Len};
         }
 
 #undef _CONSTEXPR20_STRING_LITERALS // TRANSITION, VSO-1273381
