@@ -1423,6 +1423,20 @@ STATIC_ASSERT(__cpp_lib_ranges_iota == 202202L);
 #endif
 
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_join_with
+#error __cpp_lib_ranges_join_with is not defined
+#elif __cpp_lib_ranges_join_with != 202202L
+#error __cpp_lib_ranges_join_with is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_join_with == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_join_with
+#error __cpp_lib_ranges_join_with is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_ranges_slide
 #error __cpp_lib_ranges_slide is not defined
 #elif __cpp_lib_ranges_slide != 202202L

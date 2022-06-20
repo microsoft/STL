@@ -2688,6 +2688,11 @@ namespace ranges {
     template <class _Rng>
     concept common_range = range<_Rng> && same_as<iterator_t<_Rng>, sentinel_t<_Rng>>;
 
+    template <class _It, class _Se>
+    concept _Bidi_common = is_same_v<_It, _Se> && bidirectional_iterator<_It>;
+    template <class _Rng>
+    concept _Bidi_common_range = common_range<_Rng> && bidirectional_iterator<iterator_t<_Rng>>;
+
     template <class _Ty>
     concept _Can_empty = requires(_Ty __t) {
         _RANGES empty(__t);
