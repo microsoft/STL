@@ -131,12 +131,9 @@ __PURE_APPDOMAIN_GLOBAL locale::id ctype<wchar_t>::id(0);
 
 __PURE_APPDOMAIN_GLOBAL locale::id codecvt<wchar_t, char, mbstate_t>::id(0);
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
 __PURE_APPDOMAIN_GLOBAL locale::id ctype<unsigned short>::id(0);
 
 __PURE_APPDOMAIN_GLOBAL locale::id codecvt<unsigned short, char, mbstate_t>::id(0);
-
-#endif // _NATIVE_WCHAR_T_DEFINED
 
 _MRTIMP2_PURE const locale& __CLRCALL_PURE_OR_CDECL locale::classic() { // get reference to "C" locale
     _Init();

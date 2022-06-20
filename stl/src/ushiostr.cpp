@@ -3,7 +3,6 @@
 
 // _UShinit members (unsigned short version)
 
-#ifdef _NATIVE_WCHAR_T_DEFINED
 #include <fstream>
 
 _STD_BEGIN
@@ -14,14 +13,10 @@ using ushfilebuf = basic_filebuf<unsigned short, char_traits<unsigned short>>;
 
 _STD_END
 
-#define wistream    ushistream
-#define wostream    ushostream
-#define wfilebuf    ushfilebuf
-#define _Init_wcerr _Init_ushcerr
-#define _Init_wcout _Init_ushcout
-#define _Init_wclog _Init_ushclog
-#define _Init_wcin  _Init_ushcin
-#define _Winit      _UShinit
+#define wistream ushistream
+#define wostream ushostream
+#define wfilebuf ushfilebuf
+#define _Winit   _UShinit
 
 #include <iostream>
 
@@ -40,5 +35,4 @@ __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wcerr = nullptr;
 __PURE_APPDOMAIN_GLOBAL extern _CRTDATA2_IMPORT wostream* _Ptr_wclog = nullptr;
 _STD_END
 #include "wiostrea.cpp"
-#endif
 #endif
