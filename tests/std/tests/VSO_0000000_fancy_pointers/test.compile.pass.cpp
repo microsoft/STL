@@ -24,6 +24,9 @@
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
+template <typename T>
+struct always_false : std::false_type {};
+
 int main() {} // COMPILE-ONLY
 
 template <typename Val>
@@ -82,14 +85,24 @@ public:
         return *this;
     }
 
-    void operator++(int) = delete; // avoid postincrement
+    fancy_pointer operator++(int) {
+        static_assert(always_false<Val>::value, "avoid postincrement");
+        fancy_pointer result = *this;
+        ++rep;
+        return result;
+    }
 
     fancy_pointer& operator--() {
         --rep;
         return *this;
     }
 
-    void operator--(int) = delete; // avoid postdecrement
+    fancy_pointer operator--(int) {
+        static_assert(always_false<Val>::value, "avoid postdecrement");
+        fancy_pointer result = *this;
+        --rep;
+        return result;
+    }
 
 #ifdef _WIN64
     fancy_pointer& operator+=(int rhs) {
@@ -277,9 +290,6 @@ namespace std {
         typedef fancy_pointer<Val> pointer;
     };
 } // namespace std
-
-template <typename T>
-struct always_false : std::false_type {};
 
 template <typename Val>
 struct fancy_allocator {

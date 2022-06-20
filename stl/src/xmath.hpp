@@ -10,7 +10,6 @@
 
 // macros for _Feraise argument
 #define _FE_DIVBYZERO 0x04
-#define _FE_INEXACT   0x20
 #define _FE_INVALID   0x01
 #define _FE_OVERFLOW  0x08
 #define _FE_UNDERFLOW 0x10
@@ -42,9 +41,6 @@
 #define FSIGN(x) (reinterpret_cast<_Fval*>(&(x))->_Sh[_F0] & _FSIGN)
 #define LSIGN(x) (reinterpret_cast<_Lval*>(&(x))->_Sh[_L0] & _LSIGN)
 
-#define _Fg _F1 // least-significant 16-bit word
-#define _Dg _D3
-
 // return values for _Stopfx/_Stoflt
 #define FL_ERR 0
 #define FL_DEC 1
@@ -72,7 +68,6 @@ union _Dval { // pun floating type as integer array
     double _Val;
 };
 
-unsigned short* _Plsw(double*);
 unsigned short* _Pmsw(double*);
 
 short _Dint(double*, short);
@@ -93,11 +88,8 @@ double* _Xp_addh(double*, int, double);
 double* _Xp_mulh(double*, int, double);
 double* _Xp_movx(double*, int, const double*);
 double* _Xp_addx(double*, int, const double*, int);
-double* _Xp_subx(double*, int, const double*, int);
 double* _Xp_ldexpx(double*, int, int);
 double* _Xp_mulx(double*, int, const double*, int, double*);
-double* _Xp_invx(double*, int, double*);
-double* _Xp_sqrtx(double*, int, double*);
 
 // float declarations
 union _Fval { // pun floating type as integer array
@@ -105,7 +97,6 @@ union _Fval { // pun floating type as integer array
     float _Val;
 };
 
-unsigned short* _FPlsw(float*);
 unsigned short* _FPmsw(float*);
 
 short _FDint(float*, short);
@@ -126,11 +117,8 @@ float* _FXp_addh(float*, int, float);
 float* _FXp_mulh(float*, int, float);
 float* _FXp_movx(float*, int, const float*);
 float* _FXp_addx(float*, int, const float*, int);
-float* _FXp_subx(float*, int, const float*, int);
 float* _FXp_ldexpx(float*, int, int);
 float* _FXp_mulx(float*, int, const float*, int, float*);
-float* _FXp_invx(float*, int, float*);
-float* _FXp_sqrtx(float*, int, float*);
 
 // long double declarations
 union _Lval { // pun floating type as integer array
@@ -138,7 +126,6 @@ union _Lval { // pun floating type as integer array
     long double _Val;
 };
 
-unsigned short* _LPlsw(long double*);
 unsigned short* _LPmsw(long double*);
 
 short _LDint(long double*, short);
@@ -158,11 +145,8 @@ long double* _LXp_addh(long double*, int, long double);
 long double* _LXp_mulh(long double*, int, long double);
 long double* _LXp_movx(long double*, int, const long double*);
 long double* _LXp_addx(long double*, int, const long double*, int);
-long double* _LXp_subx(long double*, int, const long double*, int);
 long double* _LXp_ldexpx(long double*, int, int);
 long double* _LXp_mulx(long double*, int, const long double*, int, long double*);
-long double* _LXp_invx(long double*, int, long double*);
-long double* _LXp_sqrtx(long double*, int, long double*);
 
 _END_EXTERN_C_UNLESS_PURE
 

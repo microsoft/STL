@@ -346,7 +346,7 @@ public:
 
     template <class _FwdIt>
     string_type lookup_collatename(_FwdIt _First, _FwdIt _Last) const { // map [_First, _Last) to collation element
-        return string_type(_First, _Last);
+        return string_type{_First, _Last};
     }
 
     locale_type imbue(locale_type _Lx) { // store locale object
@@ -612,7 +612,7 @@ public:
 
     _NODISCARD string_type str() const { // convert matched text to string
         const _Mybase _Range(_Effective_range());
-        return string_type(_Range.first, _Range.second);
+        return string_type{_Range.first, _Range.second};
     }
 
     _NODISCARD int compare(const sub_match& _Right) const { // compare *this to _Right
@@ -1009,7 +1009,7 @@ public:
     }
 
     _NODISCARD string_type str(size_type _Sub = 0) const {
-        return string_type((*this)[_Sub]);
+        return string_type{(*this)[_Sub]};
     }
 
     _NODISCARD const_reference operator[](size_type _Sub) const noexcept /* strengthened */ {
@@ -1156,16 +1156,16 @@ _NODISCARD bool operator!=(const match_results<_BidIt, _Alloc>& _Left, const mat
 }
 #endif // !_HAS_CXX20
 
-const unsigned int _BRE_MAX_GRP = 9U;
+_INLINE_VAR constexpr unsigned int _BRE_MAX_GRP = 9U;
 
-const unsigned int _Bmp_max   = 256U; // must fit in an unsigned int
-const unsigned int _Bmp_shift = 3U;
-const unsigned int _Bmp_chrs  = 1U << _Bmp_shift; // # of bits to be stored in each char
-const unsigned int _Bmp_mask  = _Bmp_chrs - 1U;
-const unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _Bmp_chrs;
+_INLINE_VAR constexpr unsigned int _Bmp_max   = 256U; // must fit in an unsigned int
+_INLINE_VAR constexpr unsigned int _Bmp_shift = 3U;
+_INLINE_VAR constexpr unsigned int _Bmp_chrs  = 1U << _Bmp_shift; // # of bits to be stored in each char
+_INLINE_VAR constexpr unsigned int _Bmp_mask  = _Bmp_chrs - 1U;
+_INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _Bmp_chrs;
 
-const unsigned int _Buf_incr        = 16U;
-const unsigned int _ARRAY_THRESHOLD = 4U;
+_INLINE_VAR constexpr unsigned int _Buf_incr        = 16U;
+_INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_none    = 0x00,

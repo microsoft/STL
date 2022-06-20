@@ -234,9 +234,6 @@ std/utilities/meta/meta.unary/meta.unary.prop/is_literal_type.deprecated.fail.cp
 std/language.support/support.limits/support.limits.general/tuple.version.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/utility.version.pass.cpp FAIL
 
-# P1328R1 constexpr type_info::operator==()
-std/language.support/support.limits/support.limits.general/typeinfo.version.pass.cpp FAIL
-
 
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
