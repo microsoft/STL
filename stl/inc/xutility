@@ -2403,7 +2403,7 @@ namespace ranges {
 
         constexpr explicit _Not_quite_object(_Construct_tag) noexcept {}
 
-        _Not_quite_object(const _Not_quite_object&) = delete;
+        _Not_quite_object(const _Not_quite_object&)            = delete;
         _Not_quite_object& operator=(const _Not_quite_object&) = delete;
 
         void operator&() const = delete;
@@ -3658,7 +3658,7 @@ _OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Count, _OutCtgIt _Dest) {
     if constexpr (is_pointer_v<_OutCtgIt>) {
         return reinterpret_cast<_OutCtgIt>(_Dest_ch + _Byte_count);
     } else {
-        return _Dest + _Count;
+        return _Dest + static_cast<_Iter_diff_t<_OutCtgIt>>(_Count);
     }
 }
 
@@ -5852,7 +5852,7 @@ public:
         return _Ret;
     }
 
-    _Rng_from_urng(const _Rng_from_urng&) = delete;
+    _Rng_from_urng(const _Rng_from_urng&)            = delete;
     _Rng_from_urng& operator=(const _Rng_from_urng&) = delete;
 
 private:
