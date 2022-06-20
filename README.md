@@ -57,7 +57,7 @@ issue. The [bug tag][] and [enhancement tag][] are being populated.
 
 # Goals
 
-We're implementing the latest C++ Working Draft, currently [N4901][], which will eventually become the next C++
+We're implementing the latest C++ Working Draft, currently [N4910][], which will eventually become the next C++
 International Standard. The terms Working Draft (WD) and Working Paper (WP) are interchangeable; we often
 informally refer to these drafts as "the Standard" while being aware of the difference. (There are other relevant
 Standards; for example, supporting `/std:c++14` and `/std:c++17` involves understanding how the C++14 and C++17
@@ -121,7 +121,7 @@ reproducing the bug.
 
 * You should be reasonably confident that you're looking at an actual implementation bug, instead of undefined behavior
 or surprising-yet-Standard behavior. Comparing against other implementations can help (but remember that implementations
-can differ while conforming to the Standard); try Godbolt's [Compiler Explorer][] and [Wandbox][]. If you still aren't
+can differ while conforming to the Standard); try Godbolt's [Compiler Explorer][]. If you still aren't
 sure, ask the nearest C++ expert.
 
 * You should prepare a self-contained command-line test case, ideally as small as possible. We need a source file, a
@@ -140,10 +140,11 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.2 Preview 2 or later.
+1. Install Visual Studio 2022 17.3 Preview 2 or later.
+    * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.22 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.23 or later, and [Ninja][] 1.10.2 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
@@ -155,10 +156,11 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.2 Preview 2 or later.
+1. Install Visual Studio 2022 17.3 Preview 2 or later.
+    * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.22 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.23 or later, and [Ninja][] 1.10.2 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.
@@ -484,14 +486,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [LWG issues]: https://cplusplus.github.io/LWG/lwg-toc.html
 [LWG tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3ALWG
 [Microsoft Open Source Code of Conduct]: https://opensource.microsoft.com/codeofconduct/
-[N4901]: https://wg21.link/n4901
+[N4910]: https://wg21.link/n4910
 [NOTICE.txt]: NOTICE.txt
 [Ninja]: https://ninja-build.org
 [Pipelines]: https://dev.azure.com/vclibs/STL/_build/latest?definitionId=4&branchName=main
 [Python]: https://www.python.org/downloads/windows/
 [Roadmap]: https://github.com/microsoft/STL/wiki/Roadmap
 [Status Chart]: https://microsoft.github.io/STL/
-[Wandbox]: https://wandbox.org
 [bug tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug
 [cxx20 tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20
 [enhancement tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement

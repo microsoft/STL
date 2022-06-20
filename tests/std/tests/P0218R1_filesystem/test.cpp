@@ -996,7 +996,11 @@ void test_directory_entry() {
         EXPECT(!nonexistentEntryEc.exists());
         EXPECT(good(ec));
 
-        EXPECT(throws_filesystem_error([&] { nonexistentEntryEc.refresh(); }, "directory_entry::refresh", nonexistent));
+        // Also test GH-232 "<filesystem>: directory_entry(const path& p, error_code& ec) does not return error code"
+        nonexistentEntry.refresh();
+
+        nonexistentEntryEc.refresh(ec);
+        EXPECT(good(ec));
     }
 
     directory_entry goodEntry(filePath, ec);

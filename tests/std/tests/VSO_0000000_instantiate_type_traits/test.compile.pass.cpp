@@ -6,6 +6,7 @@
 #define _SILENCE_CXX17_IS_LITERAL_TYPE_DEPRECATION_WARNING
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
 #define _SILENCE_CXX20_IS_POD_DEPRECATION_WARNING
+#define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 #define _USE_NAMED_IDL_NAMESPACE 1
 
 #include <array>
@@ -299,10 +300,8 @@ void type_traits_test() {
         virtual ~F() {}
     };
     type_traits_ref_test_impl<F, C>();
-#ifdef _MSC_EXTENSIONS // TRANSITION, VSO-589178
     type_traits_ref_test_impl<pair<int, double>>();
     type_traits_ref_test_impl<tuple<int, int, int>>();
-#endif // TRANSITION, VSO-589178
 
     INSTANTIATE(make_integer_sequence<int, 0>);
     INSTANTIATE(index_sequence<1, 1, 2, 3, 5, 8, 13>);

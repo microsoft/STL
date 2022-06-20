@@ -633,7 +633,7 @@ _STD _Common_float_type_t<_Ty1, _Ty2> remquo(_Ty1 _Left, _Ty2 _Right, int* _Pquo
 #define _GENERIC_MATH2I(FUN, CLANG_INTRIN, MSVC_INTRIN) _GENERIC_MATH2_BASE(FUN, _CSTD FUN)
 #endif // ^^^ intrinsics unavailable ^^^
 
-// The following order matches N4820 26.8.1 [cmath.syn].
+// The following order matches N4910 28.7.1 [cmath.syn].
 _GENERIC_MATH1(acos)
 _GENERIC_MATH1(asin)
 _GENERIC_MATH1(atan)
@@ -693,9 +693,8 @@ _GENERIC_MATH2(fdim)
 _GENERIC_MATH2(fmax)
 _GENERIC_MATH2(fmin)
 // fma() is hand-crafted
-// lerp() should be exempt, LWG-3223
+// lerp() is hand-crafted
 // The "classification/comparison functions" (fpclassify(), etc.) are exempt, LWG-1327
-// TRANSITION, VSO-945789, Special Math shouldn't be exempt
 
 #undef _GENERIC_MATH1_BASE
 #undef _GENERIC_MATH1R
@@ -953,260 +952,364 @@ _NODISCARD _CRT_SATELLITE_2 float __stdcall __std_smf_hypot3f(float, float, floa
 _END_EXTERN_C
 
 _STD_BEGIN
-_NODISCARD inline double assoc_laguerre(const unsigned int _Degree, const unsigned int _Order, const double _Value) {
+_NODISCARD inline double assoc_laguerre(
+    const unsigned int _Degree, const unsigned int _Order, const double _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_laguerre(_Degree, _Order, _Value);
 }
 
-_NODISCARD inline float assoc_laguerref(const unsigned int _Degree, const unsigned int _Order, const float _Value) {
+_NODISCARD inline float assoc_laguerref(
+    const unsigned int _Degree, const unsigned int _Order, const float _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_laguerref(_Degree, _Order, _Value);
 }
 
 _NODISCARD inline long double assoc_laguerrel(
-    const unsigned int _Degree, const unsigned int _Order, const long double _Value) {
+    const unsigned int _Degree, const unsigned int _Order, const long double _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_laguerre(_Degree, _Order, static_cast<double>(_Value));
 }
 
-_NODISCARD inline double assoc_legendre(const unsigned int _Degree, const unsigned int _Order, const double _Value) {
+_NODISCARD inline double assoc_legendre(
+    const unsigned int _Degree, const unsigned int _Order, const double _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_legendre(_Degree, _Order, _Value);
 }
 
-_NODISCARD inline float assoc_legendref(const unsigned int _Degree, const unsigned int _Order, const float _Value) {
+_NODISCARD inline float assoc_legendref(
+    const unsigned int _Degree, const unsigned int _Order, const float _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_legendref(_Degree, _Order, _Value);
 }
 
 _NODISCARD inline long double assoc_legendrel(
-    const unsigned int _Degree, const unsigned int _Order, const long double _Value) {
+    const unsigned int _Degree, const unsigned int _Order, const long double _Value) noexcept /* strengthened */ {
     return __std_smf_assoc_legendre(_Degree, _Order, static_cast<double>(_Value));
 }
 
-_NODISCARD inline double beta(const double _Arg1, const double _Arg2) {
+_NODISCARD inline double beta(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_beta(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float betaf(const float _Arg1, const float _Arg2) {
+_NODISCARD inline float betaf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_betaf(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double betal(const long double _Arg1, const long double _Arg2) {
+_NODISCARD inline long double betal(const long double _Arg1, const long double _Arg2) noexcept /* strengthened */ {
     return __std_smf_beta(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double comp_ellint_1(const double _Arg) {
+_NODISCARD inline double comp_ellint_1(const double _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_1(_Arg);
 }
 
-_NODISCARD inline float comp_ellint_1f(const float _Arg) {
+_NODISCARD inline float comp_ellint_1f(const float _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_1f(_Arg);
 }
 
-_NODISCARD inline long double comp_ellint_1l(const long double _Arg) {
+_NODISCARD inline long double comp_ellint_1l(const long double _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_1(static_cast<double>(_Arg));
 }
 
-_NODISCARD inline double comp_ellint_2(const double _Arg) {
+_NODISCARD inline double comp_ellint_2(const double _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_2(_Arg);
 }
 
-_NODISCARD inline float comp_ellint_2f(const float _Arg) {
+_NODISCARD inline float comp_ellint_2f(const float _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_2f(_Arg);
 }
 
-_NODISCARD inline long double comp_ellint_2l(const long double _Arg) {
+_NODISCARD inline long double comp_ellint_2l(const long double _Arg) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_2(static_cast<double>(_Arg));
 }
 
-_NODISCARD inline double comp_ellint_3(const double _Arg1, const double _Arg2) {
+_NODISCARD inline double comp_ellint_3(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_3(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float comp_ellint_3f(const float _Arg1, const float _Arg2) {
+_NODISCARD inline float comp_ellint_3f(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_comp_ellint_3f(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double comp_ellint_3l(const long double _Arg1, const long double _Arg2) {
+_NODISCARD inline long double comp_ellint_3l(const long double _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_comp_ellint_3(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double cyl_bessel_i(const double _Arg1, const double _Arg2) {
+_NODISCARD inline double cyl_bessel_i(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_i(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float cyl_bessel_if(const float _Arg1, const float _Arg2) {
+_NODISCARD inline float cyl_bessel_if(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_if(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double cyl_bessel_il(const long double _Arg1, const long double _Arg2) {
+_NODISCARD inline long double cyl_bessel_il(const long double _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_cyl_bessel_i(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double cyl_bessel_j(const double _Arg1, const double _Arg2) {
+_NODISCARD inline double cyl_bessel_j(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_j(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float cyl_bessel_jf(const float _Arg1, const float _Arg2) {
+_NODISCARD inline float cyl_bessel_jf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_jf(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double cyl_bessel_jl(const long double _Arg1, const long double _Arg2) {
+_NODISCARD inline long double cyl_bessel_jl(const long double _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_cyl_bessel_j(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double cyl_bessel_k(const double _Arg1, const double _Arg2) {
+_NODISCARD inline double cyl_bessel_k(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_k(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float cyl_bessel_kf(const float _Arg1, const float _Arg2) {
+_NODISCARD inline float cyl_bessel_kf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_bessel_kf(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double cyl_bessel_kl(const long double _Arg1, const long double _Arg2) {
+_NODISCARD inline long double cyl_bessel_kl(const long double _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_cyl_bessel_k(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double cyl_neumann(const double _Arg1, const double _Arg2) {
+_NODISCARD inline double cyl_neumann(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_neumann(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float cyl_neumannf(const float _Arg1, const float _Arg2) {
+_NODISCARD inline float cyl_neumannf(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_cyl_neumannf(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double cyl_neumannl(const long double _Arg1, const long double _Arg2) {
+_NODISCARD inline long double cyl_neumannl(const long double _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_cyl_neumann(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double ellint_1(const double _Arg1, const double _Arg2) {
+_NODISCARD inline double ellint_1(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_ellint_1(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float ellint_1f(const float _Arg1, const float _Arg2) {
+_NODISCARD inline float ellint_1f(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_ellint_1f(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double ellint_1l(const long double _Arg1, const long double _Arg2) {
+_NODISCARD inline long double ellint_1l(const long double _Arg1, const long double _Arg2) noexcept /* strengthened */ {
     return __std_smf_ellint_1(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double ellint_2(const double _Arg1, const double _Arg2) {
+_NODISCARD inline double ellint_2(const double _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_ellint_2(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float ellint_2f(const float _Arg1, const float _Arg2) {
+_NODISCARD inline float ellint_2f(const float _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_ellint_2f(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double ellint_2l(const long double _Arg1, const long double _Arg2) {
+_NODISCARD inline long double ellint_2l(const long double _Arg1, const long double _Arg2) noexcept /* strengthened */ {
     return __std_smf_ellint_2(static_cast<double>(_Arg1), static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double ellint_3(const double _Arg1, const double _Arg2, const double _Arg3) {
+_NODISCARD inline double ellint_3(const double _Arg1, const double _Arg2, const double _Arg3) noexcept
+/* strengthened */ {
     return __std_smf_ellint_3(_Arg1, _Arg2, _Arg3);
 }
 
-_NODISCARD inline float ellint_3f(const float _Arg1, const float _Arg2, const float _Arg3) {
+_NODISCARD inline float ellint_3f(const float _Arg1, const float _Arg2, const float _Arg3) noexcept
+/* strengthened */ {
     return __std_smf_ellint_3f(_Arg1, _Arg2, _Arg3);
 }
 
-_NODISCARD inline long double ellint_3l(const long double _Arg1, const long double _Arg2, const long double _Arg3) {
+_NODISCARD inline long double ellint_3l(
+    const long double _Arg1, const long double _Arg2, const long double _Arg3) noexcept /* strengthened */ {
     return __std_smf_ellint_3(static_cast<double>(_Arg1), static_cast<double>(_Arg2), static_cast<double>(_Arg3));
 }
 
-_NODISCARD inline double expint(const double _Arg) {
+_NODISCARD inline double expint(const double _Arg) noexcept /* strengthened */ {
     return __std_smf_expint(_Arg);
 }
 
-_NODISCARD inline float expintf(const float _Arg) {
+_NODISCARD inline float expintf(const float _Arg) noexcept /* strengthened */ {
     return __std_smf_expintf(_Arg);
 }
 
-_NODISCARD inline long double expintl(const long double _Arg) {
+_NODISCARD inline long double expintl(const long double _Arg) noexcept /* strengthened */ {
     return __std_smf_expint(static_cast<double>(_Arg));
 }
 
-_NODISCARD inline double hermite(const unsigned int _Arg1, const double _Arg2) {
+_NODISCARD inline double hermite(const unsigned int _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_hermite(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float hermitef(const unsigned int _Arg1, const float _Arg2) {
+_NODISCARD inline float hermitef(const unsigned int _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_hermitef(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double hermitel(const unsigned int _Arg1, const long double _Arg2) {
+_NODISCARD inline long double hermitel(const unsigned int _Arg1, const long double _Arg2) noexcept /* strengthened */ {
     return __std_smf_hermite(_Arg1, static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double laguerre(const unsigned int _Arg1, const double _Arg2) {
+_NODISCARD inline double laguerre(const unsigned int _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_laguerre(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float laguerref(const unsigned int _Arg1, const float _Arg2) {
+_NODISCARD inline float laguerref(const unsigned int _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_laguerref(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double laguerrel(const unsigned int _Arg1, const long double _Arg2) {
+_NODISCARD inline long double laguerrel(const unsigned int _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_laguerre(_Arg1, static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double legendre(const unsigned int _Degree, const double _Value) {
+_NODISCARD inline double legendre(const unsigned int _Degree, const double _Value) noexcept /* strengthened */ {
     return __std_smf_legendre(_Degree, _Value);
 }
 
-_NODISCARD inline float legendref(const unsigned int _Degree, const float _Value) {
+_NODISCARD inline float legendref(const unsigned int _Degree, const float _Value) noexcept /* strengthened */ {
     return __std_smf_legendref(_Degree, _Value);
 }
 
-_NODISCARD inline long double legendrel(const unsigned int _Degree, const long double _Value) {
+_NODISCARD inline long double legendrel(const unsigned int _Degree, const long double _Value) noexcept
+/* strengthened */ {
     return __std_smf_legendre(_Degree, static_cast<double>(_Value));
 }
 
-_NODISCARD inline double riemann_zeta(const double _Arg) {
+_NODISCARD inline double riemann_zeta(const double _Arg) noexcept /* strengthened */ {
     return __std_smf_riemann_zeta(_Arg);
 }
-
-_NODISCARD inline float riemann_zetaf(const float _Arg) {
+_NODISCARD inline float riemann_zetaf(const float _Arg) noexcept /* strengthened */ {
     return __std_smf_riemann_zetaf(_Arg);
 }
 
-_NODISCARD inline long double riemann_zetal(const long double _Arg) {
+_NODISCARD inline long double riemann_zetal(const long double _Arg) noexcept /* strengthened */ {
     return __std_smf_riemann_zeta(static_cast<double>(_Arg));
 }
 
-_NODISCARD inline double sph_bessel(const unsigned int _Arg1, const double _Arg2) {
+_NODISCARD inline double sph_bessel(const unsigned int _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_sph_bessel(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float sph_besself(const unsigned int _Arg1, const float _Arg2) {
+_NODISCARD inline float sph_besself(const unsigned int _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_sph_besself(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double sph_bessell(const unsigned int _Arg1, const long double _Arg2) {
+_NODISCARD inline long double sph_bessell(const unsigned int _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_sph_bessel(_Arg1, static_cast<double>(_Arg2));
 }
 
-_NODISCARD inline double sph_legendre(const unsigned int _Arg1, const unsigned int _Arg2, const double _Theta) {
+_NODISCARD inline double sph_legendre(const unsigned int _Arg1, const unsigned int _Arg2, const double _Theta) noexcept
+/* strengthened */ {
     return __std_smf_sph_legendre(_Arg1, _Arg2, _Theta);
 }
 
-_NODISCARD inline float sph_legendref(const unsigned int _Arg1, const unsigned int _Arg2, const float _Theta) {
+_NODISCARD inline float sph_legendref(const unsigned int _Arg1, const unsigned int _Arg2, const float _Theta) noexcept
+/* strengthened */ {
     return __std_smf_sph_legendref(_Arg1, _Arg2, _Theta);
 }
 
 _NODISCARD inline long double sph_legendrel(
-    const unsigned int _Arg1, const unsigned int _Arg2, const long double _Theta) {
+    const unsigned int _Arg1, const unsigned int _Arg2, const long double _Theta) noexcept /* strengthened */ {
     return __std_smf_sph_legendre(_Arg1, _Arg2, static_cast<double>(_Theta));
 }
 
-_NODISCARD inline double sph_neumann(const unsigned int _Arg1, const double _Arg2) {
+_NODISCARD inline double sph_neumann(const unsigned int _Arg1, const double _Arg2) noexcept /* strengthened */ {
     return __std_smf_sph_neumann(_Arg1, _Arg2);
 }
 
-_NODISCARD inline float sph_neumannf(const unsigned int _Arg1, const float _Arg2) {
+_NODISCARD inline float sph_neumannf(const unsigned int _Arg1, const float _Arg2) noexcept /* strengthened */ {
     return __std_smf_sph_neumannf(_Arg1, _Arg2);
 }
 
-_NODISCARD inline long double sph_neumannl(const unsigned int _Arg1, const long double _Arg2) {
+_NODISCARD inline long double sph_neumannl(const unsigned int _Arg1, const long double _Arg2) noexcept
+/* strengthened */ {
     return __std_smf_sph_neumann(_Arg1, static_cast<double>(_Arg2));
 }
+
+#define _GENERIC_MATH_SPECIAL1(NAME)                                                  \
+    template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                  \
+    _NODISCARD auto NAME(const _Ty _Arg) noexcept /* strengthened */ {                \
+        using _Common = conditional_t<is_integral_v<_Ty>, double, _Ty>;               \
+        if constexpr (is_same_v<_Common, float>) {                                    \
+            return __std_smf_##NAME##f(_Arg);                                         \
+        } else {                                                                      \
+            return static_cast<_Common>(__std_smf_##NAME(static_cast<double>(_Arg))); \
+        }                                                                             \
+    }
+
+#define _GENERIC_MATH_SPECIAL2(NAME)                                                                               \
+    template <class _Ty1, class _Ty2, enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2>, int> = 0>        \
+    _NODISCARD auto NAME(const _Ty1 _Arg1, const _Ty2 _Arg2) noexcept /* strengthened */ {                         \
+        using _Common = _Common_float_type_t<_Ty1, _Ty2>;                                                          \
+        if constexpr (is_same_v<_Common, float>) {                                                                 \
+            return __std_smf_##NAME##f(_Arg1, _Arg2);                                                              \
+        } else {                                                                                                   \
+            return static_cast<_Common>(__std_smf_##NAME(static_cast<double>(_Arg1), static_cast<double>(_Arg2))); \
+        }                                                                                                          \
+    }
+
+#define _GENERIC_MATH_SPECIAL3(NAME)                                                                                   \
+    template <class _Ty1, class _Ty2, class _Ty3,                                                                      \
+        enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>                 \
+    _NODISCARD auto NAME(const _Ty1 _Arg1, const _Ty2 _Arg2, const _Ty3 _Arg3) noexcept /* strengthened */ {           \
+        using _Common = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>;                                  \
+        if constexpr (is_same_v<_Common, float>) {                                                                     \
+            return __std_smf_##NAME##f(_Arg1, _Arg2, _Arg3);                                                           \
+        } else {                                                                                                       \
+            return static_cast<_Common>(                                                                               \
+                __std_smf_##NAME(static_cast<double>(_Arg1), static_cast<double>(_Arg2), static_cast<double>(_Arg3))); \
+        }                                                                                                              \
+    }
+
+#define _GENERIC_MATH_SPECIAL_UINT1(NAME)                                                         \
+    template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                              \
+    _NODISCARD auto NAME(const unsigned int _Arg1, const _Ty _Arg2) noexcept /* strengthened */ { \
+        using _Common = conditional_t<is_integral_v<_Ty>, double, _Ty>;                           \
+        if constexpr (is_same_v<_Common, float>) {                                                \
+            return __std_smf_##NAME##f(_Arg1, _Arg2);                                             \
+        } else {                                                                                  \
+            return static_cast<_Common>(__std_smf_##NAME(_Arg1, static_cast<double>(_Arg2)));     \
+        }                                                                                         \
+    }
+
+#define _GENERIC_MATH_SPECIAL_UINT2(NAME)                                                                  \
+    template <class _Ty, enable_if_t<is_arithmetic_v<_Ty>, int> = 0>                                       \
+    _NODISCARD auto NAME(                                                                                  \
+        const unsigned int _Arg1, const unsigned int _Arg2, const _Ty _Arg3) noexcept /* strengthened */ { \
+        using _Common = conditional_t<is_integral_v<_Ty>, double, _Ty>;                                    \
+        if constexpr (is_same_v<_Common, float>) {                                                         \
+            return __std_smf_##NAME##f(_Arg1, _Arg2, _Arg3);                                               \
+        } else {                                                                                           \
+            return static_cast<_Common>(__std_smf_##NAME(_Arg1, _Arg2, static_cast<double>(_Arg3)));       \
+        }                                                                                                  \
+    }
+
+// per LWG-3234 and LWG-3693
+_GENERIC_MATH_SPECIAL_UINT2(assoc_laguerre)
+_GENERIC_MATH_SPECIAL_UINT2(assoc_legendre)
+_GENERIC_MATH_SPECIAL2(beta)
+_GENERIC_MATH_SPECIAL1(comp_ellint_1)
+_GENERIC_MATH_SPECIAL1(comp_ellint_2)
+_GENERIC_MATH_SPECIAL2(comp_ellint_3)
+_GENERIC_MATH_SPECIAL2(cyl_bessel_i)
+_GENERIC_MATH_SPECIAL2(cyl_bessel_j)
+_GENERIC_MATH_SPECIAL2(cyl_bessel_k)
+_GENERIC_MATH_SPECIAL2(cyl_neumann)
+_GENERIC_MATH_SPECIAL2(ellint_1)
+_GENERIC_MATH_SPECIAL2(ellint_2)
+_GENERIC_MATH_SPECIAL3(ellint_3)
+_GENERIC_MATH_SPECIAL1(expint)
+_GENERIC_MATH_SPECIAL_UINT1(hermite)
+_GENERIC_MATH_SPECIAL_UINT1(laguerre)
+_GENERIC_MATH_SPECIAL_UINT1(legendre)
+_GENERIC_MATH_SPECIAL1(riemann_zeta)
+_GENERIC_MATH_SPECIAL_UINT1(sph_bessel)
+_GENERIC_MATH_SPECIAL_UINT2(sph_legendre)
+_GENERIC_MATH_SPECIAL_UINT1(sph_neumann)
+
+#undef _GENERIC_MATH_SPECIAL1
+#undef _GENERIC_MATH_SPECIAL2
+#undef _GENERIC_MATH_SPECIAL3
+#undef _GENERIC_MATH_SPECIAL_UINT1
+#undef _GENERIC_MATH_SPECIAL_UINT2
 
 _NODISCARD inline double hypot(const double _Dx, const double _Dy, const double _Dz) {
     return __std_smf_hypot3(_Dx, _Dy, _Dz);
@@ -1223,7 +1326,7 @@ _NODISCARD inline long double hypot(const long double _Dx, const long double _Dy
 template <class _Ty1, class _Ty2, class _Ty3,
     enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>
 _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
-    // N4727 [cmath.syn]/2 "Sufficient additional overloads"
+    // N4910 [cmath.syn]/2 "Sufficient additional overloads"
     // Note that this template is selected by overload resolution only when at least one
     // argument is double/long double/integral but not all three are double or long double.
     using _Common      = _Common_float_type_t<_Ty1, _Common_float_type_t<_Ty2, _Ty3>>; // TRANSITION, fold expressions
@@ -1232,6 +1335,31 @@ _NODISCARD auto hypot(const _Ty1 _Dx, const _Ty2 _Dy, const _Ty3 _Dz) {
 }
 
 #if _HAS_CXX20
+template <class _Ty>
+_NODISCARD constexpr _Ty _Linear_for_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) {
+    if (_STD is_constant_evaluated()) {
+        auto _Smaller     = _ArgT;
+        auto _Larger      = _ArgB - _ArgA;
+        auto _Abs_smaller = _Float_abs(_Smaller);
+        auto _Abs_larger  = _Float_abs(_Larger);
+        if (_Abs_larger < _Abs_smaller) {
+            _STD swap(_Smaller, _Larger);
+            _STD swap(_Abs_smaller, _Abs_larger);
+        }
+
+        if (_Abs_smaller > 1) {
+            // _Larger is too large to be subnormal, so scaling by 0.5 is exact, and the product _Smaller * _Larger is
+            // large enough that if _ArgA is subnormal, it will be too small to contribute anyway and this way can
+            // sometimes avoid overflow problems.
+            return 2 * (_Ty{0.5} * _ArgA + _Smaller * (_Ty{0.5} * _Larger));
+        } else {
+            return _ArgA + _Smaller * _Larger;
+        }
+    }
+
+    return _STD fma(_ArgT, _ArgB - _ArgA, _ArgA);
+}
+
 template <class _Ty>
 _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _Ty _ArgT) noexcept {
     // on a line intersecting {(0.0, _ArgA), (1.0, _ArgB)}, return the Y value for X == _ArgT
@@ -1250,7 +1378,7 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
         }
 
         // exact at _ArgT == 0, monotonic except near _ArgT == 1, bounded, determinate, and consistent:
-        const auto _Candidate = _ArgA + _ArgT * (_ArgB - _ArgA);
+        const auto _Candidate = _Linear_for_lerp(_ArgA, _ArgB, _ArgT);
         // monotonic near _ArgT == 1:
         if ((_ArgT > 1) == (_ArgB > _ArgA)) {
             if (_ArgB > _Candidate) {
@@ -1308,9 +1436,6 @@ _NODISCARD constexpr _Ty _Common_lerp(const _Ty _ArgA, const _Ty _ArgB, const _T
     }
 }
 
-// As of 2019-06-17 it is unclear whether the "sufficient additional overloads" clause is intended to target lerp;
-// LWG-3223 is pending.
-
 _NODISCARD constexpr inline float lerp(const float _ArgA, const float _ArgB, const float _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
 }
@@ -1322,6 +1447,13 @@ _NODISCARD constexpr inline double lerp(const double _ArgA, const double _ArgB, 
 _NODISCARD constexpr inline long double lerp(
     const long double _ArgA, const long double _ArgB, const long double _ArgT) noexcept {
     return _Common_lerp(_ArgA, _ArgB, _ArgT);
+}
+
+template <class _Ty1, class _Ty2, class _Ty3,
+    enable_if_t<is_arithmetic_v<_Ty1> && is_arithmetic_v<_Ty2> && is_arithmetic_v<_Ty3>, int> = 0>
+_NODISCARD constexpr auto lerp(const _Ty1 _ArgA, const _Ty2 _ArgB, const _Ty3 _ArgT) noexcept {
+    using _Tgt = conditional_t<_Is_any_of_v<long double, _Ty1, _Ty2, _Ty3>, long double, double>;
+    return _Common_lerp(static_cast<_Tgt>(_ArgA), static_cast<_Tgt>(_ArgB), static_cast<_Tgt>(_ArgT));
 }
 #endif // _HAS_CXX20
 _STD_END
