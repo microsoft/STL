@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.23)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(msvc_standard_libraries LANGUAGES CXX)
 
@@ -81,7 +81,7 @@ add_compile_definitions(
     _CRT_DECLARE_NONSTDC_NAMES=1 _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_CO)
 
 add_compile_options(/WX /Gy
-    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/d1FastFail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
+    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
     # note that /Zi generates debug info inside the object file, it's the same as /Z7 for msvc
     "$<$<COMPILE_LANGUAGE:ASM_MASM>:/Zi;/W3;/nologo>")
 

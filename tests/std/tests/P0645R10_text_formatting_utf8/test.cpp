@@ -156,8 +156,6 @@ int main() {
     assert(setlocale(LC_ALL, ".932") != nullptr);
     run_tests();
 
-#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
     assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
     run_tests();
-#endif
 }

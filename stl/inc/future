@@ -322,8 +322,8 @@ public:
         _Set_value_raw(_Val, &_Lock, _At_thread_exit);
     }
 
-    void _Set_value_raw(const _Ty& _Val, unique_lock<mutex>* _Lock,
-        bool _At_thread_exit) { // store a result while inside a locked block
+    void _Set_value_raw(const _Ty& _Val, unique_lock<mutex>* _Lock, bool _At_thread_exit) {
+        // store a result while inside a locked block
         if (_Already_has_stored_result()) {
             _Throw_future_error2(future_errc::promise_already_satisfied);
         }
@@ -337,8 +337,8 @@ public:
         _Set_value_raw(_STD forward<_Ty>(_Val), &_Lock, _At_thread_exit);
     }
 
-    void _Set_value_raw(_Ty&& _Val, unique_lock<mutex>* _Lock,
-        bool _At_thread_exit) { // store a result while inside a locked block
+    void _Set_value_raw(_Ty&& _Val, unique_lock<mutex>* _Lock, bool _At_thread_exit) {
+        // store a result while inside a locked block
         if (_Already_has_stored_result()) {
             _Throw_future_error2(future_errc::promise_already_satisfied);
         }
@@ -352,8 +352,8 @@ public:
         _Set_exception_raw(_Exc, &_Lock, _At_thread_exit);
     }
 
-    void _Set_exception_raw(exception_ptr _Exc, unique_lock<mutex>* _Lock,
-        bool _At_thread_exit) { // store a result while inside a locked block
+    void _Set_exception_raw(exception_ptr _Exc, unique_lock<mutex>* _Lock, bool _At_thread_exit) {
+        // store a result while inside a locked block
         if (_Already_has_stored_result()) {
             _Throw_future_error2(future_errc::promise_already_satisfied);
         }
@@ -454,8 +454,8 @@ public:
 };
 
 template <class _Ty, class _Derived, class _Alloc>
-void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(
-    _Associated_state<_Ty>* _State) { // delete _State and this using stored allocator
+void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(_Associated_state<_Ty>* _State) {
+    // delete _State and this using stored allocator
     using _State_allocator = _Rebind_alloc_t<_Alloc, _Derived>;
     _State_allocator _St_alloc(_My_alloc);
 
@@ -1507,8 +1507,8 @@ private:
 };
 
 template <class _Ret, class _Fty>
-_Associated_state<typename _P_arg_type<_Ret>::type>* _Get_associated_state(
-    launch _Psync, _Fty&& _Fnarg) { // construct associated asynchronous state object for the launch type
+_Associated_state<typename _P_arg_type<_Ret>::type>* _Get_associated_state(launch _Psync, _Fty&& _Fnarg) {
+    // construct associated asynchronous state object for the launch type
     switch (_Psync) { // select launch type
     case launch::deferred:
         return new _Deferred_async_state<_Ret>(_STD forward<_Fty>(_Fnarg));
