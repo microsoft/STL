@@ -65,13 +65,18 @@
                     porting them to GitHub, unless they're discovered to be duplicates or already fixed.</li>
                 <li><span class="Counter" id="currentValue-bug"></span>
                     <a href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug">
-                        Open GitHub bugs.</a> That is, only GitHub issues that have <b>bug</b> labels.
+                        Open GitHub bugs.</a> That is, only GitHub issues that have
+                    <span class="Label Label--danger">bug</span> labels.
                 </li>
                 <li><span class="Counter" id="currentValue-issue"></span> <a
                         href="https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+-label%3Acxx20+-label%3Acxx23+-label%3ALWG">
-                        Open GitHub issues.</a> That is, all GitHub issues including <b>bug</b>,
-                    <b>documentation</b>, <b>enhancement</b>, <b>performance</b>, <b>throughput</b>, etc.
-                    and excluding only <b>cxx20</b>, <b>cxx23</b>, and <b>LWG</b> to avoid double-counting.
+                        Open GitHub issues.</a> That is, all GitHub issues including
+                    <span class="Label Label--danger">bug</span>,
+                    <span class="Label Label--accent">performance</span>,
+                    <span class="Label Label--done">throughput</span>, etc. and excluding only
+                    <span class="Label Label--attention">cxx20</span>,
+                    <span class="Label Label--severe">cxx23</span>, and
+                    <span class="Label Label--success">LWG</span> to avoid double-counting.
                 </li>
                 <li><span class="Counter" id="currentValue-libcxx"></span>
                     <a href="https://github.com/microsoft/STL/blob/main/tests/libcxx/expected_results.txt">
