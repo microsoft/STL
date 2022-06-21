@@ -591,6 +591,7 @@ function(add_stl_dlls D_SUFFIX REL_OR_DBG)
     # msvcp140_codecvt_ids.dll
     add_library(msvcp${D_SUFFIX}_codecvt_ids_objects OBJECT ${SOURCES_SATELLITE_CODECVT_IDS})
     target_compile_definitions(msvcp${D_SUFFIX}_codecvt_ids_objects PRIVATE _BUILDING_SATELLITE_CODECVT_IDS _DLL)
+    target_compile_options(msvcp${D_SUFFIX}_codecvt_ids_objects PRIVATE ${gl_flag_${REL_OR_DBG}} /EHsc)
     target_stl_compile_options(msvcp${D_SUFFIX}_codecvt_ids_objects ${REL_OR_DBG})
 
     add_library(msvcp${D_SUFFIX}_codecvt_ids SHARED)
