@@ -78,7 +78,7 @@ namespace {
         // take lower bits to undo HRESULT_FROM_WIN32
         return {false, __std_win_error{_Copy_result & 0x0000FFFFU}};
 #else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
-        if (CopyFileW(_Source, _Target, static_cast<BOOL>(_Fail_if_exists)) != 0) {
+        if (CopyFileW(_Source, _Target, _Fail_if_exists)) {
             return {true, __std_win_error::_Success};
         }
 
