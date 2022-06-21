@@ -40,6 +40,8 @@ endif()
 option(BUILD_TESTING "Enable testing" ON)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
+option(STL_USE_ANALYZE "Pass the /analyze flag to MSVC" OFF)
+
 set(CMAKE_CXX_FLAGS "")
 set(CMAKE_CXX_FLAGS_DEBUG "")
 set(CMAKE_CXX_FLAGS_RELEASE "")
@@ -84,6 +86,19 @@ add_compile_options(/WX /Gy
     "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
     # note that /Zi generates debug info inside the object file, it's the same as /Z7 for msvc
     "$<$<COMPILE_LANGUAGE:ASM_MASM>:/Zi;/W3;/nologo>")
+
+if(STL_USE_ANALYZE)
+    # warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9)
+    # does not apply to a value type.
+    # There's a bug in the declaration for LCMapStringEx - it applies _In_opt_ to an LPARAM.
+    # LPARAM is a LONG_PTR (intptr_t), and it's invalid to apply _In_opt_ to a non-pointer.
+
+    # warning C28182: Dereferencing NULL pointer. 'Temp_value_#1457' contains the same NULL value as
+    # 'new(1*40, nothrow)' did.
+    # `new` expressions with allocation functions that may return `null` are incorrectly treated as dereferencing
+    # the new'd pointer. This is a bug in C28182.
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553;/wd28182>")
+endif()
 
 set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
 
