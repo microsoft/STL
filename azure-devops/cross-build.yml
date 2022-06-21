@@ -15,9 +15,9 @@ parameters:
 - name: numShards
   type: number
   default: 8
-- name: buildBenchmarks
+- name: buildBenchmarking
   type: string
-  default: ON
+  default: 'ON'
 jobs:
 - job: '${{ parameters.targetPlatform }}'
   variables:
@@ -41,7 +41,7 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.vsDevCmdArch }}
-      buildBenchmarks: '${{ parameters.buildBenchmarks }}'
+      buildBenchmarking: ${{ parameters.buildBenchmarking }}
       cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
   - template: run-tests.yml
     parameters:

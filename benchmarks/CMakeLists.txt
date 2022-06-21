@@ -3,7 +3,7 @@
 
 set(STL_BENCHMARK_MSVC_RUNTIME_LIBRARY
     MultiThreaded
-    CACHE STRING "The version of the standard library to use; see https://cmake.org/cmake/help/latest/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html for more information.")
+    CACHE STRING "The flavor of the standard library to use; see https://cmake.org/cmake/help/latest/variable/CMAKE_MSVC_RUNTIME_LIBRARY.html for more information.")
 set_property(CACHE STL_BENCHMARK_MSVC_RUNTIME_LIBRARY
     PROPERTY STRINGS
     "MultiThreaded;MultiThreadedDLL;MultiThreadedDebug;MultiThreadedDebugDLL"
@@ -40,12 +40,19 @@ link_directories(BEFORE "${STL_LIBRARY_OUTPUT_DIRECTORY}")
 
 add_subdirectory(google-benchmark EXCLUDE_FROM_ALL)
 
-file(GLOB benchmark_sources "src/*.cpp")
+set(benchmark_headers
+    "inc/udt.hpp"
+)
+
+set(benchmark_sources
+    "src/copy.cpp"
+)
 
 add_executable(stl-benchmark
+    ${benchmark_headers}
     ${benchmark_sources}
 )
-target_compile_features(stl-benchmark PRIVATE cxx_std_20)
+target_compile_features(stl-benchmark PRIVATE cxx_std_23)
 target_include_directories(stl-benchmark PRIVATE inc)
 
 target_link_libraries(stl-benchmark PRIVATE benchmark::benchmark benchmark::benchmark_main)

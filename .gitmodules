@@ -9,4 +9,4 @@
 	url = https://github.com/boostorg/math.git
 [submodule "benchmarks/google-benchmark"]
 	path = benchmarks/google-benchmark
-	url = https://github.com/google/benchmark
+	url = https://github.com/google/benchmark.git

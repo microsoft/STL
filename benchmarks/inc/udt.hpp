@@ -7,7 +7,7 @@ template <typename Contained>
 struct aggregate {
     Contained c;
 
-    friend bool operator==(const aggregate& lhs, const aggregate& rhs) = default;
+    friend bool operator==(const aggregate&, const aggregate&) = default;
 };
 
 template <typename Contained>
@@ -22,5 +22,5 @@ struct non_trivial {
     }
     ~non_trivial() {}
 
-    friend bool operator==(const non_trivial& lhs, const non_trivial& rhs) = default;
+    friend bool operator==(const non_trivial&, const non_trivial&) = default;
 };

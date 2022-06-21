@@ -82,7 +82,7 @@ stages:
         parameters:
           targetPlatform: arm
           vsDevCmdArch: arm
-          buildBenchmarks: 'OFF'
+          buildBenchmarking: 'OFF'
 
   - stage: Build_ARM64
     dependsOn: Build_And_Test_x64
