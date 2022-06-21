@@ -1253,9 +1253,9 @@ public:
 protected:
     template <class _Iter, class _Sent>
     void _Insert_range_unchecked(_Iter _First, const _Sent _Last) {
-        auto _Hint = _Get_scary()->_Myhead;
+        const auto _Myhead = _Get_scary()->_Myhead;
         for (; _First != _Last; ++_First) {
-            _Hint = _Emplace_hint(_Hint, *_First);
+            _Emplace_hint(_Myhead, *_First);
         }
     }
 

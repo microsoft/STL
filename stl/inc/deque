@@ -1351,14 +1351,21 @@ public:
             _Orphan_all();
             if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
                 _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
-                for (; _UFirst != _ULast; ++_UFirst) {
-                    _Emplace_front_internal(*_UFirst); // prepend flipped
+                if constexpr (_Is_bidi_iter_v<_Iter>) {
+                    while (_UFirst != _ULast) {
+                        --_ULast;
+                        _Emplace_front_internal(*_ULast); // prepend in order
+                    }
+                } else {
+                    for (; _UFirst != _ULast; ++_UFirst) {
+                        _Emplace_front_internal(*_UFirst); // prepend flipped
+                    }
                 }
 
                 _Guard._Container = nullptr;
 
                 const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
-                if (!_Is_bidi_iter_v<_Iter>) {
+                if constexpr (!_Is_bidi_iter_v<_Iter>) {
                     _STD reverse(begin(), begin() + _Num); // flip new stuff in place
                 }
                 _STD rotate(begin(), begin() + _Num, begin() + _Num + static_cast<difference_type>(_Off));

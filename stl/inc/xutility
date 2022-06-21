@@ -2403,7 +2403,7 @@ namespace ranges {
 
         constexpr explicit _Not_quite_object(_Construct_tag) noexcept {}
 
-        _Not_quite_object(const _Not_quite_object&)            = delete;
+        _Not_quite_object(const _Not_quite_object&) = delete;
         _Not_quite_object& operator=(const _Not_quite_object&) = delete;
 
         void operator&() const = delete;
@@ -5852,7 +5852,7 @@ public:
         return _Ret;
     }
 
-    _Rng_from_urng(const _Rng_from_urng&)            = delete;
+    _Rng_from_urng(const _Rng_from_urng&) = delete;
     _Rng_from_urng& operator=(const _Rng_from_urng&) = delete;
 
 private:
