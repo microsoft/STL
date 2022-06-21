@@ -92,12 +92,7 @@ if(STL_USE_ANALYZE)
     # does not apply to a value type.
     # There's a bug in the declaration for LCMapStringEx - it applies _In_opt_ to an LPARAM.
     # LPARAM is a LONG_PTR (intptr_t), and it's invalid to apply _In_opt_ to a non-pointer.
-
-    # warning C28182: Dereferencing NULL pointer. 'Temp_value_#1457' contains the same NULL value as
-    # 'new(1*40, nothrow)' did.
-    # `new` expressions with allocation functions that may return `null` are incorrectly treated as dereferencing
-    # the new'd pointer. This is a bug in C28182.
-    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553;/wd28182>")
+    add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/analyze:autolog-;/wd6553>")
 endif()
 
 set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
