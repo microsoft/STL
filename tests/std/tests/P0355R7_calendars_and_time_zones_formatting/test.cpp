@@ -255,6 +255,9 @@ void test_duration_formatter() {
     empty_braces_helper(duration<int, ratio<3, 1>>{40}, STR("40[3]s"));
     empty_braces_helper(duration<int, ratio<3, 7>>{40}, STR("40[3/7]s"));
 
+    // formatting small types needs to work as iostreams << MSVC-BUG-1521926
+    empty_braces_helper(duration<long long, atto>{123}, STR("123as"));
+
     assert(format(STR("{:%T}"), 4083007ms) == STR("01:08:03.007"));
     assert(format(STR("{:%T}"), -4083007ms) == STR("-01:08:03.007"));
 
