@@ -696,7 +696,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     FILE_END_OF_FILE_INFO _File_info;
     _File_info.EndOfFile.QuadPart = static_cast<LONGLONG>(_New_size);
 
-    if (SetFileInformationByHandle(_Handle._Get(), FileEndOfFileInfo, &_File_info, sizeof(_File_info)) != 0) {
+    if (SetFileInformationByHandle(_Handle._Get(), FileEndOfFileInfo, &_File_info, sizeof(_File_info))) {
         return __std_win_error::_Success;
     }
 

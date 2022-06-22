@@ -429,7 +429,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t* _Fname, uintmax_t _Ne
     const auto _Ok = SetFileInformationByHandle(_Handle, FileEndOfFileInfo, &_File_info, sizeof(_File_info));
 
     CloseHandle(_Handle);
-    return _Ok != 0 ? 0 : GetLastError();
+    return _Ok ? 0 : GetLastError();
 }
 
 
