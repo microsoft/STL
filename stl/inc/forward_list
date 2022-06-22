@@ -242,7 +242,7 @@ struct _Flist_node { // forward_list node
     using _Nodeptr = _Rebind_pointer_t<_Voidptr, _Flist_node>;
 
     _Nodeptr _Next;
-    _Value_type _Myval = _Returns_exactly<_Value_type>(); // fake a viable constructor to workaround GH-2740
+    _Value_type _Myval = _Returns_exactly<_Value_type>(); // fake a viable constructor to workaround GH-2749
 
     _Flist_node()                   = default;
     _Flist_node(const _Flist_node&) = delete;
