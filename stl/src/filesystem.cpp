@@ -89,14 +89,13 @@ namespace {
     [[nodiscard]] __std_win_error __stdcall _Create_symlink(
         const wchar_t* const _Symlink_file_name, const wchar_t* const _Target_file_name, const DWORD _Flags) noexcept {
         if (__vcrt_CreateSymbolicLinkW(
-                _Symlink_file_name, _Target_file_name, _Flags | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE)
-            != 0) {
+                _Symlink_file_name, _Target_file_name, _Flags | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE)) {
             return __std_win_error::_Success;
         }
 
         DWORD _Last_error = GetLastError();
         if (_Last_error == ERROR_INVALID_PARAMETER) {
-            if (__vcrt_CreateSymbolicLinkW(_Symlink_file_name, _Target_file_name, _Flags) != 0) {
+            if (__vcrt_CreateSymbolicLinkW(_Symlink_file_name, _Target_file_name, _Flags)) {
                 return __std_win_error::_Success;
             }
 
@@ -118,7 +117,7 @@ namespace {
         const HANDLE _Handle, long long* const _Last_write_filetime) {
         // read the last write time from _Handle and store it in _Last_write_filetime
         FILE_BASIC_INFO _Ex_info;
-        if (GetFileInformationByHandleEx(_Handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info)) != 0) {
+        if (GetFileInformationByHandleEx(_Handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info))) {
             *_Last_write_filetime = _Ex_info.LastWriteTime.QuadPart;
             return __std_win_error::_Success;
         }
@@ -128,7 +127,7 @@ namespace {
 
     [[nodiscard]] __std_win_error __stdcall _Get_file_id_by_handle(
         const HANDLE _Handle, _Out_ FILE_ID_INFO* const _Id) noexcept {
-        if (GetFileInformationByHandleEx(_Handle, FileIdInfo, _Id, sizeof(*_Id)) != 0) {
+        if (GetFileInformationByHandleEx(_Handle, FileIdInfo, _Id, sizeof(*_Id))) {
             // if we could get FILE_ID_INFO, use that as the source of truth
             return __std_win_error::_Success;
         }
@@ -146,7 +145,7 @@ namespace {
 
         // try GetFileInformationByHandle as a fallback
         BY_HANDLE_FILE_INFORMATION _Info;
-        if (GetFileInformationByHandle(_Handle, &_Info) != 0) {
+        if (GetFileInformationByHandle(_Handle, &_Info)) {
             _Id->VolumeSerialNumber = _Info.dwVolumeSerialNumber;
             _CSTD memcpy(&_Id->FileId.Identifier[0], &_Info.nFileIndexHigh, 8);
             _CSTD memset(&_Id->FileId.Identifier[8], 0, 8);
@@ -165,8 +164,7 @@ namespace {
         // See minwinbase.h and WinBase.h.
         FILE_DISPOSITION_INFO_EX _Info_ex{FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS};
         if (SetFileInformationByHandle(
-                reinterpret_cast<HANDLE>(_Handle), FileDispositionInfoEx, &_Info_ex, sizeof(_Info_ex))
-            != 0) {
+                reinterpret_cast<HANDLE>(_Handle), FileDispositionInfoEx, &_Info_ex, sizeof(_Info_ex))) {
             return __std_win_error::_Success;
         }
 
@@ -182,8 +180,7 @@ namespace {
         }
 
         FILE_DISPOSITION_INFO _Info{/* .Delete= */ TRUE};
-        if (SetFileInformationByHandle(reinterpret_cast<HANDLE>(_Handle), FileDispositionInfo, &_Info, sizeof(_Info))
-            != 0) {
+        if (SetFileInformationByHandle(reinterpret_cast<HANDLE>(_Handle), FileDispositionInfo, &_Info, sizeof(_Info))) {
             return __std_win_error::_Success;
         }
 
@@ -214,7 +211,7 @@ _EXTERN_C
 }
 
 void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcept { // calls CloseHandle
-    if (_Handle != __std_fs_file_handle::_Invalid && CloseHandle(reinterpret_cast<HANDLE>(_Handle)) == 0) {
+    if (_Handle != __std_fs_file_handle::_Invalid && !CloseHandle(reinterpret_cast<HANDLE>(_Handle))) {
         terminate();
     }
 }
@@ -226,7 +223,7 @@ void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcep
     const HANDLE _As_plain_handle = reinterpret_cast<HANDLE>(_Handle);
 
     FILE_BASIC_INFO _Ex_info;
-    if (GetFileInformationByHandleEx(_As_plain_handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info)) != 0) {
+    if (GetFileInformationByHandleEx(_As_plain_handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info))) {
         *_File_attributes = _Ex_info.FileAttributes;
         return __std_win_error::_Success;
     }
@@ -274,14 +271,14 @@ static_assert(alignof(WIN32_FIND_DATAW) == alignof(__std_fs_find_data));
 }
 
 void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle _Handle) noexcept {
-    if (_Handle != __std_fs_dir_handle::_Invalid && FindClose(reinterpret_cast<HANDLE>(_Handle)) == 0) {
+    if (_Handle != __std_fs_dir_handle::_Invalid && !FindClose(reinterpret_cast<HANDLE>(_Handle))) {
         terminate();
     }
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_directory_iterator_advance(
     _In_ const __std_fs_dir_handle _Handle, _Out_ __std_fs_find_data* const _Results) noexcept {
-    if (FindNextFileW(reinterpret_cast<HANDLE>(_Handle), reinterpret_cast<WIN32_FIND_DATAW*>(_Results)) != 0) {
+    if (FindNextFileW(reinterpret_cast<HANDLE>(_Handle), reinterpret_cast<WIN32_FIND_DATAW*>(_Results))) {
         return __std_win_error::_Success;
     }
 
@@ -294,7 +291,7 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
     }
 
 #if !defined(_ONECORE)
-    if (AreFileApisANSI() == 0) {
+    if (!AreFileApisANSI()) {
         return __std_code_page{CP_OEMCP};
     }
 #endif // !defined(_ONECORE)
@@ -327,8 +324,8 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
         _Result._Len = WideCharToMultiByte(static_cast<unsigned int>(_Code_page), WC_NO_BEST_FIT_CHARS, _Input_str,
             _Input_len, _Output_str, _Output_len, nullptr, &_Used_default_char);
 
-        if (_Used_default_char != 0) { // Report round-tripping failure with ERROR_NO_UNICODE_TRANSLATION,
-            // "No mapping for the Unicode character exists in the target multi-byte code page."
+        if (_Used_default_char) { // Report round-tripping failure with ERROR_NO_UNICODE_TRANSLATION,
+                                  // "No mapping for the Unicode character exists in the target multi-byte code page."
             return {0, __std_win_error{ERROR_NO_UNICODE_TRANSLATION}};
         }
     }
@@ -482,7 +479,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     (void) _Existing_file_name;
     return __std_win_error::_Not_supported;
 #else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
-    if (CreateHardLinkW(_File_name, _Existing_file_name, nullptr) != 0) {
+    if (CreateHardLinkW(_File_name, _Existing_file_name, nullptr)) {
         return __std_win_error::_Success;
     }
 
@@ -498,14 +495,13 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 [[nodiscard]] __std_win_error __stdcall __std_fs_read_reparse_data_buffer(_In_ const __std_fs_file_handle _Handle,
     _Out_writes_bytes_(_Buffer_size) void* const _Buffer, _In_ const unsigned long _Buffer_size) noexcept {
     unsigned long _Bytes_returned;
-    // If DeviceIoControl fails, it returns 0 and _Bytes_returned is 0.
     if (DeviceIoControl(reinterpret_cast<HANDLE>(_Handle), FSCTL_GET_REPARSE_POINT, nullptr, 0, _Buffer, _Buffer_size,
-            &_Bytes_returned, nullptr)
-        == 0) {
-        return __std_win_error{GetLastError()};
+            &_Bytes_returned, nullptr)) {
+        return __std_win_error::_Success;
     }
 
-    return __std_win_error::_Success;
+    // If DeviceIoControl fails, _Bytes_returned is 0.
+    return __std_win_error{GetLastError()};
 }
 
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
@@ -538,7 +534,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         return _Last_error;
     }
 
-    if (SetFileTime(_Handle._Get(), nullptr, nullptr, reinterpret_cast<const FILETIME*>(&_Last_write_filetime)) != 0) {
+    if (SetFileTime(_Handle._Get(), nullptr, nullptr, reinterpret_cast<const FILETIME*>(&_Last_write_filetime))) {
         return __std_win_error::_Success;
     }
 
@@ -571,7 +567,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     // Windows 10 1809 added support for FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE.
     FILE_DISPOSITION_INFO_EX _Info_ex{FILE_DISPOSITION_FLAG_DELETE | FILE_DISPOSITION_FLAG_POSIX_SEMANTICS
                                       | FILE_DISPOSITION_FLAG_IGNORE_READONLY_ATTRIBUTE};
-    if (SetFileInformationByHandle(_Handle._Get(), FileDispositionInfoEx, &_Info_ex, sizeof(_Info_ex)) != 0) {
+    if (SetFileInformationByHandle(_Handle._Get(), FileDispositionInfoEx, &_Info_ex, sizeof(_Info_ex))) {
         return {true, __std_win_error::_Success};
     }
 
@@ -596,14 +592,14 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     if (_Last_error == __std_win_error::_Access_denied && _Able_to_change_attributes) {
 
         FILE_BASIC_INFO _Basic_info;
-        if (GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info)) == 0) {
+        if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
             return {false, __std_win_error{GetLastError()}};
         }
         // check if FILE_ATTRIBUTE_READONLY is set
         if ((_Basic_info.FileAttributes & FILE_ATTRIBUTE_READONLY) != 0u) {
             // try to remove FILE_ATTRIBUTE_READONLY
             _Basic_info.FileAttributes ^= FILE_ATTRIBUTE_READONLY;
-            if (SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info)) == 0) {
+            if (!SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
                 return {false, __std_win_error{GetLastError()}};
             }
             // removed FILE_ATTRIBUTE_READONLY, now try to set the delete flag again
@@ -614,7 +610,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
                 // looks like we failed to set the delete flag, after clearing the FILE_ATTRIBUTE_READONLY flag
                 // perform rollback
                 _Basic_info.FileAttributes |= FILE_ATTRIBUTE_READONLY;
-                if (SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info)) == 0) {
+                if (!SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
                     return {false, __std_win_error{GetLastError()}};
                 }
                 return {false, _Last_error};
@@ -648,7 +644,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         }
 
         FILE_BASIC_INFO _Basic_info;
-        if (GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info)) == 0) {
+        if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
             return __std_win_error{GetLastError()};
         }
 
@@ -657,7 +653,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         }
 
         _Basic_info.FileAttributes ^= FILE_ATTRIBUTE_READONLY;
-        if (SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info)) != 0) {
+        if (SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
             return __std_win_error::_Success;
         }
 
@@ -668,7 +664,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         return __std_win_error::_Success;
     }
 
-    if (SetFileAttributesW(_Path, _Old_attributes ^ FILE_ATTRIBUTE_READONLY) != 0) {
+    if (SetFileAttributesW(_Path, _Old_attributes ^ FILE_ATTRIBUTE_READONLY)) {
         return __std_win_error::_Success;
     }
 
@@ -677,7 +673,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_rename(
     _In_z_ const wchar_t* const _Source, _In_z_ const wchar_t* const _Target) noexcept {
-    if (MoveFileExW(_Source, _Target, MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0) {
+    if (MoveFileExW(_Source, _Target, MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING)) {
         return __std_win_error::_Success;
     }
 
@@ -710,7 +706,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     const auto _Available_c   = reinterpret_cast<PULARGE_INTEGER>(_Available);
     const auto _Total_bytes_c = reinterpret_cast<PULARGE_INTEGER>(_Total_bytes);
     const auto _Free_bytes_c  = reinterpret_cast<PULARGE_INTEGER>(_Free_bytes);
-    if (GetDiskFreeSpaceExW(_Target, _Available_c, _Total_bytes_c, _Free_bytes_c) != 0) {
+    if (GetDiskFreeSpaceExW(_Target, _Available_c, _Total_bytes_c, _Free_bytes_c)) {
         return __std_win_error::_Success;
     }
 
@@ -769,7 +765,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     } while (*_Cursor != L'\\');
 
     *_Cursor = L'\0';
-    if (GetDiskFreeSpaceExW(_Ptr, _Available_c, _Total_bytes_c, _Free_bytes_c) != 0) {
+    if (GetDiskFreeSpaceExW(_Ptr, _Available_c, _Total_bytes_c, _Free_bytes_c)) {
         return __std_win_error::_Success;
     }
 
@@ -840,7 +836,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
                                     // GetFileAttributesExW/FindFirstFileW would return the right answer
 
             WIN32_FILE_ATTRIBUTE_DATA _Data;
-            if (GetFileAttributesExW(_Path, GetFileExInfoStandard, &_Data) == 0) {
+            if (!GetFileAttributesExW(_Path, GetFileExInfoStandard, &_Data)) {
                 // In some cases, ERROR_SHARING_VIOLATION is returned from GetFileAttributesExW;
                 // FindFirstFileW will work in those cases if we have read permissions on the directory.
                 if (const __std_win_error _Last_error{GetLastError()};
@@ -898,7 +894,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
     if (_Bitmask_includes(_Flags, _Basic_info_data | __std_fs_stats_flags::_Reparse_tag)) {
         FILE_BASIC_INFO _Info;
-        if (GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Info, sizeof(_Info)) == 0) {
+        if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Info, sizeof(_Info))) {
             return __std_win_error{GetLastError()};
         }
 
@@ -910,8 +906,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
             // ERROR_INVALID_PARAMETER. We avoid calling this for non-reparse-points.
             if ((_Info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u) {
                 FILE_ATTRIBUTE_TAG_INFO _TagInfo;
-                if (GetFileInformationByHandleEx(_Handle._Get(), FileAttributeTagInfo, &_TagInfo, sizeof(_TagInfo))
-                    == 0) {
+                if (!GetFileInformationByHandleEx(_Handle._Get(), FileAttributeTagInfo, &_TagInfo, sizeof(_TagInfo))) {
                     return __std_win_error{GetLastError()};
                 }
 
@@ -925,7 +920,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
     if (_Bitmask_includes(_Flags, _Standard_info_data)) {
         FILE_STANDARD_INFO _Info;
-        if (GetFileInformationByHandleEx(_Handle._Get(), FileStandardInfo, &_Info, sizeof(_Info)) == 0) {
+        if (!GetFileInformationByHandleEx(_Handle._Get(), FileStandardInfo, &_Info, sizeof(_Info))) {
             return __std_win_error{GetLastError()};
         }
 
@@ -945,7 +940,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
 [[nodiscard]] __std_fs_create_directory_result __stdcall __std_fs_create_directory(
     _In_z_ const wchar_t* const _New_directory) noexcept {
-    if (CreateDirectoryW(_New_directory, nullptr) != 0) {
+    if (CreateDirectoryW(_New_directory, nullptr)) {
         return {true, __std_win_error::_Success};
     }
 
@@ -970,7 +965,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     (void) _Template_directory;
     return __std_fs_create_directory(_New_directory);
 #else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
-    if (CreateDirectoryExW(_Template_directory, _New_directory, nullptr) != 0) {
+    if (CreateDirectoryExW(_Template_directory, _New_directory, nullptr)) {
         return {true, __std_win_error::_Success};
     }
 
@@ -998,7 +993,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_set_current_path(_In_z_ const wchar_t* const _Target) noexcept {
     // If setting the path failed, SetCurrentDirectoryW returns 0; otherwise returns non-zero.
-    if (SetCurrentDirectoryW(_Target) != 0) {
+    if (SetCurrentDirectoryW(_Target)) {
         return __std_win_error::_Success;
     }
 
