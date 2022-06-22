@@ -9,12 +9,14 @@
 #include <vector>
 
 #include <udt.hpp>
+#include <utility.hpp>
 
 namespace {
+
     template <typename Contained>
     void handwritten_loop(benchmark::State& state) {
-        const size_t r0 = static_cast<size_t>(state.range(0));
-        const std::vector<Contained> in_buffer(r0);
+        const size_t r0      = static_cast<size_t>(state.range(0));
+        const auto in_buffer = random_vector<Contained>(r0);
         std::vector<Contained> out_buffer(r0);
         for ([[maybe_unused]] auto _ : state) {
             benchmark::DoNotOptimize(in_buffer.data());
@@ -31,8 +33,8 @@ namespace {
 
     template <typename Contained>
     void handwritten_loop_n(benchmark::State& state) {
-        const size_t r0 = static_cast<size_t>(state.range(0));
-        const std::vector<Contained> in_buffer(r0);
+        const size_t r0      = static_cast<size_t>(state.range(0));
+        const auto in_buffer = random_vector<Contained>(r0);
         std::vector<Contained> out_buffer(r0);
         for ([[maybe_unused]] auto _ : state) {
             benchmark::DoNotOptimize(in_buffer.data());
@@ -50,8 +52,8 @@ namespace {
     void memcpy_call(benchmark::State& state) {
         static_assert(
             std::is_trivially_copyable_v<Contained>, "memcpy must only be called on trivially copyable types");
-        const size_t r0 = static_cast<size_t>(state.range(0));
-        const std::vector<Contained> in_buffer(r0);
+        const size_t r0      = static_cast<size_t>(state.range(0));
+        const auto in_buffer = random_vector<Contained>(r0);
         std::vector<Contained> out_buffer(r0);
         for ([[maybe_unused]] auto _ : state) {
             benchmark::DoNotOptimize(in_buffer.data());
@@ -62,8 +64,8 @@ namespace {
 
     template <typename Contained>
     void std_copy_call(benchmark::State& state) {
-        const size_t r0 = static_cast<size_t>(state.range(0));
-        const std::vector<Contained> in_buffer(r0);
+        const size_t r0      = static_cast<size_t>(state.range(0));
+        const auto in_buffer = random_vector<Contained>(r0);
         std::vector<Contained> out_buffer(r0);
         for ([[maybe_unused]] auto _ : state) {
             benchmark::DoNotOptimize(in_buffer.data());
@@ -74,8 +76,8 @@ namespace {
 
     template <typename Contained>
     void std_copy_n_call(benchmark::State& state) {
-        const size_t r0 = static_cast<size_t>(state.range(0));
-        const std::vector<Contained> in_buffer(r0);
+        const size_t r0      = static_cast<size_t>(state.range(0));
+        const auto in_buffer = random_vector<Contained>(r0);
         std::vector<Contained> out_buffer(r0);
         for ([[maybe_unused]] auto _ : state) {
             benchmark::DoNotOptimize(in_buffer.data());
