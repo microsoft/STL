@@ -328,7 +328,7 @@ struct _Tree_node {
     _Nodeptr _Right; // right subtree, or largest element if head
     char _Color; // _Red or _Black, _Black if head
     char _Isnil; // true only if head (also nil) node; TRANSITION, should be bool
-    value_type _Myval = _Returns_exactly<value_type>(); // the stored value, unused if head
+    value_type _Myval = _Returns_exactly<value_type>(); // fake a viable constructor to workaround GH-2740
 
     enum _Redbl { // colors for link to parent
         _Red,
