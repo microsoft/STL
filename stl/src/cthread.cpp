@@ -54,7 +54,7 @@ _CRTIMP2_PURE int _Thrd_start(_Thrd_t* thr, _Thrd_callback_t func, void* b) { //
 
 int _Thrd_join(_Thrd_t thr, int* code) { // return exit code when thread terminates
     unsigned long res;
-    if (WaitForSingleObjectEx(thr._Hnd, INFINITE, FALSE) == WAIT_FAILED || GetExitCodeThread(thr._Hnd, &res) == 0) {
+    if (WaitForSingleObjectEx(thr._Hnd, INFINITE, FALSE) == WAIT_FAILED || !GetExitCodeThread(thr._Hnd, &res)) {
         return _Thrd_error;
     }
 
