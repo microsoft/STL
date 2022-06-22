@@ -33,7 +33,9 @@ set(BENCHMARK_ENABLE_DOXYGEN OFF)
 set(BENCHMARK_ENABLE_INSTALL OFF)
 set(BENCHMARK_ENABLE_TESTING OFF)
 set(BUILD_SHARED_LIBS OFF)
-set(HAVE_LIB_RT OFF) # on some machines, the google benchmark CMakeLists.txt finds librt despite it not existing
+
+# TRANSITION, GH-2816: on some machines, librt is found, despite it being a unix-only library
+set(HAVE_LIB_RT OFF)
 
 include_directories(BEFORE "${CMAKE_BINARY_DIR}/out/inc")
 link_directories(BEFORE "${STL_LIBRARY_OUTPUT_DIRECTORY}")
@@ -44,15 +46,30 @@ set(benchmark_headers
     "inc/udt.hpp"
 )
 
-set(benchmark_sources
-    "src/copy.cpp"
-)
+function(add_benchmark name)
+    cmake_parse_arguments(PARSE_ARGV 1 "arg" "" "CXX_STANDARD" "")
 
-add_executable(stl-benchmark
-    ${benchmark_headers}
-    ${benchmark_sources}
-)
-target_compile_features(stl-benchmark PRIVATE cxx_std_23)
-target_include_directories(stl-benchmark PRIVATE inc)
+    if(NOT DEFINED arg_CXX_STANDARD)
+        set(arg_CXX_STANDARD 23)
+    elseif(NOT arg_CXX_STANDARD MATCHES "^[0-9][0-9]$")
+        message(FATAL_ERROR "Unexpected value for CXX_STANDARD: ${arg_CXX_STANDARD}")
+    endif()
 
-target_link_libraries(stl-benchmark PRIVATE benchmark::benchmark benchmark::benchmark_main)
+    if(NOT DEFINED arg_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "benchmark ${name} does not have any source files")
+    endif()
+
+    add_executable(benchmark-${name}
+        ${benchmark_headers}
+        ${arg_UNPARSED_ARGUMENTS}
+    )
+
+    target_compile_features(benchmark-${name} PRIVATE cxx_std_${arg_CXX_STANDARD})
+    target_include_directories(benchmark-${name} PRIVATE inc)
+    target_link_libraries(benchmark-${name} PRIVATE benchmark::benchmark)
+endfunction()
+
+add_benchmark(std_copy
+    src/std_copy.cpp
+    CXX_STANDARD 23
+)

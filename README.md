@@ -140,11 +140,11 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With The Visual Studio IDE
 
-1. Install Visual Studio 2022 17.3 Preview 2 or later.
+1. Install Visual Studio 2022 17.3 Preview 1 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.23 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.22 or later, and [Ninja][] 1.10.2 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
@@ -156,11 +156,11 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 
 # How To Build With A Native Tools Command Prompt
 
-1. Install Visual Studio 2022 17.3 Preview 2 or later.
+1. Install Visual Studio 2022 17.3 Preview 1 or later.
     * Select "Windows 11 SDK (10.0.22000.0)" in the VS Installer.
     * We recommend selecting "C++ CMake tools for Windows" in the VS Installer.
     This will ensure that you're using supported versions of CMake and Ninja.
-    * Otherwise, install [CMake][] 3.23 or later, and [Ninja][] 1.10.2 or later.
+    * Otherwise, install [CMake][] 3.22 or later, and [Ninja][] 1.10.2 or later.
     * We recommend selecting "Python 3 64-bit" in the VS Installer.
     * Otherwise, make sure [Python][] 3.9 or later is available to CMake.
 2. Open a command prompt.
@@ -395,6 +395,39 @@ If you are testing one of the configurations with dynamic linkage (`/MD` or `/MD
 build folder to your path:
 ```
 set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
+```
+
+# Benchmarking
+
+For performance sensitive code &ndash; like containers, algorithms, and the like &ndash;
+you will likely wish to write and/or run benchmarks, and the STL team will likely
+run any benchmarks we do have in our PR process.
+
+All benchmarks are located in `benchmarks`. Adding a new one is as easy as adding a new file
+to `benchmarks/src`, and adding a benchmark using that file in `benchmarks/CMakeLists.txt`,
+or modifying an existing file in `benchmarks/src`. We use Google's [Benchmark][gbenchmark] library,
+so you may find [their documentation][gbenchmark:docs] helpful, and you can also read the existing code
+for how _we_ use it.
+
+To run benchmarks, you'll want to configure the STL with the `-DSTL_BUILD_BENCHMARKING=ON` option:
+
+```cmd
+> cmake -B out\bench -S . -G Ninja -DSTL_BUILD_BENCHMARKING=ON
+> cmake --build out\bench
+```
+
+you can then run your benchmark with:
+
+```cmd
+> out\bench\benchmarks\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
+```
+
+And then you can copy this csv file into your favorite Excel program.
+
+If you want to see all the other flags you can pass, run:
+
+```cmd
+> out\bench\benchmarks\benchmark-<benchmark-name> --help
 ```
 
 # Editing And Testing The Debugger Visualizer
