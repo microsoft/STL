@@ -688,7 +688,7 @@ public:
         return 0;
     }
 
-    _NODISCARD constexpr bool empty() const noexcept {
+    _NODISCARD_EMPTY_MTHD_ARRAY constexpr bool empty() const noexcept {
         return true;
     }
 
