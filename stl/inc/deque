@@ -796,12 +796,12 @@ public:
         _Orphan_all();
 
         const auto _Oldsize = _Mysize();
-        _TRY_BEGIN
+        _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
         if constexpr (_RANGES bidirectional_range<_Rng>) {
             auto _ULast        = _RANGES _Get_final_iterator_unwrapped(_Range);
             const auto _UFirst = _RANGES _Ubegin(_Range);
             while (_UFirst != _ULast) {
-                _Emplace_front_internal(*--_ULast);
+                _Emplace_front_internal(*--_ULast); // prepend in order
             }
         } else {
             auto _UFirst      = _RANGES _Ubegin(_Range);
@@ -810,12 +810,7 @@ public:
                 _Emplace_front_internal(*_UFirst); // prepend flipped
             }
         }
-        _CATCH_ALL
-        while (_Oldsize < _Mysize()) {
-            pop_front(); // restore old size, at least
-        }
-        _RERAISE;
-        _CATCH_END
+        _Guard._Container = nullptr;
 
         if constexpr (!_RANGES bidirectional_range<_Rng>) {
             const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
@@ -837,16 +832,12 @@ public:
         const auto _Oldsize = _Mysize();
         auto _UFirst        = _RANGES _Ubegin(_Range);
         const auto _ULast   = _RANGES _Uend(_Range);
-        _TRY_BEGIN
+
+        _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
         for (; _UFirst != _ULast; ++_UFirst) {
             _Emplace_back_internal(*_UFirst);
         }
-        _CATCH_ALL
-        while (_Oldsize < _Mysize()) {
-            pop_back(); // restore old size, at least
-        }
-        _RERAISE;
-        _CATCH_END
+        _Guard._Container = nullptr;
     }
 #endif // __cpp_lib_containers_ranges
 
@@ -1331,120 +1322,73 @@ private:
         }
     };
 
-public:
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
-        // insert [_First, _Last) at _Where, input iterators
-        size_type _Off = static_cast<size_type>(_Where - begin());
+    template <bool _Bidi, class _It, class _Se>
+    void _Insert_range(const size_type _Off, _It _First, _Se _Last) {
+        // insert [_First, _Last) at begin() + _Off
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Mysize() >= _Off, "deque insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst = _Get_unwrapped(_First);
-        auto _ULast  = _Get_unwrapped(_Last);
+        const size_type _Oldsize = _Mysize();
 
-        size_type _Oldsize = _Mysize();
-
-        if (_UFirst != _ULast) {
-            _Orphan_all();
-            if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
-                _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
-                if constexpr (_Is_bidi_iter_v<_Iter>) {
-                    while (_UFirst != _ULast) {
-                        --_ULast;
-                        _Emplace_front_internal(*_ULast); // prepend in order
-                    }
-                } else {
-                    for (; _UFirst != _ULast; ++_UFirst) {
-                        _Emplace_front_internal(*_UFirst); // prepend flipped
-                    }
-                }
-
-                _Guard._Container = nullptr;
-
-                const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
-                if constexpr (!_Is_bidi_iter_v<_Iter>) {
-                    _STD reverse(begin(), begin() + _Num); // flip new stuff in place
-                }
-                _STD rotate(begin(), begin() + _Num, begin() + _Num + static_cast<difference_type>(_Off));
-            } else { // closer to back
-                _Orphan_all();
-                _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
-                for (; _UFirst != _ULast; ++_UFirst) {
-                    _Emplace_back_internal(*_UFirst);
-                }
-
-                _Guard._Container = nullptr;
-
-                _STD rotate(begin() + static_cast<difference_type>(_Off),
-                    begin() + static_cast<difference_type>(_Oldsize), end());
-            }
+        if (_First == _Last) {
+            return;
         }
 
+        _Orphan_all();
+        if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
+            _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
+            if constexpr (_Bidi) {
+                while (_First != _Last) {
+                    _Emplace_front_internal(*--_Last); // prepend in order
+                }
+            } else {
+                for (; _First != _Last; ++_First) {
+                    _Emplace_front_internal(*_First); // prepend flipped
+                }
+            }
+
+            _Guard._Container = nullptr;
+
+            const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
+            if constexpr (!_Bidi) {
+                _STD reverse(begin(), begin() + _Num); // flip new stuff in place
+            }
+            _STD rotate(begin(), begin() + _Num, begin() + _Num + static_cast<difference_type>(_Off));
+            return;
+        }
+
+        _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
+        for (; _First != _Last; ++_First) {
+            _Emplace_back_internal(*_First);
+        }
+
+        _Guard._Container = nullptr;
+
+        _STD rotate(
+            begin() + static_cast<difference_type>(_Off), begin() + static_cast<difference_type>(_Oldsize), end());
+    }
+
+public:
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
+    iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
+        // insert [_First, _Last) at _Where, input iterators
+        _Adl_verify_range(_First, _Last);
+        const size_type _Off = static_cast<size_type>(_Where - begin());
+        _Insert_range<_Is_bidi_iter_v<_Iter>>(_Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
         return begin() + static_cast<difference_type>(_Off);
     }
 
 #ifdef __cpp_lib_containers_ranges
     template <_Container_compatible_range<_Ty> _Rng>
     iterator insert_range(const_iterator _Where, _Rng&& _Range) {
-        size_type _Off = static_cast<size_type>(_Where - begin());
+        const size_type _Off = static_cast<size_type>(_Where - begin());
 
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Mysize() >= _Off, "deque insert iterator outside range");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
-        size_type _Oldsize = _Mysize();
-
-        auto _UFirst = _RANGES _Ubegin(_Range);
-        auto _ULast  = [&] {
-            if constexpr (_RANGES bidirectional_range<_Rng>) {
-                return _RANGES _Get_final_iterator_unwrapped(_Range);
-            } else {
-                return _RANGES _Uend(_Range);
-            }
-        }();
-        if (_UFirst != _ULast) {
-            _Orphan_all();
-            if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
-                _TRY_BEGIN
-                if constexpr (_RANGES bidirectional_range<_Rng>) {
-                    while (_UFirst != _ULast) {
-                        _Emplace_front_internal(*--_ULast);
-                    }
-                } else {
-                    for (; _UFirst != _ULast; ++_UFirst) {
-                        _Emplace_front_internal(*_UFirst); // prepend flipped
-                    }
-                }
-                _CATCH_ALL
-                while (_Oldsize < _Mysize()) {
-                    pop_front(); // restore old size, at least
-                }
-                _RERAISE;
-                _CATCH_END
-
-                const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
-                if constexpr (!_RANGES bidirectional_range<_Rng>) {
-                    _STD reverse(begin(), begin() + _Num); // flip new stuff in place
-                }
-                _STD rotate(begin(), begin() + _Num, begin() + _Num + static_cast<difference_type>(_Off));
-            } else { // closer to back
-                _TRY_BEGIN
-                for (; _UFirst != _ULast; ++_UFirst) {
-                    _Emplace_back_internal(*_UFirst);
-                }
-                _CATCH_ALL
-                while (_Oldsize < _Mysize()) {
-                    pop_back(); // restore old size, at least
-                }
-                _RERAISE;
-                _CATCH_END
-
-                _STD rotate(begin() + static_cast<difference_type>(_Off),
-                    begin() + static_cast<difference_type>(_Oldsize), end());
-            }
+        if constexpr (_RANGES bidirectional_range<_Rng>) {
+            _Insert_range<true>(_Off, _RANGES _Ubegin(_Range), _RANGES _Get_final_iterator_unwrapped(_Range));
+        } else {
+            _Insert_range<false>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
 
         return begin() + static_cast<difference_type>(_Off);
