@@ -8,6 +8,7 @@
 #define _FORWARD_LIST_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
+#include <type_traits>
 #include <xmemory>
 
 #if _HAS_CXX17
@@ -242,7 +243,7 @@ struct _Flist_node { // forward_list node
     using _Nodeptr = _Rebind_pointer_t<_Voidptr, _Flist_node>;
 
     _Nodeptr _Next; // successor node
-    _Value_type _Myval; // the stored value
+    _Value_type _Myval = _Returns_exactly<_Value_type>(); // the stored value
 
     _Flist_node()                   = default;
     _Flist_node(const _Flist_node&) = delete;
