@@ -400,6 +400,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <!-- VS 2019 16.3 -->
   <Type Name="std::_Ref_count_obj2&lt;*&gt;">
       <DisplayString>make_shared</DisplayString>
       <Expand>
@@ -425,11 +426,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <!-- VS 2019 16.7 -->
   <Type Name="std::_Ref_count_obj_alloc3&lt;*&gt;">
       <DisplayString>allocate_shared</DisplayString>
       <Expand>
           <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
-          <Item Name="[allocator]">*((_Mybase *) this)</Item>
+          <!-- stateless allocator -->
+          <Item Name="[allocator]" Optional="true">*((_Mybase *) this)</Item>
+          <!-- stateful allocator -->
+          <Item Name="[allocator]" Optional="true">_Myval</Item>
       </Expand>
   </Type>
 
