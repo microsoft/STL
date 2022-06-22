@@ -463,7 +463,7 @@ struct _Flist_insert_after_op2 {
             ++_First; // throws
         }
 
-        while (_First != _Last) {
+        while (_First != _Last) { // throws
             _Newnode._Allocate(); // throws
             _Alnode_traits::construct(_Al, _STD addressof(_Newnode._Ptr->_Myval), *_First); // throws
             const auto _Newtail = _Newnode._Release();
