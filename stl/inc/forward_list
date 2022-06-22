@@ -1127,7 +1127,7 @@ public:
             // snip the node out
             const auto _Removed = _Predecessor->_Next;
             const auto _Next    = _Removed->_Next;
-            _Removed->_Next     = _Nodeptr();
+            _Removed->_Next     = nullptr;
             _Predecessor->_Next = _Next;
 
             *_Tail = _Removed;

@@ -1529,14 +1529,14 @@ public:
 
             // snip the node out
             --_List._Mypair._Myval2._Mysize;
-            const auto _Next = _STD exchange(_Removed->_Next, _Nodeptr());
+            const auto _Next = _STD exchange(_Removed->_Next, nullptr);
             const auto _Prev = _Removed->_Prev;
             _Prev->_Next     = _Next;
             _Next->_Prev     = _Prev;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
             // mark removed node for IDL to snip out later
-            _Removed->_Prev = _Nodeptr();
+            _Removed->_Prev = nullptr;
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
             *_Tail = _Removed;
@@ -1579,7 +1579,7 @@ public:
         }
 
         list& _List;
-        _Nodeptr _Head; // singly linked list of nodes to remove; their _Prev pointers set to _Nodeptr()
+        _Nodeptr _Head; // singly linked list of nodes to remove; their _Prev pointers set to nullptr
         _Nodeptr* _Tail;
     };
 

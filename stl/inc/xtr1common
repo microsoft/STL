@@ -165,6 +165,10 @@ template <class _Ty, class... _Types>
 _INLINE_VAR constexpr bool _Is_any_of_v = // true if and only if _Ty is in _Types
     disjunction_v<is_same<_Ty, _Types>...>;
 
+_NODISCARD constexpr bool _Is_constant_evaluated() noexcept { // Internal function for any standard mode
+    return __builtin_is_constant_evaluated();
+}
+
 #if _HAS_CXX20
 _NODISCARD constexpr bool is_constant_evaluated() noexcept {
     return __builtin_is_constant_evaluated();

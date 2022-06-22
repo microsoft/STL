@@ -21,10 +21,6 @@ _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double* px) { // categorize *
     }
 }
 
-unsigned short* _Plsw(double* px) { // get pointer to lsw
-    return &reinterpret_cast<_Dval*>(px)->_Sh[_Dg];
-}
-
 unsigned short* _Pmsw(double* px) { // get pointer to msw
     return &reinterpret_cast<_Dval*>(px)->_Sh[_D0];
 }
