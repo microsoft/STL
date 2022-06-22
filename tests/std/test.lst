@@ -202,6 +202,7 @@ tests\GH_002431_byte_range_find_with_unreachable_sentinel
 tests\GH_002488_promise_not_default_constructible_types
 tests\GH_002558_format_presetPadding
 tests\GH_002581_common_reference_workaround
+tests\GH_002620_construct_at_workaround
 tests\GH_002655_alternate_name_broke_linker
 tests\GH_002711_Zc_alignedNew-
 tests\GH_002760_syncstream_memory_leak
@@ -490,6 +491,7 @@ tests\P2415R2_owning_view
 tests\P2440R1_ranges_alg_shift_left
 tests\P2440R1_ranges_alg_shift_right
 tests\P2440R1_ranges_numeric_iota
+tests\P2441R2_views_join_with
 tests\P2442R1_views_chunk
 tests\P2442R1_views_chunk_death
 tests\P2442R1_views_slide

@@ -166,19 +166,19 @@ protected:
     }
 
     virtual string __CLR_OR_THIS_CALL do_grouping() const {
-        return string(_Grouping);
+        return string{_Grouping};
     }
 
     virtual string_type __CLR_OR_THIS_CALL do_curr_symbol() const {
-        return string_type(_Currencysign);
+        return string_type{_Currencysign};
     }
 
     virtual string_type __CLR_OR_THIS_CALL do_positive_sign() const {
-        return string_type(_Plussign);
+        return string_type{_Plussign};
     }
 
     virtual string_type __CLR_OR_THIS_CALL do_negative_sign() const {
-        return string_type(_Minussign);
+        return string_type{_Minussign};
     }
 
     virtual int __CLR_OR_THIS_CALL do_frac_digits() const {

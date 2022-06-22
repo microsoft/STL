@@ -358,7 +358,7 @@ public:
     }
 
     string name() const {
-        return _Ptr ? _Ptr->_Name.c_str() : string();
+        return _Ptr ? _Ptr->_Name.c_str() : string{};
     }
 
     _Ret_z_ const char* c_str() const {

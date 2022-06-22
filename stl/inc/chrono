@@ -2675,11 +2675,11 @@ namespace filesystem {
         }
 
 #if _HAS_CXX20
-        // Assumes that FILETIME counts leap seconds only after the first 27 (i.e., after 1 January 2017), even though
-        // systems can opt out of this behavior.
+        // Assumes that FILETIME counts leap seconds since 2018-06-01 (i.e., after the first 27 leap seconds), even
+        // though systems can opt out of this behavior.
         static constexpr chrono::seconds _Skipped_filetime_leap_seconds{27};
         static constexpr chrono::sys_days _Cutoff{
-            chrono::year_month_day{chrono::year{2017}, chrono::January, chrono::day{1}}};
+            chrono::year_month_day{chrono::year{2018}, chrono::June, chrono::day{1}}};
 
         template <class _Duration>
         _NODISCARD static chrono::utc_time<common_type_t<_Duration, chrono::seconds>> to_utc(
@@ -3454,83 +3454,70 @@ namespace chrono {
             return false;
         }
 
-        enum class _LeapSecondRep : unsigned int {
-            _None, // tai_clock, gps_clock; oblivious to leap seconds
-            _Negative, // system_clock, observes negative, but not positive, leap seconds
+        enum class _Leap_second_rep : unsigned int {
+            _None, // system_clock, tai_clock, gps_clock; oblivious to leap seconds
             _All, // utc_clock
-            _File_time // _Negative before 1 January 2017, _All afterwards.
+            _File_time // _None before 2018-06-01, _All afterwards.
         };
 
         template <class _DurationType>
-        _NODISCARD bool _Make_time_point(_DurationType& _Dur, _LeapSecondRep _Leap) {
+        _NODISCARD bool _Make_time_point(_DurationType& _Dur, _Leap_second_rep _Leap) {
 
             const bool _Consistent{_Calculate_hour24() && _Calculate_year_fields() && _Calculate_ymd()};
             if (!_Consistent || !_Apply_duration_fields<_Parse_tp_or_duration::_Time_point>(_Dur)) {
                 return false;
             }
 
-            const _LeapSecondRep _Original_leap{_Leap};
-            if (_Leap == _LeapSecondRep::_File_time) {
-                const int _Year{*_Century + *_Two_dig_year};
-                _Leap = _Year <= 2016 ? _LeapSecondRep::_Negative : _LeapSecondRep::_All;
+            const _Leap_second_rep _Original_leap{_Leap};
+            if (_Leap == _Leap_second_rep::_File_time) {
+                _Leap =
+                    _Dur < file_clock::_Cutoff.time_since_epoch() ? _Leap_second_rep::_None : _Leap_second_rep::_All;
             }
 
-            if (_Second > (_Leap == _LeapSecondRep::_All ? 60 : 59)) {
+            if (_Second > (_Leap == _Leap_second_rep::_All ? 60 : 59)) {
                 return false;
             }
 
-            // A distinction has to be made here between clocks that tick monotonically, even around a positive leap
-            // second (everything except system_clock) and ones that have a special representation for leap seconds
-            // (utc_clock and, for negative leap seconds, system_clock). gps_clock and tai_clock, in particular, always
-            // monotonically count 86,400 seconds/day. The correct tick count, therefore, can be determined without
+            // A distinction has to be made here between clocks that always count 86,400 seconds/day (system_clock,
+            // tai_clock, and gps_clock) and ones that count leap seconds (utc_clock and, since 2018-06-01, file_clock).
+            // The correct tick count for the clocks that always count 86,400 seconds/day can be determined without
             // knowing whether any leap seconds have occurred, and there aren't any invalid times due to negative leap
             // second deletions.
-            //
-            // system_clock also has 86,400 seconds/day, but observes negative leap seconds by skipping them in its tick
-            // count. So leap second data is needed to check for a valid time, but not to calculate the tick count.
 
-            if (_Leap != _LeapSecondRep::_None) {
-                if (_Hour_24 == 23 && _Minute == 59 && _Second >= 59) {
+            if (_Leap == _Leap_second_rep::_All) {
+                if constexpr (!_Can_represent<_DurationType, seconds>()) {
+                    // Error if _Dur can't represent the adjustment below.
+                    return false;
+                } else {
                     // It's possible that the parsed time doesn't exist because (a) _Seconds == 60 and there *isn't* a
-                    // leap second insertion or (b) _Seconds == 59 and there *is* a leap second subtraction.
-
-                    // Check for quick exit.
+                    // leap second insertion or (b) _Seconds >= 59 and there *is* a leap second subtraction.
                     const auto& _Tzdb{_CHRONO get_tzdb()};
-                    if (_Leap == _LeapSecondRep::_Negative && _Tzdb._All_ls_positive) {
-                        return true;
-                    }
 
                     const bool _Possible_insertion{_Second == 60};
                     const sys_seconds _Target_sys_time{
-                        _CHRONO floor<seconds>(_Dur) + (_Possible_insertion ? seconds{0} : seconds{1})};
+                        _CHRONO floor<seconds>(_Dur) - (_Possible_insertion ? seconds{1} : seconds{0})};
                     const auto& _Ls_vector{_Tzdb.leap_seconds};
-                    const auto _It{_STD lower_bound(_Ls_vector.begin(), _Ls_vector.end(), _Target_sys_time)};
-                    const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time};
+                    const auto _It{_STD upper_bound(_Ls_vector.begin(), _Ls_vector.end(), _Target_sys_time)};
+                    const bool _Match_leap{_It != _Ls_vector.end() && *_It == _Target_sys_time + seconds{1}};
 
-                    // Condition for a good parse: (_Seconds == 59 && !_Match_leap) || (_Match_leap &&
-                    // _It->_Is_positive()). Below is the inverse of this.
-                    if (!(_Match_leap ? _It->_Positive() : !_Possible_insertion)) {
-                        return false;
+                    if (_Match_leap) {
+                        if (!_It->_Positive()) { // negative leap second
+                            if (_Second >= 59) {
+                                return false;
+                            }
+                        }
+                    } else { // no leap second
+                        if (_Possible_insertion) {
+                            return false;
+                        }
                     }
-                }
 
-                if (_Leap == _LeapSecondRep::_All) {
-                    constexpr bool _Can_rep_sec = _Can_represent<_DurationType, seconds>();
-                    if constexpr (_Can_rep_sec) {
-                        _Dur = utc_clock::from_sys(sys_time<_DurationType>{_Dur}).time_since_epoch();
-                        // If we parsed a positive leap second, then _Dur, interpreted as a system time, refers to the
-                        // second *after* insertion. Need to back up one second in this case.
-                        if (_Second == 60) {
-                            _Dur -= _CHRONO duration_cast<_DurationType>(seconds{1});
-                        }
+                    const auto _Offset = _It == _Ls_vector.begin() ? seconds{0} : _Prev_iter(_It)->_Elapsed();
+                    _Dur += _CHRONO duration_cast<_DurationType>(_Offset);
 
-                        if (_Original_leap == _LeapSecondRep::_File_time) {
-                            _Dur -= _CHRONO duration_cast<_DurationType>(
-                                filesystem::_File_time_clock::_Skipped_filetime_leap_seconds);
-                        }
-                    } else {
-                        // Error if _Dur can't represent the above adjustment.
-                        return false;
+                    if (_Original_leap == _Leap_second_rep::_File_time) {
+                        _Dur -= _CHRONO duration_cast<_DurationType>(
+                            filesystem::_File_time_clock::_Skipped_filetime_leap_seconds);
                     }
                 }
             }
@@ -4398,7 +4385,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_All)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_All)) {
             _Tp = utc_time<_Duration>{_Dur};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4413,7 +4400,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_Negative)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
             _Tp = sys_time<_Duration>{_Dur};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4428,7 +4415,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
             _Tp = tai_time<_Duration>{_Dur + _CHRONO duration_cast<_Duration>(days{4383})};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4443,7 +4430,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
             _Tp = gps_time<_Duration>{_Dur - _CHRONO duration_cast<_Duration>(days{3657})};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4458,7 +4445,7 @@ namespace chrono {
         constexpr auto _Subsecond_precision{hh_mm_ss<_Duration>::fractional_width};
         _Time_parse_fields _Time{_Istr, _Fmt, _Abbrev, _Offset, _Subsecond_precision};
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_File_time)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_File_time)) {
             constexpr auto _File_clock_adj{_CHRONO duration_cast<_Duration>(
                 filesystem::_File_time_clock::duration{filesystem::__std_fs_file_time_epoch_adjustment})};
             _Tp = file_time<_Duration>{_Dur} + _File_clock_adj;
@@ -4477,7 +4464,7 @@ namespace chrono {
         // *_Offset is not subtracted from local_time, see N4885 [time.clock.local]/4.
         _Time._Utc_offset.reset();
         _Duration _Dur;
-        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_LeapSecondRep::_None)) {
+        if (_Istr && _Time._Make_time_point(_Dur, _Time_parse_fields::_Leap_second_rep::_None)) {
             _Tp = local_time<_Duration>{_Dur};
         } else {
             _Istr.setstate(ios_base::failbit);
@@ -4493,6 +4480,12 @@ namespace chrono {
 
         _Time_parse_iomanip_c_str(_Time_parse_iomanip_c_str&&) = delete;
 
+        friend basic_istream<_CharT, _Traits>& operator>>(
+            basic_istream<_CharT, _Traits>& _Is, _Time_parse_iomanip_c_str&& _Tpi) {
+            from_stream(_Is, _Tpi._Fmt, _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset); // intentional ADL
+            return _Is;
+        }
+
         const _CharT* _Fmt;
         _Parsable& _Tp;
         basic_string<_CharT, _Traits, _Alloc>* _Abbrev;
@@ -4506,6 +4499,12 @@ namespace chrono {
             : _Fmt{_Fmt_}, _Tp{_Tp_}, _Abbrev{_Abbrev_}, _Offset{_Offset_} {}
 
         _Time_parse_iomanip(_Time_parse_iomanip&&) = delete;
+
+        friend basic_istream<_CharT, _Traits>& operator>>(
+            basic_istream<_CharT, _Traits>& _Is, _Time_parse_iomanip&& _Tpi) {
+            from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset); // intentional ADL
+            return _Is;
+        }
 
         const basic_string<_CharT, _Traits, _Alloc>& _Fmt;
         _Parsable& _Tp;
@@ -4568,21 +4567,6 @@ namespace chrono {
         basic_string<_CharT, _Traits, _Alloc>& _Abbrev, minutes& _Offset) {
         return _Time_parse_iomanip{_Fmt, _Tp, _STD addressof(_Abbrev), &_Offset};
     }
-
-    template <class _CharT, class _Traits, class _Alloc, class _Parsable>
-    basic_istream<_CharT, _Traits>& operator>>(
-        basic_istream<_CharT, _Traits>& _Is, _Time_parse_iomanip_c_str<_CharT, _Traits, _Alloc, _Parsable>&& _Tpi) {
-        from_stream(_Is, _Tpi._Fmt, _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset); // intentional ADL
-        return _Is;
-    }
-
-    template <class _CharT, class _Traits, class _Alloc, class _Parsable>
-    basic_istream<_CharT, _Traits>& operator>>(
-        basic_istream<_CharT, _Traits>& _Is, _Time_parse_iomanip<_CharT, _Traits, _Alloc, _Parsable>&& _Tpi) {
-        from_stream(_Is, _Tpi._Fmt.c_str(), _Tpi._Tp, _Tpi._Abbrev, _Tpi._Offset); // intentional ADL
-        return _Is;
-    }
-
 } // namespace chrono
 
 #ifdef __cpp_lib_format
@@ -4621,9 +4605,9 @@ concept _Has_ok = requires(_Ty _At) {
 // A chrono spec is either a type (with an optional modifier), OR a literal character, never both.
 template <class _CharT>
 struct _Chrono_spec {
-    _CharT _Lit_char = _CharT{'\0'}; // any character other than '{', '}', or '%'
-    char _Modifier   = '\0'; // either 'E' or 'O'
-    char _Type       = '\0';
+    _CharT _Lit_char{'\0'}; // any character other than '{', '}', or '%'
+    char _Modifier = '\0'; // either 'E' or 'O'
+    char _Type     = '\0';
 };
 
 template <class _CharT>
@@ -4826,6 +4810,14 @@ namespace chrono {
         local_time<_Duration> _Time;
         const string* _Abbrev      = nullptr;
         const seconds* _Offset_sec = nullptr;
+
+        template <class _CharT, class _Traits>
+        friend basic_ostream<_CharT, _Traits>& operator<<(
+            basic_ostream<_CharT, _Traits>& _Os, const _Local_time_format_t& _Val) {
+            // Doesn't appear in the Standard, but allowed by N4885 [global.functions]/2.
+            // Implements N4885 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
+            return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T %Z}"), _Val);
+        }
     };
 
     template <class _Duration>
@@ -5156,14 +5148,6 @@ namespace chrono {
     template <class _CharT, class _Traits, class _Duration>
     basic_ostream<_CharT, _Traits>& operator<<(basic_ostream<_CharT, _Traits>& _Os, const local_time<_Duration>& _Val) {
         return _Os << sys_time<_Duration>{_Val.time_since_epoch()};
-    }
-
-    template <class _CharT, class _Traits, class _Duration>
-    basic_ostream<_CharT, _Traits>& operator<<(
-        basic_ostream<_CharT, _Traits>& _Os, const _Local_time_format_t<_Duration>& _Val) {
-        // Doesn't appear in the Standard, but allowed by N4885 [global.functions]/2.
-        // Implements N4885 [time.zone.zonedtime.nonmembers]/2 for zoned_time.
-        return _Os << _STD format(_Os.getloc(), _STATICALLY_WIDEN(_CharT, "{:L%F %T %Z}"), _Val);
     }
 
     template <class _CharT, class _Traits, class _Duration, class _TimeZonePtr>
