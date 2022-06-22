@@ -295,6 +295,7 @@
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
 // P1272R4 byteswap()
+// P1328R1 constexpr type_info::operator==()
 // P1413R3 Deprecate aligned_storage And aligned_union
 // P1425R4 Iterator Pair Constructors For stack And queue
 // P1659R3 ranges::starts_with, ranges::ends_with
@@ -309,6 +310,8 @@
 // P2273R3 constexpr unique_ptr
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
+// P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
+// P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
 // P2549R0 unexpected<E>::error()
@@ -480,17 +483,6 @@
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("msvc")
 
-// Controls whether the STL uses "conditional explicit" internally
-#ifndef _HAS_CONDITIONAL_EXPLICIT
-#ifdef __cpp_conditional_explicit
-#define _HAS_CONDITIONAL_EXPLICIT 1
-#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, CUDA/ICC
-#else // vvv C1XX or Clang or IntelliSense vvv
-#define _HAS_CONDITIONAL_EXPLICIT 1
-#endif // ^^^ C1XX or Clang or IntelliSense ^^^
-#endif // _HAS_CONDITIONAL_EXPLICIT
-
 // warning C4577: 'noexcept' used with no exception handling mode specified;
 // termination on exception is not guaranteed. Specify /EHsc (/Wall)
 #if _HAS_EXCEPTIONS
@@ -507,11 +499,11 @@
 #endif // !_HAS_CXX17
 
 // warning C5053: support for 'explicit(<expr>)' in C++17 and earlier is a vendor extension
-#if !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
+#if !_HAS_CXX20
 #define _STL_DISABLED_WARNING_C5053 5053
-#else // !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
+#else // !_HAS_CXX20
 #define _STL_DISABLED_WARNING_C5053
-#endif // !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
+#endif // !_HAS_CXX20
 
 #ifndef _STL_EXTRA_DISABLED_WARNINGS
 #define _STL_EXTRA_DISABLED_WARNINGS
@@ -622,10 +614,8 @@
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
-#if __CUDACC_VER_MAJOR__ < 10      \
-    || (__CUDACC_VER_MAJOR__ == 10 \
-        && (__CUDACC_VER_MINOR__ < 1 || (__CUDACC_VER_MINOR__ == 1 && __CUDACC_VER_BUILD__ < 243)))
-#error STL1002: Unexpected compiler version, expected CUDA 10.1 Update 2 or newer.
+#if __CUDACC_VER_MAJOR__ < 11 || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ < 6)
+#error STL1002: Unexpected compiler version, expected CUDA 11.6 or newer.
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
@@ -1426,7 +1416,6 @@
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
-#define __cpp_lib_shift                   201806L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
 
 #ifdef __cpp_consteval
@@ -1458,6 +1447,7 @@
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_expected 202202L
@@ -1471,6 +1461,8 @@
 #define __cpp_lib_out_ptr                 202106L
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
+#define __cpp_lib_ranges_iota             202202L
+#define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #endif // __cpp_lib_concepts
@@ -1525,6 +1517,12 @@
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
 #else // _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
+#endif // _HAS_CXX20
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#define __cpp_lib_shift 201806L // P0769R2 shift_left(), shift_right()
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20
@@ -1615,10 +1613,6 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #else // ^^^ _ENABLE_STL_INTERNAL_CHECK ^^^ // vvv !_ENABLE_STL_INTERNAL_CHECK vvv
 #define _STL_INTERNAL_STATIC_ASSERT(...)
 #endif // _ENABLE_STL_INTERNAL_CHECK
-
-#ifndef _MSVC_CONSTEXPR // TRANSITION, VS2022v17.3p2
-#define _MSVC_CONSTEXPR
-#endif
 
 #endif // _STL_COMPILER_PREPROCESSOR
 #endif // _YVALS_CORE_H_
