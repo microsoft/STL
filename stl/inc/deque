@@ -1323,7 +1323,7 @@ private:
     };
 
     template <bool _Bidi, class _It, class _Se>
-    void _Insert_range(const size_type _Off, _It _First, _Se _Last) {
+    iterator _Insert_range(const size_type _Off, _It _First, _Se _Last) {
         // insert [_First, _Last) at begin() + _Off
 
 #if _ITERATOR_DEBUG_LEVEL == 2
@@ -1333,7 +1333,7 @@ private:
         const size_type _Oldsize = _Mysize();
 
         if (_First == _Last) {
-            return;
+            return begin() + static_cast<difference_type>(_Off);
         }
 
         _Orphan_all();
@@ -1356,7 +1356,7 @@ private:
                 _STD reverse(begin(), begin() + _Num); // flip new stuff in place
             }
             _STD rotate(begin(), begin() + _Num, begin() + _Num + static_cast<difference_type>(_Off));
-            return;
+            return begin() + static_cast<difference_type>(_Off);
         }
 
         _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
@@ -1368,6 +1368,8 @@ private:
 
         _STD rotate(
             begin() + static_cast<difference_type>(_Off), begin() + static_cast<difference_type>(_Oldsize), end());
+
+        return begin() + static_cast<difference_type>(_Off);
     }
 
 public:
@@ -1376,8 +1378,7 @@ public:
         // insert [_First, _Last) at _Where, input iterators
         _Adl_verify_range(_First, _Last);
         const size_type _Off = static_cast<size_type>(_Where - begin());
-        _Insert_range<_Is_bidi_iter_v<_Iter>>(_Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
-        return begin() + static_cast<difference_type>(_Off);
+        return _Insert_range<_Is_bidi_iter_v<_Iter>>(_Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
 #ifdef __cpp_lib_containers_ranges
@@ -1386,12 +1387,10 @@ public:
         const size_type _Off = static_cast<size_type>(_Where - begin());
 
         if constexpr (_RANGES bidirectional_range<_Rng>) {
-            _Insert_range<true>(_Off, _RANGES _Ubegin(_Range), _RANGES _Get_final_iterator_unwrapped(_Range));
+            return _Insert_range<true>(_Off, _RANGES _Ubegin(_Range), _RANGES _Get_final_iterator_unwrapped(_Range));
         } else {
-            _Insert_range<false>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+            return _Insert_range<false>(_Off, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
-
-        return begin() + static_cast<difference_type>(_Off);
     }
 #endif // __cpp_lib_containers_ranges
 

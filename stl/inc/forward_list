@@ -997,43 +997,36 @@ public:
         return _Make_iter(_Where._Ptr);
     }
 
-    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
-    iterator insert_after(const_iterator _Where, _Iter _First, _Iter _Last) {
+private:
+    template <class _It, class _Se>
+    iterator _Insert_range_after(const_iterator _Where, _It _First, const _Se _Last) {
         // insert [_First, _Last) after _Where
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(
             _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list insert_after location incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        _Adl_verify_range(_First, _Last);
-        const auto _UFirst = _Get_unwrapped(_First);
-        const auto _ULast  = _Get_unwrapped(_Last);
-        if (_UFirst == _ULast) {
+        if (_First == _Last) {
             return _Make_iter(_Where._Ptr);
         }
 
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
-        _Insert_op._Append_range_unchecked(_UFirst, _ULast);
+        _Insert_op._Append_range_unchecked(_STD move(_First), _Last);
         return _Make_iter(_Insert_op._Attach_after(_Where._Ptr));
+    }
+
+public:
+    template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
+    iterator insert_after(const_iterator _Where, _Iter _First, _Iter _Last) {
+        // insert [_First, _Last) after _Where
+        _Adl_verify_range(_First, _Last);
+        return _Insert_range_after(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
 #ifdef __cpp_lib_containers_ranges
     template <_Container_compatible_range<_Ty> _Rng>
     iterator insert_range_after(const_iterator _Where, _Rng&& _Range) {
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(
-            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list insert_after location incompatible");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
-        auto _UFirst      = _RANGES _Ubegin(_Range);
-        const auto _ULast = _RANGES _Uend(_Range);
-        if (_UFirst == _ULast) {
-            return _Make_iter(_Where._Ptr);
-        }
-
-        _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
-        _Insert_op._Append_range_unchecked(_STD move(_UFirst), _ULast);
-        return _Make_iter(_Insert_op._Attach_after(_Where._Ptr));
+        return _Insert_range_after(_Where, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
 #endif // __cpp_lib_containers_ranges
 
