@@ -2069,9 +2069,9 @@ namespace chrono {
         };
 
         // __std_tzdb_get_leap_seconds gets leap second (LS) data from the registry, but only if it contains more
-        // LSs than we already know about. The registry only contains LSs after 2018, so we need to tell it how many
-        // of *those* we already know about. The *total* number of LSs known at this point is a combination of what
-        // the caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
+        // LSs than we already know about. The registry only contains LSs after 2018, so we need to tell it how many of
+        // *those* we already know about. The *total* number of LSs known at this point is a combination of what the
+        // caller knows (_Current_size, 0 on first call) and the _Known_leap_seconds entries.
         constexpr size_t _Pre_2018_count = 27;
         const size_t _Known_post_2018_ls_size =
             (_STD max)(_Current_size, _STD size(_Known_leap_seconds)) - _Pre_2018_count;
@@ -2095,8 +2095,8 @@ namespace chrono {
             _Leap_sec_info.assign(_STD cbegin(_Known_leap_seconds), _STD cend(_Known_leap_seconds));
 
             for (size_t _Idx = 0; _Idx < _Reg_post_2018_ls_size; ++_Idx) {
-                // Leap seconds occur at _Ls._Hour:59:59. We store the next second after, so we need to add an
-                // entire hour.
+                // Leap seconds occur at _Ls._Hour:59:59. We store the next second after, so we need to add an entire
+                // hour.
                 const auto& _Ls = _Reg_ls_data[_Idx];
                 const auto _Date =
                     static_cast<sys_days>(year_month_day{year{_Ls._Year}, month{_Ls._Month}, day{_Ls._Day}})
@@ -2533,9 +2533,9 @@ namespace chrono {
         } else {
             seconds _Prev_elapsed{0};
             for (_It = _Ls_vector.begin(); _It != _Ls_vector.end(); ++_It) {
-                // UTC time when leap second insertion begins. In all cases, _It->date() + _It->_Elapsed() is the
-                // *end* of the insertion. For a negative leap that's also the beginning, but for a positive one,
-                // insertion begins 1 second earlier.
+                // UTC time when leap second insertion begins. In all cases, _It->date() + _It->_Elapsed() is the *end*
+                // of the insertion. For a negative leap that's also the beginning, but for a positive one, insertion
+                // begins 1 second earlier.
                 const utc_seconds _This_ls_begin{
                     _It->date().time_since_epoch() + (_It->_Positive() ? _Prev_elapsed : _It->_Elapsed())};
                 if (_This_ls_begin > _Time_floor) {
@@ -3069,8 +3069,8 @@ namespace chrono {
 
         template <class _Ty>
         _NODISCARD static bool _Update(optional<_Ty>& _Val, const _Ty& _New) {
-            // Update a field. Ignores invalid values. If _Val already has a value, returns true or false according
-            // to whether the new value matches the current one or not, so that inconsistencies can be detected.
+            // Update a field. Ignores invalid values. If _Val already has a value, returns true or false according to
+            // whether the new value matches the current one or not, so that inconsistencies can be detected.
 
             if constexpr (!is_same_v<_Ty, string>) {
                 if (_New == _Invalid_time_field<_Ty>) {
@@ -3217,8 +3217,7 @@ namespace chrono {
         _NODISCARD bool _Calculate_ymd() {
             bool _No_err = true;
             // Flags to indicate if a field should be checked for consistency with other data. Set to false when the
-            // field is used to calculate the date, as it's necessarily self-consistent in that case (barring a
-            // bug).
+            // field is used to calculate the date, as it's necessarily self-consistent in that case (barring a bug).
             bool _Check_u    = true;
             bool _Check_w    = true;
             bool _Check_iso  = true;
@@ -3258,8 +3257,8 @@ namespace chrono {
                 _Year       = *_Iso_year;
                 _Have_year  = true;
 
-                // Shift weekdays to Monday-based. Jan. 4 is the anchor of week 1, so calculate where the parsed
-                // weekday is relative to that point.
+                // Shift weekdays to Monday-based. Jan. 4 is the anchor of week 1, so calculate where the parsed weekday
+                // is relative to that point.
                 const int _Jan4_wday        = _Next_weekday(_Jan1_weekday(_Year), 3 - 1);
                 const int _Offset_from_jan4 = _Prev_weekday(*_Weekday, 1) - _Jan4_wday;
                 int _Trial_yday             = 4 + 7 * (*_Iso_week - 1) + _Offset_from_jan4;
@@ -3338,10 +3337,10 @@ namespace chrono {
         }
 
         _NODISCARD bool _Is_complete() const {
-            // Check for data that is incomplete, ambiguous, or obviously out-of-range. The exception is 12-hour
-            // time without am/pm. Most strptime implementations will assume am in this case, so we'll do that too.
-            // Don't check for consistency yet, because the data might not even be representable by the type being
-            // parsed, and calendar computations are relatively expensive.
+            // Check for data that is incomplete, ambiguous, or obviously out-of-range. The exception is 12-hour time
+            // without am/pm. Most strptime implementations will assume am in this case, so we'll do that too. Don't
+            // check for consistency yet, because the data might not even be representable by the type being parsed,
+            // and calendar computations are relatively expensive.
 
             // Most time-of-day fields are deferred until we know if we're parsing a time_point.
             if (_Out_of_range(_Hour_12, 1, 12) //
@@ -3382,19 +3381,18 @@ namespace chrono {
             // Returns whether _Duration1 can represent _Duration2{1}. Assumes 1 <= _Period2 <=
             // 86,400, i.e., we're interested in time periods between seconds and days.
             if constexpr (is_integral_v<_Rep1>) {
-                // Must have _Period1 <= _Period2 and numeric_limits<_Rep1>::max() >= _Period2 / _Period1. For
-                // example, std::days can't represent std::seconds, and duration<int, atto>::max() is ~9.2 seconds.
+                // Must have _Period1 <= _Period2 and numeric_limits<_Rep1>::max() >= _Period2 / _Period1. For example,
+                // std::days can't represent std::seconds, and duration<int, atto>::max() is ~9.2 seconds.
                 constexpr auto _Max_tick = static_cast<intmax_t>((numeric_limits<make_signed_t<_Rep1>>::max)());
 
                 return ratio_less_equal_v<_Period1, _Period2> //
                     && ratio_greater_equal_v<ratio<_Max_tick, _Period2::num>, ratio_divide<ratio<1>, _Period1>>;
             } else if (is_floating_point_v<_Rep1>) {
                 // With the smallest possible _Period1, ratio<1,INTMAX_MAX>, one day has a tick count of
-                // 86,400*INTMAX_MAX ~= 7.97e23. This is representable by float and double, so they can always
-                // represent at least one day. On the other hand, one second with the largest possible _Period1
-                // needs a tick count of 1/(INTMAX_MAX) ~= 1.08e-19, which is also representable in both float and
-                // double. So, both floating point types can represent durations between one second and one day,
-                // regardless of _Period1.
+                // 86,400*INTMAX_MAX ~= 7.97e23. This is representable by float and double, so they can always represent
+                // at least one day. On the other hand, one second with the largest possible _Period1 needs a tick count
+                // of 1/(INTMAX_MAX) ~= 1.08e-19, which is also representable in both float and double. So, both
+                // floating point types can represent durations between one second and one day, regardless of _Period1.
                 return true;
             } else {
                 // TRANSITION: user-defined arithmetic-like types
@@ -4129,8 +4127,7 @@ namespace chrono {
             // For a regular offset hh[mm], simply read four digits, with the option of an EOF or non-digit after
             // reading two. The modified form h[h][:mm] is similar, except for the following points:
             //  (a) an EOF or non-digit is allowable after reading *one* digit, not two.
-            //  (b) after reading one digit, another optional digit keeps us in the same state, except for
-            //  decrementing
+            //  (b) after reading one digit, another optional digit keeps us in the same state, except for decrementing
             //      the number of optional digits allowed. In this state, reading a ':' allows parsing to continue.
 
             int _Tz_hours        = 0;
@@ -5368,9 +5365,9 @@ namespace chrono {
         }
 
         // This echoes the functionality of put_time, but is able to handle invalid dates (when !ok()) since the
-        // Standard mandates that invalid dates still be formatted properly.  For example, put_time isn't able to
-        // handle a tm_mday of 40, but format("{:%d}", day{40}) should return "40" and operator<< for day prints "40
-        // is not a valid day".
+        // Standard mandates that invalid dates still be formatted properly.  For example, put_time isn't able to handle
+        // a tm_mday of 40, but format("{:%d}", day{40}) should return "40" and operator<< for day prints
+        // "40 is not a valid day".
         template <class _Ty>
         bool _Custom_write(
             basic_ostream<_CharT>& _Os, const _Chrono_spec<_CharT>& _Spec, const tm& _Time, const _Ty& _Val) const {
