@@ -481,7 +481,7 @@
     _NODISCARD_MSG("This function returns a bool value whether the container or container-like object is empty and " \
                    "has no other effects. It is not useful to call this method and discard the returned value. ")
 
-#define _NODISCARD_EMPTY_MTHD_ADAPTER                                                                  \
+#define _NODISCARD_EMPTY_MTHD_ADAPTER                                                                \
     _NODISCARD_MSG(                                                                                  \
         "This method returns a bool value whether the container is empty and has no other effects. " \
         "It is not useful to call this method and discard the returned value. "                      \
