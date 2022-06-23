@@ -287,9 +287,10 @@ template <class _Value_type, class _Voidptr>
 struct _List_node { // list node
     using value_type = _Value_type;
     using _Nodeptr   = _Rebind_pointer_t<_Voidptr, _List_node>;
-    _Nodeptr _Next;
-    _Nodeptr _Prev;
-    _Value_type _Myval = _Returns_exactly<_Value_type>(); // fake a viable constructor to workaround GH-2749
+    _Nodeptr _Next; // successor node, or first element if head
+    _Nodeptr _Prev; // predecessor node, or last element if head
+    _Value_type _Myval = // the stored value, unused if head
+        _Returns_exactly<_Value_type>(); // fake a viable constructor to workaround GH-2749
 
     _List_node()                  = default;
     _List_node(const _List_node&) = delete;
