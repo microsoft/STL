@@ -257,6 +257,7 @@ void test_duration_formatter() {
 
     // formatting small types needs to work as iostreams << VSO-1521926
     empty_braces_helper(duration<long long, atto>{123}, STR("123as"));
+    assert(format(STR("{:%j}"), duration<long long, atto>{123}) == STR("0"));
 
     assert(format(STR("{:%T}"), 4083007ms) == STR("01:08:03.007"));
     assert(format(STR("{:%T}"), -4083007ms) == STR("-01:08:03.007"));
@@ -278,6 +279,8 @@ void test_clock_formatter() {
     empty_braces_helper(gps_seconds{}, STR("1980-01-06 00:00:00"));
     empty_braces_helper(file_time<seconds>{}, STR("1601-01-01 00:00:00"));
     empty_braces_helper(local_seconds{}, STR("1970-01-01 00:00:00"));
+
+    assert(format(STR("{:%j}"), utc_seconds{}) == STR("001"));
 
     assert(format(STR("{:%Z %z %Oz %Ez}"), sys_seconds{}) == STR("UTC +0000 +00:00 +00:00"));
     assert(format(STR("{:%Z %z %Oz %Ez}"), sys_days{}) == STR("UTC +0000 +00:00 +00:00"));
