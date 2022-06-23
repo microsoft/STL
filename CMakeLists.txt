@@ -11,6 +11,7 @@ check_cxx_source_compiles([=[
 static_assert(WDK_NTDDI_VERSION >= NTDDI_WIN10_CO, "Inspecting WDK_NTDDI_VERSION, the Windows SDK version.");
 int main() {}
 ]=] WINDOWS_SDK_VERSION_CHECK)
+
 if(NOT WINDOWS_SDK_VERSION_CHECK)
     message(FATAL_ERROR "The STL must be built with the Windows 11 SDK (10.0.22000.0) or later. Make sure it's available by selecting it in the Individual Components tab of the VS Installer.")
 endif()
@@ -18,6 +19,7 @@ endif()
 if(NOT DEFINED VCLIBS_TARGET_ARCHITECTURE)
     set(VCLIBS_TARGET_ARCHITECTURE "${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}")
 endif()
+
 string(TOLOWER "${VCLIBS_TARGET_ARCHITECTURE}" VCLIBS_TARGET_ARCHITECTURE)
 
 if(VCLIBS_TARGET_ARCHITECTURE MATCHES "^x64$|^x86$")
@@ -26,12 +28,14 @@ endif()
 
 # add the tools subdirectory _before_ we change all the flags
 add_subdirectory(tools EXCLUDE_FROM_ALL)
+
 # these allow the targets to show up in the top-level
 # (as opposed to under the tools subdirectory)
 if(TARGET run-format)
     add_custom_target(format)
     add_dependencies(format run-format)
 endif()
+
 if(TARGET run-validate)
     add_custom_target(validate)
     add_dependencies(validate run-validate)
@@ -53,6 +57,7 @@ if("${VCLIBS_TARGET_ARCHITECTURE}" MATCHES "^x86$")
     set(VCLIBS_TARGET_ARCHITECTURE "x86")
     set(VCLIBS_I386_OR_AMD64 "i386")
     set(VCLIBS_X86_OR_X64 "x86")
+
     # Note that we set _WIN32_WINNT to a high level to make declarations available, but still engage downlevel
     # runtime dynamic linking by setting our own _STL_WIN32_WINNT back to Windows XP.
     add_compile_definitions(_X86_ _VCRT_WIN32_WINNT=0x0501 _STL_WIN32_WINNT=0x0501)
@@ -84,10 +89,12 @@ add_compile_definitions(
 
 add_compile_options(/WX /Gy
     "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
+
     # note that /Zi generates debug info inside the object file, it's the same as /Z7 for msvc
     "$<$<COMPILE_LANGUAGE:ASM_MASM>:/Zi;/W3;/nologo>")
 
 if(STL_USE_ANALYZE)
+    # TRANSITION OS-40109504: Windows SDK: incorrect SAL annotations on functions the STL uses
     # warning C6553: The annotation for function 'LCMapStringEx' on _Param_(9)
     # does not apply to a value type.
     # There's a bug in the declaration for LCMapStringEx - it applies _In_opt_ to an LPARAM.
