@@ -1482,10 +1482,10 @@ namespace chrono {
     }
 
     template <class _ToPeriod, class _FromPeriod>
-    constexpr bool _Duration_cast_would_underflow = _FromPeriod::den > INTMAX_MAX / _ToPeriod::num;
+    inline constexpr bool _Duration_cast_would_underflow = _FromPeriod::den > INTMAX_MAX / _ToPeriod::num;
 
     template <class _From, class _To>
-    constexpr bool _Duration_underflows_with =
+    inline constexpr bool _Duration_underflows_with =
         !treat_as_floating_point_v<typename _From::rep> //
         && _Duration_cast_would_underflow<typename _To::period, typename _From::period>;
 
@@ -1532,10 +1532,10 @@ namespace chrono {
         constexpr hh_mm_ss() noexcept : hh_mm_ss{_Duration::zero()} {}
         constexpr explicit hh_mm_ss(_Duration _Dur)
             : _Is_neg{_Dur < _Duration::zero()}, //
-              _Hours{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO hours>(_CHRONO abs(_Dur))},
-              _Mins{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO minutes>(
+              _Hours{_Duration_cast_underflow_to_zero<_CHRONO hours>(_CHRONO abs(_Dur))},
+              _Mins{_Duration_cast_underflow_to_zero<_CHRONO minutes>(
                   _Remove_duration_part<_CHRONO hours>(_CHRONO abs(_Dur)))},
-              _Secs{_CHRONO _Duration_cast_underflow_to_zero<_CHRONO seconds>(
+              _Secs{_Duration_cast_underflow_to_zero<_CHRONO seconds>(
                   _Remove_duration_part<_CHRONO minutes>(_CHRONO abs(_Dur)))} {
             if constexpr (treat_as_floating_point_v<typename precision::rep>) {
                 // no need to deal with underflow here, because floating durations allow it
@@ -4865,7 +4865,7 @@ namespace chrono {
 
     template <class _Duration>
     _NODISCARD constexpr hh_mm_ss<_Duration> _Hh_mm_ss_part_underflow_to_zero(const _Duration& _Val) {
-        return hh_mm_ss<_Duration>(_CHRONO _Remove_duration_part<days>(_Val));
+        return hh_mm_ss<_Duration>{_Remove_duration_part<days>(_Val)};
     }
 
     template <unsigned int _Fractional_width, class _CharT, class _Traits, class _Precision>
@@ -4914,7 +4914,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits, class _Rep, class _Period>
     void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const duration<_Rep, _Period>& _Val) {
-        _Write_seconds(_Os, _Hh_mm_ss_part_underflow_to_zero((_Val)));
+        _Write_seconds(_Os, _Hh_mm_ss_part_underflow_to_zero(_Val));
     }
 
     template <class _Ty>
@@ -4987,12 +4987,12 @@ namespace chrono {
         } else if constexpr (_Is_specialization_v<_Ty, time_point>) {
             const auto _Dp = _CHRONO floor<days>(_Val);
             const year_month_day _Ymd{_Dp};
-            const auto _Time = _Hh_mm_ss_part_underflow_to_zero(_Val - _Dp);
-            const auto _Hms  = _Fill_tm(_Time);
-            auto _Tm         = _Fill_tm(_Ymd);
-            _Tm.tm_sec       = _Hms.tm_sec;
-            _Tm.tm_min       = _Hms.tm_min;
-            _Tm.tm_hour      = _Hms.tm_hour;
+            const hh_mm_ss _Time{_Val - _Dp};
+            const auto _Hms = _Fill_tm(_Time);
+            auto _Tm        = _Fill_tm(_Ymd);
+            _Tm.tm_sec      = _Hms.tm_sec;
+            _Tm.tm_min      = _Hms.tm_min;
+            _Tm.tm_hour     = _Hms.tm_hour;
             return _Tm;
         }
 
