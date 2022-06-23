@@ -429,7 +429,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <!-- VS 2019 16.7: _Ref_count_obj_alloc3 -->
   <!-- VS 2019 16.3: _Ref_count_obj_alloc2 -->
   <Type Name="std::_Ref_count_obj_alloc3&lt;*&gt;">
-  <AlternativeType Name="std::_Ref_count_obj_alloc2&lt;*&gt;" />
+      <AlternativeType Name="std::_Ref_count_obj_alloc2&lt;*&gt;" />
       <!-- stateless allocator -->
       <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
       <!-- stateful allocator -->
