@@ -6367,17 +6367,24 @@ namespace ranges {
     concept _Common_constructible = common_range<_Rng> && _Cpp17_input_iterator<iterator_t<_Rng>>
         && constructible_from<_Container, iterator_t<_Rng>, iterator_t<_Rng>, _Types...>;
 
+    template <class _Container, class _Reference>
+    concept _Can_push_back = requires(_Container& _Cont) {
+        _Cont.push_back(_STD declval<_Reference>());
+    };
+
+    template <class _Container, class _Reference>
+    concept _Can_insert_end = requires(_Container& _Cont) {
+        _Cont.insert(_Cont.end(), _STD declval<_Reference>());
+    };
+
     template <class _Rng, class _Container, class... _Types>
     concept _Constructible_and_insertable = constructible_from<_Container, _Types...>
-        && requires(_Container& _Cont) {
-            requires (
-                requires { _Cont.push_back(_STD declval<range_reference_t<_Rng>>()); }
-                || requires { _Cont.insert(_Cont.end(), _STD declval<range_reference_t<_Rng>>()); });
-        };
+        && (_Can_push_back<_Container, range_reference_t<_Rng>>
+            || _Can_insert_end<_Container, range_reference_t<_Rng>>);
 
     template <class _Reference, class _Container>
     _NODISCARD constexpr auto _Container_inserter(_Container& _Cont) {
-        if constexpr (requires { _Cont.push_back(_STD declval<_Reference>()); }) {
+        if constexpr (_Can_push_back<_Container, _Reference>) {
             return back_insert_iterator{_Cont};
         } else {
             return insert_iterator{_Cont, _Cont.end()};

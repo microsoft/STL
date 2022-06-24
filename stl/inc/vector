@@ -695,7 +695,8 @@ public:
         auto _UFirst = _Get_unwrapped(_First);
         auto _ULast  = _Get_unwrapped(_Last);
         if constexpr (_Is_fwd_iter_v<_Iter>) {
-            const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
+            const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
+            const auto _Count  = _Convert_size<size_type>(_Length);
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
 #ifdef __cpp_lib_concepts
         } else if constexpr (forward_iterator<_Iter>) {
@@ -1307,7 +1308,8 @@ public:
         auto _ULast          = _Get_unwrapped(_Last);
         const auto _Whereoff = static_cast<size_type>(_Whereptr - _Oldfirst);
         if constexpr (_Is_fwd_iter_v<_Iter>) {
-            const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
+            const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
+            const auto _Count  = _Convert_size<size_type>(_Length);
             _Insert_counted_range(_Where, _UFirst, _Count);
 #ifdef __cpp_lib_concepts
         } else if constexpr (forward_iterator<_Iter>) {
@@ -1462,30 +1464,24 @@ private:
 
         const auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
         if (_Newsize > _Oldsize) {
+            bool _Copied = false;
+            if constexpr (_Iter_copy_cat<_Iter, pointer>::_Bitcopy_assignable) {
 #if _HAS_CXX20
-            constexpr
+                if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
-                auto _Copy_n_helper = [](_Iter _In, size_type _Count, pointer _Out) {
-                    // copy _In + [0, _Count) to _Out, returning _In + _Count
-                    // (This is _Copy_n_unchecked, except it returns _In instead of _Out.)
-                    if constexpr (_Iter_copy_cat<_Iter, pointer>::_Bitcopy_assignable) {
-#if _HAS_CXX20
-                        if (!_STD is_constant_evaluated())
-#endif // _HAS_CXX20
-                        {
-                            _Copy_memmove_n(_In, _Count, _Out);
-                            return _In + _Count;
-                        }
-                    }
+                {
+                    _Copy_memmove_n(_First, _Oldsize, _Myfirst);
+                    _First += _Oldsize;
+                    _Copied = true;
+                }
+            }
 
-                    for (; _Count != 0; ++_Out, (void) ++_In, --_Count) {
-                        *_Out = *_In;
-                    }
+            if (!_Copied) {
+                for (auto _Mid = _Myfirst; _Mid != _Mylast; ++_Mid, (void) ++_First) {
+                    *_Mid = *_First;
+                }
+            }
 
-                    return _In;
-                };
-
-            _First = _Copy_n_helper(_STD move(_First), _Oldsize, _Myfirst);
             if constexpr (_Nothrow_construct) {
                 _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
                 _Mylast = _Uninitialized_copy_n(_STD move(_First), _Newsize - _Oldsize, _Mylast, _Al);
@@ -3406,8 +3402,9 @@ public:
         const auto _ULast = _Get_unwrapped(_Last);
 
         if constexpr (_Is_fwd_iter_v<_Iter>) {
-            const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
-            const auto _Off   = static_cast<difference_type>(_Insert_x(_Where, _Count));
+            const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
+            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
         } else {
             difference_type _Off = _Saved_offset;

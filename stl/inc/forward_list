@@ -919,7 +919,7 @@ public:
 #ifdef __cpp_lib_containers_ranges
     template <_Container_compatible_range<_Ty> _Rng>
     void prepend_range(_Rng&& _Range) {
-        insert_range_after(before_begin(), _Range);
+        _Insert_range_after(_Mypair._Myval2._Before_head(), _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
 #endif // __cpp_lib_containers_ranges
 
@@ -999,34 +999,37 @@ public:
 
 private:
     template <class _It, class _Se>
-    iterator _Insert_range_after(const_iterator _Where, _It _First, const _Se _Last) {
-        // insert [_First, _Last) after _Where
-#if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(
-            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list insert_after location incompatible");
-#endif // _ITERATOR_DEBUG_LEVEL == 2
-
+    iterator _Insert_range_after(_Nodeptr _Pnode, _It _First, const _Se _Last) {
+        // insert [_First, _Last) after _Pnode
         if (_First == _Last) {
-            return _Make_iter(_Where._Ptr);
+            return _Make_iter(_Pnode);
         }
 
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
         _Insert_op._Append_range_unchecked(_STD move(_First), _Last);
-        return _Make_iter(_Insert_op._Attach_after(_Where._Ptr));
+        return _Make_iter(_Insert_op._Attach_after(_Pnode));
     }
 
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert_after(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert [_First, _Last) after _Where
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(
+            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list erase_after iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
         _Adl_verify_range(_First, _Last);
-        return _Insert_range_after(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+        return _Insert_range_after(_Where._Ptr, _Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
 #ifdef __cpp_lib_containers_ranges
     template <_Container_compatible_range<_Ty> _Rng>
     iterator insert_range_after(const_iterator _Where, _Rng&& _Range) {
-        return _Insert_range_after(_Where, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(
+            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list erase_after iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+        return _Insert_range_after(_Where._Ptr, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
 #endif // __cpp_lib_containers_ranges
 

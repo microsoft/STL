@@ -2826,8 +2826,8 @@ public:
         if constexpr (_RANGES sized_range<_Rng>) {
             const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
 
-            if constexpr (contiguous_iterator<decltype(_RANGES _Ubegin(
-                              _Range))> && same_as<_RANGES range_value_t<_Rng>, _Elem>) {
+            if constexpr (contiguous_iterator<decltype(_RANGES _Ubegin(_Range))> && //
+                same_as<_RANGES range_value_t<_Rng>, _Elem>) {
                 if (_Count != 0) {
                     const auto _Ptr = _STD to_address(_RANGES _Ubegin(_Range));
                     assign(_Ptr, _Count);
