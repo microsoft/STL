@@ -1328,6 +1328,7 @@ private:
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
+        _Adl_verify_range(_First, _Last);
         _Assign_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 

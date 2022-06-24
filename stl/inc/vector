@@ -1470,7 +1470,7 @@ private:
                 if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
                 {
-                    _Copy_memmove_n(_First, _Oldsize, _Myfirst);
+                    _Copy_memmove_n(_First, static_cast<size_t>(_Oldsize), _Myfirst);
                     _First += _Oldsize;
                     _Copied = true;
                 }

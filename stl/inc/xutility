@@ -3649,15 +3649,10 @@ _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
 
 template <class _CtgIt, class _OutCtgIt>
 _OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Count, _OutCtgIt _Dest) {
-    auto _FirstPtr              = _To_address(_First);
-    auto _DestPtr               = _To_address(_Dest);
-    const char* const _First_ch = const_cast<const char*>(reinterpret_cast<const volatile char*>(_FirstPtr));
-    char* const _Dest_ch        = const_cast<char*>(reinterpret_cast<const volatile char*>(_DestPtr));
-    const auto _Byte_count      = _Count * sizeof(*_FirstPtr);
-    _CSTD memmove(_Dest_ch, _First_ch, _Byte_count);
+    const auto _Result = _Copy_memmove(_First, _First + _Count, _Dest);
     if constexpr (is_pointer_v<_OutCtgIt>) {
-        return reinterpret_cast<_OutCtgIt>(_Dest_ch + _Byte_count);
-    } else {
+        return _Result;
+    } else { // _Result is unused so the compiler can optimize it away
         return _Dest + static_cast<_Iter_diff_t<_OutCtgIt>>(_Count);
     }
 }
@@ -3665,16 +3660,20 @@ _OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Count, _OutCtgIt _Dest) {
 template <class _It, bool _RequiresMutable = false>
 _INLINE_VAR constexpr bool _Is_vb_iterator = false;
 
-template <class _InIt, class _OutIt>
-_CONSTEXPR20 _OutIt _Copy_n_unchecked(_InIt _First, size_t _Count, _OutIt _Dest) {
+template <class _InIt, class _SizeTy, class _OutIt>
+_CONSTEXPR20 _OutIt _Copy_n_unchecked(_InIt _First, _SizeTy _Count, _OutIt _Dest) {
     // copy _First + [0, _Count) to _Dest + [0, _Count), returning _Dest + _Count
     // note: has callers outside the copy family
+#ifdef __cpp_lib_concepts
+    _STL_INTERNAL_STATIC_ASSERT(_Integer_like<_SizeTy>);
+#endif // __cpp_lib_concepts
+
     if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            return _Copy_memmove_n(_First, _Count, _Dest);
+            return _Copy_memmove_n(_First, static_cast<size_t>(_Count), _Dest);
         }
     }
 
@@ -3705,15 +3704,12 @@ _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
         {
 #ifdef __cpp_lib_concepts
             if constexpr (is_same_v<_InIt, _Sent>)
-#else // ^^^ Concepts support / no Concepts vvv
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_InIt, _Sent>);
 #endif // __cpp_lib_concepts
             {
                 return _Copy_memmove(_First, _Last, _Dest);
             }
 #ifdef __cpp_lib_concepts
             else {
-                _STL_INTERNAL_STATIC_ASSERT(sized_sentinel_for<_Sent, _InIt>);
                 return _Copy_memmove_n(_First, static_cast<size_t>(_Last - _First), _Dest);
             }
 #endif // __cpp_lib_concepts
@@ -3852,8 +3848,8 @@ namespace ranges {
                     return {_STD move(_Last), _STD move(_Result)};
                 } else {
                     _STL_INTERNAL_STATIC_ASSERT(sized_sentinel_for<_Se, _It>);
-                    auto _Count = static_cast<size_t>(_Last - _First);
-                    _Result     = _Copy_memmove_n(_First, _Count, _STD move(_Result));
+                    const auto _Count = static_cast<size_t>(_Last - _First);
+                    _Result           = _Copy_memmove_n(_First, _Count, _STD move(_Result));
                     _First += _Count;
                     return {_STD move(_First), _STD move(_Result)};
                 }
