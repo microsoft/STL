@@ -79,19 +79,14 @@ static_assert(ranges::enable_borrowed_range<span<int>>);
 static_assert(ranges::enable_borrowed_range<span<int, 3>>);
 #endif // __cpp_lib_concepts
 
-// We provide non-standard guarantees that span and its iterator types are trivially copyable;
-// P2251 may eventually standardize that guarantee for span itself.
+// N4901 [span.overview]/3
 static_assert(is_trivially_copyable_v<span<int>>);
-static_assert(is_trivially_copyable_v<span<int>::iterator>);
 static_assert(is_trivially_copyable_v<span<int, 3>>);
-static_assert(is_trivially_copyable_v<span<int, 3>::iterator>);
 static_assert(is_trivially_copyable_v<span<const int>>);
-static_assert(is_trivially_copyable_v<span<const int>::iterator>);
 static_assert(is_trivially_copyable_v<span<const int, 3>>);
-static_assert(is_trivially_copyable_v<span<const int, 3>::iterator>);
 
-// For portability, our implementation provides an additional guarantee beyond the Standard
-// that span and its iterators are standard-layout.
+// Our implementation provides additional guarantees beyond the Standard
+// that span and its iterators are standard-layout, and that the iterators are trivially copyable.
 static_assert(is_standard_layout_v<span<int>>);
 static_assert(is_standard_layout_v<span<int>::iterator>);
 static_assert(is_standard_layout_v<span<int, 3>>);
@@ -100,6 +95,10 @@ static_assert(is_standard_layout_v<span<const int>>);
 static_assert(is_standard_layout_v<span<const int>::iterator>);
 static_assert(is_standard_layout_v<span<const int, 3>>);
 static_assert(is_standard_layout_v<span<const int, 3>::iterator>);
+static_assert(is_trivially_copyable_v<span<int>::iterator>);
+static_assert(is_trivially_copyable_v<span<int, 3>::iterator>);
+static_assert(is_trivially_copyable_v<span<const int>::iterator>);
+static_assert(is_trivially_copyable_v<span<const int, 3>::iterator>);
 
 // For performance, our implementation provides an additional guarantee beyond the Standard
 // that fixed-size span has only the size of a pointer.
@@ -991,10 +990,8 @@ constexpr bool test() {
         assert(*sp_dyn.begin() == 10);
         assert(*sp_nine.begin() == 10);
 
-#if !(defined(__EDG__) && defined(_M_X64)) // TRANSITION, VSO-1356637
         assert(sp_dyn.end()[-2] == 80);
         assert(sp_nine.end()[-2] == 80);
-#endif // TRANSITION, VSO-1356637
 
         assert(*sp_dyn.rbegin() == 90);
         assert(*sp_nine.rbegin() == 90);

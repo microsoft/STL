@@ -13,9 +13,11 @@
 #pragma warning(1 : 4668) // 'MEOW' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
 
 // All STL headers should protect themselves from macroized new.
+#if !(defined(__CUDACC__) && defined(__clang__))
 #pragma push_macro("new")
 #undef new
 #define new WILL NOT COMPILE
+#endif // !(defined(__CUDACC__) && defined(__clang__))
 
 // VSO-768746: mbctype.h macroizes _MS, _MP, _M1, and _M2. Include it first for test coverage.
 #ifndef _MSVC_TESTING_NVCC
@@ -33,7 +35,7 @@
 #endif // TRANSITION, OS-17090155 (UCRT)
 
 #define _SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING
-#define _SILENCE_CXX17_STRSTREAM_DEPRECATION_WARNING
+#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
@@ -47,6 +49,7 @@
 #include <numbers>
 #include <ratio>
 #include <source_location>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <version>
@@ -86,6 +89,7 @@
 #include <complex>
 #include <deque>
 #include <exception>
+#include <expected>
 #include <filesystem>
 #include <format>
 #include <forward_list>
@@ -118,6 +122,7 @@
 #include <spanstream>
 #include <sstream>
 #include <stack>
+#include <stacktrace>
 #include <stdexcept>
 #include <streambuf>
 #include <string>
@@ -125,7 +130,6 @@
 #include <strstream>
 #include <syncstream>
 #include <system_error>
-#include <tuple>
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
@@ -232,7 +236,9 @@
 #endif // _M_CEE_PURE
 #endif // _MSVC_TESTING_NVCC
 
+#if !(defined(__CUDACC__) && defined(__clang__))
 #pragma pop_macro("new")
+#endif // !(defined(__CUDACC__) && defined(__clang__))
 
 #pragma warning(pop)
 

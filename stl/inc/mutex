@@ -13,7 +13,7 @@
 #error <mutex> is not supported when compiling with /clr:pure.
 #endif // _M_CEE_PURE
 
-#include <chrono>
+#include <__msvc_chrono.hpp>
 #include <cstdlib>
 #include <system_error>
 #include <thread>
@@ -76,7 +76,7 @@ private:
     friend condition_variable;
     friend condition_variable_any;
 
-    aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
+    _Aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
 
     _Mtx_t _Mymtx() noexcept { // get pointer to _Mtx_internal_imp_t inside _Mtx_storage
         return reinterpret_cast<_Mtx_t>(&_Mtx_storage);
@@ -495,13 +495,14 @@ public:
 };
 #endif // _HAS_CXX17
 
-#ifdef _M_CEE
+#if defined(_M_CEE) || defined(_M_ARM64EC) || defined(_M_HYBRID) \
+    || defined(__clang__) // TRANSITION, Clang doesn't recognize /ALTERNATENAME, not yet reported
 #define _WINDOWS_API              __stdcall
 #define _RENAME_WINDOWS_API(_Api) _Api##_clr
-#else // ^^^ _M_CEE // !_M_CEE vvv
+#else // ^^^ use forwarders / use /ALTERNATENAME vvv
 #define _WINDOWS_API              __declspec(dllimport) __stdcall
 #define _RENAME_WINDOWS_API(_Api) _Api
-#endif // _M_CEE
+#endif // ^^^ use /ALTERNATENAME ^^^
 
 // WINBASEAPI
 // BOOL
@@ -526,6 +527,8 @@ extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_begin
 extern "C" _NODISCARD int _WINDOWS_API _RENAME_WINDOWS_API(__std_init_once_complete)(
     void** _LpInitOnce, unsigned long _DwFlags, void* _LpContext) noexcept;
 
+extern "C" [[noreturn]] void __stdcall __std_init_once_link_alternate_names_and_abort() noexcept;
+
 // #define RTL_RUN_ONCE_INIT_FAILED    0x00000004UL
 // #define INIT_ONCE_INIT_FAILED       RTL_RUN_ONCE_INIT_FAILED
 _INLINE_VAR constexpr unsigned long _Init_once_init_failed = 0x4UL;
@@ -535,7 +538,7 @@ struct _Init_once_completer {
     unsigned long _DwFlags;
     ~_Init_once_completer() {
         if (_RENAME_WINDOWS_API(__std_init_once_complete)(&_Once._Opaque, _DwFlags, nullptr) == 0) {
-            _CSTD abort();
+            __std_init_once_link_alternate_names_and_abort();
         }
     }
 };
@@ -695,7 +698,7 @@ public:
     }
 
 private:
-    aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cnd_storage;
+    _Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cnd_storage;
 
     _Cnd_t _Mycnd() noexcept { // get pointer to _Cnd_internal_imp_t inside _Cnd_storage
         return reinterpret_cast<_Cnd_t>(&_Cnd_storage);

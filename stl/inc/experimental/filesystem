@@ -9,8 +9,8 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 
+#include <__msvc_chrono.hpp> // for chrono::time_point
 #include <algorithm> // for replace
-#include <chrono> // for chrono::time_point
 #include <codecvt> // for codecvt_utf8_*
 #include <list> // for recursive_directory_iterator stack
 #include <locale> // for wstring_convert
@@ -1008,13 +1008,7 @@ public:
         return _Path_cvt<value_type, char16_t>::_Cvt(_Str, _Mystr.c_str(), _Mystr.size());
     }
 
-    _STD u32string u32string() const = delete; // TRANSITION, ABI
-#if 0
-                { // return path as basic_string<char32_t> UTF32
-                    _STD u32string _Str;
-                    return _Path_cvt<value_type, char32_t>::_Cvt(_Str, _Mystr.c_str(), _Mystr.size());
-                }
-#endif // 0
+    _STD u32string u32string() const = delete;
 
     string_type _Make_generic() const { // copy and convert any '\' to '/'
         string_type _Str = _Mystr;
@@ -1055,14 +1049,7 @@ public:
         return _Path_cvt<value_type, char16_t>::_Cvt(_Str, _Genstr.c_str(), _Genstr.size());
     }
 
-    _STD u32string generic_u32string() const = delete; // TRANSITION, ABI
-#if 0
-                { // return path as basic_string<char32_t> UTF32
-                    _STD u32string _Str;
-                    const string_type _Genstr = _Make_generic();
-                    return _Path_cvt<value_type, char32_t>::_Cvt(_Str, _Genstr.c_str(), _Genstr.size());
-                }
-#endif // 0
+    _STD u32string generic_u32string() const = delete;
 
     _NODISCARD int compare(const path& _Path) const noexcept { // compare native() to _Path.native()
         return _Mystr.compare(_Path._Mystr);
@@ -1468,7 +1455,7 @@ public:
 
         *_Mypdir = _Open_dir(_Dest, _Path.c_str(), _Errno, _Ftype);
         if (*_Mypdir) {
-            _Form_name(_Dest, _Ftype, _Prefix_directory());
+            _Form_name(_Dest, _Ftype);
         }
     }
 
@@ -1480,7 +1467,7 @@ public:
 
         *_Mypdir = _Open_dir(_Dest, _Path.c_str(), _Errno, _Ftype);
         if (*_Mypdir) {
-            _Form_name(_Dest, _Ftype, _Prefix_directory());
+            _Form_name(_Dest, _Ftype);
         }
 
         _Code = error_code(_Errno, _STD system_category());
@@ -1555,19 +1542,19 @@ private:
                 _Close_dir(*_Mypdir);
                 *_Mypdir = nullptr; // end of directory
             } else {
-                _Form_name(_Dest, _Ftype, _Prefix_directory());
+                _Form_name(_Dest, _Ftype);
             }
         }
     }
 
-    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype,
-        true_type) { // set entry to _Mydirpath/_Filename
-        _Myentry.assign(_Mydirpath / path(_Filename), file_status(_Ftype));
-    }
-
-    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype,
-        false_type) { // set entry to _Filename
-        _Myentry.assign(path(_Filename), file_status(_Ftype));
+    void _Form_name(typename string_type::value_type* _Filename, file_type _Ftype) {
+        if constexpr (_Prefix_directory::value) {
+            // set entry to _Mydirpath/_Filename
+            _Myentry.assign(_Mydirpath / path(_Filename), file_status(_Ftype));
+        } else {
+            // set entry to _Filename
+            _Myentry.assign(path(_Filename), file_status(_Ftype));
+        }
     }
 
     shared_ptr<void*> _Mypdir;
@@ -1914,6 +1901,7 @@ inline void copy(const path& _Oldpval, const path& _Newpval, copy_options _Opts,
         _Oldstat = status(_Oldpval);
         _Newstat = status(_Newpval);
     }
+
     if (!exists(_Oldstat) || equivalent(_Oldpval, _Newpval, _Code2) || is_other(_Oldstat) || is_other(_Newstat)
         || (is_directory(_Oldstat) && is_regular_file(_Newstat))) {
         _Code = make_error_code(errc::operation_not_permitted);
@@ -2398,7 +2386,7 @@ _NODISCARD inline file_time_type last_write_time(const path& _Path, error_code& 
     _Code.clear();
     if (_Ticks == -1) { // report error
         _Code = make_error_code(errc::operation_not_permitted);
-        return (file_time_type::min) ();
+        return (file_time_type::min)();
     }
     return file_time_type(chrono::system_clock::duration(_Ticks));
 }

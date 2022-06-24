@@ -385,7 +385,7 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
 
     for (size_t _Name_idx = 0; _Name_idx < _Info->_Num_time_zones; ++_Name_idx) {
         int32_t _Elem_len{};
-        const auto* const _Elem = __icu_uenum_unext(_Enum.get(), &_Elem_len, &_UErr);
+        const auto _Elem = __icu_uenum_unext(_Enum.get(), &_Elem_len, &_UErr);
         if (U_FAILURE(_UErr) || _Elem == nullptr) {
             return _Report_error(_Info, __std_tzdb_error::_Icu_error);
         }
@@ -582,7 +582,8 @@ _NODISCARD __std_tzdb_leap_info* __stdcall __std_tzdb_get_leap_seconds(
     if ((status == ERROR_SUCCESS || status == ERROR_MORE_DATA) && ls_size > prev_reg_ls_size) {
         try {
             reg_ls_data = new __std_tzdb_leap_info[ls_size];
-            status      = RegQueryValueExW(
+
+            status = RegQueryValueExW(
                 leap_sec_key, reg_subkey_name, nullptr, nullptr, reinterpret_cast<LPBYTE>(reg_ls_data), &byte_size);
             if (status != ERROR_SUCCESS) {
                 *current_reg_ls_size = 0;

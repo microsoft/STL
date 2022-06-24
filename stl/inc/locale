@@ -26,19 +26,18 @@ _STD_BEGIN
 template <class _Elem>
 class collate : public locale::facet { // facet for ordering sequences of elements
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type   = _Elem;
     using string_type = basic_string<_Elem, char_traits<_Elem>, allocator<_Elem>>;
 
-    _NODISCARD int compare(const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2,
-        const _Elem* _Last2) const { // compare [_First1, _Last1) to [_First2, _Last2)
+    _NODISCARD int compare(const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2) const {
+        // compare [_First1, _Last1) to [_First2, _Last2)
         return do_compare(_First1, _Last1, _First2, _Last2);
     }
 
-    _NODISCARD string_type transform(
-        const _Elem* _First, const _Elem* _Last) const { // transform [_First, _Last) to key string
+    _NODISCARD string_type transform(const _Elem* _First, const _Elem* _Last) const {
+        // transform [_First, _Last) to key string
         return do_transform(_First, _Last);
     }
 
@@ -81,17 +80,17 @@ protected:
         _Coll = _Lobj._Getcoll();
     }
 
-    _NODISCARD virtual int __CLR_OR_THIS_CALL do_compare(const _Elem* _First1, const _Elem* _Last1,
-        const _Elem* _First2,
-        const _Elem* _Last2) const { // compare [_First1, _Last1) to [_First2, _Last2)
+    _NODISCARD virtual int __CLR_OR_THIS_CALL do_compare(
+        const _Elem* _First1, const _Elem* _Last1, const _Elem* _First2, const _Elem* _Last2) const {
+        // compare [_First1, _Last1) to [_First2, _Last2)
         _Adl_verify_range(_First1, _Last1);
         _Adl_verify_range(_First2, _Last2);
         int _Ans = _LStrcoll(_First1, _Last1, _First2, _Last2, &_Coll);
         return _Ans < 0 ? -1 : _Ans == 0 ? 0 : +1;
     }
 
-    _NODISCARD virtual string_type __CLR_OR_THIS_CALL do_transform(const _Elem* _First,
-        const _Elem* _Last) const { // transform [_First, _Last) to key string
+    _NODISCARD virtual string_type __CLR_OR_THIS_CALL do_transform(const _Elem* _First, const _Elem* _Last) const {
+        // transform [_First, _Last) to key string
         _Adl_verify_range(_First, _Last);
         size_t _Count;
         string_type _Str;
@@ -107,8 +106,8 @@ protected:
         return _Str;
     }
 
-    _NODISCARD virtual long __CLR_OR_THIS_CALL do_hash(
-        const _Elem* _First, const _Elem* _Last) const { // compute hash code for [_First, _Last)
+    _NODISCARD virtual long __CLR_OR_THIS_CALL do_hash(const _Elem* _First, const _Elem* _Last) const {
+        // compute hash code for [_First, _Last)
         _Adl_verify_range(_First, _Last);
         return static_cast<long>(_Hash_array_representation(_First, static_cast<size_t>(_Last - _First)));
     }
@@ -165,72 +164,72 @@ _NODISCARD bool has_facet(const locale& _Loc) noexcept {
 }
 
 template <class _Elem>
-_NODISCARD bool(isalnum)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isalnum(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::alnum, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isalpha)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isalpha(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::alpha, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isblank)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isblank(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::blank, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(iscntrl)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool iscntrl(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::cntrl, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isdigit)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isdigit(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::digit, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isgraph)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isgraph(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::graph, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(islower)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool islower(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::lower, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isprint)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isprint(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::print, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(ispunct)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool ispunct(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::punct, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isspace)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isspace(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::space, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isupper)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isupper(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::upper, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD bool(isxdigit)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD bool isxdigit(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).is(ctype_base::xdigit, _Ch);
 }
 
 template <class _Elem>
-_NODISCARD _Elem(tolower)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD _Elem tolower(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).tolower(_Ch);
 }
 
 template <class _Elem>
-_NODISCARD _Elem(toupper)(_Elem _Ch, const locale& _Loc) {
+_NODISCARD _Elem toupper(_Elem _Ch, const locale& _Loc) {
     return _STD use_facet<ctype<_Elem>>(_Loc).toupper(_Ch);
 }
 _STD_END

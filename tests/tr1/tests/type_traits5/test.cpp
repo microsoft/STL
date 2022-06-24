@@ -5,6 +5,9 @@
 #define TEST_NAME "<type_traits>, part 5"
 
 #define _DISABLE_EXTENDED_ALIGNED_STORAGE 1
+#define _SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING
+#define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
+
 #include "tdefs.h"
 #include "typetr.h"
 #include <limits.h>
@@ -192,7 +195,7 @@ static void t_make_signed() { // test make_signed<T> for various types
     CHECK_TYPE(STD make_signed<unsigned long long>::type, long long);
 
     color neg = (color) (-3);
-    CHECK_INT((STD make_signed<color>::type) (neg), neg);
+    CHECK_INT((STD make_signed<color>::type)(neg), neg);
 }
 
 static void t_make_unsigned() { // test make_unsigned<T> for various types
@@ -208,7 +211,7 @@ static void t_make_unsigned() { // test make_unsigned<T> for various types
     CHECK_TYPE(STD make_unsigned<unsigned long long>::type, unsigned long long);
 
     color neg = (color) (-3);
-    CHECK_INT((STD make_unsigned<color>::type) (neg), (unsigned int) (neg));
+    CHECK_INT((STD make_unsigned<color>::type)(neg), (unsigned int) (neg));
 }
 
 static void t_is_signed() { // test is_signed<T> for various types

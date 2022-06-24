@@ -5,6 +5,7 @@
 #define TEST_NAMEX "<cstdio>"
 
 #include "tdefs.h"
+#include "temp_file_name.h"
 #include <assert.h>
 #include <cstdio>
 #include <errno.h>
@@ -91,7 +92,8 @@ void test_cpp() { // test C++ header
         int in1;
         long off;
 
-        assert((tn = STDx tmpnam((char*) nullptr)) != nullptr);
+        const auto temp_name = temp_file_name();
+        tn                   = temp_name.c_str();
         assert((pf = STDx fopen(tn, "w+")) != nullptr);
 
         STDx setbuf(pf, (char*) nullptr);
@@ -124,18 +126,17 @@ void test_cpp() { // test C++ header
     }
 
     { // test character I/O
-        const char* tmpbuff;
         char tname[L_tmpnam];
-        char tmpbuf[L_tmpnam];
+        char tn[100];
         STDx FILE* pf;
-        char tn[100] = {0};
 
-        assert(STDx tmpnam(tmpbuf) == tmpbuf);
-        CHECK(CSTD strlen(tmpbuf) < L_tmpnam);
-        assert((tmpbuff = STDx tmpnam((char*) nullptr)) != nullptr);
+        const auto temp_name1 = temp_file_name();
+        CHECK(temp_name1.size() < sizeof(tname));
+        CSTD strcpy_s(tname, sizeof(tname), temp_name1.c_str());
 
-        CSTD strcpy_s(tn, sizeof(tn), tmpbuff);
-        CSTD strcpy_s(tname, sizeof(tname), tmpbuf);
+        const auto temp_name2 = temp_file_name();
+        CHECK(temp_name2.size() < sizeof(tn));
+        CSTD strcpy_s(tn, sizeof(tn), temp_name2.c_str());
 
         CHECK(CSTD strcmp(tn, tname) != 0);
         assert((pf = STDx fopen(tname, "w")) != nullptr);

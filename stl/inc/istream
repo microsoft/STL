@@ -206,7 +206,7 @@ private:
 
     template <class = void>
     void _Increment_gcount() {
-        if (_Chcount != (numeric_limits<streamsize>::max) ()) {
+        if (_Chcount != (numeric_limits<streamsize>::max)()) {
             ++_Chcount;
         }
     }
@@ -488,7 +488,7 @@ public:
             _TRY_IO_BEGIN
             for (;;) { // get a metacharacter if more room in buffer
                 int_type _Meta;
-                if (_Count != (numeric_limits<streamsize>::max) () && --_Count < 0) {
+                if (_Count != (numeric_limits<streamsize>::max)() && --_Count < 0) {
                     break; // buffer full, quit
                 } else if (_Traits::eq_int_type(_Traits::eof(),
                                _Meta = _Myios::rdbuf()->sbumpc())) { // end of file, quit
@@ -807,7 +807,7 @@ basic_istream<_Elem, _Traits>& _Istream_extract_into_buffer(
         }
         _CATCH_IO_(ios_base, _Istr)
     }
-    __analysis_assume(static_cast<size_t>(_Current) < _Size); // TRANSITION, VSO-860375
+    _Analysis_assume_(static_cast<size_t>(_Current) < _Size); // TRANSITION, VSO-860375
     _Str[_Current] = _Elem(); // add terminating null character
     _Istr.width(0);
     if (_Current == 0) {

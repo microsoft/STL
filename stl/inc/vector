@@ -42,9 +42,6 @@ public:
         this->_Adopt(_Pvector);
     }
 
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vector_const_iterator& operator=(const _Vector_const_iterator&) noexcept = default;
-
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
         const auto _Mycont = static_cast<const _Myvec*>(this->_Getcont());
@@ -129,6 +126,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _Vector_const_iterator operator+(
+        const difference_type _Off, _Vector_const_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _CONSTEXPR20 _Vector_const_iterator& operator-=(const difference_type _Off) noexcept {
         return *this += -_Off;
     }
@@ -211,13 +214,6 @@ public:
     _Tptr _Ptr; // pointer to element in vector
 };
 
-template <class _Myvec>
-_NODISCARD _CONSTEXPR20 _Vector_const_iterator<_Myvec> operator+(
-    typename _Vector_const_iterator<_Myvec>::difference_type _Off, _Vector_const_iterator<_Myvec> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
-
 #if _HAS_CXX20
 template <class _Myvec>
 struct pointer_traits<_Vector_const_iterator<_Myvec>> {
@@ -260,9 +256,6 @@ public:
     using reference         = value_type&;
 
     using _Mybase::_Mybase;
-
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vector_iterator& operator=(const _Vector_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20 reference operator*() const noexcept {
         return const_cast<reference>(_Mybase::operator*());
@@ -312,6 +305,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _Vector_iterator operator+(
+        const difference_type _Off, _Vector_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _CONSTEXPR20 _Vector_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
@@ -335,13 +334,6 @@ public:
         return _Unfancy(this->_Ptr);
     }
 };
-
-template <class _Myvec>
-_NODISCARD _CONSTEXPR20 _Vector_iterator<_Myvec> operator+(
-    typename _Vector_iterator<_Myvec>::difference_type _Off, _Vector_iterator<_Myvec> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 #if _HAS_CXX20
 template <class _Myvec>
@@ -434,6 +426,70 @@ constexpr _Ty* _Unfancy_maybe_null(_Ty* _Ptr) noexcept { // do nothing for plain
     return _Ptr;
 }
 
+#if !defined(_M_CEE_PURE) && !defined(_DISABLE_VECTOR_ANNOTATION)
+#if defined(__SANITIZE_ADDRESS__)
+#define _ACTIVATE_VECTOR_ANNOTATION
+#define _INSERT_VECTOR_ANNOTATION
+#elif defined(__clang__) && defined(__has_feature) // ^^^ __SANITIZE_ADDRESS__ ^^^ // vvv __clang__ vvv
+#if __has_feature(address_sanitizer)
+#define _ACTIVATE_VECTOR_ANNOTATION
+#define _INSERT_VECTOR_ANNOTATION
+#pragma comment(linker, "/INFERASANLIBS")
+#endif // __has_feature(address_sanitizer)
+#elif defined(_ANNOTATE_VECTOR) // ^^^ __clang__ ^^^ // vvv _ANNOTATE_VECTOR vvv
+#define _INSERT_VECTOR_ANNOTATION
+#endif // _ANNOTATE_VECTOR
+#endif // !_M_CEE_PURE && !_DISABLE_VECTOR_ANNOTATION
+
+#ifdef _ACTIVATE_VECTOR_ANNOTATION
+#pragma comment(lib, "stl_asan")
+#pragma detect_mismatch("annotate_vector", "1")
+#endif // _ACTIVATE_VECTOR_ANNOTATION
+
+#ifdef _INSERT_VECTOR_ANNOTATION
+extern "C" {
+void __cdecl __sanitizer_annotate_contiguous_container(
+    const void* _First, const void* _End, const void* _Old_last, const void* _New_last) noexcept;
+extern const bool _Asan_vector_should_annotate;
+}
+
+#if defined(_M_ARM64EC)
+#pragma comment(linker, \
+    "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, \
+    "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:#_Asan_vector_should_annotate=#_Asan_vector_should_annotate_default")
+#pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
+#elif defined(_M_HYBRID)
+#pragma comment(linker, \
+    "/alternatename:#__sanitizer_annotate_contiguous_container=#__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, \
+    "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:#_Asan_vector_should_annotate=#_Asan_vector_should_annotate_default")
+#pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
+#elif defined(_M_IX86)
+#pragma comment(linker, \
+    "/alternatename:___sanitizer_annotate_contiguous_container=___sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:__Asan_vector_should_annotate=__Asan_vector_should_annotate_default")
+#elif defined(_M_X64) || defined(_M_ARM) || defined(_M_ARM64)
+#pragma comment(linker, \
+    "/alternatename:__sanitizer_annotate_contiguous_container=__sanitizer_annotate_contiguous_container_default")
+#pragma comment(linker, "/alternatename:_Asan_vector_should_annotate=_Asan_vector_should_annotate_default")
+#else // ^^^ known architecture / unknown architecture vvv
+#error Unknown architecture
+#endif // ^^^ unknown architecture ^^^
+
+template <class _Vec, class = void>
+_INLINE_VAR constexpr bool _Has_minimum_allocation_alignment = alignof(typename _Vec::value_type) >= _Asan_granularity;
+
+template <class _Vec>
+_INLINE_VAR constexpr bool
+    _Has_minimum_allocation_alignment<_Vec, void_t<decltype(_Vec::allocator_type::_Minimum_allocation_alignment)>> =
+        _Vec::allocator_type::_Minimum_allocation_alignment >= _Asan_granularity;
+#else // ^^^ _INSERT_VECTOR_ANNOTATION ^^^ // vvv !_INSERT_VECTOR_ANNOTATION vvv
+#pragma detect_mismatch("annotate_vector", "0")
+#endif // !_INSERT_VECTOR_ANNOTATION
+
 template <class _Ty, class _Alloc = allocator<_Ty>>
 class vector { // varying size array of values
 private:
@@ -458,6 +514,153 @@ public:
     using difference_type = typename _Alty_traits::difference_type;
 
 private:
+#ifdef _INSERT_VECTOR_ANNOTATION
+    _CONSTEXPR20 void _Create_annotation() const noexcept {
+        // Annotates the shadow memory of the valid range
+        auto& _My_data = _Mypair._Myval2;
+        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Myend, _My_data._Mylast);
+    }
+
+    _CONSTEXPR20 void _Remove_annotation() const noexcept {
+        // Removes the shadow memory annotation of the range
+        auto& _My_data = _Mypair._Myval2;
+        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myend);
+    }
+
+    _CONSTEXPR20 void _Modify_annotation(const difference_type _Count) const noexcept {
+        // Extends/shrinks the annotated range by _Count
+        if (_Count == 0) { // nothing to do
+            // This also avoids calling _Apply_annotation() with null pointers
+            // when the vector has zero capacity, see GH-2464.
+            return;
+        }
+
+        auto& _My_data = _Mypair._Myval2;
+        _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Mylast + _Count);
+    }
+
+    _NODISCARD static const void* _Get_aligned_first(const void* _First, const void* _End) noexcept {
+        const auto _CFirst     = reinterpret_cast<const char*>(_First);
+        const auto _CEnd       = reinterpret_cast<const char*>(_End);
+        const size_t _Capacity = static_cast<size_t>(_CEnd - _CFirst);
+
+        if (_Capacity >= _Asan_granularity) {
+            // We are guaranteed to have sufficient space to find an aligned address.
+            return reinterpret_cast<const void*>(
+                (reinterpret_cast<uintptr_t>(_CFirst) + (_Asan_granularity - 1)) & ~(_Asan_granularity - 1));
+        }
+
+        uintptr_t _Alignment_offset = reinterpret_cast<uintptr_t>(_CFirst) & (_Asan_granularity - 1);
+        if (_Alignment_offset != 0) {
+            _Alignment_offset = _Asan_granularity - _Alignment_offset;
+        }
+
+        if (_Capacity > _Alignment_offset) {
+            return _CFirst + _Alignment_offset;
+        }
+
+        return nullptr;
+    }
+
+    static _CONSTEXPR20 void _Apply_annotation(
+        pointer _First_, pointer _End_, pointer _Old_last_, pointer _New_last_) noexcept {
+        _STL_INTERNAL_CHECK(_First_ != nullptr);
+        _STL_INTERNAL_CHECK(_End_ != nullptr);
+        _STL_INTERNAL_CHECK(_Old_last_ != nullptr);
+        _STL_INTERNAL_CHECK(_New_last_ != nullptr);
+
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            return;
+        }
+#endif // _HAS_CXX20
+
+        if (!_Asan_vector_should_annotate) {
+            return;
+        }
+
+        const auto _First    = reinterpret_cast<const char*>(_Unfancy(_First_));
+        const auto _End      = reinterpret_cast<const char*>(_Unfancy(_End_));
+        const auto _Old_last = reinterpret_cast<const char*>(_Unfancy(_Old_last_));
+        const auto _New_last = reinterpret_cast<const char*>(_Unfancy(_New_last_));
+        if constexpr (_Has_minimum_allocation_alignment<vector>) {
+            __sanitizer_annotate_contiguous_container(_First, _End, _Old_last, _New_last);
+        } else {
+            const void* const _Aligned_first = _Get_aligned_first(_First, _End);
+            if (!_Aligned_first) {
+                // There is no aligned address within the underlying buffer; nothing to do.
+                return;
+            }
+
+            const void* const _Aligned_old_last = _Old_last < _Aligned_first ? _Aligned_first : _Old_last;
+            const void* const _Aligned_new_last = _New_last < _Aligned_first ? _Aligned_first : _New_last;
+            const void* const _Aligned_end      = _End < _Aligned_first ? _Aligned_first : _End;
+            __sanitizer_annotate_contiguous_container(
+                _Aligned_first, _Aligned_end, _Aligned_old_last, _Aligned_new_last);
+        }
+    }
+
+    class _NODISCARD _Asan_extend_guard {
+    public:
+        _Asan_extend_guard(const _Asan_extend_guard&) = delete;
+        _Asan_extend_guard& operator=(const _Asan_extend_guard&) = delete;
+
+        constexpr explicit _Asan_extend_guard(vector* _Myvec_, size_type _Target_size_) noexcept
+            : _Myvec(_Myvec_), _Target_size(_Target_size_) {
+            _STL_INTERNAL_CHECK(_Myvec != nullptr);
+            auto& _My_data = _Myvec->_Mypair._Myval2;
+            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Mylast, _My_data._Myfirst + _Target_size);
+        }
+
+        _CONSTEXPR20 ~_Asan_extend_guard() {
+            if (!_Myvec) { // Operation succeeded, no modification to the shadow memory required.
+                return;
+            }
+
+            // Shrinks the shadow memory to the current size of the vector.
+            auto& _My_data = _Myvec->_Mypair._Myval2;
+            _Apply_annotation(_My_data._Myfirst, _My_data._Myend, _My_data._Myfirst + _Target_size, _My_data._Mylast);
+        }
+
+        _CONSTEXPR20 void _Release() noexcept {
+            _Myvec = nullptr;
+        }
+
+    private:
+        vector* _Myvec;
+        size_type _Target_size;
+    };
+
+    class _NODISCARD _Asan_create_guard {
+    public:
+        _Asan_create_guard(const _Asan_create_guard&) = delete;
+        _Asan_create_guard& operator=(const _Asan_create_guard&) = delete;
+
+        constexpr explicit _Asan_create_guard(const vector& _Myvec_) noexcept : _Myvec(_Myvec_) {}
+
+        _CONSTEXPR20 ~_Asan_create_guard() {
+            _Myvec._Create_annotation();
+        }
+
+    private:
+        const vector& _Myvec;
+    };
+
+#define _ASAN_VECTOR_MODIFY(n)       _Modify_annotation((n))
+#define _ASAN_VECTOR_REMOVE          _Remove_annotation()
+#define _ASAN_VECTOR_CREATE          _Create_annotation()
+#define _ASAN_VECTOR_CREATE_GUARD    _Asan_create_guard _Annotator(*this)
+#define _ASAN_VECTOR_EXTEND_GUARD(n) _Asan_extend_guard _Annotator(this, (n))
+#define _ASAN_VECTOR_RELEASE_GUARD   _Annotator._Release()
+#else // ^^^ _INSERT_VECTOR_ANNOTATION ^^^ // vvv !_INSERT_VECTOR_ANNOTATION vvv
+#define _ASAN_VECTOR_MODIFY(n)
+#define _ASAN_VECTOR_REMOVE
+#define _ASAN_VECTOR_CREATE
+#define _ASAN_VECTOR_CREATE_GUARD
+#define _ASAN_VECTOR_EXTEND_GUARD(n)
+#define _ASAN_VECTOR_RELEASE_GUARD
+#endif // !_INSERT_VECTOR_ANNOTATION
+
     using _Scary_val = _Vector_val<conditional_t<_Is_simple_alloc_v<_Alty>, _Simple_types<_Ty>,
         _Vec_iter_types<_Ty, size_type, difference_type, pointer, const_pointer, _Ty&, const _Ty&>>>;
 
@@ -494,13 +697,19 @@ public:
         if constexpr (_Is_fwd_iter_v<_Iter>) {
             const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
+#ifdef __cpp_lib_concepts
+        } else if constexpr (forward_iterator<_Iter>) {
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES distance(_UFirst, _ULast)));
+            _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
+#endif // __cpp_lib_concepts
         } else {
             auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
             _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
             _Tidy_guard<vector> _Guard{this};
 
             for (; _UFirst != _ULast; ++_UFirst) {
-                emplace_back(*_UFirst); // performance note: emplace_back()'s strong guarantee is unnecessary here
+                // performance note: _Emplace_one_at_back's strong guarantee is unnecessary here.
+                _Emplace_one_at_back(*_UFirst);
             }
 
             _Guard._Target = nullptr;
@@ -553,6 +762,8 @@ public:
                     _Tidy_guard<vector> _Guard{this};
                     _My_data._Mylast =
                         _Uninitialized_move(_Right_data._Myfirst, _Right_data._Mylast, _My_data._Myfirst, _Al);
+
+                    _ASAN_VECTOR_CREATE;
                     _Guard._Target = nullptr;
                 }
                 _Proxy._Release();
@@ -565,14 +776,15 @@ public:
     }
 
     _CONSTEXPR20 vector& operator=(vector&& _Right) noexcept(
-        !is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
+        _Choose_pocma_v<_Alty> != _Pocma_values::_No_propagate_allocators) {
         if (this == _STD addressof(_Right)) {
             return *this;
         }
 
-        _Alty& _Al       = _Getal();
-        _Alty& _Right_al = _Right._Getal();
-        if constexpr (is_same_v<_Choose_pocma<_Alty>, _No_propagate_allocators>) {
+        _Alty& _Al                = _Getal();
+        _Alty& _Right_al          = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alty>;
+        if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
             if (_Al != _Right_al) {
                 _Move_assign_unequal_alloc(_Right);
                 return *this;
@@ -581,7 +793,7 @@ public:
 
         _Tidy();
 #if _ITERATOR_DEBUG_LEVEL != 0
-        if constexpr (is_same_v<_Choose_pocma<_Alty>, _Propagate_allocators>) {
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
             if (_Al != _Right_al) {
                 // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
                 _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
@@ -604,47 +816,39 @@ public:
 
 private:
     template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) _Emplace_back_with_unused_capacity(_Valty&&... _Val) {
+    _CONSTEXPR20 _Ty& _Emplace_one_at_back(_Valty&&... _Val) {
         // insert by perfectly forwarding into element at end, provide strong guarantee
         auto& _My_data   = _Mypair._Myval2;
         pointer& _Mylast = _My_data._Mylast;
-        _STL_INTERNAL_CHECK(_Mylast != _My_data._Myend); // check that we have unused capacity
-        _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
-        _Orphan_range(_Mylast, _Mylast);
-        _Ty& _Result = *_Mylast;
-        ++_Mylast;
-#if _HAS_CXX17
-        return _Result;
-#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
-        (void) _Result;
-#endif // _HAS_CXX17
-    }
 
-public:
-    template <class... _Valty>
-    _CONSTEXPR20 decltype(auto) emplace_back(_Valty&&... _Val) {
-        // insert by perfectly forwarding into element at end, provide strong guarantee
-        auto& _My_data   = _Mypair._Myval2;
-        pointer& _Mylast = _My_data._Mylast;
         if (_Mylast != _My_data._Myend) {
             return _Emplace_back_with_unused_capacity(_STD forward<_Valty>(_Val)...);
         }
 
-        _Ty& _Result = *_Emplace_reallocate(_Mylast, _STD forward<_Valty>(_Val)...);
-#if _HAS_CXX17
+        return *_Emplace_reallocate(_Mylast, _STD forward<_Valty>(_Val)...);
+    }
+
+    template <class... _Valty>
+    _CONSTEXPR20 _Ty& _Emplace_back_with_unused_capacity(_Valty&&... _Val) {
+        // insert by perfectly forwarding into element at end, provide strong guarantee
+        auto& _My_data   = _Mypair._Myval2;
+        pointer& _Mylast = _My_data._Mylast;
+        _STL_INTERNAL_CHECK(_Mylast != _My_data._Myend); // check that we have unused capacity
+        if constexpr (conjunction_v<is_nothrow_constructible<_Ty, _Valty...>,
+                          _Uses_default_construct<_Alloc, _Ty*, _Valty...>>) {
+            _ASAN_VECTOR_MODIFY(1);
+            _Construct_in_place(*_Mylast, _STD forward<_Valty>(_Val)...);
+        } else {
+            _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Mylast - _My_data._Myfirst) + 1);
+            _Alty_traits::construct(_Getal(), _Unfancy(_Mylast), _STD forward<_Valty>(_Val)...);
+            _ASAN_VECTOR_RELEASE_GUARD;
+        }
+
+        _Orphan_range(_Mylast, _Mylast);
+        _Ty& _Result = *_Mylast;
+        ++_Mylast;
+
         return _Result;
-#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
-        (void) _Result;
-#endif // _HAS_CXX17
-    }
-
-    _CONSTEXPR20 void push_back(const _Ty& _Val) { // insert element at end, provide strong guarantee
-        emplace_back(_Val);
-    }
-
-    _CONSTEXPR20 void push_back(_Ty&& _Val) {
-        // insert by moving into element at end, provide strong guarantee
-        emplace_back(_STD move(_Val));
     }
 
     template <class... _Valty>
@@ -696,6 +900,27 @@ public:
         return _Newvec + _Whereoff;
     }
 
+public:
+    template <class... _Valty>
+    _CONSTEXPR20 decltype(auto) emplace_back(_Valty&&... _Val) {
+        // insert by perfectly forwarding into element at end, provide strong guarantee
+        _Ty& _Result = _Emplace_one_at_back(_STD forward<_Valty>(_Val)...);
+#if _HAS_CXX17
+        return _Result;
+#else // ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv
+        (void) _Result;
+#endif // _HAS_CXX17
+    }
+
+    _CONSTEXPR20 void push_back(const _Ty& _Val) { // insert element at end, provide strong guarantee
+        emplace_back(_Val);
+    }
+
+    _CONSTEXPR20 void push_back(_Ty&& _Val) {
+        // insert by moving into element at end, provide strong guarantee
+        emplace_back(_STD move(_Val));
+    }
+
     template <class... _Valty>
     _CONSTEXPR20 iterator emplace(const_iterator _Where, _Valty&&... _Val) {
         // insert by perfectly forwarding _Val at _Where
@@ -716,7 +941,9 @@ public:
                 _Alloc_temporary2<_Alty> _Obj(_Al, _STD forward<_Valty>(_Val)...); // handle aliasing
                 // after constructing _Obj, provide basic guarantee
                 _Orphan_range(_Whereptr, _Oldlast);
+                _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _My_data._Myfirst) + 1);
                 _Alty_traits::construct(_Al, _Unfancy(_Oldlast), _STD move(_Oldlast[-1]));
+                _ASAN_VECTOR_RELEASE_GUARD;
                 ++_My_data._Mylast;
                 _Move_backward_unchecked(_Whereptr, _Oldlast - 1, _Oldlast);
                 *_Whereptr = _STD move(_Obj._Get_value());
@@ -799,6 +1026,7 @@ public:
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
             _Orphan_range(_Whereptr, _Oldlast);
 
+            _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _My_data._Myfirst) + _Count);
             if (_Count > _Affected_elements) { // new stuff spills off end
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Count - _Affected_elements, _Tmp, _Al);
                 _Mylast = _Uninitialized_move(_Whereptr, _Oldlast, _Mylast, _Al);
@@ -808,6 +1036,7 @@ public:
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
                 _STD fill(_Whereptr, _Whereptr + _Count, _Tmp);
             }
+            _ASAN_VECTOR_RELEASE_GUARD;
         }
 
         return _Make_iterator_offset(_Whereoff);
@@ -815,7 +1044,7 @@ public:
 
 private:
     template <class _Iter>
-    _CONSTEXPR20 void _Insert_range(const_iterator _Where, _Iter _First, _Iter _Last, input_iterator_tag) {
+    _CONSTEXPR20 void _Insert_input_range(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert input range [_First, _Last) at _Where
         if (_First == _Last) {
             return; // nothing to do, avoid invalidating iterators
@@ -829,10 +1058,10 @@ private:
 
         // For one-at-back, provide strong guarantee.
         // Otherwise, provide basic guarantee (despite N4659 26.3.11.5 [vector.modifiers]/1).
-        // Performance note: except for one-at-back, emplace_back()'s strong guarantee is unnecessary here.
+        // Performance note: except for one-at-back, _Emplace_one_at_back()'s strong guarantee is unnecessary here.
 
         for (; _First != _Last; ++_First) {
-            emplace_back(*_First);
+            _Emplace_one_at_back(*_First);
         }
 
         _Orphan_range(_Myfirst + _Whereoff, _Myfirst + _Oldsize);
@@ -841,10 +1070,18 @@ private:
     }
 
     template <class _Iter>
-    _CONSTEXPR20 void _Insert_range(const_iterator _Where, _Iter _First, _Iter _Last, forward_iterator_tag) {
+    _CONSTEXPR20 void _Insert_forward_range(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert forward range [_First, _Last) at _Where
         const pointer _Whereptr = _Where._Ptr;
-        const auto _Count       = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+        size_type _Count;
+#ifdef __cpp_lib_concepts
+        if constexpr (forward_iterator<_Iter>) {
+            _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES distance(_First, _Last)));
+        } else
+#endif // __cpp_lib_concepts
+        {
+            _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+        }
 
         auto& _Al        = _Getal();
         auto& _My_data   = _Mypair._Myval2;
@@ -898,6 +1135,7 @@ private:
 
             const auto _Affected_elements = static_cast<size_type>(_Oldlast - _Whereptr);
 
+            _ASAN_VECTOR_EXTEND_GUARD(static_cast<size_type>(_Oldlast - _Oldfirst) + _Count);
             if (_Count < _Affected_elements) { // some affected elements must be assigned
                 _Mylast = _Uninitialized_move(_Oldlast - _Count, _Oldlast, _Oldlast, _Al);
                 _Move_backward_unchecked(_Whereptr, _Oldlast - _Count, _Oldlast);
@@ -950,6 +1188,7 @@ private:
             }
 
             _Orphan_range(_Whereptr, _Oldlast);
+            _ASAN_VECTOR_RELEASE_GUARD;
         }
     }
 
@@ -967,7 +1206,16 @@ public:
 
         _Adl_verify_range(_First, _Last);
         const auto _Whereoff = static_cast<size_type>(_Whereptr - _Oldfirst);
-        _Insert_range(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+#ifdef __cpp_lib_concepts
+        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter> || forward_iterator<_Iter>;
+#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
+        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter>;
+#endif // ^^^ !__cpp_lib_concepts ^^^
+        if constexpr (_Is_fwd) {
+            _Insert_forward_range(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+        } else {
+            _Insert_input_range(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last));
+        }
         return _Make_iterator_offset(_Whereoff);
     }
 
@@ -982,29 +1230,47 @@ public:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
+        constexpr bool _Nothrow_construct =
+            conjunction_v<is_nothrow_copy_constructible<_Ty>, _Uses_default_construct<_Alloc, _Ty*, const _Ty&>>;
+
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) { // reallocate
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
+            if constexpr (_Nothrow_construct) {
+                _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
+                _ASAN_VECTOR_CREATE;
+            } else {
+                _ASAN_VECTOR_CREATE_GUARD;
+                _Mylast = _Uninitialized_fill_n(_Myfirst, _Newsize, _Val, _Al);
+            }
+
             return;
         }
 
         const auto _Oldsize = static_cast<size_type>(_Mylast - _Myfirst);
         if (_Newsize > _Oldsize) {
             _STD fill(_Myfirst, _Mylast, _Val);
-            _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
+            if constexpr (_Nothrow_construct) {
+                _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
+                _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
+            } else {
+                _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
+                _Mylast = _Uninitialized_fill_n(_Mylast, _Newsize - _Oldsize, _Val, _Al);
+                _ASAN_VECTOR_RELEASE_GUARD;
+            }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _STD fill(_Myfirst, _Newlast, _Val);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
     }
 
 private:
     template <class _Iter>
-    _CONSTEXPR20 void _Assign_range(_Iter _First, _Iter _Last, input_iterator_tag) {
+    _CONSTEXPR20 void _Assign_input_range(_Iter _First, _Iter _Last) {
         // assign input range [_First, _Last)
         auto& _My_data    = _Mypair._Myval2;
         pointer& _Myfirst = _My_data._Myfirst;
@@ -1013,7 +1279,6 @@ private:
         _My_data._Orphan_all();
 
         pointer _Next = _Myfirst;
-
         for (; _First != _Last && _Next != _Mylast; ++_First, (void) ++_Next) {
             *_Next = *_First;
         }
@@ -1025,29 +1290,48 @@ private:
 
         // Trim.
         _Destroy_range(_Next, _Mylast, _Getal());
+        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Next - _Mylast)); // negative when destroying elements
         _Mylast = _Next;
 
         // Append.
         for (; _First != _Last; ++_First) {
-            emplace_back(*_First); // performance note: emplace_back()'s strong guarantee is unnecessary here
+            // performance note: _Emplace_one_at_back()'s strong guarantee is unnecessary here
+            _Emplace_one_at_back(*_First);
         }
     }
 
     template <class _Iter>
-    _CONSTEXPR20 void _Assign_range(_Iter _First, _Iter _Last, forward_iterator_tag) {
+    _CONSTEXPR20 void _Assign_forward_range(_Iter _First, _Iter _Last) {
         // assign forward range [_First, _Last)
-        const auto _Newsize = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        auto& _Al           = _Getal();
-        auto& _My_data      = _Mypair._Myval2;
-        pointer& _Myfirst   = _My_data._Myfirst;
-        pointer& _Mylast    = _My_data._Mylast;
-        pointer& _Myend     = _My_data._Myend;
+        size_type _Newsize;
+#ifdef __cpp_lib_concepts
+        if constexpr (forward_iterator<_Iter>) {
+            _Newsize = _Convert_size<size_type>(_To_unsigned_like(_RANGES distance(_First, _Last)));
+        } else
+#endif // __cpp_lib_concepts
+        {
+            _Newsize = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+        }
+        auto& _Al         = _Getal();
+        auto& _My_data    = _Mypair._Myval2;
+        pointer& _Myfirst = _My_data._Myfirst;
+        pointer& _Mylast  = _My_data._Mylast;
+        pointer& _Myend   = _My_data._Myend;
+
+        constexpr bool _Nothrow_construct = conjunction_v<is_nothrow_constructible<_Ty, _Iter_ref_t<_Iter>>,
+            _Uses_default_construct<_Alloc, _Ty*, _Iter_ref_t<_Iter>>>;
 
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
+            if constexpr (_Nothrow_construct) {
+                _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
+                _ASAN_VECTOR_CREATE;
+            } else {
+                _ASAN_VECTOR_CREATE_GUARD;
+                _Mylast = _Uninitialized_copy(_First, _Last, _Myfirst, _Al);
+            }
             return;
         }
 
@@ -1056,11 +1340,20 @@ private:
             // performance note: traversing [_First, _Mid) twice
             const _Iter _Mid = _STD next(_First, static_cast<difference_type>(_Oldsize));
             _Copy_unchecked(_First, _Mid, _Myfirst);
-            _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
+
+            if constexpr (_Nothrow_construct) {
+                _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
+                _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
+            } else {
+                _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
+                _Mylast = _Uninitialized_copy(_Mid, _Last, _Mylast, _Al);
+                _ASAN_VECTOR_RELEASE_GUARD;
+            }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Copy_unchecked(_First, _Last, _Myfirst);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
     }
@@ -1069,41 +1362,46 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 void assign(_Iter _First, _Iter _Last) {
         _Adl_verify_range(_First, _Last);
-        _Assign_range(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Iter_cat_t<_Iter>{});
+#ifdef __cpp_lib_concepts
+        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter> || forward_iterator<_Iter>;
+#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
+        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter>;
+#endif // ^^^ !__cpp_lib_concepts ^^^
+        if constexpr (_Is_fwd) {
+            _Assign_forward_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        } else {
+            _Assign_input_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        }
     }
 
     _CONSTEXPR20 void assign(initializer_list<_Ty> _Ilist) {
-        _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
-    }
-
-private:
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, false_type) {
-        _Pocca(_Getal(), _Right._Getal());
-        auto& _Right_data = _Right._Mypair._Myval2;
-        assign(_Right_data._Myfirst, _Right_data._Mylast);
-    }
-
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, true_type) {
-        if (_Getal() != _Right._Getal()) {
-            _Tidy();
-            _Mypair._Myval2._Reload_proxy(
-                _GET_PROXY_ALLOCATOR(_Alty, _Getal()), _GET_PROXY_ALLOCATOR(_Alty, _Right._Getal()));
-        }
-
-        _Copy_assign(_Right, false_type{});
+        _Assign_forward_range(_Ilist.begin(), _Ilist.end());
     }
 
 public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
-        if (this != _STD addressof(_Right)) {
-            _Copy_assign(_Right, _Choose_pocca<_Alty>{});
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+        auto& _Al       = _Getal();
+        auto& _Right_al = _Right._Getal();
+        if constexpr (_Choose_pocca_v<_Alty>) {
+            if (_Al != _Right_al) {
+                _Tidy();
+                _Mypair._Myval2._Reload_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Al), _GET_PROXY_ALLOCATOR(_Alty, _Right_al));
+            }
+        }
+
+        _Pocca(_Al, _Right_al);
+        auto& _Right_data = _Right._Mypair._Myval2;
+        assign(_Right_data._Myfirst, _Right_data._Mylast);
 
         return *this;
     }
 
     _CONSTEXPR20 vector& operator=(initializer_list<_Ty> _Ilist) {
-        _Assign_range(_Ilist.begin(), _Ilist.end(), random_access_iterator_tag{});
+        _Assign_forward_range(_Ilist.begin(), _Ilist.end());
         return *this;
     }
 
@@ -1160,6 +1458,7 @@ private:
             const pointer _Newlast = _Myfirst + _Newsize;
             _Orphan_range(_Newlast, _Mylast);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
             return;
         }
@@ -1171,6 +1470,7 @@ private:
                 return;
             }
 
+            _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
             const pointer _Oldlast = _Mylast;
             if constexpr (is_same_v<_Ty2, _Ty>) {
                 _Mylast = _Uninitialized_fill_n(_Oldlast, _Newsize - _Oldsize, _Val, _Al);
@@ -1178,6 +1478,7 @@ private:
                 _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Ty2, _Value_init_tag>);
                 _Mylast = _Uninitialized_value_construct_n(_Oldlast, _Newsize - _Oldsize, _Al);
             }
+            _ASAN_VECTOR_RELEASE_GUARD;
             _Orphan_range(_Oldlast, _Oldlast);
         }
 
@@ -1261,6 +1562,7 @@ private:
 
         if (_Myfirst) { // destroy and deallocate old array
             _Destroy_range(_Myfirst, _Mylast, _Al);
+            _ASAN_VECTOR_REMOVE;
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
             _Myfirst = nullptr;
@@ -1306,6 +1608,7 @@ public:
 
         _Orphan_range(_Mylast - 1, _Mylast);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
+        _ASAN_VECTOR_MODIFY(-1);
         --_Mylast;
     }
 
@@ -1324,6 +1627,7 @@ public:
         _Orphan_range(_Whereptr, _Mylast);
         _Move_unchecked(_Whereptr + 1, _Mylast, _Whereptr);
         _Alty_traits::destroy(_Getal(), _Unfancy(_Mylast - 1));
+        _ASAN_VECTOR_MODIFY(-1);
         --_Mylast;
         return iterator(_Whereptr, _STD addressof(_My_data));
     }
@@ -1346,6 +1650,7 @@ public:
 
             const pointer _Newlast = _Move_unchecked(_Lastptr, _Mylast, _Firstptr);
             _Destroy_range(_Newlast, _Mylast, _Getal());
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newlast - _Mylast)); // negative when destroying elements
             _Mylast = _Newlast;
         }
 
@@ -1357,8 +1662,16 @@ public:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
+        if (_Myfirst == _Mylast) { // already empty, nothing to do
+            // This is an optimization for debug mode: we can avoid taking the debug lock to invalidate iterators.
+            // Note that when clearing an empty vector, this will preserve past-the-end iterators, which is allowed by
+            // N4901 [tab:container.seq.req] "a.clear() [...] may invalidate the past-the-end iterator".
+            return;
+        }
+
         _My_data._Orphan_all();
         _Destroy_range(_Myfirst, _Mylast, _Getal());
+        _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Myfirst - _Mylast)); // negative when destroying elements
         _Mylast = _Myfirst;
     }
 
@@ -1456,8 +1769,8 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
-        return (_STD min) (static_cast<size_type>((numeric_limits<difference_type>::max) ()),
-            _Alty_traits::max_size(_Getal()));
+        return (_STD min)(
+            static_cast<size_type>((numeric_limits<difference_type>::max)()), _Alty_traits::max_size(_Getal()));
     }
 
     _NODISCARD _CONSTEXPR20 size_type capacity() const noexcept {
@@ -1608,12 +1921,14 @@ private:
 
         if (_Myfirst) { // destroy and deallocate old array
             _Destroy_range(_Myfirst, _Mylast, _Al);
+            _ASAN_VECTOR_REMOVE;
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
         }
 
         _Myfirst = _Newvec;
         _Mylast  = _Newvec + _Newsize;
         _Myend   = _Newvec + _Newcapacity;
+        _ASAN_VECTOR_CREATE;
     }
 
     _CONSTEXPR20 void _Tidy() noexcept { // free all storage
@@ -1627,6 +1942,7 @@ private:
 
         if (_Myfirst) { // destroy and deallocate old array
             _Destroy_range(_Myfirst, _Mylast, _Al);
+            _ASAN_VECTOR_REMOVE;
             _Al.deallocate(_Myfirst, static_cast<size_type>(_Myend - _Myfirst));
 
             _Myfirst = nullptr;
@@ -1658,6 +1974,7 @@ private:
             } else {
                 static_assert(_Always_false<_Ty>, "Should be unreachable");
             }
+            _ASAN_VECTOR_CREATE;
             _Guard._Target = nullptr;
         }
 
@@ -1676,11 +1993,21 @@ private:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
+        constexpr bool _Nothrow_construct =
+            conjunction_v<is_nothrow_move_constructible<_Ty>, _Uses_default_construct<_Alloc, _Ty*, _Ty>>;
+
         _My_data._Orphan_all();
         const auto _Oldcapacity = static_cast<size_type>(_My_data._Myend - _Myfirst);
         if (_Newsize > _Oldcapacity) {
             _Clear_and_reserve_geometric(_Newsize);
-            _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
+            if constexpr (_Nothrow_construct) {
+                _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
+                _ASAN_VECTOR_CREATE;
+            } else {
+                _ASAN_VECTOR_CREATE_GUARD;
+                _Mylast = _Uninitialized_move(_First, _Last, _Myfirst, _Al);
+            }
+
             return;
         }
 
@@ -1688,11 +2015,20 @@ private:
         if (_Newsize > _Oldsize) {
             const pointer _Mid = _First + _Oldsize;
             _Move_unchecked(_First, _Mid, _Myfirst);
-            _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+
+            if constexpr (_Nothrow_construct) {
+                _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
+                _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+            } else {
+                _ASAN_VECTOR_EXTEND_GUARD(_Newsize);
+                _Mylast = _Uninitialized_move(_Mid, _Last, _Mylast, _Al);
+                _ASAN_VECTOR_RELEASE_GUARD;
+            }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
             _Move_unchecked(_First, _Last, _Myfirst);
             _Destroy_range(_Newlast, _Mylast, _Al);
+            _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
         }
     }
@@ -1710,13 +2046,12 @@ private:
         _Iterator_base12** _Pnext = &_Mypair._Myval2._Myproxy->_Myfirstiter;
         while (*_Pnext) {
             const auto _Pnextptr = static_cast<const_iterator&>(**_Pnext)._Ptr;
+            const auto _Temp     = *_Pnext;
             if (_Pnextptr < _First || _Last < _Pnextptr) { // skip the iterator
-                const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
-                _Pnext           = &_Temp->_Mynextiter;
+                _Pnext = &_Temp->_Mynextiter;
             } else { // orphan the iterator
-                const auto _Temp = *_Pnext; // TRANSITION, VSO-1269037
-                _Temp->_Myproxy  = nullptr;
-                *_Pnext          = _Temp->_Mynextiter;
+                _Temp->_Myproxy = nullptr;
+                *_Pnext         = _Temp->_Mynextiter;
             }
         }
     }
@@ -1771,8 +2106,9 @@ vector(_Iter, _Iter, _Alloc = _Alloc()) -> vector<_Iter_value_t<_Iter>, _Alloc>;
 template <class _Alloc>
 class vector<bool, _Alloc>;
 
-using _Vbase         = unsigned int; // word type for vector<bool> representation
-constexpr int _VBITS = 8 * sizeof(_Vbase); // at least CHAR_BITS bits per word
+using _Vbase = unsigned int; // word type for vector<bool> representation
+
+_INLINE_VAR constexpr int _VBITS = 8 * sizeof(_Vbase); // at least CHAR_BITS bits per word
 
 template <class _Ty, class _Alloc>
 _NODISCARD _CONSTEXPR20 bool operator==(const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
@@ -1843,7 +2179,7 @@ _NODISCARD constexpr _Synth_three_way_result<_Ty> operator<=>(
     const vector<_Ty, _Alloc>& _Left, const vector<_Ty, _Alloc>& _Right) {
     if constexpr (is_same_v<_Ty, bool>) {
         // This optimization works because vector<bool> "trims" its underlying storage by zeroing out unused bits.
-        const auto _Min_word_size = (_STD min) (_Left._Myvec.size(), _Right._Myvec.size());
+        const auto _Min_word_size = (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
         const auto _Left_words    = _Left._Myvec._Unchecked_begin();
         const auto _Right_words   = _Right._Myvec._Unchecked_begin();
 
@@ -1870,7 +2206,7 @@ _NODISCARD _CONSTEXPR20 bool operator<(const vector<_Ty, _Alloc>& _Left, const v
         auto _First = _Left._Myvec._Unchecked_begin();
         auto _Other = _Right._Myvec._Unchecked_begin();
 
-        const auto _Last = _First + (_STD min) (_Left._Myvec.size(), _Right._Myvec.size());
+        const auto _Last = _First + (_STD min)(_Left._Myvec.size(), _Right._Myvec.size());
 
         for (; _First != _Last; ++_First, (void) ++_Other) {
             using _Comp = _Vbase_compare_three_way<signed char>;
@@ -1944,9 +2280,6 @@ public:
         this->_Adopt(_Mypvbool);
     }
 
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vb_iter_base& operator=(const _Vb_iter_base&) noexcept = default;
-
     _CONSTEXPR20 void _Advance(_Size_type _Off) noexcept {
         _Myoff += _Off;
         _Myptr += _Myoff / _VBITS;
@@ -1966,6 +2299,7 @@ public:
 template <class _Alvbase_wrapped>
 class _Vb_reference : public _Vb_iter_base<_Alvbase_wrapped> {
     // reference to a bit within a base word
+private:
     using _Mybase          = _Vb_iter_base<_Alvbase_wrapped>;
     using _Mycont          = typename _Mybase::_Mycont;
     using _Difference_type = typename _Mybase::_Difference_type;
@@ -1992,6 +2326,18 @@ public:
 
         return *this;
     }
+
+#if _HAS_CXX23
+    constexpr const _Vb_reference& operator=(bool _Val) const noexcept {
+        if (_Val) {
+            *const_cast<_Vbase*>(_Getptr()) |= _Mask();
+        } else {
+            *const_cast<_Vbase*>(_Getptr()) &= ~_Mask();
+        }
+
+        return *this;
+    }
+#endif // _HAS_CXX23
 
     _CONSTEXPR20 void flip() noexcept {
         *const_cast<_Vbase*>(_Getptr()) ^= _Mask();
@@ -2046,9 +2392,6 @@ public:
 
     _CONSTEXPR20 _Vb_const_iterator(const _Vbase* _Ptr, const _Container_base* _Mypvbool) noexcept
         : _Mybase(_Ptr, 0, _Mypvbool) {}
-
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vb_const_iterator& operator=(const _Vb_const_iterator&) noexcept = default;
 
     _NODISCARD _CONSTEXPR20 const_reference operator*() const noexcept {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -2114,6 +2457,12 @@ public:
         _Vb_const_iterator _Tmp = *this;
         _Tmp += _Off;
         return _Tmp;
+    }
+
+    _NODISCARD_FRIEND _CONSTEXPR20 _Vb_const_iterator operator+(
+        const difference_type _Off, _Vb_const_iterator _Right) noexcept {
+        _Right += _Off;
+        return _Right;
     }
 
     _CONSTEXPR20 _Vb_const_iterator& operator-=(const difference_type _Off) noexcept {
@@ -2223,14 +2572,6 @@ public:
 };
 
 template <class _Alvbase_wrapped>
-_NODISCARD _CONSTEXPR20 _Vb_const_iterator<_Alvbase_wrapped> operator+(
-    typename _Vb_const_iterator<_Alvbase_wrapped>::difference_type _Off,
-    _Vb_const_iterator<_Alvbase_wrapped> _Right) noexcept {
-    _Right += _Off;
-    return _Right;
-}
-
-template <class _Alvbase_wrapped>
 class _Vb_iterator : public _Vb_const_iterator<_Alvbase_wrapped> {
 public:
     using _Mybase          = _Vb_const_iterator<_Alvbase_wrapped>;
@@ -2258,9 +2599,6 @@ public:
 
         return _Reft(*this);
     }
-
-    // TRANSITION, DevCom-1331017
-    _CONSTEXPR20 _Vb_iterator& operator=(const _Vb_iterator&) noexcept = default;
 
     _CONSTEXPR20 _Vb_iterator& operator++() noexcept {
         _Mybase::operator++();
@@ -2295,6 +2633,11 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _Vb_iterator operator+(const difference_type _Off, _Vb_iterator _Right) noexcept {
+        _Right += _Off;
+        return _Right;
+    }
+
     _CONSTEXPR20 _Vb_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
@@ -2314,13 +2657,6 @@ public:
 
     using _Prevent_inheriting_unwrap = _Vb_iterator;
 };
-
-template <class _Alvbase_wrapped>
-_NODISCARD _CONSTEXPR20 _Vb_iterator<_Alvbase_wrapped> operator+(
-    typename _Vb_iterator<_Alvbase_wrapped>::difference_type _Off, _Vb_iterator<_Alvbase_wrapped> _Right) noexcept {
-    _Right += _Off;
-    return _Right;
-}
 
 template <class _Alloc>
 class _Vb_val : public _Container_base {
@@ -2453,11 +2789,6 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 vector(_Iter _First, _Iter _Last, const _Alloc& _Al = _Alloc()) : _Mybase(_Al) {
-        _BConstruct(_First, _Last);
-    }
-
-    template <class _Iter>
-    _CONSTEXPR20 void _BConstruct(_Iter _First, _Iter _Last) {
         insert(begin(), _First, _Last);
     }
 
@@ -2478,58 +2809,52 @@ public:
         this->_Swap_proxy_and_iterators(_Right);
     }
 
-private:
-#if _ITERATOR_DEBUG_LEVEL != 0
-    _CONSTEXPR20 void _Move_assign(vector& _Right, _Equal_allocators) noexcept {
-        this->_Myvec  = _STD move(_Right._Myvec);
-        this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
-        this->_Swap_proxy_and_iterators(_Right);
-    }
-
-    _CONSTEXPR20 void _Move_assign(vector& _Right, _Propagate_allocators) noexcept {
-        using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
-        if (this->_Getal() != _Right._Getal()) { // reload proxy
-            // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
-            _Alproxy_type _Oldal(this->_Getal());
-            _Alproxy_type _Right_proxy_al(_Right._Getal());
-            _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
-            this->_Myvec  = _STD move(_Right._Myvec);
-            this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
-            _Proxy._Bind(_Oldal, this);
-            this->_Swap_proxy_and_iterators(_Right);
-            return;
-        }
-
-        this->_Myvec  = _STD move(_Right._Myvec);
-        this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
-        this->_Swap_proxy_and_iterators(_Right);
-    }
-
-    _CONSTEXPR20 void _Move_assign(vector& _Right, _No_propagate_allocators) {
-        this->_Myvec  = _STD move(_Right._Myvec);
-        this->_Mysize = _Right._Mysize;
-        if (_Right._Myvec.empty()) {
-            // we took _Right's buffer, so zero out size
-            _Right._Mysize = 0;
-        }
-
-        if (this->_Getal() == _Right._Getal()) {
-            this->_Swap_proxy_and_iterators(_Right);
-        }
-    }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
 public:
     _CONSTEXPR20 vector& operator=(vector&& _Right) noexcept(is_nothrow_move_assignable_v<_Mybase>) {
-        if (this != _STD addressof(_Right)) {
-#if _ITERATOR_DEBUG_LEVEL == 0
-            this->_Myvec  = _STD move(_Right._Myvec);
-            this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
-            this->_Orphan_all();
-            _Move_assign(_Right, _Choose_pocma<_Alvbase>{});
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+#if _ITERATOR_DEBUG_LEVEL == 0
+        this->_Myvec  = _STD move(_Right._Myvec);
+        this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+        this->_Orphan_all();
+        auto& _Al = this->_Getal();
+        auto& _Right_al = _Right._Getal();
+        constexpr auto _Pocma_val = _Choose_pocma_v<_Alvbase>;
+        if constexpr (_Pocma_val == _Pocma_values::_Propagate_allocators) {
+            using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
+            if (_Al != _Right_al) { // reload proxy
+                // intentionally slams into noexcept on OOM, TRANSITION, VSO-466800
+                _Alproxy_type _Oldal(_Al);
+                _Alproxy_type _Right_proxy_al(_Right_al);
+                _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
+                this->_Myvec = _STD move(_Right._Myvec);
+                this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
+                _Proxy._Bind(_Oldal, this);
+                this->_Swap_proxy_and_iterators(_Right);
+                return *this;
+            }
+        } else if constexpr (_Pocma_val == _Pocma_values::_No_propagate_allocators) {
+            this->_Myvec = _STD move(_Right._Myvec);
+            this->_Mysize = _Right._Mysize;
+            if (_Right._Myvec.empty()) {
+                // we took _Right's buffer, so zero out size
+                _Right._Mysize = 0;
+            }
+
+            if (_Al == _Right_al) {
+                this->_Swap_proxy_and_iterators(_Right);
+            }
+            return *this;
+        }
+
+        this->_Myvec = _STD move(_Right._Myvec);
+        this->_Mysize = _STD exchange(_Right._Mysize, size_type{0});
+        this->_Swap_proxy_and_iterators(_Right);
+
+#endif // _ITERATOR_DEBUG_LEVEL == 0
         return *this;
     }
 
@@ -2568,40 +2893,36 @@ public:
 
     _CONSTEXPR20 ~vector() noexcept {}
 
-private:
-#if _ITERATOR_DEBUG_LEVEL != 0
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, false_type) {
-        this->_Myvec  = _Right._Myvec;
-        this->_Mysize = _Right._Mysize;
-    }
-
-    _CONSTEXPR20 void _Copy_assign(const vector& _Right, true_type) {
-        if (this->_Getal() == _Right._Getal()) {
-            _Copy_assign(_Right, false_type{});
-        } else {
-            // reload proxy
-            using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
-            _Alproxy_type _Oldal(this->_Getal());
-            _Alproxy_type _Right_proxy_al(_Right._Getal());
-            _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
-            this->_Myvec  = _Right._Myvec;
-            this->_Mysize = _Right._Mysize;
-            _Proxy._Bind(_Oldal, this);
-        }
-    }
-#endif // _ITERATOR_DEBUG_LEVEL != 0
-
 public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
-        if (this != _STD addressof(_Right)) {
-#if _ITERATOR_DEBUG_LEVEL == 0
-            this->_Myvec  = _Right._Myvec;
-            this->_Mysize = _Right._Mysize;
-#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
-            this->_Orphan_all();
-            _Copy_assign(_Right, _Choose_pocca<_Alvbase>{});
-#endif // _ITERATOR_DEBUG_LEVEL == 0
+        if (this == _STD addressof(_Right)) {
+            return *this;
         }
+
+#if _ITERATOR_DEBUG_LEVEL == 0
+        this->_Myvec  = _Right._Myvec;
+        this->_Mysize = _Right._Mysize;
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
+        this->_Orphan_all();
+        auto& _Al = this->_Getal();
+        auto& _Right_al = _Right._Getal();
+        if constexpr (_Choose_pocca_v<_Alvbase>) {
+            if (_Al != _Right_al) {
+                // reload proxy
+                using _Alproxy_type = _Rebind_alloc_t<_Alvbase, _Container_proxy>;
+                _Alproxy_type _Oldal(_Al);
+                _Alproxy_type _Right_proxy_al(_Right_al);
+                _Container_proxy_ptr<_Alvbase> _Proxy(_Right_proxy_al, _Leave_proxy_unbound{});
+                this->_Myvec = _Right._Myvec;
+                this->_Mysize = _Right._Mysize;
+                _Proxy._Bind(_Oldal, this);
+                return *this;
+            }
+        }
+
+        this->_Myvec = _Right._Myvec;
+        this->_Mysize = _Right._Mysize;
+#endif // _ITERATOR_DEBUG_LEVEL == 0
 
         return *this;
     }
@@ -2707,7 +3028,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR20 size_type max_size() const noexcept {
-        constexpr auto _Diff_max  = static_cast<size_type>((numeric_limits<difference_type>::max) ());
+        constexpr auto _Diff_max  = static_cast<size_type>((numeric_limits<difference_type>::max)());
         const size_type _Ints_max = this->_Myvec.max_size();
         if (_Ints_max > _Diff_max / _VBITS) { // max_size bound by difference_type limits
             return _Diff_max;
@@ -2822,26 +3143,23 @@ public:
 
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
-        difference_type _Off = _Where - begin();
-        _Insert(_Where, _First, _Last, _Iter_cat_t<_Iter>{});
-        return begin() + _Off;
-    }
+        const difference_type _Saved_offset = _Where - begin();
 
-    template <class _Iter>
-    _CONSTEXPR20 void _Insert(const_iterator _Where, _Iter _First, _Iter _Last, input_iterator_tag) {
-        difference_type _Off = _Where - begin();
+        if constexpr (_Is_fwd_iter_v<_Iter>) {
+            _Adl_verify_range(_First, _Last);
+            const auto _Count    = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+            const size_type _Off = _Insert_x(_Where, _Count);
+            _Copy_unchecked(
+                _Get_unwrapped(_First), _Get_unwrapped(_Last), begin() + static_cast<difference_type>(_Off));
+        } else {
+            difference_type _Off = _Saved_offset;
 
-        for (; _First != _Last; ++_First, (void) ++_Off) {
-            insert(begin() + _Off, *_First);
+            for (; _First != _Last; ++_First, (void) ++_Off) {
+                insert(begin() + _Off, *_First);
+            }
         }
-    }
 
-    template <class _Iter>
-    _CONSTEXPR20 void _Insert(const_iterator _Where, _Iter _First, _Iter _Last, forward_iterator_tag) {
-        _Adl_verify_range(_First, _Last);
-        auto _Count    = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
-        size_type _Off = _Insert_x(_Where, _Count);
-        _Copy_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), begin() + static_cast<difference_type>(_Off));
+        return begin() + _Saved_offset;
     }
 
     _CONSTEXPR20 iterator erase(const_iterator _Where_arg) noexcept /* strengthened */ {
@@ -2933,7 +3251,9 @@ public:
                 _Xlen(); // result too long
             }
 
-            // worth doing
+#if _ITERATOR_DEBUG_LEVEL == 2
+            _Orphan_range(static_cast<size_type>(_Realloc ? 0 : _Off), this->_Mysize);
+#endif // _ITERATOR_DEBUG_LEVEL == 2
             this->_Myvec.resize(this->_Nw(size() + _Count), 0);
             if (empty()) {
                 this->_Mysize += _Count;
@@ -2942,10 +3262,6 @@ public:
                 this->_Mysize += _Count;
                 _STD copy_backward(begin() + _Off, _Oldend, end());
             }
-
-#if _ITERATOR_DEBUG_LEVEL == 2
-            _Orphan_range(static_cast<size_type>(_Realloc ? 0 : _Off), this->_Mysize);
-#endif // _ITERATOR_DEBUG_LEVEL == 2
         }
 
         return static_cast<size_type>(_Off);
@@ -2958,7 +3274,7 @@ public:
         _Iterator_base12** _Pnext = &this->_Myproxy->_Myfirstiter;
         while (*_Pnext) { // test offset from beginning of vector
             const auto& _Pnextiter = static_cast<const_iterator&>(**_Pnext);
-            const auto _Temp       = *_Pnext; // TRANSITION, VSO-1269037
+            const auto _Temp       = *_Pnext;
             if (!_Pnextiter._Myptr) { // orphan the iterator
                 _Temp->_Myproxy = nullptr;
                 *_Pnext         = _Temp->_Mynextiter;
@@ -3040,8 +3356,8 @@ _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_iterator<_Alloc>, _RequiresMutabl
 template <class _Alloc>
 _INLINE_VAR constexpr bool _Is_vb_iterator<_Vb_const_iterator<_Alloc>, false> = true;
 
-template <class _VbIt, class _Ty>
-_CONSTEXPR20 void _Fill_vbool(_VbIt _First, _VbIt _Last, const _Ty& _Val) {
+template <class _VbIt>
+_CONSTEXPR20 void _Fill_vbool(_VbIt _First, const _VbIt _Last, const bool _Val) noexcept {
     // Set [_First, _Last) to _Val
     if (_First == _Last) {
         return;
@@ -3090,8 +3406,8 @@ _CONSTEXPR20 void _Fill_vbool(_VbIt _First, _VbIt _Last, const _Ty& _Val) {
     }
 }
 
-template <class _VbIt, class _Ty>
-_NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const _Ty& _Val) {
+template <class _VbIt>
+_NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const bool _Val) noexcept {
     // Find _Val in [_First, _Last)
     if (_First == _Last) {
         return _First;
@@ -3139,8 +3455,8 @@ _NODISCARD _CONSTEXPR20 _VbIt _Find_vbool(_VbIt _First, const _VbIt _Last, const
     return _Last;
 }
 
-template <class _VbIt, class _Ty>
-_NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _VbIt _Last, const _Ty& _Val) {
+template <class _VbIt>
+_NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _VbIt _Last, const bool _Val) noexcept {
     if (_First == _Last) {
         return 0;
     }
@@ -3158,23 +3474,35 @@ _NODISCARD _CONSTEXPR20 _Iter_diff_t<_VbIt> _Count_vbool(_VbIt _First, const _Vb
         return _Popcount(_SelectVal);
     }
 
-    const auto _FirstVal       = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
-    _Iter_diff_t<_VbIt> _Count = _Popcount(_FirstVal);
-    ++_VbFirst;
+    return _Select_popcount_impl<_Vbase>(
+        [_Last, _Val, _VbFirst, _VbLast, _FirstSourceMask](auto _Popcount_impl) mutable noexcept {
+            const auto _FirstVal       = (_Val ? *_VbFirst : ~*_VbFirst) & _FirstSourceMask;
+            _Iter_diff_t<_VbIt> _Count = _Popcount_impl(_FirstVal);
+            ++_VbFirst;
 
-    for (; _VbFirst != _VbLast; ++_VbFirst) {
-        const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
-        _Count += _Popcount(_SelectVal);
-    }
+            for (; _VbFirst != _VbLast; ++_VbFirst) {
+                const auto _SelectVal = _Val ? *_VbFirst : ~*_VbFirst;
+                _Count += _Popcount_impl(_SelectVal);
+            }
 
-    if (_Last._Myoff != 0) {
-        const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
-        const auto _LastVal        = (_Val ? *_VbFirst : ~*_VbFirst) & _LastSourceMask;
-        _Count += _Popcount(_LastVal);
-    }
+            if (_Last._Myoff != 0) {
+                const auto _LastSourceMask = static_cast<_Vbase>(-1) >> (_VBITS - _Last._Myoff);
+                const auto _LastVal        = (_Val ? *_VbFirst : ~*_VbFirst) & _LastSourceMask;
+                _Count += _Popcount_impl(_LastVal);
+            }
 
-    return _Count;
+            return _Count;
+        });
 }
+
+#undef _ASAN_VECTOR_MODIFY
+#undef _ASAN_VECTOR_REMOVE
+#undef _ASAN_VECTOR_CREATE
+#undef _ASAN_VECTOR_CREATE_GUARD
+#undef _ASAN_VECTOR_EXTEND_GUARD
+#undef _ASAN_VECTOR_RELEASE_GUARD
+#undef _ACTIVATE_VECTOR_ANNOTATION
+#undef _INSERT_VECTOR_ANNOTATION
 _STD_END
 
 #pragma pop_macro("new")

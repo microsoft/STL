@@ -7,6 +7,11 @@ using namespace std;
 
 // Needs to be separately declared as a simple alias of streampos
 void test_forward_declaration(wstreampos*);
+#ifdef __cpp_lib_char8_t
+void test_forward_declaration(u8streampos*);
+#endif // __cpp_lib_char8_t
+void test_forward_declaration(u16streampos*);
+void test_forward_declaration(u32streampos*);
 
 struct test_aliases {
     static void test_forward_declaration(streampos*);
