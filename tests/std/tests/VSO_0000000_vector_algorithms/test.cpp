@@ -366,6 +366,13 @@ void test_vector_algorithms() {
     test_min_max_element_special_cases<int8_t, 32>(); // AVX2 vectors
     test_min_max_element_special_cases<int8_t, 64>(); // AVX512 vectors
 
+    // Test VSO-1558536, a regression caused by GH-2447 that was specific to 64-bit types on x86.
+    test_case_min_max_element(vector<uint64_t>{10, 0x8000'0000ULL, 20, 30});
+    test_case_min_max_element(vector<uint64_t>{10, 20, 0xD000'0000'B000'0000ULL, 30, 0xC000'0000'A000'0000ULL});
+    test_case_min_max_element(vector<int64_t>{10, 0x8000'0000LL, 20, 30});
+    test_case_min_max_element(
+        vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
+
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
     test_reverse<unsigned char>(gen);
