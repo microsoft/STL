@@ -2,16 +2,49 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cstddef>
+#include <cstdint>
+#include <cstdio>
 #include <deque>
+#include <functional>
 #include <isa_availability.h>
+#include <limits>
 #include <list>
 #include <random>
 #include <type_traits>
 #include <vector>
 
 using namespace std;
+
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
+#endif // __clang__
+
+void initialize_randomness(mt19937_64& gen) {
+    constexpr size_t n = mt19937_64::state_size;
+    constexpr size_t w = mt19937_64::word_size;
+    constexpr size_t k = w / 32;
+
+    vector<uint32_t> vec(n * k);
+
+    random_device rd;
+    generate(vec.begin(), vec.end(), ref(rd));
+
+    printf("This is a randomized test.\n");
+    printf("DO NOT IGNORE/RERUN ANY FAILURES.\n");
+    printf("You must report them to the STL maintainers.\n\n");
+
+    printf("Seed vector: ");
+    for (const auto& e : vec) {
+        printf("%u,", e);
+    }
+    printf("\n");
+
+    seed_seq seq(vec.cbegin(), vec.cend());
+    gen.seed(seq);
+}
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
 extern "C" long __isa_enabled;
@@ -164,10 +197,18 @@ void test_case_min_max_element(const vector<T>& input) {
 
 template <class T>
 void test_min_max_element(mt19937_64& gen) {
-    using Distribution = conditional_t<is_floating_point_v<T>, uniform_real_distribution<T>,
-        conditional_t<(sizeof(T) > 1), uniform_int_distribution<T>, uniform_int_distribution<int>>>;
+    static constexpr T Min = numeric_limits<T>::min();
+    static constexpr T Max = numeric_limits<T>::max();
 
-    Distribution dis(1, 20);
+    auto dis = [] {
+        if constexpr (is_floating_point_v<T>) {
+            return uniform_real_distribution<T>{-Max / 2, Max / 2};
+        } else if constexpr (sizeof(T) > 1) {
+            return uniform_int_distribution<T>{Min, Max};
+        } else {
+            return uniform_int_distribution<int>{Min, Max};
+        }
+    }();
 
     vector<T> input;
     input.reserve(dataCount);
@@ -324,9 +365,7 @@ void test_swap_ranges(mt19937_64& gen) {
     }
 }
 
-void test_vector_algorithms() {
-    mt19937_64 gen(1729);
-
+void test_vector_algorithms(mt19937_64& gen) {
     test_count<char>(gen);
     test_count<signed char>(gen);
     test_count<unsigned char>(gen);
@@ -445,18 +484,21 @@ void test_various_containers() {
 }
 
 int main() {
-    test_vector_algorithms();
+    mt19937_64 gen;
+    initialize_randomness(gen);
+
+    test_vector_algorithms(gen);
     test_various_containers();
 #ifndef _M_CEE_PURE
 #if defined(_M_IX86) || defined(_M_X64)
     disable_instructions(__ISA_AVAILABLE_AVX2);
-    test_vector_algorithms();
+    test_vector_algorithms(gen);
     disable_instructions(__ISA_AVAILABLE_SSE42);
-    test_vector_algorithms();
+    test_vector_algorithms(gen);
 #endif // defined(_M_IX86) || defined(_M_X64)
 #if defined(_M_IX86)
     disable_instructions(__ISA_AVAILABLE_SSE2);
-    test_vector_algorithms();
+    test_vector_algorithms(gen);
 #endif // defined(_M_IX86)
 #endif // _M_CEE_PURE
 }
