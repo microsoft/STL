@@ -1316,8 +1316,8 @@ private:
 
     enum class _Is_bidi : bool { _No, _Yes };
 
-    template <_Is_bidi _Bidi, class _It, class _Se>
-    iterator _Insert_range(const size_type _Off, _It _First, _Se _Last) {
+    template <_Is_bidi _Bidi, class _Iter, class _Sent>
+    iterator _Insert_range(const size_type _Off, _Iter _First, _Sent _Last) {
         // insert [_First, _Last) at begin() + _Off
 
 #if _ITERATOR_DEBUG_LEVEL == 2

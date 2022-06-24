@@ -998,8 +998,8 @@ public:
     }
 
 private:
-    template <class _It, class _Se>
-    iterator _Insert_range_after(_Nodeptr _Pnode, _It _First, const _Se _Last) {
+    template <class _Iter, class _Sent>
+    iterator _Insert_range_after(_Nodeptr _Pnode, _Iter _First, const _Sent _Last) {
         // insert [_First, _Last) after _Pnode
         if (_First == _Last) {
             return _Make_iter(_Pnode);

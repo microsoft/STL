@@ -1240,9 +1240,9 @@ public:
 
 #ifdef __cpp_lib_concepts
     // clang-format off
-    template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
-        requires (is_same_v<iter_value_t<_It>, _Elem> && !is_convertible_v<_Se, size_type>)
-    constexpr basic_string_view(_It _First, _Se _Last) noexcept(noexcept(_Last - _First)) // strengthened
+    template <contiguous_iterator _Iter, sized_sentinel_for<_Iter> _Sent>
+        requires (is_same_v<iter_value_t<_Iter>, _Elem> && !is_convertible_v<_Sent, size_type>)
+    constexpr basic_string_view(_Iter _First, _Sent _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mydata(_STD to_address(_First)), _Mysize(static_cast<size_type>(_Last - _First)) {}
     // clang-format on
 
@@ -1657,8 +1657,8 @@ private:
 };
 
 #ifdef __cpp_lib_concepts
-template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
-basic_string_view(_It, _Se) -> basic_string_view<iter_value_t<_It>>;
+template <contiguous_iterator _Iter, sized_sentinel_for<_Iter> _Sent>
+basic_string_view(_Iter, _Sent) -> basic_string_view<iter_value_t<_Iter>>;
 
 #if _HAS_CXX23
 template <_RANGES contiguous_range _Range>
@@ -2827,7 +2827,7 @@ public:
             const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
 
             if constexpr (contiguous_iterator<decltype(_RANGES _Ubegin(_Range))> && //
-                same_as<_RANGES range_value_t<_Rng>, _Elem>) {
+                          same_as<_RANGES range_value_t<_Rng>, _Elem>) {
                 if (_Count != 0) {
                     const auto _Ptr = _STD to_address(_RANGES _Ubegin(_Range));
                     assign(_Ptr, _Count);
