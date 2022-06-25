@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.23)
 project(msvc_standard_libraries_format NONE)
 
 set(did_search OFF)
@@ -50,7 +50,7 @@ if(CLANG_FORMAT)
         message("${message_level}" "Could not find any files to clang-format!")
     endif()
 
-    add_custom_target(clang-format-all ALL)
+    add_custom_target(run-format)
     foreach(file IN LISTS clang_format_files)
         cmake_path(RELATIVE_PATH file
             BASE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../.."
@@ -60,9 +60,9 @@ if(CLANG_FORMAT)
         set(target_name "clang-format.${relative-file}")
         add_custom_target("${target_name}"
             COMMAND "${CLANG_FORMAT}" -style=file -i "${file}"
-            WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../.."
         )
-        add_dependencies(clang-format-all "${target_name}")
+        add_dependencies(run-format "${target_name}")
     endforeach()
 else()
     if(did_search)

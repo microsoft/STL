@@ -708,6 +708,31 @@ constexpr void iterator_instantiation_test() {
     iterator_instantiator::call<test_iterator<contiguous_iterator_tag, CanDifference::yes>>();
 }
 
+// GH-1709 "Performance issue in handling range iterators in vector constructor"
+void test_gh_1709() {
+    const vector vec{1, 2, 3, 4, 5};
+    const auto transformed{vec | views::transform([](int i) { return i * 10; })};
+    const auto b{ranges::begin(transformed)};
+    const auto e{ranges::end(transformed)};
+
+    {
+        const vector test_construct(b, e);
+        assert((test_construct == vector{10, 20, 30, 40, 50}));
+    }
+
+    {
+        vector test_insert{-6, -7};
+        test_insert.insert(test_insert.end(), b, e);
+        assert((test_insert == vector{-6, -7, 10, 20, 30, 40, 50}));
+    }
+
+    {
+        vector test_assign{-8, -9};
+        test_assign.assign(b, e);
+        assert((test_assign == vector{10, 20, 30, 40, 50}));
+    }
+}
+
 int main() {
     { // Validate copyable views
         constexpr span<const int> s{some_ints};
@@ -776,4 +801,6 @@ int main() {
         assert(*i1 == 'e');
         assert(*i2 == 'h');
     }
+
+    test_gh_1709();
 }

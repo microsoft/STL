@@ -1,15 +1,22 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.23)
 project(msvc_standard_libraries_validate LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
-add_compile_definitions(NOMINMAX UNICODE _UNICODE)
+add_executable(validate-binary validate.cpp)
 # we use SAL annotations, so pass /analyze
-add_compile_options(/W4 /WX $<$<NOT:$<CONFIG:Debug>>:/Zi> /permissive- /analyze)
+target_compile_options(validate-binary PRIVATE /W4 /WX /analyze)
+set_target_properties(validate-binary
+    PROPERTIES
+        CXX_STANDARD 20
+        CXX_EXTENSIONS OFF
+        CXX_STANDARD_REQUIRED ON
+        # statically link the standard library
+        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+)
 
-add_executable(validate validate.cpp)
+add_custom_target(run-validate
+    COMMAND validate-binary
+    WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../.."
+)

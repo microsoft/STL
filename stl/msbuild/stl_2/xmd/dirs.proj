@@ -6,8 +6,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\crt-common.settings.targets" />
 
-    <ItemGroup Condition="'$(BuildExePhase)' == '1' and
-                          ('$(SpectreBuildMode)' == '' or
+    <ItemGroup Condition="('$(SpectreBuildMode)' == '' or
                            '$(SpectreBuildDebug)' == 'true' or
                            '$(_BuildType)' == 'chk' or
                            '$(_BuildType)' == 'dbg')">
@@ -16,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ProjectFile Include="msvcp_2_onecore\msvcp_2.nativeproj" />
     </ItemGroup>
 
-    <ItemGroup Condition="'$(BuildExePhase)' == '1' and ('$(SpectreBuildMode)' == '' or '$(SpectreBuildDebug)' == 'true')">
+    <ItemGroup Condition="('$(SpectreBuildMode)' == '' or '$(SpectreBuildDebug)' == 'true')">
         <ProjectFile Include="msvcp_2_netfx\msvcp_2.nativeproj" Condition="'$(BuildArchitecture)' != 'chpe'" />
     </ItemGroup>
 

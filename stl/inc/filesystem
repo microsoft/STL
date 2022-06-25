@@ -211,21 +211,6 @@ namespace filesystem {
         }
     }
 
-    template <class>
-    inline constexpr bool _Is_EcharT = false;
-    template <>
-    inline constexpr bool _Is_EcharT<char> = true;
-    template <>
-    inline constexpr bool _Is_EcharT<wchar_t> = true;
-#ifdef __cpp_char8_t
-    template <>
-    inline constexpr bool _Is_EcharT<char8_t> = true;
-#endif // __cpp_char8_t
-    template <>
-    inline constexpr bool _Is_EcharT<char16_t> = true;
-    template <>
-    inline constexpr bool _Is_EcharT<char32_t> = true;
-
     template <class _Ty, class = void>
     inline constexpr bool _Is_Source_impl = false;
 
@@ -269,7 +254,7 @@ namespace filesystem {
     _NODISCARD wstring _Convert_stringoid_to_wide(const wstring_view _Input, _Conversion) {
         static_assert(
             is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
-        return wstring(_Input);
+        return wstring{_Input};
     }
 
 #ifdef __cpp_char8_t
@@ -286,7 +271,7 @@ namespace filesystem {
     _NODISCARD wstring _Convert_stringoid_to_wide(const u16string_view _Input, _Conversion) {
         static_assert(
             is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
-        return wstring(_Input.data(), _Input.data() + _Input.size());
+        return wstring{_Input.data(), _Input.data() + _Input.size()};
     }
 
     template <class _Conversion>
@@ -1682,11 +1667,21 @@ namespace filesystem {
         return _Val;
     }
 
+    _NODISCARD inline bool _Starts_with_root_name(const wchar_t* const _First, const wchar_t* const _Last) {
+        return _Find_root_name_end(_First, _Last) != _First;
+    }
+
     _NODISCARD inline bool _Relative_path_contains_root_name(const path& _Path) {
-        for (const auto& _File_name : _Path.relative_path()) {
-            if (!_Parse_root_name(_File_name.native()).empty()) {
+        const auto& _Native = _Path.native();
+        auto _First         = _Native.data();
+        const auto _Last    = _First + _Native.size();
+        _First              = _Find_relative_path(_First, _Last);
+        while (_First != _Last) {
+            const auto _Next = _STD find_if(_First, _Last, _Is_slash);
+            if (_Starts_with_root_name(_First, _Next)) {
                 return true;
             }
+            _First = _STD find_if_not(_Next, _Last, _Is_slash);
         }
         return false;
     }
@@ -2126,12 +2121,14 @@ namespace filesystem {
         directory_entry(const directory_entry&)     = default;
         directory_entry(directory_entry&&) noexcept = default;
         explicit directory_entry(const filesystem::path& _Path_arg) : _Cached_data{}, _Path(_Path_arg) {
-            (void) _Refresh(_Cached_data, _Path);
+            refresh();
         }
 
         directory_entry(const filesystem::path& _Path_arg, error_code& _Ec) : _Cached_data{}, _Path(_Path_arg) {
-            _Ec.clear();
-            (void) _Refresh(_Cached_data, _Path);
+            refresh(_Ec);
+            if (_Ec) {
+                _Path.clear();
+            }
         }
 
         ~directory_entry() = default;
@@ -2143,35 +2140,39 @@ namespace filesystem {
         // [fs.dir.entry.mods], modifiers
         void assign(const filesystem::path& _Path_arg) {
             _Path.assign(_Path_arg);
-            (void) _Refresh(_Cached_data, _Path);
+            refresh();
         }
 
         void assign(const filesystem::path& _Path_arg, error_code& _Ec) {
             _Ec.clear(); // for exception safety
             _Path.assign(_Path_arg);
-            (void) _Refresh(_Cached_data, _Path);
+            refresh(_Ec);
         }
 
         void replace_filename(const filesystem::path& _Path_arg) {
             _Path.replace_filename(_Path_arg);
-            (void) _Refresh(_Cached_data, _Path);
+            refresh();
         }
 
         void replace_filename(const filesystem::path& _Path_arg, error_code& _Ec) {
             _Ec.clear(); // for exception safety
             _Path.replace_filename(_Path_arg);
-            (void) _Refresh(_Cached_data, _Path);
+            refresh(_Ec);
         }
 
         void refresh() {
             const auto _Error = _Refresh(_Cached_data, _Path);
-            if (_Error != __std_win_error::_Success) {
+            if (_Error != __std_win_error::_Success && !__std_is_file_not_found(_Error)) {
                 _Throw_fs_error("directory_entry::refresh", _Error, _Path);
             }
         }
 
         void refresh(error_code& _Ec) noexcept {
-            _Ec = _Make_ec(_Refresh(_Cached_data, _Path));
+            _Ec.clear();
+            const auto _Error = _Refresh(_Cached_data, _Path);
+            if (_Error != __std_win_error::_Success && !__std_is_file_not_found(_Error)) {
+                _Ec = _Make_ec(_Error);
+            }
         }
 
 #if _HAS_CXX20

@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
     <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\crt-common.settings.targets" />
 
-    <ItemGroup Condition="'$(BuildExePhase)' == '1'">
+    <ItemGroup>
         <ProjectFile Condition="'$(CrtBuildMD)'  != 'false'" Include="md\dirs.proj" />
         <ProjectFile Condition="'$(CrtBuildXMD)' != 'false'" Include="xmd\dirs.proj" />
         <ProjectFile Condition="'$(CrtBuildMT)'  != 'false'" Include="mt\dirs.proj" />
