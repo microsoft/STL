@@ -52,13 +52,16 @@ _CRTIMP2_PURE int _Thrd_start(_Thrd_t* thr, _Thrd_callback_t func, void* b) { //
     return thr->_Hnd == nullptr ? _Thrd_error : _Thrd_success;
 }
 
-int _Thrd_join(_Thrd_t thr, int* code) { // return exit code when thread terminates
-    unsigned long res;
-    if (WaitForSingleObjectEx(thr._Hnd, INFINITE, FALSE) == WAIT_FAILED || !GetExitCodeThread(thr._Hnd, &res)) {
+int _Thrd_join(_Thrd_t thr, int* code) { // returns when thread terminates
+    if (WaitForSingleObjectEx(thr._Hnd, INFINITE, FALSE) == WAIT_FAILED) {
         return _Thrd_error;
     }
 
-    if (code) {
+    if (code) { // TRANSITION, ABI: code is preserved for binary compatibility
+        unsigned long res;
+        if (!GetExitCodeThread(thr._Hnd, &res)) {
+            return _Thrd_error;
+        }
         *code = static_cast<int>(res);
     }
 
