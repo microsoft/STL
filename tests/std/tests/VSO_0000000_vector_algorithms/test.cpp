@@ -198,18 +198,9 @@ void test_case_min_max_element(const vector<T>& input) {
 
 template <class T>
 void test_min_max_element(mt19937_64& gen) {
-    static constexpr T Min = numeric_limits<T>::min();
-    static constexpr T Max = numeric_limits<T>::max();
+    using Limits = numeric_limits<T>;
 
-    auto dis = [] {
-        if constexpr (is_floating_point_v<T>) {
-            return uniform_real_distribution<T>{-Max / 2, Max / 2};
-        } else if constexpr (sizeof(T) > 1) {
-            return uniform_int_distribution<T>{Min, Max};
-        } else {
-            return uniform_int_distribution<int>{Min, Max};
-        }
-    }();
+    uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(Limits::min(), Limits::max());
 
     vector<T> input;
     input.reserve(dataCount);
@@ -396,9 +387,6 @@ void test_vector_algorithms(mt19937_64& gen) {
     test_min_max_element<unsigned int>(gen);
     test_min_max_element<long long>(gen);
     test_min_max_element<unsigned long long>(gen);
-    test_min_max_element<float>(gen);
-    test_min_max_element<double>(gen);
-    test_min_max_element<long double>(gen);
 
     test_min_max_element_pointers(gen);
 
