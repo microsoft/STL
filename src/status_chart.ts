@@ -357,6 +357,23 @@ function make_xAxis(timeframe: Timeframe) {
     };
 }
 
+function make_yAxis(position: 'left' | 'right', title_text: string, min: number, max: number, stepSize: number) {
+    return {
+        type: 'linear' as const,
+        display: 'auto' as const,
+        position: position,
+        title: {
+            display: true,
+            text: title_text,
+        },
+        min: min,
+        max: max,
+        ticks: {
+            stepSize: stepSize,
+        },
+    };
+}
+
 const status_options = {
     ...common_options,
     plugins: {
@@ -368,34 +385,8 @@ const status_options = {
     },
     scales: {
         x: make_xAxis(timeframes[timeframe_idx]),
-        largeAxis: {
-            type: 'linear' as const,
-            display: 'auto' as const,
-            position: 'left' as const,
-            title: {
-                display: true,
-                text: 'Bugs, Issues, Skipped Libcxx Tests',
-            },
-            min: 0,
-            max: 900,
-            ticks: {
-                stepSize: 100,
-            },
-        },
-        smallAxis: {
-            type: 'linear' as const,
-            display: 'auto' as const,
-            position: 'right' as const,
-            title: {
-                display: true,
-                text: 'Features, LWG Resolutions, Pull Requests',
-            },
-            min: 0,
-            max: 90,
-            ticks: {
-                stepSize: 10,
-            },
-        },
+        largeAxis: make_yAxis('left', 'Bugs, Issues, Skipped Libcxx Tests', 0, 900, 100),
+        smallAxis: make_yAxis('right', 'Features, LWG Resolutions, Pull Requests', 0, 90, 10),
     },
 };
 
@@ -410,34 +401,8 @@ const age_options = {
     },
     scales: {
         x: make_xAxis(timeframe_github),
-        leftAxis: {
-            type: 'linear' as const,
-            display: 'auto' as const,
-            position: 'left' as const,
-            title: {
-                display: true,
-                text: 'Average Age, Average Wait (days)',
-            },
-            min: 0,
-            max: 600,
-            ticks: {
-                stepSize: 100,
-            },
-        },
-        rightAxis: {
-            type: 'linear' as const,
-            display: 'auto' as const,
-            position: 'right' as const,
-            title: {
-                display: true,
-                text: 'Combined Age, Combined Wait (PR-months)',
-            },
-            min: 0,
-            max: 600,
-            ticks: {
-                stepSize: 100,
-            },
-        },
+        leftAxis: make_yAxis('left', 'Average Age, Average Wait (days)', 0, 600, 100),
+        rightAxis: make_yAxis('right', 'Combined Age, Combined Wait (PR-months)', 0, 600, 100),
     },
 };
 
@@ -452,20 +417,7 @@ const merge_options = {
     },
     scales: {
         x: make_xAxis(timeframe_github),
-        mergeAxis: {
-            type: 'linear' as const,
-            display: 'auto' as const,
-            position: 'right' as const,
-            title: {
-                display: true,
-                text: 'PRs / month',
-            },
-            min: 0,
-            max: 80,
-            ticks: {
-                stepSize: 10,
-            },
-        },
+        mergeAxis: make_yAxis('right', 'PRs / month', 0, 80, 10),
     },
 };
 
