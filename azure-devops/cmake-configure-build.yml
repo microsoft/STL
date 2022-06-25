@@ -33,7 +33,7 @@ steps:
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DLIT_FLAGS=$(litFlags) ^
-    -DCMAKE_CXX_FLAGS=/analyze:autolog- ^
+    -DSTL_USE_ANALYZE=ON ^
     -S $(Build.SourcesDirectory) -B $(${{ parameters.buildOutputLocationVar }})
   displayName: 'Configure the STL'
   timeoutInMinutes: 2
