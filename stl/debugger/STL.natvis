@@ -371,12 +371,35 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <!-- VS 2019 16.3 -->
+  <Type Name="std::_Ref_count_obj2&lt;*&gt;">
+      <DisplayString>make_shared</DisplayString>
+      <Expand>
+          <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
+      </Expand>
+  </Type>
+
   <!-- VC 2015 -->
   <Type Name="std::_Ref_count_obj_alloc&lt;*&gt;">
       <DisplayString>allocate_shared</DisplayString>
       <Expand>
           <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Mypair._Myval2</Item>
           <Item Name="[allocator]">_Mypair</Item>
+      </Expand>
+  </Type>
+
+  <!-- VS 2019 16.7: _Ref_count_obj_alloc3 -->
+  <!-- VS 2019 16.3: _Ref_count_obj_alloc2 -->
+  <Type Name="std::_Ref_count_obj_alloc3&lt;*&gt;">
+      <AlternativeType Name="std::_Ref_count_obj_alloc2&lt;*&gt;" />
+      <!-- stateless allocator -->
+      <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+      <!-- stateful allocator -->
+      <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+      <DisplayString>allocate_shared</DisplayString>
+      <Expand>
+          <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
+          <Item Name="[allocator]">allocator()</Item>
       </Expand>
   </Type>
 
