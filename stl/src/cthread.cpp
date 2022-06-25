@@ -65,11 +65,11 @@ int _Thrd_join(_Thrd_t thr, int* code) { // returns when thread terminates
         *code = static_cast<int>(res);
     }
 
-    return CloseHandle(thr._Hnd) == 0 ? _Thrd_error : _Thrd_success;
+    return CloseHandle(thr._Hnd) ? _Thrd_success : _Thrd_error;
 }
 
 int _Thrd_detach(_Thrd_t thr) { // tell OS to release thread's resources when it terminates
-    return CloseHandle(thr._Hnd) == 0 ? _Thrd_error : _Thrd_success;
+    return CloseHandle(thr._Hnd) ? _Thrd_success : _Thrd_error;
 }
 
 void _Thrd_sleep(const xtime* xt) { // suspend thread until time xt
