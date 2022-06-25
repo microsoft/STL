@@ -193,7 +193,7 @@ extern "C" _CRTIMP2 PTP_TIMER __cdecl __crtCreateThreadpoolTimer(
 
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 VOID __cdecl __crtSetThreadpoolTimer(_Inout_ PTP_TIMER const pti,
-    _In_opt_ PFILETIME const pftDueTime, _In_ DWORD const msPeriod, _In_opt_ DWORD const msWindowLength) {
+    _In_opt_ PFILETIME const pftDueTime, _In_ DWORD const msPeriod, _In_ DWORD const msWindowLength) {
     SetThreadpoolTimer(pti, pftDueTime, msPeriod, msWindowLength);
 }
 
