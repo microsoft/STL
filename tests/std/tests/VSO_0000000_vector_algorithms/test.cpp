@@ -25,6 +25,7 @@ using namespace std;
 void initialize_randomness(mt19937_64& gen) {
     constexpr size_t n = mt19937_64::state_size;
     constexpr size_t w = mt19937_64::word_size;
+    static_assert(w % 32 == 0, "w should be evenly divisible by 32");
     constexpr size_t k = w / 32;
 
     vector<uint32_t> vec(n * k);
