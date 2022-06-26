@@ -9447,7 +9447,8 @@ namespace ranges {
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _To_address(_First);
-                const auto _Result    = __std_max_element(_First_ptr, _To_address(_Last));
+                const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                const auto _Result    = __std_max_element(_First_ptr, _Last_ptr);
                 if constexpr (is_pointer_v<_It>) {
                     return _Result;
                 } else {
@@ -9567,7 +9568,8 @@ namespace ranges {
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _To_address(_First);
-                const auto _Result    = __std_min_element(_First_ptr, _To_address(_Last));
+                const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                const auto _Result    = __std_min_element(_First_ptr, _Last_ptr);
                 if constexpr (is_pointer_v<_It>) {
                     return _Result;
                 } else {
@@ -9721,7 +9723,8 @@ namespace ranges {
                       && sized_sentinel_for<_Se, _It>) {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _To_address(_First);
-                const auto _Result    = __std_minmax_element(_First_ptr, _To_address(_Last));
+                const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                const auto _Result    = __std_minmax_element(_First_ptr, _Last_ptr);
                 if constexpr (is_pointer_v<_It>) {
                     return {_Result.first, _Result.second};
                 } else {
