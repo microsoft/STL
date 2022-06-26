@@ -9448,7 +9448,7 @@ namespace ranges {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _To_address(_First);
                 const auto _Result    = __std_max_element(_First_ptr, _To_address(_Last));
-                if constexpr (is_pointer_v<_FwdIt>) {
+                if constexpr (is_pointer_v<_It>) {
                     return _Result;
                 } else {
                     return _First + (_Result - _First_ptr);
@@ -9568,7 +9568,7 @@ namespace ranges {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _To_address(_First);
                 const auto _Result    = __std_min_element(_First_ptr, _To_address(_Last));
-                if constexpr (is_pointer_v<_FwdIt>) {
+                if constexpr (is_pointer_v<_It>) {
                     return _Result;
                 } else {
                     return _First + (_Result - _First_ptr);
@@ -9722,8 +9722,8 @@ namespace ranges {
             if (!_STD is_constant_evaluated()) {
                 const auto _First_ptr = _To_address(_First);
                 const auto _Result    = __std_minmax_element(_First_ptr, _To_address(_Last));
-                if constexpr (is_pointer_v<_FwdIt>) {
-                    return _Result;
+                if constexpr (is_pointer_v<_It>) {
+                    return (_Result.first, _Result.second};
                 } else {
                     return {_First + (_Result.first - _First_ptr), _First + (_Result.second - _First_ptr)};
                 }
