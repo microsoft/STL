@@ -9723,7 +9723,7 @@ namespace ranges {
                 const auto _First_ptr = _To_address(_First);
                 const auto _Result    = __std_minmax_element(_First_ptr, _To_address(_Last));
                 if constexpr (is_pointer_v<_It>) {
-                    return (_Result.first, _Result.second};
+                    return {_Result.first, _Result.second};
                 } else {
                     return {_First + (_Result.first - _First_ptr), _First + (_Result.second - _First_ptr)};
                 }
