@@ -50,6 +50,171 @@ _STL_DISABLE_CLANG_WARNINGS
 #define _MT_INCR(x) _INTRIN_RELAXED(_InterlockedIncrement)(reinterpret_cast<volatile long*>(&x))
 #define _MT_DECR(x) _INTRIN_ACQ_REL(_InterlockedDecrement)(reinterpret_cast<volatile long*>(&x))
 
+#ifndef _INVALID_MEMORY_ORDER
+#ifdef _DEBUG
+#define _INVALID_MEMORY_ORDER _STL_REPORT_ERROR("Invalid memory order")
+#else // ^^^ _DEBUG / !_DEBUG vvv
+#define _INVALID_MEMORY_ORDER
+#endif // _DEBUG
+#endif // _INVALID_MEMORY_ORDER
+
+#define _Compiler_barrier() _STL_DISABLE_DEPRECATED_WARNING _ReadWriteBarrier() _STL_RESTORE_DEPRECATED_WARNING
+
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#define _Memory_barrier()             __dmb(0xB) // inner shared data memory barrier
+#define _Compiler_or_memory_barrier() _Memory_barrier()
+#elif defined(_M_IX86) || defined(_M_X64)
+// x86/x64 hardware only emits memory barriers inside _Interlocked intrinsics
+#define _Compiler_or_memory_barrier() _Compiler_barrier()
+#else // ^^^ x86/x64 / unsupported hardware vvv
+#error Unsupported hardware
+#endif // hardware
+
+_EXTERN_C
+enum {
+    _Atomic_memory_order_relaxed,
+    _Atomic_memory_order_consume,
+    _Atomic_memory_order_acquire,
+    _Atomic_memory_order_release,
+    _Atomic_memory_order_acq_rel,
+    _Atomic_memory_order_seq_cst,
+};
+
+inline void _Atomic_store8(volatile char* _Ptr, char _Desired, int _Order) {
+    switch (_Order) {
+    case _Atomic_memory_order_relaxed:
+        __iso_volatile_store8(_Ptr, _Desired);
+        return;
+    case _Atomic_memory_order_release:
+        _Compiler_or_memory_barrier();
+        __iso_volatile_store8(_Ptr, _Desired);
+        return;
+    default:
+    case _Atomic_memory_order_consume:
+    case _Atomic_memory_order_acquire:
+    case _Atomic_memory_order_acq_rel:
+        _INVALID_MEMORY_ORDER;
+        // [[fallthrough]];
+    case _Atomic_memory_order_seq_cst:
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+        _Memory_barrier();
+        __iso_volatile_store8(_Ptr, _Desired);
+        _Memory_barrier();
+#else // ^^^ ARM32/ARM64/ARM64EC hardware / x86/x64 hardware vvv
+        (void) _InterlockedExchange8(_Ptr, _Desired);
+#endif // hardware
+        return;
+    }
+}
+
+inline void _Atomic_store16(volatile short* _Ptr, short _Desired, int _Order) {
+    switch (_Order) {
+    case _Atomic_memory_order_relaxed:
+        __iso_volatile_store16(_Ptr, _Desired);
+        return;
+    case _Atomic_memory_order_release:
+        _Compiler_or_memory_barrier();
+        __iso_volatile_store16(_Ptr, _Desired);
+        return;
+    default:
+    case _Atomic_memory_order_consume:
+    case _Atomic_memory_order_acquire:
+    case _Atomic_memory_order_acq_rel:
+        _INVALID_MEMORY_ORDER;
+        // [[fallthrough]];
+    case _Atomic_memory_order_seq_cst:
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+        _Memory_barrier();
+        __iso_volatile_store16(_Ptr, _Desired);
+        _Memory_barrier();
+#else // ^^^ ARM32/ARM64/ARM64EC hardware / x86/x64 hardware vvv
+        (void) _InterlockedExchange16(_Ptr, _Desired);
+#endif // hardware
+        return;
+    }
+}
+
+inline void _Atomic_store32(volatile int* _Ptr, int _Desired, int _Order) {
+    switch (_Order) {
+    case _Atomic_memory_order_relaxed:
+        __iso_volatile_store32(_Ptr, _Desired);
+        return;
+    case _Atomic_memory_order_release:
+        _Compiler_or_memory_barrier();
+        __iso_volatile_store32(_Ptr, _Desired);
+        return;
+    default:
+    case _Atomic_memory_order_consume:
+    case _Atomic_memory_order_acquire:
+    case _Atomic_memory_order_acq_rel:
+        _INVALID_MEMORY_ORDER;
+        // [[fallthrough]];
+    case _Atomic_memory_order_seq_cst:
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+        _Memory_barrier();
+        __iso_volatile_store32(_Ptr, _Desired);
+        _Memory_barrier();
+#else // ^^^ ARM32/ARM64/ARM64EC hardware / x86/x64 hardware vvv
+        (void) _InterlockedExchange(reinterpret_cast<volatile long*>(_Ptr), static_cast<long>(_Desired));
+#endif // hardware
+        return;
+    }
+}
+
+inline void _Atomic_store64(volatile long long* _Ptr, long long _Desired, int _Order) {
+    switch (_Order) {
+    case _Atomic_memory_order_relaxed:
+        __iso_volatile_store64(_Ptr, _Desired);
+        return;
+    case _Atomic_memory_order_release:
+        _Compiler_or_memory_barrier();
+        __iso_volatile_store64(_Ptr, _Desired);
+        return;
+    default:
+    case _Atomic_memory_order_consume:
+    case _Atomic_memory_order_acquire:
+    case _Atomic_memory_order_acq_rel:
+        _INVALID_MEMORY_ORDER;
+        // [[fallthrough]];
+    case _Atomic_memory_order_seq_cst:
+#if defined(_M_IX86)
+        _Compiler_barrier();
+        __iso_volatile_store64(_Ptr, _Desired);
+        _STD atomic_thread_fence(memory_order_seq_cst);
+#elif defined(_M_ARM64) || defined(_M_ARM64EC)
+        _Memory_barrier();
+        __iso_volatile_store64(_Ptr, _Desired);
+        _Memory_barrier();
+#else // ^^^ _M_ARM64, _M_ARM64EC / ARM32, x64 vvv
+        (void) _InterlockedExchange64(_Ptr, _Desired);
+#endif // ^^^ ARM32, x64 ^^^
+        return;
+    }
+}
+
+inline int _Atomic_load32(const volatile int* _Ptr, int _Order) {
+    int _As_bytes = __iso_volatile_load32(_Ptr);
+    switch (_Order) {
+    case _Atomic_memory_order_relaxed:
+        break;
+    case _Atomic_memory_order_consume:
+    case _Atomic_memory_order_acquire:
+    case _Atomic_memory_order_seq_cst:
+        _Compiler_or_memory_barrier();
+        // load barrier
+        break;
+    case _Atomic_memory_order_release:
+    case _Atomic_memory_order_acq_rel:
+    default:
+        _INVALID_MEMORY_ORDER;
+        break;
+    }
+    return _As_bytes;
+}
+
+
+_END_EXTERN_C
+
 _STD_BEGIN
 
 #if _HAS_CXX20
