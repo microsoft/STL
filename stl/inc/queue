@@ -377,7 +377,7 @@ public:
 
 #ifdef __cpp_lib_containers_ranges
     template <_Container_compatible_range<_Ty> _Rng>
-    void push_range(_Rng&& _Range) { // LWG issue submitted but unnumbered as of 2022-06-20
+    void push_range(_Rng&& _Range) { // per LWG-3723
         if constexpr (requires { c.append_range(_Range); }) {
             c.append_range(_Range);
         } else {

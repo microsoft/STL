@@ -1506,8 +1506,7 @@ public:
         auto _UFirst = _Get_unwrapped(_First);
         auto _ULast  = _Get_unwrapped(_Last);
         if constexpr (_Is_fwd_iter_v<_Iter>) {
-            using _SizeTy      = make_unsigned_t<typename iterator_traits<_Iter>::difference_type>;
-            const auto _Length = static_cast<_SizeTy>(_STD distance(_UFirst, _ULast));
+            const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Assign_counted_range(_UFirst, _Count);
 #ifdef __cpp_lib_concepts
