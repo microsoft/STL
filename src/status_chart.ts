@@ -40,7 +40,7 @@ function get_monthly_values(key: Exclude<keyof MonthlyRow, 'date'>) {
     return get_values(monthly_table, row => row[key]);
 }
 
-class HiddenInfo {
+class DatasetInfo {
     url_key: string;
     chart_label: string;
     default_hidden: boolean;
@@ -52,29 +52,29 @@ class HiddenInfo {
     }
 }
 
-class HiddenInfoMaps {
-    static url_key = new Map<string, HiddenInfo>();
-    static chart_label = new Map<string, HiddenInfo>();
+class DatasetInfoMaps {
+    static url_key = new Map<string, DatasetInfo>();
+    static chart_label = new Map<string, DatasetInfo>();
 
     static {
         const arr = [
-            new HiddenInfo('cxx17', 'C++17 Features'),
-            new HiddenInfo('cxx20', 'C++20 Features'),
-            new HiddenInfo('cxx23', 'C++23 Features'),
-            new HiddenInfo('lwg', 'LWG Resolutions'),
-            new HiddenInfo('pr', 'Pull Requests'),
-            new HiddenInfo('vso', 'Old Bugs'),
-            new HiddenInfo('bug', 'GitHub Bugs'),
-            new HiddenInfo('issue', 'GitHub Issues'),
-            new HiddenInfo('libcxx', 'Skipped Libcxx Tests'),
+            new DatasetInfo('cxx17', 'C++17 Features'),
+            new DatasetInfo('cxx20', 'C++20 Features'),
+            new DatasetInfo('cxx23', 'C++23 Features'),
+            new DatasetInfo('lwg', 'LWG Resolutions'),
+            new DatasetInfo('pr', 'Pull Requests'),
+            new DatasetInfo('vso', 'Old Bugs'),
+            new DatasetInfo('bug', 'GitHub Bugs'),
+            new DatasetInfo('issue', 'GitHub Issues'),
+            new DatasetInfo('libcxx', 'Skipped Libcxx Tests'),
 
-            new HiddenInfo('avg_age', 'Average Age', true),
-            new HiddenInfo('avg_wait', 'Average Wait', true),
-            new HiddenInfo('sum_age', 'Combined Age'),
-            new HiddenInfo('sum_wait', 'Combined Wait'),
+            new DatasetInfo('avg_age', 'Average Age', true),
+            new DatasetInfo('avg_wait', 'Average Wait', true),
+            new DatasetInfo('sum_age', 'Combined Age'),
+            new DatasetInfo('sum_wait', 'Combined Wait'),
 
-            new HiddenInfo('merged', 'Line: Sliding Window'),
-            new HiddenInfo('merge_bar', 'Bars: Calendar Months'),
+            new DatasetInfo('merged', 'Line: Sliding Window'),
+            new DatasetInfo('merge_bar', 'Bars: Calendar Months'),
         ];
 
         for (const elem of arr) {
@@ -87,7 +87,7 @@ class HiddenInfoMaps {
         const ret = this[field].get(value);
 
         if (ret === undefined) {
-            throw new Error('HiddenInfoMaps.lookup() should always find the value.');
+            throw new Error('DatasetInfoMaps.lookup() should always find the value.');
         }
 
         return ret;
@@ -99,7 +99,7 @@ const hide_string = 'n';
 const show_string = 'y';
 
 function get_label_and_hidden(url_key: string) {
-    const { chart_label, default_hidden } = HiddenInfoMaps.lookup('url_key', url_key);
+    const { chart_label, default_hidden } = DatasetInfoMaps.lookup('url_key', url_key);
 
     let hidden: boolean;
 
@@ -308,7 +308,7 @@ function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legen
 
     legend_item.hidden = becoming_hidden;
 
-    const { url_key, default_hidden } = HiddenInfoMaps.lookup('chart_label', legend_item.text);
+    const { url_key, default_hidden } = DatasetInfoMaps.lookup('chart_label', legend_item.text);
 
     if (becoming_hidden === default_hidden) {
         url_search_params.delete(url_key);
