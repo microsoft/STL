@@ -98,7 +98,7 @@ const url_search_params = new URLSearchParams(window.location.search);
 const hide_string = 'n';
 const show_string = 'y';
 
-function get_label_and_hidden(url_key: string) {
+function get_dataset_properties(url_key: string) {
     const { chart_label, default_hidden } = DatasetInfoMaps.lookup('url_key', url_key);
 
     let hidden: boolean;
@@ -139,63 +139,63 @@ const status_data = {
             backgroundColor: '#9966FF',
             borderDash: [10, 5],
             yAxisID: 'smallAxis',
-            ...get_label_and_hidden('cxx17'),
+            ...get_dataset_properties('cxx17'),
         },
         {
             data: get_weekly_values('cxx20').concat(get_daily_values('cxx20')),
             borderColor: '#7030A0',
             backgroundColor: '#7030A0',
             yAxisID: 'smallAxis',
-            ...get_label_and_hidden('cxx20'),
+            ...get_dataset_properties('cxx20'),
         },
         {
             data: get_daily_values('cxx23'),
             borderColor: '#9966FF',
             backgroundColor: '#9966FF',
             yAxisID: 'smallAxis',
-            ...get_label_and_hidden('cxx23'),
+            ...get_dataset_properties('cxx23'),
         },
         {
             data: get_weekly_values('lwg').concat(get_daily_values('lwg')),
             borderColor: '#0070C0',
             backgroundColor: '#0070C0',
             yAxisID: 'smallAxis',
-            ...get_label_and_hidden('lwg'),
+            ...get_dataset_properties('lwg'),
         },
         {
             data: get_daily_values('pr'),
             borderColor: '#00B050',
             backgroundColor: '#00B050',
             yAxisID: 'smallAxis',
-            ...get_label_and_hidden('pr'),
+            ...get_dataset_properties('pr'),
         },
         {
             data: get_weekly_values('vso'),
             borderColor: '#900000',
             backgroundColor: '#900000',
             yAxisID: 'largeAxis',
-            ...get_label_and_hidden('vso'),
+            ...get_dataset_properties('vso'),
         },
         {
             data: get_daily_values('bug'),
             borderColor: '#FF0000',
             backgroundColor: '#FF0000',
             yAxisID: 'largeAxis',
-            ...get_label_and_hidden('bug'),
+            ...get_dataset_properties('bug'),
         },
         {
             data: get_daily_values('issue'),
             borderColor: '#909090',
             backgroundColor: '#909090',
             yAxisID: 'largeAxis',
-            ...get_label_and_hidden('issue'),
+            ...get_dataset_properties('issue'),
         },
         {
             data: get_weekly_values('libcxx'),
             borderColor: '#FFC000',
             backgroundColor: '#FFC000',
             yAxisID: 'largeAxis',
-            ...get_label_and_hidden('libcxx'),
+            ...get_dataset_properties('libcxx'),
         },
     ],
 };
@@ -207,28 +207,28 @@ const age_data = {
             borderColor: '#909090',
             backgroundColor: '#909090',
             yAxisID: 'leftAxis',
-            ...get_label_and_hidden('avg_age'),
+            ...get_dataset_properties('avg_age'),
         },
         {
             data: get_daily_values('avg_wait'),
             borderColor: '#FF9090',
             backgroundColor: '#FF9090',
             yAxisID: 'leftAxis',
-            ...get_label_and_hidden('avg_wait'),
+            ...get_dataset_properties('avg_wait'),
         },
         {
             data: get_daily_values('sum_age'),
             borderColor: '#000000',
             backgroundColor: '#000000',
             yAxisID: 'rightAxis',
-            ...get_label_and_hidden('sum_age'),
+            ...get_dataset_properties('sum_age'),
         },
         {
             data: get_daily_values('sum_wait'),
             borderColor: '#FF0000',
             backgroundColor: '#FF0000',
             yAxisID: 'rightAxis',
-            ...get_label_and_hidden('sum_wait'),
+            ...get_dataset_properties('sum_wait'),
         },
     ],
 };
@@ -240,7 +240,7 @@ const merge_data = {
             borderColor: '#00B050',
             backgroundColor: '#00B050',
             yAxisID: 'mergeAxis',
-            ...get_label_and_hidden('merged'),
+            ...get_dataset_properties('merged'),
         },
         {
             type: 'bar' as const,
@@ -248,7 +248,7 @@ const merge_data = {
             borderColor: '#CCCCCC',
             borderWidth: 1,
             yAxisID: 'mergeAxis',
-            ...get_label_and_hidden('merge_bar'),
+            ...get_dataset_properties('merge_bar'),
         },
     ],
 };
