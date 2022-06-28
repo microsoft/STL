@@ -220,7 +220,6 @@ const merge_data = {
         {
             type: 'bar' as const,
             data: get_monthly_values('merge_bar'),
-            borderWidth: 1,
             ...get_dataset_properties('merge_bar'),
         },
     ],
