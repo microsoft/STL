@@ -246,26 +246,6 @@ const timeframes = [timeframe_all, timeframe_github, timeframe_2021];
 const timeframe_github_idx = 1;
 let timeframe_idx = timeframe_github_idx;
 
-const common_options = {
-    animation: {
-        duration: 0,
-    },
-    elements: {
-        line: {
-            borderCapStyle: 'round' as const,
-            borderJoinStyle: 'round' as const,
-            fill: false,
-            spanGaps: false,
-        },
-        point: {
-            radius: 0,
-        },
-    },
-    hover: {
-        mode: 'nearest' as const,
-    },
-};
-
 function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legend: LegendElement<ChartType>) {
     const ch = legend.chart;
     const index = legend_item.datasetIndex;
@@ -292,30 +272,38 @@ function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legen
     update_url();
 }
 
-const common_plugins = {
-    legend: {
-        onClick: legend_click_handler,
-    },
-    tooltip: {
-        mode: 'nearest' as const,
-        intersect: false,
-    },
-};
-
-const common_title = {
-    display: true,
-    font: {
-        size: 24,
-    },
-};
-
 function make_common_options(title_text: string) {
     return {
-        ...common_options,
+        animation: {
+            duration: 0,
+        },
+        elements: {
+            line: {
+                borderCapStyle: 'round' as const,
+                borderJoinStyle: 'round' as const,
+                fill: false,
+                spanGaps: false,
+            },
+            point: {
+                radius: 0,
+            },
+        },
+        hover: {
+            mode: 'nearest' as const,
+        },
         plugins: {
-            ...common_plugins,
+            legend: {
+                onClick: legend_click_handler,
+            },
+            tooltip: {
+                mode: 'nearest' as const,
+                intersect: false,
+            },
             title: {
-                ...common_title,
+                display: true,
+                font: {
+                    size: 24,
+                },
                 text: title_text,
             },
         },
