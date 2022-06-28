@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import { Chart, ChartEvent, ChartType, LegendElement, LegendItem, TimeUnit, registerables } from 'chart.js';
+import { Chart, ChartEvent, LegendElement, LegendItem, TimeUnit, registerables } from 'chart.js';
 Chart.register(...registerables);
 import 'chartjs-adapter-luxon';
 
@@ -253,7 +253,7 @@ const timeframes = [timeframe_all, timeframe_github, timeframe_2021];
 const timeframe_github_idx = 1;
 let timeframe_idx = timeframe_github_idx;
 
-function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legend: LegendElement<ChartType>) {
+function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legend: LegendElement<'bar' | 'line'>) {
     const ch = legend.chart;
     const index = legend_item.datasetIndex;
 
@@ -430,6 +430,54 @@ function load_charts() {
         data: merge_data,
         options: merge_options,
     });
+
+    function update_dark_mode(_event: MediaQueryListEvent) {
+        const color_fg_default = get_css_property('--color-fg-default');
+        const color_border_default = get_css_property('--color-border-default');
+
+        for (const chart of [status_chart, age_chart, merge_chart]) {
+            if (
+                chart.options.plugins?.legend?.labels === undefined ||
+                chart.options.plugins?.title === undefined ||
+                chart.options.scales === undefined
+            ) {
+                throw new Error('update_dark_mode() was surprised by chart.options.');
+            }
+
+            chart.options.plugins.legend.labels.color = color_fg_default;
+            chart.options.plugins.title.color = color_fg_default;
+
+            for (const [scaleId, scale] of Object.entries(chart.options.scales)) {
+                if (scale?.title === undefined || scale?.ticks === undefined || scale?.grid === undefined) {
+                    throw new Error(`update_dark_mode() was surprised by chart.options.scales[${scaleId}].`);
+                }
+
+                scale.title.color = color_fg_default;
+                scale.ticks.color = color_fg_default;
+
+                scale.grid.borderColor = color_border_default;
+                scale.grid.color = color_border_default;
+            }
+
+            for (const dataset of chart.data.datasets) {
+                if (dataset.label === undefined) {
+                    throw new Error('update_dark_mode() was surprised by dataset.label.');
+                }
+
+                const { color_name } = DatasetInfoMaps.lookup('chart_label', dataset.label);
+
+                const color = get_css_property(color_name);
+
+                dataset.borderColor = color;
+                dataset.backgroundColor = color;
+            }
+
+            chart.update();
+        }
+    }
+
+    const media_query_list = window.matchMedia('(prefers-color-scheme: dark)');
+    media_query_list.addEventListener('change', update_dark_mode);
 
     function update_chart_timeframe(chart: typeof status_chart, idx: number) {
         if (!('scales' in chart.options)) {
