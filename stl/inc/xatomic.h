@@ -191,6 +191,43 @@ inline void _Atomic_store64(volatile long long* _Ptr, long long _Desired, int _O
         return;
     }
 }
+inline char _Atomic_load8(const volatile char* _Ptr, int _Order) {
+    char _As_bytes = __iso_volatile_load8(_Ptr);
+    switch (_Order) {
+    case _Atomic_memory_order_relaxed:
+        break;
+    case _Atomic_memory_order_consume:
+    case _Atomic_memory_order_acquire:
+    case _Atomic_memory_order_seq_cst:
+        _Compiler_or_memory_barrier();
+        break;
+    case _Atomic_memory_order_release:
+    case _Atomic_memory_order_acq_rel:
+    default:
+        _INVALID_MEMORY_ORDER;
+        break;
+    }
+    return _As_bytes;
+}
+
+inline short _Atomic_load16(const volatile short* _Ptr, int _Order) {
+    short _As_bytes = __iso_volatile_load16(_Ptr);
+    switch (_Order) {
+    case _Atomic_memory_order_relaxed:
+        break;
+    case _Atomic_memory_order_consume:
+    case _Atomic_memory_order_acquire:
+    case _Atomic_memory_order_seq_cst:
+        _Compiler_or_memory_barrier();
+        break;
+    case _Atomic_memory_order_release:
+    case _Atomic_memory_order_acq_rel:
+    default:
+        _INVALID_MEMORY_ORDER;
+        break;
+    }
+    return _As_bytes;
+}
 
 inline int _Atomic_load32(const volatile int* _Ptr, int _Order) {
     int _As_bytes = __iso_volatile_load32(_Ptr);
@@ -201,7 +238,29 @@ inline int _Atomic_load32(const volatile int* _Ptr, int _Order) {
     case _Atomic_memory_order_acquire:
     case _Atomic_memory_order_seq_cst:
         _Compiler_or_memory_barrier();
-        // load barrier
+        break;
+    case _Atomic_memory_order_release:
+    case _Atomic_memory_order_acq_rel:
+    default:
+        _INVALID_MEMORY_ORDER;
+        break;
+    }
+    return _As_bytes;
+}
+
+inline long long _Atomic_load64(const volatile long long* _Ptr, int _Order) {
+#ifdef _M_ARM
+    long long _As_bytes = __ldrexd(_Ptr);
+#else
+    long long _As_bytes = __iso_volatile_load64(_Ptr);
+#endif
+    switch (_Order) {
+    case _Atomic_memory_order_relaxed:
+        break;
+    case _Atomic_memory_order_consume:
+    case _Atomic_memory_order_acquire:
+    case _Atomic_memory_order_seq_cst:
+        _Compiler_or_memory_barrier();
         break;
     case _Atomic_memory_order_release:
     case _Atomic_memory_order_acq_rel:
