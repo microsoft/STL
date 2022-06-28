@@ -42,26 +42,26 @@ function get_monthly_values(key: Exclude<keyof MonthlyRow, 'date'>) {
 
 type AxisID = `${string}Axis`;
 
-type HexColor = `#${string}`;
+type ColorName = `--color-${string}`;
 
 class DatasetInfo {
     url_key: string;
     chart_label: string;
     yAxisID: AxisID;
-    color: HexColor;
+    color_name: ColorName;
     default_hidden: boolean;
 
     constructor(
         url_key: string,
         chart_label: string,
         yAxisID: AxisID,
-        color: HexColor,
+        color_name: ColorName,
         default_hidden: boolean = false
     ) {
         this.url_key = url_key;
         this.chart_label = chart_label;
         this.yAxisID = yAxisID;
-        this.color = color;
+        this.color_name = color_name;
         this.default_hidden = default_hidden;
     }
 }
@@ -72,23 +72,23 @@ class DatasetInfoMaps {
 
     static {
         const arr = [
-            new DatasetInfo('cxx17', 'C++17 Features', 'smallAxis', '#9966FF'),
-            new DatasetInfo('cxx20', 'C++20 Features', 'smallAxis', '#7030A0'),
-            new DatasetInfo('cxx23', 'C++23 Features', 'smallAxis', '#9966FF'),
-            new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '#0070C0'),
-            new DatasetInfo('pr', 'Pull Requests', 'smallAxis', '#00B050'),
-            new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '#900000'),
-            new DatasetInfo('bug', 'GitHub Bugs', 'largeAxis', '#FF0000'),
-            new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '#909090'),
-            new DatasetInfo('libcxx', 'Skipped Libcxx Tests', 'largeAxis', '#FFC000'),
+            new DatasetInfo('cxx17', 'C++17 Features', 'smallAxis', '--color-done-emphasis'),
+            new DatasetInfo('cxx20', 'C++20 Features', 'smallAxis', '--color-sponsors-emphasis'),
+            new DatasetInfo('cxx23', 'C++23 Features', 'smallAxis', '--color-done-emphasis'),
+            new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '--color-success-emphasis'),
+            new DatasetInfo('pr', 'Pull Requests', 'smallAxis', '--color-accent-emphasis'),
+            new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '--color-scale-red-7'),
+            new DatasetInfo('bug', 'GitHub Bugs', 'largeAxis', '--color-danger-emphasis'),
+            new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '--color-neutral-emphasis'),
+            new DatasetInfo('libcxx', 'Skipped Libcxx Tests', 'largeAxis', '--color-attention-emphasis'),
 
-            new DatasetInfo('avg_age', 'Average Age', 'leftAxis', '#909090', true),
-            new DatasetInfo('avg_wait', 'Average Wait', 'leftAxis', '#FF9090', true),
-            new DatasetInfo('sum_age', 'Combined Age', 'rightAxis', '#000000'),
-            new DatasetInfo('sum_wait', 'Combined Wait', 'rightAxis', '#FF0000'),
+            new DatasetInfo('avg_age', 'Average Age', 'leftAxis', '--color-neutral-emphasis', true),
+            new DatasetInfo('avg_wait', 'Average Wait', 'leftAxis', '--color-sponsors-emphasis', true),
+            new DatasetInfo('sum_age', 'Combined Age', 'rightAxis', '--color-fg-default'),
+            new DatasetInfo('sum_wait', 'Combined Wait', 'rightAxis', '--color-done-emphasis'),
 
-            new DatasetInfo('merged', 'Line: Sliding Window', 'mergeAxis', '#00B050'),
-            new DatasetInfo('merge_bar', 'Bars: Calendar Months', 'mergeAxis', '#CCCCCC'),
+            new DatasetInfo('merged', 'Line: Sliding Window', 'mergeAxis', '--color-accent-emphasis'),
+            new DatasetInfo('merge_bar', 'Bars: Calendar Months', 'mergeAxis', '--color-border-default'),
         ];
 
         for (const elem of arr) {
@@ -112,8 +112,14 @@ const url_search_params = new URLSearchParams(window.location.search);
 const hide_string = 'n';
 const show_string = 'y';
 
+const css_style_declaration = window.getComputedStyle(document.documentElement);
+
+function get_css_property(property_name: string) {
+    return css_style_declaration.getPropertyValue(property_name);
+}
+
 function get_dataset_properties(url_key: string) {
-    const { chart_label, yAxisID, color, default_hidden } = DatasetInfoMaps.lookup('url_key', url_key);
+    const { chart_label, yAxisID, color_name, default_hidden } = DatasetInfoMaps.lookup('url_key', url_key);
 
     let hidden: boolean;
 
@@ -126,6 +132,8 @@ function get_dataset_properties(url_key: string) {
     } else {
         hidden = default_hidden;
     }
+
+    const color = get_css_property(color_name);
 
     return {
         label: chart_label,
@@ -293,6 +301,9 @@ function make_common_options(title_text: string) {
         },
         plugins: {
             legend: {
+                labels: {
+                    color: get_css_property('--color-fg-default'),
+                },
                 onClick: legend_click_handler,
             },
             tooltip: {
@@ -300,6 +311,7 @@ function make_common_options(title_text: string) {
                 intersect: false,
             },
             title: {
+                color: get_css_property('--color-fg-default'),
                 display: true,
                 font: {
                     size: 24,
@@ -316,9 +328,17 @@ function make_xAxis(timeframe: Timeframe) {
         min: timeframe.min,
         max: daily_table[daily_table.length - 1].date,
         grid: {
+            borderColor: get_css_property('--color-border-default'),
+            color: get_css_property('--color-border-default'),
             offset: false,
         },
         offset: false,
+        title: {
+            color: get_css_property('--color-fg-default'),
+        },
+        ticks: {
+            color: get_css_property('--color-fg-default'),
+        },
         time: {
             parser: 'yyyy-MM-dd',
             tooltipFormat: 'MMM d, yyyy',
@@ -336,12 +356,18 @@ function make_yAxis(position: 'left' | 'right', title_text: string, min: number,
         display: 'auto' as const,
         position: position,
         title: {
+            color: get_css_property('--color-fg-default'),
             display: true,
             text: title_text,
         },
         min: min,
         max: max,
+        grid: {
+            borderColor: get_css_property('--color-border-default'),
+            color: get_css_property('--color-border-default'),
+        },
         ticks: {
+            color: get_css_property('--color-fg-default'),
             stepSize: stepSize,
         },
     };
