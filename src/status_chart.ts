@@ -72,7 +72,7 @@ class DatasetInfoMaps {
 
     static {
         const arr = [
-            new DatasetInfo('cxx17', 'C++17 Features', 'smallAxis', '--color-done-emphasis'),
+            new DatasetInfo('cxx17', 'C++17 Features', 'smallAxis', '--color-severe-emphasis'),
             new DatasetInfo('cxx20', 'C++20 Features', 'smallAxis', '--color-sponsors-emphasis'),
             new DatasetInfo('cxx23', 'C++23 Features', 'smallAxis', '--color-done-emphasis'),
             new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '--color-success-emphasis'),
@@ -160,7 +160,6 @@ const status_data = {
     datasets: [
         {
             data: get_weekly_values('cxx17'),
-            borderDash: [10, 5],
             ...get_dataset_properties('cxx17'),
         },
         {
