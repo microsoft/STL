@@ -66,23 +66,23 @@ union _Dconst { // pun float types as integer array
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double*);
 
-extern _CRTIMP2_PURE_IMPORT _Dconst _Denorm;
-extern _CRTIMP2_PURE_IMPORT _Dconst _Hugeval;
-extern _CRTIMP2_PURE_IMPORT _Dconst _Inf;
-extern _CRTIMP2_PURE_IMPORT _Dconst _Nan;
-extern _CRTIMP2_PURE_IMPORT _Dconst _Snan;
+extern _CRTIMP2_PURE _Dconst _Denorm;
+extern _CRTIMP2_PURE _Dconst _Hugeval;
+extern _CRTIMP2_PURE _Dconst _Inf;
+extern _CRTIMP2_PURE _Dconst _Nan;
+extern _CRTIMP2_PURE _Dconst _Snan;
 
 _CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float*);
 
-extern _CRTIMP2_PURE_IMPORT _Dconst _FDenorm;
-extern _CRTIMP2_PURE_IMPORT _Dconst _FInf;
-extern _CRTIMP2_PURE_IMPORT _Dconst _FNan;
-extern _CRTIMP2_PURE_IMPORT _Dconst _FSnan;
+extern _CRTIMP2_PURE _Dconst _FDenorm;
+extern _CRTIMP2_PURE _Dconst _FInf;
+extern _CRTIMP2_PURE _Dconst _FNan;
+extern _CRTIMP2_PURE _Dconst _FSnan;
 
-extern _CRTIMP2_PURE_IMPORT _Dconst _LDenorm;
-extern _CRTIMP2_PURE_IMPORT _Dconst _LInf;
-extern _CRTIMP2_PURE_IMPORT _Dconst _LNan;
-extern _CRTIMP2_PURE_IMPORT _Dconst _LSnan;
+extern _CRTIMP2_PURE _Dconst _LDenorm;
+extern _CRTIMP2_PURE _Dconst _LInf;
+extern _CRTIMP2_PURE _Dconst _LNan;
+extern _CRTIMP2_PURE _Dconst _LSnan;
 
 int _Stopfx(const char**, char**);
 _In_range_(0, maxsig) int _Stoflt(
