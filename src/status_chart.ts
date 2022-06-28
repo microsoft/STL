@@ -309,6 +309,19 @@ const common_title = {
     },
 };
 
+function make_common_options(title_text: string) {
+    return {
+        ...common_options,
+        plugins: {
+            ...common_plugins,
+            title: {
+                ...common_title,
+                text: title_text,
+            },
+        },
+    };
+}
+
 function make_xAxis(timeframe: Timeframe) {
     return {
         type: 'time' as const,
@@ -347,14 +360,7 @@ function make_yAxis(position: 'left' | 'right', title_text: string, min: number,
 }
 
 const status_options = {
-    ...common_options,
-    plugins: {
-        ...common_plugins,
-        title: {
-            ...common_title,
-            text: 'STL Status Chart',
-        },
-    },
+    ...make_common_options('STL Status Chart'),
     scales: {
         x: make_xAxis(timeframes[timeframe_idx]),
         largeAxis: make_yAxis('left', 'Bugs, Issues, Skipped Libcxx Tests', 0, 900, 100),
@@ -363,14 +369,7 @@ const status_options = {
 };
 
 const age_options = {
-    ...common_options,
-    plugins: {
-        ...common_plugins,
-        title: {
-            ...common_title,
-            text: 'Pull Request Age',
-        },
-    },
+    ...make_common_options('Pull Request Age'),
     scales: {
         x: make_xAxis(timeframe_github),
         leftAxis: make_yAxis('left', 'Average Age, Average Wait (days)', 0, 600, 100),
@@ -379,14 +378,7 @@ const age_options = {
 };
 
 const merge_options = {
-    ...common_options,
-    plugins: {
-        ...common_plugins,
-        title: {
-            ...common_title,
-            text: 'Monthly Merged PRs',
-        },
-    },
+    ...make_common_options('Monthly Merged PRs'),
     scales: {
         x: make_xAxis(timeframe_github),
         mergeAxis: make_yAxis('right', 'PRs / month', 0, 80, 10),
