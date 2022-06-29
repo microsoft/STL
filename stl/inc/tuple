@@ -847,7 +847,7 @@ struct _Tuple_cat2 {
 
 template <size_t... _Kx, size_t... _Ix, size_t _Ix_next, size_t... _Kx_next, class... _Rest>
 struct _Tuple_cat2<index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next, index_sequence<_Kx_next...>, _Rest...>
-    : _Tuple_cat2<index_sequence<_Kx..., _Kx_next...>, index_sequence<_Ix..., (_Ix_next + (0 * _Kx_next))...>,
+    : _Tuple_cat2<index_sequence<_Kx..., _Kx_next...>, index_sequence<_Ix..., (_Ix_next + 0 * _Kx_next)...>,
           _Ix_next + 1, _Rest...> {};
 
 template <size_t... _Nx>
