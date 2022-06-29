@@ -882,9 +882,9 @@ struct _Tuple_cat2 { // determine tuple_cat's _Kx/_Ix indices
     using _Ix_arg_seq = _Ix_arg;
 };
 
-template <class _Kx_arg, size_t... _Ix, size_t _Ix_next, class... _Types2, class... _Rest>
-struct _Tuple_cat2<_Kx_arg, index_sequence<_Ix...>, _Ix_next, tuple<_Types2...>, _Rest...>
-    : _Tuple_cat2<typename _Cat_sequences<_Kx_arg, index_sequence_for<_Types2...>>::type,
+template <size_t... _Kx, size_t... _Ix, size_t _Ix_next, class... _Types2, class... _Rest>
+struct _Tuple_cat2<index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next, tuple<_Types2...>, _Rest...>
+    : _Tuple_cat2<typename _Cat_sequences<index_sequence<_Kx...>, index_sequence_for<_Types2...>>::type,
           index_sequence<_Ix..., _Repeat_for<_Ix_next, _Types2>::value...>, _Ix_next + 1,
           _Rest...> { // determine tuple_cat's _Kx/_Ix indices
 };
