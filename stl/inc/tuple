@@ -840,7 +840,7 @@ _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
 
 template <class _Kx_arg, class _Ix_arg, size_t _Ix_next, class... _Sequences>
 struct _Tuple_cat2 { // determine tuple_cat's _Kx/_Ix indices
-    static_assert(sizeof...(_Sequences) == 0, "Unsupported tuple_cat arguments.");
+    _STL_INTERNAL_STATIC_ASSERT(sizeof...(_Sequences) == 0);
     using _Kx_arg_seq = _Kx_arg;
     using _Ix_arg_seq = _Ix_arg;
 };
