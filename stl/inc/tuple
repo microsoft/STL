@@ -853,10 +853,9 @@ struct _Tuple_cat2<index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next, ind
 };
 
 template <size_t... _Nx>
-struct _Tuple_cat1 : _Tuple_cat2<index_sequence<>, index_sequence<>, 0,
-                         make_index_sequence<_Nx>...> { // prepare to determine tuple_cat's
-                                                        // _Kx/_Ix indices
-};
+using _Tuple_cat1 = _Tuple_cat2<index_sequence<>, index_sequence<>, 0,
+    make_index_sequence<_Nx>...>; // prepare to determine tuple_cat's
+                                  // _Kx/_Ix indices
 
 template <size_t... _Kx, size_t... _Ix, class _Ty>
 constexpr auto _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty&& _Arg) { // concatenate tuples
