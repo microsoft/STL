@@ -304,6 +304,51 @@ inline long long _Atomic_load64(const volatile long long* _Ptr, int _Order) {
     return _As_bytes;
 }
 
+inline bool _Atomic_compare_exchange_strong8(volatile char* _Ptr, char* _Expected, char _Desired, int _Order) {
+    char _Prev_bytes;
+    char _Expected_bytes = *_Expected;
+    _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange8, _Ptr, _Desired, _Expected_bytes);
+    if (_Prev_bytes == _Expected_bytes) {
+        return true;
+    }
+    *_Expected = _Prev_bytes;
+    return false;
+}
+
+inline bool _Atomic_compare_exchange_strong16(volatile short* _Ptr, short* _Expected, short _Desired, int _Order) {
+    short _Prev_bytes;
+    short _Expected_bytes = *_Expected;
+    _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange16, _Ptr, _Desired, _Expected_bytes);
+    if (_Prev_bytes == _Expected_bytes) {
+        return true;
+    }
+    *_Expected = _Prev_bytes;
+    return false;
+}
+
+inline bool _Atomic_compare_exchange_strong32(volatile int* _Ptr, int* _Expected, int _Desired, int _Order) {
+    long _Prev_bytes;
+    long _Expected_bytes = *_Expected;
+    _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange, reinterpret_cast<volatile long*>(_Ptr),
+        _Desired, _Expected_bytes);
+    if (_Prev_bytes == _Expected_bytes) {
+        return true;
+    }
+    *_Expected = _Prev_bytes;
+    return false;
+}
+
+inline bool _Atomic_compare_exchange_strong64(
+    volatile long long* _Ptr, long long* _Expected, long long _Desired, int _Order) {
+    long long _Prev_bytes;
+    long long _Expected_bytes = *_Expected;
+    _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange64, _Ptr, _Desired, _Expected_bytes);
+    if (_Prev_bytes == _Expected_bytes) {
+        return true;
+    }
+    *_Expected = _Prev_bytes;
+    return false;
+}
 
 _END_EXTERN_C
 
