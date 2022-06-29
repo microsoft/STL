@@ -68,5 +68,6 @@ steps:
     )
 
     git fetch --filter=tree:0 --depth=1 boostorg $(${{ parameters.boostMathSHAVar }})
-    git checkout -f FETCH_HEAD
+    git reset --quiet --hard FETCH_HEAD
+    git clean --quiet -x -d -f
   displayName: "Checkout boost-math source"
