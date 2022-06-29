@@ -37,6 +37,7 @@ steps:
     -DCMAKE_BUILD_TYPE=Release ^
     -DSTL_BUILD_BENCHMARKING=${{ parameters.buildBenchmarking }} ^
     -DLIT_FLAGS=$(litFlags) ^
+    -DSTL_USE_ANALYZE=ON ^
     -S $(Build.SourcesDirectory) -B $(${{ parameters.buildOutputLocationVar }})
   displayName: 'Configure the STL'
   timeoutInMinutes: 2

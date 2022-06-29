@@ -316,16 +316,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand/>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::unique_ptr&lt;*&gt;" Priority="MediumLow">
-      <SmartPointer Usage="Minimal">_Myptr</SmartPointer>
-      <DisplayString Condition="_Myptr == 0">empty</DisplayString>
-      <DisplayString Condition="_Myptr != 0">unique_ptr {*_Myptr}</DisplayString>
-      <Expand>
-          <Item Condition="_Myptr != 0" Name="[ptr]">_Myptr</Item>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
    <Type Name="std::unique_ptr&lt;void, *&gt;">
       <SmartPointer Usage="Minimal">_Mypair._Myval2</SmartPointer>
@@ -355,31 +345,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::_Ref_count_del&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>custom deleter</DisplayString>
-      <Expand>
-          <Item Condition="_Uses != 0" Name="[original ptr]">_Ptr</Item>
-          <Item Name="[deleter]">_Dtor</Item>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::_Ref_count_del&lt;*&gt;">
       <DisplayString>custom deleter</DisplayString>
       <Expand>
           <Item Condition="_Uses != 0" Name="[original ptr]">_Mypair._Myval2</Item>
           <Item Name="[deleter]">_Mypair</Item>
-      </Expand>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::_Ref_count_del_alloc&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>custom deleter, custom allocator</DisplayString>
-      <Expand>
-          <Item Condition="_Uses != 0" Name="[original ptr]">_Ptr</Item>
-          <Item Name="[deleter]">_Dtor</Item>
-          <Item Name="[allocator]">_Myal</Item>
       </Expand>
   </Type>
 
@@ -400,12 +371,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::_Ref_count_obj_alloc&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>allocate_shared</DisplayString>
+  <!-- VS 2019 16.3 -->
+  <Type Name="std::_Ref_count_obj2&lt;*&gt;">
+      <DisplayString>make_shared</DisplayString>
       <Expand>
           <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
-          <Item Name="[allocator]">_Myal</Item>
       </Expand>
   </Type>
 
@@ -415,6 +385,21 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand>
           <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Mypair._Myval2</Item>
           <Item Name="[allocator]">_Mypair</Item>
+      </Expand>
+  </Type>
+
+  <!-- VS 2019 16.7: _Ref_count_obj_alloc3 -->
+  <!-- VS 2019 16.3: _Ref_count_obj_alloc2 -->
+  <Type Name="std::_Ref_count_obj_alloc3&lt;*&gt;">
+      <AlternativeType Name="std::_Ref_count_obj_alloc2&lt;*&gt;" />
+      <!-- stateless allocator -->
+      <Intrinsic Optional="true" Name="allocator" Expression="*((_Mybase *) this)"/>
+      <!-- stateful allocator -->
+      <Intrinsic Optional="true" Name="allocator" Expression="_Myval"/>
+      <DisplayString>allocate_shared</DisplayString>
+      <Expand>
+          <Item Condition="_Uses != 0" Name="[original ptr]">($T1 *) &amp;_Storage</Item>
+          <Item Name="[allocator]">allocator()</Item>
       </Expand>
   </Type>
 
@@ -505,28 +490,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::_Callable_base&lt;*,1&gt;">
-      <DisplayString>{*_Ptr}</DisplayString>
-      <Expand>
-          <Item Name="[ptr]">_Ptr</Item>
-      </Expand>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::_Callable_base&lt;*,0&gt;">
-      <DisplayString>{_Object}</DisplayString>
-      <Expand/>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::reference_wrapper&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>{_Callee}</DisplayString>
-      <Expand>
-          <ExpandedItem>_Callee</ExpandedItem>
-      </Expand>
-  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::reference_wrapper&lt;*&gt;">
@@ -674,15 +637,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Expand/>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::_Bind&lt;*&gt;">
-      <DisplayString>bind({_Myfun}, {_Mybargs,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[f]">_Myfun</Item>
-          <Item Name="[bound_args]">_Mybargs</Item>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::_Binder&lt;*&gt;">
       <DisplayString>bind({_Mypair}, {_Mypair._Myval2,view(noparens)})</DisplayString>
@@ -701,27 +655,12 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
-  <!-- VC 2013 -->
-  <Type Name="std::_Mem_fn_wrap&lt;*&gt;">
-      <DisplayString>mem_fn({_Callee._Object})</DisplayString>
-      <Expand/>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::_Mem_fn&lt;*&gt;">
       <DisplayString>mem_fn({_Pm})</DisplayString>
       <Expand/>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::_Func_impl&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>{_Callee._Object}</DisplayString>
-      <Expand>
-          <Item Name="[functor]">_Callee._Object</Item>
-          <Item Name="[allocator]">_Myal</Item>
-      </Expand>
-  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::_Func_impl&lt;*&gt;">
@@ -736,15 +675,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <DisplayString>{_Callee}</DisplayString>
       <Expand>
           <Item Name="[functor]">_Callee</Item>
-      </Expand>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::function&lt;*&gt;" Priority="MediumLow">
-      <DisplayString Condition="_Impl == 0">empty</DisplayString>
-      <DisplayString Condition="_Impl != 0">{*_Impl}</DisplayString>
-      <Expand>
-          <ExpandedItem Condition="_Impl != 0">*_Impl</ExpandedItem>
       </Expand>
   </Type>
 
@@ -971,41 +901,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::basic_string&lt;char,*&gt;" Priority="MediumLow">
-      <DisplayString Condition="_Myres &lt; _BUF_SIZE">{_Bx._Buf,na}</DisplayString>
-      <DisplayString Condition="_Myres &gt;= _BUF_SIZE">{_Bx._Ptr,na}</DisplayString>
-      <StringView Condition="_Myres &lt; _BUF_SIZE">_Bx._Buf,na</StringView>
-      <StringView Condition="_Myres &gt;= _BUF_SIZE">_Bx._Ptr,na</StringView>
-      <Expand>
-          <Item Name="[size]" ExcludeView="simple">_Mysize</Item>
-          <Item Name="[capacity]" ExcludeView="simple">_Myres</Item>
-          <ArrayItems>
-              <Size>_Mysize</Size>
-              <ValuePointer Condition="_Myres &lt; _BUF_SIZE">_Bx._Buf</ValuePointer>
-              <ValuePointer Condition="_Myres &gt;= _BUF_SIZE">_Bx._Ptr</ValuePointer>
-          </ArrayItems>
-      </Expand>
-  </Type>
-
-  <!-- VC 2013 -->
-  <Type Name="std::basic_string&lt;wchar_t,*&gt;" Priority="MediumLow">
-      <AlternativeType Name="std::basic_string&lt;unsigned short,*&gt;" />
-      <DisplayString Condition="_Myres &lt; _BUF_SIZE">{_Bx._Buf,su}</DisplayString>
-      <DisplayString Condition="_Myres &gt;= _BUF_SIZE">{_Bx._Ptr,su}</DisplayString>
-      <StringView Condition="_Myres &lt; _BUF_SIZE">_Bx._Buf,su</StringView>
-      <StringView Condition="_Myres &gt;= _BUF_SIZE">_Bx._Ptr,su</StringView>
-      <Expand>
-          <Item Name="[size]" ExcludeView="simple">_Mysize</Item>
-          <Item Name="[capacity]" ExcludeView="simple">_Myres</Item>
-          <ArrayItems>
-              <Size>_Mysize</Size>
-              <ValuePointer Condition="_Myres &lt; _BUF_SIZE">_Bx._Buf</ValuePointer>
-              <ValuePointer Condition="_Myres &gt;= _BUF_SIZE">_Bx._Ptr</ValuePointer>
-          </ArrayItems>
-      </Expand>
-  </Type>
-
   <!--
    * VC 2015+ ABI basic_string
    * Notes:
@@ -1182,17 +1077,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-  <!-- VC 2013 -->
-  <Type Name="std::deque&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>{{ size={_Mysize} }}</DisplayString>
-      <Expand>
-          <IndexListItems>
-              <Size>_Mysize</Size>
-              <ValueNode>_Map[(($i + _Myoff) / _EEN_DS) % _Mapsize][($i + _Myoff) % _EEN_DS]</ValueNode>
-          </IndexListItems>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::deque&lt;*&gt;">
       <DisplayString>{{ size={_Mypair._Myval2._Mysize} }}</DisplayString>
@@ -1216,19 +1100,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
-  <!-- VC 2013 -->
-  <Type Name="std::forward_list&lt;*&gt;" Priority="MediumLow">
-      <DisplayString Condition="_Myhead == 0">empty</DisplayString>
-      <DisplayString Condition="_Myhead != 0">non-empty</DisplayString>
-      <Expand>
-          <LinkedListItems>
-              <HeadPointer>_Myhead</HeadPointer>
-              <NextPointer>_Next</NextPointer>
-              <ValueNode>_Myval</ValueNode>
-          </LinkedListItems>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::forward_list&lt;*&gt;">
       <DisplayString Condition="_Mypair._Myval2._Myhead == 0">empty</DisplayString>
@@ -1250,20 +1121,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <DisplayString Condition="_Ptr != 0">{**this}</DisplayString>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::list&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>{{ size={_Mysize} }}</DisplayString>
-      <Expand>
-          <LinkedListItems>
-              <Size>_Mysize</Size>
-              <HeadPointer>_Myhead-&gt;_Next</HeadPointer>
-              <NextPointer>_Next</NextPointer>
-              <ValueNode>_Myval</ValueNode>
-          </LinkedListItems>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::list&lt;*&gt;">
       <DisplayString>{{ size={_Mypair._Myval2._Mysize} }}</DisplayString>
@@ -1283,18 +1140,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <SmartPointer Usage="Minimal">&amp;_Ptr-&gt;_Myval,na</SmartPointer>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::vector&lt;bool,*&gt;" Priority="MediumLow">
-      <DisplayString>{{ size={_Mysize} }}</DisplayString>
-      <Expand>
-          <Item Name="[capacity]" ExcludeView="simple">(_Myvec._Myend - _Myvec._Myfirst) * _EEN_VBITS</Item>
-          <IndexListItems>
-              <Size>_Mysize</Size>
-              <ValueNode>(bool)((_Myvec._Myfirst[$i / _EEN_VBITS] &gt;&gt; ($i % _EEN_VBITS)) &amp; 1)</ValueNode>
-          </IndexListItems>
-      </Expand>
-  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::vector&lt;bool,*&gt;">
@@ -1322,18 +1167,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
-  <!-- VC 2013 -->
-  <Type Name="std::vector&lt;*&gt;" Priority="MediumLow">
-      <DisplayString>{{ size={_Mylast - _Myfirst} }}</DisplayString>
-      <Expand>
-          <Item Name="[capacity]" ExcludeView="simple">_Myend - _Myfirst</Item>
-          <ArrayItems>
-              <Size>_Mylast - _Myfirst</Size>
-              <ValuePointer>_Myfirst</ValuePointer>
-          </ArrayItems>
-      </Expand>
-  </Type>
-
   <!-- VC 2015 -->
   <Type Name="std::vector&lt;*&gt;">
     <Intrinsic Name="size" Expression="(size_t)(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst)" />
@@ -1357,23 +1190,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-
-  <!-- VC 2013 -->
-  <Type Name="std::map&lt;*&gt;" Priority="MediumLow">
-      <AlternativeType Name="std::multimap&lt;*&gt;" />
-      <AlternativeType Name="std::set&lt;*&gt;" />
-      <AlternativeType Name="std::multiset&lt;*&gt;" />
-      <DisplayString>{{ size={_Mysize} }}</DisplayString>
-      <Expand>
-          <TreeItems>
-              <Size>_Mysize</Size>
-              <HeadPointer>_Myhead-&gt;_Parent</HeadPointer>
-              <LeftPointer>_Left</LeftPointer>
-              <RightPointer>_Right</RightPointer>
-              <ValueNode Condition="_Isnil == 0">_Myval</ValueNode>
-          </TreeItems>
-      </Expand>
-  </Type>
 
   <!-- VC 2015 -->
   <Type Name="std::map&lt;*&gt;" Priority="Medium">
@@ -1428,18 +1244,18 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
 
-  <!-- VC 2013 - must have lower priority -->
-  <Type Name="std::unordered_map&lt;*&gt;" Priority="MediumLow">
-      <AlternativeType Name="std::unordered_multimap&lt;*&gt;" />
-      <AlternativeType Name="std::unordered_set&lt;*&gt;"  />
-      <AlternativeType Name="std::unordered_multiset&lt;*&gt;"  />
-      <AlternativeType Name="stdext::hash_map&lt;*&gt;"  />
-      <AlternativeType Name="stdext::hash_multimap&lt;*&gt;"  />
-      <AlternativeType Name="stdext::hash_set&lt;*&gt;"  />
+  <!-- VC 2015 - must have higher priority -->
+  <Type Name="stdext::hash_map&lt;*&gt;" Priority="Medium">
+      <AlternativeType Name="stdext::hash_multimap&lt;*&gt;" />
+      <AlternativeType Name="stdext::hash_set&lt;*&gt;" />
       <AlternativeType Name="stdext::hash_multiset&lt;*&gt;" />
       <DisplayString>{_List}</DisplayString>
       <Expand>
-          <ExpandedItem>_List</ExpandedItem>
+          <Item Name="[bucket_count]" IncludeView="detailed">_Maxidx</Item>
+          <Item Name="[load_factor]" IncludeView="detailed">((float)_List._Mypair._Myval2._Mysize) / ((float)_Maxidx)</Item>
+          <Item Name="[max_load_factor]" IncludeView="detailed">_Traitsobj._Max_buckets</Item>
+          <Item Name="[allocator]" ExcludeView="simple">_List._Mypair</Item>
+          <ExpandedItem>_List,view(simple)</ExpandedItem>
       </Expand>
   </Type>
 
@@ -1448,10 +1264,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <AlternativeType Name="std::unordered_multimap&lt;*&gt;" />
       <AlternativeType Name="std::unordered_set&lt;*&gt;" />
       <AlternativeType Name="std::unordered_multiset&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_map&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_multimap&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_set&lt;*&gt;" />
-      <AlternativeType Name="stdext::hash_multiset&lt;*&gt;" />
       <DisplayString>{_List}</DisplayString>
       <Expand>
           <Item Name="[bucket_count]" IncludeView="detailed">_Maxidx</Item>
