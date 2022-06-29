@@ -53,33 +53,6 @@ extern "C" _NODISCARD char __stdcall __std_atomic_has_cmpxchg16b() noexcept;
 #define _ATOMIC_HAS_DCAS 0
 #endif // _STD_ATOMIC_ALWAYS_USE_CMPXCHG16B == 1 || !defined(_M_X64) || defined(_M_ARM64EC)
 
-#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
-#define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
-    _Check_memory_order(_Order);                                   \
-    _Result = _Intrinsic(__VA_ARGS__)
-#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
-#define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
-    switch (_Order) {                                              \
-    case memory_order_relaxed:                                     \
-        _Result = _INTRIN_RELAXED(_Intrinsic)(__VA_ARGS__);        \
-        break;                                                     \
-    case memory_order_consume:                                     \
-    case memory_order_acquire:                                     \
-        _Result = _INTRIN_ACQUIRE(_Intrinsic)(__VA_ARGS__);        \
-        break;                                                     \
-    case memory_order_release:                                     \
-        _Result = _INTRIN_RELEASE(_Intrinsic)(__VA_ARGS__);        \
-        break;                                                     \
-    default:                                                       \
-        _INVALID_MEMORY_ORDER;                                     \
-        /* [[fallthrough]]; */                                     \
-    case memory_order_acq_rel:                                     \
-    case memory_order_seq_cst:                                     \
-        _Result = _Intrinsic(__VA_ARGS__);                         \
-        break;                                                     \
-    }
-#endif // hardware
-
 #define ATOMIC_BOOL_LOCK_FREE 2
 #define ATOMIC_CHAR_LOCK_FREE 2
 #ifdef __cpp_lib_char8_t
@@ -182,9 +155,7 @@ _Ty kill_dependency(_Ty _Arg) noexcept { // "magic" template that kills dependen
 
 inline void _Check_memory_order(const memory_order _Order) noexcept {
     // check that _Order is a valid memory_order
-    if (static_cast<unsigned int>(_Order) > static_cast<unsigned int>(memory_order_seq_cst)) {
-        _INVALID_MEMORY_ORDER;
-    }
+    ::_Check_memory_order(static_cast<int>(_Order));
 }
 
 inline void _Check_store_memory_order(const memory_order _Order) noexcept {

@@ -70,6 +70,33 @@ _STL_DISABLE_CLANG_WARNINGS
 #error Unsupported hardware
 #endif // hardware
 
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+#define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
+    _Check_memory_order(_Order);                                   \
+    _Result = _Intrinsic(__VA_ARGS__)
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
+    switch (_Order) {                                              \
+    case memory_order_relaxed:                                     \
+        _Result = _INTRIN_RELAXED(_Intrinsic)(__VA_ARGS__);        \
+        break;                                                     \
+    case memory_order_consume:                                     \
+    case memory_order_acquire:                                     \
+        _Result = _INTRIN_ACQUIRE(_Intrinsic)(__VA_ARGS__);        \
+        break;                                                     \
+    case memory_order_release:                                     \
+        _Result = _INTRIN_RELEASE(_Intrinsic)(__VA_ARGS__);        \
+        break;                                                     \
+    default:                                                       \
+        _INVALID_MEMORY_ORDER;                                     \
+        /* [[fallthrough]]; */                                     \
+    case memory_order_acq_rel:                                     \
+    case memory_order_seq_cst:                                     \
+        _Result = _Intrinsic(__VA_ARGS__);                         \
+        break;                                                     \
+    }
+#endif // hardware
+
 _EXTERN_C
 enum {
     _Atomic_memory_order_relaxed,
@@ -79,6 +106,12 @@ enum {
     _Atomic_memory_order_acq_rel,
     _Atomic_memory_order_seq_cst,
 };
+
+inline void _Check_memory_order(const int _Order) {
+    if (_Order > _Atomic_memory_order_seq_cst) {
+        _INVALID_MEMORY_ORDER;
+    }
+}
 
 inline void _Atomic_store8(volatile char* _Ptr, char _Desired, int _Order) {
     switch (_Order) {
