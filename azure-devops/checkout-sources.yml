@@ -12,6 +12,10 @@ steps:
 - checkout: self
   clean: true
   submodules: false
+- script: |
+    cd $(Build.SourcesDirectory)
+    git clean --quiet -x -d -f -f
+  displayName: 'Clean after checkout'
 - task: PowerShell@2
   displayName: 'Get submodule SHAs'
   timeoutInMinutes: 1
