@@ -14,6 +14,41 @@ using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
+template <template <typename...> class PairOrTuple>
+void test_value_categories() {
+    int n1       = 10;
+    const int n2 = 20;
+    int n3       = 30;
+    const int n4 = 40;
+
+    PairOrTuple<char, long> obj('x', 50);
+    PairOrTuple<int&, const int&> lv(n1, n2);
+    PairOrTuple<int&&, const int&&> rv(move(n3), move(n4));
+
+    // For rvalue reference elements, we must pass the tuple-like containers as rvalues,
+    // otherwise the concatenated tuple can't be constructed.
+    {
+        auto cat1 = tuple_cat(obj, lv);
+        STATIC_ASSERT(is_same_v<decltype(cat1), tuple<char, long, int&, const int&>>);
+        assert(cat1 == make_tuple('x', 50, 10, 20));
+    }
+    {
+        auto cat2 = tuple_cat(as_const(obj), as_const(lv));
+        STATIC_ASSERT(is_same_v<decltype(cat2), tuple<char, long, int&, const int&>>);
+        assert(cat2 == make_tuple('x', 50, 10, 20));
+    }
+    {
+        auto cat3 = tuple_cat(move(obj), move(lv), move(rv));
+        STATIC_ASSERT(is_same_v<decltype(cat3), tuple<char, long, int&, const int&, int&&, const int&&>>);
+        assert(cat3 == make_tuple('x', 50, 10, 20, 30, 40));
+    }
+    {
+        auto cat4 = tuple_cat(move(as_const(obj)), move(as_const(lv)), move(as_const(rv)));
+        STATIC_ASSERT(is_same_v<decltype(cat4), tuple<char, long, int&, const int&, int&&, const int&&>>);
+        assert(cat4 == make_tuple('x', 50, 10, 20, 30, 40));
+    }
+}
+
 int main() {
     {
         tuple<> x;
@@ -167,6 +202,26 @@ int main() {
             const tuple<int, int, unsigned int, const char*, int, long, long, char, char, char, long long>>);
 
         assert(t == make_tuple(11, 22, 33U, s, 40, 50L, 60L, 'x', 'y', 'z', 1234LL));
+    }
+
+    test_value_categories<pair>();
+    test_value_categories<tuple>();
+
+    {
+        array<int, 3> a1{{-1, -2, -3}};
+        const array<char, 4> a2{{'C', 'A', 'T', 'S'}};
+
+        {
+            auto cat5 = tuple_cat(a1, a2);
+            STATIC_ASSERT(is_same_v<decltype(cat5), tuple<int, int, int, char, char, char, char>>);
+            assert(cat5 == make_tuple(-1, -2, -3, 'C', 'A', 'T', 'S'));
+        }
+
+        {
+            auto cat6 = tuple_cat(move(a1), move(a2));
+            STATIC_ASSERT(is_same_v<decltype(cat6), tuple<int, int, int, char, char, char, char>>);
+            assert(cat6 == make_tuple(-1, -2, -3, 'C', 'A', 'T', 'S'));
+        }
     }
 
 // Also test C++17 apply() and make_from_tuple().
