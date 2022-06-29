@@ -891,8 +891,8 @@ struct _Tuple_cat2<_Kx_arg, index_sequence<_Ix...>, _Ix_next, tuple<_Types2...>,
 
 template <class... _Tuples>
 struct _Tuple_cat1 : _Tuple_cat2<index_sequence<>, index_sequence<>, 0,
-                         typename _View_as_tuple<decay_t<_Tuples>>::type...> { // prepare to determine tuple_cat's
-                                                                               // _Kx/_Ix indices
+                         typename _View_as_tuple<_Tuples>::type...> { // prepare to determine tuple_cat's
+                                                                      // _Kx/_Ix indices
 };
 
 template <size_t... _Kx, size_t... _Ix, class _Ty>
@@ -903,7 +903,7 @@ constexpr auto _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty&& 
 
 template <class... _Tuples>
 _NODISCARD constexpr auto tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
-    using _Cat1 = _Tuple_cat1<_Tuples...>;
+    using _Cat1 = _Tuple_cat1<_Remove_cvref_t<_Tuples>...>;
     return _Tuple_cat(typename _Cat1::_Kx_arg_seq{}, typename _Cat1::_Ix_arg_seq{},
         _STD forward_as_tuple(_STD forward<_Tuples>(_Tpls)...));
 }
