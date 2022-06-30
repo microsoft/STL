@@ -838,34 +838,38 @@ _NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept;
 template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
 
-template <class _Kx_arg, class _Ix_arg, size_t _Ix_next, class... _Sequences>
-struct _Tuple_cat2 {
-    _STL_INTERNAL_STATIC_ASSERT(sizeof...(_Sequences) == 0);
-    using _Kx_seq = _Kx_arg;
-    using _Ix_seq = _Ix_arg;
+template <class _Ty, class _Kx_arg, class _Ix_arg, size_t _Ix_next, class... _Sequences>
+struct _Tuple_cat2;
+
+template <class _Ty, size_t... _Kx, size_t... _Ix, size_t _Ix_next>
+struct _Tuple_cat2<_Ty, index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next> {
+    using _Ret    = tuple<tuple_element_t<_Kx, _Remove_cvref_t<tuple_element_t<_Ix, _Ty>>>...>;
+    using _Kx_seq = index_sequence<_Kx...>;
+    using _Ix_seq = index_sequence<_Ix...>;
 };
 
-template <size_t... _Kx, size_t... _Ix, size_t _Ix_next, size_t... _Kx_next, class... _Rest>
-struct _Tuple_cat2<index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next, index_sequence<_Kx_next...>, _Rest...>
-    : _Tuple_cat2<index_sequence<_Kx..., _Kx_next...>,
+template <class _Ty, size_t... _Kx, size_t... _Ix, size_t _Ix_next, size_t... _Kx_next, class... _Rest>
+struct _Tuple_cat2<_Ty, index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next, index_sequence<_Kx_next...>, _Rest...>
+    : _Tuple_cat2<_Ty, index_sequence<_Kx..., _Kx_next...>,
           index_sequence<_Ix..., (_Ix_next + 0 * _Kx_next)...>, // repeat _Ix_next, ignoring the elements of _Kx_next
           _Ix_next + 1, _Rest...> {};
 
-template <size_t... _Nx>
-using _Tuple_cat1 = _Tuple_cat2<index_sequence<>, index_sequence<>, 0, make_index_sequence<_Nx>...>;
+template <class... _Tuples>
+using _Tuple_cat1 = _Tuple_cat2<tuple<_Tuples&&...>, index_sequence<>, index_sequence<>, 0,
+    make_index_sequence<tuple_size_v<_Remove_cvref_t<_Tuples>>>...>;
 
-template <size_t... _Kx, size_t... _Ix, class _Ty>
-constexpr auto _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty _Arg) {
-    using _Ret = tuple<tuple_element_t<_Kx, _Remove_cvref_t<tuple_element_t<_Ix, _Ty>>>...>;
+template <class _Ret, size_t... _Kx, size_t... _Ix, class _Ty>
+constexpr _Ret _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty _Arg) {
     return _Ret{_STD get<_Kx>(_STD get<_Ix>(_STD move(_Arg)))...};
 }
 
 template <class... _Tuples>
-_NODISCARD constexpr auto tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
-    using _Cat1   = _Tuple_cat1<tuple_size_v<_Remove_cvref_t<_Tuples>>...>;
+_NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::_Ret tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
+    using _Cat1   = _Tuple_cat1<_Tuples...>;
+    using _Ret    = typename _Cat1::_Ret;
     using _Kx_seq = typename _Cat1::_Kx_seq;
     using _Ix_seq = typename _Cat1::_Ix_seq;
-    return _Tuple_cat(_Kx_seq{}, _Ix_seq{}, _STD forward_as_tuple(_STD forward<_Tuples>(_Tpls)...));
+    return _Tuple_cat<_Ret>(_Kx_seq{}, _Ix_seq{}, _STD forward_as_tuple(_STD forward<_Tuples>(_Tpls)...));
 }
 
 #if _HAS_CXX17
