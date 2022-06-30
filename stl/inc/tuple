@@ -847,16 +847,17 @@ struct _Tuple_cat2 {
 
 template <size_t... _Kx, size_t... _Ix, size_t _Ix_next, size_t... _Kx_next, class... _Rest>
 struct _Tuple_cat2<index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next, index_sequence<_Kx_next...>, _Rest...>
-    : _Tuple_cat2<index_sequence<_Kx..., _Kx_next...>, index_sequence<_Ix..., (_Ix_next + 0 * _Kx_next)...>,
+    : _Tuple_cat2<index_sequence<_Kx..., _Kx_next...>,
+          index_sequence<_Ix..., (_Ix_next + 0 * _Kx_next)...>, // repeat _Ix_next, ignoring the elements of _Kx_next
           _Ix_next + 1, _Rest...> {};
 
 template <size_t... _Nx>
 using _Tuple_cat1 = _Tuple_cat2<index_sequence<>, index_sequence<>, 0, make_index_sequence<_Nx>...>;
 
 template <size_t... _Kx, size_t... _Ix, class _Ty>
-constexpr auto _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty&& _Arg) {
+constexpr auto _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty _Arg) {
     using _Ret = tuple<tuple_element_t<_Kx, _Remove_cvref_t<tuple_element_t<_Ix, _Ty>>>...>;
-    return _Ret(_STD get<_Kx>(_STD get<_Ix>(_STD forward<_Ty>(_Arg)))...);
+    return _Ret{_STD get<_Kx>(_STD get<_Ix>(_STD move(_Arg)))...};
 }
 
 template <class... _Tuples>

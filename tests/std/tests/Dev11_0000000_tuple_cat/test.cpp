@@ -10,6 +10,13 @@
 #include <type_traits>
 #include <utility>
 
+#ifdef __cpp_lib_ranges
+#include <iterator>
+#include <list>
+#include <ranges>
+#include <vector>
+#endif // __cpp_lib_ranges
+
 using namespace std;
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
@@ -223,6 +230,29 @@ int main() {
             assert(cat6 == make_tuple(-1, -2, -3, 'C', 'A', 'T', 'S'));
         }
     }
+
+#ifdef __cpp_lib_ranges
+    {
+        using ranges::subrange, ranges::subrange_kind;
+
+        list<int> lst     = {10, 20, 30, 40, 50};
+        using LstIter     = list<int>::iterator;
+        using LstSubrange = subrange<LstIter>; // test unsized
+        STATIC_ASSERT(is_same_v<LstSubrange, subrange<LstIter, LstIter, subrange_kind::unsized>>);
+        LstSubrange lst_subrange(next(lst.begin()), prev(lst.end()));
+
+        vector<int> vec    = {60, 70, 80, 90, 100};
+        using VecIter      = vector<int>::iterator;
+        using VecConstIter = vector<int>::const_iterator;
+        using VecSubrange  = subrange<VecIter, VecConstIter>; // test sized, and different iterator/sentinel types
+        STATIC_ASSERT(is_same_v<VecSubrange, subrange<VecIter, VecConstIter, subrange_kind::sized>>);
+        VecSubrange vec_subrange(vec.begin() + 1, vec.cend() - 1);
+
+        auto cat7 = tuple_cat(lst_subrange, vec_subrange);
+        STATIC_ASSERT(is_same_v<decltype(cat7), tuple<LstIter, LstIter, VecIter, VecConstIter>>);
+        assert(cat7 == make_tuple(next(lst.begin()), prev(lst.end()), vec.begin() + 1, vec.cend() - 1));
+    }
+#endif // __cpp_lib_ranges
 
 // Also test C++17 apply() and make_from_tuple().
 #if _HAS_CXX17
