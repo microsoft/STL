@@ -15,6 +15,10 @@
 #include <type_traits>
 #include <vector>
 
+#ifdef __cpp_lib_concepts
+#include <ranges>
+#endif
+
 using namespace std;
 
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
@@ -194,6 +198,24 @@ void test_case_min_max_element(const vector<T>& input) {
     assert(expected_min == actual_min);
     assert(expected_max == actual_max);
     assert(expected_minmax == actual_minmax);
+#ifdef __cpp_lib_concepts
+    using ranges::views::take;
+
+    auto actual_min_range          = ranges::min_element(input);
+    auto actual_max_range          = ranges::max_element(input);
+    auto actual_minmax_range       = ranges::minmax_element(input);
+    auto actual_min_sized_range    = ranges::min_element(take(input, static_cast<ptrdiff_t>(input.size())));
+    auto actual_max_sized_range    = ranges::max_element(take(input, static_cast<ptrdiff_t>(input.size())));
+    auto actual_minmax_sized_range = ranges::minmax_element(take(input, static_cast<ptrdiff_t>(input.size())));
+    assert(expected_min == actual_min_range);
+    assert(expected_max == actual_max_range);
+    assert(expected_minmax.first == actual_minmax_range.min);
+    assert(expected_minmax.second == actual_minmax_range.max);
+    assert(expected_min == actual_min_sized_range);
+    assert(expected_max == actual_max_sized_range);
+    assert(expected_minmax.first == actual_minmax_sized_range.min);
+    assert(expected_minmax.second == actual_minmax_sized_range.max);
+#endif // __cpp_lib_concepts
 }
 
 template <class T>
