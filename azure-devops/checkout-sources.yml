@@ -90,5 +90,6 @@ steps:
     )
 
     git fetch --filter=tree:0 --depth=1 googlebenchmark $(${{ parameters.googleBenchmarkSHAVar }})
-    git checkout -f FETCH_HEAD
+    git reset --quiet --hard FETCH_HEAD
+    git clean --quiet -x -d -f -f
   displayName: "Checkout google benchmark source"

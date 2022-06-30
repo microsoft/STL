@@ -7,6 +7,8 @@ worldwide. This software is distributed without any warranty.
 See <http://creativecommons.org/publicdomain/zero/1.0/>.
 SPDX-License-Identifier: CC0-1.0 */
 
+#pragma once
+
 #include <bit>
 #include <stdint.h>
 
