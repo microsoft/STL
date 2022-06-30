@@ -8,6 +8,9 @@ parameters:
 - name: boostMathSHAVar
   type: string
   default: boostMathSHA
+- name: googleBenchmarkSHAVar
+  type: string
+  default: googleBenchmarkSHA
 steps:
 - checkout: self
   clean: true
@@ -28,6 +31,9 @@ steps:
       Write-Host "##vso[task.setvariable variable=${{ parameters.llvmSHAVar }};]$llvmSHA"
       $boostMathSHA = git submodule status --cached boost-math | %{$_ -replace $regexSubmoduleSHA, '$1'}
       Write-Host "##vso[task.setvariable variable=${{ parameters.boostMathSHAVar }};]$boostMathSHA"
+      $googleBenchmarkSHA = git submodule status --cached benchmarks/google-benchmark `
+        | %{$_ -replace $regexSubmoduleSHA, '$1'}
+      Write-Host "##vso[task.setvariable variable=${{ parameters.googleBenchmarkSHAVar }};]$googleBenchmarkSHA"
 - script: |
     cd $(Build.SourcesDirectory)
     if not exist "llvm-project" (
@@ -71,3 +77,24 @@ steps:
     git reset --quiet --hard FETCH_HEAD
     git clean --quiet -x -d -f -f
   displayName: "Checkout boost-math source"
+- script: |
+    cd $(Build.SourcesDirectory)/benchmarks
+    if not exist "google-benchmark" (
+      mkdir google-benchmark
+    )
+    cd google-benchmark
+
+    if not exist ".git" (
+      del /S /Q *
+      git init
+    )
+
+    git remote get-url googlebenchmark
+    if errorlevel 1 (
+      git remote add googlebenchmark https://github.com/google/benchmark.git
+    )
+
+    git fetch --filter=tree:0 --depth=1 googlebenchmark $(${{ parameters.googleBenchmarkSHAVar }})
+    git reset --quiet --hard FETCH_HEAD
+    git clean --quiet -x -d -f -f
+  displayName: "Checkout google benchmark source"

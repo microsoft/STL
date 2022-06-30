@@ -151,7 +151,7 @@ Just try to follow these rules, so we can spend more time fixing bugs and implem
 2. Open Visual Studio, and choose the "Clone or check out code" option. Enter the URL of this repository,
    `https://github.com/microsoft/STL`.
 3. Open a terminal in the IDE with `` Ctrl + ` `` (by default) or press on "View" in the top bar, and then "Terminal".
-4. In the terminal, invoke `git submodule update --init --progress llvm-project boost-math`
+4. In the terminal, invoke `git submodule update --init --progress`
 5. Choose the architecture you wish to build in the IDE, and build as you would any other project. All necessary CMake
    settings are set by `CMakeSettings.json`.
 
@@ -398,6 +398,46 @@ build folder to your path:
 set PATH=C:\STL\out\build\x64\out\bin\amd64;%PATH%
 ```
 
+# Benchmarking
+
+For performance-sensitive code &ndash; containers, algorithms, and the like &ndash;
+you may wish to write and/or run benchmarks, and the STL team will likely
+run any benchmarks we do have in our PR process. Additionally,
+if you are writing a "performance improvement" PR, please add and run benchmarks
+to show that the PR does, in fact, improve performance.
+
+The benchmarking code is located in `benchmarks`. Adding a new benchmark is as easy as adding a new file
+to `benchmarks/src`, and then adding `add_benchmark(<name> <source_file>)`
+to `benchmarks/CMakeLists.txt`.
+You may also modify an existing benchmark file. We use Google's [Benchmark][gbenchmark] library,
+so you may find [their documentation][gbenchmark:docs] helpful, and you can also read the existing code
+for how _we_ use it.
+
+To run benchmarks, you'll need to configure the STL with the `-DSTL_BUILD_BENCHMARKING=ON` option:
+
+```cmd
+cmake -B out\bench -S . -G Ninja -DSTL_BUILD_BENCHMARKING=ON
+cmake --build out\bench
+```
+
+You can then run your benchmark with:
+
+```cmd
+out\bench\benchmarks\benchmark-<benchmark-name> --benchmark_out=<file> --benchmark_out_format=csv
+```
+
+And then you can copy this csv file into Excel, or another spreadsheet program. For example:
+
+```cmd
+out\bench\benchmarks\benchmark-std_copy --benchmark_out=benchmark-std_copy-results.csv --benchmark_out_format=csv
+```
+
+If you want to see all the other flags you can pass, run:
+
+```cmd
+out\bench\benchmarks\benchmark-<benchmark-name> --help
+```
+
 # Editing And Testing The Debugger Visualizer
 
 ### Modify The Visualizer
@@ -500,6 +540,8 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 [bug tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Abug
 [cxx20 tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Acxx20
 [enhancement tag]: https://github.com/microsoft/STL/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
+[gbenchmark]: https://github.com/google/benchmark
+[gbenchmark:docs]: https://github.com/google/benchmark/blob/main/docs/user_guide.md
 [hub]: https://support.microsoft.com/en-us/help/4021566/windows-10-send-feedback-to-microsoft-with-feedback-hub-app
 [libcxx]: https://libcxx.llvm.org
 [lit]: https://llvm.org/docs/CommandGuide/lit.html

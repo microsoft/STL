@@ -208,6 +208,7 @@ int main() {
         L"__pycache__"sv,
         L"boost-math"sv,
         L"build"sv,
+        L"google-benchmark"sv,
         L"llvm-project"sv,
         L"out"sv,
     };

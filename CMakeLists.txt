@@ -42,16 +42,10 @@ if(TARGET run-validate)
 endif()
 
 option(BUILD_TESTING "Enable testing" ON)
+option(STL_BUILD_BENCHMARKING "Enable benchmarking" OFF)
 set(VCLIBS_SUFFIX "_oss" CACHE STRING "suffix for built DLL names to avoid conflicts with distributed DLLs")
 
 option(STL_USE_ANALYZE "Pass the /analyze flag to MSVC" OFF)
-
-set(CMAKE_CXX_FLAGS "")
-set(CMAKE_CXX_FLAGS_DEBUG "")
-set(CMAKE_CXX_FLAGS_RELEASE "")
-set(CMAKE_CXX_STANDARD_LIBRARIES "kernel32.lib")
-set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "kernel32.lib")
-set(CMAKE_MSVC_RUNTIME_LIBRARY "")
 
 if("${VCLIBS_TARGET_ARCHITECTURE}" MATCHES "^x86$")
     set(VCLIBS_TARGET_ARCHITECTURE "x86")
@@ -72,26 +66,26 @@ elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^armv7$")
     set(VCLIBS_I386_OR_AMD64 "arm")
     set(VCLIBS_X86_OR_X64 "arm")
     add_compile_definitions(_ARM_ _VCRT_WIN32_WINNT=0x0602 _STL_WIN32_WINNT=0x0602)
-    string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " Synchronization.lib")
 elseif(VCLIBS_TARGET_ARCHITECTURE MATCHES "^arm64$")
     set(VCLIBS_TARGET_ARCHITECTURE "arm64")
     set(VCLIBS_I386_OR_AMD64 "arm64")
     set(VCLIBS_X86_OR_X64 "arm64")
     add_compile_definitions(_ARM64_ _VCRT_WIN32_WINNT=0x0A00 _STL_WIN32_WINNT=0x0A00)
-    string(APPEND CMAKE_CXX_STANDARD_LIBRARIES " Synchronization.lib")
 else()
     message(FATAL_ERROR "Could not determine target architecture: VCLIBS_TARGET_ARCHITECTURE: ${VCLIBS_TARGET_ARCHITECTURE}")
 endif()
 
+get_filename_component(TOOLSET_BINARIES_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY) # Example: $\VC\Tools\MSVC\14.23.27931\bin\Hostx86\x86
+get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_BINARIES_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin\Hostx86
+get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin
+get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931
+set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
+set(STL_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
+set(STL_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
+set(STL_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR_AMD64}")
 add_compile_definitions(
     _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH WIN32_LEAN_AND_MEAN STRICT _CRT_STDIO_ARBITRARY_WIDE_SPECIFIERS
     _CRT_DECLARE_NONSTDC_NAMES=1 _WIN32_WINNT=0x0A00 NTDDI_VERSION=NTDDI_WIN10_CO)
-
-add_compile_options(/WX /Gy
-    "$<$<COMPILE_LANGUAGE:CXX>:/diagnostics:caret;/W4;/w14265;/w15038;/fastfail;/guard:cf;/Z7;/Zp8;/std:c++latest;/permissive-;/Zc:threadSafeInit-;/Zl>"
-
-    # note that /Zi generates debug info inside the object file, it's the same as /Z7 for msvc
-    "$<$<COMPILE_LANGUAGE:ASM_MASM>:/Zi;/W3;/nologo>")
 
 if(STL_USE_ANALYZE)
     # TRANSITION OS-40109504: Windows SDK: incorrect SAL annotations on functions the STL uses
@@ -114,28 +108,16 @@ set(VCLIBS_DEBUG_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/Od>")
 # See GH-2108 for more info.
 set(VCLIBS_RELEASE_OPTIONS "$<$<COMPILE_LANGUAGE:CXX>:/O2;/Os>")
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/lib/${VCLIBS_I386_OR_AMD64}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/out/bin/${VCLIBS_I386_OR_AMD64}")
-
-set(CMAKE_STATIC_LINKER_FLAGS "/WX")
-set(CMAKE_STATIC_LINKER_FLAGS_DEBUG "")
-set(CMAKE_STATIC_LINKER_FLAGS_RELEASE "")
-set(CMAKE_SHARED_LINKER_FLAGS "/DEBUG:FULL /WX /RELEASE /SUBSYSTEM:Console /NODEFAULTLIB /INCREMENTAL:NO /MANIFEST:NO /DLL /profile /guard:cf /DEBUGTYPE:cv,fixup /LARGEADDRESSAWARE")
-set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "")
-set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "")
-
-get_filename_component(TOOLSET_BINARIES_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY) # Example: $\VC\Tools\MSVC\14.23.27931\bin\Hostx86\x86
-get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_BINARIES_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin\Hostx86
-get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin
-get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931
-
-set(TOOLSET_LIB "${TOOLSET_ROOT_DIR}/lib/${VCLIBS_X86_OR_X64}")
-
 add_subdirectory(boost-math)
 add_subdirectory(stl)
 
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
+endif()
+if(STL_BUILD_BENCHMARKING)
+    if(VCLIBS_TARGET_ARCHITECTURE STREQUAL "arm")
+        message(WARNING "google benchmark does not build on arm32 - this build will likely fail.")
+    endif()
+    add_subdirectory(benchmarks)
 endif()
