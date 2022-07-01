@@ -51,75 +51,62 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 
   <Type Name="std::tuple&lt;&gt;">
-      <DisplayString IncludeView="noparens"></DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand/>
+    <DisplayString IncludeView="noparens"></DisplayString>
+    <DisplayString IncludeView="noparensasptr"></DisplayString>
+    <DisplayString>({*this,view(noparens)})</DisplayString>
+    <Expand/>
   </Type>
 
   <Type Name="std::tuple&lt;*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-      </Expand>
+    <DisplayString IncludeView="noparens">{_Myfirst._Val}</DisplayString>
+    <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}</DisplayString>
+    <DisplayString IncludeView="asptr">({*this,view(noparensasptr)})</DisplayString>
+    <DisplayString>({*this,view(noparens)})</DisplayString>
+    <Expand>
+      <Item Name="[0]">_Myfirst._Val</Item>
+    </Expand>
   </Type>
 
   <Type Name="std::tuple&lt;*,*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
-      </Expand>
-  </Type>
-
-  <Type Name="std::tuple&lt;*,*,*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase *) this)->_Myfirst._Val}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[2]">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      </Expand>
-  </Type>
-
-  <Type Name="std::tuple&lt;*,*,*,*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[2]">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[3]">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      </Expand>
-  </Type>
-
-  <Type Name="std::tuple&lt;*,*,*,*,*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[2]">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[3]">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[4]">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      </Expand>
+    <DisplayString IncludeView="noparens">{_Myfirst._Val}, {*((_Mybase *) this),view(noparens)}</DisplayString>
+    <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}, {*((_Mybase *) this),view(noparensasptr)}</DisplayString>
+    <DisplayString IncludeView="asptr">({*this,view(noparensasptr)})</DisplayString>
+    <DisplayString>({*this,view(noparens)})</DisplayString>
+    <Expand>
+      <Item Name="[0]" ExcludeView="asptr">_Myfirst._Val</Item>
+      <Item Name="[0]" IncludeView="asptr">&amp;_Myfirst._Val</Item>
+      <Item Name="[1]" ExcludeView="asptr">((_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[1]" IncludeView="asptr">&amp;((_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[2]" ExcludeView="asptr" Optional="true">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[2]" IncludeView="asptr" Optional="true">&amp;((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[3]" EncludeView="asptr" Optional="true">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[3]" IncludeView="asptr" Optional="true">&amp;((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[4]" EncludeView="asptr" Optional="true">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[4]" IncludeView="asptr" Optional="true">&amp;((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+    </Expand>
   </Type>
 
   <Type Name="std::tuple&lt;*,*,*,*,*,*&gt;">
-      <DisplayString IncludeView="noparens">{_Myfirst._Val}, {((_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val}, {((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val}, {*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this),view(noparens)}</DisplayString>
-      <DisplayString ExcludeView="noparens">({*this,view(noparens)})</DisplayString>
-      <Expand>
-          <Item Name="[0]">_Myfirst._Val</Item>
-          <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[2]">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[3]">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Item Name="[4]">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-          <Synthetic Name="[...]"><DisplayString>Next five elements:</DisplayString></Synthetic>
-          <ExpandedItem>*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)</ExpandedItem>
-      </Expand>
+    <DisplayString IncludeView="noparens">{_Myfirst._Val}, {*((_Mybase *) this),view(noparens)}</DisplayString>
+    <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}, {*((_Mybase *) this),view(noparensasptr)}</DisplayString>
+    <DisplayString IncludeView="asptr">({*this,view(noparensasptr)})</DisplayString>
+    <DisplayString>({*this,view(noparens)})</DisplayString>
+    <Expand>
+      <Item Name="[0]" ExcludeView="asptr">_Myfirst._Val</Item>
+      <Item Name="[0]" IncludeView="asptr">&amp;_Myfirst._Val</Item>
+      <Item Name="[1]" ExcludeView="asptr">((_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[1]" IncludeView="asptr">&amp;((_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[2]" ExcludeView="asptr">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[2]" IncludeView="asptr">&amp;((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[3]" ExcludeView="asptr">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[3]" IncludeView="asptr">&amp;((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[4]" ExcludeView="asptr">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[4]" IncludeView="asptr">&amp;((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Synthetic Name="[...]"><DisplayString>Next five elements:</DisplayString></Synthetic>
+      <ExpandedItem ExcludeView="asptr">*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)</ExpandedItem>
+      <ExpandedItem IncludeView="asptr">*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this),view(asptr)</ExpandedItem>
+    </Expand>
   </Type>
-
 
   <Type Name="std::nullopt_t">
       <DisplayString>nullopt</DisplayString>
@@ -1577,34 +1564,47 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <Type Name="std::timed_mutex">
     <AlternativeType Name="std::recursive_timed_mutex"/>
-    <DisplayString>{_My_mutex}</DisplayString>
+    <DisplayString Condition="_My_locked == 0">unlocked</DisplayString>
+    <DisplayString Condition="_My_locked != 0">locked</DisplayString>
     <Expand>
-      <Item Name="[internal_locking_thread_id]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44) != 0">*(long *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 40)</Item>
-      <Item Name="[internal_locking_thread_id]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76) != 0">*(long *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 72)</Item>
-      <Item Name="[internal_ownership_levels]" Condition="sizeof(void *) == 4u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44) != 0">*(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 44)</Item>
-      <Item Name="[internal_ownership_levels]" Condition="sizeof(void *) == 8u &amp;&amp; *(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76) != 0">*(int *)((char *)(&amp;(_My_mutex._Mtx_storage)) + 76)</Item>
       <Item Name="[locking_thread_id]" Optional="true">_My_owner</Item>
-      <Item Name="[ownership_levels]" Optional="true">_My_locked</Item>
+      <Item Name="[ownership_levels]">_My_locked</Item>
     </Expand>
   </Type>
 
   <Type Name="std::lock_guard&lt;*&gt;">
-    <DisplayString>{_My_mutex}</DisplayString>
-  </Type>
-
-  <Type Name="std::unique_lock&lt;*&gt;">
-    <DisplayString>{*_Pmtx}</DisplayString>
+    <DisplayString>{&amp;_MyMutex}</DisplayString>
     <Expand>
-      <Item Name="owns">_Owns</Item>
+      <Item Name="mutex">&amp;_MyMutex</Item>
     </Expand>
   </Type>
 
+  <Type Name="std::unique_lock&lt;*&gt;">
+    <DisplayString Condition="_Pmtx == nullptr">empty</DisplayString>
+    <DisplayString Condition="_Pmtx != nullptr &amp;&amp; !_Owns">{*_Pmtx} - unowned</DisplayString>
+    <DisplayString Condition="_Pmtx != nullptr &amp;&amp; _Owns">{*_Pmtx} - owned</DisplayString>
+    <Expand>
+      <Item Name="mutex">_Pmtx</Item>
+      <Item Name="owned">_Owns</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="std::scoped_lock&lt;&gt;">
+    <DisplayString>()</DisplayString>
+  </Type>
+
   <Type Name="std::scoped_lock&lt;*&gt;">
-    <DisplayString>{_MyMutex}</DisplayString>
+    <DisplayString>({&amp;_MyMutex})</DisplayString>
+    <Expand>
+      <Item Name="[0]">&amp;_MyMutex</Item>
+    </Expand>
   </Type>
 
   <Type Name="std::scoped_lock&lt;*,*&gt;">
     <DisplayString>{_MyMutexes}</DisplayString>
+    <Expand>
+      <ExpandedItem Optional="true">_MyMutexes</ExpandedItem>
+    </Expand>
   </Type>
 
   <Type Name="std::defer_lock_t">
