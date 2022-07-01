@@ -3,6 +3,7 @@
 
 // system_error message mapping
 
+#include <algorithm>
 #include <system_error>
 
 #include <Windows.h>
@@ -108,17 +109,9 @@ namespace {
         {WSAEHOSTUNREACH, errc::host_unreachable},
     };
 
-    [[nodiscard]] constexpr bool _Windows_errors_are_sorted_and_unique() {
-        for (size_t _Idx = 1; _Idx < _STD size(_Win_errtab); ++_Idx) {
-            if (_Win_errtab[_Idx - 1]._Windows >= _Win_errtab[_Idx]._Windows) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    static_assert(_Windows_errors_are_sorted_and_unique(),
+    static_assert(_STD adjacent_find(_STD begin(_Win_errtab), _STD end(_Win_errtab),
+                      [](const auto& _Left, const auto& _Right) { return _Left._Windows >= _Right._Windows; })
+                      == _STD end(_Win_errtab),
         "The Windows error codes in _Win_errtab should be numerically sorted and unique.");
 
     struct _Sys_errtab_t { // maps error_code to NTBS
