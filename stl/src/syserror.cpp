@@ -112,6 +112,7 @@ namespace {
 
     constexpr _Sys_errtab_t _Sys_errtab[] = {
         // table of Posix code/name pairs
+        {static_cast<errc>(0), "success"},
         {errc::address_family_not_supported, "address family not supported"},
         {errc::address_in_use, "address in use"},
         {errc::address_not_available, "address not available"},
