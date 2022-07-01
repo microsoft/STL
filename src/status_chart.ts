@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import { Chart, ChartEvent, ChartType, LegendElement, LegendItem, TimeUnit, registerables } from 'chart.js';
+import { Chart, ChartEvent, LegendElement, LegendItem, TimeUnit, registerables } from 'chart.js';
 Chart.register(...registerables);
 import 'chartjs-adapter-luxon';
 
@@ -40,41 +40,55 @@ function get_monthly_values(key: Exclude<keyof MonthlyRow, 'date'>) {
     return get_values(monthly_table, row => row[key]);
 }
 
-class HiddenInfo {
+type AxisID = `${string}Axis`;
+
+type ColorName = `--color-${string}`;
+
+class DatasetInfo {
     url_key: string;
     chart_label: string;
+    yAxisID: AxisID;
+    color_name: ColorName;
     default_hidden: boolean;
 
-    constructor(url_key: string, chart_label: string, default_hidden: boolean = false) {
+    constructor(
+        url_key: string,
+        chart_label: string,
+        yAxisID: AxisID,
+        color_name: ColorName,
+        default_hidden: boolean = false
+    ) {
         this.url_key = url_key;
         this.chart_label = chart_label;
+        this.yAxisID = yAxisID;
+        this.color_name = color_name;
         this.default_hidden = default_hidden;
     }
 }
 
-class HiddenInfoMaps {
-    static url_key = new Map<string, HiddenInfo>();
-    static chart_label = new Map<string, HiddenInfo>();
+class DatasetInfoMaps {
+    static url_key = new Map<string, DatasetInfo>();
+    static chart_label = new Map<string, DatasetInfo>();
 
     static {
         const arr = [
-            new HiddenInfo('cxx17', 'C++17 Features'),
-            new HiddenInfo('cxx20', 'C++20 Features'),
-            new HiddenInfo('cxx23', 'C++23 Features'),
-            new HiddenInfo('lwg', 'LWG Resolutions'),
-            new HiddenInfo('pr', 'Pull Requests'),
-            new HiddenInfo('vso', 'Old Bugs'),
-            new HiddenInfo('bug', 'GitHub Bugs'),
-            new HiddenInfo('issue', 'GitHub Issues'),
-            new HiddenInfo('libcxx', 'Skipped Libcxx Tests'),
+            new DatasetInfo('cxx17', 'C++17 Features', 'smallAxis', '--color-severe-emphasis'),
+            new DatasetInfo('cxx20', 'C++20 Features', 'smallAxis', '--color-sponsors-emphasis'),
+            new DatasetInfo('cxx23', 'C++23 Features', 'smallAxis', '--color-done-emphasis'),
+            new DatasetInfo('lwg', 'LWG Resolutions', 'smallAxis', '--color-success-emphasis'),
+            new DatasetInfo('pr', 'Pull Requests', 'smallAxis', '--color-accent-emphasis'),
+            new DatasetInfo('vso', 'Old Bugs', 'largeAxis', '--color-scale-red-7'),
+            new DatasetInfo('bug', 'GitHub Bugs', 'largeAxis', '--color-danger-emphasis'),
+            new DatasetInfo('issue', 'GitHub Issues', 'largeAxis', '--color-neutral-emphasis'),
+            new DatasetInfo('libcxx', 'Skipped Libcxx Tests', 'largeAxis', '--color-attention-emphasis'),
 
-            new HiddenInfo('avg_age', 'Average Age', true),
-            new HiddenInfo('avg_wait', 'Average Wait', true),
-            new HiddenInfo('sum_age', 'Combined Age'),
-            new HiddenInfo('sum_wait', 'Combined Wait'),
+            new DatasetInfo('avg_age', 'Average Age', 'leftAxis', '--color-neutral-emphasis', true),
+            new DatasetInfo('avg_wait', 'Average Wait', 'leftAxis', '--color-sponsors-emphasis', true),
+            new DatasetInfo('sum_age', 'Combined Age', 'rightAxis', '--color-fg-default'),
+            new DatasetInfo('sum_wait', 'Combined Wait', 'rightAxis', '--color-done-emphasis'),
 
-            new HiddenInfo('merged', 'Line: Sliding Window'),
-            new HiddenInfo('merge_bar', 'Bars: Calendar Months'),
+            new DatasetInfo('merged', 'Line: Sliding Window', 'mergeAxis', '--color-accent-emphasis'),
+            new DatasetInfo('merge_bar', 'Bars: Calendar Months', 'mergeAxis', '--color-border-default'),
         ];
 
         for (const elem of arr) {
@@ -87,7 +101,7 @@ class HiddenInfoMaps {
         const ret = this[field].get(value);
 
         if (ret === undefined) {
-            throw new Error('HiddenInfoMaps.lookup() should always find the value.');
+            throw new Error('DatasetInfoMaps.lookup() should always find the value.');
         }
 
         return ret;
@@ -98,8 +112,14 @@ const url_search_params = new URLSearchParams(window.location.search);
 const hide_string = 'n';
 const show_string = 'y';
 
-function get_label_and_hidden(url_key: string) {
-    const { chart_label, default_hidden } = HiddenInfoMaps.lookup('url_key', url_key);
+const css_style_declaration = window.getComputedStyle(document.documentElement);
+
+function get_css_property(property_name: string) {
+    return css_style_declaration.getPropertyValue(property_name);
+}
+
+function get_dataset_properties(url_key: string) {
+    const { chart_label, yAxisID, color_name, default_hidden } = DatasetInfoMaps.lookup('url_key', url_key);
 
     let hidden: boolean;
 
@@ -113,8 +133,13 @@ function get_label_and_hidden(url_key: string) {
         hidden = default_hidden;
     }
 
+    const color = get_css_property(color_name);
+
     return {
         label: chart_label,
+        yAxisID: yAxisID,
+        borderColor: color,
+        backgroundColor: color,
         hidden: hidden,
     };
 }
@@ -135,67 +160,39 @@ const status_data = {
     datasets: [
         {
             data: get_weekly_values('cxx17'),
-            borderColor: '#9966FF',
-            backgroundColor: '#9966FF',
-            borderDash: [10, 5],
-            yAxisID: 'smallAxis',
-            ...get_label_and_hidden('cxx17'),
+            ...get_dataset_properties('cxx17'),
         },
         {
             data: get_weekly_values('cxx20').concat(get_daily_values('cxx20')),
-            borderColor: '#7030A0',
-            backgroundColor: '#7030A0',
-            yAxisID: 'smallAxis',
-            ...get_label_and_hidden('cxx20'),
+            ...get_dataset_properties('cxx20'),
         },
         {
             data: get_daily_values('cxx23'),
-            borderColor: '#9966FF',
-            backgroundColor: '#9966FF',
-            yAxisID: 'smallAxis',
-            ...get_label_and_hidden('cxx23'),
+            ...get_dataset_properties('cxx23'),
         },
         {
             data: get_weekly_values('lwg').concat(get_daily_values('lwg')),
-            borderColor: '#0070C0',
-            backgroundColor: '#0070C0',
-            yAxisID: 'smallAxis',
-            ...get_label_and_hidden('lwg'),
+            ...get_dataset_properties('lwg'),
         },
         {
             data: get_daily_values('pr'),
-            borderColor: '#00B050',
-            backgroundColor: '#00B050',
-            yAxisID: 'smallAxis',
-            ...get_label_and_hidden('pr'),
+            ...get_dataset_properties('pr'),
         },
         {
             data: get_weekly_values('vso'),
-            borderColor: '#900000',
-            backgroundColor: '#900000',
-            yAxisID: 'largeAxis',
-            ...get_label_and_hidden('vso'),
+            ...get_dataset_properties('vso'),
         },
         {
             data: get_daily_values('bug'),
-            borderColor: '#FF0000',
-            backgroundColor: '#FF0000',
-            yAxisID: 'largeAxis',
-            ...get_label_and_hidden('bug'),
+            ...get_dataset_properties('bug'),
         },
         {
             data: get_daily_values('issue'),
-            borderColor: '#909090',
-            backgroundColor: '#909090',
-            yAxisID: 'largeAxis',
-            ...get_label_and_hidden('issue'),
+            ...get_dataset_properties('issue'),
         },
         {
             data: get_weekly_values('libcxx'),
-            borderColor: '#FFC000',
-            backgroundColor: '#FFC000',
-            yAxisID: 'largeAxis',
-            ...get_label_and_hidden('libcxx'),
+            ...get_dataset_properties('libcxx'),
         },
     ],
 };
@@ -204,31 +201,19 @@ const age_data = {
     datasets: [
         {
             data: get_daily_values('avg_age'),
-            borderColor: '#909090',
-            backgroundColor: '#909090',
-            yAxisID: 'leftAxis',
-            ...get_label_and_hidden('avg_age'),
+            ...get_dataset_properties('avg_age'),
         },
         {
             data: get_daily_values('avg_wait'),
-            borderColor: '#FF9090',
-            backgroundColor: '#FF9090',
-            yAxisID: 'leftAxis',
-            ...get_label_and_hidden('avg_wait'),
+            ...get_dataset_properties('avg_wait'),
         },
         {
             data: get_daily_values('sum_age'),
-            borderColor: '#000000',
-            backgroundColor: '#000000',
-            yAxisID: 'rightAxis',
-            ...get_label_and_hidden('sum_age'),
+            ...get_dataset_properties('sum_age'),
         },
         {
             data: get_daily_values('sum_wait'),
-            borderColor: '#FF0000',
-            backgroundColor: '#FF0000',
-            yAxisID: 'rightAxis',
-            ...get_label_and_hidden('sum_wait'),
+            ...get_dataset_properties('sum_wait'),
         },
     ],
 };
@@ -237,18 +222,12 @@ const merge_data = {
     datasets: [
         {
             data: get_daily_values('merged'),
-            borderColor: '#00B050',
-            backgroundColor: '#00B050',
-            yAxisID: 'mergeAxis',
-            ...get_label_and_hidden('merged'),
+            ...get_dataset_properties('merged'),
         },
         {
             type: 'bar' as const,
             data: get_monthly_values('merge_bar'),
-            borderColor: '#CCCCCC',
-            borderWidth: 1,
-            yAxisID: 'mergeAxis',
-            ...get_label_and_hidden('merge_bar'),
+            ...get_dataset_properties('merge_bar'),
         },
     ],
 };
@@ -274,27 +253,7 @@ const timeframes = [timeframe_all, timeframe_github, timeframe_2021];
 const timeframe_github_idx = 1;
 let timeframe_idx = timeframe_github_idx;
 
-const common_options = {
-    animation: {
-        duration: 0,
-    },
-    elements: {
-        line: {
-            borderCapStyle: 'round' as const,
-            borderJoinStyle: 'round' as const,
-            fill: false,
-            spanGaps: false,
-        },
-        point: {
-            radius: 0,
-        },
-    },
-    hover: {
-        mode: 'nearest' as const,
-    },
-};
-
-function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legend: LegendElement<ChartType>) {
+function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legend: LegendElement<'bar' | 'line'>) {
     const ch = legend.chart;
     const index = legend_item.datasetIndex;
 
@@ -308,7 +267,7 @@ function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legen
 
     legend_item.hidden = becoming_hidden;
 
-    const { url_key, default_hidden } = HiddenInfoMaps.lookup('chart_label', legend_item.text);
+    const { url_key, default_hidden } = DatasetInfoMaps.lookup('chart_label', legend_item.text);
 
     if (becoming_hidden === default_hidden) {
         url_search_params.delete(url_key);
@@ -320,22 +279,47 @@ function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legen
     update_url();
 }
 
-const common_plugins = {
-    legend: {
-        onClick: legend_click_handler,
-    },
-    tooltip: {
-        mode: 'nearest' as const,
-        intersect: false,
-    },
-};
-
-const common_title = {
-    display: true,
-    font: {
-        size: 24,
-    },
-};
+function make_common_options(title_text: string) {
+    return {
+        animation: {
+            duration: 0,
+        },
+        elements: {
+            line: {
+                borderCapStyle: 'round' as const,
+                borderJoinStyle: 'round' as const,
+                fill: false,
+                spanGaps: false,
+            },
+            point: {
+                radius: 0,
+            },
+        },
+        hover: {
+            mode: 'nearest' as const,
+        },
+        plugins: {
+            legend: {
+                labels: {
+                    color: get_css_property('--color-fg-default'),
+                },
+                onClick: legend_click_handler,
+            },
+            tooltip: {
+                mode: 'nearest' as const,
+                intersect: false,
+            },
+            title: {
+                color: get_css_property('--color-fg-default'),
+                display: true,
+                font: {
+                    size: 24,
+                },
+                text: title_text,
+            },
+        },
+    };
+}
 
 function make_xAxis(timeframe: Timeframe) {
     return {
@@ -343,9 +327,17 @@ function make_xAxis(timeframe: Timeframe) {
         min: timeframe.min,
         max: daily_table[daily_table.length - 1].date,
         grid: {
+            borderColor: get_css_property('--color-border-default'),
+            color: get_css_property('--color-border-default'),
             offset: false,
         },
         offset: false,
+        title: {
+            color: get_css_property('--color-fg-default'),
+        },
+        ticks: {
+            color: get_css_property('--color-fg-default'),
+        },
         time: {
             parser: 'yyyy-MM-dd',
             tooltipFormat: 'MMM d, yyyy',
@@ -357,115 +349,52 @@ function make_xAxis(timeframe: Timeframe) {
     };
 }
 
-const status_options = {
-    ...common_options,
-    plugins: {
-        ...common_plugins,
+function make_yAxis(position: 'left' | 'right', title_text: string, min: number, max: number, stepSize: number) {
+    return {
+        type: 'linear' as const,
+        display: 'auto' as const,
+        position: position,
         title: {
-            ...common_title,
-            text: 'STL Status Chart',
+            color: get_css_property('--color-fg-default'),
+            display: true,
+            text: title_text,
         },
-    },
+        min: min,
+        max: max,
+        grid: {
+            borderColor: get_css_property('--color-border-default'),
+            color: get_css_property('--color-border-default'),
+        },
+        ticks: {
+            color: get_css_property('--color-fg-default'),
+            stepSize: stepSize,
+        },
+    };
+}
+
+const status_options = {
+    ...make_common_options('STL Status Chart'),
     scales: {
         x: make_xAxis(timeframes[timeframe_idx]),
-        largeAxis: {
-            type: 'linear' as const,
-            display: 'auto' as const,
-            position: 'left' as const,
-            title: {
-                display: true,
-                text: 'Bugs, Issues, Skipped Libcxx Tests',
-            },
-            min: 0,
-            max: 900,
-            ticks: {
-                stepSize: 100,
-            },
-        },
-        smallAxis: {
-            type: 'linear' as const,
-            display: 'auto' as const,
-            position: 'right' as const,
-            title: {
-                display: true,
-                text: 'Features, LWG Resolutions, Pull Requests',
-            },
-            min: 0,
-            max: 90,
-            ticks: {
-                stepSize: 10,
-            },
-        },
+        largeAxis: make_yAxis('left', 'Bugs, Issues, Skipped Libcxx Tests', 0, 900, 100),
+        smallAxis: make_yAxis('right', 'Features, LWG Resolutions, Pull Requests', 0, 90, 10),
     },
 };
 
 const age_options = {
-    ...common_options,
-    plugins: {
-        ...common_plugins,
-        title: {
-            ...common_title,
-            text: 'Pull Request Age',
-        },
-    },
+    ...make_common_options('Pull Request Age'),
     scales: {
         x: make_xAxis(timeframe_github),
-        leftAxis: {
-            type: 'linear' as const,
-            display: 'auto' as const,
-            position: 'left' as const,
-            title: {
-                display: true,
-                text: 'Average Age, Average Wait (days)',
-            },
-            min: 0,
-            max: 600,
-            ticks: {
-                stepSize: 100,
-            },
-        },
-        rightAxis: {
-            type: 'linear' as const,
-            display: 'auto' as const,
-            position: 'right' as const,
-            title: {
-                display: true,
-                text: 'Combined Age, Combined Wait (PR-months)',
-            },
-            min: 0,
-            max: 600,
-            ticks: {
-                stepSize: 100,
-            },
-        },
+        leftAxis: make_yAxis('left', 'Average Age, Average Wait (days)', 0, 600, 100),
+        rightAxis: make_yAxis('right', 'Combined Age, Combined Wait (PR-months)', 0, 600, 100),
     },
 };
 
 const merge_options = {
-    ...common_options,
-    plugins: {
-        ...common_plugins,
-        title: {
-            ...common_title,
-            text: 'Monthly Merged PRs',
-        },
-    },
+    ...make_common_options('Monthly Merged PRs'),
     scales: {
         x: make_xAxis(timeframe_github),
-        mergeAxis: {
-            type: 'linear' as const,
-            display: 'auto' as const,
-            position: 'right' as const,
-            title: {
-                display: true,
-                text: 'PRs / month',
-            },
-            min: 0,
-            max: 80,
-            ticks: {
-                stepSize: 10,
-            },
-        },
+        mergeAxis: make_yAxis('right', 'PRs / month', 0, 80, 10),
     },
 };
 
@@ -501,6 +430,54 @@ function load_charts() {
         data: merge_data,
         options: merge_options,
     });
+
+    function update_dark_mode(_event: MediaQueryListEvent) {
+        const color_fg_default = get_css_property('--color-fg-default');
+        const color_border_default = get_css_property('--color-border-default');
+
+        for (const chart of [status_chart, age_chart, merge_chart]) {
+            if (
+                chart.options.plugins?.legend?.labels === undefined ||
+                chart.options.plugins?.title === undefined ||
+                chart.options.scales === undefined
+            ) {
+                throw new Error('update_dark_mode() was surprised by chart.options.');
+            }
+
+            chart.options.plugins.legend.labels.color = color_fg_default;
+            chart.options.plugins.title.color = color_fg_default;
+
+            for (const [scaleId, scale] of Object.entries(chart.options.scales)) {
+                if (scale?.title === undefined || scale?.ticks === undefined || scale?.grid === undefined) {
+                    throw new Error(`update_dark_mode() was surprised by chart.options.scales[${scaleId}].`);
+                }
+
+                scale.title.color = color_fg_default;
+                scale.ticks.color = color_fg_default;
+
+                scale.grid.borderColor = color_border_default;
+                scale.grid.color = color_border_default;
+            }
+
+            for (const dataset of chart.data.datasets) {
+                if (dataset.label === undefined) {
+                    throw new Error('update_dark_mode() was surprised by dataset.label.');
+                }
+
+                const { color_name } = DatasetInfoMaps.lookup('chart_label', dataset.label);
+
+                const color = get_css_property(color_name);
+
+                dataset.borderColor = color;
+                dataset.backgroundColor = color;
+            }
+
+            chart.update();
+        }
+    }
+
+    const media_query_list = window.matchMedia('(prefers-color-scheme: dark)');
+    media_query_list.addEventListener('change', update_dark_mode);
 
     function update_chart_timeframe(chart: typeof status_chart, idx: number) {
         if (!('scales' in chart.options)) {
