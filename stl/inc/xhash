@@ -822,7 +822,7 @@ public:
         return _List.max_size();
     }
 
-    _NODISCARD_EMPTY_MTHD bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEM_FN bool empty() const noexcept {
         return _List.empty();
     }
 

@@ -475,41 +475,46 @@
         "The 'unique' algorithm returns the iterator past the last non-removed element. " \
         "Normally you need to use the result to call container's 'erase' method afterwards to erase elements")
 
-#define _NODISCARD_EMPTY_MTHD                                                                                   \
-    _NODISCARD_MSG("This method returns a bool value whether the container is empty and has no other effects. " \
-                   "It is not useful to call this method and discard the returned value. "                      \
-                   "Use 'clear()' method if you intend to clear the container instead")
+#define _NODISCARD_EMPTY_MEM_FN                                                                               \
+    _NODISCARD_MSG(                                                                                           \
+        "This member function returns a bool value whether the container is empty and has no other effects. " \
+        "It is not useful to call this method and discard the returned value. "                               \
+        "Use 'clear()' method if you intend to clear the container instead")
 
-#define _NODISCARD_EMPTY_MTHD_ARRAY                                                                             \
-    _NODISCARD_MSG("This method returns a bool value whether the container is empty and has no other effects. " \
-                   "It is not useful to call this method and discard the returned value. "                      \
-                   "There's no way to clear an array as its size is fixed")
+#define _NODISCARD_EMPTY_MEM_FN_ARRAY                                                                         \
+    _NODISCARD_MSG(                                                                                           \
+        "This member function returns a bool value whether the container is empty and has no other effects. " \
+        "It is not useful to call this method and discard the returned value. "                               \
+        "There's no way to clear an array as its size is fixed")
 
-#define _NODISCARD_EMPTY_MTHD_STACKTRACE                                                                        \
-    _NODISCARD_MSG("This method returns a bool value whether the container is empty and has no other effects. " \
-                   "It is not useful to call this method and discard the returned value. "                      \
-                   "std::stacktrace can be cleared by re-assigning with an empty value")
+#define _NODISCARD_EMPTY_MEM_FN_STACKTRACE                                                                    \
+    _NODISCARD_MSG(                                                                                           \
+        "This member function returns a bool value whether the container is empty and has no other effects. " \
+        "It is not useful to call this method and discard the returned value. "                               \
+        "std::stacktrace can be cleared by re-assigning with an empty value")
 
 #define _NODISCARD_EMPTY_FUNCTION                                                                                    \
     _NODISCARD_MSG("This function returns a bool value whether the container or container-like object is empty and " \
                    "has no other effects. It is not useful to call this method and discard the returned value. ")
 
-#define _NODISCARD_EMPTY_MTHD_ADAPTER                                                                \
-    _NODISCARD_MSG(                                                                                  \
-        "This method returns a bool value whether the container is empty and has no other effects. " \
-        "It is not useful to call this method and discard the returned value. "                      \
+#define _NODISCARD_EMPTY_MEM_FN_ADAPTER                                                                       \
+    _NODISCARD_MSG(                                                                                           \
+        "This member function returns a bool value whether the container is empty and has no other effects. " \
+        "It is not useful to call this method and discard the returned value. "                               \
         "There's no way to clear a queue or stack, it intentionally limits access to the udnerlying container. ")
 
 #define _NODISCARD_BARRIER_TOKEN \
     _NODISCARD_MSG("The token from 'arrive()' should not be discarded; it should be passed to 'wait()'")
 
-#define _NODISCARD_TRY_WAIT                                                                                            \
-    _NODISCARD_MSG("This method returns the state of the synchronization object and does not do anything else; it is " \
-                   "not useful to call this method and discard the return value")
+#define _NODISCARD_TRY_WAIT                                                                                          \
+    _NODISCARD_MSG(                                                                                                  \
+        "This member function returns the state of the synchronization object and does not do anything else; it is " \
+        "not useful to call this method and discard the return value")
 
-#define _NODISCARD_TRY_CHANGE_STATE                                                                                   \
-    _NODISCARD_MSG("This method returns whether the operation succeeds in modifying the state of the object or not. " \
-                   "It is dangerous to ignore the return value")
+#define _NODISCARD_TRY_CHANGE_STATE                                                                                 \
+    _NODISCARD_MSG(                                                                                                 \
+        "This member function returns whether the operation succeeds in modifying the state of the object or not. " \
+        "It is dangerous to ignore the return value")
 
 #define _NODISCARD_TRY_CHANGE_STATE_FN                                                                          \
     _NODISCARD_MSG("This function returns whether the operation succeeds in modifying the state of the passed " \
@@ -518,7 +523,6 @@
 #define _NODISCARD_PTR_ALLOC_FN                                                                                     \
     _NODISCARD_MSG("This function constructs an object wrapped by a pointer, and has no other side effects; it is " \
                    "not useful to call this function and discard the return value")
-
 
 #define _NODISCARD_PTR_RAW_ALLOC_FN                                                  \
     _NODISCARD_MSG("This function allocates some memory and returns a raw pointer. " \
@@ -566,9 +570,8 @@
 
 #define _NODISCARD_ASYNC                                                                                               \
     _NODISCARD_MSG(                                                                                                    \
-        "Async should save the return value to a variable. If the return value is discarded, the temporary future is " \
-        "destroyed, waiting for async result or evaluating deferred result, thus defeating std::async purpose.")
-
+        "'std::async' result should be saved into a variable. If the return value is discarded, the temporary future " \
+        "is destroyed, waiting for async result or evaluating deferred result, thus defeating 'std::async' purpose.")
 
 #define _NODISCARD_GET_FUTURE                                                                                       \
     _NODISCARD_MSG("Getting the future more than once or not satisfying the obtained future are errors that cause " \

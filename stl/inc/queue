@@ -72,7 +72,7 @@ public:
         : c(_STD move(_First), _STD move(_Last), _Al) {}
 #endif // _HAS_CXX23
 
-    _NODISCARD_EMPTY_MTHD_ADAPTER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
+    _NODISCARD_EMPTY_MEM_FN_ADAPTER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
         return c.empty();
     }
 
@@ -296,7 +296,7 @@ public:
         _STD make_heap(c.begin(), c.end(), comp);
     }
 
-    _NODISCARD_EMPTY_MTHD_ADAPTER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
+    _NODISCARD_EMPTY_MEM_FN_ADAPTER bool empty() const noexcept(noexcept(c.empty())) /* strengthened */ {
         return c.empty();
     }
 
