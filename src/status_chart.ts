@@ -376,8 +376,8 @@ const status_options = {
     ...make_common_options('STL Status Chart'),
     scales: {
         x: make_xAxis(timeframes[timeframe_idx]),
-        largeAxis: make_yAxis('left', 'Bugs, Issues, Skipped Libcxx Tests', 0, 900, 100),
-        smallAxis: make_yAxis('right', 'Features, LWG Resolutions, Pull Requests', 0, 90, 10),
+        largeAxis: make_yAxis('left', 'Bugs, Issues, Skipped Libcxx Tests', 0, 800, 100),
+        smallAxis: make_yAxis('right', 'Features, LWG Resolutions, Pull Requests', 0, 80, 10),
     },
 };
 
@@ -385,8 +385,8 @@ const age_options = {
     ...make_common_options('Pull Request Age'),
     scales: {
         x: make_xAxis(timeframe_github),
-        leftAxis: make_yAxis('left', 'Average Age, Average Wait (days)', 0, 600, 100),
-        rightAxis: make_yAxis('right', 'Combined Age, Combined Wait (PR-months)', 0, 600, 100),
+        leftAxis: make_yAxis('left', 'Average Age, Average Wait (days)', 0, 500, 100),
+        rightAxis: make_yAxis('right', 'Combined Age, Combined Wait (PR-months)', 0, 500, 100),
     },
 };
 
