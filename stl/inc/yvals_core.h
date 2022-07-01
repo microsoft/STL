@@ -528,7 +528,7 @@
     _NODISCARD_MSG("Implementation might take advantage of alignment assumption only if the object is accesssed via " \
                    "the returned pointer")
 
-#define _NODISCARD_LAUNDER                                                                          \
+#define _NODISCARD_LAUNDER                                                                            \
     _NODISCARD_MSG("'std::launder' has an effect on the return value (not on the passed parameter). " \
                    "It is not useful to call 'std::launder' and discard the returned value")
 
@@ -570,7 +570,7 @@
         "destroyed, waiting for async result or evaluating deferred result, thus defeating std::async purpose.")
 
 
-#define _NODISCARD_GET_FUTURE                                                                                        \
+#define _NODISCARD_GET_FUTURE                                                                                       \
     _NODISCARD_MSG("Getting the future more than once or not satisfying the obtained future are errors that cause " \
                    "exception to be thrown, so it is an error to get the future and discard it")
 
