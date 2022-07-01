@@ -24,19 +24,16 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _EXTERN_C_UNLESS_PURE
 
-extern _CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _Stofx(
+_CRTIMP2_PURE float __CLRCALL_PURE_OR_CDECL _Stofx(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long, int*);
+_CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Stodx(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long, int*);
+_CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _Stoldx(
     const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long, int*);
-extern _CRTIMP2_PURE double __CLRCALL_PURE_OR_CDECL _Stodx(
-    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long, int*);
-extern _CRTIMP2_PURE long double __CLRCALL_PURE_OR_CDECL _Stoldx(
-    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, long, int*);
-extern _CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(
+_CRTIMP2_PURE long __CLRCALL_PURE_OR_CDECL _Stolx(const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
+_CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
     const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
-extern _CRTIMP2_PURE unsigned long __CLRCALL_PURE_OR_CDECL _Stoulx(
+_CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
     const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
-extern _CRTIMP2_PURE long long __CLRCALL_PURE_OR_CDECL _Stollx(
-    const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
-extern _CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
+_CRTIMP2_PURE unsigned long long __CLRCALL_PURE_OR_CDECL _Stoullx(
     const char*, _Out_opt_ _Deref_post_opt_valid_ char**, int, int*);
 
 _END_EXTERN_C_UNLESS_PURE
@@ -101,8 +98,7 @@ private:
     friend _Tidy_guard<numpunct>;
 
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using string_type = basic_string<_Elem, char_traits<_Elem>, allocator<_Elem>>;
     using char_type   = _Elem;
@@ -205,15 +201,15 @@ protected:
     }
 
     virtual string __CLR_OR_THIS_CALL do_grouping() const {
-        return string(_Grouping);
+        return string{_Grouping};
     }
 
     virtual string_type __CLR_OR_THIS_CALL do_falsename() const {
-        return string_type(_Falsename);
+        return string_type{_Falsename};
     }
 
     virtual string_type __CLR_OR_THIS_CALL do_truename() const {
-        return string_type(_Truename);
+        return string_type{_Truename};
     }
 
 private:
@@ -262,8 +258,7 @@ __PURE_APPDOMAIN_GLOBAL locale::id numpunct<_Elem>::id;
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class num_get : public locale::facet { // facet for converting text to encoded numbers
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet
@@ -1137,25 +1132,18 @@ __PURE_APPDOMAIN_GLOBAL locale::id num_get<_Elem, _InIt>::id;
 #endif // __clang__
 
 template <class _Ty>
-struct _Hex_float_precision;
-
-template <>
-struct _Hex_float_precision<double> {
-    // the number of hexits needed to represent (DBL_MANT_DIG - 1) bits after the radix point exactly
-    static constexpr int value = ((DBL_MANT_DIG - 1) + 3) / 4;
-};
-
-template <>
-struct _Hex_float_precision<long double> {
-    // the number of hexits needed to represent (LDBL_MANT_DIG - 1) bits after the radix point exactly
-    static constexpr int value = ((LDBL_MANT_DIG - 1) + 3) / 4;
-};
-
-template <class _Ty>
 int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fmtflags _Float_flags) {
+    // return the effective precision determined by N4910 [facet.num.put.virtuals]/2.1 and printf's rules
     const bool _Is_hex = _Float_flags == (ios_base::fixed | ios_base::scientific);
     if (_Is_hex) {
-        return _Hex_float_precision<_Ty>::value;
+        // return the number of hexits needed (after the radix point) to represent the floating-point value exactly
+        if constexpr (is_same_v<_Ty, double>) {
+            return ((DBL_MANT_DIG - 1) + 3) / 4;
+        } else if constexpr (is_same_v<_Ty, long double>) {
+            return ((LDBL_MANT_DIG - 1) + 3) / 4;
+        } else {
+            static_assert(_Always_false<_Ty>, "Expected only double or long double here (not float).");
+        }
     }
 
     if (_Precision > 0) {
@@ -1176,8 +1164,7 @@ int _Float_put_desired_precision(const streamsize _Precision, const ios_base::fm
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class num_put : public locale::facet { // facet for converting encoded numbers to text
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     static size_t __CLRCALL_OR_CDECL _Getcat(const locale::facet** _Ppf = nullptr, const locale* _Ploc = nullptr) {
         // return locale category mask and construct standard facet

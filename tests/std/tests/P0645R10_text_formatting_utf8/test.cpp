@@ -22,7 +22,8 @@ void test_multibyte_format_strings() {
 
     {
         try {
-            (void) format("{:\x9f\x8f\x88<10}"sv, 42); // Bad fill character encoding: missing lead byte before \x9f
+            // Bad fill character encoding: missing lead byte before \x9f
+            (void) vformat("{:\x9f\x8f\x88<10}"sv, make_format_args(42));
             assert(false);
         } catch (const format_error&) {
         }
@@ -128,6 +129,8 @@ void test_width_estimation() {
         {TYPED_LITERAL(CharT, "\ufe40\u2000\ufe40\x58"), 6},
         {TYPED_LITERAL(CharT, "\ufe40\ufe40\u2000\x58"), 6},
         {TYPED_LITERAL(CharT, "\ufe40\ufe40\ufe40\x58"), 7},
+        {TYPED_LITERAL(CharT, "\u0061\u200D\x58"), 2},
+        {TYPED_LITERAL(CharT, "\u0061\U0001F1E6\U0001F1E7\u200D\U0001F1E8\u0062\x58"), 5},
     };
 
     for (const auto& test : test_cases) {
@@ -153,8 +156,6 @@ int main() {
     assert(setlocale(LC_ALL, ".932") != nullptr);
     run_tests();
 
-#ifndef MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
     assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
     run_tests();
-#endif
 }

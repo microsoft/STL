@@ -8,10 +8,17 @@ parameters:
 - name: boostMathSHAVar
   type: string
   default: boostMathSHA
+- name: googleBenchmarkSHAVar
+  type: string
+  default: googleBenchmarkSHA
 steps:
 - checkout: self
   clean: true
   submodules: false
+- script: |
+    cd $(Build.SourcesDirectory)
+    git clean --quiet -x -d -f -f
+  displayName: 'Clean after checkout'
 - task: PowerShell@2
   displayName: 'Get submodule SHAs'
   timeoutInMinutes: 1
@@ -24,6 +31,9 @@ steps:
       Write-Host "##vso[task.setvariable variable=${{ parameters.llvmSHAVar }};]$llvmSHA"
       $boostMathSHA = git submodule status --cached boost-math | %{$_ -replace $regexSubmoduleSHA, '$1'}
       Write-Host "##vso[task.setvariable variable=${{ parameters.boostMathSHAVar }};]$boostMathSHA"
+      $googleBenchmarkSHA = git submodule status --cached benchmarks/google-benchmark `
+        | %{$_ -replace $regexSubmoduleSHA, '$1'}
+      Write-Host "##vso[task.setvariable variable=${{ parameters.googleBenchmarkSHAVar }};]$googleBenchmarkSHA"
 - script: |
     cd $(Build.SourcesDirectory)
     if not exist "llvm-project" (
@@ -39,14 +49,12 @@ steps:
     git remote get-url llvm
     if errorlevel 1 (
       git remote add llvm https://github.com/llvm/llvm-project.git
-      git config --local extensions.partialClone llvm
     )
 
     git fetch --filter=tree:0 --depth=1 llvm $(${{ parameters.llvmSHAVar }})
-    git sparse-checkout init --cone
-    git sparse-checkout set libcxx/test libcxx/utils/libcxx llvm/utils/lit
+    git sparse-checkout set --cone --sparse-index libcxx/test libcxx/utils/libcxx llvm/utils/lit
     git reset --quiet --hard FETCH_HEAD
-    git clean --quiet -x -d -f
+    git clean --quiet -x -d -f -f
   displayName: "Checkout LLVM source"
 - script: |
     cd $(Build.SourcesDirectory)
@@ -63,9 +71,30 @@ steps:
     git remote get-url boostorg
     if errorlevel 1 (
       git remote add boostorg https://github.com/boostorg/math.git
-      git config --local extensions.partialClone boostorg
     )
 
     git fetch --filter=tree:0 --depth=1 boostorg $(${{ parameters.boostMathSHAVar }})
-    git checkout -f FETCH_HEAD
+    git reset --quiet --hard FETCH_HEAD
+    git clean --quiet -x -d -f -f
   displayName: "Checkout boost-math source"
+- script: |
+    cd $(Build.SourcesDirectory)/benchmarks
+    if not exist "google-benchmark" (
+      mkdir google-benchmark
+    )
+    cd google-benchmark
+
+    if not exist ".git" (
+      del /S /Q *
+      git init
+    )
+
+    git remote get-url googlebenchmark
+    if errorlevel 1 (
+      git remote add googlebenchmark https://github.com/google/benchmark.git
+    )
+
+    git fetch --filter=tree:0 --depth=1 googlebenchmark $(${{ parameters.googleBenchmarkSHAVar }})
+    git reset --quiet --hard FETCH_HEAD
+    git clean --quiet -x -d -f -f
+  displayName: "Checkout google benchmark source"

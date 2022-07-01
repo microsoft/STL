@@ -53,6 +53,7 @@ void t_del() { // test default_delete for scalars
 
     STD default_delete<derived> del1;
     STD default_delete<base> del2(del1);
+    (void) del2;
 }
 
 void t_del_arr() { // test default_delete for arrays
@@ -233,6 +234,7 @@ void t_hash() { // test hash functions
     typedef STD shared_ptr<int> sptr_t;
     sptr_t sp0;
     CSTD size_t hash_val = STD hash<sptr_t>()(sp0);
+    (void) hash_val;
 
     typedef STD unique_ptr<int> uptr_t;
     uptr_t up0;
@@ -353,7 +355,7 @@ void t_allocator_traits() { // test allocator_traits
             Mytraits::deallocate(myal, pch, 1);
         }
 
-        CHECK(Mytraits::max_size(myal) == (STD size_t) (-1));
+        CHECK(Mytraits::max_size(myal) == (STD size_t)(-1));
         CHECK(Mytraits::select_on_container_copy_construction(myal) == myal);
     }
 
@@ -384,7 +386,7 @@ void t_allocator_traits() { // test allocator_traits
         CHECK_INT(*pch, 'x');
         Mytraits::destroy(myal, pch);
         Mytraits::deallocate(myal, pch, 1);
-        CHECK(Mytraits::max_size(myal) == (STD size_t) (-1));
+        CHECK(Mytraits::max_size(myal) == (STD size_t)(-1));
         CHECK(Mytraits::select_on_container_copy_construction(myal) == myal);
     }
 }

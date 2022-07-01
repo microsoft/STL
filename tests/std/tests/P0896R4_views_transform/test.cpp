@@ -35,7 +35,7 @@ using pipeline_t =
 
 template <class Rng>
 concept CanViewTransform = requires(Rng&& r) {
-    views::transform(static_cast<Rng&&>(r), add8);
+    views::transform(forward<Rng>(r), add8);
 };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
@@ -59,7 +59,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     constexpr auto transform_incr = views::transform(add8);
 
     // ... with lvalue argument
-    STATIC_ASSERT(CanViewTransform<Rng&> == (!is_view || copyable<V>) );
+    STATIC_ASSERT(CanViewTransform<Rng&> == (!is_view || copy_constructible<V>) );
     if constexpr (CanViewTransform<Rng&>) { // Validate lvalue
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
@@ -74,8 +74,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const lvalue argument
-    STATIC_ASSERT(CanViewTransform<const remove_reference_t<Rng>&> == (!is_view || copyable<V>) );
-    if constexpr (is_view && copyable<V>) {
+    STATIC_ASSERT(CanViewTransform<const remove_reference_t<Rng>&> == (!is_view || copy_constructible<V>) );
+    if constexpr (is_view && copy_constructible<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::transform(as_const(rng), add8)), TV>);
@@ -87,8 +87,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(as_const(rng) | pipeline), pipeline_t<const remove_reference_t<Rng>&>>);
         STATIC_ASSERT(noexcept(as_const(rng) | pipeline) == is_noexcept);
     } else if constexpr (!is_view) {
-        using RC                   = transform_view<views::all_t<const remove_reference_t<Rng>&>, Fun>;
-        constexpr bool is_noexcept = is_nothrow_constructible_v<RC, const remove_reference_t<Rng>&, decltype((add8))>;
+        using RC                   = transform_view<ranges::ref_view<const remove_reference_t<Rng>>, Fun>;
+        constexpr bool is_noexcept = true;
 
         STATIC_ASSERT(same_as<decltype(views::transform(as_const(rng), add8)), RC>);
         STATIC_ASSERT(noexcept(views::transform(as_const(rng), add8)) == is_noexcept);
@@ -101,7 +101,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with rvalue argument
-    STATIC_ASSERT(CanViewTransform<remove_reference_t<Rng>> == is_view || enable_borrowed_range<remove_cvref_t<Rng>>);
+    STATIC_ASSERT(CanViewTransform<remove_reference_t<Rng>> == (is_view || movable<remove_reference_t<Rng>>) );
     if constexpr (is_view) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
         STATIC_ASSERT(same_as<decltype(views::transform(move(rng), add8)), TV>);
@@ -113,9 +113,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         STATIC_ASSERT(same_as<decltype(move(rng) | pipeline), pipeline_t<remove_reference_t<Rng>>>);
         STATIC_ASSERT(noexcept(move(rng) | pipeline) == is_noexcept);
     } else if constexpr (enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{declval<remove_reference_t<Rng>>()});
+        using S                    = ranges::owning_view<remove_reference_t<Rng>>;
         using RS                   = transform_view<S, Fun>;
-        constexpr bool is_noexcept = noexcept(S{declval<remove_reference_t<Rng>>()});
+        constexpr bool is_noexcept = is_nothrow_move_constructible_v<remove_reference_t<Rng>>;
 
         STATIC_ASSERT(same_as<decltype(views::transform(move(rng), add8)), RS>);
         STATIC_ASSERT(noexcept(views::transform(move(rng), add8)) == is_noexcept);
@@ -128,28 +128,14 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // ... with const rvalue argument
-    STATIC_ASSERT(CanViewTransform<const remove_reference_t<Rng>> == (is_view && copyable<V>)
-                  || (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) );
-    if constexpr (is_view && copyable<V>) {
+    STATIC_ASSERT(CanViewTransform<const remove_reference_t<Rng>> == (is_view && copy_constructible<V>) );
+    if constexpr (is_view && copy_constructible<V>) {
         constexpr bool is_noexcept = is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(same_as<decltype(views::transform(move(as_const(rng)), add8)), TV>);
         STATIC_ASSERT(noexcept(views::transform(move(as_const(rng)), add8)) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | transform_incr), TV>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | transform_incr) == is_noexcept);
-
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
-        STATIC_ASSERT(noexcept(move(as_const(rng)) | pipeline) == is_noexcept);
-    } else if constexpr (!is_view && enable_borrowed_range<remove_cvref_t<Rng>>) {
-        using S                    = decltype(ranges::subrange{declval<const remove_reference_t<Rng>>()});
-        using RS                   = transform_view<S, Fun>;
-        constexpr bool is_noexcept = noexcept(S{declval<const remove_reference_t<Rng>>()});
-
-        STATIC_ASSERT(same_as<decltype(views::transform(move(as_const(rng)), add8)), RS>);
-        STATIC_ASSERT(noexcept(views::transform(move(as_const(rng)), add8)) == is_noexcept);
-
-        STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | transform_incr), RS>);
         STATIC_ASSERT(noexcept(move(as_const(rng)) | transform_incr) == is_noexcept);
 
         STATIC_ASSERT(same_as<decltype(move(as_const(rng)) | pipeline), pipeline_t<const remove_reference_t<Rng>>>);
@@ -221,7 +207,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(*i == *begin(expected));
         }
 
-        if constexpr (copyable<V>) {
+        if constexpr (copy_constructible<V>) {
             auto r2                              = r;
             const same_as<iterator_t<R>> auto i2 = r2.begin();
             if (!is_empty) {
@@ -504,21 +490,12 @@ struct iterator_instantiator {
             auto r0 = make_view();
             auto i0 = r0.begin();
             assert(*i0 == add8(mutable_ints[0]));
-            STATIC_ASSERT(NOEXCEPT_IDL0(*i0));
+            STATIC_ASSERT(noexcept(*i0));
 
             assert(ranges::iter_move(i0) == add8(mutable_ints[0])); // NB: moving from int leaves it unchanged
-            STATIC_ASSERT(NOEXCEPT_IDL0(ranges::iter_move(i0)));
+            STATIC_ASSERT(noexcept(ranges::iter_move(i0)));
 
-            if constexpr (forward_iterator<Iter>) {
-                auto i1 = ranges::next(i0);
-                ranges::iter_swap(i0, i1);
-                assert(mutable_ints[0] == 1);
-                assert(mutable_ints[1] == 0);
-                ranges::iter_swap(i1, i0);
-                assert(mutable_ints[0] == 0);
-                assert(mutable_ints[1] == 1);
-                STATIC_ASSERT(NOEXCEPT_IDL0(ranges::iter_swap(i0, i1)));
-            }
+            STATIC_ASSERT(!CanIterSwap<decltype(i0)>);
         }
 
         { // Validate increments
@@ -731,6 +708,31 @@ constexpr void iterator_instantiation_test() {
     iterator_instantiator::call<test_iterator<contiguous_iterator_tag, CanDifference::yes>>();
 }
 
+// GH-1709 "Performance issue in handling range iterators in vector constructor"
+void test_gh_1709() {
+    const vector vec{1, 2, 3, 4, 5};
+    const auto transformed{vec | views::transform([](int i) { return i * 10; })};
+    const auto b{ranges::begin(transformed)};
+    const auto e{ranges::end(transformed)};
+
+    {
+        const vector test_construct(b, e);
+        assert((test_construct == vector{10, 20, 30, 40, 50}));
+    }
+
+    {
+        vector test_insert{-6, -7};
+        test_insert.insert(test_insert.end(), b, e);
+        assert((test_insert == vector{-6, -7, 10, 20, 30, 40, 50}));
+    }
+
+    {
+        vector test_assign{-8, -9};
+        test_assign.assign(b, e);
+        assert((test_assign == vector{10, 20, 30, 40, 50}));
+    }
+}
+
 int main() {
     { // Validate copyable views
         constexpr span<const int> s{some_ints};
@@ -784,4 +786,21 @@ int main() {
 
         (void) views::transform(Fn{})(span<int>{});
     }
+
+    { // Validate that iter_swap works when result of transformation is an lvalue reference
+        char base[] = "hello";
+        auto v      = ranges::transform_view{base, [](char& c) -> char& { return c; }};
+        auto i1     = v.begin();
+        auto i2     = v.begin() + 1;
+
+        assert(*i1 == 'h');
+        assert(*i2 == 'e');
+
+        ranges::iter_swap(i1, i2);
+
+        assert(*i1 == 'e');
+        assert(*i2 == 'h');
+    }
+
+    test_gh_1709();
 }

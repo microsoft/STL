@@ -523,6 +523,50 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
     }
 }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+namespace ranges {
+    template <class _Out, class _Ty>
+    using iota_result = out_value_result<_Out, _Ty>;
+
+    class _Iota_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_or_output_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Ty>
+            requires indirectly_writable<_It, const _Ty&>
+        constexpr iota_result<_It, _Ty> operator()(_It _First, _Se _Last, _Ty _Val) const {
+            _Adl_verify_range(_First, _Last);
+            _Seek_wrapped(
+                _First, _Iota_impl(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Val));
+            return {_STD move(_First), _STD move(_Val)};
+        }
+
+        template <weakly_incrementable _Ty, output_range<const _Ty&> _Rng>
+        constexpr iota_result<borrowed_iterator_t<_Rng>, _Ty> operator()(_Rng&& _Range, _Ty _Val) const {
+            auto _First = _RANGES begin(_Range);
+            _Seek_wrapped(_First, _Iota_impl(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Val));
+            return {_STD move(_First), _STD move(_Val)};
+        }
+
+    private:
+        template <class _It, class _Se, class _Ty>
+        _NODISCARD static constexpr _It _Iota_impl(_It _First, const _Se _Last, _Ty& _Val) {
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Ty>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_writable<_It, const _Ty&>);
+
+            const _Ty& _Const_val = _Val;
+            for (; _First != _Last; ++_First, (void) ++_Val) {
+                *_First = _Const_val;
+            }
+            return _First;
+        }
+    };
+
+    inline constexpr _Iota_fn iota{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
 #if _HAS_CXX17
 template <class _Integral>
 _NODISCARD constexpr auto _Abs_u(const _Integral _Val) noexcept {
@@ -548,35 +592,37 @@ _NODISCARD constexpr common_type_t<_Mt, _Nt> gcd(const _Mt _Mx, const _Nt _Nx) n
     // calculate greatest common divisor
     static_assert(_Is_nonbool_integral<_Mt> && _Is_nonbool_integral<_Nt>, "GCD requires nonbool integral types");
 
-    using _Common                  = common_type_t<_Mt, _Nt>;
-    using _Common_unsigned         = make_unsigned_t<_Common>;
-    _Common_unsigned _Mx_magnitude = _Abs_u(_Mx);
-    _Common_unsigned _Nx_magnitude = _Abs_u(_Nx);
-    if (_Mx_magnitude == 0U) {
-        return static_cast<_Common>(_Nx_magnitude);
-    }
+    using _Common          = common_type_t<_Mt, _Nt>;
+    using _Common_unsigned = make_unsigned_t<_Common>;
 
-    if (_Nx_magnitude == 0U) {
-        return static_cast<_Common>(_Mx_magnitude);
-    }
-
-    const auto _Mx_trailing_zeroes = static_cast<unsigned long>(_Countr_zero(_Mx_magnitude));
-    const auto _Common_factors_of_2 =
-        (_STD min) (_Mx_trailing_zeroes, static_cast<unsigned long>(_Countr_zero(_Nx_magnitude)));
-    _Nx_magnitude >>= _Common_factors_of_2;
-    _Mx_magnitude >>= _Mx_trailing_zeroes;
-    do {
-        _Nx_magnitude >>= static_cast<unsigned long>(_Countr_zero(_Nx_magnitude));
-        if (_Mx_magnitude > _Nx_magnitude) {
-            _Common_unsigned _Temp = _Mx_magnitude;
-            _Mx_magnitude          = _Nx_magnitude;
-            _Nx_magnitude          = _Temp;
+    return _Select_countr_zero_impl<_Common_unsigned>([=](auto _Countr_zero_impl) {
+        _Common_unsigned _Mx_magnitude = _Abs_u(_Mx);
+        _Common_unsigned _Nx_magnitude = _Abs_u(_Nx);
+        if (_Mx_magnitude == 0U) {
+            return static_cast<_Common>(_Nx_magnitude);
         }
 
-        _Nx_magnitude -= _Mx_magnitude;
-    } while (_Nx_magnitude != 0U);
+        if (_Nx_magnitude == 0U) {
+            return static_cast<_Common>(_Mx_magnitude);
+        }
 
-    return static_cast<_Common>(_Mx_magnitude << _Common_factors_of_2);
+        const auto _Mx_trailing_zeroes = static_cast<unsigned long>(_Countr_zero_impl(_Mx_magnitude));
+        const auto _Common_factors_of_2 =
+            (_STD min)(_Mx_trailing_zeroes, static_cast<unsigned long>(_Countr_zero_impl(_Nx_magnitude)));
+        _Nx_magnitude >>= _Common_factors_of_2;
+        _Mx_magnitude >>= _Mx_trailing_zeroes;
+        do {
+            _Nx_magnitude >>= static_cast<unsigned long>(_Countr_zero_impl(_Nx_magnitude));
+            if (_Mx_magnitude > _Nx_magnitude) {
+                _Common_unsigned _Temp = _Mx_magnitude;
+                _Mx_magnitude          = _Nx_magnitude;
+                _Nx_magnitude          = _Temp;
+            }
+
+            _Nx_magnitude -= _Mx_magnitude;
+        } while (_Nx_magnitude != 0U);
+        return static_cast<_Common>(_Mx_magnitude << _Common_factors_of_2);
+    });
 }
 
 template <class _Mt, class _Nt>
@@ -614,7 +660,7 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
             }
         }
 
-        constexpr _Ty _High_limit = (numeric_limits<_Ty>::max) () / 2;
+        constexpr _Ty _High_limit = (numeric_limits<_Ty>::max)() / 2;
         const auto _Val1_a        = _Float_abs(_Val1);
         const auto _Val2_a        = _Float_abs(_Val2);
         if (_Val1_a <= _High_limit && _Val2_a <= _High_limit) {
@@ -638,7 +684,7 @@ _NODISCARD constexpr _Ty midpoint(const _Ty _Val1, const _Ty _Val2) noexcept {
 
         // In the default rounding mode this less than one ULP difference will always be rounded away, so under
         // /fp:fast we could avoid these tests if we had some means of detecting it in the caller.
-        constexpr _Ty _Low_limit = (numeric_limits<_Ty>::min) () * 2;
+        constexpr _Ty _Low_limit = (numeric_limits<_Ty>::min)() * 2;
         if (_Val1_a < _Low_limit) {
             return _Val1 + _Val2 / 2;
         }

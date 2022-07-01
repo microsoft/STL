@@ -17,6 +17,7 @@ void test_ranges();
 void test_regex();
 void test_set();
 void test_stack();
+void test_stacktrace();
 void test_string();
 void test_string_view();
 void test_system_error();
@@ -46,6 +47,7 @@ int main() {
     test_regex();
     test_set();
     test_stack();
+    test_stacktrace();
     test_string();
     test_string_view();
     test_system_error();

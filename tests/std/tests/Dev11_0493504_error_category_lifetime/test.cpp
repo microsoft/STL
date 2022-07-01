@@ -28,6 +28,29 @@ struct Global {
 
 Global global;
 
+// Also test LWG-3598: system_category().default_error_condition(0) has a generic category.
+void test_lwg_3598() {
+    error_condition cond = system_category().default_error_condition(0);
+
+    assert(cond.category() == generic_category());
+    assert(cond.message() == "success");
+    assert(cond.value() == 0);
+
+    assert(error_code() == error_condition());
+}
+
+// Also test GH-2572: WAIT_TIMEOUT is not matched against by std::errc::timed_out
+void test_gh_2572() {
+    assert((errc::timed_out == error_code{WAIT_TIMEOUT, system_category()}));
+    assert((make_error_condition(errc::timed_out) == error_code{WAIT_TIMEOUT, system_category()}));
+
+    assert((errc::timed_out == error_code{ERROR_TIMEOUT, system_category()}));
+    assert((make_error_condition(errc::timed_out) == error_code{ERROR_TIMEOUT, system_category()}));
+
+    assert((errc::timed_out == error_code{ERROR_SEM_TIMEOUT, system_category()}));
+    assert((make_error_condition(errc::timed_out) == error_code{ERROR_SEM_TIMEOUT, system_category()}));
+}
+
 int main() {
     // Also test DevDiv-781294 "<system_error>: Visual C++ 2013 RC system_category().equivalent function does not work".
     const error_code code(ERROR_NOT_ENOUGH_MEMORY, system_category());
@@ -44,6 +67,10 @@ int main() {
     // Also test VSO-649432 <system_error> system_category().message() ends with extra newlines
     const auto msg = code.message();
     assert(!msg.empty() && msg.back() != '\0' && !isspace(static_cast<unsigned char>(msg.back())));
+
+    test_lwg_3598();
+
+    test_gh_2572();
 }
 
 

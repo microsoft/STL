@@ -38,7 +38,7 @@ struct to_chars_result {
     char* ptr;
     errc ec;
 #if _HAS_CXX20
-    _NODISCARD friend bool operator==(const to_chars_result&, const to_chars_result&) = default;
+    _NODISCARD_FRIEND bool operator==(const to_chars_result&, const to_chars_result&) = default;
 #endif // _HAS_CXX20
 };
 

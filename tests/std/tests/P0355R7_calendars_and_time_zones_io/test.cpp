@@ -29,7 +29,7 @@ bool test_duration_basic_out(const duration<Rep, Period>& d, const CharT* expect
     return ss.str() == expected;
 }
 
-#define WIDEN(TYPE, STR) get<const TYPE*>(pair{STR, L##STR});
+#define WIDEN(TYPE, STR) get<const TYPE*>(pair{STR, L##STR})
 
 template <class CharT>
 bool test_duration_locale_out() {
@@ -63,8 +63,6 @@ bool test_duration_locale_out() {
 
     return ss.str() == expected;
 }
-
-#undef WIDEN
 
 void test_duration_output() {
     using LongRatio = ratio<INTMAX_MAX - 1, INTMAX_MAX>;
@@ -128,9 +126,9 @@ void test_duration_output() {
 }
 
 
-template <class CharT, class Parsable>
-void test_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t<basic_string<CharT>*> abbrev = nullptr,
-    minutes* offset = nullptr) {
+template <class CharT, class CStringOrStdString, class Parsable>
+ios_base::iostate parse_state(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
     p = Parsable{};
     if (abbrev) {
         if constexpr (is_same_v<CharT, char>) {
@@ -147,53 +145,31 @@ void test_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t
     basic_stringstream<CharT> sstr{str};
     if (abbrev) {
         if (offset) {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev, *offset);
+            sstr >> parse(fmt, p, *abbrev, *offset);
         } else {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev);
+            sstr >> parse(fmt, p, *abbrev);
         }
     } else {
         if (offset) {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *offset);
+            sstr >> parse(fmt, p, *offset);
         } else {
-            sstr >> parse(basic_string<CharT>{fmt}, p);
+            sstr >> parse(fmt, p);
         }
     }
 
-    assert(sstr);
+    return sstr.rdstate();
 }
 
-template <class CharT, class Parsable>
-void fail_parse(const CharT* str, const CharT* fmt, Parsable& p, type_identity_t<basic_string<CharT>*> abbrev = nullptr,
-    minutes* offset = nullptr) {
-    p = Parsable{};
-    if (abbrev) {
-        if constexpr (is_same_v<CharT, char>) {
-            *abbrev = "!";
-        } else {
-            *abbrev = L"!";
-        }
-    }
+template <class CharT, class CStringOrStdString, class Parsable>
+void test_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
+    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) == ios_base::goodbit);
+}
 
-    if (offset) {
-        *offset = minutes::min();
-    }
-
-    basic_stringstream<CharT> sstr{str};
-    if (abbrev) {
-        if (offset) {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev, *offset);
-        } else {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *abbrev);
-        }
-    } else {
-        if (offset) {
-            sstr >> parse(basic_string<CharT>{fmt}, p, *offset);
-        } else {
-            sstr >> parse(basic_string<CharT>{fmt}, p);
-        }
-    }
-
-    assert(!sstr);
+template <class CharT, class CStringOrStdString, class Parsable>
+void fail_parse(const CharT* str, const CStringOrStdString& fmt, Parsable& p,
+    type_identity_t<basic_string<CharT>*> abbrev = nullptr, minutes* offset = nullptr) {
+    assert((parse_state(str, fmt, p, abbrev, offset) & ~ios_base::eofbit) != ios_base::goodbit);
 }
 
 template <class TimeType, class IntType = int>
@@ -227,19 +203,19 @@ void test_lwg_3536() {
 
     {
         istringstream iss{"2:2:30"};
-        iss >> parse(string{"%H:%M:%S"}, mm);
+        iss >> parse("%H:%M:%S", mm);
         assert(iss.fail() && mm == 20min);
     }
 
     {
         istringstream iss{"June"};
-        iss >> parse(string{"%B"}, mm);
+        iss >> parse("%B", mm);
         assert(iss.fail() && mm == 20min);
     }
 
     {
         istringstream iss{""};
-        iss >> parse(string{"%B"}, mm);
+        iss >> parse("%B", mm);
         assert(iss.fail() && mm == 20min);
     }
 }
@@ -282,6 +258,10 @@ void parse_seconds() {
     duration<int64_t, atto> time_atto;
     test_parse("0.400000000000000002", "%S", time_atto);
     assert((time_atto == duration<int64_t, deci>{4} + duration<int64_t, atto>{2}));
+
+    duration<float, ratio<1, 25>> time_float;
+    test_parse("0.33", "%S", time_float);
+    assert((time_float == duration<float, ratio<1, 25>>{8.25f}));
 
     fail_parse("1.2 1.3", "%S %S", time_ms);
     fail_parse("1.2 2.2", "%S %S", time_ms);
@@ -880,6 +860,32 @@ void parse_other_week_date() {
     assert(ymd == 2022y / January / 1d);
 }
 
+void parse_incomplete() {
+    // Parsing should fail if the input is insufficient to supply all fields of the format string, even if the input is
+    // sufficient to supply all fields of the parsable.
+    // Check both explicit and shorthand format strings, since the code path is different.
+    year_month ym;
+    assert(parse_state("2021-01", "%Y-%m-%d", ym) == (ios_base::eofbit | ios_base::failbit));
+    assert(parse_state("2022-02", "%F", ym) == (ios_base::eofbit | ios_base::failbit));
+    assert(parse_state("2021-", "%Y-%m-%d", ym) == (ios_base::eofbit | ios_base::failbit));
+    assert(parse_state("2022-", "%F", ym) == (ios_base::eofbit | ios_base::failbit));
+
+    seconds time;
+    fail_parse("01:59", "%H:%M:%S", time);
+    fail_parse("03:23", "%T", time);
+    fail_parse("04", "%R", time);
+
+    // Check for parsing of whitespace fields after other fields.  More whitespace tests below.
+    test_parse("15:19", "%H:%M%t", time);
+    test_parse("15:19", "%R%t", time);
+    fail_parse("15:19", "%H:%M%n", time);
+    fail_parse("15:19", "%R%n", time);
+
+    // However, it is OK to omit seconds from the format when parsing a duration to seconds precision.
+    test_parse("05:24", "%H:%M", time);
+    test_parse("06:25", "%R", time);
+}
+
 void parse_whitespace() {
     seconds time;
     fail_parse("ab", "a%nb", time);
@@ -901,7 +907,7 @@ void parse_whitespace() {
     fail_parse("", "%n", time);
 }
 
-void insert_leap_second(const sys_days& date, const seconds& value) {
+tzdb copy_tzdb() {
     const auto& my_tzdb = get_tzdb_list().front();
     vector<time_zone> zones;
     vector<time_zone_link> links;
@@ -911,13 +917,11 @@ void insert_leap_second(const sys_days& date, const seconds& value) {
         return time_zone_link{link.name(), link.target()};
     });
 
-    auto leap_vec = my_tzdb.leap_seconds;
-    leap_vec.emplace_back(date, value == 1s, leap_vec.back()._Elapsed());
-    get_tzdb_list()._Emplace_front(
-        tzdb{my_tzdb.version, move(zones), move(links), move(leap_vec), my_tzdb._All_ls_positive && (value == 1s)});
+    return {my_tzdb.version, move(zones), move(links), my_tzdb.leap_seconds, my_tzdb._All_ls_positive};
 }
 
 void test_gh_1952() {
+    // GH-1952 <chrono>: parse ignores subseconds when the underlying type supports it
     const auto time_str{"2021-06-02T17:51:05.696028Z"};
     const auto fmt{"%FT%TZ"};
     const auto utc_ref = clock_cast<utc_clock>(sys_days{2021y / June / 2d} + 17h + 51min + 5s + 696028us);
@@ -1048,8 +1052,15 @@ void parse_timepoints() {
 
     // Historical leap seconds don't allow complete testing, because they've all been positive and there haven't been
     // any since 2016 (as of 2021).
-    insert_leap_second(1d / January / 2020y, -1s);
-    insert_leap_second(1d / January / 2022y, 1s);
+    {
+        auto my_tzdb   = copy_tzdb();
+        auto& leap_vec = my_tzdb.leap_seconds;
+        leap_vec.erase(leap_vec.begin() + 27, leap_vec.end());
+        leap_vec.emplace_back(sys_days{1d / January / 2020y}, false, leap_vec.back()._Elapsed());
+        leap_vec.emplace_back(sys_days{1d / January / 2022y}, true, leap_vec.back()._Elapsed());
+        my_tzdb._All_ls_positive = false;
+        get_tzdb_list()._Emplace_front(move(my_tzdb));
+    }
 
     utc_seconds ut_ref = utc_clock::from_sys(sys_days{1d / July / 1972y}) - 1s; // leap second insertion
     test_parse("june 30 23:59:60 1972", "%c", ut);
@@ -1068,10 +1079,24 @@ void parse_timepoints() {
 
     fail_parse("june 30 23:59:60 1973", "%c", ut); // not a leap second insertion
 
+    // the last leap second insertion that file_clock is not aware of
+    test_parse("dec 31 23:59:59 2016", "%c", ut);
+    test_parse("dec 31 23:59:59 2016", "%c", ft);
+    assert(ft == clock_cast<file_clock>(ut));
+
+    test_parse("dec 31 23:59:60 2016", "%c", ut);
+    fail_parse("dec 31 23:59:60 2016", "%c", ft);
+
+    test_parse("jan 01 00:00:00 2017", "%c", ut);
+    test_parse("jan 01 00:00:00 2017", "%c", ft);
+    assert(ft == clock_cast<file_clock>(ut));
+
     ref = sys_days{1d / January / 2020y} - 1s; // negative leap second, UTC time doesn't exist
     fail_parse("dec 31 23:59:59 2019", "%c", ut);
-    fail_parse("dec 31 23:59:59 2019", "%c", st);
     fail_parse("dec 31 23:59:59 2019", "%c", ft);
+
+    test_parse("dec 31 23:59:59 2019", "%c", st);
+    assert(st == ref);
 
     test_parse("dec 31 23:59:59 2019", "%c", lt); // Not UTC, might be valid depending on the time zone.
     assert(lt.time_since_epoch() == ref.time_since_epoch());
@@ -1170,38 +1195,46 @@ void parse_timepoints() {
     assert(st == sys_days{23d / March / 1882y});
 
     test_gh_1952();
+
+    // GH-2698: 00:00:60 incorrectly parsed
+    fail_parse("2021-08-28 00:00:60", "%F %T", ut);
+
+    fail_parse("2017-01-01 05:29:60", "%F %T", ut);
+    test_parse("2017-01-01 05:29:60 +05:30", "%F %T %Ez", ut);
+    assert(ut == clock_cast<utc_clock>(sys_days{1d / January / 2017y}) - 1s);
 }
 
-void parse_wchar() {
+template <class CharT, class CStringOrStdString>
+void test_io_manipulator() {
     seconds time;
-    test_parse(L"12", L"%S", time);
+    test_parse(WIDEN(CharT, "12"), CStringOrStdString{WIDEN(CharT, "%S")}, time);
     assert(time == 12s);
-    test_parse(L"12", L"%M", time);
+    test_parse(WIDEN(CharT, "12"), CStringOrStdString{WIDEN(CharT, "%M")}, time);
     assert(time == 12min);
-    test_parse(L"30", L"%H", time);
+    test_parse(WIDEN(CharT, "30"), CStringOrStdString{WIDEN(CharT, "%H")}, time);
     assert(time == 30h);
-    test_parse(L" 1:23:42", L"%T", time);
+    test_parse(WIDEN(CharT, " 1:23:42"), CStringOrStdString{WIDEN(CharT, "%T")}, time);
     assert(time == 1h + 23min + 42s);
-    wstring tz_name;
-    test_parse(L"Etc/GMT+11", L"%Z", time, &tz_name);
-    assert(tz_name == L"Etc/GMT+11");
-    fail_parse(L"Not_valid! 00", L"%Z %H", time, &tz_name);
+    basic_string<CharT> tz_name;
+    test_parse(WIDEN(CharT, "Etc/GMT+11"), CStringOrStdString{WIDEN(CharT, "%Z")}, time, &tz_name);
+    assert(tz_name == WIDEN(CharT, "Etc/GMT+11"));
+    fail_parse(WIDEN(CharT, "Not_valid! 00"), CStringOrStdString{WIDEN(CharT, "%Z %H")}, time, &tz_name);
 
     weekday wd;
-    test_parse(L"wedNesday", L"%A", wd);
+    test_parse(WIDEN(CharT, "wedNesday"), CStringOrStdString{WIDEN(CharT, "%A")}, wd);
     assert(wd == Wednesday);
 
     month m;
-    test_parse(L"deCeMbeR", L"%b", m);
+    test_parse(WIDEN(CharT, "deCeMbeR"), CStringOrStdString{WIDEN(CharT, "%b")}, m);
     assert(m == December);
 
     sys_seconds st;
-    test_parse(L"oct 29 19:01:42 2020", L"%c", st);
+    test_parse(WIDEN(CharT, "oct 29 19:01:42 2020"), CStringOrStdString{WIDEN(CharT, "%c")}, st);
     assert(st == sys_days{2020y / October / 29d} + 19h + 1min + 42s);
 
-    fail_parse(L"ab", L"a%nb", time);
-    test_parse(L"a b", L"a%nb", time);
-    fail_parse(L"a  b", L"a%nb", time);
+    fail_parse(WIDEN(CharT, "ab"), CStringOrStdString{WIDEN(CharT, "a%nb")}, time);
+    test_parse(WIDEN(CharT, "a b"), CStringOrStdString{WIDEN(CharT, "a%nb")}, time);
+    fail_parse(WIDEN(CharT, "a  b"), CStringOrStdString{WIDEN(CharT, "a%nb")}, time);
 }
 
 void test_parse() {
@@ -1214,9 +1247,13 @@ void test_parse() {
     parse_calendar_types_basic();
     parse_iso_week_date();
     parse_other_week_date();
+    parse_incomplete();
     parse_whitespace();
     parse_timepoints();
-    parse_wchar();
+    test_io_manipulator<char, const char*>();
+    test_io_manipulator<wchar_t, const wchar_t*>();
+    test_io_manipulator<char, string>();
+    test_io_manipulator<wchar_t, wstring>();
 }
 
 void test() {

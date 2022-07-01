@@ -30,9 +30,8 @@ namespace stdext {
 #define _ESC_CODE 0x1b
 
         template <class _Elem, unsigned long _Maxcode = 0xffff>
-        class codecvt_jis
-            : public _STD
-                  codecvt<_Elem, char, _Statype> { // facet for converting between JIS-X0208 _Elem and UCS-2 bytes
+        class codecvt_jis : public _STD codecvt<_Elem, char, _Statype> {
+            // facet for converting between JIS-X0208 _Elem and UCS-2 bytes
             using _Table = _tab_jis<int>;
 
             bool _Jis_to_ucs(unsigned short& _Ch) const { // convert _Ch from JIS-X0208 to UCS-2

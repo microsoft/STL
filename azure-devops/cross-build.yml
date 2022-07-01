@@ -15,13 +15,16 @@ parameters:
 - name: numShards
   type: number
   default: 8
+- name: buildBenchmarking
+  type: string
+  default: 'ON'
 jobs:
 - job: '${{ parameters.targetPlatform }}'
   variables:
     fixedFlags: '--timeout=240;--shuffle'
     parallelismFlag: '-j$(testParallelism)'
     xmlOutputFlag: '--xunit-xml-output=$(${{ parameters.buildOutputLocationVar }})/test-results.xml'
-    shardFlags: '--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
+    shardFlags: '--order=lexical;--num-shards=$(System.TotalJobsInPhase);--run-shard=$(System.JobPositionInPhase)'
     litFlags: '$(fixedFlags);$(parallelismFlag);$(xmlOutputFlag);$(shardFlags)'
   strategy:
     parallel: ${{ parameters.numShards }}
@@ -38,6 +41,7 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       hostArch: ${{ parameters.hostArch }}
       targetArch: ${{ parameters.vsDevCmdArch }}
+      buildBenchmarking: ${{ parameters.buildBenchmarking }}
       cmakeAdditionalFlags: '-DTESTS_BUILD_ONLY=ON'
   - template: run-tests.yml
     parameters:
@@ -45,4 +49,3 @@ jobs:
       targetPlatform: ${{ parameters.targetPlatform }}
       targetArch: ${{ parameters.vsDevCmdArch }}
       displayName: 'Build Tests'
-      publishArtifact: false # disabled due to GH-1653

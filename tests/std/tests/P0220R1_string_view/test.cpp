@@ -69,12 +69,11 @@ const evil_conversion_to_string_view_lvalue_only convert_lvalue_only{};
 #pragma clang diagnostic pop
 #endif // __clang__
 
-// We provide a non-standard guarantee that basic_string_view is trivially copyable;
-// P2251 may eventually standardize that guarantee.
+// N4901 [string.view.template.general]/4
 static_assert(is_trivially_copyable_v<string_view>);
 static_assert(is_trivially_copyable_v<wstring_view>);
 
-// Similar non-standard guarantees
+// Implied by N4901 [class.prop]/1
 static_assert(is_trivially_move_constructible_v<string_view>);
 static_assert(is_trivially_copy_constructible_v<string_view>);
 static_assert(is_trivially_move_assignable_v<string_view>);
@@ -404,11 +403,7 @@ constexpr bool test_case_iterators() {
     assert(*testIterator == static_cast<CharT>('h'));
     testIterator += 8;
     assert(*testIterator == static_cast<CharT>('r'));
-#if defined(__EDG__) && defined(_M_X64) // TRANSITION, VSO-1356637
-    testIterator -= 4;
-#else // ^^^ workaround / no workaround vvv
     testIterator += -4;
-#endif // ^^^ no workaround ^^^
     assert(*testIterator == static_cast<CharT>('o'));
 
     assert(*(testIterator + 6) == static_cast<CharT>('d'));

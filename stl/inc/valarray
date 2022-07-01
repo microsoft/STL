@@ -57,10 +57,21 @@ using _Sizarray  = valarray<size_t>;
 
 template <class _Ty>
 class valarray { // store array with various indexing options
-private:
+public:
     friend _Tidy_deallocate_guard<valarray>;
 
-public:
+    template <class _Ty2>
+    friend _Ty2* begin(valarray<_Ty2>& _Array);
+
+    template <class _Ty2>
+    friend const _Ty2* begin(const valarray<_Ty2>& _Array);
+
+    template <class _Ty2>
+    friend _Ty2* end(valarray<_Ty2>& _Array);
+
+    template <class _Ty2>
+    friend const _Ty2* end(const valarray<_Ty2>& _Array);
+
     using value_type = _Ty;
 
     valarray() { // construct empty valarray
@@ -591,22 +602,22 @@ void swap(valarray<_Ty>& _Left, valarray<_Ty>& _Right) noexcept {
 
 template <class _Ty>
 _NODISCARD _Ty* begin(valarray<_Ty>& _Array) {
-    return &_Array[0];
+    return _Array._Myptr;
 }
 
 template <class _Ty>
 _NODISCARD const _Ty* begin(const valarray<_Ty>& _Array) {
-    return &_Array[0];
+    return _Array._Myptr;
 }
 
 template <class _Ty>
 _NODISCARD _Ty* end(valarray<_Ty>& _Array) {
-    return &_Array[0] + _Array.size();
+    return _Array._Myptr + _Array.size();
 }
 
 template <class _Ty>
 _NODISCARD const _Ty* end(const valarray<_Ty>& _Array) {
-    return &_Array[0] + _Array.size();
+    return _Array._Myptr + _Array.size();
 }
 
 template <class _Ty>
@@ -1370,7 +1381,7 @@ public:
     }
 
 #if _HAS_CXX20
-    _NODISCARD friend bool operator==(const slice& _Left, const slice& _Right) noexcept /* strengthened */ {
+    _NODISCARD_FRIEND bool operator==(const slice& _Left, const slice& _Right) noexcept /* strengthened */ {
         return _Left.start() == _Right.start() && _Left.size() == _Right.size() && _Left.stride() == _Right.stride();
     }
 #endif // _HAS_CXX20

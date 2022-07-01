@@ -27,12 +27,6 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
-#ifdef __clang__
-#define _STL_UNREACHABLE __builtin_unreachable()
-#else // ^^^ clang ^^^ / vvv other vvv
-#define _STL_UNREACHABLE __assume(false)
-#endif // __clang__
-
 _STD_BEGIN
 
 template <class...>
@@ -111,7 +105,7 @@ template <class _Fn, class _List>
 struct _Meta_apply_;
 template <class _Fn, class _List>
 using _Meta_apply =
-    // explode _List into the parameters of meta-callable _Fn
+    // unpack _List into the parameters of meta-callable _Fn
     typename _Meta_apply_<_Fn, _List>::type;
 
 template <class _Fn, template <class...> class _List, class... _Types>
@@ -397,27 +391,6 @@ struct variant_alternative<_Idx, variant<_Types...>> {
 };
 
 inline constexpr size_t variant_npos = _Meta_npos;
-
-class bad_variant_access
-    : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
-public:
-    bad_variant_access() noexcept = default;
-
-    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
-        return "bad variant access";
-    }
-
-#if !_HAS_EXCEPTIONS
-protected:
-    void _Doraise() const override { // perform class-specific exception handling
-        _RAISE(*this);
-    }
-#endif // !_HAS_EXCEPTIONS
-};
-
-[[noreturn]] inline void _Throw_bad_variant_access() {
-    _THROW(bad_variant_access{});
-}
 
 template <bool _TrivialDestruction, class... _Types>
 class _Variant_storage_ {}; // empty storage (empty "_Types" case)
@@ -747,8 +720,8 @@ class _Variant_base;
 
 template <size_t _Count>
 using _Variant_index_t = // signed so that conversion of -1 to size_t can cheaply sign extend
-    conditional_t<(_Count < static_cast<size_t>((numeric_limits<signed char>::max) ())), signed char,
-        conditional_t<(_Count < static_cast<size_t>((numeric_limits<short>::max) ())), short, int>>;
+    conditional_t<(_Count < static_cast<size_t>((numeric_limits<signed char>::max)())), signed char,
+        conditional_t<(_Count < static_cast<size_t>((numeric_limits<short>::max)())), short, int>>;
 
 template <class... _Types>
 struct _Variant_construct_visitor { // visitor that constructs the same alternative in a target _Variant_base as is
@@ -760,7 +733,6 @@ struct _Variant_construct_visitor { // visitor that constructs the same alternat
         disjunction_v<bool_constant<_Idx == variant_npos>, is_nothrow_constructible<remove_reference_t<_Ty>, _Ty>>) {
         // initialize _Idx-th item in _Self from _Source
         _STL_INTERNAL_CHECK(_Self.valueless_by_exception());
-        (void) _Source; // TRANSITION, DevCom-1004719
         if constexpr (_Idx != variant_npos) {
             _Construct_in_place(_Self._Storage(), integral_constant<size_t, _Idx>{}, static_cast<_Ty&&>(_Source._Val));
             _Self._Set_index(_Idx);
@@ -783,7 +755,6 @@ struct _Variant_assign_visitor { // visitor that implements assignment for varia
                 is_nothrow_constructible<_Remove_cvref_t<_Ty>, _Ty>>>) {
         // assign the _Idx-th alternative of _Self from _Source
         if constexpr (_Idx == variant_npos) { // assign from valueless _Source
-            (void) _Source; // TRANSITION, DevCom-1004719
             _Self._Reset();
         } else {
             if (_Self._Which == _Idx) { // same alternative: assign directly
@@ -1239,8 +1210,8 @@ _NODISCARD constexpr bool holds_alternative(
 }
 
 template <size_t _Idx, class... _Types>
-_NODISCARD constexpr decltype(auto) get(
-    variant<_Types...>& _Var) { // access the contained value of _Var if its _Idx-th alternative is active
+_NODISCARD constexpr decltype(auto) get(variant<_Types...>& _Var) {
+    // access the contained value of _Var if its _Idx-th alternative is active
     static_assert(_Idx < sizeof...(_Types), "variant index out of bounds");
     if (_Var.index() == _Idx) {
         return _Variant_raw_get<_Idx>(_Var._Storage());
@@ -1249,8 +1220,8 @@ _NODISCARD constexpr decltype(auto) get(
     _Throw_bad_variant_access();
 }
 template <size_t _Idx, class... _Types>
-_NODISCARD constexpr decltype(auto) get(
-    variant<_Types...>&& _Var) { // access the contained value of _Var if its _Idx-th alternative is active
+_NODISCARD constexpr decltype(auto) get(variant<_Types...>&& _Var) {
+    // access the contained value of _Var if its _Idx-th alternative is active
     static_assert(_Idx < sizeof...(_Types), "variant index out of bounds");
     if (_Var.index() == _Idx) {
         return _Variant_raw_get<_Idx>(_STD move(_Var)._Storage());
@@ -1259,8 +1230,8 @@ _NODISCARD constexpr decltype(auto) get(
     _Throw_bad_variant_access();
 }
 template <size_t _Idx, class... _Types>
-_NODISCARD constexpr decltype(auto) get(
-    const variant<_Types...>& _Var) { // access the contained value of _Var if its _Idx-th alternative is active
+_NODISCARD constexpr decltype(auto) get(const variant<_Types...>& _Var) {
+    // access the contained value of _Var if its _Idx-th alternative is active
     static_assert(_Idx < sizeof...(_Types), "variant index out of bounds");
     if (_Var.index() == _Idx) {
         return _Variant_raw_get<_Idx>(_Var._Storage());
@@ -1269,8 +1240,8 @@ _NODISCARD constexpr decltype(auto) get(
     _Throw_bad_variant_access();
 }
 template <size_t _Idx, class... _Types>
-_NODISCARD constexpr decltype(auto) get(
-    const variant<_Types...>&& _Var) { // access the contained value of _Var if its _Idx-th alternative is active
+_NODISCARD constexpr decltype(auto) get(const variant<_Types...>&& _Var) {
+    // access the contained value of _Var if its _Idx-th alternative is active
     static_assert(_Idx < sizeof...(_Types), "variant index out of bounds");
     if (_Var.index() == _Idx) {
         return _Variant_raw_get<_Idx>(_STD move(_Var)._Storage());
@@ -1280,32 +1251,32 @@ _NODISCARD constexpr decltype(auto) get(
 }
 
 template <class _Ty, class... _Types>
-_NODISCARD constexpr decltype(auto) get(
-    variant<_Types...>& _Var) { // access the contained value of _Var if its alternative _Ty is active
+_NODISCARD constexpr decltype(auto) get(variant<_Types...>& _Var) {
+    // access the contained value of _Var if its alternative _Ty is active
     constexpr size_t _Idx = _Meta_find_unique_index<variant<_Types...>, _Ty>::value;
     static_assert(_Idx < sizeof...(_Types),
         "get<T>(variant<Types...>&) requires T to occur exactly once in Types. (N4835 [variant.get]/5)");
     return _STD get<_Idx>(_Var);
 }
 template <class _Ty, class... _Types>
-_NODISCARD constexpr decltype(auto) get(
-    variant<_Types...>&& _Var) { // access the contained value of _Var if its alternative _Ty is active
+_NODISCARD constexpr decltype(auto) get(variant<_Types...>&& _Var) {
+    // access the contained value of _Var if its alternative _Ty is active
     constexpr size_t _Idx = _Meta_find_unique_index<variant<_Types...>, _Ty>::value;
     static_assert(_Idx < sizeof...(_Types),
         "get<T>(variant<Types...>&&) requires T to occur exactly once in Types. (N4835 [variant.get]/5)");
     return _STD get<_Idx>(_STD move(_Var));
 }
 template <class _Ty, class... _Types>
-_NODISCARD constexpr decltype(auto) get(
-    const variant<_Types...>& _Var) { // access the contained value of _Var if its alternative _Ty is active
+_NODISCARD constexpr decltype(auto) get(const variant<_Types...>& _Var) {
+    // access the contained value of _Var if its alternative _Ty is active
     constexpr size_t _Idx = _Meta_find_unique_index<variant<_Types...>, _Ty>::value;
     static_assert(_Idx < sizeof...(_Types),
         "get<T>(const variant<Types...>&) requires T to occur exactly once in Types. (N4835 [variant.get]/5)");
     return _STD get<_Idx>(_Var);
 }
 template <class _Ty, class... _Types>
-_NODISCARD constexpr decltype(auto) get(
-    const variant<_Types...>&& _Var) { // access the contained value of _Var if its alternative _Ty is active
+_NODISCARD constexpr decltype(auto) get(const variant<_Types...>&& _Var) {
+    // access the contained value of _Var if its alternative _Ty is active
     constexpr size_t _Idx = _Meta_find_unique_index<variant<_Types...>, _Ty>::value;
     static_assert(_Idx < sizeof...(_Types),
         "get<T>(const variant<Types...>&&) requires T to occur exactly once in Types. (N4835 [variant.get]/5)");
@@ -1313,29 +1284,29 @@ _NODISCARD constexpr decltype(auto) get(
 }
 
 template <size_t _Idx, class... _Types>
-_NODISCARD constexpr auto get_if(
-    variant<_Types...>* _Ptr) noexcept { // get the address of *_Ptr's contained value if it holds alternative _Idx
+_NODISCARD constexpr auto get_if(variant<_Types...>* _Ptr) noexcept {
+    // get the address of *_Ptr's contained value if it holds alternative _Idx
     static_assert(_Idx < sizeof...(_Types), "variant index out of bounds");
     return _Ptr && _Ptr->index() == _Idx ? _STD addressof(_Variant_raw_get<_Idx>(_Ptr->_Storage())) : nullptr;
 }
 template <size_t _Idx, class... _Types>
-_NODISCARD constexpr auto get_if(const variant<_Types...>*
-        _Ptr) noexcept { // get the address of *_Ptr's contained value if it holds alternative _Idx
+_NODISCARD constexpr auto get_if(const variant<_Types...>* _Ptr) noexcept {
+    // get the address of *_Ptr's contained value if it holds alternative _Idx
     static_assert(_Idx < sizeof...(_Types), "variant index out of bounds");
     return _Ptr && _Ptr->index() == _Idx ? _STD addressof(_Variant_raw_get<_Idx>(_Ptr->_Storage())) : nullptr;
 }
 
 template <class _Ty, class... _Types>
-_NODISCARD constexpr add_pointer_t<_Ty> get_if(
-    variant<_Types...>* _Ptr) noexcept { // get the address of *_Ptr's contained value if it holds alternative _Ty
+_NODISCARD constexpr add_pointer_t<_Ty> get_if(variant<_Types...>* _Ptr) noexcept {
+    // get the address of *_Ptr's contained value if it holds alternative _Ty
     constexpr size_t _Idx = _Meta_find_unique_index<variant<_Types...>, _Ty>::value;
     static_assert(_Idx != _Meta_npos,
         "get_if<T>(variant<Types...> *) requires T to occur exactly once in Types. (N4835 [variant.get]/9)");
     return _STD get_if<_Idx>(_Ptr);
 }
 template <class _Ty, class... _Types>
-_NODISCARD constexpr add_pointer_t<const _Ty> get_if(
-    const variant<_Types...>* _Ptr) noexcept { // get the address of *_Ptr's contained value if it holds alternative _Ty
+_NODISCARD constexpr add_pointer_t<const _Ty> get_if(const variant<_Types...>* _Ptr) noexcept {
+    // get the address of *_Ptr's contained value if it holds alternative _Ty
     constexpr size_t _Idx = _Meta_find_unique_index<variant<_Types...>, _Ty>::value;
     static_assert(_Idx != _Meta_npos,
         "get_if<T>(const variant<Types...> *) requires T to occur exactly once in Types. (N4835 [variant.get]/9)");
@@ -1355,7 +1326,6 @@ struct _Variant_relop_visitor2 { // evaluate _Op with the contained value of two
         if constexpr (_Idx != variant_npos) {
             return _Op{}(_Variant_raw_get<_Idx>(_Left), _Right._Val);
         } else { // return whatever _Op returns for equal values
-            (void) _Right; // TRANSITION, DevCom-1004719
             return _Op{}(0, 0);
         }
     }
@@ -1481,8 +1451,7 @@ struct _Variant_dispatcher<index_sequence<_Is...>> {
     template <class _Ret, class _Callable, class... _Types, bool _Any_valueless = ((_Is == 0) || ...)>
     _NODISCARD static constexpr _Ret _Dispatch2(_Callable&& _Obj, _Types&&... _Args) {
         if constexpr (_Any_valueless) {
-            (void) _Obj; // TRANSITION, DevCom-1004719
-            ((void) _Args, ...); // TRANSITION, DevCom-1004719
+            ((void) _Args, ...); // TRANSITION, VSO-1513409
             _Throw_bad_variant_access();
         }
 #if _HAS_CXX20
@@ -1761,7 +1730,6 @@ _STD_END
 #undef _STL_STAMP64
 #undef _STL_STAMP16
 #undef _STL_STAMP4
-#undef _STL_UNREACHABLE
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS

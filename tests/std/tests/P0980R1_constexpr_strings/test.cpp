@@ -86,6 +86,11 @@ constexpr auto get_cat() {
 }
 
 template <class CharType>
+constexpr auto get_cat_view() {
+    return basic_string_view<CharType>{get_cat<CharType>()};
+}
+
+template <class CharType>
 constexpr auto get_dog() {
     if constexpr (is_same_v<CharType, char>) {
         return "dog";
@@ -100,6 +105,11 @@ constexpr auto get_dog() {
     } else {
         return L"dog";
     }
+}
+
+template <class CharType>
+constexpr auto get_dog_view() {
+    return basic_string_view<CharType>{get_dog<CharType>()};
 }
 
 template <class CharType>
@@ -165,11 +175,72 @@ constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept 
 #endif // !__cpp_lib_concepts
 }
 
+template <class CharType, class POCCA, class POCMA, class POCS, class EQUAL>
+class MyAlloc {
+private:
+    size_t _id;
+
+    [[nodiscard]] constexpr size_t equal_id() const noexcept {
+        if constexpr (is_always_equal::value) {
+            return 10;
+        } else {
+            return _id;
+        }
+    }
+
+public:
+    [[nodiscard]] constexpr size_t id() const noexcept {
+        return _id;
+    }
+
+    using value_type = CharType;
+
+    using propagate_on_container_copy_assignment = POCCA;
+    using propagate_on_container_move_assignment = POCMA;
+    using propagate_on_container_swap            = POCS;
+    using is_always_equal                        = EQUAL;
+
+    constexpr explicit MyAlloc(const size_t off) : _id(off) {}
+
+    template <class U>
+    constexpr MyAlloc(const MyAlloc<U, POCCA, POCMA, POCS, EQUAL>& other) noexcept : _id(other.id()) {}
+
+    template <class U>
+    [[nodiscard]] constexpr bool operator==(const MyAlloc<U, POCCA, POCMA, POCS, EQUAL>& other) const noexcept {
+        return equal_id() == other.equal_id();
+    }
+
+    [[nodiscard]] constexpr CharType* allocate(const size_t numElements) {
+        return allocator<CharType>{}.allocate(numElements + equal_id()) + equal_id();
+    }
+
+    constexpr void deallocate(CharType* const first, const size_t numElements) noexcept {
+        allocator<CharType>{}.deallocate(first - equal_id(), numElements + equal_id());
+    }
+};
+
+template <class CharType>
+using StationaryAlloc = MyAlloc<CharType, false_type, false_type, false_type, false_type>;
+template <class CharType>
+using CopyAlloc = MyAlloc<CharType, true_type, false_type, false_type, false_type>;
+template <class CharType>
+using CopyEqualAlloc = MyAlloc<CharType, true_type, false_type, false_type, true_type>;
+template <class CharType>
+using MoveAlloc = MyAlloc<CharType, false_type, true_type, false_type, false_type>;
+template <class CharType>
+using MoveEqualAlloc = MyAlloc<CharType, false_type, true_type, false_type, true_type>;
+template <class CharType>
+using SwapAlloc = MyAlloc<CharType, false_type, false_type, true_type, false_type>;
+template <class CharType>
+using SwapEqualAlloc = MyAlloc<CharType, false_type, false_type, true_type, true_type>;
+
 template <class CharType>
 constexpr bool test_interface() {
-#ifndef __EDG__ // TRANSITION, VSO-1273296
     using str = basic_string<CharType>;
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // constructors
         // range constructors
         str literal_constructed{get_literal_input<CharType>()};
@@ -225,6 +296,9 @@ constexpr bool test_interface() {
         assert(equalRanges(conversion_start_length_constructed, "llo"sv));
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // allocator constructors
         allocator<CharType> alloc;
 
@@ -273,6 +347,9 @@ constexpr bool test_interface() {
         assert(equalRanges(conversion_start_length_constructed, "llo"sv));
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // assignment operator
         str literal_constructed = get_literal_input<CharType>();
 
@@ -303,6 +380,9 @@ constexpr bool test_interface() {
         assert(equalRanges(conversion_assigned, literal_constructed));
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // assign
         str literal_constructed = get_literal_input<CharType>();
 
@@ -419,6 +499,9 @@ constexpr bool test_interface() {
         assert(char_traits<CharType>::length(cs) == literal_constructed.size());
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // iterators
         str literal_constructed             = get_literal_input<CharType>();
         const str const_literal_constructed = get_literal_input<CharType>();
@@ -530,17 +613,7 @@ constexpr bool test_interface() {
         literal_constructed.shrink_to_fit();
 
         const auto c4 = literal_constructed.capacity();
-        if (is_constant_evaluated()) { // check minimum allocation of _BUF_SIZE when constant evaluated
-            assert(c4 == 16 / sizeof(CharType));
-        } else {
-            if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, wchar_t>) {
-                assert(c4 == 7);
-            } else if constexpr (is_same_v<CharType, char32_t>) {
-                assert(c4 == 3);
-            } else {
-                assert(c4 == 15);
-            }
-        }
+        assert(c4 == 16 / sizeof(CharType) - 1);
     }
 
     { // clear
@@ -550,6 +623,9 @@ constexpr bool test_interface() {
         assert(cleared.capacity() == str{get_literal_input<CharType>()}.capacity());
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // insert
         str insert_char               = get_literal_input<CharType>();
         const CharType to_be_inserted = CharType{','};
@@ -582,7 +658,7 @@ constexpr bool test_interface() {
 
         str insert_initializer_list = get_literal_input<CharType>();
         const auto it_ilist         = insert_initializer_list.insert(insert_initializer_list.begin() + 6,
-            {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
+                    {CharType{'c'}, CharType{'u'}, CharType{'t'}, CharType{'e'}, CharType{' '}});
         assert(it_ilist == insert_initializer_list.begin() + 6);
         assert(equalRanges(insert_initializer_list, "Hello cute fluffy kittens"sv));
 
@@ -627,6 +703,9 @@ constexpr bool test_interface() {
         assert(equalRanges(insert_iter_count_char, "Hellooooo fluffy kittens"sv));
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // erase
         str erase_pos_count = get_literal_input<CharType>();
         erase_pos_count.erase(0, 6);
@@ -673,6 +752,9 @@ constexpr bool test_interface() {
         assert(pushed.back() == CharType{'y'});
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // append
         const str literal_constructed = get_literal_input<CharType>();
 
@@ -718,6 +800,9 @@ constexpr bool test_interface() {
         assert(equalRanges(append_conversion_start_length, "bbllo"sv));
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // operator+=
         str literal_constructed = get_literal_input<CharType>();
 
@@ -743,6 +828,9 @@ constexpr bool test_interface() {
         assert(equalRanges(plus_conversion, "bbHello fluffy kittens"sv));
     }
 
+#ifdef __EDG__ // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // compare
         const str first  = get_literal_input<CharType>();
         const str second = get_cat<CharType>();
@@ -857,6 +945,9 @@ constexpr bool test_interface() {
         assert(comp_pos_count_conversion_pos_count_greater == 1);
     }
 
+#ifdef __EDG__ // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // starts_with
         const str starts            = get_literal_input<CharType>();
         const str input_string_true = starts.substr(0, 5);
@@ -872,6 +963,9 @@ constexpr bool test_interface() {
         assert(!input_string_false.starts_with(get_literal_input<CharType>()));
     }
 
+#ifdef __EDG__ // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // ends_with
         const str ends              = get_literal_input<CharType>();
         const str input_string_true = ends.substr(5);
@@ -888,6 +982,9 @@ constexpr bool test_interface() {
     }
 
 #if _HAS_CXX23
+#ifdef __EDG__ // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // contains
         const str hello_fluffy_kittens = get_literal_input<CharType>(); // "Hello fluffy kittens"
         constexpr auto kitten_ptr      = get_cat<CharType>(); // "kitten"
@@ -903,6 +1000,9 @@ constexpr bool test_interface() {
     }
 #endif // _HAS_CXX23
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // replace
         const str input = get_dog<CharType>();
 
@@ -992,6 +1092,9 @@ constexpr bool test_interface() {
         assert(equalRanges(replaced_pos_count_conversion_pos_count, "dfluffy"sv));
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // substr
         const str input = get_literal_input<CharType>();
 
@@ -1014,6 +1117,9 @@ constexpr bool test_interface() {
         assert(equalRanges(copy_count_pos, "fluffy"sv));
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // resize
         str resized = get_literal_input<CharType>();
         resized.resize(3);
@@ -1021,7 +1127,116 @@ constexpr bool test_interface() {
 
         resized.resize(6, CharType{'a'});
         assert(equalRanges(resized, "Helaaa"sv));
+
+        // ensure we grow properly from small string
+        resized.resize(26, CharType{'a'});
+        assert(equalRanges(resized, "Helaaaaaaaaaaaaaaaaaaaaaaa"sv));
     }
+
+#if _HAS_CXX23
+#ifdef __EDG__ // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
+    { // resize_and_overwrite
+        constexpr basic_string_view hello_fluffy_kittens = get_view_input<CharType>();
+        constexpr basic_string_view hello                = hello_fluffy_kittens.substr(0, 5);
+        constexpr basic_string_view dog                  = get_dog<CharType>();
+        constexpr basic_string_view kitten               = get_cat<CharType>();
+
+        str s;
+        s.resize_and_overwrite(5, [=](CharType* p, size_t n) {
+            assert(n == 5);
+            hello.copy(p, 5);
+            return 5u;
+        });
+
+        assert(s == hello);
+        assert(s.size() == 5);
+        assert(s.capacity() >= 5);
+        assert(s[5] == 0);
+
+        s.resize_and_overwrite(8, [=](CharType* p, size_t n) {
+            assert(n == 8);
+            assert(equal(hello.begin(), hello.end(), p, p + 5));
+            dog.copy(p, 3);
+            return 3u;
+        });
+
+        assert(s == dog);
+        assert(s.size() == 3);
+        assert(s.capacity() >= 3);
+        assert(s[3] == 0);
+
+        s.resize_and_overwrite(6, [=](CharType* p, size_t n) {
+            assert(n == 6);
+            assert(equal(dog.begin(), dog.end(), p, p + 3));
+            kitten.copy(p, 6);
+            return 6u;
+        });
+
+        assert(s == kitten);
+        assert(s.size() == 6);
+        assert(s.capacity() >= 6);
+        assert(s[6] == 0);
+
+        s.resize_and_overwrite(0, [=](CharType*, size_t n) {
+            assert(n == 0);
+            return 0u;
+        });
+
+        assert(s.size() == 0);
+        assert(s[0] == 0);
+
+        s = dog;
+
+        s.resize_and_overwrite(6, [=](CharType* p, size_t n) {
+            assert(n == 6);
+            assert(equal(dog.begin(), dog.end(), p, p + 3));
+            return 0u;
+        });
+
+        assert(s.size() == 0);
+        assert(s[0] == 0);
+
+        s = kitten;
+
+        s.resize_and_overwrite(3, [=](CharType* p, size_t n) {
+            assert(n == 3);
+            assert(equal(kitten.begin(), kitten.begin() + 3, p, p + 3));
+            dog.copy(p, 3);
+            return 3u;
+        });
+
+        assert(s == dog);
+        assert(s.size() == 3);
+        assert(s.capacity() >= 3);
+        assert(s[3] == 0);
+
+        s.resize_and_overwrite(20, [=](CharType* p, size_t n) {
+            assert(n == 20);
+            assert(equal(dog.begin(), dog.end(), p, p + 3));
+            hello_fluffy_kittens.copy(p, 20);
+            return 20u;
+        });
+
+        assert(s == hello_fluffy_kittens);
+        assert(s.size() == 20);
+        assert(s.capacity() >= 20);
+        assert(s[20] == 0);
+
+        s.resize_and_overwrite(3, [=](CharType* p, size_t n) {
+            assert(n == 3);
+            assert(equal(hello_fluffy_kittens.begin(), hello_fluffy_kittens.begin() + 3, p, p + 3));
+            dog.copy(p, 3);
+            return 3u;
+        });
+
+        assert(s == dog);
+        assert(s.size() == 3);
+        assert(s.capacity() >= 3);
+        assert(s[3] == 0);
+    }
+#endif // _HAS_CXX23
 
     { // swap
         constexpr basic_string_view<CharType> expected_first  = get_dog<CharType>();
@@ -1038,6 +1253,9 @@ constexpr bool test_interface() {
         assert(equalRanges(first, expected_second));
     }
 
+#ifdef __EDG__ // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // find
         const str input     = get_literal_input<CharType>();
         const str needle    = get_cat<CharType>();
@@ -1096,6 +1314,9 @@ constexpr bool test_interface() {
         assert(find_convertible_pos == str::npos);
     }
 
+#ifdef __EDG__ // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // rfind
         const str input     = get_literal_input<CharType>();
         const str needle    = get_cat<CharType>();
@@ -1382,6 +1603,9 @@ constexpr bool test_interface() {
         assert(find_last_not_of_convertible_pos == str::npos);
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // operator+
         const str first  = get_cat<CharType>();
         const str second = get_dog<CharType>();
@@ -1423,6 +1647,9 @@ constexpr bool test_interface() {
         assert(equalRanges(op_char_rstr, "!dog"sv));
     }
 
+#ifdef __EDG__ // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // comparison
         str first(get_view_input<CharType>());
         str second(get_view_input<CharType>());
@@ -1506,12 +1733,17 @@ constexpr bool test_interface() {
         basic_string_view<CharType> sv = s;
         assert(equalRanges(sv, "Hello fluffy kittens"sv));
     }
-#endif // __EDG__
+
     return true;
 }
 
 constexpr bool test_udls() {
-#ifndef __EDG__ // TRANSITION, VSO-1273296
+#ifdef __EDG__ // TRANSITION, VSO-1273296
+    if (is_constant_evaluated()) {
+        return true;
+    }
+#endif // ^^^ workaround ^^^
+
     assert(equalRanges("purr purr"s, "purr purr"sv));
 #ifdef __cpp_char8_t
     assert(equalRanges(u8"purr purr"s, "purr purr"sv));
@@ -1519,7 +1751,7 @@ constexpr bool test_udls() {
     assert(equalRanges(u"purr purr"s, "purr purr"sv));
     assert(equalRanges(U"purr purr"s, "purr purr"sv));
     assert(equalRanges(L"purr purr"s, "purr purr"sv));
-#endif // __EDG__
+
     return true;
 }
 
@@ -1532,7 +1764,6 @@ struct CharLikeType {
 
 template <class CharType>
 constexpr bool test_iterators() {
-#ifndef __EDG__ // TRANSITION, VSO-1273296
     using str               = basic_string<CharType>;
     str literal_constructed = get_literal_input<CharType>();
 
@@ -1546,6 +1777,9 @@ constexpr bool test_iterators() {
         cit = cit2;
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // op->
         basic_string<CharLikeType<CharType>> bs{CharType{'x'}};
         auto it = bs.begin();
@@ -1557,6 +1791,9 @@ constexpr bool test_iterators() {
         assert(cc == CharType{'x'});
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // increment
         auto it = literal_constructed.begin();
         assert(*++it == CharType{'e'});
@@ -1569,6 +1806,9 @@ constexpr bool test_iterators() {
         assert(*cit == CharType{'l'});
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // advance
         auto it = literal_constructed.begin() + 2;
         assert(*it == CharType{'l'});
@@ -1585,6 +1825,9 @@ constexpr bool test_iterators() {
         assert(*cit == CharType{'f'});
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // decrement
         auto it = literal_constructed.end();
         assert(*--it == CharType{'s'});
@@ -1597,6 +1840,9 @@ constexpr bool test_iterators() {
         assert(*cit == CharType{'n'});
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // advance back
         auto it = literal_constructed.end() - 2;
         assert(*it == CharType{'n'});
@@ -1639,6 +1885,9 @@ constexpr bool test_iterators() {
         assert((it3 <=> it1) == strong_ordering::greater);
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     { // access
         const auto it = literal_constructed.begin() + 2;
         it[2]         = CharType{'l'};
@@ -1647,14 +1896,13 @@ constexpr bool test_iterators() {
         const auto cit = literal_constructed.cbegin() + 2;
         assert(cit[2] == CharType{'l'});
     }
-#endif // __EDG__
+
     return true;
 }
 
 template <class CharType>
 constexpr bool test_growth() {
     using str = basic_string<CharType>;
-#ifndef __EDG__ // TRANSITION, VSO-1273296
     {
         str v(1007, CharType{'a'});
 
@@ -1695,6 +1943,9 @@ constexpr bool test_growth() {
         assert(v.capacity() == 1510);
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     {
         str v(1007, CharType{'a'});
 
@@ -1709,6 +1960,9 @@ constexpr bool test_growth() {
         assert(v.capacity() == 1510);
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     {
         str v(1007, CharType{'a'});
 
@@ -1727,6 +1981,9 @@ constexpr bool test_growth() {
         }
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     {
         str v(1007, CharType{'a'});
 
@@ -1739,6 +1996,9 @@ constexpr bool test_growth() {
         assert(v.capacity() == 1510);
     }
 
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
     {
         str v(1007, CharType{'a'});
 
@@ -1754,60 +2014,386 @@ constexpr bool test_growth() {
             assert(v.capacity() == 8015);
         }
     }
-#endif // __EDG__
+
     return true;
 }
 
+template <class CharType>
+constexpr void test_copy_ctor() {
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (is_constant_evaluated()) {
+        return;
+    }
+#endif // ^^^ workaround ^^^
+
+    using Str = basic_string<CharType, char_traits<CharType>, StationaryAlloc<CharType>>;
+
+    { // Allocated
+        Str range_constructed(get_view_input<CharType>(), StationaryAlloc<CharType>{11});
+        Str copy_constructed(range_constructed);
+        assert(equalRanges(range_constructed, get_view_input<CharType>()));
+        assert(equalRanges(copy_constructed, get_view_input<CharType>()));
+        assert(range_constructed.get_allocator().id() == 11);
+        assert(copy_constructed.get_allocator().id() == 11);
+    }
+
+    { // SSO
+        Str range_constructed_sso(get_cat_view<CharType>(), StationaryAlloc<CharType>{11});
+        Str copy_constructed_sso(range_constructed_sso);
+        assert(equalRanges(range_constructed_sso, get_cat_view<CharType>()));
+        assert(equalRanges(copy_constructed_sso, get_cat_view<CharType>()));
+        assert(range_constructed_sso.get_allocator().id() == 11);
+        assert(copy_constructed_sso.get_allocator().id() == 11);
+    }
+}
+
+template <class CharType>
+constexpr void test_copy_alloc_ctor(const size_t id1, const size_t id2) {
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (is_constant_evaluated()) {
+        return;
+    }
+#endif // ^^^ workaround ^^^
+
+    using Str = basic_string<CharType, char_traits<CharType>, StationaryAlloc<CharType>>;
+
+    { // Allocated
+        Str range_constructed(get_view_input<CharType>(), StationaryAlloc<CharType>{id1});
+        Str copy_constructed(range_constructed, StationaryAlloc<CharType>{id2});
+        assert(equalRanges(range_constructed, get_view_input<CharType>()));
+        assert(equalRanges(copy_constructed, get_view_input<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(copy_constructed.get_allocator().id() == id2);
+    }
+
+    { // SSO
+        Str range_constructed_sso(get_cat_view<CharType>(), StationaryAlloc<CharType>{id1});
+        Str copy_constructed_sso(range_constructed_sso, StationaryAlloc<CharType>{id2});
+        assert(equalRanges(range_constructed_sso, get_cat_view<CharType>()));
+        assert(equalRanges(copy_constructed_sso, get_cat_view<CharType>()));
+        assert(range_constructed_sso.get_allocator().id() == id1);
+        assert(copy_constructed_sso.get_allocator().id() == id2);
+    }
+}
+
+template <class CharType, class Alloc>
+constexpr void test_copy_assign(const size_t id1, const size_t id2, const size_t id3) {
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (is_constant_evaluated()) {
+        return;
+    }
+#endif // ^^^ workaround ^^^
+
+    using Str = basic_string<CharType, char_traits<CharType>, Alloc>;
+
+    { // Allocated to SSO
+        Str range_constructed(get_view_input<CharType>(), Alloc{id1});
+        Str copy_assigned(get_cat_view<CharType>(), Alloc{id2});
+
+        copy_assigned = range_constructed;
+        assert(equalRanges(range_constructed, get_view_input<CharType>()));
+        assert(equalRanges(copy_assigned, get_view_input<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(copy_assigned.get_allocator().id() == id3);
+    }
+
+    { // SSO to SSO
+        Str range_constructed(get_dog_view<CharType>(), Alloc{id1});
+        Str copy_assigned(get_cat_view<CharType>(), Alloc{id2});
+
+        copy_assigned = range_constructed;
+        assert(equalRanges(range_constructed, get_dog_view<CharType>()));
+        assert(equalRanges(copy_assigned, get_dog_view<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(copy_assigned.get_allocator().id() == id3);
+    }
+
+    { // SSO to Allocated
+        Str range_constructed(get_dog_view<CharType>(), Alloc{id1});
+        Str copy_assigned(get_view_input<CharType>(), Alloc{id2});
+
+        copy_assigned = range_constructed;
+        assert(equalRanges(range_constructed, get_dog_view<CharType>()));
+        assert(equalRanges(copy_assigned, get_dog_view<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(copy_assigned.get_allocator().id() == id3);
+    }
+
+    { // Allocated to Allocated
+        Str range_constructed(get_view_input<CharType>(), Alloc{id1});
+        Str copy_assigned(get_view_input<CharType>(), Alloc{id2});
+        copy_assigned.resize(30, 'a');
+
+        copy_assigned = range_constructed;
+        assert(equalRanges(range_constructed, get_view_input<CharType>()));
+        assert(equalRanges(copy_assigned, get_view_input<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(copy_assigned.get_allocator().id() == id3);
+    }
+}
+
+template <class CharType>
+constexpr void test_move_ctor() {
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (is_constant_evaluated()) {
+        return;
+    }
+#endif // ^^^ workaround ^^^
+
+    using Str = basic_string<CharType, char_traits<CharType>, StationaryAlloc<CharType>>;
+
+    { // Allocated
+        // Iterators are taken over if the allocators are equal and source is large
+        Str range_constructed(get_view_input<CharType>(), StationaryAlloc<CharType>{11});
+        const auto test_it = range_constructed.begin();
+        Str move_constructed(move(range_constructed));
+
+        assert(test_it == move_constructed.begin());
+        assert(range_constructed.empty());
+        assert(equalRanges(move_constructed, get_view_input<CharType>()));
+        assert(range_constructed.get_allocator().id() == 11);
+        assert(move_constructed.get_allocator().id() == 11);
+    }
+
+    { // SSO
+        Str range_constructed(get_cat_view<CharType>(), StationaryAlloc<CharType>{11});
+        Str move_constructed(move(range_constructed));
+
+        assert(range_constructed.empty());
+        assert(equalRanges(move_constructed, get_cat_view<CharType>()));
+        assert(range_constructed.get_allocator().id() == 11);
+        assert(move_constructed.get_allocator().id() == 11);
+    }
+}
+
+template <class CharType>
+constexpr void test_move_alloc_ctor(const size_t id1, const size_t id2) {
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (is_constant_evaluated()) {
+        return;
+    }
+#endif // ^^^ workaround ^^^
+
+    using Str = basic_string<CharType, char_traits<CharType>, StationaryAlloc<CharType>>;
+
+    { // Allocated
+        // Iterators are taken over if the allocators are equal and source is large
+        Str range_constructed(get_view_input<CharType>(), StationaryAlloc<CharType>{id1});
+        const auto test_it = range_constructed.begin();
+        Str move_constructed(move(range_constructed), StationaryAlloc<CharType>{id2});
+
+        assert(id1 != id2 || test_it == move_constructed.begin());
+        assert((id1 == id2) == range_constructed.empty());
+        assert(equalRanges(move_constructed, get_view_input<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(move_constructed.get_allocator().id() == id2);
+    }
+
+    { // SSO
+        Str range_constructed(get_cat_view<CharType>(), StationaryAlloc<CharType>{id1});
+        Str move_constructed(move(range_constructed), StationaryAlloc<CharType>{id2});
+
+        assert((id1 == id2) == range_constructed.empty());
+        assert(equalRanges(move_constructed, get_cat_view<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(move_constructed.get_allocator().id() == id2);
+    }
+}
+
+template <class CharType, class Alloc>
+constexpr void test_move_assign(const size_t id1, const size_t id2, const size_t id3) {
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (is_constant_evaluated()) {
+        return;
+    }
+#endif // ^^^ workaround ^^^
+
+    using Str = basic_string<CharType, char_traits<CharType>, Alloc>;
+    // Iterators are taken over if the allocators are equal and source is large
+
+    { // Allocated to SSO
+        Str range_constructed(get_view_input<CharType>(), Alloc{id1});
+        const auto test_it = range_constructed.begin();
+        Str move_assigned(get_cat_view<CharType>(), Alloc{id2});
+
+        move_assigned = move(range_constructed);
+        assert(id1 != id3 || test_it == move_assigned.begin());
+        assert((id1 == id3) == range_constructed.empty());
+        assert(equalRanges(move_assigned, get_view_input<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(move_assigned.get_allocator().id() == id3);
+    }
+
+    { // SSO to SSO
+        Str range_constructed(get_dog_view<CharType>(), Alloc{id1});
+        Str move_assigned(get_cat_view<CharType>(), Alloc{id2});
+
+        move_assigned = move(range_constructed);
+        assert((id1 == id3) == range_constructed.empty());
+        assert(equalRanges(move_assigned, get_dog_view<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(move_assigned.get_allocator().id() == id3);
+    }
+
+    { // SSO to Allocated
+        Str range_constructed(get_dog_view<CharType>(), Alloc{id1});
+        Str move_assigned(get_view_input<CharType>(), Alloc{id2});
+
+        move_assigned = move(range_constructed);
+        assert((id1 == id3) == range_constructed.empty());
+        assert(equalRanges(move_assigned, get_dog_view<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(move_assigned.get_allocator().id() == id3);
+    }
+
+    { // Allocated to Allocated
+        Str range_constructed(get_view_input<CharType>(), Alloc{id1});
+        Str move_assigned(get_view_input<CharType>(), Alloc{id2});
+        move_assigned.resize(30, 'a');
+        const auto test_it = range_constructed.begin();
+
+        move_assigned = move(range_constructed);
+        assert(id1 != id3 || test_it == move_assigned.begin());
+        assert((id1 == id3) == range_constructed.empty());
+        assert(equalRanges(move_assigned, get_view_input<CharType>()));
+        assert(range_constructed.get_allocator().id() == id1);
+        assert(move_assigned.get_allocator().id() == id3);
+    }
+}
+
+template <class CharType, class Alloc>
+constexpr void test_swap(const size_t id1, const size_t id2) {
+    using Str = basic_string<CharType, char_traits<CharType>, Alloc>;
+    { // Allocated to SSO
+        Str lhs(get_view_input<CharType>(), Alloc{id1});
+        Str rhs(get_cat_view<CharType>(), Alloc{id2});
+        const auto lhs_begin = lhs.begin();
+
+        lhs.swap(rhs);
+        assert(lhs_begin == rhs.begin());
+
+        assert(equalRanges(lhs, get_cat_view<CharType>()));
+        assert(equalRanges(rhs, get_view_input<CharType>()));
+
+        assert(lhs.get_allocator().id() == id2);
+        assert(rhs.get_allocator().id() == id1);
+    }
+
+    { // SSO to SSO
+        Str lhs(get_dog_view<CharType>(), Alloc{id1});
+        Str rhs(get_cat_view<CharType>(), Alloc{id2});
+
+        lhs.swap(rhs);
+        assert(equalRanges(lhs, get_cat_view<CharType>()));
+        assert(equalRanges(rhs, get_dog_view<CharType>()));
+
+        assert(lhs.get_allocator().id() == id2);
+        assert(rhs.get_allocator().id() == id1);
+    }
+
+    { // SSO to Allocated
+        Str lhs(get_dog_view<CharType>(), Alloc{id1});
+        Str rhs(get_view_input<CharType>(), Alloc{id2});
+        const auto rhs_begin = rhs.begin();
+
+        lhs.swap(rhs);
+        assert(rhs_begin == lhs.begin());
+
+        assert(equalRanges(lhs, get_view_input<CharType>()));
+        assert(equalRanges(rhs, get_dog_view<CharType>()));
+
+        assert(lhs.get_allocator().id() == id2);
+        assert(rhs.get_allocator().id() == id1);
+    }
+
+#if defined(__EDG__) && _ITERATOR_DEBUG_LEVEL != 0 // TRANSITION, VSO-1273296
+    if (!is_constant_evaluated())
+#endif // ^^^ workaround ^^^
+    { // Allocated to Allocated
+        Str lhs(get_view_input<CharType>(), Alloc{id1});
+        Str rhs(get_view_input<CharType>(), Alloc{id2});
+        rhs.resize(30, 'a');
+        const auto lhs_begin = lhs.begin();
+        const auto rhs_begin = rhs.begin();
+
+        Str expected_lhs = rhs;
+
+        lhs.swap(rhs);
+        assert(lhs_begin == rhs.begin());
+        assert(rhs_begin == lhs.begin());
+
+        assert(equalRanges(lhs, expected_lhs));
+        assert(equalRanges(rhs, get_view_input<CharType>()));
+
+        assert(lhs.get_allocator().id() == id2);
+        assert(rhs.get_allocator().id() == id1);
+    }
+}
+
+template <class CharType>
+constexpr bool test_allocator_awareness() {
+    test_copy_ctor<CharType>();
+    test_copy_alloc_ctor<CharType>(11, 11); // equal allocators
+    test_copy_alloc_ctor<CharType>(11, 22); // non-equal allocators
+    test_copy_assign<CharType, StationaryAlloc<CharType>>(11, 11, 11); // non-POCCA, equal allocators
+    test_copy_assign<CharType, StationaryAlloc<CharType>>(11, 22, 22); // non-POCCA, non-equal allocators
+    test_copy_assign<CharType, CopyAlloc<CharType>>(11, 11, 11); // POCCA, equal allocators
+    test_copy_assign<CharType, CopyAlloc<CharType>>(11, 22, 11); // POCCA, non-equal allocators
+    test_copy_assign<CharType, CopyEqualAlloc<CharType>>(11, 22, 11); // POCCA, always-equal allocators
+
+    test_move_ctor<CharType>();
+    test_move_alloc_ctor<CharType>(11, 11); // equal allocators
+    test_move_alloc_ctor<CharType>(11, 22); // non-equal allocators
+
+    test_move_assign<CharType, StationaryAlloc<CharType>>(11, 11, 11); // non-POCMA, equal allocators
+    test_move_assign<CharType, StationaryAlloc<CharType>>(11, 22, 22); // non-POCMA, non-equal allocators
+    test_move_assign<CharType, MoveAlloc<CharType>>(11, 11, 11); // POCMA, equal allocators
+    test_move_assign<CharType, MoveAlloc<CharType>>(11, 22, 11); // POCMA, non-equal allocators
+    test_move_assign<CharType, MoveEqualAlloc<CharType>>(11, 22, 11); // POCMA, always-equal allocators
+
+    test_swap<CharType, StationaryAlloc<CharType>>(11, 11); // non-POCS, equal allocators
+    // UNDEFINED BEHAVIOR, NOT TESTED - non-POCS, non-equal allocators
+    test_swap<CharType, SwapAlloc<CharType>>(11, 11); // POCS, equal allocators
+    test_swap<CharType, SwapAlloc<CharType>>(11, 22); // POCS, non-equal allocators
+    test_swap<CharType, SwapEqualAlloc<CharType>>(11, 22); // POCS, always-equal allocators
+
+    return true;
+}
+
+template <class CharType>
+constexpr void test_all() {
+    test_interface<CharType>();
+    test_iterators<CharType>();
+    test_growth<CharType>();
+    test_allocator_awareness<CharType>();
+
+    static_assert(test_interface<CharType>());
+    static_assert(test_iterators<CharType>());
+    static_assert(test_growth<CharType>());
+    static_assert(test_allocator_awareness<CharType>());
+}
+
+#if _HAS_CXX23
+void test_gh_2524() { // COMPILE-ONLY
+    // GH-2524 resize_and_overwrite generates warning C4018 when Operation returns int
+    string s;
+    s.resize_and_overwrite(1, [](char* buffer, size_t) {
+        *buffer = 'x';
+        int i   = 1;
+        return i;
+    });
+}
+#endif // _HAS_CXX23
+
 int main() {
-    test_interface<char>();
+    test_all<char>();
 #ifdef __cpp_char8_t
-    test_interface<char8_t>();
+    test_all<char8_t>();
 #endif // __cpp_char8_t
-    test_interface<char16_t>();
-    test_interface<char32_t>();
-    test_interface<wchar_t>();
+    test_all<char16_t>();
+    test_all<char32_t>();
+    test_all<wchar_t>();
 
     test_udls();
-
-    test_iterators<char>();
-#ifdef __cpp_char8_t
-    test_iterators<char8_t>();
-#endif // __cpp_char8_t
-    test_iterators<char16_t>();
-    test_iterators<char32_t>();
-    test_iterators<wchar_t>();
-
-    test_growth<char>();
-#ifdef __cpp_char8_t
-    test_growth<char8_t>();
-#endif // __cpp_char8_t
-    test_growth<char16_t>();
-    test_growth<char32_t>();
-    test_growth<wchar_t>();
-
-    static_assert(test_interface<char>());
-#ifdef __cpp_char8_t
-    static_assert(test_interface<char8_t>());
-#endif // __cpp_char8_t
-    static_assert(test_interface<char16_t>());
-    static_assert(test_interface<char32_t>());
-    static_assert(test_interface<wchar_t>());
-
     static_assert(test_udls());
-
-    static_assert(test_iterators<char>());
-#ifdef __cpp_char8_t
-    static_assert(test_iterators<char8_t>());
-#endif // __cpp_char8_t
-    static_assert(test_iterators<char16_t>());
-    static_assert(test_iterators<char32_t>());
-    static_assert(test_iterators<wchar_t>());
-
-    static_assert(test_growth<char>());
-#ifdef __cpp_char8_t
-    static_assert(test_growth<char8_t>());
-#endif // __cpp_char8_t
-    static_assert(test_growth<char16_t>());
-    static_assert(test_growth<char32_t>());
-    static_assert(test_growth<wchar_t>());
 }

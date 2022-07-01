@@ -169,18 +169,14 @@ struct _Cl_names { // structure to associate class name with mask value
     ctype_base::mask _Ctype;
 
     template <class _Elem>
-    const _Elem* _Get() const;
+    _NODISCARD const _Elem* _Get() const noexcept {
+        if constexpr (is_same_v<_Elem, char>) {
+            return _Narrow;
+        } else {
+            return _Wide;
+        }
+    }
 };
-
-template <>
-inline const char* _Cl_names::_Get<char>() const { // get narrow pointer
-    return _Narrow;
-}
-
-template <>
-inline const wchar_t* _Cl_names::_Get<wchar_t>() const { // get wide pointer
-    return _Wide;
-}
 
 template <class _RxTraits>
 struct _Cmp_cs { // functor to compare two character values for equality
@@ -201,8 +197,6 @@ struct _Cmp_icase { // functor to compare for case-insensitive equality
     }
 
     const _RxTraits& _Traits;
-
-    _Cmp_icase& operator=(const _Cmp_icase&) = delete;
 };
 
 template <class _RxTraits>
@@ -216,8 +210,6 @@ struct _Cmp_collate { // functor to compare for locale-specific equality
     }
 
     const _RxTraits& _Traits;
-
-    _Cmp_collate& operator=(const _Cmp_collate&) = delete;
 };
 
 struct _Regex_traits_base { // base of all regular expression traits
@@ -353,7 +345,7 @@ public:
 
     template <class _FwdIt>
     string_type lookup_collatename(_FwdIt _First, _FwdIt _Last) const { // map [_First, _Last) to collation element
-        return string_type(_First, _Last);
+        return string_type{_First, _Last};
     }
 
     locale_type imbue(locale_type _Lx) { // store locale object
@@ -502,44 +494,6 @@ private:
 };
 
 template <class _Traits, class _FwdIt1, class _FwdIt2>
-int _Iter_compare3(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, true_type) {
-    // _Iter_compare for memory buffer ranges
-    return _Traits_compare<_Traits>(
-        _First1, static_cast<size_t>(_Last1 - _First1), _First2, static_cast<size_t>(_Last2 - _First2));
-}
-
-template <class _Traits, class _FwdIt1, class _FwdIt2>
-int _Iter_compare3(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2, false_type) {
-    // _Iter_compare for general ranges
-    const pair<_FwdIt1, _FwdIt2> _Cmp = _STD mismatch(_First1, _Last1, _First2, _Last2, _Char_traits_eq<_Traits>{});
-
-    if (_Cmp.first == _Last1) {
-        if (_Cmp.second == _Last2) {
-            return 0;
-        } else {
-            return -1;
-        }
-    }
-
-    if (_Cmp.second == _Last2) {
-        return 1;
-    }
-
-    if (_Traits::lt(*_Cmp.first, *_Cmp.second)) {
-        return -1;
-    } else {
-        return 1;
-    }
-}
-
-template <class _Traits, class _FwdIt1, class _FwdIt2>
-int _Iter_compare2(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
-    // decide which _Iter_compare implementation to use
-    return _Iter_compare3<_Traits>(
-        _First1, _Last1, _First2, _Last2, bool_constant<conjunction_v<is_pointer<_FwdIt1>, is_pointer<_FwdIt2>>>{});
-}
-
-template <class _Traits, class _FwdIt1, class _FwdIt2>
 int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) {
     // compare two iterator ranges:
     // if [_First1, _Last1) is lexicographically less than [_First2, _Last2), a negative value
@@ -551,13 +505,41 @@ int _Iter_compare(_FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Las
 
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
-    return _Iter_compare2<_Traits>(
-        _Get_unwrapped(_First1), _Get_unwrapped(_Last1), _Get_unwrapped(_First2), _Get_unwrapped(_Last2));
+
+    auto _UFirst1 = _Get_unwrapped(_First1);
+    auto _ULast1  = _Get_unwrapped(_Last1);
+    auto _UFirst2 = _Get_unwrapped(_First2);
+    auto _ULast2  = _Get_unwrapped(_Last2);
+
+    if constexpr (is_pointer_v<decltype(_UFirst1)> && is_pointer_v<decltype(_UFirst2)>) {
+        return _Traits_compare<_Traits>(
+            _UFirst1, static_cast<size_t>(_ULast1 - _UFirst1), _UFirst2, static_cast<size_t>(_ULast2 - _UFirst2));
+    } else {
+        const auto _Cmp = _STD mismatch(_UFirst1, _ULast1, _UFirst2, _ULast2, _Char_traits_eq<_Traits>{});
+
+        if (_Cmp.first == _ULast1) {
+            if (_Cmp.second == _ULast2) {
+                return 0;
+            } else {
+                return -1;
+            }
+        }
+
+        if (_Cmp.second == _ULast2) {
+            return 1;
+        }
+
+        if (_Traits::lt(*_Cmp.first, *_Cmp.second)) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
 }
 
 inline bool _Is_word(unsigned char _UCh) {
     // special casing char to avoid branches for std::regex in this path
-    static constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max) () + 1] = {
+    static constexpr bool _Is_word_table[(numeric_limits<unsigned char>::max)() + 1] = {
         //        X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 XA XB XC XD XE XF
         /* 0X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         /* 1X */ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -629,7 +611,7 @@ public:
 
     _NODISCARD string_type str() const { // convert matched text to string
         const _Mybase _Range(_Effective_range());
-        return string_type(_Range.first, _Range.second);
+        return string_type{_Range.first, _Range.second};
     }
 
     _NODISCARD int compare(const sub_match& _Right) const { // compare *this to _Right
@@ -1026,7 +1008,7 @@ public:
     }
 
     _NODISCARD string_type str(size_type _Sub = 0) const {
-        return string_type((*this)[_Sub]);
+        return string_type{(*this)[_Sub]};
     }
 
     _NODISCARD const_reference operator[](size_type _Sub) const noexcept /* strengthened */ {
@@ -1173,16 +1155,16 @@ _NODISCARD bool operator!=(const match_results<_BidIt, _Alloc>& _Left, const mat
 }
 #endif // !_HAS_CXX20
 
-const unsigned int _BRE_MAX_GRP = 9U;
+_INLINE_VAR constexpr unsigned int _BRE_MAX_GRP = 9U;
 
-const unsigned int _Bmp_max   = 256U; // must fit in an unsigned int
-const unsigned int _Bmp_shift = 3U;
-const unsigned int _Bmp_chrs  = 1U << _Bmp_shift; // # of bits to be stored in each char
-const unsigned int _Bmp_mask  = _Bmp_chrs - 1U;
-const unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _Bmp_chrs;
+_INLINE_VAR constexpr unsigned int _Bmp_max   = 256U; // must fit in an unsigned int
+_INLINE_VAR constexpr unsigned int _Bmp_shift = 3U;
+_INLINE_VAR constexpr unsigned int _Bmp_chrs  = 1U << _Bmp_shift; // # of bits to be stored in each char
+_INLINE_VAR constexpr unsigned int _Bmp_mask  = _Bmp_chrs - 1U;
+_INLINE_VAR constexpr unsigned int _Bmp_size  = (_Bmp_max + _Bmp_chrs - 1U) / _Bmp_chrs;
 
-const unsigned int _Buf_incr        = 16U;
-const unsigned int _ARRAY_THRESHOLD = 4U;
+_INLINE_VAR constexpr unsigned int _Buf_incr        = 16U;
+_INLINE_VAR constexpr unsigned int _ARRAY_THRESHOLD = 4U;
 
 enum _Node_flags : int { // flags for nfa nodes with special properties
     _Fl_none    = 0x00,
@@ -1808,13 +1790,13 @@ public:
     basic_regex() : _Rep(nullptr) {} // construct empty object
 
     explicit basic_regex(_In_z_ const _Elem* _Ptr, flag_type _Flags = regex_constants::ECMAScript) : _Rep(nullptr) {
-        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), _Flags, random_access_iterator_tag{});
+        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), _Flags);
     }
 
     basic_regex(_In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript)
         : _Rep(nullptr) {
         if (_Ptr) {
-            _Reset(_Ptr, _Ptr + _Count, _Flags, random_access_iterator_tag{});
+            _Reset(_Ptr, _Ptr + _Count, _Flags);
             return;
         }
 
@@ -1825,19 +1807,19 @@ public:
     explicit basic_regex(
         const basic_string<_Elem, _STtraits, _STalloc>& _Str, flag_type _Flags = regex_constants::ECMAScript)
         : _Rep(nullptr) {
-        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, random_access_iterator_tag{});
+        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags);
     }
 
     template <class _InIt>
     basic_regex(_InIt _First, _InIt _Last, flag_type _Flags) : _Rep(nullptr) {
         _Adl_verify_range(_First, _Last);
-        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Flags, _Iter_cat_t<_InIt>{});
+        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Flags);
     }
 
     template <class _InIt>
     basic_regex(_InIt _First, _InIt _Last) : _Rep(nullptr) {
         _Adl_verify_range(_First, _Last);
-        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), regex_constants::ECMAScript, _Iter_cat_t<_InIt>{});
+        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), regex_constants::ECMAScript);
     }
 
     basic_regex(const basic_regex& _Right)
@@ -1851,7 +1833,7 @@ public:
     }
 
     basic_regex(initializer_list<_Elem> _Ilist, flag_type _Flags = regex_constants::ECMAScript) : _Rep(nullptr) {
-        _Reset(_Ilist.begin(), _Ilist.end(), _Flags, random_access_iterator_tag{});
+        _Reset(_Ilist.begin(), _Ilist.end(), _Flags);
     }
 
     basic_regex& operator=(initializer_list<_Elem> _Ilist) { // replace with regular expression in initializer_list
@@ -1860,7 +1842,7 @@ public:
 
     basic_regex& assign(initializer_list<_Elem> _Ilist, flag_type _Flags = regex_constants::ECMAScript) {
         // replace with regular expression in initializer_list
-        _Reset(_Ilist.begin(), _Ilist.end(), _Flags, random_access_iterator_tag{});
+        _Reset(_Ilist.begin(), _Ilist.end(), _Flags);
         return *this;
     }
 
@@ -1900,14 +1882,13 @@ public:
     }
 
     basic_regex& operator=(_In_z_ const _Elem* _Ptr) {
-        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), ECMAScript, random_access_iterator_tag{});
+        _Reset(_Ptr, _Ptr + _RxTraits::length(_Ptr), ECMAScript);
         return *this;
     }
 
     template <class _STtraits, class _STalloc>
     basic_regex& operator=(const basic_string<_Elem, _STtraits, _STalloc>& _Str) {
-        _Reset(
-            _Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), ECMAScript, random_access_iterator_tag{});
+        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), ECMAScript);
         return *this;
     }
 
@@ -1934,21 +1915,21 @@ public:
 
     basic_regex& assign(
         _In_reads_(_Count) const _Elem* _Ptr, size_t _Count, flag_type _Flags = regex_constants::ECMAScript) {
-        _Reset(_Ptr, _Ptr + _Count, _Flags, random_access_iterator_tag{});
+        _Reset(_Ptr, _Ptr + _Count, _Flags);
         return *this;
     }
 
     template <class _STtraits, class _STalloc>
     basic_regex& assign(
         const basic_string<_Elem, _STtraits, _STalloc>& _Str, flag_type _Flags = regex_constants::ECMAScript) {
-        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, random_access_iterator_tag{});
+        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags);
         return *this;
     }
 
     template <class _InIt>
     basic_regex& assign(_InIt _First, _InIt _Last, flag_type _Flags = regex_constants::ECMAScript) {
         _Adl_verify_range(_First, _Last);
-        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Flags, _Iter_cat_t<_InIt>{});
+        _Reset(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Flags);
         return *this;
     }
 
@@ -2002,23 +1983,23 @@ private:
     }
 
     template <class _InIt>
-    void _Reset(_InIt _First, _InIt _Last, flag_type _Flags, input_iterator_tag) {
-        // build regular expression from input iterators
-        basic_string<_Iter_value_t<_InIt>> _Str(_First, _Last);
-
-        _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags, forward_iterator_tag{});
-    }
-
-    template <class _FwdIt>
-    void _Reset(_FwdIt _First, _FwdIt _Last, flag_type _Flags, forward_iterator_tag) {
-        // build regular expression from forward iterators
+    void _Reset(_InIt _First, _InIt _Last, flag_type _Flags) {
+        // build regular expression from iterator range
+        if constexpr (_Is_fwd_iter_v<_InIt>) {
 #if _ENHANCED_REGEX_VISUALIZER
-        _Visualization.assign(_First, _Last);
+            _Visualization.assign(_First, _Last);
 #endif // _ENHANCED_REGEX_VISUALIZER
 
-        _Parser<_FwdIt, _Elem, _RxTraits> _Prs(_Traits, _First, _Last, _Flags);
-        _Root_node* _Rx = _Prs._Compile();
-        _Reset(_Rx);
+            _Parser<_InIt, _Elem, _RxTraits> _Prs(_Traits, _First, _Last, _Flags);
+            _Root_node* _Rx = _Prs._Compile();
+            _Reset(_Rx);
+        } else {
+            static_assert(_Is_input_iter_v<_InIt>, "Iterators must be at least input iterators");
+
+            basic_string<_Iter_value_t<_InIt>> _Str(_First, _Last);
+
+            _Reset(_Str.data(), _Str.data() + static_cast<ptrdiff_t>(_Str.size()), _Flags);
+        }
     }
 
     void _Reset(_Root_node* _Rx) { // build regular expression holding root node _Rx
@@ -2084,6 +2065,7 @@ _OutIt _Format_default(const match_results<_BidIt, _Alloc>& _Match, _OutIt _Out,
                 _Num *= 10;
                 _Num += static_cast<unsigned int>(*_First++ - '0');
             }
+
             if (_Num == 0) { // preserve $0, $00
                 *_Out++ = '$';
                 *_Out++ = '0';
@@ -2915,7 +2897,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_named_class(typename _Regex_traits
     bool _Negate) { // add contents of named class to bracket expression
     _Node_class<_Elem, _RxTraits>* _Node = static_cast<_Node_class<_Elem, _RxTraits>*>(_Current);
     _Add_elts(_Node, _Cl, _Negate);
-    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max) ())) {
+    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max)())) {
         _Node->_Classes = static_cast<_Regex_traits_base::char_class_type>(_Node->_Classes | _Cl);
     }
 }
@@ -2962,7 +2944,7 @@ void _Builder<_FwdIt, _Elem, _RxTraits>::_Add_equiv(_FwdIt _First, _FwdIt _Last,
             _Node->_Small->_Mark(_Ch);
         }
     }
-    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max) ())) { // map range
+    if (_Bmp_max < static_cast<unsigned int>((numeric_limits<_Elem>::max)())) { // map range
         _Sequence<_Elem>** _Cur = _STD addressof(_Node->_Equiv);
         _Char_to_elts(_First, _Last, _Diff, _Cur);
     }
@@ -4095,6 +4077,7 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterClass() { // add bracket expre
         _Nfa._Negate();
         _Next();
     }
+
     if ((_L_flags & _L_brk_rstr) && _Mchar == _Meta_rsq) { // insert initial ] when not special
         _Nfa._Add_char_to_class(_Meta_rsq);
         _Next();
@@ -4277,7 +4260,7 @@ bool _Parser<_FwdIt, _Elem, _RxTraits>::_CharacterEscape() { // check for valid 
         return _IdentityEscape();
     }
 
-    if ((numeric_limits<typename _RxTraits::_Uelem>::max) () < static_cast<unsigned int>(_Val)) {
+    if ((numeric_limits<typename _RxTraits::_Uelem>::max)() < static_cast<unsigned int>(_Val)) {
         _Error(regex_constants::error_escape);
     }
 
