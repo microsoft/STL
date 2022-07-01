@@ -823,15 +823,6 @@ _NODISCARD constexpr tuple<_Types&&...> forward_as_tuple(_Types&&... _Args) noex
     return tuple<_Types&&...>(_STD forward<_Types>(_Args)...);
 }
 
-template <class _Seq_type1, class _Seq_type2>
-struct _Cat_sequences;
-
-template <size_t... _Indexes1, size_t... _Indexes2>
-struct _Cat_sequences<index_sequence<_Indexes1...>,
-    index_sequence<_Indexes2...>> { // concatenates two index_sequence types
-    using type = index_sequence<_Indexes1..., _Indexes2...>;
-};
-
 template <class _Ty, size_t _Size>
 class array;
 
@@ -847,65 +838,38 @@ _NODISCARD constexpr _Ty&& get(array<_Ty, _Size>&& _Arr) noexcept;
 template <size_t _Idx, class _Ty, size_t _Size>
 _NODISCARD constexpr const _Ty&& get(const array<_Ty, _Size>&& _Arr) noexcept;
 
-template <class _Ty, class... _For_array>
-struct _View_as_tuple { // tuple_cat() supports only tuples, pairs, and arrays
-    static_assert(_Always_false<_Ty>, "Unsupported tuple_cat arguments.");
+template <class _Ty, class _Kx_arg, class _Ix_arg, size_t _Ix_next, class... _Sequences>
+struct _Tuple_cat2;
+
+template <class _Ty, size_t... _Kx, size_t... _Ix, size_t _Ix_next>
+struct _Tuple_cat2<_Ty, index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next> {
+    using _Ret    = tuple<tuple_element_t<_Kx, _Remove_cvref_t<tuple_element_t<_Ix, _Ty>>>...>;
+    using _Kx_seq = index_sequence<_Kx...>;
+    using _Ix_seq = index_sequence<_Ix...>;
 };
 
-template <class... _Types>
-struct _View_as_tuple<tuple<_Types...>> { // view a tuple as a tuple
-    using type = tuple<_Types...>;
-};
-
-template <class _Ty1, class _Ty2>
-struct _View_as_tuple<pair<_Ty1, _Ty2>> { // view a pair as a tuple
-    using type = tuple<_Ty1, _Ty2>;
-};
-
-template <class _Ty, class... _Types>
-struct _View_as_tuple<array<_Ty, 0>, _Types...> { // view an array as a tuple; ends recursion at 0
-    using type = tuple<_Types...>;
-};
-
-template <class _Ty, size_t _Size, class... _Types>
-struct _View_as_tuple<array<_Ty, _Size>, _Types...>
-    : _View_as_tuple<array<_Ty, _Size - 1>, _Ty, _Types...> { // view an array as a tuple; counts down to 0
-};
-
-template <size_t _Nx, class _Ty>
-struct _Repeat_for : integral_constant<size_t, _Nx> {}; // repeats _Nx for each _Ty in a parameter pack
-
-template <class _Ret, class _Kx_arg, class _Ix_arg, size_t _Ix_next, class... _Tuples>
-struct _Tuple_cat2 { // determine tuple_cat's return type and _Kx/_Ix indices
-    static_assert(sizeof...(_Tuples) == 0, "Unsupported tuple_cat arguments.");
-    using type        = _Ret;
-    using _Kx_arg_seq = _Kx_arg;
-    using _Ix_arg_seq = _Ix_arg;
-};
-
-template <class... _Types1, class _Kx_arg, size_t... _Ix, size_t _Ix_next, class... _Types2, class... _Rest>
-struct _Tuple_cat2<tuple<_Types1...>, _Kx_arg, index_sequence<_Ix...>, _Ix_next, tuple<_Types2...>, _Rest...>
-    : _Tuple_cat2<tuple<_Types1..., _Types2...>, typename _Cat_sequences<_Kx_arg, index_sequence_for<_Types2...>>::type,
-          index_sequence<_Ix..., _Repeat_for<_Ix_next, _Types2>::value...>, _Ix_next + 1,
-          _Rest...> { // determine tuple_cat's return type and _Kx/_Ix indices
-};
+template <class _Ty, size_t... _Kx, size_t... _Ix, size_t _Ix_next, size_t... _Kx_next, class... _Rest>
+struct _Tuple_cat2<_Ty, index_sequence<_Kx...>, index_sequence<_Ix...>, _Ix_next, index_sequence<_Kx_next...>, _Rest...>
+    : _Tuple_cat2<_Ty, index_sequence<_Kx..., _Kx_next...>,
+          index_sequence<_Ix..., (_Ix_next + 0 * _Kx_next)...>, // repeat _Ix_next, ignoring the elements of _Kx_next
+          _Ix_next + 1, _Rest...> {};
 
 template <class... _Tuples>
-struct _Tuple_cat1 : _Tuple_cat2<tuple<>, index_sequence<>, index_sequence<>, 0,
-                         typename _View_as_tuple<decay_t<_Tuples>>::type...> { // prepare to determine tuple_cat's
-                                                                               // return type and _Kx/_Ix indices
-};
+using _Tuple_cat1 = _Tuple_cat2<tuple<_Tuples&&...>, index_sequence<>, index_sequence<>, 0,
+    make_index_sequence<tuple_size_v<_Remove_cvref_t<_Tuples>>>...>;
 
 template <class _Ret, size_t... _Kx, size_t... _Ix, class _Ty>
-constexpr _Ret _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty&& _Arg) { // concatenate tuples
-    return _Ret(_STD get<_Kx>(_STD get<_Ix>(_STD forward<_Ty>(_Arg)))...);
+constexpr _Ret _Tuple_cat(index_sequence<_Kx...>, index_sequence<_Ix...>, _Ty _Arg) {
+    return _Ret{_STD get<_Kx>(_STD get<_Ix>(_STD move(_Arg)))...};
 }
 
 template <class... _Tuples>
-_NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::type tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
-    using _Cat1 = _Tuple_cat1<_Tuples...>;
-    return _Tuple_cat<typename _Cat1::type>(typename _Cat1::_Kx_arg_seq{}, typename _Cat1::_Ix_arg_seq{},
-        _STD forward_as_tuple(_STD forward<_Tuples>(_Tpls)...));
+_NODISCARD constexpr typename _Tuple_cat1<_Tuples...>::_Ret tuple_cat(_Tuples&&... _Tpls) { // concatenate tuples
+    using _Cat1   = _Tuple_cat1<_Tuples...>;
+    using _Ret    = typename _Cat1::_Ret;
+    using _Kx_seq = typename _Cat1::_Kx_seq;
+    using _Ix_seq = typename _Cat1::_Ix_seq;
+    return _Tuple_cat<_Ret>(_Kx_seq{}, _Ix_seq{}, _STD forward_as_tuple(_STD forward<_Tuples>(_Tpls)...));
 }
 
 #if _HAS_CXX17
