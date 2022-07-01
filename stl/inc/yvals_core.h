@@ -529,8 +529,8 @@
                    "the returned pointer")
 
 #define _NODISCARD_LAUNDER                                                                          \
-    _NODISCARD_MSG("std::launder has an effect on the return value (not on the passed parameter). " \
-                   "It is not useful to call std::launder and discard the returned value")
+    _NODISCARD_MSG("'std::launder' has an effect on the return value (not on the passed parameter). " \
+                   "It is not useful to call 'std::launder' and discard the returned value")
 
 #ifdef _NODISCARD_LOCK_SUPPRESS
 
@@ -571,8 +571,8 @@
 
 
 #define _NODISCARD_GET_FUTURE                                                                                        \
-    _NODISCARD_MSG("Getting the future more than once or not satisfying the obtained future are errors that causes " \
-                   "exception to be throwns, so it is an error to get the future and discard it")
+    _NODISCARD_MSG("Getting the future more than once or not satisfying the obtained future are errors that cause " \
+                   "exception to be thrown, so it is an error to get the future and discard it")
 
 #pragma push_macro("msvc")
 #pragma push_macro("known_semantics")
