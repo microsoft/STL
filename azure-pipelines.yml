@@ -27,6 +27,10 @@ stages:
             clean: true
             submodules: false
           - script: |
+              cd $(Build.SourcesDirectory)
+              git clean --quiet -x -d -f -f
+            displayName: 'Clean after checkout'
+          - script: |
               call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
                 -host_arch=amd64 -arch=amd64 -no_logo
               cmake -G Ninja -S $(Build.SourcesDirectory)/tools -B $(tmpDir)/format-validate-build
