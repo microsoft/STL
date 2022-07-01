@@ -485,6 +485,11 @@
                    "It is not useful to call this method and discard the returned value. "                      \
                    "There's no way to clear an array as its size is fixed")
 
+#define _NODISCARD_EMPTY_MTHD_STACKTRACE                                                                        \
+    _NODISCARD_MSG("This method returns a bool value whether the container is empty and has no other effects. " \
+                   "It is not useful to call this method and discard the returned value. "                      \
+                   "std::stacktrace can be cleared by re-assigning with an empty value")
+
 #define _NODISCARD_EMPTY_FUNCTION                                                                                    \
     _NODISCARD_MSG("This function returns a bool value whether the container or container-like object is empty and " \
                    "has no other effects. It is not useful to call this method and discard the returned value. ")
@@ -514,9 +519,18 @@
     _NODISCARD_MSG("This function constructs an object wrapped by a pointer, and has no other side effects; it is " \
                    "not useful to call this function and discard the return value")
 
+
+#define _NODISCARD_PTR_RAW_ALLOC_FN                                                  \
+    _NODISCARD_MSG("This function allocates some memory and returns a raw pointer. " \
+                   "It is an error to discard the result, it causes a memory leak")
+
 #define _NODISCARD_ASSUME_ALIGNED                                                                                     \
     _NODISCARD_MSG("Implementation might take advantage of alignment assumption only if the object is accesssed via " \
                    "the returned pointer")
+
+#define _NODISCARD_LAUNDER                                                                          \
+    _NODISCARD_MSG("std::launder has an effect on the return value (not on the passed parameter). " \
+                   "It is not useful to call std::launder and discard the returned value")
 
 #ifdef _NODISCARD_LOCK_SUPPRESS
 
@@ -549,6 +563,16 @@
 #define _NODISCARD_CTOR_PURE \
     _NODISCARD_CTOR_MSG(     \
         "Construction of the object has no side effects; it is not useful to construct an object just to discard it")
+
+#define _NODISCARD_ASYNC                                                                                               \
+    _NODISCARD_MSG(                                                                                                    \
+        "Async should save the return value to a variable. If the return value is discarded, the temporary future is " \
+        "destroyed, waiting for async result or evaluating deferred result, thus defeating std::async purpose.")
+
+
+#define _NODISCARD_GET_FUTURE                                                                                        \
+    _NODISCARD_MSG("Getting the future more than once or not satisfying the obtained future are errors that causes " \
+                   "exception to be throwns, so it is an error to get the future and discard it")
 
 #pragma push_macro("msvc")
 #pragma push_macro("known_semantics")
