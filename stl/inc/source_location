@@ -26,7 +26,7 @@ struct source_location {
     _NODISCARD static consteval source_location current(const uint_least32_t _Line_ = __builtin_LINE(),
         const uint_least32_t _Column_ = __builtin_COLUMN(), const char* const _File_ = __builtin_FILE(),
         const char* const _Function_ = __builtin_FUNCTION()) noexcept {
-        source_location _Result;
+        source_location _Result{};
         _Result._Line     = _Line_;
         _Result._Column   = _Column_;
         _Result._File     = _File_;
