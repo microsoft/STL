@@ -1218,12 +1218,12 @@ struct _Common_type3<void_t<common_type_t<_Ty1, _Ty2>>, _Ty1, _Ty2, _Rest...>
 template <class _Ty1, class _Ty2, class... _Rest>
 struct common_type<_Ty1, _Ty2, _Rest...> : _Common_type3<void, _Ty1, _Ty2, _Rest...> {};
 
+template <class _Ty>
+_Ty _Returns_exactly() noexcept; // not defined
+
 #if _HAS_CXX20
 template <class, class, template <class> class, template <class> class>
 struct basic_common_reference {};
-
-template <class _Ty>
-_Ty _Returns_exactly() noexcept; // not defined
 
 template <class _From>
 struct _Copy_cv_impl {
@@ -1613,9 +1613,6 @@ inline constexpr bool is_nothrow_convertible_v = _Is_nothrow_convertible_v<_From
 template <class _From, class _To>
 using is_nothrow_convertible = _Is_nothrow_convertible<_From, _To>;
 #endif // _HAS_CXX20
-
-template <class _Ty>
-_Ty _Returns_exactly() noexcept; // not defined
 
 template <class _From, class _To, class = void>
 struct _Invoke_convertible : false_type {};

@@ -283,7 +283,7 @@ struct _Path_cvt<char, wchar_t, _Outtraits,
             _Xinvalid_argument("invalid char filename argument");
         }
 
-        return _STD move(_Str.append(&_Fname_wide[0]));
+        return _STD move(_Str.append(_Fname_wide));
     }
 
     static _Outstr&& _Cvt(_Outstr& _Str, const _Inchar* _First, size_t _Size,
@@ -307,7 +307,7 @@ struct _Path_cvt<wchar_t, char, _Outtraits,
             _Xinvalid_argument("invalid wchar_t filename argument");
         }
 
-        return _STD move(_Str.append(&_Fname_byte[0]));
+        return _STD move(_Str.append(_Fname_byte));
     }
 
     static _Outstr&& _Cvt(_Outstr& _Str, const _Inchar* _First, size_t _Size,
@@ -334,12 +334,12 @@ struct _Path_cvt<char, _Char8_t, char_traits<char>,
         }
 
         wstring_convert<codecvt_utf8<wchar_t>, wchar_t> _Wcvt;
-        wchar_t* _Last1 = &_Fname_wide[0];
+        wchar_t* _Last1 = _Fname_wide;
         while (*_Last1 != L'\0') {
             ++_Last1;
         }
 
-        return _STD move(_Str.append(_Wcvt.to_bytes(&_Fname_wide[0], _Last1)));
+        return _STD move(_Str.append(_Wcvt.to_bytes(_Fname_wide, _Last1)));
     }
 };
 
@@ -359,7 +359,7 @@ struct _Path_cvt<_Char8_t, char, _Outtraits,
             _Xinvalid_argument("invalid UTF8 filename argument");
         }
 
-        return _STD move(_Str.append(&_Fname_byte[0]));
+        return _STD move(_Str.append(_Fname_byte));
     }
 };
 
@@ -1008,13 +1008,7 @@ public:
         return _Path_cvt<value_type, char16_t>::_Cvt(_Str, _Mystr.c_str(), _Mystr.size());
     }
 
-    _STD u32string u32string() const = delete; // TRANSITION, ABI
-#if 0
-                { // return path as basic_string<char32_t> UTF32
-                    _STD u32string _Str;
-                    return _Path_cvt<value_type, char32_t>::_Cvt(_Str, _Mystr.c_str(), _Mystr.size());
-                }
-#endif // 0
+    _STD u32string u32string() const = delete;
 
     string_type _Make_generic() const { // copy and convert any '\' to '/'
         string_type _Str = _Mystr;
@@ -1055,14 +1049,7 @@ public:
         return _Path_cvt<value_type, char16_t>::_Cvt(_Str, _Genstr.c_str(), _Genstr.size());
     }
 
-    _STD u32string generic_u32string() const = delete; // TRANSITION, ABI
-#if 0
-                { // return path as basic_string<char32_t> UTF32
-                    _STD u32string _Str;
-                    const string_type _Genstr = _Make_generic();
-                    return _Path_cvt<value_type, char32_t>::_Cvt(_Str, _Genstr.c_str(), _Genstr.size());
-                }
-#endif // 0
+    _STD u32string generic_u32string() const = delete;
 
     _NODISCARD int compare(const path& _Path) const noexcept { // compare native() to _Path.native()
         return _Mystr.compare(_Path._Mystr);
@@ -1649,7 +1636,7 @@ public:
     }
 
     void pop() { // pop a level
-        if (1 < _Mylist.size()) {
+        if (_Mylist.size() > 1) {
             _Mylist.pop_front(); // something to pop, do it
         }
     }

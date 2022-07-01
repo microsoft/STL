@@ -722,7 +722,7 @@ private:
     virtual const void* _Get() const noexcept = 0;
 };
 
-constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
+_INLINE_VAR constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Impl> // determine whether _Impl must be dynamically allocated
 _INLINE_VAR constexpr bool _Is_large = sizeof(_Impl) > _Space_size || alignof(_Impl) > alignof(max_align_t)

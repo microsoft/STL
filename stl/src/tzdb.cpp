@@ -342,8 +342,11 @@ _NODISCARD __std_tzdb_time_zones_info* __stdcall __std_tzdb_get_time_zones() noe
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
+#pragma warning(push)
+#pragma warning(disable : 28182) // TRANSITION, VSO-1558277: Dereferencing NULL pointer.
     _STD unique_ptr<__std_tzdb_time_zones_info, _STD _Tzdb_deleter<__std_tzdb_time_zones_info>> _Info{
         new (_STD nothrow) __std_tzdb_time_zones_info{}};
+#pragma warning(pop)
     if (_Info == nullptr) {
         return nullptr;
     }
@@ -440,8 +443,11 @@ _NODISCARD __std_tzdb_current_zone_info* __stdcall __std_tzdb_get_current_zone()
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
+#pragma warning(push)
+#pragma warning(disable : 28182) // TRANSITION, VSO-1558277: Dereferencing NULL pointer.
     _STD unique_ptr<__std_tzdb_current_zone_info, _STD _Tzdb_deleter<__std_tzdb_current_zone_info>> _Info{
         new (_STD nothrow) __std_tzdb_current_zone_info{}};
+#pragma warning(pop)
     if (_Info == nullptr) {
         return nullptr;
     }
@@ -478,8 +484,11 @@ _NODISCARD __std_tzdb_sys_info* __stdcall __std_tzdb_get_sys_info(
     //    _Info == nullptr          --> bad_alloc
     //    _Info->_Err == _Win_error --> failed, call GetLastError()
     //    _Info->_Err == _Icu_error --> runtime_error interacting with ICU
+#pragma warning(push)
+#pragma warning(disable : 28182) // TRANSITION, VSO-1558277: Dereferencing NULL pointer.
     _STD unique_ptr<__std_tzdb_sys_info, _STD _Tzdb_deleter<__std_tzdb_sys_info>> _Info{
         new (_STD nothrow) __std_tzdb_sys_info{}};
+#pragma warning(pop)
     if (_Info == nullptr) {
         return nullptr;
     }

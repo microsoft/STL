@@ -193,6 +193,7 @@ tests\GH_001964_constexpr_generate_canonical
 tests\GH_002030_asan_annotate_string
 tests\GH_002030_asan_annotate_vector
 tests\GH_002039_byte_is_not_trivially_swappable
+tests\GH_002045_put_time_changes_errno
 tests\GH_002058_debug_iterator_race
 tests\GH_002120_streambuf_seekpos_and_seekoff
 tests\GH_002299_implicit_sfinae_constraints
@@ -202,8 +203,12 @@ tests\GH_002431_byte_range_find_with_unreachable_sentinel
 tests\GH_002488_promise_not_default_constructible_types
 tests\GH_002558_format_presetPadding
 tests\GH_002581_common_reference_workaround
+tests\GH_002620_construct_at_workaround
 tests\GH_002655_alternate_name_broke_linker
 tests\GH_002711_Zc_alignedNew-
+tests\GH_002760_syncstream_memory_leak
+tests\GH_002769_handle_deque_block_pointers
+tests\GH_002789_Hash_vec_Tidy
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3121_constrained_tuple_forwarding_ctor
@@ -324,6 +329,7 @@ tests\P0784R7_library_machinery
 tests\P0784R7_library_support_for_more_constexpr_containers
 tests\P0798R8_monadic_operations_for_std_optional
 tests\P0811R3_midpoint_lerp
+tests\P0881R7_stacktrace
 tests\P0896R4_common_iterator
 tests\P0896R4_common_iterator_death
 tests\P0896R4_counted_iterator
@@ -483,6 +489,10 @@ tests\P2273R3_constexpr_unique_ptr
 tests\P2321R2_proxy_reference
 tests\P2401R0_conditional_noexcept_for_exchange
 tests\P2415R2_owning_view
+tests\P2440R1_ranges_alg_shift_left
+tests\P2440R1_ranges_alg_shift_right
+tests\P2440R1_ranges_numeric_iota
+tests\P2441R2_views_join_with
 tests\P2442R1_views_chunk
 tests\P2442R1_views_chunk_death
 tests\P2442R1_views_slide
