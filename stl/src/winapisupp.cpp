@@ -135,7 +135,8 @@ extern "C" int __crt_IsPackagedAppHelper() {
 //
 // Exit:
 //        TRUE if Packaged app, FALSE if not.
-extern "C" BOOL __cdecl __crtIsPackagedApp() {
+// TRANSITION, ABI: preserved for binary compatibility
+extern "C" _CRTIMP2 BOOL __cdecl __crtIsPackagedApp() {
 #ifdef _CRT_APP
     return TRUE;
 #else

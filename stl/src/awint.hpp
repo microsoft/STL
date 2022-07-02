@@ -12,10 +12,6 @@
 
 _CRT_BEGIN_C_HEADER
 
-#if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-_CRTIMP2 BOOL __cdecl __crtIsPackagedApp();
-#endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-
 #if _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 
 #define __crtGetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime) \
