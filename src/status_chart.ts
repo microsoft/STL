@@ -243,7 +243,7 @@ const timeframe_all: Timeframe = {
 };
 const timeframe_github: Timeframe = {
     min: '2019-09-20', // first Friday after 2019-09-16
-    time: { unit: 'quarter' },
+    time: { unit: 'year' },
 };
 const timeframe_2021: Timeframe = {
     min: '2021-01-01',
