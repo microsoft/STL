@@ -16,6 +16,7 @@
 #pragma warning(pop)
 #include <cstdint>
 
+#if !defined(_ONECORE)
 _CRT_BEGIN_C_HEADER
 
 enum wrapKERNEL32Functions {
@@ -26,7 +27,7 @@ enum wrapKERNEL32Functions {
     eMaxKernel32Function
 };
 
-extern PVOID __KERNEL32Functions[eMaxKernel32Function];
+PVOID __KERNEL32Functions[eMaxKernel32Function]{};
 
 using PFNGETSYSTEMTIMEPRECISEASFILETIME = VOID(WINAPI*)(LPFILETIME);
 
@@ -43,6 +44,7 @@ using PFNGETSYSTEMTIMEPRECISEASFILETIME = VOID(WINAPI*)(LPFILETIME);
     if (variable_name != nullptr)
 
 _CRT_END_C_HEADER
+#endif // ^^^ !defined(_ONECORE) ^^^
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 // GetCurrentPackageId retrieves the current package id, if the app is deployed via a package.
@@ -397,8 +399,6 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
 // All APIs are statically available, and we can't call GetModuleHandleW().
 
 #else // defined _ONECORE
-
-extern "C" PVOID __KERNEL32Functions[eMaxKernel32Function] = {nullptr};
 
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
