@@ -17,19 +17,19 @@
 #include <cstdint>
 
 #if !defined(_ONECORE)
-_CRT_BEGIN_C_HEADER
+namespace {
 
-enum wrapKERNEL32Functions {
+    enum wrapKERNEL32Functions {
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-    eGetCurrentPackageId,
+        eGetCurrentPackageId,
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-    eGetSystemTimePreciseAsFileTime,
-    eMaxKernel32Function
-};
+        eGetSystemTimePreciseAsFileTime,
+        eMaxKernel32Function
+    };
 
-PVOID __KERNEL32Functions[eMaxKernel32Function]{};
+    PVOID __KERNEL32Functions[eMaxKernel32Function]{};
 
-using PFNGETSYSTEMTIMEPRECISEASFILETIME = VOID(WINAPI*)(LPFILETIME);
+    using PFNGETSYSTEMTIMEPRECISEASFILETIME = VOID(WINAPI*)(LPFILETIME);
 
 // Use this macro for caching a function pointer from a DLL
 #define STOREFUNCTIONPOINTER(instance, function_name) \
@@ -43,7 +43,7 @@ using PFNGETSYSTEMTIMEPRECISEASFILETIME = VOID(WINAPI*)(LPFILETIME);
     DYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name);      \
     if (variable_name != nullptr)
 
-_CRT_END_C_HEADER
+} // unnamed namespace
 #endif // ^^^ !defined(_ONECORE) ^^^
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
