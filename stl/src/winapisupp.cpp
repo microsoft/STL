@@ -376,58 +376,11 @@ static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
     _Analysis_assume_(hKernel32);
 
-    STOREFUNCTIONPOINTER(hKernel32, FlsAlloc);
-    STOREFUNCTIONPOINTER(hKernel32, FlsFree);
-    STOREFUNCTIONPOINTER(hKernel32, FlsGetValue);
-    STOREFUNCTIONPOINTER(hKernel32, FlsSetValue);
-    STOREFUNCTIONPOINTER(hKernel32, InitializeCriticalSectionEx);
-    STOREFUNCTIONPOINTER(hKernel32, InitOnceExecuteOnce);
-    STOREFUNCTIONPOINTER(hKernel32, CreateEventExW);
-    STOREFUNCTIONPOINTER(hKernel32, CreateSemaphoreW);
-    STOREFUNCTIONPOINTER(hKernel32, CreateSemaphoreExW);
-    STOREFUNCTIONPOINTER(hKernel32, CreateThreadpoolTimer);
-    STOREFUNCTIONPOINTER(hKernel32, SetThreadpoolTimer);
-    STOREFUNCTIONPOINTER(hKernel32, WaitForThreadpoolTimerCallbacks);
-    STOREFUNCTIONPOINTER(hKernel32, CloseThreadpoolTimer);
-    STOREFUNCTIONPOINTER(hKernel32, CreateThreadpoolWait);
-    STOREFUNCTIONPOINTER(hKernel32, SetThreadpoolWait);
-    STOREFUNCTIONPOINTER(hKernel32, CloseThreadpoolWait);
-    STOREFUNCTIONPOINTER(hKernel32, FlushProcessWriteBuffers);
-    STOREFUNCTIONPOINTER(hKernel32, FreeLibraryWhenCallbackReturns);
-    STOREFUNCTIONPOINTER(hKernel32, GetCurrentProcessorNumber);
-    STOREFUNCTIONPOINTER(hKernel32, CreateSymbolicLinkW);
 #if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-    STOREFUNCTIONPOINTER(hKernel32, SetDefaultDllDirectories);
-    STOREFUNCTIONPOINTER(hKernel32, EnumSystemLocalesEx);
-    STOREFUNCTIONPOINTER(hKernel32, CompareStringEx);
-    STOREFUNCTIONPOINTER(hKernel32, GetLocaleInfoEx);
-    STOREFUNCTIONPOINTER(hKernel32, GetUserDefaultLocaleName);
-    STOREFUNCTIONPOINTER(hKernel32, IsValidLocaleName);
-    STOREFUNCTIONPOINTER(hKernel32, LCMapStringEx);
 #else
     STOREFUNCTIONPOINTER(hKernel32, GetCurrentPackageId);
 #endif
-    STOREFUNCTIONPOINTER(hKernel32, GetTickCount64);
-    STOREFUNCTIONPOINTER(hKernel32, GetFileInformationByHandleEx);
-    STOREFUNCTIONPOINTER(hKernel32, SetFileInformationByHandle);
     STOREFUNCTIONPOINTER(hKernel32, GetSystemTimePreciseAsFileTime);
-    STOREFUNCTIONPOINTER(hKernel32, InitializeConditionVariable);
-    STOREFUNCTIONPOINTER(hKernel32, WakeConditionVariable);
-    STOREFUNCTIONPOINTER(hKernel32, WakeAllConditionVariable);
-    STOREFUNCTIONPOINTER(hKernel32, SleepConditionVariableCS);
-    STOREFUNCTIONPOINTER(hKernel32, InitializeSRWLock);
-    STOREFUNCTIONPOINTER(hKernel32, AcquireSRWLockExclusive);
-    STOREFUNCTIONPOINTER(hKernel32, TryAcquireSRWLockExclusive);
-    STOREFUNCTIONPOINTER(hKernel32, ReleaseSRWLockExclusive);
-    STOREFUNCTIONPOINTER(hKernel32, SleepConditionVariableSRW);
-    STOREFUNCTIONPOINTER(hKernel32, CreateThreadpoolWork);
-    STOREFUNCTIONPOINTER(hKernel32, SubmitThreadpoolWork);
-    STOREFUNCTIONPOINTER(hKernel32, CloseThreadpoolWork);
-#if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-    STOREFUNCTIONPOINTER(hKernel32, CompareStringEx);
-    STOREFUNCTIONPOINTER(hKernel32, GetLocaleInfoEx);
-    STOREFUNCTIONPOINTER(hKernel32, LCMapStringEx);
-#endif
 
     return 0;
 }

@@ -27,60 +27,12 @@ _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSys
 
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 
-// This enum should not change, even though some functions are no longer imported dynamically
 enum wrapKERNEL32Functions {
-    eFlsAlloc,
-    eFlsFree,
-    eFlsGetValue,
-    eFlsSetValue,
-    eInitializeCriticalSectionEx,
-    eInitOnceExecuteOnce,
-    eCreateEventExW,
-    eCreateSemaphoreW,
-    eCreateSemaphoreExW,
-    eCreateThreadpoolTimer,
-    eSetThreadpoolTimer,
-    eWaitForThreadpoolTimerCallbacks,
-    eCloseThreadpoolTimer,
-    eCreateThreadpoolWait,
-    eSetThreadpoolWait,
-    eCloseThreadpoolWait,
-    eFlushProcessWriteBuffers,
-    eFreeLibraryWhenCallbackReturns,
-    eGetCurrentProcessorNumber,
-    eCreateSymbolicLinkW,
 #if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-    eSetDefaultDllDirectories,
-    eCompareStringEx,
-    eEnumSystemLocalesEx,
-    eGetLocaleInfoEx,
-    eGetUserDefaultLocaleName,
-    eIsValidLocaleName,
-    eLCMapStringEx,
 #else // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
     eGetCurrentPackageId,
 #endif // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-    eGetTickCount64,
-    eGetFileInformationByHandleEx,
-    eSetFileInformationByHandle,
     eGetSystemTimePreciseAsFileTime,
-    eInitializeConditionVariable,
-    eWakeConditionVariable,
-    eWakeAllConditionVariable,
-    eSleepConditionVariableCS,
-    eInitializeSRWLock,
-    eAcquireSRWLockExclusive,
-    eTryAcquireSRWLockExclusive,
-    eReleaseSRWLockExclusive,
-    eSleepConditionVariableSRW,
-    eCreateThreadpoolWork,
-    eSubmitThreadpoolWork,
-    eCloseThreadpoolWork,
-#if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-    eCompareStringEx,
-    eGetLocaleInfoEx,
-    eLCMapStringEx,
-#endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
     eMaxKernel32Function
 };
 
