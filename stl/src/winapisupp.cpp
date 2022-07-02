@@ -44,8 +44,6 @@ namespace {
 #endif // ^^^ !defined(_ONECORE) ^^^
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-// GetCurrentPackageId retrieves the current package id, if the app is deployed via a package.
-using PFNGETCURRENTPACKAGEID = LONG(WINAPI*)(UINT32*, BYTE*);
 
 #if !defined _CRT_APP
 #if defined _ONECORE
@@ -80,7 +78,7 @@ extern "C" int __crt_IsPackagedAppHelper() {
         }
 
         auto const get_current_package_id =
-            reinterpret_cast<PFNGETCURRENTPACKAGEID>(GetProcAddress(apiset.Get(), "GetCurrentPackageId"));
+            reinterpret_cast<decltype(&GetCurrentPackageId)>(GetProcAddress(apiset.Get(), "GetCurrentPackageId"));
 
         if (!get_current_package_id) {
             continue;
