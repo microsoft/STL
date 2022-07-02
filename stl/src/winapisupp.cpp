@@ -23,11 +23,15 @@ namespace {
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
         eGetCurrentPackageId,
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
+
+#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
         eGetSystemTimePreciseAsFileTime,
+#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+
         eMaxKernel32Function
     };
 
-    PVOID __KERNEL32Functions[eMaxKernel32Function]{};
+    PVOID __KERNEL32Functions[eMaxKernel32Function > 0 ? eMaxKernel32Function : 1]{};
 
     using PFNGETSYSTEMTIMEPRECISEASFILETIME = VOID(WINAPI*)(LPFILETIME);
 
@@ -407,7 +411,10 @@ static int __cdecl initialize_pointers() {
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
     STOREFUNCTIONPOINTER(hKernel32, GetCurrentPackageId);
 #endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
+
+#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
     STOREFUNCTIONPOINTER(hKernel32, GetSystemTimePreciseAsFileTime);
+#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
     return 0;
 }
