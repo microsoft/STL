@@ -14,7 +14,6 @@
 #pragma warning(disable : 4265) // non-virtual destructor in base class
 #include <wrl/wrappers/corewrappers.h>
 #pragma warning(pop)
-#include <cstdint>
 
 #if !defined(_ONECORE)
 namespace {
