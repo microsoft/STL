@@ -20,12 +20,13 @@
     <script type="module" src="built/status_chart.mjs"></script>
 </head>
 
-<body class="container-xl markdown-body pt-2 px-3 pb-3">
+<body class="container-xl markdown-body p-3">
+    <h1 id="status">STL Status Chart</h1>
     <canvas id="statusChart"></canvas>
     <button class="btn" id="moreHistory" type="button">More History</button>
     <button class="btn" id="lessHistory" type="button">Less History</button>
 
-    <h1>Explanation</h1>
+    <h2>Explanation</h2>
     <p>This tracks the progress of the <a href="https://github.com/microsoft/STL">microsoft/STL</a> repo.
         For more info, read the <a href="https://github.com/microsoft/STL/wiki/Changelog">Changelog</a>.</p>
 
@@ -97,9 +98,10 @@
 
     <hr />
 
+    <h1 id="age">Pull Request Age</h1>
     <canvas id="ageChart"></canvas>
 
-    <h1>Explanation</h1>
+    <h2>Explanation</h2>
     <ul>
         <li>Left axis:
             <ul>
@@ -123,9 +125,10 @@
 
     <hr />
 
+    <h1 id="merge">Monthly Merged PRs</h1>
     <canvas id="mergeChart"></canvas>
 
-    <h1>Explanation</h1>
+    <h2>Explanation</h2>
     <p>For this chart, more is better. It includes merges into any branch
         and excludes PRs that were closed without being merged, which are rare.</p>
 
