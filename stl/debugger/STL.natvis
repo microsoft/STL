@@ -52,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <Type Name="std::tuple&lt;&gt;">
     <DisplayString IncludeView="noparens"></DisplayString>
-    <DisplayString IncludeView="noparensasptr"></DisplayString>
+    <DisplayString IncludeView="asptr"></DisplayString>
     <DisplayString>({*this,view(noparens)})</DisplayString>
     <Expand/>
   </Type>
@@ -79,15 +79,15 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Item Name="[1]" IncludeView="asptr">&amp;((_Mybase *) this)->_Myfirst._Val</Item>
       <Item Name="[2]" ExcludeView="asptr" Optional="true">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
       <Item Name="[2]" IncludeView="asptr" Optional="true">&amp;((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[3]" EncludeView="asptr" Optional="true">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[3]" ExcludeView="asptr" Optional="true">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
       <Item Name="[3]" IncludeView="asptr" Optional="true">&amp;((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[4]" EncludeView="asptr" Optional="true">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[4]" ExcludeView="asptr" Optional="true">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
       <Item Name="[4]" IncludeView="asptr" Optional="true">&amp;((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
     </Expand>
   </Type>
 
   <Type Name="std::tuple&lt;*,*,*,*,*,*&gt;">
-    <DisplayString IncludeView="noparens">{_Myfirst._Val}, {*((_Mybase *) this),view(noparens)}</DisplayString>
+    <DisplayString IncludeView="noparens">{_Myfirst._Val}, {*((_Mybase *) this)}</DisplayString>
     <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}, {*((_Mybase *) this),view(noparensasptr)}</DisplayString>
     <DisplayString IncludeView="asptr">({*this,view(noparensasptr)})</DisplayString>
     <DisplayString>({*this,view(noparens)})</DisplayString>
@@ -103,6 +103,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Item Name="[4]" ExcludeView="asptr">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
       <Item Name="[4]" IncludeView="asptr">&amp;((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
       <Synthetic Name="[...]"><DisplayString>Next five elements:</DisplayString></Synthetic>
+      <!-- TODO: this is broken. Figure out why. -->
       <ExpandedItem ExcludeView="asptr">*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)</ExpandedItem>
       <ExpandedItem IncludeView="asptr">*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this),view(asptr)</ExpandedItem>
     </Expand>
@@ -1601,9 +1602,9 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::scoped_lock&lt;*,*&gt;">
-    <DisplayString>{_MyMutexes}</DisplayString>
+    <DisplayString>{_MyMutexes,view(asptr)}</DisplayString>
     <Expand>
-      <ExpandedItem Optional="true">_MyMutexes</ExpandedItem>
+      <ExpandedItem>_MyMutexes,view(asptr)</ExpandedItem>
     </Expand>
   </Type>
 
