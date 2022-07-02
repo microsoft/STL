@@ -16,6 +16,34 @@
 #pragma warning(pop)
 #include <cstdint>
 
+_CRT_BEGIN_C_HEADER
+
+enum wrapKERNEL32Functions {
+#if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
+    eGetCurrentPackageId,
+#endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
+    eGetSystemTimePreciseAsFileTime,
+    eMaxKernel32Function
+};
+
+extern PVOID __KERNEL32Functions[eMaxKernel32Function];
+
+using PFNGETSYSTEMTIMEPRECISEASFILETIME = VOID(WINAPI*)(LPFILETIME);
+
+// Use this macro for caching a function pointer from a DLL
+#define STOREFUNCTIONPOINTER(instance, function_name) \
+    __KERNEL32Functions[e##function_name] = reinterpret_cast<PVOID>(GetProcAddress(instance, #function_name));
+
+// Use this macro as a cached function pointer from a DLL
+#define DYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name) \
+    const auto variable_name = reinterpret_cast<function_pointer_type>(__KERNEL32Functions[e##function_name])
+
+#define IFDYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name) \
+    DYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name);      \
+    if (variable_name != nullptr)
+
+_CRT_END_C_HEADER
+
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
 // GetCurrentPackageId retrieves the current package id, if the app is deployed via a package.
 using PFNGETCURRENTPACKAGEID = BOOL(WINAPI*)(UINT32*, BYTE*);
