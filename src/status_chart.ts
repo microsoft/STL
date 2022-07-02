@@ -300,6 +300,7 @@ function make_common_options(title_text: string) {
         },
         plugins: {
             legend: {
+                display: true,
                 labels: {
                     color: get_css_property('--color-fg-default'),
                 },
@@ -317,6 +318,12 @@ function make_common_options(title_text: string) {
                 },
                 text: title_text,
             },
+        },
+        onResize: (chart: Chart, size: { width: number; height: number }) => {
+            if (chart.options.plugins?.legend === undefined) {
+                throw new Error('onResize was surprised by chart.options.');
+            }
+            chart.options.plugins.legend.display = size.width > 670;
         },
     };
 }
