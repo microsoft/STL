@@ -376,10 +376,9 @@ static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
     _Analysis_assume_(hKernel32);
 
-#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-#else
+#if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
     STOREFUNCTIONPOINTER(hKernel32, GetCurrentPackageId);
-#endif
+#endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
     STOREFUNCTIONPOINTER(hKernel32, GetSystemTimePreciseAsFileTime);
 
     return 0;

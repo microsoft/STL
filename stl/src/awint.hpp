@@ -28,10 +28,9 @@ _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSys
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 
 enum wrapKERNEL32Functions {
-#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-#else // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
+#if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
     eGetCurrentPackageId,
-#endif // defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
+#endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
     eGetSystemTimePreciseAsFileTime,
     eMaxKernel32Function
 };
