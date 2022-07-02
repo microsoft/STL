@@ -35,7 +35,7 @@ namespace {
 
 // Use this macro for caching a function pointer from a DLL
 #define STOREFUNCTIONPOINTER(instance, function_name) \
-    __KERNEL32Functions[e##function_name] = reinterpret_cast<PVOID>(GetProcAddress(instance, #function_name));
+    __KERNEL32Functions[e##function_name] = reinterpret_cast<PVOID>(GetProcAddress(instance, #function_name))
 
 // Use this macro for retrieving a cached function pointer from a DLL
 #define IFDYNAMICGETCACHEDFUNCTION(name) \
