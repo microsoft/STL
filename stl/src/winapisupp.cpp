@@ -33,16 +33,14 @@ namespace {
 
     PVOID __KERNEL32Functions[eMaxKernel32Function > 0 ? eMaxKernel32Function : 1]{};
 
-    using PFNGETSYSTEMTIMEPRECISEASFILETIME = VOID(WINAPI*)(LPFILETIME);
-
 // Use this macro for caching a function pointer from a DLL
 #define STOREFUNCTIONPOINTER(instance, function_name) \
     __KERNEL32Functions[e##function_name] = reinterpret_cast<PVOID>(GetProcAddress(instance, #function_name));
 
 // Use this macro for retrieving a cached function pointer from a DLL
-#define IFDYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name)                        \
-    const auto variable_name = reinterpret_cast<function_pointer_type>(__KERNEL32Functions[e##function_name]); \
-    if (variable_name)
+#define IFDYNAMICGETCACHEDFUNCTION(function_name)                                                                     \
+    const auto pf##function_name = reinterpret_cast<decltype(&function_name)>(__KERNEL32Functions[e##function_name]); \
+    if (pf##function_name)
 
 } // unnamed namespace
 #endif // ^^^ !defined(_ONECORE) ^^^
@@ -110,8 +108,8 @@ extern "C" int __crt_IsPackagedAppHelper() {
     LONG retValue       = APPMODEL_ERROR_NO_PACKAGE;
     UINT32 bufferLength = 0;
 
-    IFDYNAMICGETCACHEDFUNCTION(PFNGETCURRENTPACKAGEID, GetCurrentPackageId, pfn) {
-        retValue = pfn(&bufferLength, nullptr);
+    IFDYNAMICGETCACHEDFUNCTION(GetCurrentPackageId) {
+        retValue = pfGetCurrentPackageId(&bufferLength, nullptr);
     }
 
     if (retValue == ERROR_INSUFFICIENT_BUFFER) {
@@ -380,8 +378,7 @@ extern "C" BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(_Inout_ PSRWLOCK cons
 
 extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime) {
     // use GetSystemTimePreciseAsFileTime if it is available (only on Windows 8+)...
-    IFDYNAMICGETCACHEDFUNCTION(
-        PFNGETSYSTEMTIMEPRECISEASFILETIME, GetSystemTimePreciseAsFileTime, pfGetSystemTimePreciseAsFileTime) {
+    IFDYNAMICGETCACHEDFUNCTION(GetSystemTimePreciseAsFileTime) {
         pfGetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime);
         return;
     }
