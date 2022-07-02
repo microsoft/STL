@@ -39,13 +39,10 @@ namespace {
 #define STOREFUNCTIONPOINTER(instance, function_name) \
     __KERNEL32Functions[e##function_name] = reinterpret_cast<PVOID>(GetProcAddress(instance, #function_name));
 
-// Use this macro as a cached function pointer from a DLL
-#define DYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name) \
-    const auto variable_name = reinterpret_cast<function_pointer_type>(__KERNEL32Functions[e##function_name])
-
-#define IFDYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name) \
-    DYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name);      \
-    if (variable_name != nullptr)
+// Use this macro for retrieving a cached function pointer from a DLL
+#define IFDYNAMICGETCACHEDFUNCTION(function_pointer_type, function_name, variable_name)                        \
+    const auto variable_name = reinterpret_cast<function_pointer_type>(__KERNEL32Functions[e##function_name]); \
+    if (variable_name)
 
 } // unnamed namespace
 #endif // ^^^ !defined(_ONECORE) ^^^
