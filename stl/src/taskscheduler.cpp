@@ -42,7 +42,7 @@ namespace Concurrency {
                 return nullptr;
 #else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
                 HMODULE _Result;
-                if (::GetModuleHandleExW(_Flags, _Addr, &_Result) == 0) {
+                if (!GetModuleHandleExW(_Flags, _Addr, &_Result)) {
                     return nullptr;
                 }
 
