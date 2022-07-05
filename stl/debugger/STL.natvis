@@ -51,8 +51,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 
   <Type Name="std::tuple&lt;&gt;">
-    <DisplayString IncludeView="noparens"></DisplayString>
-    <DisplayString IncludeView="asptr"></DisplayString>
+    <DisplayString IncludeView="noparens;noparensasptr"></DisplayString>
     <DisplayString>({*this,view(noparens)})</DisplayString>
     <Expand/>
   </Type>
@@ -63,49 +62,42 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString IncludeView="asptr">({*this,view(noparensasptr)})</DisplayString>
     <DisplayString>({*this,view(noparens)})</DisplayString>
     <Expand>
-      <Item Name="[0]">_Myfirst._Val</Item>
+      <Item Name="[0]" ExcludeView="asptr">_Myfirst._Val</Item>
+      <Item Name="[0]" IncludeView="asptr">&amp;_Myfirst._Val</Item>
     </Expand>
   </Type>
 
   <Type Name="std::tuple&lt;*,*&gt;">
     <DisplayString IncludeView="noparens">{_Myfirst._Val}, {*((_Mybase *) this),view(noparens)}</DisplayString>
-    <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}, {*((_Mybase *) this),view(noparensasptr)}</DisplayString>
-    <DisplayString IncludeView="asptr">({*this,view(noparensasptr)})</DisplayString>
     <DisplayString>({*this,view(noparens)})</DisplayString>
     <Expand>
-      <Item Name="[0]" ExcludeView="asptr">_Myfirst._Val</Item>
-      <Item Name="[0]" IncludeView="asptr">&amp;_Myfirst._Val</Item>
-      <Item Name="[1]" ExcludeView="asptr">((_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[1]" IncludeView="asptr">&amp;((_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[2]" ExcludeView="asptr" Optional="true">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[2]" IncludeView="asptr" Optional="true">&amp;((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[3]" ExcludeView="asptr" Optional="true">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[3]" IncludeView="asptr" Optional="true">&amp;((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[4]" ExcludeView="asptr" Optional="true">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[4]" IncludeView="asptr" Optional="true">&amp;((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[0]">_Myfirst._Val</Item>
+      <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[2]" Optional="true">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[3]" Optional="true">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[4]" Optional="true">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <!-- This Condition, plus Optional="true", allows us to only show this when we have more values. -->
+      <Synthetic Name="[...]" Optional="true" Condition="(void)((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val, true">
+        <DisplayString>Next five elements:</DisplayString>
+      </Synthetic>
+      <ExpandedItem Optional="true">*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)</ExpandedItem>
     </Expand>
   </Type>
 
-  <Type Name="std::tuple&lt;*,*,*,*,*,*&gt;">
-    <DisplayString IncludeView="noparens">{_Myfirst._Val}, {*((_Mybase *) this)}</DisplayString>
+  <Type Name="std::tuple&lt;*,*&gt;" IncludeView="asptr;noparensasptr">
     <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}, {*((_Mybase *) this),view(noparensasptr)}</DisplayString>
-    <DisplayString IncludeView="asptr">({*this,view(noparensasptr)})</DisplayString>
-    <DisplayString>({*this,view(noparens)})</DisplayString>
+    <DisplayString>({*this,view(noparensasptr)})</DisplayString>
     <Expand>
-      <Item Name="[0]" ExcludeView="asptr">_Myfirst._Val</Item>
-      <Item Name="[0]" IncludeView="asptr">&amp;_Myfirst._Val</Item>
-      <Item Name="[1]" ExcludeView="asptr">((_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[1]" IncludeView="asptr">&amp;((_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[2]" ExcludeView="asptr">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[2]" IncludeView="asptr">&amp;((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[3]" ExcludeView="asptr">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[3]" IncludeView="asptr">&amp;((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[4]" ExcludeView="asptr">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Item Name="[4]" IncludeView="asptr">&amp;((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <Synthetic Name="[...]"><DisplayString>Next five elements:</DisplayString></Synthetic>
-      <!-- TODO: this is broken. Figure out why. -->
-      <ExpandedItem ExcludeView="asptr">*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)</ExpandedItem>
-      <ExpandedItem IncludeView="asptr">*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this),view(asptr)</ExpandedItem>
+      <Item Name="[0]">&amp;_Myfirst._Val</Item>
+      <Item Name="[1]">&amp;((_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[2]" Optional="true">&amp;((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[3]" Optional="true">&amp;((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[4]" Optional="true">&amp;((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
+      <!-- This Condition, plus Optional="true", allows us to only show this when we have more values. -->
+      <Synthetic Name="[...]" Optional="true" Condition="(void)((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val, true">
+        <DisplayString>Next five elements:</DisplayString>
+      </Synthetic>
+      <ExpandedItem Optional="true">*((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this),view(asptr)</ExpandedItem>
     </Expand>
   </Type>
 
@@ -203,37 +195,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   <Type Name="std::monostate">
       <DisplayString>monostate</DisplayString>
   </Type>
-
-
-  <Type Name="std::any">
-      <Intrinsic Name="has_value"   Expression="_Storage._TypeData != 0"/>
-      <Intrinsic Name="_Rep"        Expression="_Storage._TypeData &amp; _Rep_mask"/>
-      <Intrinsic Name="type"        Expression="(const type_info*)(_Storage._TypeData &amp; ~_Rep_mask)"/>
-      <Intrinsic Name="_Is_trivial" Expression="has_value() &amp;&amp; _Rep() == 0"/>
-      <Intrinsic Name="_Is_big"     Expression="has_value() &amp;&amp; _Rep() == 1"/>
-      <Intrinsic Name="_Is_small"   Expression="has_value() &amp;&amp; _Rep() == 2"/>
-      <DisplayString Condition="!has_value()">[empty]</DisplayString>
-      <DisplayString Condition="_Is_trivial() || _Is_small()">[not empty (Small)]</DisplayString>
-      <DisplayString Condition="_Is_big()">[not empty (Large)]</DisplayString>
-      <Expand>
-          <Synthetic Name="has_value">
-              <DisplayString>{has_value()}</DisplayString>
-          </Synthetic>
-          <Synthetic Name="type" Condition="has_value()">
-              <DisplayString>{type()}</DisplayString>
-          </Synthetic>
-          <Synthetic Name="[representation]" Condition="_Is_trivial()">
-              <DisplayString>(Small/Trivial Object)</DisplayString>
-          </Synthetic>
-          <Synthetic Name="[representation]" Condition="_Is_small()">
-              <DisplayString>(Small Object)</DisplayString>
-          </Synthetic>
-          <Synthetic Name="[representation]" Condition="_Is_big()">
-              <DisplayString>(Dynamic Allocation)</DisplayString>
-          </Synthetic>
-      </Expand>
-  </Type>
-
 
   <Type Name="std::unexpected&lt;*&gt;">
       <Intrinsic Name="unex" Expression="_Unexpected"/>
@@ -1609,19 +1570,20 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::defer_lock_t">
-    <DisplayString>defer lock</DisplayString>
+    <DisplayString>std::defer_lock</DisplayString>
   </Type>
 
   <Type Name="std::try_to_lock_t">
-    <DisplayString>try to lock</DisplayString>
+    <DisplayString>std::try_to_lock</DisplayString>
   </Type>
 
   <Type Name="std::adopt_lock_t">
-    <DisplayString>adopt lock</DisplayString>
+    <DisplayString>std::adopt_lock</DisplayString>
   </Type>
 
   <Type Name="std::once_flag">
-    <DisplayString>{(int)_Opaque}</DisplayString>
+    <DisplayString Condition="!_Opaque">incomplete</DisplayString>
+    <DisplayString Condition="_Opaque">complete</DisplayString>
   </Type>
 
   <!-- VC 2015 -->
@@ -1847,11 +1809,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString>{_Base}</DisplayString>
   </Type>
 
-  <Type Name="std::ranges::istream_view&lt;*&gt;">
-    <AlternativeType Name="std::ranges::basic_istream_view&lt;*&gt;"/>
+  <Type Name="std::ranges::basic_istream_view&lt;*&gt;">
     <DisplayString>{_Stream}</DisplayString>
     <Expand>
-      <Item Name="Val">_Val</Item>
+      <Item Name="value">_Val</Item>
     </Expand>
   </Type>
 
@@ -1878,17 +1839,18 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <AlternativeType Name="std::ranges::lazy_split_view&lt;*&gt;"/>
     <AlternativeType Name="std::ranges::reverse_view&lt;*&gt;"/>
     <AlternativeType Name="std::ranges::elements_view&lt;*&gt;"/>
-    <AlternativeType Name="std::ranges::keys_view&lt;*&gt;"/>
-    <AlternativeType Name="std::ranges::values_view&lt;*&gt;"/>
     <AlternativeType Name="std::ranges::take_view&lt;*&gt;"/>
     <AlternativeType Name="std::ranges::ref_view&lt;*&gt;"/>
     <AlternativeType Name="std::ranges::filter_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::owning_view&lt;*&gt;"/>
+    <AlternativeType Name="std::ranges::chunk_by_view&lt;*&gt;"/>
     <DisplayString>{_Range}</DisplayString>
     <Expand>
-      <Item Optional="true" Name="Pred">_Pred</Item>
-      <Item Optional="true" Name="Count">_Count</Item>
-      <Item Optional="true" Name="Fun">_Fun</Item>
-      <Item Optional="true" Name="Pattern">_Pattern</Item>
+      <Item Optional="true" Name="pred">_Pred</Item>
+      <Item Optional="true" Name="next">_Next</Item>
+      <Item Optional="true" Name="count">_Count</Item>
+      <Item Optional="true" Name="function">_Fun</Item>
+      <Item Optional="true" Name="pattern">_Pattern</Item>
     </Expand>
   </Type>
 
@@ -1940,24 +1902,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Expand/>
   </Type>
 
-  <Type Name="std::formatter&lt;*,*&gt;">
-    <DisplayString>{_Specs._Dynamic_width_index}, {_Specs._Dynamic_precision_index}</DisplayString>
-    <Expand>
-      <Item Name="Dynamic width index">_Specs._Dynamic_width_index</Item>
-      <Item Name="Dynamic precision index">_Specs._Dynamic_precision_index</Item>
-      <Item Name="Width index">_Specs._Width</Item>
-      <Item Name="Precision index">_Specs._Precision</Item>
-      <Item Name="Width index">_Specs._Type</Item>
-      <Item Name="Precision index">_Specs._Alignment</Item>
-      <Item Name="Width index">_Specs._Sgn</Item>
-      <Item Name="Precision index">_Specs._Alt</Item>
-      <Item Name="Width index">_Specs._Localized</Item>
-      <Item Name="Precision index">_Specs._Leading_zero</Item>
-      <Item Name="Width index">_Specs._Fill_length</Item>
-      <Item Name="Precision index">_Specs._Fill</Item>
-    </Expand>
-  </Type>
-
   <Type Name="std::basic_format_parse_context&lt;*&gt;">
     <DisplayString>{_Format_string}</DisplayString>
     <Expand>
@@ -1967,48 +1911,70 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::basic_format_args&lt;*&gt;">
-    <DisplayString>Num args:{_Num_args}</DisplayString>
+    <AlternativeType Name="std::_Format_arg_store&lt;*&gt;" />
+    <Intrinsic Name="storage" Expression="(char*)(&amp;_Index_array[_Num_args])" />
+    <DisplayString>{{ size={_Num_args} }}</DisplayString>
     <Expand>
-      <Item Name="Type">_Index_array->_Type_</Item>
       <IndexListItems>
         <Size>_Num_args</Size>
+        <ValueNode Condition="_Index_array[$i]._Type_ == 0">"None"</ValueNode>
+        <!-- _Basic_format_arg_type::_Int_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 1">
-          *(reinterpret_cast&lt;const int*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          *(int*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!-- _Basic_format_arg_type::_UInt_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 2">
-          *(reinterpret_cast&lt;const unsigned int*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          *(unsigned int*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!-- _Basic_format_arg_type::_Long_long_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 3">
-          *(reinterpret_cast&lt;const long long*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          *(long long*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!-- _Basic_format_arg_type::_ULong_long_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 4">
-          *(reinterpret_cast&lt;const unsigned long long*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          *(unsigned long long*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!-- _Basic_format_arg_type::_Bool_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 5">
-          *(reinterpret_cast&lt;const bool*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          *(bool*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!-- _Basic_format_arg_type::_Char_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 6">
-          *(reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          *(char*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!-- _Basic_format_arg_type::_Float_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 7">
-          *(reinterpret_cast&lt;const float*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          *(float*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!-- _Basic_format_arg_type::_Double_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 8">
-          *(reinterpret_cast&lt;const double*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          *(double*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!-- _Basic_format_arg_type::_Long_double_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 9">
-          *(reinterpret_cast&lt;const long double*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)
+          *(long double*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!-- _Basic_format_arg_type::_Pointer_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 10">
-          (void*)(*(reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index))
+          *(void**)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!--
+          Note: the following two are incorrect for wformat_args;
+          however, it is, as far as I can tell, impossible to support both
+          (and one will at least get _something_ for `wformat_args`)
+        -->
+        <!-- _Basic_format_arg_type::_CString_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 11">
-          reinterpret_cast&lt;char*&gt;(*((reinterpret_cast&lt;const long long *&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)+0))
+          *(char**)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
+        <!-- _Basic_format_arg_type::_String_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 12">
-          reinterpret_cast&lt;char*&gt;(*((reinterpret_cast&lt;const long long *&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index)+0))
+          *(std::string_view*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
-        <ValueNode>reinterpret_cast&lt;const unsigned char*&gt;(_Index_array + _Num_args) + _Index_array[$i]._Index</ValueNode>
+        <!-- _Basic_format_arg_type::_Custom_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 13">
+          *(void**)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
       </IndexListItems>
     </Expand>
   </Type>
@@ -2043,10 +2009,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString>{what()}</DisplayString>
   </Type>
 
-  <Type Name="std::function&lt;*&gt;">
-    <DisplayString>{target_type().name()}</DisplayString>
-  </Type>
-
   <Type Name="std::default_searcher&lt;*&gt;">
     <AlternativeType Name="std::boyer_moore_searcher&lt;*&gt;" />
     <AlternativeType Name="std::boyer_moore_horspool_searcher&lt;*&gt;" />
@@ -2061,12 +2023,13 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <Intrinsic Name="_Is_big"     Expression="has_value() &amp;&amp; _Rep() == 1"/>
     <Intrinsic Name="_Is_small"   Expression="has_value() &amp;&amp; _Rep() == 2"/>
     <DisplayString Condition="!has_value()">[empty]</DisplayString>
-    <DisplayString Condition="_Is_trivial() || _Is_small()">[not empty (Small)]</DisplayString>
-    <DisplayString Condition="_Is_big()">[not empty (Large)]</DisplayString>
+    <DisplayString Condition="_Is_trivial()">[not empty (trivial)]</DisplayString>
+    <DisplayString Condition="_Is_small()">[not empty (small)]</DisplayString>
+    <DisplayString Condition="_Is_big()">[not empty (large)]</DisplayString>
     <Expand>
       <Item Name="[castable_ptr]" Condition="_Is_trivial()">(void*)(&amp;_Storage._TrivialData)</Item>
       <Item Name="[castable_ptr]" Condition="_Is_small()">(void*)(&amp;_Storage._SmallStorage._Data)</Item>
-      <Item Name="[castable_ptr]" Condition="_Is_big()">(void*)(_Storage._BigStorage._Ptr)</Item>
+      <Item Name="[castable_ptr]" Condition="_Is_big()">_Storage._BigStorage._Ptr</Item>
       <Synthetic Name="has_value">
         <DisplayString>{has_value()}</DisplayString>
       </Synthetic>
@@ -2074,7 +2037,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <DisplayString>{type()}</DisplayString>
       </Synthetic>
       <Synthetic Name="[representation]" Condition="_Is_trivial()">
-        <DisplayString>(Small/Trivial Object)</DisplayString>
+        <DisplayString>(Small and Trivial Object)</DisplayString>
       </Synthetic>
       <Synthetic Name="[representation]" Condition="_Is_small()">
         <DisplayString>(Small Object)</DisplayString>
