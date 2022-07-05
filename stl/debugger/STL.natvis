@@ -62,7 +62,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   -->
 
   <Type Name="std::tuple&lt;*&gt;">
-    <DisplayString IncludeView="noparens" Condition="(void)((_Mybase *)this)->_Myfirst._Val, true" Optional="true">
+    <DisplayString IncludeView="noparens" Optional="true" Condition="(void)((_Mybase *)this)->_Myfirst._Val, true">
       {_Myfirst._Val}, {*((_Mybase *) this),view(noparens)}
     </DisplayString>
     <DisplayString IncludeView="noparens">{_Myfirst._Val}</DisplayString>
@@ -81,7 +81,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <Type Name="std::tuple&lt;*&gt;" IncludeView="asptr;noparensasptr">
-    <DisplayString IncludeView="noparensasptr" Condition="(void)((_Mybase *)this)->_Myfirst._Val, true" Optional="true">
+    <DisplayString IncludeView="noparensasptr" Optional="true" Condition="(void)((_Mybase *)this)->_Myfirst._Val, true">
       {_Myfirst._Val}, {*((_Mybase *) this),view(noparensasptr)}
     </DisplayString>
     <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}</DisplayString>
