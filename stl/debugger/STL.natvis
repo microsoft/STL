@@ -1994,7 +1994,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString Condition="_Active_state == 11">CString state: {_CString_state}</DisplayString>
     <DisplayString Condition="_Active_state == 12">String state: {_String_state}</DisplayString>
     <DisplayString Condition="_Active_state == 13">Custom state: {_Custom_state}</DisplayString>
-    <DisplayString Condition="_Active_state >= 14">Active state: {_Active_state}</DisplayString>
+    <DisplayString Condition="_Active_state >= 14">Invalid state: {_Active_state}</DisplayString>
   </Type>
 
   <Type Name="std::basic_format_context&lt;*&gt;">
