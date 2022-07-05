@@ -1481,13 +1481,11 @@ namespace chrono {
         return _Result;
     }
 
-    template <class _ToPeriod, class _FromPeriod>
-    inline constexpr bool _Duration_cast_would_underflow = _FromPeriod::den > INTMAX_MAX / _ToPeriod::num;
-
     template <class _From, class _To>
-    inline constexpr bool _Duration_underflows_with =
-        !treat_as_floating_point_v<typename _From::rep> //
-        && _Duration_cast_would_underflow<typename _To::period, typename _From::period>;
+    inline constexpr bool
+        _Duration_underflows_with = !treat_as_floating_point_v<typename _From::rep> //
+                                 && _From::period::den / _Gcd(_From::period::den, _To::period::den)
+                                        > INTMAX_MAX / (_To::period::num / _Gcd(_From::period::num, _To::period::num));
 
     template <class _To, class _From>
     _NODISCARD constexpr _To _Duration_cast_underflow_to_zero(const _From& _Dur) {
