@@ -49,34 +49,30 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
-
   <Type Name="std::tuple&lt;&gt;">
     <DisplayString IncludeView="noparens;noparensasptr"></DisplayString>
     <DisplayString>({*this,view(noparens)})</DisplayString>
     <Expand/>
   </Type>
 
-  <Type Name="std::tuple&lt;*&gt;">
-    <DisplayString IncludeView="noparens">{_Myfirst._Val}</DisplayString>
-    <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}</DisplayString>
-    <DisplayString IncludeView="asptr">({*this,view(noparensasptr)})</DisplayString>
-    <DisplayString>({*this,view(noparens)})</DisplayString>
-    <Expand>
-      <Item Name="[0]" ExcludeView="asptr">_Myfirst._Val</Item>
-      <Item Name="[0]" IncludeView="asptr">&amp;_Myfirst._Val</Item>
-    </Expand>
-  </Type>
+  <!--
+    Tuple uses a bit of a SFINAE-style hack in order to allow us to write less code.
+    It uses Condition="(void)<expr>, true", along with Optional="true".
+    This allows us to check if <expr> compiles, and if so, use that "branch".
+  -->
 
-  <Type Name="std::tuple&lt;*,*&gt;">
-    <DisplayString IncludeView="noparens">{_Myfirst._Val}, {*((_Mybase *) this),view(noparens)}</DisplayString>
+  <Type Name="std::tuple&lt;*&gt;">
+    <DisplayString IncludeView="noparens" Condition="(void)((_Mybase *)this)->_Myfirst._Val, true" Optional="true">
+      {_Myfirst._Val}, {*((_Mybase *) this),view(noparens)}
+    </DisplayString>
+    <DisplayString IncludeView="noparens">{_Myfirst._Val}</DisplayString>
     <DisplayString>({*this,view(noparens)})</DisplayString>
     <Expand>
       <Item Name="[0]">_Myfirst._Val</Item>
-      <Item Name="[1]">((_Mybase *) this)->_Myfirst._Val</Item>
+      <Item Name="[1]" Optional="true">((_Mybase *) this)->_Myfirst._Val</Item>
       <Item Name="[2]" Optional="true">((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
       <Item Name="[3]" Optional="true">((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
       <Item Name="[4]" Optional="true">((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <!-- This Condition, plus Optional="true", allows us to only show this when we have more values. -->
       <Synthetic Name="[...]" Optional="true" Condition="(void)((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val, true">
         <DisplayString>Next five elements:</DisplayString>
       </Synthetic>
@@ -84,8 +80,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::tuple&lt;*,*&gt;" IncludeView="asptr;noparensasptr">
-    <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}, {*((_Mybase *) this),view(noparensasptr)}</DisplayString>
+  <Type Name="std::tuple&lt;*&gt;" IncludeView="asptr;noparensasptr">
+    <DisplayString IncludeView="noparensasptr" Condition="(void)((_Mybase *)this)->_Myfirst._Val, true" Optional="true">
+      {_Myfirst._Val}, {*((_Mybase *) this),view(noparensasptr)}
+    </DisplayString>
+    <DisplayString IncludeView="noparensasptr">{&amp;_Myfirst._Val}</DisplayString>
     <DisplayString>({*this,view(noparensasptr)})</DisplayString>
     <Expand>
       <Item Name="[0]">&amp;_Myfirst._Val</Item>
@@ -93,7 +92,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       <Item Name="[2]" Optional="true">&amp;((_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
       <Item Name="[3]" Optional="true">&amp;((_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
       <Item Name="[4]" Optional="true">&amp;((_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val</Item>
-      <!-- This Condition, plus Optional="true", allows us to only show this when we have more values. -->
       <Synthetic Name="[...]" Optional="true" Condition="(void)((_Mybase::_Mybase::_Mybase::_Mybase::_Mybase *) this)->_Myfirst._Val, true">
         <DisplayString>Next five elements:</DisplayString>
       </Synthetic>
