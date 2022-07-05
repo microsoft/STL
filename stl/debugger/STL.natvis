@@ -1910,8 +1910,10 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     </Expand>
   </Type>
 
-  <Type Name="std::basic_format_args&lt;*&gt;">
-    <AlternativeType Name="std::_Format_arg_store&lt;*&gt;" />
+  <!-- std::format_args -->
+  <Type Name="std::basic_format_args&lt;std::basic_format_context&lt;std::back_insert_iterator&lt;std::_Fmt_buffer&lt;char&gt;&gt;, char&gt;&gt;">
+    <!-- decltype(std::make_format_args(...))-->
+    <AlternativeType Name="std::_Format_arg_store&lt;std::basic_format_context&lt;std::back_insert_iterator&lt;std::_Fmt_buffer&lt;char&gt;&gt;, char&gt;, *&gt;" />
     <Intrinsic Name="storage" Expression="(char*)(&amp;_Index_array[_Num_args])" />
     <DisplayString>{{ size={_Num_args} }}</DisplayString>
     <Expand>
@@ -1970,6 +1972,71 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <!-- _Basic_format_arg_type::_String_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 12">
           *(std::string_view*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Custom_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 13">
+          *(void**)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+      </IndexListItems>
+    </Expand>
+  </Type>
+
+  <!-- std::wformat_args -->
+  <Type Name="std::basic_format_args&lt;std::basic_format_context&lt;std::back_insert_iterator&lt;std::_Fmt_buffer&lt;wchar_t&gt;&gt;, wchar_t&gt;&gt;">
+    <!-- decltype(std::make_format_args(...))-->
+    <AlternativeType Name="std::_Format_arg_store&lt;std::basic_format_context&lt;std::back_insert_iterator&lt;std::_Fmt_buffer&lt;wchar_t&gt;&gt;, wchar_t&gt;, *&gt;" />
+    <Intrinsic Name="storage" Expression="(char*)(&amp;_Index_array[_Num_args])" />
+    <DisplayString>{{ size={_Num_args} }}</DisplayString>
+    <Expand>
+      <IndexListItems>
+        <Size>_Num_args</Size>
+        <!-- _Basic_format_arg_type::_Int_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 1">
+          *(int*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_UInt_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 2">
+          *(unsigned int*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Long_long_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 3">
+          *(long long*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_ULong_long_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 4">
+          *(unsigned long long*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Bool_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 5">
+          *(bool*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Char_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 6">
+          *(char*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Float_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 7">
+          *(float*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Double_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 8">
+          *(double*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Long_double_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 9">
+          *(long double*)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_Pointer_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 10">
+          *(void**)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_CString_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 11">
+          *(wchar_t**)(&amp;storage()[_Index_array[$i]._Index])
+        </ValueNode>
+        <!-- _Basic_format_arg_type::_String_type -->
+        <ValueNode Condition="_Index_array[$i]._Type_ == 12">
+          *(std::wstring_view*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
         <!-- _Basic_format_arg_type::_Custom_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 13">
