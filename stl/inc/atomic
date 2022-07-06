@@ -112,24 +112,24 @@ extern "C" inline void _Check_memory_order(const int _Order) {
     _Result = _Intrinsic(__VA_ARGS__)
 #elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
-    switch (_Order) {                                                                 \
-    case _Atomic_memory_order_relaxed:                                                \
-        _Result = _INTRIN_RELAXED(_Intrinsic)(__VA_ARGS__);                           \
-        break;                                                                        \
-    case _Atomic_memory_order_consume:                                                \
-    case _Atomic_memory_order_acquire:                                                \
-        _Result = _INTRIN_ACQUIRE(_Intrinsic)(__VA_ARGS__);                           \
-        break;                                                                        \
-    case _Atomic_memory_order_release:                                                \
-        _Result = _INTRIN_RELEASE(_Intrinsic)(__VA_ARGS__);                           \
-        break;                                                                        \
-    default:                                                                          \
-        _INVALID_MEMORY_ORDER;                                                        \
-        /* [[fallthrough]]; */                                                        \
-    case _Atomic_memory_order_acq_rel:                                                \
-    case _Atomic_memory_order_seq_cst:                                                \
-        _Result = _Intrinsic(__VA_ARGS__);                                            \
-        break;                                                                        \
+    switch (_Order) {                                              \
+    case _Atomic_memory_order_relaxed:                             \
+        _Result = _INTRIN_RELAXED(_Intrinsic)(__VA_ARGS__);        \
+        break;                                                     \
+    case _Atomic_memory_order_consume:                             \
+    case _Atomic_memory_order_acquire:                             \
+        _Result = _INTRIN_ACQUIRE(_Intrinsic)(__VA_ARGS__);        \
+        break;                                                     \
+    case _Atomic_memory_order_release:                             \
+        _Result = _INTRIN_RELEASE(_Intrinsic)(__VA_ARGS__);        \
+        break;                                                     \
+    default:                                                       \
+        _INVALID_MEMORY_ORDER;                                     \
+        /* [[fallthrough]]; */                                     \
+    case _Atomic_memory_order_acq_rel:                             \
+    case _Atomic_memory_order_seq_cst:                             \
+        _Result = _Intrinsic(__VA_ARGS__);                         \
+        break;                                                     \
     }
 #endif // hardware
 
@@ -330,7 +330,7 @@ _NODISCARD inline memory_order _Combine_cas_memory_orders(
         {memory_order_seq_cst, memory_order_seq_cst, memory_order_seq_cst, memory_order_seq_cst, memory_order_seq_cst,
             memory_order_seq_cst}};
 
-    _Check_memory_order(_Success);
+    _Check_memory_order(static_cast<int>(_Success));
     _Check_load_memory_order(_Failure);
     return _Combined_memory_orders[static_cast<int>(_Success)][static_cast<int>(_Failure)];
 }
@@ -574,7 +574,7 @@ struct _Atomic_storage {
 
     _TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange _Value with _Storage with sequential consistency
-        _Check_memory_order(_Order);
+        _Check_memory_order(static_cast<int>(_Order));
         _Guard _Lock{_Spinlock};
         _TVal _Result(_Storage);
         _Storage = _Value;
@@ -583,7 +583,7 @@ struct _Atomic_storage {
 
     bool compare_exchange_strong(_TVal& _Expected, const _TVal _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept { // CAS with sequential consistency, plain
-        _Check_memory_order(_Order);
+        _Check_memory_order(static_cast<int>(_Order));
         const auto _Storage_ptr  = _STD addressof(_Storage);
         const auto _Expected_ptr = _STD addressof(_Expected);
         bool _Result;
