@@ -176,13 +176,50 @@ extern "C" inline void _Check_memory_order(const int _Order) {
 #define _ATOMIC_STORE_32_SEQ_CST_INTEL(_Ptr, _Desired) \
     (void) _InterlockedExchange(reinterpret_cast<volatile long*>(_Ptr), static_cast<long>(_Desired));
 
+#define _ATOMIC_STORE_64_SEQ_CST_IX86(_Ptr, _Desired) \
+    _Compiler_barrier();                              \
+    __iso_volatile_store64((_Ptr), (_Desired));       \
+    _Atomic_thread_fence(_Atomic_memory_order_seq_cst);
+
 #if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_ARM((_Width), (_Ptr), (_Desired))
 #define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(32, (_Ptr), (_Desired))
+#define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(64, (_Ptr), (_Desired))
 #else // ^^^ ARM32/ARM64/ARM64EC hardware / x86/x64 hardware vvv
 #define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_INTEL(_Width, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_32_SEQ_CST_INTEL((_Ptr), (_Desired))
+#ifdef _M_IX86
+#define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired) _ATOMIC_STORE_64_SEQ_CST_IX86((_Ptr), (_Desired))
+#else // ^^^ x86 / x64 vvv
+#define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_INTEL(64, (_Ptr), (_Desired))
+#endif // x86/x64
 #endif // hardware
+
+extern "C" inline void _Atomic_thread_fence(int _Order) {
+    if (_Order == _Atomic_memory_order_relaxed) {
+        return;
+    }
+
+#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+    _Compiler_barrier();
+    if (_Order == _Atomic_memory_order_seq_cst) {
+        volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
+
+        // _mm_mfence could have been used, but it is not supported on older x86 CPUs and is slower on some recent CPUs.
+        // The memory fence provided by interlocked operations has some exceptions, but this is fine:
+        // std::atomic_thread_fence works with respect to other atomics only; it may not be a full fence for all ops.
+#pragma warning(suppress : 6001) // "Using uninitialized memory '_Guard'"
+#pragma warning(suppress : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
+                                  // usage which could be reconsidered."
+        (void) _InterlockedIncrement(&_Guard);
+        _Compiler_barrier();
+    }
+#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+    _Memory_barrier();
+#else // ^^^ ARM32/ARM64/ARM64EC / unsupported hardware vvv
+#error Unsupported hardware
+#endif // unsupported hardware
+}
 // End of code shared with vcruntime
 
 _EXTERN_C
@@ -235,29 +272,7 @@ inline constexpr bool _Might_have_non_value_bits =
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 
 extern "C" inline void atomic_thread_fence(const memory_order _Order) noexcept {
-    if (_Order == memory_order_relaxed) {
-        return;
-    }
-
-#if defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
-    _Compiler_barrier();
-    if (_Order == memory_order_seq_cst) {
-        volatile long _Guard; // Not initialized to avoid an unnecessary operation; the value does not matter
-
-        // _mm_mfence could have been used, but it is not supported on older x86 CPUs and is slower on some recent CPUs.
-        // The memory fence provided by interlocked operations has some exceptions, but this is fine:
-        // std::atomic_thread_fence works with respect to other atomics only; it may not be a full fence for all ops.
-#pragma warning(suppress : 6001) // "Using uninitialized memory '_Guard'"
-#pragma warning(suppress : 28113) // "Accessing a local variable _Guard via an Interlocked function: This is an unusual
-                                  // usage which could be reconsidered."
-        (void) _InterlockedIncrement(&_Guard);
-        _Compiler_barrier();
-    }
-#elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
-    _Memory_barrier();
-#else // ^^^ ARM32/ARM64/ARM64EC / unsupported hardware vvv
-#error Unsupported hardware
-#endif // unsupported hardware
+    ::_Atomic_thread_fence(static_cast<int>(_Order));
 }
 
 extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
@@ -993,7 +1008,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     void store(const _TVal _Value) noexcept { // store with sequential consistency
         const auto _Mem           = _Atomic_address_as<long long>(_Storage);
         const long long _As_bytes = _Atomic_reinterpret_as<long long>(_Value);
-        _ATOMIC_STORE_SEQ_CST(64, _Mem, _As_bytes);
+        _ATOMIC_STORE_64_SEQ_CST(_Mem, _As_bytes);
     }
 
     void store(const _TVal _Value, const memory_order _Order) noexcept { // store with given memory order
