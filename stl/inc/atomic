@@ -169,7 +169,7 @@ extern "C" inline void _Check_memory_order(const int _Order) {
 
 
 #define _ATOMIC_STORE_SEQ_CST_ARM(_Width, _Ptr, _Desired) \
-    _Memory_barrrier();                                   \
+    _Memory_barrier();                                    \
     __iso_volatile_store##_Width((_Ptr), (_Desired));     \
     _Memory_barrier();
 #define _ATOMIC_STORE_SEQ_CST_INTEL(_Width, _Ptr, _Desired) (void) _InterlockedExchange##_Width((_Ptr), (_Desired));
@@ -182,7 +182,7 @@ extern "C" inline void _Check_memory_order(const int _Order) {
     _Atomic_thread_fence(_Atomic_memory_order_seq_cst);
 
 #if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
-#define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_ARM((_Width), (_Ptr), (_Desired))
+#define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_ARM(_Width, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(32, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(64, (_Ptr), (_Desired))
 #else // ^^^ ARM32/ARM64/ARM64EC hardware / x86/x64 hardware vvv
