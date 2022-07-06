@@ -342,6 +342,11 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <AlternativeType Name="std::unique_ptr&lt;char8_t [0],*&gt;"/>
     <AlternativeType Name="std::unique_ptr&lt;char16_t [0],*&gt;"/>
     <AlternativeType Name="std::unique_ptr&lt;char32_t [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;wchar_t const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char8_t const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char16_t const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char32_t const [0],*&gt;"/>
     <DisplayString Condition="_Mypair._Myval2 == nullptr">{{empty}}</DisplayString>
     <DisplayString Condition="_Mypair._Myval2 != nullptr">{_Mypair._Myval2}</DisplayString>
     <StringView>_Mypair._Myval2</StringView>
