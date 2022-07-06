@@ -112,24 +112,24 @@ extern "C" inline void _Check_memory_order(const int _Order) {
     _Result = _Intrinsic(__VA_ARGS__)
 #elif defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #define _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _Intrinsic, ...) \
-    switch (_Order) {                                              \
-    case memory_order_relaxed:                                     \
-        _Result = _INTRIN_RELAXED(_Intrinsic)(__VA_ARGS__);        \
-        break;                                                     \
-    case memory_order_consume:                                     \
-    case memory_order_acquire:                                     \
-        _Result = _INTRIN_ACQUIRE(_Intrinsic)(__VA_ARGS__);        \
-        break;                                                     \
-    case memory_order_release:                                     \
-        _Result = _INTRIN_RELEASE(_Intrinsic)(__VA_ARGS__);        \
-        break;                                                     \
-    default:                                                       \
-        _INVALID_MEMORY_ORDER;                                     \
-        /* [[fallthrough]]; */                                     \
-    case memory_order_acq_rel:                                     \
-    case memory_order_seq_cst:                                     \
-        _Result = _Intrinsic(__VA_ARGS__);                         \
-        break;                                                     \
+    switch (_Order) {                                                                 \
+    case _Atomic_memory_order_relaxed:                                                \
+        _Result = _INTRIN_RELAXED(_Intrinsic)(__VA_ARGS__);                           \
+        break;                                                                        \
+    case _Atomic_memory_order_consume:                                                \
+    case _Atomic_memory_order_acquire:                                                \
+        _Result = _INTRIN_ACQUIRE(_Intrinsic)(__VA_ARGS__);                           \
+        break;                                                                        \
+    case _Atomic_memory_order_release:                                                \
+        _Result = _INTRIN_RELEASE(_Intrinsic)(__VA_ARGS__);                           \
+        break;                                                                        \
+    default:                                                                          \
+        _INVALID_MEMORY_ORDER;                                                        \
+        /* [[fallthrough]]; */                                                        \
+    case _Atomic_memory_order_acq_rel:                                                \
+    case _Atomic_memory_order_seq_cst:                                                \
+        _Result = _Intrinsic(__VA_ARGS__);                                            \
+        break;                                                                        \
     }
 #endif // hardware
 
@@ -269,11 +269,6 @@ extern "C" inline void atomic_signal_fence(const memory_order _Order) noexcept {
 template <class _Ty>
 _Ty kill_dependency(_Ty _Arg) noexcept { // "magic" template that kills dependency ordering when called
     return _Arg;
-}
-
-inline void _Check_memory_order(const memory_order _Order) noexcept {
-    // check that _Order is a valid memory_order
-    ::_Check_memory_order(static_cast<int>(_Order));
 }
 
 inline void _Check_store_memory_order(const memory_order _Order) noexcept {
@@ -729,8 +724,8 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
     _TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with given memory order
         char _As_bytes;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _As_bytes, _InterlockedExchange8, _Atomic_address_as<char>(_Storage),
-            _Atomic_reinterpret_as<char>(_Value));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _As_bytes, _InterlockedExchange8,
+            _Atomic_address_as<char>(_Storage), _Atomic_reinterpret_as<char>(_Value));
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
@@ -745,7 +740,7 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
             const char _Mask_val = _Atomic_reinterpret_as<char>(_Mask._Ref());
 
             for (;;) {
-                _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange8,
+                _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Prev_bytes, _InterlockedCompareExchange8,
                     _Atomic_address_as<char>(_Storage), _Atomic_reinterpret_as<char>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
@@ -759,8 +754,8 @@ struct _Atomic_storage<_Ty, 1> { // lock-free using 1-byte intrinsics
             }
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange8, _Atomic_address_as<char>(_Storage),
-            _Atomic_reinterpret_as<char>(_Desired), _Expected_bytes);
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Prev_bytes, _InterlockedCompareExchange8,
+            _Atomic_address_as<char>(_Storage), _Atomic_reinterpret_as<char>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
@@ -832,8 +827,8 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
     _TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with given memory order
         short _As_bytes;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _As_bytes, _InterlockedExchange16, _Atomic_address_as<short>(_Storage),
-            _Atomic_reinterpret_as<short>(_Value));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _As_bytes, _InterlockedExchange16,
+            _Atomic_address_as<short>(_Storage), _Atomic_reinterpret_as<short>(_Value));
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
@@ -847,7 +842,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
             const short _Mask_val = _Atomic_reinterpret_as<short>(_Mask._Ref());
 
             for (;;) {
-                _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange16,
+                _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Prev_bytes, _InterlockedCompareExchange16,
                     _Atomic_address_as<short>(_Storage), _Atomic_reinterpret_as<short>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
@@ -861,7 +856,7 @@ struct _Atomic_storage<_Ty, 2> { // lock-free using 2-byte intrinsics
             }
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange16,
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Prev_bytes, _InterlockedCompareExchange16,
             _Atomic_address_as<short>(_Storage), _Atomic_reinterpret_as<short>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
@@ -934,8 +929,8 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
     _TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with given memory order
         long _As_bytes;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _As_bytes, _InterlockedExchange, _Atomic_address_as<long>(_Storage),
-            _Atomic_reinterpret_as<long>(_Value));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _As_bytes, _InterlockedExchange,
+            _Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Value));
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 
@@ -949,7 +944,7 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
             const long _Mask_val = _Atomic_reinterpret_as<long>(_Mask);
 
             for (;;) {
-                _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange,
+                _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Prev_bytes, _InterlockedCompareExchange,
                     _Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
                     return true;
@@ -963,8 +958,8 @@ struct _Atomic_storage<_Ty, 4> { // lock-free using 4-byte intrinsics
             }
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange, _Atomic_address_as<long>(_Storage),
-            _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Prev_bytes, _InterlockedCompareExchange,
+            _Atomic_address_as<long>(_Storage), _Atomic_reinterpret_as<long>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
         }
@@ -1054,8 +1049,8 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
     _TVal exchange(const _TVal _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
         // exchange with given memory order
         long long _As_bytes;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _As_bytes, _InterlockedExchange64, _Atomic_address_as<long long>(_Storage),
-            _Atomic_reinterpret_as<long long>(_Value));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _As_bytes, _InterlockedExchange64,
+            _Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Value));
         return reinterpret_cast<_TVal&>(_As_bytes);
     }
 #endif // _M_IX86
@@ -1071,7 +1066,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             const long long _Mask_val = _Atomic_reinterpret_as<long long>(_Mask);
 
             for (;;) {
-                _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange64,
+                _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Prev_bytes, _InterlockedCompareExchange64,
                     _Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Desired),
                     _Expected_bytes);
                 if (_Prev_bytes == _Expected_bytes) {
@@ -1086,7 +1081,7 @@ struct _Atomic_storage<_Ty, 8> { // lock-free using 8-byte intrinsics
             }
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Prev_bytes, _InterlockedCompareExchange64,
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Prev_bytes, _InterlockedCompareExchange64,
             _Atomic_address_as<long long>(_Storage), _Atomic_reinterpret_as<long long>(_Desired), _Expected_bytes);
         if (_Prev_bytes == _Expected_bytes) {
             return true;
@@ -1202,7 +1197,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
             _CSTD memcpy(&_Mask_val, _Mask._Ptr(), sizeof(_TVal));
             for (;;) {
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-                _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedCompareExchange128,
+                _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedCompareExchange128,
                     _Atomic_address_as<long long>(_Storage), _Desired_bytes._High, _Desired_bytes._Low,
                     &_Expected_temp._Low);
 #else // ^^^ _M_ARM64, _M_ARM64EC / _M_X64 vvv
@@ -1228,7 +1223,7 @@ struct _Atomic_storage<_Ty&, 16> { // lock-free using 16-byte intrinsics
         }
 #endif // _CMPXCHG_MASK_OUT_PADDING_BITS
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedCompareExchange128,
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedCompareExchange128,
             _Atomic_address_as<long long>(_Storage), _Desired_bytes._High, _Desired_bytes._Low, &_Expected_temp._Low);
 #else // ^^^ _M_ARM64, _M_ARM64EC / _M_X64 vvv
         (void) _Order;
@@ -1303,29 +1298,29 @@ struct _Atomic_integral<_Ty, 1> : _Atomic_storage<_Ty> { // atomic integral oper
 
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         char _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedExchangeAdd8, _Atomic_address_as<char>(this->_Storage),
-            static_cast<char>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedExchangeAdd8,
+            _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_and(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         char _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedAnd8, _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedAnd8,
+            _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_or(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         char _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedOr8, _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedOr8,
+            _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_xor(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         char _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedXor8, _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedXor8,
+            _Atomic_address_as<char>(this->_Storage), static_cast<char>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
@@ -1361,29 +1356,29 @@ struct _Atomic_integral<_Ty, 2> : _Atomic_storage<_Ty> { // atomic integral oper
 
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         short _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedExchangeAdd16, _Atomic_address_as<short>(this->_Storage),
-            static_cast<short>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedExchangeAdd16,
+            _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_and(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         short _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedAnd16, _Atomic_address_as<short>(this->_Storage),
-            static_cast<short>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedAnd16,
+            _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_or(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         short _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedOr16, _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedOr16,
+            _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_xor(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         short _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedXor16, _Atomic_address_as<short>(this->_Storage),
-            static_cast<short>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedXor16,
+            _Atomic_address_as<short>(this->_Storage), static_cast<short>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
@@ -1419,29 +1414,29 @@ struct _Atomic_integral<_Ty, 4> : _Atomic_storage<_Ty> { // atomic integral oper
 
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedExchangeAdd, _Atomic_address_as<long>(this->_Storage),
-            static_cast<long>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedExchangeAdd,
+            _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_and(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedAnd, _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedAnd,
+            _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_or(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedOr, _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedOr,
+            _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_xor(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedXor, _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedXor,
+            _Atomic_address_as<long>(this->_Storage), static_cast<long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
@@ -1531,29 +1526,29 @@ struct _Atomic_integral<_Ty, 8> : _Atomic_storage<_Ty> { // atomic integral oper
 #else // ^^^ _M_IX86 / !_M_IX86 vvv
     _TVal fetch_add(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedExchangeAdd64,
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedExchangeAdd64,
             _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_and(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedAnd64, _Atomic_address_as<long long>(this->_Storage),
-            static_cast<long long>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedAnd64,
+            _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_or(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedOr64, _Atomic_address_as<long long>(this->_Storage),
-            static_cast<long long>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedOr64,
+            _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
     _TVal fetch_xor(const _TVal _Operand, const memory_order _Order = memory_order_seq_cst) noexcept {
         long long _Result;
-        _ATOMIC_CHOOSE_INTRINSIC(_Order, _Result, _InterlockedXor64, _Atomic_address_as<long long>(this->_Storage),
-            static_cast<long long>(_Operand));
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedXor64,
+            _Atomic_address_as<long long>(this->_Storage), static_cast<long long>(_Operand));
         return static_cast<_TVal>(_Result);
     }
 
@@ -1920,11 +1915,11 @@ struct _Atomic_pointer : _Atomic_storage<_Ty> {
             static_cast<ptrdiff_t>(static_cast<size_t>(_Diff) * sizeof(remove_pointer_t<_Ty>));
         ptrdiff_t _Result;
 #if defined(_M_IX86) || defined(_M_ARM)
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedExchangeAdd, _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedExchangeAdd,
+            _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
 #else // ^^^ 32 bits / 64 bits vvv
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedExchangeAdd64, _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedExchangeAdd64,
+            _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
 #endif // hardware
         return reinterpret_cast<_Ty>(_Result);
     }
@@ -2017,11 +2012,11 @@ struct _Atomic_pointer<_Ty&> : _Atomic_storage<_Ty&> {
             static_cast<ptrdiff_t>(static_cast<size_t>(_Diff) * sizeof(remove_pointer_t<_Ty>));
         ptrdiff_t _Result;
 #if defined(_M_IX86) || defined(_M_ARM)
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedExchangeAdd, _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedExchangeAdd,
+            _Atomic_address_as<long>(this->_Storage), _Shift_bytes);
 #else // ^^^ 32 bits / 64 bits vvv
-        _ATOMIC_CHOOSE_INTRINSIC(
-            _Order, _Result, _InterlockedExchangeAdd64, _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
+        _ATOMIC_CHOOSE_INTRINSIC(static_cast<int>(_Order), _Result, _InterlockedExchangeAdd64,
+            _Atomic_address_as<long long>(this->_Storage), _Shift_bytes);
 #endif // hardware
         return reinterpret_cast<_Ty>(_Result);
     }
