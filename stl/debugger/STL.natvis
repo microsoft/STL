@@ -346,6 +346,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
     <DisplayString Condition="_Mypair._Myval2 != nullptr">{_Mypair._Myval2}</DisplayString>
     <StringView>_Mypair._Myval2</StringView>
     <Expand>
+      <Item Condition="_Mypair._Myval2 != nullptr" Name="[deleter]">_Mypair</Item>
       <ExpandedItem Condition="_Mypair._Myval2 != nullptr">_Mypair._Myval2,hv</ExpandedItem>
     </Expand>
   </Type>
