@@ -56,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
   </Type>
 
   <!--
-    Tuple uses a bit of a SFINAE-style hack in order to allow us to write less code.
+    Tuple uses a bit of a SFINAE-style technique in order to allow us to write less code.
     It uses Condition="(void)<expr>, true", along with Optional="true".
     This allows us to check if <expr> compiles, and if so, use that "branch".
   -->
@@ -1958,11 +1958,6 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <ValueNode Condition="_Index_array[$i]._Type_ == 10">
           *(void**)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
-        <!--
-          Note: the following two are incorrect for wformat_args;
-          however, it is, as far as I can tell, impossible to support both
-          (and one will at least get _something_ for `wformat_args`)
-        -->
         <!-- _Basic_format_arg_type::_CString_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 11">
           *(char**)(&amp;storage()[_Index_array[$i]._Index])
@@ -1981,7 +1976,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
   <!-- std::wformat_args -->
   <Type Name="std::basic_format_args&lt;std::basic_format_context&lt;std::back_insert_iterator&lt;std::_Fmt_buffer&lt;wchar_t&gt;&gt;, wchar_t&gt;&gt;">
-    <!-- decltype(std::make_format_args(...))-->
+    <!-- decltype(std::make_wformat_args(...))-->
     <AlternativeType Name="std::_Format_arg_store&lt;std::basic_format_context&lt;std::back_insert_iterator&lt;std::_Fmt_buffer&lt;wchar_t&gt;&gt;, wchar_t&gt;, *&gt;" />
     <Intrinsic Name="storage" Expression="(char*)(&amp;_Index_array[_Num_args])" />
     <DisplayString>{{ size={_Num_args} }}</DisplayString>
@@ -2010,7 +2005,7 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         </ValueNode>
         <!-- _Basic_format_arg_type::_Char_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 6">
-          *(char*)(&amp;storage()[_Index_array[$i]._Index])
+          *(wchar_t*)(&amp;storage()[_Index_array[$i]._Index])
         </ValueNode>
         <!-- _Basic_format_arg_type::_Float_type -->
         <ValueNode Condition="_Index_array[$i]._Type_ == 7">
