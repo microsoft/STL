@@ -1,0 +1,38 @@
+# Copyright (c) Microsoft Corporation.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+
+# This is usual_matrix.lst, but with additional `/std:c++14 /Zc:char8_t` and `/std:c++17 /Zc:char8_t` configurations.
+
+RUNALL_INCLUDE .\prefix.lst
+RUNALL_CROSSLIST
+PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++14 /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++17 /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++20 /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive- /w14640 /Zc:threadSafeInit- /Zc:noexceptTypes-"
+PM_CL="/EHsc /MD /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /Zc:char8_t- /w14640 /Zc:threadSafeInit- /Zc:preprocessor"
+PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /Zc:wchar_t- /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++14 /fp:except /w14640 /Zc:threadSafeInit- /Zc:preprocessor"
+PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++14 /permissive- /w14640 /Zc:threadSafeInit- /Zc:char8_t"
+PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++17 /permissive- /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++17 /permissive- /w14640 /Zc:threadSafeInit- /Zc:char8_t"
+PM_CL="/EHsc /MDd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++20 /permissive- /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MT /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MT /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /analyze:only /analyze:autolog- /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MT /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /fp:strict /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /permissive /w14640 /Zc:threadSafeInit-"
+PM_CL="/EHsc /MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /permissive- /analyze:only /analyze:autolog- /w14640 /Zc:threadSafeInit-"
+PM_CL="/clr /MD /std:c++17 /w14640 /Zc:threadSafeInit-"
+PM_CL="/clr /MDd /std:c++17 /w14640 /Zc:threadSafeInit-"
+PM_CL="/clr:pure /MD /std:c++14"
+PM_CL="/clr:pure /MDd /std:c++14"
+PM_CL="/BE /c /EHsc /MD /std:c++14 /w14640 /Zc:threadSafeInit-"
+PM_CL="/BE /c /EHsc /MDd /std:c++17 /permissive- /w14640 /Zc:threadSafeInit-"
+PM_CL="/BE /c /EHsc /MT /std:c++20 /permissive- /w14640 /Zc:threadSafeInit-"
+PM_CL="/BE /c /EHsc /MTd /std:c++latest /permissive- /w14640 /Zc:threadSafeInit-"
+PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /EHsc /MD /std:c++14 /w14640 /Zc:threadSafeInit-"
+PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /EHsc /MDd /std:c++17 /w14640 /Zc:threadSafeInit-"
+PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /EHsc /MT /std:c++20 /permissive- /w14640 /Zc:threadSafeInit-"
+PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /EHsc /MTd /std:c++latest /permissive- /fp:strict /w14640 /Zc:threadSafeInit-"

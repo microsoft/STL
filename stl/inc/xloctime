@@ -106,8 +106,7 @@ private:
     friend _Tidy_guard<time_get>;
 
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type = _Elem;
     using iter_type = _InIt;
@@ -649,8 +648,7 @@ protected:
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put : public locale::facet { // facet for converting encoded times to text
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type = _Elem;
     using iter_type = _OutIt;
@@ -737,7 +735,8 @@ protected:
             _Fmt[3] = _Specifier;
         }
 
-        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+        int& _Errno_ref      = errno; // Nonzero cost, pay it once
+        const int _Old_errno = _Errno_ref;
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
@@ -750,6 +749,7 @@ protected:
             }
         }
 
+        _Errno_ref = _Old_errno;
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
     }
 
@@ -866,7 +866,8 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
-        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+        int& _Errno_ref      = errno; // Nonzero cost, pay it once
+        const int _Old_errno = _Errno_ref;
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
@@ -878,6 +879,8 @@ protected:
                 return _Dest;
             }
         }
+
+        _Errno_ref = _Old_errno;
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
     }
 
@@ -995,7 +998,8 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
-        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+        int& _Errno_ref      = errno; // Nonzero cost, pay it once
+        const int _Old_errno = _Errno_ref;
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
@@ -1008,6 +1012,7 @@ protected:
             }
         }
 
+        _Errno_ref = _Old_errno;
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
     }
 

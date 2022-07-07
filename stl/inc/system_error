@@ -501,12 +501,7 @@ public:
     }
 
     _NODISCARD string message(int _Errcode) const override {
-        // TRANSITION, GH-2561, move the logic to syserror.cpp
-        if (_Errcode == 0) {
-            return "success";
-        } else {
-            return _Syserror_map(_Errcode);
-        }
+        return _Syserror_map(_Errcode);
     }
 };
 
@@ -522,7 +517,7 @@ public:
         if (_Errcode == static_cast<int>(io_errc::stream)) {
             static constexpr char _Iostream_error[] = "iostream stream error";
             constexpr size_t _Iostream_error_length = sizeof(_Iostream_error) - 1; // TRANSITION, DevCom-906503
-            return string(_Iostream_error, _Iostream_error_length);
+            return string{_Iostream_error, _Iostream_error_length};
         } else {
             return _Syserror_map(_Errcode);
         }
@@ -542,9 +537,9 @@ public:
         if (_Msg._Length == 0) {
             static constexpr char _Unknown_error[] = "unknown error";
             constexpr size_t _Unknown_error_length = sizeof(_Unknown_error) - 1; // TRANSITION, DevCom-906503
-            return string(_Unknown_error, _Unknown_error_length);
+            return string{_Unknown_error, _Unknown_error_length};
         } else {
-            return string(_Msg._Str, _Msg._Length);
+            return string{_Msg._Str, _Msg._Length};
         }
     }
 

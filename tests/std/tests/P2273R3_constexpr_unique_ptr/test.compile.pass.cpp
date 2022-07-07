@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <memory>
+#include <typeinfo>
 #include <utility>
 
 using namespace std;
@@ -13,7 +14,7 @@ struct Dummy {
     }
 };
 
-constexpr bool test() {
+constexpr bool test_P2273R3_constexpr_unique_ptr() {
     // [memory.syn]
     {
         auto p1 = make_unique<int>(42);
@@ -126,6 +127,20 @@ constexpr bool test() {
     return true;
 }
 
-static_assert(test());
+static_assert(test_P2273R3_constexpr_unique_ptr());
+
+// Also test P1328R1 constexpr type_info::operator==()
+constexpr bool test_P1328R1_constexpr_type_info_equality() {
+    assert(typeid(int) == typeid(int));
+    assert(typeid(int) != typeid(double));
+
+    assert(typeid(int) == typeid(int&)); // N4910 [expr.typeid]/5
+    assert(typeid(int) == typeid(const int&)); // N4910 [expr.typeid]/5
+    assert(typeid(int) == typeid(const int)); // N4910 [expr.typeid]/6
+
+    return true;
+}
+
+static_assert(test_P1328R1_constexpr_type_info_equality());
 
 int main() {} // COMPILE-ONLY

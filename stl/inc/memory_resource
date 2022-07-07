@@ -110,8 +110,10 @@ namespace pmr {
     };
 
     template <class _Ty, class _Tag = void>
-    struct _Intrusive_list { // intrusive circular list of _Ty (which must derive from _Double_link<_Tag>)
+    struct _Intrusive_list { // intrusive circular list of _Ty, which must derive from _Double_link<_Tag>
         using _Link_type = _Double_link<_Tag>;
+
+        _STL_INTERNAL_STATIC_ASSERT(is_base_of_v<_Link_type, _Ty>);
 
         constexpr _Intrusive_list() noexcept { // TRANSITION, VSO-517878
             // initialize this list to the empty state
@@ -122,17 +124,14 @@ namespace pmr {
 
         static constexpr _Link_type* _As_link(_Ty* const _Ptr) noexcept {
             // extract the link from the item denoted by _Ptr
-            static_assert(is_base_of_v<_Link_type, _Ty>);
             return static_cast<_Link_type*>(_Ptr);
         }
 
         static constexpr _Ty* _As_item(_Link_type* const _Ptr) noexcept { // get the item whose link is denoted by _Ptr
-            static_assert(is_base_of_v<_Link_type, _Ty>);
             return static_cast<_Ty*>(_Ptr);
         }
 
         constexpr void _Push_front(_Ty* const _Item) noexcept { // insert _Item at the head of this list
-            static_assert(is_base_of_v<_Link_type, _Ty>);
             const auto _Ptr    = static_cast<_Link_type*>(_Item);
             _Ptr->_Next        = _Head._Next;
             _Head._Next->_Prev = _Ptr;
@@ -141,7 +140,6 @@ namespace pmr {
         }
 
         static constexpr void _Remove(_Ty* const _Item) noexcept { // unlink _Item from this list
-            static_assert(is_base_of_v<_Link_type, _Ty>);
             const auto _Ptr    = static_cast<_Link_type*>(_Item);
             _Ptr->_Next->_Prev = _Ptr->_Prev;
             _Ptr->_Prev->_Next = _Ptr->_Next;
@@ -164,6 +162,8 @@ namespace pmr {
     struct _Intrusive_stack { // intrusive stack of _Ty, which must derive from _Single_link<_Tag>
         using _Link_type = _Single_link<_Tag>;
 
+        _STL_INTERNAL_STATIC_ASSERT(is_base_of_v<_Link_type, _Ty>);
+
         constexpr _Intrusive_stack() noexcept = default;
         constexpr _Intrusive_stack(_Intrusive_stack&& _That) noexcept : _Head{_That._Head} {
             _That._Head = nullptr;
@@ -175,12 +175,10 @@ namespace pmr {
         }
 
         static constexpr _Link_type* _As_link(_Ty* const _Ptr) noexcept {
-            static_assert(is_base_of_v<_Link_type, _Ty>);
             return static_cast<_Link_type*>(_Ptr);
         }
 
         static constexpr _Ty* _As_item(_Link_type* const _Ptr) noexcept {
-            static_assert(is_base_of_v<_Link_type, _Ty>);
             return static_cast<_Ty*>(_Ptr);
         }
 
@@ -206,9 +204,9 @@ namespace pmr {
 
         constexpr void _Remove(_Ty* const _Item) noexcept {
             const auto _Ptr = _As_link(_Item);
-            for (_Link_type** _Foo = _STD addressof(_Head); *_Foo; _Foo = _STD addressof((*_Foo)->_Next)) {
-                if (*_Foo == _Ptr) {
-                    *_Foo = _Ptr->_Next;
+            for (_Link_type** _Pnext = &_Head; *_Pnext; _Pnext = &(*_Pnext)->_Next) {
+                if (*_Pnext == _Ptr) {
+                    *_Pnext = _Ptr->_Next;
                     break;
                 }
             }
@@ -315,8 +313,8 @@ namespace pmr {
         }
 
     private:
-        struct _Oversized_header
-            : _Double_link<> { // tracks an allocation that was obtained directly from the upstream resource
+        struct _Oversized_header : _Double_link<> {
+            // tracks an allocation that was obtained directly from the upstream resource
             size_t _Size;
             size_t _Align;
 
@@ -383,8 +381,8 @@ namespace pmr {
         }
 
         struct _Pool { // manager for a collection of chunks comprised of blocks of a single size
-            struct _Chunk
-                : _Single_link<> { // a memory allocation consisting of a number of fixed-size blocks to be parceled out
+            struct _Chunk : _Single_link<> {
+                // a memory allocation consisting of a number of fixed-size blocks to be parceled out
                 _Intrusive_stack<_Single_link<>> _Free_blocks{}; // list of free blocks
                 size_t _Free_count; // # of unallocated blocks
                 size_t _Capacity; // total # of blocks
