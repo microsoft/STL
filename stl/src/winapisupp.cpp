@@ -193,7 +193,7 @@ extern "C" _CRTIMP2 PTP_TIMER __cdecl __crtCreateThreadpoolTimer(
 
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 VOID __cdecl __crtSetThreadpoolTimer(_Inout_ PTP_TIMER const pti,
-    _In_opt_ PFILETIME const pftDueTime, _In_ DWORD const msPeriod, _In_opt_ DWORD const msWindowLength) {
+    _In_opt_ PFILETIME const pftDueTime, _In_ DWORD const msPeriod, _In_ DWORD const msWindowLength) {
     SetThreadpoolTimer(pti, pftDueTime, msPeriod, msWindowLength);
 }
 
@@ -337,11 +337,9 @@ extern "C" BOOL __cdecl __crtQueueUserWorkItem(_In_ LPTHREAD_START_ROUTINE, _In_
 
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
-
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(_Inout_ PSRWLOCK const pLock) {
-    DYNAMICGETCACHEDFUNCTION(PFNTRYACQUIRESRWLOCKEXCLUSIVE, TryAcquireSRWLockExclusive, pfTryAcquireSRWLockExclusive);
-    return pfTryAcquireSRWLockExclusive(pLock);
-    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
+    return TryAcquireSRWLockExclusive(pLock);
 }
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN7

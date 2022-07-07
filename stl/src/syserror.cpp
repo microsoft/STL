@@ -68,10 +68,13 @@ namespace {
         {ERROR_REPARSE_TAG_INVALID, errc::invalid_argument},
         {ERROR_RETRY, errc::resource_unavailable_try_again},
         {ERROR_SEEK, errc::io_error},
+        {ERROR_SEM_TIMEOUT, errc::timed_out},
         {ERROR_SHARING_VIOLATION, errc::permission_denied},
+        {ERROR_TIMEOUT, errc::timed_out},
         {ERROR_TOO_MANY_OPEN_FILES, errc::too_many_files_open},
         {ERROR_WRITE_FAULT, errc::io_error},
         {ERROR_WRITE_PROTECT, errc::permission_denied},
+        {WAIT_TIMEOUT, errc::timed_out},
         {WSAEACCES, errc::permission_denied},
         {WSAEADDRINUSE, errc::address_in_use},
         {WSAEADDRNOTAVAIL, errc::address_not_available},
@@ -112,6 +115,7 @@ namespace {
 
     constexpr _Sys_errtab_t _Sys_errtab[] = {
         // table of Posix code/name pairs
+        {static_cast<errc>(0), "success"},
         {errc::address_family_not_supported, "address family not supported"},
         {errc::address_in_use, "address in use"},
         {errc::address_not_available, "address not available"},

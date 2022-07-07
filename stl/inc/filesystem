@@ -3542,12 +3542,12 @@ namespace filesystem {
     }
 
     _NODISCARD inline bool is_other(const path& _Path) {
-        // tests whether _Path is an other file (such as a junction)
+        // tests whether _Path is an "other" file (such as a junction)
         return _STD filesystem::is_other(_STD filesystem::status(_Path));
     }
 
     _NODISCARD inline bool is_other(const path& _Path, error_code& _Ec) noexcept {
-        // tests whether _Path is an other file (such as a junction)
+        // tests whether _Path is an "other" file (such as a junction)
         return _STD filesystem::is_other(_STD filesystem::status(_Path, _Ec));
     }
 
