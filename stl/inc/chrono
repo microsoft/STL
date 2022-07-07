@@ -1481,7 +1481,7 @@ namespace chrono {
         return _Result;
     }
 
-    template <class _From, class _To>
+    template <class _To, class _From>
     inline constexpr bool
         _Duration_underflows_with = !treat_as_floating_point_v<typename _From::rep> //
                                  && _From::period::den / _Gcd(_From::period::den, _To::period::den)
@@ -1489,7 +1489,7 @@ namespace chrono {
 
     template <class _To, class _From>
     _NODISCARD constexpr _To _Duration_cast_underflow_to_zero(const _From& _Dur) {
-        if constexpr (_Duration_underflows_with<_From, _To>) {
+        if constexpr (_Duration_underflows_with<_To, _From>) {
             return _To{};
         } else {
             return _CHRONO duration_cast<_To>(_Dur);
@@ -1498,7 +1498,7 @@ namespace chrono {
 
     template <class _To, class _From>
     _NODISCARD constexpr common_type_t<_To, _From> _Remove_duration_part(const _From& _Val) {
-        if constexpr (_Duration_underflows_with<_From, _To>) {
+        if constexpr (_Duration_underflows_with<_To, _From>) {
             return _Val;
         } else {
             const auto _Dp = _CHRONO duration_cast<_To>(_Val);
