@@ -1492,7 +1492,7 @@ namespace chrono {
         if constexpr (_Duration_underflows_with<_From, _To>) {
             return _To{};
         } else {
-            return duration_cast<_To>(_Dur);
+            return _CHRONO duration_cast<_To>(_Dur);
         }
     }
 
@@ -1501,7 +1501,7 @@ namespace chrono {
         if constexpr (_Duration_underflows_with<_From, _To>) {
             return _Val;
         } else {
-            const auto _Dp = duration_cast<_To>(_Val);
+            const auto _Dp = _CHRONO duration_cast<_To>(_Val);
             return _Val - _Dp;
         }
     }
