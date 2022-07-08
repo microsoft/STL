@@ -243,7 +243,7 @@ const timeframe_all: Timeframe = {
 };
 const timeframe_github: Timeframe = {
     min: '2019-09-20', // first Friday after 2019-09-16
-    time: { unit: 'quarter' },
+    time: { unit: 'year' },
 };
 const timeframe_2021: Timeframe = {
     min: '2021-01-01',
@@ -279,7 +279,7 @@ function legend_click_handler(_event: ChartEvent, legend_item: LegendItem, legen
     update_url();
 }
 
-function make_common_options(title_text: string) {
+function make_common_options() {
     return {
         animation: {
             duration: 0,
@@ -300,6 +300,7 @@ function make_common_options(title_text: string) {
         },
         plugins: {
             legend: {
+                display: true,
                 labels: {
                     color: get_css_property('--color-fg-default'),
                 },
@@ -309,14 +310,12 @@ function make_common_options(title_text: string) {
                 mode: 'nearest' as const,
                 intersect: false,
             },
-            title: {
-                color: get_css_property('--color-fg-default'),
-                display: true,
-                font: {
-                    size: 24,
-                },
-                text: title_text,
-            },
+        },
+        onResize: (chart: Chart, size: { width: number; height: number }) => {
+            if (chart.options.plugins?.legend === undefined) {
+                throw new Error('onResize was surprised by chart.options.');
+            }
+            chart.options.plugins.legend.display = size.width > 670;
         },
     };
 }
@@ -373,25 +372,25 @@ function make_yAxis(position: 'left' | 'right', title_text: string, min: number,
 }
 
 const status_options = {
-    ...make_common_options('STL Status Chart'),
+    ...make_common_options(),
     scales: {
         x: make_xAxis(timeframes[timeframe_idx]),
-        largeAxis: make_yAxis('left', 'Bugs, Issues, Skipped Libcxx Tests', 0, 900, 100),
-        smallAxis: make_yAxis('right', 'Features, LWG Resolutions, Pull Requests', 0, 90, 10),
+        largeAxis: make_yAxis('left', 'Bugs, Issues, Skipped Libcxx Tests', 0, 800, 100),
+        smallAxis: make_yAxis('right', 'Features, LWG Resolutions, Pull Requests', 0, 80, 10),
     },
 };
 
 const age_options = {
-    ...make_common_options('Pull Request Age'),
+    ...make_common_options(),
     scales: {
         x: make_xAxis(timeframe_github),
-        leftAxis: make_yAxis('left', 'Average Age, Average Wait (days)', 0, 600, 100),
-        rightAxis: make_yAxis('right', 'Combined Age, Combined Wait (PR-months)', 0, 600, 100),
+        leftAxis: make_yAxis('left', 'Average Age, Average Wait (days)', 0, 500, 100),
+        rightAxis: make_yAxis('right', 'Combined Age, Combined Wait (PR-months)', 0, 500, 100),
     },
 };
 
 const merge_options = {
-    ...make_common_options('Monthly Merged PRs'),
+    ...make_common_options(),
     scales: {
         x: make_xAxis(timeframe_github),
         mergeAxis: make_yAxis('right', 'PRs / month', 0, 80, 10),
@@ -436,16 +435,11 @@ function load_charts() {
         const color_border_default = get_css_property('--color-border-default');
 
         for (const chart of [status_chart, age_chart, merge_chart]) {
-            if (
-                chart.options.plugins?.legend?.labels === undefined ||
-                chart.options.plugins?.title === undefined ||
-                chart.options.scales === undefined
-            ) {
+            if (chart.options.plugins?.legend?.labels === undefined || chart.options.scales === undefined) {
                 throw new Error('update_dark_mode() was surprised by chart.options.');
             }
 
             chart.options.plugins.legend.labels.color = color_fg_default;
-            chart.options.plugins.title.color = color_fg_default;
 
             for (const [scaleId, scale] of Object.entries(chart.options.scales)) {
                 if (scale?.title === undefined || scale?.ticks === undefined || scale?.grid === undefined) {
