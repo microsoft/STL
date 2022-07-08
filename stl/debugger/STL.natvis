@@ -337,6 +337,24 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <Type Name="std::unique_ptr&lt;wchar_t [0],*&gt;">
+    <AlternativeType Name="std::unique_ptr&lt;char [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char8_t [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char16_t [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char32_t [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;wchar_t const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char8_t const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char16_t const [0],*&gt;"/>
+    <AlternativeType Name="std::unique_ptr&lt;char32_t const [0],*&gt;"/>
+    <DisplayString Condition="_Mypair._Myval2 == nullptr">{{empty}}</DisplayString>
+    <DisplayString Condition="_Mypair._Myval2 != nullptr">{_Mypair._Myval2}</DisplayString>
+    <StringView>_Mypair._Myval2</StringView>
+    <Expand>
+      <Item Condition="_Mypair._Myval2 != nullptr" Name="[deleter]">_Mypair</Item>
+      <ExpandedItem Condition="_Mypair._Myval2 != nullptr">_Mypair._Myval2,hv</ExpandedItem>
+    </Expand>
+  </Type>
 
   <Type Name="std::_Ref_count&lt;*&gt;">
       <DisplayString>default</DisplayString>
@@ -1179,6 +1197,27 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
         <Size>size()</Size>
         <ValuePointer>_Mypair._Myval2._Myfirst</ValuePointer>
         </ArrayItems>
+    </Expand>
+  </Type>
+
+  <Type Name="std::vector&lt;wchar_t,*&gt;">
+    <AlternativeType Name="std::vector&lt;char,*&gt;" />
+    <AlternativeType Name="std::vector&lt;char8_t,*&gt;" />
+    <AlternativeType Name="std::vector&lt;char16_t,*&gt;" />
+    <AlternativeType Name="std::vector&lt;char32_t,*&gt;" />
+    <Intrinsic Name="data" Expression="_Mypair._Myval2._Myfirst" />
+    <Intrinsic Name="size" Expression="(size_t)(_Mypair._Myval2._Mylast - _Mypair._Myval2._Myfirst)" />
+    <Intrinsic Name="capacity" Expression="(size_t)(_Mypair._Myval2._Myend - _Mypair._Myval2._Myfirst)" />
+    <SmartPointer Usage="Indexable" DefaultExpansion="false">data()</SmartPointer>
+    <DisplayString Condition="size() > 0">{data(),na} (size = {size()})</DisplayString>
+    <DisplayString Condition="size() == 0">{{empty}}</DisplayString>
+    <Expand>
+      <Item Name="[capacity]" ExcludeView="simple">capacity()</Item>
+      <Item Name="[allocator]" ExcludeView="simple">_Mypair</Item>
+      <ArrayItems>
+        <Size>size()</Size>
+        <ValuePointer>data()</ValuePointer>
+      </ArrayItems>
     </Expand>
   </Type>
 
