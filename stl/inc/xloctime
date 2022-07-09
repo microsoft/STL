@@ -582,7 +582,7 @@ protected:
                 while (_First != _Last && _Ctype_fac.is(_Ctype::space, *_First)) {
                     ++_First;
                 }
-            } else if (_Ctype_fac.narrow(*_First) != *_Fmtfirst) { // bad literal match
+            } else if (_First == _Last || _Ctype_fac.narrow(*_First) != *_Fmtfirst) { // bad literal match
                 _State |= ios_base::failbit;
                 break;
             } else {

@@ -873,3 +873,17 @@ void test_gh_2618() {
     // 1-digit strings: same as 2-digit
     TestTimeGetYear("1", 2001, 1, 2001);
 }
+
+void test_stream_unmatched() {
+
+    const locale loc{locale::classic()};
+    const auto& tmget{use_facet<time_get<char>>(loc)};
+    ios_base::iostate err{ios_base::goodbit};
+    tm when{};
+    const string fmt{"%X"};
+    istringstream iss{"3:04"};
+    istreambuf_iterator<char> first{iss};
+    const istreambuf_iterator<char> last{};
+    tmget.get(first, last, iss, err, &when, fmt.data(), fmt.data() + fmt.size());
+    assert(err == ios_base::failbit);
+}
