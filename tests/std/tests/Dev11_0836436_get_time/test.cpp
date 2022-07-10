@@ -877,8 +877,8 @@ void test_gh_2618() {
 }
 
 void test_gh_2848() {
-    //// GH-2848 <xloctime>: time_get::get can still assert 'istreambuf_iterator is not dereferenceable' when
-    /// the format is longer than the stream
+    // GH-2848 <xloctime>: time_get::get can still assert 'istreambuf_iterator is not dereferenceable' when
+    // the format is longer than the stream
     {
         const locale loc{locale::classic()};
         const auto& tmget{use_facet<time_get<char>>(loc)};
@@ -889,7 +889,7 @@ void test_gh_2848() {
         istreambuf_iterator<char> first{iss};
         const istreambuf_iterator<char> last{};
         tmget.get(first, last, iss, err, &when, fmt.data(), fmt.data() + fmt.size());
-        assert(err != ios_base::goodbit);
+        assert(err == (ios_base::eofbit | ios_base::failbit));
     }
 
     {
@@ -902,6 +902,6 @@ void test_gh_2848() {
         istreambuf_iterator<wchar_t> first{iss};
         const istreambuf_iterator<wchar_t> last{};
         tmget.get(first, last, iss, err, &when, fmt.data(), fmt.data() + fmt.size());
-        assert(err != ios_base::goodbit);
+        assert(err == (ios_base::eofbit | ios_base::failbit));
     }
 }

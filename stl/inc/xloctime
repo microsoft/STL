@@ -578,11 +578,14 @@ protected:
             if (*_Fmtfirst == '%') {
                 _First = do_get(_First, _Last, _Iosbase, _State, _Pt,
                     *++_Fmtfirst); // convert a single field
+            } else if (_First == _Last) {
+                _State |= ios_base::failbit;
+                break;
             } else if (*_Fmtfirst == ' ') {
                 while (_First != _Last && _Ctype_fac.is(_Ctype::space, *_First)) {
                     ++_First;
                 }
-            } else if (_First == _Last || _Ctype_fac.narrow(*_First) != *_Fmtfirst) { // bad literal match
+            } else if (_Ctype_fac.narrow(*_First) != *_Fmtfirst) { // bad literal match
                 _State |= ios_base::failbit;
                 break;
             } else {
