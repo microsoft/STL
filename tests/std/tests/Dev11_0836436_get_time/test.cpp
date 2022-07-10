@@ -878,7 +878,7 @@ void test_gh_2618() {
 
 void test_gh_2848() {
     //// GH-2848 <xloctime>: time_get::get can still assert 'istreambuf_iterator is not dereferenceable' when
-    ///the format is longer than the stream
+    /// the format is longer than the stream
     {
         const locale loc{locale::classic()};
         const auto& tmget{use_facet<time_get<char>>(loc)};
