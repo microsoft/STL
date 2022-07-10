@@ -4,7 +4,7 @@
 #include <version> // TRANSITION, Clang 14 coroutine support
 #ifdef __cpp_lib_coroutine // TRANSITION, Clang 14 coroutine support
 
-#include <assert.h>
+#include <cassert>
 #include <coroutine>
 #include <exception>
 using namespace std;

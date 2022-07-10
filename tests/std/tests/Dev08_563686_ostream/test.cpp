@@ -26,10 +26,12 @@
 
 #define CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
+#include <cstdlib>
 #include <sstream>
-#include <stdlib.h>
 
 #include <Windows.h>
+
+using namespace std;
 
 int main() {
     // Track CRT blocks
@@ -38,7 +40,7 @@ int main() {
     {
         // Allocate long lived objects in the CRT.
         // We don't want these objects to show up as leaks.
-        std::iostream s(nullptr);
+        iostream s(nullptr);
     }
 
     // Get memory state before creating iostream

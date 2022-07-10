@@ -27,15 +27,15 @@ _EXTERN_C
     } // STET
 
 #if 0
-#include <stdio.h>
+#include <cstdio>
 
 static void printit(const char* s, FTYPE* p, int n) { // print xp array
     int i;
-    printf(s);
+    std::printf(s);
     for (i = 0; i < n && (p[i] != FLIT(0.0) || i == 0); ++i) {
-        printf(" %La", static_cast<long double>(p[i]));
+        std::printf(" %La", static_cast<long double>(p[i]));
     }
-    printf("\n");
+    std::printf("\n");
 }
 #endif // 0
 

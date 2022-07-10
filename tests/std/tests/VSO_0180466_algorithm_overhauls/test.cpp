@@ -11,7 +11,7 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <functional>
 #include <iterator>
 #include <string>

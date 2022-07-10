@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <any>
-#include <assert.h>
+#include <cassert>
 #include <utility>
 
 #include "ab.hpp"

@@ -5,8 +5,8 @@
 
 #include <cassert>
 #include <cfenv>
+#include <cfloat>
 #include <cmath>
-#include <float.h>
 #include <type_traits>
 #include <xutility>
 

@@ -94,8 +94,8 @@ import <vector>;
 import <version>;
 // clang-format on
 
-#include <assert.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
 
 #include <force_include.hpp>
 using namespace std;

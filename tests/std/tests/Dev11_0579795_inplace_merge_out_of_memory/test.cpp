@@ -3,10 +3,10 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstdint>
+#include <cstdlib>
 #include <new>
-#include <stdint.h>
-#include <stdlib.h>
 
 #if _HAS_CXX17 && !defined(_M_CEE)
 #define HAS_PARALLEL_ALGORITHMS 1

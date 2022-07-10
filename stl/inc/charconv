@@ -804,8 +804,8 @@ _NODISCARD inline bool _Multiply_by_power_of_ten(_Big_integer_flt& _Xval, const 
 #if 0
 #include <algorithm>
 #include <charconv>
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <tuple>
 #include <vector>
 using namespace std;
@@ -2444,13 +2444,13 @@ _NODISCARD to_chars_result _Floating_to_chars_hex_shortest(
 // cl /EHsc /nologo /W4 /MT /O2 /std:c++17 generate_tables.cpp && generate_tables
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <charconv>
 #include <cmath>
+#include <cstdint>
+#include <cstdio>
 #include <limits>
 #include <map>
-#include <stdint.h>
-#include <stdio.h>
 #include <system_error>
 #include <type_traits>
 #include <vector>

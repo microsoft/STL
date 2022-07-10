@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cstddef>
 #include <iterator>
-#include <stddef.h>
 
 #include <test_death.hpp>
 
 using namespace stdext;
 
 void test_case_construction_out_of_range() {
-    checked_array_iterator<int*> it(nullptr, 1, 0); // checked_array_iterator construction index out of range
+    checked_array_iterator<int*> it(std::nullptr, 1, 0); // checked_array_iterator construction index out of range
     (void) it;
 }
 
@@ -43,7 +43,7 @@ void test_case_operator_preincrement_value_initialized_iterator() {
 void test_case_operator_preincrement_off_end() {
     int arr[] = {1, 2};
     checked_array_iterator<int*> it(arr, 2);
-    for (size_t idx = 0; idx < 3; ++idx) {
+    for (std::size_t idx = 0; idx < 3; ++idx) {
         ++it; // cannot increment checked_array_iterator past end
     }
 }

@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <iomanip>
 #include <ios>
 #include <locale>
 #include <sstream>
 #include <streambuf>
 #include <string>
-#include <time.h>
 #include <tuple>
 
 using namespace std;

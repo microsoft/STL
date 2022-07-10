@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cstdlib>
 #include <deque>
 #include <forward_list>
 #include <list>
 #include <map>
 #include <set>
-#include <stdlib.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -25,11 +25,11 @@ struct simple_allocator : Base {
     simple_allocator(simple_allocator<U, UB> const&) {}
 
     value_type* allocate(std::size_t n) {
-        return static_cast<value_type*>(malloc(n * sizeof(value_type)));
+        return static_cast<value_type*>(std::malloc(n * sizeof(value_type)));
     }
 
     void deallocate(value_type* p, std::size_t) {
-        free(p);
+        std::free(p);
     }
 };
 

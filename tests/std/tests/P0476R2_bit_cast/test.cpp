@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
 #include <bit>
+#include <cassert>
 #include <cmath>
+#include <cstddef>
+#include <cstring>
 #include <limits>
-#include <stddef.h>
-#include <string.h>
 #include <type_traits>
 #include <utility>
+using namespace std;
 
 // structure sizing depends on a packing of 8, which is the default
 
