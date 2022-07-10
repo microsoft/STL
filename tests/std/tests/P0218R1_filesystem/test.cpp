@@ -1200,18 +1200,6 @@ void test_directory_entry() {
     EXPECT(good(ec));
     EXPECT(cachingEntry.is_regular_file(ec));
     EXPECT(good(ec));
-#if _HAS_CXX20
-    // break caching again, and assert that things aren't cached
-    cachingEntry.clear_cache();
-    EXPECT(cachingEntry.file_size(ec) == static_cast<uintmax_t>(-1));
-    EXPECT(bad(ec));
-    EXPECT(cachingEntry.last_write_time(ec) == file_time_type::min());
-    EXPECT(bad(ec));
-    EXPECT(cachingEntry.hard_link_count(ec) == static_cast<uintmax_t>(-1));
-    EXPECT(bad(ec));
-    EXPECT(!cachingEntry.is_regular_file(ec));
-    EXPECT(bad(ec));
-#endif // _HAS_CXX20
 
     // assert that mutating the path doesn't fail even though the target doesn't exist
     for (auto&& nonexistent : nonexistentPaths) {
