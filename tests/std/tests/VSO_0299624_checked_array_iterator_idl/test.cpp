@@ -9,7 +9,7 @@
 using namespace stdext;
 
 void test_case_construction_out_of_range() {
-    checked_array_iterator<int*> it(std::nullptr, 1, 0); // checked_array_iterator construction index out of range
+    checked_array_iterator<int*> it(nullptr, 1, 0); // checked_array_iterator construction index out of range
     (void) it;
 }
 
