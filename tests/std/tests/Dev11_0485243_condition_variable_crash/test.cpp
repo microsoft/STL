@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// REQUIRES: debug_CRT
+
 #include <algorithm>
 #include <assert.h>
 #include <chrono>
@@ -17,11 +19,9 @@
 using namespace std;
 
 void assert_no_leaks() {
-#ifdef _DEBUG
     if (_CrtDumpMemoryLeaks()) {
         abort();
     }
-#endif
 }
 
 void test_484720();
