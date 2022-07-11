@@ -16,6 +16,7 @@
 #include <atomic>
 #include <cmath>
 #include <compare>
+#include <cstdint>
 #include <forward_list>
 #include <istream>
 #include <memory>
@@ -1480,6 +1481,31 @@ namespace chrono {
         return _Result;
     }
 
+    template <class _To, class _From>
+    inline constexpr bool
+        _Duration_underflows_with = !treat_as_floating_point_v<typename _From::rep> //
+                                 && _From::period::den / _Gcd(_From::period::den, _To::period::den)
+                                        > INTMAX_MAX / (_To::period::num / _Gcd(_From::period::num, _To::period::num));
+
+    template <class _To, class _From>
+    _NODISCARD constexpr _To _Duration_cast_underflow_to_zero(const _From& _Dur) {
+        if constexpr (_Duration_underflows_with<_To, _From>) {
+            return _To{};
+        } else {
+            return _CHRONO duration_cast<_To>(_Dur);
+        }
+    }
+
+    template <class _To, class _From>
+    _NODISCARD constexpr common_type_t<_To, _From> _Remove_duration_part(const _From& _Val) {
+        if constexpr (_Duration_underflows_with<_To, _From>) {
+            return _Val;
+        } else {
+            const auto _Dp = _CHRONO duration_cast<_To>(_Val);
+            return _Val - _Dp;
+        }
+    }
+
     template <class _Duration>
     class hh_mm_ss {
     public:
@@ -1504,13 +1530,16 @@ namespace chrono {
         constexpr hh_mm_ss() noexcept : hh_mm_ss{_Duration::zero()} {}
         constexpr explicit hh_mm_ss(_Duration _Dur)
             : _Is_neg{_Dur < _Duration::zero()}, //
-              _Hours{_CHRONO duration_cast<_CHRONO hours>(_CHRONO abs(_Dur))},
-              _Mins{_CHRONO duration_cast<_CHRONO minutes>(_CHRONO abs(_Dur) - hours())},
-              _Secs{_CHRONO duration_cast<_CHRONO seconds>(_CHRONO abs(_Dur) - hours() - minutes())} {
+              _Hours{_Duration_cast_underflow_to_zero<_CHRONO hours>(_CHRONO abs(_Dur))},
+              _Mins{_Duration_cast_underflow_to_zero<_CHRONO minutes>(
+                  _Remove_duration_part<_CHRONO hours>(_CHRONO abs(_Dur)))},
+              _Secs{_Duration_cast_underflow_to_zero<_CHRONO seconds>(
+                  _Remove_duration_part<_CHRONO minutes>(_CHRONO abs(_Dur)))} {
             if constexpr (treat_as_floating_point_v<typename precision::rep>) {
+                // no need to deal with underflow here, because floating durations allow it
                 _Sub_secs = _CHRONO abs(_Dur) - hours() - minutes() - seconds();
             } else {
-                _Sub_secs = _CHRONO duration_cast<precision>(_CHRONO abs(_Dur) - hours() - minutes() - seconds());
+                _Sub_secs = _CHRONO duration_cast<precision>(_Remove_duration_part<_CHRONO seconds>(_CHRONO abs(_Dur)));
             }
         }
 
@@ -4832,6 +4861,11 @@ namespace chrono {
         _STL_INTERNAL_CHECK(false);
     }
 
+    template <class _Duration>
+    _NODISCARD constexpr hh_mm_ss<_Duration> _Hh_mm_ss_part_underflow_to_zero(const _Duration& _Val) {
+        return hh_mm_ss<_Duration>{_Remove_duration_part<days>(_Val)};
+    }
+
     template <unsigned int _Fractional_width, class _CharT, class _Traits, class _Precision>
     void _Write_fractional_seconds(
         basic_ostream<_CharT, _Traits>& _Os, const seconds& _Seconds, const _Precision& _Subseconds) {
@@ -4878,8 +4912,7 @@ namespace chrono {
 
     template <class _CharT, class _Traits, class _Rep, class _Period>
     void _Write_seconds(basic_ostream<_CharT, _Traits>& _Os, const duration<_Rep, _Period>& _Val) {
-        const auto _Dp = _CHRONO duration_cast<days>(_Val);
-        _Write_seconds(_Os, hh_mm_ss{_Val - _Dp});
+        _Write_seconds(_Os, _Hh_mm_ss_part_underflow_to_zero(_Val));
     }
 
     template <class _Ty>
@@ -4894,8 +4927,7 @@ namespace chrono {
         int _Seconds        = 0;
 
         if constexpr (_Is_specialization_v<_Ty, duration>) {
-            const auto _Dp = _CHRONO duration_cast<days>(_Val);
-            return _Fill_tm(hh_mm_ss{_Val - _Dp});
+            return _Fill_tm(_Hh_mm_ss_part_underflow_to_zero(_Val));
         } else if constexpr (_Is_specialization_v<_Ty, _Local_time_format_t>) {
             return _Fill_tm(_Val._Time);
         } else if constexpr (is_same_v<_Ty, day>) {
@@ -5403,7 +5435,7 @@ namespace chrono {
                 return false;
             case 'j':
                 if constexpr (_Is_specialization_v<_Ty, duration>) {
-                    _Os << _STD abs(_CHRONO duration_cast<days>(_Val).count());
+                    _Os << _STD abs(_Duration_cast_underflow_to_zero<days>(_Val).count());
                     return true;
                 }
                 return false;
