@@ -575,12 +575,12 @@ protected:
         const _Ctype& _Ctype_fac = _STD use_facet<_Ctype>(_Iosbase.getloc());
 
         for (; *_Fmtfirst != '\0'; ++_Fmtfirst) {
-            if (*_Fmtfirst == '%') {
-                _First = do_get(_First, _Last, _Iosbase, _State, _Pt,
-                    *++_Fmtfirst); // convert a single field
-            } else if (_First == _Last) {
+            if (_First == _Last) {
                 _State |= ios_base::failbit;
                 break;
+            } else if (*_Fmtfirst == '%') {
+                _First = do_get(_First, _Last, _Iosbase, _State, _Pt,
+                    *++_Fmtfirst); // convert a single field
             } else if (*_Fmtfirst == ' ') {
                 while (_First != _Last && _Ctype_fac.is(_Ctype::space, *_First)) {
                     ++_First;
