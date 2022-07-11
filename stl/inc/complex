@@ -1402,7 +1402,7 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const _Ty& _Right) {
     complex<_Ty> _Tmp(_Left);
-    _Tmp.real(_Tmp.real() + _Right);
+    _Tmp += _Right;
     return _Tmp;
 }
 
@@ -1444,8 +1444,7 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const _Ty& _Right) {
     complex<_Ty> _Tmp(_Left);
-    _Tmp.real(_Tmp.real() * _Right);
-    _Tmp.imag(_Tmp.imag() * _Right);
+    _Tmp *= _Right;
     return _Tmp;
 }
 
