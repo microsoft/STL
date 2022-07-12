@@ -134,7 +134,7 @@ extern "C" inline void _Check_memory_order(const int _Order) {
 #endif // hardware
 
 // note: these macros are _not_ always safe to use with a trailing semicolon,
-// we avoid wrapping them in do {} while(0) because MSVC generates code for such loops
+// we avoid wrapping them in do {} while (0) because MSVC generates code for such loops
 // in debug mode.
 #define _ATOMIC_LOAD_VERIFY_MEMORY_ORDER(_Order_var) \
     switch (_Order_var) {                            \
@@ -172,8 +172,8 @@ extern "C" inline void _Check_memory_order(const int _Order) {
     _Memory_barrier();                                    \
     __iso_volatile_store##_Width((_Ptr), (_Desired));     \
     _Memory_barrier();
-#define _ATOMIC_STORE_SEQ_CST_INTEL(_Width, _Ptr, _Desired) (void) _InterlockedExchange##_Width((_Ptr), (_Desired));
-#define _ATOMIC_STORE_32_SEQ_CST_INTEL(_Ptr, _Desired) \
+#define _ATOMIC_STORE_SEQ_CST_X86_X64(_Width, _Ptr, _Desired) (void) _InterlockedExchange##_Width((_Ptr), (_Desired));
+#define _ATOMIC_STORE_32_SEQ_CST_X86_X64(_Ptr, _Desired) \
     (void) _InterlockedExchange(reinterpret_cast<volatile long*>(_Ptr), static_cast<long>(_Desired));
 
 #define _ATOMIC_STORE_64_SEQ_CST_IX86(_Ptr, _Desired) \
@@ -186,12 +186,12 @@ extern "C" inline void _Check_memory_order(const int _Order) {
 #define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(32, (_Ptr), (_Desired))
 #define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_SEQ_CST_ARM(64, (_Ptr), (_Desired))
 #else // ^^^ ARM32/ARM64/ARM64EC hardware / x86/x64 hardware vvv
-#define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_INTEL(_Width, (_Ptr), (_Desired))
-#define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_32_SEQ_CST_INTEL((_Ptr), (_Desired))
+#define _ATOMIC_STORE_SEQ_CST(_Width, _Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_X86_X64(_Width, (_Ptr), (_Desired))
+#define _ATOMIC_STORE_32_SEQ_CST(_Ptr, _Desired)      _ATOMIC_STORE_32_SEQ_CST_X86_X64((_Ptr), (_Desired))
 #ifdef _M_IX86
 #define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired) _ATOMIC_STORE_64_SEQ_CST_IX86((_Ptr), (_Desired))
 #else // ^^^ x86 / x64 vvv
-#define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_INTEL(64, (_Ptr), (_Desired))
+#define _ATOMIC_STORE_64_SEQ_CST(_Ptr, _Desired) _ATOMIC_STORE_SEQ_CST_X86_X64(64, (_Ptr), (_Desired))
 #endif // x86/x64
 #endif // hardware
 
@@ -245,8 +245,8 @@ struct _Storage_for {
     // uninitialized space to store a _Ty
     alignas(_Ty) unsigned char _Storage[sizeof(_Ty)];
 
-    _Storage_for()                    = default;
-    _Storage_for(const _Storage_for&) = delete;
+    _Storage_for()                               = default;
+    _Storage_for(const _Storage_for&)            = delete;
     _Storage_for& operator=(const _Storage_for&) = delete;
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
@@ -517,7 +517,7 @@ public:
         _Atomic_lock_release(_Spinlock);
     }
 
-    _Atomic_lock_guard(const _Atomic_lock_guard&) = delete;
+    _Atomic_lock_guard(const _Atomic_lock_guard&)            = delete;
     _Atomic_lock_guard& operator=(const _Atomic_lock_guard&) = delete;
 
 private:
@@ -2098,7 +2098,7 @@ public:
 
     constexpr atomic() noexcept(is_nothrow_default_constructible_v<_Ty>) : _Base() {}
 
-    atomic(const atomic&) = delete;
+    atomic(const atomic&)            = delete;
     atomic& operator=(const atomic&) = delete;
 
 #if _HAS_CXX17
@@ -2906,7 +2906,7 @@ public:
     constexpr _Locked_pointer() noexcept : _Storage{} {}
     explicit _Locked_pointer(_Ty* const _Ptr) noexcept : _Storage{reinterpret_cast<uintptr_t>(_Ptr)} {}
 
-    _Locked_pointer(const _Locked_pointer&) = delete;
+    _Locked_pointer(const _Locked_pointer&)            = delete;
     _Locked_pointer& operator=(const _Locked_pointer&) = delete;
 
     _NODISCARD _Ty* _Lock_and_load() noexcept {
@@ -2965,8 +2965,8 @@ _STD_END
 #undef _ATOMIC_LOAD_VERIFY_MEMORY_ORDER
 #undef _ATOMIC_STORE_PREFIX
 #undef _ATOMIC_STORE_SEQ_CST_ARM
-#undef _ATOMIC_STORE_SEQ_CST_INTEL
-#undef _ATOMIC_STORE_32_SEQ_CST_INTEL
+#undef _ATOMIC_STORE_SEQ_CST_X86_X64
+#undef _ATOMIC_STORE_32_SEQ_CST_X86_X64
 #undef _ATOMIC_STORE_SEQ_CST
 #undef _ATOMIC_STORE_32_SEQ_CST
 #undef _ATOMIC_HAS_DCAS
