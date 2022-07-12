@@ -88,7 +88,7 @@ enum {
 #endif // _DEBUG
 #endif // _INVALID_MEMORY_ORDER
 
-extern "C" inline void _Check_memory_order(const int _Order) {
+extern "C" inline void _Check_memory_order(const unsigned int _Order) {
     if (_Order > _Atomic_memory_order_seq_cst) {
         _INVALID_MEMORY_ORDER;
     }
@@ -2969,6 +2969,8 @@ _STD_END
 #undef _ATOMIC_STORE_32_SEQ_CST_X86_X64
 #undef _ATOMIC_STORE_SEQ_CST
 #undef _ATOMIC_STORE_32_SEQ_CST
+#undef _ATOMIC_STORE_64_SEQ_CST
+#undef _ATOMIC_STORE_64_SEQ_CST_IX86
 #undef _ATOMIC_HAS_DCAS
 
 #undef _STD_COMPARE_EXCHANGE_128
