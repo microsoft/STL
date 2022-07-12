@@ -65,10 +65,8 @@ using _CSTD wctomb;
 
 using _CSTD lldiv_t;
 
-#ifdef _CRT_USE_WINAPI_FAMILY_DESKTOP_APP
 using _CSTD getenv;
 using _CSTD system;
-#endif // _CRT_USE_WINAPI_FAMILY_DESKTOP_APP
 
 using _CSTD atoll;
 using _CSTD llabs;
