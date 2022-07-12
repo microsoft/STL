@@ -850,9 +850,7 @@ _NODISCARD constexpr bool _Is_execution_charset_self_synchronizing() {
     default:
         return false;
     }
-#elif defined(__clang__) // ^^^ no workaround / Clang workaround vvv
-    return string_view{__clang_literal_encoding__} == "UTF-8"; // TRANSITION, Clang 14
-#else // ^^^ Clang workaround / EDG workaround vvv
+#else // ^^^ no workaround / EDG workaround vvv
     return false; // TRANSITION, VSO-1468747 (EDG) - safe fallback response
 #endif // ^^^ EDG workaround ^^^
 }
@@ -907,7 +905,6 @@ protected:
 #ifdef _MSVC_EXECUTION_CHARACTER_SET
         constexpr __std_code_page _Format_codepage{_MSVC_EXECUTION_CHARACTER_SET};
 #else // ^^^ no workaround / workaround vvv
-      // TRANSITION, Clang 14 - only utf-8 is supported
       // TRANSITION, VSO-1468747 (EDG) - constructor isn't constexpr, so value is unimportant
         constexpr __std_code_page _Format_codepage{65001};
 #endif // ^^^ workaround ^^^
