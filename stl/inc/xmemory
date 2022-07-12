@@ -66,9 +66,7 @@ _NODISCARD constexpr size_t _Get_size_of_n(const size_t _Count) {
 }
 
 template <class _Ty>
-_INLINE_VAR constexpr size_t _New_alignof = (_STD max)(alignof(_Ty),
-    static_cast<size_t>(__STDCPP_DEFAULT_NEW_ALIGNMENT__) // TRANSITION, VSO-522105
-);
+_INLINE_VAR constexpr size_t _New_alignof = (_STD max)(alignof(_Ty), __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 
 struct _Default_allocate_traits {
     __declspec(allocator) static
