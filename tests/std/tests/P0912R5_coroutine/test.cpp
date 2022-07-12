@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <version> // TRANSITION, Clang 14 coroutine support
-#ifdef __cpp_lib_coroutine // TRANSITION, Clang 14 coroutine support
-
 #include <assert.h>
 #include <coroutine>
 #include <exception>
@@ -180,7 +177,3 @@ int main() {
 
     test_noop_handle();
 }
-
-#else // ^^^ test <coroutine> ^^^ / vvv don't test <coroutine> vvv
-int main() {}
-#endif // TRANSITION, Clang 14 coroutine support
