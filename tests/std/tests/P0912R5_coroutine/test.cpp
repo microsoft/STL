@@ -132,7 +132,16 @@ void test_noop_handle() { // Validate noop_coroutine_handle
 
     assert(noop);
     assert(as_void);
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-undefined-compare"
+#endif // __clang__
+    // Clang notices that this is always true and warns: "reference cannot be bound to dereferenced null pointer
+    // in well-defined C++ code; comparison may be assumed to always evaluate to true"
     assert(&noop.promise() != nullptr);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
     STATIC_ASSERT(noexcept(noop.promise()));
 
     assert(noop);
