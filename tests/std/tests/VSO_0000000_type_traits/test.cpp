@@ -450,7 +450,7 @@ struct test_abc1 {
     test_abc1();
     virtual ~test_abc1();
     test_abc1(const test_abc1&);
-    test_abc1& operator  =(const test_abc1&);
+    test_abc1& operator=(const test_abc1&);
     virtual void meow()  = 0;
     virtual void meow2() = 0;
 };
