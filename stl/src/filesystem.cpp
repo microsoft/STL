@@ -762,20 +762,28 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     return __std_win_error{GetLastError()};
 }
 
-static decltype(&::GetTempPath2W) _Get_GetTempPath2W() {
-    static _STD atomic<decltype(&::GetTempPath2W)> _Static = nullptr;
-    if (auto _Ptr = _Static.load(_STD memory_order_relaxed)) {
-        return _Ptr;
+static DWORD WINAPI _Stl_GetTempPath2W(
+    _In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) {
+
+    decltype(&::GetTempPath2W) _PfGetTempPath2W;
+    {
+        static _STD atomic<decltype(&::GetTempPath2W)> _Static = nullptr;
+
+        _PfGetTempPath2W = _Static.load(_STD memory_order_relaxed);
+        if (!_PfGetTempPath2W) {
+            const auto _Kernel32 = GetModuleHandleW(L"kernel32.dll");
+            _Analysis_assume_(_Kernel32);
+            _PfGetTempPath2W =
+                reinterpret_cast<decltype(&::GetTempPath2W)>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
+            if (!_PfGetTempPath2W) {
+                _PfGetTempPath2W = GetTempPathW;
+            }
+            decltype(&::GetTempPath2W) _Expected = nullptr;
+            _Static.compare_exchange_weak(_Expected, _PfGetTempPath2W, _STD memory_order_relaxed);
+        }
     }
 
-    const auto _Kernel32 = GetModuleHandleW(L"kernel32.dll");
-    auto _Ptr            = reinterpret_cast<decltype(&::GetTempPath2W)>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
-    if (!_Ptr) {
-        _Ptr = GetTempPathW;
-    }
-    decltype(&::GetTempPath2W) _Expected = nullptr;
-    _Static.compare_exchange_weak(_Expected, _Ptr, _STD memory_order_relaxed);
-    return _Ptr;
+    return _PfGetTempPath2W(nBufferLength, lpBuffer);
 }
 
 [[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
@@ -784,7 +792,7 @@ static decltype(&::GetTempPath2W) _Get_GetTempPath2W() {
     // If getting the path failed, returns 0 size; otherwise, returns the size of the
     // expected directory. If the path could be resolved to an existing directory,
     // returns __std_win_error::_Success; otherwise, returns __std_win_error::_Max.
-    const auto _Size = _Get_GetTempPath2W()(__std_fs_temp_path_max, _Target);
+    const auto _Size = _Stl_GetTempPath2W(__std_fs_temp_path_max, _Target);
     if (_Size == 0) {
         return {0, __std_win_error{GetLastError()}};
     }
