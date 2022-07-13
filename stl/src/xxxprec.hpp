@@ -31,11 +31,11 @@ _EXTERN_C
 
 static void printit(const char* s, FTYPE* p, int n) { // print xp array
     int i;
-    std::printf(s);
+    printf(s);
     for (i = 0; i < n && (p[i] != FLIT(0.0) || i == 0); ++i) {
-        std::printf(" %La", static_cast<long double>(p[i]));
+        printf(" %La", static_cast<long double>(p[i]));
     }
-    std::printf("\n");
+    printf("\n");
 }
 #endif // 0
 

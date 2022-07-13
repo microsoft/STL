@@ -43,7 +43,7 @@ void test_case_operator_preincrement_value_initialized_iterator() {
 void test_case_operator_preincrement_off_end() {
     int arr[] = {1, 2};
     checked_array_iterator<int*> it(arr, 2);
-    for (std::size_t idx = 0; idx < 3; ++idx) {
+    for (size_t idx = 0; idx < 3; ++idx) {
         ++it; // cannot increment checked_array_iterator past end
     }
 }
