@@ -1072,7 +1072,7 @@ namespace iterator_cust_move_test {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1008447
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
 #else // ^^^ no workaround / workaround vvv
-    STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int(&&)(int)>);
+    STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&&)(int)>);
 #endif // TRANSITION, VSO-1008447
     STATIC_ASSERT(ranges::iter_move (&f)(42) == 43);
     STATIC_ASSERT(noexcept(ranges::iter_move(&f)));

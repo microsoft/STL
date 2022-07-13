@@ -292,8 +292,8 @@ STATIC_ASSERT(is_array_v<const volatile int[]>);
 // lvalue/rvalue references aren't arrays.
 STATIC_ASSERT(!is_array_v<int (&)[3]>);
 STATIC_ASSERT(!is_array_v<int (&)[]>);
-STATIC_ASSERT(!is_array_v<int(&&)[3]>);
-STATIC_ASSERT(!is_array_v<int(&&)[]>);
+STATIC_ASSERT(!is_array_v<int (&&)[3]>);
+STATIC_ASSERT(!is_array_v<int (&&)[]>);
 
 #if _HAS_CXX20
 STATIC_ASSERT(is_bounded_array_v<int[3]>);
@@ -319,12 +319,12 @@ STATIC_ASSERT(is_unbounded_array_v<const volatile int[]>);
 // lvalue/rvalue references aren't bounded/unbounded arrays.
 STATIC_ASSERT(!is_bounded_array_v<int (&)[3]>);
 STATIC_ASSERT(!is_bounded_array_v<int (&)[]>);
-STATIC_ASSERT(!is_bounded_array_v<int(&&)[3]>);
-STATIC_ASSERT(!is_bounded_array_v<int(&&)[]>);
+STATIC_ASSERT(!is_bounded_array_v<int (&&)[3]>);
+STATIC_ASSERT(!is_bounded_array_v<int (&&)[]>);
 STATIC_ASSERT(!is_unbounded_array_v<int (&)[3]>);
 STATIC_ASSERT(!is_unbounded_array_v<int (&)[]>);
-STATIC_ASSERT(!is_unbounded_array_v<int(&&)[3]>);
-STATIC_ASSERT(!is_unbounded_array_v<int(&&)[]>);
+STATIC_ASSERT(!is_unbounded_array_v<int (&&)[3]>);
+STATIC_ASSERT(!is_unbounded_array_v<int (&&)[]>);
 #endif // _HAS_CXX20
 
 
@@ -1355,9 +1355,9 @@ STATIC_ASSERT(is_same_v<common_reference_t<int const&>, int const&>);
 STATIC_ASSERT(is_same_v<common_reference_t<int const&&>, int const&&>);
 STATIC_ASSERT(is_same_v<common_reference_t<int volatile[]>, int volatile[]>);
 STATIC_ASSERT(is_same_v<common_reference_t<int volatile (&)[]>, int volatile (&)[]>);
-STATIC_ASSERT(is_same_v<common_reference_t<int volatile(&&)[]>, int volatile(&&)[]>);
+STATIC_ASSERT(is_same_v<common_reference_t<int volatile (&&)[]>, int volatile (&&)[]>);
 STATIC_ASSERT(is_same_v<common_reference_t<void (&)()>, void (&)()>);
-STATIC_ASSERT(is_same_v<common_reference_t<void(&&)()>, void(&&)()>);
+STATIC_ASSERT(is_same_v<common_reference_t<void (&&)()>, void (&&)()>);
 STATIC_ASSERT(is_same_v<common_reference_t<void() volatile>, void() volatile>);
 STATIC_ASSERT(is_same_v<common_reference_t<void() &&>, void() &&>);
 
@@ -1396,14 +1396,14 @@ STATIC_ASSERT(is_same_v<common_reference_t<simple_base const&&, simple_derived c
 // FAIL IF AND WHEN EDG STARTS BEHAVING CORRECTLY. We can then remove the non-workaround to defend against
 // regression.
 STATIC_ASSERT(!is_same_v<common_reference_t<int (&)(), int (&)()>, int (&)()>);
-STATIC_ASSERT(!is_same_v<common_reference_t<int(&&)(), int (&)()>, int (&)()>);
-STATIC_ASSERT(!is_same_v<common_reference_t<int (&)(), int(&&)()>, int (&)()>);
-STATIC_ASSERT(!is_same_v<common_reference_t<int(&&)(), int(&&)()>, int(&&)()>);
+STATIC_ASSERT(!is_same_v<common_reference_t<int (&&)(), int (&)()>, int (&)()>);
+STATIC_ASSERT(!is_same_v<common_reference_t<int (&)(), int (&&)()>, int (&)()>);
+STATIC_ASSERT(!is_same_v<common_reference_t<int (&&)(), int (&&)()>, int (&&)()>);
 #else // ^^^ EDG / not EDG vvv
 STATIC_ASSERT(is_same_v<common_reference_t<int (&)(), int (&)()>, int (&)()>);
-STATIC_ASSERT(is_same_v<common_reference_t<int(&&)(), int (&)()>, int (&)()>);
-STATIC_ASSERT(is_same_v<common_reference_t<int (&)(), int(&&)()>, int (&)()>);
-STATIC_ASSERT(is_same_v<common_reference_t<int(&&)(), int(&&)()>, int(&&)()>);
+STATIC_ASSERT(is_same_v<common_reference_t<int (&&)(), int (&)()>, int (&)()>);
+STATIC_ASSERT(is_same_v<common_reference_t<int (&)(), int (&&)()>, int (&)()>);
+STATIC_ASSERT(is_same_v<common_reference_t<int (&&)(), int (&&)()>, int (&&)()>);
 #endif // __EDG__
 
 STATIC_ASSERT(is_same_v<common_reference_t<int const volatile&&, int volatile&&>, int const volatile&&>);

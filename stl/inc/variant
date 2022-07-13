@@ -922,7 +922,7 @@ using _Variant_destroy_layer = conditional_t<conjunction_v<is_trivially_destruct
 #if _HAS_CXX20
 // build Ti x[] = {std::forward<T>(t)};
 template <size_t _Idx, class _TargetType>
-auto _Construct_array(_TargetType(&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
+auto _Construct_array(_TargetType (&&)[1]) -> _Meta_list<integral_constant<size_t, _Idx>, _TargetType>;
 
 template <size_t _Idx, class _TargetType, class _InitializerType>
 using _Variant_type_resolver = decltype(_Construct_array<_Idx, _TargetType>({_STD declval<_InitializerType>()}));

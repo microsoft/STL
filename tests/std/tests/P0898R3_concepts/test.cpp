@@ -541,8 +541,8 @@ namespace test_convertible_to {
     STATIC_ASSERT(convertible_to<int volatile (&)[42], int volatile (&)[42]>);
     STATIC_ASSERT(convertible_to<int volatile (&)[42][13], int volatile (&)[42][13]>);
 #endif // TRANSITION, DevCom-1627396
-    STATIC_ASSERT(convertible_to<int volatile(&&)[42], int volatile(&&)[42]>);
-    STATIC_ASSERT(convertible_to<int volatile(&&)[42][13], int volatile(&&)[42][13]>);
+    STATIC_ASSERT(convertible_to<int volatile (&&)[42], int volatile (&&)[42]>);
+    STATIC_ASSERT(convertible_to<int volatile (&&)[42][13], int volatile (&&)[42][13]>);
 
 
     // char
@@ -724,8 +724,8 @@ namespace test_common_reference_with {
     STATIC_ASSERT(test<int volatile (&)[42], int volatile (&)[42]>());
     STATIC_ASSERT(test<int volatile (&)[42][13], int volatile (&)[42][13]>());
 #endif // TRANSITION, DevCom-1627396
-    STATIC_ASSERT(test<int volatile(&&)[42], int volatile(&&)[42]>());
-    STATIC_ASSERT(test<int volatile(&&)[42][13], int volatile(&&)[42][13]>());
+    STATIC_ASSERT(test<int volatile (&&)[42], int volatile (&&)[42]>());
+    STATIC_ASSERT(test<int volatile (&&)[42][13], int volatile (&&)[42][13]>());
 } // namespace test_common_reference_with
 
 namespace test_common_with {
@@ -1327,10 +1327,10 @@ namespace test_constructible_from {
 
     STATIC_ASSERT(test<void (&)(), void()>());
     STATIC_ASSERT(test<void (&)(), void (&)()>());
-    STATIC_ASSERT(test<void (&)(), void(&&)()>());
-    STATIC_ASSERT(test<void(&&)(), void()>());
-    STATIC_ASSERT(test<void(&&)(), void (&)()>());
-    STATIC_ASSERT(test<void(&&)(), void(&&)()>());
+    STATIC_ASSERT(test<void (&)(), void (&&)()>());
+    STATIC_ASSERT(test<void (&&)(), void()>());
+    STATIC_ASSERT(test<void (&&)(), void (&)()>());
+    STATIC_ASSERT(test<void (&&)(), void (&&)()>());
 
     STATIC_ASSERT(test<int&&, double&>());
 
@@ -1657,10 +1657,10 @@ namespace test_ranges_swap {
     STATIC_ASSERT(!can_swap<int()>);
     STATIC_ASSERT(!can_swap<int() const>);
     STATIC_ASSERT(!can_swap<int (&)()>);
-    STATIC_ASSERT(!can_swap<int(&&)()>);
+    STATIC_ASSERT(!can_swap<int (&&)()>);
 
     STATIC_ASSERT(!can_swap<int (&)[]>);
-    STATIC_ASSERT(!can_swap<int(&&)[]>);
+    STATIC_ASSERT(!can_swap<int (&&)[]>);
 
     STATIC_ASSERT(can_nothrow_swap<int (&)[42]>);
     STATIC_ASSERT(can_nothrow_swap<int (&)[42][13]>);
@@ -1672,10 +1672,10 @@ namespace test_ranges_swap {
     STATIC_ASSERT(can_nothrow_swap<int volatile (&)[42][13]>);
     STATIC_ASSERT(!can_swap<int const volatile (&)[42][13]>);
 
-    STATIC_ASSERT(!can_swap<int(&&)[42]>);
-    STATIC_ASSERT(!can_swap<int(&&)[42][13]>);
+    STATIC_ASSERT(!can_swap<int (&&)[42]>);
+    STATIC_ASSERT(!can_swap<int (&&)[42][13]>);
 
-    STATIC_ASSERT(!can_swap<int(&&)[42][13], int(&&)[13][42]>);
+    STATIC_ASSERT(!can_swap<int (&&)[42][13], int (&&)[13][42]>);
 
     struct SemithrowCopyOnly {
         SemithrowCopyOnly()                                  = default;
@@ -1752,9 +1752,9 @@ namespace test_ranges_swap {
     STATIC_ASSERT(!can_swap<Unswappable (&)[42][13]>);
     STATIC_ASSERT(!can_swap<Unswappable (&)[42][13], Unswappable (&)[13][42]>);
 
-    STATIC_ASSERT(!can_swap<Unswappable(&&)[42]>);
-    STATIC_ASSERT(!can_swap<Unswappable(&&)[42][13]>);
-    STATIC_ASSERT(!can_swap<Unswappable(&&)[42][13], Unswappable(&&)[13][42]>);
+    STATIC_ASSERT(!can_swap<Unswappable (&&)[42]>);
+    STATIC_ASSERT(!can_swap<Unswappable (&&)[42][13]>);
+    STATIC_ASSERT(!can_swap<Unswappable (&&)[42][13], Unswappable (&&)[13][42]>);
 
     // The wording allows customization of swap for unions as well
     union U {
