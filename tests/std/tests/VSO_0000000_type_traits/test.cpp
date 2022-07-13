@@ -729,8 +729,8 @@ namespace swappable_trait_tests {
 
     template <bool Throws>
     struct type<implicitly_unswappable, Throws> {
-        type()        = default;
-        type(type&&)  = delete;
+        type()                  = default;
+        type(type&&)            = delete;
         type& operator=(type&&) = delete;
     };
 
@@ -744,7 +744,7 @@ namespace swappable_trait_tests {
         type& operator=(type&&) noexcept(!Throws) {
             return *this;
         }
-        type(const type&) = default;
+        type(const type&)            = default;
         type& operator=(const type&) = default;
     };
 
@@ -842,7 +842,7 @@ namespace swappable_trait_tests {
 struct Immovable {
     Immovable() {}
     ~Immovable() {}
-    Immovable(const Immovable&) = delete;
+    Immovable(const Immovable&)            = delete;
     Immovable& operator=(const Immovable&) = delete;
 };
 
@@ -1291,8 +1291,8 @@ namespace {
     constexpr bool is_permissive = detail::Derived<int>::test();
 
     struct move_only {
-        move_only()            = default;
-        move_only(move_only&&) = default;
+        move_only()                       = default;
+        move_only(move_only&&)            = default;
         move_only& operator=(move_only&&) = default;
     };
 

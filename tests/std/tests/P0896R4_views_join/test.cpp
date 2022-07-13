@@ -466,11 +466,11 @@ constexpr auto ToString(const size_t val) {
 }
 
 struct Immovable {
-    Immovable()                 = default;
-    Immovable(const Immovable&) = delete;
-    Immovable(Immovable&&)      = delete;
+    Immovable()                            = default;
+    Immovable(const Immovable&)            = delete;
+    Immovable(Immovable&&)                 = delete;
     Immovable& operator=(const Immovable&) = delete;
-    Immovable& operator=(Immovable&&) = delete;
+    Immovable& operator=(Immovable&&)      = delete;
 };
 
 // Validate that the _Defaultabox primary template works when fed with a non-trivially-destructible type

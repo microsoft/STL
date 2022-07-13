@@ -68,7 +68,7 @@ struct garbage_data {
         memset(&data, 0xCC, sizeof(data));
     }
 
-    garbage_data(const garbage_data&) = delete;
+    garbage_data(const garbage_data&)            = delete;
     garbage_data& operator=(const garbage_data&) = delete;
 
     T& get() {

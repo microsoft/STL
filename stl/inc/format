@@ -560,7 +560,7 @@ public:
         const basic_string_view<_CharT> _Fmt, const size_t _Num_args_ = 0) noexcept
         : _Format_string(_Fmt), _Num_args(_Num_args_) {}
 
-    basic_format_parse_context(const basic_format_parse_context&) = delete;
+    basic_format_parse_context(const basic_format_parse_context&)            = delete;
     basic_format_parse_context& operator=(const basic_format_parse_context&) = delete;
 
     _NODISCARD constexpr const_iterator begin() const noexcept {
@@ -2078,7 +2078,7 @@ protected:
 public:
     using value_type = _Ty;
 
-    _Fmt_buffer(const _Fmt_buffer&) = delete;
+    _Fmt_buffer(const _Fmt_buffer&)    = delete;
     void operator=(const _Fmt_buffer&) = delete;
 
     _NODISCARD _Ty* begin() noexcept {
@@ -3257,8 +3257,8 @@ struct _Format_handler {
 // makes it "disabled" as per N4885 [format.formatter.spec]/5
 template <class _Ty, class _CharT>
 struct formatter {
-    formatter()                 = delete;
-    formatter(const formatter&) = delete;
+    formatter()                           = delete;
+    formatter(const formatter&)           = delete;
     formatter operator=(const formatter&) = delete;
 };
 

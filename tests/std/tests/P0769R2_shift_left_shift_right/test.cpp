@@ -21,7 +21,7 @@ struct MoveOnly {
     MoveOnly(MoveOnly&&)      = default;
 
     MoveOnly& operator=(const MoveOnly&) = delete;
-    MoveOnly& operator=(MoveOnly&&) = default;
+    MoveOnly& operator=(MoveOnly&&)      = default;
 
     MoveOnly& operator=(const ptrdiff_t x) {
         value = x;

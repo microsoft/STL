@@ -62,23 +62,23 @@ struct DoNotInstantiate {
 };
 
 struct Immobile {
-    Immobile()                = default;
-    Immobile(Immobile const&) = delete;
+    Immobile()                           = default;
+    Immobile(Immobile const&)            = delete;
     Immobile& operator=(Immobile const&) = delete;
 };
 
 struct MoveOnly {
-    MoveOnly()           = default;
-    MoveOnly(MoveOnly&&) = default;
+    MoveOnly()                      = default;
+    MoveOnly(MoveOnly&&)            = default;
     MoveOnly& operator=(MoveOnly&&) = default;
 };
 
 struct CopyOnlyAbomination {
-    CopyOnlyAbomination()                           = default;
-    CopyOnlyAbomination(CopyOnlyAbomination const&) = default;
-    CopyOnlyAbomination(CopyOnlyAbomination&&)      = delete;
+    CopyOnlyAbomination()                                      = default;
+    CopyOnlyAbomination(CopyOnlyAbomination const&)            = default;
+    CopyOnlyAbomination(CopyOnlyAbomination&&)                 = delete;
     CopyOnlyAbomination& operator=(CopyOnlyAbomination const&) = default;
-    CopyOnlyAbomination& operator=(CopyOnlyAbomination&&) = delete;
+    CopyOnlyAbomination& operator=(CopyOnlyAbomination&&)      = delete;
 };
 
 struct CopyableType {
@@ -1701,31 +1701,31 @@ namespace test_ranges_swap {
     STATIC_ASSERT(!can_nothrow_swap<SemithrowMoveOnly (&)[42]>);
 
     struct NothrowMoveOnly {
-        NothrowMoveOnly()                           = default;
-        NothrowMoveOnly(NothrowMoveOnly&&) noexcept = default;
+        NothrowMoveOnly()                                      = default;
+        NothrowMoveOnly(NothrowMoveOnly&&) noexcept            = default;
         NothrowMoveOnly& operator=(NothrowMoveOnly&&) noexcept = default;
     };
     STATIC_ASSERT(can_nothrow_swap<NothrowMoveOnly&>);
     STATIC_ASSERT(can_nothrow_swap<NothrowMoveOnly (&)[42]>);
 
     struct NotMoveConstructible {
-        NotMoveConstructible()                       = default;
-        NotMoveConstructible(NotMoveConstructible&&) = delete;
+        NotMoveConstructible()                                  = default;
+        NotMoveConstructible(NotMoveConstructible&&)            = delete;
         NotMoveConstructible& operator=(NotMoveConstructible&&) = default;
     };
     STATIC_ASSERT(!can_swap<NotMoveConstructible&>);
     STATIC_ASSERT(!can_swap<NotMoveConstructible (&)[42]>);
 
     struct NotMoveAssignable {
-        NotMoveAssignable(NotMoveAssignable&&) = default;
+        NotMoveAssignable(NotMoveAssignable&&)            = default;
         NotMoveAssignable& operator=(NotMoveAssignable&&) = delete;
     };
     STATIC_ASSERT(!can_swap<NotMoveAssignable&>);
     STATIC_ASSERT(!can_swap<NotMoveAssignable (&)[42]>);
 
     struct ImmobileNothrowSwap {
-        ImmobileNothrowSwap()                      = default;
-        ImmobileNothrowSwap(ImmobileNothrowSwap&&) = delete;
+        ImmobileNothrowSwap()                                 = default;
+        ImmobileNothrowSwap(ImmobileNothrowSwap&&)            = delete;
         ImmobileNothrowSwap& operator=(ImmobileNothrowSwap&&) = delete;
         friend void swap(ImmobileNothrowSwap&, ImmobileNothrowSwap&) noexcept {}
     };
@@ -1758,7 +1758,7 @@ namespace test_ranges_swap {
 
     // The wording allows customization of swap for unions as well
     union U {
-        U(U const&) = delete;
+        U(U const&)            = delete;
         U& operator=(U const&) = delete;
 
         friend void swap(U&, U&) {}

@@ -113,8 +113,8 @@ void test_more() {
 
 struct int_ish {
     /* implicit */ int_ish(int init) : value(init) {}
-    int_ish(const int_ish&) = delete;
-    int_ish(int_ish&&)      = default;
+    int_ish(const int_ish&)            = delete;
+    int_ish(int_ish&&)                 = default;
     int_ish& operator=(const int_ish&) = delete;
 
     int_ish& operator=(int_ish&& rhs) {

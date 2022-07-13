@@ -6582,8 +6582,8 @@ namespace msvc {
 
     template <class Fn>
     struct immobile_visitor : mobile_visitor<Fn> {
-        immobile_visitor()                        = default;
-        immobile_visitor(const immobile_visitor&) = delete;
+        immobile_visitor()                                   = default;
+        immobile_visitor(const immobile_visitor&)            = delete;
         immobile_visitor& operator=(const immobile_visitor&) = delete;
     };
 
@@ -6961,7 +6961,7 @@ namespace msvc {
 
         struct immobile_data : mobile_data {
             using mobile_data::mobile_data;
-            immobile_data(const immobile_data&) = delete;
+            immobile_data(const immobile_data&)            = delete;
             immobile_data& operator=(const immobile_data&) = delete;
         };
 

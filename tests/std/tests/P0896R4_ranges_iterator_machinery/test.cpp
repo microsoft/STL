@@ -67,8 +67,8 @@ struct empty_type {
 };
 
 struct move_only {
-    move_only()            = default;
-    move_only(move_only&&) = default;
+    move_only()                       = default;
+    move_only(move_only&&)            = default;
     move_only& operator=(move_only&&) = default;
 };
 
@@ -3215,11 +3215,11 @@ namespace move_iterator_test {
             }
         };
 
-        input_iter()                                   = default;
-        input_iter(input_iter const&) requires CanCopy = default;
-        input_iter(input_iter&&)                       = default;
+        input_iter()                                              = default;
+        input_iter(input_iter const&) requires CanCopy            = default;
+        input_iter(input_iter&&)                                  = default;
         input_iter& operator=(input_iter const&) requires CanCopy = default;
-        input_iter& operator=(input_iter&&) = default;
+        input_iter& operator=(input_iter&&)                       = default;
 
         reference operator*() const;
         input_iter& operator++();
@@ -3338,8 +3338,8 @@ namespace move_iterator_test {
         typename move_sentinel<T>;
     };
     struct moveonly {
-        moveonly()           = default;
-        moveonly(moveonly&&) = default;
+        moveonly()                      = default;
+        moveonly(moveonly&&)            = default;
         moveonly& operator=(moveonly&&) = default;
     };
     STATIC_ASSERT(!CanMoveSentinel<void>);

@@ -106,7 +106,7 @@ public:
     }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-    error_category(const error_category&) = delete;
+    error_category(const error_category&)            = delete;
     error_category& operator=(const error_category&) = delete;
 
 protected:
@@ -484,7 +484,7 @@ struct _System_error_message {
     explicit _System_error_message(const unsigned long _Ec) noexcept
         : _Str(nullptr), _Length(_CSTD __std_system_error_allocate_message(_Ec, &_Str)) {}
 
-    _System_error_message(const _System_error_message&) = delete;
+    _System_error_message(const _System_error_message&)            = delete;
     _System_error_message& operator=(const _System_error_message&) = delete;
 
     ~_System_error_message() {
@@ -615,7 +615,7 @@ struct _Constexpr_immortalize_impl {
 
     constexpr _Constexpr_immortalize_impl() noexcept : _Storage{} {}
 
-    _Constexpr_immortalize_impl(const _Constexpr_immortalize_impl&) = delete;
+    _Constexpr_immortalize_impl(const _Constexpr_immortalize_impl&)            = delete;
     _Constexpr_immortalize_impl& operator=(const _Constexpr_immortalize_impl&) = delete;
 
     _MSVC_NOOP_DTOR ~_Constexpr_immortalize_impl() {

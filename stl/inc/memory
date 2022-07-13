@@ -1072,7 +1072,7 @@ protected:
     constexpr _Ref_count_base() noexcept = default; // non-atomic initializations
 
 public:
-    _Ref_count_base(const _Ref_count_base&) = delete;
+    _Ref_count_base(const _Ref_count_base&)            = delete;
     _Ref_count_base& operator=(const _Ref_count_base&) = delete;
 
     virtual ~_Ref_count_base() noexcept {} // TRANSITION, should be non-virtual
@@ -1258,7 +1258,7 @@ public:
         return _Rep < _Right._Rep;
     }
 
-    _Ptr_base(const _Ptr_base&) = delete;
+    _Ptr_base(const _Ptr_base&)            = delete;
     _Ptr_base& operator=(const _Ptr_base&) = delete;
 
 protected:
@@ -1466,7 +1466,7 @@ struct _Temporary_owner {
     _Ux* _Ptr;
 
     explicit _Temporary_owner(_Ux* const _Ptr_) noexcept : _Ptr(_Ptr_) {}
-    _Temporary_owner(const _Temporary_owner&) = delete;
+    _Temporary_owner(const _Temporary_owner&)            = delete;
     _Temporary_owner& operator=(const _Temporary_owner&) = delete;
     ~_Temporary_owner() {
         delete _Ptr;
@@ -1480,7 +1480,7 @@ struct _Temporary_owner_del {
     bool _Call_deleter = true;
 
     explicit _Temporary_owner_del(const _UxptrOrNullptr _Ptr_, _Dx& _Dt_) noexcept : _Ptr(_Ptr_), _Dt(_Dt_) {}
-    _Temporary_owner_del(const _Temporary_owner_del&) = delete;
+    _Temporary_owner_del(const _Temporary_owner_del&)            = delete;
     _Temporary_owner_del& operator=(const _Temporary_owner_del&) = delete;
     ~_Temporary_owner_del() {
         if (_Call_deleter) {
@@ -2130,7 +2130,7 @@ struct _NODISCARD _Uninitialized_rev_destroying_backout {
 
     explicit _Uninitialized_rev_destroying_backout(_NoThrowIt _Dest) noexcept : _First(_Dest), _Last(_Dest) {}
 
-    _Uninitialized_rev_destroying_backout(const _Uninitialized_rev_destroying_backout&) = delete;
+    _Uninitialized_rev_destroying_backout(const _Uninitialized_rev_destroying_backout&)            = delete;
     _Uninitialized_rev_destroying_backout& operator=(const _Uninitialized_rev_destroying_backout&) = delete;
 
     ~_Uninitialized_rev_destroying_backout() {
@@ -2493,7 +2493,7 @@ public:
     _Uninitialized_rev_destroying_backout_al(pointer _Dest, _Alloc& _Al_) noexcept
         : _First(_Dest), _Last(_Dest), _Al(_Al_) {}
 
-    _Uninitialized_rev_destroying_backout_al(const _Uninitialized_rev_destroying_backout_al&) = delete;
+    _Uninitialized_rev_destroying_backout_al(const _Uninitialized_rev_destroying_backout_al&)            = delete;
     _Uninitialized_rev_destroying_backout_al& operator=(const _Uninitialized_rev_destroying_backout_al&) = delete;
 
     ~_Uninitialized_rev_destroying_backout_al() {
@@ -2861,7 +2861,7 @@ struct _Allocate_n_ptr {
         }
     }
 
-    _Allocate_n_ptr(const _Allocate_n_ptr&) = delete;
+    _Allocate_n_ptr(const _Allocate_n_ptr&)            = delete;
     _Allocate_n_ptr& operator=(const _Allocate_n_ptr&) = delete;
 };
 
@@ -3288,7 +3288,7 @@ public:
         }
     }
 
-    unique_ptr(const unique_ptr&) = delete;
+    unique_ptr(const unique_ptr&)            = delete;
     unique_ptr& operator=(const unique_ptr&) = delete;
 
 private:
@@ -3421,7 +3421,7 @@ public:
         }
     }
 
-    unique_ptr(const unique_ptr&) = delete;
+    unique_ptr(const unique_ptr&)            = delete;
     unique_ptr& operator=(const unique_ptr&) = delete;
 
 private:
@@ -3981,7 +3981,7 @@ public:
         _Value._Incref();
     }
 
-    atomic(const atomic&) = delete;
+    atomic(const atomic&)         = delete;
     void operator=(const atomic&) = delete;
 
     void operator=(shared_ptr<_Ty> _Value) noexcept {
@@ -4098,7 +4098,7 @@ public:
         _Value._Incwref();
     }
 
-    atomic(const atomic&) = delete;
+    atomic(const atomic&)         = delete;
     void operator=(const atomic&) = delete;
 
     void operator=(weak_ptr<_Ty> _Value) noexcept {

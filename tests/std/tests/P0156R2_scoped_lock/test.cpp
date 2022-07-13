@@ -108,7 +108,7 @@ public:
         cout << "Started thread " << this->t.get_id() << endl;
     }
 
-    logging_thread(logging_thread const&) = delete;
+    logging_thread(logging_thread const&)            = delete;
     logging_thread& operator=(logging_thread const&) = delete;
 
     ~logging_thread() {

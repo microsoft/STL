@@ -35,10 +35,10 @@ struct movable_uint {
 
     movable_uint() : value{} {}
     /* implicit */ movable_uint(unsigned int x) : value(x) {}
-    movable_uint(const movable_uint&) = delete;
-    movable_uint(movable_uint&&)      = default;
+    movable_uint(const movable_uint&)            = delete;
+    movable_uint(movable_uint&&)                 = default;
     movable_uint& operator=(const movable_uint&) = delete;
-    movable_uint& operator=(movable_uint&&) = default;
+    movable_uint& operator=(movable_uint&&)      = default;
 };
 
 const auto is_odd  = [](unsigned int i) { return (i & 0x1u) != 0; };
