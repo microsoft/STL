@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <atomic>
+#include <cstdlib>
 #include <iostream>
 #include <mutex>
-#include <stdlib.h>
 #include <thread>
 #include <type_traits>
 #include <utility>
@@ -108,7 +108,7 @@ public:
         cout << "Started thread " << this->t.get_id() << endl;
     }
 
-    logging_thread(logging_thread const&) = delete;
+    logging_thread(logging_thread const&)            = delete;
     logging_thread& operator=(logging_thread const&) = delete;
 
     ~logging_thread() {
