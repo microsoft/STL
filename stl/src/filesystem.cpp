@@ -9,6 +9,7 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
+#include <atomic>
 #include <clocale>
 #include <corecrt_terminate.h>
 #include <cstdlib>
@@ -18,8 +19,6 @@
 
 #include <Windows.h>
 #include <winioctl.h>
-
-#include "awint.hpp"
 
 // We have several switches that do not have case statements for every possible enum value.
 // Hence, disabling this warning.
@@ -763,13 +762,29 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     return __std_win_error{GetLastError()};
 }
 
+static decltype(&::GetTempPath2W) _Get_GetTempPath2W() {
+    static _STD atomic<decltype(&::GetTempPath2W)> _Static = nullptr;
+    if (auto _Ptr = _Static.load(_STD memory_order_relaxed)) {
+        return _Ptr;
+    }
+
+    const auto _Kernel32 = GetModuleHandleW(L"kernel32.dll");
+    auto _Ptr            = reinterpret_cast<decltype(&::GetTempPath2W)>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
+    if (!_Ptr) {
+        _Ptr = GetTempPathW;
+    }
+    decltype(&::GetTempPath2W) _Expected = nullptr;
+    _Static.compare_exchange_weak(_Expected, _Ptr, _STD memory_order_relaxed);
+    return _Ptr;
+}
+
 [[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
     __stdcall __std_fs_get_temp_path(_Out_writes_z_(__std_fs_temp_path_max) wchar_t* const _Target) noexcept {
-    // calls GetTempPath2W
+    // calls GetTempPath2W if available (Win11+), else calls GetTempPathW
     // If getting the path failed, returns 0 size; otherwise, returns the size of the
     // expected directory. If the path could be resolved to an existing directory,
     // returns __std_win_error::_Success; otherwise, returns __std_win_error::_Max.
-    const auto _Size = __crtGetTempPath2W(__std_fs_temp_path_max, _Target);
+    const auto _Size = _Get_GetTempPath2W()(__std_fs_temp_path_max, _Target);
     if (_Size == 0) {
         return {0, __std_win_error{GetLastError()}};
     }

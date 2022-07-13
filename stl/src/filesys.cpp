@@ -15,6 +15,9 @@
 
 #include <Windows.h>
 
+extern "C" DWORD __cdecl __crtGetTempPath2W(
+    _In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer);
+
 _FS_BEGIN
 static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_status
     constexpr int _File_attribute_regular =

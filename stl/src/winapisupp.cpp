@@ -27,6 +27,8 @@ namespace {
         eGetSystemTimePreciseAsFileTime,
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
+        eGetTempPath2W,
+
         eMaxKernel32Function
     };
 
@@ -386,7 +388,7 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
 
 extern "C" DWORD __cdecl __crtGetTempPath2W(
     _In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer) {
-    // use GetTempPath2 if it is available (only on Windows 11+)...
+    // use GetTempPath2W if it is available (only on Windows 11+)...
     IFDYNAMICGETCACHEDFUNCTION(GetTempPath2W) {
         return pfGetTempPath2W(BufferLength, Buffer);
     }
@@ -416,6 +418,8 @@ static int __cdecl initialize_pointers() {
     STOREFUNCTIONPOINTER(hKernel32, GetSystemTimePreciseAsFileTime);
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
+    // Note that GetTempPath2W is defined as of Windows 10 Build 20348 (a server release) or Windows 11,
+    // but there is no "_WIN32_WINNT_WIN11" constant, so we will always dynamically load it
     STOREFUNCTIONPOINTER(hKernel32, GetTempPath2W);
 
     return 0;

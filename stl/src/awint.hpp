@@ -23,11 +23,6 @@ _CRTIMP2 void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSys
 
 #endif // _STL_WIN32_WINNT >= _WIN32_WINNT_WIN8
 
-// Note that GetTempPath2W is defined as of Win11, but there is no "_WIN32_WINNT_WIN11" constant,
-// so we will always dynamically load it
-_CRTIMP2 DWORD __cdecl __crtGetTempPath2W(
-    _In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer);
-
 _CRTIMP2 int __cdecl __crtCompareStringA(_In_z_ LPCWSTR _LocaleName, _In_ DWORD _DwCmpFlags,
     _In_reads_(_CchCount1) LPCSTR _LpString1, _In_ int _CchCount1, _In_reads_(_CchCount2) LPCSTR _LpString2,
     _In_ int _CchCount2, _In_ int _CodePage);
