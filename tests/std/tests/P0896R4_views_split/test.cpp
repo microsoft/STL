@@ -212,8 +212,8 @@ struct instantiator {
         "This"sv, "is"sv, "a"sv, "test,"sv, "this"sv, "is"sv, "only"sv, "a"sv, "test."sv};
     static constexpr string_view expected_range[]    = {"Th"sv, " "sv, " a test, th"sv, " "sv, " only a test."sv};
     static constexpr string_view expected_empty[]    = {"T"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "a"sv,
-        " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "o"sv,
-        "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
+           " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, //
+           "o"sv, "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
     static constexpr string_view expected_trailing[] = {"test"sv, ""sv};
     static constexpr string_view expected_lwg3505[]  = {"x"sv, "x"sv, "x"sv};
 
