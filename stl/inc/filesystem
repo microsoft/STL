@@ -2175,12 +2175,6 @@ namespace filesystem {
             }
         }
 
-#if _HAS_CXX20
-        void clear_cache() noexcept {
-            _Cached_data._Available = __std_fs_stats_flags::_None;
-        }
-#endif // _HAS_CXX20
-
     private:
         _NODISCARD bool _Has_cached_attribute(const __std_fs_file_attr _Attrs) const noexcept {
             return _Bitmask_includes(_Cached_data._Attributes, _Attrs);
