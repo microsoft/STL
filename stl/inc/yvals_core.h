@@ -1514,10 +1514,10 @@
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #if _HAS_CXX23
-#define __cpp_lib_ranges 202202L
+#define __cpp_lib_ranges 202202L // P2387R3 Pipe Support For User-Defined Range Adaptors
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
-#define __cpp_lib_ranges 202110L
-#endif // _HAS_CXX23
+#define __cpp_lib_ranges 202110L // P2415R2 What Is A `view`?
+#endif // _HAS_CXX20
 #endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX20
