@@ -5078,7 +5078,7 @@ namespace ranges {
                 (void) _Off;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
                 if constexpr (_Offset_verifiable_v<iterator_t<_Base>>) {
-                    _Current._Verify_offset(_Off);
+                      _Current._Verify_offset(_Off);
                 }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
             }
