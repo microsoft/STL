@@ -137,8 +137,8 @@ struct _Storage_for {
     // uninitialized space to store a _Ty
     alignas(_Ty) unsigned char _Storage[sizeof(_Ty)];
 
-    _Storage_for()                    = default;
-    _Storage_for(const _Storage_for&) = delete;
+    _Storage_for()                               = default;
+    _Storage_for(const _Storage_for&)            = delete;
     _Storage_for& operator=(const _Storage_for&) = delete;
 
 #if _CMPXCHG_MASK_OUT_PADDING_BITS
@@ -445,7 +445,7 @@ public:
         _Atomic_lock_release(_Spinlock);
     }
 
-    _Atomic_lock_guard(const _Atomic_lock_guard&) = delete;
+    _Atomic_lock_guard(const _Atomic_lock_guard&)            = delete;
     _Atomic_lock_guard& operator=(const _Atomic_lock_guard&) = delete;
 
 private:
@@ -2102,7 +2102,7 @@ public:
 
     constexpr atomic() noexcept(is_nothrow_default_constructible_v<_Ty>) : _Base() {}
 
-    atomic(const atomic&) = delete;
+    atomic(const atomic&)            = delete;
     atomic& operator=(const atomic&) = delete;
 
 #if _HAS_CXX17
@@ -2910,7 +2910,7 @@ public:
     constexpr _Locked_pointer() noexcept : _Storage{} {}
     explicit _Locked_pointer(_Ty* const _Ptr) noexcept : _Storage{reinterpret_cast<uintptr_t>(_Ptr)} {}
 
-    _Locked_pointer(const _Locked_pointer&) = delete;
+    _Locked_pointer(const _Locked_pointer&)            = delete;
     _Locked_pointer& operator=(const _Locked_pointer&) = delete;
 
     _NODISCARD _Ty* _Lock_and_load() noexcept {

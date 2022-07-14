@@ -7367,9 +7367,9 @@ namespace msvc {
         struct nontrivial_copy {
             nontrivial_copy() = default;
             nontrivial_copy(const nontrivial_copy&) {}
-            nontrivial_copy(nontrivial_copy&&) = default;
+            nontrivial_copy(nontrivial_copy&&)                 = default;
             nontrivial_copy& operator=(const nontrivial_copy&) = default;
-            nontrivial_copy& operator=(nontrivial_copy&&) = default;
+            nontrivial_copy& operator=(nontrivial_copy&&)      = default;
         };
 
         const std::optional<nontrivial_copy> s;

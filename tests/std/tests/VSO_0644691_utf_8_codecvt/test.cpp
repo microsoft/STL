@@ -253,14 +253,13 @@ void test_codecvt_encoding(const codecvt<wchar_t, char, mbstate_t>& f) {
 }
 
 int main() {
-#if 0 // TRANSITION, VSO-801237
     try {
-        locale loc("en-US.utf8");
+        locale loc("en-US.UTF-8");
         test_fstream(loc);
         test_codecvt_encoding(use_facet<codecvt<wchar_t, char, mbstate_t>>(loc));
     } catch (const exception& ex) {
-        puts("Warning, could not test UTF-8 on this platform, newer Windows 10 required.");
+        puts("Could not test UTF-8 on this platform, newer Windows 10 required.");
         puts(ex.what());
+        assert(false);
     }
-#endif // TRANSITION, VSO-801237
 }

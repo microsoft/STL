@@ -2166,11 +2166,11 @@ struct _Conditionally_enabled_hash { // conditionally enabled hash base
 
 template <class _Kty>
 struct _Conditionally_enabled_hash<_Kty, false> { // conditionally disabled hash base
-    _Conditionally_enabled_hash()                                   = delete;
-    _Conditionally_enabled_hash(const _Conditionally_enabled_hash&) = delete;
-    _Conditionally_enabled_hash(_Conditionally_enabled_hash&&)      = delete;
+    _Conditionally_enabled_hash()                                              = delete;
+    _Conditionally_enabled_hash(const _Conditionally_enabled_hash&)            = delete;
+    _Conditionally_enabled_hash(_Conditionally_enabled_hash&&)                 = delete;
     _Conditionally_enabled_hash& operator=(const _Conditionally_enabled_hash&) = delete;
-    _Conditionally_enabled_hash& operator=(_Conditionally_enabled_hash&&) = delete;
+    _Conditionally_enabled_hash& operator=(_Conditionally_enabled_hash&&)      = delete;
 };
 
 template <class _Kty>

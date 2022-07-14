@@ -65,7 +65,7 @@ namespace stdext {
 
             virtual ~wstring_convert() noexcept {}
 
-            wstring_convert(const wstring_convert&) = delete;
+            wstring_convert(const wstring_convert&)            = delete;
             wstring_convert& operator=(const wstring_convert&) = delete;
 
             _NODISCARD size_t converted() const noexcept { // get conversion count

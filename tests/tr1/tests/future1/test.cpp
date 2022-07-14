@@ -16,7 +16,7 @@ class future_tester_base { // base class for testing future types with set and g
 public:
     future_tester_base() = default;
 
-    future_tester_base(const future_tester_base&) = delete;
+    future_tester_base(const future_tester_base&)            = delete;
     future_tester_base& operator=(const future_tester_base&) = delete;
     virtual ~future_tester_base() {}
 

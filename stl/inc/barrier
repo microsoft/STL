@@ -85,7 +85,7 @@ public:
             "Precondition: expected >= 0 and expected <= max() (N4861 [thread.barrier.class]/9)");
     }
 
-    barrier(const barrier&) = delete;
+    barrier(const barrier&)            = delete;
     barrier& operator=(const barrier&) = delete;
 
     _NODISCARD static constexpr ptrdiff_t(max)() noexcept {

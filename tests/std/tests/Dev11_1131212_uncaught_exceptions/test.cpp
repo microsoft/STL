@@ -29,7 +29,7 @@ public:
     }
 
 private:
-    check_uncaught_exceptions_count(check_uncaught_exceptions_count const&) = delete;
+    check_uncaught_exceptions_count(check_uncaught_exceptions_count const&)            = delete;
     check_uncaught_exceptions_count& operator=(check_uncaught_exceptions_count const&) = delete;
 
     int _remaining;

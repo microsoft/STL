@@ -79,8 +79,8 @@ STATIC_ASSERT(is_trivially_constexpr<ranges::greater_equal>());
 // Validate three_way_comparable
 template <int I, class Category>
 struct three_way_archetype {
-    three_way_archetype()                           = delete;
-    three_way_archetype(three_way_archetype const&) = delete;
+    three_way_archetype()                                      = delete;
+    three_way_archetype(three_way_archetype const&)            = delete;
     three_way_archetype& operator=(three_way_archetype const&) = delete;
     ~three_way_archetype()                                     = delete;
     // clang-format off
@@ -500,7 +500,7 @@ constexpr void ordering_test_cases() {
 
         constexpr explicit partially_ordered_class(int x) noexcept : i{x} {}
 
-        partially_ordered_class(partially_ordered_class const&) = delete;
+        partially_ordered_class(partially_ordered_class const&)            = delete;
         partially_ordered_class& operator=(partially_ordered_class const&) = delete;
 
         constexpr bool operator==(partially_ordered_class const& that) const {
@@ -523,7 +523,7 @@ constexpr void ordering_test_cases() {
 
         constexpr explicit weakly_ordered_class(int x) noexcept : i{x} {}
 
-        weakly_ordered_class(weakly_ordered_class const&) = delete;
+        weakly_ordered_class(weakly_ordered_class const&)            = delete;
         weakly_ordered_class& operator=(weakly_ordered_class const&) = delete;
 
         constexpr bool operator==(weakly_ordered_class const& that) const {
@@ -538,7 +538,7 @@ constexpr void ordering_test_cases() {
 
         constexpr explicit strongly_ordered_class(int x) noexcept : i{x} {}
 
-        strongly_ordered_class(strongly_ordered_class const&) = delete;
+        strongly_ordered_class(strongly_ordered_class const&)            = delete;
         strongly_ordered_class& operator=(strongly_ordered_class const&) = delete;
 
         auto operator<=>(strongly_ordered_class const&) const = default;
@@ -556,7 +556,7 @@ constexpr void ordering_test_cases() {
 
         constexpr explicit equality_comparable_class(int x) noexcept : i{x} {}
 
-        equality_comparable_class(equality_comparable_class const&) = delete;
+        equality_comparable_class(equality_comparable_class const&)            = delete;
         equality_comparable_class& operator=(equality_comparable_class const&) = delete;
 
         constexpr boolish operator==(equality_comparable_class const& that) const {

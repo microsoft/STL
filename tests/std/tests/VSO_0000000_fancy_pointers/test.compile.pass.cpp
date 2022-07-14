@@ -320,10 +320,10 @@ struct fancy_allocator {
     // operator!=(a1, a2) ditto
     // operator==(a, b) ditto
     // operator!=(a, b) ditto
-    fancy_allocator(const fancy_allocator&) = default;
-    fancy_allocator(fancy_allocator&&)      = default;
+    fancy_allocator(const fancy_allocator&)            = default;
+    fancy_allocator(fancy_allocator&&)                 = default;
     fancy_allocator& operator=(const fancy_allocator&) = delete;
-    fancy_allocator& operator=(fancy_allocator&&) = delete;
+    fancy_allocator& operator=(fancy_allocator&&)      = delete;
 
     template <typename U>
     explicit fancy_allocator(const fancy_allocator<U>&) {}
