@@ -3917,7 +3917,7 @@ public:
     }
 
     shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
-        _Check_memory_order(static_cast<int>(_Order));
+        _Check_memory_order(static_cast<unsigned int>(_Order));
         shared_ptr<_Ty> _Result;
         _Result._Rep = this->_Repptr._Lock_and_load();
         _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
@@ -3945,7 +3945,7 @@ public:
 
     bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept {
-        _Check_memory_order(static_cast<int>(_Order));
+        _Check_memory_order(static_cast<unsigned int>(_Order));
         auto _Rep = this->_Repptr._Lock_and_load();
         if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
             remove_extent_t<_Ty>* const _Tmp = _Desired._Ptr;
@@ -4036,7 +4036,7 @@ public:
     }
 
     weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
-        _Check_memory_order(static_cast<int>(_Order));
+        _Check_memory_order(static_cast<unsigned int>(_Order));
         weak_ptr<_Ty> _Result;
         _Result._Rep = this->_Repptr._Lock_and_load();
         _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
@@ -4064,7 +4064,7 @@ public:
 
     bool compare_exchange_strong(
         weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order_seq_cst) noexcept {
-        _Check_memory_order(static_cast<int>(_Order));
+        _Check_memory_order(static_cast<unsigned int>(_Order));
         auto _Rep = this->_Repptr._Lock_and_load();
         if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
             remove_extent_t<_Ty>* const _Tmp = _Desired._Ptr;
