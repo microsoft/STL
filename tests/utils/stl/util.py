@@ -153,8 +153,6 @@ def killProcessAndChildren(pid):
     running children (recursively). It is currently implemented
     using the psutil module which provides a simple platform
     neutral implementation.
-
-    TRANSITION: Jobify this
     """
     if platform.system() == 'AIX':
         subprocess.call('kill -kill $(ps -o pid= -L{})'.format(pid),

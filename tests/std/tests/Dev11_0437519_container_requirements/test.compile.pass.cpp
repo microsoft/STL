@@ -5,9 +5,6 @@ int main() {} // COMPILE-ONLY
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
-// Work around VSO-119998 "/Za's elided-copy-ctor check is still bogus".
-#ifdef _MSC_EXTENSIONS
-
 // This test program verifies all of the container requirements for the Standard Library containers,
 // including the four non-array sequence containers (deque, forward_list, list, vector), the four
 // associative containers (map, multimap, multiset, and set), and the four unordered associative
@@ -94,8 +91,8 @@ struct faux_compare {
 
 template <typename T>
 struct default_constructible_compare {
-    default_constructible_compare()                                     = default;
-    default_constructible_compare(default_constructible_compare const&) = default;
+    default_constructible_compare()                                                = default;
+    default_constructible_compare(default_constructible_compare const&)            = default;
     default_constructible_compare& operator=(default_constructible_compare const&) = delete;
 
     bool operator()(T const&, T const&) const noexcept {
@@ -107,7 +104,7 @@ template <typename T>
 struct copy_constructible_compare {
     copy_constructible_compare() = delete;
     copy_constructible_compare(key) {}
-    copy_constructible_compare(copy_constructible_compare const&) = default;
+    copy_constructible_compare(copy_constructible_compare const&)            = default;
     copy_constructible_compare& operator=(copy_constructible_compare const&) = delete;
 
     bool operator()(T const&, T const&) const noexcept {
@@ -124,8 +121,8 @@ struct faux_hash {
 
 template <typename T>
 struct default_constructible_hash {
-    default_constructible_hash()                                  = default;
-    default_constructible_hash(default_constructible_hash const&) = default;
+    default_constructible_hash()                                             = default;
+    default_constructible_hash(default_constructible_hash const&)            = default;
     default_constructible_hash& operator=(default_constructible_hash const&) = delete;
 
     bool operator()(T const&, T const&) const noexcept {
@@ -137,7 +134,7 @@ template <typename T>
 struct copy_constructible_hash {
     copy_constructible_hash() = delete;
     copy_constructible_hash(key) {}
-    copy_constructible_hash(copy_constructible_hash const&) = default;
+    copy_constructible_hash(copy_constructible_hash const&)            = default;
     copy_constructible_hash& operator=(copy_constructible_hash const&) = delete;
 
     std::size_t operator()(T const&) const noexcept {
@@ -163,8 +160,8 @@ struct input_iterator_base {
     typedef std::input_iterator_tag iterator_category;
     typedef std::ptrdiff_t difference_type;
 
-    input_iterator_base()                           = default;
-    input_iterator_base(input_iterator_base const&) = default;
+    input_iterator_base()                                      = default;
+    input_iterator_base(input_iterator_base const&)            = default;
     input_iterator_base& operator=(input_iterator_base const&) = default;
 
     I& operator++() {
@@ -3042,4 +3039,3 @@ void assert_all() {
     assert_container<tag_unordered_multiset>();
     assert_container<tag_unordered_set>();
 }
-#endif // _MSC_EXTENSIONS

@@ -86,6 +86,9 @@ utilities\format\format.functions\vformat_to.pass.cpp
 utilities\format\format.functions\vformat.locale.pass.cpp
 utilities\format\format.functions\vformat.pass.cpp
 
+# libc++ doesn't implement P2321R2's changes to vector<bool>::reference
+containers\sequences\vector.bool\iterator_concept_conformance.compile.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -218,11 +221,11 @@ containers\unord\unord.set\max_size.pass.cpp
 utilities\tuple\tuple.tuple\tuple.apply\apply_large_arity.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\recursion_depth.pass.cpp
 
-# Deprecation is a mess. We disable all deprecations in msvc_stdlib_force_include.h to allow libc++ tests for
-# deprecated features to pass, which breaks when libc++ deprecates the feature and adds two tests that (1) pass
-# with deprecation suppressed, and (2) fail without deprecation suppression. We should instead translate libc++
-# un-deprecation macros to STL un-deprecation macros in the force-include header, and just skip tests when we
-# deprecate before they do.
+# Deprecation is a mess. We disable all deprecations in llvm-project/libcxx/test/support/msvc_stdlib_force_include.h
+# (external to this repo) to allow libc++ tests for deprecated features to pass, which breaks when libc++ deprecates
+# the feature and adds two tests that (1) pass with deprecation suppressed, and (2) fail without deprecation suppression.
+# We should instead translate libc++ un-deprecation macros to STL un-deprecation macros in the force-include header,
+# and just skip tests when we deprecate before they do.
 utilities\meta\meta.unary\meta.unary.prop\is_literal_type.deprecated.fail.cpp
 
 
@@ -230,11 +233,6 @@ utilities\meta\meta.unary\meta.unary.prop\is_literal_type.deprecated.fail.cpp
 # P2321R2 zip
 language.support\support.limits\support.limits.general\tuple.version.pass.cpp
 language.support\support.limits\support.limits.general\utility.version.pass.cpp
-utilities\meta\meta.trans\meta.trans.other\common_reference.compile.pass.cpp
-utilities\meta\meta.trans\meta.trans.other\common_type.pass.cpp
-
-# P1328R1 constexpr type_info::operator==()
-language.support\support.limits\support.limits.general\typeinfo.version.pass.cpp
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -280,9 +278,6 @@ utilities\utility\pairs\pairs.spec\three_way_comparison.pass.cpp
 # DevCom-1626727: bogus "failure was caused by a conversion from void* to a pointer-to-object type" for conversion to void
 algorithms\robust_re_difference_type.compile.pass.cpp
 
-# DevCom-1628714: C1XX refuses nullptr_t == reference-to-function in a requires expression
-concepts\concepts.compare\concept.equalitycomparable\equality_comparable_with.compile.pass.cpp
-
 # DevCom-1638496: C1XX doesn't properly reject int <=> unsigned
 language.support\cmp\cmp.concept\three_way_comparable_with.compile.pass.cpp
 language.support\cmp\cmp.result\compare_three_way_result.compile.pass.cpp
@@ -291,44 +286,13 @@ utilities\tuple\tuple.tuple\tuple.rel\three_way.pass.cpp
 # DevCom-1638563: icky static analysis false positive
 language.support\support.coroutines\end.to.end\go.pass.cpp
 
+# DevCom-10026599: conditional expression has two different types
+concepts\concepts.compare\concept.equalitycomparable\equality_comparable_with.compile.pass.cpp
+
 
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
-
-# Clang doesn't implement the common coroutine ABI until LLVM 14
-language.support\support.coroutines\coroutine.handle\coroutine.handle.capacity\operator_bool.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.compare\equal_comp.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.compare\less_comp.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.completion\done.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.con\assign.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.con\construct.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.export\address.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.export\from_address.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.hash\hash.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.noop\noop_coroutine.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.prom\promise.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.resumption\destroy.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.resumption\resume.pass.cpp
-language.support\support.coroutines\coroutine.handle\void_handle.pass.cpp
-language.support\support.coroutines\coroutine.traits\promise_type.pass.cpp
-language.support\support.coroutines\coroutine.trivial.awaitables\suspend_always.pass.cpp
-language.support\support.coroutines\coroutine.trivial.awaitables\suspend_never.pass.cpp
-language.support\support.coroutines\end.to.end\await_result.pass.cpp
-language.support\support.coroutines\end.to.end\bool_await_suspend.pass.cpp
-language.support\support.coroutines\end.to.end\expected.pass.cpp
-language.support\support.coroutines\end.to.end\fullexpr-dtor.pass.cpp
-language.support\support.coroutines\end.to.end\generator.pass.cpp
-language.support\support.coroutines\end.to.end\go.pass.cpp
-language.support\support.coroutines\end.to.end\multishot_func.pass.cpp
-language.support\support.coroutines\end.to.end\oneshot_func.pass.cpp
-language.support\support.limits\support.limits.general\coroutine.version.pass.cpp
-
-# LLVM-52970 SFINAEing p.x on a pointer wrongly tries to complete the pointee's type
-ranges\range.access\begin.pass.cpp
-ranges\range.access\data.pass.cpp
-ranges\range.access\end.pass.cpp
-ranges\range.req\range.range\range.compile.pass.cpp
 
 # Clang doesn't yet implement P0960 "Initializing Aggregates With Parentheses"
 ranges\range.factories\range.iota.view\sentinel\ctor.value.pass.cpp
@@ -410,10 +374,6 @@ diagnostics\syserr\syserr.errcat\syserr.errcat.nonvirtuals\default_ctor.pass.cpp
 
 # GH-1190 <future>: incorrectly used copy assignment instead of copy construction in set_value
 thread\futures\futures.promise\set_value_const.pass.cpp
-
-# GH-757 <xstring>: Too many enabled hash specializations
-strings\basic.string.hash\char_type_hash.fail.cpp
-strings\string.view\string.view.hash\char_type.hash.fail.cpp
 
 # GH-784 <type_traits>: aligned_storage has incorrect alignment defaults
 utilities\meta\meta.trans\meta.trans.other\aligned_storage.pass.cpp
@@ -917,9 +877,6 @@ containers\sequences\vector\vector.cons\deduct.pass.cpp
 iterators\iterator.primitives\iterator.operations\advance.pass.cpp
 
 # Not yet analyzed. Maybe Clang over-eagerly instantiating noexcept-specifier?
-ranges\range.access\empty.pass.cpp
-ranges\range.access\size.pass.cpp
-ranges\range.access\ssize.pass.cpp
 utilities\memory\unique.ptr\iterator_concept_conformance.compile.pass.cpp
 
 # Not yet analyzed. Assertion failed: std::abs((kurtosis - x_kurtosis) / x_kurtosis) < VARIOUS_VALUES

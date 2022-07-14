@@ -106,7 +106,7 @@ public:
     }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-    error_category(const error_category&) = delete;
+    error_category(const error_category&)            = delete;
     error_category& operator=(const error_category&) = delete;
 
 protected:
@@ -385,20 +385,20 @@ _NODISCARD inline error_condition error_code::default_error_condition() const no
     return category().default_error_condition(value());
 }
 
-_NODISCARD inline error_code make_error_code(errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), _STD generic_category());
+_NODISCARD inline error_code make_error_code(errc _Ec) noexcept {
+    return error_code(static_cast<int>(_Ec), _STD generic_category());
 }
 
-_NODISCARD inline error_code make_error_code(io_errc _Errno) noexcept {
-    return error_code(static_cast<int>(_Errno), _STD iostream_category());
+_NODISCARD inline error_code make_error_code(io_errc _Ec) noexcept {
+    return error_code(static_cast<int>(_Ec), _STD iostream_category());
 }
 
-_NODISCARD inline error_condition make_error_condition(errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), _STD generic_category());
+_NODISCARD inline error_condition make_error_condition(errc _Ec) noexcept {
+    return error_condition(static_cast<int>(_Ec), _STD generic_category());
 }
 
-_NODISCARD inline error_condition make_error_condition(io_errc _Errno) noexcept {
-    return error_condition(static_cast<int>(_Errno), _STD iostream_category());
+_NODISCARD inline error_condition make_error_condition(io_errc _Ec) noexcept {
+    return error_condition(static_cast<int>(_Ec), _STD iostream_category());
 }
 
 template <>
@@ -470,8 +470,8 @@ protected:
 #endif // !_HAS_EXCEPTIONS
 };
 
-[[noreturn]] inline void _Throw_system_error(const errc _Errno) {
-    _THROW(system_error{_STD make_error_code(_Errno)});
+[[noreturn]] inline void _Throw_system_error(const errc _Ec) {
+    _THROW(system_error{_STD make_error_code(_Ec)});
 }
 
 _CRTIMP2_PURE const char* __CLRCALL_PURE_OR_CDECL _Syserror_map(int);
@@ -484,7 +484,7 @@ struct _System_error_message {
     explicit _System_error_message(const unsigned long _Ec) noexcept
         : _Str(nullptr), _Length(_CSTD __std_system_error_allocate_message(_Ec, &_Str)) {}
 
-    _System_error_message(const _System_error_message&) = delete;
+    _System_error_message(const _System_error_message&)            = delete;
     _System_error_message& operator=(const _System_error_message&) = delete;
 
     ~_System_error_message() {
@@ -501,12 +501,7 @@ public:
     }
 
     _NODISCARD string message(int _Errcode) const override {
-        // TRANSITION, GH-2561, move the logic to syserror.cpp
-        if (_Errcode == 0) {
-            return "success";
-        } else {
-            return _Syserror_map(_Errcode);
-        }
+        return _Syserror_map(_Errcode);
     }
 };
 
@@ -522,7 +517,7 @@ public:
         if (_Errcode == static_cast<int>(io_errc::stream)) {
             static constexpr char _Iostream_error[] = "iostream stream error";
             constexpr size_t _Iostream_error_length = sizeof(_Iostream_error) - 1; // TRANSITION, DevCom-906503
-            return string(_Iostream_error, _Iostream_error_length);
+            return string{_Iostream_error, _Iostream_error_length};
         } else {
             return _Syserror_map(_Errcode);
         }
@@ -542,9 +537,9 @@ public:
         if (_Msg._Length == 0) {
             static constexpr char _Unknown_error[] = "unknown error";
             constexpr size_t _Unknown_error_length = sizeof(_Unknown_error) - 1; // TRANSITION, DevCom-906503
-            return string(_Unknown_error, _Unknown_error_length);
+            return string{_Unknown_error, _Unknown_error_length};
         } else {
-            return string(_Msg._Str, _Msg._Length);
+            return string{_Msg._Str, _Msg._Length};
         }
     }
 
@@ -620,7 +615,7 @@ struct _Constexpr_immortalize_impl {
 
     constexpr _Constexpr_immortalize_impl() noexcept : _Storage{} {}
 
-    _Constexpr_immortalize_impl(const _Constexpr_immortalize_impl&) = delete;
+    _Constexpr_immortalize_impl(const _Constexpr_immortalize_impl&)            = delete;
     _Constexpr_immortalize_impl& operator=(const _Constexpr_immortalize_impl&) = delete;
 
     _MSVC_NOOP_DTOR ~_Constexpr_immortalize_impl() {

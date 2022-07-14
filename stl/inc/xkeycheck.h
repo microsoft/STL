@@ -145,19 +145,19 @@ Enable warning C4005 to find the forbidden define.
 Enable warning C4005 to find the forbidden define.
 #endif // continue
 
-#if defined(co_await) && _HAS_CXX20
+#if defined(co_await ) && _HAS_CXX20
 #define co_await EMIT WARNING C4005
 #error The C++ Standard Library forbids macroizing the keyword "co_await". \
 Enable warning C4005 to find the forbidden define.
 #endif // co_await
 
-#if defined(co_return) && _HAS_CXX20
+#if defined(co_return ) && _HAS_CXX20
 #define co_return EMIT WARNING C4005
 #error The C++ Standard Library forbids macroizing the keyword "co_return". \
 Enable warning C4005 to find the forbidden define.
 #endif // co_return
 
-#if defined(co_yield) && _HAS_CXX20
+#if defined(co_yield ) && _HAS_CXX20
 #define co_yield EMIT WARNING C4005
 #error The C++ Standard Library forbids macroizing the keyword "co_yield". \
 Enable warning C4005 to find the forbidden define.

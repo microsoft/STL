@@ -35,8 +35,8 @@ using namespace std::filesystem;
 
 constexpr wstring_view badPath = L"// ?? ?? ///// ?? ?? ? ////"sv;
 const path nonexistentPaths[]  = {
-    L"C:/This/Path/Should/Not/Exist"sv,
-    L"//this_path_does_not_exist_on_the_network_e9da301701f70ead24c65bd30f600d15/docs"sv,
+     L"C:/This/Path/Should/Not/Exist"sv,
+     L"//this_path_does_not_exist_on_the_network_e9da301701f70ead24c65bd30f600d15/docs"sv,
 };
 constexpr wstring_view longSuffix =
     LR"(really\long\path\longer\than\max_path\goes\here\and it just goes)"
@@ -996,7 +996,11 @@ void test_directory_entry() {
         EXPECT(!nonexistentEntryEc.exists());
         EXPECT(good(ec));
 
-        EXPECT(throws_filesystem_error([&] { nonexistentEntryEc.refresh(); }, "directory_entry::refresh", nonexistent));
+        // Also test GH-232 "<filesystem>: directory_entry(const path& p, error_code& ec) does not return error code"
+        nonexistentEntry.refresh();
+
+        nonexistentEntryEc.refresh(ec);
+        EXPECT(good(ec));
     }
 
     directory_entry goodEntry(filePath, ec);

@@ -212,8 +212,8 @@ struct instantiator {
         "This"sv, "is"sv, "a"sv, "test,"sv, "this"sv, "is"sv, "only"sv, "a"sv, "test."sv};
     static constexpr string_view expected_range[]    = {"Th"sv, " "sv, " a test, th"sv, " "sv, " only a test."sv};
     static constexpr string_view expected_empty[]    = {"T"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "a"sv,
-        " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "o"sv,
-        "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
+           " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, //
+           "o"sv, "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
     static constexpr string_view expected_trailing[] = {"test"sv, ""sv};
     static constexpr string_view expected_lwg3505[]  = {"x"sv, "x"sv, "x"sv};
 
@@ -329,9 +329,10 @@ constexpr bool test_devcom_1559808() {
 }
 
 constexpr bool test_LWG_3590() {
+    // LWG-3590: "split_view::base() const & is overconstrained"
     struct weird_view : ranges::view_interface<weird_view> {
-        weird_view()                  = default;
-        weird_view(const weird_view&) = default;
+        weird_view()                        = default;
+        weird_view(const weird_view&)       = default;
         weird_view& operator=(weird_view&&) = default;
 
         constexpr const int* begin() const {

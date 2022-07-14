@@ -35,7 +35,7 @@
 #endif // TRANSITION, OS-17090155 (UCRT)
 
 #define _SILENCE_CXX17_C_HEADER_DEPRECATION_WARNING
-#define _SILENCE_CXX17_STRSTREAM_DEPRECATION_WARNING
+#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
@@ -49,6 +49,7 @@
 #include <numbers>
 #include <ratio>
 #include <source_location>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <version>
@@ -88,6 +89,7 @@
 #include <complex>
 #include <deque>
 #include <exception>
+#include <expected>
 #include <filesystem>
 #include <format>
 #include <forward_list>
@@ -120,6 +122,7 @@
 #include <spanstream>
 #include <sstream>
 #include <stack>
+#include <stacktrace>
 #include <stdexcept>
 #include <streambuf>
 #include <string>
@@ -127,7 +130,6 @@
 #include <strstream>
 #include <syncstream>
 #include <system_error>
-#include <tuple>
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
@@ -141,7 +143,9 @@
 #include <barrier>
 #include <latch>
 #include <semaphore>
+#ifndef __clang__ // TRANSITION, GH-2862
 #include <stdatomic.h>
+#endif // TRANSITION, GH-2862
 #include <stop_token>
 #endif // _M_CEE_PURE
 

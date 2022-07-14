@@ -4,6 +4,7 @@
 #if defined(__cpp_consteval) && !defined(__EDG__) // TRANSITION, VSO-1285779
 #include "header.h"
 #include <cassert>
+#include <functional>
 #include <source_location>
 #include <string_view>
 #include <type_traits>
@@ -148,6 +149,12 @@ constexpr bool test() {
     function_template_test();
     header_test();
     return true;
+}
+
+// Also test GH-2822 Failed to specialize std::invoke on operator() with default argument
+// std::source_location::current()
+void test_gh_2822() { // COMPILE-ONLY
+    invoke([](source_location = source_location::current()) {});
 }
 
 int main() {

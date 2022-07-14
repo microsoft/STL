@@ -5,6 +5,9 @@
 #define TEST_NAME "<type_traits>, part 5"
 
 #define _DISABLE_EXTENDED_ALIGNED_STORAGE 1
+#define _SILENCE_CXX23_ALIGNED_STORAGE_DEPRECATION_WARNING
+#define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
+
 #include "tdefs.h"
 #include "typetr.h"
 #include <limits.h>

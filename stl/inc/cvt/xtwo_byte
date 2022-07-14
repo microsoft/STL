@@ -24,9 +24,8 @@ namespace stdext {
         using _Statype = _CSTD mbstate_t;
 
         template <class _Elem, class _Table, unsigned long _Maxcode = 0xffff>
-        class _Cvt_two_byte
-            : public _STD
-                  codecvt<_Elem, char, _Statype> { // facet for converting between _Elem and one- or two-byte sequences
+        class _Cvt_two_byte : public _STD codecvt<_Elem, char, _Statype> {
+            // facet for converting between _Elem and one- or two-byte sequences
         public:
             using _Mybase     = _STD codecvt<_Elem, char, _Statype>;
             using result      = typename _Mybase::result;

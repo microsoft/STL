@@ -22,6 +22,7 @@ _STL_DISABLE_DEPRECATED_WARNING
 template <class _Codecvt, class _Elem = wchar_t, class _Traits = char_traits<_Elem>>
 class _CXX17_DEPRECATE_CODECVT_HEADER wbuffer_convert
     : public basic_streambuf<_Elem, _Traits> { // stream buffer associated with a codecvt facet
+private:
     enum _Mode { _Unused, _Wrote, _Need, _Got, _Eof };
     enum { _STRING_INC = 8 };
 
@@ -108,7 +109,7 @@ public:
         return _State;
     }
 
-    wbuffer_convert(const wbuffer_convert&) = delete;
+    wbuffer_convert(const wbuffer_convert&)            = delete;
     wbuffer_convert& operator=(const wbuffer_convert&) = delete;
 
 protected:
@@ -299,6 +300,7 @@ private:
 
 template <class _Codecvt, class _Elem = wchar_t, class _Walloc = allocator<_Elem>, class _Balloc = allocator<char>>
 class _CXX17_DEPRECATE_CODECVT_HEADER wstring_convert { // converts between _Elem (wide) and char (byte) strings
+private:
     enum { _BUF_INC = 8, _BUF_MAX = 16 };
     void _Init(const _Codecvt* _Pcvt_arg = new _Codecvt) { // initialize the object
         _State = state_type{};
@@ -480,7 +482,7 @@ public:
         return _Bstr;
     }
 
-    wstring_convert(const wstring_convert&) = delete;
+    wstring_convert(const wstring_convert&)            = delete;
     wstring_convert& operator=(const wstring_convert&) = delete;
 
 private:

@@ -43,7 +43,7 @@ public:
         _Mtx_destroy_in_situ(_Mymtx());
     }
 
-    _Mutex_base(const _Mutex_base&) = delete;
+    _Mutex_base(const _Mutex_base&)            = delete;
     _Mutex_base& operator=(const _Mutex_base&) = delete;
 
     void lock() {
@@ -76,7 +76,7 @@ private:
     friend condition_variable;
     friend condition_variable_any;
 
-    aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
+    _Aligned_storage_t<_Mtx_internal_imp_size, _Mtx_internal_imp_alignment> _Mtx_storage;
 
     _Mtx_t _Mymtx() noexcept { // get pointer to _Mtx_internal_imp_t inside _Mtx_storage
         return reinterpret_cast<_Mtx_t>(&_Mtx_storage);
@@ -88,7 +88,7 @@ public:
     /* constexpr */ mutex() noexcept // TRANSITION, ABI
         : _Mutex_base() {}
 
-    mutex(const mutex&) = delete;
+    mutex(const mutex&)            = delete;
     mutex& operator=(const mutex&) = delete;
 };
 
@@ -100,7 +100,7 @@ public:
         return _Mutex_base::try_lock();
     }
 
-    recursive_mutex(const recursive_mutex&) = delete;
+    recursive_mutex(const recursive_mutex&)            = delete;
     recursive_mutex& operator=(const recursive_mutex&) = delete;
 };
 #endif // _M_CEE
@@ -186,7 +186,7 @@ public:
         }
     }
 
-    unique_lock(const unique_lock&) = delete;
+    unique_lock(const unique_lock&)            = delete;
     unique_lock& operator=(const unique_lock&) = delete;
 
     void lock() { // lock the mutex
@@ -433,7 +433,7 @@ public:
         _MyMutex.unlock();
     }
 
-    lock_guard(const lock_guard&) = delete;
+    lock_guard(const lock_guard&)            = delete;
     lock_guard& operator=(const lock_guard&) = delete;
 
 private:
@@ -454,7 +454,7 @@ public:
         _STD apply([](_Mutexes&... _Mtxes) { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
     }
 
-    scoped_lock(const scoped_lock&) = delete;
+    scoped_lock(const scoped_lock&)            = delete;
     scoped_lock& operator=(const scoped_lock&) = delete;
 
 private:
@@ -476,7 +476,7 @@ public:
         _MyMutex.unlock();
     }
 
-    scoped_lock(const scoped_lock&) = delete;
+    scoped_lock(const scoped_lock&)            = delete;
     scoped_lock& operator=(const scoped_lock&) = delete;
 
 private:
@@ -490,7 +490,7 @@ public:
     explicit scoped_lock(adopt_lock_t) {}
     ~scoped_lock() noexcept {}
 
-    scoped_lock(const scoped_lock&) = delete;
+    scoped_lock(const scoped_lock&)            = delete;
     scoped_lock& operator=(const scoped_lock&) = delete;
 };
 #endif // _HAS_CXX17
@@ -537,7 +537,7 @@ struct _Init_once_completer {
     once_flag& _Once;
     unsigned long _DwFlags;
     ~_Init_once_completer() {
-        if (_RENAME_WINDOWS_API(__std_init_once_complete)(&_Once._Opaque, _DwFlags, nullptr) == 0) {
+        if (!_RENAME_WINDOWS_API(__std_init_once_complete)(&_Once._Opaque, _DwFlags, nullptr)) {
             __std_init_once_link_alternate_names_and_abort();
         }
     }
@@ -549,7 +549,7 @@ void(call_once)(once_flag& _Once, _Fn&& _Fx, _Args&&... _Ax) noexcept(
     // call _Fx(_Ax...) once
     // parentheses against common "#define call_once(flag,func) pthread_once(flag,func)"
     int _Pending;
-    if (_RENAME_WINDOWS_API(__std_init_once_begin_initialize)(&_Once._Opaque, 0, &_Pending, nullptr) == 0) {
+    if (!_RENAME_WINDOWS_API(__std_init_once_begin_initialize)(&_Once._Opaque, 0, &_Pending, nullptr)) {
         _CSTD abort();
     }
 
@@ -582,7 +582,7 @@ public:
         _Cnd_destroy_in_situ(_Mycnd());
     }
 
-    condition_variable(const condition_variable&) = delete;
+    condition_variable(const condition_variable&)            = delete;
     condition_variable& operator=(const condition_variable&) = delete;
 
     void notify_one() noexcept { // wake up one waiter
@@ -698,7 +698,7 @@ public:
     }
 
 private:
-    aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cnd_storage;
+    _Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cnd_storage;
 
     _Cnd_t _Mycnd() noexcept { // get pointer to _Cnd_internal_imp_t inside _Cnd_storage
         return reinterpret_cast<_Cnd_t>(&_Cnd_storage);
@@ -748,7 +748,7 @@ class timed_mutex { // class for timed mutual exclusion
 public:
     timed_mutex() noexcept : _My_locked(0) {}
 
-    timed_mutex(const timed_mutex&) = delete;
+    timed_mutex(const timed_mutex&)            = delete;
     timed_mutex& operator=(const timed_mutex&) = delete;
 
     void lock() { // lock the mutex
@@ -818,7 +818,7 @@ class recursive_timed_mutex { // class for recursive timed mutual exclusion
 public:
     recursive_timed_mutex() noexcept : _My_locked(0) {}
 
-    recursive_timed_mutex(const recursive_timed_mutex&) = delete;
+    recursive_timed_mutex(const recursive_timed_mutex&)            = delete;
     recursive_timed_mutex& operator=(const recursive_timed_mutex&) = delete;
 
     void lock() { // lock the mutex

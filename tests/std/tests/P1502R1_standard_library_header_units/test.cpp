@@ -28,6 +28,7 @@ import <coroutine>;
 import <deque>;
 import <exception>;
 import <execution>;
+import <expected>;
 import <filesystem>;
 import <format>;
 import <forward_list>;
@@ -68,6 +69,7 @@ import <span>;
 import <spanstream>;
 import <sstream>;
 import <stack>;
+import <stacktrace>;
 import <stdexcept>;
 import <stop_token>;
 import <streambuf>;
@@ -107,7 +109,8 @@ constexpr bool test_source_location() {
     return true;
 }
 
-int main() {
+__declspec(dllexport) // for <stacktrace> test export main to have it named even without debug info
+    int main() {
     {
         puts("Testing <algorithm>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
@@ -258,8 +261,8 @@ int main() {
         odd.join();
         even.join();
 
-        const vector<int> expected = {5, 51, 512, 5121, 51212, 512121, 5121212};
-        assert(vec == expected);
+        const vector<int> expected_val = {5, 51, 512, 5121, 51212, 512121, 5121212};
+        assert(vec == expected_val);
 
         static_assert(static_cast<int>(cv_status::no_timeout) == 0);
         static_assert(static_cast<int>(cv_status::timeout) == 1);
@@ -289,6 +292,12 @@ int main() {
         puts("Testing <execution>.");
         constexpr int arr[]{11, 0, 22, 0, 33, 0, 44, 0, 55};
         assert(count(execution::par, begin(arr), end(arr), 0) == 4);
+    }
+
+    {
+        puts("Testing <expected>.");
+        constexpr expected<double, int> test{unexpect, 42};
+        assert(test.error() == 42);
     }
 
     {
@@ -330,7 +339,6 @@ int main() {
         static_assert(b(3) == 33);
     }
 
-#if defined(_MSVC_INTERNAL_TESTING) || defined(TEST_TOPO_SORT) // TRANSITION, VSO-1496084 fixed in 17.3 Preview 2
     {
         puts("Testing <future>.");
         promise<int> p{};
@@ -340,7 +348,6 @@ int main() {
         assert(f.wait_for(chrono::seconds{0}) == future_status::ready);
         assert(f.get() == 1729);
     }
-#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <initializer_list>.");
@@ -601,8 +608,8 @@ int main() {
             v.push_back(it->str());
         }
 
-        const vector<string> expected{"cute", "fluffy", "kittens"};
-        assert(v == expected);
+        const vector<string> expected_val{"cute", "fluffy", "kittens"};
+        assert(v == expected_val);
     }
 
     {
@@ -611,8 +618,8 @@ int main() {
         v.push_back(11);
         v.push_back(22);
         v.push_back(33);
-        constexpr int expected[]{11, 22, 33};
-        assert(equal(v.begin(), v.end(), begin(expected), end(expected)));
+        constexpr int expected_val[]{11, 22, 33};
+        assert(equal(v.begin(), v.end(), begin(expected_val), end(expected_val)));
     }
 
     {
@@ -682,8 +689,8 @@ int main() {
         odd.join();
         even.join();
 
-        const vector<int> expected = {5, 51, 512, 5121, 51212, 512121, 5121212};
-        assert(vec == expected);
+        const vector<int> expected_val = {5, 51, 512, 5121, 51212, 512121, 5121212};
+        assert(vec == expected_val);
     }
 
     {
@@ -706,31 +713,31 @@ int main() {
         char ibuffer[] = "1 2 3 4 5";
         ispanstream is{span<char>{ibuffer}};
         int read = 0;
-        for (int expected = 1; expected <= 5; ++expected) {
+        for (int expected_val = 1; expected_val <= 5; ++expected_val) {
             assert(is.good());
             is >> read;
-            assert(read == expected);
+            assert(read == expected_val);
         }
 
         const char const_buffer[] = "1 2 3 4 5";
         basic_ispanstream<char> is_const_buffer{span<const char>{const_buffer}};
         read = 0;
-        for (int expected = 1; expected <= 5; ++expected) {
+        for (int expected_val = 1; expected_val <= 5; ++expected_val) {
             assert(is_const_buffer.good());
             is_const_buffer >> read;
-            assert(read == expected);
+            assert(read == expected_val);
         }
 
-        const auto expected = "102030"sv;
+        const auto expected_val = "102030"sv;
         char obuffer[10];
         ospanstream os{span<char>{obuffer}};
         os << 10 << 20 << 30;
-        assert(equal(begin(os.span()), end(os.span()), begin(expected), end(expected)));
+        assert(equal(begin(os.span()), end(os.span()), begin(expected_val), end(expected_val)));
 
         char buffer[10];
         spanstream s{span<char>{buffer}};
         s << 10 << 20 << 30;
-        assert(equal(begin(s.span()), end(s.span()), begin(expected), end(expected)));
+        assert(equal(begin(s.span()), end(s.span()), begin(expected_val), end(expected_val)));
     }
 
     {
@@ -757,6 +764,21 @@ int main() {
     }
 
     {
+        puts("Testing <stacktrace>.");
+        auto desc = stacktrace::current().at(0).description();
+
+        if (auto pos = desc.find("!"); pos != string::npos) {
+            desc = desc.substr(pos + 1);
+        }
+
+        if (auto pos = desc.find("+"); pos != string::npos) {
+            desc.resize(pos);
+        }
+
+        assert(desc == "main");
+    }
+
+    {
         puts("Testing <stdexcept>.");
         bool caught_puppies = false;
 
@@ -771,7 +793,6 @@ int main() {
         assert(caught_puppies);
     }
 
-#if defined(_MSVC_INTERNAL_TESTING) || defined(TEST_TOPO_SORT) // TRANSITION, VSO-1496084 fixed in 17.3 Preview 2
     {
         puts("Testing <stop_token>.");
         vector<int> vec;
@@ -799,15 +820,14 @@ int main() {
             }};
             l.wait(); // wait for jt to generate the sequence
         } // destroying jt will ask it to stop
-        static constexpr int expected[]{1729, 5188, 2594, 1297, 3892, 1946, 973, 2920, 1460, 730, 365, 1096, 548, 274,
-            137, 412, 206, 103, 310, 155, 466, 233, 700, 350, 175, 526, 263, 790, 395, 1186, 593, 1780, 890, 445, 1336,
-            668, 334, 167, 502, 251, 754, 377, 1132, 566, 283, 850, 425, 1276, 638, 319, 958, 479, 1438, 719, 2158,
-            1079, 3238, 1619, 4858, 2429, 7288, 3644, 1822, 911, 2734, 1367, 4102, 2051, 6154, 3077, 9232, 4616, 2308,
-            1154, 577, 1732, 866, 433, 1300, 650, 325, 976, 488, 244, 122, 61, 184, 92, 46, 23, 70, 35, 106, 53, 160,
-            80, 40, 20, 10, 5, 16, 8, 4, 2, 1, -1000};
-        assert(equal(vec.begin(), vec.end(), begin(expected), end(expected)));
+        static constexpr int expected_val[]{1729, 5188, 2594, 1297, 3892, 1946, 973, 2920, 1460, 730, 365, 1096, 548,
+            274, 137, 412, 206, 103, 310, 155, 466, 233, 700, 350, 175, 526, 263, 790, 395, 1186, 593, 1780, 890, 445,
+            1336, 668, 334, 167, 502, 251, 754, 377, 1132, 566, 283, 850, 425, 1276, 638, 319, 958, 479, 1438, 719,
+            2158, 1079, 3238, 1619, 4858, 2429, 7288, 3644, 1822, 911, 2734, 1367, 4102, 2051, 6154, 3077, 9232, 4616,
+            2308, 1154, 577, 1732, 866, 433, 1300, 650, 325, 976, 488, 244, 122, 61, 184, 92, 46, 23, 70, 35, 106, 53,
+            160, 80, 40, 20, 10, 5, 16, 8, 4, 2, 1, -1000};
+        assert(equal(vec.begin(), vec.end(), begin(expected_val), end(expected_val)));
     }
-#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <streambuf>.");

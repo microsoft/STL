@@ -42,17 +42,17 @@ namespace std_testing {
         // mode perf.
 
         struct Immobile {
-            Immobile()                = default;
-            Immobile(const Immobile&) = delete;
+            Immobile()                           = default;
+            Immobile(const Immobile&)            = delete;
             Immobile& operator=(const Immobile&) = delete;
         };
 
         struct MoveOnly {
-            MoveOnly()                = default;
-            MoveOnly(const MoveOnly&) = delete;
-            MoveOnly(MoveOnly&&)      = default;
+            MoveOnly()                           = default;
+            MoveOnly(const MoveOnly&)            = delete;
+            MoveOnly(MoveOnly&&)                 = default;
             MoveOnly& operator=(const MoveOnly&) = delete;
-            MoveOnly& operator=(MoveOnly&&) = delete;
+            MoveOnly& operator=(MoveOnly&&)      = delete;
         };
 
         template <typename T>

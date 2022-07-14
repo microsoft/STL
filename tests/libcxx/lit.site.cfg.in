@@ -25,10 +25,10 @@ lit_config.test_subdirs     = getattr(lit_config, 'test_subdirs', dict())
 
 lit_config.expected_results[config.name] = stl.test.file_parsing.parse_result_file('@LIBCXX_EXPECTED_RESULTS@')
 lit_config.include_dirs[config.name]     = ['@STL_TESTED_HEADERS_DIR@', '@LIBCXX_SOURCE_DIR@/test/support']
-lit_config.library_dirs[config.name]     = ['@CMAKE_LIBRARY_OUTPUT_DIRECTORY@', '@TOOLSET_LIB@']
+lit_config.library_dirs[config.name]     = ['@STL_LIBRARY_OUTPUT_DIRECTORY@', '@TOOLSET_LIB@']
 lit_config.test_subdirs[config.name]     = ['@LIBCXX_SOURCE_DIR@/test/std']
 
-lit_config.cxx_runtime = '@CMAKE_RUNTIME_OUTPUT_DIRECTORY@'
+lit_config.cxx_runtime = '@STL_RUNTIME_OUTPUT_DIRECTORY@'
 lit_config.target_arch = '@VCLIBS_TARGET_ARCHITECTURE@'
 lit_config.build_only  = '@TESTS_BUILD_ONLY@'.lower() in ['1', 'true', 'on']
 

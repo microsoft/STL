@@ -51,8 +51,8 @@ struct NullptrDeleter {
 };
 
 struct ImmobileDeleter {
-    ImmobileDeleter()                  = default;
-    ImmobileDeleter(ImmobileDeleter&&) = delete;
+    ImmobileDeleter()                             = default;
+    ImmobileDeleter(ImmobileDeleter&&)            = delete;
     ImmobileDeleter& operator=(ImmobileDeleter&&) = delete;
 
     void operator()(void*) const {}
@@ -216,8 +216,8 @@ namespace unique_ptr_ {
         fancy_deleter()                = default;
         fancy_deleter(fancy_deleter&&) = default;
 
-        fancy_deleter(const fancy_deleter&) = delete;
-        fancy_deleter& operator=(fancy_deleter&&) = delete;
+        fancy_deleter(const fancy_deleter&)            = delete;
+        fancy_deleter& operator=(fancy_deleter&&)      = delete;
         fancy_deleter& operator=(const fancy_deleter&) = delete;
     };
 
@@ -293,7 +293,7 @@ namespace unique_ptr_ {
     }
 
     void test_lwg_2415() {
-        // per LWG-2415
+        // per LWG-2415: "Inconsistency between unique_ptr and shared_ptr"
         assert(AssertDeleter::count == 0);
         unique_ptr<int, AssertDeleter> up{nullptr};
         assert(AssertDeleter::count == 1);

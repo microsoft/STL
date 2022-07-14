@@ -338,7 +338,7 @@ constexpr void mm_constexpr_tests() {
 }
 
 void test_gh_1893() {
-    // ranges::clamp was sometimes performing too many projections,
+    // GH-1893: ranges::clamp was sometimes performing too many projections,
     // and we should conform at least in release mode.
     // the test protects us from the wrong implementation with std::move instead of std::forward in ranges::clamp
     // so reference_wrappers and the lambda are necessary.
@@ -351,7 +351,7 @@ void test_gh_1893() {
           [&projection_count](const auto& x) -> decltype(auto) {
             ++projection_count;
             return x.get();
-          });
+        });
     (void) clamped;
 #ifdef _DEBUG
     ASSERT(projection_count == 5);
