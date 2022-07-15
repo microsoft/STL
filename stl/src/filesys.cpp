@@ -15,8 +15,8 @@
 
 #include <Windows.h>
 
-extern "C" DWORD __cdecl __crtGetTempPath2W(
-    _In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer);
+extern "C" _Success_(return > 0 && return < BufferLength) DWORD
+    __stdcall __crtGetTempPath2W(_In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer);
 
 _FS_BEGIN
 static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_status
@@ -165,7 +165,7 @@ _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(wchar_t (&_Dest)[_MAX_FILE
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME]) {
     // get temp directory
     wchar_t _Dentry[MAX_PATH];
-    return _Strcpy(_Dest, __crtGetTempPath2W(MAX_PATH, _Dentry) == 0 ? L"." : _Dentry);
+    return _Strcpy(_Dest, __crtGetTempPath2W(MAX_PATH, _Dentry) != 0 ? _Dentry : L".");
 }
 
 

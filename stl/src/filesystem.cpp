@@ -762,24 +762,23 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     return __std_win_error{GetLastError()};
 }
 
-static DWORD WINAPI _Stl_GetTempPath2W(
-    _In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) {
+static _Success_(return > 0 && return < nBufferLength) DWORD WINAPI
+    _Stl_GetTempPath2W(_In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) {
 
     decltype(&::GetTempPath2W) _PfGetTempPath2W;
     {
-        static _STD atomic<decltype(&::GetTempPath2W)> _Static = nullptr;
+        static _STD atomic<decltype(&::GetTempPath2W)> _Static{nullptr};
 
         _PfGetTempPath2W = _Static.load(_STD memory_order_relaxed);
         if (!_PfGetTempPath2W) {
-            const auto _Kernel32 = GetModuleHandleW(L"kernel32.dll");
+            const auto _Kernel32 = ::GetModuleHandleW(L"kernel32.dll");
             _Analysis_assume_(_Kernel32);
             _PfGetTempPath2W =
                 reinterpret_cast<decltype(&::GetTempPath2W)>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
             if (!_PfGetTempPath2W) {
-                _PfGetTempPath2W = GetTempPathW;
+                _PfGetTempPath2W = &::GetTempPathW;
             }
-            decltype(&::GetTempPath2W) _Expected = nullptr;
-            _Static.compare_exchange_weak(_Expected, _PfGetTempPath2W, _STD memory_order_relaxed);
+            _Static.store(_PfGetTempPath2W, _STD memory_order_relaxed); // overwriting with the same value is okay
         }
     }
 

@@ -32,7 +32,7 @@ namespace {
         eMaxKernel32Function
     };
 
-    PVOID __KERNEL32Functions[eMaxKernel32Function > 0 ? eMaxKernel32Function : 1]{};
+    PVOID __KERNEL32Functions[eMaxKernel32Function]{};
 
 // Use this macro for caching a function pointer from a DLL
 #define STOREFUNCTIONPOINTER(instance, function_name) \
@@ -386,8 +386,8 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
-extern "C" DWORD __cdecl __crtGetTempPath2W(
-    _In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer) {
+extern "C" _Success_(return > 0 && return < BufferLength) DWORD
+    __stdcall __crtGetTempPath2W(_In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer) {
     // use GetTempPath2W if it is available (only on Windows 11+)...
     IFDYNAMICGETCACHEDFUNCTION(GetTempPath2W) {
         return pfGetTempPath2W(BufferLength, Buffer);
