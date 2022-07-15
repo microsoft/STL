@@ -2092,7 +2092,7 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
     }
 
 template <class _Bitmask>
-_NODISCARD constexpr bool _Bitmask_includes(_Bitmask _Left, _Bitmask _Elements) noexcept {
+_NODISCARD constexpr bool _Bitmask_includes_any(_Bitmask _Left, _Bitmask _Elements) noexcept {
     return (_Left & _Elements) != _Bitmask{};
 }
 
