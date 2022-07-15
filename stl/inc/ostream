@@ -56,7 +56,7 @@ protected:
     }
 
 public:
-    __CLR_OR_THIS_CALL basic_ostream(const basic_ostream&) = delete;
+    __CLR_OR_THIS_CALL basic_ostream(const basic_ostream&)            = delete;
     basic_ostream& __CLR_OR_THIS_CALL operator=(const basic_ostream&) = delete;
 
     __CLR_OR_THIS_CALL ~basic_ostream() noexcept override {}
@@ -124,7 +124,7 @@ public:
             return _Ok;
         }
 
-        __CLR_OR_THIS_CALL sentry(const sentry&) = delete;
+        __CLR_OR_THIS_CALL sentry(const sentry&)            = delete;
         sentry& __CLR_OR_THIS_CALL operator=(const sentry&) = delete;
 
     private:

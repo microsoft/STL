@@ -164,7 +164,7 @@ void test_case_searcher(const Args... args) {
 struct FancyHash {
     FancyHash() = delete;
     explicit FancyHash(int) {}
-    FancyHash(const FancyHash&) = default;
+    FancyHash(const FancyHash&)            = default;
     FancyHash& operator=(const FancyHash&) = delete;
 
     size_t operator()(const char c) const {
@@ -175,7 +175,7 @@ struct FancyHash {
 struct FancyEqual {
     FancyEqual() = delete;
     explicit FancyEqual(int) {}
-    FancyEqual(const FancyEqual&) = default;
+    FancyEqual(const FancyEqual&)            = default;
     FancyEqual& operator=(const FancyEqual&) = delete;
 
     bool operator()(const char lhs, const char rhs) const {

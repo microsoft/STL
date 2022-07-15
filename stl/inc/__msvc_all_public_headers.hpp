@@ -143,7 +143,9 @@
 #include <barrier>
 #include <latch>
 #include <semaphore>
+#ifndef __clang__ // TRANSITION, GH-2862
 #include <stdatomic.h>
+#endif // TRANSITION, GH-2862
 #include <stop_token>
 #endif // _M_CEE_PURE
 

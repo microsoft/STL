@@ -95,7 +95,7 @@ constexpr void test_memmove() {
 
         constexpr S() = default;
         constexpr S(int x) : val{x} {}
-        constexpr S(S&&)     = default;
+        constexpr S(S&&)                 = default;
         constexpr S& operator=(S&&)      = default;
         auto operator<=>(const S&) const = default;
     };

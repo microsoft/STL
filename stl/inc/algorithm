@@ -155,7 +155,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
         _Capacity = _Optimistic_count;
     }
 
-    _Optimistic_temporary_buffer(const _Optimistic_temporary_buffer&) = delete;
+    _Optimistic_temporary_buffer(const _Optimistic_temporary_buffer&)            = delete;
     _Optimistic_temporary_buffer& operator=(const _Optimistic_temporary_buffer&) = delete;
 
     ~_Optimistic_temporary_buffer() noexcept {

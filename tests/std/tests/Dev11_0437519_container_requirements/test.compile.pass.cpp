@@ -91,8 +91,8 @@ struct faux_compare {
 
 template <typename T>
 struct default_constructible_compare {
-    default_constructible_compare()                                     = default;
-    default_constructible_compare(default_constructible_compare const&) = default;
+    default_constructible_compare()                                                = default;
+    default_constructible_compare(default_constructible_compare const&)            = default;
     default_constructible_compare& operator=(default_constructible_compare const&) = delete;
 
     bool operator()(T const&, T const&) const noexcept {
@@ -104,7 +104,7 @@ template <typename T>
 struct copy_constructible_compare {
     copy_constructible_compare() = delete;
     copy_constructible_compare(key) {}
-    copy_constructible_compare(copy_constructible_compare const&) = default;
+    copy_constructible_compare(copy_constructible_compare const&)            = default;
     copy_constructible_compare& operator=(copy_constructible_compare const&) = delete;
 
     bool operator()(T const&, T const&) const noexcept {
@@ -121,8 +121,8 @@ struct faux_hash {
 
 template <typename T>
 struct default_constructible_hash {
-    default_constructible_hash()                                  = default;
-    default_constructible_hash(default_constructible_hash const&) = default;
+    default_constructible_hash()                                             = default;
+    default_constructible_hash(default_constructible_hash const&)            = default;
     default_constructible_hash& operator=(default_constructible_hash const&) = delete;
 
     bool operator()(T const&, T const&) const noexcept {
@@ -134,7 +134,7 @@ template <typename T>
 struct copy_constructible_hash {
     copy_constructible_hash() = delete;
     copy_constructible_hash(key) {}
-    copy_constructible_hash(copy_constructible_hash const&) = default;
+    copy_constructible_hash(copy_constructible_hash const&)            = default;
     copy_constructible_hash& operator=(copy_constructible_hash const&) = delete;
 
     std::size_t operator()(T const&) const noexcept {
@@ -160,8 +160,8 @@ struct input_iterator_base {
     typedef std::input_iterator_tag iterator_category;
     typedef std::ptrdiff_t difference_type;
 
-    input_iterator_base()                           = default;
-    input_iterator_base(input_iterator_base const&) = default;
+    input_iterator_base()                                      = default;
+    input_iterator_base(input_iterator_base const&)            = default;
     input_iterator_base& operator=(input_iterator_base const&) = default;
 
     I& operator++() {

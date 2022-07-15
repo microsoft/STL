@@ -124,7 +124,7 @@ namespace stdext {
                 return _State;
             }
 
-            wbuffer_convert(const wbuffer_convert&) = delete;
+            wbuffer_convert(const wbuffer_convert&)            = delete;
             wbuffer_convert& operator=(const wbuffer_convert&) = delete;
 
         protected:

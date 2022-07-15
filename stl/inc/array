@@ -831,7 +831,7 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> _To_array_lvalue_impl(
 
 template <class _Ty, size_t _Size, size_t... _Idx>
 _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> _To_array_rvalue_impl(
-    _Ty(&&_Array)[_Size], index_sequence<_Idx...>) {
+    _Ty (&&_Array)[_Size], index_sequence<_Idx...>) {
     return {{_STD move(_Array[_Idx])...}};
 }
 
@@ -845,7 +845,7 @@ _NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty (&_Array)[_Size
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty(&&_Array)[_Size]) {
+_NODISCARD constexpr array<remove_cv_t<_Ty>, _Size> to_array(_Ty (&&_Array)[_Size]) {
     static_assert(!is_array_v<_Ty>, "N4830 [array.creation]/4: "
                                     "to_array does not accept multidimensional arrays.");
     static_assert(is_move_constructible_v<_Ty>, "N4830 [array.creation]/4: "

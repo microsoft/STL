@@ -20,7 +20,7 @@ struct X {
         --g_objects;
     }
 
-    X(const X&) = delete;
+    X(const X&)            = delete;
     X& operator=(const X&) = delete;
 };
 
@@ -120,8 +120,8 @@ namespace lwg_2905 {
         using T       = int;
         using pointer = int*;
         struct Immobile {
-            Immobile()                = default;
-            Immobile(Immobile const&) = delete;
+            Immobile()                           = default;
+            Immobile(Immobile const&)            = delete;
             Immobile& operator=(Immobile const&) = delete;
 
             void operator()(int*) const {}

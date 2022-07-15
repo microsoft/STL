@@ -46,7 +46,7 @@ public:
         }
     }
 
-    BinaryFile(const BinaryFile&) = delete;
+    BinaryFile(const BinaryFile&)            = delete;
     BinaryFile& operator=(const BinaryFile&) = delete;
 
 private:

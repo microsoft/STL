@@ -37,7 +37,7 @@ namespace {
             _Prev->_Next           = _Next_local;
         }
 
-        _Guarded_wait_context(const _Guarded_wait_context&) = delete;
+        _Guarded_wait_context(const _Guarded_wait_context&)            = delete;
         _Guarded_wait_context& operator=(const _Guarded_wait_context&) = delete;
     };
 
@@ -51,7 +51,7 @@ namespace {
             ReleaseSRWLockExclusive(_Locked);
         }
 
-        _SrwLock_guard(const _SrwLock_guard&) = delete;
+        _SrwLock_guard(const _SrwLock_guard&)            = delete;
         _SrwLock_guard& operator=(const _SrwLock_guard&) = delete;
 
     private:

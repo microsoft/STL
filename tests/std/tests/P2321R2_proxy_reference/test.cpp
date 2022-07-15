@@ -30,7 +30,7 @@ struct Meow {
     constexpr Meow(Meow&&) : state(State::move_construct) {}
     constexpr Meow(const Meow&&) : state(State::move_construct_from_const) {}
 
-    constexpr Meow& operator=(Meow&) = delete;
+    constexpr Meow& operator=(Meow&)             = delete;
     constexpr const Meow& operator=(Meow&) const = delete;
 
     constexpr Meow& operator=(const Meow&) {
@@ -50,7 +50,7 @@ struct Meow {
         return *this;
     }
 
-    constexpr Meow& operator=(const Meow&&) = delete;
+    constexpr Meow& operator=(const Meow&&)             = delete;
     constexpr const Meow& operator=(const Meow&&) const = delete;
 
     friend constexpr void swap(Meow& left, Meow&) {

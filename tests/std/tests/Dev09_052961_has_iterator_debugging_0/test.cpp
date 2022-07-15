@@ -66,7 +66,7 @@ union uninit_vector {
     vector<int> storage;
 
     constexpr uninit_vector() : bytes{} {}
-    uninit_vector(const uninit_vector&) = delete;
+    uninit_vector(const uninit_vector&)            = delete;
     uninit_vector& operator=(const uninit_vector&) = delete;
     ~uninit_vector() {}
 };

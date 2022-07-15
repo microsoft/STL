@@ -215,7 +215,7 @@ struct _List_head_construct_ptr {
         _Mycont._Myhead = _Newhead;
     }
 
-    _List_head_construct_ptr(const _List_head_construct_ptr&) = delete;
+    _List_head_construct_ptr(const _List_head_construct_ptr&)            = delete;
     _List_head_construct_ptr& operator=(const _List_head_construct_ptr&) = delete;
 
     _NODISCARD pointer _Release() noexcept {
@@ -257,7 +257,7 @@ struct _Hash_vec {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Aliter, _Mypair._Get_first()));
     }
 
-    _Hash_vec(const _Hash_vec&) = delete;
+    _Hash_vec(const _Hash_vec&)            = delete;
     _Hash_vec& operator=(const _Hash_vec&) = delete;
 
     _NODISCARD size_type size() const noexcept {
@@ -467,7 +467,7 @@ private:
 
         explicit _Clear_guard(_Hash* const _Target_) : _Target(_Target_) {}
 
-        _Clear_guard(const _Clear_guard&) = delete;
+        _Clear_guard(const _Clear_guard&)            = delete;
         _Clear_guard& operator=(const _Clear_guard&) = delete;
 
         ~_Clear_guard() {
@@ -483,7 +483,7 @@ private:
 
         explicit _Check_container_invariants_guard(const _Hash& _Target_) : _Target(_Target_) {}
 
-        _Check_container_invariants_guard(const _Check_container_invariants_guard&) = delete;
+        _Check_container_invariants_guard(const _Check_container_invariants_guard&)            = delete;
         _Check_container_invariants_guard& operator=(const _Check_container_invariants_guard&) = delete;
 
         ~_Check_container_invariants_guard() {
@@ -959,7 +959,7 @@ private:
     }
 
     struct _Range_eraser {
-        _Range_eraser(const _Range_eraser&) = delete;
+        _Range_eraser(const _Range_eraser&)            = delete;
         _Range_eraser& operator=(const _Range_eraser&) = delete;
 
 #if _ITERATOR_DEBUG_LEVEL == 2

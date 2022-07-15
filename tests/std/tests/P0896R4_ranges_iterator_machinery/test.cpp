@@ -67,8 +67,8 @@ struct empty_type {
 };
 
 struct move_only {
-    move_only()            = default;
-    move_only(move_only&&) = default;
+    move_only()                       = default;
+    move_only(move_only&&)            = default;
     move_only& operator=(move_only&&) = default;
 };
 
@@ -1072,7 +1072,7 @@ namespace iterator_cust_move_test {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1008447
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
 #else // ^^^ no workaround / workaround vvv
-    STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int(&&)(int)>);
+    STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&&)(int)>);
 #endif // TRANSITION, VSO-1008447
     STATIC_ASSERT(ranges::iter_move (&f)(42) == 43);
     STATIC_ASSERT(noexcept(ranges::iter_move(&f)));
@@ -1131,7 +1131,7 @@ namespace iterator_cust_swap_test {
         void iter_swap(T, U) = delete;
 
         template <class T, class U = T>
-        concept bullet1 = requires(T && t, U && u) {
+        concept bullet1 = requires(T&& t, U&& u) {
             iter_swap(std::forward<T>(t), std::forward<U>(u));
         };
     } // namespace adl_barrier
@@ -3215,11 +3215,11 @@ namespace move_iterator_test {
             }
         };
 
-        input_iter()                                   = default;
-        input_iter(input_iter const&) requires CanCopy = default;
-        input_iter(input_iter&&)                       = default;
+        input_iter()                                              = default;
+        input_iter(input_iter const&) requires CanCopy            = default;
+        input_iter(input_iter&&)                                  = default;
         input_iter& operator=(input_iter const&) requires CanCopy = default;
-        input_iter& operator=(input_iter&&) = default;
+        input_iter& operator=(input_iter&&)                       = default;
 
         reference operator*() const;
         input_iter& operator++();
@@ -3338,8 +3338,8 @@ namespace move_iterator_test {
         typename move_sentinel<T>;
     };
     struct moveonly {
-        moveonly()           = default;
-        moveonly(moveonly&&) = default;
+        moveonly()                      = default;
+        moveonly(moveonly&&)            = default;
         moveonly& operator=(moveonly&&) = default;
     };
     STATIC_ASSERT(!CanMoveSentinel<void>);
