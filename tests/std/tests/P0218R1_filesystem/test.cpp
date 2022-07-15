@@ -3145,6 +3145,12 @@ void test_lexically_relative() {
 
     // LWG-3070
     EXPECT(path(LR"(\a:\b:)"sv).lexically_relative(LR"(\a:\c:)"sv).native() == LR"()"sv);
+
+    // LWG-3699
+    EXPECT(path(LR"(\\?\a:\foo)"sv).lexically_relative(LR"(\\?\a:\foo)"sv).native() == LR"(.)"sv);
+    EXPECT(path(LR"(a:\foo)"sv).lexically_relative(LR"(\\?\a:\foo)"sv).native() == LR"(.)"sv);
+    EXPECT(path(LR"(\\?\a:\foo)"sv).lexically_relative(LR"(a:\foo)"sv).native() == LR"(.)"sv);
+    EXPECT(path(LR"(\\?\a:\foo\bar\baz)"sv).lexically_relative(LR"(a:\foo)"sv).native() == LR"(bar\baz)"sv);
 }
 
 void test_lexically_proximate() {
