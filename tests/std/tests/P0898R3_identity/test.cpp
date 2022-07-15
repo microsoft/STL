@@ -10,8 +10,8 @@ using namespace std;
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
 struct S {
-    S()         = delete;
-    S(const S&) = delete;
+    S()                    = delete;
+    S(const S&)            = delete;
     S& operator=(const S&) = delete;
 };
 

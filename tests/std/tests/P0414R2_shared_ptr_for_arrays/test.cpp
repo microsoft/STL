@@ -907,7 +907,7 @@ struct BaseX {
     BaseX()          = default;
     virtual ~BaseX() = default;
 
-    BaseX(const BaseX&) = delete;
+    BaseX(const BaseX&)            = delete;
     BaseX& operator=(const BaseX&) = delete;
 };
 
@@ -917,7 +917,7 @@ struct BaseY {
     BaseY()          = default;
     virtual ~BaseY() = default;
 
-    BaseY(const BaseY&) = delete;
+    BaseY(const BaseY&)            = delete;
     BaseY& operator=(const BaseY&) = delete;
 };
 

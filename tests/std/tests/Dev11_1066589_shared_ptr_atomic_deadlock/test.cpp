@@ -21,7 +21,7 @@ struct Noisy {
         (void) atomic_load(&g_sp);
     }
 
-    Noisy(const Noisy&) = delete;
+    Noisy(const Noisy&)            = delete;
     Noisy& operator=(const Noisy&) = delete;
 };
 

@@ -223,12 +223,12 @@ struct SimpleBidIt {
     using pointer           = int*;
     using reference         = int&;
 
-    SimpleBidIt()                   = default;
-    SimpleBidIt(const SimpleBidIt&) = default;
-    SimpleBidIt(SimpleBidIt&&)      = default;
+    SimpleBidIt()                              = default;
+    SimpleBidIt(const SimpleBidIt&)            = default;
+    SimpleBidIt(SimpleBidIt&&)                 = default;
     SimpleBidIt& operator=(const SimpleBidIt&) = default;
-    SimpleBidIt& operator=(SimpleBidIt&&) = default;
-    ~SimpleBidIt()                        = default;
+    SimpleBidIt& operator=(SimpleBidIt&&)      = default;
+    ~SimpleBidIt()                             = default;
 
     int& operator*() const {
         static int val{};
@@ -275,12 +275,12 @@ struct FancyBidIt {
     using pointer           = int*;
     using reference         = int&;
 
-    FancyBidIt()                  = default;
-    FancyBidIt(const FancyBidIt&) = default;
-    FancyBidIt(FancyBidIt&&)      = default;
+    FancyBidIt()                             = default;
+    FancyBidIt(const FancyBidIt&)            = default;
+    FancyBidIt(FancyBidIt&&)                 = default;
     FancyBidIt& operator=(const FancyBidIt&) = default;
-    FancyBidIt& operator=(FancyBidIt&&) = default;
-    ~FancyBidIt()                       = default;
+    FancyBidIt& operator=(FancyBidIt&&)      = default;
+    ~FancyBidIt()                            = default;
 
     int& operator*() const {
         static int val{};

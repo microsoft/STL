@@ -1543,8 +1543,8 @@ namespace borrowed_range_testing {
 
 template <bool AllowNonConst, bool AllowConst, bool AllowSize>
 struct arbitrary_range {
-    arbitrary_range()                  = default;
-    arbitrary_range(arbitrary_range&&) = default;
+    arbitrary_range()                             = default;
+    arbitrary_range(arbitrary_range&&)            = default;
     arbitrary_range& operator=(arbitrary_range&&) = default;
 
     int* begin() requires AllowNonConst;
@@ -1565,8 +1565,8 @@ using immutable_sized_range      = arbitrary_range<false, true, true>;
 
 template <class Base>
 struct badsized_range : Base { // size() launches the missiles.
-    badsized_range()                 = default;
-    badsized_range(badsized_range&&) = default;
+    badsized_range()                            = default;
+    badsized_range(badsized_range&&)            = default;
     badsized_range& operator=(badsized_range&&) = default;
 
     [[noreturn]] int size() const {
@@ -1587,8 +1587,8 @@ constexpr bool ranges::disable_sized_range<badsized_range<T>> = true;
 
 // "strange" in that const-ness affects the iterator type
 struct strange_view {
-    strange_view()               = default;
-    strange_view(strange_view&&) = default;
+    strange_view()                          = default;
+    strange_view(strange_view&&)            = default;
     strange_view& operator=(strange_view&&) = default;
 
     int* begin();

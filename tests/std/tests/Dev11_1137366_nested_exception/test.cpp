@@ -46,7 +46,7 @@ struct AlreadyNested : nested_exception {};
 struct PolymorphicInt {
     explicit PolymorphicInt(const int n) : m_n(n) {}
 
-    PolymorphicInt(const PolymorphicInt&) = default;
+    PolymorphicInt(const PolymorphicInt&)            = default;
     PolymorphicInt& operator=(const PolymorphicInt&) = default;
     virtual ~PolymorphicInt()                        = default;
 

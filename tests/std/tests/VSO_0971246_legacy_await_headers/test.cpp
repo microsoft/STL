@@ -75,7 +75,7 @@ struct Immovable {
 
     explicit Immovable(int v) : val(v) {}
 
-    Immovable(Immovable const&) = delete;
+    Immovable(Immovable const&)            = delete;
     Immovable& operator=(Immovable const&) = delete;
 };
 

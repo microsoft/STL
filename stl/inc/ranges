@@ -231,7 +231,7 @@ namespace ranges {
         ~_Cached_position() = default;
 
         // Offsets are oblivious to copying, so cache values _do_ propagate via copying.
-        _Cached_position(const _Cached_position&) = default;
+        _Cached_position(const _Cached_position&)            = default;
         _Cached_position& operator=(const _Cached_position&) = default;
 
         // Offsets are potentially invalidated by move, so source caches are invalidated after move
@@ -1358,7 +1358,7 @@ namespace ranges {
             _Iterator(_Iterator&&)      = default;
 
             _Iterator& operator=(const _Iterator&) = delete;
-            _Iterator& operator=(_Iterator&&) = default;
+            _Iterator& operator=(_Iterator&&)      = default;
 
             _Iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -1503,7 +1503,7 @@ namespace ranges {
         constexpr owning_view(_Rng&& _Range_) noexcept(is_nothrow_move_constructible_v<_Rng>) // strengthened
             : _Range(_STD move(_Range_)) {}
 
-        owning_view(owning_view&&) = default;
+        owning_view(owning_view&&)            = default;
         owning_view& operator=(owning_view&&) = default;
 
         _NODISCARD constexpr _Rng& base() & noexcept {
@@ -5275,7 +5275,7 @@ namespace ranges {
             using difference_type  = range_difference_t<_Vw>;
             using value_type       = range_value_t<_Vw>;
 
-            _Inner_iterator(_Inner_iterator&&) = default;
+            _Inner_iterator(_Inner_iterator&&)            = default;
             _Inner_iterator& operator=(_Inner_iterator&&) = default;
 
             _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept /* strengthened */ {
@@ -5384,7 +5384,7 @@ namespace ranges {
                 }
             };
 
-            _Outer_iterator(_Outer_iterator&&) = default;
+            _Outer_iterator(_Outer_iterator&&)            = default;
             _Outer_iterator& operator=(_Outer_iterator&&) = default;
 
             _NODISCARD constexpr value_type operator*() const noexcept /* strengthened */ {

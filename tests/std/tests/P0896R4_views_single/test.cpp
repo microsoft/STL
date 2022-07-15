@@ -146,7 +146,7 @@ void test_non_trivially_destructible_type() { // COMPILE-ONLY
         ~non_trivially_destructible() {}
 
         // To test the correct specialization of _Copyable_box, this type must not be copy assignable.
-        non_trivially_destructible(const non_trivially_destructible&) = default;
+        non_trivially_destructible(const non_trivially_destructible&)            = default;
         non_trivially_destructible& operator=(const non_trivially_destructible&) = delete;
     };
 

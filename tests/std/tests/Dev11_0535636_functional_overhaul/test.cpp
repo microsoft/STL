@@ -730,7 +730,7 @@ struct BaseMeow {
     BaseMeow() {}
     virtual ~BaseMeow() {}
 
-    BaseMeow(const BaseMeow&) = delete;
+    BaseMeow(const BaseMeow&)            = delete;
     BaseMeow& operator=(const BaseMeow&) = delete;
 
     virtual int operator()(int, int) = 0;
@@ -2245,10 +2245,10 @@ struct TestNotFn {
 
     constexpr explicit TestNotFn(const int x) : m_x(x) {}
 
-    TestNotFn(const TestNotFn&) = delete;
-    TestNotFn(TestNotFn&&)      = default;
+    TestNotFn(const TestNotFn&)            = delete;
+    TestNotFn(TestNotFn&&)                 = default;
     TestNotFn& operator=(const TestNotFn&) = delete;
-    TestNotFn& operator=(TestNotFn&&) = delete;
+    TestNotFn& operator=(TestNotFn&&)      = delete;
 
     constexpr bool operator()(const int i) & {
         return i < m_x + 100;
@@ -2270,10 +2270,10 @@ struct TestNotFn {
 struct EmptyTestNotFn {
     constexpr explicit EmptyTestNotFn(int) {}
 
-    EmptyTestNotFn(const EmptyTestNotFn&)      = delete;
-    constexpr EmptyTestNotFn(EmptyTestNotFn&&) = default;
+    EmptyTestNotFn(const EmptyTestNotFn&)            = delete;
+    constexpr EmptyTestNotFn(EmptyTestNotFn&&)       = default;
     EmptyTestNotFn& operator=(const EmptyTestNotFn&) = delete;
-    EmptyTestNotFn& operator=(EmptyTestNotFn&&) = delete;
+    EmptyTestNotFn& operator=(EmptyTestNotFn&&)      = delete;
 
     constexpr bool operator()(const int i) & {
         return i < 1500;

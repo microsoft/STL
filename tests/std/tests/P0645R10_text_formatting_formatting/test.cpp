@@ -74,7 +74,7 @@ struct move_only_back_inserter {
     move_only_back_inserter() = default;
     explicit move_only_back_inserter(basic_string<charT>& str) : it{str} {}
 
-    move_only_back_inserter(const move_only_back_inserter&) = delete;
+    move_only_back_inserter(const move_only_back_inserter&)            = delete;
     move_only_back_inserter& operator=(const move_only_back_inserter&) = delete;
 
     move_only_back_inserter(move_only_back_inserter&& other) : it(other.it) {

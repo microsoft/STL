@@ -348,7 +348,7 @@ struct _Fs_file {
         *_Err = __std_fs_open_handle(&_Raw, _File_name, _Desired_access, _Flags);
     }
 
-    _Fs_file(const _Fs_file&) = delete;
+    _Fs_file(const _Fs_file&)            = delete;
     _Fs_file& operator=(const _Fs_file&) = delete;
 
     ~_Fs_file() {

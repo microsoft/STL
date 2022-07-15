@@ -48,7 +48,7 @@ public:
         checked_fesetround(newRound);
     }
 
-    RoundGuard(const RoundGuard&) = delete;
+    RoundGuard(const RoundGuard&)            = delete;
     RoundGuard& operator=(const RoundGuard&) = delete;
 
     ~RoundGuard() {
@@ -75,7 +75,7 @@ public:
         checked_feholdexcept(&env);
     }
 
-    ExceptGuard(const ExceptGuard&) = delete;
+    ExceptGuard(const ExceptGuard&)            = delete;
     ExceptGuard& operator=(const ExceptGuard&) = delete;
 
     ~ExceptGuard() {
@@ -94,7 +94,7 @@ class ExceptGuard {
 public:
     ExceptGuard() {}
 
-    ExceptGuard(const ExceptGuard&) = delete;
+    ExceptGuard(const ExceptGuard&)            = delete;
     ExceptGuard& operator=(const ExceptGuard&) = delete;
 
     ~ExceptGuard() {}

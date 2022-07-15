@@ -252,7 +252,7 @@ namespace {
             CHECK(allocations_.empty());
         }
 
-        recording_resource(recording_resource const&) = delete;
+        recording_resource(recording_resource const&)            = delete;
         recording_resource& operator=(recording_resource const&) = delete;
 
         void release() noexcept {
@@ -956,7 +956,7 @@ namespace {
                     ~S() {
                         destroy_ref = true;
                     }
-                    S(const S&) = delete;
+                    S(const S&)            = delete;
                     S& operator=(const S&) = delete;
                 };
                 std::pmr::polymorphic_allocator<S> a{};

@@ -273,7 +273,6 @@
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2432R1 Fix istream_view
-// P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -612,7 +611,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202206L
+#define _MSVC_STL_UPDATE  202207L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -622,12 +621,12 @@
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 13
-#error STL1000: Unexpected compiler version, expected Clang 13.0.0 or newer.
+#if __clang_major__ < 14
+#error STL1000: Unexpected compiler version, expected Clang 14.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1932 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.32 or newer.
+#if _MSC_VER < 1933 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.33 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers

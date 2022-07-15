@@ -67,7 +67,7 @@ struct min_alloc {
     min_alloc() = default;
     template <typename U>
     min_alloc(const min_alloc<U>&) {}
-    min_alloc(const min_alloc&) = default;
+    min_alloc(const min_alloc&)            = default;
     min_alloc& operator=(const min_alloc&) = default;
 
     value_type* allocate(size_t n) {

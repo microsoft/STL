@@ -28,7 +28,7 @@ public:
         g_prohibit_allocations = value;
     }
 
-    prohibit_allocations(const prohibit_allocations&) = delete;
+    prohibit_allocations(const prohibit_allocations&)            = delete;
     prohibit_allocations& operator=(const prohibit_allocations&) = delete;
 
     ~prohibit_allocations() {
@@ -46,7 +46,7 @@ struct test_allocator {
     test_allocator() = default;
     template <typename U>
     test_allocator(const test_allocator<U>&) {}
-    test_allocator(const test_allocator&) = default;
+    test_allocator(const test_allocator&)            = default;
     test_allocator& operator=(const test_allocator&) = default;
 
     T* allocate(const size_t n) {

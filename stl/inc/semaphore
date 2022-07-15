@@ -68,7 +68,7 @@ public:
             "Precondition: desired >= 0, and desired <= max() (N4861 [thread.sema.cnt]/5)");
     }
 
-    counting_semaphore(const counting_semaphore&) = delete;
+    counting_semaphore(const counting_semaphore&)            = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
     void release(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
@@ -217,7 +217,7 @@ public:
                                           "(N4861 [thread.sema.cnt]/5)");
     }
 
-    counting_semaphore(const counting_semaphore&) = delete;
+    counting_semaphore(const counting_semaphore&)            = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
     void release(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {
