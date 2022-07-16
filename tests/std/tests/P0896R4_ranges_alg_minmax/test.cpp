@@ -351,7 +351,7 @@ void test_gh_1893() {
           [&projection_count](const auto& x) -> decltype(auto) {
             ++projection_count;
             return x.get();
-          });
+        });
     (void) clamped;
 #ifdef _DEBUG
     ASSERT(projection_count == 5);

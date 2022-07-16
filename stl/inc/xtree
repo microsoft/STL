@@ -336,8 +336,8 @@ struct _Tree_node {
         _Black
     };
 
-    _Tree_node()                  = default;
-    _Tree_node(const _Tree_node&) = delete;
+    _Tree_node()                             = default;
+    _Tree_node(const _Tree_node&)            = delete;
     _Tree_node& operator=(const _Tree_node&) = delete;
 
     template <class _Alloc>
@@ -786,7 +786,7 @@ struct _Tree_temp_node_alloc : _Alloc_construct_ptr<_Alnode> {
         _Alloc_construct_ptr<_Alnode>::_Allocate();
     }
 
-    _Tree_temp_node_alloc(const _Tree_temp_node_alloc&) = delete;
+    _Tree_temp_node_alloc(const _Tree_temp_node_alloc&)            = delete;
     _Tree_temp_node_alloc& operator=(const _Tree_temp_node_alloc&) = delete;
 };
 
@@ -812,7 +812,7 @@ struct _Tree_temp_node : _Tree_temp_node_alloc<_Alnode> {
         this->_Ptr->_Isnil = false;
     }
 
-    _Tree_temp_node(const _Tree_temp_node&) = delete;
+    _Tree_temp_node(const _Tree_temp_node&)            = delete;
     _Tree_temp_node& operator=(const _Tree_temp_node&) = delete;
 
     ~_Tree_temp_node() {

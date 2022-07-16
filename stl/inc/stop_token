@@ -43,7 +43,7 @@ private:
 public:
     explicit _Stop_callback_base(const _Callback_fn _Fn_) noexcept : _Fn{_Fn_} {}
 
-    _Stop_callback_base(const _Stop_callback_base&) = delete;
+    _Stop_callback_base(const _Stop_callback_base&)            = delete;
     _Stop_callback_base& operator=(const _Stop_callback_base&) = delete;
 
 protected:

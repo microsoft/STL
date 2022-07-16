@@ -91,7 +91,7 @@ void test_to_bytes() { // test wstring_convert from wide to bytes
     // check error handling
     const char* mesg = "to_bytes didn't throw";
     wchar_t bad[]    = {
-        // bad two-word sequence
+           // bad two-word sequence
         (wchar_t) 0xd800, // first of two words
         (wchar_t) 0xd800, // not second word
         0,

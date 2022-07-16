@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// REQUIRES: debug_CRT
+
 #include <assert.h>
 #include <crtdbg.h>
 #include <locale>
@@ -20,9 +22,7 @@ int main() {
         v.insert(v.begin(), 2, "2");
     }
 
-#ifdef _DEBUG
     assert(!_CrtDumpMemoryLeaks());
-#endif
 
     {
         string one("111");
@@ -32,21 +32,17 @@ int main() {
         two = three;
     }
 
-#ifdef _DEBUG
     assert(!_CrtDumpMemoryLeaks());
-#endif
 
     // Also test DevDiv-846054 "<locale>: Spurious memory leaks".
     locale::global(locale(""));
 
-#ifdef _DEBUG
     assert(!_CrtDumpMemoryLeaks());
-#endif
 }
 
 // Also test DevDiv-810608 "<xlocale>: [torino][boost]error C2665:
 // 'std::_Crt_new_delete::operator new' : none of the 2 overloads could convert all the argument types".
-void meow(void* pv) {
+void meow(void* pv) { // COMPILE-ONLY
     // Saying "new" instead of "::new" is intentional here.
     new (pv) locale();
 }

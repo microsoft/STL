@@ -292,8 +292,8 @@ STATIC_ASSERT(is_array_v<const volatile int[]>);
 // lvalue/rvalue references aren't arrays.
 STATIC_ASSERT(!is_array_v<int (&)[3]>);
 STATIC_ASSERT(!is_array_v<int (&)[]>);
-STATIC_ASSERT(!is_array_v<int(&&)[3]>);
-STATIC_ASSERT(!is_array_v<int(&&)[]>);
+STATIC_ASSERT(!is_array_v<int (&&)[3]>);
+STATIC_ASSERT(!is_array_v<int (&&)[]>);
 
 #if _HAS_CXX20
 STATIC_ASSERT(is_bounded_array_v<int[3]>);
@@ -319,12 +319,12 @@ STATIC_ASSERT(is_unbounded_array_v<const volatile int[]>);
 // lvalue/rvalue references aren't bounded/unbounded arrays.
 STATIC_ASSERT(!is_bounded_array_v<int (&)[3]>);
 STATIC_ASSERT(!is_bounded_array_v<int (&)[]>);
-STATIC_ASSERT(!is_bounded_array_v<int(&&)[3]>);
-STATIC_ASSERT(!is_bounded_array_v<int(&&)[]>);
+STATIC_ASSERT(!is_bounded_array_v<int (&&)[3]>);
+STATIC_ASSERT(!is_bounded_array_v<int (&&)[]>);
 STATIC_ASSERT(!is_unbounded_array_v<int (&)[3]>);
 STATIC_ASSERT(!is_unbounded_array_v<int (&)[]>);
-STATIC_ASSERT(!is_unbounded_array_v<int(&&)[3]>);
-STATIC_ASSERT(!is_unbounded_array_v<int(&&)[]>);
+STATIC_ASSERT(!is_unbounded_array_v<int (&&)[3]>);
+STATIC_ASSERT(!is_unbounded_array_v<int (&&)[]>);
 #endif // _HAS_CXX20
 
 
@@ -450,7 +450,7 @@ struct test_abc1 {
     test_abc1();
     virtual ~test_abc1();
     test_abc1(const test_abc1&);
-    test_abc1& operator  =(const test_abc1&);
+    test_abc1& operator=(const test_abc1&);
     virtual void meow()  = 0;
     virtual void meow2() = 0;
 };
@@ -729,8 +729,8 @@ namespace swappable_trait_tests {
 
     template <bool Throws>
     struct type<implicitly_unswappable, Throws> {
-        type()        = default;
-        type(type&&)  = delete;
+        type()                  = default;
+        type(type&&)            = delete;
         type& operator=(type&&) = delete;
     };
 
@@ -744,7 +744,7 @@ namespace swappable_trait_tests {
         type& operator=(type&&) noexcept(!Throws) {
             return *this;
         }
-        type(const type&) = default;
+        type(const type&)            = default;
         type& operator=(const type&) = default;
     };
 
@@ -842,7 +842,7 @@ namespace swappable_trait_tests {
 struct Immovable {
     Immovable() {}
     ~Immovable() {}
-    Immovable(const Immovable&) = delete;
+    Immovable(const Immovable&)            = delete;
     Immovable& operator=(const Immovable&) = delete;
 };
 
@@ -1291,8 +1291,8 @@ namespace {
     constexpr bool is_permissive = detail::Derived<int>::test();
 
     struct move_only {
-        move_only()            = default;
-        move_only(move_only&&) = default;
+        move_only()                       = default;
+        move_only(move_only&&)            = default;
         move_only& operator=(move_only&&) = default;
     };
 
@@ -1355,9 +1355,9 @@ STATIC_ASSERT(is_same_v<common_reference_t<int const&>, int const&>);
 STATIC_ASSERT(is_same_v<common_reference_t<int const&&>, int const&&>);
 STATIC_ASSERT(is_same_v<common_reference_t<int volatile[]>, int volatile[]>);
 STATIC_ASSERT(is_same_v<common_reference_t<int volatile (&)[]>, int volatile (&)[]>);
-STATIC_ASSERT(is_same_v<common_reference_t<int volatile(&&)[]>, int volatile(&&)[]>);
+STATIC_ASSERT(is_same_v<common_reference_t<int volatile (&&)[]>, int volatile (&&)[]>);
 STATIC_ASSERT(is_same_v<common_reference_t<void (&)()>, void (&)()>);
-STATIC_ASSERT(is_same_v<common_reference_t<void(&&)()>, void(&&)()>);
+STATIC_ASSERT(is_same_v<common_reference_t<void (&&)()>, void (&&)()>);
 STATIC_ASSERT(is_same_v<common_reference_t<void() volatile>, void() volatile>);
 STATIC_ASSERT(is_same_v<common_reference_t<void() &&>, void() &&>);
 
@@ -1396,14 +1396,14 @@ STATIC_ASSERT(is_same_v<common_reference_t<simple_base const&&, simple_derived c
 // FAIL IF AND WHEN EDG STARTS BEHAVING CORRECTLY. We can then remove the non-workaround to defend against
 // regression.
 STATIC_ASSERT(!is_same_v<common_reference_t<int (&)(), int (&)()>, int (&)()>);
-STATIC_ASSERT(!is_same_v<common_reference_t<int(&&)(), int (&)()>, int (&)()>);
-STATIC_ASSERT(!is_same_v<common_reference_t<int (&)(), int(&&)()>, int (&)()>);
-STATIC_ASSERT(!is_same_v<common_reference_t<int(&&)(), int(&&)()>, int(&&)()>);
+STATIC_ASSERT(!is_same_v<common_reference_t<int (&&)(), int (&)()>, int (&)()>);
+STATIC_ASSERT(!is_same_v<common_reference_t<int (&)(), int (&&)()>, int (&)()>);
+STATIC_ASSERT(!is_same_v<common_reference_t<int (&&)(), int (&&)()>, int (&&)()>);
 #else // ^^^ EDG / not EDG vvv
 STATIC_ASSERT(is_same_v<common_reference_t<int (&)(), int (&)()>, int (&)()>);
-STATIC_ASSERT(is_same_v<common_reference_t<int(&&)(), int (&)()>, int (&)()>);
-STATIC_ASSERT(is_same_v<common_reference_t<int (&)(), int(&&)()>, int (&)()>);
-STATIC_ASSERT(is_same_v<common_reference_t<int(&&)(), int(&&)()>, int(&&)()>);
+STATIC_ASSERT(is_same_v<common_reference_t<int (&&)(), int (&)()>, int (&)()>);
+STATIC_ASSERT(is_same_v<common_reference_t<int (&)(), int (&&)()>, int (&)()>);
+STATIC_ASSERT(is_same_v<common_reference_t<int (&&)(), int (&&)()>, int (&&)()>);
 #endif // __EDG__
 
 STATIC_ASSERT(is_same_v<common_reference_t<int const volatile&&, int volatile&&>, int const volatile&&>);

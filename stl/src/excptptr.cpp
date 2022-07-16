@@ -52,7 +52,7 @@ namespace {
 
         constexpr _Constexpr_excptptr_immortalize_impl() noexcept : _Storage{} {}
 
-        _Constexpr_excptptr_immortalize_impl(const _Constexpr_excptptr_immortalize_impl&) = delete;
+        _Constexpr_excptptr_immortalize_impl(const _Constexpr_excptptr_immortalize_impl&)            = delete;
         _Constexpr_excptptr_immortalize_impl& operator=(const _Constexpr_excptptr_immortalize_impl&) = delete;
 
         _MSVC_NOOP_DTOR ~_Constexpr_excptptr_immortalize_impl() {
