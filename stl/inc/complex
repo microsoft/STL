@@ -79,7 +79,7 @@ namespace _Float_multi_prec {
 
     // 1x precision + 1x precision -> 2x precision
     // the result is exact when:
-    // 1) the result doesn't overflow
+    // 1) no internal overflow occurs
     // 2) either underflow is gradual, or no internal underflow occurs
     // 3) intermediate precision is either the same as _Ty, or greater than twice the precision of _Ty
     // 4) parameters and local variables do not retain extra intermediate precision
@@ -100,7 +100,7 @@ namespace _Float_multi_prec {
     // requires: exponent(_Xval) + countr_zero(significand(_Xval)) >= exponent(_Yval) || _Xval == 0
     // the result is exact when:
     // 0) the requirement above is satisfied
-    // 1) no internal overflow occurs
+    // 1) the result doesn't overflow
     // 2) either underflow is gradual, or no internal underflow occurs
     // 3) intermediate precision is either the same as _Ty, or greater than twice the precision of _Ty
     // 4) parameters and local variables do not retain extra intermediate precision
