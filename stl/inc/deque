@@ -818,7 +818,7 @@ public:
 
     template <class... _Valty>
     iterator emplace(const_iterator _Where, _Valty&&... _Val) {
-        const auto _Off = static_cast<size_type>(_Where - begin());
+        const auto _Off = static_cast<size_type>(_Where - _Unchecked_begin());
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Off <= _Mysize(), "deque emplace iterator outside range");
@@ -826,33 +826,33 @@ public:
 
         if (_Off <= _Mysize() / 2) { // closer to front, push to front then rotate
             emplace_front(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
+            _STD rotate(_Unchecked_begin(), _Next_iter(_Unchecked_begin()),_Unchecked_begin() + static_cast<difference_type>(1 + _Off));
         } else { // closer to back, push to back then rotate
             emplace_back(_STD forward<_Valty>(_Val)...);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
+            _STD rotate(_Unchecked_begin() + static_cast<difference_type>(_Off), _Prev_iter(_Unchecked_end()),_Unchecked_end());
         }
-        return begin() + static_cast<difference_type>(_Off);
+        return _Unchecked_begin() + static_cast<difference_type>(_Off);
     }
 
     deque(initializer_list<_Ty> _Ilist, const _Alloc& _Al = allocator_type())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
         _Alproxy_ty _Alproxy(_Getal());
         _Container_proxy_ptr12<_Alproxy_ty> _Proxy(_Alproxy, _Get_data());
-        _Construct(_Ilist.begin(), _Ilist.end());
+        _Construct(_Ilist._Unchecked_begin(), _Ilist._Unchecked_end());
         _Proxy._Release();
     }
 
     deque& operator=(initializer_list<_Ty> _Ilist) {
-        assign(_Ilist.begin(), _Ilist.end());
+        assign(_Ilist._Unchecked_begin(), _Ilist._Unchecked_end());
         return *this;
     }
 
     void assign(initializer_list<_Ty> _Ilist) {
-        assign(_Ilist.begin(), _Ilist.end());
+        assign(_Ilist._Unchecked_begin(), _Ilist._Unchecked_end());
     }
 
     iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) {
-        return insert(_Where, _Ilist.begin(), _Ilist.end());
+        return insert(_Where, _Ilist._Unchecked_begin(), _Ilist._Unchecked_end());
     }
 
     ~deque() noexcept {
@@ -959,7 +959,7 @@ public:
 
         if ((empty() && _Mapsize() > 0)
             || (!empty() && size() <= _Newcapacity && _Newcapacity < _Oldcapacity)) { // worth shrinking, do it
-            deque _Tmp(_STD make_move_iterator(begin()), _STD make_move_iterator(end()));
+            deque _Tmp(_STD make_move_iterator(_Unchecked_begin()), _STD make_move_iterator(_Unchecked_end()));
             swap(_Tmp);
         }
     }
@@ -1007,7 +1007,7 @@ public:
             _Xran();
         }
 
-        return *(begin() + static_cast<difference_type>(_Pos));
+        return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
     }
 
     _NODISCARD reference at(size_type _Pos) {
@@ -1015,7 +1015,7 @@ public:
             _Xran();
         }
 
-        return *(begin() + static_cast<difference_type>(_Pos));
+        return *(_Unchecked_begin() + static_cast<difference_type>(_Pos));
     }
 
     _NODISCARD const_reference operator[](size_type _Pos) const noexcept /* strengthened */ {
@@ -1188,7 +1188,7 @@ public:
     }
 
     iterator insert(const_iterator _Where, const _Ty& _Val) {
-        size_type _Off = static_cast<size_type>(_Where - begin());
+        size_type _Off = static_cast<size_type>(_Where - _Unchecked_begin());
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Off <= _Mysize(), "deque insert iterator outside range");
@@ -1196,20 +1196,20 @@ public:
 
         if (_Off <= _Mysize() / 2) { // closer to front, push to front then copy
             push_front(_Val);
-            _STD rotate(begin(), _Next_iter(begin()), begin() + static_cast<difference_type>(1 + _Off));
+            _STD rotate(_Unchecked_begin(), _Next_iter(_Unchecked_begin()),_Unchecked_begin() + static_cast<difference_type>(1 + _Off));
         } else { // closer to back, push to back then copy
             push_back(_Val);
-            _STD rotate(begin() + static_cast<difference_type>(_Off), _Prev_iter(end()), end());
+            _STD rotate(_Unchecked_begin() + static_cast<difference_type>(_Off), _Prev_iter(_Unchecked_end()),_Unchecked_end());
         }
 
-        return begin() + static_cast<difference_type>(_Off);
+        return _Unchecked_begin() + static_cast<difference_type>(_Off);
     }
 
     iterator insert(const_iterator _Where, _CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) {
         // insert _Count * _Val at _Where
-        size_type _Off = static_cast<size_type>(_Where - begin());
+        size_type _Off = static_cast<size_type>(_Where - _Unchecked_begin());
         _Insert_n(_Where, _Count, _Val);
-        return begin() + static_cast<difference_type>(_Off);
+        return _Unchecked_begin() + static_cast<difference_type>(_Off);
     }
 
 private:
@@ -1240,7 +1240,7 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         // insert [_First, _Last) at _Where, input iterators
-        size_type _Off = static_cast<size_type>(_Where - begin());
+        size_type _Off = static_cast<size_type>(_Where - _Unchecked_begin());
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Mysize() >= _Off, "deque insert iterator outside range");
@@ -1262,9 +1262,9 @@ public:
                 _Guard._Container = nullptr;
 
                 size_type _Num = _Mysize() - _Oldsize;
-                _STD reverse(begin(), begin() + static_cast<difference_type>(_Num)); // flip new stuff in place
-                _STD rotate(begin(), begin() + static_cast<difference_type>(_Num),
-                    begin() + static_cast<difference_type>(_Num + _Off));
+                _STD reverse(_Unchecked_begin(),_Unchecked_begin() + static_cast<difference_type>(_Num)); // flip new stuff in place
+                _STD rotate(_Unchecked_begin(), _Unchecked_begin() + static_cast<difference_type>(_Num),
+                    _Unchecked_begin() + static_cast<difference_type>(_Num + _Off));
             } else { // closer to back
                 _Orphan_all();
                 _Restore_old_size_guard<_Pop_direction::_Back> _Guard{this, _Oldsize};
@@ -1274,12 +1274,12 @@ public:
 
                 _Guard._Container = nullptr;
 
-                _STD rotate(begin() + static_cast<difference_type>(_Off),
-                    begin() + static_cast<difference_type>(_Oldsize), end());
+                _STD rotate(_Unchecked_begin() + static_cast<difference_type>(_Off),
+                    _Unchecked_begin() + static_cast<difference_type>(_Oldsize), _Unchecked_end());
             }
         }
 
-        return begin() + static_cast<difference_type>(_Off);
+        return _Unchecked_begin() + static_cast<difference_type>(_Off);
     }
 
     iterator erase(const_iterator _Where) noexcept(is_nothrow_move_assignable_v<value_type>) /* strengthened */ {
@@ -1292,15 +1292,16 @@ public:
         iterator _Last  = _Make_iter(_Last_arg);
 
 #if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_First <= _Last && begin() <= _First && _Last <= end(), "deque erase iterator outside range");
+        _STL_VERIFY(_First <= _Last && _Unchecked_begin() <= _First && _Last <= _Unchecked_end(),
+            "deque erase iterator outside range");
         _Adl_verify_range(_First, _Last);
 
-        auto _Off   = static_cast<size_type>(_First - begin());
+        auto _Off   = static_cast<size_type>(_First - _Unchecked_begin());
         auto _Count = static_cast<size_type>(_Last - _First);
         bool _Moved = _Off > 0 && _Off + _Count < _Mysize();
 
 #else // _ITERATOR_DEBUG_LEVEL == 2
-        auto _Off   = static_cast<size_type>(_First - begin());
+        auto _Off   = static_cast<size_type>(_First - _Unchecked_begin());
         auto _Count = static_cast<size_type>(_Last - _First);
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
@@ -1308,13 +1309,13 @@ public:
             return _First;
         }
 
-        if (_Off < static_cast<size_type>(end() - _Last)) { // closer to front
-            _STD move_backward(begin(), _First, _Last); // copy over hole
+        if (_Off < static_cast<size_type>(_Unchecked_end() - _Last)) { // closer to front
+            _STD move_backward(_Unchecked_begin(), _First, _Last); // copy over hole
             for (; _Count > 0; --_Count) {
                 pop_front(); // pop copied elements
             }
         } else { // closer to back
-            _STD move(_Last, end(), _First); // copy over hole
+            _STD move(_Last, _Unchecked_end(), _First); // copy over hole
             for (; _Count > 0; --_Count) {
                 pop_back(); // pop copied elements
             }
@@ -1326,7 +1327,7 @@ public:
         }
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
-        return begin() + static_cast<difference_type>(_Off);
+        return _Unchecked_begin() + static_cast<difference_type>(_Off);
     }
 
 private:
@@ -1358,7 +1359,7 @@ private:
     void _Insert_n(const_iterator _Where, size_type _Count, const _Ty& _Val) { // insert _Count * _Val at _Where
         iterator _Mid;
         size_type _Num;
-        size_type _Off     = static_cast<size_type>(_Where - begin());
+        size_type _Off     = static_cast<size_type>(_Where - _Unchecked_begin());
         size_type _Oldsize = _Mysize();
         size_type _Rem     = _Oldsize - _Off;
 
@@ -1373,21 +1374,21 @@ private:
                     push_front(_Val); // push excess values
                 }
                 for (_Num = _Off; _Num > 0; --_Num) {
-                    push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push prefix
+                    push_front(_Unchecked_begin()[static_cast<difference_type>(_Count - 1)]); // push prefix
                 }
 
-                _Mid = begin() + static_cast<difference_type>(_Count);
+                _Mid = _Unchecked_begin() + static_cast<difference_type>(_Count);
                 _STD fill(_Mid, _Mid + static_cast<difference_type>(_Off), _Val); // fill in rest of values
             } else { // insert not longer than prefix
                 for (_Num = _Count; _Num > 0; --_Num) {
-                    push_front(begin()[static_cast<difference_type>(_Count - 1)]); // push part of prefix
+                    push_front(_Unchecked_begin()[static_cast<difference_type>(_Count - 1)]); // push part of prefix
                 }
 
-                _Mid = begin() + static_cast<difference_type>(_Count);
+                _Mid = _Unchecked_begin() + static_cast<difference_type>(_Count);
                 _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
                 _STD move(_Mid + static_cast<difference_type>(_Count), _Mid + static_cast<difference_type>(_Off),
                     _Mid); // copy rest of prefix
-                _STD fill(begin() + static_cast<difference_type>(_Off), _Mid + static_cast<difference_type>(_Off),
+                _STD fill(_Unchecked_begin() + static_cast<difference_type>(_Off),_Mid + static_cast<difference_type>(_Off),
                     _Tmp._Get_value()); // fill in values
             }
             _Guard._Container = nullptr;
@@ -1399,18 +1400,18 @@ private:
                     _Emplace_back_internal(_Val); // push excess values
                 }
                 for (_Num = 0; _Num < _Rem; ++_Num) {
-                    _Emplace_back_internal(begin()[static_cast<difference_type>(_Off + _Num)]); // push suffix
+                    _Emplace_back_internal(_Unchecked_begin()[static_cast<difference_type>(_Off + _Num)]); // push suffix
                 }
 
-                _Mid = begin() + static_cast<difference_type>(_Off);
+                _Mid = _Unchecked_begin() + static_cast<difference_type>(_Off);
                 _STD fill(_Mid, _Mid + static_cast<difference_type>(_Rem), _Val); // fill in rest of values
             } else { // insert not longer than prefix
                 for (_Num = 0; _Num < _Count; ++_Num) {
-                    _Emplace_back_internal(
-                        begin()[static_cast<difference_type>(_Off + _Rem - _Count + _Num)]); // push part of prefix
+                    _Emplace_back_internal(_Unchecked_begin()[static_cast<difference_type>(
+                        _Off + _Rem - _Count + _Num)]); // push part of prefix
                 }
 
-                _Mid = begin() + static_cast<difference_type>(_Off);
+                _Mid = _Unchecked_begin() + static_cast<difference_type>(_Off);
                 _Alloc_temporary2<_Alty> _Tmp(_Getal(), _Val); // in case _Val is in sequence
                 _STD move_backward(_Mid, _Mid + static_cast<difference_type>(_Rem - _Count),
                     _Mid + static_cast<difference_type>(_Rem)); // copy rest of prefix
