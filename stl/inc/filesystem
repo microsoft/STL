@@ -2062,13 +2062,13 @@ namespace filesystem {
         case file_type::regular:
         case file_type::directory:
         case file_type::symlink:
+        case file_type::junction:
             return false;
         case file_type::block:
         case file_type::character:
         case file_type::fifo:
         case file_type::socket:
         case file_type::unknown:
-        case file_type::junction:
         default:
             return true;
         }
@@ -2086,7 +2086,7 @@ namespace filesystem {
 
     _NODISCARD inline bool is_symlink(const file_status _Status) noexcept {
         // tests whether _Status indicates a symlink
-        return _Status.type() == file_type::symlink;
+        return _Status.type() == file_type::symlink || _Status.type() == file_type::junction;
     }
 
     struct _File_status_and_error {
