@@ -492,7 +492,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_read_name_from_reparse_data_buffer(_In_ __std_fs_reparse_data_buffer* const _Buffer,
         _Out_ wchar_t** const _Offset, _Out_ unsigned short* const _Length) noexcept {
-    // this is a symlink (IO_REPARSE_TAG_SYMLINK) or junctino (IO_REPARSE_TAG_MOUNT_POINT)
+    // this is a symlink (IO_REPARSE_TAG_SYMLINK) or junction (IO_REPARSE_TAG_MOUNT_POINT)
     if (_Buffer->_Reparse_tag == IO_REPARSE_TAG_SYMLINK || _Buffer->_Reparse_tag == IO_REPARSE_TAG_MOUNT_POINT) {
         auto& _Symlink_buffer             = _Buffer->_Symbolic_link_reparse_buffer;
         const unsigned short _Temp_length = _Symlink_buffer._Print_name_length / sizeof(wchar_t);
