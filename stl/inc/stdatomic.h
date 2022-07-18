@@ -117,6 +117,8 @@ using _STD atomic_fetch_sub;
 using _STD atomic_fetch_sub_explicit;
 using _STD atomic_fetch_or;
 using _STD atomic_fetch_or_explicit;
+using _STD atomic_fetch_xor;
+using _STD atomic_fetch_xor_explicit;
 using _STD atomic_fetch_and;
 using _STD atomic_fetch_and_explicit;
 using _STD atomic_flag_test_and_set;
