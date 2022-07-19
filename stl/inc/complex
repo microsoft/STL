@@ -19,18 +19,18 @@
 #ifdef _M_CEE_PURE
 // no intrinsics for /clr:pure
 #elif defined(_M_ARM64) || defined(_M_ARM64EC)
-// https://docs.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions?view=vs-2019#base-requirements
+// https://docs.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions?view=msvc-170#base-requirements
 // Both floating-point and NEON support are presumed to be present in hardware.
 #define _FMP_USING_STD_FMA
 #elif defined(__clang__) // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
 // TRANSITION, not using x86/x64 FMA intrinsics for Clang yet
-#elif defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+#elif defined(_M_IX86) || defined(_M_X64)
 #define _FMP_USING_X86_X64_INTRINSICS
 #include <emmintrin.h>
 #include <isa_availability.h>
 extern "C" int __isa_available;
 extern "C" __m128d __cdecl _mm_fmsub_sd(__m128d, __m128d, __m128d);
-#endif // ^^^ defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC)) ^^^
+#endif // ^^^ defined(_M_IX86) || defined(_M_X64) ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
