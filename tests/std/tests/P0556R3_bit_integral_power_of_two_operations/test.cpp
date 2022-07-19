@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <bit>
 #include <limits>
+#include <type_traits>
 #include <utility>
 
 using namespace std;
@@ -82,6 +83,10 @@ constexpr bool test_bit_width() {
     for (int i = 1; i < digits; ++i) {
         assert(bit_width(static_cast<T>(T{1} << i)) == static_cast<T>(i + 1));
     }
+
+    // LWG-3656: bit_width returns int
+    static_assert(is_same_v<decltype(bit_width(T{0})), int>);
+
     return true;
 }
 
