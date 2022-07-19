@@ -2882,7 +2882,6 @@ void test_status() {
     EXPECT(!is_other(file_status{file_type::not_found}));
     EXPECT(is_other(file_status{file_type::block}));
     EXPECT(is_other(file_status{file_type::character}));
-    EXPECT(is_other(file_status{file_type::junction}));
     EXPECT(is_other(file_status{file_type::socket}));
     EXPECT(is_other(file_status{file_type::unknown}));
     EXPECT(!is_regular_file(file_status{}));
@@ -2891,6 +2890,7 @@ void test_status() {
     EXPECT(is_socket(file_status{file_type::socket}));
     EXPECT(!is_symlink(file_status{}));
     EXPECT(is_symlink(file_status{file_type::symlink}));
+    EXPECT(is_symlink(file_status{file_type::junction}));
 
     for (auto&& nonexistent : nonexistentPaths) {
         EXPECT(!exists(nonexistent));
