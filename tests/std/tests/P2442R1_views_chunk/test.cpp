@@ -460,7 +460,8 @@ constexpr bool test_input(Rng&& rng, Expected&& expected) {
 
     auto val_ty = *outer_iter;
     if constexpr (sized_sentinel_for<sentinel_t<Rng>, iterator_t<Rng>>) {
-        assert(val_ty.size() == 2);
+        const same_as<_Make_unsigned_like_t<ranges::range_difference_t<V>>> auto s = val_ty.size(); // test LWG-3707
+        assert(s == 2);
     }
 
     auto inner_iter                            = val_ty.begin();

@@ -5380,7 +5380,8 @@ namespace ranges {
                 _NODISCARD constexpr auto size() const
                     noexcept(noexcept(_RANGES end(_Parent->_Range) - *_Parent->_Current)) /* strengthened */
                     requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>> {
-                    return (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current);
+                    return _To_unsigned_like(
+                        (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current));
                 }
             };
 
