@@ -31,8 +31,6 @@
 
 #include <Windows.h>
 
-using namespace std;
-
 int main() {
     // Track CRT blocks
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_CRT_DF);
@@ -40,7 +38,7 @@ int main() {
     {
         // Allocate long lived objects in the CRT.
         // We don't want these objects to show up as leaks.
-        iostream s(nullptr);
+        std::iostream s(nullptr);
     }
 
     // Get memory state before creating iostream

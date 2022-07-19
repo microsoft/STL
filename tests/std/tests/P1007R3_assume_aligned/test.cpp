@@ -5,16 +5,14 @@
 #include <cstddef>
 #include <memory>
 
-using namespace std;
-
 constexpr void can_change_value_via_assume_aligned(int* p) {
-    int* p1 = assume_aligned<256>(p);
+    int* p1 = std::assume_aligned<256>(p);
     p1[0]   = 10;
     p1[1]   = -15;
 }
 
 constexpr int can_read_value_via_assume_aligned_and_sum_it(int const* p, size_t size) {
-    int const* p1 = assume_aligned<256>(p);
+    int const* p1 = std::assume_aligned<256>(p);
     int result    = 0;
     for (size_t i = 0; i < size; ++i) {
         result += p1[i];

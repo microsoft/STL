@@ -9,7 +9,6 @@
 #include <limits>
 #include <type_traits>
 #include <utility>
-using namespace std;
 
 // structure sizing depends on a packing of 8, which is the default
 

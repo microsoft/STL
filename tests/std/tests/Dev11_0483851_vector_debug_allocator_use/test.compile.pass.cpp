@@ -24,11 +24,11 @@ struct simple_allocator : Base {
     template <typename U, typename UB>
     simple_allocator(simple_allocator<U, UB> const&) {}
 
-    value_type* allocate(size_t n) {
+    value_type* allocate(std::size_t n) {
         return static_cast<value_type*>(malloc(n * sizeof(value_type)));
     }
 
-    void deallocate(value_type* p, size_t) {
+    void deallocate(value_type* p, std::size_t) {
         free(p);
     }
 };
