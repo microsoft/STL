@@ -3,16 +3,16 @@
 
 // The following code generated the lookup tables for the
 // scientific exponent X. Don't remove this code.
-// cl /EHsc /nologo /W4 /MT /O2 /std:c++17 generate_tables.cpp && generate_tables
+// cl /EHsc /nologo /W4 /MT /O2 /std:c++17 charconv_tables_generate.cpp && charconv_tables_generate
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <charconv>
 #include <cmath>
+#include <cstdint>
+#include <cstdio>
 #include <limits>
 #include <map>
-#include <stdint.h>
-#include <stdio.h>
 #include <system_error>
 #include <type_traits>
 #include <vector>

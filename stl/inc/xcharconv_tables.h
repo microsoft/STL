@@ -13,14 +13,14 @@
 #error The contents of <charconv> are only available with C++17. (Also, you should not include this internal header.)
 #endif // !_HAS_CXX17
 
+#include <cstdint>
+
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
 #pragma warning(disable : _STL_DISABLED_WARNINGS)
 _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
-
-#include <cstdint>
 
 // For general precision, we can use lookup tables to avoid performing trial formatting.
 

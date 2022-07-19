@@ -37,9 +37,9 @@
 
 #include <cstdint>
 
-// clang-format off
-
 namespace std {
+
+    // clang-format off
 
 // vvvvvvvvvv DERIVED FROM d2s_full_table.h vvvvvvvvvv
 
@@ -4727,5 +4727,7 @@ extern const uint64_t __POW10_SPLIT_2[3133][3] = {
 };
 
 // ^^^^^^^^^^ DERIVED FROM d2fixed_full_table.h ^^^^^^^^^^
+
+    // clang-format on
 
 } // namespace std

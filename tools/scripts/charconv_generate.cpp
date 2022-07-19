@@ -6,8 +6,8 @@
 
 #include <algorithm>
 #include <charconv>
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <tuple>
 #include <vector>
 
