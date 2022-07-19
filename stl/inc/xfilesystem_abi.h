@@ -41,6 +41,7 @@ enum class __std_win_error : unsigned long {
     _Already_exists            = 183, // #define ERROR_ALREADY_EXISTS             183L
     _Filename_exceeds_range    = 206, // #define ERROR_FILENAME_EXCED_RANGE       206L
     _Directory_name_is_invalid = 267, // #define ERROR_DIRECTORY                  267L
+    _Reparse_tag_invalid       = 4393L, // #define ERROR_REPARSE_TAG_INVALID        4393L
     _Max                       = ~0UL // sentinel not used by Win32
 };
 
@@ -308,6 +309,12 @@ _NODISCARD __std_win_error __stdcall __std_fs_create_symbolic_link(
 
 _NODISCARD __std_win_error __stdcall __std_fs_read_reparse_data_buffer(_In_ __std_fs_file_handle _Handle,
     _Out_writes_bytes_(_Buffer_size) void* _Buffer, _In_ unsigned long _Buffer_size) noexcept;
+
+_NODISCARD __std_win_error __stdcall __std_fs_write_reparse_data_buffer(
+    _In_ __std_fs_file_handle _Handle, _In_ const __std_fs_reparse_data_buffer* const _Buffer) noexcept;
+
+[[nodiscard]] bool __stdcall __std_fs_is_junction_from_reparse_data_buffer(
+    _In_ const __std_fs_reparse_data_buffer* const _Buffer) noexcept;
 
 _NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_read_name_from_reparse_data_buffer(

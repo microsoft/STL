@@ -489,11 +489,27 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     return __std_win_error{GetLastError()};
 }
 
+[[nodiscard]] __std_win_error __stdcall __std_fs_write_reparse_data_buffer(
+    _In_ const __std_fs_file_handle _Handle, _In_ const __std_fs_reparse_data_buffer* const _Buffer) noexcept {
+    if (DeviceIoControl(reinterpret_cast<HANDLE>(_Handle), FSCTL_SET_REPARSE_POINT,
+            const_cast<__std_fs_reparse_data_buffer*>(_Buffer), sizeof(_Buffer) + _Buffer->_Reparse_data_length,
+            nullptr, 0, nullptr, nullptr)) {
+        return __std_win_error::_Success;
+    }
+
+    // If DeviceIoControl fails, _Bytes_returned is 0.
+    return __std_win_error{GetLastError()};
+}
+
+[[nodiscard]] bool __stdcall __std_fs_is_junction_from_reparse_data_buffer(
+    _In_ const __std_fs_reparse_data_buffer* const _Buffer) noexcept {
+    return _Buffer->_Reparse_tag == IO_REPARSE_TAG_MOUNT_POINT;
+}
+
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_read_name_from_reparse_data_buffer(_In_ __std_fs_reparse_data_buffer* const _Buffer,
         _Out_ wchar_t** const _Offset, _Out_ unsigned short* const _Length) noexcept {
-    // this is a symlink (IO_REPARSE_TAG_SYMLINK) or junction (IO_REPARSE_TAG_MOUNT_POINT)
-    if (_Buffer->_Reparse_tag == IO_REPARSE_TAG_SYMLINK || _Buffer->_Reparse_tag == IO_REPARSE_TAG_MOUNT_POINT) {
+    if (_Buffer->_Reparse_tag == IO_REPARSE_TAG_SYMLINK) {
         auto& _Symlink_buffer             = _Buffer->_Symbolic_link_reparse_buffer;
         const unsigned short _Temp_length = _Symlink_buffer._Print_name_length / sizeof(wchar_t);
 
@@ -504,8 +520,20 @@ _Success_(return == __std_win_error::_Success) __std_win_error
             *_Length = _Temp_length;
             *_Offset = &_Symlink_buffer._Path_buffer[_Symlink_buffer._Print_name_offset / sizeof(wchar_t)];
         }
+    } else if (_Buffer->_Reparse_tag == IO_REPARSE_TAG_MOUNT_POINT) {
+        // junction
+        auto& _Junction_buffer            = _Buffer->_Mount_point_reparse_buffer;
+        const unsigned short _Temp_length = _Junction_buffer._Print_name_length / sizeof(wchar_t);
+
+        if (_Temp_length == 0) {
+            *_Length = _Junction_buffer._Substitute_name_length / sizeof(wchar_t);
+            *_Offset = &_Junction_buffer._Path_buffer[_Junction_buffer._Substitute_name_offset / sizeof(wchar_t)];
+        } else {
+            *_Length = _Temp_length;
+            *_Offset = &_Junction_buffer._Path_buffer[_Junction_buffer._Print_name_offset / sizeof(wchar_t)];
+        }
     } else {
-        return __std_win_error{ERROR_REPARSE_TAG_INVALID};
+        return __std_win_error::_Reparse_tag_invalid;
     }
 
     return __std_win_error::_Success;
