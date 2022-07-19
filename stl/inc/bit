@@ -82,7 +82,7 @@ _NODISCARD constexpr _Ty bit_floor(const _Ty _Val) noexcept {
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty bit_width(const _Ty _Val) noexcept {
+_NODISCARD constexpr int bit_width(const _Ty _Val) noexcept {
     return static_cast<_Ty>(numeric_limits<_Ty>::digits - _STD countl_zero(_Val));
 }
 
