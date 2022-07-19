@@ -54,10 +54,10 @@ struct TriviallyMovableStruct {
     int i;
     TriviallyMovableStruct() {}
     TriviallyMovableStruct(int j) : i(j) {}
-    TriviallyMovableStruct(const TriviallyMovableStruct&) = delete;
-    TriviallyMovableStruct(TriviallyMovableStruct&&)      = default;
+    TriviallyMovableStruct(const TriviallyMovableStruct&)            = delete;
+    TriviallyMovableStruct(TriviallyMovableStruct&&)                 = default;
     TriviallyMovableStruct& operator=(const TriviallyMovableStruct&) = delete;
-    TriviallyMovableStruct& operator=(TriviallyMovableStruct&&) = default;
+    TriviallyMovableStruct& operator=(TriviallyMovableStruct&&)      = default;
 
     bool operator==(const TriviallyMovableStruct& right) const {
         return i == right.i;

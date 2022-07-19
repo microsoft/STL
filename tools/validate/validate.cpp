@@ -46,7 +46,7 @@ public:
         }
     }
 
-    BinaryFile(const BinaryFile&) = delete;
+    BinaryFile(const BinaryFile&)            = delete;
     BinaryFile& operator=(const BinaryFile&) = delete;
 
 private:
@@ -208,6 +208,7 @@ int main() {
         L"__pycache__"sv,
         L"boost-math"sv,
         L"build"sv,
+        L"google-benchmark"sv,
         L"llvm-project"sv,
         L"out"sv,
     };

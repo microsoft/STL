@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#ifndef __clang__ // TRANSITION, GH-2862
 #include <stdatomic.h>
 
 static_assert(ATOMIC_BOOL_LOCK_FREE == 2);
@@ -113,5 +114,6 @@ namespace test {
 
 static_assert(std::atomic_thread_fence == atomic_thread_fence);
 static_assert(std::atomic_signal_fence == atomic_signal_fence);
+#endif // TRANSITION, GH-2862
 
 int main() {} // COMPILE-ONLY

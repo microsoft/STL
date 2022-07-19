@@ -1079,7 +1079,7 @@ namespace test_subrange {
             iterator() = default;
             iterator(iterator<!IsConst>) requires IsConst;
 
-            iterator(iterator&&) = default;
+            iterator(iterator&&)            = default;
             iterator& operator=(iterator&&) = default;
 
             int operator*() const;

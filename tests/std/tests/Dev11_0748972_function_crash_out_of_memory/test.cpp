@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// REQUIRES: debug_CRT
+
 #define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 
 #include <assert.h>
@@ -127,11 +129,9 @@ void test(const int num) {
 
         g_allocations_remaining = 1000000;
 
-#ifdef _DEBUG
         if (_CrtDumpMemoryLeaks()) {
             abort();
         }
-#endif
 
         return;
     }

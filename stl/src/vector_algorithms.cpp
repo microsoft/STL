@@ -789,8 +789,9 @@ namespace {
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
-            return static_cast<_Signed_t>((static_cast<_Unsigned_t>(_mm_extract_epi32(_Cur, 1)) << 32)
-                                          | static_cast<_Unsigned_t>(_mm_cvtsi128_si32(_Cur)));
+            return static_cast<_Signed_t>(
+                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
+                | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
 #else // ^^^ x86 ^^^ / vvv x64 vvv
             return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
 #endif // ^^^ x64 ^^^

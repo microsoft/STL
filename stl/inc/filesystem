@@ -680,11 +680,11 @@ namespace filesystem {
 
         enum format { auto_format, native_format, generic_format };
 
-        path()            = default;
-        path(const path&) = default;
-        path(path&&)      = default;
-        ~path()           = default;
-        path& operator=(const path&) = default;
+        path()                           = default;
+        path(const path&)                = default;
+        path(path&&)                     = default;
+        ~path()                          = default;
+        path& operator=(const path&)     = default;
         path& operator=(path&&) noexcept = default;
 
         path(string_type&& _Source) : _Text(_STD move(_Source)) {}
@@ -1458,10 +1458,10 @@ namespace filesystem {
         _Path_iterator(const _Base_iter& _Position_, wstring_view _Element_text, const path* _Mypath_)
             : _Position(_Position_), _Element(_Element_text), _Mypath(_Mypath_) {}
 
-        _Path_iterator(const _Path_iterator&) = default;
-        _Path_iterator(_Path_iterator&&)      = default;
+        _Path_iterator(const _Path_iterator&)            = default;
+        _Path_iterator(_Path_iterator&&)                 = default;
         _Path_iterator& operator=(const _Path_iterator&) = default;
-        _Path_iterator& operator=(_Path_iterator&&) = default;
+        _Path_iterator& operator=(_Path_iterator&&)      = default;
 
         _NODISCARD reference operator*() const noexcept {
             return _Element;
@@ -1946,7 +1946,7 @@ namespace filesystem {
 
         // assignments
         file_status& operator=(const file_status&) noexcept = default;
-        file_status& operator=(file_status&&) noexcept = default;
+        file_status& operator=(file_status&&) noexcept      = default;
 
         // [fs.file_status.mods], modifiers
         void type(file_type _Ft) noexcept {
@@ -2134,7 +2134,7 @@ namespace filesystem {
         ~directory_entry() = default;
 
         // assignments
-        directory_entry& operator=(const directory_entry&) = default;
+        directory_entry& operator=(const directory_entry&)     = default;
         directory_entry& operator=(directory_entry&&) noexcept = default;
 
         // [fs.dir.entry.mods], modifiers
@@ -2174,12 +2174,6 @@ namespace filesystem {
                 _Ec = _Make_ec(_Error);
             }
         }
-
-#if _HAS_CXX20
-        void clear_cache() noexcept {
-            _Cached_data._Available = __std_fs_stats_flags::_None;
-        }
-#endif // _HAS_CXX20
 
     private:
         _NODISCARD bool _Has_cached_attribute(const __std_fs_file_attr _Attrs) const noexcept {
@@ -2679,7 +2673,7 @@ namespace filesystem {
         ~directory_iterator() noexcept                         = default;
 
         directory_iterator& operator=(const directory_iterator&) noexcept = default; // strengthened
-        directory_iterator& operator=(directory_iterator&&) noexcept = default;
+        directory_iterator& operator=(directory_iterator&&) noexcept      = default;
 
         _NODISCARD const directory_entry& operator*() const noexcept /* strengthened */ {
             return _Impl->_Entry;
@@ -2922,7 +2916,7 @@ namespace filesystem {
         }
 
         // [fs.rec.dir.itr.members], modifiers
-        recursive_directory_iterator& operator=(recursive_directory_iterator&&) noexcept = default;
+        recursive_directory_iterator& operator=(recursive_directory_iterator&&) noexcept      = default;
         recursive_directory_iterator& operator=(const recursive_directory_iterator&) noexcept = default; // strengthened
 
         recursive_directory_iterator& operator++() {
@@ -3542,12 +3536,12 @@ namespace filesystem {
     }
 
     _NODISCARD inline bool is_other(const path& _Path) {
-        // tests whether _Path is an other file (such as a junction)
+        // tests whether _Path is an "other" file (such as a junction)
         return _STD filesystem::is_other(_STD filesystem::status(_Path));
     }
 
     _NODISCARD inline bool is_other(const path& _Path, error_code& _Ec) noexcept {
-        // tests whether _Path is an other file (such as a junction)
+        // tests whether _Path is an "other" file (such as a junction)
         return _STD filesystem::is_other(_STD filesystem::status(_Path, _Ec));
     }
 
