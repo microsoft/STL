@@ -84,6 +84,8 @@ struct instantiator {
                 } else {
                     // Either a pointer or the wrapped iterator
                     static_assert(!is_class_v<decltype(iter.operator->())>);
+                    // LWG-3672: operator->() always returns by value
+                    static_assert(is_object_v<decltype(iter.operator->())>);
                 }
 
                 const Cit constIter{Iter{input}};
@@ -96,6 +98,8 @@ struct instantiator {
                 } else {
                     // Either a pointer or the wrapped iterator
                     static_assert(!is_class_v<decltype(constIter.operator->())>);
+                    // LWG-3672: operator->() always returns by value
+                    static_assert(is_object_v<decltype(constIter.operator->())>);
                 }
             }
 
@@ -184,7 +188,7 @@ constexpr bool test_operator_arrow() {
     assert(*pointerIter == P(0, 1));
     assert(pointerIter->first == 0);
     assert(pointerIter->second == 1);
-    static_assert(is_same_v<decltype(pointerIter.operator->()), P* const&>);
+    static_assert(is_same_v<decltype(pointerIter.operator->()), P*>);
 
     using countedTest = common_iterator<counted_iterator<P*>, default_sentinel_t>;
     countedTest countedIter{counted_iterator{input, 3}};
@@ -192,7 +196,7 @@ constexpr bool test_operator_arrow() {
     assert(*countedIter == P(0, 1));
     assert(countedIter->first == 0);
     assert(countedIter->second == 1);
-    static_assert(is_same_v<decltype(countedIter.operator->()), counted_iterator<P*> const&>);
+    static_assert(is_same_v<decltype(countedIter.operator->()), counted_iterator<P*>>);
 
     return true;
 }
