@@ -2327,15 +2327,18 @@ _NODISCARD inline to_chars_result _Floating_to_chars_general_precision(
 
     using _Tables = _General_precision_tables_2<_Floating>;
 
+    constexpr int _Max_special_P = _Tables::_Max_special_P; // TRANSITION, VSO-1579484
+    constexpr int _Max_P         = _Tables::_Max_P; // TRANSITION, VSO-1579484
+
     const _Uint_type* _Table_begin;
     const _Uint_type* _Table_end;
 
-    if (_Precision <= _Tables::_Max_special_P) {
+    if (_Precision <= _Max_special_P) {
         _Table_begin = _Tables::_Special_X_table + (_Precision - 1) * (_Precision + 10) / 2;
         _Table_end   = _Table_begin + _Precision + 5;
     } else {
         _Table_begin = _Tables::_Ordinary_X_table;
-        _Table_end   = _Table_begin + (_STD min)(_Precision, _Tables::_Max_P) + 5;
+        _Table_end   = _Table_begin + (_STD min)(_Precision, _Max_P) + 5;
     }
 
     // Profiling indicates that linear search is faster than binary search for small tables.
