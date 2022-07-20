@@ -388,10 +388,12 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
 
 extern "C" _Success_(return > 0 && return < BufferLength) DWORD
     __stdcall __crtGetTempPath2W(_In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer) {
+#if !defined(_ONECORE)
     // use GetTempPath2W if it is available (only on Windows 11+)...
     IFDYNAMICGETCACHEDFUNCTION(GetTempPath2W) {
         return pfGetTempPath2W(BufferLength, Buffer);
     }
+#endif // ^^^ !defined(_ONECORE) ^^^
 
     // ...otherwise use GetTempPathW.
     return GetTempPathW(BufferLength, Buffer);

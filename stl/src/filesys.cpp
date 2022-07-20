@@ -15,8 +15,12 @@
 
 #include <Windows.h>
 
+#ifdef _M_CEE_PURE
+#define __crtGetTempPath2W(BufferLength, Buffer) GetTempPathW(BufferLength, Buffer)
+#else // vvv !defined(_M_CEE_PURE) vvv
 extern "C" _Success_(return > 0 && return < BufferLength) DWORD
     __stdcall __crtGetTempPath2W(_In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer);
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 _FS_BEGIN
 static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_status
