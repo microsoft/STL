@@ -1686,18 +1686,16 @@ namespace filesystem {
         return false;
     }
 
-    _NODISCARD inline path path::lexically_relative(const path& _Base_) const {
-        // N4868 [fs.path.gen]
-
+    _NODISCARD inline path path::lexically_relative(const path& _Base_raw) const {
         constexpr wstring_view _Dot     = L"."sv;
         constexpr wstring_view _Dot_dot = L".."sv;
 
         // LWG-3699: `lexically_relative` on UNC drive paths (`\\?\C:\...`) results in a default-constructed value
         // This avoids doing any unnecessary copies;
-        // the return value of `relative_path()` is lifetime extended if necessary.
-        const path& _This = _Is_drive_prefix_with_slash_slash_question(native()) ? relative_path() : *this;
+        // the return value of `relative_path()` is lifetime-extended if necessary.
+        const path& _This = _Is_drive_prefix_with_slash_slash_question(_Text) ? relative_path() : *this;
         const path& _Base =
-            _Is_drive_prefix_with_slash_slash_question(_Base_.native()) ? _Base_.relative_path() : _Base_;
+            _Is_drive_prefix_with_slash_slash_question(_Base_raw._Text) ? _Base_raw.relative_path() : _Base_raw;
 
         path _Result;
 

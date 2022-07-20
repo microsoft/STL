@@ -3147,10 +3147,10 @@ void test_lexically_relative() {
     EXPECT(path(LR"(\a:\b:)"sv).lexically_relative(LR"(\a:\c:)"sv).native() == LR"()"sv);
 
     // LWG-3699
-    EXPECT(path(LR"(\\?\a:\foo)"sv).lexically_relative(LR"(\\?\a:\foo)"sv).native() == LR"(.)"sv);
-    EXPECT(path(LR"(a:\foo)"sv).lexically_relative(LR"(\\?\a:\foo)"sv).native() == LR"(.)"sv);
-    EXPECT(path(LR"(\\?\a:\foo)"sv).lexically_relative(LR"(a:\foo)"sv).native() == LR"(.)"sv);
-    EXPECT(path(LR"(\\?\a:\foo\bar\baz)"sv).lexically_relative(LR"(a:\foo)"sv).native() == LR"(bar\baz)"sv);
+    EXPECT(path(LR"(\\?\a:\meow)"sv).lexically_relative(LR"(\\?\a:\meow)"sv).native() == LR"(.)"sv);
+    EXPECT(path(LR"(a:\meow)"sv).lexically_relative(LR"(\\?\a:\meow)"sv).native() == LR"(.)"sv);
+    EXPECT(path(LR"(\\?\a:\meow)"sv).lexically_relative(LR"(a:\meow)"sv).native() == LR"(.)"sv);
+    EXPECT(path(LR"(\\?\a:\meow\purr\nyan)"sv).lexically_relative(LR"(a:\meow)"sv).native() == LR"(purr\nyan)"sv);
 }
 
 void test_lexically_proximate() {
