@@ -3148,9 +3148,11 @@ void test_lexically_relative() {
 
     // LWG-3699
     EXPECT(path(LR"(\\?\a:\meow)"sv).lexically_relative(LR"(\\?\a:\meow)"sv).native() == LR"(.)"sv);
-    EXPECT(path(LR"(a:\meow)"sv).lexically_relative(LR"(\\?\a:\meow)"sv).native() == LR"(.)"sv);
-    EXPECT(path(LR"(\\?\a:\meow)"sv).lexically_relative(LR"(a:\meow)"sv).native() == LR"(.)"sv);
-    EXPECT(path(LR"(\\?\a:\meow\purr\nyan)"sv).lexically_relative(LR"(a:\meow)"sv).native() == LR"(purr\nyan)"sv);
+    EXPECT(path(LR"(\\?\a:\meow\purr\nyan)"sv).lexically_relative(LR"(\\?\a:\meow)"sv).native() == LR"(purr\nyan)"sv);
+    EXPECT(path(LR"(\\?\a:\meow)"sv).lexically_relative(LR"(\\?\a:\meow\purr\nyan)"sv).native() == LR"(..\..)"sv);
+    // UNC/DOS together should return an empty path
+    EXPECT(path(LR"(a:\meow)"sv).lexically_relative(LR"(\\?\a:\meow)"sv).native().empty());
+    EXPECT(path(LR"(\\?\a:\meow)"sv).lexically_relative(LR"(a:\meow)"sv).native().empty());
 }
 
 void test_lexically_proximate() {

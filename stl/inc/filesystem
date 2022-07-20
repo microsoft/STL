@@ -1693,9 +1693,10 @@ namespace filesystem {
         // LWG-3699: `lexically_relative` on UNC drive paths (`\\?\C:\...`) results in a default-constructed value
         // This avoids doing any unnecessary copies;
         // the return value of `relative_path()` is lifetime-extended if necessary.
-        const path& _This = _Is_drive_prefix_with_slash_slash_question(_Text) ? relative_path() : *this;
-        const path& _Base =
-            _Is_drive_prefix_with_slash_slash_question(_Base_raw._Text) ? _Base_raw.relative_path() : _Base_raw;
+        const bool _Both_unc_paths = _Is_drive_prefix_with_slash_slash_question(_Text)
+                                  && _Is_drive_prefix_with_slash_slash_question(_Base_raw._Text);
+        const path& _This = _Both_unc_paths ? relative_path() : *this;
+        const path& _Base = _Both_unc_paths ? _Base_raw.relative_path() : _Base_raw;
 
         path _Result;
 
