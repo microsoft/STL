@@ -8,7 +8,7 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <chrono>
 #include <complex>
 #include <cstddef>
@@ -386,11 +386,11 @@ int main() {
         // expensive, and even for relatively cheap to copy function objects we care (somewhat) about debug
         // mode perf.
         struct no_copy {
-            no_copy()               = default;
-            no_copy(const no_copy&) = delete;
-            no_copy(no_copy&&)      = default;
+            no_copy()                          = default;
+            no_copy(const no_copy&)            = delete;
+            no_copy(no_copy&&)                 = default;
             no_copy& operator=(const no_copy&) = delete;
-            no_copy& operator=(no_copy&&) = delete;
+            no_copy& operator=(no_copy&&)      = delete;
         };
 
         struct is_vowel : no_copy {
@@ -543,11 +543,11 @@ int main() {
         // expensive, and even for relatively cheap to copy function objects we care (somewhat) about debug
         // mode perf.
         struct no_copy {
-            no_copy()               = default;
-            no_copy(const no_copy&) = delete;
-            no_copy(no_copy&&)      = default;
+            no_copy()                          = default;
+            no_copy(const no_copy&)            = delete;
+            no_copy(no_copy&&)                 = default;
             no_copy& operator=(const no_copy&) = delete;
-            no_copy& operator=(no_copy&&) = delete;
+            no_copy& operator=(no_copy&&)      = delete;
         };
 
         struct is_vowel : no_copy {

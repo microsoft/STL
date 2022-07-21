@@ -15,7 +15,12 @@
 
 #include <Windows.h>
 
-#include "awint.hpp"
+#ifdef _M_CEE_PURE
+#define __crtGetTempPath2W(BufferLength, Buffer) GetTempPathW(BufferLength, Buffer)
+#else // vvv !defined(_M_CEE_PURE) vvv
+extern "C" _Success_(return > 0 && return < BufferLength) DWORD
+    __stdcall __crtGetTempPath2W(_In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer);
+#endif // ^^^ !defined(_M_CEE_PURE) ^^^
 
 _FS_BEGIN
 static file_type _Map_mode(int _Mode) { // map Windows file attributes to file_status
@@ -60,12 +65,7 @@ _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
     wchar_t (&_Dest)[_MAX_FILESYS_NAME], void* _Handle, file_type& _Ftype) { // read a directory entry
     WIN32_FIND_DATAW _Dentry;
 
-    for (;;) {
-        if (FindNextFileW(_Handle, &_Dentry) == 0) { // fail
-            _Ftype = file_type::unknown;
-            return _Strcpy(_Dest, L"");
-        }
-
+    while (FindNextFileW(_Handle, &_Dentry)) {
         if (_Dentry.cFileName[0] != L'.'
             || (_Dentry.cFileName[1] != L'\0'
                 && (_Dentry.cFileName[1] != L'.'
@@ -74,6 +74,9 @@ _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Read_dir(
             return _Strcpy(_Dest, &_Dentry.cFileName[0]);
         }
     }
+
+    _Ftype = file_type::unknown;
+    return _Strcpy(_Dest, L"");
 }
 
 static unsigned int _Filesys_code_page() { // determine appropriate code page
@@ -122,17 +125,16 @@ _FS_DLL void* __CLRCALL_PURE_OR_CDECL _Open_dir(
         && (_Dentry.cFileName[1] == L'\0'
             || _Dentry.cFileName[1] == L'.' && _Dentry.cFileName[2] == L'\0')) { // skip "." and ".."
         _Read_dir(_Dest, _Handle, _Ftype);
-        if (_Dest[0] != L'\0') {
-            return _Handle;
+        if (_Dest[0] == L'\0') {
+            // no entries, release handle
+            _Close_dir(_Handle);
+            return nullptr;
         }
-
-        // no entries, release handle
-        _Close_dir(_Handle);
-        return nullptr;
+        return _Handle;
     }
 
     // get file type and return handle
-    _Strcpy(_Dest, &_Dentry.cFileName[0]);
+    _Strcpy(_Dest, _Dentry.cFileName);
     _Ftype = _Map_mode(_Dentry.dwFileAttributes);
     return _Handle;
 }
@@ -161,21 +163,19 @@ _FS_DLL bool __CLRCALL_PURE_OR_CDECL _Current_set(const wchar_t* _Dirname) {
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Symlink_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME], const wchar_t*) {
     // get symlink -- DUMMY
     _Dest[0] = L'\0';
-    return &_Dest[0];
+    return _Dest;
 }
 
 _FS_DLL wchar_t* __CLRCALL_PURE_OR_CDECL _Temp_get(wchar_t (&_Dest)[_MAX_FILESYS_NAME]) {
     // get temp directory
     wchar_t _Dentry[MAX_PATH];
-    return _Strcpy(_Dest, GetTempPathW(MAX_PATH, &_Dentry[0]) == 0 ? L"." : &_Dentry[0]);
+    return _Strcpy(_Dest, __crtGetTempPath2W(MAX_PATH, _Dentry) != 0 ? _Dentry : L".");
 }
 
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Make_dir(const wchar_t* _Fname, const wchar_t*) {
     // make a new directory (ignore attributes)
-    int _Ans = CreateDirectoryW(_Fname, nullptr);
-
-    if (_Ans != 0) {
+    if (CreateDirectoryW(_Fname, nullptr)) {
         return 1;
     } else if (GetLastError() == ERROR_ALREADY_EXISTS) {
         return 0;
@@ -197,20 +197,23 @@ _FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Stat(const wchar_t* _Fname, perms* _P
             constexpr perms _Write_perms    = perms::owner_write | perms::group_write | perms::others_write;
             constexpr perms _Readonly_perms = perms::all & ~_Write_perms;
 
-            *_Pmode = _Data.dwFileAttributes & FILE_ATTRIBUTE_READONLY ? _Readonly_perms : perms::all;
+            *_Pmode = (_Data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0u ? _Readonly_perms : perms::all;
         }
 
         return _Map_mode(_Data.dwFileAttributes);
     }
 
     // invalid, get error code
-    int _Errno = GetLastError();
-
-    if (_Errno == ERROR_BAD_NETPATH || _Errno == ERROR_BAD_PATHNAME || _Errno == ERROR_FILE_NOT_FOUND
-        || _Errno == ERROR_INVALID_DRIVE || _Errno == ERROR_INVALID_NAME || _Errno == ERROR_INVALID_PARAMETER
-        || _Errno == ERROR_PATH_NOT_FOUND) {
+    switch (GetLastError()) {
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_PATH_NOT_FOUND:
+    case ERROR_INVALID_NAME:
+    case ERROR_INVALID_DRIVE:
+    case ERROR_INVALID_PARAMETER:
+    case ERROR_BAD_NETPATH:
+    case ERROR_BAD_PATHNAME:
         return file_type::not_found;
-    } else {
+    default:
         return file_type::unknown;
     }
 }
@@ -221,39 +224,39 @@ _FS_DLL file_type __CLRCALL_PURE_OR_CDECL _Lstat(const wchar_t* _Fname, perms* _
     return _Stat(_Fname, _Pmode); // symlink not supported
 }
 
-_FS_DLL unsigned long long __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t* _Fname) {
+_FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _Hard_links(const wchar_t* _Fname) {
     // get hard link count
     HANDLE _Handle = _FilesysOpenFile(_Fname, FILE_READ_ATTRIBUTES, FILE_FLAG_BACKUP_SEMANTICS);
 
+    if (_Handle == INVALID_HANDLE_VALUE) {
+        return static_cast<uintmax_t>(-1);
+    }
+
 #ifdef _CRT_APP
     FILE_STANDARD_INFO _Info = {0};
-    bool _Ok                 = false;
 
-    if (_Handle != INVALID_HANDLE_VALUE) { // get file info
-        _Ok = GetFileInformationByHandleEx(_Handle, FileStandardInfo, &_Info, sizeof(_Info)) != 0;
-        CloseHandle(_Handle);
-    }
-    return _Ok ? _Info.NumberOfLinks : static_cast<unsigned long long>(-1);
+    // get file info
+    const auto _Ok = GetFileInformationByHandleEx(_Handle, FileStandardInfo, &_Info, sizeof(_Info));
+    CloseHandle(_Handle);
+    return _Ok ? _Info.NumberOfLinks : static_cast<uintmax_t>(-1);
 #else // _CRT_APP
     BY_HANDLE_FILE_INFORMATION _Info = {0};
-    bool _Ok                         = false;
 
-    if (_Handle != INVALID_HANDLE_VALUE) { // get file info
-        _Ok = GetFileInformationByHandle(_Handle, &_Info) != 0;
-        CloseHandle(_Handle);
-    }
-    return _Ok ? _Info.nNumberOfLinks : static_cast<unsigned long long>(-1);
+    // get file info
+    const auto _Ok = GetFileInformationByHandle(_Handle, &_Info);
+    CloseHandle(_Handle);
+    return _Ok ? _Info.nNumberOfLinks : static_cast<uintmax_t>(-1);
 #endif // _CRT_APP
 }
 
 
-_FS_DLL unsigned long long __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fname) { // get file size
+_FS_DLL uintmax_t __CLRCALL_PURE_OR_CDECL _File_size(const wchar_t* _Fname) { // get file size
     WIN32_FILE_ATTRIBUTE_DATA _Data;
 
-    if (!GetFileAttributesExW(_Fname, GetFileExInfoStandard, &_Data)) {
-        return static_cast<unsigned long long>(-1);
+    if (GetFileAttributesExW(_Fname, GetFileExInfoStandard, &_Data)) {
+        return static_cast<uintmax_t>(_Data.nFileSizeHigh) << 32 | _Data.nFileSizeLow;
     } else {
-        return static_cast<unsigned long long>(_Data.nFileSizeHigh) << 32 | _Data.nFileSizeLow;
+        return static_cast<uintmax_t>(-1);
     }
 }
 
@@ -279,8 +282,8 @@ _FS_DLL int64_t __CLRCALL_PURE_OR_CDECL _Last_write_time(const wchar_t* _Fname) 
     }
 
     // success, convert time
-    unsigned long long _Wtime = static_cast<unsigned long long>(_Data.ftLastWriteTime.dwHighDateTime) << 32
-                              | _Data.ftLastWriteTime.dwLowDateTime;
+    uint64_t _Wtime =
+        static_cast<uint64_t>(_Data.ftLastWriteTime.dwHighDateTime) << 32 | _Data.ftLastWriteTime.dwLowDateTime;
     return static_cast<int64_t>(_Wtime - _Win_ticks_from_epoch);
 }
 
@@ -294,9 +297,9 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Set_last_write_time(const wchar_t* _Fname, 
     }
 
     // convert to FILETIME and set
-    unsigned long long _Wtime = static_cast<unsigned long long>(_When) + _Win_ticks_from_epoch;
+    uint64_t _Wtime = static_cast<uint64_t>(_When) + _Win_ticks_from_epoch;
     FILETIME _Ft;
-    _Ft.dwLowDateTime  = static_cast<DWORD>(_Wtime); // intentionally discard upper bits
+    _Ft.dwLowDateTime  = static_cast<DWORD>(_Wtime & 0xFFFFFFFFUL);
     _Ft.dwHighDateTime = static_cast<DWORD>(_Wtime >> 32);
     int _Result        = SetFileTime(_Handle, nullptr, nullptr, &_Ft);
     CloseHandle(_Handle);
@@ -351,10 +354,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
     } else if (!_Ok1 || !_Ok2) {
         return 0;
     } else { // test existing files for equivalence
-        return _Info1.VolumeSerialNumber != _Info2.VolumeSerialNumber
-                    || memcmp(&_Info1.FileId, &_Info2.FileId, sizeof(_Info1.FileId)) != 0
-                 ? 0
-                 : 1;
+        return memcmp(&_Info1, &_Info2, sizeof(_FILE_ID_INFO)) == 0 ? 1 : 0;
     }
 #else // _CRT_APP
     BY_HANDLE_FILE_INFORMATION _Info1 = {0};
@@ -379,10 +379,10 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Equivalent(
     } else if (!_Ok1 || !_Ok2) {
         return 0;
     } else { // test existing files for equivalence
-        return _Info1.dwVolumeSerialNumber != _Info2.dwVolumeSerialNumber
-                    || _Info1.nFileIndexHigh != _Info2.nFileIndexHigh || _Info1.nFileIndexLow != _Info2.nFileIndexLow
-                 ? 0
-                 : 1;
+        return _Info1.dwVolumeSerialNumber == _Info2.dwVolumeSerialNumber
+                    && _Info1.nFileIndexHigh == _Info2.nFileIndexHigh && _Info1.nFileIndexLow == _Info2.nFileIndexLow
+                 ? 1
+                 : 0;
     }
 #endif // _CRT_APP
 }
@@ -395,7 +395,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Link(const wchar_t* _Fname1, const wchar_t*
     (void) _Fname2;
     return errno = EDOM; // hardlinks not supported
 #else // _CRT_APP
-    return CreateHardLinkW(_Fname2, _Fname1, nullptr) != 0 ? 0 : GetLastError();
+    return CreateHardLinkW(_Fname2, _Fname1, nullptr) ? 0 : GetLastError();
 #endif // _CRT_APP
 }
 
@@ -406,7 +406,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Symlink(const wchar_t* _Fname1, const wchar
     (void) _Fname2;
     return errno = EDOM; // symlinks not supported
 #else // _CRT_APP
-    return CreateSymbolicLinkW(_Fname2, _Fname1, 0) != 0 ? 0 : GetLastError();
+    return CreateSymbolicLinkW(_Fname2, _Fname1, 0) ? 0 : GetLastError();
 #endif // _CRT_APP
 }
 
@@ -416,16 +416,19 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Rename(const wchar_t* _Fname1, const wchar_
 }
 
 _FS_DLL int __CLRCALL_PURE_OR_CDECL _Resize(const wchar_t* _Fname, uintmax_t _Newsize) { // change file size
-    bool _Ok = false;
 
     HANDLE _Handle = _FilesysOpenFile(_Fname, FILE_GENERIC_WRITE, 0);
 
-    if (_Handle != INVALID_HANDLE_VALUE) { // set file pointer to new size and trim
-        LARGE_INTEGER _Large;
-        _Large.QuadPart = _Newsize;
-        _Ok             = SetFilePointerEx(_Handle, _Large, nullptr, FILE_BEGIN) != 0 && SetEndOfFile(_Handle) != 0;
-        CloseHandle(_Handle);
+    if (_Handle == INVALID_HANDLE_VALUE) {
+        return GetLastError();
     }
+
+    FILE_END_OF_FILE_INFO _File_info;
+    _File_info.EndOfFile.QuadPart = static_cast<LONGLONG>(_Newsize);
+
+    const auto _Ok = SetFileInformationByHandle(_Handle, FileEndOfFileInfo, &_File_info, sizeof(_File_info));
+
+    CloseHandle(_Handle);
     return _Ok ? 0 : GetLastError();
 }
 
@@ -449,7 +452,7 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Copy_file(const wchar_t* _Fname1, const wch
     // take lower bits to undo HRESULT_FROM_WIN32
     return _Copy_result & 0x0000FFFFU;
 #else // defined(_ONECORE)
-    return CopyFileW(_Fname1, _Fname2, 0) != 0 ? 0 : GetLastError();
+    return CopyFileW(_Fname1, _Fname2, 0) ? 0 : GetLastError();
 #endif // defined(_ONECORE)
 }
 
@@ -464,14 +467,16 @@ _FS_DLL int __CLRCALL_PURE_OR_CDECL _Chmod(const wchar_t* _Fname, perms _Newmode
 
     // got mode, alter readonly bit
     DWORD _Oldmode = _Data.dwFileAttributes;
-    DWORD _Mode    = _Oldmode & ~FILE_ATTRIBUTE_READONLY;
+    DWORD _Mode    = _Oldmode;
 
     constexpr perms _Write_perms = perms::owner_write | perms::group_write | perms::others_write;
 
     if ((_Newmode & _Write_perms) == perms::none) {
         _Mode |= FILE_ATTRIBUTE_READONLY;
+    } else {
+        _Mode &= ~FILE_ATTRIBUTE_READONLY;
     }
 
-    return _Mode == _Oldmode ? 0 : SetFileAttributesW(_Fname, _Mode) != 0 ? 0 : -1;
+    return _Mode == _Oldmode || SetFileAttributesW(_Fname, _Mode) ? 0 : -1;
 }
 _FS_END

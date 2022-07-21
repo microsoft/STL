@@ -267,7 +267,7 @@ public:
         }
     }
 
-    basic_filebuf(const basic_filebuf&) = delete;
+    basic_filebuf(const basic_filebuf&)            = delete;
     basic_filebuf& operator=(const basic_filebuf&) = delete;
 
     enum _Initfl { // reasons for a call to _Init
@@ -878,7 +878,7 @@ public:
         }
     }
 
-    basic_ifstream(const basic_ifstream&) = delete;
+    basic_ifstream(const basic_ifstream&)            = delete;
     basic_ifstream& operator=(const basic_ifstream&) = delete;
 
     void open(
@@ -1061,7 +1061,7 @@ public:
         }
     }
 
-    basic_ofstream(const basic_ofstream&) = delete;
+    basic_ofstream(const basic_ofstream&)            = delete;
     basic_ofstream& operator=(const basic_ofstream&) = delete;
 
     void open(
@@ -1249,7 +1249,7 @@ public:
         }
     }
 
-    basic_fstream(const basic_fstream&) = delete;
+    basic_fstream(const basic_fstream&)            = delete;
     basic_fstream& operator=(const basic_fstream&) = delete;
 
     void open(const wchar_t* _Filename, ios_base::openmode _Mode = ios_base::in | ios_base::out,

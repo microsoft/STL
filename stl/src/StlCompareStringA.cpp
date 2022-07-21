@@ -67,7 +67,7 @@ extern "C" int __cdecl __crtCompareStringA(_In_z_ LPCWSTR LocaleName, _In_ DWORD
         // - if the one count is a naked lead byte, the strings are equal
         // - otherwise it is a single character and they are unequal
         CPINFO cpInfo;
-        if (GetCPInfo(code_page, &cpInfo) == FALSE) {
+        if (!GetCPInfo(code_page, &cpInfo)) {
             return 0;
         }
 

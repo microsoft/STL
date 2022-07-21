@@ -6,11 +6,11 @@
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 #include <algorithm>
+#include <cstring>
 #include <experimental/filesystem>
 #include <filesystem>
 #include <iterator>
 #include <random>
-#include <string.h>
 #include <string>
 
 inline std::string get_test_directory_subname(const char* const testName, const size_t testNameLength) {

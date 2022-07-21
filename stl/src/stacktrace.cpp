@@ -42,7 +42,7 @@ namespace {
             ReleaseSRWLockExclusive(&srw);
         }
 
-        dbg_eng_data(const dbg_eng_data&) = delete;
+        dbg_eng_data(const dbg_eng_data&)            = delete;
         dbg_eng_data& operator=(const dbg_eng_data&) = delete;
 
         void uninitialize() noexcept {

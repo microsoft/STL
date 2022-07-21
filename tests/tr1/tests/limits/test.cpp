@@ -24,7 +24,7 @@ struct Mytype { // wrap an int
 void test_main() { // test basic workings of limits definitions
     static const STD float_denorm_style fds[] = {STD denorm_indeterminate, STD denorm_absent, STD denorm_present};
     static const STD float_round_style frs[]  = {STD round_indeterminate, STD round_toward_zero, STD round_to_nearest,
-        STD round_toward_infinity, STD round_toward_neg_infinity};
+         STD round_toward_infinity, STD round_toward_neg_infinity};
     int i, j, ok;
 
     for (ok = 1, i = sizeof(fds) / sizeof(fds[0]); 0 < i;)

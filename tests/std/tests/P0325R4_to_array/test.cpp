@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -16,10 +16,7 @@ using namespace std;
 template <class T, class E, size_t N>
 constexpr void assert_equal(T&& actual, const array<E, N>& expected) {
     STATIC_ASSERT(is_same_v<T, array<E, N>>);
-    // TRANSITION, P1023R0 "constexpr comparison operators for std::array"
-    for (auto it1 = cbegin(actual), it2 = cbegin(expected); it1 != cend(actual); ++it1, ++it2) {
-        assert(*it1 == *it2);
-    }
+    assert(actual == expected);
 }
 
 struct A {

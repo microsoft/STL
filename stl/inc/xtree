@@ -328,14 +328,16 @@ struct _Tree_node {
     _Nodeptr _Right; // right subtree, or largest element if head
     char _Color; // _Red or _Black, _Black if head
     char _Isnil; // true only if head (also nil) node; TRANSITION, should be bool
-    value_type _Myval; // the stored value, unused if head
+    value_type _Myval = // the stored value, unused if head
+        _Returns_exactly<value_type>(); // fake a viable constructor to workaround GH-2749
 
     enum _Redbl { // colors for link to parent
         _Red,
         _Black
     };
 
-    _Tree_node(const _Tree_node&) = delete;
+    _Tree_node()                             = default;
+    _Tree_node(const _Tree_node&)            = delete;
     _Tree_node& operator=(const _Tree_node&) = delete;
 
     template <class _Alloc>
@@ -784,7 +786,7 @@ struct _Tree_temp_node_alloc : _Alloc_construct_ptr<_Alnode> {
         _Alloc_construct_ptr<_Alnode>::_Allocate();
     }
 
-    _Tree_temp_node_alloc(const _Tree_temp_node_alloc&) = delete;
+    _Tree_temp_node_alloc(const _Tree_temp_node_alloc&)            = delete;
     _Tree_temp_node_alloc& operator=(const _Tree_temp_node_alloc&) = delete;
 };
 
@@ -810,7 +812,7 @@ struct _Tree_temp_node : _Tree_temp_node_alloc<_Alnode> {
         this->_Ptr->_Isnil = false;
     }
 
-    _Tree_temp_node(const _Tree_temp_node&) = delete;
+    _Tree_temp_node(const _Tree_temp_node&)            = delete;
     _Tree_temp_node& operator=(const _Tree_temp_node&) = delete;
 
     ~_Tree_temp_node() {

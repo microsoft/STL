@@ -7,6 +7,7 @@
 // This file is compiled into import library.
 // Limitations apply to what can be included here; see ../../docs/import_library.txt
 
+#include <atomic>
 #include <clocale>
 #include <corecrt_terminate.h>
 #include <cstdlib>
@@ -87,14 +88,13 @@ namespace {
     [[nodiscard]] __std_win_error __stdcall _Create_symlink(
         const wchar_t* const _Symlink_file_name, const wchar_t* const _Target_file_name, const DWORD _Flags) noexcept {
         if (__vcrt_CreateSymbolicLinkW(
-                _Symlink_file_name, _Target_file_name, _Flags | 0x2 /* SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE */)
-            != 0) {
+                _Symlink_file_name, _Target_file_name, _Flags | SYMBOLIC_LINK_FLAG_ALLOW_UNPRIVILEGED_CREATE)) {
             return __std_win_error::_Success;
         }
 
         DWORD _Last_error = GetLastError();
         if (_Last_error == ERROR_INVALID_PARAMETER) {
-            if (__vcrt_CreateSymbolicLinkW(_Symlink_file_name, _Target_file_name, _Flags) != 0) {
+            if (__vcrt_CreateSymbolicLinkW(_Symlink_file_name, _Target_file_name, _Flags)) {
                 return __std_win_error::_Success;
             }
 
@@ -116,8 +116,8 @@ namespace {
         const HANDLE _Handle, long long* const _Last_write_filetime) {
         // read the last write time from _Handle and store it in _Last_write_filetime
         FILE_BASIC_INFO _Ex_info;
-        if (GetFileInformationByHandleEx(_Handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info)) != 0) {
-            _CSTD memcpy(_Last_write_filetime, &_Ex_info.LastWriteTime, sizeof(*_Last_write_filetime));
+        if (GetFileInformationByHandleEx(_Handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info))) {
+            *_Last_write_filetime = _Ex_info.LastWriteTime.QuadPart;
             return __std_win_error::_Success;
         }
 
@@ -126,13 +126,14 @@ namespace {
 
     [[nodiscard]] __std_win_error __stdcall _Get_file_id_by_handle(
         const HANDLE _Handle, _Out_ FILE_ID_INFO* const _Id) noexcept {
-        __std_win_error _Last_error;
-        if (GetFileInformationByHandleEx(_Handle, FileIdInfo, _Id, sizeof(*_Id)) != 0) {
+        if (GetFileInformationByHandleEx(_Handle, FileIdInfo, _Id, sizeof(*_Id))) {
             // if we could get FILE_ID_INFO, use that as the source of truth
             return __std_win_error::_Success;
         }
 
-        _Last_error = __std_win_error{GetLastError()};
+        __std_win_error _Last_error{GetLastError()};
+
+#ifndef _CRT_APP
         switch (_Last_error) {
         case __std_win_error::_Not_supported:
         case __std_win_error::_Invalid_parameter:
@@ -141,10 +142,9 @@ namespace {
             return _Last_error; // real error, bail to the caller
         }
 
-#ifndef _CRT_APP
         // try GetFileInformationByHandle as a fallback
         BY_HANDLE_FILE_INFORMATION _Info;
-        if (GetFileInformationByHandle(_Handle, &_Info) != 0) {
+        if (GetFileInformationByHandle(_Handle, &_Info)) {
             _Id->VolumeSerialNumber = _Info.dwVolumeSerialNumber;
             _CSTD memcpy(&_Id->FileId.Identifier[0], &_Info.nFileIndexHigh, 8);
             _CSTD memset(&_Id->FileId.Identifier[8], 0, 8);
@@ -186,7 +186,7 @@ namespace {
         return __std_win_error{GetLastError()};
     }
 
-    [[nodiscard]] unsigned long long _Merge_to_ull(unsigned long _High, unsigned long _Low) noexcept {
+    [[nodiscard]] unsigned long long _Merge_to_ull(DWORD _High, DWORD _Low) noexcept {
         return (static_cast<unsigned long long>(_High) << 32) | static_cast<unsigned long long>(_Low);
     }
 } // unnamed namespace
@@ -210,7 +210,7 @@ _EXTERN_C
 }
 
 void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcept { // calls CloseHandle
-    if (_Handle != __std_fs_file_handle::_Invalid && CloseHandle(reinterpret_cast<HANDLE>(_Handle)) == 0) {
+    if (_Handle != __std_fs_file_handle::_Invalid && !CloseHandle(reinterpret_cast<HANDLE>(_Handle))) {
         terminate();
     }
 }
@@ -222,7 +222,7 @@ void __stdcall __std_fs_close_handle(const __std_fs_file_handle _Handle) noexcep
     const HANDLE _As_plain_handle = reinterpret_cast<HANDLE>(_Handle);
 
     FILE_BASIC_INFO _Ex_info;
-    if (GetFileInformationByHandleEx(_As_plain_handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info)) != 0) {
+    if (GetFileInformationByHandleEx(_As_plain_handle, FileBasicInfo, &_Ex_info, sizeof(_Ex_info))) {
         *_File_attributes = _Ex_info.FileAttributes;
         return __std_win_error::_Success;
     }
@@ -250,21 +250,6 @@ static_assert(alignof(WIN32_FIND_DATAW) == alignof(__std_fs_find_data));
     if (*_Handle != __std_fs_dir_handle::_Invalid) {
         return __std_win_error::_Success;
     }
-
-#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
-    // If the above call failed, we might be on pre Windows 7 / Windows Server 2008 R2, which doesn't support
-    // FindExInfoBasic; try again with FindExInfoStandard if we got an invalid parameter error.
-    const __std_win_error _Last_error{GetLastError()};
-    if (_Last_error != __std_win_error::_Not_supported && _Last_error != __std_win_error::_Invalid_parameter) {
-        return _Last_error;
-    }
-
-    *_Handle = __std_fs_dir_handle{reinterpret_cast<intptr_t>(
-        FindFirstFileExW(_Path_spec, FindExInfoStandard, _Results, FindExSearchNameMatch, nullptr, 0))};
-    if (*_Handle != __std_fs_dir_handle::_Invalid) {
-        return __std_win_error::_Success;
-    }
-#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
 
     return __std_win_error{GetLastError()};
 }
@@ -432,10 +417,7 @@ void __stdcall __std_fs_directory_iterator_close(_In_ const __std_fs_dir_handle 
                     return {false, _Last_error};
                 }
 
-                if (_Source_id.VolumeSerialNumber == _Target_id.VolumeSerialNumber
-                    && _CSTD memcmp(_Source_id.FileId.Identifier, _Target_id.FileId.Identifier,
-                           sizeof(_Source_id.FileId.Identifier))
-                           == 0) {
+                if (_CSTD memcmp(&_Source_id, &_Target_id, sizeof(FILE_ID_INFO)) == 0) {
                     // the files are equivalent
                     return {false, __std_win_error::_Sharing_violation};
                 }
@@ -481,7 +463,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     (void) _Existing_file_name;
     return __std_win_error::_Not_supported;
 #else // ^^^ defined(_CRT_APP) ^^^ // vvv !defined(_CRT_APP) vvv
-    if (CreateHardLinkW(_File_name, _Existing_file_name, nullptr) != 0) {
+    if (CreateHardLinkW(_File_name, _Existing_file_name, nullptr)) {
         return __std_win_error::_Success;
     }
 
@@ -497,14 +479,13 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 [[nodiscard]] __std_win_error __stdcall __std_fs_read_reparse_data_buffer(_In_ const __std_fs_file_handle _Handle,
     _Out_writes_bytes_(_Buffer_size) void* const _Buffer, _In_ const unsigned long _Buffer_size) noexcept {
     unsigned long _Bytes_returned;
-    // If DeviceIoControl fails, it returns 0 and _Bytes_returned is 0.
-    if (0
-        == DeviceIoControl(reinterpret_cast<HANDLE>(_Handle), FSCTL_GET_REPARSE_POINT, nullptr, 0, _Buffer,
-            _Buffer_size, &_Bytes_returned, nullptr)) {
-        return __std_win_error{GetLastError()};
+    if (DeviceIoControl(reinterpret_cast<HANDLE>(_Handle), FSCTL_GET_REPARSE_POINT, nullptr, 0, _Buffer, _Buffer_size,
+            &_Bytes_returned, nullptr)) {
+        return __std_win_error::_Success;
     }
 
-    return __std_win_error::_Success;
+    // If DeviceIoControl fails, _Bytes_returned is 0.
+    return __std_win_error{GetLastError()};
 }
 
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
@@ -599,7 +580,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
             return {false, __std_win_error{GetLastError()}};
         }
         // check if FILE_ATTRIBUTE_READONLY is set
-        if (_Basic_info.FileAttributes & FILE_ATTRIBUTE_READONLY) {
+        if ((_Basic_info.FileAttributes & FILE_ATTRIBUTE_READONLY) != 0u) {
             // try to remove FILE_ATTRIBUTE_READONLY
             _Basic_info.FileAttributes ^= FILE_ATTRIBUTE_READONLY;
             if (!SetFileInformationByHandle(_Handle._Get(), FileBasicInfo, &_Basic_info, sizeof(_Basic_info))) {
@@ -636,7 +617,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     }
 
     const DWORD _Readonly_test = _Readonly ? FILE_ATTRIBUTE_READONLY : 0;
-    if ((_Old_attributes & FILE_ATTRIBUTE_REPARSE_POINT) && _Follow_symlinks) {
+    if ((_Old_attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u && _Follow_symlinks) {
         __std_win_error _Err;
         _STD _Fs_file _Handle(_Path,
             __std_access_rights::_File_read_attributes | __std_access_rights::_File_write_attributes,
@@ -691,13 +672,14 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         return _Err;
     }
 
-    LARGE_INTEGER _Large;
-    _Large.QuadPart = _New_size;
-    if (SetFilePointerEx(_Handle._Get(), _Large, nullptr, FILE_BEGIN) == 0 || SetEndOfFile(_Handle._Get()) == 0) {
-        return __std_win_error{GetLastError()};
+    FILE_END_OF_FILE_INFO _File_info;
+    _File_info.EndOfFile.QuadPart = static_cast<LONGLONG>(_New_size);
+
+    if (SetFileInformationByHandle(_Handle._Get(), FileEndOfFileInfo, &_File_info, sizeof(_File_info))) {
+        return __std_win_error::_Success;
     }
 
-    return __std_win_error::_Success;
+    return __std_win_error{GetLastError()};
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_space(_In_z_ const wchar_t* const _Target,
@@ -778,24 +760,49 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     return __std_win_error{GetLastError()};
 }
 
+namespace {
+    _Success_(return > 0 && return < nBufferLength) DWORD WINAPI
+        _Stl_GetTempPath2W(_In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) {
+        using _Fun_ptr = decltype(&::GetTempPath2W);
+
+        _Fun_ptr _PfGetTempPath2W;
+        {
+            static _STD atomic<_Fun_ptr> _Static{nullptr};
+
+            _PfGetTempPath2W = _Static.load(_STD memory_order_relaxed);
+            if (!_PfGetTempPath2W) {
+                const auto _Kernel32 = ::GetModuleHandleW(L"kernel32.dll");
+                _Analysis_assume_(_Kernel32);
+                _PfGetTempPath2W = reinterpret_cast<_Fun_ptr>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
+                if (!_PfGetTempPath2W) {
+                    _PfGetTempPath2W = &::GetTempPathW;
+                }
+                _Static.store(_PfGetTempPath2W, _STD memory_order_relaxed); // overwriting with the same value is okay
+            }
+        }
+
+        return _PfGetTempPath2W(nBufferLength, lpBuffer);
+    }
+} // unnamed namespace
+
 [[nodiscard]] _Success_(return._Error == __std_win_error::_Success) __std_ulong_and_error
     __stdcall __std_fs_get_temp_path(_Out_writes_z_(__std_fs_temp_path_max) wchar_t* const _Target) noexcept {
-    // calls GetTempPathW
+    // calls GetTempPath2W if available (Win11+), else calls GetTempPathW
     // If getting the path failed, returns 0 size; otherwise, returns the size of the
     // expected directory. If the path could be resolved to an existing directory,
     // returns __std_win_error::_Success; otherwise, returns __std_win_error::_Max.
-    const auto _Size = GetTempPathW(__std_fs_temp_path_max, _Target);
+    const auto _Size = _Stl_GetTempPath2W(__std_fs_temp_path_max, _Target);
     if (_Size == 0) {
         return {0, __std_win_error{GetLastError()}};
     }
 
     // Effects: If exists(p) is false or is_directory(p) is false, an error is reported
     const DWORD _Attributes = GetFileAttributesW(_Target);
-    if (_Attributes == INVALID_FILE_ATTRIBUTES || !(_Attributes & FILE_ATTRIBUTE_DIRECTORY)) {
+    if (_Attributes == INVALID_FILE_ATTRIBUTES || (_Attributes & FILE_ATTRIBUTE_DIRECTORY) == 0u) {
         return {_Size, __std_win_error::_Max};
     }
 
-    if (_Attributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+    if ((_Attributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u) {
         __std_fs_file_handle _Handle;
         const auto _Last_error = __std_fs_open_handle(
             &_Handle, _Target, __std_access_rights::_File_read_attributes, __std_fs_file_flags::_Backup_semantics);
@@ -811,15 +818,15 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 [[nodiscard]] _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_get_stats(_In_z_ const wchar_t* const _Path, __std_fs_stats* const _Stats,
         _In_ __std_fs_stats_flags _Flags, _In_ const __std_fs_file_attr _Symlink_attribute_hint) noexcept {
-    const bool _Follow_symlinks = _Bitmask_includes(_Flags, __std_fs_stats_flags::_Follow_symlinks);
+    const bool _Follow_symlinks = _STD _Bitmask_includes_any(_Flags, __std_fs_stats_flags::_Follow_symlinks);
     _Flags &= ~__std_fs_stats_flags::_Follow_symlinks;
-    if (_Follow_symlinks && _Bitmask_includes(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
+    if (_Follow_symlinks && _STD _Bitmask_includes_any(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
         return __std_win_error::_Invalid_parameter;
     }
 
-    if (_Bitmask_includes(_Flags, __std_fs_stats_flags::_Attributes)
+    if (_STD _Bitmask_includes_any(_Flags, __std_fs_stats_flags::_Attributes)
         && _Symlink_attribute_hint != __std_fs_file_attr::_Invalid
-        && (!_Bitmask_includes(_Symlink_attribute_hint, __std_fs_file_attr::_Reparse_point)
+        && (!_STD _Bitmask_includes_any(_Symlink_attribute_hint, __std_fs_file_attr::_Reparse_point)
             || !_Follow_symlinks)) { // if the hint can't be a symlink, we already have the attributes
         _Flags &= ~__std_fs_stats_flags::_Attributes;
         _Stats->_Attributes = _Symlink_attribute_hint;
@@ -831,10 +838,10 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 
     constexpr auto _Get_file_attributes_data =
         __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Last_write_time;
-    if (_Bitmask_includes(_Flags, _Get_file_attributes_data)) {
+    if (_STD _Bitmask_includes_any(_Flags, _Get_file_attributes_data)) {
         // caller wants something GetFileAttributesExW/FindFirstFileW might provide
         if (_Symlink_attribute_hint == __std_fs_file_attr::_Invalid
-            || !_Bitmask_includes(_Symlink_attribute_hint, __std_fs_file_attr::_Reparse_point)
+            || !_STD _Bitmask_includes_any(_Symlink_attribute_hint, __std_fs_file_attr::_Reparse_point)
             || !_Follow_symlinks) { // we might not be a symlink or not following symlinks, so
                                     // GetFileAttributesExW/FindFirstFileW would return the right answer
 
@@ -866,7 +873,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
             }
 
             const __std_fs_file_attr _Attributes{_Data.dwFileAttributes};
-            if (!_Follow_symlinks || !_Bitmask_includes(_Attributes, __std_fs_file_attr::_Reparse_point)) {
+            if (!_Follow_symlinks || !_STD _Bitmask_includes_any(_Attributes, __std_fs_file_attr::_Reparse_point)) {
                 // if we aren't following symlinks or can't be a symlink, that data was useful, record
                 _Stats->_Attributes      = _Attributes;
                 _Stats->_File_size       = _Merge_to_ull(_Data.nFileSizeHigh, _Data.nFileSizeLow);
@@ -895,7 +902,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     constexpr auto _Basic_info_data    = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Last_write_time;
     constexpr auto _Standard_info_data = __std_fs_stats_flags::_File_size | __std_fs_stats_flags::_Link_count;
 
-    if (_Bitmask_includes(_Flags, _Basic_info_data | __std_fs_stats_flags::_Reparse_tag)) {
+    if (_STD _Bitmask_includes_any(_Flags, _Basic_info_data | __std_fs_stats_flags::_Reparse_tag)) {
         FILE_BASIC_INFO _Info;
         if (!GetFileInformationByHandleEx(_Handle._Get(), FileBasicInfo, &_Info, sizeof(_Info))) {
             return __std_win_error{GetLastError()};
@@ -904,10 +911,10 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         _Stats->_Attributes      = __std_fs_file_attr{_Info.FileAttributes};
         _Stats->_Last_write_time = _Info.LastWriteTime.QuadPart;
         _Flags &= ~_Basic_info_data;
-        if (_Bitmask_includes(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
+        if (_STD _Bitmask_includes_any(_Flags, __std_fs_stats_flags::_Reparse_tag)) {
             // Calling GetFileInformationByHandleEx with FileAttributeTagInfo fails on FAT file system with
             // ERROR_INVALID_PARAMETER. We avoid calling this for non-reparse-points.
-            if (_Info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) {
+            if ((_Info.FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) != 0u) {
                 FILE_ATTRIBUTE_TAG_INFO _TagInfo;
                 if (!GetFileInformationByHandleEx(_Handle._Get(), FileAttributeTagInfo, &_TagInfo, sizeof(_TagInfo))) {
                     return __std_win_error{GetLastError()};
@@ -921,7 +928,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         }
     }
 
-    if (_Bitmask_includes(_Flags, _Standard_info_data)) {
+    if (_STD _Bitmask_includes_any(_Flags, _Standard_info_data)) {
         FILE_STANDARD_INFO _Info;
         if (!GetFileInformationByHandleEx(_Handle._Get(), FileStandardInfo, &_Info, sizeof(_Info))) {
             return __std_win_error{GetLastError()};
@@ -953,7 +960,7 @@ _Success_(return == __std_win_error::_Success) __std_win_error
         _Last_error = __std_fs_get_stats(
             _New_directory, &_Stats, __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Follow_symlinks);
         if (_Last_error == __std_win_error::_Success
-            && !_Bitmask_includes(_Stats._Attributes, __std_fs_file_attr::_Directory)) {
+            && !_STD _Bitmask_includes_any(_Stats._Attributes, __std_fs_file_attr::_Directory)) {
             _Last_error = __std_win_error::_Already_exists;
         }
     }
@@ -987,20 +994,20 @@ _Success_(return == __std_win_error::_Success) __std_win_error
     // If getting the path failed, GetCurrentDirectoryW returns 0; otherwise, returns the size of the expected
     // directory.
     const auto _Size = GetCurrentDirectoryW(_Target_size, _Target);
-    if (_Size == 0 || _Size > _Target_size) {
-        return {_Size, __std_win_error{GetLastError()}};
+    if (_Size != 0 && _Size <= _Target_size) {
+        return {_Size, __std_win_error::_Success};
     }
 
-    return {_Size, __std_win_error::_Success};
+    return {_Size, __std_win_error{GetLastError()}};
 }
 
 [[nodiscard]] __std_win_error __stdcall __std_fs_set_current_path(_In_z_ const wchar_t* const _Target) noexcept {
     // If setting the path failed, SetCurrentDirectoryW returns 0; otherwise returns non-zero.
-    const auto _Succeeded = SetCurrentDirectoryW(_Target);
-    if (_Succeeded == 0) {
-        return __std_win_error{GetLastError()};
+    if (SetCurrentDirectoryW(_Target)) {
+        return __std_win_error::_Success;
     }
-    return __std_win_error::_Success;
+
+    return __std_win_error{GetLastError()};
 }
 
 _END_EXTERN_C

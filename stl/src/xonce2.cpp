@@ -6,7 +6,7 @@
 
 #include <yvals_core.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <synchapi.h>
 
 // Provides forwarders for InitOnceBeginInitialize and InitOnceComplete for

@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <exception>
 #include <stdexcept>
-#include <stdlib.h>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -46,7 +46,7 @@ struct AlreadyNested : nested_exception {};
 struct PolymorphicInt {
     explicit PolymorphicInt(const int n) : m_n(n) {}
 
-    PolymorphicInt(const PolymorphicInt&) = default;
+    PolymorphicInt(const PolymorphicInt&)            = default;
     PolymorphicInt& operator=(const PolymorphicInt&) = default;
     virtual ~PolymorphicInt()                        = default;
 
