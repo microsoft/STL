@@ -6,10 +6,10 @@
 #define _SILENCE_CXX17_ADAPTOR_TYPEDEFS_DEPRECATION_WARNING
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <functional>
 #include <memory>
-#include <stdlib.h>
 #include <string>
 #include <type_traits>
 #include <typeinfo>

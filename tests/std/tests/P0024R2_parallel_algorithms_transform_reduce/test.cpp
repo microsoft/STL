@@ -3,7 +3,7 @@
 
 #pragma warning(disable : 4242 4244 4365) // test_case_incorrect_special_case_reasoning tests narrowing on purpose
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <execution>
 #include <functional>
 #include <iterator>

@@ -3,7 +3,7 @@
 
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <deque>
 #include <forward_list>
 #include <hash_map>

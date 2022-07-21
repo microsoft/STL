@@ -5,13 +5,13 @@
 
 #define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 
-#include <assert.h>
+#include <cassert>
 #include <crtdbg.h>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <new>
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
 #include <type_traits>
 #include <vector>
 

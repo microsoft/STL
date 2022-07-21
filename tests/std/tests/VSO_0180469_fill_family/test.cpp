@@ -9,12 +9,12 @@
 // Note that this test *should* trigger 4365 inside STL headers, because it
 // calls std::fill and std::uninitialized_fill with (signed*, signed*, unsigned)
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstdio>
+#include <cstdlib>
 #include <memory>
-#include <stdio.h>
-#include <stdlib.h>
 #include <vector>
 
 using namespace std;
