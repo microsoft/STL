@@ -3,6 +3,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+// This header is used to compile import library.
+// Limitations apply to what can be included here; see ../../docs/import_library.txt
+
 #pragma once
 #ifndef _XCHARCONV_TABLES_H
 #define _XCHARCONV_TABLES_H
