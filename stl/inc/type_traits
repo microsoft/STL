@@ -1265,7 +1265,7 @@ struct _Add_qualifiers<_Ty1&&> {
     using _Apply = add_rvalue_reference_t<_Copy_cv<_Ty1, _Ty2>>;
 };
 
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-876860
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-10095944
 template <class _Ty1, class _Ty2>
 using _Cond_res_if_right = // N4810 [meta.trans.other]/2.4
     decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
