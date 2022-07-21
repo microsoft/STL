@@ -5248,8 +5248,8 @@ namespace ranges {
         requires input_range<_Vw>
     class chunk_view : public view_interface<chunk_view<_Vw>> {
     private:
-        /* [[no_unique_address]] */ _Vw _Range{};
-        range_difference_t<_Vw> _Count     = 0;
+        /* [[no_unique_address]] */ _Vw _Range;
+        range_difference_t<_Vw> _Count;
         range_difference_t<_Vw> _Remainder = 0;
         _Non_propagating_cache<iterator_t<_Vw>> _Current{};
 
@@ -5430,10 +5430,6 @@ namespace ranges {
         };
 
     public:
-        // clang-format off
-        chunk_view() requires default_initializable<_Vw> = default;
-        // clang-format on
-
         constexpr explicit chunk_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {
@@ -5477,8 +5473,8 @@ namespace ranges {
         requires forward_range<_Vw>
     class chunk_view<_Vw> : public view_interface<chunk_view<_Vw>> {
     private:
-        /* [[no_unique_address]] */ _Vw _Range{};
-        range_difference_t<_Vw> _Count = 0;
+        /* [[no_unique_address]] */ _Vw _Range;
+        range_difference_t<_Vw> _Count;
 
         template <bool _Const>
         class _Iterator {
@@ -5690,10 +5686,6 @@ namespace ranges {
         };
 
     public:
-        // clang-format off
-        chunk_view() requires default_initializable<_Vw> = default;
-        // clang-format on
-
         constexpr explicit chunk_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {
@@ -5818,8 +5810,8 @@ namespace ranges {
         requires view<_Vw>
     class slide_view : public _Cached_position_t<!_Slide_caches_nothing<_Vw>, _Vw, slide_view<_Vw>> {
     private:
-        /* [[no_unique_address]] */ _Vw _Range{};
-        range_difference_t<_Vw> _Count = 0;
+        /* [[no_unique_address]] */ _Vw _Range;
+        range_difference_t<_Vw> _Count;
 
         template <class>
         class _Iter_base {};
@@ -6052,10 +6044,6 @@ namespace ranges {
         };
 
     public:
-        // clang-format off
-        slide_view() requires default_initializable<_Vw> = default;
-        // clang-format on
-
         constexpr explicit slide_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {}
