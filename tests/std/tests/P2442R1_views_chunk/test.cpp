@@ -199,23 +199,28 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     STATIC_ASSERT(CanMemberEnd<const R> == input_range<const V>);
     if constexpr (CanMemberEnd<const R>) {
-        const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
-        assert((r.begin() == cs) == is_empty);
-        STATIC_ASSERT(
-            common_range<R> //
-            == (forward_range<
-                    const V> && common_range<const V> && (sized_range<const V> || !bidirectional_range<const V>) ));
-        if constexpr (common_range<const R> && bidirectional_range<V>) {
-            if (!is_empty) {
-                assert(equal(*prev(cs), *prev(end(expected))));
-            }
-
-            if constexpr (copy_constructible<V>) {
-                const auto r2 = r;
+        if constexpr (CanMemberBegin<const R>) {
+            const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
+            assert((r.begin() == cs) == is_empty);
+            // clang-format off
+            STATIC_ASSERT(common_range<const R>
+                == (forward_range<const V> && common_range<const V> &&
+                    (sized_range<const V> || !bidirectional_range<const V>)));
+            // clang-format on
+            if constexpr (common_range<const R> && bidirectional_range<V>) {
                 if (!is_empty) {
-                    assert(equal(*prev(r2.end()), *prev(end(expected))));
+                    assert(equal(*prev(cs), *prev(end(expected))));
+                }
+
+                if constexpr (copy_constructible<V>) {
+                    const auto r2 = r;
+                    if (!is_empty) {
+                        assert(equal(*prev(r2.end()), *prev(end(expected))));
+                    }
                 }
             }
+        } else {
+            STATIC_ASSERT(same_as<decltype(as_const(r).end()), std::default_sentinel_t>);
         }
     }
 
