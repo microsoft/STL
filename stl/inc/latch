@@ -39,7 +39,7 @@ public:
         _STL_VERIFY(_Expected >= 0, "Precondition: expected >= 0 (N4861 [thread.latch.class]/4)");
     }
 
-    latch(const latch&) = delete;
+    latch(const latch&)            = delete;
     latch& operator=(const latch&) = delete;
 
     void count_down(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {

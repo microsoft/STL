@@ -71,9 +71,7 @@ locale::_Locimp* __CLRCALL_OR_CDECL locale::_Locimp::_Makeloc(
     ADDFAC(_Tc5, cat, ptrimp, ptrloc);
     _Locimp::_Makexloc(lobj, cat, ptrimp, ptrloc);
     _Locimp::_Makewloc(lobj, cat, ptrimp, ptrloc);
-#ifdef _NATIVE_WCHAR_T_DEFINED
     _Locimp::_Makeushloc(lobj, cat, ptrimp, ptrloc);
-#endif
     ptrimp->_Catmask |= cat;
     ptrimp->_Name = lobj._Getname();
     return ptrimp;

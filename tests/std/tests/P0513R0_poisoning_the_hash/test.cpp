@@ -4,12 +4,12 @@
 #define _HAS_DEPRECATED_ADAPTOR_TYPEDEFS 1
 #define _SILENCE_CXX17_ADAPTOR_TYPEDEFS_DEPRECATION_WARNING
 
-#include <assert.h>
 #include <bitset>
+#include <cassert>
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <optional>
-#include <stddef.h>
 #include <string>
 #include <string_view>
 #include <system_error>

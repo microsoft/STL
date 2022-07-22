@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <functional>
 #include <memory>
 #include <unordered_map>
@@ -21,8 +21,8 @@ template <class T>
 struct TestAlloc {
     using value_type = T;
 
-    TestAlloc()                 = default;
-    TestAlloc(const TestAlloc&) = default;
+    TestAlloc()                            = default;
+    TestAlloc(const TestAlloc&)            = default;
     TestAlloc& operator=(const TestAlloc&) = default;
 
     template <class U>
@@ -53,7 +53,7 @@ struct NoAllocGuard {
         g_allow_allocations = false;
     }
 
-    NoAllocGuard(const NoAllocGuard&) = delete;
+    NoAllocGuard(const NoAllocGuard&)            = delete;
     NoAllocGuard& operator=(const NoAllocGuard&) = delete;
 
     ~NoAllocGuard() {

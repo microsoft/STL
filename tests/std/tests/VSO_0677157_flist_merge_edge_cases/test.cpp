@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <forward_list>
 #include <functional>
 #include <iterator>
 #include <stdexcept>
-#include <stdlib.h>
 #include <vector>
 
 #include <test_death.hpp>
@@ -113,7 +113,7 @@ void test_case_empty_target_bad() {
 struct throw_cmp_less_int {
     size_t remainingCompares;
     explicit throw_cmp_less_int(size_t remainingCompares_) : remainingCompares(remainingCompares_) {}
-    throw_cmp_less_int(const throw_cmp_less_int&) = delete;
+    throw_cmp_less_int(const throw_cmp_less_int&)            = delete;
     throw_cmp_less_int& operator=(const throw_cmp_less_int&) = delete;
 
     bool operator()(int a, int b) /* neither const nor noexcept */ {

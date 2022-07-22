@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <random>
-#include <stdlib.h>
 #include <string>
 #include <vector>
 

@@ -126,6 +126,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _Vector_const_iterator operator+(
+        const difference_type _Off, _Vector_const_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _CONSTEXPR20 _Vector_const_iterator& operator-=(const difference_type _Off) noexcept {
         return *this += -_Off;
     }
@@ -207,13 +213,6 @@ public:
 
     _Tptr _Ptr; // pointer to element in vector
 };
-
-template <class _Myvec>
-_NODISCARD _CONSTEXPR20 _Vector_const_iterator<_Myvec> operator+(
-    typename _Vector_const_iterator<_Myvec>::difference_type _Off, _Vector_const_iterator<_Myvec> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 #if _HAS_CXX20
 template <class _Myvec>
@@ -306,6 +305,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _Vector_iterator operator+(
+        const difference_type _Off, _Vector_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _CONSTEXPR20 _Vector_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
@@ -329,13 +334,6 @@ public:
         return _Unfancy(this->_Ptr);
     }
 };
-
-template <class _Myvec>
-_NODISCARD _CONSTEXPR20 _Vector_iterator<_Myvec> operator+(
-    typename _Vector_iterator<_Myvec>::difference_type _Off, _Vector_iterator<_Myvec> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 #if _HAS_CXX20
 template <class _Myvec>
@@ -604,7 +602,7 @@ private:
 
     class _NODISCARD _Asan_extend_guard {
     public:
-        _Asan_extend_guard(const _Asan_extend_guard&) = delete;
+        _Asan_extend_guard(const _Asan_extend_guard&)            = delete;
         _Asan_extend_guard& operator=(const _Asan_extend_guard&) = delete;
 
         constexpr explicit _Asan_extend_guard(vector* _Myvec_, size_type _Target_size_) noexcept
@@ -635,7 +633,7 @@ private:
 
     class _NODISCARD _Asan_create_guard {
     public:
-        _Asan_create_guard(const _Asan_create_guard&) = delete;
+        _Asan_create_guard(const _Asan_create_guard&)            = delete;
         _Asan_create_guard& operator=(const _Asan_create_guard&) = delete;
 
         constexpr explicit _Asan_create_guard(const vector& _Myvec_) noexcept : _Myvec(_Myvec_) {}
@@ -2461,6 +2459,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _Vb_const_iterator operator+(
+        const difference_type _Off, _Vb_const_iterator _Right) noexcept {
+        _Right += _Off;
+        return _Right;
+    }
+
     _CONSTEXPR20 _Vb_const_iterator& operator-=(const difference_type _Off) noexcept {
         return *this += -_Off;
     }
@@ -2568,14 +2572,6 @@ public:
 };
 
 template <class _Alvbase_wrapped>
-_NODISCARD _CONSTEXPR20 _Vb_const_iterator<_Alvbase_wrapped> operator+(
-    typename _Vb_const_iterator<_Alvbase_wrapped>::difference_type _Off,
-    _Vb_const_iterator<_Alvbase_wrapped> _Right) noexcept {
-    _Right += _Off;
-    return _Right;
-}
-
-template <class _Alvbase_wrapped>
 class _Vb_iterator : public _Vb_const_iterator<_Alvbase_wrapped> {
 public:
     using _Mybase          = _Vb_const_iterator<_Alvbase_wrapped>;
@@ -2637,6 +2633,11 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _Vb_iterator operator+(const difference_type _Off, _Vb_iterator _Right) noexcept {
+        _Right += _Off;
+        return _Right;
+    }
+
     _CONSTEXPR20 _Vb_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
@@ -2656,13 +2657,6 @@ public:
 
     using _Prevent_inheriting_unwrap = _Vb_iterator;
 };
-
-template <class _Alvbase_wrapped>
-_NODISCARD _CONSTEXPR20 _Vb_iterator<_Alvbase_wrapped> operator+(
-    typename _Vb_iterator<_Alvbase_wrapped>::difference_type _Off, _Vb_iterator<_Alvbase_wrapped> _Right) noexcept {
-    _Right += _Off;
-    return _Right;
-}
 
 template <class _Alloc>
 class _Vb_val : public _Container_base {

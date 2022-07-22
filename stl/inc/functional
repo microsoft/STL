@@ -713,8 +713,8 @@ public:
     }
 #endif // _HAS_STATIC_RTTI
 
-    _Func_base()                  = default;
-    _Func_base(const _Func_base&) = delete;
+    _Func_base()                             = default;
+    _Func_base(const _Func_base&)            = delete;
     _Func_base& operator=(const _Func_base&) = delete;
     // dtor non-virtual due to _Delete_this()
 

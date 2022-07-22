@@ -373,7 +373,7 @@ private:
     static void __cdecl _Lockit_dtor(_Lockit*) noexcept;
 
 public:
-    __CLR_OR_THIS_CALL _Lockit(const _Lockit&) = delete;
+    __CLR_OR_THIS_CALL _Lockit(const _Lockit&)            = delete;
     _Lockit& __CLR_OR_THIS_CALL operator=(const _Lockit&) = delete;
 
 private:

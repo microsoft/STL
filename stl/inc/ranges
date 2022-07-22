@@ -231,7 +231,7 @@ namespace ranges {
         ~_Cached_position() = default;
 
         // Offsets are oblivious to copying, so cache values _do_ propagate via copying.
-        _Cached_position(const _Cached_position&) = default;
+        _Cached_position(const _Cached_position&)            = default;
         _Cached_position& operator=(const _Cached_position&) = default;
 
         // Offsets are potentially invalidated by move, so source caches are invalidated after move
@@ -1358,7 +1358,7 @@ namespace ranges {
             _Iterator(_Iterator&&)      = default;
 
             _Iterator& operator=(const _Iterator&) = delete;
-            _Iterator& operator=(_Iterator&&) = default;
+            _Iterator& operator=(_Iterator&&)      = default;
 
             _Iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -1503,7 +1503,7 @@ namespace ranges {
         constexpr owning_view(_Rng&& _Range_) noexcept(is_nothrow_move_constructible_v<_Rng>) // strengthened
             : _Range(_STD move(_Range_)) {}
 
-        owning_view(owning_view&&) = default;
+        owning_view(owning_view&&)            = default;
         owning_view& operator=(owning_view&&) = default;
 
         _NODISCARD constexpr _Rng& base() & noexcept {
@@ -3046,7 +3046,8 @@ namespace ranges {
     private:
         struct _Cache_wrapper {
             template <input_iterator _Iter>
-            constexpr _Cache_wrapper(_Not_quite_object::_Construct_tag, const _Iter& _It) noexcept(noexcept(*_It))
+            constexpr _Cache_wrapper(_Not_quite_object::_Construct_tag, const _Iter& _It) noexcept(
+                noexcept(static_cast<decltype(_Val)>(*_It)))
                 : _Val(*_It) {}
 
             remove_cv_t<range_reference_t<_Vw>> _Val;
@@ -3426,6 +3427,479 @@ namespace ranges {
 
         inline constexpr _Join_fn join;
     } // namespace views
+
+#if _HAS_CXX23
+    template <class _Rng, class _Pat>
+    concept _Compatible_joinable_ranges = common_with<range_value_t<_Rng>, range_value_t<_Pat>> //
+        && common_reference_with<range_reference_t<_Rng>, range_reference_t<_Pat>> //
+        && common_reference_with<range_rvalue_reference_t<_Rng>, range_rvalue_reference_t<_Pat>>;
+
+    template <class _Rng, class _Pat> // TRANSITION, LLVM-47414
+    concept _Can_const_join_with =
+        input_range<const _Rng> && forward_range<const _Pat> && is_reference_v<range_reference_t<const _Rng>>;
+
+    template <input_range _Vw, forward_range _Pat>
+        requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat> //
+            && _Compatible_joinable_ranges<range_reference_t<_Vw>, _Pat>
+    class join_with_view;
+
+    template <class _Vw, class _Pat>
+    class _Join_with_view_base : public view_interface<join_with_view<_Vw, _Pat>> {
+    private:
+        struct _Cache_wrapper {
+            template <input_iterator _Iter>
+            constexpr _Cache_wrapper(_Not_quite_object::_Construct_tag, const _Iter& _It) noexcept(
+                noexcept(static_cast<decltype(_Val)>(*_It)))
+                : _Val(*_It) {}
+
+            remove_cv_t<range_reference_t<_Vw>> _Val;
+        };
+
+    protected:
+        /* [[no_unique_address]] */ _Non_propagating_cache<_Cache_wrapper, false> _Inner{};
+    };
+
+    template <class _Vw, class _Pat>
+        requires is_reference_v<range_reference_t<_Vw>>
+    class _Join_with_view_base<_Vw, _Pat> : public view_interface<join_with_view<_Vw, _Pat>> {
+    };
+
+    template <input_range _Vw, forward_range _Pat>
+        requires view<_Vw> && input_range<range_reference_t<_Vw>> && view<_Pat> //
+            && _Compatible_joinable_ranges<range_reference_t<_Vw>, _Pat>
+    class join_with_view : public _Join_with_view_base<_Vw, _Pat> {
+    private:
+        template <bool _Const>
+        using _InnerRng = range_reference_t<_Maybe_const<_Const, _Vw>>;
+
+        /* [[no_unique_address]] */ _Vw _Range{};
+        /* [[no_unique_address]] */ _Pat _Pattern{};
+
+        template <bool _Const>
+        class _Sentinel;
+
+        template <bool _Const>
+        struct _Category_base {};
+
+        template <bool _Const>
+            requires forward_range<_Maybe_const<_Const, _Vw>> && forward_range<_InnerRng<_Const>> //
+                && is_reference_v<_InnerRng<_Const>>
+        struct _Category_base<_Const> {
+            using _Outer       = _Maybe_const<_Const, _Vw>;
+            using _Inner       = _InnerRng<_Const>;
+            using _PatternBase = _Maybe_const<_Const, _Pat>;
+
+            using iterator_category = conditional_t<
+                !is_lvalue_reference_v<common_reference_t<range_reference_t<_Inner>, range_reference_t<_PatternBase>>>,
+                input_iterator_tag,
+                conditional_t<common_range<_Inner> && common_range<_PatternBase> //
+                                  && derived_from<_Iter_cat_t<iterator_t<_Outer>>, bidirectional_iterator_tag> //
+                                  && derived_from<_Iter_cat_t<iterator_t<_Inner>>, bidirectional_iterator_tag> //
+                                  && derived_from<_Iter_cat_t<iterator_t<_PatternBase>>, bidirectional_iterator_tag>,
+                    bidirectional_iterator_tag,
+                    conditional_t<derived_from<_Iter_cat_t<iterator_t<_Outer>>, forward_iterator_tag> //
+                                      && derived_from<_Iter_cat_t<iterator_t<_Inner>>, forward_iterator_tag> //
+                                      && derived_from<_Iter_cat_t<iterator_t<_PatternBase>>, forward_iterator_tag>,
+                        forward_iterator_tag, input_iterator_tag>>>;
+        };
+
+        template <bool _Const>
+        class _Iterator : public _Category_base<_Const> {
+        private:
+            friend join_with_view;
+
+            using _Parent_t    = _Maybe_const<_Const, join_with_view>;
+            using _Base        = _Maybe_const<_Const, _Vw>;
+            using _PatternBase = _Maybe_const<_Const, _Pat>;
+
+            using _OuterIter   = iterator_t<_Base>;
+            using _InnerIter   = iterator_t<_InnerRng<_Const>>;
+            using _PatternIter = iterator_t<_PatternBase>;
+
+            // True if and only if the expression *i, where i is an iterator from the outer range, is a glvalue:
+            static constexpr bool _Deref_is_glvalue = is_reference_v<_InnerRng<_Const>>;
+
+            _Parent_t* _Parent{};
+            /* [[no_unique_address]] */ _OuterIter _Outer_it{};
+            _Variantish<_PatternIter, _InnerIter> _Inner_it{};
+
+            constexpr _Iterator(_Parent_t& _Parent_, iterator_t<_Base> _Outer_)
+                : _Parent{_STD addressof(_Parent_)}, _Outer_it{_STD move(_Outer_)} {
+                if (_Outer_it != _RANGES end(_Parent->_Range)) {
+                    auto&& _Inner = _Update_inner();
+                    _Inner_it._Emplace_second(_RANGES begin(_Inner));
+                    _Satisfy();
+                }
+            }
+
+            _NODISCARD constexpr auto&& _Update_inner() {
+                if constexpr (_Deref_is_glvalue) {
+                    return *_Outer_it;
+                } else {
+                    return _Parent->_Inner._Emplace(_Not_quite_object::_Construct_tag{}, _Outer_it)._Val;
+                }
+            }
+
+            _NODISCARD constexpr auto&& _Get_inner() noexcept {
+                if constexpr (_Deref_is_glvalue) {
+                    return *_Outer_it;
+                } else {
+                    return (*_Parent->_Inner)._Val;
+                }
+            }
+
+            template <class _Ret = void>
+            constexpr _Ret _Visit_inner_it(auto&& _Func) const {
+                if (_Inner_it._Contains == _Variantish_state::_Holds_first) {
+                    return _Func(_Inner_it._First);
+                } else if (_Inner_it._Contains == _Variantish_state::_Holds_second) {
+                    return _Func(_Inner_it._Second);
+                } else {
+                    _Throw_bad_variant_access();
+                }
+            }
+
+            constexpr void _Satisfy() {
+                for (;;) {
+                    if (_Inner_it._Contains == _Variantish_state::_Holds_first) {
+                        if (_Inner_it._First != _RANGES end(_Parent->_Pattern)) {
+                            break;
+                        }
+
+                        auto&& _Inner = _Update_inner();
+                        _Inner_it._Emplace_second(_RANGES begin(_Inner));
+                    } else {
+                        _STL_INTERNAL_CHECK(_Inner_it._Contains == _Variantish_state::_Holds_second);
+
+                        auto&& _Inner = _Get_inner();
+                        if (_Inner_it._Second != _RANGES end(_Inner)) {
+                            break;
+                        }
+
+                        ++_Outer_it;
+                        if (_Outer_it == _RANGES end(_Parent->_Range)) {
+                            if constexpr (_Deref_is_glvalue) {
+                                _Inner_it._Emplace_first();
+                            }
+                            break;
+                        }
+
+                        _Inner_it._Emplace_first(_RANGES begin(_Parent->_Pattern));
+                    }
+                }
+            }
+
+        public:
+            using iterator_concept = //
+                conditional_t<_Deref_is_glvalue && bidirectional_range<_Base> //
+                                  && _Bidi_common_range<_InnerRng<_Const>> && _Bidi_common_range<_PatternBase>,
+                    bidirectional_iterator_tag,
+                    conditional_t<_Deref_is_glvalue && forward_range<_Base> && forward_range<_InnerRng<_Const>>,
+                        forward_iterator_tag, input_iterator_tag>>;
+            using value_type      = common_type_t<iter_value_t<_InnerIter>, iter_value_t<_PatternIter>>;
+            using difference_type = _Common_diff_t<_OuterIter, _InnerIter, _PatternIter>;
+
+            // clang-format off
+            _Iterator() requires default_initializable<_OuterIter> = default;
+            // clang-format on
+
+            constexpr _Iterator(_Iterator<!_Const> _It) requires _Const //
+                && convertible_to<iterator_t<_Vw>, _OuterIter> //
+                && convertible_to<iterator_t<_InnerRng<false>>, _InnerIter> //
+                && convertible_to<iterator_t<_Pat>, _PatternIter> //
+                : _Outer_it{_STD move(_It._Outer_it)}, _Parent{_It._Parent} {
+                switch (_It._Inner_it._Contains) {
+                case _Variantish_state::_Holds_first:
+                    _Inner_it._Emplace_first(_STD move(_It._Inner_it._First));
+                    break;
+                case _Variantish_state::_Holds_second:
+                    _Inner_it._Emplace_second(_STD move(_It._Inner_it._Second));
+                    break;
+                case _Variantish_state::_Nothing:
+                    _Throw_bad_variant_access();
+                }
+            }
+
+            _NODISCARD constexpr decltype(auto) operator*() const {
+                using _Ref = common_reference_t<iter_reference_t<_InnerIter>, iter_reference_t<_PatternIter>>;
+                return _Visit_inner_it<_Ref>([](auto&& _It) -> _Ref { return *_It; });
+            }
+
+            constexpr _Iterator& operator++() {
+                switch (_Inner_it._Contains) {
+                case _Variantish_state::_Holds_first:
+                    ++_Inner_it._First;
+                    break;
+                case _Variantish_state::_Holds_second:
+                    ++_Inner_it._Second;
+                    break;
+                case _Variantish_state::_Nothing:
+                    _Throw_bad_variant_access();
+                }
+                _Satisfy();
+                return *this;
+            }
+
+            constexpr void operator++(int) {
+                ++*this;
+            }
+
+            constexpr _Iterator operator++(int) requires _Deref_is_glvalue
+                && forward_iterator<_OuterIter> && forward_iterator<_InnerIter> {
+                auto _Tmp = *this;
+                ++*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator--() requires _Deref_is_glvalue && bidirectional_range<_Base> //
+                && _Bidi_common_range<_InnerRng<_Const>> && _Bidi_common_range<_PatternBase> {
+                if (_Outer_it == _RANGES end(_Parent->_Range)) {
+                    --_Outer_it;
+                    auto&& _Inner = *_Outer_it;
+                    _Inner_it._Emplace_second(_RANGES end(_Inner));
+                }
+
+                for (;;) {
+                    if (_Inner_it._Contains == _Variantish_state::_Holds_first) {
+                        auto& _It = _Inner_it._First;
+                        if (_It == _RANGES begin(_Parent->_Pattern)) {
+                            --_Outer_it;
+                            auto&& _Inner = *_Outer_it;
+                            _Inner_it._Emplace_second(_RANGES end(_Inner));
+                        } else {
+                            break;
+                        }
+                    } else if (_Inner_it._Contains == _Variantish_state::_Holds_second) {
+                        auto& _It     = _Inner_it._Second;
+                        auto&& _Inner = *_Outer_it;
+                        if (_It == _RANGES begin(_Inner)) {
+                            _Inner_it._Emplace_first(_RANGES end(_Parent->_Pattern));
+                        } else {
+                            break;
+                        }
+                    } else {
+                        _Throw_bad_variant_access();
+                    }
+                }
+
+                switch (_Inner_it._Contains) {
+                case _Variantish_state::_Holds_first:
+                    --_Inner_it._First;
+                    break;
+                case _Variantish_state::_Holds_second:
+                    --_Inner_it._Second;
+                    break;
+                case _Variantish_state::_Nothing:
+                    _Throw_bad_variant_access();
+                }
+                return *this;
+            }
+
+            constexpr _Iterator operator--(int) requires _Deref_is_glvalue && bidirectional_range<_Base> //
+                && _Bidi_common_range<_InnerRng<_Const>> && _Bidi_common_range<_PatternBase> {
+                auto _Tmp = *this;
+                --*this;
+                return _Tmp;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator==(
+                const _Iterator& _Left, const _Iterator& _Right) requires _Deref_is_glvalue
+                && equality_comparable<_OuterIter> && equality_comparable<_InnerIter> {
+                if (_Left._Outer_it != _Right._Outer_it) {
+                    return false;
+                }
+
+                if (_Left._Inner_it._Contains != _Right._Inner_it._Contains) {
+                    return false;
+                }
+
+                switch (_Left._Inner_it._Contains) {
+                case _Variantish_state::_Holds_first:
+                    return _Left._Inner_it._First == _Right._Inner_it._First;
+                case _Variantish_state::_Holds_second:
+                    return _Left._Inner_it._Second == _Right._Inner_it._Second;
+                case _Variantish_state::_Nothing:
+                    return true;
+                }
+
+                _STL_UNREACHABLE;
+            }
+
+            _NODISCARD_FRIEND constexpr decltype(auto) iter_move(const _Iterator& _It) {
+                using _Rvalue_ref =
+                    common_reference_t<iter_rvalue_reference_t<_InnerIter>, iter_rvalue_reference_t<_PatternIter>>;
+                return _It._Visit_inner_it<_Rvalue_ref>(_RANGES iter_move);
+            }
+
+            friend constexpr void iter_swap(const _Iterator& _Left,
+                const _Iterator& _Right) requires indirectly_swappable<_InnerIter, _PatternIter> {
+                switch (_Left._Inner_it._Contains) {
+                case _Variantish_state::_Holds_first:
+                    switch (_Right._Inner_it._Contains) {
+                    case _Variantish_state::_Holds_first:
+                        return _RANGES iter_swap(_Left._Inner_it._First, _Right._Inner_it._First);
+                    case _Variantish_state::_Holds_second:
+                        return _RANGES iter_swap(_Left._Inner_it._First, _Right._Inner_it._Second);
+                    case _Variantish_state::_Nothing:
+                        break;
+                    }
+                    break;
+                case _Variantish_state::_Holds_second:
+                    switch (_Right._Inner_it._Contains) {
+                    case _Variantish_state::_Holds_first:
+                        return _RANGES iter_swap(_Left._Inner_it._Second, _Right._Inner_it._First);
+                    case _Variantish_state::_Holds_second:
+                        return _RANGES iter_swap(_Left._Inner_it._Second, _Right._Inner_it._Second);
+                    case _Variantish_state::_Nothing:
+                        break;
+                    }
+                    break;
+                case _Variantish_state::_Nothing:
+                    break;
+                }
+
+                _Throw_bad_variant_access();
+            }
+        };
+
+        template <bool _Const>
+        class _Sentinel {
+        private:
+            friend join_with_view;
+
+            using _Parent_t = _Maybe_const<_Const, join_with_view>;
+            using _Base     = _Maybe_const<_Const, _Vw>;
+
+            /* [[no_unique_address]] */ sentinel_t<_Base> _Last{};
+
+            constexpr explicit _Sentinel(_Parent_t& _Parent) noexcept(
+                noexcept(_RANGES end(_Parent._Range))
+                && is_nothrow_move_constructible_v<sentinel_t<_Base>>) // strengthened
+                : _Last(_RANGES end(_Parent._Range)) {}
+
+            template <bool _OtherConst>
+            _NODISCARD constexpr bool _Equal(const _Iterator<_OtherConst>& _It) const
+                noexcept(noexcept(_Implicitly_convert_to<bool>(_It._Outer_it == _Last))) {
+                _STL_INTERNAL_STATIC_ASSERT(
+                    sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>);
+                return _It._Outer_it == _Last;
+            }
+
+        public:
+            _Sentinel() = default;
+
+            constexpr _Sentinel(_Sentinel<!_Const> _Se) noexcept(
+                is_nothrow_constructible_v<sentinel_t<_Base>, sentinel_t<_Vw>>) // strengthened
+                requires _Const && convertible_to<sentinel_t<_Vw>, sentinel_t<_Base>> //
+                : _Last{_STD move(_Se._Last)} {}
+
+            template <bool _OtherConst>
+            requires sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>
+                _NODISCARD_FRIEND constexpr bool operator==(const _Iterator<_OtherConst>& _Left,
+                    const _Sentinel& _Right) noexcept(noexcept(_Right._Equal(_Left))) /* strengthened */ {
+                return _Right._Equal(_Left);
+            }
+        };
+
+    public:
+        // clang-format off
+        join_with_view() requires default_initializable<_Vw> && default_initializable<_Pat> = default;
+        // clang-format on
+
+        constexpr join_with_view(_Vw _Range_, _Pat _Pattern_) noexcept(
+            is_nothrow_move_constructible_v<_Vw>&& is_nothrow_move_constructible_v<_Pat>) // strengthened
+            : _Range{_STD move(_Range_)}, _Pattern{_STD move(_Pattern_)} {}
+
+        template <input_range _Rng>
+            requires constructible_from<_Vw, views::all_t<_Rng>> && constructible_from<_Pat,
+                single_view<range_value_t<_InnerRng<false>>>>
+        constexpr join_with_view(_Rng&& _Range_, range_value_t<_InnerRng<false>> _Elem) noexcept(
+            noexcept(_Vw(views::all(_STD forward<_Rng>(_Range_)))) && noexcept(
+                _Pat(views::single(_STD move(_Elem))))) // strengthened
+            : _Range(views::all(_STD forward<_Rng>(_Range_))), _Pattern(views::single(_STD move(_Elem))) {}
+
+        _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) /* strengthened */
+            requires copy_constructible<_Vw> {
+            return _Range;
+        }
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        _NODISCARD constexpr auto begin() {
+            constexpr bool _Use_const = _Simple_view<_Vw> && is_reference_v<_InnerRng<false>> && _Simple_view<_Pat>;
+            return _Iterator<_Use_const>{*this, _RANGES begin(_Range)};
+        }
+
+        _NODISCARD constexpr auto begin() const
+#ifdef __clang__ // TRANSITION, LLVM-47414
+            requires _Can_const_join_with<_Vw, _Pat>
+#else // ^^^ workaround / no workaround vvv
+            requires input_range<const _Vw> && forward_range<const _Pat> && is_reference_v<_InnerRng<true>>
+#endif // TRANSITION, LLVM-47414
+        {
+            return _Iterator<true>{*this, _RANGES begin(_Range)};
+        }
+
+        _NODISCARD constexpr auto end() {
+            constexpr bool _Both_simple = _Simple_view<_Vw> && _Simple_view<_Pat>;
+            if constexpr (forward_range<_Vw> //
+                          && is_reference_v<_InnerRng<false>> && forward_range<_InnerRng<false>> //
+                          && common_range<_Vw> && common_range<_InnerRng<false>>) {
+                return _Iterator<_Both_simple>{*this, _RANGES end(_Range)};
+            } else {
+                return _Sentinel<_Both_simple>{*this};
+            }
+        }
+
+        _NODISCARD constexpr auto end() const
+#ifdef __clang__ // TRANSITION, LLVM-47414
+            requires _Can_const_join_with<_Vw, _Pat>
+#else // ^^^ workaround / no workaround vvv
+            requires input_range<const _Vw> && forward_range<const _Pat> && is_reference_v<_InnerRng<true>>
+#endif // TRANSITION, LLVM-47414
+        {
+            if constexpr (forward_range<const _Vw> && forward_range<_InnerRng<true>> //
+                          && common_range<_Vw> && common_range<_InnerRng<true>>) {
+                return _Iterator<true>{*this, _RANGES end(_Range)};
+            } else {
+                return _Sentinel<true>{*this};
+            }
+        }
+    };
+
+    template <class _Rng, class _Pat>
+    join_with_view(_Rng&&, _Pat&&) -> join_with_view<views::all_t<_Rng>, views::all_t<_Pat>>;
+
+    template <input_range _Rng>
+    join_with_view(_Rng&&, range_value_t<range_reference_t<_Rng>>)
+        -> join_with_view<views::all_t<_Rng>, single_view<range_value_t<range_reference_t<_Rng>>>>;
+
+    namespace views {
+        struct _Join_with_fn {
+            // clang-format off
+            template <viewable_range _Rng, class _Pat>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, _Pat&& _Pattern) const noexcept(
+                noexcept(join_with_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern)))) requires requires {
+                join_with_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern));
+            }
+            { // clang-format on
+                return join_with_view(_STD forward<_Rng>(_Range), _STD forward<_Pat>(_Pattern));
+            }
+
+            // clang-format off
+            template <class _Delim>
+                requires constructible_from<decay_t<_Delim>, _Delim>
+            _NODISCARD constexpr auto operator()(_Delim&& _Delimiter) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Delim>, _Delim>) {
+                // clang-format on
+                return _Range_closure<_Join_with_fn, decay_t<_Delim>>{_STD forward<_Delim>(_Delimiter)};
+            }
+        };
+
+        inline constexpr _Join_with_fn join_with;
+    } // namespace views
+#endif // _HAS_CXX23
 
     template <auto> // _Require_constant<E> is a valid template-id iff E is a constant expression of structural type
     struct _Require_constant;
@@ -4801,7 +5275,7 @@ namespace ranges {
             using difference_type  = range_difference_t<_Vw>;
             using value_type       = range_value_t<_Vw>;
 
-            _Inner_iterator(_Inner_iterator&&) = default;
+            _Inner_iterator(_Inner_iterator&&)            = default;
             _Inner_iterator& operator=(_Inner_iterator&&) = default;
 
             _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept /* strengthened */ {
@@ -4910,7 +5384,7 @@ namespace ranges {
                 }
             };
 
-            _Outer_iterator(_Outer_iterator&&) = default;
+            _Outer_iterator(_Outer_iterator&&)            = default;
             _Outer_iterator& operator=(_Outer_iterator&&) = default;
 
             _NODISCARD constexpr value_type operator*() const noexcept /* strengthened */ {

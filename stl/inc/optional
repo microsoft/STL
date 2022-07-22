@@ -118,10 +118,10 @@ struct _Optional_destruct_base<_Ty, false> { // either contains a value of _Ty o
         : _Value(_STD invoke(_STD forward<_Fn>(_Func), _STD forward<_Ux>(_Arg))), _Has_value{true} {}
 #endif // _HAS_CXX23
 
-    _Optional_destruct_base(const _Optional_destruct_base&) = default;
-    _Optional_destruct_base(_Optional_destruct_base&&)      = default;
+    _Optional_destruct_base(const _Optional_destruct_base&)            = default;
+    _Optional_destruct_base(_Optional_destruct_base&&)                 = default;
     _Optional_destruct_base& operator=(const _Optional_destruct_base&) = default;
-    _Optional_destruct_base& operator=(_Optional_destruct_base&&) = default;
+    _Optional_destruct_base& operator=(_Optional_destruct_base&&)      = default;
 
     _CONSTEXPR20 void reset() noexcept {
         if (_Has_value) {
@@ -232,18 +232,9 @@ public:
     using _AllowDirectConversion = bool_constant<conjunction_v<negation<is_same<_Remove_cvref_t<_Ty2>, optional>>,
         negation<is_same<_Remove_cvref_t<_Ty2>, in_place_t>>, is_constructible<_Ty, _Ty2>>>;
 
-#if _HAS_CONDITIONAL_EXPLICIT
     template <class _Ty2 = _Ty, enable_if_t<_AllowDirectConversion<_Ty2>::value, int> = 0>
     constexpr explicit(!is_convertible_v<_Ty2, _Ty>) optional(_Ty2&& _Right)
         : _Mybase(in_place, _STD forward<_Ty2>(_Right)) {}
-#else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Ty2                                                                         = _Ty,
-        enable_if_t<conjunction_v<_AllowDirectConversion<_Ty2>, is_convertible<_Ty2, _Ty>>, int> = 0>
-    constexpr optional(_Ty2&& _Right) : _Mybase(in_place, _STD forward<_Ty2>(_Right)) {}
-    template <class _Ty2                                                                                   = _Ty,
-        enable_if_t<conjunction_v<_AllowDirectConversion<_Ty2>, negation<is_convertible<_Ty2, _Ty>>>, int> = 0>
-    constexpr explicit optional(_Ty2&& _Right) : _Mybase(in_place, _STD forward<_Ty2>(_Right)) {}
-#endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
     template <class _Ty2>
     struct _AllowUnwrapping : bool_constant<!disjunction_v<is_same<_Ty, _Ty2>, is_constructible<_Ty, optional<_Ty2>&>,
@@ -252,7 +243,6 @@ public:
                                   is_convertible<optional<_Ty2>&, _Ty>, is_convertible<const optional<_Ty2>&, _Ty>,
                                   is_convertible<const optional<_Ty2>, _Ty>, is_convertible<optional<_Ty2>, _Ty>>> {};
 
-#if _HAS_CONDITIONAL_EXPLICIT
     template <class _Ty2,
         enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, const _Ty2&>>, int> = 0>
     _CONSTEXPR20 explicit(!is_convertible_v<const _Ty2&, _Ty>) optional(const optional<_Ty2>& _Right) {
@@ -260,50 +250,13 @@ public:
             this->_Construct(*_Right);
         }
     }
-#else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, const _Ty2&>,
-                                          is_convertible<const _Ty2&, _Ty>>,
-                              int> = 0>
-    optional(const optional<_Ty2>& _Right) {
-        if (_Right) {
-            this->_Construct(*_Right);
-        }
-    }
-    template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, const _Ty2&>,
-                                          negation<is_convertible<const _Ty2&, _Ty>>>,
-                              int> = 0>
-    explicit optional(const optional<_Ty2>& _Right) {
-        if (_Right) {
-            this->_Construct(*_Right);
-        }
-    }
-#endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
-#if _HAS_CONDITIONAL_EXPLICIT
     template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, _Ty2>>, int> = 0>
     _CONSTEXPR20 explicit(!is_convertible_v<_Ty2, _Ty>) optional(optional<_Ty2>&& _Right) {
         if (_Right) {
             this->_Construct(_STD move(*_Right));
         }
     }
-#else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Ty2,
-        enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, _Ty2>, is_convertible<_Ty2, _Ty>>,
-            int> = 0>
-    optional(optional<_Ty2>&& _Right) {
-        if (_Right) {
-            this->_Construct(_STD move(*_Right));
-        }
-    }
-    template <class _Ty2, enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, _Ty2>,
-                                          negation<is_convertible<_Ty2, _Ty>>>,
-                              int> = 0>
-    explicit optional(optional<_Ty2>&& _Right) {
-        if (_Right) {
-            this->_Construct(_STD move(*_Right));
-        }
-    }
-#endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
 #if _HAS_CXX23
     template <class _Fn, class _Ux>

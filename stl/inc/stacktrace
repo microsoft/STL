@@ -77,8 +77,8 @@ class stacktrace_entry {
 public:
     using native_handle_type = void*;
 
-    constexpr stacktrace_entry() noexcept                        = default;
-    constexpr stacktrace_entry(const stacktrace_entry&) noexcept = default;
+    constexpr stacktrace_entry() noexcept                                   = default;
+    constexpr stacktrace_entry(const stacktrace_entry&) noexcept            = default;
     constexpr stacktrace_entry& operator=(const stacktrace_entry&) noexcept = default;
 
     ~stacktrace_entry() = default;
@@ -191,7 +191,7 @@ public:
     basic_stacktrace(basic_stacktrace&& _Other, const allocator_type& _Al)
         : _Frames(_STD move(_Other._Frames), _Al), _Hash(_Other._Hash) {}
 
-    basic_stacktrace& operator=(const basic_stacktrace&) = default;
+    basic_stacktrace& operator=(const basic_stacktrace&)                 = default;
     basic_stacktrace& operator=(basic_stacktrace&&) noexcept(_Noex_move) = default;
 
     ~basic_stacktrace() = default;

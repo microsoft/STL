@@ -345,7 +345,7 @@ public:
 
     template <class _FwdIt>
     string_type lookup_collatename(_FwdIt _First, _FwdIt _Last) const { // map [_First, _Last) to collation element
-        return string_type(_First, _Last);
+        return string_type{_First, _Last};
     }
 
     locale_type imbue(locale_type _Lx) { // store locale object
@@ -611,7 +611,7 @@ public:
 
     _NODISCARD string_type str() const { // convert matched text to string
         const _Mybase _Range(_Effective_range());
-        return string_type(_Range.first, _Range.second);
+        return string_type{_Range.first, _Range.second};
     }
 
     _NODISCARD int compare(const sub_match& _Right) const { // compare *this to _Right
@@ -1008,7 +1008,7 @@ public:
     }
 
     _NODISCARD string_type str(size_type _Sub = 0) const {
-        return string_type((*this)[_Sub]);
+        return string_type{(*this)[_Sub]};
     }
 
     _NODISCARD const_reference operator[](size_type _Sub) const noexcept /* strengthened */ {

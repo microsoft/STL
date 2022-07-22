@@ -189,6 +189,8 @@
 // P0769R2 shift_left(), shift_right()
 // P0784R7 Library Support For More constexpr Containers
 // P0811R3 midpoint(), lerp()
+// P0849R8 auto(x): decay-copy In The Language
+//     (library part only)
 // P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
 // P0896R4 Ranges
@@ -271,7 +273,6 @@
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2432R1 Fix istream_view
-// P????R? directory_entry::clear_cache()
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -295,6 +296,7 @@
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
 // P1272R4 byteswap()
+// P1328R1 constexpr type_info::operator==()
 // P1413R3 Deprecate aligned_storage And aligned_union
 // P1425R4 Iterator Pair Constructors For stack And queue
 // P1659R3 ranges::starts_with, ranges::ends_with
@@ -310,6 +312,7 @@
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
+// P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
 // P2549R0 unexpected<E>::error()
@@ -483,17 +486,6 @@
 #pragma pop_macro("known_semantics")
 #pragma pop_macro("msvc")
 
-// Controls whether the STL uses "conditional explicit" internally
-#ifndef _HAS_CONDITIONAL_EXPLICIT
-#ifdef __cpp_conditional_explicit
-#define _HAS_CONDITIONAL_EXPLICIT 1
-#elif defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _HAS_CONDITIONAL_EXPLICIT 0 // TRANSITION, CUDA/ICC
-#else // vvv C1XX or Clang or IntelliSense vvv
-#define _HAS_CONDITIONAL_EXPLICIT 1
-#endif // ^^^ C1XX or Clang or IntelliSense ^^^
-#endif // _HAS_CONDITIONAL_EXPLICIT
-
 // warning C4577: 'noexcept' used with no exception handling mode specified;
 // termination on exception is not guaranteed. Specify /EHsc (/Wall)
 #if _HAS_EXCEPTIONS
@@ -510,11 +502,11 @@
 #endif // !_HAS_CXX17
 
 // warning C5053: support for 'explicit(<expr>)' in C++17 and earlier is a vendor extension
-#if !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
+#if !_HAS_CXX20
 #define _STL_DISABLED_WARNING_C5053 5053
-#else // !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
+#else // !_HAS_CXX20
 #define _STL_DISABLED_WARNING_C5053
-#endif // !_HAS_CXX20 && _HAS_CONDITIONAL_EXPLICIT
+#endif // !_HAS_CXX20
 
 #ifndef _STL_EXTRA_DISABLED_WARNINGS
 #define _STL_EXTRA_DISABLED_WARNINGS
@@ -621,7 +613,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202206L
+#define _MSVC_STL_UPDATE  202207L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
@@ -631,12 +623,12 @@
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 13
-#error STL1000: Unexpected compiler version, expected Clang 13.0.0 or newer.
+#if __clang_major__ < 14
+#error STL1000: Unexpected compiler version, expected Clang 14.0.0 or newer.
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1932 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.32 or newer.
+#if _MSC_VER < 1933 // Coarse-grained, not inspecting _MSC_FULL_VER
+#error STL1001: Unexpected compiler version, expected MSVC 19.33 or newer.
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -1461,6 +1453,7 @@
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_expected 202202L
@@ -1475,6 +1468,7 @@
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_iota             202202L
+#define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
 #endif // __cpp_lib_concepts
@@ -1590,6 +1584,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
 #define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN7    0x0601 // _WIN32_WINNT_WIN7 from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
 #define _STL_WIN32_WINNT_WINBLUE 0x0603 // _WIN32_WINNT_WINBLUE from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN10   0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
@@ -1602,9 +1597,9 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
 // The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
-#else // ^^^ default to Win8 // default to Vista vvv
-// The earliest Windows supported by this implementation is Windows Vista
-#define _STL_WIN32_WINNT _STL_WIN32_WINNT_VISTA
+#else // ^^^ default to Win8 // default to Win7 vvv
+// The earliest Windows supported by this implementation is Windows 7
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN7
 #endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
 #endif // _STL_WIN32_WINNT
 

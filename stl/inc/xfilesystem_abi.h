@@ -129,7 +129,7 @@ struct __std_fs_stats {
     __std_fs_stats_flags _Available; // which fields are available
 
     _NODISCARD __std_fs_file_attr _Symlink_hint_attributes() const noexcept {
-        if (_Bitmask_includes(_Available, __std_fs_stats_flags::_Attributes)) {
+        if (_STD _Bitmask_includes_any(_Available, __std_fs_stats_flags::_Attributes)) {
             return _Attributes;
         }
 
@@ -348,7 +348,7 @@ struct _Fs_file {
         *_Err = __std_fs_open_handle(&_Raw, _File_name, _Desired_access, _Flags);
     }
 
-    _Fs_file(const _Fs_file&) = delete;
+    _Fs_file(const _Fs_file&)            = delete;
     _Fs_file& operator=(const _Fs_file&) = delete;
 
     ~_Fs_file() {

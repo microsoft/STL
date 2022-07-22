@@ -234,9 +234,6 @@ utilities\meta\meta.unary\meta.unary.prop\is_literal_type.deprecated.fail.cpp
 language.support\support.limits\support.limits.general\tuple.version.pass.cpp
 language.support\support.limits\support.limits.general\utility.version.pass.cpp
 
-# P1328R1 constexpr type_info::operator==()
-language.support\support.limits\support.limits.general\typeinfo.version.pass.cpp
-
 
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
@@ -296,40 +293,6 @@ concepts\concepts.compare\concept.equalitycomparable\equality_comparable_with.co
 # *** CLANG COMPILER BUGS ***
 # LLVM-46207 Clang's tgmath.h interferes with the UCRT's tgmath.h
 depr\depr.c.headers\tgmath_h.pass.cpp
-
-# Clang doesn't implement the common coroutine ABI until LLVM 14
-language.support\support.coroutines\coroutine.handle\coroutine.handle.capacity\operator_bool.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.compare\equal_comp.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.compare\less_comp.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.completion\done.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.con\assign.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.con\construct.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.export\address.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.export\from_address.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.hash\hash.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.noop\noop_coroutine.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.prom\promise.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.resumption\destroy.pass.cpp
-language.support\support.coroutines\coroutine.handle\coroutine.handle.resumption\resume.pass.cpp
-language.support\support.coroutines\coroutine.handle\void_handle.pass.cpp
-language.support\support.coroutines\coroutine.traits\promise_type.pass.cpp
-language.support\support.coroutines\coroutine.trivial.awaitables\suspend_always.pass.cpp
-language.support\support.coroutines\coroutine.trivial.awaitables\suspend_never.pass.cpp
-language.support\support.coroutines\end.to.end\await_result.pass.cpp
-language.support\support.coroutines\end.to.end\bool_await_suspend.pass.cpp
-language.support\support.coroutines\end.to.end\expected.pass.cpp
-language.support\support.coroutines\end.to.end\fullexpr-dtor.pass.cpp
-language.support\support.coroutines\end.to.end\generator.pass.cpp
-language.support\support.coroutines\end.to.end\go.pass.cpp
-language.support\support.coroutines\end.to.end\multishot_func.pass.cpp
-language.support\support.coroutines\end.to.end\oneshot_func.pass.cpp
-language.support\support.limits\support.limits.general\coroutine.version.pass.cpp
-
-# LLVM-52970 SFINAEing p.x on a pointer wrongly tries to complete the pointee's type
-ranges\range.access\begin.pass.cpp
-ranges\range.access\data.pass.cpp
-ranges\range.access\end.pass.cpp
-ranges\range.req\range.range\range.compile.pass.cpp
 
 # Clang doesn't yet implement P0960 "Initializing Aggregates With Parentheses"
 ranges\range.factories\range.iota.view\sentinel\ctor.value.pass.cpp
@@ -914,9 +877,6 @@ containers\sequences\vector\vector.cons\deduct.pass.cpp
 iterators\iterator.primitives\iterator.operations\advance.pass.cpp
 
 # Not yet analyzed. Maybe Clang over-eagerly instantiating noexcept-specifier?
-ranges\range.access\empty.pass.cpp
-ranges\range.access\size.pass.cpp
-ranges\range.access\ssize.pass.cpp
 utilities\memory\unique.ptr\iterator_concept_conformance.compile.pass.cpp
 
 # Not yet analyzed. Assertion failed: std::abs((kurtosis - x_kurtosis) / x_kurtosis) < VARIOUS_VALUES

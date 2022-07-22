@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <__msvc_all_public_headers.hpp>
-#include <assert.h>
+#include <cassert>
 
 namespace fs = std::experimental::filesystem;
 

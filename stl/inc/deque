@@ -85,6 +85,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _Deque_unchecked_const_iterator operator+(
+        const difference_type _Off, _Deque_unchecked_const_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _Deque_unchecked_const_iterator& operator-=(const difference_type _Off) noexcept {
         _Myoff -= _Off;
         return *this;
@@ -143,14 +149,6 @@ public:
 };
 
 template <class _Mydeque>
-_NODISCARD _Deque_unchecked_const_iterator<_Mydeque> operator+(
-    typename _Deque_unchecked_const_iterator<_Mydeque>::difference_type _Off,
-    _Deque_unchecked_const_iterator<_Mydeque> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
-
-template <class _Mydeque>
 class _Deque_unchecked_iterator : public _Deque_unchecked_const_iterator<_Mydeque> {
 private:
     using _Size_type = typename _Mydeque::size_type;
@@ -207,6 +205,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _Deque_unchecked_iterator operator+(
+        const difference_type _Off, _Deque_unchecked_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _Deque_unchecked_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
@@ -226,14 +230,6 @@ public:
         return const_cast<reference>(_Mybase::operator[](_Off));
     }
 };
-
-template <class _Mydeque>
-_NODISCARD _Deque_unchecked_iterator<_Mydeque> operator+(
-    typename _Deque_unchecked_iterator<_Mydeque>::difference_type _Off,
-    _Deque_unchecked_iterator<_Mydeque> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 template <class _Mydeque>
 class _Deque_const_iterator : public _Iterator_base12 {
@@ -330,6 +326,12 @@ public:
         _Deque_const_iterator _Tmp = *this;
         _Tmp += _Off;
         return _Tmp;
+    }
+
+    _NODISCARD_FRIEND _Deque_const_iterator operator+(
+        const difference_type _Off, _Deque_const_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
     }
 
     _Deque_const_iterator& operator-=(const difference_type _Off) noexcept {
@@ -431,13 +433,6 @@ public:
 };
 
 template <class _Mydeque>
-_NODISCARD _Deque_const_iterator<_Mydeque> operator+(
-    typename _Deque_const_iterator<_Mydeque>::difference_type _Off, _Deque_const_iterator<_Mydeque> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
-
-template <class _Mydeque>
 class _Deque_iterator : public _Deque_const_iterator<_Mydeque> {
 private:
     using _Size_type = typename _Mydeque::size_type;
@@ -495,6 +490,11 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _Deque_iterator operator+(const difference_type _Off, _Deque_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _Deque_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
@@ -518,13 +518,6 @@ public:
         return {this->_Myoff, this->_Getcont()};
     }
 };
-
-template <class _Mydeque>
-_NODISCARD _Deque_iterator<_Mydeque> operator+(
-    typename _Deque_iterator<_Mydeque>::difference_type _Off, _Deque_iterator<_Mydeque> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 template <class _Value_type, class _Size_type, class _Difference_type, class _Pointer, class _Const_pointer,
     class _Reference, class _Const_reference, class _Mapptr_type>
@@ -1466,7 +1459,7 @@ private:
             _Uninitialized_value_construct_n_unchecked1(_Myptr, _Count); // clear rest to initial block
         }
 
-        if (_Map() != _Mapptr()) {
+        if (_Map() != nullptr) {
             _Destroy_range(_Map(), _Map() + _Mapsize());
             _Almap.deallocate(_Map(), _Mapsize()); // free storage for old
         }
@@ -1483,7 +1476,7 @@ private:
             pop_back();
         }
 
-        if (_Map() != _Mapptr()) {
+        if (_Map() != nullptr) {
             for (size_type _Block = _Mapsize(); _Block > 0;) { // free storage for a block and destroy pointer
                 if (_Map()[--_Block]) { // free block
                     _Getal().deallocate(_Map()[_Block], _Block_size);
@@ -1495,7 +1488,7 @@ private:
         }
 
         _Mapsize() = 0;
-        _Map()     = _Mapptr();
+        _Map()     = nullptr;
     }
 
 #if _ITERATOR_DEBUG_LEVEL == 2

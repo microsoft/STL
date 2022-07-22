@@ -381,7 +381,7 @@ public:
         return reinterpret_cast<const unsigned short*>(_Ret);
     }
 
-    _Locinfo(const _Locinfo&) = delete;
+    _Locinfo(const _Locinfo&)            = delete;
     _Locinfo& operator=(const _Locinfo&) = delete;
 
 private:

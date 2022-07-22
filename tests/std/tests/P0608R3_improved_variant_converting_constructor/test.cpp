@@ -3,8 +3,8 @@
 
 // Also tests for P1957R2: Converting from T* to bool should be considered narrowing
 
-#include <assert.h>
 #include <bitset>
+#include <cassert>
 #include <functional>
 #include <optional>
 #include <string>

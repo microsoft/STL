@@ -37,7 +37,7 @@ namespace {
             _Prev->_Next           = _Next_local;
         }
 
-        _Guarded_wait_context(const _Guarded_wait_context&) = delete;
+        _Guarded_wait_context(const _Guarded_wait_context&)            = delete;
         _Guarded_wait_context& operator=(const _Guarded_wait_context&) = delete;
     };
 
@@ -51,7 +51,7 @@ namespace {
             ReleaseSRWLockExclusive(_Locked);
         }
 
-        _SrwLock_guard(const _SrwLock_guard&) = delete;
+        _SrwLock_guard(const _SrwLock_guard&)            = delete;
         _SrwLock_guard& operator=(const _SrwLock_guard&) = delete;
 
     private:
@@ -62,8 +62,12 @@ namespace {
 #pragma warning(push)
 #pragma warning(disable : 4324) // structure was padded due to alignment specifier
     struct alignas(_STD hardware_destructive_interference_size) _Wait_table_entry {
-        SRWLOCK _Lock                 = SRWLOCK_INIT;
-        _Wait_context _Wait_list_head = {nullptr, &_Wait_list_head, &_Wait_list_head, CONDITION_VARIABLE_INIT};
+        SRWLOCK _Lock = SRWLOCK_INIT;
+        // Initialize to all zeros, self-link lazily to optimize for space.
+        // Since _Wait_table_entry is initialized to all zero bytes,
+        // _Atomic_wait_table_entry::wait_table will also be all zero bytes.
+        // It can thus can be stored in the .bss section, and not in the actual binary.
+        _Wait_context _Wait_list_head = {nullptr, nullptr, nullptr, CONDITION_VARIABLE_INIT};
 
         constexpr _Wait_table_entry() noexcept = default;
     };
@@ -263,6 +267,11 @@ void __stdcall __std_atomic_notify_one_indirect(const void* const _Storage) noex
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     _SrwLock_guard _Guard(_Entry._Lock);
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
+
+    if (_Context == nullptr) {
+        return;
+    }
+
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
             // Can't move wake outside SRWLOCKed section: SRWLOCK also protects the _Context itself
@@ -276,6 +285,11 @@ void __stdcall __std_atomic_notify_all_indirect(const void* const _Storage) noex
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
     _SrwLock_guard _Guard(_Entry._Lock);
     _Wait_context* _Context = _Entry._Wait_list_head._Next;
+
+    if (_Context == nullptr) {
+        return;
+    }
+
     for (; _Context != &_Entry._Wait_list_head; _Context = _Context->_Next) {
         if (_Context->_Storage == _Storage) {
             // Can't move wake outside SRWLOCKed section: SRWLOCK also protects the _Context itself
@@ -289,6 +303,12 @@ int __stdcall __std_atomic_wait_indirect(const void* _Storage, void* _Comparand,
     auto& _Entry = _Atomic_wait_table_entry(_Storage);
 
     _SrwLock_guard _Guard(_Entry._Lock);
+
+    if (_Entry._Wait_list_head._Next == nullptr) {
+        _Entry._Wait_list_head._Next = &_Entry._Wait_list_head;
+        _Entry._Wait_list_head._Prev = &_Entry._Wait_list_head;
+    }
+
     _Guarded_wait_context _Context{_Storage, &_Entry._Wait_list_head};
     for (;;) {
         if (!_Are_equal(_Storage, _Comparand, _Size, _Param)) { // note: under lock to prevent lost wakes
