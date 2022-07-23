@@ -1189,8 +1189,7 @@
 #define _DEPRECATE_NONFLOATING_COMPLEX
 #endif // ^^^ warning disabled ^^^
 
-// STL4038 is used to warn about the contents of some header is available only with specific C++ standard or later. See
-// example at stl/inc/any, line 13
+// STL4038 is used to warn that "The contents of <meow> are available only with C++NN or later."
 
 // next warning number: STL4039
 
