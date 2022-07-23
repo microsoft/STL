@@ -1191,7 +1191,9 @@
 
 // STL4038 is used to warn that "The contents of <meow> are available only with C++NN or later."
 
-// next warning number: STL4039
+// STL4039 is used to warn that "The contents of <coroutine> are not available with /await."
+
+// next warning number: STL4040
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
