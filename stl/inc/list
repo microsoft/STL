@@ -1395,7 +1395,7 @@ public:
     template <_Container_compatible_range<_Ty> _Rng>
     iterator insert_range(const_iterator _Where, _Rng&& _Range) {
 #if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list insert iterator outside range");
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list insert_range iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
         _List_node_insert_op2<_Alnode> _Op(_Getal());
         _Op._Append_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));

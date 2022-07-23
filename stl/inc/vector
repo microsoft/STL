@@ -602,7 +602,7 @@ private:
 
     class _NODISCARD _Asan_extend_guard {
     public:
-        _Asan_extend_guard(const _Asan_extend_guard&) = delete;
+        _Asan_extend_guard(const _Asan_extend_guard&)            = delete;
         _Asan_extend_guard& operator=(const _Asan_extend_guard&) = delete;
 
         constexpr explicit _Asan_extend_guard(vector* _Myvec_, size_type _Target_size_) noexcept
@@ -633,7 +633,7 @@ private:
 
     class _NODISCARD _Asan_create_guard {
     public:
-        _Asan_create_guard(const _Asan_create_guard&) = delete;
+        _Asan_create_guard(const _Asan_create_guard&)            = delete;
         _Asan_create_guard& operator=(const _Asan_create_guard&) = delete;
 
         constexpr explicit _Asan_create_guard(const vector& _Myvec_) noexcept : _Myvec(_Myvec_) {}
@@ -709,10 +709,7 @@ public:
             _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
             _Tidy_guard<vector> _Guard{this};
 
-            for (; _UFirst != _ULast; ++_UFirst) {
-                // performance note: _Emplace_one_at_back's strong guarantee is unnecessary here.
-                _Emplace_one_at_back(*_UFirst);
-            }
+            _Append_uncounted_range(_STD move(_UFirst), _STD move(_ULast));
 
             _Guard._Target = nullptr;
             _Proxy._Release();
@@ -737,12 +734,7 @@ public:
             _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
             _Tidy_guard<vector> _Guard{this};
 
-            auto _UFirst      = _RANGES _Ubegin(_Range);
-            const auto _ULast = _RANGES _Uend(_Range);
-            for (; _UFirst != _ULast; ++_UFirst) {
-                // performance note: _Emplace_one_at_back's strong guarantee is unnecessary here.
-                _Emplace_one_at_back(*_UFirst);
-            }
+            _Append_uncounted_range(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
 
             _Guard._Target = nullptr;
             _Proxy._Release();

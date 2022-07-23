@@ -823,7 +823,7 @@ public:
     constexpr allocator(const allocator&) noexcept = default;
     template <class _Other>
     constexpr allocator(const allocator<_Other>&) noexcept {}
-    _CONSTEXPR20 ~allocator()       = default;
+    _CONSTEXPR20 ~allocator()                           = default;
     _CONSTEXPR20 allocator& operator=(const allocator&) = default;
 
     _CONSTEXPR20 void deallocate(_Ty* const _Ptr, const size_t _Count) {
@@ -1020,7 +1020,7 @@ struct _Alloc_construct_ptr { // pointer used to help construct 1 _Alloc::value_
         }
     }
 
-    _Alloc_construct_ptr(const _Alloc_construct_ptr&) = delete;
+    _Alloc_construct_ptr(const _Alloc_construct_ptr&)            = delete;
     _Alloc_construct_ptr& operator=(const _Alloc_construct_ptr&) = delete;
 };
 
@@ -1055,7 +1055,7 @@ struct _Container_base12 {
 public:
     _CONSTEXPR20 _Container_base12() noexcept = default;
 
-    _Container_base12(const _Container_base12&) = delete;
+    _Container_base12(const _Container_base12&)            = delete;
     _Container_base12& operator=(const _Container_base12&) = delete;
 
     _CONSTEXPR20 void _Orphan_all() noexcept;
@@ -1290,7 +1290,7 @@ struct _Leave_proxy_unbound {
 }; // tag to indicate that a proxy is being allocated before it is safe to bind to a _Container_base12
 
 struct _Fake_proxy_ptr_impl { // fake replacement for a container proxy smart pointer when no container proxy is in use
-    _Fake_proxy_ptr_impl(const _Fake_proxy_ptr_impl&) = delete;
+    _Fake_proxy_ptr_impl(const _Fake_proxy_ptr_impl&)            = delete;
     _Fake_proxy_ptr_impl& operator=(const _Fake_proxy_ptr_impl&) = delete;
     _CONSTEXPR20 _Fake_proxy_ptr_impl(const _Fake_allocator&, _Leave_proxy_unbound) noexcept {}
     _CONSTEXPR20 _Fake_proxy_ptr_impl(const _Fake_allocator&, const _Container_base0&) noexcept {}
@@ -1465,7 +1465,7 @@ struct _NODISCARD _Uninitialized_backout {
 
     constexpr _Uninitialized_backout(_NoThrowFwdIt _First_, _NoThrowFwdIt _Last_) : _First(_First_), _Last(_Last_) {}
 
-    _Uninitialized_backout(const _Uninitialized_backout&) = delete;
+    _Uninitialized_backout(const _Uninitialized_backout&)            = delete;
     _Uninitialized_backout& operator=(const _Uninitialized_backout&) = delete;
 
     _CONSTEXPR20 ~_Uninitialized_backout() {
@@ -1652,7 +1652,7 @@ private:
 public:
     _CONSTEXPR20 _Uninitialized_backout_al(pointer _Dest, _Alloc& _Al_) : _First(_Dest), _Last(_Dest), _Al(_Al_) {}
 
-    _Uninitialized_backout_al(const _Uninitialized_backout_al&) = delete;
+    _Uninitialized_backout_al(const _Uninitialized_backout_al&)            = delete;
     _Uninitialized_backout_al& operator=(const _Uninitialized_backout_al&) = delete;
 
     _CONSTEXPR20 ~_Uninitialized_backout_al() {
@@ -1683,30 +1683,23 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     // note: only called internally from elsewhere in the STL
     using _Ptrval = typename _Alloc::value_type*;
 
-    auto _UFirst      = _Get_unwrapped(_STD move(_First));
-    const auto _ULast = _Get_unwrapped(_STD move(_Last));
+    auto _UFirst = _Get_unwrapped(_STD move(_First));
+    auto _ULast  = _Get_unwrapped(_STD move(_Last));
 
-    constexpr bool _Same_types = is_same_v<const decltype(_UFirst), decltype(_ULast)>;
-    constexpr bool _Can_memmove =
-        conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>, //
-        _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>
-        && (_Same_types
-#ifdef __cpp_lib_ranges
-            || sized_sentinel_for<remove_const_t<decltype(_ULast)>, decltype(_UFirst)>
-#endif // __cpp_lib_ranges
-        );
+    constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_assignable //
+                               && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
 
     if constexpr (_Can_memmove) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            if constexpr (_Same_types) {
-                _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
+            if constexpr (is_same_v<decltype(_UFirst), decltype(_ULast)>) {
+                _Copy_memmove(_To_address(_UFirst), _To_address(_ULast), _Unfancy(_Dest));
                 _Dest += _ULast - _UFirst;
             } else {
                 const auto _Count = static_cast<size_t>(_ULast - _UFirst);
-                _Copy_memmove_n(_UFirst, _Count, _Unfancy(_Dest));
+                _Copy_memmove_n(_To_address(_UFirst), _Count, _Unfancy(_Dest));
                 _Dest += _Count;
             }
             return _Dest;
@@ -2024,7 +2017,7 @@ struct _Alloc_temporary2 {
         _Traits::construct(_Al, _STD addressof(_Get_value()), _STD forward<_Args>(_Vals)...);
     }
 
-    _Alloc_temporary2(const _Alloc_temporary2&) = delete;
+    _Alloc_temporary2(const _Alloc_temporary2&)            = delete;
     _Alloc_temporary2& operator=(const _Alloc_temporary2&) = delete;
 
     _CONSTEXPR20 ~_Alloc_temporary2() {

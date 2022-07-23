@@ -708,7 +708,7 @@ public:
     iterator emplace_after(const_iterator _Where, _Valty&&... _Val) { // insert element after _Where
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(
-            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list insert_after iterator outside range");
+            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list emplace_after iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
         _Insert_after(_Where._Ptr, _STD forward<_Valty>(_Val)...);
         return _Make_iter(_Where._Ptr->_Next);
@@ -975,7 +975,8 @@ public:
 
     iterator insert_after(const_iterator _Where, const _Ty& _Val) { // insert _Val after _Where
 #if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "insert_after location incompatible");
+        _STL_VERIFY(
+            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list insert_after location incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
         _Insert_after(_Where._Ptr, _Val);
         return _Make_iter(_Where._Ptr->_Next);
@@ -1016,7 +1017,7 @@ public:
         // insert [_First, _Last) after _Where
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(
-            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list erase_after iterator outside range");
+            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list insert_after location incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
         _Adl_verify_range(_First, _Last);
         return _Insert_range_after(_Where._Ptr, _Get_unwrapped(_First), _Get_unwrapped(_Last));
@@ -1026,8 +1027,8 @@ public:
     template <_Container_compatible_range<_Ty> _Rng>
     iterator insert_range_after(const_iterator _Where, _Rng&& _Range) {
 #if _ITERATOR_DEBUG_LEVEL == 2
-        _STL_VERIFY(
-            _Where._Getcont() == _STD addressof(_Mypair._Myval2), "forward_list erase_after iterator outside range");
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2),
+            "forward_list insert_range_after location incompatible");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
         return _Insert_range_after(_Where._Ptr, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
@@ -1293,7 +1294,7 @@ private:
 #if _ITERATOR_DEBUG_LEVEL != 0
         _DEBUG_ORDER_UNWRAPPED(_Right._Unchecked_begin(), _Default_sentinel{}, _Pred);
         if constexpr (!_Alnode_traits::is_always_equal::value) {
-            _STL_VERIFY(_Getal() == _Right._Getal(), "list allocators incompatible for merge");
+            _STL_VERIFY(_Getal() == _Right._Getal(), "forward_list allocators incompatible for merge");
         }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 

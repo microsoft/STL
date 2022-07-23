@@ -1220,7 +1220,7 @@ public:
 
     constexpr basic_string_view() noexcept : _Mydata(), _Mysize(0) {}
 
-    constexpr basic_string_view(const basic_string_view&) noexcept = default;
+    constexpr basic_string_view(const basic_string_view&) noexcept            = default;
     constexpr basic_string_view& operator=(const basic_string_view&) noexcept = default;
 
     /* implicit */ constexpr basic_string_view(_In_z_ const const_pointer _Ntcts) noexcept // strengthened
@@ -2409,6 +2409,12 @@ _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
 #pragma detect_mismatch("annotate_string", "0")
 #endif // !_INSERT_STRING_ANNOTATION
 
+#ifdef __cpp_lib_containers_ranges
+template <class _Rng, class _Ty>
+concept _Contiguous_range_of =
+    _RANGES contiguous_range<_Rng> && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
+#endif // __cpp_lib_containers_ranges
+
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
 private:
@@ -2666,6 +2672,10 @@ public:
             if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
                 _Construct<_Construct_strategy::_From_ptr>(
                     _UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
+            } else if constexpr (_Is_fwd_iter_v<decltype(_UFirst)>) {
+                const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
+                const auto _Count  = _Convert_size<size_type>(_Length);
+                _Construct_from_iter(_STD move(_UFirst), _STD move(_ULast), _Count);
             } else {
                 _Construct_from_iter(_STD move(_UFirst), _STD move(_ULast));
             }
@@ -2742,8 +2752,11 @@ private:
         _Proxy._Release();
     }
 
-    template <class _Iter>
-    _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Iter _Last) {
+    template <class _Iter, class _Sent, class _Size = nullptr_t>
+    _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Sent _Last, _Size _Count = {}) {
+        // Pre: _First models input_iterator or meets the Cpp17InputIterator requirements
+        // Pre: [_First, Last) is a valid range
+        // Pre: if is_same_v<_Size, size_type>, _Count is the length of [First, Last).
         // Pre: *this is in SSO mode; the lifetime of the SSO elements has already begun
 
         auto& _My_data  = _Mypair._Myval2;
@@ -2754,8 +2767,7 @@ private:
         _My_data._Mysize = 0;
         _My_data._Myres  = _BUF_SIZE - 1;
 
-        if constexpr (_Is_fwd_iter_v<_Iter>) {
-            const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+        if constexpr (is_same_v<_Size, size_type>) {
             if (_Count > max_size()) {
                 _Xlen_string(); // result too long
             }
@@ -2776,7 +2788,7 @@ private:
 
         _Tidy_deallocate_guard<basic_string> _Guard{this};
         for (; _First != _Last; ++_First) {
-            if constexpr (!_Is_fwd_iter_v<_Iter>) {
+            if constexpr (!is_same_v<_Size, size_type>) {
                 if (_My_data._Mysize == _My_data._Myres) { // Need to grow
                     if (_My_data._Mysize == max_size()) {
                         _Xlen_string(); // result too long
@@ -2819,44 +2831,17 @@ public:
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
-        auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
-        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
-        _Tidy_init();
-
-        if constexpr (_RANGES sized_range<_Rng>) {
-            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
-
-            if constexpr (contiguous_iterator<decltype(_RANGES _Ubegin(_Range))> && //
-                          same_as<_RANGES range_value_t<_Rng>, _Elem>) {
-                if (_Count != 0) {
-                    const auto _Ptr = _STD to_address(_RANGES _Ubegin(_Range));
-                    assign(_Ptr, _Count);
-                }
+        if constexpr (_RANGES sized_range<_Rng> || _RANGES forward_range<_Rng>) {
+            const auto _Length = _To_unsigned_like(_RANGES distance(_Range));
+            const auto _Count  = _Convert_size<size_type>(_Length);
+            if constexpr (_Contiguous_range_of<_Rng, _Elem>) {
+                _Construct<_Construct_strategy::_From_ptr>(_RANGES data(_Range), _Count);
             } else {
-                reserve(_Count);
-                _Tidy_deallocate_guard<basic_string> _Guard{this};
-                auto _First      = _RANGES _Ubegin(_Range);
-                const auto _Last = _RANGES _Uend(_Range);
-
-                for (; _First != _Last; ++_First) {
-                    _Push_back_unchecked(*_First);
-                }
-
-                _Guard._Target = nullptr;
+                _Construct_from_iter(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range), _Count);
             }
         } else {
-            _Tidy_deallocate_guard<basic_string> _Guard{this};
-            auto _First      = _RANGES _Ubegin(_Range);
-            const auto _Last = _RANGES _Uend(_Range);
-
-            for (; _First != _Last; ++_First) {
-                push_back(*_First);
-            }
-
-            _Guard._Target = nullptr;
+            _Construct_from_iter(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
-
-        _Proxy._Release();
     }
 #endif // __cpp_lib_containers_ranges
 
@@ -3437,11 +3422,9 @@ public:
 #ifdef __cpp_lib_containers_ranges
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string& append_range(_Rng&& _Range) {
-        if constexpr (_RANGES sized_range<_Rng> && contiguous_iterator<decltype(_RANGES _Ubegin(_Range))> //
-                      && same_as<_RANGES range_value_t<_Rng>, _Elem>) {
+        if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
             const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
-            const auto _Ptr   = _STD to_address(_RANGES _Ubegin(_Range));
-            return append(_Ptr, _Count);
+            return append(_RANGES data(_Range), _Count);
         } else {
             const basic_string _Right(from_range, _Range, get_allocator());
             return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
@@ -3544,13 +3527,9 @@ public:
 #ifdef __cpp_lib_containers_ranges
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string& assign_range(_Rng&& _Range) {
-        // clang-format off
-        if constexpr (_RANGES sized_range<_Rng> && contiguous_iterator<decltype(_RANGES _Ubegin(_Range))>
-            && same_as<_RANGES range_value_t<_Rng>, _Elem>) {
-            // clang-format on
+        if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
             const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
-            const auto _Ptr   = _STD to_address(_RANGES _Ubegin(_Range));
-            return assign(_Ptr, _Count);
+            return assign(_RANGES data(_Range), _Count);
         } else {
             basic_string _Right(from_range, _Range, get_allocator());
             if (_Mypair._Myval2._Myres < _Right._Mypair._Myval2._Myres) {
@@ -3600,8 +3579,8 @@ public:
         _Mypair._Myval2._Check_offset(_Off);
         const size_type _Old_size = _Mypair._Myval2._Mysize;
 
-        // checking for overlapping ranges is technically UB (considering string literals), so just always
-        // reallocate and copy to the new buffer if constant evaluated
+        // We can't check for overlapping ranges when constant evaluated since comparison of pointers into string
+        // literals is unspecified, so always reallocate and copy to the new buffer if constant evaluated.
 #if _HAS_CXX20
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size && !_STD is_constant_evaluated();
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
@@ -3722,13 +3701,9 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
 
-        // clang-format off
-        if constexpr (_RANGES sized_range<_Rng> && contiguous_iterator<decltype(_RANGES _Ubegin(_Range))>
-            && same_as<_RANGES range_value_t<_Rng>, _Elem>) {
-            // clang-format on
+        if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
             const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
-            const auto _Ptr   = _STD to_address(_RANGES _Ubegin(_Range));
-            insert(_Off, _Ptr, _Count);
+            insert(_Off, _RANGES data(_Range), _Count);
         } else {
             const basic_string _Right(from_range, _Range, get_allocator());
             insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
@@ -4012,13 +3987,9 @@ public:
         const auto _Off    = static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr());
         const auto _Length = static_cast<size_type>(_Last._Ptr - _First._Ptr);
 
-        // clang-format off
-        if constexpr (_RANGES sized_range<_Rng> && contiguous_iterator<decltype(_RANGES _Ubegin(_Range))>
-            && same_as<_RANGES range_value_t<_Rng>, _Elem>) {
-            // clang-format on
+        if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
             const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
-            const auto _Ptr   = _STD to_address(_RANGES _Ubegin(_Range));
-            return replace(_Off, _Length, _Ptr, _Count);
+            return replace(_Off, _Length, _RANGES data(_Range), _Count);
         } else {
             const basic_string _Right(from_range, _Range, get_allocator());
             return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
@@ -4158,20 +4129,6 @@ public:
         return basic_string_view<_Elem, _Traits>{_Mypair._Myval2._Myptr(), _Mypair._Myval2._Mysize};
     }
 #endif // _HAS_CXX17
-
-#ifdef __cpp_lib_containers_ranges
-private:
-    constexpr void _Push_back_unchecked(const _Elem _Ch) { // insert element at end; assume available capacity
-        const size_type _Old_size = _Mypair._Myval2._Mysize;
-        _STL_INTERNAL_CHECK(_Old_size < _Mypair._Myval2._Myres);
-        _Mypair._Myval2._Mysize = _Old_size + 1;
-        _Elem* const _Ptr       = _Mypair._Myval2._Myptr();
-        _Traits::assign(_Ptr[_Old_size], _Ch);
-        _Traits::assign(_Ptr[_Old_size + 1], _Elem());
-    }
-
-public:
-#endif // __cpp_lib_containers_ranges
 
     _CONSTEXPR20 void push_back(const _Elem _Ch) { // insert element at end
         const size_type _Old_size = _Mypair._Myval2._Mysize;

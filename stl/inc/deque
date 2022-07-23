@@ -811,7 +811,7 @@ public:
             }
 
             const auto _Num = static_cast<difference_type>(_Mysize() - _Oldsize);
-            _STD reverse(begin(), begin() + _Num); // flip new stuff in place
+            _STD reverse(begin(), begin() + _Num); // Per LWG-3742
         }
         _Guard._Container = nullptr;
     }
@@ -1319,6 +1319,8 @@ private:
     template <_Is_bidi _Bidi, class _Iter, class _Sent>
     iterator _Insert_range(const size_type _Off, _Iter _First, _Sent _Last) {
         // insert [_First, _Last) at begin() + _Off
+        // Pre: _Bidi == _Is_bidi::_Yes implies that _Iter and _Sent are the same type, and that
+        //      _Iter is either a bidirectional_iterator or a Cpp17BidirectionalIterator.
 
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Mysize() >= _Off, "deque insert iterator outside range");
@@ -1362,8 +1364,9 @@ private:
 
         _Guard._Container = nullptr;
 
-        _STD rotate(
-            begin() + static_cast<difference_type>(_Off), begin() + static_cast<difference_type>(_Oldsize), end());
+        const auto _Myfirst = _Unchecked_begin();
+        _STD rotate(_Myfirst + static_cast<difference_type>(_Off), _Myfirst + static_cast<difference_type>(_Oldsize),
+            _Unchecked_end());
 
         return begin() + static_cast<difference_type>(_Off);
     }
@@ -1371,7 +1374,7 @@ private:
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
-        // insert [_First, _Last) at _Where, input iterators
+        // insert [_First, _Last) at _Where
         _Adl_verify_range(_First, _Last);
         const size_type _Off = static_cast<size_type>(_Where - begin());
         return _Insert_range<static_cast<_Is_bidi>(_Is_bidi_iter_v<_Iter>)>(
