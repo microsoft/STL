@@ -9,7 +9,7 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #ifndef _M_CEE_PURE
 #include <atomic>
 #endif // _M_CEE_PURE
@@ -29,12 +29,12 @@
 #ifndef _M_CEE
 #include <mutex>
 #endif // _M_CEE
+#include <cstdint>
 #include <new>
 #include <numeric>
 #include <random>
 #include <ratio>
 #include <regex>
-#include <stdint.h>
 #include <string>
 #include <system_error>
 #include <tuple>

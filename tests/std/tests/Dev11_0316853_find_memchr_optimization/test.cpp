@@ -15,7 +15,7 @@
 #endif // __clang__
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <climits>
 #include <iterator>
 #include <limits>

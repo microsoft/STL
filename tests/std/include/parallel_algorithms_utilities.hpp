@@ -3,7 +3,7 @@
 
 #pragma once
 #include <algorithm>
-#include <stddef.h>
+#include <cstddef>
 #include <thread>
 
 #ifdef EXHAUSTIVE

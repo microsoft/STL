@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <tuple>
 #include <type_traits>
 #include <utility>

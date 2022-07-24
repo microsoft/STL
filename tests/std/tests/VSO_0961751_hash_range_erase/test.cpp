@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _STL_INTERNAL_CHECK_EXHAUSTIVE
-#include <assert.h>
+#include <cassert>
+#include <climits>
+#include <cstdlib>
 #include <functional>
 #include <iterator>
-#include <limits.h>
 #include <memory>
 #include <stdexcept>
-#include <stdlib.h>
 #include <type_traits>
 #include <unordered_set>
 #include <utility>

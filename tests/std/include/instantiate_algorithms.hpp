@@ -6,13 +6,13 @@
 // Notably, all permutations of all iterator strengths are tested.
 
 #include <algorithm>
+#include <cstddef>
 #include <forward_list>
 #include <functional>
 #include <iterator>
 #include <list>
 #include <memory>
 #include <numeric>
-#include <stddef.h>
 #include <type_traits>
 
 #if _HAS_CXX17 && !defined(_M_CEE)

@@ -27,7 +27,7 @@ _EXTERN_C
     } // STET
 
 #if 0
-#include <stdio.h>
+#include <cstdio>
 
 static void printit(const char* s, FTYPE* p, int n) { // print xp array
     int i;
