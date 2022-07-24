@@ -3,15 +3,15 @@
 
 #define _SILENCE_CXX20_CODECVT_FACETS_DEPRECATION_WARNING
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <clocale>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <exception>
 #include <fstream>
 #include <iostream>
-#include <locale.h>
 #include <locale>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
 
 using namespace std;

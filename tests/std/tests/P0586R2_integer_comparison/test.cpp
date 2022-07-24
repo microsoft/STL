@@ -5,9 +5,9 @@
 // Tests the new functions added as part of P0586R2, "Integer Comparison Functions"
 //
 
-#include <assert.h>
+#include <cassert>
+#include <cstdint>
 #include <limits>
-#include <stdint.h>
 #include <utility>
 using namespace std;
 

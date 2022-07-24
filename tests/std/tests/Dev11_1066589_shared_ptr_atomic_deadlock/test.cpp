@@ -3,8 +3,8 @@
 
 #define _SILENCE_CXX20_OLD_SHARED_PTR_ATOMIC_SUPPORT_DEPRECATION_WARNING
 
+#include <cstdlib>
 #include <memory>
-#include <stdlib.h>
 
 #ifndef _M_CEE_PURE
 #include <atomic>

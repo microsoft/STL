@@ -3,7 +3,7 @@
 
 // REQUIRES: debug_CRT
 
-#include <assert.h>
+#include <cassert>
 #include <crtdbg.h>
 #include <locale>
 #include <new>
