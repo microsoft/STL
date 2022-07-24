@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
 #include <memory>
-#include <stddef.h>
 
 constexpr void can_change_value_via_assume_aligned(int* p) {
     int* p1 = std::assume_aligned<256>(p);

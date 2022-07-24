@@ -8,7 +8,7 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <chrono>
 #include <complex>
 #include <cstddef>

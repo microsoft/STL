@@ -4,11 +4,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
 #include <filesystem>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <string_view>
 #include <utility>
