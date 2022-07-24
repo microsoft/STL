@@ -2417,6 +2417,12 @@ public:
     }
 #endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+    _NODISCARD bool operator==(default_sentinel_t) const {
+        return *this == regex_iterator{};
+    }
+#endif // __cpp_lib_concepts
+
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_MyRe, "regex_iterator not dereferenceable");
@@ -2600,6 +2606,12 @@ public:
         return !(*this == _Right);
     }
 #endif // !_HAS_CXX20
+
+#ifdef __cpp_lib_concepts
+    _NODISCARD bool operator==(default_sentinel_t) const {
+        return *this == regex_token_iterator{};
+    }
+#endif // __cpp_lib_concepts
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0

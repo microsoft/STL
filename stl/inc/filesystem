@@ -2708,6 +2708,12 @@ namespace filesystem {
         }
 #endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+        _NODISCARD bool operator==(default_sentinel_t) const noexcept {
+            return *this == directory_iterator{};
+        }
+#endif // __cpp_lib_concepts
+
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
             ++*this;
@@ -2957,6 +2963,12 @@ namespace filesystem {
             return _Impl != _Rhs._Impl;
         }
 #endif // !_HAS_CXX20
+
+#ifdef __cpp_lib_concepts
+        _NODISCARD bool operator==(default_sentinel_t) const noexcept {
+            return *this == recursive_directory_iterator{};
+        }
+#endif // __cpp_lib_concepts
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
