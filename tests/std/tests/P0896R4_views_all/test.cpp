@@ -44,7 +44,7 @@ struct weird_string_view {
     }
 };
 
-template<>
+template <>
 inline constexpr bool std::ranges::enable_view<weird_string_view> = true;
 
 template <class Rng>
