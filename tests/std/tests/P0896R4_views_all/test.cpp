@@ -22,14 +22,14 @@ constexpr auto pipeline = views::all | views::all | views::all | views::all | vi
 
 // Test weird view type with explicit copy constructor, LWG-3724
 struct weird_string_view {
-    const char* data_ = nullptr;
+    const char* data_  = nullptr;
     unsigned int size_ = 0u;
 
-    weird_string_view() = default;
-    explicit weird_string_view(const weird_string_view&) = default;
-    weird_string_view(weird_string_view&&) = default;
+    weird_string_view()                                    = default;
+    explicit weird_string_view(const weird_string_view&)   = default;
+    weird_string_view(weird_string_view&&)                 = default;
     weird_string_view& operator=(const weird_string_view&) = default;
-    weird_string_view& operator=(weird_string_view&&) = default;
+    weird_string_view& operator=(weird_string_view&&)      = default;
 
     const char* begin() const {
         return data_;
@@ -210,7 +210,7 @@ int main() {
         test_one(str);
         assert(ranges::equal(views::all(str), str));
     }
-    
+
     // Weird views, LWG-3724
     {
         weird_string_view v{};
