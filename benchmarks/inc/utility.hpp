@@ -4,9 +4,9 @@
 #pragma once
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <random>
-#include <stddef.h>
-#include <stdint.h>
 #include <vector>
 
 #include <xoshiro.hpp>

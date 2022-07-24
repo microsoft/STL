@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #pragma once
+#include <cstdio>
 #include <regex>
-#include <stdio.h>
 #include <string>
 
 class regex_fixture {

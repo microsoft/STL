@@ -40,7 +40,7 @@
 #endif // defined(FP_CONTRACT_MODE)
 
 #include <cassert>
-#include <float.h>
+#include <cfloat>
 
 struct fenv_initializer_t {
     fenv_initializer_t() {

@@ -4,7 +4,7 @@
 // DevDiv-253803 "<algorithm>: merge() asserts when given null src/dest"
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <initializer_list>
 #include <iterator>
 #include <memory>

@@ -1976,13 +1976,13 @@ namespace filesystem {
             if (_Error == __std_win_error::_Success) {
                 const auto _Attrs = _Stats._Attributes;
 
-                if (_Bitmask_includes(_Attrs, __std_fs_file_attr::_Readonly)) {
+                if (_Bitmask_includes_any(_Attrs, __std_fs_file_attr::_Readonly)) {
                     this->permissions(perms::_File_attribute_readonly);
                 } else {
                     this->permissions(perms::all);
                 }
 
-                if (_Bitmask_includes(_Attrs, __std_fs_file_attr::_Reparse_point)) {
+                if (_Bitmask_includes_any(_Attrs, __std_fs_file_attr::_Reparse_point)) {
                     if (_Stats._Reparse_point_tag == __std_fs_reparse_tag::_Symlink) {
                         this->type(file_type::symlink);
                         return;
@@ -1996,7 +1996,7 @@ namespace filesystem {
                     // All other reparse points considered ordinary files or directories
                 }
 
-                if (_Bitmask_includes(_Attrs, __std_fs_file_attr::_Directory)) {
+                if (_Bitmask_includes_any(_Attrs, __std_fs_file_attr::_Directory)) {
                     this->type(file_type::directory);
                 } else {
                     this->type(file_type::regular);
@@ -2177,7 +2177,7 @@ namespace filesystem {
 
     private:
         _NODISCARD bool _Has_cached_attribute(const __std_fs_file_attr _Attrs) const noexcept {
-            return _Bitmask_includes(_Cached_data._Attributes, _Attrs);
+            return _Bitmask_includes_any(_Cached_data._Attributes, _Attrs);
         }
 
     public:
@@ -2275,7 +2275,7 @@ namespace filesystem {
         }
 
         _NODISCARD bool _Available(const __std_fs_stats_flags _Flags) const noexcept {
-            return _Bitmask_includes(_Cached_data._Available, _Flags);
+            return _Bitmask_includes_any(_Cached_data._Available, _Flags);
         }
 
     private:
@@ -2481,7 +2481,7 @@ namespace filesystem {
             _Cached_data._Attributes        = _Data._Attributes;
             _Cached_data._Reparse_point_tag = _Data._Reparse_point_tag;
             _Cached_data._Available         = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
-            if (!_Bitmask_includes(_Data._Attributes, __std_fs_file_attr::_Reparse_point)) {
+            if (!_Bitmask_includes_any(_Data._Attributes, __std_fs_file_attr::_Reparse_point)) {
                 _Cached_data._File_size = (static_cast<uintmax_t>(_Data._File_size_high) << 32)
                                         + static_cast<uintmax_t>(_Data._File_size_low);
                 _CSTD memcpy(
@@ -2493,7 +2493,7 @@ namespace filesystem {
         _NODISCARD static __std_win_error _Refresh(__std_fs_stats& _Stats, const filesystem::path& _Path) noexcept {
             const auto _Error = __std_fs_get_stats(_Path.c_str(), &_Stats, __std_fs_stats_flags::_All_data);
             if (_Error == __std_win_error::_Success) {
-                if (_Bitmask_includes(_Stats._Attributes, __std_fs_file_attr::_Reparse_point)) {
+                if (_Bitmask_includes_any(_Stats._Attributes, __std_fs_file_attr::_Reparse_point)) {
                     _Stats._Available = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
                 } else {
                     _Stats._Available = __std_fs_stats_flags::_All_data;
@@ -2562,7 +2562,7 @@ namespace filesystem {
             }
 
             if (_Error == __std_win_error::_Access_denied
-                && _Bitmask_includes(_Options_arg, directory_options::skip_permission_denied)) {
+                && _Bitmask_includes_any(_Options_arg, directory_options::skip_permission_denied)) {
                 _Error = __std_win_error::_No_more_files;
             }
 
@@ -2745,7 +2745,7 @@ namespace filesystem {
             __std_win_error _Error = __std_win_error::_Success;
             if (_Recursion_pending) {
                 if (_Entry._Is_symlink_or_junction()) {
-                    if (_Bitmask_includes(_Options, directory_options::follow_directory_symlink)) {
+                    if (_Bitmask_includes_any(_Options, directory_options::follow_directory_symlink)) {
                         // check for broken symlink/junction
                         __std_fs_stats _Target_stats;
                         constexpr auto _Flags =
@@ -2754,10 +2754,10 @@ namespace filesystem {
                             _Entry._Path.c_str(), &_Target_stats, _Flags, _Entry._Cached_data._Attributes);
                         if (_Error == __std_win_error::_Success) {
                             _Should_recurse =
-                                _Bitmask_includes(_Target_stats._Attributes, __std_fs_file_attr::_Directory);
+                                _Bitmask_includes_any(_Target_stats._Attributes, __std_fs_file_attr::_Directory);
                         } else if (__std_is_file_not_found(_Error)
                                    || (_Error == __std_win_error::_Access_denied
-                                       && _Bitmask_includes(_Options, directory_options::skip_permission_denied))) {
+                                       && _Bitmask_includes_any(_Options, directory_options::skip_permission_denied))) {
                             // skip broken symlinks and permission denied (when configured)
                             _Error = __std_win_error::_Success;
                         }

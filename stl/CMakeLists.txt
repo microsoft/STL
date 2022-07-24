@@ -220,6 +220,7 @@ set(HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_ryu.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_ryu_tables.h
+    ${CMAKE_CURRENT_LIST_DIR}/inc/xcharconv_tables.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xerrc.h
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfacet
     ${CMAKE_CURRENT_LIST_DIR}/inc/xfilesystem_abi.h
@@ -263,6 +264,7 @@ set(ALIAS_SOURCES_X86_X64
 # Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib.
 set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/asan_noop.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/charconv.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/filesystem.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/format.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/locale0_implib.cpp
@@ -271,6 +273,9 @@ set(IMPLIB_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/stacktrace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/syserror_import_lib.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vector_algorithms.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/xcharconv_ryu_tables.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/xcharconv_tables_double.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/xcharconv_tables_float.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/xonce2.cpp
 )
 

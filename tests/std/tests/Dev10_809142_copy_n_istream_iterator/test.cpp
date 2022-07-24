@@ -3,13 +3,13 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <forward_list>
 #include <iterator>
 #include <list>
 #include <memory>
 #include <sstream>
-#include <stdlib.h>
 #include <string>
 #include <vector>
 
