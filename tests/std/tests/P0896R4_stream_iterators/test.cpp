@@ -2,14 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 // Covers Ranges changes to istream_iterator, ostream_iterator, istreambuf_iterator, and ostreambuf_iterator
+// and LWG-3719 changes for directory_iterator, recursive_directory_iterator, regex_iterator, and regex_token_iterator
 
 #include <cassert>
 #include <cstddef>
 #include <iostream>
 #include <iterator>
+#include <regex>
 #include <string>
 #include <type_traits>
 #include <utility>
+
+#if _HAS_CXX17
+#include <filesystem>
+#endif // _HAS_CXX17
 
 using namespace std;
 
@@ -101,6 +107,78 @@ void test_ostreambuf_iterator(basic_ostream<CharT, Traits>& os) {
 #endif // __cpp_lib_concepts
 }
 
+template <class BidIt, class CharT = typename iterator_traits<BidIt>::value_type, class Traits = regex_traits<CharT>>
+void test_regex_iterator() {
+    using I = regex_iterator<BidIt, CharT, Traits>;
+    STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
+    STATIC_ASSERT(is_same_v<typename I::iterator_category, forward_iterator_tag>);
+
+#ifdef __cpp_lib_concepts
+    const I i{};
+
+    assert(i == default_sentinel);
+    assert(default_sentinel == i);
+    assert(!(i != default_sentinel));
+    assert(!(default_sentinel != i));
+
+    STATIC_ASSERT(forward_iterator<I>);
+#endif // __cpp_lib_concepts
+}
+
+template <class BidIt, class CharT = typename iterator_traits<BidIt>::value_type, class Traits = regex_traits<CharT>>
+void test_regex_token_iterator() {
+    using I = regex_token_iterator<BidIt, CharT, Traits>;
+    STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
+    STATIC_ASSERT(is_same_v<typename I::iterator_category, forward_iterator_tag>);
+
+#ifdef __cpp_lib_concepts
+    const I i{};
+
+    assert(i == default_sentinel);
+    assert(default_sentinel == i);
+    assert(!(i != default_sentinel));
+    assert(!(default_sentinel != i));
+
+    STATIC_ASSERT(forward_iterator<I>);
+#endif // __cpp_lib_concepts
+}
+
+#if _HAS_CXX17
+void test_directory_iterator() {
+    using I = filesystem::directory_iterator;
+    STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
+    STATIC_ASSERT(is_same_v<typename I::iterator_category, input_iterator_tag>);
+
+#ifdef __cpp_lib_concepts
+    const I i{};
+
+    assert(i == default_sentinel);
+    assert(default_sentinel == i);
+    assert(!(i != default_sentinel));
+    assert(!(default_sentinel != i));
+
+    STATIC_ASSERT(input_iterator<I>);
+#endif // __cpp_lib_concepts
+}
+
+void test_recursive_directory_iterator() {
+    using I = filesystem::recursive_directory_iterator;
+    STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
+    STATIC_ASSERT(is_same_v<typename I::iterator_category, input_iterator_tag>);
+
+#ifdef __cpp_lib_concepts
+    const I i{};
+
+    assert(i == default_sentinel);
+    assert(default_sentinel == i);
+    assert(!(i != default_sentinel));
+    assert(!(default_sentinel != i));
+
+    STATIC_ASSERT(input_iterator<I>);
+#endif // __cpp_lib_concepts
+}
+#endif // _HAS_CXX17
+
 int main() {
     test_istream_iterator<int>();
     test_istream_iterator<string>();
@@ -117,4 +195,19 @@ int main() {
 
     test_ostreambuf_iterator(cout);
     test_ostreambuf_iterator(wcout);
+
+    test_regex_iterator<const char*>();
+    test_regex_iterator<const wchar_t*>();
+    test_regex_iterator<string::const_iterator>();
+    test_regex_iterator<wstring::const_iterator>();
+
+    test_regex_token_iterator<const char*>();
+    test_regex_token_iterator<const wchar_t*>();
+    test_regex_token_iterator<string::const_iterator>();
+    test_regex_token_iterator<wstring::const_iterator>();
+
+#if _HAS_CXX17
+    test_directory_iterator();
+    test_recursive_directory_iterator();
+#endif // _HAS_CXX17
 }
