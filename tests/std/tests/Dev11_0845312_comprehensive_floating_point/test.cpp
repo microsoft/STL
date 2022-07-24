@@ -7,14 +7,14 @@
 // improvements. This test verifies scanf-printf round-tripping of a set of
 // diverse floating point values (both single and double precision).
 
-#include <assert.h>
-#include <float.h>
+#include <cassert>
+#include <cfloat>
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
 #include <iomanip>
 #include <ios>
-#include <math.h>
 #include <sstream>
-#include <stdint.h>
-#include <stdio.h>
 
 #include <floating_point_test_cases.hpp>
 

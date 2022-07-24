@@ -3,8 +3,8 @@
 
 #include <algorithm>
 #include <benchmark/benchmark.h>
-#include <stddef.h>
-#include <string.h>
+#include <cstddef>
+#include <cstring>
 #include <type_traits>
 #include <vector>
 

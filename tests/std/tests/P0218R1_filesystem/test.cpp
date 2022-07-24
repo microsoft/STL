@@ -4,8 +4,10 @@
 #define _SILENCE_CXX20_U8PATH_DEPRECATION_WARNING
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <chrono>
+#include <cstdlib>
+#include <cstring>
 #include <cvt/cp1251>
 #include <cvt/sjis>
 #include <cvt/utf8_utf16>
@@ -18,8 +20,6 @@
 #include <memory>
 #include <optional>
 #include <sstream>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
 #include <string_view>
 #include <system_error>

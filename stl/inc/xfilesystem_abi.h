@@ -129,7 +129,7 @@ struct __std_fs_stats {
     __std_fs_stats_flags _Available; // which fields are available
 
     _NODISCARD __std_fs_file_attr _Symlink_hint_attributes() const noexcept {
-        if (_Bitmask_includes(_Available, __std_fs_stats_flags::_Attributes)) {
+        if (_STD _Bitmask_includes_any(_Available, __std_fs_stats_flags::_Attributes)) {
             return _Attributes;
         }
 

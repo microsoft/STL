@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <limits.h>
+#include <climits>
 #include <numeric>
 
 using std::gcd;

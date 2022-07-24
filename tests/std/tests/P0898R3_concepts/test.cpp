@@ -9,8 +9,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <assert.h>
 #include <bitset>
+#include <cassert>
 #include <concepts>
 #include <cstddef>
 #include <cstdio>

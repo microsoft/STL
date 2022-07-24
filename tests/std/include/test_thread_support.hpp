@@ -5,9 +5,9 @@
 
 #include <chrono>
 #include <condition_variable>
+#include <cstdio>
+#include <cstdlib>
 #include <mutex>
-#include <stdio.h>
-#include <stdlib.h>
 #include <thread>
 
 #include <Windows.h>

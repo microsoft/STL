@@ -3,11 +3,11 @@
 
 // Test DevDiv-1114006 "[+ VS2015] conditional_variable with predicate does not behave according to the standard".
 
-#include <assert.h>
+#include <cassert>
 #include <chrono>
 #include <condition_variable>
+#include <cstdlib>
 #include <mutex>
-#include <stdlib.h>
 #include <thread>
 
 using namespace std;

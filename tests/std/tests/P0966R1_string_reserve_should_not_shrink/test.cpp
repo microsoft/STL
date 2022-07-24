@@ -3,7 +3,7 @@
 
 #define _SILENCE_CXX20_STRING_RESERVE_WITHOUT_ARGUMENT_DEPRECATION_WARNING
 
-#include <assert.h>
+#include <cassert>
 #include <string>
 
 using namespace std;
