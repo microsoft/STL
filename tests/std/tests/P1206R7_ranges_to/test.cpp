@@ -173,7 +173,7 @@ struct sequence_instantiator {
 
 struct mappish_instantiator {
     static constexpr std::pair<int, std::string_view> some_pairs[]   = {{0, "0"}, {1, "1a"}, {1, "1b"}, {1, "1c"},
-        {2, "2"}, {3, "3"}, {4, "4"}, {5, "5a"}, {5, "5b"}, {6, "6"}, {7, "7"}};
+          {2, "2"}, {3, "3"}, {4, "4"}, {5, "5a"}, {5, "5b"}, {6, "6"}, {7, "7"}};
     static constexpr std::pair<int, std::string_view> unique_pairs[] = {
         {0, "0"}, {1, "1a"}, {2, "2"}, {3, "3"}, {4, "4"}, {5, "5a"}, {6, "6"}, {7, "7"}};
 

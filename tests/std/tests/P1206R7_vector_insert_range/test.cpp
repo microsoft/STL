@@ -63,7 +63,7 @@ static constexpr int other_ints[80]       = { //
 static constexpr int other_short_result[] = {true, false, true, true, true, true, true, true, true, true, true, true,
     true}; // result of inserting other_ints at offset 1 in a sequence of 5 trues
 static constexpr int other_long_result[]  = {true, false, true, true, true, true, true, true, true, true, true, true,
-    true, true, true, true, true, true, true}; // ditto, in a sequence of 11 trues
+     true, true, true, true, true, true, true}; // ditto, in a sequence of 11 trues
 
 struct vector_boo_instantiator {
     template <ranges::input_range R>
