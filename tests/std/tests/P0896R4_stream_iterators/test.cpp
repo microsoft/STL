@@ -107,74 +107,105 @@ void test_ostreambuf_iterator(basic_ostream<CharT, Traits>& os) {
 #endif // __cpp_lib_concepts
 }
 
-template <class BidIt, class CharT = typename iterator_traits<BidIt>::value_type, class Traits = regex_traits<CharT>>
-void test_regex_iterator() {
-    using I = regex_iterator<BidIt, CharT, Traits>;
-    STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
-    STATIC_ASSERT(is_same_v<typename I::iterator_category, forward_iterator_tag>);
+template <class C>
+constexpr auto statically_widen_impl(const char* narrow_str, const wchar_t* wide_str) noexcept {
+    if constexpr (is_same_v<C, char>) {
+        return narrow_str;
+    } else {
+        return wide_str;
+    }
+}
 
+#define STATICALLY_WIDEN(C, S) statically_widen_impl<C>(S, L##S)
+
+template <class Sequence>
+void test_regex_iterator(const Sequence& seq) {
 #ifdef __cpp_lib_concepts
-    const I i{};
+    using SequenceIter = decltype(cbegin(seq));
+    using CharT = remove_cv_t<iter_value_t<SequenceIter>>;
+    using I = regex_iterator<SequenceIter>;
 
-    assert(i == default_sentinel);
-    assert(default_sentinel == i);
-    assert(!(i != default_sentinel));
-    assert(!(default_sentinel != i));
+    const I end_it{};
+    assert(end_it == default_sentinel);
+    assert(default_sentinel == end_it);
+    assert(!(end_it != default_sentinel));
+    assert(!(default_sentinel != end_it));
 
-    STATIC_ASSERT(forward_iterator<I>);
+    basic_regex<CharT> re(STATICALLY_WIDEN(CharT, "[a-z]"));
+    const I begin_it{cbegin(seq), cend(seq), re};
+    assert(begin_it != default_sentinel);
+    assert(default_sentinel != begin_it);
+    assert(!(begin_it == default_sentinel));
+    assert(!(default_sentinel == begin_it));
 #endif // __cpp_lib_concepts
 }
 
-template <class BidIt, class CharT = typename iterator_traits<BidIt>::value_type, class Traits = regex_traits<CharT>>
-void test_regex_token_iterator() {
-    using I = regex_token_iterator<BidIt, CharT, Traits>;
-    STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
-    STATIC_ASSERT(is_same_v<typename I::iterator_category, forward_iterator_tag>);
-
+template <class Sequence>
+void test_regex_token_iterator(const Sequence& seq) {
 #ifdef __cpp_lib_concepts
-    const I i{};
+    using SequenceIter = decltype(cbegin(seq));
+    using CharT = remove_cv_t<iter_value_t<SequenceIter>>;
+    using I = regex_token_iterator<SequenceIter>;
 
-    assert(i == default_sentinel);
-    assert(default_sentinel == i);
-    assert(!(i != default_sentinel));
-    assert(!(default_sentinel != i));
+    const I end_it{};
+    assert(end_it == default_sentinel);
+    assert(default_sentinel == end_it);
+    assert(!(end_it != default_sentinel));
+    assert(!(default_sentinel != end_it));
 
-    STATIC_ASSERT(forward_iterator<I>);
+    basic_regex<CharT> re(STATICALLY_WIDEN(CharT, "[a-z]"));
+    const I begin_it{cbegin(seq), cend(seq), re};
+    assert(begin_it != default_sentinel);
+    assert(default_sentinel != begin_it);
+    assert(!(begin_it == default_sentinel));
+    assert(!(default_sentinel == begin_it));
 #endif // __cpp_lib_concepts
 }
 
 #if _HAS_CXX17
 void test_directory_iterator() {
-    using I = filesystem::directory_iterator;
-    STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
-    STATIC_ASSERT(is_same_v<typename I::iterator_category, input_iterator_tag>);
-
 #ifdef __cpp_lib_concepts
-    const I i{};
+    using I = filesystem::directory_iterator;
 
-    assert(i == default_sentinel);
-    assert(default_sentinel == i);
-    assert(!(i != default_sentinel));
-    assert(!(default_sentinel != i));
+    const I end_it{};
+    STATIC_ASSERT(noexcept(end_it == default_sentinel));
+    STATIC_ASSERT(noexcept(end_it != default_sentinel));
+    STATIC_ASSERT(noexcept(default_sentinel == end_it));
+    STATIC_ASSERT(noexcept(default_sentinel != end_it));
 
-    STATIC_ASSERT(input_iterator<I>);
+    assert(end_it == default_sentinel);
+    assert(default_sentinel == end_it);
+    assert(!(end_it != default_sentinel));
+    assert(!(default_sentinel != end_it));
+
+    I begin_it{filesystem::path{L"."}};
+    assert(begin_it != default_sentinel);
+    assert(default_sentinel != begin_it);
+    assert(!(begin_it == default_sentinel));
+    assert(!(default_sentinel == begin_it));
 #endif // __cpp_lib_concepts
 }
 
 void test_recursive_directory_iterator() {
-    using I = filesystem::recursive_directory_iterator;
-    STATIC_ASSERT(is_same_v<typename I::difference_type, ptrdiff_t>);
-    STATIC_ASSERT(is_same_v<typename I::iterator_category, input_iterator_tag>);
-
 #ifdef __cpp_lib_concepts
-    const I i{};
+    using I = filesystem::recursive_directory_iterator;
 
-    assert(i == default_sentinel);
-    assert(default_sentinel == i);
-    assert(!(i != default_sentinel));
-    assert(!(default_sentinel != i));
+    const I end_it{};
+    STATIC_ASSERT(noexcept(end_it == default_sentinel));
+    STATIC_ASSERT(noexcept(end_it != default_sentinel));
+    STATIC_ASSERT(noexcept(default_sentinel == end_it));
+    STATIC_ASSERT(noexcept(default_sentinel != end_it));
 
-    STATIC_ASSERT(input_iterator<I>);
+    assert(end_it == default_sentinel);
+    assert(default_sentinel == end_it);
+    assert(!(end_it != default_sentinel));
+    assert(!(default_sentinel != end_it));
+
+    I begin_it{filesystem::path{L"."}};
+    assert(begin_it != default_sentinel);
+    assert(default_sentinel != begin_it);
+    assert(!(begin_it == default_sentinel));
+    assert(!(default_sentinel == begin_it));
 #endif // __cpp_lib_concepts
 }
 #endif // _HAS_CXX17
@@ -196,15 +227,15 @@ int main() {
     test_ostreambuf_iterator(cout);
     test_ostreambuf_iterator(wcout);
 
-    test_regex_iterator<const char*>();
-    test_regex_iterator<const wchar_t*>();
-    test_regex_iterator<string::const_iterator>();
-    test_regex_iterator<wstring::const_iterator>();
+    test_regex_iterator("hello world");
+    test_regex_iterator(L"hello world");
+    test_regex_iterator(string("hello world"));
+    test_regex_iterator(wstring(L"hello world"));
 
-    test_regex_token_iterator<const char*>();
-    test_regex_token_iterator<const wchar_t*>();
-    test_regex_token_iterator<string::const_iterator>();
-    test_regex_token_iterator<wstring::const_iterator>();
+    test_regex_token_iterator("hello world");
+    test_regex_token_iterator(L"hello world");
+    test_regex_token_iterator(string("hello world"));
+    test_regex_token_iterator(wstring(L"hello world"));
 
 #if _HAS_CXX17
     test_directory_iterator();
