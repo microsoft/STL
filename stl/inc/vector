@@ -602,7 +602,7 @@ private:
 
     class _NODISCARD _Asan_extend_guard {
     public:
-        _Asan_extend_guard(const _Asan_extend_guard&)            = delete;
+        _Asan_extend_guard(const _Asan_extend_guard&) = delete;
         _Asan_extend_guard& operator=(const _Asan_extend_guard&) = delete;
 
         constexpr explicit _Asan_extend_guard(vector* _Myvec_, size_type _Target_size_) noexcept
@@ -633,7 +633,7 @@ private:
 
     class _NODISCARD _Asan_create_guard {
     public:
-        _Asan_create_guard(const _Asan_create_guard&)            = delete;
+        _Asan_create_guard(const _Asan_create_guard&) = delete;
         _Asan_create_guard& operator=(const _Asan_create_guard&) = delete;
 
         constexpr explicit _Asan_create_guard(const vector& _Myvec_) noexcept : _Myvec(_Myvec_) {}
