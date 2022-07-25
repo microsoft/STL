@@ -1421,15 +1421,15 @@ public:
     template <class _Ty>
     _NODISCARD constexpr unsigned long long operator()(const _Ty _Value) const {
         if constexpr (is_integral_v<_Ty>) {
-            bool _Positive;
-            if constexpr (same_as<_Ty, bool>) { // avoid "bool > 0", which triggers C4804
-                _Positive = _Value != 0;
+            bool _Negative;
+            if constexpr (same_as<_Ty, bool>) { // avoid "bool < 0", which triggers C4804
+                _Negative = false;
             } else {
-                _Positive = _Value > 0;
+                _Negative = _Value < 0;
             }
 
-            if (!_Positive) {
-                _Throw_format_error("width is not positive.");
+            if (_Negative) {
+                _Throw_format_error("width is negative.");
             }
             return static_cast<unsigned long long>(_Value);
         } else {
