@@ -78,29 +78,23 @@ struct instantiator {
                 assert(*iter == P(0, 1));
                 assert(iter->first == 0);
                 assert(iter->second == 1);
+
+                using ArrowRetType = decltype(iter.operator->());
                 if constexpr (HasProxy<Iter>) {
                     // We return a proxy class here
-                    static_assert(is_class_v<decltype(iter.operator->())>);
+                    static_assert(is_class_v<ArrowRetType>);
                 } else {
-                    // Either a pointer or the wrapped iterator
-                    static_assert(!is_class_v<decltype(iter.operator->())>);
                     // LWG-3672: operator->() always returns by value
-                    static_assert(is_object_v<decltype(iter.operator->())>);
+                    // Either a pointer or the wrapped iterator
+                    static_assert(is_pointer_v<ArrowRetType> || is_same_v<Iter, ArrowRetType>);
                 }
 
                 const Cit constIter{Iter{input}};
                 assert(*constIter == P(0, 1));
                 assert(constIter->first == 0);
                 assert(constIter->second == 1);
-                if constexpr (HasProxy<Iter>) {
-                    // We return a proxy class here
-                    static_assert(is_class_v<decltype(constIter.operator->())>);
-                } else {
-                    // Either a pointer or the wrapped iterator
-                    static_assert(!is_class_v<decltype(constIter.operator->())>);
-                    // LWG-3672: operator->() always returns by value
-                    static_assert(is_object_v<decltype(constIter.operator->())>);
-                }
+
+                static_assert(is_same_v<decltype(constIter.operator->()), ArrowRetType>);
             }
 
             { // [common.iter.nav]
