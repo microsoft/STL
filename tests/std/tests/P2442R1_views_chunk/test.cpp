@@ -35,7 +35,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     STATIC_ASSERT(forward_range<R> == forward_range<Rng>);
     STATIC_ASSERT(bidirectional_range<R> == bidirectional_range<Rng>);
     STATIC_ASSERT(random_access_range<R> == random_access_range<Rng>);
-    // LWG-3712: Validate non-default-initializability
+    // Validate non-default-initializability
     STATIC_ASSERT(!is_default_constructible_v<R>);
     STATIC_ASSERT(!default_initializable<R>);
     // Validate borrowed_range
