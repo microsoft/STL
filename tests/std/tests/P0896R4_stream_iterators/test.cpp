@@ -120,6 +120,7 @@ constexpr auto statically_widen_impl(const char* narrow_str, const wchar_t* wide
 
 template <class Sequence>
 void test_regex_iterator(const Sequence& seq) {
+    (void) seq;
 #ifdef __cpp_lib_concepts
     using SequenceIter = decltype(cbegin(seq));
     using CharT        = remove_cv_t<iter_value_t<SequenceIter>>;
@@ -142,6 +143,7 @@ void test_regex_iterator(const Sequence& seq) {
 
 template <class Sequence>
 void test_regex_token_iterator(const Sequence& seq) {
+    (void) seq;
 #ifdef __cpp_lib_concepts
     using SequenceIter = decltype(cbegin(seq));
     using CharT        = remove_cv_t<iter_value_t<SequenceIter>>;
