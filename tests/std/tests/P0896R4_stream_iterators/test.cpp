@@ -107,13 +107,14 @@ void test_ostreambuf_iterator(basic_ostream<CharT, Traits>& os) {
 #endif // __cpp_lib_concepts
 }
 
-template <class C>
-constexpr auto statically_widen_impl(const char* narrow_str, const wchar_t* wide_str) noexcept {
-    if constexpr (is_same_v<C, char>) {
-        return narrow_str;
-    } else {
-        return wide_str;
-    }
+template <class C, enable_if_t<is_same_v<C, char>, int> = 0>
+constexpr auto statically_widen_impl(const char* narrow_str, const wchar_t*) noexcept {
+    return narrow_str;
+}
+
+template <class C, enable_if_t<!is_same_v<C, char>, int> = 0>
+constexpr auto statically_widen_impl(const char*, const wchar_t* wide_str) noexcept {
+    return wide_str;
 }
 
 #define STATICALLY_WIDEN(C, S) statically_widen_impl<C>(S, L##S)
