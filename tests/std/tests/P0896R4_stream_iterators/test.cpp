@@ -122,8 +122,8 @@ template <class Sequence>
 void test_regex_iterator(const Sequence& seq) {
 #ifdef __cpp_lib_concepts
     using SequenceIter = decltype(cbegin(seq));
-    using CharT = remove_cv_t<iter_value_t<SequenceIter>>;
-    using I = regex_iterator<SequenceIter>;
+    using CharT        = remove_cv_t<iter_value_t<SequenceIter>>;
+    using I            = regex_iterator<SequenceIter>;
 
     const I end_it{};
     assert(end_it == default_sentinel);
@@ -144,8 +144,8 @@ template <class Sequence>
 void test_regex_token_iterator(const Sequence& seq) {
 #ifdef __cpp_lib_concepts
     using SequenceIter = decltype(cbegin(seq));
-    using CharT = remove_cv_t<iter_value_t<SequenceIter>>;
-    using I = regex_token_iterator<SequenceIter>;
+    using CharT        = remove_cv_t<iter_value_t<SequenceIter>>;
+    using I            = regex_token_iterator<SequenceIter>;
 
     const I end_it{};
     assert(end_it == default_sentinel);
