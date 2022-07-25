@@ -84,7 +84,6 @@ struct instantiator {
                     // We return a proxy class here
                     static_assert(is_class_v<ArrowRetType>);
                 } else {
-                    // LWG-3672: operator->() always returns by value
                     // Either a pointer or the wrapped iterator
                     static_assert(is_pointer_v<ArrowRetType> || is_same_v<Iter, ArrowRetType>);
                 }
