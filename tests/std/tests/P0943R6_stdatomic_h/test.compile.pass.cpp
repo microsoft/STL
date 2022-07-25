@@ -99,10 +99,10 @@ namespace test {
     using ::atomic_fetch_and_explicit;
     using ::atomic_fetch_or;
     using ::atomic_fetch_or_explicit;
-    using ::atomic_fetch_xor;
-    using ::atomic_fetch_xor_explicit;
     using ::atomic_fetch_sub;
     using ::atomic_fetch_sub_explicit;
+    using ::atomic_fetch_xor;
+    using ::atomic_fetch_xor_explicit;
     using ::atomic_flag_clear;
     using ::atomic_flag_clear_explicit;
     using ::atomic_flag_test_and_set;
