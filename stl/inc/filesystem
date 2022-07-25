@@ -2066,9 +2066,9 @@ namespace filesystem {
         case file_type::block:
         case file_type::character:
         case file_type::fifo:
-        case file_type::junction:
         case file_type::socket:
         case file_type::unknown:
+        case file_type::junction:
         default:
             return true;
         }
@@ -3285,6 +3285,8 @@ namespace filesystem {
 
         const auto _Buffer = reinterpret_cast<__std_fs_reparse_data_buffer*>(_Buffer_unique_ptr.get());
 
+        // LWG-3744: `copy_symlink(junction, new_symlink)`'s behavior is unclear
+        // `read_symlink(junction)` should be allowed, but `copy_symlink(junction)` is not.
         if (__std_fs_is_junction_from_reparse_data_buffer(_Buffer)) {
             _Err = __std_win_error::_Reparse_tag_invalid;
             return _Err;
