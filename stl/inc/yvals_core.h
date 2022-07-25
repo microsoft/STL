@@ -19,6 +19,13 @@
 
 #if _STL_COMPILER_PREPROCESSOR
 
+// This does not use `_EMIT_STL_ERROR`, as it needs to be checked before we include anything else.
+// However, `_EMIT_STL_ERROR` has a dependency on `_CRT_STRINGIZE`, defined in `<vcruntime.h>`
+#ifndef __cplusplus
+#pragma message(__FILE__ "(1): STL1003: Unexpected compiler, expected C++ compiler.");
+#error Error in C++ Standard Library usage
+#endif // __cplusplus
+
 // Implemented unconditionally:
 // N3911 void_t
 // N4089 Safe Conversions In unique_ptr<T[]>
@@ -425,16 +432,11 @@
 // clang-format off
 #define _EMIT_STL_WARNING(NUMBER, MESSAGE) \
     _EMIT_STL_MESSAGE("warning " #NUMBER ": " MESSAGE) \
-    static_assert(1, "")
+    static_assert(true, "")
 #define _EMIT_STL_ERROR(NUMBER, MESSAGE) \
     _EMIT_STL_MESSAGE("error " #NUMBER ": " MESSAGE) \
-    static_assert(0, "Error in C++ Standard Library usage.")
+    static_assert(false, "Error in C++ Standard Library usage.")
 // clang-format on
-
-#ifndef __cplusplus
-_EMIT_STL_ERROR(STL1003, "Unexpected compiler, expected C++ compiler.");
-#error Error in C++ Standard Library usage
-#endif // __cplusplus
 
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
