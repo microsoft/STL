@@ -2710,7 +2710,7 @@ namespace filesystem {
 
 #ifdef __cpp_lib_concepts
         _NODISCARD bool operator==(default_sentinel_t) const noexcept {
-            return *this == directory_iterator{};
+            return !_Impl;
         }
 #endif // __cpp_lib_concepts
 
@@ -2966,7 +2966,7 @@ namespace filesystem {
 
 #ifdef __cpp_lib_concepts
         _NODISCARD bool operator==(default_sentinel_t) const noexcept {
-            return *this == recursive_directory_iterator{};
+            return !_Impl;
         }
 #endif // __cpp_lib_concepts
 
