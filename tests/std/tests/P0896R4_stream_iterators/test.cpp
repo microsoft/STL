@@ -134,7 +134,7 @@ void test_regex_iterator(const Sequence& seq) {
     assert(!(default_sentinel != end_it));
 
     basic_regex<CharT> re(STATICALLY_WIDEN(CharT, "[a-z]"));
-    const I begin_it{cbegin(seq), cend(seq), re};
+    I begin_it{cbegin(seq), cend(seq), re};
     assert(begin_it != default_sentinel);
     assert(default_sentinel != begin_it);
     assert(!(begin_it == default_sentinel));
@@ -157,11 +157,17 @@ void test_regex_token_iterator(const Sequence& seq) {
     assert(!(default_sentinel != end_it));
 
     basic_regex<CharT> re(STATICALLY_WIDEN(CharT, "[a-z]"));
-    const I begin_it{cbegin(seq), cend(seq), re};
+    I begin_it{cbegin(seq), cend(seq), re};
     assert(begin_it != default_sentinel);
     assert(default_sentinel != begin_it);
     assert(!(begin_it == default_sentinel));
     assert(!(default_sentinel == begin_it));
+
+    ranges::advance(begin_it, end_it);
+    assert(begin_it == default_sentinel);
+    assert(default_sentinel == begin_it);
+    assert(!(begin_it != default_sentinel));
+    assert(!(default_sentinel != begin_it));
 #endif // __cpp_lib_concepts
 }
 
@@ -186,6 +192,12 @@ void test_directory_iterator() {
     assert(default_sentinel != begin_it);
     assert(!(begin_it == default_sentinel));
     assert(!(default_sentinel == begin_it));
+
+    ranges::advance(begin_it, end_it);
+    assert(begin_it == default_sentinel);
+    assert(default_sentinel == begin_it);
+    assert(!(begin_it != default_sentinel));
+    assert(!(default_sentinel != begin_it));
 #endif // __cpp_lib_concepts
 }
 
@@ -209,6 +221,12 @@ void test_recursive_directory_iterator() {
     assert(default_sentinel != begin_it);
     assert(!(begin_it == default_sentinel));
     assert(!(default_sentinel == begin_it));
+
+    ranges::advance(begin_it, end_it);
+    assert(begin_it == default_sentinel);
+    assert(default_sentinel == begin_it);
+    assert(!(begin_it != default_sentinel));
+    assert(!(default_sentinel != begin_it));
 #endif // __cpp_lib_concepts
 }
 #endif // _HAS_CXX17
