@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <chrono>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <exception>
 #include <functional>
 #include <intrin0.h>
 #include <mutex>
 #include <stdexcept>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <thread>
 #include <vector>

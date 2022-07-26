@@ -17,8 +17,8 @@
 #pragma message("The contents of <semaphore> are available only with C++20 or later.")
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
+#include <__msvc_chrono.hpp>
 #include <atomic>
-#include <chrono>
 #include <climits>
 
 #pragma pack(push, _CRT_PACKING)
@@ -68,7 +68,7 @@ public:
             "Precondition: desired >= 0, and desired <= max() (N4861 [thread.sema.cnt]/5)");
     }
 
-    counting_semaphore(const counting_semaphore&) = delete;
+    counting_semaphore(const counting_semaphore&)            = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
     void release(ptrdiff_t _Update = 1) noexcept /* strengthened */ {
@@ -217,7 +217,7 @@ public:
                                           "(N4861 [thread.sema.cnt]/5)");
     }
 
-    counting_semaphore(const counting_semaphore&) = delete;
+    counting_semaphore(const counting_semaphore&)            = delete;
     counting_semaphore& operator=(const counting_semaphore&) = delete;
 
     void release(const ptrdiff_t _Update = 1) noexcept /* strengthened */ {

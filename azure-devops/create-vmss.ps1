@@ -20,7 +20,7 @@ $ErrorActionPreference = 'Stop'
 # https://aka.ms/azps-changewarnings
 $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
-$Location = 'westus2'
+$Location = 'northeurope'
 $Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd-THHmm')
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
@@ -154,7 +154,9 @@ Write-Progress `
 
 $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
-New-AzResourceGroup -Name $ResourceGroupName -Location $Location | Out-Null
+# TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
+$SimplySecureV2OptInTag = @{"NRMSV2OptIn"=(Get-Date -Format 'yyyyMMdd')}
+New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Tag $SimplySecureV2OptInTag | Out-Null
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 

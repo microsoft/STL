@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <chrono>
+#include <cstdio>
+#include <cstdlib>
 #include <exception>
 #include <mutex>
 #include <shared_mutex>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <system_error>
 #include <thread>

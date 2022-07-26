@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <span>
-#include <stddef.h>
-#include <string.h>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -214,11 +214,7 @@ void test_array(const T& val) {
         ranges::construct_at(ptr + i, val);
     }
 
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1049320
     ranges::destroy_at(reinterpret_cast<U(*)[N]>(ptr));
-#else // ^^^ no workaround / workaround vvv
-    ranges::destroy_at(reinterpret_cast<T(*)[N]>(const_cast<T*>(ptr)));
-#endif // TRANSITION, VSO-1049320
 #endif // __cpp_lib_concepts
 }
 

@@ -312,7 +312,7 @@ struct ConstructConstrainingAllocator {
     ConstructConstrainingAllocator() = default;
     template <class Other>
     ConstructConstrainingAllocator(const ConstructConstrainingAllocator<Other, ConstructAssert>&) {}
-    ConstructConstrainingAllocator(const ConstructConstrainingAllocator&) = default;
+    ConstructConstrainingAllocator(const ConstructConstrainingAllocator&)            = default;
     ConstructConstrainingAllocator& operator=(const ConstructConstrainingAllocator&) = delete;
 
     T* allocate(size_t n) {
@@ -647,7 +647,8 @@ struct WeirdDeleter {
 };
 static_assert(!is_nothrow_destructible_v<WeirdDeleter<int>>);
 
-void test_GH_1733() {
+void test_gh_1733() {
+    // GH-1733 <memory>: error C2694 when calling make_shared on class with throwing destructor
     WeirdDeleter<NontrivialThrowingDtor> del;
     allocator<int> al;
 
@@ -691,5 +692,5 @@ int main() {
     test_allocate_shared_array_known_bounds();
     test_allocate_shared_array_unknown_bounds();
 
-    test_GH_1733();
+    test_gh_1733();
 }

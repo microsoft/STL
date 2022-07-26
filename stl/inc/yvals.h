@@ -162,7 +162,9 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _ITERATOR_DEBUG_LEVEL != 0 && _CONTAINER_DEBUG_LEVEL == 0
 
 #ifndef _STL_CRT_SECURE_INVALID_PARAMETER
-#ifdef _DEBUG // avoid emitting unused long strings for function names; see GH-1956
+#ifdef _STL_CALL_ABORT_INSTEAD_OF_INVALID_PARAMETER
+#define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::abort()
+#elif defined(_DEBUG) // avoid emitting unused long strings for function names; see GH-1956
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) ::_invalid_parameter(_CRT_WIDE(#expr), L"", __FILEW__, __LINE__, 0)
 #else // _DEBUG
 #define _STL_CRT_SECURE_INVALID_PARAMETER(expr) _CRT_SECURE_INVALID_PARAMETER(expr)
@@ -373,7 +375,7 @@ private:
     static void __cdecl _Lockit_dtor(_Lockit*) noexcept;
 
 public:
-    __CLR_OR_THIS_CALL _Lockit(const _Lockit&) = delete;
+    __CLR_OR_THIS_CALL _Lockit(const _Lockit&)            = delete;
     _Lockit& __CLR_OR_THIS_CALL operator=(const _Lockit&) = delete;
 
 private:

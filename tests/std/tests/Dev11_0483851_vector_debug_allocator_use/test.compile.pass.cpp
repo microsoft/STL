@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cstdlib>
 #include <deque>
 #include <forward_list>
 #include <list>
 #include <map>
 #include <set>
-#include <stdlib.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>

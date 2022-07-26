@@ -1023,7 +1023,7 @@ _NODISCARD constexpr int _Countl_zero_fallback(_Ty _Val) noexcept {
 // see "Hacker's Delight" section 5-4
 template <class _Ty>
 _NODISCARD constexpr int _Countr_zero_fallback(const _Ty _Val) noexcept {
-    constexpr int _Digits = std::numeric_limits<_Ty>::digits;
+    constexpr int _Digits = numeric_limits<_Ty>::digits;
     return _Digits - _Countl_zero_fallback(static_cast<_Ty>(static_cast<_Ty>(~_Val) & static_cast<_Ty>(_Val - 1)));
 }
 

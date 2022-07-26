@@ -65,7 +65,7 @@ protected:
     }
 
 public:
-    __CLR_OR_THIS_CALL basic_istream(const basic_istream&) = delete;
+    __CLR_OR_THIS_CALL basic_istream(const basic_istream&)            = delete;
     basic_istream& __CLR_OR_THIS_CALL operator=(const basic_istream&) = delete;
 
     __CLR_OR_THIS_CALL ~basic_istream() noexcept override {}
@@ -104,7 +104,7 @@ public:
             return _Ok;
         }
 
-        __CLR_OR_THIS_CALL sentry(const sentry&) = delete;
+        __CLR_OR_THIS_CALL sentry(const sentry&)            = delete;
         sentry& __CLR_OR_THIS_CALL operator=(const sentry&) = delete;
 
     private:
@@ -755,7 +755,7 @@ protected:
     }
 
 public:
-    __CLR_OR_THIS_CALL basic_iostream(const basic_iostream&) = delete;
+    __CLR_OR_THIS_CALL basic_iostream(const basic_iostream&)            = delete;
     basic_iostream& __CLR_OR_THIS_CALL operator=(const basic_iostream&) = delete;
 
     __CLR_OR_THIS_CALL ~basic_iostream() noexcept override {}
@@ -807,7 +807,7 @@ basic_istream<_Elem, _Traits>& _Istream_extract_into_buffer(
         }
         _CATCH_IO_(ios_base, _Istr)
     }
-    __analysis_assume(static_cast<size_t>(_Current) < _Size); // TRANSITION, VSO-860375
+    _Analysis_assume_(static_cast<size_t>(_Current) < _Size); // TRANSITION, VSO-860375
     _Str[_Current] = _Elem(); // add terminating null character
     _Istr.width(0);
     if (_Current == 0) {

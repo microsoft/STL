@@ -650,7 +650,7 @@ namespace test {
             range_base() = delete;
             constexpr explicit range_base(span<Element> elements) noexcept : elements_{elements} {}
 
-            range_base(const range_base&) = delete;
+            range_base(const range_base&)            = delete;
             range_base& operator=(const range_base&) = delete;
 
         protected:
@@ -697,7 +697,7 @@ namespace test {
             constexpr range_base() = default;
             constexpr explicit range_base(span<Element> elements) noexcept : elements_{elements} {}
 
-            constexpr range_base(const range_base&) = default;
+            constexpr range_base(const range_base&)            = default;
             constexpr range_base& operator=(const range_base&) = default;
 
             constexpr range_base(range_base&& that) noexcept

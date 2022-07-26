@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
+#include <cstring>
 #include <initializer_list>
 #include <memory>
 #include <new>
-#include <stddef.h>
-#include <string.h>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -68,7 +68,7 @@ struct garbage_data {
         memset(&data, 0xCC, sizeof(data));
     }
 
-    garbage_data(const garbage_data&) = delete;
+    garbage_data(const garbage_data&)            = delete;
     garbage_data& operator=(const garbage_data&) = delete;
 
     T& get() {
@@ -320,7 +320,7 @@ void test_weak_ptr_construction() {
 
     int i = 42;
     shared_ptr<int> x(shared_ptr<int>{}, &i);
-    const auto all_zero = [](const auto* const ptr) {
+    const auto all_zero = [](const auto ptr) {
         const auto first = reinterpret_cast<const char*>(ptr);
         const auto last  = reinterpret_cast<const char*>(ptr + 1);
         return all_of(first, last, [](const auto x) { return x == 0; });

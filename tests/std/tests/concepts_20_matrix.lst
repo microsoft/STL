@@ -1,7 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# When updating this file, also update tests\P0645R10_text_formatting_legacy_text_encoding\env.lst to match
+# When updating this file, also update tests\P0645R10_text_formatting_legacy_text_encoding\env.lst
+# and tests\GH_002558_format_presetPadding\env.lst to match
 
 RUNALL_INCLUDE .\prefix.lst
 RUNALL_CROSSLIST
@@ -20,9 +21,7 @@ PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=0 /std:c++latest /permissive- /fp:strict"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=1 /std:c++latest /permissive-"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /permissive"
 PM_CL="/MTd /D_ITERATOR_DEBUG_LEVEL=2 /std:c++latest /permissive- /analyze:only /analyze:autolog-"
-PM_CL="/std:c++20 /permissive- /Za /MD"
-PM_CL="/std:c++latest /permissive- /Za /MDd"
 # PM_CL="/std:c++20 /permissive- /BE /c /MD"
 # PM_CL="/std:c++latest /permissive- /BE /c /MTd"
-PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /std:c++latest /permissive- /MD"
-PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /std:c++latest /permissive- /D_HAS_CXX23 /MTd /fp:strict"
+PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /std:c++20 /permissive- /MD"
+PM_COMPILER="clang-cl" PM_CL="-fno-ms-compatibility -fno-delayed-template-parsing /std:c++latest /permissive- /MTd /fp:strict"

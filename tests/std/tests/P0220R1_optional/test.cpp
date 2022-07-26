@@ -34,6 +34,7 @@
 #define _HAS_DEPRECATED_RESULT_OF       1
 #define _SILENCE_CXX17_IS_LITERAL_TYPE_DEPRECATION_WARNING
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
+#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 #include <stdlib.h>
@@ -7366,9 +7367,9 @@ namespace msvc {
         struct nontrivial_copy {
             nontrivial_copy() = default;
             nontrivial_copy(const nontrivial_copy&) {}
-            nontrivial_copy(nontrivial_copy&&) = default;
+            nontrivial_copy(nontrivial_copy&&)                 = default;
             nontrivial_copy& operator=(const nontrivial_copy&) = default;
-            nontrivial_copy& operator=(nontrivial_copy&&) = default;
+            nontrivial_copy& operator=(nontrivial_copy&&)      = default;
         };
 
         const std::optional<nontrivial_copy> s;
@@ -7382,6 +7383,47 @@ namespace msvc {
             (void) t;
         }
     } // namespace vso614907
+
+    namespace gh2458 {
+        // GH-2458: optional<const meow> o = std::move(lvalue_optional_const_meow);
+        // was moving from the contained const object
+        enum class action { none, copy, move };
+        action last = action::none;
+
+        struct Copyable {
+            Copyable() = default;
+            Copyable(const Copyable&) {
+                last = action::copy;
+            }
+            Copyable(Copyable&&) {
+                last = action::move;
+            }
+        };
+
+        struct ConstMovable {
+            ConstMovable() = default;
+            ConstMovable(const ConstMovable&) {
+                last = action::copy;
+            }
+            ConstMovable(const ConstMovable&&) {
+                last = action::move;
+            }
+        };
+
+        template <class T, action Result>
+        void testMove() {
+            std::optional<T> orig{std::in_place};
+            std::optional<T> moved = std::move(orig);
+            assert(last == Result);
+        }
+
+        void run_test() {
+            testMove<Copyable, action::move>();
+            testMove<const Copyable, action::copy>();
+            testMove<ConstMovable, action::move>();
+            testMove<const ConstMovable, action::move>();
+        }
+    } // namespace gh2458
 } // namespace msvc
 
 int main() {
@@ -7478,4 +7520,6 @@ int main() {
     msvc::vso406124::run_test();
     msvc::vso508126::run_test();
     msvc::vso614907::run_test();
+
+    msvc::gh2458::run_test();
 }

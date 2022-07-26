@@ -41,7 +41,6 @@ class _Mpunct : public money_base { // common base class for moneypunct<_Elem, f
 public:
     friend _Tidy_guard<_Mpunct>;
 
-public:
     using char_type   = _Elem;
     using string_type = basic_string<_Elem, char_traits<_Elem>, allocator<_Elem>>;
 
@@ -167,19 +166,19 @@ protected:
     }
 
     virtual string __CLR_OR_THIS_CALL do_grouping() const {
-        return string(_Grouping);
+        return string{_Grouping};
     }
 
     virtual string_type __CLR_OR_THIS_CALL do_curr_symbol() const {
-        return string_type(_Currencysign);
+        return string_type{_Currencysign};
     }
 
     virtual string_type __CLR_OR_THIS_CALL do_positive_sign() const {
-        return string_type(_Plussign);
+        return string_type{_Plussign};
     }
 
     virtual string_type __CLR_OR_THIS_CALL do_negative_sign() const {
-        return string_type(_Minussign);
+        return string_type{_Minussign};
     }
 
     virtual int __CLR_OR_THIS_CALL do_frac_digits() const {
@@ -245,8 +244,7 @@ private:
 template <class _Elem, bool _Intl = false>
 class moneypunct : public _Mpunct<_Elem> { // facet for defining monetary punctuation text
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     _PGLOBAL _CRTIMP2_PURE_IMPORT static const bool intl; // true if international
     __PURE_APPDOMAIN_GLOBAL _CRTIMP2_PURE_IMPORT static locale::id id; // unique facet id
@@ -303,12 +301,12 @@ protected:
 
 template <class _Elem, class _InIt = istreambuf_iterator<_Elem, char_traits<_Elem>>>
 class money_get : public locale::facet { // facet for converting text to encoded monetary amounts
+private:
     using _Mypunct0 = moneypunct<_Elem, false>;
     using _Mypunct1 = moneypunct<_Elem, true>;
 
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type   = _Elem;
     using iter_type   = _InIt;
@@ -607,12 +605,12 @@ __PURE_APPDOMAIN_GLOBAL locale::id money_get<_Elem, _InIt>::id;
 
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class money_put : public locale::facet { // facet for converting encoded monetary amounts to text
+private:
     using _Mypunct0 = moneypunct<_Elem, false>;
     using _Mypunct1 = moneypunct<_Elem, true>;
 
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type   = _Elem;
     using iter_type   = _OutIt;

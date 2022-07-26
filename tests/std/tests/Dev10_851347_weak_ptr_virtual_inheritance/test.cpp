@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <memory>
 #include <utility>
 #ifndef _M_CEE_PURE // in /clr:pure we miss runtime coverage of weak_ptr converting constructor
@@ -65,7 +65,8 @@ void test_owner_equal() {
     assert(!owner_equal(wp_expired, wp_expired_different));
 }
 
-void test_gh_000258_sometimes_avoid_locking() {
+void test_gh_258() {
+    // GH-258 <memory>: weak_ptr's converting constructors could sometimes avoid locking
 #ifndef _M_CEE_PURE
     struct base1 {
         int i = 0;
@@ -149,7 +150,7 @@ struct D : B, C {
 
 int main() {
     test_owner_equal();
-    test_gh_000258_sometimes_avoid_locking();
+    test_gh_258();
 
     shared_ptr<D> spd(new D);
 

@@ -656,26 +656,24 @@ struct _Unforced { // tag to distinguish bind() from bind<R>()
 };
 
 // helper to give INVOKE an explicit return type; avoids undesirable Expression SFINAE
-template <class _Rx, bool = is_void_v<_Rx>>
-struct _Invoker_ret { // selected for _Rx being cv void
-    template <class _Fx, class... _Valtys>
-    static _CONSTEXPR20 void _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
-        _Valtys...>::_Is_nothrow_invocable::value) { // INVOKE, "implicitly" converted to void
-        _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
-    }
-};
-
 template <class _Rx>
-struct _Invoker_ret<_Rx, false> { // selected for all _Rx other than cv void and _Unforced
+struct _Invoker_ret { // selected for all _Rx other than _Unforced
     template <class _Fx, class... _Valtys>
     static _CONSTEXPR20 _Rx _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(_Select_invoke_traits<_Fx,
-        _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted to _Rx
-        return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value) { // INVOKE, implicitly converted
+        if constexpr (is_void_v<_Rx>) {
+            _STL_INTERNAL_STATIC_ASSERT(
+                _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value
+                == _Select_invoke_traits<_Fx, _Valtys...>::template _Is_nothrow_invocable_r<_Rx>::value);
+            _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        } else {
+            return _STD invoke(static_cast<_Fx&&>(_Func), static_cast<_Valtys&&>(_Vals)...);
+        }
     }
 };
 
 template <>
-struct _Invoker_ret<_Unforced, false> { // selected for _Rx being _Unforced
+struct _Invoker_ret<_Unforced> { // selected for _Rx being _Unforced
     template <class _Fx, class... _Valtys>
     static _CONSTEXPR20 auto _Call(_Fx&& _Func, _Valtys&&... _Vals) noexcept(
         _Select_invoke_traits<_Fx, _Valtys...>::_Is_nothrow_invocable::value)
@@ -715,8 +713,8 @@ public:
     }
 #endif // _HAS_STATIC_RTTI
 
-    _Func_base()                  = default;
-    _Func_base(const _Func_base&) = delete;
+    _Func_base()                             = default;
+    _Func_base(const _Func_base&)            = delete;
     _Func_base& operator=(const _Func_base&) = delete;
     // dtor non-virtual due to _Delete_this()
 
@@ -724,7 +722,7 @@ private:
     virtual const void* _Get() const noexcept = 0;
 };
 
-constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
+_INLINE_VAR constexpr size_t _Space_size = (_Small_object_num_ptrs - 1) * sizeof(void*);
 
 template <class _Impl> // determine whether _Impl must be dynamically allocated
 _INLINE_VAR constexpr bool _Is_large = sizeof(_Impl) > _Space_size || alignof(_Impl) > alignof(max_align_t)
@@ -1301,17 +1299,25 @@ inline void __stdcall _Function_deallocate_large_default_aligned(_Move_only_func
 
 template <size_t _Align>
 void __stdcall _Function_deallocate_large_overaligned(_Move_only_function_data& _Self) noexcept {
+    _STL_INTERNAL_STATIC_ASSERT(_Align > __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+#ifdef __cpp_aligned_new
     ::operator delete (_Self._Large_fn_ptr<void>(), align_val_t{_Align});
+#else // ^^^ __cpp_aligned_new / !__cpp_aligned_new vvv
+    ::operator delete(_Self._Large_fn_ptr<void>());
+#endif // __cpp_aligned_new
 }
 
 template <class _Vt>
 void __stdcall _Function_destroy_large(_Move_only_function_data& _Self) noexcept {
     const auto _Pfn = _Self._Large_fn_ptr<_Vt>();
     _Pfn->~_Vt();
-    if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        ::operator delete(static_cast<void*>(_Pfn));
-    } else {
+#ifdef __cpp_aligned_new
+    if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         ::operator delete (static_cast<void*>(_Pfn), align_val_t{alignof(_Vt)});
+    } else
+#endif // __cpp_aligned_new
+    {
+        ::operator delete(static_cast<void*>(_Pfn));
     }
 }
 
@@ -1329,20 +1335,26 @@ _NODISCARD void* _Function_new_large(_CTypes&&... _Args) {
             // _Ptr is not nullptr only if an exception is thrown as a result of _Vt construction.
             // Check _Ptr before calling operator delete to save the call in the common case.
             if (_Ptr) {
-                if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-                    ::operator delete(_Ptr);
-                } else {
+#ifdef __cpp_aligned_new
+                if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
                     ::operator delete (_Ptr, align_val_t{alignof(_Vt)});
+                } else
+#endif // __cpp_aligned_new
+                {
+                    ::operator delete(_Ptr);
                 }
             }
         }
     };
 
     void* _Ptr;
-    if constexpr (alignof(_Vt) <= __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
-        _Ptr = ::operator new(sizeof(_Vt));
-    } else {
+#ifdef __cpp_aligned_new
+    if constexpr (alignof(_Vt) > __STDCPP_DEFAULT_NEW_ALIGNMENT__) {
         _Ptr = ::operator new (sizeof(_Vt), align_val_t{alignof(_Vt)});
+    } else
+#endif // __cpp_aligned_new
+    {
+        _Ptr = ::operator new(sizeof(_Vt));
     }
     _Guard_type _Guard{_Ptr};
     ::new (_Ptr) _Vt(_STD forward<_CTypes>(_Args)...);
@@ -1844,7 +1856,7 @@ public:
         _Fn1._Swap(_Fn2);
     }
 
-    _NODISCARD friend bool operator==(const move_only_function& _This, nullptr_t) noexcept {
+    _NODISCARD_FRIEND bool operator==(const move_only_function& _This, nullptr_t) noexcept {
         return _This._Is_null();
     }
 };
@@ -2171,48 +2183,47 @@ struct _Global_delete {
 };
 
 template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
-_CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
-    _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq, forward_iterator_tag, forward_iterator_tag) {
-    // find first [_First2, _Last2) satisfying _Eq, arbitrary iterators
-    for (;; ++_First1) { // loop until match or end of a sequence
-        _FwdItHaystack _Mid1 = _First1;
-        for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
-            if (_Mid2 == _Last2) {
-                return {_First1, _Mid1};
-            }
+_CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
+    _FwdItHaystack _First1, _FwdItHaystack _Last1, _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq) {
+    // find first [_First2, _Last2) satisfying _Eq
+    if constexpr (_Is_random_iter_v<_FwdItHaystack> && _Is_random_iter_v<_FwdItPat>) {
+        _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
+        _Iter_diff_t<_FwdItPat> _Count2      = _Last2 - _First2;
 
-            if (_Mid1 == _Last1) {
-                return {_Last1, _Last1};
-            }
+        for (; _Count2 <= _Count1; ++_First1, (void) --_Count1) { // room for match, try it
+            _FwdItHaystack _Mid1 = _First1;
+            for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
+                if (_Mid2 == _Last2) {
+                    return {_First1, _Mid1};
+                }
 
-            if (!_Eq(*_Mid1, *_Mid2)) {
-                break;
-            }
-        }
-    }
-}
-
-template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
-_CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(_FwdItHaystack _First1, _FwdItHaystack _Last1,
-    _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq, random_access_iterator_tag, random_access_iterator_tag) {
-    // find first [_First2, _Last2) satisfying _Eq, random-access iterators
-    _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
-    _Iter_diff_t<_FwdItPat> _Count2      = _Last2 - _First2;
-
-    for (; _Count2 <= _Count1; ++_First1, (void) --_Count1) { // room for match, try it
-        _FwdItHaystack _Mid1 = _First1;
-        for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
-            if (_Mid2 == _Last2) {
-                return {_First1, _Mid1};
-            }
-
-            if (!_Eq(*_Mid1, *_Mid2)) {
-                break;
+                if (!_Eq(*_Mid1, *_Mid2)) {
+                    break;
+                }
             }
         }
-    }
 
-    return {_Last1, _Last1};
+        return {_Last1, _Last1};
+    } else if constexpr (_Is_fwd_iter_v<_FwdItHaystack> && _Is_fwd_iter_v<_FwdItPat>) {
+        for (;; ++_First1) { // loop until match or end of a sequence
+            _FwdItHaystack _Mid1 = _First1;
+            for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
+                if (_Mid2 == _Last2) {
+                    return {_First1, _Mid1};
+                }
+
+                if (_Mid1 == _Last1) {
+                    return {_Last1, _Last1};
+                }
+
+                if (!_Eq(*_Mid1, *_Mid2)) {
+                    break;
+                }
+            }
+        }
+    } else {
+        static_assert(_Always_false<_FwdItHaystack>, "Iterators must be at least forward iterators");
+    }
 }
 
 template <class _FwdItPat, class _Pred_eq = equal_to<>>
@@ -2232,9 +2243,8 @@ public:
         const auto& _Eq  = _Data._Get_first();
         const auto& _Pat = _Data._Myval2;
         _Adl_verify_range(_Pat.first, _Pat.second); // check again to ensure container is not destroyed
-        const auto _Result =
-            _Search_pair_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last), _Get_unwrapped(_Pat.first),
-                _Get_unwrapped(_Pat.second), _Eq, _Iter_cat_t<_FwdItHaystack>{}, _Iter_cat_t<_FwdItPat>{});
+        const auto _Result = _Search_pair_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last),
+            _Get_unwrapped(_Pat.first), _Get_unwrapped(_Pat.second), _Eq);
         _Seek_wrapped(_Last, _Result.second);
         _Seek_wrapped(_First, _Result.first);
         return {_First, _Last};

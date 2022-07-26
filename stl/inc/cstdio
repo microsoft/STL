@@ -34,7 +34,6 @@ _STD_BEGIN
 #pragma warning(push)
 #pragma warning(disable : 4995) // name was marked as #pragma deprecated
 
-using _CSTD FILE;
 using _CSTD _Mbstatet;
 
 using _CSTD size_t;

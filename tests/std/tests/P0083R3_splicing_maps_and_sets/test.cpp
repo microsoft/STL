@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
+#include <cstdio>
 #include <functional>
 #include <initializer_list>
 #include <iterator>
 #include <map>
 #include <memory>
 #include <set>
-#include <stddef.h>
-#include <stdio.h>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
@@ -153,12 +153,10 @@ void test_node_handle(NodeHandle& nh1, NodeHandle& nh2, Validator1 v1, Validator
     // Nothrow/constexpr default construction
     static_assert(std::is_nothrow_default_constructible_v<NodeHandle>);
     CHECK_EMPTY(NodeHandle{});
-#if defined(__cpp_constinit)
+#ifdef __cpp_constinit
 #pragma warning(suppress : 4640) // C4640 emitted by MSVC because 'NodeHandle' type has non-trivial dtor
     { static constinit NodeHandle static_handle{}; }
-#elif defined(__clang__)
-    { [[clang::require_constant_initialization]] static NodeHandle static_handle{}; }
-#endif // ^^^ __clang__ ^^^
+#endif // ^^^ __cpp_constinit ^^^
 
     // No copies!
     static_assert(!std::is_copy_constructible_v<NodeHandle>);
@@ -659,7 +657,7 @@ void test_unordered_set() {
     test_merge<Set, std::unordered_multiset>();
 }
 
-void test_gh1309() {
+void test_gh_1309() {
     // Guard against regression of GH-1309, in which node handles were incorrectly destroying the user value with a node
     // allocator rather than a value_type allocator as the Standard requires.
 
@@ -803,5 +801,5 @@ int main() {
     test_unordered_set<std::unordered_set>();
     test_unordered_set<std::unordered_multiset>();
 
-    test_gh1309();
+    test_gh_1309();
 }

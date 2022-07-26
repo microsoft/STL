@@ -218,11 +218,14 @@ protected:
         }
 
         const _Size_type _New_capacity  = _Calculate_growth(_Buf_size, _Buf_size + 1, _Max_allocation);
-        const _Elem* const _Old_ptr     = streambuf_type::pbase();
+        _Elem* const _Old_ptr           = streambuf_type::pbase();
         const _Size_type _Old_data_size = _Get_data_size();
 
         _Elem* const _New_ptr = _Unfancy(_Al.allocate(_New_capacity));
         _Traits::copy(_New_ptr, _Old_ptr, _Old_data_size);
+        if (0 < _Buf_size) {
+            _Al.deallocate(_Refancy<_Pointer>(_Old_ptr), _Buf_size);
+        }
 
         streambuf_type::setp(_New_ptr, _New_ptr + _Old_data_size, _New_ptr + _New_capacity);
         streambuf_type::sputc(_Traits::to_char_type(_Current_elem));
@@ -323,6 +326,7 @@ public:
     using syncbuf_type   = basic_syncbuf<_Elem, _Traits, _Alloc>;
 
     using _Mybase = basic_ostream<_Elem, _Traits>;
+    using _Myios  = basic_ios<_Elem, _Traits>;
 
     basic_osyncstream(streambuf_type* _Strbuf, const _Alloc& _Al)
         : _Mybase(_STD addressof(_Sync_buf)), _Sync_buf(_Strbuf, _Al) {}
@@ -344,9 +348,18 @@ public:
     basic_osyncstream& operator=(basic_osyncstream&&) noexcept = default;
 
     void emit() {
-        if (!_Sync_buf.emit()) {
-            _Mybase::setstate(ios::badbit);
+        ios_base::iostate _State = ios_base::goodbit;
+        const typename _Mybase::sentry _Ok(*this);
+        if (!_Ok) {
+            _State |= ios_base::badbit;
+        } else {
+            _TRY_IO_BEGIN
+            if (!_Sync_buf.emit()) {
+                _State |= ios_base::badbit;
+            }
+            _CATCH_IO_END
         }
+        _Mybase::setstate(_State);
     }
     _NODISCARD streambuf_type* get_wrapped() const noexcept {
         return _Sync_buf.get_wrapped();

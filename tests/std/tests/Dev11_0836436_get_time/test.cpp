@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
 #include <iomanip>
 #include <ios>
 #include <locale>
 #include <sstream>
 #include <streambuf>
 #include <string>
-#include <time.h>
 #include <tuple>
 
 using namespace std;
@@ -18,6 +18,7 @@ using namespace std;
 // DevDiv-821672 "<locale>: visual studio.net 2013 time libraries buggy (%x %X) - time_get"
 // DevDiv-836436 "<iomanip>: get_time()'s AM/PM parsing is broken"
 // DevDiv-872926 "<locale>: time_get::get parsing format string gets tm::tm_hour wrong [libcxx]"
+// VSO-1259138/GH-2618 "<xloctime>: get_time does not return correct year in tm.tm_year if year is 1"
 
 tm helper(const char* const s, const char* const fmt) {
     tm t{};
@@ -107,6 +108,8 @@ void test_locale_german();
 void test_locale_chinese();
 void test_invalid_argument();
 void test_buffer_resizing();
+void test_gh_2618();
+void test_gh_2848();
 
 int main() {
     assert(read_hour("12 AM") == 0);
@@ -152,6 +155,8 @@ int main() {
     test_locale_chinese();
     test_invalid_argument();
     test_buffer_resizing();
+    test_gh_2618();
+    test_gh_2848();
 }
 
 typedef istreambuf_iterator<char> Iter;
@@ -819,5 +824,84 @@ void test_buffer_resizing() {
         ss.imbue(locale("ja-JP"));
         ss << put_time(&currentTime, "%c");
         assert(ss.rdstate() == ios_base::goodbit);
+    }
+}
+
+void test_gh_2618() {
+    // GH-2618 <xloctime>: get_time does not return correct year in tm.tm_year if year is 1
+    auto TestTimeGetYear = [](const char* input, const int expected_y, const int expected_Y,
+                               const int expected_get_year) {
+        {
+            tm time{};
+            istringstream iss{input};
+            iss >> get_time(&time, "%y");
+            assert(time.tm_year + 1900 == expected_y);
+        }
+
+        {
+            tm time{};
+            istringstream iss{input};
+            iss >> get_time(&time, "%Y");
+            assert(time.tm_year + 1900 == expected_Y);
+        }
+
+        {
+            tm time{};
+            ios_base::iostate state{};
+            istringstream iss{input};
+            use_facet<time_get<char>>(iss.getloc()).get_year({iss}, {}, iss, state, &time);
+            assert(time.tm_year + 1900 == expected_get_year);
+        }
+    };
+
+    // 4-digit strings: 'y' should only read the first two digits, 'Y' and `get_year` should agree
+    TestTimeGetYear("0001", 2000, 1, 1);
+    TestTimeGetYear("0080", 2000, 80, 80);
+    TestTimeGetYear("1995", 2019, 1995, 1995);
+    TestTimeGetYear("2022", 2020, 2022, 2022);
+    TestTimeGetYear("8522", 1985, 8522, 8522);
+
+    // 3-digit strings: same as 4-digit
+    TestTimeGetYear("001", 2000, 1, 1);
+    TestTimeGetYear("080", 2008, 80, 80);
+    TestTimeGetYear("995", 1999, 995, 995);
+
+    // 2-digit strings: 'Y' should parse literally, `get_year` should behave as 'y'
+    TestTimeGetYear("01", 2001, 1, 2001);
+    TestTimeGetYear("80", 1980, 80, 1980);
+    TestTimeGetYear("95", 1995, 95, 1995);
+    TestTimeGetYear("22", 2022, 22, 2022);
+
+    // 1-digit strings: same as 2-digit
+    TestTimeGetYear("1", 2001, 1, 2001);
+}
+
+void test_gh_2848() {
+    // GH-2848 <xloctime>: time_get::get can still assert 'istreambuf_iterator is not dereferenceable' when
+    // the format is longer than the stream
+    {
+        const locale loc{locale::classic()};
+        const auto& tmget{use_facet<time_get<char>>(loc)};
+        ios_base::iostate err{ios_base::goodbit};
+        tm when{};
+        const string fmt{"%X"};
+        istringstream iss{"3:04"};
+        istreambuf_iterator<char> first{iss};
+        const istreambuf_iterator<char> last{};
+        tmget.get(first, last, iss, err, &when, fmt.data(), fmt.data() + fmt.size());
+        assert(err == (ios_base::eofbit | ios_base::failbit));
+    }
+
+    {
+        const locale loc{locale::classic()};
+        const auto& tmget{use_facet<time_get<wchar_t>>(loc)};
+        ios_base::iostate err{ios_base::goodbit};
+        tm when{};
+        const wstring fmt{L"%X"};
+        wistringstream iss{L"3:04"};
+        istreambuf_iterator<wchar_t> first{iss};
+        const istreambuf_iterator<wchar_t> last{};
+        tmget.get(first, last, iss, err, &when, fmt.data(), fmt.data() + fmt.size());
+        assert(err == (ios_base::eofbit | ios_base::failbit));
     }
 }

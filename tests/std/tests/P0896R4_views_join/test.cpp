@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#define _USE_JOIN_VIEW_INPUT_RANGE
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -464,12 +466,44 @@ constexpr auto ToString(const size_t val) {
 }
 
 struct Immovable {
-    Immovable()                 = default;
-    Immovable(const Immovable&) = delete;
-    Immovable(Immovable&&)      = delete;
+    Immovable()                            = default;
+    Immovable(const Immovable&)            = delete;
+    Immovable(Immovable&&)                 = delete;
     Immovable& operator=(const Immovable&) = delete;
-    Immovable& operator=(Immovable&&) = delete;
+    Immovable& operator=(Immovable&&)      = delete;
 };
+
+// Validate that the _Defaultabox primary template works when fed with a non-trivially-destructible type
+void test_non_trivially_destructible_type() { // COMPILE-ONLY
+    struct non_trivially_destructible_input_iterator {
+        using difference_type = int;
+        using value_type      = int;
+
+        ~non_trivially_destructible_input_iterator() {}
+
+        // To test the correct specialization of _Defaultabox, this type must not be default constructible.
+        non_trivially_destructible_input_iterator() = delete;
+
+        non_trivially_destructible_input_iterator& operator++() {
+            return *this;
+        }
+        void operator++(int) {}
+        int operator*() const {
+            return 0;
+        }
+        bool operator==(default_sentinel_t) const {
+            return true;
+        }
+    };
+
+    using Inner = ranges::subrange<non_trivially_destructible_input_iterator, default_sentinel_t>;
+
+    auto r = views::empty<Inner> | views::join;
+    (void) r.begin();
+
+    // Also validate _Non_propagating_cache
+    auto r2 = views::empty<Inner> | views::transform([](Inner& r) { return r; }) | views::join;
+}
 
 int main() {
     // Validate views
@@ -526,33 +560,25 @@ int main() {
     { // P2328 range of prvalue vector using global function
         static constexpr int result[] = {1, 2, 3, 4, 5};
         assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVector) | views::join, result));
-#endif // not MSVC
     }
 
     { // P2328 range of prvalue vector using lambda
         static constexpr int result[] = {1, 2, 3, 4, 5};
-        auto ToVectorLambda           = [](const int i) { return vector{i + 1}; };
+        constexpr auto ToVectorLambda = [](const int i) { return vector{i + 1}; };
         assert(ranges::equal(views::iota(0, 5) | views::transform(ToVectorLambda) | views::join, result));
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(ranges::equal(views::iota(0, 5) | views::transform(ToVectorLambda) | views::join, result));
-#endif // not MSVC
     }
 
     { // P2328 range of prvalue string using global function
         assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToString) | views::join, expected));
-#endif // not MSVC
     }
 
     { // P2328 range of prvalue string using lambda
-        auto ToStringLambda = [](const size_t i) { return string{prvalue_input[i]}; };
+        constexpr auto ToStringLambda = [](const size_t i) { return string{prvalue_input[i]}; };
         assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-934264
         static_assert(ranges::equal(views::iota(0u, 5u) | views::transform(ToStringLambda) | views::join, expected));
-#endif // not MSVC
     }
 
     { // Immovable type

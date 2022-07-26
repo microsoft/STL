@@ -11,7 +11,7 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <functional>
 #include <iterator>
 #include <string>
@@ -22,10 +22,10 @@ struct move_only {
     int val;
 
     move_only(int val_) : val(val_) {}
-    move_only(const move_only&) = delete;
-    move_only(move_only&&)      = default;
+    move_only(const move_only&)            = delete;
+    move_only(move_only&&)                 = default;
     move_only& operator=(const move_only&) = delete;
-    move_only& operator=(move_only&&) = default;
+    move_only& operator=(move_only&&)      = default;
 };
 
 bool operator==(const move_only& lhs, const move_only& rhs) {

@@ -11,6 +11,9 @@ parameters:
 - name: buildOutputLocationVar
   type: string
   default: buildOutputLocation
+- name: buildBenchmarking
+  type: string
+  default: 'ON'
 - name: cmakeAdditionalFlags
   type: string
   default: ''
@@ -21,7 +24,7 @@ steps:
   inputs:
     targetType: inline
     script: |
-      $testParallelism = $env:NUMBER_OF_PROCESSORS - 2
+      $testParallelism = $env:NUMBER_OF_PROCESSORS
       Write-Host "##vso[task.setvariable variable=testParallelism;]$testParallelism"
 - script: |
     if exist "$(${{ parameters.buildOutputLocationVar }})" (
@@ -32,8 +35,9 @@ steps:
     cmake ${{ parameters.cmakeAdditionalFlags}} -G Ninja ^
     -DCMAKE_CXX_COMPILER=cl ^
     -DCMAKE_BUILD_TYPE=Release ^
+    -DSTL_BUILD_BENCHMARKING=${{ parameters.buildBenchmarking }} ^
     -DLIT_FLAGS=$(litFlags) ^
-    -DCMAKE_CXX_FLAGS=/analyze:autolog- ^
+    -DSTL_USE_ANALYZE=ON ^
     -S $(Build.SourcesDirectory) -B $(${{ parameters.buildOutputLocationVar }})
   displayName: 'Configure the STL'
   timeoutInMinutes: 2

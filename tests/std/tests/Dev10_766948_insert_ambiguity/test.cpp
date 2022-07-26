@@ -4,7 +4,7 @@
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <hash_map>
 #include <hash_set>
 #include <map>

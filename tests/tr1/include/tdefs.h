@@ -520,7 +520,7 @@ public:
         return val < x.val;
     }
 
-    Movable_int(const Movable_int&) = delete;
+    Movable_int(const Movable_int&)            = delete;
     Movable_int& operator=(const Movable_int&) = delete;
 };
 #endif // __cplusplus

@@ -10,7 +10,6 @@
 
 // macros for _Feraise argument
 #define _FE_DIVBYZERO 0x04
-#define _FE_INEXACT   0x20
 #define _FE_INVALID   0x01
 #define _FE_OVERFLOW  0x08
 #define _FE_UNDERFLOW 0x10
@@ -42,9 +41,6 @@
 #define FSIGN(x) (reinterpret_cast<_Fval*>(&(x))->_Sh[_F0] & _FSIGN)
 #define LSIGN(x) (reinterpret_cast<_Lval*>(&(x))->_Sh[_L0] & _LSIGN)
 
-#define _Fg _F1 // least-significant 16-bit word
-#define _Dg _D3
-
 // return values for _Stopfx/_Stoflt
 #define FL_ERR 0
 #define FL_DEC 1
@@ -53,7 +49,40 @@
 #define FL_NAN 4
 #define FL_NEG 8
 
+// macros for _Dtest return (0 => ZERO)
+#define _DENORM (-2) // C9X only
+#define _FINITE (-1)
+
 _EXTERN_C_UNLESS_PURE
+
+void __CLRCALL_PURE_OR_CDECL _Feraise(int);
+
+union _Dconst { // pun float types as integer array
+    unsigned short _Word[8]; // TRANSITION, ABI: Twice as large as necessary.
+    float _Float;
+    double _Double;
+    long double _Long_double;
+};
+
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _Dtest(double*);
+
+extern _CRTIMP2_PURE _Dconst _Denorm;
+extern _CRTIMP2_PURE _Dconst _Hugeval;
+extern _CRTIMP2_PURE _Dconst _Inf;
+extern _CRTIMP2_PURE _Dconst _Nan;
+extern _CRTIMP2_PURE _Dconst _Snan;
+
+_CRTIMP2_PURE short __CLRCALL_PURE_OR_CDECL _FDtest(float*);
+
+extern _CRTIMP2_PURE _Dconst _FDenorm;
+extern _CRTIMP2_PURE _Dconst _FInf;
+extern _CRTIMP2_PURE _Dconst _FNan;
+extern _CRTIMP2_PURE _Dconst _FSnan;
+
+extern _CRTIMP2_PURE _Dconst _LDenorm;
+extern _CRTIMP2_PURE _Dconst _LInf;
+extern _CRTIMP2_PURE _Dconst _LNan;
+extern _CRTIMP2_PURE _Dconst _LSnan;
 
 int _Stopfx(const char**, char**);
 _In_range_(0, maxsig) int _Stoflt(
@@ -72,7 +101,6 @@ union _Dval { // pun floating type as integer array
     double _Val;
 };
 
-unsigned short* _Plsw(double*);
 unsigned short* _Pmsw(double*);
 
 short _Dint(double*, short);
@@ -93,11 +121,8 @@ double* _Xp_addh(double*, int, double);
 double* _Xp_mulh(double*, int, double);
 double* _Xp_movx(double*, int, const double*);
 double* _Xp_addx(double*, int, const double*, int);
-double* _Xp_subx(double*, int, const double*, int);
 double* _Xp_ldexpx(double*, int, int);
 double* _Xp_mulx(double*, int, const double*, int, double*);
-double* _Xp_invx(double*, int, double*);
-double* _Xp_sqrtx(double*, int, double*);
 
 // float declarations
 union _Fval { // pun floating type as integer array
@@ -105,7 +130,6 @@ union _Fval { // pun floating type as integer array
     float _Val;
 };
 
-unsigned short* _FPlsw(float*);
 unsigned short* _FPmsw(float*);
 
 short _FDint(float*, short);
@@ -126,11 +150,8 @@ float* _FXp_addh(float*, int, float);
 float* _FXp_mulh(float*, int, float);
 float* _FXp_movx(float*, int, const float*);
 float* _FXp_addx(float*, int, const float*, int);
-float* _FXp_subx(float*, int, const float*, int);
 float* _FXp_ldexpx(float*, int, int);
 float* _FXp_mulx(float*, int, const float*, int, float*);
-float* _FXp_invx(float*, int, float*);
-float* _FXp_sqrtx(float*, int, float*);
 
 // long double declarations
 union _Lval { // pun floating type as integer array
@@ -138,7 +159,6 @@ union _Lval { // pun floating type as integer array
     long double _Val;
 };
 
-unsigned short* _LPlsw(long double*);
 unsigned short* _LPmsw(long double*);
 
 short _LDint(long double*, short);
@@ -158,11 +178,8 @@ long double* _LXp_addh(long double*, int, long double);
 long double* _LXp_mulh(long double*, int, long double);
 long double* _LXp_movx(long double*, int, const long double*);
 long double* _LXp_addx(long double*, int, const long double*, int);
-long double* _LXp_subx(long double*, int, const long double*, int);
 long double* _LXp_ldexpx(long double*, int, int);
 long double* _LXp_mulx(long double*, int, const long double*, int, long double*);
-long double* _LXp_invx(long double*, int, long double*);
-long double* _LXp_sqrtx(long double*, int, long double*);
 
 _END_EXTERN_C_UNLESS_PURE
 

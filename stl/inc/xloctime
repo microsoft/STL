@@ -20,6 +20,72 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 _STD_BEGIN
+template <class _InIt, class _Elem>
+ios_base::iostate _Getint_v2(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int& _Val, int& _Digits_read,
+    const ctype<_Elem>& _Ctype_fac) { // get integer in range [_Lo, _Hi] from [_First, _Last)
+    _STL_INTERNAL_CHECK(0 <= _Hi && _Hi <= 9999);
+    const int _Hi_digits = (_Hi <= 9 ? 1 : _Hi <= 99 ? 2 : _Hi <= 999 ? 3 : 4);
+    char _Ac[_MAX_INT_DIG];
+    char* _Ep;
+    char* _Ptr = _Ac;
+    char _Ch;
+
+    _Digits_read = 0;
+
+    while (_First != _Last && _Digits_read < _Hi_digits && _Ctype_fac.is(ctype_base::space, *_First)) {
+        ++_First;
+        ++_Digits_read;
+    }
+
+    if (_First != _Last && _Digits_read < _Hi_digits) {
+        if ((_Ch = _Ctype_fac.narrow(*_First)) == '+') { // copy plus sign
+            *_Ptr++ = '+';
+            ++_First;
+        } else if (_Ch == '-') { // copy minus sign
+            *_Ptr++ = '-';
+            ++_First;
+        }
+    }
+
+    for (; _First != _Last && _Digits_read < _Hi_digits && _Ctype_fac.narrow(*_First) == '0'; ++_First) {
+        ++_Digits_read; // strip leading zeros
+    }
+
+    if (_Digits_read > 0) {
+        *_Ptr++ = '0'; // replace one or more with single zero
+    }
+
+    for (char* const _Pe = &_Ac[_MAX_INT_DIG - 1];
+         _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _Digits_read < _Hi_digits;
+         ++_Digits_read, (void) ++_First) { // copy digits
+        *_Ptr = _Ch;
+        if (_Ptr < _Pe) {
+            ++_Ptr; // drop trailing digits if already too large
+        }
+    }
+
+    if (_Digits_read == 0) {
+        _Ptr = _Ac;
+    }
+
+    *_Ptr                    = '\0';
+    int _Errno               = 0;
+    const long _Ans          = _CSTD _Stolx(_Ac, &_Ep, 10, &_Errno);
+    ios_base::iostate _State = ios_base::goodbit;
+
+    if (_First == _Last) {
+        _State |= ios_base::eofbit;
+    }
+
+    if (_Ep == _Ac || _Errno != 0 || _Ans < _Lo || _Hi < _Ans) {
+        _State |= ios_base::failbit; // bad conversion
+    } else {
+        _Val = _Ans; // store valid result
+    }
+
+    return _State;
+}
+
 struct _CRTIMP2_PURE_IMPORT time_base : locale::facet { // base class for time_get
     enum dateorder { // constants for different orders of date components
         no_order,
@@ -40,8 +106,7 @@ private:
     friend _Tidy_guard<time_get>;
 
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type = _Elem;
     using iter_type = _InIt;
@@ -343,17 +408,20 @@ protected:
         ios_base::iostate& _State, tm* _Pt) const { // get year from [_First, _Last) into _Pt
         const _Ctype& _Ctype_fac = _STD use_facet<_Ctype>(_Iosbase.getloc());
 
-        int _Ans               = 0;
-        ios_base::iostate _Res = _Getint(_First, _Last, 0, 9999, _Ans, _Ctype_fac);
+        int _Ans = 0;
+        int _Digits_read;
+        ios_base::iostate _Res = _Getint_v2(_First, _Last, 0, 9999, _Ans, _Digits_read, _Ctype_fac);
 
         _State |= _Res; // pass on eofbit and failbit
         if (!(_Res & ios_base::failbit)) {
-            if (_Ans < 69) {
-                _Pt->tm_year = _Ans + 100; // [0, 68] parsed as [2000, 2068]
-            } else if (_Ans < 100) {
-                _Pt->tm_year = _Ans; // [69, 99] parsed as [1969, 1999]
+            if (_Digits_read <= 2) {
+                if (_Ans < 69) {
+                    _Pt->tm_year = _Ans + 100; // [00, 68] parsed as [2000, 2068]
+                } else if (_Ans < 100) {
+                    _Pt->tm_year = _Ans; // [69, 99] parsed as [1969, 1999]
+                }
             } else {
-                _Pt->tm_year = _Ans - 1900; // [100, 9999] parsed literally
+                _Pt->tm_year = _Ans - 1900; // parsed literally
             }
         }
 
@@ -485,7 +553,10 @@ protected:
             break;
 
         case 'Y':
-            _First = get_year(_First, _Last, _Iosbase, _State, _Pt);
+            _State |= _Getint(_First, _Last, 0, 9999, _Ans, _Ctype_fac);
+            if (!(_State & ios_base::failbit)) {
+                _Pt->tm_year = _Ans - 1900;
+            }
             break;
 
         default:
@@ -504,7 +575,10 @@ protected:
         const _Ctype& _Ctype_fac = _STD use_facet<_Ctype>(_Iosbase.getloc());
 
         for (; *_Fmtfirst != '\0'; ++_Fmtfirst) {
-            if (*_Fmtfirst == '%') {
+            if (_First == _Last) {
+                _State |= ios_base::failbit;
+                break;
+            } else if (*_Fmtfirst == '%') {
                 _First = do_get(_First, _Last, _Iosbase, _State, _Pt,
                     *++_Fmtfirst); // convert a single field
             } else if (*_Fmtfirst == ' ') {
@@ -529,68 +603,9 @@ protected:
 private:
     ios_base::iostate __CLRCALL_OR_CDECL _Getint(_InIt& _First, _InIt& _Last, int _Lo, int _Hi, int& _Val,
         const _Ctype& _Ctype_fac) const { // get integer in range [_Lo, _Hi] from [_First, _Last)
-        _STL_INTERNAL_CHECK(0 <= _Hi && _Hi <= 9999);
-        const int _Hi_digits = (_Hi <= 9 ? 1 : _Hi <= 99 ? 2 : _Hi <= 999 ? 3 : 4);
-        char _Ac[_MAX_INT_DIG];
-        char* _Ep;
-        char* _Ptr = _Ac;
-        char _Ch;
-
-        int _Digits_seen = 0;
-
-        while (_First != _Last && _Digits_seen < _Hi_digits && _Ctype_fac.is(ctype_base::space, *_First)) {
-            ++_First;
-            ++_Digits_seen;
-        }
-
-        if (_First != _Last && _Digits_seen < _Hi_digits) {
-            if ((_Ch = _Ctype_fac.narrow(*_First)) == '+') { // copy plus sign
-                *_Ptr++ = '+';
-                ++_First;
-            } else if (_Ch == '-') { // copy minus sign
-                *_Ptr++ = '-';
-                ++_First;
-            }
-        }
-
-        for (; _First != _Last && _Digits_seen < _Hi_digits && _Ctype_fac.narrow(*_First) == '0';
-             ++_First) { // strip leading zeros
-            ++_Digits_seen;
-        }
-
-        if (_Digits_seen > 0) {
-            *_Ptr++ = '0'; // replace one or more with single zero
-        }
-
-        for (char* const _Pe = &_Ac[_MAX_INT_DIG - 1];
-             _First != _Last && '0' <= (_Ch = _Ctype_fac.narrow(*_First)) && _Ch <= '9' && _Digits_seen < _Hi_digits;
-             ++_Digits_seen, (void) ++_First) { // copy digits
-            *_Ptr = _Ch;
-            if (_Ptr < _Pe) {
-                ++_Ptr; // drop trailing digits if already too large
-            }
-        }
-
-        if (_Digits_seen == 0) {
-            _Ptr = _Ac;
-        }
-
-        *_Ptr                    = '\0';
-        int _Errno               = 0;
-        const long _Ans          = _CSTD _Stolx(_Ac, &_Ep, 10, &_Errno);
-        ios_base::iostate _State = ios_base::goodbit;
-
-        if (_First == _Last) {
-            _State |= ios_base::eofbit;
-        }
-
-        if (_Ep == _Ac || _Errno != 0 || _Ans < _Lo || _Hi < _Ans) {
-            _State |= ios_base::failbit; // bad conversion
-        } else {
-            _Val = _Ans; // store valid result
-        }
-
-        return _State;
+        // TRANSITION, ABI
+        int _Digits_read;
+        return _Getint_v2(_First, _Last, _Lo, _Hi, _Val, _Digits_read, _Ctype_fac);
     }
 
     void __CLR_OR_THIS_CALL _Tidy() noexcept { // free all storage
@@ -636,8 +651,7 @@ protected:
 template <class _Elem, class _OutIt = ostreambuf_iterator<_Elem, char_traits<_Elem>>>
 class time_put : public locale::facet { // facet for converting encoded times to text
 public:
-    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t, unsigned short>,
-        _FACET_SPECIALIZATION_MESSAGE);
+    static_assert(!_ENFORCE_FACET_SPECIALIZATIONS || _Is_any_of_v<_Elem, char, wchar_t>, _FACET_SPECIALIZATION_MESSAGE);
 
     using char_type = _Elem;
     using iter_type = _OutIt;
@@ -724,7 +738,8 @@ protected:
             _Fmt[3] = _Specifier;
         }
 
-        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+        int& _Errno_ref      = errno; // Nonzero cost, pay it once
+        const int _Old_errno = _Errno_ref;
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
@@ -737,6 +752,7 @@ protected:
             }
         }
 
+        _Errno_ref = _Old_errno;
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
     }
 
@@ -853,7 +869,8 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
-        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+        int& _Errno_ref      = errno; // Nonzero cost, pay it once
+        const int _Old_errno = _Errno_ref;
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
@@ -865,6 +882,8 @@ protected:
                 return _Dest;
             }
         }
+
+        _Errno_ref = _Old_errno;
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
     }
 
@@ -982,7 +1001,8 @@ protected:
             _Fmt[3] = static_cast<_Elem>(_Specifier);
         }
 
-        const int& _Errno_ref = errno; // Nonzero cost, pay it once
+        int& _Errno_ref      = errno; // Nonzero cost, pay it once
+        const int _Old_errno = _Errno_ref;
 
         for (_Num = 16;; _Num *= 2) { // convert into ever larger string buffer until success
             _Str.append(_Num, '\0');
@@ -995,6 +1015,7 @@ protected:
             }
         }
 
+        _Errno_ref = _Old_errno;
         return _STD copy(&_Str[1], &_Str[_Count], _Dest);
     }
 

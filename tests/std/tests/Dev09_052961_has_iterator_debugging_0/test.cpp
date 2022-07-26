@@ -49,9 +49,9 @@
 // correctness to all known cases, and also increases efficiency (as iterator destructors
 // in debug mode with iterator debugging disabled now perform no extra work).
 
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
+#include <cassert>
+#include <cstdio>
+#include <cstring>
 #include <vector>
 
 using namespace std;
@@ -66,7 +66,7 @@ union uninit_vector {
     vector<int> storage;
 
     constexpr uninit_vector() : bytes{} {}
-    uninit_vector(const uninit_vector&) = delete;
+    uninit_vector(const uninit_vector&)            = delete;
     uninit_vector& operator=(const uninit_vector&) = delete;
     ~uninit_vector() {}
 };

@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <format>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <variant>
@@ -211,6 +212,17 @@ void test_format_arg_store() {
 
 static_assert(sizeof(_Format_arg_index) == sizeof(size_t));
 static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<void*>, const void*>);
+
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<string>, string_view>);
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<const string>, string_view>);
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<char*>, const char*>);
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<const char*>, const char*>);
+
+// we rely on the _Storage_type<long> to be int in:
+// explicit basic_format_arg(const long _Val) noexcept
+//     : _Active_state(_Basic_format_arg_type::_Int_type), _Int_state(_Val) {}
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<long>, int>);
+static_assert(is_same_v<_Format_arg_traits<format_context>::_Storage_type<unsigned long>, unsigned int>);
 
 template <class Context>
 void test_visit_monostate() {

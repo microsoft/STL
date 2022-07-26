@@ -8,7 +8,7 @@
 #define _CONDITION_VARIABLE_
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
-#include <chrono>
+#include <__msvc_chrono.hpp>
 #include <memory>
 #include <mutex>
 #include <xthreads.h>
@@ -42,7 +42,7 @@ struct _NODISCARD _Unlock_guard {
         _Mtx.lock();
     }
 
-    _Unlock_guard(const _Unlock_guard&) = delete;
+    _Unlock_guard(const _Unlock_guard&)            = delete;
     _Unlock_guard& operator=(const _Unlock_guard&) = delete;
 
 private:
@@ -59,7 +59,7 @@ public:
         _Cnd_destroy_in_situ(_Mycnd());
     }
 
-    condition_variable_any(const condition_variable_any&) = delete;
+    condition_variable_any(const condition_variable_any&)            = delete;
     condition_variable_any& operator=(const condition_variable_any&) = delete;
 
     void notify_one() noexcept { // wake up one waiter
@@ -162,7 +162,7 @@ private:
 
         explicit _Cv_any_notify_all(condition_variable_any* _This_) : _This{_This_} {}
 
-        _Cv_any_notify_all(const _Cv_any_notify_all&) = delete;
+        _Cv_any_notify_all(const _Cv_any_notify_all&)            = delete;
         _Cv_any_notify_all& operator=(const _Cv_any_notify_all&) = delete;
 
         void operator()() const noexcept {
@@ -248,7 +248,7 @@ public:
 private:
     shared_ptr<mutex> _Myptr;
 
-    aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cnd_storage;
+    _Aligned_storage_t<_Cnd_internal_imp_size, _Cnd_internal_imp_alignment> _Cnd_storage;
 
     _NODISCARD _Cnd_t _Mycnd() noexcept { // get pointer to _Cnd_internal_imp_t inside _Cnd_storage
         return reinterpret_cast<_Cnd_t>(&_Cnd_storage);

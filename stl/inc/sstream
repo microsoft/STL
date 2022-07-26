@@ -103,7 +103,7 @@ public:
         }
     }
 
-    basic_stringbuf(const basic_stringbuf&) = delete;
+    basic_stringbuf(const basic_stringbuf&)            = delete;
     basic_stringbuf& operator=(const basic_stringbuf&) = delete;
 
     ~basic_stringbuf() noexcept override {
@@ -184,7 +184,6 @@ public:
             // the buffer is full
             _Result.assign(_View._Ptr, _View._Size);
         } else {
-            _Traits::assign(_View._Ptr[_View._Size], _Elem());
             if (_Result._Move_assign_from_buffer(_View._Ptr, _View._Size, _View._Res)) {
                 _Mystate &= ~_Allocated;
             }
@@ -420,7 +419,6 @@ protected:
         return pos_type(_Off);
     }
 
-protected:
     void _Init(const _Elem* _Ptr, _Mysize_type _Count, int _State) {
         // initialize buffer to [_Ptr, _Ptr + _Count), set state
         _State &= ~_From_rvalue;
@@ -429,9 +427,8 @@ protected:
             _Xbad_alloc();
         }
 
-        if (_Count != 0
-            && (_State & (_Noread | _Constant))
-                   != (_Noread | _Constant)) { // finite buffer that can be read or written, set it up
+        if (_Count != 0 && (_State & (_Noread | _Constant)) != (_Noread | _Constant)) {
+            // finite buffer that can be read or written, set it up
             const auto _Pnew = _Unfancy(_Al.allocate(_Count));
             _Traits::copy(_Pnew, _Ptr, _Count);
             _Seekhigh = _Pnew + _Count;
@@ -599,7 +596,7 @@ public:
         }
     }
 
-    basic_istringstream(const basic_istringstream&) = delete;
+    basic_istringstream(const basic_istringstream&)            = delete;
     basic_istringstream& operator=(const basic_istringstream&) = delete;
 
     ~basic_istringstream() noexcept override {}
@@ -718,7 +715,7 @@ public:
         }
     }
 
-    basic_ostringstream(const basic_ostringstream&) = delete;
+    basic_ostringstream(const basic_ostringstream&)            = delete;
     basic_ostringstream& operator=(const basic_ostringstream&) = delete;
 
     ~basic_ostringstream() noexcept override {}
@@ -843,7 +840,7 @@ public:
         }
     }
 
-    basic_stringstream(const basic_stringstream&) = delete;
+    basic_stringstream(const basic_stringstream&)            = delete;
     basic_stringstream& operator=(const basic_stringstream&) = delete;
 
     ~basic_stringstream() noexcept override {}

@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <compare>
 #include <concepts>
 #include <cstddef>
 #include <cstdlib>
 #include <deque>
+#include <filesystem>
 #include <forward_list>
 #include <initializer_list>
 #include <iostream>
@@ -30,6 +31,10 @@
 
 // Note that many tests herein assume:
 STATIC_ASSERT(std::same_as<std::make_unsigned_t<std::ptrdiff_t>, std::size_t>);
+
+// GH-2358: <filesystem>: path's comparison operators are IF-NDR
+static_assert(ranges::range<std::filesystem::path>);
+static_assert(ranges::range<const std::filesystem::path>);
 
 template <class T>
 concept Decayed = std::same_as<std::decay_t<T>, T>;
@@ -1538,8 +1543,8 @@ namespace borrowed_range_testing {
 
 template <bool AllowNonConst, bool AllowConst, bool AllowSize>
 struct arbitrary_range {
-    arbitrary_range()                  = default;
-    arbitrary_range(arbitrary_range&&) = default;
+    arbitrary_range()                             = default;
+    arbitrary_range(arbitrary_range&&)            = default;
     arbitrary_range& operator=(arbitrary_range&&) = default;
 
     int* begin() requires AllowNonConst;
@@ -1560,8 +1565,8 @@ using immutable_sized_range      = arbitrary_range<false, true, true>;
 
 template <class Base>
 struct badsized_range : Base { // size() launches the missiles.
-    badsized_range()                 = default;
-    badsized_range(badsized_range&&) = default;
+    badsized_range()                            = default;
+    badsized_range(badsized_range&&)            = default;
     badsized_range& operator=(badsized_range&&) = default;
 
     [[noreturn]] int size() const {
@@ -1582,8 +1587,8 @@ constexpr bool ranges::disable_sized_range<badsized_range<T>> = true;
 
 // "strange" in that const-ness affects the iterator type
 struct strange_view {
-    strange_view()               = default;
-    strange_view(strange_view&&) = default;
+    strange_view()                          = default;
+    strange_view(strange_view&&)            = default;
     strange_view& operator=(strange_view&&) = default;
 
     int* begin();

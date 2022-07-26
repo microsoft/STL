@@ -299,7 +299,8 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
     IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag>},
     test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>}, test::CanView::yes, test::Copyability::move_only>;
 
-void test_gh2312() { // COMPILE-ONLY
+void test_gh_2312() { // COMPILE-ONLY
+    // GH-2312 <ranges>: using views::reverse on ranges::reverse_view lvalue is broken
     using X = ranges::iota_view<int, int>;
     ranges::reverse_view<X> view;
     static_assert(same_as<decltype(view | views::reverse), X>);

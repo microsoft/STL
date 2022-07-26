@@ -215,7 +215,7 @@ struct _List_head_construct_ptr {
         _Mycont._Myhead = _Newhead;
     }
 
-    _List_head_construct_ptr(const _List_head_construct_ptr&) = delete;
+    _List_head_construct_ptr(const _List_head_construct_ptr&)            = delete;
     _List_head_construct_ptr& operator=(const _List_head_construct_ptr&) = delete;
 
     _NODISCARD pointer _Release() noexcept {
@@ -257,7 +257,7 @@ struct _Hash_vec {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Aliter, _Mypair._Get_first()));
     }
 
-    _Hash_vec(const _Hash_vec&) = delete;
+    _Hash_vec(const _Hash_vec&)            = delete;
     _Hash_vec& operator=(const _Hash_vec&) = delete;
 
     _NODISCARD size_type size() const noexcept {
@@ -269,6 +269,12 @@ struct _Hash_vec {
             _Aliter_traits::max_size(_Mypair._Get_first()));
     }
 
+    _NODISCARD size_type capacity() const noexcept {
+        // This implementation never has capacity() differ from size(), but the previous implementation could.
+        // We need to handle that situation gracefully since we may link to old code (See GH-2774).
+        return static_cast<size_type>(_Mypair._Myval2._Myend - _Mypair._Myval2._Myfirst);
+    }
+
     void _Assign_grow(const size_type _Cells, const value_type _Val) {
         // set the elements stored here to _Cells copies of _Val, leaving the value unchanged if an exception is thrown
         const auto _Oldsize = size();
@@ -277,9 +283,10 @@ struct _Hash_vec {
         if (_Oldsize < _Cells) {
             const auto _Newvec = _Alvec.allocate(_Cells); // throws
             // nothrow hereafter
-            if (_Oldsize != 0) {
+            const auto _Oldcapacity = capacity();
+            if (_Oldcapacity != 0) {
                 _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
-                _Alvec.deallocate(_Mypair._Myval2._Myfirst, _Oldsize);
+                _Alvec.deallocate(_Mypair._Myval2._Myfirst, _Oldcapacity);
             }
 
             _Mypair._Myval2._Myfirst = _Newvec;
@@ -293,11 +300,13 @@ struct _Hash_vec {
     }
 
     void _Tidy() noexcept {
-        _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
-        _Mypair._Get_first().deallocate(_Mypair._Myval2._Myfirst, size());
-        _Mypair._Myval2._Myfirst = nullptr;
-        _Mypair._Myval2._Mylast  = nullptr;
-        _Mypair._Myval2._Myend   = nullptr;
+        if (_Mypair._Myval2._Myfirst != nullptr) {
+            _Destroy_range(_Mypair._Myval2._Myfirst, _Mypair._Myval2._Mylast);
+            _Mypair._Get_first().deallocate(_Mypair._Myval2._Myfirst, capacity());
+            _Mypair._Myval2._Myfirst = nullptr;
+            _Mypair._Myval2._Mylast  = nullptr;
+            _Mypair._Myval2._Myend   = nullptr;
+        }
     }
 
     ~_Hash_vec() {
@@ -458,7 +467,7 @@ private:
 
         explicit _Clear_guard(_Hash* const _Target_) : _Target(_Target_) {}
 
-        _Clear_guard(const _Clear_guard&) = delete;
+        _Clear_guard(const _Clear_guard&)            = delete;
         _Clear_guard& operator=(const _Clear_guard&) = delete;
 
         ~_Clear_guard() {
@@ -474,7 +483,7 @@ private:
 
         explicit _Check_container_invariants_guard(const _Hash& _Target_) : _Target(_Target_) {}
 
-        _Check_container_invariants_guard(const _Check_container_invariants_guard&) = delete;
+        _Check_container_invariants_guard(const _Check_container_invariants_guard&)            = delete;
         _Check_container_invariants_guard& operator=(const _Check_container_invariants_guard&) = delete;
 
         ~_Check_container_invariants_guard() {
@@ -950,7 +959,7 @@ private:
     }
 
     struct _Range_eraser {
-        _Range_eraser(const _Range_eraser&) = delete;
+        _Range_eraser(const _Range_eraser&)            = delete;
         _Range_eraser& operator=(const _Range_eraser&) = delete;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
