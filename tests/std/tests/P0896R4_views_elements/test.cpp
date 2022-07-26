@@ -157,7 +157,7 @@ constexpr bool test_one(Rng&& rng) {
     const bool is_empty = ranges::empty(expected_keys);
 
     // Validate view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == forward_range<Rng>);
+    STATIC_ASSERT(CanMemberEmpty<R> == sized_range<Rng> || forward_range<Rng>);
     STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
@@ -170,7 +170,7 @@ constexpr bool test_one(Rng&& rng) {
         }
     }
 
-    STATIC_ASSERT(CanMemberEmpty<const R> == forward_range<const Rng>);
+    STATIC_ASSERT(CanMemberEmpty<const R> == sized_range<const Rng> || forward_range<const Rng>);
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
