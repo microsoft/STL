@@ -42,7 +42,7 @@ template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
     using ranges::transform_view, ranges::bidirectional_range, ranges::common_range, ranges::contiguous_range,
         ranges::enable_borrowed_range, ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::prev,
-        ranges::random_access_range, ranges::range, ranges::range_reference_t, ranges::sentinel_t;
+        ranges::random_access_range, ranges::sized_range, ranges::range, ranges::range_reference_t, ranges::sentinel_t;
 
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
 
