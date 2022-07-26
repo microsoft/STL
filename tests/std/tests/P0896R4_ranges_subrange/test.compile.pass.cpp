@@ -139,7 +139,7 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::view<V>);
         STATIC_ASSERT(CanEmpty<V&>);
         STATIC_ASSERT(!CanEmpty<V const&>);
-        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(CanBool<V&>);
         STATIC_ASSERT(!CanBool<V const&>);
         STATIC_ASSERT(!CanData<V&>);
         STATIC_ASSERT(!CanData<V const&>);
@@ -160,8 +160,8 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::view<V>);
         STATIC_ASSERT(CanEmpty<V&>);
         STATIC_ASSERT(CanEmpty<V const&>);
-        STATIC_ASSERT(!CanBool<V&>);
-        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
         STATIC_ASSERT(!CanData<V&>);
         STATIC_ASSERT(!CanData<V const&>);
         STATIC_ASSERT(CanSize<V&>);
@@ -223,7 +223,7 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::view<V>);
         STATIC_ASSERT(CanEmpty<V&>);
         STATIC_ASSERT(!CanEmpty<V const&>);
-        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(CanBool<V&>);
         STATIC_ASSERT(!CanBool<V const&>);
         STATIC_ASSERT(!CanData<V&>);
         STATIC_ASSERT(!CanData<V const&>);
@@ -244,8 +244,8 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::view<V>);
         STATIC_ASSERT(CanEmpty<V&>);
         STATIC_ASSERT(CanEmpty<V const&>);
-        STATIC_ASSERT(!CanBool<V&>);
-        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
         STATIC_ASSERT(!CanData<V&>);
         STATIC_ASSERT(!CanData<V const&>);
         STATIC_ASSERT(CanSize<V&>);
