@@ -36,7 +36,7 @@ template <ranges::input_range Rng>
 constexpr bool test_one(Rng&& rng) {
     using ranges::elements_view, ranges::bidirectional_range, ranges::common_range, ranges::contiguous_range,
         ranges::enable_borrowed_range, ranges::forward_range, ranges::input_range, ranges::iterator_t, ranges::prev,
-        ranges::random_access_range, ranges::range, ranges::range_reference_t, ranges::sentinel_t,
+        ranges::random_access_range, ranges::range, ranges::range_reference_t, ranges::sentinel_t, ranges::sized_range,
         ranges::borrowed_range;
 
     using V = views::all_t<Rng>;
