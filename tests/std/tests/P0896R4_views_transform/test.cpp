@@ -169,7 +169,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     constexpr bool const_invocable = regular_invocable<const Fun&, range_reference_t<const V>>;
 
     // Validate view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == forward_range<Rng>);
+    STATIC_ASSERT(CanMemberEmpty<R> == (sized_range<Rng> || forward_range<Rng>) );
     STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
@@ -182,7 +182,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(CanMemberEmpty<const R> == (forward_range<const Rng> && const_invocable));
+    STATIC_ASSERT(
+        CanMemberEmpty<const R> == ((sized_range<const Rng> || forward_range<const Rng>) && const_invocable));
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
