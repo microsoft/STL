@@ -139,6 +139,12 @@ void test_regex_iterator(const Sequence& seq) {
     assert(default_sentinel != begin_it);
     assert(!(begin_it == default_sentinel));
     assert(!(default_sentinel == begin_it));
+
+    ranges::advance(begin_it, end_it);
+    assert(begin_it == default_sentinel);
+    assert(default_sentinel == begin_it);
+    assert(!(begin_it != default_sentinel));
+    assert(!(default_sentinel != begin_it));
 #endif // __cpp_lib_concepts
 }
 
@@ -250,13 +256,13 @@ int main() {
 
     test_regex_iterator("hello world");
     test_regex_iterator(L"hello world");
-    test_regex_iterator(string("hello world"));
-    test_regex_iterator(wstring(L"hello world"));
+    test_regex_iterator(string{"hello world"});
+    test_regex_iterator(wstring{L"hello world"});
 
     test_regex_token_iterator("hello world");
     test_regex_token_iterator(L"hello world");
-    test_regex_token_iterator(string("hello world"));
-    test_regex_token_iterator(wstring(L"hello world"));
+    test_regex_token_iterator(string{"hello world"});
+    test_regex_token_iterator(wstring{L"hello world"});
 
 #if _HAS_CXX17
     test_directory_iterator();
