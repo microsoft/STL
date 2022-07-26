@@ -311,10 +311,10 @@ _NODISCARD __std_win_error __stdcall __std_fs_read_reparse_data_buffer(_In_ __st
     _Out_writes_bytes_(_Buffer_size) void* _Buffer, _In_ unsigned long _Buffer_size) noexcept;
 
 _NODISCARD __std_win_error __stdcall __std_fs_write_reparse_data_buffer(
-    _In_ __std_fs_file_handle _Handle, _In_ const __std_fs_reparse_data_buffer* const _Buffer) noexcept;
+    _In_ __std_fs_file_handle _Handle, _In_ const __std_fs_reparse_data_buffer* _Buffer) noexcept;
 
-[[nodiscard]] bool __stdcall __std_fs_is_junction_from_reparse_data_buffer(
-    _In_ const __std_fs_reparse_data_buffer* const _Buffer) noexcept;
+_NODISCARD bool __stdcall __std_fs_is_junction_from_reparse_data_buffer(
+    _In_ const __std_fs_reparse_data_buffer* _Buffer) noexcept;
 
 _NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_read_name_from_reparse_data_buffer(

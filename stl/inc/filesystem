@@ -3328,7 +3328,7 @@ namespace filesystem {
 
         const auto _Buffer = reinterpret_cast<__std_fs_reparse_data_buffer*>(_Buffer_unique_ptr.get());
 
-        auto _Create_dir_res = __std_fs_create_directory(_New_junction.c_str());
+        const auto _Create_dir_res = __std_fs_create_directory(_New_junction.c_str());
 
         if (_Create_dir_res._Error != __std_win_error::_Success) {
             return _Create_dir_res._Error;
@@ -3336,21 +3336,18 @@ namespace filesystem {
             return __std_win_error::_Already_exists;
         }
 
-        struct _Delete_directory_scope_guard {
+        struct _NODISCARD _Delete_directory_scope_guard {
             const wchar_t* _Path;
             ~_Delete_directory_scope_guard() {
                 if (_Path) {
                     (void) __std_fs_remove(_Path);
                 }
             }
-        } _Delete_directory{_New_junction.c_str()};
-
-        _Fs_file _To_handle{
-            _New_junction.c_str(),
-            __std_access_rights::_File_write_attributes,
-            __std_fs_file_flags::_Backup_semantics,
-            &_Err,
         };
+        _Delete_directory_scope_guard _Delete_directory{_New_junction.c_str()};
+
+        _Fs_file _To_handle{_New_junction.c_str(), __std_access_rights::_File_write_attributes,
+            __std_fs_file_flags::_Backup_semantics, &_Err};
         if (_Err != __std_win_error::_Success) {
             return _Err;
         }
@@ -4268,9 +4265,9 @@ namespace filesystem {
             }
         }
 
-        bool _Fstat_is_other =
+        const bool _Fstat_is_other =
             _STD filesystem::is_other(_Fstat._Status) && _Fstat._Status.type() != file_type::junction;
-        bool _Tstat_is_other =
+        const bool _Tstat_is_other =
             _STD filesystem::is_other(_Tstat._Status) && _Tstat._Status.type() != file_type::junction;
         if (_Fstat_is_other || _Tstat_is_other) {
             // report an error if is_other(f) || is_other(t) is true, and it's not a junction
