@@ -182,8 +182,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(
-        CanMemberEmpty<const R> == ((sized_range<const Rng> || forward_range<const Rng>) && const_invocable));
+     STATIC_ASSERT(CanMemberEmpty<const R> == ((sized_range<const Rng> || forward_range<const Rng>) &&const_invocable));
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
