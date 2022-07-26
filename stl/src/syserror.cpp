@@ -38,7 +38,6 @@ namespace {
         {ERROR_INVALID_DRIVE, errc::no_such_device},
         {ERROR_CURRENT_DIRECTORY, errc::permission_denied},
         {ERROR_NOT_SAME_DEVICE, errc::cross_device_link},
-        {ERROR_NO_MORE_FILES, errc::no_such_file_or_directory},
         {ERROR_WRITE_PROTECT, errc::permission_denied},
         {ERROR_BAD_UNIT, errc::no_such_device},
         {ERROR_NOT_READY, errc::resource_unavailable_try_again},

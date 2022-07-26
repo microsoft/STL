@@ -60,10 +60,6 @@ void test_gh_2893() {
     assert((errc::no_such_file_or_directory == error_code{ERROR_BAD_NET_NAME, system_category()}));
     assert(
         (make_error_condition(errc::no_such_file_or_directory) == error_code{ERROR_BAD_NET_NAME, system_category()}));
-
-    assert((errc::no_such_file_or_directory == error_code{ERROR_NO_MORE_FILES, system_category()}));
-    assert(
-        (make_error_condition(errc::no_such_file_or_directory) == error_code{ERROR_NO_MORE_FILES, system_category()}));
 }
 
 int main() {
