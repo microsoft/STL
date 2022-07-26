@@ -232,7 +232,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(CanMemberEmpty<const R> == sized_range<const Rng>);
+    STATIC_ASSERT(CanMemberEmpty<const R> == (random_access_range<const Rng> && sized_range<const Rng>) );
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
