@@ -51,7 +51,7 @@ struct instantiator {
             const same_as<bool> auto result = contains_subrange(Fwd1{haystack}, Fwd1{empty});
             assert(result);
         }
-        { // Validate  unreachable_sentinel case
+        { // Validate unreachable_sentinel case
             const Fwd1 wrap_hay{haystack};
             const Fwd2 wrap_needle{needle};
             const same_as<bool> auto result = contains_subrange(begin(wrap_hay), unreachable_sentinel,
