@@ -18,7 +18,7 @@ struct instantiator {
     static constexpr pair<int, int> haystack[] = {{0, 42}, {1, 42}, {2, 42}, {3, 42}, {4, 42}, {5, 42}};
     static constexpr int needle[]              = {2, 3, 4};
 
-    template <class Fwd1, class Fwd2>
+    template <ranges::forward_range Fwd1, ranges::forward_range Fwd2>
     static constexpr void call() {
         using ranges::contains_subrange, ranges::begin, ranges::end;
 
