@@ -647,8 +647,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2) noexcept /* terminates */ {
     // return [_First1, _Last1)/[_First2, ...) mismatch
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
     return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to{});
 }
 #endif // _HAS_CXX17
@@ -702,8 +702,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) noexcept /* terminates */ {
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
     return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
@@ -1448,8 +1448,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execu
 _FwdIt2 copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // copy each satisfying _Pred
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX17
@@ -1637,9 +1637,9 @@ pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _F
     _Pr _Pred) noexcept /* terminates */ {
     // copy true partition to _Dest_true, false to _Dest_false
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD partition_copy(_First, _Last, _Dest_true, _Dest_false, _Pass_fn(_Pred));
 }
 
@@ -3369,8 +3369,8 @@ _FwdIt2 replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, cons
     const _Ty& _Newval) noexcept /* terminates */ {
     // copy replacing each matching _Oldval with _Newval
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD replace_copy(_First, _Last, _Dest, _Oldval, _Newval);
 }
 #endif // _HAS_CXX17
@@ -3464,8 +3464,8 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
 /* terminates */ {
     // copy replacing each satisfying _Pred with _Val
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD replace_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred), _Val);
 }
 #endif // _HAS_CXX17
@@ -3683,7 +3683,7 @@ template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_executio
 _FwdIt generate_n(_ExPo&&, const _FwdIt _Dest, const _Diff _Count_raw, _Fn _Func) noexcept /* terminates */ {
     // replace [_Dest, _Dest + _Count) with _Func()
     // not parallelized at present due to unclear parallelism requirements on _Func
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt);
     return _STD generate_n(_Dest, _Count_raw, _Pass_fn(_Func));
 }
 #endif // _HAS_CXX17
@@ -3711,8 +3711,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execu
 _FwdIt2 remove_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const _Ty& _Val) noexcept /* terminates */ {
     // copy omitting each matching _Val
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD remove_copy(_First, _Last, _Dest, _Val);
 }
 #endif // _HAS_CXX17
@@ -3740,8 +3740,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execu
 _FwdIt2 remove_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // copy omitting each element satisfying _Pred
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD remove_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX17
@@ -4171,8 +4171,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execu
 _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // copy compressing pairs that match
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD unique_copy(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
 
@@ -4180,8 +4180,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy compressing pairs that match
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD unique_copy(_First, _Last, _Dest);
 }
 #endif // _HAS_CXX17
@@ -4408,7 +4408,7 @@ template <class _ExPo, class _BidIt, class _FwdIt, _Enable_if_execution_policy_t
 _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept /* terminates */ {
     // copy reversing elements in [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt);
     return _STD reverse_copy(_First, _Last, _Dest);
 }
 
@@ -4623,7 +4623,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy rotating [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD rotate_copy(_First, _Mid, _Last, _Dest);
 }
 
@@ -6768,9 +6769,9 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
     _Pr _Pred) noexcept /* terminates */ {
     // copy merging ranges
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
@@ -6779,9 +6780,9 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
 /* terminates */ {
     // copy merging ranges
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest);
 }
 
@@ -8469,7 +8470,8 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
 /* terminates */ {
     // copy [_First1, _Last1) into [_First2, _Last2)
     // parallelism suspected to be infeasible
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_RanIt);
     return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
 }
 
@@ -8478,7 +8480,8 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
 /* terminates */ {
     // copy [_First1, _Last1) into [_First2, _Last2)
     // parallelism suspected to be infeasible
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_RanIt);
     return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2);
 }
 
@@ -8735,8 +8738,8 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
 /* terminates */ {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
     return _STD includes(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
 }
 
@@ -8745,8 +8748,8 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
 /* terminates */ {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
     return _STD includes(_First1, _Last1, _First2, _Last2);
 }
 
@@ -8866,9 +8869,9 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
     _Pr _Pred) noexcept /* terminates */ {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
@@ -8877,9 +8880,9 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
 /* terminates */ {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest);
 }
 
@@ -9264,9 +9267,9 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
     _FwdIt3 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // XOR sets [_First1, _Last1) and [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
@@ -9275,9 +9278,9 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
     _FwdIt3 _Dest) noexcept /* terminates */ {
     // XOR sets [_First1, _Last1) and [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest);
 }
 

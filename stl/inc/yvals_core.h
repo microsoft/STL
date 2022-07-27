@@ -1349,6 +1349,14 @@
 #endif // __cpp_impl_coroutine
 
 #if _HAS_CXX20
+#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
+#define __cpp_lib_concepts 202002L
+#endif // !defined(__EDG__) || defined(__INTELLISENSE__)
+
+#if defined(__cpp_lib_concepts)
+#define __cpp_lib_algorithm_iterator_requirements 202207L
+#endif
+
 #define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
 #define __cpp_lib_atomic_float                  201711L
@@ -1361,10 +1369,6 @@
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-
-#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
-#define __cpp_lib_concepts 202002L
-#endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
 #define __cpp_lib_constexpr_algorithms    201806L
 #define __cpp_lib_constexpr_complex       201711L

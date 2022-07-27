@@ -849,6 +849,14 @@ template <class _Iter>
 _INLINE_VAR constexpr bool _Is_fwd_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, forward_iterator_tag>;
 
 template <class _Iter>
+_INLINE_VAR constexpr bool _Is_ranges_fwd_iter_v =
+#if defined(__cpp_lib_concepts)
+    forward_iterator<_Iter>;
+#else
+    is_convertible_v<_Iter_cat_t<_Iter>, forward_iterator_tag>;
+#endif
+
+template <class _Iter>
 _INLINE_VAR constexpr bool _Is_bidi_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
 
 template <class _Iter>
@@ -1036,8 +1044,11 @@ inline constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 template <class _ExPo>
 using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Standard_execution_policy;
 
-#define _REQUIRE_PARALLEL_ITERATOR(_Iter) \
-    static_assert(_Is_fwd_iter_v<_Iter>, "Parallel algorithms require forward iterators or stronger.")
+#define _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_Iter) \
+    static_assert(_Is_fwd_iter_v<_Iter>,          \
+        "Parallel algorithms require that mutable iterators be Cpp17ForwardIterators or stronger.")
+#define _REQUIRE_CONST_PARALLEL_ITERATOR(_Iter) \
+    static_assert(_Is_ranges_fwd_iter_v<_Iter>, "Parallel algorithms require forward iterators or stronger.")
 
 #endif // _HAS_CXX17
 
@@ -3687,8 +3698,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy [_First, _Last) to [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD copy(_First, _Last, _Dest);
 }
 #endif // _HAS_CXX17
@@ -3827,8 +3838,8 @@ template <class _ExPo, class _FwdIt1, class _Diff, class _FwdIt2, _Enable_if_exe
 _FwdIt2 copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy [_First, _First + _Count) to [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD copy_n(_First, _Count_raw, _Dest);
 }
 #endif // _HAS_CXX17
@@ -3922,8 +3933,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 move(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // move [_First, _Last) to [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD move(_First, _Last, _Dest);
 }
 #endif // _HAS_CXX17
@@ -4068,7 +4079,7 @@ template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_E
 void fill(_ExPo&&, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept /* terminates */ {
     // copy _Val through [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt);
     return _STD fill(_First, _Last, _Val);
 }
 #endif // _HAS_CXX17
@@ -4116,7 +4127,7 @@ template <class _ExPo, class _FwdIt, class _Diff, class _Ty, _Enable_if_executio
 _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept /* terminates */ {
     // copy _Val _Count times through [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt);
     return _STD fill_n(_Dest, _Count_raw, _Val);
 }
 #endif // _HAS_CXX17
@@ -4609,8 +4620,8 @@ _NODISCARD bool lexicographical_compare(_ExPo&&, const _FwdIt1 _First1, const _F
     const _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
     // order [_First1, _Last1) vs. [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
     return _STD lexicographical_compare(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
 }
 
@@ -4619,8 +4630,8 @@ _NODISCARD bool lexicographical_compare(_ExPo&&, const _FwdIt1 _First1, const _F
     const _FwdIt2 _Last2) noexcept /* terminates */ {
     // order [_First1, _Last1) vs. [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
     return _STD lexicographical_compare(_First1, _Last1, _First2, _Last2);
 }
 #endif // _HAS_CXX17
