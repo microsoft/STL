@@ -85,8 +85,8 @@ namespace test_view_interface {
         S end() const requires (to_bool(HasConstRange));
 
         unsigned int size() requires (to_bool(Diff) && !std::derived_from<Cat, forward_iterator_tag>);
-        unsigned int size() const requires (to_bool(HasConstRange) && to_bool(Diff) &&
-            !std::derived_from<Cat, forward_iterator_tag>);
+        unsigned int size() const requires (to_bool(HasConstRange) && to_bool(Diff)
+            && !std::derived_from<Cat, forward_iterator_tag>);
     };
     // clang-format on
 
