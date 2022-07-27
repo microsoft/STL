@@ -498,6 +498,7 @@ tests\P2442R1_views_chunk_death
 tests\P2442R1_views_slide
 tests\P2443R1_views_chunk_by
 tests\P2443R1_views_chunk_by_death
+tests\P2517R1_apply_conditional_noexcept
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions
 tests\VSO_0000000_c_math_functions
