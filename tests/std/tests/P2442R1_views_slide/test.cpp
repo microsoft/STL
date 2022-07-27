@@ -41,7 +41,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Validate non-default-initializability
     STATIC_ASSERT(!is_default_constructible_v<R>);
-    STATIC_ASSERT(!default_initializable<R>);
 
     // Validate borrowed_range
     static_assert(ranges::borrowed_range<R> == ranges::borrowed_range<V>);
@@ -68,7 +67,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         constexpr bool is_noexcept = !is_view || is_nothrow_copy_constructible_v<V>;
 
         STATIC_ASSERT(!is_default_constructible_v<RC>);
-        STATIC_ASSERT(!default_initializable<RC>);
 
         STATIC_ASSERT(same_as<decltype(views::slide(as_const(rng), 4)), RC>);
         STATIC_ASSERT(noexcept(views::slide(as_const(rng), 4)) == is_noexcept);
@@ -84,7 +82,6 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         constexpr bool is_noexcept = is_nothrow_move_constructible_v<V>;
 
         STATIC_ASSERT(!is_default_constructible_v<RS>);
-        STATIC_ASSERT(!default_initializable<RS>);
 
         STATIC_ASSERT(same_as<decltype(views::slide(move(rng), 4)), RS>);
         STATIC_ASSERT(noexcept(views::slide(move(rng), 4)) == is_noexcept);
