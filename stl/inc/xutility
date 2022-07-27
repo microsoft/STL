@@ -860,6 +860,14 @@ template <class _Iter>
 _INLINE_VAR constexpr bool _Is_bidi_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
 
 template <class _Iter>
+_INLINE_VAR constexpr bool _Is_ranges_bidi_iter_v =
+#if defined(__cpp_lib_concepts)
+    bidirectional_iterator<_Iter>;
+#else
+    is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
+#endif
+
+template <class _Iter>
 _INLINE_VAR constexpr bool _Is_random_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, random_access_iterator_tag>;
 
 template <class, class = void>
@@ -1109,7 +1117,7 @@ constexpr bool _Debug_lt_pred(_Pr&& _Pred, _Ty1&& _Left, _Ty2&& _Right) noexcept
 template <class _InIt, class _Sentinel, class _Pr>
 constexpr void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
-    if constexpr (_Is_fwd_iter_v<_InIt>) {
+    if constexpr (_Is_ranges_fwd_iter_v<_InIt>) {
         if (_First != _Last) {
             for (auto _Next = _First; ++_Next != _Last; _First = _Next) {
                 _STL_VERIFY(!static_cast<bool>(_Pred(*_Next, *_First)), "sequence not ordered");
@@ -1121,7 +1129,7 @@ constexpr void _Debug_order_unchecked(_InIt _First, _Sentinel _Last, _Pr&& _Pred
 template <class _OtherIt, class _InIt, class _Pr>
 constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred) {
     // test if range is ordered by predicate
-    if constexpr (is_same_v<_Iter_value_t<_OtherIt>, _Iter_value_t<_InIt>> && _Is_fwd_iter_v<_InIt>) {
+    if constexpr (is_same_v<_Iter_value_t<_OtherIt>, _Iter_value_t<_InIt>>) {
         _Debug_order_unchecked(_First, _Last, _Pred);
     }
 }
@@ -1193,7 +1201,7 @@ constexpr _BidIt _Prev_iter(_BidIt _First) { // decrement iterator
 
 template <class _BidIt>
 _NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1) { // decrement iterator
-    static_assert(_Is_bidi_iter_v<_BidIt>, "prev requires bidirectional iterator");
+    static_assert(_Is_ranges_bidi_iter_v<_BidIt>, "prev requires bidirectional iterator");
 
     _STD advance(_First, -_Off);
     return _First;
