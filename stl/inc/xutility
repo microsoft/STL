@@ -3211,6 +3211,7 @@ public:
     using pointer         = _Iter;
 
 #ifdef __cpp_lib_concepts
+private:
     constexpr static auto _Get_iter_concept() {
         if constexpr (random_access_iterator<_Iter>) {
             return random_access_iterator_tag{};
@@ -3222,6 +3223,8 @@ public:
             return input_iterator_tag{};
         }
     }
+
+public:
     using iterator_concept = decltype(_Get_iter_concept());
 
     using reference = iter_rvalue_reference_t<_Iter>;
