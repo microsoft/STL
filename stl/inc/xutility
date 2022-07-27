@@ -3186,11 +3186,26 @@ class move_sentinel;
 
 template <class>
 struct _Move_iterator_category {};
+template <class _Iter>
+struct _Move_iterator_concept {
+    constexpr static auto _Get_concept() {
+        if constexpr (random_access_iterator<_Iter>) {
+            return random_access_iterator_tag{};
+        } else if constexpr (bidirectional_iterator<_Iter>) {
+            return bidirectional_iterator_tag{};
+        } else if constexpr (forward_iterator<_Iter>) {
+            return forward_iterator_tag{};
+        } else {
+            return input_iterator_tag{};
+        }
+    }
+    using iterator_concept = decltype(_Get_concept());
+};
 
 // clang-format off
 template <class _Iter>
     requires requires { typename _Iter_cat_t<_Iter>; }
-struct _Move_iterator_category<_Iter> {
+struct _Move_iterator_category<_Iter> : _Move_iterator_concept<_Iter> {
     using iterator_category = conditional_t<derived_from<_Iter_cat_t<_Iter>, random_access_iterator_tag>,
         random_access_iterator_tag, _Iter_cat_t<_Iter>>;
 };
@@ -3211,8 +3226,7 @@ public:
     using pointer         = _Iter;
 
 #ifdef __cpp_lib_concepts
-    using iterator_concept = input_iterator_tag;
-    using reference        = iter_rvalue_reference_t<_Iter>;
+    using reference = iter_rvalue_reference_t<_Iter>;
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
     using reference =
         conditional_t<is_reference_v<_Iter_ref_t<_Iter>>, remove_reference_t<_Iter_ref_t<_Iter>>&&, _Iter_ref_t<_Iter>>;
