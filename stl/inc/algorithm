@@ -1412,8 +1412,8 @@ namespace ranges {
                 return true;
             }
 
-            const auto _Match = _RANGES search(_First1, _Last1, _STD move(_UFirst2), _STD move(_ULast2),
-                _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            const auto _Match = _RANGES search(_STD move(_First1), _STD move(_Last1), _STD move(_UFirst2),
+                _STD move(_ULast2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
             return !_Match.empty();
         }
 
