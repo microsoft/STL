@@ -5118,7 +5118,7 @@ using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32
 
 template <class _Elem, class _Alloc>
 struct hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>>
-    : _Conditionally_enabled_hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>, _Is_EcharT<_Elem>> { // per LWG-3705
+    : _Conditionally_enabled_hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>, _Is_EcharT<_Elem>> {
     _NODISCARD static size_t _Do_hash(const basic_string<_Elem, char_traits<_Elem>, _Alloc>& _Keyval) noexcept {
         return _Hash_array_representation(_Keyval.c_str(), _Keyval.size());
     }

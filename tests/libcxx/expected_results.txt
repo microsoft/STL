@@ -674,7 +674,7 @@ std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
 # libc++ is missing various <format> DRs
 std/language.support/support.limits/support.limits.general/format.version.pass.cpp FAIL
 
-# We speculatively implement LWG-3670
+# libc++ doesn't yet implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
 
