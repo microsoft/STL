@@ -3337,6 +3337,9 @@ struct formatter<const _CharT*, _CharT>
     : _Formatter_base<const _CharT*, _CharT, _Basic_format_arg_type::_CString_type> {};
 
 template <_Format_supported_charT _CharT, size_t _Nx>
+struct formatter<_CharT[_Nx], _CharT> : _Formatter_base<_CharT[_Nx], _CharT, _Basic_format_arg_type::_CString_type> {};
+
+template <_Format_supported_charT _CharT, size_t _Nx>
 struct formatter<const _CharT[_Nx], _CharT>
     : _Formatter_base<const _CharT[_Nx], _CharT, _Basic_format_arg_type::_CString_type> {};
 
