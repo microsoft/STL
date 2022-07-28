@@ -18,7 +18,7 @@
 using namespace std;
 
 template <class T>
-struct adaptor_adaptor : T {
+struct accessible_adaptor : T {
     using T::T;
 
     auto& get_container() {
@@ -31,7 +31,7 @@ struct adaptor_adaptor : T {
 
 template <ranges::input_range Rng>
 void test_priority_queue(const size_t presize, Rng&& rng) {
-    adaptor_adaptor<priority_queue<int>> pq{less<int>{}, vector<int>(presize, -1)};
+    accessible_adaptor<priority_queue<int>> pq{less<int>{}, vector<int>(presize, -1)};
 
     pq.push_range(forward<Rng>(rng));
     const auto& container = pq.get_container();

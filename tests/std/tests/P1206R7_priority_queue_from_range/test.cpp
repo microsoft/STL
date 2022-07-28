@@ -16,7 +16,7 @@
 using namespace std;
 
 template <class T>
-struct adaptor_adaptor : T {
+struct accessible_adaptor : T {
     using T::T;
 
     auto& get_container() {
@@ -29,7 +29,7 @@ struct adaptor_adaptor : T {
 
 template <ranges::input_range R, class... Args>
 void test_priority_queue(R&& r, Args&&... args) {
-    adaptor_adaptor<priority_queue<int>> s{from_range, r, forward<Args>(args)...};
+    accessible_adaptor<priority_queue<int>> s{from_range, r, forward<Args>(args)...};
     assert(ranges::is_heap(s.get_container()));
 }
 

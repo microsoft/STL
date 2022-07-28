@@ -18,7 +18,7 @@
 using namespace std;
 
 template <class T>
-struct adaptor_adaptor : T {
+struct accessible_adaptor : T {
     using T::T;
 
     auto& get_container() {
@@ -31,7 +31,7 @@ struct adaptor_adaptor : T {
 
 template <ranges::input_range Rng, size_t N>
 void test_stack(const size_t presize, Rng&& rng, const int (&expected)[N]) {
-    adaptor_adaptor<stack<int>> d{deque<int>(presize, -1)};
+    accessible_adaptor<stack<int>> d{deque<int>(presize, -1)};
 
     d.push_range(forward<Rng>(rng));
     const auto count      = static_cast<ptrdiff_t>(presize);

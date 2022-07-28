@@ -17,7 +17,7 @@
 using namespace std;
 
 template <class T>
-struct adaptor_adaptor : T {
+struct accessible_adaptor : T {
     using T::T;
 
     auto& get_container() {
@@ -32,7 +32,7 @@ static constexpr int some_ints[] = {0, 1, 2, 3, 4, 5, 6, 7};
 
 template <ranges::input_range R, class... Args>
 void test_stack(R&& r, Args&&... args) {
-    adaptor_adaptor<stack<int>> s{from_range, r, forward<Args>(args)...};
+    accessible_adaptor<stack<int>> s{from_range, r, forward<Args>(args)...};
     assert(ranges::equal(s.get_container(), some_ints));
 }
 
