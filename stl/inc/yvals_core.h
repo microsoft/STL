@@ -316,6 +316,7 @@
 // P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
+// P2499R0 string_view Range Constructor Should Be explicit
 // P2549R0 unexpected<E>::error()
 
 // Parallel Algorithms Notes

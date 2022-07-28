@@ -66,6 +66,10 @@ std/utilities/format/format.formatter/format.parse.ctx/begin.pass.cpp FAIL
 std/utilities/format/format.formatter/format.parse.ctx/ctor.pass.cpp FAIL
 std/utilities/format/format.formatter/format.parse.ctx/end.pass.cpp FAIL
 
+# libc++ doesn't yet implement P2499R0
+std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
+std/strings/string.view/string.view.deduct/range.pass.cpp FAIL
+
 # libc++ doesn't correctly constrain the iterator_traits specialization for common_iterator (https://reviews.llvm.org/D117449)
 std/iterators/predef.iterators/iterators.common/iterator_traits.compile.pass.cpp FAIL
 
