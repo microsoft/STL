@@ -16,7 +16,7 @@
 using namespace std;
 
 static constexpr pair<int, int> expected[] = {
-    {0, 20}, {1, 19}, {2, 18}, {3, 17}, {4, 16}, {4, 15}, {4, 14}, {5, 13}, {6, 12}, {7, 11}};
+    {0, 20}, {1, 19}, {2, 18}, {3, 17}, {4, 16}, {4, 15}, {4, 14}, {5, 13}, {5, 13}, {6, 12}, {7, 11}};
 
 template <ranges::input_range Rng>
 void test_unordered_multimap(Rng&& rng) {
