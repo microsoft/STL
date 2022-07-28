@@ -1686,23 +1686,32 @@ namespace filesystem {
         return false;
     }
 
-    _NODISCARD inline path path::lexically_relative(const path& _Base) const {
+    _NODISCARD inline path path::lexically_relative(const path& _Base_raw) const {
         constexpr wstring_view _Dot     = L"."sv;
         constexpr wstring_view _Dot_dot = L".."sv;
 
+        // LWG-3699: `lexically_relative` on UNC drive paths (`\\?\C:\...`) results in a default-constructed value
+        // This avoids doing any unnecessary copies;
+        // the return value of `relative_path()` is lifetime-extended if necessary.
+        const bool _Both_unc_paths = _Is_drive_prefix_with_slash_slash_question(_Text)
+                                  && _Is_drive_prefix_with_slash_slash_question(_Base_raw._Text);
+        const path& _This = _Both_unc_paths ? relative_path() : *this;
+        const path& _Base = _Both_unc_paths ? _Base_raw.relative_path() : _Base_raw;
+
         path _Result;
 
-        if (root_name() != _Base.root_name() || is_absolute() != _Base.is_absolute()
-            || (!has_root_directory() && _Base.has_root_directory()) || _Relative_path_contains_root_name(*this)
-            || _Relative_path_contains_root_name(_Base)) {
+        if (_This.root_name() != _Base.root_name() || _This.is_absolute() != _Base.is_absolute()
+            || (!_This.has_root_directory() && _Base.has_root_directory())
+            || (_Relative_path_contains_root_name(_This) || _Relative_path_contains_root_name(_Base))) {
             return _Result;
         }
 
-        const iterator _This_end   = end();
+
+        const iterator _This_end   = _This.end();
         const iterator _Base_begin = _Base.begin();
         const iterator _Base_end   = _Base.end();
 
-        auto _Mismatched  = _STD mismatch(begin(), _This_end, _Base_begin, _Base_end);
+        auto _Mismatched  = _STD mismatch(_This.begin(), _This_end, _Base_begin, _Base_end);
         iterator& _A_iter = _Mismatched.first;
         iterator& _B_iter = _Mismatched.second;
 
