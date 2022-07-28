@@ -90,7 +90,7 @@ utilities\format\format.functions\vformat.pass.cpp
 containers\sequences\vector.bool\iterator_concept_conformance.compile.pass.cpp
 
 # libc++ hasn't updated move_iterator for P2520R0
-std/iterators/predef.iterators/move.iterators/move.iterator/types.pass.cpp
+iterators\predef.iterators\move.iterators\move.iterator\types.pass.cpp
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
