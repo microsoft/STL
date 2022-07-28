@@ -851,10 +851,9 @@ _INLINE_VAR constexpr bool _Is_fwd_iter_v = is_convertible_v<_Iter_cat_t<_Iter>,
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_ranges_fwd_iter_v =
 #if defined(__cpp_lib_concepts)
-    forward_iterator<_Iter>;
-#else
-    is_convertible_v<_Iter_cat_t<_Iter>, forward_iterator_tag>;
+    forward_iterator<_Iter> ||
 #endif
+    is_convertible_v<_Iter_cat_t<_Iter>, forward_iterator_tag>;
 
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_bidi_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
@@ -862,10 +861,9 @@ _INLINE_VAR constexpr bool _Is_bidi_iter_v = is_convertible_v<_Iter_cat_t<_Iter>
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_ranges_bidi_iter_v =
 #if defined(__cpp_lib_concepts)
-    bidirectional_iterator<_Iter>;
-#else
-    is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
+    bidirectional_iterator<_Iter> ||
 #endif
+    is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
 
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_random_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, random_access_iterator_tag>;
