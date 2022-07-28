@@ -302,6 +302,7 @@
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
+// P1899R3 views::stride
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
@@ -1475,6 +1476,7 @@
 #define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
+#define __cpp_lib_ranges_stride           202207L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L
