@@ -258,6 +258,10 @@ function load_charts() {
         const ch = legend.chart;
         const index = legend_item.datasetIndex;
 
+        if (index === undefined) {
+            throw new Error('legend_click_handler() was surprised by legend_item.datasetIndex.');
+        }
+
         const becoming_hidden = ch.isDatasetVisible(index);
 
         if (becoming_hidden) {
