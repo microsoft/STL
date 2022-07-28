@@ -40,7 +40,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_format
-#pragma message("The contents of <format> are available only with C++20 or later.")
+#pragma message(_WARNING_MESSAGE("STL4038", "The contents of <format> are available only with C++20 or later."))
 #else // ^^^ !defined(__cpp_lib_format) / defined(__cpp_lib_format) vvv
 
 #include <__msvc_format_ucd_tables.hpp>

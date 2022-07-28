@@ -415,6 +415,8 @@
 #include <vcruntime.h>
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
+#define _WARNING_MESSAGE(NUMBER, MESSAGE) __FILE__ "(" _CRT_STRINGIZE(__LINE__) "): warning " NUMBER ": " MESSAGE
+
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
 #define _STL_WARNING_LEVEL 4
@@ -1187,7 +1189,11 @@
 #define _DEPRECATE_NONFLOATING_COMPLEX
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4038
+// STL4038 is used to warn that "The contents of <meow> are available only with C++NN or later."
+
+// STL4039 is used to warn that "The contents of <coroutine> are not available with /await."
+
+// next warning number: STL4040
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
