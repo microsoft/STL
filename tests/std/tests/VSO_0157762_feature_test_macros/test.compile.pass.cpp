@@ -1408,6 +1408,20 @@ STATIC_ASSERT(__cpp_lib_ranges_chunk_by == 202202L);
 #endif
 #endif
 
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_ranges_contains
+#error __cpp_lib_ranges_contains is not defined
+#elif __cpp_lib_ranges_contains != 202207L
+#error __cpp_lib_ranges_contains is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_contains
+#error __cpp_lib_ranges_contains is defined
+#endif
+#endif
+
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
 #ifndef __cpp_lib_ranges_iota
 #error __cpp_lib_ranges_iota is not defined

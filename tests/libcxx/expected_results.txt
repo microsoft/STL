@@ -66,6 +66,10 @@ std/utilities/format/format.formatter/format.parse.ctx/begin.pass.cpp FAIL
 std/utilities/format/format.formatter/format.parse.ctx/ctor.pass.cpp FAIL
 std/utilities/format/format.formatter/format.parse.ctx/end.pass.cpp FAIL
 
+# libc++ doesn't yet implement P2499R0
+std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
+std/strings/string.view/string.view.deduct/range.pass.cpp FAIL
+
 # libc++ doesn't correctly constrain the iterator_traits specialization for common_iterator (https://reviews.llvm.org/D117449)
 std/iterators/predef.iterators/iterators.common/iterator_traits.compile.pass.cpp FAIL
 
@@ -652,6 +656,9 @@ std/utilities/charconv/charconv.msvc/test.pass.cpp FAIL
 std/ranges/range.adaptors/range.transform/end.pass.cpp FAIL
 std/ranges/range.adaptors/range.transform/iterator/base.pass.cpp FAIL
 
+# libc++ doesn't yet implement LWG-3656 (https://reviews.llvm.org/D120444)
+std/numerics/bit/bit.pow.two/bit_width.pass.cpp FAIL
+
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp FAIL
 
@@ -674,7 +681,7 @@ std/strings/basic.string/string.capacity/resize_and_overwrite.pass.cpp FAIL
 # libc++ is missing various <format> DRs
 std/language.support/support.limits/support.limits.general/format.version.pass.cpp FAIL
 
-# We speculatively implement LWG-3670
+# libc++ doesn't yet implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
 

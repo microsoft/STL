@@ -2722,24 +2722,32 @@ namespace ranges {
     public:
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        _NODISCARD constexpr bool empty() requires forward_range<_Dx>
+        _NODISCARD constexpr bool empty() requires sized_range<_Dx> || forward_range<_Dx>
 #else // ^^^ workaround / no workaround vvv
-        _NODISCARD constexpr bool empty() requires forward_range<_Derived>
+        _NODISCARD constexpr bool empty() requires sized_range<_Derived> || forward_range<_Derived>
 #endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
-            return _RANGES begin(_Self) == _RANGES end(_Self);
+            if constexpr (sized_range<_Derived>) {
+                return _RANGES size(_Self) == 0;
+            } else {
+                return _RANGES begin(_Self) == _RANGES end(_Self);
+            }
         }
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
         template <class _Dx = _Derived>
-        _NODISCARD constexpr bool empty() const requires forward_range<const _Dx>
+        _NODISCARD constexpr bool empty() const requires sized_range<const _Dx> || forward_range<const _Dx>
 #else // ^^^ workaround / no workaround vvv
-        _NODISCARD constexpr bool empty() const requires forward_range<const _Derived>
+        _NODISCARD constexpr bool empty() const requires sized_range<const _Derived> || forward_range<const _Derived>
 #endif // TRANSITION, LLVM-44833
         {
             auto& _Self = _Cast();
-            return _RANGES begin(_Self) == _RANGES end(_Self);
+            if constexpr (sized_range<const _Derived>) {
+                return _RANGES size(_Self) == 0;
+            } else {
+                return _RANGES begin(_Self) == _RANGES end(_Self);
+            }
         }
 
 #ifdef __clang__ // TRANSITION, LLVM-44833
