@@ -27,7 +27,7 @@ void test_unordered_set(Rng&& rng) {
     }
 }
 
-static constexpr int some_ints[] = {4, 2, 3, 0, 5, 6, 7, 1};
+static constexpr int some_ints[] = {4, 2, 3, 4, 0, 5, 4, 6, 7, 1};
 
 struct unordered_set_instantiator {
     template <ranges::input_range R>

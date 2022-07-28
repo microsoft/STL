@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
 #include <forward_list>
 #include <ranges>
 #include <span>

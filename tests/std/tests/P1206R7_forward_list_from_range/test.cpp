@@ -17,7 +17,6 @@ using namespace std;
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 void test_flist(Rng&& rng, Expected&& expected) {
     forward_list<int> fl{from_range, forward<Rng>(rng)};
-    static_assert(same_as<decltype(fl), forward_list<int>>);
     assert(ranges::equal(fl, expected));
 }
 

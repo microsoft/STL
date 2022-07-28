@@ -18,6 +18,8 @@ using namespace std;
 
 template <ranges::input_range Rng, class T, size_t N>
 constexpr bool test_string(const size_t capacity, const size_t presize, Rng&& rng, const T (&expected)[N]) {
+    // We need to test both reallocating and non-reallocating code paths,
+    // so we accept distinct capacity and size values for the initial container.
     basic_string<T> str;
     str.reserve(capacity);
     str.resize(presize, T{'x'});

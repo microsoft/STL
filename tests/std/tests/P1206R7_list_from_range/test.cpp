@@ -17,7 +17,7 @@ using namespace std;
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 void test_list(Rng&& rng, Expected&& expected) {
-    list<int> lst(from_range, forward<Rng>(rng));
+    list<int> lst{from_range, forward<Rng>(rng)};
     assert(ranges::equal(lst, expected));
 }
 

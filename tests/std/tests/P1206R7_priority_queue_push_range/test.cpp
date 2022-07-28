@@ -29,8 +29,6 @@ struct adaptor_adaptor : T {
     }
 };
 
-static constexpr int some_ints[] = {0, 7, 1, 6, 2, 5, 3, 4};
-
 template <ranges::input_range Rng>
 void test_priority_queue(const size_t presize, Rng&& rng) {
     adaptor_adaptor<priority_queue<int>> pq{less<int>{}, vector<int>(presize, -1)};
@@ -39,6 +37,8 @@ void test_priority_queue(const size_t presize, Rng&& rng) {
     const auto& container = pq.get_container();
     assert(ranges::is_heap(container));
 }
+
+static constexpr int some_ints[] = {0, 7, 1, 6, 2, 5, 3, 4};
 
 template <ranges::input_range Rng>
 void test_priority_queue() {

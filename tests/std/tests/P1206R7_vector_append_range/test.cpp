@@ -17,6 +17,8 @@ using namespace std;
 
 template <ranges::input_range Rng, size_t N>
 constexpr bool test_vector(const size_t capacity, const size_t presize, Rng&& rng, const int (&expected)[N]) {
+    // We need to test both reallocating and non-reallocating code paths,
+    // so we accept distinct capacity and size values for the initial container.
     vector<int> vec;
     vec.reserve(capacity);
     vec.resize(presize, -1);
@@ -48,7 +50,9 @@ struct vector_instantiator {
 };
 
 template <ranges::input_range Rng, size_t N>
-constexpr bool test_vector_boo(const size_t capacity, const size_t presize, Rng&& rng, const int (&expected)[N]) {
+constexpr bool test_vector_bool(const size_t capacity, const size_t presize, Rng&& rng, const int (&expected)[N]) {
+    // We need to test both reallocating and non-reallocating code paths,
+    // so we accept distinct capacity and size values for the initial container.
     vector<bool> vec;
     vec.reserve(capacity);
     vec.resize(presize, true);
@@ -62,9 +66,9 @@ constexpr bool test_vector_boo(const size_t capacity, const size_t presize, Rng&
 }
 
 template <ranges::input_range Rng, size_t N>
-constexpr bool test_vector_boo(const int (&expected)[N]) {
-    test_vector_boo(0, 0, Rng{expected}, expected);
-    test_vector_boo(ranges::size(expected) + 2, 2, Rng{expected}, expected);
+constexpr bool test_vector_bool(const int (&expected)[N]) {
+    test_vector_bool(0, 0, Rng{expected}, expected);
+    test_vector_bool(ranges::size(expected) + 2, 2, Rng{expected}, expected);
 
     return true;
 }
@@ -79,8 +83,8 @@ static constexpr int other_ints[80] = { //
 struct vector_boo_instantiator {
     template <ranges::input_range R>
     static constexpr void call() {
-        test_vector_boo<R>(other_ints);
-        STATIC_ASSERT(test_vector_boo<R>(other_ints));
+        test_vector_bool<R>(other_ints);
+        STATIC_ASSERT(test_vector_bool<R>(other_ints));
     }
 };
 
@@ -91,7 +95,7 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
 
 constexpr bool test_copyable_view() {
     test_vector<span<const int>>(some_ints);
-    test_vector_boo<span<const int>>(other_ints);
+    test_vector_bool<span<const int>>(other_ints);
     return true;
 }
 
@@ -104,20 +108,20 @@ constexpr bool test_move_only_view() {
     test_vector<move_only_view<random_access_iterator_tag, test::Common::no>>(some_ints);
     test_vector<move_only_view<random_access_iterator_tag, test::Common::yes>>(some_ints);
 
-    test_vector_boo<move_only_view<input_iterator_tag, test::Common::no>>(other_ints);
-    test_vector_boo<move_only_view<forward_iterator_tag, test::Common::no>>(other_ints);
-    test_vector_boo<move_only_view<forward_iterator_tag, test::Common::yes>>(other_ints);
-    test_vector_boo<move_only_view<bidirectional_iterator_tag, test::Common::no>>(other_ints);
-    test_vector_boo<move_only_view<bidirectional_iterator_tag, test::Common::yes>>(other_ints);
-    test_vector_boo<move_only_view<random_access_iterator_tag, test::Common::no>>(other_ints);
-    test_vector_boo<move_only_view<random_access_iterator_tag, test::Common::yes>>(other_ints);
+    test_vector_bool<move_only_view<input_iterator_tag, test::Common::no>>(other_ints);
+    test_vector_bool<move_only_view<forward_iterator_tag, test::Common::no>>(other_ints);
+    test_vector_bool<move_only_view<forward_iterator_tag, test::Common::yes>>(other_ints);
+    test_vector_bool<move_only_view<bidirectional_iterator_tag, test::Common::no>>(other_ints);
+    test_vector_bool<move_only_view<bidirectional_iterator_tag, test::Common::yes>>(other_ints);
+    test_vector_bool<move_only_view<random_access_iterator_tag, test::Common::no>>(other_ints);
+    test_vector_bool<move_only_view<random_access_iterator_tag, test::Common::yes>>(other_ints);
 
     return true;
 }
 
 constexpr bool test_c_array() {
     test_vector(0, 0, some_ints, some_ints);
-    test_vector_boo(0, 0, other_ints, other_ints);
+    test_vector_bool(0, 0, other_ints, other_ints);
     return true;
 }
 
@@ -128,7 +132,7 @@ constexpr bool test_lvalue_vector() {
     }
     {
         vector vec(from_range, other_ints);
-        test_vector_boo(0, 0, vec, other_ints);
+        test_vector_bool(0, 0, vec, other_ints);
     }
     return true;
 }
@@ -140,7 +144,7 @@ void test_lvalue_forward_list() {
     }
     {
         forward_list lst(ranges::begin(other_ints), ranges::end(other_ints));
-        test_vector_boo(0, 0, lst, other_ints);
+        test_vector_bool(0, 0, lst, other_ints);
     }
 }
 

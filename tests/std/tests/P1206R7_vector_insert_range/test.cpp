@@ -18,8 +18,8 @@ template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_vector(const size_t presize, Rng&& rng, Expected&& expected) {
     vector<int> vec(presize, -1);
     const same_as<vector<int>::iterator> auto result =
-        vec.insert_range(vec.begin() + (presize != 0), forward<Rng>(rng));
-    assert(result == vec.begin() + (presize != 0));
+        vec.insert_range(ranges::next(vec.begin(), presize != 0), forward<Rng>(rng));
+    assert(result == ranges::next(vec.begin(), presize != 0));
     assert(ranges::equal(vec, expected));
 
     return true;
@@ -44,11 +44,11 @@ struct vector_instantiator {
 };
 
 template <ranges::input_range Rng, ranges::random_access_range Expected>
-constexpr bool test_vector_boo(const size_t presize, Rng&& rng, Expected&& expected) {
+constexpr bool test_vector_bool(const size_t presize, Rng&& rng, Expected&& expected) {
     vector<bool> vec(presize, true);
     const same_as<vector<bool>::iterator> auto result =
-        vec.insert_range(vec.begin() + (presize != 0), forward<Rng>(rng));
-    assert(result == vec.begin() + (presize != 0));
+        vec.insert_range(ranges::next(vec.begin(), presize != 0), forward<Rng>(rng));
+    assert(result == ranges::next(vec.begin(), presize != 0));
     assert(ranges::equal(vec, expected, std::equal_to<bool>{}));
 
     return true;
@@ -68,12 +68,12 @@ static constexpr int other_long_result[]  = {true, false, true, true, true, true
 struct vector_boo_instantiator {
     template <ranges::input_range R>
     static void call() {
-        test_vector_boo(0, R{some_ints}, some_ints);
-        STATIC_ASSERT(test_vector_boo(0, R{some_ints}, some_ints));
-        test_vector_boo(5, R{some_ints}, other_short_result);
-        STATIC_ASSERT(test_vector_boo(5, R{some_ints}, other_short_result));
-        test_vector_boo(11, R{some_ints}, other_long_result);
-        STATIC_ASSERT(test_vector_boo(11, R{some_ints}, other_long_result));
+        test_vector_bool(0, R{some_ints}, some_ints);
+        STATIC_ASSERT(test_vector_bool(0, R{some_ints}, some_ints));
+        test_vector_bool(5, R{some_ints}, other_short_result);
+        STATIC_ASSERT(test_vector_bool(5, R{some_ints}, other_short_result));
+        test_vector_bool(11, R{some_ints}, other_long_result);
+        STATIC_ASSERT(test_vector_bool(11, R{some_ints}, other_long_result));
     }
 };
 
@@ -89,7 +89,7 @@ constexpr bool test_copyable_views() {
     }
     {
         constexpr span<const int> s{other_ints};
-        test_vector_boo(0, s, other_ints);
+        test_vector_bool(0, s, other_ints);
     }
 
     return true;
@@ -106,13 +106,13 @@ constexpr bool test_move_only_views() {
         test_vector(0, move_only_view<random_access_iterator_tag, test::Common::yes>{some_ints}, some_ints);
     }
     {
-        test_vector_boo(0, move_only_view<input_iterator_tag, test::Common::no>{other_ints}, other_ints);
-        test_vector_boo(0, move_only_view<forward_iterator_tag, test::Common::no>{other_ints}, other_ints);
-        test_vector_boo(0, move_only_view<forward_iterator_tag, test::Common::yes>{other_ints}, other_ints);
-        test_vector_boo(0, move_only_view<bidirectional_iterator_tag, test::Common::no>{other_ints}, other_ints);
-        test_vector_boo(0, move_only_view<bidirectional_iterator_tag, test::Common::yes>{other_ints}, other_ints);
-        test_vector_boo(0, move_only_view<random_access_iterator_tag, test::Common::no>{other_ints}, other_ints);
-        test_vector_boo(0, move_only_view<random_access_iterator_tag, test::Common::yes>{other_ints}, other_ints);
+        test_vector_bool(0, move_only_view<input_iterator_tag, test::Common::no>{other_ints}, other_ints);
+        test_vector_bool(0, move_only_view<forward_iterator_tag, test::Common::no>{other_ints}, other_ints);
+        test_vector_bool(0, move_only_view<forward_iterator_tag, test::Common::yes>{other_ints}, other_ints);
+        test_vector_bool(0, move_only_view<bidirectional_iterator_tag, test::Common::no>{other_ints}, other_ints);
+        test_vector_bool(0, move_only_view<bidirectional_iterator_tag, test::Common::yes>{other_ints}, other_ints);
+        test_vector_bool(0, move_only_view<random_access_iterator_tag, test::Common::no>{other_ints}, other_ints);
+        test_vector_bool(0, move_only_view<random_access_iterator_tag, test::Common::yes>{other_ints}, other_ints);
     }
 
     return true;
@@ -120,7 +120,7 @@ constexpr bool test_move_only_views() {
 
 constexpr bool test_c_array() {
     test_vector(0, some_ints, some_ints);
-    test_vector_boo(0, other_ints, other_ints);
+    test_vector_bool(0, other_ints, other_ints);
     return true;
 }
 
@@ -131,7 +131,7 @@ constexpr bool test_lvalue_vector() {
     }
     {
         vector vec(ranges::begin(other_ints), ranges::end(other_ints));
-        test_vector_boo(0, vec, other_ints);
+        test_vector_bool(0, vec, other_ints);
     }
     return true;
 }
@@ -143,7 +143,7 @@ void test_lvalue_forward_list() {
     }
     {
         forward_list lst(ranges::begin(other_ints), ranges::end(other_ints));
-        test_vector_boo(0, lst, other_ints);
+        test_vector_bool(0, lst, other_ints);
     }
 }
 

@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <forward_list>
-#include <new>
 #include <queue>
 #include <ranges>
 #include <span>
@@ -28,13 +27,13 @@ struct adaptor_adaptor : T {
     }
 };
 
-static constexpr int some_ints[] = {0, 7, 1, 6, 2, 5, 3, 4};
-
 template <ranges::input_range R, class... Args>
 void test_priority_queue(R&& r, Args&&... args) {
     adaptor_adaptor<priority_queue<int>> s{from_range, r, forward<Args>(args)...};
     assert(ranges::is_heap(s.get_container()));
 }
+
+static constexpr int some_ints[] = {0, 7, 1, 6, 2, 5, 3, 4};
 
 struct instantiator {
     template <ranges::input_range R>

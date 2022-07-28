@@ -18,8 +18,9 @@ using namespace std;
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 void test_deque(const size_t presize, Rng&& rng, Expected&& expected) {
     deque<int> d(presize, -1);
-    const same_as<deque<int>::iterator> auto result = d.insert_range(d.begin() + (presize != 0), forward<Rng>(rng));
-    assert(result == d.begin() + (presize != 0));
+    const same_as<deque<int>::iterator> auto result =
+        d.insert_range(ranges::next(d.begin(), presize != 0), forward<Rng>(rng));
+    assert(result == ranges::next(d.begin(), presize != 0));
     assert(ranges::equal(d, expected));
 }
 

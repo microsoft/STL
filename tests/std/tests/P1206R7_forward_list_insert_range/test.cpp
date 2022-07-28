@@ -18,8 +18,8 @@ template <ranges::input_range Rng, ranges::random_access_range Expected>
 void test_flist(const size_t presize, Rng&& rng, Expected&& expected) {
     forward_list<int> fl(presize, -1);
     const same_as<forward_list<int>::iterator> auto result =
-        fl.insert_range_after(presize ? fl.begin() : fl.before_begin(), forward<Rng>(rng));
-    assert(result == ranges::next(presize ? fl.begin() : fl.before_begin(), 8));
+        fl.insert_range_after(ranges::next(fl.before_begin(), presize != 0), forward<Rng>(rng));
+    assert(result == ranges::next(fl.before_begin(), 8 + (presize != 0)));
     assert(ranges::equal(fl, expected));
 }
 
