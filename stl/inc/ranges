@@ -413,8 +413,6 @@ namespace ranges {
         };
         bool _Engaged;
     };
-    template <class _Ty>
-    using _Copyable_box = _Movable_box<_Ty>;
 
     // clang-format off
     template <class _Ty>
@@ -923,8 +921,7 @@ namespace ranges {
         inline constexpr empty_view<_Ty> empty;
     } // namespace views
 
-    template <copy_constructible _Ty>
-        requires is_object_v<_Ty>
+    template <_Move_constructible_object _Ty>
     class single_view : public view_interface<single_view<_Ty>> {
     public:
         // clang-format off
@@ -968,7 +965,7 @@ namespace ranges {
         }
 
     private:
-        /* [[no_unique_address]] */ _Copyable_box<_Ty> _Val{};
+        /* [[no_unique_address]] */ _Movable_box<_Ty> _Val{};
     };
 
     template <class _Ty>
@@ -1651,7 +1648,7 @@ namespace ranges {
     class filter_view : public _Cached_position_t<forward_range<_Vw>, _Vw, filter_view<_Vw, _Pr>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
+        /* [[no_unique_address]] */ _Movable_box<_Pr> _Pred{};
 
         template <class _View>
         struct _Category_base {};
@@ -1909,15 +1906,15 @@ namespace ranges {
 #define _NOEXCEPT_IDL0(...)
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
-    template <input_range _Vw, copy_constructible _Fn>
-        requires view<_Vw> && is_object_v<_Fn>
+    template <input_range _Vw, _Move_constructible_object _Fn>
+        requires view<_Vw>
             && regular_invocable<_Fn&, range_reference_t<_Vw>>
             && _Can_reference<invoke_result_t<_Fn&, range_reference_t<_Vw>>>
     class transform_view : public view_interface<transform_view<_Vw, _Fn>> {
         // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ _Copyable_box<_Fn> _Fun{};
+        /* [[no_unique_address]] */ _Movable_box<_Fn> _Fun{};
 
         template <bool _Const>
         class _Sentinel;
@@ -2609,7 +2606,7 @@ namespace ranges {
     class take_while_view : public view_interface<take_while_view<_Vw, _Pr>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
+        /* [[no_unique_address]] */ _Movable_box<_Pr> _Pred{};
 
         template <bool _Const, bool _Wrapped = true>
         class _Sentinel {
@@ -2978,7 +2975,7 @@ namespace ranges {
     class drop_while_view : public _Cached_position_t<forward_range<_Vw>, _Vw, drop_while_view<_Vw, _Pr>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
+        /* [[no_unique_address]] */ _Movable_box<_Pr> _Pred{};
 
     public:
         // clang-format off
@@ -6184,7 +6181,7 @@ namespace ranges {
     class chunk_by_view : public _Cached_position<_Vw, chunk_by_view<_Vw, _Pr>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
+        /* [[no_unique_address]] */ _Movable_box<_Pr> _Pred{};
 
         class _Iterator {
         private:
