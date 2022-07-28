@@ -47,7 +47,7 @@ namespace ranges {
         && same_as<sentinel_t<_Rng>, sentinel_t<const _Rng>>;
 
     template <class _Ty>
-    concept _Copy_constructible_object = copy_constructible<_Ty> && _Destructible_object<_Ty>;
+    concept _Move_constructible_object = move_constructible<_Ty> && _Destructible_object<_Ty>;
 
     template <class _It>
     concept _Has_arrow = input_iterator<_It>
@@ -260,18 +260,21 @@ namespace ranges {
     template <bool _Enable, class _Rng, class _Derived>
     using _Cached_position_t = conditional_t<_Enable, _Cached_position<_Rng, _Derived>, view_interface<_Derived>>;
 
-    template <_Copy_constructible_object _Ty>
-    class _Copyable_box { // a simplified optional that augments copy_constructible types with full copyability
+    // a simplified optional that augments copy_constructible types with full copyability,
+    // and move_constructible types with full moveability.
+    template <_Move_constructible_object _Ty>
+        requires is_object_v<_Ty>
+    class _Movable_box {
     public:
-        constexpr _Copyable_box() noexcept(is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
+        constexpr _Movable_box() noexcept(is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
             : _Val(), _Engaged{true} {}
 
         template <class... _Types>
-        constexpr _Copyable_box(in_place_t, _Types&&... _Args) noexcept(
+        constexpr _Movable_box(in_place_t, _Types&&... _Args) noexcept(
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             : _Val(_STD forward<_Types>(_Args)...), _Engaged{true} {}
 
-        constexpr ~_Copyable_box() {
+        constexpr ~_Movable_box() {
             if (_Engaged) {
                 _Val.~_Ty();
             }
@@ -279,33 +282,33 @@ namespace ranges {
 
         // TRANSITION, LLVM-46269, destructor order is significant
         // clang-format off
-        ~_Copyable_box() requires is_trivially_destructible_v<_Ty> = default;
+        ~_Movable_box() requires is_trivially_destructible_v<_Ty> = default;
 
-        _Copyable_box(const _Copyable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
+        _Movable_box(const _Movable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Copyable_box(const _Copyable_box& _That) : _Engaged{_That._Engaged} {
+        constexpr _Movable_box(const _Movable_box& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _That._Val);
             }
         }
 
         // clang-format off
-        _Copyable_box(_Copyable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
+        _Movable_box(_Movable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Copyable_box(_Copyable_box&& _That) : _Engaged{_That._Engaged} {
+        constexpr _Movable_box(_Movable_box&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
             }
         }
 
         // clang-format off
-        _Copyable_box& operator=(const _Copyable_box&) noexcept
+        _Movable_box& operator=(const _Movable_box&) noexcept
             requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Copyable_box& operator=(const _Copyable_box& _That) noexcept(
+        constexpr _Movable_box& operator=(const _Movable_box& _That) noexcept(
             is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_assignable_v<_Ty>) // strengthened
             requires copyable<_Ty> {
             if (_Engaged) {
@@ -327,7 +330,8 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Copyable_box& operator=(const _Copyable_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        constexpr _Movable_box& operator=(const _Movable_box& _That) noexcept(
+            is_nothrow_copy_constructible_v<_Ty>) requires copy_constructible<_Ty> {
             if (_STD addressof(_That) == this) {
                 return *this;
             }
@@ -346,11 +350,11 @@ namespace ranges {
         }
 
         // clang-format off
-        _Copyable_box& operator=(_Copyable_box&&) noexcept
+        _Movable_box& operator=(_Movable_box&&) noexcept
             requires movable<_Ty> && is_trivially_move_assignable_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Copyable_box& operator=(_Copyable_box&& _That) noexcept(
+        constexpr _Movable_box& operator=(_Movable_box&& _That) noexcept(
             is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) // strengthened
             requires movable<_Ty> {
             if (_Engaged) {
@@ -372,7 +376,7 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Copyable_box& operator=(_Copyable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
+        constexpr _Movable_box& operator=(_Movable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
             if (_STD addressof(_That) == this) {
                 return *this;
             }
@@ -409,33 +413,48 @@ namespace ranges {
         };
         bool _Engaged;
     };
+    template <class _Ty>
+    using _Copyable_box = _Movable_box<_Ty>;
 
     // clang-format off
-    template <_Copy_constructible_object _Ty>
-        requires (copyable<_Ty>
-            || (is_nothrow_copy_constructible_v<_Ty>
-                && (movable<_Ty> || is_nothrow_move_constructible_v<_Ty>)))
-    class _Copyable_box<_Ty> { // provide the same API more efficiently when we can avoid the disengaged state
+    template <class _Ty>
+    concept _Use_simple_movable_box_wrapper =
+        // 1. If copy_constructible<T> is true, movable-box<T> should store only a T if either T models copyable, or
+        // is_nothrow_move_constructible_v<T> && is_nothrow_copy_constructible_v<T> is true.
+        (copy_constructible<_Ty> && (
+            copyable<_Ty>
+            || (is_nothrow_move_constructible_v<_Ty> && is_nothrow_copy_constructible_v<_Ty>)
+        ))
+        // Otherwise, movable-box<T> should store only a T if either T models movable or
+        // is_nothrow_move_constructible_v<T> is true.
+        || (!copy_constructible<_Ty> && (
+            movable<_Ty>
+            || is_nothrow_move_constructible_v<_Ty>)
+        );
+
+    template <_Move_constructible_object _Ty>
+        requires _Use_simple_movable_box_wrapper<_Ty>
+    class _Movable_box<_Ty> { // provide the same API more efficiently when we can avoid the disengaged state
         // clang-format on
     public:
         // clang-format off
-        _Copyable_box() requires default_initializable<_Ty> = default;
+        _Movable_box() requires default_initializable<_Ty> = default;
         // clang-format on
 
         template <class... _Types>
-        constexpr _Copyable_box(in_place_t, _Types&&... _Args) noexcept(
+        constexpr _Movable_box(in_place_t, _Types&&... _Args) noexcept(
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             : _Val(_STD forward<_Types>(_Args)...) {}
 
-        _Copyable_box(const _Copyable_box&) = default;
-        _Copyable_box(_Copyable_box&&)      = default;
+        _Movable_box(const _Movable_box&) = default;
+        _Movable_box(_Movable_box&&)      = default;
 
         // clang-format off
-        _Copyable_box& operator=(const _Copyable_box&) requires copyable<_Ty> = default;
-        _Copyable_box& operator=(_Copyable_box&&) requires movable<_Ty> = default;
+        _Movable_box& operator=(const _Movable_box&) requires copyable<_Ty> = default;
+        _Movable_box& operator=(_Movable_box&&) requires movable<_Ty> = default;
         // clang-format on
 
-        constexpr _Copyable_box& operator=(const _Copyable_box& _That) noexcept {
+        constexpr _Movable_box& operator=(const _Movable_box& _That) noexcept requires copy_constructible<_Ty> {
             if (_STD addressof(_That) != this) {
                 _Val.~_Ty();
                 _Construct_in_place(_Val, _That._Val);
@@ -444,7 +463,7 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Copyable_box& operator=(_Copyable_box&& _That) noexcept {
+        constexpr _Movable_box& operator=(_Movable_box&& _That) noexcept {
             if (_STD addressof(_That) != this) {
                 _Val.~_Ty();
                 _Construct_in_place(_Val, _STD move(_That._Val));

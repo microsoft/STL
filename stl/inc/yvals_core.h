@@ -1511,10 +1511,12 @@
 #endif // language mode
 #endif // _M_CEE
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if defined(__cpp_lib_concepts)
+#if _HAS_CXX23
 #define __cpp_lib_ranges 202207L // P2494R2 Relaxing Range Adaptors to Allow for Move-only Types
-#else
+#elif _HAS_CXX20
 #define __cpp_lib_ranges 202110L // P2415R2 What is a view?
+#endif
 #endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
