@@ -312,12 +312,14 @@
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
+// P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 // P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
+// P2499R0 string_view Range Constructor Should Be explicit
 // P2549R0 unexpected<E>::error()
 
 // Parallel Algorithms Notes
@@ -1210,7 +1212,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define _DEPRECATE_NONFLOATING_COMPLEX
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4038
+// STL4038 is used to warn that "The contents of <meow> are available only with C++NN or later."
+
+// STL4039 is used to warn that "The contents of <coroutine> are not available with /await."
+
+// next warning number: STL4040
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1485,6 +1491,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_out_ptr                 202106L
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
+#define __cpp_lib_ranges_contains         202207L
 #define __cpp_lib_ranges_iota             202202L
 #define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L

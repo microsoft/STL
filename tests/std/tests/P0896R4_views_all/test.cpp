@@ -20,6 +20,33 @@ concept CanViewAll = requires(Rng&& r) {
 // Test a silly precomposed range adaptor pipeline
 constexpr auto pipeline = views::all | views::all | views::all | views::all | views::all | views::all;
 
+// Test weird view type with explicit copy constructor, LWG-3724
+struct weird_string_view {
+    const char* data_  = nullptr;
+    unsigned int size_ = 0u;
+
+    weird_string_view()                                    = default;
+    explicit weird_string_view(const weird_string_view&)   = default;
+    weird_string_view(weird_string_view&&)                 = default;
+    weird_string_view& operator=(const weird_string_view&) = default;
+    weird_string_view& operator=(weird_string_view&&)      = default;
+
+    const char* begin() const {
+        return data_;
+    }
+
+    const char* end() const {
+        return data_ + size_;
+    }
+
+    unsigned int size() const {
+        return size_;
+    }
+};
+
+template <>
+inline constexpr bool std::ranges::enable_view<weird_string_view> = true;
+
 template <class Rng>
 constexpr bool test_one(Rng&& rng) {
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
@@ -182,5 +209,12 @@ int main() {
         string str{"Hello, World!"};
         test_one(str);
         assert(ranges::equal(views::all(str), str));
+    }
+
+    // Weird views, LWG-3724
+    {
+        weird_string_view v{};
+        static_assert(test_one(v));
+        test_one(v);
     }
 }

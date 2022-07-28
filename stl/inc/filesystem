@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX17
-#pragma message("The contents of <filesystem> are available only with C++17 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <filesystem> are available only with C++17 or later.");
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <algorithm>
 #include <chrono>
@@ -1686,23 +1686,32 @@ namespace filesystem {
         return false;
     }
 
-    _NODISCARD inline path path::lexically_relative(const path& _Base) const {
+    _NODISCARD inline path path::lexically_relative(const path& _Base_raw) const {
         constexpr wstring_view _Dot     = L"."sv;
         constexpr wstring_view _Dot_dot = L".."sv;
 
+        // LWG-3699: `lexically_relative` on UNC drive paths (`\\?\C:\...`) results in a default-constructed value
+        // This avoids doing any unnecessary copies;
+        // the return value of `relative_path()` is lifetime-extended if necessary.
+        const bool _Both_unc_paths = _Is_drive_prefix_with_slash_slash_question(_Text)
+                                  && _Is_drive_prefix_with_slash_slash_question(_Base_raw._Text);
+        const path& _This = _Both_unc_paths ? relative_path() : *this;
+        const path& _Base = _Both_unc_paths ? _Base_raw.relative_path() : _Base_raw;
+
         path _Result;
 
-        if (root_name() != _Base.root_name() || is_absolute() != _Base.is_absolute()
-            || (!has_root_directory() && _Base.has_root_directory()) || _Relative_path_contains_root_name(*this)
-            || _Relative_path_contains_root_name(_Base)) {
+        if (_This.root_name() != _Base.root_name() || _This.is_absolute() != _Base.is_absolute()
+            || (!_This.has_root_directory() && _Base.has_root_directory())
+            || (_Relative_path_contains_root_name(_This) || _Relative_path_contains_root_name(_Base))) {
             return _Result;
         }
 
-        const iterator _This_end   = end();
+
+        const iterator _This_end   = _This.end();
         const iterator _Base_begin = _Base.begin();
         const iterator _Base_end   = _Base.end();
 
-        auto _Mismatched  = _STD mismatch(begin(), _This_end, _Base_begin, _Base_end);
+        auto _Mismatched  = _STD mismatch(_This.begin(), _This_end, _Base_begin, _Base_end);
         iterator& _A_iter = _Mismatched.first;
         iterator& _B_iter = _Mismatched.second;
 
@@ -2708,6 +2717,12 @@ namespace filesystem {
         }
 #endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+        _NODISCARD bool operator==(default_sentinel_t) const noexcept {
+            return !_Impl;
+        }
+#endif // __cpp_lib_concepts
+
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
             ++*this;
@@ -2958,6 +2973,12 @@ namespace filesystem {
         }
 #endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+        _NODISCARD bool operator==(default_sentinel_t) const noexcept {
+            return !_Impl;
+        }
+#endif // __cpp_lib_concepts
+
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
             ++*this;
@@ -3194,7 +3215,7 @@ namespace filesystem {
         }
     }
 
-    _NODISCARD inline __std_win_error _Read_symlink_reparse_data(
+    _NODISCARD inline __std_win_error _Read_reparse_data(
         const _Fs_file& _Handle, unique_ptr<char[]>& _Buffer_unique_ptr) noexcept {
         constexpr auto _Buffer_size = 16 * 1024 + sizeof(wchar_t); // MAXIMUM_REPARSE_DATA_BUFFER_SIZE + sizeof(wchar_t)
 
@@ -3222,7 +3243,7 @@ namespace filesystem {
                 return _Err;
             }
 
-            _Err = _Read_symlink_reparse_data(_Handle, _Buffer_unique_ptr);
+            _Err = _Read_reparse_data(_Handle, _Buffer_unique_ptr);
             if (_Err != __std_win_error::_Success) {
                 return _Err;
             }
@@ -3269,7 +3290,7 @@ namespace filesystem {
                 return _Err;
             }
 
-            _Err = _Read_symlink_reparse_data(_Handle, _Buffer_unique_ptr);
+            _Err = _Read_reparse_data(_Handle, _Buffer_unique_ptr);
             if (_Err != __std_win_error::_Success) {
                 return _Err;
             }
@@ -3284,6 +3305,14 @@ namespace filesystem {
         } // Close _Handle
 
         const auto _Buffer = reinterpret_cast<__std_fs_reparse_data_buffer*>(_Buffer_unique_ptr.get());
+
+        // LWG-3744: `copy_symlink(junction, new_symlink)`'s behavior is unclear
+        // `read_symlink(junction)` should be allowed, but `copy_symlink(junction)` is not.
+        if (__std_fs_is_junction_from_reparse_data_buffer(_Buffer)) {
+            _Err = __std_win_error::_Reparse_tag_invalid;
+            return _Err;
+        }
+
         unsigned short _Length;
         wchar_t* _Offset;
         _Err = __std_fs_read_name_from_reparse_data_buffer(_Buffer, &_Offset, &_Length);
@@ -3297,6 +3326,56 @@ namespace filesystem {
             _Err = __std_fs_create_directory_symbolic_link(_New_symlink.c_str(), _Offset);
         } else {
             _Err = __std_fs_create_symbolic_link(_New_symlink.c_str(), _Offset);
+        }
+
+        return _Err;
+    }
+
+    _NODISCARD inline __std_win_error _Copy_junction(const path& _Junction, const path& _New_junction) noexcept {
+        __std_win_error _Err;
+        unique_ptr<char[]> _Buffer_unique_ptr;
+        {
+            const _Fs_file _Handle(_Junction.c_str(), __std_access_rights::_File_read_attributes,
+                __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point, &_Err);
+            if (_Err != __std_win_error::_Success) {
+                return _Err;
+            }
+
+            _Err = _Read_reparse_data(_Handle, _Buffer_unique_ptr);
+            if (_Err != __std_win_error::_Success) {
+                return _Err;
+            }
+        } // Close _Handle
+
+        const auto _Buffer = reinterpret_cast<__std_fs_reparse_data_buffer*>(_Buffer_unique_ptr.get());
+
+        const auto _Create_dir_res = __std_fs_create_directory(_New_junction.c_str());
+
+        if (_Create_dir_res._Error != __std_win_error::_Success) {
+            return _Create_dir_res._Error;
+        } else if (!_Create_dir_res._Created) {
+            return __std_win_error::_Already_exists;
+        }
+
+        struct _NODISCARD _Delete_directory_scope_guard {
+            const wchar_t* _Path;
+            ~_Delete_directory_scope_guard() {
+                if (_Path) {
+                    (void) __std_fs_remove(_Path);
+                }
+            }
+        };
+        _Delete_directory_scope_guard _Delete_directory{_New_junction.c_str()};
+
+        _Fs_file _To_handle{_New_junction.c_str(), __std_access_rights::_File_write_attributes,
+            __std_fs_file_flags::_Backup_semantics, &_Err};
+        if (_Err != __std_win_error::_Success) {
+            return _Err;
+        }
+        _Err = __std_fs_write_reparse_data_buffer(_To_handle._Raw, _Buffer);
+        if (_Err == __std_win_error::_Success) {
+            // don't delete the directory if we succeeded in making it a junction
+            _Delete_directory._Path = nullptr;
         }
 
         return _Err;
@@ -4207,8 +4286,12 @@ namespace filesystem {
             }
         }
 
-        if (_STD filesystem::is_other(_Fstat._Status) || _STD filesystem::is_other(_Tstat._Status)) {
-            // report an error if is_other(f) || is_other(t) is true
+        const bool _Fstat_is_other =
+            _STD filesystem::is_other(_Fstat._Status) && _Fstat._Status.type() != file_type::junction;
+        const bool _Tstat_is_other =
+            _STD filesystem::is_other(_Tstat._Status) && _Tstat._Status.type() != file_type::junction;
+        if (_Fstat_is_other || _Tstat_is_other) {
+            // report an error if is_other(f) || is_other(t) is true, and it's not a junction
             _Ec = _STD make_error_code(errc::operation_not_supported);
             return;
         }
@@ -4219,14 +4302,26 @@ namespace filesystem {
             return;
         }
 
+        if (_Fstat._Status.type() == file_type::junction) {
+            if ((_Options & copy_options::skip_symlinks) != copy_options::none) {
+                return;
+            }
+
+            // _Options includes copy_options::copy_symlinks,
+            // since _Fstat is only allowed to be a symbolic link when either skip_symlinks or copy_symlinks
+            if (!_STD filesystem::exists(_Tstat._Status)) {
+                _Ec = _Make_ec(_Copy_junction(_From, _To));
+            }
+        }
+
         if (_STD filesystem::is_symlink(_Fstat._Status)) {
             if ((_Options & copy_options::skip_symlinks) != copy_options::none) {
                 return;
             }
 
-            if (!_STD filesystem::exists(_Tstat._Status)
-                && (_Options & copy_options::copy_symlinks) != copy_options::none) {
-                // if (condition) then copy_symlink(from, to)
+            // _Options includes copy_options::copy_symlinks,
+            // since _Fstat is only allowed to be a symbolic link when either skip_symlinks or copy_symlinks
+            if (!_STD filesystem::exists(_Tstat._Status)) {
                 _STD filesystem::copy_symlink(_From, _To, _Ec);
                 return;
             }
