@@ -357,7 +357,7 @@ constexpr void test_difference_on_const_functor(Rng&& rng) {
         using TVItCat = typename iterator_traits<TVIt>::iterator_category;
         STATIC_ASSERT(
             is_same_v<TVItCat, VItCat> //
-            || (is_same_v<TVItCat, random_access_iterator_tag> && is_same_v<VITCat, contiguous_iterator_tag>) );
+            || (is_same_v<TVItCat, random_access_iterator_tag> && is_same_v<VItCat, contiguous_iterator_tag>) );
     }
 
     if constexpr (forward_range<const V>) {
