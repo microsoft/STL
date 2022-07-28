@@ -5458,7 +5458,7 @@ namespace ranges {
             return _Outer_iterator{this};
         }
 
-        _NODISCARD constexpr default_sentinel_t end() noexcept {
+        _NODISCARD constexpr default_sentinel_t end() const noexcept {
             return default_sentinel;
         }
 

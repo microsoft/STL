@@ -22,8 +22,8 @@ constexpr auto equal_ranges = [](auto&& left, auto&& right) { return ranges::equ
 
 template <ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
-    using ranges::bidirectional_range, ranges::common_range, ranges::forward_range, ranges::random_access_range,
-        ranges::sized_range;
+    using ranges::bidirectional_range, ranges::common_range, ranges::forward_range, ranges::input_range,
+        ranges::random_access_range, ranges::sized_range;
     using ranges::chunk_view, ranges::begin, ranges::end, ranges::equal, ranges::iterator_t, ranges::sentinel_t,
         ranges::prev;
     constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
@@ -197,23 +197,28 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
     }
 
-    STATIC_ASSERT(CanMemberEnd<const R> == forward_range<const V>);
+    STATIC_ASSERT(CanMemberEnd<const R> == input_range<const V>);
     if constexpr (CanMemberEnd<const R>) {
-        const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
-        assert((r.begin() == cs) == is_empty);
-        STATIC_ASSERT(
-            common_range<R> == (common_range<const V> && (sized_range<const V> || !bidirectional_range<const V>) ));
-        if constexpr (common_range<const R> && bidirectional_range<V>) {
-            if (!is_empty) {
-                assert(equal(*prev(cs), *prev(end(expected))));
-            }
-
-            if constexpr (copy_constructible<V>) {
-                const auto r2 = r;
+        if constexpr (CanMemberBegin<const R>) {
+            const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
+            assert((r.begin() == cs) == is_empty);
+            STATIC_ASSERT(common_range<const R> //
+                          == (forward_range<const V> && common_range<const V> //
+                              && (sized_range<const V> || !bidirectional_range<const V>) ));
+            if constexpr (common_range<const R> && bidirectional_range<V>) {
                 if (!is_empty) {
-                    assert(equal(*prev(r2.end()), *prev(end(expected))));
+                    assert(equal(*prev(cs), *prev(end(expected))));
+                }
+
+                if constexpr (copy_constructible<V>) {
+                    const auto r2 = r;
+                    if (!is_empty) {
+                        assert(equal(*prev(r2.end()), *prev(end(expected))));
+                    }
                 }
             }
+        } else {
+            STATIC_ASSERT(same_as<decltype(as_const(r).end()), default_sentinel_t>);
         }
     }
 
