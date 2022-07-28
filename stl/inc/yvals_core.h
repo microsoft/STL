@@ -309,6 +309,7 @@
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
+// P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
@@ -1468,6 +1469,7 @@
 #define __cpp_lib_out_ptr                 202106L
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
+#define __cpp_lib_ranges_contains         202207L
 #define __cpp_lib_ranges_iota             202202L
 #define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L
