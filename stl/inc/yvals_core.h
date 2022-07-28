@@ -1419,10 +1419,6 @@
 #define __cpp_lib_math_constants          201907L
 #define __cpp_lib_polymorphic_allocator   201902L
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
-#define __cpp_lib_ranges 202110L
-#endif // defined(__cpp_lib_concepts)
-
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
@@ -1514,6 +1510,12 @@
 #define __cpp_lib_execution 201603L // P0024R2 Parallel Algorithms
 #endif // language mode
 #endif // _M_CEE
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#define __cpp_lib_ranges 202207L // P2494R2 Relaxing Range Adaptors to Allow for Move-only Types
+#else
+#define __cpp_lib_ranges 202110L // P2415R2 What is a view?
+#endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
