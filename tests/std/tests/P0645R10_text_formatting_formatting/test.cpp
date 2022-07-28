@@ -1287,6 +1287,8 @@ void libfmt_formatter_test_runtime_width() {
            == STR("                                               0")); // behavior differs from libfmt, but conforms
     throw_helper(STR("{0:{1}}"), 0, 0.0);
 
+    assert(format(STR("{0:{1}}"), 42, 0) == STR("42")); // LWG-3721: zero dynamic width is OK
+
     assert(format(STR("{0:{1}}"), -42, 4) == STR(" -42"));
     assert(format(STR("{0:{1}}"), 42u, 5) == STR("   42"));
     assert(format(STR("{0:{1}}"), -42l, 6) == STR("   -42"));
