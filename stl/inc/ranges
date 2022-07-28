@@ -1586,8 +1586,8 @@ namespace ranges {
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 if constexpr (view<remove_cvref_t<_Rng>>) {
-                    if constexpr (constructible_from<remove_cvref_t<_Rng>, _Rng>) {
-                        return {_St::_View, is_nothrow_constructible_v<remove_cvref_t<_Rng>, _Rng>};
+                    if constexpr (convertible_to<_Rng, remove_cvref_t<_Rng>>) {
+                        return {_St::_View, is_nothrow_convertible_v<_Rng, remove_cvref_t<_Rng>>};
                     }
                 } else if constexpr (_Can_ref_view<_Rng>) {
                     return {_St::_Ref, noexcept(ref_view{_STD declval<_Rng>()})};
