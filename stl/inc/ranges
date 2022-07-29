@@ -1903,22 +1903,22 @@ namespace ranges {
         template <bool _Const>
         class _Sentinel;
 
-        template <bool _Const, class _ViewTy>
+        template <bool _Const>
         struct _Category_base {};
 
-        template <bool _Const, class _ViewTy>
-            requires forward_range<_Maybe_const<_Const, _ViewTy>>
+        template <bool _Const>
+            requires forward_range<_Maybe_const<_Const, _Vw>>
         struct _Category_base<_Const, _ViewTy> {
-            using _BaseTy           = _Maybe_const<_Const, _ViewTy>;
+            using _Base             = _Maybe_const<_Const, _Vw>;
             using iterator_category = conditional_t<
-                is_lvalue_reference_v<invoke_result_t<_Maybe_const<_Const, _Fn>&, range_reference_t<_BaseTy>>>,
-                conditional_t<derived_from<_Iter_cat_t<iterator_t<_BaseTy>>, contiguous_iterator_tag>,
-                    random_access_iterator_tag, _Iter_cat_t<iterator_t<_BaseTy>>>,
+                is_lvalue_reference_v<invoke_result_t<_Maybe_const<_Const, _Fn>&, range_reference_t<_Base>>>,
+                conditional_t<derived_from<_Iter_cat_t<iterator_t<_Base>>, contiguous_iterator_tag>,
+                    random_access_iterator_tag, _Iter_cat_t<iterator_t<_Base>>>,
                 input_iterator_tag>;
         };
 
         template <bool _Const>
-        class _Iterator : public _Category_base<_Const, _Vw> {
+        class _Iterator : public _Category_base<_Const> {
         private:
             template <bool>
             friend class _Iterator;
