@@ -18,7 +18,7 @@ struct iterator_adaptor {
     iterator_adaptor(initializer_list<int> il) : v(il) {}
 
     using iterator       = I;
-    using const_iterator = I::Consterator;
+    using const_iterator = typename I::Consterator;
 
     iterator begin() {
         return iterator{v.data()};
