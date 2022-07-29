@@ -1577,6 +1577,7 @@ _NODISCARD _FwdIt1 find_first_of(_ExPo&& _Exec, const _FwdIt1 _First1, _FwdIt1 _
     const _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
     // look for one of [_First2, _Last2) that matches element
     _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
     using _UFwdIt1 = _Unwrapped_t<const _FwdIt1&>;
     _Adl_verify_range(_First1, _Last1);
     _Adl_verify_range(_First2, _Last2);
@@ -4389,7 +4390,7 @@ _FwdIt2 exclusive_scan(_ExPo&&, const _FwdIt1 _First, const _FwdIt1 _Last, _FwdI
     _BinOp _Reduce_op) noexcept /* terminates */ {
     // set each value in [_Dest, _Dest + (_Last - _First)) to the associative reduction of predecessors and _Val
     _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
     _Adl_verify_range(_First, _Last);
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);

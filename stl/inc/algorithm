@@ -4408,6 +4408,7 @@ template <class _ExPo, class _BidIt, class _FwdIt, _Enable_if_execution_policy_t
 _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept /* terminates */ {
     // copy reversing elements in [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
+    _REQUIRE_CONST_PARALLEL_ITERATOR(_BidIt);
     _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt);
     return _STD reverse_copy(_First, _Last, _Dest);
 }
