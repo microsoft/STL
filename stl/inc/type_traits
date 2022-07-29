@@ -422,8 +422,7 @@ _MEMBER_CALL_CV_REF_NOEXCEPT(_IS_MEMFUNPTR)
 _CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_MEMFUNPTR_ELLIPSIS)
 #undef _IS_MEMFUNPTR_ELLIPSIS
 
-#if _HAS_CXX23 && !defined(__EDG__) \
-    && !defined(__clang__) // TRANSITION, DevCom-10107077, Clang and EDG has not implemented Deducing this
+#if _HAS_CXX23 && !defined(__clang__) // TRANSITION, DevCom-10107077, Clang has not implemented Deducing this
 #define _IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
     template <class _Ret, class _Self, class... _Args>                              \
     struct _Is_memfunptr<_Ret(CALL_OPT*)(_Self, _Args...) NOEXCEPT_OPT> {           \
