@@ -377,7 +377,7 @@ void test_function_wrapper() {
     static_assert(is_same_v<decltype(f19), F<void(int)>>);
 
     struct ExplicitThisByRRef {
-        void operator()(this const ExplicitThisByRRef&, long) {}
+        void operator()(this ExplicitThisByRRef&&, long) {}
     };
 
     ExplicitThisByRRef explicit_this_by_rref_functor{};
