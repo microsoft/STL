@@ -1908,7 +1908,7 @@ namespace ranges {
 
         template <bool _Const>
             requires forward_range<_Maybe_const<_Const, _Vw>>
-        struct _Category_base<_Const, _ViewTy> {
+        struct _Category_base<_Const> {
             using _Base             = _Maybe_const<_Const, _Vw>;
             using iterator_category = conditional_t<
                 is_lvalue_reference_v<invoke_result_t<_Maybe_const<_Const, _Fn>&, range_reference_t<_Base>>>,
