@@ -422,6 +422,23 @@ _MEMBER_CALL_CV_REF_NOEXCEPT(_IS_MEMFUNPTR)
 _CLASS_DEFINE_CV_REF_NOEXCEPT(_IS_MEMFUNPTR_ELLIPSIS)
 #undef _IS_MEMFUNPTR_ELLIPSIS
 
+#if _HAS_CXX23 && !defined(__EDG__) \
+    && !defined(__clang__) // TRANSITION, DevCom-10107077, Clang and EDG has not implemented Deducing this
+#define _IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES(CALL_OPT, CV_OPT, REF_OPT, NOEXCEPT_OPT) \
+    template <class _Ret, class _Self, class... _Args>                              \
+    struct _Is_memfunptr<_Ret(CALL_OPT*)(_Self, _Args...) NOEXCEPT_OPT> {           \
+        using _Bool_type  = false_type;                                             \
+        using _Guide_type = type_identity<_Ret(_Args...)>;                          \
+    };
+
+_NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , )
+#ifdef __cpp_noexcept_function_type
+_NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , noexcept)
+#endif // __cpp_noexcept_function_type
+
+#undef _IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES
+#endif // _HAS_CXX23 && !defined(__EDG__) && !defined(__clang__)
+
 #ifdef __clang__
 template <class _Ty>
 _INLINE_VAR constexpr bool is_member_function_pointer_v = __is_member_function_pointer(_Ty);
