@@ -389,7 +389,7 @@ void test_function_wrapper() {
     struct ExplicitThisByConv {
         struct That {};
 
-        explicit operator That(this ExplicitThisByConv) {
+        operator That(this ExplicitThisByConv) {
             return {};
         }
 
