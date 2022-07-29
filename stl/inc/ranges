@@ -263,7 +263,6 @@ namespace ranges {
     // a simplified optional that augments copy_constructible types with full copyability,
     // and move_constructible types with full moveability.
     template <_Move_constructible_object _Ty>
-        requires is_object_v<_Ty>
     class _Movable_box {
     public:
         constexpr _Movable_box() noexcept(is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
