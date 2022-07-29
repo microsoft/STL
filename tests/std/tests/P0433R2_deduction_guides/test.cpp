@@ -43,6 +43,11 @@
 #include <shared_mutex>
 #endif // _M_CEE
 
+#if _HAS_CXX23 && !defined(__EDG__) \
+    && !defined(__clang__) // TRANSITION, DevCom-10107077, Clang and EDG has not implemented Deducing this
+#define HAS_EXPLICIT_THIS_PARAMETER
+#endif // _HAS_CXX23 && !defined(__EDG__) && !defined(__clang__)
+
 using namespace std;
 
 template <typename T>
@@ -328,6 +333,82 @@ void test_function_wrapper() {
 
     static_assert(is_same_v<decltype(f9), F<double(const double&, const double&)>>);
     static_assert(is_same_v<decltype(f10), F<int(int, int)>>);
+
+#ifdef HAS_EXPLICIT_THIS_PARAMETER
+    struct ExplicitThisByVal {
+        void operator()(this ExplicitThisByVal, char) {}
+    };
+
+    ExplicitThisByVal explicit_this_by_val_functor{};
+
+    F f11(explicit_this_by_val_functor);
+    F f12(as_const(explicit_this_by_val_functor));
+    F f13(move(explicit_this_by_val_functor));
+    F f14(move(as_const(explicit_this_by_val_functor)));
+
+    static_assert(is_same_v<decltype(f11), F<void(char)>>);
+    static_assert(is_same_v<decltype(f12), F<void(char)>>);
+    static_assert(is_same_v<decltype(f13), F<void(char)>>);
+    static_assert(is_same_v<decltype(f14), F<void(char)>>);
+
+    struct ExplicitThisByRef {
+        void operator()(this ExplicitThisByRef&, short) {}
+    };
+
+    ExplicitThisByRef explicit_this_by_ref_functor{};
+
+    F f15(explicit_this_by_ref_functor);
+
+    static_assert(is_same_v<decltype(f15), F<void(short)>>);
+
+    struct ExplicitThisByCRef {
+        void operator()(this const ExplicitThisByCRef&, int) {}
+    };
+
+    ExplicitThisByCRef explicit_this_by_cref_functor{};
+
+    F f16(explicit_this_by_cref_functor);
+    F f17(as_const(explicit_this_by_cref_functor));
+    F f18(move(explicit_this_by_cref_functor));
+    F f19(move(as_const(explicit_this_by_cref_functor)));
+
+    static_assert(is_same_v<decltype(f16), F<void(int)>>);
+    static_assert(is_same_v<decltype(f17), F<void(int)>>);
+    static_assert(is_same_v<decltype(f18), F<void(int)>>);
+    static_assert(is_same_v<decltype(f19), F<void(int)>>);
+
+    struct ExplicitThisByRRef {
+        void operator()(this const ExplicitThisByRRef&, long) {}
+    };
+
+    ExplicitThisByRRef explicit_this_by_rref_functor{};
+
+    F f20(move(explicit_this_by_rref_functor));
+
+    static_assert(is_same_v<decltype(f20), F<void(long)>>);
+
+    struct ExplicitThisByConv {
+        struct That {};
+
+        explicit operator That(this ExplicitThisByConv) {
+            return {};
+        }
+
+        void operator()(this That, long long) {}
+    };
+
+    ExplicitThisByConv explicit_this_by_conv_functor{};
+
+    F f21(explicit_this_by_conv_functor);
+    F f22(as_const(explicit_this_by_conv_functor));
+    F f23(move(explicit_this_by_conv_functor));
+    F f24(move(as_const(explicit_this_by_conv_functor)));
+
+    static_assert(is_same_v<decltype(f21), F<void(long long)>>);
+    static_assert(is_same_v<decltype(f22), F<void(long long)>>);
+    static_assert(is_same_v<decltype(f23), F<void(long long)>>);
+    static_assert(is_same_v<decltype(f24), F<void(long long)>>);
+#endif // HAS_EXPLICIT_THIS_PARAMETER
 }
 
 void test_searchers() {
