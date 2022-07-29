@@ -863,7 +863,7 @@ _INLINE_VAR constexpr bool _Is_ranges_bidi_iter_v =
 #if defined(__cpp_lib_concepts)
     bidirectional_iterator<_Iter> ||
 #endif
-    _Is_ranges_bidi_iter_v<_Iter>;
+    _Is_bidi_iter_v<_Iter>;
 
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_random_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, random_access_iterator_tag>;
