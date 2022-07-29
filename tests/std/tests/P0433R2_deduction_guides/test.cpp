@@ -43,8 +43,7 @@
 #include <shared_mutex>
 #endif // _M_CEE
 
-#if _HAS_CXX23 && !defined(__EDG__) \
-    && !defined(__clang__) // TRANSITION, DevCom-10107077, Clang and EDG has not implemented Deducing this
+#if _HAS_CXX23 && !defined(__clang__) // TRANSITION, DevCom-10107077, Clang has not implemented Deducing this
 #define HAS_EXPLICIT_THIS_PARAMETER
 #endif // _HAS_CXX23 && !defined(__EDG__) && !defined(__clang__)
 
