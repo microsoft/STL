@@ -443,7 +443,7 @@ _NON_MEMBER_CALL(_IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES, , , noexcept)
 #endif // __cpp_noexcept_function_type
 
 #undef _IS_MEMFUNPTR_EXPLICIT_THIS_GUIDES
-#endif // _HAS_CXX23 && !defined(__EDG__) && !defined(__clang__)
+#endif // _HAS_CXX23 && !defined(__clang__)
 
 #ifdef __clang__
 template <class _Ty>
