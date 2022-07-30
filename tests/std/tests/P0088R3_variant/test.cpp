@@ -6971,6 +6971,23 @@ namespace msvc {
                 using R = immobile_data;
                 assert(std::visit<R>(std::identity{}, std::variant<int, short>{13}).x == 13);
                 assert(std::visit<R>(std::identity{}, std::variant<int, short>{short{42}}).x == 42);
+
+                // Verify that conversions to an object is not copied/moved are correctly handeled
+                struct convertible_to_immobile_one {
+                     operator immobile_data() const {
+                         return immobile_data{1729};
+                     }
+                };
+
+                struct convertible_to_immobile_other {
+                     operator immobile_data() const {
+                         return immobile_data{1138};
+                     }
+                };
+
+                using VarTestConv = std::variant<convertible_to_immobile_one, convertible_to_immobile_other>;
+                assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_one{}}).x == 1729);
+                assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_other{}}).x == 1138);
             }
             {
                 // Verify that a returned object is not copied/moved/modified
