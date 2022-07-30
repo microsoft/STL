@@ -13,11 +13,9 @@
 _EMIT_STL_WARNING("STL4039", "The contents of <coroutine> are not available with /await. "
                              "Remove /await or use /await:strict for standard coroutines. "
                              "Use <experimental/coroutine> for legacy /await support.");
-#undef _STL4039_COROUTINE // TRANSITION, DevCom-1479701
 #else // ^^^ /await ^^^ / vvv no /await vvv
 #ifndef __cpp_lib_coroutine
 _EMIT_STL_WARNING(STL4038, "The contents of <coroutine> are available only with C++20 or later or /await:strict.");
-#undef _STL4038_COROUTINE // TRANSITION, DevCom-1479701
 #else // ^^^ <coroutine> is not available / <coroutine> is available vvv
 #ifndef _ALLOW_COROUTINE_ABI_MISMATCH
 #pragma detect_mismatch("_COROUTINE_ABI", "2")
