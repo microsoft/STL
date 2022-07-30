@@ -1457,6 +1457,7 @@
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_constexpr_bitset                  202207L
 #define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
@@ -1485,7 +1486,6 @@
 #define __cpp_lib_string_resize_and_overwrite 202110L
 #define __cpp_lib_to_underlying               202102L
 #define __cpp_lib_unreachable                 202202L
-#define __cpp_lib_constexpr_bitset            202207L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
