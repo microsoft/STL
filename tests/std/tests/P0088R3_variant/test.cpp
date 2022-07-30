@@ -6974,15 +6974,15 @@ namespace msvc {
 
                 // Verify that conversions to an object is not copied/moved are correctly handeled
                 struct convertible_to_immobile_one {
-                     operator immobile_data() const {
-                         return immobile_data{1729};
-                     }
+                    operator immobile_data() const {
+                        return immobile_data{1729};
+                    }
                 };
 
                 struct convertible_to_immobile_other {
-                     operator immobile_data() const {
-                         return immobile_data{1138};
-                     }
+                    operator immobile_data() const {
+                        return immobile_data{1138};
+                    }
                 };
 
                 using VarTestConv = std::variant<convertible_to_immobile_one, convertible_to_immobile_other>;
