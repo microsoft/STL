@@ -824,14 +824,14 @@ constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
     static_assert(_Can_reference<_Ty>,
         "The first template parameter of std::forward_like must be a referenceable type.");
 
+    using _UnrefU = remove_reference_t<_Uty>;
     if constexpr (is_lvalue_reference_v<_Ty>) {
         if constexpr (is_const_v<remove_reference_t<_Ty>>) {
-            return static_cast<const _Uty&>(_Ux);
+            return static_cast<const _UnrefU&>(_Ux);
         } else {
-            return static_cast<_Uty&>(_Ux);
+            return static_cast<_UnrefU&>(_Ux);
         }
     } else {
-        using _UnrefU = remove_reference_t<_Uty>;
         if constexpr (is_const_v<remove_reference_t<_Ty>>) {
             return static_cast<const _UnrefU&&>(_Ux);
         } else {
