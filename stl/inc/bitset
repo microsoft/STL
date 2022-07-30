@@ -66,7 +66,7 @@ public:
         size_t _Mypos; // position of element in bitset
     };
 
-    static _CONSTEXPR23 void _Validate(size_t _Pos) { // verify that _Pos is within bounds
+    static _CONSTEXPR23 void _Validate(const size_t _Pos) noexcept { // verify that _Pos is within bounds
 #if _ITERATOR_DEBUG_LEVEL == 0
         (void) _Pos;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 ^^^ // vvv _ITERATOR_DEBUG_LEVEL != 0 vvv
