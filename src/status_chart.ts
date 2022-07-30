@@ -544,4 +544,17 @@ function load_charts() {
     }
 }
 
-window.addEventListener('load', _event => load_charts()); // wait for stylesheets to finish loading
+// wait for Primer CSS to finish loading
+function check_css() {
+    const regex = new RegExp('@primer/css');
+    for (const sheet of document.styleSheets) {
+        if (sheet.href !== null && regex.test(sheet.href)) {
+            load_charts();
+            return;
+        }
+    }
+
+    window.setTimeout(check_css, 50 /* milliseconds */);
+}
+
+check_css();
