@@ -318,6 +318,7 @@
 // P2443R1 views::chunk_by
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R0 unexpected<E>::error()
+// P2417R2 More constexpr bitset
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -1484,6 +1485,7 @@
 #define __cpp_lib_string_resize_and_overwrite 202110L
 #define __cpp_lib_to_underlying               202102L
 #define __cpp_lib_unreachable                 202202L
+#define __cpp_lib_constexpr_bitset            202207L
 #endif // _HAS_CXX23
 
 // macros with language mode sensitivity
