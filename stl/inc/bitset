@@ -235,11 +235,14 @@ public:
     }
 
     _CONSTEXPR23 bitset& set() noexcept { // set all bits true
-        if (_STD _Is_constant_evaluated()) {
+#if _HAS_CXX23
+        if (_STD is_constant_evaluated()) {
             for (auto& _El : _Array) {
                 _El = 0xFF;
             }
-        } else {
+        } else
+#endif // _HAS_CXX23
+        {
             _CSTD memset(&_Array, 0xFF, sizeof(_Array));
         }
         _Trim();
@@ -255,11 +258,14 @@ public:
     }
 
     _CONSTEXPR23 bitset& reset() noexcept { // set all bits false
-        if (_STD _Is_constant_evaluated()) {
+#if _HAS_CXX23
+        if (_STD is_constant_evaluated()) {
             for (auto& _El : _Array) {
                 _El = 0;
             }
-        } else {
+        } else
+#endif // _HAS_CXX23
+        {
             _CSTD memset(&_Array, 0, sizeof(_Array));
         }
         return *this;
@@ -365,15 +371,17 @@ public:
     }
 
     _NODISCARD _CONSTEXPR23 bool operator==(const bitset& _Right) const noexcept {
-        if (_STD _Is_constant_evaluated()) {
+#if _HAS_CXX23
+        if (_STD is_constant_evaluated()) {
             for (size_t _Index = 0; _Index <= _Words; ++_Index) {
                 if (_Array[_Index] != _Right._Array[_Index]) {
                     return false;
                 }
             }
-
             return true;
-        } else {
+        } else
+#endif // _HAS_CXX23
+        {
             return _CSTD memcmp(&_Array[0], &_Right._Array[0], sizeof(_Array)) == 0;
         }
     }
