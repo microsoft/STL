@@ -235,7 +235,7 @@ public:
     }
 
     _CONSTEXPR23 bitset& set() noexcept { // set all bits true
-        if (_STD is_constant_evaluated()) {
+        if (_STD _Is_constant_evaluated()) {
             for (auto& _El : _Array) {
                 _El = 0xFF;
             }
@@ -255,7 +255,7 @@ public:
     }
 
     _CONSTEXPR23 bitset& reset() noexcept { // set all bits false
-        if (_STD is_constant_evaluated()) {
+        if (_STD _Is_constant_evaluated()) {
             for (auto& _El : _Array) {
                 _El = 0;
             }
@@ -365,7 +365,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR23 bool operator==(const bitset& _Right) const noexcept {
-        if (_STD is_constant_evaluated()) {
+        if (_STD _Is_constant_evaluated()) {
             for (size_t _Index = 0; _Index <= _Words; ++_Index) {
                 if (_Array[_Index] != _Right._Array[_Index]) {
                     return false;
