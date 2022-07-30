@@ -376,7 +376,7 @@ void test_function_wrapper() {
     static_assert(is_same_v<decltype(f18), F<void(int)>>);
     static_assert(is_same_v<decltype(f19), F<void(int)>>);
 
-   struct ExplicitThisByConv {
+    struct ExplicitThisByConv {
         struct That {};
 
         operator That(this ExplicitThisByConv) {
