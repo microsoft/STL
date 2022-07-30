@@ -821,8 +821,8 @@ _NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
 
 template <class _Ty, class _Uty>
 constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
-    static_assert(_Can_reference<_Ty>,
-        "The first template parameter of std::forward_like must be a referenceable type.");
+    static_assert(
+        _Can_reference<_Ty>, "The first template parameter of std::forward_like must be a referenceable type.");
 
     using _UnrefU = remove_reference_t<_Uty>;
     if constexpr (is_lvalue_reference_v<_Ty>) {
