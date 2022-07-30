@@ -3212,7 +3212,7 @@ public:
 
 #ifdef __cpp_lib_concepts
 private:
-    constexpr static auto _Get_iter_concept() {
+    static constexpr auto _Get_iter_concept() {
         if constexpr (random_access_iterator<_Iter>) {
             return random_access_iterator_tag{};
         } else if constexpr (bidirectional_iterator<_Iter>) {
