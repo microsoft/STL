@@ -34,7 +34,7 @@ public:
     public:
         _CONSTEXPR23 ~reference() noexcept {} // TRANSITION, ABI
 
-        _CONSTEXPR23 reference& operator=(bool _Val) noexcept {
+        _CONSTEXPR23 reference& operator=(const bool _Val) noexcept {
             _Pbitset->_Set_unchecked(_Mypos, _Val);
             return *this;
         }
@@ -60,7 +60,7 @@ public:
     private:
         _CONSTEXPR23 reference() noexcept : _Pbitset(nullptr), _Mypos(0) {}
 
-        _CONSTEXPR23 reference(bitset<_Bits>& _Bitset, size_t _Pos) : _Pbitset(&_Bitset), _Mypos(_Pos) {}
+        _CONSTEXPR23 reference(bitset<_Bits>& _Bitset, const size_t _Pos) noexcept : _Pbitset(&_Bitset), _Mypos(_Pos) {}
 
         bitset<_Bits>* _Pbitset;
         size_t _Mypos; // position of element in bitset
@@ -87,7 +87,7 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 0
     }
 
-    _NODISCARD _CONSTEXPR23 reference operator[](size_t _Pos) {
+    _NODISCARD _CONSTEXPR23 reference operator[](const size_t _Pos) noexcept {
         _Validate(_Pos);
         return reference(*this, _Pos);
     }
@@ -249,7 +249,7 @@ public:
         return *this;
     }
 
-    _CONSTEXPR23 bitset& set(size_t _Pos, bool _Val = true) { // set bit at _Pos to _Val
+    _CONSTEXPR23 bitset& set(const size_t _Pos, bool _Val = true) { // set bit at _Pos to _Val
         if (_Bits <= _Pos) {
             _Xran(); // _Pos off end
         }
@@ -271,7 +271,7 @@ public:
         return *this;
     }
 
-    _CONSTEXPR23 bitset& reset(size_t _Pos) { // set bit at _Pos to false
+    _CONSTEXPR23 bitset& reset(const size_t _Pos) { // set bit at _Pos to false
         return set(_Pos, false);
     }
 
@@ -290,7 +290,7 @@ public:
         return *this;
     }
 
-    _CONSTEXPR23 bitset& flip(size_t _Pos) { // flip bit at _Pos
+    _CONSTEXPR23 bitset& flip(const size_t _Pos) { // flip bit at _Pos
         if (_Bits <= _Pos) {
             _Xran(); // _Pos off end
         }
@@ -343,7 +343,7 @@ public:
 
     template <class _Elem = char, class _Tr = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
     _NODISCARD _CONSTEXPR23 basic_string<_Elem, _Tr, _Alloc> to_string(
-        _Elem _Elem0 = static_cast<_Elem>('0'), _Elem _Elem1 = static_cast<_Elem>('1')) const {
+        const _Elem _Elem0 = static_cast<_Elem>('0'), _Elem const _Elem1 = static_cast<_Elem>('1')) const {
         // convert bitset to string
         basic_string<_Elem, _Tr, _Alloc> _Str;
         _Str.reserve(_Bits);
@@ -392,7 +392,7 @@ public:
     }
 #endif // !_HAS_CXX20
 
-    _NODISCARD _CONSTEXPR23 bool test(size_t _Pos) const {
+    _NODISCARD _CONSTEXPR23 bool test(const size_t _Pos) const {
         if (_Bits <= _Pos) {
             _Xran(); // _Pos off end
         }
@@ -430,13 +430,13 @@ public:
         return _No_padding || _Array[_Words] == (static_cast<_Ty>(1) << (_Bits % _Bitsperword)) - 1;
     }
 
-    _NODISCARD _CONSTEXPR23 bitset operator<<(size_t _Pos) const noexcept {
+    _NODISCARD _CONSTEXPR23 bitset operator<<(const size_t _Pos) const noexcept {
         bitset _Tmp = *this;
         _Tmp <<= _Pos;
         return _Tmp;
     }
 
-    _NODISCARD _CONSTEXPR23 bitset operator>>(size_t _Pos) const noexcept {
+    _NODISCARD _CONSTEXPR23 bitset operator>>(const size_t _Pos) const noexcept {
         bitset _Tmp = *this;
         _Tmp >>= _Pos;
         return _Tmp;
@@ -459,7 +459,8 @@ private:
         }
     }
 
-    _CONSTEXPR23 bitset& _Set_unchecked(size_t _Pos, bool _Val) noexcept { // set bit at _Pos to _Val, no checking
+    _CONSTEXPR23 bitset& _Set_unchecked(const size_t _Pos, const bool _Val) noexcept {
+        // set bit at _Pos to _Val, no checking
         auto& _Selected_word = _Array[_Pos / _Bitsperword];
         const auto _Bit      = _Ty{1} << _Pos % _Bitsperword;
         if (_Val) {
@@ -471,7 +472,7 @@ private:
         return *this;
     }
 
-    _CONSTEXPR23 bitset& _Flip_unchecked(size_t _Pos) noexcept { // flip bit at _Pos, no checking
+    _CONSTEXPR23 bitset& _Flip_unchecked(const size_t _Pos) noexcept { // flip bit at _Pos, no checking
         _Array[_Pos / _Bitsperword] ^= _Ty{1} << _Pos % _Bitsperword;
         return *this;
     }
