@@ -298,7 +298,7 @@ public:
         return _Flip_unchecked(_Pos);
     }
 
-    _NODISCARD _CONSTEXPR23 unsigned long to_ulong() const {
+    _NODISCARD _CONSTEXPR23 unsigned long to_ulong() const noexcept(_Bits <= 32) /* strengthened */ {
         constexpr bool _Bits_zero  = _Bits == 0;
         constexpr bool _Bits_small = _Bits <= 32;
         constexpr bool _Bits_large = _Bits > 64;
@@ -323,7 +323,7 @@ public:
         }
     }
 
-    _NODISCARD _CONSTEXPR23 unsigned long long to_ullong() const {
+    _NODISCARD _CONSTEXPR23 unsigned long long to_ullong() const noexcept(_Bits <= 64) /* strengthened */ {
         constexpr bool _Bits_zero  = _Bits == 0;
         constexpr bool _Bits_large = _Bits > 64;
         if constexpr (_Bits_zero) {
