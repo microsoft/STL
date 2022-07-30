@@ -92,6 +92,7 @@ constexpr bool test() {
         assert(x50.test(1));
         assert(!x50.test(2));
         assert(x50.any());
+        assert(!x50.all());
         assert(!x50.none());
         x50.reset();
         assert(!x50.any());
