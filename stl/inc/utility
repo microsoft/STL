@@ -788,6 +788,22 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
 
     return true;
 }
+
+#ifdef __cpp_lib_concepts
+template <class _Ty>
+using _With_reference = _Ty&;
+
+template <class _Ty>
+concept _Can_reference = requires {
+    typename _With_reference<_Ty>;
+};
+#else
+template <class _Ty, class = void>
+inline constexpr bool _Can_reference = false;
+
+template <class _Ty>
+inline constexpr bool _Can_reference<_Ty, void_t<_Ty&>> = true;
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
@@ -801,6 +817,27 @@ _NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
 #ifdef _DEBUG
     _CSTD abort(); // likely to be called in debug mode, but can't be relied upon - already entered the UB territory
 #endif // _DEBUG
+}
+
+template <class _Ty, class _Uty>
+constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
+    static_assert(_Can_reference<_Ty>,
+        "The first template parameter of std::forward_like must be a referenceable type.");
+
+    if constexpr (is_lvalue_reference_v<_Ty>) {
+        if constexpr (is_const_v<remove_reference_t<_Ty>>) {
+            return static_cast<const _Uty&>(_Ux);
+        } else {
+            return static_cast<_Uty&>(_Ux);
+        }
+    } else {
+        using _UnrefU = remove_reference_t<_Uty>;
+        if constexpr (is_const_v<remove_reference_t<_Ty>>) {
+            return static_cast<const _UnrefU&&>(_Ux);
+        } else {
+            return static_cast<_UnrefU&&>(_Ux);
+        }
+    }
 }
 #endif // _HAS_CXX23
 

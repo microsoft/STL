@@ -316,6 +316,7 @@
 // P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
+// P2445R1 forward_like()
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R0 unexpected<E>::error()
 
@@ -1462,6 +1463,7 @@
 #define __cpp_lib_expected 202202L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_forward_like       202207L
 #define __cpp_lib_invoke_r           202106L
 #define __cpp_lib_is_scoped_enum     202011L
 #define __cpp_lib_move_only_function 202110L
