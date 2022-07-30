@@ -426,7 +426,7 @@
 // Note that _STL_PRAGMA is load-bearing;
 // it still needs to exist even once CUDA and ICC support _Pragma.
 #if defined(__CUDACC__) || defined(__INTEL_COMPILER)
-#define _STL_PRAGMA(PRAGMA) __pragma(#PRAGMA)
+#define _STL_PRAGMA(PRAGMA) __pragma(PRAGMA)
 #else
 #define _STL_PRAGMA(PRAGMA) _Pragma(#PRAGMA)
 #endif
