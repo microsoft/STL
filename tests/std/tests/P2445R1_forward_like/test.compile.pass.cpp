@@ -19,7 +19,7 @@ struct owner_type {
     const int&& m_crref = move(iconst);
 };
 
-constinit owner_type owner{};
+owner_type owner{};
 constexpr owner_type& owner_lref  = owner;
 constexpr owner_type&& owner_rref = move(owner);
 
