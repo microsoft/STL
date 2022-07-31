@@ -577,10 +577,6 @@ std/language.support/support.limits/support.limits.general/ranges.version.pass.c
 std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy.pass.cpp SKIPPED
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp SKIPPED
 
-# libc++ allows some forbidden unique_ptr conversions
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.assign/unique_ptr_Y.pass.cpp FAIL
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/unique_ptr.pass.cpp FAIL
-
 # non-portable test of strengthened noexcept
 std/ranges/range.adaptors/range.transform/iterator/subscript.pass.cpp FAIL
 std/ranges/range.adaptors/range.transform/iterator/deref.pass.cpp FAIL
