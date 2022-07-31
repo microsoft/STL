@@ -619,9 +619,7 @@ language.support\support.limits\support.limits.general\format.version.pass.cpp
 ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
 
 # Test suite incorrectly detects support for `int128`
-concepts\concepts.lang\concepts.arithmetic\integral.pass.cpp
 language.support\support.limits\limits\numeric.limits.members\lowest.pass.cpp
-
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Various assertions.
@@ -825,25 +823,81 @@ iterators\iterator.primitives\iterator.operations\advance.pass.cpp
 utilities\memory\unique.ptr\iterator_concept_conformance.compile.pass.cpp
 
 # Not yet analyzed. Assertion failed: std::abs((kurtosis - x_kurtosis) / x_kurtosis) < VARIOUS_VALUES
-numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.bin\eval.PR44847.pass.cpp
-numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.geo\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.geo\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.negbin\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.lognormal\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.lognormal\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.t\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.norm\rand.dist.norm.t\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.extreme\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.extreme\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.gamma\eval.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
+numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.bin\eval.PR44847.pass.cpp
+numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.geo\eval_param.pass.cpp
+numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.geo\eval.pass.cpp
+numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.negbin\eval_param.pass.cpp
+numerics\rand\rand.dist\rand.dist.norm\rand.dist.norm.lognormal\eval_param.pass.cpp
+numerics\rand\rand.dist\rand.dist.norm\rand.dist.norm.lognormal\eval.pass.cpp
+numerics\rand\rand.dist\rand.dist.norm\rand.dist.norm.t\eval_param.pass.cpp
+numerics\rand\rand.dist\rand.dist.norm\rand.dist.norm.t\eval.pass.cpp
+numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.extreme\eval_param.pass.cpp
+numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.extreme\eval.pass.cpp
+numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.gamma\eval_param.pass.cpp
+numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.gamma\eval.pass.cpp
+numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.poisson\eval_param.pass.cpp
+numerics\rand\rand.dist\rand.dist.pois\rand.dist.pois.poisson\eval.pass.cpp
 
 # Not yet analyzed. Assertion failed: std::abs((skew - x_skew) / x_skew) < 0.01
-numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.bin\eval_param.pass.cpp
-numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.bin\eval.pass.cpp
+numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.bin\eval_param.pass.cpp
+numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.bin\eval.pass.cpp
 
+# Not yet analyzed
+algorithms\alg.modifying.operations\alg.copy\ranges.copy.pass.cpp
+algorithms\alg.modifying.operations\alg.copy\ranges.copy_backward.pass.cpp
+algorithms\alg.modifying.operations\alg.move\ranges.move.pass.cpp
+algorithms\alg.modifying.operations\alg.move\ranges.move_backward.pass.cpp
+algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
+algorithms\alg.nonmodifying\alg.any_of\ranges.any_of.pass.cpp
+algorithms\alg.nonmodifying\alg.equal\ranges.equal.pass.cpp
+algorithms\alg.nonmodifying\alg.find.end\ranges.find_end.pass.cpp
+algorithms\alg.nonmodifying\alg.foreach\ranges.for_each.pass.cpp
+algorithms\alg.nonmodifying\alg.foreach\ranges.for_each_n.pass.cpp
+algorithms\alg.nonmodifying\alg.none_of\ranges.none_of.pass.cpp
+algorithms\alg.nonmodifying\alg.search\ranges.search.pass.cpp
+algorithms\alg.nonmodifying\alg.search\ranges.search_n.pass.cpp
+algorithms\alg.nonmodifying\mismatch\ranges_mismatch.pass.cpp
+concepts\concepts.lang\concept.default.init\default_initializable.compile.pass.cpp
+containers\sequences\vector\iterators.pass.cpp
+containers\sequences\vector\reverse_iterators.pass.cpp
+containers\sequences\vector\vector.cons\construct_iter_iter.pass.cpp
+containers\sequences\vector\vector.cons\construct_iter_iter_alloc.pass.cpp
+containers\sequences\vector\vector.cons\construct_size.pass.cpp
+containers\sequences\vector\vector.cons\construct_size_value.pass.cpp
+containers\sequences\vector\vector.cons\construct_size_value_alloc.pass.cpp
+containers\sequences\vector\vector.erasure\erase.pass.cpp
+containers\sequences\vector\vector.erasure\erase_if.pass.cpp
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_gt.pass.cpp
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_gte.pass.cpp
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_lte.pass.cpp
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_spaceship.pass.cpp
+language.support\support.limits\support.limits.general\algorithm.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\chrono.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\cmath.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\cstdlib.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\deque.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\format.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\forward_list.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\functional.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\iterator.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\list.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\list.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\map.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\memory.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\new.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\queue.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\ranges.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\set.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\stack.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\string.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\tuple.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\type_traits.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\unordered_map.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\unordered_set.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\utility.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\variant.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\vector.version.compile.pass.cpp
+language.support\support.limits\support.limits.general\version.version.compile.pass.cpp
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
 # "XFAIL: msvc" or "XFAIL: clang"
