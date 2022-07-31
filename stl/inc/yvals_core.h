@@ -67,6 +67,7 @@
 // P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
 // P2401R0 Conditional noexcept For exchange()
+// P2419R2 Clarify Handling Of Encodings In Localized Formatting Of chrono Types
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()

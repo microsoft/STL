@@ -5245,6 +5245,18 @@ namespace chrono {
     }
 
     template <class _CharT>
+    _NODISCARD const _CharT* _Fmt_string(const _Chrono_spec<_CharT>& _Spec, _CharT (&_Fmt_str)[4]) {
+        size_t _Next_idx      = 0;
+        _Fmt_str[_Next_idx++] = _CharT{'%'};
+        if (_Spec._Modifier != '\0') {
+            _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Modifier);
+        }
+        _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Type);
+        _Fmt_str[_Next_idx]   = _CharT{'\0'};
+        return _Fmt_str;
+    }
+
+    template <class _CharT>
     struct _Chrono_formatter {
         _Chrono_formatter() = default;
 
@@ -5405,6 +5417,24 @@ namespace chrono {
                     }
 
                     _Validate_specifiers(_Spec, _Val);
+
+#if defined(_MSVC_EXECUTION_CHARACTER_SET) && _MSVC_EXECUTION_CHARACTER_SET == 65001
+                    if constexpr (is_same_v<_CharT, char>) {
+                        if (_Specs._Localized) {
+                            wostringstream _Wstream;
+                            _Wstream.imbue(_FormatCtx.locale());
+
+                            wchar_t _Fmt_str[4];
+                            _Chrono_spec<wchar_t> _Wspec{._Modifier = _Spec._Modifier, ._Type = _Spec._Type};
+                            _Wstream << _STD put_time<wchar_t>(&_Time, _Fmt_string(_Wspec, _Fmt_str));
+
+                            _Stream << _Convert_wide_to_narrow<char_traits<char>>(
+                                __std_code_page::_Utf8, _Wstream.view(), allocator<char>{});
+
+                            continue;
+                        }
+                    }
+#endif // defined(_MSVC_EXECUTION_CHARACTER_SET) && _MSVC_EXECUTION_CHARACTER_SET == 65001
 
                     _CharT _Fmt_str[4];
                     _Stream << _STD put_time<_CharT>(&_Time, _Fmt_string(_Spec, _Fmt_str));
@@ -5728,17 +5758,6 @@ namespace chrono {
             if (!_Validate()) {
                 _Throw_format_error("Cannot localize out-of-bounds time point.");
             }
-        }
-
-        _NODISCARD static const _CharT* _Fmt_string(const _Chrono_spec<_CharT>& _Spec, _CharT (&_Fmt_str)[4]) {
-            size_t _Next_idx      = 0;
-            _Fmt_str[_Next_idx++] = _CharT{'%'};
-            if (_Spec._Modifier != '\0') {
-                _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Modifier);
-            }
-            _Fmt_str[_Next_idx++] = static_cast<_CharT>(_Spec._Type);
-            _Fmt_str[_Next_idx]   = _CharT{'\0'};
-            return _Fmt_str;
         }
 
         _Chrono_format_specs<_CharT> _Specs{};
