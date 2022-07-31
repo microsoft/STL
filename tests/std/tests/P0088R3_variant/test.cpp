@@ -1180,16 +1180,20 @@ struct hash<::hash::B> {
 namespace hash {
 void test_hash_variant_enabled() {
   {
+#ifndef __EDG__ // TRANSITION, DevCom-10107834
     test_hash_enabled_for_type<std::variant<int> >();
     test_hash_enabled_for_type<std::variant<int*, long, double, const int> >();
+#endif // // TRANSITION, DevCom-10107834
   }
   {
     test_hash_disabled_for_type<std::variant<int, A>>();
     test_hash_disabled_for_type<std::variant<const A, void*>>();
   }
   {
+#ifndef __EDG__ // TRANSITION, DevCom-10107834
     test_hash_enabled_for_type<std::variant<int, B>>();
     test_hash_enabled_for_type<std::variant<const B, int>>();
+#endif // TRANSITION, DevCom-10107834
   }
 }
 
