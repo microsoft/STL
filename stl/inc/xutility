@@ -260,7 +260,8 @@ struct pointer_traits {
 
     using _Reftype = conditional_t<is_void_v<element_type>, char, element_type>&;
 
-    _NODISCARD static pointer pointer_to(_Reftype _Val) noexcept(noexcept(_Ty::pointer_to(_Val))) /* strengthened */ {
+    _NODISCARD static _CONSTEXPR20 pointer pointer_to(_Reftype _Val) noexcept(
+        noexcept(_Ty::pointer_to(_Val))) /* strengthened */ {
         return _Ty::pointer_to(_Val);
     }
 };
