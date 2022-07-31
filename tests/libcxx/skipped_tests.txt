@@ -582,64 +582,11 @@ language.support\support.limits\support.limits.general\ranges.version.pass.cpp
 # non-portable test of strengthened noexcept
 ranges\range.adaptors\range.transform\iterator\deref.pass.cpp
 ranges\range.adaptors\range.transform\iterator\iter_move.pass.cpp
+ranges\range.adaptors\range.transform\iterator\subscript.pass.cpp
 
 # tests invalid range
 utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move.pass.cpp
-
-# Narrowing conversion
-utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
-utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move_n.pass.cpp
-
-# libc++ doesn't yet implement LWG-3533
-ranges\range.adaptors\range.transform\end.pass.cpp
-ranges\range.adaptors\range.transform\iterator\base.pass.cpp
-
-# MaybePOCCAAllocator doesn't meet the allocator requirements
-containers\sequences\vector\vector.cons\assign_copy.pass.cpp
-
-# compares iterators from distinct transform_views
-ranges\range.adaptors\range.transform\iterator\plus_minus.pass.cpp
-
-# MoveOnlyForwardIterator (a misnomer) has mixed-type comparisons and conversions
-ranges\range.utility\range.subrange\primitives.pass.cpp
-
-# libc++ speculatively implements LWG-3645
-strings\basic.string\string.capacity\resize_and_overwrite.pass.cpp
-
-# Tests non-portable behavior
-utilities\format\format.formatter\format.context\format.context\advance_to.pass.cpp
-utilities\format\format.formatter\format.context\format.context\arg.pass.cpp
-utilities\format\format.formatter\format.context\format.context\ctor.pass.cpp
-utilities\format\format.formatter\format.context\format.context\locale.pass.cpp
-utilities\format\format.formatter\format.context\format.context\out.pass.cpp
-utilities\format\format.formatter\format.context\format.formatter.spec\formatter.bool.pass.cpp
-utilities\format\format.formatter\format.context\format.formatter.spec\formatter.c_string.pass.cpp
-utilities\format\format.formatter\format.context\format.formatter.spec\formatter.char.pass.cpp
-utilities\format\format.formatter\format.context\format.formatter.spec\formatter.const_char_array.pass.cpp
-utilities\format\format.formatter\format.context\format.formatter.spec\formatter.signed_integral.pass.cpp
-utilities\format\format.formatter\format.context\format.formatter.spec\formatter.string.pass.cpp
-utilities\format\format.formatter\format.context\format.formatter.spec\formatter.unsigned_integral.pass.cpp
-
-# libc++ doesn't yet implement P2216R3 (test uses non-constant-expression format strings)
-utilities\format\format.functions\format.pass.cpp
-utilities\format\format.functions\format.locale.pass.cpp
-utilities\format\format.functions\format_to.locale.pass.cpp
-utilities\format\format.functions\format_to.pass.cpp
-utilities\format\format.functions\format_to_n.pass.cpp
-utilities\format\format.functions\format_to_n.locale.pass.cpp
-utilities\format\format.functions\formatted_size.pass.cpp
-utilities\format\format.functions\formatted_size.locale.pass.cpp
-utilities\format\format.functions\locale-specific_form.pass.cpp
-
-# libc++ chose option A for [time.clock.file.members], and we chose option B.
-utilities\time\time.clock\time.clock.file\to_from_sys.pass.cpp
-
-# libc++ is missing various Ranges DRs
-language.support\support.limits\support.limits.general\ranges.version.pass.cpp
-
-# non-portable test of strengthened noexcept
-ranges\range.adaptors\range.transform\iterator\subscript.pass.cpp
 
 # Narrowing conversion
 utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
