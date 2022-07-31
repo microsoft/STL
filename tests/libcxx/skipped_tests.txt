@@ -55,37 +55,15 @@ language.support\support.limits\support.limits.general\optional.version.pass.cpp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
 
-# string_view and array iterators are not portably pointers (https://reviews.llvm.org/D117368)
-iterators\iterator.primitives\iterator.traits\cxx20_iterator_traits.compile.pass.cpp
-iterators\iterator.requirements\iterator.cust\iterator.cust.move\iter_move.pass.cpp
-strings\string.view\string.view.cons\from_iterator_sentinel.pass.cpp
-strings\string.view\string.view.deduct\iterator_sentinel.pass.cpp
-utilities\format\format.formatter\format.parse.ctx\advance_to.pass.cpp
-utilities\format\format.formatter\format.parse.ctx\begin.pass.cpp
-utilities\format\format.formatter\format.parse.ctx\ctor.pass.cpp
-utilities\format\format.formatter\format.parse.ctx\end.pass.cpp
-
 # libc++ doesn't yet implement P2499R0
 strings\string.view\string.view.cons\from_range.pass.cpp
 strings\string.view\string.view.deduct\range.pass.cpp
-
-# libc++ doesn't correctly constrain the iterator_traits specialization for common_iterator (https://reviews.llvm.org/D117449)
-iterators\predef.iterators\iterators.common\iterator_traits.compile.pass.cpp
-
-# libc++ hasn't updated {move,reverse}_iterator for P0896R4
-iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op=\move_iterator.pass.cpp
-iterators\predef.iterators\move.iterators\move.iterator\iterator_concept_conformance.compile.pass.cpp
-iterators\predef.iterators\reverse.iterators\iterator_concept_conformance.compile.pass.cpp
-iterators\predef.iterators\reverse.iterators\reverse.iter.cmp\three-way.pass.cpp
 
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 utilities\format\format.functions\vformat_to.locale.pass.cpp
 utilities\format\format.functions\vformat_to.pass.cpp
 utilities\format\format.functions\vformat.locale.pass.cpp
 utilities\format\format.functions\vformat.pass.cpp
-
-# libc++ doesn't implement P2321R2's changes to vector<bool>::reference
-containers\sequences\vector.bool\iterator_concept_conformance.compile.pass.cpp
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -274,7 +252,6 @@ algorithms\alg.sorting\alg.sort\partial.sort\partial_sort_comp.pass.cpp
 ranges\range.utility\range.subrange\structured_bindings.pass.cpp
 
 # DevCom-1626139 "compile-time NaN comparison"
-iterators\predef.iterators\reverse.iterators\reverse.iter.cmp\three-way.pass.cpp
 library\description\conventions\expos.only.func\synth_three_way.pass.cpp
 utilities\function.objects\comparisons\compare_three_way.pass.cpp
 utilities\tuple\tuple.tuple\tuple.rel\three_way.pass.cpp
@@ -343,18 +320,9 @@ localization\locale.categories\category.numeric\locale.num.get\facet.num.get.mem
 # More bugs may be uncovered when the locale names are present.
 # move.pass.cpp can crash.
 input.output\iostreams.base\ios\basic.ios.members\move.pass.cpp
-localization\locale.categories\category.collate\locale.collate.byname\compare.pass.cpp
 localization\locale.categories\category.ctype\locale.ctype.byname\is_1.pass.cpp
-localization\locale.categories\category.ctype\locale.ctype.byname\is_many.pass.cpp
-localization\locale.categories\category.ctype\locale.ctype.byname\narrow_1.pass.cpp
-localization\locale.categories\category.ctype\locale.ctype.byname\narrow_many.pass.cpp
-localization\locale.categories\category.ctype\locale.ctype.byname\scan_is.pass.cpp
-localization\locale.categories\category.ctype\locale.ctype.byname\scan_not.pass.cpp
-localization\locale.categories\category.ctype\locale.ctype.byname\widen_1.pass.cpp
-localization\locale.categories\category.ctype\locale.ctype.byname\widen_many.pass.cpp
 localization\locale.categories\category.monetary\locale.moneypunct.byname\curr_symbol.pass.cpp
 localization\locale.categories\category.monetary\locale.moneypunct.byname\decimal_point.pass.cpp
-localization\locale.categories\category.monetary\locale.moneypunct.byname\grouping.pass.cpp
 localization\locale.categories\category.monetary\locale.moneypunct.byname\neg_format.pass.cpp
 localization\locale.categories\category.monetary\locale.moneypunct.byname\negative_sign.pass.cpp
 localization\locale.categories\category.monetary\locale.moneypunct.byname\pos_format.pass.cpp
@@ -368,7 +336,6 @@ localization\locale.categories\category.time\locale.time.get.byname\get_one_wide
 localization\locale.categories\category.time\locale.time.get.byname\get_weekday.pass.cpp
 localization\locale.categories\category.time\locale.time.get.byname\get_weekday_wide.pass.cpp
 localization\locale.categories\category.time\locale.time.put.byname\put1.pass.cpp
-localization\locale.categories\facet.numpunct\locale.numpunct.byname\grouping.pass.cpp
 localization\locale.categories\facet.numpunct\locale.numpunct.byname\thousands_sep.pass.cpp
 
 # GH-1264 <locale>: wbuffer_convert does not implement seek
@@ -419,9 +386,6 @@ language.support\support.limits\c.limits\cfloat.pass.cpp
 
 
 # *** LIKELY BOGUS TESTS ***
-# pass lambda without noexcept to barrier
-thread\thread.barrier\completion.pass.cpp
-thread\thread.barrier\max.pass.cpp
 
 # Test bug after LWG-2899 "is_(nothrow_)move_constructible and tuple, optional and unique_ptr" was accepted.
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass.cpp
@@ -512,11 +476,6 @@ input.output\iostream.format\input.streams\istream.unformatted\get_pointer_size.
 # Sensitive to implementation details. Assertion failed: test_alloc_base::count == expected_num_allocs
 containers\container.requirements\container.requirements.general\allocator_move.pass.cpp
 
-# Comment: "Test C99 compound literal."
-# Code: `(int[]){3, 4}`
-# error C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
-containers\sequences\array\array.creation\to_array.pass.cpp
-
 # Tests emit warning C4244: 'argument': conversion from 'T' to 'const std::complex<double>::_Ty', possible loss of data
 numerics\complex.number\cmplx.over\conj.pass.cpp
 numerics\complex.number\cmplx.over\pow.pass.cpp
@@ -559,9 +518,6 @@ iterators\iterator.primitives\iterator.operations\robust_against_adl.pass.cpp
 # Non-Standard assumption that std::filesystem::file_time_type::duration::period is std::nano
 input.output\filesystems\fs.filesystem.synopsis\file_time_type_resolution.compile.pass.cpp
 
-# P1614R2 "Adding Spaceship <=> To The Library" makes `std::operator!=(i1, i3)` an error
-iterators\stream.iterators\istream.iterator\istream.iterator.ops\equal.pass.cpp
-
 # Uses-allocator class constructor wants non-const allocator ref and mismatched piecewise_construct's value category
 utilities\allocator.adaptor\allocator.adaptor.members\construct.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair.pass.cpp
@@ -572,13 +528,7 @@ utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass
 utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
 
 # Tests ignore the return value of sto{meow}, triggering nodiscard warnings
-strings\string.conversions\stod.pass.cpp
-strings\string.conversions\stof.pass.cpp
-strings\string.conversions\stoi.pass.cpp
 strings\string.conversions\stol.pass.cpp
-strings\string.conversions\stold.pass.cpp
-strings\string.conversions\stoll.pass.cpp
-strings\string.conversions\stoul.pass.cpp
 strings\string.conversions\stoull.pass.cpp
 
 # We define __cpp_lib_has_unique_object_representations in C++17 mode; test error says it
@@ -634,21 +584,9 @@ utilities\time\time.clock\time.clock.file\to_from_sys.pass.cpp
 # libc++ is missing various Ranges DRs
 language.support\support.limits\support.limits.general\ranges.version.pass.cpp
 
-# test compares singular and non-singular string iterators
-strings\basic.string\string.iterators\iterators.pass.cpp
-
-# test compares iterators into distinct `array`s
-ranges\range.adaptors\range.all\range.owning.view\begin_end.pass.cpp
-
-# libc++ allows some forbidden unique_ptr conversions
-utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.assign\unique_ptr_Y.pass.cpp
-utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.const\unique_ptr.pass.cpp
-
 # non-portable test of strengthened noexcept
-ranges\range.adaptors\range.drop\ctor.default.pass.cpp
 ranges\range.adaptors\range.transform\iterator\deref.pass.cpp
 ranges\range.adaptors\range.transform\iterator\iter_move.pass.cpp
-ranges\range.utility\view.interface\view.interface.pass.cpp
 
 # tests invalid range
 utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy.pass.cpp
@@ -657,9 +595,6 @@ utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_
 # Narrowing conversion
 utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move_n.pass.cpp
-
-# <charconv> test defines std::_Bit_cast, which we already have
-utilities\charconv\charconv.msvc\test.pass.cpp
 
 # libc++ doesn't yet implement LWG-3533
 ranges\range.adaptors\range.transform\end.pass.cpp
@@ -708,47 +643,23 @@ utilities\time\time.clock\time.clock.file\to_from_sys.pass.cpp
 # libc++ is missing various Ranges DRs
 language.support\support.limits\support.limits.general\ranges.version.pass.cpp
 
-# test compares singular and non-singular string iterators
-strings\basic.string\string.iterators\iterators.pass.cpp
-
-# test compares iterators into distinct `array`s
-ranges\range.adaptors\range.all\range.owning.view\begin_end.pass.cpp
-
-# libc++ allows some forbidden unique_ptr conversions
-utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.assign\unique_ptr_Y.pass.cpp
-utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.const\unique_ptr.pass.cpp
-
 # non-portable test of strengthened noexcept
-ranges\range.adaptors\range.drop\ctor.default.pass.cpp
 ranges\range.adaptors\range.transform\iterator\subscript.pass.cpp
-ranges\range.utility\view.interface\view.interface.pass.cpp
 
 # Narrowing conversion
 utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move_n.pass.cpp
 
-# <charconv> test defines std::_Bit_cast, which we already have
-utilities\charconv\charconv.msvc\test.pass.cpp
-
 # libc++ doesn't yet implement LWG-3533
 ranges\range.adaptors\range.transform\end.pass.cpp
 ranges\range.adaptors\range.transform\iterator\base.pass.cpp
 
-# libc++ doesn't yet implement LWG-3656 (https://reviews.llvm.org/D120444)
-numerics\bit\bit.pow.two\bit_width.pass.cpp
-
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 containers\sequences\vector\vector.cons\assign_copy.pass.cpp
-
-# Mismatching allocator value_type
-containers\sequences\vector.bool\get_allocator.pass.cpp
 
 # Test annotated "XFAIL: msvc" should be "XFAIL: msvc && stdlib=libc++"
 language.support\support.dynamic\alloc.errors\set.new.handler\get_new_handler.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\copy_move.pass.cpp
-
-# view_interface doesn't necessarily inherit view_base after LWG-3549
-ranges\range.utility\view.interface\view.interface.pass.cpp
 
 # compares iterators from distinct transform_views
 ranges\range.adaptors\range.transform\iterator\plus_minus.pass.cpp
@@ -767,16 +678,8 @@ ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
 
 # Test suite incorrectly detects support for `int128`
 concepts\concepts.lang\concepts.arithmetic\integral.pass.cpp
-language.support\support.limits\limits\numeric.limits.members\digits.pass.cpp
 language.support\support.limits\limits\numeric.limits.members\lowest.pass.cpp
 numerics\bit\bit.pow.two\bit_ceil.pass.cpp
-numerics\bit\bitops.count\countl_one.pass.cpp
-numerics\bit\bitops.count\countl_zero.pass.cpp
-numerics\bit\bitops.count\countr_one.pass.cpp
-numerics\bit\bitops.count\countr_zero.pass.cpp
-numerics\bit\bitops.count\popcount.pass.cpp
-utilities\type.index\type.index.hash\enabled_hash.pass.cpp
-utilities\utility\utility.intcmp\intcmp.cmp_greater_equal\cmp_greater_equal.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
@@ -790,7 +693,6 @@ re\re.alg\re.alg.search\basic.pass.cpp
 re\re.alg\re.alg.search\ecma.pass.cpp
 re\re.alg\re.alg.search\extended.pass.cpp
 re\re.alg\re.alg.search\no_update_pos.pass.cpp
-re\re.badexp\regex_error.pass.cpp
 re\re.const\re.synopt\syntax_option_type.pass.cpp
 re\re.grammar\excessive_brace_count.pass.cpp
 re\re.regex\re.regex.construct\bad_backref.pass.cpp
@@ -824,7 +726,6 @@ numerics\complex.number\complex.transcendentals\tanh.pass.cpp
 numerics\complex.number\complex.value.ops\norm.pass.cpp
 
 # Not yet analyzed, likely STL bugs. Many various assertions.
-localization\locale.categories\category.ctype\facet.ctype.special\facet.ctype.char.statics\classic_table.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_en_US.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_fr_FR.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_ru_RU.pass.cpp
@@ -837,7 +738,6 @@ localization\locale.categories\category.monetary\locale.money.put\locale.money.p
 localization\locale.categories\category.monetary\locale.money.put\locale.money.put.members\put_string_en_US.pass.cpp
 localization\locale.categories\category.monetary\locale.moneypunct\locale.moneypunct.members\decimal_point.pass.cpp
 localization\locale.categories\category.monetary\locale.moneypunct\locale.moneypunct.members\thousands_sep.pass.cpp
-localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_double.pass.cpp
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_long_double.pass.cpp
 localization\locale.categories\category.time\locale.time.get\locale.time.get.members\get_monthname_wide.pass.cpp
 localization\locale.categories\category.time\locale.time.get\locale.time.get.members\get_monthname.pass.cpp
