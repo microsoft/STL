@@ -893,7 +893,7 @@ public:
     }
 
     // clang-format off
-    _NODISCARD constexpr decltype(auto) operator->() const
+    _NODISCARD constexpr auto operator->() const
         requires indirectly_readable<const _Iter>
             && (_Has_member_arrow<const _Iter&> || is_reference_v<iter_reference_t<_Iter>>
                 || constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>) {
@@ -903,7 +903,7 @@ public:
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (_Has_member_arrow<const _Iter&> || is_pointer_v<_Iter>) {
-            return (_Val._First); // NB: () are necessary for decltype(auto)
+            return _Val._First;
         } else if constexpr (is_reference_v<iter_reference_t<_Iter>>) {
             auto&& _Tmp = *_Val._First;
             return _STD addressof(_Tmp);

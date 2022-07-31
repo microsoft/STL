@@ -229,7 +229,7 @@ namespace test_expected {
         constexpr bool should_be_noexcept = should_be_trivial || IsYes(nothrowCopyConstructible);
 
         struct payload_copy_constructor {
-            payload_copy_constructor()        = default;
+            payload_copy_constructor()                                           = default;
             payload_copy_constructor& operator=(const payload_copy_constructor&) = delete;
             constexpr payload_copy_constructor(const payload_copy_constructor&) noexcept(should_be_noexcept) //
                 requires(!should_be_trivial)
@@ -320,8 +320,8 @@ namespace test_expected {
         constexpr bool should_be_noexcept = should_be_trivial || IsYes(nothrowMoveConstructible);
 
         struct payload_move_constructor {
-            payload_move_constructor()                                = default;
-            payload_move_constructor(const payload_move_constructor&) = default;
+            payload_move_constructor()                                      = default;
+            payload_move_constructor(const payload_move_constructor&)       = default;
             payload_move_constructor& operator=(payload_move_constructor&&) = delete;
             constexpr payload_move_constructor(payload_move_constructor&&) noexcept(should_be_noexcept) //
                 requires(!should_be_trivial)

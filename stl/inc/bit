@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #if !_HAS_CXX20
-#pragma message("The contents of <bit> are available only with C++20 or later.")
+#pragma message(_WARNING_MESSAGE("STL4038", "The contents of <bit> are available only with C++20 or later."))
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 
 #include <intrin0.h>
@@ -82,8 +82,8 @@ _NODISCARD constexpr _Ty bit_floor(const _Ty _Val) noexcept {
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>
-_NODISCARD constexpr _Ty bit_width(const _Ty _Val) noexcept {
-    return static_cast<_Ty>(numeric_limits<_Ty>::digits - _STD countl_zero(_Val));
+_NODISCARD constexpr int bit_width(const _Ty _Val) noexcept {
+    return numeric_limits<_Ty>::digits - _STD countl_zero(_Val);
 }
 
 template <class _Ty, enable_if_t<_Is_standard_unsigned_integer<_Ty>, int> = 0>

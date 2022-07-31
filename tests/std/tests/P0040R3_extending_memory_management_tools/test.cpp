@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <iterator>
 #include <memory>
 #include <new>
@@ -173,7 +173,7 @@ struct alive_counter {
     alive_counter() {
         ++g_alive;
     }
-    alive_counter(const alive_counter&) = delete;
+    alive_counter(const alive_counter&)            = delete;
     alive_counter& operator=(const alive_counter&) = delete;
     ~alive_counter() {
         --g_alive;

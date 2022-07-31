@@ -241,10 +241,11 @@ template <class _Value_type, class _Voidptr>
 struct _Flist_node { // forward_list node
     using _Nodeptr = _Rebind_pointer_t<_Voidptr, _Flist_node>;
 
-    _Nodeptr _Next; // successor node
-    _Value_type _Myval; // the stored value
+    _Nodeptr _Next;
+    _Value_type _Myval = _Returns_exactly<_Value_type>(); // fake a viable constructor to workaround GH-2749
 
-    _Flist_node(const _Flist_node&) = delete;
+    _Flist_node()                              = default;
+    _Flist_node(const _Flist_node&)            = delete;
     _Flist_node& operator=(const _Flist_node&) = delete;
 
     template <class _Alnode>
@@ -417,7 +418,7 @@ struct _Flist_insert_after_op2 {
 
     explicit _Flist_insert_after_op2(_Alnode& _Al_) : _Al(_Al_), _Tail() {}
 
-    _Flist_insert_after_op2(const _Flist_insert_after_op2&) = delete;
+    _Flist_insert_after_op2(const _Flist_insert_after_op2&)            = delete;
     _Flist_insert_after_op2& operator=(const _Flist_insert_after_op2&) = delete;
 
     template <class... _CArgT>
@@ -1116,7 +1117,7 @@ public:
         explicit _Flist_node_remove_op(forward_list& _List_) noexcept
             : _List(_List_), _Head(), _Tail(_STD addressof(_Head)) {}
 
-        _Flist_node_remove_op(const _Flist_node_remove_op&) = delete;
+        _Flist_node_remove_op(const _Flist_node_remove_op&)            = delete;
         _Flist_node_remove_op& operator=(const _Flist_node_remove_op&) = delete;
 
         _Nodeptr _Transfer_back(const _Nodeptr _Predecessor) noexcept {

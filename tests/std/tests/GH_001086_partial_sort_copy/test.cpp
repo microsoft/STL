@@ -28,7 +28,7 @@ struct source : wrapper {
 
     using wrapper::wrapper;
 
-    source(const source&) = delete;
+    source(const source&)            = delete;
     source& operator=(const source&) = delete;
 };
 
@@ -37,7 +37,7 @@ struct target : wrapper {
 
     using wrapper::wrapper;
 
-    target(target&&) = default;
+    target(target&&)            = default;
     target& operator=(target&&) = default;
 
     target& operator=(const source& w) {

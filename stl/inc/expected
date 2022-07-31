@@ -9,7 +9,7 @@
 #include <yvals.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_expected
-#pragma message("The contents of <expected> are available only with C++23 or later.")
+#pragma message(_WARNING_MESSAGE("STL4038", "The contents of <expected> are available only with C++23 or later."))
 #else // ^^^ !__cpp_lib_expected / __cpp_lib_expected vvv
 #include <exception>
 #include <initializer_list>
@@ -121,11 +121,11 @@ public:
     }
 
 protected:
-    bad_expected_access()                           = default;
-    bad_expected_access(const bad_expected_access&) = default;
-    bad_expected_access(bad_expected_access&&)      = default;
+    bad_expected_access()                                      = default;
+    bad_expected_access(const bad_expected_access&)            = default;
+    bad_expected_access(bad_expected_access&&)                 = default;
     bad_expected_access& operator=(const bad_expected_access&) = default;
-    bad_expected_access& operator=(bad_expected_access&&) = default;
+    bad_expected_access& operator=(bad_expected_access&&)      = default;
 
 #if !_HAS_EXCEPTIONS
     void _Doraise() const override { // perform class-specific exception handling

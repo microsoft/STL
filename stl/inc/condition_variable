@@ -42,7 +42,7 @@ struct _NODISCARD _Unlock_guard {
         _Mtx.lock();
     }
 
-    _Unlock_guard(const _Unlock_guard&) = delete;
+    _Unlock_guard(const _Unlock_guard&)            = delete;
     _Unlock_guard& operator=(const _Unlock_guard&) = delete;
 
 private:
@@ -59,7 +59,7 @@ public:
         _Cnd_destroy_in_situ(_Mycnd());
     }
 
-    condition_variable_any(const condition_variable_any&) = delete;
+    condition_variable_any(const condition_variable_any&)            = delete;
     condition_variable_any& operator=(const condition_variable_any&) = delete;
 
     void notify_one() noexcept { // wake up one waiter
@@ -162,7 +162,7 @@ private:
 
         explicit _Cv_any_notify_all(condition_variable_any* _This_) : _This{_This_} {}
 
-        _Cv_any_notify_all(const _Cv_any_notify_all&) = delete;
+        _Cv_any_notify_all(const _Cv_any_notify_all&)            = delete;
         _Cv_any_notify_all& operator=(const _Cv_any_notify_all&) = delete;
 
         void operator()() const noexcept {

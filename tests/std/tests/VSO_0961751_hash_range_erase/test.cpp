@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _STL_INTERNAL_CHECK_EXHAUSTIVE
-#include <assert.h>
+#include <cassert>
+#include <climits>
+#include <cstdlib>
 #include <functional>
 #include <iterator>
-#include <limits.h>
 #include <memory>
 #include <stdexcept>
-#include <stdlib.h>
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
@@ -24,8 +24,8 @@ template <class T>
 struct liveness_allocator {
     using value_type = T;
 
-    liveness_allocator()                          = default;
-    liveness_allocator(const liveness_allocator&) = default;
+    liveness_allocator()                                     = default;
+    liveness_allocator(const liveness_allocator&)            = default;
     liveness_allocator& operator=(const liveness_allocator&) = default;
     template <class U, enable_if_t<!is_same_v<T, U>, int> = 0>
     liveness_allocator(const liveness_allocator<U>&) {}

@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
+#include <cstddef>
+#include <cstdlib>
 #include <deque>
 #include <forward_list>
 #include <functional>
@@ -10,8 +12,6 @@
 #include <memory>
 #include <regex>
 #include <set>
-#include <stddef.h>
-#include <stdlib.h>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>

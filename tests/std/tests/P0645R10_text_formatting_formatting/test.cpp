@@ -74,7 +74,7 @@ struct move_only_back_inserter {
     move_only_back_inserter() = default;
     explicit move_only_back_inserter(basic_string<charT>& str) : it{str} {}
 
-    move_only_back_inserter(const move_only_back_inserter&) = delete;
+    move_only_back_inserter(const move_only_back_inserter&)            = delete;
     move_only_back_inserter& operator=(const move_only_back_inserter&) = delete;
 
     move_only_back_inserter(move_only_back_inserter&& other) : it(other.it) {
@@ -1286,6 +1286,8 @@ void libfmt_formatter_test_runtime_width() {
     assert(format(STR("{0:{1}}"), 0, '0')
            == STR("                                               0")); // behavior differs from libfmt, but conforms
     throw_helper(STR("{0:{1}}"), 0, 0.0);
+
+    assert(format(STR("{0:{1}}"), 42, 0) == STR("42")); // LWG-3721: zero dynamic width is OK
 
     assert(format(STR("{0:{1}}"), -42, 4) == STR(" -42"));
     assert(format(STR("{0:{1}}"), 42u, 5) == STR("   42"));

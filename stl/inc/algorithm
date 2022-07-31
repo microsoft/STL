@@ -155,7 +155,7 @@ struct _Optimistic_temporary_buffer { // temporary storage with _alloca-like att
         _Capacity = _Optimistic_count;
     }
 
-    _Optimistic_temporary_buffer(const _Optimistic_temporary_buffer&) = delete;
+    _Optimistic_temporary_buffer(const _Optimistic_temporary_buffer&)            = delete;
     _Optimistic_temporary_buffer& operator=(const _Optimistic_temporary_buffer&) = delete;
 
     ~_Optimistic_temporary_buffer() noexcept {
@@ -1363,6 +1363,78 @@ namespace ranges {
     };
 
     inline constexpr _None_of_fn none_of{_Not_quite_object::_Construct_tag{}};
+
+#if _HAS_CXX23
+    class _Contains_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
+            requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
+        _NODISCARD constexpr bool operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First, _Last);
+            const auto _ULast = _Get_unwrapped(_STD move(_Last));
+            const auto _UResult =
+                _RANGES _Find_unchecked(_Get_unwrapped(_STD move(_First)), _ULast, _Val, _Pass_fn(_Proj));
+            return _UResult != _ULast;
+        }
+
+        // clang-format off
+        template <input_range _Rng, class _Ty, class _Pj = identity>
+            requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
+        _NODISCARD constexpr bool operator()(_Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
+            // clang-format on
+            const auto _UResult = _RANGES _Find_unchecked(_Ubegin(_Range), _Uend(_Range), _Val, _Pass_fn(_Proj));
+            return _UResult != _Uend(_Range);
+        }
+    };
+
+    inline constexpr _Contains_fn contains{_Not_quite_object::_Construct_tag{}};
+
+    class _Contains_subrange_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        // clang-format off
+        template <forward_iterator _It1, sentinel_for<_It1> _Se1, forward_iterator _It2, sentinel_for<_It2> _Se2,
+            class _Pr = ranges::equal_to, class _Pj1 = identity, class _Pj2 = identity>
+            requires indirectly_comparable<_It1, _It2, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(_It1 _First1,
+            _Se1 _Last1, _It2 _First2, _Se2 _Last2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            _Adl_verify_range(_First2, _Last2);
+            auto _UFirst2 = _Get_unwrapped(_STD move(_First2));
+            auto _ULast2  = _Get_unwrapped(_STD move(_Last2));
+
+            if (_UFirst2 == _ULast2) {
+                return true;
+            }
+
+            const auto _Match = _RANGES search(_STD move(_First1), _STD move(_Last1), _STD move(_UFirst2),
+                _STD move(_ULast2), _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            return !_Match.empty();
+        }
+
+        // clang-format off
+        template <forward_range _Rng1, forward_range _Rng2, class _Pr = ranges::equal_to, class _Pj1 = identity,
+            class _Pj2 = identity>
+            requires indirectly_comparable<iterator_t<_Rng1>, iterator_t<_Rng2>, _Pr, _Pj1, _Pj2>
+        _NODISCARD constexpr bool operator()(
+            _Rng1&& _Range1, _Rng2&& _Range2, _Pr _Pred = {}, _Pj1 _Proj1 = {}, _Pj2 _Proj2 = {}) const {
+            // clang-format on
+            if (_RANGES empty(_Range2)) {
+                return true;
+            }
+
+            const auto _Match = _RANGES search(_Range1, _Range2, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+            return !_Match.empty();
+        }
+    };
+
+    inline constexpr _Contains_subrange_fn contains_subrange{_Not_quite_object::_Construct_tag{}};
+#endif // _HAS_CXX23
 
     template <class _In, class _Out>
     using copy_n_result = in_out_result<_In, _Out>;
@@ -9442,6 +9514,22 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
 
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr> //
+                      && sized_sentinel_for<_Se, _It>) {
+            if (!_STD is_constant_evaluated()) {
+                const auto _First_ptr = _STD to_address(_First);
+                const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                const auto _Result    = __std_max_element(_First_ptr, _Last_ptr);
+                if constexpr (is_pointer_v<_It>) {
+                    return _Result;
+                } else {
+                    return _First + (_Result - _First_ptr);
+                }
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
+
         auto _Found = _First;
         if (_First == _Last) {
             return _Found;
@@ -9546,6 +9634,22 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr> //
+                      && sized_sentinel_for<_Se, _It>) {
+            if (!_STD is_constant_evaluated()) {
+                const auto _First_ptr = _STD to_address(_First);
+                const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                const auto _Result    = __std_min_element(_First_ptr, _Last_ptr);
+                if constexpr (is_pointer_v<_It>) {
+                    return _Result;
+                } else {
+                    return _First + (_Result - _First_ptr);
+                }
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
         auto _Found = _First;
         if (_First == _Last) {
@@ -9685,6 +9789,22 @@ namespace ranges {
         _STL_INTERNAL_STATIC_ASSERT(forward_iterator<_It>);
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
         _STL_INTERNAL_STATIC_ASSERT(indirect_strict_weak_order<_Pr, projected<_It, _Pj>>);
+
+#if _USE_STD_VECTOR_ALGORITHMS
+        if constexpr (is_same_v<_Pj, identity> && _Is_min_max_optimization_safe<_It, _Pr> //
+                      && sized_sentinel_for<_Se, _It>) {
+            if (!_STD is_constant_evaluated()) {
+                const auto _First_ptr = _STD to_address(_First);
+                const auto _Last_ptr  = _First_ptr + (_Last - _First);
+                const auto _Result    = __std_minmax_element(_First_ptr, _Last_ptr);
+                if constexpr (is_pointer_v<_It>) {
+                    return {_Result.first, _Result.second};
+                } else {
+                    return {_First + (_Result.first - _First_ptr), _First + (_Result.second - _First_ptr)};
+                }
+            }
+        }
+#endif // _USE_STD_VECTOR_ALGORITHMS
 
         min_max_result<_It> _Found{_First, _First};
 

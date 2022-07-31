@@ -120,7 +120,7 @@ void test_functor_types() {
 
         f1(int, int, int) {}
 
-        f1(f1&&) noexcept = default;
+        f1(f1&&) noexcept   = default;
         f1& operator=(f1&&) = delete;
     };
     std::barrier b1{1, f1{0, 0, 0}};

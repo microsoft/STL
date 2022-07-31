@@ -6,7 +6,7 @@
 // This test validates the implementation of std::uncaught_exceptions by recursively
 // throwing exceptions from a destructor.
 
-#include <assert.h>
+#include <cassert>
 #include <exception>
 
 class awesome_exception {};
@@ -29,7 +29,7 @@ public:
     }
 
 private:
-    check_uncaught_exceptions_count(check_uncaught_exceptions_count const&) = delete;
+    check_uncaught_exceptions_count(check_uncaught_exceptions_count const&)            = delete;
     check_uncaught_exceptions_count& operator=(check_uncaught_exceptions_count const&) = delete;
 
     int _remaining;

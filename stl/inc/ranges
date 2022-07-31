@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #ifndef __cpp_lib_ranges
-#pragma message("The contents of <ranges> are available only with C++20 or later.")
+#pragma message(_WARNING_MESSAGE("STL4038", "The contents of <ranges> are available only with C++20 or later."))
 #else // ^^^ !defined(__cpp_lib_ranges) / defined(__cpp_lib_ranges) vvv
 #include <__msvc_int128.hpp>
 #include <iosfwd>
@@ -231,7 +231,7 @@ namespace ranges {
         ~_Cached_position() = default;
 
         // Offsets are oblivious to copying, so cache values _do_ propagate via copying.
-        _Cached_position(const _Cached_position&) = default;
+        _Cached_position(const _Cached_position&)            = default;
         _Cached_position& operator=(const _Cached_position&) = default;
 
         // Offsets are potentially invalidated by move, so source caches are invalidated after move
@@ -1001,7 +1001,7 @@ namespace ranges {
     struct _Ioterator_category_base {};
 
     template <incrementable _Wi>
-        requires integral<_Iota_diff_t<_Wi>> // TRANSITION, LWG-3670
+        requires integral<_Iota_diff_t<_Wi>>
     struct _Ioterator_category_base<_Wi> {
         using iterator_category = input_iterator_tag;
     };
@@ -1358,7 +1358,7 @@ namespace ranges {
             _Iterator(_Iterator&&)      = default;
 
             _Iterator& operator=(const _Iterator&) = delete;
-            _Iterator& operator=(_Iterator&&) = default;
+            _Iterator& operator=(_Iterator&&)      = default;
 
             _Iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -1503,7 +1503,7 @@ namespace ranges {
         constexpr owning_view(_Rng&& _Range_) noexcept(is_nothrow_move_constructible_v<_Rng>) // strengthened
             : _Range(_STD move(_Range_)) {}
 
-        owning_view(owning_view&&) = default;
+        owning_view(owning_view&&)            = default;
         owning_view& operator=(owning_view&&) = default;
 
         _NODISCARD constexpr _Rng& base() & noexcept {
@@ -1586,8 +1586,8 @@ namespace ranges {
             template <class _Rng>
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 if constexpr (view<remove_cvref_t<_Rng>>) {
-                    if constexpr (constructible_from<remove_cvref_t<_Rng>, _Rng>) {
-                        return {_St::_View, is_nothrow_constructible_v<remove_cvref_t<_Rng>, _Rng>};
+                    if constexpr (convertible_to<_Rng, remove_cvref_t<_Rng>>) {
+                        return {_St::_View, is_nothrow_convertible_v<_Rng, remove_cvref_t<_Rng>>};
                     }
                 } else if constexpr (_Can_ref_view<_Rng>) {
                     return {_St::_Ref, noexcept(ref_view{_STD declval<_Rng>()})};
@@ -5248,8 +5248,8 @@ namespace ranges {
         requires input_range<_Vw>
     class chunk_view : public view_interface<chunk_view<_Vw>> {
     private:
-        /* [[no_unique_address]] */ _Vw _Range{};
-        range_difference_t<_Vw> _Count     = 0;
+        /* [[no_unique_address]] */ _Vw _Range;
+        range_difference_t<_Vw> _Count;
         range_difference_t<_Vw> _Remainder = 0;
         _Non_propagating_cache<iterator_t<_Vw>> _Current{};
 
@@ -5275,7 +5275,7 @@ namespace ranges {
             using difference_type  = range_difference_t<_Vw>;
             using value_type       = range_value_t<_Vw>;
 
-            _Inner_iterator(_Inner_iterator&&) = default;
+            _Inner_iterator(_Inner_iterator&&)            = default;
             _Inner_iterator& operator=(_Inner_iterator&&) = default;
 
             _NODISCARD constexpr const iterator_t<_Vw>& base() const& noexcept /* strengthened */ {
@@ -5380,11 +5380,12 @@ namespace ranges {
                 _NODISCARD constexpr auto size() const
                     noexcept(noexcept(_RANGES end(_Parent->_Range) - *_Parent->_Current)) /* strengthened */
                     requires sized_sentinel_for<sentinel_t<_Vw>, iterator_t<_Vw>> {
-                    return (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current);
+                    return _To_unsigned_like(
+                        (_STD min)(_Parent->_Remainder, _RANGES end(_Parent->_Range) - *_Parent->_Current));
                 }
             };
 
-            _Outer_iterator(_Outer_iterator&&) = default;
+            _Outer_iterator(_Outer_iterator&&)            = default;
             _Outer_iterator& operator=(_Outer_iterator&&) = default;
 
             _NODISCARD constexpr value_type operator*() const noexcept /* strengthened */ {
@@ -5430,10 +5431,6 @@ namespace ranges {
         };
 
     public:
-        // clang-format off
-        chunk_view() requires default_initializable<_Vw> = default;
-        // clang-format on
-
         constexpr explicit chunk_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {
@@ -5458,7 +5455,7 @@ namespace ranges {
             return _Outer_iterator{this};
         }
 
-        _NODISCARD constexpr default_sentinel_t end() noexcept {
+        _NODISCARD constexpr default_sentinel_t end() const noexcept {
             return default_sentinel;
         }
 
@@ -5477,8 +5474,8 @@ namespace ranges {
         requires forward_range<_Vw>
     class chunk_view<_Vw> : public view_interface<chunk_view<_Vw>> {
     private:
-        /* [[no_unique_address]] */ _Vw _Range{};
-        range_difference_t<_Vw> _Count = 0;
+        /* [[no_unique_address]] */ _Vw _Range;
+        range_difference_t<_Vw> _Count;
 
         template <bool _Const>
         class _Iterator {
@@ -5690,10 +5687,6 @@ namespace ranges {
         };
 
     public:
-        // clang-format off
-        chunk_view() requires default_initializable<_Vw> = default;
-        // clang-format on
-
         constexpr explicit chunk_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {
@@ -5818,8 +5811,8 @@ namespace ranges {
         requires view<_Vw>
     class slide_view : public _Cached_position_t<!_Slide_caches_nothing<_Vw>, _Vw, slide_view<_Vw>> {
     private:
-        /* [[no_unique_address]] */ _Vw _Range{};
-        range_difference_t<_Vw> _Count = 0;
+        /* [[no_unique_address]] */ _Vw _Range;
+        range_difference_t<_Vw> _Count;
 
         template <class>
         class _Iter_base {};
@@ -6052,10 +6045,6 @@ namespace ranges {
         };
 
     public:
-        // clang-format off
-        slide_view() requires default_initializable<_Vw> = default;
-        // clang-format on
-
         constexpr explicit slide_view(_Vw _Range_, const range_difference_t<_Vw> _Count_) noexcept(
             is_nothrow_move_constructible_v<_Vw>) /* strengthened */
             : _Range(_STD move(_Range_)), _Count{_Count_} {}

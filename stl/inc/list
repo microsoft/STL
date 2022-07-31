@@ -289,9 +289,11 @@ struct _List_node { // list node
     using _Nodeptr   = _Rebind_pointer_t<_Voidptr, _List_node>;
     _Nodeptr _Next; // successor node, or first element if head
     _Nodeptr _Prev; // predecessor node, or last element if head
-    _Value_type _Myval; // the stored value, unused if head
+    _Value_type _Myval = // the stored value, unused if head
+        _Returns_exactly<_Value_type>(); // fake a viable constructor to workaround GH-2749
 
-    _List_node(const _List_node&) = delete;
+    _List_node()                             = default;
+    _List_node(const _List_node&)            = delete;
     _List_node& operator=(const _List_node&) = delete;
 
     template <class _Alnode>
@@ -590,7 +592,7 @@ struct _List_node_emplace_op2 : _Alloc_construct_ptr<_Alnode> {
         }
     }
 
-    _List_node_emplace_op2(const _List_node_emplace_op2&) = delete;
+    _List_node_emplace_op2(const _List_node_emplace_op2&)            = delete;
     _List_node_emplace_op2& operator=(const _List_node_emplace_op2&) = delete;
 
     pointer _Transfer_before(const pointer _Insert_before) noexcept {
@@ -615,7 +617,7 @@ struct _List_node_insert_op2 {
 
     explicit _List_node_insert_op2(_Alnode& _Al_) : _Al(_Al_), _Added(0) {}
 
-    _List_node_insert_op2(const _List_node_insert_op2&) = delete;
+    _List_node_insert_op2(const _List_node_insert_op2&)            = delete;
     _List_node_insert_op2& operator=(const _List_node_insert_op2&) = delete;
 
     template <class... _CArgT>
@@ -1518,7 +1520,7 @@ public:
 
         explicit _List_node_remove_op(list& _List_) noexcept : _List(_List_), _Head(), _Tail(_STD addressof(_Head)) {}
 
-        _List_node_remove_op(const _List_node_remove_op&) = delete;
+        _List_node_remove_op(const _List_node_remove_op&)            = delete;
         _List_node_remove_op& operator=(const _List_node_remove_op&) = delete;
 
         _Nodeptr _Transfer_back(const _Nodeptr _Removed) noexcept {

@@ -224,7 +224,7 @@ public:
         return _Myvec.size();
     }
 
-    seed_seq(const seed_seq&) = delete;
+    seed_seq(const seed_seq&)       = delete;
     void operator=(const seed_seq&) = delete;
 
 private:
@@ -4981,7 +4981,7 @@ public:
         return _Random_device();
     }
 
-    random_device(const random_device&) = delete;
+    random_device(const random_device&)            = delete;
     random_device& operator=(const random_device&) = delete;
 };
 

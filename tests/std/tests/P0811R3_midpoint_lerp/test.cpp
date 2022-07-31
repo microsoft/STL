@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
 #include <bit>
+#include <cassert>
+#include <cfenv>
 #include <charconv>
 #include <cmath>
-#include <fenv.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <iterator>
 #include <limits>
 #include <numeric>
 #include <optional>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <type_traits>
 
 using namespace std;
@@ -48,7 +48,7 @@ public:
         checked_fesetround(newRound);
     }
 
-    RoundGuard(const RoundGuard&) = delete;
+    RoundGuard(const RoundGuard&)            = delete;
     RoundGuard& operator=(const RoundGuard&) = delete;
 
     ~RoundGuard() {
@@ -75,7 +75,7 @@ public:
         checked_feholdexcept(&env);
     }
 
-    ExceptGuard(const ExceptGuard&) = delete;
+    ExceptGuard(const ExceptGuard&)            = delete;
     ExceptGuard& operator=(const ExceptGuard&) = delete;
 
     ~ExceptGuard() {
@@ -94,7 +94,7 @@ class ExceptGuard {
 public:
     ExceptGuard() {}
 
-    ExceptGuard(const ExceptGuard&) = delete;
+    ExceptGuard(const ExceptGuard&)            = delete;
     ExceptGuard& operator=(const ExceptGuard&) = delete;
 
     ~ExceptGuard() {}

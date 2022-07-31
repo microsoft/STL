@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <array>
+#include <cstddef>
 #include <deque>
 #include <filesystem>
 #include <forward_list>
@@ -10,7 +11,6 @@
 #include <map>
 #include <set>
 #include <span>
-#include <stddef.h>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -223,12 +223,12 @@ struct SimpleBidIt {
     using pointer           = int*;
     using reference         = int&;
 
-    SimpleBidIt()                   = default;
-    SimpleBidIt(const SimpleBidIt&) = default;
-    SimpleBidIt(SimpleBidIt&&)      = default;
+    SimpleBidIt()                              = default;
+    SimpleBidIt(const SimpleBidIt&)            = default;
+    SimpleBidIt(SimpleBidIt&&)                 = default;
     SimpleBidIt& operator=(const SimpleBidIt&) = default;
-    SimpleBidIt& operator=(SimpleBidIt&&) = default;
-    ~SimpleBidIt()                        = default;
+    SimpleBidIt& operator=(SimpleBidIt&&)      = default;
+    ~SimpleBidIt()                             = default;
 
     int& operator*() const {
         static int val{};
@@ -275,12 +275,12 @@ struct FancyBidIt {
     using pointer           = int*;
     using reference         = int&;
 
-    FancyBidIt()                  = default;
-    FancyBidIt(const FancyBidIt&) = default;
-    FancyBidIt(FancyBidIt&&)      = default;
+    FancyBidIt()                             = default;
+    FancyBidIt(const FancyBidIt&)            = default;
+    FancyBidIt(FancyBidIt&&)                 = default;
     FancyBidIt& operator=(const FancyBidIt&) = default;
-    FancyBidIt& operator=(FancyBidIt&&) = default;
-    ~FancyBidIt()                       = default;
+    FancyBidIt& operator=(FancyBidIt&&)      = default;
+    ~FancyBidIt()                            = default;
 
     int& operator*() const {
         static int val{};

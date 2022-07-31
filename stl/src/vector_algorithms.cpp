@@ -12,11 +12,11 @@
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_ARM64EC)
 
+#include <cstdint>
 #include <emmintrin.h>
 #include <immintrin.h>
 #include <intrin0.h>
 #include <isa_availability.h>
-#include <stdint.h>
 
 extern "C" long __isa_enabled;
 
@@ -789,8 +789,9 @@ namespace {
 
         static _Signed_t _Get_any(const __m128i _Cur) noexcept {
 #ifdef _M_IX86
-            return static_cast<_Signed_t>((static_cast<_Unsigned_t>(_mm_extract_epi32(_Cur, 1)) << 32)
-                                          | static_cast<_Unsigned_t>(_mm_cvtsi128_si32(_Cur)));
+            return static_cast<_Signed_t>(
+                (static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_extract_epi32(_Cur, 1))) << 32)
+                | static_cast<_Unsigned_t>(static_cast<uint32_t>(_mm_cvtsi128_si32(_Cur))));
 #else // ^^^ x86 ^^^ / vvv x64 vvv
             return static_cast<_Signed_t>(_mm_cvtsi128_si64(_Cur));
 #endif // ^^^ x64 ^^^

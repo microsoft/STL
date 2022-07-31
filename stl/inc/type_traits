@@ -1218,12 +1218,12 @@ struct _Common_type3<void_t<common_type_t<_Ty1, _Ty2>>, _Ty1, _Ty2, _Rest...>
 template <class _Ty1, class _Ty2, class... _Rest>
 struct common_type<_Ty1, _Ty2, _Rest...> : _Common_type3<void, _Ty1, _Ty2, _Rest...> {};
 
+template <class _Ty>
+_Ty _Returns_exactly() noexcept; // not defined
+
 #if _HAS_CXX20
 template <class, class, template <class> class, template <class> class>
 struct basic_common_reference {};
-
-template <class _Ty>
-_Ty _Returns_exactly() noexcept; // not defined
 
 template <class _From>
 struct _Copy_cv_impl {
@@ -1265,7 +1265,7 @@ struct _Add_qualifiers<_Ty1&&> {
     using _Apply = add_rvalue_reference_t<_Copy_cv<_Ty1, _Ty2>>;
 };
 
-#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-876860
+#if !defined(__EDG__) && !defined(__clang__) // TRANSITION, DevCom-10095944
 template <class _Ty1, class _Ty2>
 using _Cond_res_if_right = // N4810 [meta.trans.other]/2.4
     decltype(false ? _Returns_exactly<_Ty1>() : _Returns_exactly<_Ty2>());
@@ -1613,9 +1613,6 @@ inline constexpr bool is_nothrow_convertible_v = _Is_nothrow_convertible_v<_From
 template <class _From, class _To>
 using is_nothrow_convertible = _Is_nothrow_convertible<_From, _To>;
 #endif // _HAS_CXX20
-
-template <class _Ty>
-_Ty _Returns_exactly() noexcept; // not defined
 
 template <class _From, class _To, class = void>
 struct _Invoke_convertible : false_type {};
@@ -2061,48 +2058,48 @@ struct _Is_trivially_swappable : bool_constant<_Is_trivially_swappable_v<_Ty>> {
     // true_type if and only if it is valid to swap two _Ty lvalues by exchanging object representations.
 };
 
-#define _BITMASK_OPS(_BITMASK)                                                                                      \
-    _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept { /* return _Left & _Right */ \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                                            \
-        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) & static_cast<_IntTy>(_Right));                     \
-    }                                                                                                               \
-                                                                                                                    \
-    _NODISCARD constexpr _BITMASK operator|(_BITMASK _Left, _BITMASK _Right) noexcept { /* return _Left | _Right */ \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                                            \
-        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) | static_cast<_IntTy>(_Right));                     \
-    }                                                                                                               \
-                                                                                                                    \
-    _NODISCARD constexpr _BITMASK operator^(_BITMASK _Left, _BITMASK _Right) noexcept { /* return _Left ^ _Right */ \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                                            \
-        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) ^ static_cast<_IntTy>(_Right));                     \
-    }                                                                                                               \
-                                                                                                                    \
-    constexpr _BITMASK& operator&=(_BITMASK& _Left, _BITMASK _Right) noexcept { /* return _Left &= _Right */        \
-        return _Left = _Left & _Right;                                                                              \
-    }                                                                                                               \
-                                                                                                                    \
-    constexpr _BITMASK& operator|=(_BITMASK& _Left, _BITMASK _Right) noexcept { /* return _Left |= _Right */        \
-        return _Left = _Left | _Right;                                                                              \
-    }                                                                                                               \
-                                                                                                                    \
-    constexpr _BITMASK& operator^=(_BITMASK& _Left, _BITMASK _Right) noexcept { /* return _Left ^= _Right */        \
-        return _Left = _Left ^ _Right;                                                                              \
-    }                                                                                                               \
-                                                                                                                    \
-    _NODISCARD constexpr _BITMASK operator~(_BITMASK _Left) noexcept { /* return ~_Left */                          \
-        using _IntTy = _STD underlying_type_t<_BITMASK>;                                                            \
-        return static_cast<_BITMASK>(~static_cast<_IntTy>(_Left));                                                  \
-    }                                                                                                               \
-                                                                                                                    \
-    _NODISCARD constexpr bool _Bitmask_includes(                                                                    \
-        _BITMASK _Left, _BITMASK _Elements) noexcept { /* return (_Left & _Elements) != _BITMASK{} */               \
-        return (_Left & _Elements) != _BITMASK{};                                                                   \
-    }                                                                                                               \
-                                                                                                                    \
-    _NODISCARD constexpr bool _Bitmask_includes_all(                                                                \
-        _BITMASK _Left, _BITMASK _Elements) noexcept { /* return (_Left & _Elements) == _Elements */                \
-        return (_Left & _Elements) == _Elements;                                                                    \
+#define _BITMASK_OPS(_BITMASK)                                                                  \
+    _NODISCARD constexpr _BITMASK operator&(_BITMASK _Left, _BITMASK _Right) noexcept {         \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
+        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) & static_cast<_IntTy>(_Right)); \
+    }                                                                                           \
+                                                                                                \
+    _NODISCARD constexpr _BITMASK operator|(_BITMASK _Left, _BITMASK _Right) noexcept {         \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
+        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) | static_cast<_IntTy>(_Right)); \
+    }                                                                                           \
+                                                                                                \
+    _NODISCARD constexpr _BITMASK operator^(_BITMASK _Left, _BITMASK _Right) noexcept {         \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
+        return static_cast<_BITMASK>(static_cast<_IntTy>(_Left) ^ static_cast<_IntTy>(_Right)); \
+    }                                                                                           \
+                                                                                                \
+    constexpr _BITMASK& operator&=(_BITMASK& _Left, _BITMASK _Right) noexcept {                 \
+        return _Left = _Left & _Right;                                                          \
+    }                                                                                           \
+                                                                                                \
+    constexpr _BITMASK& operator|=(_BITMASK& _Left, _BITMASK _Right) noexcept {                 \
+        return _Left = _Left | _Right;                                                          \
+    }                                                                                           \
+                                                                                                \
+    constexpr _BITMASK& operator^=(_BITMASK& _Left, _BITMASK _Right) noexcept {                 \
+        return _Left = _Left ^ _Right;                                                          \
+    }                                                                                           \
+                                                                                                \
+    _NODISCARD constexpr _BITMASK operator~(_BITMASK _Left) noexcept {                          \
+        using _IntTy = _STD underlying_type_t<_BITMASK>;                                        \
+        return static_cast<_BITMASK>(~static_cast<_IntTy>(_Left));                              \
     }
+
+template <class _Bitmask>
+_NODISCARD constexpr bool _Bitmask_includes_any(_Bitmask _Left, _Bitmask _Elements) noexcept {
+    return (_Left & _Elements) != _Bitmask{};
+}
+
+template <class _Bitmask>
+_NODISCARD constexpr bool _Bitmask_includes_all(_Bitmask _Left, _Bitmask _Elements) noexcept {
+    return (_Left & _Elements) == _Elements;
+}
 
 // These FNV-1a utility functions are extremely performance sensitive,
 // check examples like that in VSO-653642 before making changes.
@@ -2169,11 +2166,11 @@ struct _Conditionally_enabled_hash { // conditionally enabled hash base
 
 template <class _Kty>
 struct _Conditionally_enabled_hash<_Kty, false> { // conditionally disabled hash base
-    _Conditionally_enabled_hash()                                   = delete;
-    _Conditionally_enabled_hash(const _Conditionally_enabled_hash&) = delete;
-    _Conditionally_enabled_hash(_Conditionally_enabled_hash&&)      = delete;
+    _Conditionally_enabled_hash()                                              = delete;
+    _Conditionally_enabled_hash(const _Conditionally_enabled_hash&)            = delete;
+    _Conditionally_enabled_hash(_Conditionally_enabled_hash&&)                 = delete;
     _Conditionally_enabled_hash& operator=(const _Conditionally_enabled_hash&) = delete;
-    _Conditionally_enabled_hash& operator=(_Conditionally_enabled_hash&&) = delete;
+    _Conditionally_enabled_hash& operator=(_Conditionally_enabled_hash&&)      = delete;
 };
 
 template <class _Kty>

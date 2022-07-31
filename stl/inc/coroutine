@@ -10,12 +10,17 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #ifdef _RESUMABLE_FUNCTIONS_SUPPORTED
-#pragma message("The contents of <coroutine> are not available with /await.")
-#pragma message("Remove /await or use /await:strict for standard coroutines.")
-#pragma message("Use <experimental/coroutine> for legacy /await support.")
+#define _STL4039_COROUTINE                                         \
+    "The contents of <coroutine> are not available with /await. "  \
+    "Remove /await or use /await:strict for standard coroutines. " \
+    "Use <experimental/coroutine> for legacy /await support."
+#pragma message(_WARNING_MESSAGE("STL4039", _STL4039_COROUTINE))
+#undef _STL4039_COROUTINE // TRANSITION, DevCom-1479701
 #else // ^^^ /await ^^^ / vvv no /await vvv
 #ifndef __cpp_lib_coroutine
-#pragma message("The contents of <coroutine> are available only with C++20 or later or /await:strict.")
+#define _STL4038_COROUTINE "The contents of <coroutine> are available only with C++20 or later or /await:strict."
+#pragma message(_WARNING_MESSAGE("STL4038", _STL4038_COROUTINE))
+#undef _STL4038_COROUTINE // TRANSITION, DevCom-1479701
 #else // ^^^ <coroutine> is not available / <coroutine> is available vvv
 #ifndef _ALLOW_COROUTINE_ABI_MISMATCH
 #pragma detect_mismatch("_COROUTINE_ABI", "2")

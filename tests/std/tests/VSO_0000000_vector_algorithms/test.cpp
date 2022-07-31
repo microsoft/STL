@@ -2,16 +2,54 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <cstddef>
+#include <cstdint>
+#include <cstdio>
 #include <deque>
+#include <functional>
 #include <isa_availability.h>
+#include <limits>
 #include <list>
 #include <random>
 #include <type_traits>
 #include <vector>
 
+#ifdef __cpp_lib_concepts
+#include <ranges>
+#endif
+
 using namespace std;
+
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
+#endif // __clang__
+
+void initialize_randomness(mt19937_64& gen) {
+    constexpr size_t n = mt19937_64::state_size;
+    constexpr size_t w = mt19937_64::word_size;
+    static_assert(w % 32 == 0, "w should be evenly divisible by 32");
+    constexpr size_t k = w / 32;
+
+    vector<uint32_t> vec(n * k);
+
+    random_device rd;
+    generate(vec.begin(), vec.end(), ref(rd));
+
+    printf("This is a randomized test.\n");
+    printf("DO NOT IGNORE/RERUN ANY FAILURES.\n");
+    printf("You must report them to the STL maintainers.\n\n");
+
+    printf("Seed vector: ");
+    for (const auto& e : vec) {
+        printf("%u,", e);
+    }
+    printf("\n");
+
+    seed_seq seq(vec.cbegin(), vec.cend());
+    gen.seed(seq);
+}
 
 #if (defined(_M_IX86) || defined(_M_X64)) && !defined(_M_CEE_PURE)
 extern "C" long __isa_enabled;
@@ -160,14 +198,31 @@ void test_case_min_max_element(const vector<T>& input) {
     assert(expected_min == actual_min);
     assert(expected_max == actual_max);
     assert(expected_minmax == actual_minmax);
+#ifdef __cpp_lib_concepts
+    using ranges::views::take;
+
+    auto actual_min_range          = ranges::min_element(input);
+    auto actual_max_range          = ranges::max_element(input);
+    auto actual_minmax_range       = ranges::minmax_element(input);
+    auto actual_min_sized_range    = ranges::min_element(take(input, static_cast<ptrdiff_t>(input.size())));
+    auto actual_max_sized_range    = ranges::max_element(take(input, static_cast<ptrdiff_t>(input.size())));
+    auto actual_minmax_sized_range = ranges::minmax_element(take(input, static_cast<ptrdiff_t>(input.size())));
+    assert(expected_min == actual_min_range);
+    assert(expected_max == actual_max_range);
+    assert(expected_minmax.first == actual_minmax_range.min);
+    assert(expected_minmax.second == actual_minmax_range.max);
+    assert(expected_min == actual_min_sized_range);
+    assert(expected_max == actual_max_sized_range);
+    assert(expected_minmax.first == actual_minmax_sized_range.min);
+    assert(expected_minmax.second == actual_minmax_sized_range.max);
+#endif // __cpp_lib_concepts
 }
 
 template <class T>
 void test_min_max_element(mt19937_64& gen) {
-    using Distribution = conditional_t<is_floating_point_v<T>, uniform_real_distribution<T>,
-        conditional_t<(sizeof(T) > 1), uniform_int_distribution<T>, uniform_int_distribution<int>>>;
+    using Limits = numeric_limits<T>;
 
-    Distribution dis(1, 20);
+    uniform_int_distribution<conditional_t<sizeof(T) == 1, int, T>> dis(Limits::min(), Limits::max());
 
     vector<T> input;
     input.reserve(dataCount);
@@ -324,9 +379,7 @@ void test_swap_ranges(mt19937_64& gen) {
     }
 }
 
-void test_vector_algorithms() {
-    mt19937_64 gen(1729);
-
+void test_vector_algorithms(mt19937_64& gen) {
     test_count<char>(gen);
     test_count<signed char>(gen);
     test_count<unsigned char>(gen);
@@ -356,15 +409,19 @@ void test_vector_algorithms() {
     test_min_max_element<unsigned int>(gen);
     test_min_max_element<long long>(gen);
     test_min_max_element<unsigned long long>(gen);
-    test_min_max_element<float>(gen);
-    test_min_max_element<double>(gen);
-    test_min_max_element<long double>(gen);
 
     test_min_max_element_pointers(gen);
 
     test_min_max_element_special_cases<int8_t, 16>(); // SSE2 vectors
     test_min_max_element_special_cases<int8_t, 32>(); // AVX2 vectors
     test_min_max_element_special_cases<int8_t, 64>(); // AVX512 vectors
+
+    // Test VSO-1558536, a regression caused by GH-2447 that was specific to 64-bit types on x86.
+    test_case_min_max_element(vector<uint64_t>{10, 0x8000'0000ULL, 20, 30});
+    test_case_min_max_element(vector<uint64_t>{10, 20, 0xD000'0000'B000'0000ULL, 30, 0xC000'0000'A000'0000ULL});
+    test_case_min_max_element(vector<int64_t>{10, 0x8000'0000LL, 20, 30});
+    test_case_min_max_element(
+        vector<int64_t>{-6604286336755016904, -4365366089374418225, 6104371530830675888, -8582621853879131834});
 
     test_reverse<char>(gen);
     test_reverse<signed char>(gen);
@@ -438,18 +495,21 @@ void test_various_containers() {
 }
 
 int main() {
-    test_vector_algorithms();
+    mt19937_64 gen;
+    initialize_randomness(gen);
+
+    test_vector_algorithms(gen);
     test_various_containers();
 #ifndef _M_CEE_PURE
 #if defined(_M_IX86) || defined(_M_X64)
     disable_instructions(__ISA_AVAILABLE_AVX2);
-    test_vector_algorithms();
+    test_vector_algorithms(gen);
     disable_instructions(__ISA_AVAILABLE_SSE42);
-    test_vector_algorithms();
+    test_vector_algorithms(gen);
 #endif // defined(_M_IX86) || defined(_M_X64)
 #if defined(_M_IX86)
     disable_instructions(__ISA_AVAILABLE_SSE2);
-    test_vector_algorithms();
+    test_vector_algorithms(gen);
 #endif // defined(_M_IX86)
 #endif // _M_CEE_PURE
 }
