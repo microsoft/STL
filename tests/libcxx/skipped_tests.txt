@@ -320,7 +320,6 @@ localization\locale.categories\category.numeric\locale.num.get\facet.num.get.mem
 # More bugs may be uncovered when the locale names are present.
 # move.pass.cpp can crash.
 input.output\iostreams.base\ios\basic.ios.members\move.pass.cpp
-localization\locale.categories\category.ctype\locale.ctype.byname\is_1.pass.cpp
 localization\locale.categories\category.monetary\locale.moneypunct.byname\curr_symbol.pass.cpp
 localization\locale.categories\category.monetary\locale.moneypunct.byname\decimal_point.pass.cpp
 localization\locale.categories\category.monetary\locale.moneypunct.byname\neg_format.pass.cpp
@@ -527,10 +526,6 @@ utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
 
-# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
-strings\string.conversions\stol.pass.cpp
-strings\string.conversions\stoull.pass.cpp
-
 # We define __cpp_lib_has_unique_object_representations in C++17 mode; test error says it
 # "should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
 language.support\support.limits\support.limits.general\type_traits.version.pass.cpp
@@ -679,7 +674,6 @@ ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
 # Test suite incorrectly detects support for `int128`
 concepts\concepts.lang\concepts.arithmetic\integral.pass.cpp
 language.support\support.limits\limits\numeric.limits.members\lowest.pass.cpp
-numerics\bit\bit.pow.two\bit_ceil.pass.cpp
 
 
 # *** LIKELY STL BUGS ***
@@ -729,7 +723,6 @@ numerics\complex.number\complex.value.ops\norm.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_en_US.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_fr_FR.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_ru_RU.pass.cpp
-localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_zh_CN.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_string_en_US.pass.cpp
 localization\locale.categories\category.monetary\locale.money.put\locale.money.put.members\put_long_double_en_US.pass.cpp
 localization\locale.categories\category.monetary\locale.money.put\locale.money.put.members\put_long_double_fr_FR.pass.cpp

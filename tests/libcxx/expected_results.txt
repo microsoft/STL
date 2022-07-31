@@ -59,9 +59,6 @@ std/containers/sequences/array/array.cons/implicit_copy.pass.cpp FAIL
 std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
 std/strings/string.view/string.view.deduct/range.pass.cpp FAIL
 
-# libc++ hasn't updated {move,reverse}_iterator for P0896R4
-std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp FAIL
-
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
 std/utilities/format/format.functions/vformat_to.pass.cpp FAIL
@@ -317,7 +314,6 @@ std/localization/locale.categories/category.numeric/locale.num.get/facet.num.get
 # More bugs may be uncovered when the locale names are present.
 # move.pass.cpp can crash.
 std/input.output/iostreams.base/ios/basic.ios.members/move.pass.cpp SKIPPED
-std/localization/locale.categories/category.ctype/locale.ctype.byname/is_1.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.moneypunct.byname/curr_symbol.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.moneypunct.byname/decimal_point.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.moneypunct.byname/neg_format.pass.cpp FAIL
@@ -524,10 +520,6 @@ std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_rvalue.
 std/utilities/allocator.adaptor/allocator.adaptor.members/construct_pair_values.pass.cpp FAIL
 std/utilities/allocator.adaptor/allocator.adaptor.members/construct_type.pass.cpp FAIL
 
-# Tests ignore the return value of sto{meow}, triggering nodiscard warnings
-std/strings/string.conversions/stol.pass.cpp FAIL
-std/strings/string.conversions/stoull.pass.cpp FAIL
-
 # We define __cpp_lib_has_unique_object_representations in C++17 mode; test error says it
 # "should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
 std/language.support/support.limits/support.limits.general/type_traits.version.pass.cpp:1 FAIL
@@ -580,10 +572,6 @@ std/utilities/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 
 # libc++ is missing various Ranges DRs
 std/language.support/support.limits/support.limits.general/ranges.version.pass.cpp FAIL
-
-# libc++ allows some forbidden unique_ptr conversions
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.assign/unique_ptr_Y.pass.cpp FAIL
-std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.const/unique_ptr.pass.cpp FAIL
 
 # non-portable test of strengthened noexcept
 std/ranges/range.adaptors/range.transform/iterator/deref.pass.cpp FAIL
@@ -688,7 +676,6 @@ std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass
 # Test suite incorrectly detects support for `int128`
 std/concepts/concepts.lang/concepts.arithmetic/integral.pass.cpp:1 FAIL
 std/language.support/support.limits/limits/numeric.limits.members/lowest.pass.cpp:1 FAIL
-std/numerics/bit/bit.pow.two/bit_ceil.pass.cpp:1 FAIL
 
 
 # *** LIKELY STL BUGS ***
@@ -738,7 +725,6 @@ std/numerics/complex.number/complex.value.ops/norm.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_en_US.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_fr_FR.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_ru_RU.pass.cpp FAIL
-std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_zh_CN.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_string_en_US.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_en_US.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.money.put/locale.money.put.members/put_long_double_fr_FR.pass.cpp FAIL
