@@ -41,7 +41,7 @@ constexpr bool test() {
 
     // [bitset.cons], constructors
     {
-        bitset<5> x53(string("xx10101ab"), 2, 5);
+        bitset<5> x53(string{"xx10101ab"}, 2, 5);
         assert(x53.to_ulong() == 0x15);
         bitset<5> x54("xoxox", 5, 'o', 'x');
         assert(x54.to_ulong() == 0x15);
