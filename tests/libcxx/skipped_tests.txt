@@ -990,7 +990,6 @@ language.support\support.limits\support.limits.general\variant.version.compile.p
 language.support\support.limits\support.limits.general\vector.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\version.version.compile.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_zh_CN.pass.cpp
-localization\locale.categories\category.time\locale.time.get\locale.time.get.members\date_order.pass.cpp
 numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.negbin\eval.pass.cpp
 numerics\rand\rand.dist\rand.dist.samp\rand.dist.samp.pconst\eval.pass.cpp
 numerics\rand\rand.dist\rand.dist.samp\rand.dist.samp.plinear\eval.pass.cpp
