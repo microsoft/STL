@@ -722,16 +722,20 @@ int run_test()
         assert(std::hash<optional<T>>{}(opt) == std::hash<T>{}(*opt));
     }
     {
+#ifndef __EDG__ // TRANSITION, DevCom-10107834
       test_hash_enabled_for_type<std::optional<int> >();
       test_hash_enabled_for_type<std::optional<int*> >();
       test_hash_enabled_for_type<std::optional<const int> >();
       test_hash_enabled_for_type<std::optional<int* const> >();
+#endif // // TRANSITION, DevCom-10107834
 
       test_hash_disabled_for_type<std::optional<A>>();
       test_hash_disabled_for_type<std::optional<const A>>();
 
+#ifndef __EDG__ // TRANSITION, DevCom-10107834
       test_hash_enabled_for_type<std::optional<B>>();
       test_hash_enabled_for_type<std::optional<const B>>();
+#endif // // TRANSITION, DevCom-10107834
     }
 
   return 0;
