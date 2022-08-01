@@ -238,7 +238,7 @@ public:
 #if _HAS_CXX23
         if (_STD is_constant_evaluated()) {
             for (auto& _El : _Array) {
-                _El = 0xFF;
+                _El = static_cast<_Ty>(-1);
             }
         } else
 #endif // _HAS_CXX23
