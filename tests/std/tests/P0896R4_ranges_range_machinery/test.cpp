@@ -1610,6 +1610,7 @@ STATIC_ASSERT(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<
 STATIC_ASSERT(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<strange_view5>>);
 
 // Verify that enable_view<T&> or enable_view<T&&> is never true
+STATIC_ASSERT(ranges::enable_view<strange_view4>);
 STATIC_ASSERT(!ranges::enable_view<strange_view4&>);
 STATIC_ASSERT(!ranges::enable_view<const strange_view4&>);
 STATIC_ASSERT(!ranges::enable_view<strange_view4&&>);
