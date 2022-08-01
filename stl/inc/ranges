@@ -47,7 +47,13 @@ namespace ranges {
         && same_as<sentinel_t<_Rng>, sentinel_t<const _Rng>>;
 
     template <class _Ty>
-    concept _Move_constructible_object = move_constructible<_Ty> && _Destructible_object<_Ty>;
+    concept _Valid_movable_box_object =
+#if _HAS_CXX23
+    move_constructible<_Ty>
+#else // ^^^ C++23 / C++20 vvv
+    copy_constructible<_Ty>
+#endif
+    && _Destructible_object<_Ty>;
 
     template <class _It>
     concept _Has_arrow = input_iterator<_It>
@@ -262,7 +268,8 @@ namespace ranges {
 
     // a simplified optional that augments copy_constructible types with full copyability,
     // and move_constructible types with full moveability.
-    template <_Move_constructible_object _Ty>
+    // In C++20, this corresponds to copyable-box.
+    template <_Valid_movable_box_object _Ty>
     class _Movable_box {
     public:
         constexpr _Movable_box() noexcept(is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
@@ -429,7 +436,7 @@ namespace ranges {
             || is_nothrow_move_constructible_v<_Ty>)
         );
 
-    template <_Move_constructible_object _Ty>
+    template <_Valid_movable_box_object _Ty>
         requires _Use_simple_movable_box_wrapper<_Ty>
     class _Movable_box<_Ty> { // provide the same API more efficiently when we can avoid the disengaged state
         // clang-format on
@@ -920,7 +927,7 @@ namespace ranges {
         inline constexpr empty_view<_Ty> empty;
     } // namespace views
 
-    template <_Move_constructible_object _Ty>
+    template <_Valid_movable_box_object _Ty>
     class single_view : public view_interface<single_view<_Ty>> {
     public:
         // clang-format off
@@ -1905,7 +1912,7 @@ namespace ranges {
 #define _NOEXCEPT_IDL0(...)
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
-    template <input_range _Vw, _Move_constructible_object _Fn>
+    template <input_range _Vw, _Valid_movable_box_object _Fn>
         requires view<_Vw>
             && regular_invocable<_Fn&, range_reference_t<_Vw>>
             && _Can_reference<invoke_result_t<_Fn&, range_reference_t<_Vw>>>
