@@ -216,6 +216,32 @@ utilities\meta\meta.unary\meta.unary.prop\is_literal_type.deprecated.fail.cpp
 # P2321R2 zip
 language.support\support.limits\support.limits.general\tuple.version.pass.cpp
 language.support\support.limits\support.limits.general\utility.version.pass.cpp
+ranges\range.adaptors\range.zip\begin.pass.cpp
+ranges\range.adaptors\range.zip\borrowing.compile.pass.cpp
+ranges\range.adaptors\range.zip\cpo.pass.cpp
+ranges\range.adaptors\range.zip\ctad.compile.pass.cpp
+ranges\range.adaptors\range.zip\ctor.default.pass.cpp
+ranges\range.adaptors\range.zip\ctor.views.pass.cpp
+ranges\range.adaptors\range.zip\end.pass.cpp
+ranges\range.adaptors\range.zip\general.pass.cpp
+ranges\range.adaptors\range.zip\iterator\arithmetic.pass.cpp
+ranges\range.adaptors\range.zip\iterator\compare.pass.cpp
+ranges\range.adaptors\range.zip\iterator\ctor.default.pass.cpp
+ranges\range.adaptors\range.zip\iterator\ctor.other.pass.cpp
+ranges\range.adaptors\range.zip\iterator\decrement.pass.cpp
+ranges\range.adaptors\range.zip\iterator\deref.pass.cpp
+ranges\range.adaptors\range.zip\iterator\increment.pass.cpp
+ranges\range.adaptors\range.zip\iterator\iter_move.pass.cpp
+ranges\range.adaptors\range.zip\iterator\iter_swap.pass.cpp
+ranges\range.adaptors\range.zip\iterator\member_types.compile.pass.cpp
+ranges\range.adaptors\range.zip\iterator\singular.pass.cpp
+ranges\range.adaptors\range.zip\iterator\subscript.pass.cpp
+ranges\range.adaptors\range.zip\range.concept.compile.pass.cpp
+ranges\range.adaptors\range.zip\sentinel\ctor.default.pass.cpp
+ranges\range.adaptors\range.zip\sentinel\ctor.other.pass.cpp
+ranges\range.adaptors\range.zip\sentinel\eq.pass.cpp
+ranges\range.adaptors\range.zip\sentinel\minus.pass.cpp
+ranges\range.adaptors\range.zip\size.pass.cpp
 
 
 # *** MISSING COMPILER FEATURES ***
@@ -369,6 +395,8 @@ ranges\range.adaptors\range.take\range_concept_conformance.compile.pass.cpp
 ranges\range.adaptors\range.transform\iterator\compare.pass.cpp
 ranges\range.req\range.refinements\random_access_range.compile.pass.cpp
 
+# GH-2978: Some fixes around std::ranges::enable_view
+ranges\range.req\range.view\enable_view.compile.pass.cpp
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -840,6 +868,15 @@ numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.bin\eval_param.pass.cpp
 numerics\rand\rand.dist\rand.dist.bern\rand.dist.bern.bin\eval.pass.cpp
 
 # Not yet analyzed
+# MSVC is saying "note: failure was caused by a read of a variable outside its lifetime"
+# for constant evaluation failure, which is buggy.
+# compare_strong_order_fallback.pass.cpp and compare_weak_order_fallback.pass.cpp are
+# using _VSTD, perhaps we should replace it with std, or some conditionally defined macro.
+language.support\cmp\cmp.alg\compare_partial_order_fallback.pass.cpp
+language.support\cmp\cmp.alg\compare_strong_order_fallback.pass.cpp
+language.support\cmp\cmp.alg\compare_weak_order_fallback.pass.cpp
+
+# Not yet analyzed
 algorithms\alg.modifying.operations\alg.copy\ranges.copy.pass.cpp
 algorithms\alg.modifying.operations\alg.copy\ranges.copy_backward.pass.cpp
 algorithms\alg.modifying.operations\alg.copy\ranges.copy_n.pass.cpp
@@ -925,9 +962,6 @@ iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_gte
 iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_lte.pass.cpp
 iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_spaceship.pass.cpp
 iterators\predef.iterators\move.iterators\move.iterator\iterator_concept_conformance.compile.pass.cpp
-language.support\cmp\cmp.alg\compare_partial_order_fallback.pass.cpp
-language.support\cmp\cmp.alg\compare_strong_order_fallback.pass.cpp
-language.support\cmp\cmp.alg\compare_weak_order_fallback.pass.cpp
 language.support\support.limits\support.limits.general\algorithm.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\chrono.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\cmath.version.compile.pass.cpp
@@ -1032,32 +1066,6 @@ ranges\range.adaptors\range.transform\iterator\requirements.compile.pass.cpp
 ranges\range.adaptors\range.transform\iterator\sentinel.pass.cpp
 ranges\range.adaptors\range.transform\iterator\types.pass.cpp
 ranges\range.adaptors\range.transform\size.pass.cpp
-ranges\range.adaptors\range.zip\begin.pass.cpp
-ranges\range.adaptors\range.zip\borrowing.compile.pass.cpp
-ranges\range.adaptors\range.zip\cpo.pass.cpp
-ranges\range.adaptors\range.zip\ctad.compile.pass.cpp
-ranges\range.adaptors\range.zip\ctor.default.pass.cpp
-ranges\range.adaptors\range.zip\ctor.views.pass.cpp
-ranges\range.adaptors\range.zip\end.pass.cpp
-ranges\range.adaptors\range.zip\general.pass.cpp
-ranges\range.adaptors\range.zip\iterator\arithmetic.pass.cpp
-ranges\range.adaptors\range.zip\iterator\compare.pass.cpp
-ranges\range.adaptors\range.zip\iterator\ctor.default.pass.cpp
-ranges\range.adaptors\range.zip\iterator\ctor.other.pass.cpp
-ranges\range.adaptors\range.zip\iterator\decrement.pass.cpp
-ranges\range.adaptors\range.zip\iterator\deref.pass.cpp
-ranges\range.adaptors\range.zip\iterator\increment.pass.cpp
-ranges\range.adaptors\range.zip\iterator\iter_move.pass.cpp
-ranges\range.adaptors\range.zip\iterator\iter_swap.pass.cpp
-ranges\range.adaptors\range.zip\iterator\member_types.compile.pass.cpp
-ranges\range.adaptors\range.zip\iterator\singular.pass.cpp
-ranges\range.adaptors\range.zip\iterator\subscript.pass.cpp
-ranges\range.adaptors\range.zip\range.concept.compile.pass.cpp
-ranges\range.adaptors\range.zip\sentinel\ctor.default.pass.cpp
-ranges\range.adaptors\range.zip\sentinel\ctor.other.pass.cpp
-ranges\range.adaptors\range.zip\sentinel\eq.pass.cpp
-ranges\range.adaptors\range.zip\sentinel\minus.pass.cpp
-ranges\range.adaptors\range.zip\size.pass.cpp
 ranges\range.factories\range.single.view\borrowing.compile.pass.cpp
 ranges\range.req\range.range\helper_aliases.compile.pass.cpp
 ranges\range.req\range.range\iterator_t.compile.pass.cpp
@@ -1069,7 +1077,6 @@ ranges\range.req\range.refinements\forward_range.compile.pass.cpp
 ranges\range.req\range.refinements\input_range.compile.pass.cpp
 ranges\range.req\range.refinements\output_range.compile.pass.cpp
 ranges\range.req\range.refinements\viewable_range.compile.pass.cpp
-ranges\range.req\range.view\enable_view.compile.pass.cpp
 strings\basic.string\string.cons\dtor.pass.cpp
 strings\basic.string\string.cons\implicit_deduction_guides.pass.cpp
 strings\basic.string\string.modifiers\string_erase\iter.pass.cpp
