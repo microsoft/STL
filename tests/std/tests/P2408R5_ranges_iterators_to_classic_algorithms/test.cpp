@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
+#include <array>
 #include <execution>
+#include <initializer_list>
 #include <ranges>
 
 #include <range_algorithm_support.hpp>
@@ -89,7 +91,7 @@ struct binary_algorithms {
     static void call() {
         if constexpr (forward_iterator<I1> || _Is_fwd_iter_v<I2>) {
             helper<I1, I2> h({0, 0, 1, 2, 3, 3, 4, 5});
-            initializer_list exp{0, 1, 2, 3, 4, 5};
+            array exp{0, 1, 2, 3, 4, 5};
             auto it = unique_copy(hcbegin<0>(h), hcend<0>(h), hbegin<1>(h));
             assert(equal(hbegin<1>(h), it, exp.begin(), exp.end()));
         }
@@ -111,7 +113,7 @@ struct binary_algorithms {
             }
             if constexpr (_Is_fwd_iter_v<I2>) {
                 helper<I1, I2> h{{0, 1, 2, 3, 4, 5}};
-                initializer_list expected{0, 1, 2, 4, 5};
+                array expected{0, 1, 2, 4, 5};
                 auto it = copy_if(seq, hcbegin<0>(h), hcend<0>(h), hbegin<1>(h), [](int x) { return x != 3; });
                 assert(equal(hbegin<1>(h), it, expected.begin(), expected.end()));
             }
@@ -127,8 +129,8 @@ struct ternary_algorithms {
             using execution::seq;
             if constexpr (_Is_fwd_iter_v<I2> && _Is_fwd_iter_v<I3>) {
                 helper<I1, I2, I3> h{{0, 1, 2, 3, 4, 5}};
-                initializer_list exp1{0, 1};
-                initializer_list exp2{2, 3, 4, 5};
+                array exp1{0, 1};
+                array exp2{2, 3, 4, 5};
                 auto pr = partition_copy(
                     seq, hcbegin<0>(h), hcend<0>(h), hbegin<1>(h), hbegin<2>(h), [](int x) { return x < 2; });
                 assert(equal(hbegin<1>(h), pr.first, exp1.begin(), exp1.end()));
@@ -174,7 +176,7 @@ struct instantiator {
             C<cpp17_random_iter, Its...>::call();
         }
     };
-    using curry = curry_t<>::curry;
+    using curry = typename curry_t<>::curry;
 
     static void call() {
         curry_t<>::call();
