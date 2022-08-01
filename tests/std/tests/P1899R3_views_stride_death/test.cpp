@@ -3,6 +3,7 @@
 
 #define _CONTAINER_DEBUG_LEVEL 1
 
+#include <cstddef>
 #include <limits>
 #include <ranges>
 
