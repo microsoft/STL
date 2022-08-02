@@ -645,6 +645,25 @@ ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
 # https://reviews.llvm.org/D130963
 numerics\rand\rand.dist\rand.dist.samp\rand.dist.samp.discrete\eval.pass.cpp
 
+# This test assumes that std::array<int, 4>::iterator is int*, but on MSVC STL it's _Array_iterator.
+# Other std/algorithm test failures likely have the same cause.
+algorithms\alg.modifying.operations\alg.copy\ranges.copy.pass.cpp
+algorithms\alg.modifying.operations\alg.copy\ranges.copy_backward.pass.cpp
+algorithms\alg.modifying.operations\alg.copy\ranges.copy_n.pass.cpp
+algorithms\alg.modifying.operations\alg.fill\ranges.fill.pass.cpp
+algorithms\alg.modifying.operations\alg.move\ranges.move.pass.cpp
+algorithms\alg.modifying.operations\alg.move\ranges.move_backward.pass.cpp
+algorithms\alg.modifying.operations\alg.partitions\ranges_partition_copy.pass.cpp
+algorithms\alg.modifying.operations\alg.partitions\ranges_stable_partition.pass.cpp
+algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
+algorithms\alg.modifying.operations\alg.remove\ranges.remove.pass.cpp
+algorithms\alg.modifying.operations\alg.remove\ranges.remove_if.pass.cpp
+algorithms\alg.modifying.operations\alg.replace\ranges.replace.pass.cpp
+algorithms\alg.modifying.operations\alg.rotate\ranges.rotate_copy.pass.cpp
+algorithms\alg.modifying.operations\alg.swap\ranges.swap_ranges.pass.cpp
+algorithms\alg.modifying.operations\alg.transform\ranges.transform.pass.cpp
+algorithms\alg.modifying.operations\alg.unique\ranges_unique_copy.pass.cpp
+
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Various assertions.
 re\re.alg\re.alg.match\awk.pass.cpp
@@ -876,22 +895,6 @@ language.support\cmp\cmp.alg\compare_strong_order_fallback.pass.cpp
 language.support\cmp\cmp.alg\compare_weak_order_fallback.pass.cpp
 
 # Not yet analyzed
-algorithms\alg.modifying.operations\alg.copy\ranges.copy.pass.cpp
-algorithms\alg.modifying.operations\alg.copy\ranges.copy_backward.pass.cpp
-algorithms\alg.modifying.operations\alg.copy\ranges.copy_n.pass.cpp
-algorithms\alg.modifying.operations\alg.fill\ranges.fill.pass.cpp
-algorithms\alg.modifying.operations\alg.move\ranges.move.pass.cpp
-algorithms\alg.modifying.operations\alg.move\ranges.move_backward.pass.cpp
-algorithms\alg.modifying.operations\alg.partitions\ranges_partition_copy.pass.cpp
-algorithms\alg.modifying.operations\alg.partitions\ranges_stable_partition.pass.cpp
-algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
-algorithms\alg.modifying.operations\alg.remove\ranges.remove.pass.cpp
-algorithms\alg.modifying.operations\alg.remove\ranges.remove_if.pass.cpp
-algorithms\alg.modifying.operations\alg.replace\ranges.replace.pass.cpp
-algorithms\alg.modifying.operations\alg.rotate\ranges.rotate_copy.pass.cpp
-algorithms\alg.modifying.operations\alg.swap\ranges.swap_ranges.pass.cpp
-algorithms\alg.modifying.operations\alg.transform\ranges.transform.pass.cpp
-algorithms\alg.modifying.operations\alg.unique\ranges_unique_copy.pass.cpp
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
 algorithms\alg.nonmodifying\alg.any_of\ranges.any_of.pass.cpp
 algorithms\alg.nonmodifying\alg.equal\ranges.equal.pass.cpp

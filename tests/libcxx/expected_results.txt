@@ -639,6 +639,25 @@ std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass
 # https://reviews.llvm.org/D130963
 std/numerics/rand/rand.dist/rand.dist.samp/rand.dist.samp.discrete/eval.pass.cpp SKIPPED
 
+# This test assumes that std::array<int, 4>::iterator is int*, but on MSVC STL it's _Array_iterator.
+# Other std/algorithm test failures likely have the same cause.
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.fill/ranges.fill.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.partitions/ranges_partition_copy.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.partitions/ranges_stable_partition.pass.cpp:1 FAIL
+std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.remove/ranges.remove.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.remove/ranges.remove_if.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.replace/ranges.replace.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.rotate/ranges.rotate_copy.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.pass.cpp:0 FAIL
+std/algorithms/alg.modifying.operations/alg.unique/ranges_unique_copy.pass.cpp FAIL
+
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Various assertions.
 std/re/re.alg/re.alg.match/awk.pass.cpp FAIL
@@ -872,22 +891,6 @@ std/language.support/cmp/cmp.alg/compare_weak_order_fallback.pass.cpp FAIL
 std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp SKIPPED
 
 # Not yet analyzed
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_backward.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.copy/ranges.copy_n.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.fill/ranges.fill.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.partitions/ranges_partition_copy.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.partitions/ranges_stable_partition.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.remove/ranges.remove.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.remove/ranges.remove_if.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.replace/ranges.replace.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.rotate/ranges.rotate_copy.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.pass.cpp:0 FAIL
-std/algorithms/alg.modifying.operations/alg.unique/ranges_unique_copy.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.all_of/ranges.all_of.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.any_of/ranges.any_of.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
