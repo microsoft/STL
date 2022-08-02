@@ -3,9 +3,13 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
+#include <cstddef>
 #include <execution>
 #include <initializer_list>
 #include <ranges>
+#include <tuple>
+#include <vector>
 
 #include <range_algorithm_support.hpp>
 
@@ -20,7 +24,7 @@ Input second_v(Input x) {
 
 template <class I>
 struct iterator_adaptor {
-    std::vector<int> v;
+    vector<int> v;
     iterator_adaptor(initializer_list<int> il) : v(il) {}
     iterator_adaptor(size_t n) : v(n) {}
 
@@ -50,7 +54,7 @@ struct helper {
         get<0>(tup).v.assign(il);
     }
 
-    std::tuple<iterator_adaptor<Is>...> tup;
+    tuple<iterator_adaptor<Is>...> tup;
 };
 
 template <size_t Idx, class... Is>
