@@ -420,27 +420,20 @@ namespace ranges {
         bool _Engaged;
     };
 
-    // clang-format off
+    // [range.move.wrap]
     template <class _Ty>
     concept _Use_simple_movable_box_wrapper =
-        // [range.move.wrap]
-        // 1. If copy_constructible<T> is true, movable-box<T> should store only a T if either T models copyable, or
-        // is_nothrow_move_constructible_v<T> && is_nothrow_copy_constructible_v<T> is true.
-        (copy_constructible<_Ty> && (
-            copyable<_Ty>
-            || (is_nothrow_move_constructible_v<_Ty> && is_nothrow_copy_constructible_v<_Ty>)
-        ))
-        // 2. Otherwise, movable-box<T> should store only a T if either T models movable or
-        // is_nothrow_move_constructible_v<T> is true.
-        || (!copy_constructible<_Ty> && (
-            movable<_Ty>
-            || is_nothrow_move_constructible_v<_Ty>)
-        );
+        (copy_constructible<_Ty>
+                // 1. If copy_constructible<T> is true, movable-box<T> should store only a T if either T models
+                // copyable, or is_nothrow_move_constructible_v<T> && is_nothrow_copy_constructible_v<T> is true.
+                ? copyable<_Ty> || (is_nothrow_move_constructible_v<_Ty> && is_nothrow_copy_constructible_v<_Ty>)
+                // 2. Otherwise, movable-box<T> should store only a T if either T models movable or
+                // is_nothrow_move_constructible_v<T> is true.
+                : movable<_Ty> || is_nothrow_move_constructible_v<_Ty>);
 
     template <_Valid_movable_box_object _Ty>
         requires _Use_simple_movable_box_wrapper<_Ty>
     class _Movable_box<_Ty> { // provide the same API more efficiently when we can avoid the disengaged state
-        // clang-format on
     public:
         // clang-format off
         _Movable_box() requires default_initializable<_Ty> = default;
@@ -936,8 +929,7 @@ namespace ranges {
         // clang-format on
 
         constexpr explicit single_view(const _Ty& _Val_) noexcept(is_nothrow_copy_constructible_v<_Ty>) // strengthened
-            requires(copy_constructible<T>)
-            : _Val{in_place, _Val_} {}
+            requires copy_constructible<_Ty> : _Val{in_place, _Val_} {}
         constexpr explicit single_view(_Ty&& _Val_) noexcept(is_nothrow_move_constructible_v<_Ty>) // strengthened
             : _Val{in_place, _STD move(_Val_)} {}
 
