@@ -898,7 +898,7 @@ language.support\cmp\cmp.alg\compare_weak_order_fallback.pass.cpp
 strings\string.view\string.view.cons\from_range.pass.cpp
 
 # Not yet analyzed. This test seemly fails for ARM/ARM64 platforms because MSVC STL considers `tinyness_before` to be
-# always `false` even for ARM, but libc++ considers it to be `true` for floating-point types on ARM. 
+# always `false` even for ARM, but libc++ considers it to be `true` for floating-point types on ARM.
 # I don't know which is right.
 language.support\support.limits\limits\numeric.limits.members\tinyness_before.pass.cpp
 
