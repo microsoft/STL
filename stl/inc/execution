@@ -3397,7 +3397,6 @@ _FwdIt _Partition_merge(const _FwdIt _False_first, const _FwdIt _True_first, con
     const _Iter_diff_t<_FwdIt> _Count1, const _Iter_diff_t<_FwdIt> _Count2) {
     // Merge partition ranges where [_False_first, _True_first) are falses, [_True_first, _True_last) are trues
     // pre: _Count1 == distance(_False_first, _True_first) && _Count2 == distance(_True_first, _True_last)
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     if (_Count1 < _Count2) { // move the false range to the end of the true range
         const _Iter_diff_t<_FwdIt> _Offset = _Count2 - _Count1;
         auto _Result                       = _True_first;

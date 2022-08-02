@@ -886,7 +886,6 @@ _INLINE_VAR constexpr bool _Is_ranges_random_iter_v =
     static_assert(_Is_cpp17_fwd_iter_v<_Iter>, \
         "Non-ranges algorithms require that mutable iterators be Cpp17ForwardIterators or stronger.")
 
-
 template <class, class = void>
 struct _Is_checked_helper {}; // default definition, no longer used, retained due to pseudo-documentation
 
@@ -5252,7 +5251,6 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
     // exchange the ranges [_First, _Mid) and [_Mid, _Last)
     // that is, rotates [_First, _Last) left by distance(_First, _Mid) positions
     // returns the iterator pointing at *_First's new home
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Mid);
     _Adl_verify_range(_Mid, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
