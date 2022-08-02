@@ -1,6 +1,6 @@
-# Microsoft's C++ Standard Library
+# Microsoft's C++ Standard Template Library
 
-This is the official repository for Microsoft's implementation of the C++ Standard Library (also known as the STL),
+This is the official repository for Microsoft's implementation of the C++ Standard Template Library (also known as the STL),
 which ships as part of the MSVC toolset and the Visual Studio IDE.
 
 * Our [Changelog][] tracks which updates to this repository appear in each VS release.
