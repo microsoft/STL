@@ -890,6 +890,9 @@ std/language.support/cmp/cmp.alg/compare_weak_order_fallback.pass.cpp FAIL
 # Not yet analyzed. Run forever
 std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp SKIPPED
 
+# Not yet analyzed. error: "test/support/test_range.h" can only be included in builds supporting ranges
+std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
+
 # Not yet analyzed
 std/algorithms/alg.nonmodifying/alg.all_of/ranges.all_of.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.any_of/ranges.any_of.pass.cpp FAIL

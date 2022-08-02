@@ -894,6 +894,9 @@ language.support\cmp\cmp.alg\compare_partial_order_fallback.pass.cpp
 language.support\cmp\cmp.alg\compare_strong_order_fallback.pass.cpp
 language.support\cmp\cmp.alg\compare_weak_order_fallback.pass.cpp
 
+# Not yet analyzed. error: "test/support/test_range.h" can only be included in builds supporting ranges
+strings\string.view\string.view.cons\from_range.pass.cpp
+
 # Not yet analyzed
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
 algorithms\alg.nonmodifying\alg.any_of\ranges.any_of.pass.cpp
