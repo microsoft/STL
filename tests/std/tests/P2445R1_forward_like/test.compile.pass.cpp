@@ -27,52 +27,94 @@ constexpr owner_type owner_c{};
 constexpr const owner_type& owner_clref  = owner_c;
 constexpr const owner_type&& owner_crref = move(owner_c);
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner)>(owner.m_mutobj)), int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner)>(owner.m_mutlref)), int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner)>(owner.m_mutrref)), int&&>);
+using owner_t              = decltype(owner);
+using mutobj_from_owner_t  = decltype(forward_like<owner_t>(owner.m_mutobj));
+using mutlref_from_owner_t = decltype(forward_like<owner_t>(owner.m_mutlref));
+using mutrref_from_owner_t = decltype(forward_like<owner_t>(owner.m_mutrref));
+using cobj_from_owner_t    = decltype(forward_like<owner_t>(owner.m_cobj));
+using clref_from_owner_t   = decltype(forward_like<owner_t>(owner.m_clref));
+using crref_from_owner_t   = decltype(forward_like<owner_t>(owner.m_crref));
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner)>(owner.m_cobj)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner)>(owner.m_clref)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner)>(owner.m_crref)), const int&&>);
+static_assert(is_same_v<mutobj_from_owner_t, int&&>);
+static_assert(is_same_v<mutlref_from_owner_t, int&&>);
+static_assert(is_same_v<mutrref_from_owner_t, int&&>);
+static_assert(is_same_v<cobj_from_owner_t, const int&&>);
+static_assert(is_same_v<clref_from_owner_t, const int&&>);
+static_assert(is_same_v<crref_from_owner_t, const int&&>);
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner_lref)>(owner_lref.m_mutobj)), int&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_lref)>(owner_lref.m_mutlref)), int&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_lref)>(owner_lref.m_mutrref)), int&>);
+using owner_lref_t              = decltype(owner_lref);
+using mutobj_from_owner_lref_t  = decltype(forward_like<owner_lref_t>(owner_lref.m_mutobj));
+using mutlref_from_owner_lref_t = decltype(forward_like<owner_lref_t>(owner_lref.m_mutlref));
+using mutrref_from_owner_lref_t = decltype(forward_like<owner_lref_t>(owner_lref.m_mutrref));
+using cobj_from_owner_lref_t    = decltype(forward_like<owner_lref_t>(owner_lref.m_cobj));
+using clref_from_owner_lref_t   = decltype(forward_like<owner_lref_t>(owner_lref.m_clref));
+using crref_from_owner_lref_t   = decltype(forward_like<owner_lref_t>(owner_lref.m_crref));
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner_lref)>(owner_lref.m_cobj)), const int&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_lref)>(owner_lref.m_clref)), const int&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_lref)>(owner_lref.m_crref)), const int&>);
+static_assert(is_same_v<mutobj_from_owner_lref_t, int&>);
+static_assert(is_same_v<mutlref_from_owner_lref_t, int&>);
+static_assert(is_same_v<mutrref_from_owner_lref_t, int&>);
+static_assert(is_same_v<cobj_from_owner_lref_t, const int&>);
+static_assert(is_same_v<clref_from_owner_lref_t, const int&>);
+static_assert(is_same_v<crref_from_owner_lref_t, const int&>);
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner_rref)>(owner_rref.m_mutobj)), int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_rref)>(owner_rref.m_mutlref)), int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_rref)>(owner_rref.m_mutrref)), int&&>);
+using owner_rref_t              = decltype(owner_rref);
+using mutobj_from_owner_rref_t  = decltype(forward_like<owner_rref_t>(owner_rref.m_mutobj));
+using mutlref_from_owner_rref_t = decltype(forward_like<owner_rref_t>(owner_rref.m_mutlref));
+using mutrref_from_owner_rref_t = decltype(forward_like<owner_rref_t>(owner_rref.m_mutrref));
+using cobj_from_owner_rref_t    = decltype(forward_like<owner_rref_t>(owner_rref.m_cobj));
+using clref_from_owner_rref_t   = decltype(forward_like<owner_rref_t>(owner_rref.m_clref));
+using crref_from_owner_rref_t   = decltype(forward_like<owner_rref_t>(owner_rref.m_crref));
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner_rref)>(owner_rref.m_cobj)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_rref)>(owner_rref.m_clref)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_rref)>(owner_rref.m_crref)), const int&&>);
+static_assert(is_same_v<mutobj_from_owner_rref_t, int&&>);
+static_assert(is_same_v<mutlref_from_owner_rref_t, int&&>);
+static_assert(is_same_v<mutrref_from_owner_rref_t, int&&>);
+static_assert(is_same_v<cobj_from_owner_rref_t, const int&&>);
+static_assert(is_same_v<clref_from_owner_rref_t, const int&&>);
+static_assert(is_same_v<crref_from_owner_rref_t, const int&&>);
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner_c)>(owner_c.m_mutobj)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_c)>(owner_c.m_mutlref)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_c)>(owner_c.m_mutrref)), const int&&>);
+using owner_c_t              = decltype(owner_c);
+using mutobj_from_owner_c_t  = decltype(forward_like<owner_c_t>(owner_c.m_mutobj));
+using mutlref_from_owner_c_t = decltype(forward_like<owner_c_t>(owner_c.m_mutlref));
+using mutrref_from_owner_c_t = decltype(forward_like<owner_c_t>(owner_c.m_mutrref));
+using cobj_from_owner_c_t    = decltype(forward_like<owner_c_t>(owner_c.m_cobj));
+using clref_from_owner_c_t   = decltype(forward_like<owner_c_t>(owner_c.m_clref));
+using crref_from_owner_c_t   = decltype(forward_like<owner_c_t>(owner_c.m_crref));
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner_c)>(owner_c.m_cobj)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_c)>(owner_c.m_clref)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_c)>(owner_c.m_crref)), const int&&>);
+static_assert(is_same_v<mutobj_from_owner_c_t, const int&&>);
+static_assert(is_same_v<mutlref_from_owner_c_t, const int&&>);
+static_assert(is_same_v<mutrref_from_owner_c_t, const int&&>);
+static_assert(is_same_v<cobj_from_owner_c_t, const int&&>);
+static_assert(is_same_v<clref_from_owner_c_t, const int&&>);
+static_assert(is_same_v<crref_from_owner_c_t, const int&&>);
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner_clref)>(owner_clref.m_mutobj)), const int&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_clref)>(owner_clref.m_mutlref)), const int&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_clref)>(owner_clref.m_mutrref)), const int&>);
+using owner_clref_t              = decltype(owner_clref);
+using mutobj_from_owner_clref_t  = decltype(forward_like<owner_clref_t>(owner_clref.m_mutobj));
+using mutlref_from_owner_clref_t = decltype(forward_like<owner_clref_t>(owner_clref.m_mutlref));
+using mutrref_from_owner_clref_t = decltype(forward_like<owner_clref_t>(owner_clref.m_mutrref));
+using cobj_from_owner_clref_t    = decltype(forward_like<owner_clref_t>(owner_clref.m_cobj));
+using clref_from_owner_clref_t   = decltype(forward_like<owner_clref_t>(owner_clref.m_clref));
+using crref_from_owner_clref_t   = decltype(forward_like<owner_clref_t>(owner_clref.m_crref));
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner_clref)>(owner_clref.m_cobj)), const int&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_clref)>(owner_clref.m_clref)), const int&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_clref)>(owner_clref.m_crref)), const int&>);
+static_assert(is_same_v<mutobj_from_owner_clref_t, const int&>);
+static_assert(is_same_v<mutlref_from_owner_clref_t, const int&>);
+static_assert(is_same_v<mutrref_from_owner_clref_t, const int&>);
+static_assert(is_same_v<cobj_from_owner_clref_t, const int&>);
+static_assert(is_same_v<clref_from_owner_clref_t, const int&>);
+static_assert(is_same_v<crref_from_owner_clref_t, const int&>);
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner_crref)>(owner_crref.m_mutobj)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_crref)>(owner_crref.m_mutlref)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_crref)>(owner_crref.m_mutrref)), const int&&>);
+using owner_crref_t              = decltype(owner_crref);
+using mutobj_from_owner_crref_t  = decltype(forward_like<owner_crref_t>(owner_crref.m_mutobj));
+using mutlref_from_owner_crref_t = decltype(forward_like<owner_crref_t>(owner_crref.m_mutlref));
+using mutrref_from_owner_crref_t = decltype(forward_like<owner_crref_t>(owner_crref.m_mutrref));
+using cobj_from_owner_crref_t    = decltype(forward_like<owner_crref_t>(owner_crref.m_cobj));
+using clref_from_owner_crref_t   = decltype(forward_like<owner_crref_t>(owner_crref.m_clref));
+using crref_from_owner_crref_t   = decltype(forward_like<owner_crref_t>(owner_crref.m_crref));
 
-static_assert(is_same_v<decltype(forward_like<decltype(owner_crref)>(owner_crref.m_cobj)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_crref)>(owner_crref.m_clref)), const int&&>);
-static_assert(is_same_v<decltype(forward_like<decltype(owner_crref)>(owner_crref.m_crref)), const int&&>);
+static_assert(is_same_v<mutobj_from_owner_crref_t, const int&&>);
+static_assert(is_same_v<mutlref_from_owner_crref_t, const int&&>);
+static_assert(is_same_v<mutrref_from_owner_crref_t, const int&&>);
+static_assert(is_same_v<cobj_from_owner_crref_t, const int&&>);
+static_assert(is_same_v<clref_from_owner_crref_t, const int&&>);
+static_assert(is_same_v<crref_from_owner_crref_t, const int&&>);
 
 int main() {} // COMPILE-ONLY
