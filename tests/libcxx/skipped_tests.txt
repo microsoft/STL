@@ -55,10 +55,6 @@ language.support\support.limits\support.limits.general\optional.version.pass.cpp
 # Bogus test believes that copyability of array<T, 0> must be the same as array<T, 1>
 containers\sequences\array\array.cons\implicit_copy.pass.cpp
 
-# libc++ doesn't yet implement P2499R0
-strings\string.view\string.view.cons\from_range.pass.cpp
-strings\string.view\string.view.deduct\range.pass.cpp
-
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 utilities\format\format.functions\vformat_to.locale.pass.cpp
 utilities\format\format.functions\vformat_to.pass.cpp
