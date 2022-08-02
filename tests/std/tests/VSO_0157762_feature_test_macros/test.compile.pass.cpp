@@ -30,7 +30,7 @@ STATIC_ASSERT(__cpp_lib_adaptor_iterator_pair_constructor == 202106L);
 STATIC_ASSERT(__cpp_lib_addressof_constexpr == 201603L);
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts)
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_algorithm_iterator_requirements
 #error __cpp_lib_algorithm_iterator_requirements is not defined
 #elif __cpp_lib_algorithm_iterator_requirements != 202207L

@@ -4097,12 +4097,12 @@ namespace ranges {
 #endif // __cpp_lib_concepts
 
 template <class _InIt, class _OutIt>
-#if defined(__cpp_lib_concepts)
-concept _Can_reread_dest
+#ifdef __cpp_lib_concepts
+concept
 #else
-_INLINE_VAR constexpr bool _Can_reread_dest
+_INLINE_VAR constexpr bool
 #endif
-    = _Is_fwd_iter_v<_OutIt> //
+    _Can_reread_dest = _Is_fwd_iter_v<_OutIt> //
     && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
 
 template <class _InIt, class _OutIt, class _Pr>
