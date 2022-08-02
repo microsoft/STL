@@ -52,7 +52,7 @@ namespace ranges {
     move_constructible<_Ty>
 #else // ^^^ C++23 / C++20 vvv
     copy_constructible<_Ty>
-#endif
+#endif // C++20
     && _Destructible_object<_Ty>;
 
     template <class _It>
@@ -266,8 +266,8 @@ namespace ranges {
     template <bool _Enable, class _Rng, class _Derived>
     using _Cached_position_t = conditional_t<_Enable, _Cached_position<_Rng, _Derived>, view_interface<_Derived>>;
 
-    // a simplified optional that augments copy_constructible types with full copyability,
-    // and move_constructible types with full moveability.
+    // A simplified optional that augments copy_constructible types with full copyability,
+    // and move_constructible types with full movability.
     // In C++20, this corresponds to copyable-box.
     template <_Valid_movable_box_object _Ty>
     class _Movable_box {
@@ -423,13 +423,14 @@ namespace ranges {
     // clang-format off
     template <class _Ty>
     concept _Use_simple_movable_box_wrapper =
+        // [range.move.wrap]
         // 1. If copy_constructible<T> is true, movable-box<T> should store only a T if either T models copyable, or
         // is_nothrow_move_constructible_v<T> && is_nothrow_copy_constructible_v<T> is true.
         (copy_constructible<_Ty> && (
             copyable<_Ty>
             || (is_nothrow_move_constructible_v<_Ty> && is_nothrow_copy_constructible_v<_Ty>)
         ))
-        // Otherwise, movable-box<T> should store only a T if either T models movable or
+        // 2. Otherwise, movable-box<T> should store only a T if either T models movable or
         // is_nothrow_move_constructible_v<T> is true.
         || (!copy_constructible<_Ty> && (
             movable<_Ty>
@@ -935,6 +936,7 @@ namespace ranges {
         // clang-format on
 
         constexpr explicit single_view(const _Ty& _Val_) noexcept(is_nothrow_copy_constructible_v<_Ty>) // strengthened
+            requires(copy_constructible<T>)
             : _Val{in_place, _Val_} {}
         constexpr explicit single_view(_Ty&& _Val_) noexcept(is_nothrow_move_constructible_v<_Ty>) // strengthened
             : _Val{in_place, _STD move(_Val_)} {}

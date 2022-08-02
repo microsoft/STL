@@ -316,6 +316,7 @@
 // P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
+// P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R0 unexpected<E>::error()
 
@@ -1511,14 +1512,6 @@
 #endif // language mode
 #endif // _M_CEE
 
-#if defined(__cpp_lib_concepts)
-#if _HAS_CXX23
-#define __cpp_lib_ranges 202207L // P2494R2 Relaxing Range Adaptors to Allow for Move-only Types
-#elif _HAS_CXX20
-#define __cpp_lib_ranges 202110L // P2415R2 What is a view?
-#endif
-#endif // defined(__cpp_lib_concepts)
-
 #if _HAS_CXX23 && defined(__cpp_lib_concepts)
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
@@ -1526,6 +1519,15 @@
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
 #endif // _HAS_CXX17
+
+#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
+#define __cpp_lib_ranges 202207L // P2494R2 Relaxing Range Adaptors To Allow For Move-Only Types
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#define __cpp_lib_ranges 202110L // P2415R2 What Is A View?
+#endif // _HAS_CXX20
+#endif // defined(__cpp_lib_concepts)
+
 
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays

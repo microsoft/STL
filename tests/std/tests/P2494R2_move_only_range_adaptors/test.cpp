@@ -5,82 +5,81 @@
 #include <cassert>
 #include <iterator>
 #include <ranges>
+#include <stdio.h>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 using namespace std;
 
 struct BaseTransform {
-    BaseTransform(int v) : val(v) {}
+    explicit BaseTransform(int v) : val(v) {}
     int operator()(int x) {
-        return x * val;
+        return val++ * x;
     }
     int val;
 };
 
-struct CopyableTransform : BaseTransform {
-    using BaseTransform::BaseTransform;
-
-    CopyableTransform(const CopyableTransform&)            = default;
-    CopyableTransform& operator=(const CopyableTransform&) = default;
-};
-struct CopyConstructibleTransform : BaseTransform {
-    using BaseTransform::BaseTransform;
-
-    CopyConstructibleTransform(const CopyConstructibleTransform&)            = default;
-    CopyConstructibleTransform& operator=(const CopyConstructibleTransform&) = delete;
-};
-struct CopyConstructibleExceptTransform : BaseTransform {
-    using BaseTransform::BaseTransform;
-
-    CopyConstructibleExceptTransform(const CopyConstructibleExceptTransform& other) : BaseTransform(other.val) {}
-    CopyConstructibleExceptTransform& operator=(const CopyConstructibleExceptTransform&) = delete;
-};
-struct MovableTransform : BaseTransform {
-    using BaseTransform::BaseTransform;
-
-    MovableTransform(const MovableTransform&)            = delete;
-    MovableTransform(MovableTransform&&)                 = default;
-    MovableTransform& operator=(const MovableTransform&) = delete;
-    MovableTransform& operator=(MovableTransform&&)      = default;
-};
-struct MoveConstructibleTransform : BaseTransform {
-    using BaseTransform::BaseTransform;
-
-    MoveConstructibleTransform(const MoveConstructibleTransform&)            = delete;
-    MoveConstructibleTransform(MoveConstructibleTransform&&)                 = default;
-    MoveConstructibleTransform& operator=(const MoveConstructibleTransform&) = delete;
-    MoveConstructibleTransform& operator=(MoveConstructibleTransform&&)      = delete;
-};
-struct MoveConstructibleExceptTransform : BaseTransform {
-    using BaseTransform::BaseTransform;
-
-    MoveConstructibleExceptTransform(const MoveConstructibleExceptTransform&) = delete;
-    MoveConstructibleExceptTransform(MoveConstructibleExceptTransform&& other) : BaseTransform(other.val) {}
-    MoveConstructibleExceptTransform& operator=(const MoveConstructibleExceptTransform&) = delete;
-    MoveConstructibleExceptTransform& operator=(MoveConstructibleExceptTransform&&)      = delete;
+enum SmfKind {
+    Nothrow,
+    Throwing,
+    Deleted,
 };
 
-template <class T>
+template <SmfKind CCtor, SmfKind MCtor, SmfKind CAssign, SmfKind MAssign>
+struct Transform : BaseTransform {
+    using BaseTransform::BaseTransform;
+
+    Transform(const Transform&) noexcept(CCtor == Nothrow) //
+        requires(CCtor != Deleted)                         = default;
+    Transform(const Transform&) requires(CCtor == Deleted) = delete;
+
+    Transform(Transform&&) noexcept(MCtor == Nothrow) //
+        requires(MCtor != Deleted)                    = default;
+    Transform(Transform&&) requires(MCtor == Deleted) = delete;
+
+    Transform& operator=(const Transform&) noexcept(CAssign == Nothrow) //
+        requires(CAssign != Deleted)                                    = default;
+    Transform& operator=(const Transform&) requires(CAssign == Deleted) = delete;
+
+    Transform& operator=(Transform&&) noexcept(MAssign == Nothrow) //
+        requires(MAssign != Deleted)                               = default;
+    Transform& operator=(Transform&&) requires(MAssign == Deleted) = delete;
+};
+
+template <SmfKind CCtor, SmfKind MCtor, SmfKind CAssign, SmfKind MAssign>
 void test_transform() {
-    T t{2};
+    using T = Transform<CCtor, MCtor, CAssign, MAssign>;
+    T t{1};
 
     vector<int> v;
-    ranges::copy(array{0, 1, 2, 3, 4, 5} | views::transform(std::move(t)), back_inserter(v));
-    assert(ranges::equal(v, initializer_list<int>{0, 2, 4, 6, 8, 10}));
+    ranges::copy(array{0, 1, 2, 3, 4, 5} | views::transform(move(t)), back_inserter(v));
+    assert(ranges::equal(v, array{0, 2, 6, 12, 20, 30}));
 
-    if constexpr (copyable<T> || is_nothrow_copy_constructible_v<T>) {
+    if constexpr ( //
+        (is_copy_constructible_v<T> && //
+            (copyable<T> || (is_nothrow_copy_constructible_v<T> && is_nothrow_move_constructible_v<T>) ))
+        || (!is_copy_constructible_v<T> && (movable<T> || is_nothrow_move_constructible_v<T>) )) {
         static_assert(sizeof(ranges::_Movable_box<T>) == sizeof(T));
-    } else if constexpr (movable<T> || is_nothrow_move_constructible_v<T>) {
-        static_assert(sizeof(ranges::_Movable_box<T>) == sizeof(T));
+    } else {
+        static_assert(sizeof(ranges::_Movable_box<T>) > sizeof(T));
     }
 }
 
 int main() {
-    test_transform<CopyableTransform>();
-    test_transform<CopyConstructibleTransform>();
-    test_transform<CopyConstructibleExceptTransform>();
-    test_transform<MovableTransform>();
-    test_transform<MoveConstructibleTransform>();
-    test_transform<MoveConstructibleExceptTransform>();
+    test_transform<Nothrow, Nothrow, Nothrow, Nothrow>();
+    test_transform<Throwing, Throwing, Throwing, Throwing>();
+
+    test_transform<Nothrow, Nothrow, Deleted, Deleted>();
+    test_transform<Nothrow, Throwing, Deleted, Deleted>();
+    test_transform<Throwing, Nothrow, Deleted, Deleted>();
+    test_transform<Throwing, Throwing, Deleted, Deleted>();
+
+    test_transform<Deleted, Nothrow, Deleted, Nothrow>();
+    test_transform<Deleted, Nothrow, Deleted, Throwing>();
+    test_transform<Deleted, Nothrow, Deleted, Deleted>();
+
+    test_transform<Deleted, Throwing, Deleted, Nothrow>();
+    test_transform<Deleted, Throwing, Deleted, Throwing>();
+    test_transform<Deleted, Throwing, Deleted, Deleted>();
 }
