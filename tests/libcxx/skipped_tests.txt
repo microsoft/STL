@@ -535,9 +535,8 @@ numerics\rand\rand.dis\rand.dist.bern\rand.dist.bern.negbin\eval.pass.cpp
 # They shouldn't behave differently. Both of them should probably return NaN.
 numerics\c.math\lerp.pass.cpp
 
-# conversion from '__int64' to 'long', possible loss of data
-utilities\time\time.hms\time.hms.members\seconds.pass.cpp
-utilities\time\time.hms\time.hms.members\subseconds.pass.cpp
+# --month{14} should be 1, not 13 as the test expects
+time\time.cal\time.cal.month\time.cal.month.members\decrement.pass.cpp
 
 # Bogus test passes a class type as the second argument to std::advance
 iterators\iterator.primitives\iterator.operations\robust_against_adl.pass.cpp
@@ -602,7 +601,7 @@ utilities\format\format.functions\formatted_size.locale.pass.cpp
 utilities\format\format.functions\locale-specific_form.pass.cpp
 
 # libc++ chose option A for [time.clock.file.members], and we chose option B.
-utilities\time\time.clock\time.clock.file\to_from_sys.pass.cpp
+time\time.clock\time.clock.file\to_from_sys.pass.cpp
 
 # libc++ is missing various Ranges DRs
 language.support\support.limits\support.limits.general\ranges.version.pass.cpp
@@ -749,7 +748,7 @@ localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.memb
 localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.members\char32_t_max_length.pass.cpp
 
 # Likely STL bug in <chrono>: "result type of conditional expression is ambiguous"
-utilities\time\time.duration\time.duration.alg\abs.pass.cpp
+time\time.duration\time.duration.alg\abs.pass.cpp
 
 # Likely STL bug in <format>: we check argument ids at compiletime in next_arg_id
 utilities\format\format.formatter\format.parse.ctx\next_arg_id.pass.cpp
@@ -1096,9 +1095,6 @@ strings\string.view\string.view.comparison\less.pass.cpp
 strings\string.view\string.view.comparison\less_equal.pass.cpp
 strings\string.view\string.view.comparison\not_equal.pass.cpp
 thread\futures\futures.task\futures.task.members\ctor2.compile.pass.cpp
-time\time.cal\time.cal.month\time.cal.month.members\decrement.pass.cpp
-time\time.clock\time.clock.file\to_from_sys.pass.cpp
-time\time.duration\time.duration.alg\abs.pass.cpp
 utilities\format\format.formatter\format.formatter.spec\formatter.bool.pass.cpp
 utilities\format\format.formatter\format.formatter.spec\formatter.char_array.pass.cpp
 utilities\format\format.formatter\format.formatter.spec\formatter.const_char_array.pass.cpp

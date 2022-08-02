@@ -529,9 +529,8 @@ std/numerics/rand/rand.dis/rand.dist.bern/rand.dist.bern.negbin/eval.pass.cpp FA
 # They shouldn't behave differently. Both of them should probably return NaN.
 std/numerics/c.math/lerp.pass.cpp FAIL
 
-# conversion from '__int64' to 'long', possible loss of data
-std/utilities/time/time.hms/time.hms.members/seconds.pass.cpp:0 FAIL
-std/utilities/time/time.hms/time.hms.members/subseconds.pass.cpp:0 FAIL
+# --month{14} should be 1, not 13 as the test expects
+std/time/time.cal/time.cal.month/time.cal.month.members/decrement.pass.cpp FAIL
 
 # Bogus test passes a class type as the second argument to std::advance
 std/iterators/iterator.primitives/iterator.operations/robust_against_adl.pass.cpp FAIL
@@ -596,7 +595,7 @@ std/utilities/format/format.functions/formatted_size.locale.pass.cpp FAIL
 std/utilities/format/format.functions/locale-specific_form.pass.cpp FAIL
 
 # libc++ chose option A for [time.clock.file.members], and we chose option B.
-std/utilities/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
+std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 
 # libc++ is missing various Ranges DRs
 std/language.support/support.limits/support.limits.general/ranges.version.pass.cpp FAIL
@@ -744,7 +743,7 @@ std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_max_length.pass.cpp FAIL
 
 # Likely STL bug in <chrono>: "result type of conditional expression is ambiguous"
-std/utilities/time/time.duration/time.duration.alg/abs.pass.cpp FAIL
+std/time/time.duration/time.duration.alg/abs.pass.cpp FAIL
 
 # Likely STL bug in <format>: we check argument ids at compiletime in next_arg_id
 std/utilities/format/format.formatter/format.parse.ctx/next_arg_id.pass.cpp FAIL
@@ -1093,9 +1092,6 @@ std/strings/string.view/string.view.comparison/less.pass.cpp FAIL
 std/strings/string.view/string.view.comparison/less_equal.pass.cpp FAIL
 std/strings/string.view/string.view.comparison/not_equal.pass.cpp FAIL
 std/thread/futures/futures.task/futures.task.members/ctor2.compile.pass.cpp FAIL
-std/time/time.cal/time.cal.month/time.cal.month.members/decrement.pass.cpp FAIL
-std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
-std/time/time.duration/time.duration.alg/abs.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.bool.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.char_array.pass.cpp FAIL
 std/utilities/format/format.formatter/format.formatter.spec/formatter.const_char_array.pass.cpp FAIL
