@@ -38,6 +38,10 @@ STATIC_ASSERT(__cpp_lib_addressof_constexpr == 201603L);
 #else
 STATIC_ASSERT(__cpp_lib_algorithm_iterator_requirements == 202207L);
 #endif
+#else
+#ifdef __cpp_lib_algorithm_iterator_requirements
+#error __cpp_lib_algorithm_iterator_requirements is defined
+#endif
 #endif
 
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
@@ -955,6 +959,10 @@ STATIC_ASSERT(__cpp_lib_invoke == 201411L);
 #error __cpp_lib_invoke_r is not 202106L
 #else
 STATIC_ASSERT(__cpp_lib_invoke_r == 202106L);
+#endif
+#else
+#ifdef __cpp_lib_invoke_r
+#error __cpp_lib_invoke_r is defined
 #endif
 #endif
 
