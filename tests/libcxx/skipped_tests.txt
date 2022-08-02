@@ -641,6 +641,10 @@ language.support\support.limits\support.limits.general\format.version.pass.cpp
 # libc++ doesn't yet implement LWG-3670
 ranges\range.factories\range.iota.view\iterator\member_typedefs.compile.pass.cpp
 
+# This test fails for 32-bit platforms because of truncation from (unsigned) long long to 32-bit size_t
+# https://reviews.llvm.org/D130963
+numerics\rand\rand.dist\rand.dist.samp\rand.dist.samp.discrete\eval.pass.cpp
+
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Various assertions.
 re\re.alg\re.alg.match\awk.pass.cpp
