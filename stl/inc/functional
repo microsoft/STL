@@ -2186,7 +2186,7 @@ template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
 _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
     _FwdItHaystack _First1, _FwdItHaystack _Last1, _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq) {
     // find first [_First2, _Last2) satisfying _Eq
-    if constexpr (_Is_random_iter_v<_FwdItHaystack> && _Is_random_iter_v<_FwdItPat>) {
+    if constexpr (_Is_ranges_random_iter_v<_FwdItHaystack> && _Is_ranges_random_iter_v<_FwdItPat>) {
         _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
         _Iter_diff_t<_FwdItPat> _Count2      = _Last2 - _First2;
 

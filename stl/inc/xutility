@@ -843,30 +843,49 @@ template <class _Ty>
 struct _Is_iterator : bool_constant<_Is_iterator_v<_Ty>> {};
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_input_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, input_iterator_tag>;
+_INLINE_VAR constexpr bool _Is_cpp17_input_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, input_iterator_tag>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_fwd_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, forward_iterator_tag>;
+_INLINE_VAR constexpr bool _Is_ranges_input_iter_v =
+#ifdef __cpp_lib_concepts
+    (input_iterator<_Iter> && sentinel_for<_Iter, _Iter>) ||
+#endif
+    _Is_cpp17_input_iter_v<_Iter>;
+
+template <class _Iter>
+_INLINE_VAR constexpr bool _Is_cpp17_fwd_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, forward_iterator_tag>;
 
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_ranges_fwd_iter_v =
 #ifdef __cpp_lib_concepts
     forward_iterator<_Iter> ||
 #endif
-    _Is_fwd_iter_v<_Iter>;
+    _Is_cpp17_fwd_iter_v<_Iter>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_bidi_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
+_INLINE_VAR constexpr bool _Is_cpp17_bidi_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, bidirectional_iterator_tag>;
 
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_ranges_bidi_iter_v =
 #ifdef __cpp_lib_concepts
     bidirectional_iterator<_Iter> ||
 #endif
-    _Is_bidi_iter_v<_Iter>;
+    _Is_cpp17_bidi_iter_v<_Iter>;
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_random_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, random_access_iterator_tag>;
+_INLINE_VAR constexpr bool _Is_cpp17_random_iter_v = is_convertible_v<_Iter_cat_t<_Iter>, random_access_iterator_tag>;
+
+template <class _Iter>
+_INLINE_VAR constexpr bool _Is_ranges_random_iter_v =
+#if defined(__cpp_lib_concepts)
+    random_access_iterator<_Iter> ||
+#endif
+    _Is_cpp17_random_iter_v<_Iter>;
+
+#define _REQUIRE_CPP17_MUTABLE_ITERATOR(_Iter) \
+    static_assert(_Is_cpp17_fwd_iter_v<_Iter>, \
+        "Non-ranges algorithms require that mutable iterators be Cpp17ForwardIterators or stronger.")
+
 
 template <class, class = void>
 struct _Is_checked_helper {}; // default definition, no longer used, retained due to pseudo-documentation
@@ -1050,10 +1069,7 @@ inline constexpr bool is_execution_policy_v = is_execution_policy<_Ty>::value;
 template <class _ExPo>
 using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Standard_execution_policy;
 
-#define _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_Iter) \
-    static_assert(_Is_fwd_iter_v<_Iter>,          \
-        "Parallel algorithms require that mutable iterators be Cpp17ForwardIterators or stronger.")
-#define _REQUIRE_CONST_PARALLEL_ITERATOR(_Iter) \
+#define _REQUIRE_PARALLEL_ITERATOR(_Iter) \
     static_assert(_Is_ranges_fwd_iter_v<_Iter>, "Parallel algorithms require forward iterators or stronger.")
 
 #endif // _HAS_CXX17
@@ -1061,7 +1077,7 @@ using _Enable_if_execution_policy_t = typename remove_reference_t<_ExPo>::_Stand
 template <class _Checked, class _Iter>
 _NODISCARD constexpr auto _Idl_distance(const _Iter& _First, const _Iter& _Last) {
     // tries to get the distance between _First and _Last if they are random-access iterators
-    if constexpr (_Is_random_iter_v<_Iter>) {
+    if constexpr (_Is_ranges_random_iter_v<_Iter>) {
         return static_cast<_Iter_diff_t<_Checked>>(_Last - _First);
     } else {
         return _Distance_unknown{};
@@ -1136,17 +1152,17 @@ constexpr void _Debug_order_set_unchecked(_InIt _First, _InIt _Last, _Pr&& _Pred
 // from <iterator>
 template <class _InIt, class _Diff>
 _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by offset
-    if constexpr (_Is_random_iter_v<_InIt>) {
+    if constexpr (_Is_ranges_random_iter_v<_InIt>) {
         _Where += _Off;
     } else {
-        if constexpr (is_signed_v<_Diff> && !_Is_bidi_iter_v<_InIt>) {
+        if constexpr (is_signed_v<_Diff> && !_Is_ranges_bidi_iter_v<_InIt>) {
             _STL_ASSERT(_Off >= 0, "negative advance of non-bidirectional iterator");
         }
 
         decltype(auto) _UWhere      = _Get_unwrapped_n(_STD move(_Where), _Off);
         constexpr bool _Need_rewrap = !is_reference_v<decltype(_Get_unwrapped_n(_STD move(_Where), _Off))>;
 
-        if constexpr (is_signed_v<_Diff> && _Is_bidi_iter_v<_InIt>) {
+        if constexpr (is_signed_v<_Diff> && _Is_ranges_bidi_iter_v<_InIt>) {
             for (; _Off < 0; ++_Off) {
                 --_UWhere;
             }
@@ -1164,7 +1180,7 @@ _CONSTEXPR17 void advance(_InIt& _Where, _Diff _Off) { // increment iterator by 
 
 template <class _InIt>
 _NODISCARD _CONSTEXPR17 _Iter_diff_t<_InIt> distance(_InIt _First, _InIt _Last) {
-    if constexpr (_Is_random_iter_v<_InIt>) {
+    if constexpr (_Is_ranges_random_iter_v<_InIt>) {
         return _Last - _First; // assume the iterator will do debug checking
     } else {
         _Adl_verify_range(_First, _Last);
@@ -1186,7 +1202,7 @@ constexpr _InIt _Next_iter(_InIt _First) { // increment iterator
 
 template <class _InIt>
 _NODISCARD _CONSTEXPR17 _InIt next(_InIt _First, _Iter_diff_t<_InIt> _Off = 1) { // increment iterator
-    static_assert(_Is_input_iter_v<_InIt>, "next requires input iterator");
+    static_assert(_Is_ranges_input_iter_v<_InIt>, "next requires input iterator");
 
     _STD advance(_First, _Off);
     return _First;
@@ -3704,8 +3720,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy [_First, _Last) to [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD copy(_First, _Last, _Dest);
 }
 #endif // _HAS_CXX17
@@ -3844,8 +3860,8 @@ template <class _ExPo, class _FwdIt1, class _Diff, class _FwdIt2, _Enable_if_exe
 _FwdIt2 copy_n(_ExPo&&, _FwdIt1 _First, _Diff _Count_raw, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy [_First, _First + _Count) to [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD copy_n(_First, _Count_raw, _Dest);
 }
 #endif // _HAS_CXX17
@@ -3939,8 +3955,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 move(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // move [_First, _Last) to [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD move(_First, _Last, _Dest);
 }
 #endif // _HAS_CXX17
@@ -4085,7 +4101,7 @@ template <class _ExPo, class _FwdIt, class _Ty, _Enable_if_execution_policy_t<_E
 void fill(_ExPo&&, _FwdIt _First, _FwdIt _Last, const _Ty& _Val) noexcept /* terminates */ {
     // copy _Val through [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD fill(_First, _Last, _Val);
 }
 #endif // _HAS_CXX17
@@ -4133,7 +4149,7 @@ template <class _ExPo, class _FwdIt, class _Diff, class _Ty, _Enable_if_executio
 _FwdIt fill_n(_ExPo&&, _FwdIt _Dest, _Diff _Count_raw, const _Ty& _Val) noexcept /* terminates */ {
     // copy _Val _Count times through [_Dest, ...)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD fill_n(_Dest, _Count_raw, _Val);
 }
 #endif // _HAS_CXX17
@@ -4332,7 +4348,7 @@ _NODISCARD _CONSTEXPR20 bool equal(
     const auto _ULast1 = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped(_First2);
     const auto _ULast2 = _Get_unwrapped(_Last2);
-    if constexpr (_Is_random_iter_v<_InIt1> && _Is_random_iter_v<_InIt2>) {
+    if constexpr (_Is_ranges_random_iter_v<_InIt1> && _Is_ranges_random_iter_v<_InIt2>) {
         if (_ULast1 - _UFirst1 != _ULast2 - _UFirst2) {
             return false;
         }
@@ -4626,8 +4642,8 @@ _NODISCARD bool lexicographical_compare(_ExPo&&, const _FwdIt1 _First1, const _F
     const _FwdIt2 _Last2, _Pr _Pred) noexcept /* terminates */ {
     // order [_First1, _Last1) vs. [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD lexicographical_compare(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
 }
 
@@ -4636,8 +4652,8 @@ _NODISCARD bool lexicographical_compare(_ExPo&&, const _FwdIt1 _First1, const _F
     const _FwdIt2 _Last2) noexcept /* terminates */ {
     // order [_First1, _Last1) vs. [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD lexicographical_compare(_First1, _Last1, _First2, _Last2);
 }
 #endif // _HAS_CXX17
@@ -5136,7 +5152,7 @@ _NODISCARD _CONSTEXPR20 bool _Check_match_counts(
     // test if [_First1, _Last1) == permuted [_First2, _Last2), after matching prefix removal
     _STL_INTERNAL_CHECK(!_Pred(*_First1, *_First2));
     _STL_INTERNAL_CHECK(_STD distance(_First1, _Last1) == _STD distance(_First2, _Last2));
-    if constexpr (_Is_bidi_iter_v<_FwdIt1> && _Is_bidi_iter_v<_FwdIt2>) {
+    if constexpr (_Is_ranges_bidi_iter_v<_FwdIt1> && _Is_ranges_bidi_iter_v<_FwdIt2>) {
         do { // find last inequality
             --_Last1;
             --_Last2;
@@ -5236,6 +5252,7 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
     // exchange the ranges [_First, _Mid) and [_Mid, _Last)
     // that is, rotates [_First, _Last) left by distance(_First, _Mid) positions
     // returns the iterator pointing at *_First's new home
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Mid);
     _Adl_verify_range(_Mid, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
@@ -5249,12 +5266,12 @@ _CONSTEXPR20 _FwdIt rotate(_FwdIt _First, _FwdIt _Mid, _FwdIt _Last) {
         return _First;
     }
 
-    if constexpr (_Is_random_iter_v<_FwdIt>) {
+    if constexpr (_Is_cpp17_random_iter_v<_FwdIt>) {
         _STD reverse(_UFirst, _UMid);
         _STD reverse(_UMid, _ULast);
         _STD reverse(_UFirst, _ULast);
         _Seek_wrapped(_First, _UFirst + (_ULast - _UMid));
-    } else if constexpr (_Is_bidi_iter_v<_FwdIt>) {
+    } else if constexpr (_Is_cpp17_bidi_iter_v<_FwdIt>) {
         _STD reverse(_UFirst, _UMid);
         _STD reverse(_UMid, _ULast);
         auto _Tmp = _Reverse_until_sentinel_unchecked(_UFirst, _UMid, _ULast);

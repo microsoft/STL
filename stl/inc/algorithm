@@ -647,8 +647,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1, const _FwdIt2 _First2) noexcept /* terminates */ {
     // return [_First1, _Last1)/[_First2, ...) mismatch
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, equal_to{});
 }
 #endif // _HAS_CXX17
@@ -663,7 +663,7 @@ _NODISCARD _CONSTEXPR20 pair<_InIt1, _InIt2> mismatch(
     auto _ULast1       = _Get_unwrapped(_Last1);
     auto _UFirst2      = _Get_unwrapped(_First2);
     const auto _ULast2 = _Get_unwrapped(_Last2);
-    if constexpr (_Is_random_iter_v<_InIt1> && _Is_random_iter_v<_InIt2>) {
+    if constexpr (_Is_ranges_random_iter_v<_InIt1> && _Is_ranges_random_iter_v<_InIt2>) {
         using _CT         = _Common_diff_t<_InIt1, _InIt2>;
         const _CT _Count1 = _ULast1 - _UFirst1;
         const _CT _Count2 = _ULast2 - _UFirst2;
@@ -702,8 +702,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _NODISCARD pair<_FwdIt1, _FwdIt2> mismatch(
     _ExPo&& _Exec, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2 _Last2) noexcept /* terminates */ {
     // return [_First1, _Last1)/[_First2, _Last2) mismatch
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD mismatch(_STD forward<_ExPo>(_Exec), _First1, _Last1, _First2, _Last2, equal_to{});
 }
 #endif // _HAS_CXX17
@@ -853,7 +853,7 @@ _NODISCARD _CONSTEXPR20 bool is_permutation(
     auto _ULast1  = _Get_unwrapped(_Last1);
     auto _UFirst2 = _Get_unwrapped(_First2);
     auto _ULast2  = _Get_unwrapped(_Last2);
-    if constexpr (_Is_random_iter_v<_FwdIt1> && _Is_random_iter_v<_FwdIt2>) {
+    if constexpr (_Is_ranges_random_iter_v<_FwdIt1> && _Is_ranges_random_iter_v<_FwdIt2>) {
         if (_ULast1 - _UFirst1 != _ULast2 - _UFirst2) {
             return false;
         }
@@ -1448,8 +1448,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execu
 _FwdIt2 copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // copy each satisfying _Pred
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX17
@@ -1637,9 +1637,9 @@ pair<_FwdIt2, _FwdIt3> partition_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _F
     _Pr _Pred) noexcept /* terminates */ {
     // copy true partition to _Dest_true, false to _Dest_false
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt3);
     return _STD partition_copy(_First, _Last, _Dest_true, _Dest_false, _Pass_fn(_Pred));
 }
 
@@ -1947,7 +1947,7 @@ _NODISCARD _CONSTEXPR20 _FwdItHaystack search(_FwdItHaystack _First1, _FwdItHays
     const auto _ULast1  = _Get_unwrapped(_Last1);
     const auto _UFirst2 = _Get_unwrapped(_First2);
     const auto _ULast2  = _Get_unwrapped(_Last2);
-    if constexpr (_Is_random_iter_v<_FwdItHaystack> && _Is_random_iter_v<_FwdItPat>) {
+    if constexpr (_Is_ranges_random_iter_v<_FwdItHaystack> && _Is_ranges_random_iter_v<_FwdItPat>) {
         const _Iter_diff_t<_FwdItPat> _Count2 = _ULast2 - _UFirst2;
         if (_ULast1 - _UFirst1 >= _Count2) {
             const auto _Last_possible = _ULast1 - static_cast<_Iter_diff_t<_FwdItHaystack>>(_Count2);
@@ -2027,7 +2027,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt search_n(
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
-    if constexpr (_Is_random_iter_v<_FwdIt>) {
+    if constexpr (_Is_ranges_random_iter_v<_FwdIt>) {
         const auto _Count_diff = static_cast<_Iter_diff_t<_FwdIt>>(_Count);
         auto _UOld_first       = _UFirst;
         for (_Iter_diff_t<_FwdIt> _Inc = 0; _Count_diff <= _ULast - _UOld_first;) { // enough room, look for a match
@@ -2569,7 +2569,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
     const auto _ULast1  = _Get_unwrapped(_Last1);
     const auto _UFirst2 = _Get_unwrapped(_First2);
     const auto _ULast2  = _Get_unwrapped(_Last2);
-    if constexpr (_Is_random_iter_v<_FwdIt1> && _Is_random_iter_v<_FwdIt2>) {
+    if constexpr (_Is_ranges_random_iter_v<_FwdIt1> && _Is_ranges_random_iter_v<_FwdIt2>) {
         const _Iter_diff_t<_FwdIt2> _Count2 = _ULast2 - _UFirst2;
         if (_Count2 > 0 && _Count2 <= _ULast1 - _UFirst1) {
             for (auto _UCandidate = _ULast1 - static_cast<_Iter_diff_t<_FwdIt1>>(_Count2);; --_UCandidate) {
@@ -2585,7 +2585,7 @@ _NODISCARD _CONSTEXPR20 _FwdIt1 find_end(
         }
 
         return _Last1;
-    } else if constexpr (_Is_bidi_iter_v<_FwdIt1> && _Is_bidi_iter_v<_FwdIt2>) {
+    } else if constexpr (_Is_ranges_bidi_iter_v<_FwdIt1> && _Is_ranges_bidi_iter_v<_FwdIt2>) {
         for (auto _UCandidate = _ULast1;; --_UCandidate) { // try a match at _UCandidate
             auto _UNext1 = _UCandidate;
             auto _UNext2 = _ULast2;
@@ -3369,8 +3369,8 @@ _FwdIt2 replace_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, cons
     const _Ty& _Newval) noexcept /* terminates */ {
     // copy replacing each matching _Oldval with _Newval
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD replace_copy(_First, _Last, _Dest, _Oldval, _Newval);
 }
 #endif // _HAS_CXX17
@@ -3464,8 +3464,8 @@ _FwdIt2 replace_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _
 /* terminates */ {
     // copy replacing each satisfying _Pred with _Val
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD replace_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred), _Val);
 }
 #endif // _HAS_CXX17
@@ -3683,7 +3683,7 @@ template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_executio
 _FwdIt generate_n(_ExPo&&, const _FwdIt _Dest, const _Diff _Count_raw, _Fn _Func) noexcept /* terminates */ {
     // replace [_Dest, _Dest + _Count) with _Func()
     // not parallelized at present due to unclear parallelism requirements on _Func
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD generate_n(_Dest, _Count_raw, _Pass_fn(_Func));
 }
 #endif // _HAS_CXX17
@@ -3711,8 +3711,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Ty, _Enable_if_execu
 _FwdIt2 remove_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, const _Ty& _Val) noexcept /* terminates */ {
     // copy omitting each matching _Val
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD remove_copy(_First, _Last, _Dest, _Val);
 }
 #endif // _HAS_CXX17
@@ -3740,8 +3740,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execu
 _FwdIt2 remove_copy_if(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // copy omitting each element satisfying _Pred
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD remove_copy_if(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
 #endif // _HAS_CXX17
@@ -4102,8 +4102,7 @@ concept
 #else
 _INLINE_VAR constexpr bool
 #endif
-    _Can_reread_dest = _Is_fwd_iter_v<_OutIt> //
-    && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
+    _Can_reread_dest = _Is_cpp17_fwd_iter_v<_OutIt> && is_same_v<_Iter_value_t<_InIt>, _Iter_value_t<_OutIt>>;
 
 template <class _InIt, class _OutIt, class _Pr>
 _CONSTEXPR20 _OutIt unique_copy(_InIt _First, _InIt _Last, _OutIt _Dest, _Pr _Pred) {
@@ -4171,8 +4170,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, class _Pr, _Enable_if_execu
 _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // copy compressing pairs that match
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD unique_copy(_First, _Last, _Dest, _Pass_fn(_Pred));
 }
 
@@ -4180,8 +4179,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 unique_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy compressing pairs that match
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD unique_copy(_First, _Last, _Dest);
 }
 #endif // _HAS_CXX17
@@ -4408,8 +4407,8 @@ template <class _ExPo, class _BidIt, class _FwdIt, _Enable_if_execution_policy_t
 _FwdIt reverse_copy(_ExPo&&, _BidIt _First, _BidIt _Last, _FwdIt _Dest) noexcept /* terminates */ {
     // copy reversing elements in [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_BidIt);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_ITERATOR(_BidIt);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     return _STD reverse_copy(_First, _Last, _Dest);
 }
 
@@ -4624,8 +4623,8 @@ template <class _ExPo, class _FwdIt1, class _FwdIt2, _Enable_if_execution_policy
 _FwdIt2 rotate_copy(_ExPo&&, _FwdIt1 _First, _FwdIt1 _Mid, _FwdIt1 _Last, _FwdIt2 _Dest) noexcept /* terminates */ {
     // copy rotating [_First, _Last)
     // not parallelized as benchmarks show it isn't worth it
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt2);
     return _STD rotate_copy(_First, _Mid, _Last, _Dest);
 }
 
@@ -4729,8 +4728,8 @@ _SampleIt _Sample_selection_unchecked(
 template <class _PopIt, class _SampleIt, class _Diff, class _Urng>
 _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Urng&& _Func) {
     // randomly select _Count elements from [_First, _Last) into _Dest
-    static_assert(_Is_ranges_fwd_iter_v<_PopIt> || _Is_random_iter_v<_SampleIt>,
-        "If the source range is not forward, the destination range must be random-access.");
+    static_assert(_Is_ranges_fwd_iter_v<_PopIt> || _Is_cpp17_random_iter_v<_SampleIt>,
+        "If the source range is not forward, the destination range must be a Cpp17RandomAccessIterator.");
 
     static_assert(is_integral_v<_Diff>, "The sample size must have an integer type.");
     _Adl_verify_range(_First, _Last);
@@ -4749,12 +4748,11 @@ _SampleIt sample(_PopIt _First, _PopIt _Last, _SampleIt _Dest, _Diff _Count, _Ur
 
             _Seek_wrapped(_Dest,
                 _Sample_selection_unchecked(_UFirst, _Pop_size, _Get_unwrapped_n(_Dest, _Count), _Count, _RngFunc));
-        } else if constexpr (_Is_input_iter_v<_PopIt>) {
+        } else {
+            static_assert(_Is_ranges_input_iter_v<_PopIt>, "Source iterators must be at least input iterators");
             // source is input: use reservoir sampling (unstable)
             _Seek_wrapped(_Dest,
                 _Sample_reservoir_unchecked(_UFirst, _ULast, _Get_unwrapped_unverified(_Dest), _Count, _RngFunc));
-        } else {
-            static_assert(_Always_false<_PopIt>, "Source iterators must be at least input iterators");
         }
     }
 
@@ -5001,6 +4999,7 @@ template <class _FwdIt>
 constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) left by _Pos_to_shift
     // positions; returns the end of the resulting range
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/1)");
 
     _Adl_verify_range(_First, _Last);
@@ -5013,7 +5012,7 @@ constexpr _FwdIt shift_left(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fwd
     const auto _ULast  = _Get_unwrapped(_Last);
     auto _Start_at     = _UFirst;
 
-    if constexpr (_Is_random_iter_v<_FwdIt>) {
+    if constexpr (_Is_cpp17_random_iter_v<_FwdIt>) {
         if (_Pos_to_shift >= _ULast - _UFirst) {
             return _First;
         }
@@ -5042,6 +5041,7 @@ template <class _FwdIt>
 constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_FwdIt> _Pos_to_shift) {
     // shift [_First, _Last) right by _Pos_to_shift
     // positions; returns the beginning of the resulting range
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     _STL_ASSERT(_Pos_to_shift >= 0, "shift count must be non-negative (N4910 [alg.shift]/5)");
 
     _Adl_verify_range(_First, _Last);
@@ -5053,9 +5053,9 @@ constexpr _FwdIt shift_right(_FwdIt _First, const _FwdIt _Last, _Iter_diff_t<_Fw
     const auto _UFirst = _Get_unwrapped(_First);
     const auto _ULast  = _Get_unwrapped(_Last);
 
-    if constexpr (_Is_bidi_iter_v<_FwdIt>) {
+    if constexpr (_Is_cpp17_bidi_iter_v<_FwdIt>) {
         auto _UEnd_at = _ULast;
-        if constexpr (_Is_random_iter_v<_FwdIt>) {
+        if constexpr (_Is_cpp17_random_iter_v<_FwdIt>) {
             if (_Pos_to_shift >= _ULast - _UFirst) {
                 return _Last;
             }
@@ -5353,10 +5353,11 @@ namespace ranges {
 template <class _FwdIt, class _Pr>
 _CONSTEXPR20 _FwdIt partition(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
     // move elements satisfying _Pred to beginning of sequence
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Last);
     auto _UFirst = _Get_unwrapped(_First);
     auto _ULast  = _Get_unwrapped(_Last);
-    if constexpr (_Is_bidi_iter_v<_FwdIt>) {
+    if constexpr (_Is_cpp17_bidi_iter_v<_FwdIt>) {
         for (;;) { // find any out-of-order pair
             for (;;) { // skip in-place elements at beginning
                 if (_UFirst == _ULast) {
@@ -6771,9 +6772,9 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
     _Pr _Pred) noexcept /* terminates */ {
     // copy merging ranges
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt3);
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
@@ -6782,9 +6783,9 @@ _FwdIt3 merge(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _FwdIt2
 /* terminates */ {
     // copy merging ranges
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt3);
     return _STD merge(_First1, _Last1, _First2, _Last2, _Dest);
 }
 
@@ -8472,8 +8473,8 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
 /* terminates */ {
     // copy [_First1, _Last1) into [_First2, _Last2)
     // parallelism suspected to be infeasible
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_RanIt);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_RanIt);
     return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
 }
 
@@ -8482,8 +8483,8 @@ _RanIt partial_sort_copy(_ExPo&&, _FwdIt _First1, _FwdIt _Last1, _RanIt _First2,
 /* terminates */ {
     // copy [_First1, _Last1) into [_First2, _Last2)
     // parallelism suspected to be infeasible
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_RanIt);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_RanIt);
     return _STD partial_sort_copy(_First1, _Last1, _First2, _Last2);
 }
 
@@ -8740,8 +8741,8 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
 /* terminates */ {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD includes(_First1, _Last1, _First2, _Last2, _Pass_fn(_Pred));
 }
 
@@ -8750,8 +8751,8 @@ _NODISCARD bool includes(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _Firs
 /* terminates */ {
     // test if every element in sorted [_First2, _Last2) is in sorted [_First1, _Last1)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
     return _STD includes(_First1, _Last1, _First2, _Last2);
 }
 
@@ -8871,9 +8872,9 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
     _Pr _Pred) noexcept /* terminates */ {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt3);
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
@@ -8882,9 +8883,9 @@ _FwdIt3 set_union(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdIt2 _First2, _Fw
 /* terminates */ {
     // OR sets [_First1, _Last1) and [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt3);
     return _STD set_union(_First1, _Last1, _First2, _Last2, _Dest);
 }
 
@@ -9269,9 +9270,9 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
     _FwdIt3 _Dest, _Pr _Pred) noexcept /* terminates */ {
     // XOR sets [_First1, _Last1) and [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt3);
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest, _Pass_fn(_Pred));
 }
 
@@ -9280,9 +9281,9 @@ _FwdIt3 set_symmetric_difference(_ExPo&&, _FwdIt1 _First1, _FwdIt1 _Last1, _FwdI
     _FwdIt3 _Dest) noexcept /* terminates */ {
     // XOR sets [_First1, _Last1) and [_First2, _Last2)
     // not parallelized at present, parallelism expected to be feasible in a future release
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt1);
-    _REQUIRE_CONST_PARALLEL_ITERATOR(_FwdIt2);
-    _REQUIRE_MUTABLE_PARALLEL_ITERATOR(_FwdIt3);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt1);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt2);
+    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt3);
     return _STD set_symmetric_difference(_First1, _Last1, _First2, _Last2, _Dest);
 }
 

@@ -2754,7 +2754,7 @@ private:
         _My_data._Mysize = 0;
         _My_data._Myres  = _BUF_SIZE - 1;
 
-        if constexpr (_Is_fwd_iter_v<_Iter>) {
+        if constexpr (_Is_ranges_fwd_iter_v<_Iter>) {
             const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
             if (_Count > max_size()) {
                 _Xlen_string(); // result too long
@@ -2776,7 +2776,7 @@ private:
 
         _Tidy_deallocate_guard<basic_string> _Guard{this};
         for (; _First != _Last; ++_First) {
-            if constexpr (!_Is_fwd_iter_v<_Iter>) {
+            if constexpr (!_Is_ranges_fwd_iter_v<_Iter>) {
                 if (_My_data._Mysize == _My_data._Myres) { // Need to grow
                     if (_My_data._Mysize == max_size()) {
                         _Xlen_string(); // result too long

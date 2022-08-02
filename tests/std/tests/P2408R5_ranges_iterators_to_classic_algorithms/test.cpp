@@ -93,7 +93,7 @@ struct unary_algorithms {
 template <class I1, class I2>
 struct binary_algorithms {
     static void call() {
-        if constexpr (forward_iterator<I1> || _Is_fwd_iter_v<I2>) {
+        if constexpr (forward_iterator<I1> || _Is_cpp17_fwd_iter_v<I2>) {
             helper<I1, I2> h({0, 0, 1, 2, 3, 3, 4, 5});
             array exp{0, 1, 2, 3, 4, 5};
             auto it = unique_copy(hcbegin<0>(h), hcend<0>(h), hbegin<1>(h));
@@ -115,7 +115,7 @@ struct binary_algorithms {
                 assert(*pr.first == 2);
                 assert(*pr.second == 3);
             }
-            if constexpr (_Is_fwd_iter_v<I2>) {
+            if constexpr (_Is_cpp17_fwd_iter_v<I2>) {
                 helper<I1, I2> h{{0, 1, 2, 3, 4, 5}};
                 array expected{0, 1, 2, 4, 5};
                 auto it = copy_if(seq, hcbegin<0>(h), hcend<0>(h), hbegin<1>(h), [](int x) { return x != 3; });
@@ -131,7 +131,7 @@ struct ternary_algorithms {
         if constexpr (forward_iterator<I1> && forward_iterator<I2> && forward_iterator<I3>) {
             // parallel algorithms
             using execution::seq;
-            if constexpr (_Is_fwd_iter_v<I2> && _Is_fwd_iter_v<I3>) {
+            if constexpr (_Is_cpp17_fwd_iter_v<I2> && _Is_cpp17_fwd_iter_v<I3>) {
                 helper<I1, I2, I3> h{{0, 1, 2, 3, 4, 5}};
                 array exp1{0, 1};
                 array exp2{2, 3, 4, 5};
@@ -156,13 +156,13 @@ using cpp17_random_iter = test::iterator<random_access_iterator_tag, int, test::
     test::CanCompare::yes, test::ProxyRef::no>;
 
 // Sanity checks
-static_assert(!_Is_fwd_iter_v<input_iter> && !forward_iterator<input_iter>);
-static_assert(!_Is_fwd_iter_v<fwd_iter> && forward_iterator<fwd_iter>);
-static_assert(!_Is_fwd_iter_v<bidi_iter> && bidirectional_iterator<bidi_iter>);
-static_assert(!_Is_fwd_iter_v<random_iter> && random_access_iterator<random_iter>);
-static_assert(_Is_fwd_iter_v<cpp17_fwd_iter> && forward_iterator<cpp17_fwd_iter>);
-static_assert(_Is_bidi_iter_v<cpp17_bidi_iter> && bidirectional_iterator<cpp17_bidi_iter>);
-static_assert(_Is_random_iter_v<cpp17_random_iter> && random_access_iterator<cpp17_random_iter>);
+static_assert(!_Is_cpp17_fwd_iter_v<input_iter> && !forward_iterator<input_iter>);
+static_assert(!_Is_cpp17_fwd_iter_v<fwd_iter> && forward_iterator<fwd_iter>);
+static_assert(!_Is_cpp17_fwd_iter_v<bidi_iter> && bidirectional_iterator<bidi_iter>);
+static_assert(!_Is_cpp17_fwd_iter_v<random_iter> && random_access_iterator<random_iter>);
+static_assert(_Is_cpp17_fwd_iter_v<cpp17_fwd_iter> && forward_iterator<cpp17_fwd_iter>);
+static_assert(_Is_cpp17_bidi_iter_v<cpp17_bidi_iter> && bidirectional_iterator<cpp17_bidi_iter>);
+static_assert(_Is_cpp17_random_iter_v<cpp17_random_iter> && random_access_iterator<cpp17_random_iter>);
 
 template <template <class...> class C>
 struct instantiator {
