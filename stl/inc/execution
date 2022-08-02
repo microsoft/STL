@@ -3302,7 +3302,6 @@ _NODISCARD _RanIt is_heap_until(_ExPo&&, _RanIt _First, _RanIt _Last, _Pr _Pred)
 
 template <class _FwdIt, class _Pr>
 pair<_FwdIt, _Iter_diff_t<_FwdIt>> _Partition_with_count_unchecked(_FwdIt _First, _FwdIt _Last, _Pr _Pred) {
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     // move elements satisfying _Pred to front and track how many elements satisfy _Pred
     if constexpr (_Is_cpp17_random_iter_v<_FwdIt>) {
         auto _Mid = _STD partition(_First, _Last, _Pred);
@@ -3366,7 +3365,6 @@ pair<_FwdIt, _Iter_diff_t<_FwdIt>> _Partition_swap_backward(
     _FwdIt _First, _FwdIt _Last, _FwdIt _Beginning_of_falses, _Pr _Pred) {
     // Swap elements in [_First, _Last) satisfying _Pred with elements from _Beginning_of_falses.
     // Pre: _Beginning_of_falses < _First
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
     _Iter_diff_t<_FwdIt> _Trues{};
     if constexpr (_Is_cpp17_bidi_iter_v<_FwdIt>) {
         while (_First != _Last) {
