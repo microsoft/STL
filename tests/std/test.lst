@@ -490,6 +490,7 @@ tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
 tests\P2401R0_conditional_noexcept_for_exchange
+tests\P2408R5_ranges_iterators_to_classic_algorithms
 tests\P2415R2_owning_view
 tests\P2440R1_ranges_alg_shift_left
 tests\P2440R1_ranges_alg_shift_right
