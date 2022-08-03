@@ -791,9 +791,6 @@ std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_encoding.pass.cpp FAIL
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_max_length.pass.cpp FAIL
 
-# Likely STL bug in <chrono>: "result type of conditional expression is ambiguous"
-std/utilities/time/time.duration/time.duration.alg/abs.pass.cpp FAIL
-
 # Likely STL bug in <format>: we check argument ids at compiletime in next_arg_id
 std/utilities/format/format.formatter/format.parse.ctx/next_arg_id.pass.cpp FAIL
 
