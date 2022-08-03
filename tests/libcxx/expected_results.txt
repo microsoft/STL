@@ -388,6 +388,7 @@ std/ranges/range.req/range.refinements/random_access_range.compile.pass.cpp FAIL
 # GH-2978: Some fixes around std::ranges::enable_view
 std/ranges/range.req/range.view/enable_view.compile.pass.cpp FAIL
 
+
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
 std/depr/depr.c.headers/stdlib_h.aligned_alloc.compile.pass.cpp FAIL
@@ -596,10 +597,6 @@ std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 # libc++ is missing various Ranges DRs
 std/language.support/support.limits/support.limits.general/ranges.version.pass.cpp FAIL
 
-# tests invalid range
-std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy.pass.cpp SKIPPED
-std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move.pass.cpp SKIPPED
-
 # non-portable test of strengthened noexcept
 std/ranges/range.adaptors/range.transform/iterator/subscript.pass.cpp FAIL
 std/ranges/range.adaptors/range.transform/iterator/deref.pass.cpp FAIL
@@ -616,8 +613,7 @@ std/ranges/range.adaptors/range.transform/iterator/base.pass.cpp FAIL
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp FAIL
 
-# Test annotated "XFAIL: msvc" should be "XFAIL: msvc && stdlib=libc++"
-std/language.support/support.dynamic/alloc.errors/set.new.handler/get_new_handler.pass.cpp SKIPPED
+# LIT's ADDITIONAL_COMPILE_FLAGS is problematic
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_move.pass.cpp SKIPPED
 
 # compares iterators from distinct transform_views
@@ -653,6 +649,7 @@ std/algorithms/alg.modifying.operations/alg.rotate/ranges.rotate_copy.pass.cpp F
 std/algorithms/alg.modifying.operations/alg.swap/ranges.swap_ranges.pass.cpp FAIL
 std/algorithms/alg.modifying.operations/alg.transform/ranges.transform.pass.cpp:0 FAIL
 std/algorithms/alg.modifying.operations/alg.unique/ranges_unique_copy.pass.cpp FAIL
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Various assertions.
@@ -890,7 +887,6 @@ std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp 
 # always `false` even for ARM, but libc++ considers it to be `true` for floating-point types on ARM.
 # I don't know which is right.
 std/language.support/support.limits/limits/numeric.limits.members/tinyness_before.pass.cpp SKIPPED
-
 
 # Not yet analyzed
 std/algorithms/alg.nonmodifying/alg.all_of/ranges.all_of.pass.cpp FAIL
@@ -1132,6 +1128,7 @@ std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.cre
 std/utilities/meta/meta.logical/conjunction.compile.pass.cpp FAIL
 std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
+
 
 # *** XFAILs WHICH PASS ***
 # Nothing here! :-)

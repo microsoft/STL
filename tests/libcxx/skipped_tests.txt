@@ -394,6 +394,7 @@ ranges\range.req\range.refinements\random_access_range.compile.pass.cpp
 # GH-2978: Some fixes around std::ranges::enable_view
 ranges\range.req\range.view\enable_view.compile.pass.cpp
 
+
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
 depr\depr.c.headers\stdlib_h.aligned_alloc.compile.pass.cpp
@@ -607,10 +608,6 @@ ranges\range.adaptors\range.transform\iterator\deref.pass.cpp
 ranges\range.adaptors\range.transform\iterator\iter_move.pass.cpp
 ranges\range.adaptors\range.transform\iterator\subscript.pass.cpp
 
-# tests invalid range
-utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy.pass.cpp
-utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move.pass.cpp
-
 # Narrowing conversion
 utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
 utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move_n.pass.cpp
@@ -622,8 +619,7 @@ ranges\range.adaptors\range.transform\iterator\base.pass.cpp
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 containers\sequences\vector\vector.cons\assign_copy.pass.cpp
 
-# Test annotated "XFAIL: msvc" should be "XFAIL: msvc && stdlib=libc++"
-language.support\support.dynamic\alloc.errors\set.new.handler\get_new_handler.pass.cpp
+# LIT's ADDITIONAL_COMPILE_FLAGS is problematic
 utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.con\copy_move.pass.cpp
 
 # compares iterators from distinct transform_views
@@ -659,6 +655,7 @@ algorithms\alg.modifying.operations\alg.rotate\ranges.rotate_copy.pass.cpp
 algorithms\alg.modifying.operations\alg.swap\ranges.swap_ranges.pass.cpp
 algorithms\alg.modifying.operations\alg.transform\ranges.transform.pass.cpp
 algorithms\alg.modifying.operations\alg.unique\ranges_unique_copy.pass.cpp
+
 
 # *** LIKELY STL BUGS ***
 # Not yet analyzed, likely STL bugs. Various assertions.
@@ -1135,6 +1132,7 @@ utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.create\
 utilities\meta\meta.logical\conjunction.compile.pass.cpp
 utilities\meta\meta.logical\disjunction.compile.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\convert_const_move.pass.cpp
+
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
 # "XFAIL: msvc" or "XFAIL: clang"
