@@ -871,6 +871,7 @@ algorithms\alg.modifying.operations\alg.unique\ranges_unique.pass.cpp
 
 # Not yet analyzed. the test fails on ARM but passes on AMD64
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_long_double.hex.pass.cpp
+localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_double.hex.pass.cpp
 
 # Not yet analyzed
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp

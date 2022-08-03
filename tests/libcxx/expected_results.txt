@@ -862,6 +862,7 @@ std/algorithms/alg.modifying.operations/alg.unique/ranges_unique.pass.cpp:0 SKIP
 
 # Not yet analyzed. the test fails on AMD64 but passes on ARM
 std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_long_double.hex.pass.cpp SKIPPED
+std/localization/locale.categories/category.numeric/locale.nm.put/facet.num.put.members/put_double.hex.pass.cpp SKIPPED
 
 # Not yet analyzed
 std/algorithms/alg.nonmodifying/alg.all_of/ranges.all_of.pass.cpp FAIL
