@@ -635,10 +635,6 @@ std/language.support/support.limits/support.limits.general/format.version.pass.c
 # libc++ doesn't yet implement LWG-3670
 std/ranges/range.factories/range.iota.view/iterator/member_typedefs.compile.pass.cpp FAIL
 
-# This test fails for 32-bit platforms because of truncation from (unsigned) long long to 32-bit size_t
-# https://reviews.llvm.org/D130963
-std/numerics/rand/rand.dist/rand.dist.samp/rand.dist.samp.discrete/eval.pass.cpp SKIPPED
-
 # This test assumes that std::array<int, 4>::iterator is int*, but on MSVC STL it's _Array_iterator.
 # Other std/algorithm test failures likely have the same cause.
 std/algorithms/alg.modifying.operations/alg.copy/ranges.copy.pass.cpp FAIL
@@ -890,9 +886,6 @@ std/language.support/cmp/cmp.alg/compare_weak_order_fallback.pass.cpp FAIL
 # Not yet analyzed. Run forever
 std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp SKIPPED
 
-# Not yet analyzed. error: "test/support/test_range.h" can only be included in builds supporting ranges
-std/strings/string.view/string.view.cons/from_range.pass.cpp FAIL
-
 # Not yet analyzed. This test seemly fails for ARM/ARM64 platforms because MSVC STL considers `tinyness_before` to be
 # always `false` even for ARM, but libc++ considers it to be `true` for floating-point types on ARM.
 # I don't know which is right.
@@ -929,7 +922,6 @@ std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.p
 std/algorithms/alg.sorting/alg.sort/stable.sort/ranges.stable.sort.pass.cpp:1 FAIL
 std/algorithms/algorithms.results/in_found_result.pass.cpp:0 FAIL
 std/algorithms/algorithms.results/min_max_result.pass.cpp:0 FAIL
-std/algorithms/ranges_result_alias_declarations.compile.pass.cpp FAIL
 std/algorithms/ranges_robust_against_dangling.pass.cpp FAIL
 std/algorithms/ranges_robust_against_differing_projections.pass.cpp FAIL
 std/algorithms/ranges_robust_against_nonbool_predicates.pass.cpp FAIL
