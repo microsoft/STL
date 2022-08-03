@@ -279,6 +279,7 @@
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2432R1 Fix istream_view
+// P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -1441,6 +1442,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_latch                   201907L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
+#define __cpp_lib_move_iterator_concept   202207L
 #define __cpp_lib_polymorphic_allocator   201902L
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
