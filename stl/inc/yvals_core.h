@@ -321,6 +321,7 @@
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
+// P2417R2 More constexpr bitset
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 // P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
@@ -1488,6 +1489,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_constexpr_bitset                  202207L
 #define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
