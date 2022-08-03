@@ -178,8 +178,8 @@ namespace ranges {
                 _OFirst = _Backout._Release();
             }
 
-            _Seek_wrapped(_First1, _IFirst);
-            _Seek_wrapped(_First2, _OFirst);
+            _Seek_wrapped(_First1, _STD move(_IFirst));
+            _Seek_wrapped(_First2, _STD move(_OFirst));
             return {_STD move(_First1), _STD move(_First2)};
         }
     };
@@ -317,8 +317,8 @@ namespace ranges {
                 _OFirst = _Backout._Release();
             }
 
-            _Seek_wrapped(_First1, _IFirst);
-            _Seek_wrapped(_First2, _OFirst);
+            _Seek_wrapped(_First1, _STD move(_IFirst));
+            _Seek_wrapped(_First2, _STD move(_OFirst));
             return {_STD move(_First1), _STD move(_First2)};
         }
     };
