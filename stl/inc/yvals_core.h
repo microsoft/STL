@@ -1528,7 +1528,6 @@
 #endif // _HAS_CXX20
 #endif // defined(__cpp_lib_concepts)
 
-
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays
 #else // _HAS_CXX20

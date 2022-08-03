@@ -5,7 +5,6 @@
 #include <cassert>
 #include <iterator>
 #include <ranges>
-#include <stdio.h>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -56,10 +55,9 @@ void test_transform() {
     ranges::copy(array{0, 1, 2, 3, 4, 5} | views::transform(move(t)), back_inserter(v));
     assert(ranges::equal(v, array{0, 2, 6, 12, 20, 30}));
 
-    if constexpr ( //
-        (is_copy_constructible_v<T> && //
-            (copyable<T> || (is_nothrow_copy_constructible_v<T> && is_nothrow_move_constructible_v<T>) ))
-        || (!is_copy_constructible_v<T> && (movable<T> || is_nothrow_move_constructible_v<T>) )) {
+    if constexpr (is_copy_constructible_v<T>
+                      ? copyable<T> || (is_nothrow_copy_constructible_v<T> && is_nothrow_move_constructible_v<T>)
+                      : movable<T> || is_nothrow_move_constructible_v<T>) {
         static_assert(sizeof(ranges::_Movable_box<T>) == sizeof(T));
     } else {
         static_assert(sizeof(ranges::_Movable_box<T>) > sizeof(T));
