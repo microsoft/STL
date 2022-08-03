@@ -2388,12 +2388,15 @@ namespace ranges {
 
             // clang-format off
             _NODISCARD constexpr auto _Unwrapped() const&
+                noexcept(noexcept(_Sentinel<_Const, false>{_Get_unwrapped(_Last)}))
                 requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_t>&> {
                 // clang-format on
                 return _Sentinel<_Const, false>{_Get_unwrapped(_Last)};
             }
             // clang-format off
-            _NODISCARD constexpr auto _Unwrapped() && requires _Wrapped && _Unwrappable_v<iterator_t<_Base_t>> {
+            _NODISCARD constexpr auto _Unwrapped() &&
+                noexcept(noexcept(_Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last))}))
+                requires _Wrapped && _Unwrappable_v<iterator_t<_Base_t>> {
                 // clang-format on
                 return _Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last))};
             }
@@ -2644,12 +2647,15 @@ namespace ranges {
 
             // clang-format off
             _NODISCARD constexpr auto _Unwrapped() const&
+                noexcept(noexcept(_Sentinel<_Const, false>{_Get_unwrapped(_Last), _Pred}))
                 requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_t>&> {
                 // clang-format on
                 return _Sentinel<_Const, false>{_Get_unwrapped(_Last), _Pred};
             }
             // clang-format off
-            _NODISCARD constexpr auto _Unwrapped() && requires _Wrapped && _Unwrappable_v<iterator_t<_Base_t>> {
+            _NODISCARD constexpr auto _Unwrapped() &&
+                noexcept(noexcept(_Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last)), _Pred}))
+                requires _Wrapped && _Unwrappable_v<iterator_t<_Base_t>> {
                 // clang-format on
                 return _Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last)), _Pred};
             }
