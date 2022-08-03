@@ -1093,7 +1093,6 @@ utilities\format\format.fmt.string\types.compile.pass.cpp
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
 # "XFAIL: msvc" or "XFAIL: clang"
-algorithms\algorithms.results\in_out_result.compile.pass.cpp
 algorithms\algorithms.results\no_unique_address.compile.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\noncopyable_return_type.pass.cpp
 
@@ -1183,11 +1182,6 @@ containers\unord\unord.multiset\unord.multiset.cnstr\assign_copy.addressof.compi
 containers\unord\unord.set\iterator_concept_conformance.compile.pass.cpp
 containers\unord\unord.set\range_concept_conformance.compile.pass.cpp
 containers\unord\unord.set\unord.set.cnstr\assign_copy.addressof.compile.pass.cpp
-containers\views\enable_borrowed_range.compile.pass.cpp
-containers\views\range_concept_conformance.compile.pass.cpp
-containers\views\span.cons\span.dtor.compile.pass.cpp
-containers\views\span.iterators\iterator_concept_conformance.compile.pass.cpp
-containers\views\trivially_copyable.compile.pass.cpp
 depr\depr.c.headers\stdlib_h.aligned_alloc.compile.pass.cpp
 input.output\filesystems\class.directory_iterator\iterator_concept_conformance.compile.pass.cpp
 input.output\filesystems\class.directory_iterator\range_concept_conformance.compile.pass.cpp
@@ -1308,7 +1302,6 @@ ranges\range.req\range.view\view.subsumption.compile.pass.cpp
 ranges\range.utility\range.dangling\borrowed_iterator.compile.pass.cpp
 ranges\range.utility\range.dangling\borrowed_subrange.compile.pass.cpp
 ranges\range.utility\range.subrange\ctad.compile.pass.cpp
-ranges\range.utility\range.subrange\enable_borrowed_range.compile.pass.cpp
 ranges\range.utility\range.subrange\general.compile.pass.cpp
 re\re.iter\re.regiter\iterator_concept_conformance.compile.pass.cpp
 re\re.iter\re.tokiter\iterator_concept_conformance.compile.pass.cpp
@@ -1358,9 +1351,6 @@ containers\unord\unord.map\empty.verify.cpp
 containers\unord\unord.multimap\empty.verify.cpp
 containers\unord\unord.multiset\empty.verify.cpp
 containers\unord\unord.set\empty.verify.cpp
-containers\views\span.cons\iterator_len.verify.cpp
-containers\views\span.cons\iterator_sentinel.verify.cpp
-containers\views\span.obs\empty.nodiscard.verify.cpp
 depr\depr.atomics\depr.atomics.nonmembers\atomic_init.depr_in_cxx20.verify.cpp
 depr\depr.lib.binders\depr.lib.bind.1st\bind1st.depr_in_cxx11.verify.cpp
 depr\depr.lib.binders\depr.lib.bind.2nd\bind2nd.depr_in_cxx11.verify.cpp
