@@ -378,13 +378,6 @@ std/language.support/cmp/cmp.alg/partial_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/strong_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
 
-# GH-2576: Even rvalue `empty_view`s are `borrowed_range`s
-std/ranges/range.adaptors/range.all/range.owning.view/borrowing.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.all/range.ref.view/borrowing.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/range_concept_conformance.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/iterator/compare.pass.cpp FAIL
-std/ranges/range.req/range.refinements/random_access_range.compile.pass.cpp FAIL
-
 # GH-2978: Some fixes around std::ranges::enable_view
 std/ranges/range.req/range.view/enable_view.compile.pass.cpp FAIL
 
@@ -597,27 +590,15 @@ std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 # libc++ is missing various Ranges DRs
 std/language.support/support.limits/support.limits.general/ranges.version.pass.cpp FAIL
 
-# non-portable test of strengthened noexcept
-std/ranges/range.adaptors/range.transform/iterator/subscript.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/iterator/deref.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/iterator/iter_move.pass.cpp FAIL
-
 # Narrowing conversion
 std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy_n.pass.cpp:0 FAIL
 std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp:0 FAIL
-
-# libc++ doesn't yet implement LWG-3533
-std/ranges/range.adaptors/range.transform/end.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/iterator/base.pass.cpp FAIL
 
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp FAIL
 
 # LIT's ADDITIONAL_COMPILE_FLAGS is problematic
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.con/copy_move.pass.cpp SKIPPED
-
-# compares iterators from distinct transform_views
-std/ranges/range.adaptors/range.transform/iterator/plus_minus.pass.cpp FAIL
 
 # MoveOnlyForwardIterator (a misnomer) has mixed-type comparisons and conversions
 std/ranges/range.utility/range.subrange/primitives.pass.cpp:0 FAIL
@@ -990,7 +971,6 @@ std/numerics/rand/rand.dist/rand.dist.samp/rand.dist.samp.pconst/eval.pass.cpp F
 std/numerics/rand/rand.dist/rand.dist.samp/rand.dist.samp.plinear/eval.pass.cpp FAIL
 std/numerics/rand/rand.dist/rand.dist.samp/rand.dist.samp.plinear/eval_param.pass.cpp FAIL
 std/numerics/rand/rand.dist/rand.dist.uni/rand.dist.uni.real/param_ctor.pass.cpp FAIL
-std/ranges/range.adaptors/range.empty/borrowing.compile.pass.cpp FAIL
 std/ranges/range.adaptors/range.filter/iterator/arrow.pass.cpp FAIL
 std/ranges/range.adaptors/range.filter/iterator/base.pass.cpp FAIL
 std/ranges/range.adaptors/range.filter/iterator/compare.pass.cpp FAIL
@@ -1038,39 +1018,7 @@ std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer/equal.pass.cpp
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer/increment.pass.cpp FAIL
 std/ranges/range.adaptors/range.lazy.split/range.lazy.split.outer/types.compile.pass.cpp FAIL
 std/ranges/range.adaptors/range.lazy.split/view_interface.pass.cpp FAIL
-std/ranges/range.adaptors/range.reverse/borrowing.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.reverse/range_concept_conformance.compile.pass.cpp FAIL
 std/ranges/range.adaptors/range.take/adaptor.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/base.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/begin.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/borrowing.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/ctor.view_count.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/end.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/sentinel/base.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/sentinel/ctor.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/sentinel/eq.pass.cpp FAIL
-std/ranges/range.adaptors/range.take/size.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/adaptor.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/base.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/begin.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/general.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/iterator/arithmetic.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/iterator/ctor.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/iterator/requirements.compile.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/iterator/sentinel.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/iterator/types.pass.cpp FAIL
-std/ranges/range.adaptors/range.transform/size.pass.cpp FAIL
-std/ranges/range.factories/range.single.view/borrowing.compile.pass.cpp FAIL
-std/ranges/range.req/range.range/helper_aliases.compile.pass.cpp FAIL
-std/ranges/range.req/range.range/iterator_t.compile.pass.cpp FAIL
-std/ranges/range.req/range.range/range.compile.pass.cpp FAIL
-std/ranges/range.req/range.range/sentinel_t.compile.pass.cpp FAIL
-std/ranges/range.req/range.refinements/bidirectional_range.compile.pass.cpp FAIL
-std/ranges/range.req/range.refinements/contiguous_range.compile.pass.cpp FAIL
-std/ranges/range.req/range.refinements/forward_range.compile.pass.cpp FAIL
-std/ranges/range.req/range.refinements/input_range.compile.pass.cpp FAIL
-std/ranges/range.req/range.refinements/output_range.compile.pass.cpp FAIL
-std/ranges/range.req/range.refinements/viewable_range.compile.pass.cpp FAIL
 std/strings/basic.string/string.cons/dtor.pass.cpp FAIL
 std/strings/basic.string/string.cons/implicit_deduction_guides.pass.cpp FAIL
 std/strings/basic.string/string.modifiers/string_erase/iter.pass.cpp:0 FAIL
