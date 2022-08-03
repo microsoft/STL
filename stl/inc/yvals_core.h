@@ -19,8 +19,14 @@
 
 #if _STL_COMPILER_PREPROCESSOR
 
+// This does not use `_EMIT_STL_ERROR`, as it needs to be checked before we include anything else.
+// However, `_EMIT_STL_ERROR` has a dependency on `_CRT_STRINGIZE`, defined in `<vcruntime.h>`.
+// Here, we employ the same technique as `_CRT_STRINGIZE` in order to avoid needing to update the line number.
 #ifndef __cplusplus
-#error STL1003: Unexpected compiler, expected C++ compiler.
+#define _STL_STRINGIZE_(S) #S
+#define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
+#pragma message(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): STL1003: Unexpected compiler, expected C++ compiler.")
+#error Error in C++ Standard Library usage
 #endif // __cplusplus
 
 // Implemented unconditionally:
@@ -417,7 +423,25 @@
 #include <vcruntime.h>
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
-#define _WARNING_MESSAGE(NUMBER, MESSAGE) __FILE__ "(" _CRT_STRINGIZE(__LINE__) "): warning " NUMBER ": " MESSAGE
+// Note that _STL_PRAGMA is load-bearing;
+// it still needs to exist even once CUDA and ICC support _Pragma.
+#if defined(__CUDACC__) || defined(__INTEL_COMPILER)
+#define _STL_PRAGMA(PRAGMA) __pragma(PRAGMA)
+#else
+#define _STL_PRAGMA(PRAGMA) _Pragma(#PRAGMA)
+#endif
+
+#define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
+#define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _CRT_STRINGIZE(__LINE__) "): " MESSAGE)
+
+// clang-format off
+#define _EMIT_STL_WARNING(NUMBER, MESSAGE) \
+    _EMIT_STL_MESSAGE("warning " #NUMBER ": " MESSAGE) \
+    static_assert(true, "")
+#define _EMIT_STL_ERROR(NUMBER, MESSAGE) \
+    _EMIT_STL_MESSAGE("error " #NUMBER ": " MESSAGE) \
+    static_assert(false, "Error in C++ Standard Library usage.")
+// clang-format on
 
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
@@ -620,17 +644,17 @@
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
 #if __CUDACC_VER_MAJOR__ < 11 || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ < 6)
-#error STL1002: Unexpected compiler version, expected CUDA 11.6 or newer.
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
 #if __clang_major__ < 14
-#error STL1000: Unexpected compiler version, expected Clang 14.0.0 or newer.
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 14.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1933 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.33 or newer.
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.33 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -687,7 +711,7 @@
 #endif // _HAS_UNEXPECTED
 
 #if _HAS_UNEXPECTED && _HAS_CXX23
-#error STL1004: C++98 unexpected() is incompatible with C++23 unexpected<E>.
+_EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpected<E>.");
 #endif // _HAS_UNEXPECTED && _HAS_CXX23
 
 // P0004R1 Removing Deprecated Iostreams Aliases
