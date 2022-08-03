@@ -1080,6 +1080,9 @@ utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.create\
 utilities\meta\meta.logical\conjunction.compile.pass.cpp
 utilities\meta\meta.logical\disjunction.compile.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\convert_const_move.pass.cpp
+localization\locale.categories\category.time\locale.time.get\locale.time.get.members\date_order.pass.cpp
+utilities\format\format.fmt.string\get.pass.cpp
+utilities\format\format.fmt.string\types.compile.pass.cpp
 
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***

@@ -1076,6 +1076,9 @@ std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.cre
 std/utilities/meta/meta.logical/conjunction.compile.pass.cpp FAIL
 std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
+std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/date_order.pass.cpp FAIL
+std/utilities/format/format.fmt.string/get.pass.cpp FAIL
+std/utilities/format/format.fmt.string/types.compile.pass.cpp FAIL
 
 
 # *** XFAILs WHICH PASS ***
