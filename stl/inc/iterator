@@ -1373,7 +1373,7 @@ public:
 
     // clang-format off
     _NODISCARD constexpr counted_iterator<_Unwrapped_t<const _Iter&>> _Unwrapped() const&
-        noexcept(noexcept(counted_iterator<_Unwrapped_t<const _Iter&>>{_Current._Unwrapped(), _Length})
+        noexcept(noexcept(counted_iterator<_Unwrapped_t<const _Iter&>>{_Current._Unwrapped(), _Length}))
         requires _Unwrappable_v<const _Iter&> {
         // clang-format on
         return counted_iterator<_Unwrapped_t<const _Iter&>>{_Current._Unwrapped(), _Length};
@@ -1381,7 +1381,7 @@ public:
 
     // clang-format off
     _NODISCARD constexpr counted_iterator<_Unwrapped_t<_Iter>> _Unwrapped() &&
-        noexcept(noexcept(counted_iterator<_Unwrapped_t<_Iter>>{_STD move(_Current)._Unwrapped(), _Length})
+        noexcept(noexcept(counted_iterator<_Unwrapped_t<_Iter>>{_STD move(_Current)._Unwrapped(), _Length}))
         requires _Unwrappable_v<_Iter> {
         // clang-format on
         return counted_iterator<_Unwrapped_t<_Iter>>{_STD move(_Current)._Unwrapped(), _Length};
