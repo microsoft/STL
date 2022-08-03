@@ -2384,8 +2384,8 @@ namespace ranges {
     void _Derived_from_specialization_impl(const _Template<_Args...>&);
 
     template <class _Ty, template <class...> class _Template>
-    concept _Derived_from_specialization_of = requires(const _Ty& _Obj) {
-        _Derived_from_specialization_impl<_Template>(_Obj);
+    concept _Derived_from_specialization_of = is_object_v<_Ty> && requires(const _Ty& _Obj) {
+        _RANGES _Derived_from_specialization_impl<_Template>(_Obj); // qualified: avoid ADL, handle incompletable types
     };
 
     template <class _Derived>
