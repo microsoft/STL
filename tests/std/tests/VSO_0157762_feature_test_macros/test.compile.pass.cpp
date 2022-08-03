@@ -1260,7 +1260,7 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #endif
 #endif
 
-#if _HAS_CXX20
+#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_move_iterator_concept
 #error __cpp_lib_move_iterator_concept is not defined
 #elif __cpp_lib_move_iterator_concept != 202207L

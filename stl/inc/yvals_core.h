@@ -1449,8 +1449,12 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_latch                   201907L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
-#define __cpp_lib_move_iterator_concept   202207L
-#define __cpp_lib_polymorphic_allocator   201902L
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_move_iterator_concept 202207L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_polymorphic_allocator 201902L
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_ranges 202110L
