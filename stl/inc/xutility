@@ -2507,19 +2507,19 @@ namespace ranges {
     public:
         using _Not_quite_object::_Not_quite_object;
 
-        // clang-format off
-        template <class _It, sentinel_for<decay_t<_It>> _Se>
-            requires sized_sentinel_for<_Se, decay_t<_It>> || constructible_from<decay_t<_It>, _It>
-        _NODISCARD constexpr iter_difference_t<decay_t<_It>> operator()(_It&& _Raw_first, _Se _Last) const
-            noexcept(_Nothrow_dist<_It, _Se>) /* strengthened */ {
-            // clang-format on
-            if constexpr (sized_sentinel_for<_Se, decay_t<_It>>) {
-                return _Last - static_cast<const decay_t<_It>&>(_Raw_first); // Per LWG-3664
-            } else {
-                auto _First = _STD forward<_It>(_Raw_first);
-                _Adl_verify_range(_First, _Last);
-                return _Distance_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)));
-            }
+        template <class _It, sentinel_for<_It> _Se>
+            requires(!sized_sentinel_for<_Se, _It>)
+        _NODISCARD constexpr iter_difference_t<_It> operator()(_It _First, _Se _Last) const
+            noexcept(noexcept(_Distance_unchecked(
+                _Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last))))) /* strengthened */ {
+            _Adl_verify_range(_First, _Last);
+            return _Distance_unchecked(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)));
+        }
+
+        template <class _It, sized_sentinel_for<decay_t<_It>> _Se>
+        _NODISCARD constexpr iter_difference_t<decay_t<_It>> operator()(_It&& _First, const _Se _Last) const
+            noexcept(noexcept(_Last - static_cast<const decay_t<_It>&>(_First))) /* strengthened */ { // Per LWG-3664
+            return _Last - static_cast<const decay_t<_It>&>(_First);
         }
 
         template <range _Rng>
@@ -2533,13 +2533,6 @@ namespace ranges {
         }
 
     private:
-        template <class _It, class _Se>
-        static constexpr bool _Nothrow_dist = false;
-
-        template <class _It, sized_sentinel_for<decay_t<_It>> _Se>
-        static constexpr bool _Nothrow_dist<_It, _Se> = noexcept(
-            _STD declval<_Se&>() - _STD declval<const decay_t<_It>&>());
-
         template <class _It, class _Se>
         _NODISCARD static constexpr iter_difference_t<_It> _Distance_unchecked(_It _First, const _Se _Last) noexcept(
             noexcept(++_First != _Last)) {
