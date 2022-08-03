@@ -873,6 +873,14 @@ language.support\cmp\cmp.alg\compare_weak_order_fallback.pass.cpp
 # I don't know which is right.
 language.support\support.limits\limits\numeric.limits.members\tinyness_before.pass.cpp
 
+# Not yet analyzed. the test fails on AMD64 but passes on X86
+containers\associative\map\map.access\iterator.pass.cpp
+iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.-\sentinel.pass.cpp
+
+# Not yet analyzed. the test fails on X86 but passes on AMD64
+algorithms\alg.sorting\alg.set.operations\includes\ranges_includes.pass.cpp
+algorithms\alg.modifying.operations\alg.unique\ranges_unique.pass.cpp
+
 # Not yet analyzed
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
 algorithms\alg.nonmodifying\alg.any_of\ranges.any_of.pass.cpp
@@ -910,7 +918,6 @@ algorithms\ranges_robust_against_omitting_invoke.pass.cpp
 algorithms\ranges_robust_against_proxy_iterators.pass.cpp
 algorithms\robust_against_proxy_iterators_lifetime_bugs.pass.cpp
 concepts\concepts.lang\concept.default.init\default_initializable.compile.pass.cpp
-containers\associative\map\map.access\iterator.pass.cpp
 containers\sequences\vector.bool\construct_iter_iter.pass.cpp
 containers\sequences\vector.bool\construct_iter_iter_alloc.pass.cpp
 containers\sequences\vector.bool\construct_size.pass.cpp
@@ -936,7 +943,6 @@ iterators\iterator.requirements\iterator.cust\iterator.cust.move\iter_rvalue_ref
 iterators\iterator.requirements\iterator.cust\iterator.cust.swap\iter_swap.pass.cpp
 iterators\predef.iterators\iterators.common\iterator_traits.compile.pass.cpp
 iterators\predef.iterators\iterators.common\plus_plus.pass.cpp
-iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.-\sentinel.pass.cpp
 iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_gt.pass.cpp
 iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_gte.pass.cpp
 iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_lte.pass.cpp

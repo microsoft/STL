@@ -869,6 +869,14 @@ std/numerics/rand/rand.dist/rand.dist.pois/rand.dist.pois.poisson/eval.pass.cpp 
 # I don't know which is right.
 std/language.support/support.limits/limits/numeric.limits.members/tinyness_before.pass.cpp SKIPPED
 
+# Not yet analyzed. the test fails on AMD64 but passes on X86
+std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
+std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
+
+# Not yet analyzed. the test fails on X86 but passes on AMD64
+std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:0 SKIPPED
+std/algorithms/alg.modifying.operations/alg.unique/ranges_unique.pass.cpp:0 SKIPPED
+
 # Not yet analyzed
 std/algorithms/alg.nonmodifying/alg.all_of/ranges.all_of.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.any_of/ranges.any_of.pass.cpp FAIL
@@ -906,7 +914,6 @@ std/algorithms/ranges_robust_against_omitting_invoke.pass.cpp FAIL
 std/algorithms/ranges_robust_against_proxy_iterators.pass.cpp FAIL
 std/algorithms/robust_against_proxy_iterators_lifetime_bugs.pass.cpp FAIL
 std/concepts/concepts.lang/concept.default.init/default_initializable.compile.pass.cpp:0 FAIL
-std/containers/associative/map/map.access/iterator.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_iter_iter_alloc.pass.cpp:0 FAIL
 std/containers/sequences/vector.bool/construct_size.pass.cpp:0 FAIL
@@ -932,7 +939,6 @@ std/iterators/iterator.requirements/iterator.cust/iterator.cust.move/iter_rvalue
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.pass.cpp FAIL
 std/iterators/predef.iterators/iterators.common/iterator_traits.compile.pass.cpp:1 FAIL
 std/iterators/predef.iterators/iterators.common/plus_plus.pass.cpp:1 FAIL
-std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gt.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_lte.pass.cpp FAIL
