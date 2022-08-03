@@ -127,6 +127,7 @@
 // P2162R2 Inheriting From variant
 // P2251R1 Require span And basic_string_view To Be Trivially Copyable
 //     (basic_string_view always provides this behavior)
+// P2517R1 Conditional noexcept For apply()
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
