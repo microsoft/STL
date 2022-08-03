@@ -49,6 +49,9 @@ std/utilities/format/format.functions/vformat_to.pass.cpp FAIL
 std/utilities/format/format.functions/vformat.locale.pass.cpp FAIL
 std/utilities/format/format.functions/vformat.pass.cpp FAIL
 
+# libc++  fix allocator in allocator_propagation test (https://reviews.llvm.org/D131079)
+std/strings/basic.string/string.nonmembers/string_op+/allocator_propagation.pass.cpp FAIL
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -361,6 +364,9 @@ std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
 
 # GH-2978: Some fixes around std::ranges::enable_view
 std/ranges/range.req/range.view/enable_view.compile.pass.cpp FAIL
+
+# GH-2987 ranges::distance needs to better emulate the two overload presentation of LWG-3664
+std/iterators/iterator.primitives/range.iter.ops/range.iter.ops.distance/iterator_sentinel.pass.cpp FAIL
 
 
 # *** CRT BUGS ***
@@ -921,7 +927,6 @@ std/containers/sequences/vector/vector.erasure/erase.pass.cpp:0 FAIL
 std/containers/sequences/vector/vector.erasure/erase_if.pass.cpp:0 FAIL
 std/input.output/filesystems/fs.op.funcs/fs.op.remove_all/toctou.pass.cpp FAIL
 std/input.output/iostream.format/quoted.manip/quoted_traits.compile.pass.cpp FAIL
-std/iterators/iterator.primitives/range.iter.ops/range.iter.ops.distance/iterator_sentinel.pass.cpp FAIL
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.move/iter_rvalue_reference_t.compile.pass.cpp FAIL
 std/iterators/iterator.requirements/iterator.cust/iterator.cust.swap/iter_swap.pass.cpp FAIL
 std/iterators/predef.iterators/iterators.common/iterator_traits.compile.pass.cpp:1 FAIL
@@ -1006,7 +1011,6 @@ std/strings/basic.string/string.modifiers/string_replace/iter_iter_pointer_size.
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_size_char.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string.pass.cpp:0 FAIL
 std/strings/basic.string/string.modifiers/string_replace/iter_iter_string_view.pass.cpp:0 FAIL
-std/strings/basic.string/string.nonmembers/string_op+/allocator_propagation.pass.cpp FAIL
 std/strings/string.view/string.view.comparison/equal.pass.cpp FAIL
 std/strings/string.view/string.view.comparison/greater.pass.cpp FAIL
 std/strings/string.view/string.view.comparison/greater_equal.pass.cpp FAIL
