@@ -1833,5 +1833,4 @@ int main() {
 }
 #endif // TRANSITION, VSO-1586016
 
-int main() {
-}
+int main() {}
