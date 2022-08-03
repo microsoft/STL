@@ -520,7 +520,7 @@ std/utilities/allocator.adaptor/allocator.adaptor.members/construct_type.pass.cp
 
 # We define __cpp_lib_has_unique_object_representations in C++17 mode; test error says it
 # "should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
-std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp:1 FAIL
+std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 
 # Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
 std/language.support/support.limits/support.limits.general/algorithm.version.compile.pass.cpp FAIL
@@ -1037,7 +1037,6 @@ std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.cre
 std/utilities/meta/meta.logical/conjunction.compile.pass.cpp FAIL
 std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
-std/localization/locale.categories/category.time/locale.time.get/locale.time.get.members/date_order.pass.cpp FAIL
 std/utilities/format/format.fmt.string/get.pass.cpp FAIL
 std/utilities/format/format.fmt.string/types.compile.pass.cpp FAIL
 
