@@ -6986,9 +6986,10 @@ namespace msvc {
                 };
 
                 using VarTestConv = std::variant<convertible_to_immobile_one, convertible_to_immobile_other>;
-                // TRANSITION, DevCom-10024578
-                // assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_one{}}).x == 1729);
-                // assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_other{}}).x == 1138);
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, DevCom-10111923
+                assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_one{}}).x == 1729);
+                assert(std::visit<R>(std::identity{}, VarTestConv{convertible_to_immobile_other{}}).x == 1138);
+#endif // TRANSITION, DevCom-10111923
                 auto immobile_converter = [](auto src) -> immobile_data { return src; };
                 assert(std::visit<R>(immobile_converter, VarTestConv{convertible_to_immobile_one{}}).x == 1729);
                 assert(std::visit<R>(immobile_converter, VarTestConv{convertible_to_immobile_other{}}).x == 1138);
