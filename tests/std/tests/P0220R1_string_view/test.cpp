@@ -343,7 +343,7 @@ constexpr bool test_case_contiguous_constructor() {
 }
 
 constexpr bool test_case_range_constructor() {
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
     // Also tests the corresponding deduction guide:
     same_as<string_view> auto sv = basic_string_view(expectedData);

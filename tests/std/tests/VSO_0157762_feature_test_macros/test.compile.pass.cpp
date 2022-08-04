@@ -1468,7 +1468,7 @@ STATIC_ASSERT(__cpp_lib_ranges_contains == 202207L);
 #endif
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges_iota
 #error __cpp_lib_ranges_iota is not defined
 #elif __cpp_lib_ranges_iota != 202202L
@@ -1662,7 +1662,7 @@ STATIC_ASSERT(__cpp_lib_shared_timed_mutex == 201402L);
 #endif
 #endif
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_shift
 #error __cpp_lib_shift is not defined
 #elif __cpp_lib_shift != 202202L
