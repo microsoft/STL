@@ -231,19 +231,19 @@ constexpr void instantiation_test() {
 #endif // TEST_EVERYTHING
 }
 
-struct Bool {
-    Bool() {}
-    Bool(const Bool&) = delete;
-    Bool& operator!() {
-        return *this;
-    }
-    operator bool() {
-        return true;
-    }
-};
-
 void test_gh_2889() { // COMPILE-ONLY
     // GH-2889 <ranges>: chunk_by_view's helper lambda does not specify return type
+    struct Bool { // NB: poor model of boolean-testable; don't use in runtime code.
+        Bool()            = default;
+        Bool(const Bool&) = delete;
+        Bool& operator!() {
+            return *this;
+        }
+        operator bool() {
+            return true;
+        }
+    };
+
     Bool x[3];
     auto r = x | views::chunk_by([](Bool& b, Bool&) -> Bool& { return b; });
     (void) r.begin();
