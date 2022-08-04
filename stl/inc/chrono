@@ -5418,7 +5418,7 @@ namespace chrono {
 
                     _Validate_specifiers(_Spec, _Val);
 
-#if defined(_MSVC_EXECUTION_CHARACTER_SET) && _MSVC_EXECUTION_CHARACTER_SET == 65001
+#if defined(_MSVC_EXECUTION_CHARACTER_SET) && _MSVC_EXECUTION_CHARACTER_SET == 65001 // TRANSITION, VSO-1468747 (EDG)
                     if constexpr (is_same_v<_CharT, char>) {
                         if (_Specs._Localized) {
                             wostringstream _Wstream;
