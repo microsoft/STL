@@ -1385,7 +1385,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // __cpp_impl_coroutine
 
 #if _HAS_CXX20
-#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
+#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
 #define __cpp_lib_concepts 202002L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
