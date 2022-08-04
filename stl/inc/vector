@@ -694,7 +694,7 @@ public:
         _Adl_verify_range(_First, _Last);
         auto _UFirst = _Get_unwrapped(_First);
         auto _ULast  = _Get_unwrapped(_Last);
-        if constexpr (_Is_fwd_iter_v<_Iter>) {
+        if constexpr (_Is_ranges_fwd_iter_v<_Iter>) {
             const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_UFirst, _ULast)));
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
 #ifdef __cpp_lib_concepts
@@ -1206,12 +1206,7 @@ public:
 
         _Adl_verify_range(_First, _Last);
         const auto _Whereoff = static_cast<size_type>(_Whereptr - _Oldfirst);
-#ifdef __cpp_lib_concepts
-        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter> || forward_iterator<_Iter>;
-#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
-        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter>;
-#endif // ^^^ !__cpp_lib_concepts ^^^
-        if constexpr (_Is_fwd) {
+        if constexpr (_Is_ranges_fwd_iter_v<_Iter>) {
             _Insert_forward_range(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last));
         } else {
             _Insert_input_range(_Where, _Get_unwrapped(_First), _Get_unwrapped(_Last));
@@ -1362,12 +1357,7 @@ public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     _CONSTEXPR20 void assign(_Iter _First, _Iter _Last) {
         _Adl_verify_range(_First, _Last);
-#ifdef __cpp_lib_concepts
-        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter> || forward_iterator<_Iter>;
-#else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
-        constexpr bool _Is_fwd = _Is_fwd_iter_v<_Iter>;
-#endif // ^^^ !__cpp_lib_concepts ^^^
-        if constexpr (_Is_fwd) {
+        if constexpr (_Is_ranges_fwd_iter_v<_Iter>) {
             _Assign_forward_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
         } else {
             _Assign_input_range(_Get_unwrapped(_First), _Get_unwrapped(_Last));
@@ -3145,7 +3135,7 @@ public:
     _CONSTEXPR20 iterator insert(const_iterator _Where, _Iter _First, _Iter _Last) {
         const difference_type _Saved_offset = _Where - begin();
 
-        if constexpr (_Is_fwd_iter_v<_Iter>) {
+        if constexpr (_Is_ranges_fwd_iter_v<_Iter>) {
             _Adl_verify_range(_First, _Last);
             const auto _Count    = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
             const size_type _Off = _Insert_x(_Where, _Count);

@@ -490,7 +490,9 @@ tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
 tests\P2401R0_conditional_noexcept_for_exchange
+tests\P2408R5_ranges_iterators_to_classic_algorithms
 tests\P2415R2_owning_view
+tests\P2417R2_constexpr_bitset
 tests\P2440R1_ranges_alg_shift_left
 tests\P2440R1_ranges_alg_shift_right
 tests\P2440R1_ranges_numeric_iota
@@ -501,6 +503,7 @@ tests\P2442R1_views_slide
 tests\P2443R1_views_chunk_by
 tests\P2443R1_views_chunk_by_death
 tests\P2445R1_forward_like
+tests\P2517R1_apply_conditional_noexcept
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions
 tests\VSO_0000000_c_math_functions
