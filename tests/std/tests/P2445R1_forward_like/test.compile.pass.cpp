@@ -11,49 +11,49 @@ using CU = const U;
 using T  = int;
 using CT = const T;
 
-U t{};
-const U& ct = t;
+U u{};
+const U& cu = u;
 
 static_assert(is_same_v<decltype(forward_like<T>(U{})), U&&>);
 static_assert(is_same_v<decltype(forward_like<T>(CU{})), CU&&>);
-static_assert(is_same_v<decltype(forward_like<T>(t)), U&&>);
-static_assert(is_same_v<decltype(forward_like<T>(ct)), CU&&>);
-static_assert(is_same_v<decltype(forward_like<T>(move(t))), U&&>);
-static_assert(is_same_v<decltype(forward_like<T>(move(ct))), CU&&>);
+static_assert(is_same_v<decltype(forward_like<T>(u)), U&&>);
+static_assert(is_same_v<decltype(forward_like<T>(cu)), CU&&>);
+static_assert(is_same_v<decltype(forward_like<T>(move(u))), U&&>);
+static_assert(is_same_v<decltype(forward_like<T>(move(cu))), CU&&>);
 
 static_assert(is_same_v<decltype(forward_like<CT>(U{})), CU&&>);
 static_assert(is_same_v<decltype(forward_like<CT>(CU{})), CU&&>);
-static_assert(is_same_v<decltype(forward_like<CT>(t)), CU&&>);
-static_assert(is_same_v<decltype(forward_like<CT>(ct)), CU&&>);
-static_assert(is_same_v<decltype(forward_like<CT>(move(t))), CU&&>);
-static_assert(is_same_v<decltype(forward_like<CT>(move(ct))), CU&&>);
+static_assert(is_same_v<decltype(forward_like<CT>(u)), CU&&>);
+static_assert(is_same_v<decltype(forward_like<CT>(cu)), CU&&>);
+static_assert(is_same_v<decltype(forward_like<CT>(move(u))), CU&&>);
+static_assert(is_same_v<decltype(forward_like<CT>(move(cu))), CU&&>);
 
 static_assert(is_same_v<decltype(forward_like<T&>(U{})), U&>);
 static_assert(is_same_v<decltype(forward_like<T&>(CU{})), CU&>);
-static_assert(is_same_v<decltype(forward_like<T&>(t)), U&>);
-static_assert(is_same_v<decltype(forward_like<T&>(ct)), CU&>);
-static_assert(is_same_v<decltype(forward_like<T&>(move(t))), U&>);
-static_assert(is_same_v<decltype(forward_like<T&>(move(ct))), CU&>);
+static_assert(is_same_v<decltype(forward_like<T&>(u)), U&>);
+static_assert(is_same_v<decltype(forward_like<T&>(cu)), CU&>);
+static_assert(is_same_v<decltype(forward_like<T&>(move(u))), U&>);
+static_assert(is_same_v<decltype(forward_like<T&>(move(cu))), CU&>);
 
 static_assert(is_same_v<decltype(forward_like<CT&>(U{})), CU&>);
 static_assert(is_same_v<decltype(forward_like<CT&>(CU{})), CU&>);
-static_assert(is_same_v<decltype(forward_like<CT&>(t)), CU&>);
-static_assert(is_same_v<decltype(forward_like<CT&>(ct)), CU&>);
-static_assert(is_same_v<decltype(forward_like<CT&>(move(t))), CU&>);
-static_assert(is_same_v<decltype(forward_like<CT&>(move(ct))), CU&>);
+static_assert(is_same_v<decltype(forward_like<CT&>(u)), CU&>);
+static_assert(is_same_v<decltype(forward_like<CT&>(cu)), CU&>);
+static_assert(is_same_v<decltype(forward_like<CT&>(move(u))), CU&>);
+static_assert(is_same_v<decltype(forward_like<CT&>(move(cu))), CU&>);
 
 static_assert(is_same_v<decltype(forward_like<T&&>(U{})), U&&>);
 static_assert(is_same_v<decltype(forward_like<T&&>(CU{})), CU&&>);
-static_assert(is_same_v<decltype(forward_like<T&&>(t)), U&&>);
-static_assert(is_same_v<decltype(forward_like<T&&>(ct)), CU&&>);
-static_assert(is_same_v<decltype(forward_like<T&&>(move(t))), U&&>);
-static_assert(is_same_v<decltype(forward_like<T&&>(move(ct))), CU&&>);
+static_assert(is_same_v<decltype(forward_like<T&&>(u)), U&&>);
+static_assert(is_same_v<decltype(forward_like<T&&>(cu)), CU&&>);
+static_assert(is_same_v<decltype(forward_like<T&&>(move(u))), U&&>);
+static_assert(is_same_v<decltype(forward_like<T&&>(move(cu))), CU&&>);
 
 static_assert(is_same_v<decltype(forward_like<CT&&>(U{})), CU&&>);
 static_assert(is_same_v<decltype(forward_like<CT&&>(CU{})), CU&&>);
-static_assert(is_same_v<decltype(forward_like<CT&&>(t)), CU&&>);
-static_assert(is_same_v<decltype(forward_like<CT&&>(ct)), CU&&>);
-static_assert(is_same_v<decltype(forward_like<CT&&>(move(t))), CU&&>);
-static_assert(is_same_v<decltype(forward_like<CT&&>(move(ct))), CU&&>);
+static_assert(is_same_v<decltype(forward_like<CT&&>(u)), CU&&>);
+static_assert(is_same_v<decltype(forward_like<CT&&>(cu)), CU&&>);
+static_assert(is_same_v<decltype(forward_like<CT&&>(move(u))), CU&&>);
+static_assert(is_same_v<decltype(forward_like<CT&&>(move(cu))), CU&&>);
 
 int main() {} // COMPILE-ONLY
