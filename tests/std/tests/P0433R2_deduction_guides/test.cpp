@@ -397,6 +397,24 @@ void test_function_wrapper() {
     static_assert(is_same_v<decltype(f21), F<void(long long)>>);
     static_assert(is_same_v<decltype(f22), F<void(long long)>>);
     static_assert(is_same_v<decltype(f23), F<void(long long)>>);
+
+    struct ExplicitThisNoexcept {
+        float operator()(this ExplicitThisNoexcept, double) noexcept {
+            return 3.14f;
+        }
+    };
+
+    ExplicitThisNoexcept explicit_this_noexcept_functor{};
+
+    F f24(explicit_this_noexcept_functor);
+    F f25(as_const(explicit_this_noexcept_functor));
+    F f26(move(explicit_this_noexcept_functor));
+    F f27(move(as_const(explicit_this_noexcept_functor)));
+
+    static_assert(is_same_v<decltype(f24), F<float(double)>>);
+    static_assert(is_same_v<decltype(f25), F<float(double)>>);
+    static_assert(is_same_v<decltype(f26), F<float(double)>>);
+    static_assert(is_same_v<decltype(f27), F<float(double)>>);
 #endif // HAS_EXPLICIT_THIS_PARAMETER
 }
 
