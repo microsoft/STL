@@ -797,7 +797,7 @@ template <class _Ty>
 concept _Can_reference = requires {
     typename _With_reference<_Ty>;
 };
-#else
+#else // __cpp_lib_concepts
 template <class _Ty, class = void>
 inline constexpr bool _Can_reference = false;
 

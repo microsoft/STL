@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <cassert>
 #include <type_traits>
 #include <utility>
 
@@ -55,5 +56,17 @@ static_assert(is_same_v<decltype(forward_like<CT&&>(u)), CU&&>);
 static_assert(is_same_v<decltype(forward_like<CT&&>(cu)), CU&&>);
 static_assert(is_same_v<decltype(forward_like<CT&&>(move(u))), CU&&>);
 static_assert(is_same_v<decltype(forward_like<CT&&>(move(cu))), CU&&>);
+
+static_assert(noexcept(forward_like<T>(u)));
+
+constexpr bool test() {
+    int val       = 1729;
+    auto&& result = forward_like<const double&>(val);
+    static_assert(is_same_v<decltype(result), const int&>);
+    assert(&result == &val);
+    return true;
+}
+
+static_assert(test());
 
 int main() {} // COMPILE-ONLY
