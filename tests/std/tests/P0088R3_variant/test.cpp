@@ -6972,7 +6972,7 @@ namespace msvc {
                 assert(std::visit<R>(std::identity{}, std::variant<int, short>{13}).x == 13);
                 assert(std::visit<R>(std::identity{}, std::variant<int, short>{short{42}}).x == 42);
 
-                // Verify that conversions to an object is not copied/moved are correctly handeled
+                // Verify that conversions to an object that can't be copied/moved are correctly handled
                 struct convertible_to_immobile_one {
                     operator immobile_data() const {
                         return immobile_data{1729};
