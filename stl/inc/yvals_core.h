@@ -1389,9 +1389,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_concepts 202002L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
-#if defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_algorithm_iterator_requirements 202207L
-#endif
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
@@ -1421,9 +1421,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_endian                  201907L
 #define __cpp_lib_erase_if                202002L
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_format 202110L
-#endif // defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1456,9 +1456,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #define __cpp_lib_polymorphic_allocator 201902L
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_ranges 202110L
-#endif // defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
