@@ -367,9 +367,6 @@ std/language.support/cmp/cmp.alg/partial_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/strong_order.pass.cpp FAIL
 std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
 
-# GH-2978: Some fixes around std::ranges::enable_view
-std/ranges/range.req/range.view/enable_view.compile.pass.cpp FAIL
-
 # GH-2987 ranges::distance needs to better emulate the two overload presentation of LWG-3664
 std/iterators/iterator.primitives/range.iter.ops/range.iter.ops.distance/iterator_sentinel.pass.cpp FAIL
 
@@ -581,10 +578,6 @@ std/time/time.clock/time.clock.file/to_from_sys.pass.cpp FAIL
 
 # libc++ is missing various Ranges DRs
 std/language.support/support.limits/support.limits.general/ranges.version.compile.pass.cpp FAIL
-
-# Narrowing conversion
-std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy_n.pass.cpp:0 FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp:0 FAIL
 
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 std/containers/sequences/vector/vector.cons/assign_copy.pass.cpp FAIL
@@ -1041,14 +1034,15 @@ std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.targ/targ
 std/utilities/function.objects/func.wrap/func.wrap.func/func.wrap.func.targ/target_type.pass.cpp:0 FAIL
 std/utilities/function.objects/func.wrap/func.wrap.func/types.pass.cpp:0 FAIL
 std/utilities/function.objects/refwrap/refwrap.const/type_conv_ctor.pass.cpp:0 FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.copy/ranges_uninitialized_copy_n.pass.cpp:1 FAIL
-std/utilities/memory/specialized.algorithms/uninitialized.move/ranges_uninitialized_move_n.pass.cpp:1 FAIL
 std/utilities/memory/util.smartptr/util.smartptr.shared/util.smartptr.shared.create/allocate_shared.array.unbounded.pass.cpp FAIL
 std/utilities/meta/meta.logical/conjunction.compile.pass.cpp FAIL
 std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
 std/utilities/format/format.fmt.string/get.pass.cpp FAIL
 std/utilities/format/format.fmt.string/types.compile.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.rotate/ranges_rotate.pass.cpp FAIL
+std/algorithms/alg.sorting/alg.clamp/ranges.clamp.pass.cpp FAIL
+std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp:0 FAIL
 
 
 # *** XFAILs WHICH PASS ***

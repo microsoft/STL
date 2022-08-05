@@ -379,9 +379,6 @@ language.support\cmp\cmp.alg\partial_order.pass.cpp
 language.support\cmp\cmp.alg\strong_order.pass.cpp
 language.support\cmp\cmp.alg\weak_order.pass.cpp
 
-# GH-2978: Some fixes around std::ranges::enable_view
-ranges\range.req\range.view\enable_view.compile.pass.cpp
-
 # GH-2987 ranges::distance needs to better emulate the two overload presentation of LWG-3664
 iterators\iterator.primitives\range.iter.ops\range.iter.ops.distance\iterator_sentinel.pass.cpp
 
@@ -593,10 +590,6 @@ time\time.clock\time.clock.file\to_from_sys.pass.cpp
 
 # libc++ is missing various Ranges DRs
 language.support\support.limits\support.limits.general\ranges.version.compile.pass.cpp
-
-# Narrowing conversion
-utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
-utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move_n.pass.cpp
 
 # MaybePOCCAAllocator doesn't meet the allocator requirements
 containers\sequences\vector\vector.cons\assign_copy.pass.cpp
@@ -1052,14 +1045,15 @@ utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.targ\target.p
 utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.targ\target_type.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\types.pass.cpp
 utilities\function.objects\refwrap\refwrap.const\type_conv_ctor.pass.cpp
-utilities\memory\specialized.algorithms\uninitialized.copy\ranges_uninitialized_copy_n.pass.cpp
-utilities\memory\specialized.algorithms\uninitialized.move\ranges_uninitialized_move_n.pass.cpp
 utilities\memory\util.smartptr\util.smartptr.shared\util.smartptr.shared.create\allocate_shared.array.unbounded.pass.cpp
 utilities\meta\meta.logical\conjunction.compile.pass.cpp
 utilities\meta\meta.logical\disjunction.compile.pass.cpp
 utilities\tuple\tuple.tuple\tuple.cnstr\convert_const_move.pass.cpp
 utilities\format\format.fmt.string\get.pass.cpp
 utilities\format\format.fmt.string\types.compile.pass.cpp
+algorithms/alg.modifying.operations/alg.rotate/ranges_rotate.pass.cpp
+algorithms/alg.sorting/alg.clamp/ranges.clamp.pass.cpp
+iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp
 
 
 # *** SKIPPED FOR MSVC-INTERNAL CONTEST ONLY ***
