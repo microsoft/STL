@@ -46,16 +46,69 @@ void do_full_test() {
 
     do_single_test<ranges::iterator_t<R>, CopyUnwrapNothrow>();
 
-    // iterator_t<filter_view> does not define _Unwrapped
+    // TRANSITION, GH-2997
     do_single_test<ranges::iterator_t<ranges::filter_view<R, Predicate>>, true>();
-    // iterator_t<transform_view> does not define _Unwrapped
+    // TRANSITION, GH-2997
     do_single_test<ranges::iterator_t<ranges::transform_view<R, Predicate>>, true>();
     if constexpr (ranges::bidirectional_range<R>) {
-        // iterator_t<reverse_view> does not define _Unwrapped
-        do_single_test<ranges::iterator_t<ranges::reverse_view<R>>, true>();
+        do_single_test<ranges::iterator_t<ranges::reverse_view<R>>, CopyUnwrapNothrow>();
     }
 #endif // __cpp_lib_concepts
 }
+
+struct BidiIterUnwrapThrowing : vector<int>::iterator {
+    using _Base = vector<int>::iterator;
+
+    using _Base::_Base;
+    using _Base::iterator_category;
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+    using _Base::iterator_concept;
+#endif
+
+    using _Base::pointer;
+    using _Base::reference;
+    using _Base::value_type;
+
+    friend bool operator==(const BidiIterUnwrapThrowing& lhs, const BidiIterUnwrapThrowing& rhs) noexcept {
+        return static_cast<const _Base&>(lhs) == static_cast<const _Base&>(rhs);
+    }
+    friend bool operator!=(const BidiIterUnwrapThrowing& lhs, const BidiIterUnwrapThrowing& rhs) noexcept {
+        return static_cast<const _Base&>(lhs) != static_cast<const _Base&>(rhs);
+    }
+
+    BidiIterUnwrapThrowing& operator++() {
+        _Base::operator++();
+        return *this;
+    }
+    BidiIterUnwrapThrowing operator++(int) {
+        auto res = *this;
+        _Base::operator++();
+        return res;
+    }
+    BidiIterUnwrapThrowing& operator--() {
+        _Base::operator--();
+        return *this;
+    }
+    BidiIterUnwrapThrowing operator--(int) {
+        auto res = *this;
+        _Base::operator--();
+        return res;
+    }
+
+    using _Prevent_inheriting_unwrap = BidiIterUnwrapThrowing;
+
+    int* _Unwrapped() const& noexcept(false) {
+        return _Base::_Unwrapped();
+    }
+    int* _Unwrapped() && noexcept {
+        return std::move(*this)._Base::_Unwrapped();
+    }
+
+    void _Seek_to(int* p) & noexcept {
+        _Base::_Seek_to(p);
+    }
+};
 
 int main() {
     do_single_test<int>();
@@ -68,4 +121,5 @@ int main() {
     do_full_test<list<int>::const_iterator>();
 
     do_full_test<path::iterator, false>();
+    do_full_test<BidiIterUnwrapThrowing, false>();
 }
