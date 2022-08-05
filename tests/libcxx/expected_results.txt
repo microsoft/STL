@@ -935,7 +935,7 @@ std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_gte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_lte.pass.cpp FAIL
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op_spaceship.pass.cpp FAIL
-std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp:1 FAIL
+std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/deque.version.compile.pass.cpp FAIL
@@ -1043,9 +1043,10 @@ std/utilities/meta/meta.logical/disjunction.compile.pass.cpp FAIL
 std/utilities/tuple/tuple.tuple/tuple.cnstr/convert_const_move.pass.cpp FAIL
 std/utilities/format/format.fmt.string/get.pass.cpp FAIL
 std/utilities/format/format.fmt.string/types.compile.pass.cpp FAIL
+std/algorithms/alg.modifying.operations/alg.random.sample/ranges_sample.pass.cpp FAIL
 std/algorithms/alg.modifying.operations/alg.rotate/ranges_rotate.pass.cpp FAIL
 std/algorithms/alg.sorting/alg.clamp/ranges.clamp.pass.cpp FAIL
-std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp:0 FAIL
+std/iterators/iterator.requirements/iterator.concepts/iterator.concept.random.access/contiguous_iterator.compile.pass.cpp FAIL
 
 
 # *** XFAILs WHICH PASS ***
