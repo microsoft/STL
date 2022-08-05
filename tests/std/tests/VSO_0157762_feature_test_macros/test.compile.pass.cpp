@@ -30,6 +30,20 @@ STATIC_ASSERT(__cpp_lib_adaptor_iterator_pair_constructor == 202106L);
 STATIC_ASSERT(__cpp_lib_addressof_constexpr == 201603L);
 #endif
 
+#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#ifndef __cpp_lib_algorithm_iterator_requirements
+#error __cpp_lib_algorithm_iterator_requirements is not defined
+#elif __cpp_lib_algorithm_iterator_requirements != 202207L
+#error __cpp_lib_algorithm_iterator_requirements is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_algorithm_iterator_requirements == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_algorithm_iterator_requirements
+#error __cpp_lib_algorithm_iterator_requirements is defined
+#endif
+#endif
+
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
 #ifndef __cpp_lib_allocate_at_least
 #error __cpp_lib_allocate_at_least is not defined
@@ -455,6 +469,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_algorithms == 201806L);
 #else
 #ifdef __cpp_lib_constexpr_algorithms
 #error __cpp_lib_constexpr_algorithms is defined
+#endif
+#endif
+
+#if _HAS_CXX23
+#ifndef __cpp_lib_constexpr_bitset
+#error __cpp_lib_constexpr_bitset is not defined
+#elif __cpp_lib_constexpr_bitset != 202207L
+#error __cpp_lib_constexpr_bitset  is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_bitset == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_bitset
+#error __cpp_lib_constexpr_bitset is defined
 #endif
 #endif
 
@@ -946,6 +974,10 @@ STATIC_ASSERT(__cpp_lib_invoke == 201411L);
 #else
 STATIC_ASSERT(__cpp_lib_invoke_r == 202106L);
 #endif
+#else
+#ifdef __cpp_lib_invoke_r
+#error __cpp_lib_invoke_r is defined
+#endif
 #endif
 
 #if _HAS_CXX17
@@ -1225,6 +1257,20 @@ STATIC_ASSERT(__cpp_lib_memory_resource == 201603L);
 #else
 #ifdef __cpp_lib_memory_resource
 #error __cpp_lib_memory_resource is defined
+#endif
+#endif
+
+#if _HAS_CXX20
+#ifndef __cpp_lib_move_iterator_concept
+#error __cpp_lib_move_iterator_concept is not defined
+#elif __cpp_lib_move_iterator_concept != 202207L
+#error __cpp_lib_move_iterator_concept is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_move_iterator_concept == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_move_iterator_concept
+#error __cpp_lib_move_iterator_concept is defined
 #endif
 #endif
 

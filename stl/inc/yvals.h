@@ -233,7 +233,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifdef _STATIC_CPPLIB
 #ifndef _DISABLE_DEPRECATE_STATIC_CPPLIB
 #ifdef _DLL
-#pragma message(_WARNING_MESSAGE("STL4000", "_STATIC_CPPLIB is deprecated and will be REMOVED."))
+_EMIT_STL_WARNING(STL4000, "_STATIC_CPPLIB is deprecated and will be REMOVED.");
 #endif
 #ifdef _M_CEE_MIXED
 #error _STATIC_CPPLIB is not supported while building with /clr
@@ -245,7 +245,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _STATIC_CPPLIB
 
 #if defined(_M_CEE_PURE) && !defined(_SILENCE_CLR_PURE_DEPRECATION_WARNING)
-#pragma message(_WARNING_MESSAGE("STL4001", "/clr:pure is deprecated and will be REMOVED."))
+_EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #endif
 
 #ifndef _MRTIMP2_PURE

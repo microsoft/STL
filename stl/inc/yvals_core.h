@@ -19,8 +19,14 @@
 
 #if _STL_COMPILER_PREPROCESSOR
 
+// This does not use `_EMIT_STL_ERROR`, as it needs to be checked before we include anything else.
+// However, `_EMIT_STL_ERROR` has a dependency on `_CRT_STRINGIZE`, defined in `<vcruntime.h>`.
+// Here, we employ the same technique as `_CRT_STRINGIZE` in order to avoid needing to update the line number.
 #ifndef __cplusplus
-#error STL1003: Unexpected compiler, expected C++ compiler.
+#define _STL_STRINGIZE_(S) #S
+#define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
+#pragma message(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): STL1003: Unexpected compiler, expected C++ compiler.")
+#error Error in C++ Standard Library usage
 #endif // __cplusplus
 
 // Implemented unconditionally:
@@ -121,6 +127,7 @@
 // P2162R2 Inheriting From variant
 // P2251R1 Require span And basic_string_view To Be Trivially Copyable
 //     (basic_string_view always provides this behavior)
+// P2517R1 Conditional noexcept For apply()
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -270,9 +277,11 @@
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P2372R3 Fixing Locale Handling In chrono Formatters
 // P2393R1 Cleaning Up Integer-Class Types
+// P2408R5 Ranges Iterators As Inputs To Non-Ranges Algorithms
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2432R1 Fix istream_view
+// P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -312,6 +321,7 @@
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
+// P2417R2 More constexpr bitset
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 // P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
@@ -417,7 +427,25 @@
 #include <vcruntime.h>
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
 
-#define _WARNING_MESSAGE(NUMBER, MESSAGE) __FILE__ "(" _CRT_STRINGIZE(__LINE__) "): warning " NUMBER ": " MESSAGE
+// Note that _STL_PRAGMA is load-bearing;
+// it still needs to exist even once CUDA and ICC support _Pragma.
+#if defined(__CUDACC__) || defined(__INTEL_COMPILER)
+#define _STL_PRAGMA(PRAGMA) __pragma(PRAGMA)
+#else
+#define _STL_PRAGMA(PRAGMA) _Pragma(#PRAGMA)
+#endif
+
+#define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
+#define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _CRT_STRINGIZE(__LINE__) "): " MESSAGE)
+
+// clang-format off
+#define _EMIT_STL_WARNING(NUMBER, MESSAGE) \
+    _EMIT_STL_MESSAGE("warning " #NUMBER ": " MESSAGE) \
+    static_assert(true, "")
+#define _EMIT_STL_ERROR(NUMBER, MESSAGE) \
+    _EMIT_STL_MESSAGE("error " #NUMBER ": " MESSAGE) \
+    static_assert(false, "Error in C++ Standard Library usage.")
+// clang-format on
 
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
@@ -620,17 +648,17 @@
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
 #if __CUDACC_VER_MAJOR__ < 11 || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ < 6)
-#error STL1002: Unexpected compiler version, expected CUDA 11.6 or newer.
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
 #if __clang_major__ < 14
-#error STL1000: Unexpected compiler version, expected Clang 14.0.0 or newer.
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 14.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
 #if _MSC_VER < 1933 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.33 or newer.
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.33 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -687,7 +715,7 @@
 #endif // _HAS_UNEXPECTED
 
 #if _HAS_UNEXPECTED && _HAS_CXX23
-#error STL1004: C++98 unexpected() is incompatible with C++23 unexpected<E>.
+_EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpected<E>.");
 #endif // _HAS_UNEXPECTED && _HAS_CXX23
 
 // P0004R1 Removing Deprecated Iostreams Aliases
@@ -1357,6 +1385,14 @@
 #endif // __cpp_impl_coroutine
 
 #if _HAS_CXX20
+#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
+#define __cpp_lib_concepts 202002L
+#endif // !defined(__EDG__) || defined(__INTELLISENSE__)
+
+#if defined(__cpp_lib_concepts)
+#define __cpp_lib_algorithm_iterator_requirements 202207L
+#endif
+
 #define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
 #define __cpp_lib_atomic_float                  201711L
@@ -1369,10 +1405,6 @@
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-
-#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
-#define __cpp_lib_concepts 202002L
-#endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
 #define __cpp_lib_constexpr_algorithms    201806L
 #define __cpp_lib_constexpr_complex       201711L
@@ -1417,6 +1449,7 @@
 #define __cpp_lib_latch                   201907L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
+#define __cpp_lib_move_iterator_concept   202207L
 #define __cpp_lib_polymorphic_allocator   201902L
 
 #if defined(__cpp_lib_concepts) // TRANSITION, GH-395
@@ -1456,6 +1489,7 @@
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_constexpr_bitset                  202207L
 #define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
