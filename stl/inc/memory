@@ -4114,7 +4114,7 @@ public:
 };
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <class _Ty>
 struct _Pointer_of_helper {};
 

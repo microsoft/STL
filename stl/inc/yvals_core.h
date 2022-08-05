@@ -1386,13 +1386,13 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // __cpp_impl_coroutine
 
 #if _HAS_CXX20
-#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
+#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
 #define __cpp_lib_concepts 202002L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
-#if defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_algorithm_iterator_requirements 202207L
-#endif
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
@@ -1422,9 +1422,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_endian                  201907L
 #define __cpp_lib_erase_if                202002L
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_format 202110L
-#endif // defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1450,12 +1450,16 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_latch                   201907L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
-#define __cpp_lib_move_iterator_concept   202207L
-#define __cpp_lib_polymorphic_allocator   201902L
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_move_iterator_concept 202207L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_polymorphic_allocator 201902L
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_ranges 202110L
-#endif // defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
@@ -1551,7 +1555,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // language mode
 #endif // _M_CEE
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
@@ -1565,7 +1569,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_shift 201806L // P0769R2 shift_left(), shift_right()
