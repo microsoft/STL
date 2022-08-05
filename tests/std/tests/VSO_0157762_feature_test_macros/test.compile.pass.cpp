@@ -1478,11 +1478,11 @@ STATIC_ASSERT(__cpp_lib_ranges_starts_ends_with == 202106L);
 #endif
 #endif
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges_stride
 #error __cpp_lib_ranges_stride is not defined
 #elif __cpp_lib_ranges_stride != 202207L
-#error __cpp_lib_ranges_stride is not 202107L
+#error __cpp_lib_ranges_stride is not 202207L
 #else
 STATIC_ASSERT(__cpp_lib_ranges_stride == 202207L);
 #endif

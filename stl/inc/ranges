@@ -6425,7 +6425,7 @@ namespace ranges {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(_Current != _End, "cannot increment stride_view end iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                _Missing = ranges::advance(_Current, _Stride, _End);
+                _Missing = _RANGES advance(_Current, _Stride, _End);
                 return *this;
             }
 
