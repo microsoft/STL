@@ -228,6 +228,12 @@ ranges\range.adaptors\range.zip\sentinel\eq.pass.cpp
 ranges\range.adaptors\range.zip\sentinel\minus.pass.cpp
 ranges\range.adaptors\range.zip\size.pass.cpp
 
+# P1206R7 ranges::to
+language.support\support.limits\support.limits.general\string.version.compile.pass.cpp
+
+# P2255R2 "Type Traits To Detect References Binding To Temporaries"
+language.support\support.limits\support.limits.general\type_traits.version.compile.pass.cpp
+
 
 # *** MISSING COMPILER FEATURES ***
 # Nothing here! :-)
@@ -379,6 +385,10 @@ ranges\range.req\range.view\enable_view.compile.pass.cpp
 # GH-2987 ranges::distance needs to better emulate the two overload presentation of LWG-3664
 iterators\iterator.primitives\range.iter.ops\range.iter.ops.distance\iterator_sentinel.pass.cpp
 
+# GH-2839 <chrono>: abs(duration) requires a duration with reduced period
+time\time.duration\time.duration.alg\abs.pass.cpp
+
+
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
 depr\depr.c.headers\stdlib_h.aligned_alloc.compile.pass.cpp
@@ -400,9 +410,6 @@ utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.pass
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.runtime.pass.cpp
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move_convert.single.pass.cpp
 utilities\smartptr\unique.ptr\unique.ptr.class\unique.ptr.asgn\move.pass.cpp
-
-# Test bug after LWG-3257 "Missing feature testing macro update from P0858" was accepted.
-language.support\support.limits\support.limits.general\string.version.compile.pass.cpp
 
 # Not yet analyzed, likely bogus tests. Appears to be timing assumptions.
 atomics\atomics.types.operations\atomics.types.operations.wait\atomic_notify_all.pass.cpp
@@ -534,10 +541,6 @@ utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_rvalue.pass
 utilities\allocator.adaptor\allocator.adaptor.members\construct_pair_values.pass.cpp
 utilities\allocator.adaptor\allocator.adaptor.members\construct_type.pass.cpp
 
-# We define __cpp_lib_has_unique_object_representations in C++17 mode; test error says it
-# "should not be defined when TEST_HAS_BUILTIN_IDENTIFIER(__has_unique_object_representations) || TEST_GCC_VER >= 700 is not defined!"
-language.support\support.limits\support.limits.general\type_traits.version.compile.pass.cpp
-
 # Tests expect __cpp_lib_ranges to have the old value 201811L for P0896R4; we define the C++20 value 201911L for P1716R3.
 language.support\support.limits\support.limits.general\algorithm.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\functional.version.compile.pass.cpp
@@ -546,14 +549,16 @@ language.support\support.limits\support.limits.general\iterator.version.compile.
 # Test expects __cpp_lib_chrono to have the old value 201611L for P0505R0; we define the C++20 value 201907L for P1466R3.
 language.support\support.limits\support.limits.general\chrono.version.compile.pass.cpp
 
-# We unconditionally define __cpp_lib_addressof_constexpr; test error says it
-# "should not be defined when TEST_HAS_BUILTIN(__builtin_addressof) || TEST_GCC_VER >= 700 is not defined!"
+# libc++ doesn't implement P2273R3 constexpr unique_ptr
 language.support\support.limits\support.limits.general\memory.version.compile.pass.cpp
 
 # libc++ doesn't implement P2231R1 Add further constexpr support for optional/variant
 language.support\support.limits\support.limits.general\variant.version.compile.pass.cpp
 
 # Tests non-portable behavior
+# These formatter tests need to create basic_format_contexts.
+# I believe that if we provide test_format_context_create in test_format_context.h, some of these tests can work.
+# (Some of these use std::__format_context_create. They need to be changed to use test_format_context_create.)
 utilities\format\format.formatter\format.context\format.context\advance_to.pass.cpp
 utilities\format\format.formatter\format.context\format.context\arg.pass.cpp
 utilities\format\format.formatter\format.context\format.context\ctor.pass.cpp
@@ -572,7 +577,7 @@ utilities\format\format.formatter\format.formatter.spec\types.compile.pass.cpp
 utilities\format\format.formatter\format.formatter.spec\formatter.char.pass.cpp
 utilities\format\format.formatter\format.formatter.spec\formatter.floating_point.pass.cpp
 
-# libc++ doesn't yet implement P2216R3 (test uses non-constant-expression format strings)
+# Tests fail because -NaN is formatted differently (and other reasons).
 utilities\format\format.functions\format.pass.cpp
 utilities\format\format.functions\format.locale.pass.cpp
 utilities\format\format.functions\format_to.locale.pass.cpp
@@ -733,9 +738,6 @@ localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.memb
 localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.members\char32_t_encoding.pass.cpp
 localization\locale.categories\category.ctype\locale.codecvt\locale.codecvt.members\char32_t_max_length.pass.cpp
 
-# Likely STL bug in <chrono>: "result type of conditional expression is ambiguous"
-time\time.duration\time.duration.alg\abs.pass.cpp
-
 # Likely STL bug in <format>: we check argument ids at compiletime in next_arg_id
 utilities\format\format.formatter\format.parse.ctx\next_arg_id.pass.cpp
 
@@ -877,6 +879,10 @@ algorithms\alg.modifying.operations\alg.unique\ranges_unique.pass.cpp
 # Not yet analyzed. the test fails on ARM but passes on AMD64
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_long_double.hex.pass.cpp
 localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.members\put_double.hex.pass.cpp
+
+# Not yet analyzed. These tests use characters that cannot be represented in legacy character encodings
+utilities\format\format.functions\ascii.pass.cpp
+utilities\format\format.functions\unicode.pass.cpp
 
 # Not yet analyzed
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
@@ -1027,8 +1033,6 @@ strings\string.view\string.view.comparison\less.pass.cpp
 strings\string.view\string.view.comparison\less_equal.pass.cpp
 strings\string.view\string.view.comparison\not_equal.pass.cpp
 thread\futures\futures.task\futures.task.members\ctor2.compile.pass.cpp
-utilities\format\format.functions\ascii.pass.cpp
-utilities\format\format.functions\unicode.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\addressof.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.alg\swap.pass.cpp
 utilities\function.objects\func.wrap\func.wrap.func\func.wrap.func.cap\operator_bool.pass.cpp
