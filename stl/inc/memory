@@ -2396,45 +2396,6 @@ private:
 };
 #endif // _HAS_CXX20
 
-template <class _Ty,
-    bool = is_empty_v<_Ty> && !is_final_v<_Ty>>
-class _Ebco_base : private _Ty { // Empty Base Class Optimization, active
-private:
-    using _Mybase = _Ty; // for visualization
-
-protected:
-    template <class _Other, enable_if_t<!is_same_v<_Remove_cvref_t<_Other>, _Ebco_base>, int> = 0>
-    constexpr explicit _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
-        : _Ty(_STD forward<_Other>(_Val)) {}
-
-    constexpr _Ty& _Get_val() noexcept {
-        return *this;
-    }
-
-    constexpr const _Ty& _Get_val() const noexcept {
-        return *this;
-    }
-};
-
-template <class _Ty>
-class _Ebco_base<_Ty, false> { // Empty Base Class Optimization, inactive
-private:
-    _Ty _Myval;
-
-protected:
-    template <class _Other, enable_if_t<!is_same_v<_Remove_cvref_t<_Other>, _Ebco_base>, int> = 0>
-    constexpr explicit _Ebco_base(_Other&& _Val) noexcept(is_nothrow_constructible_v<_Ty, _Other>)
-        : _Myval(_STD forward<_Other>(_Val)) {}
-
-    constexpr _Ty& _Get_val() noexcept {
-        return _Myval;
-    }
-
-    constexpr const _Ty& _Get_val() const noexcept {
-        return _Myval;
-    }
-};
-
 template <class _Ty, class _Alloc>
 class _Ref_count_obj_alloc3 : public _Ebco_base<_Rebind_alloc_t<_Alloc, _Ty>>, public _Ref_count_base {
     // handle reference counting for object in control block, allocator
@@ -3709,23 +3670,6 @@ struct hash<shared_ptr<_Ty>> {
         return hash<typename shared_ptr<_Ty>::element_type*>()(_Keyval.get());
     }
 };
-
-inline void* align(size_t _Bound, size_t _Size, void*& _Ptr, size_t& _Space) noexcept /* strengthened */ {
-    // try to carve out _Size bytes on boundary _Bound
-    size_t _Off = static_cast<size_t>(reinterpret_cast<uintptr_t>(_Ptr) & (_Bound - 1));
-    if (_Off != 0) {
-        _Off = _Bound - _Off; // number of bytes to skip
-    }
-
-    if (_Space < _Off || _Space - _Off < _Size) {
-        return nullptr;
-    }
-
-    // enough room, update
-    _Ptr = static_cast<char*>(_Ptr) + _Off;
-    _Space -= _Off;
-    return _Ptr;
-}
 
 #if _HAS_CXX20
 template <size_t _Nx, class _Ty>
