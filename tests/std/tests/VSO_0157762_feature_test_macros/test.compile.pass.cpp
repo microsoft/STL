@@ -814,6 +814,20 @@ STATIC_ASSERT(__cpp_lib_format == 202110L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_forward_like
+#error __cpp_lib_forward_like is not defined
+#elif __cpp_lib_forward_like != 202207L
+#error __cpp_lib_forward_like is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_forward_like == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_forward_like
+#error __cpp_lib_forward_like is defined
+#endif
+#endif
+
 #if _HAS_CXX17
 #ifndef __cpp_lib_gcd_lcm
 #error __cpp_lib_gcd_lcm is not defined
