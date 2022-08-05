@@ -6342,18 +6342,18 @@ namespace ranges {
         inline constexpr _Chunk_by_fn chunk_by;
     } // namespace views
 
-    template <view _Vw>
-        requires input_range<_Vw>
+    template <input_range _Vw>
+        requires view<_Vw>
     class stride_view : public view_interface<stride_view<_Vw>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range;
         range_difference_t<_Vw> _Stride;
 
         template <class _BaseTy>
-        class _Iterator_base {};
+        class _Category_base {};
 
         template <forward_range _BaseTy>
-        class _Iterator_base<_BaseTy> {
+        class _Category_base<_BaseTy> {
         private:
             using _BaseCategory = typename iterator_traits<iterator_t<_BaseTy>>::iterator_category;
 
@@ -6363,7 +6363,7 @@ namespace ranges {
         };
 
         template <bool _Const>
-        class _Iterator : public _Iterator_base<_Maybe_const<_Const, _Vw>> {
+        class _Iterator : public _Category_base<_Maybe_const<_Const, _Vw>> {
         private:
             friend stride_view;
 

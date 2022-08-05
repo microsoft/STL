@@ -448,8 +448,8 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
             assert(ci2 > ci);
             assert(ci2 >= ci);
             if constexpr (three_way_comparable<iterator_t<const V>>) {
-                assert(ci <=> ci4 == strong_ordering::equal);
                 assert(ci <=> ci2 == strong_ordering::less);
+                assert(ci <=> ci4 == strong_ordering::equal);
                 assert(ci2 <=> ci == strong_ordering::greater);
             }
 
@@ -460,9 +460,9 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 assert(ci2 > i);
                 assert(ci2 >= i);
                 if constexpr (three_way_comparable<iterator_t<const V>>) {
-                    assert(ci <=> ci2 == strong_ordering::less);
-                    assert(ci <=> ci4 == strong_ordering::equal);
-                    assert(ci2 <=> ci == strong_ordering::greater);
+                    assert(i <=> ci2 == strong_ordering::less);
+                    assert(i <=> ci4 == strong_ordering::equal);
+                    assert(ci2 <=> i == strong_ordering::greater);
                 }
             }
         }
