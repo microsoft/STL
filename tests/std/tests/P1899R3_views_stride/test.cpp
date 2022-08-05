@@ -215,7 +215,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
                 assert(*prev(cs) == *prev(end(expected)));
             }
 
-            if constexpr (copy_constructible<const V>) {
+            if constexpr (copy_constructible<V>) {
                 const auto r2 = r;
                 if (!is_empty) {
                     assert(*prev(r2.end()) == *prev(end(expected)));
