@@ -9,13 +9,16 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <cmath>
-#include <cstring>
-#include <cwchar>
 #include <list>
 #include <tuple>
 #include <vector>
 #include <xbit_ops.h>
+
+#ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
+#include <cstring>
+#include <cwchar>
 #include <xstring>
+#endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 #if _HAS_CXX17
 #include <xnode_handle.h>
@@ -28,6 +31,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 namespace stdext {
     using _STD basic_string;
     using _STD less;
@@ -86,6 +90,7 @@ namespace stdext {
         _Pr comp{}; // the comparator object
     };
 } // namespace stdext
+#endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 _STD_BEGIN
 template <class _Kty, class _Hasher, class _Keyeq, class = void>
