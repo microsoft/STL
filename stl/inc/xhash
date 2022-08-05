@@ -88,8 +88,6 @@ namespace stdext {
 } // namespace stdext
 
 _STD_BEGIN
-using stdext::hash_compare; // TRANSITION, protobuf used this until v3.7.0, released Feb 28, 2019
-
 template <class _Kty, class _Hasher, class _Keyeq, class = void>
 struct _Uhash_choose_transparency {
     // transparency selector for non-transparent hashed containers
