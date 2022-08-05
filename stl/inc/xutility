@@ -1353,9 +1353,14 @@ public:
     }
 
     template <class _BidIt2 = _BidIt, enable_if_t<_Unwrappable_v<const _BidIt2&>, int> = 0>
-    _NODISCARD constexpr reverse_iterator<_Unwrapped_t<const _BidIt2&>> _Unwrapped() const
-        noexcept(noexcept(static_cast<reverse_iterator<_Unwrapped_t<const _BidIt2&>>>(current._Unwrapped()))) {
+    _NODISCARD constexpr reverse_iterator<_Unwrapped_t<const _BidIt2&>> _Unwrapped() const& noexcept(
+        noexcept(static_cast<reverse_iterator<_Unwrapped_t<const _BidIt2&>>>(current._Unwrapped()))) {
         return static_cast<reverse_iterator<_Unwrapped_t<const _BidIt2&>>>(current._Unwrapped());
+    }
+    template <class _BidIt2 = _BidIt, enable_if_t<_Unwrappable_v<_BidIt2>, int> = 0>
+    _NODISCARD constexpr reverse_iterator<_Unwrapped_t<_BidIt2>> _Unwrapped() && noexcept(
+        noexcept(static_cast<reverse_iterator<_Unwrapped_t<_BidIt2>>>(_STD move(current)._Unwrapped()))) {
+        return static_cast<reverse_iterator<_Unwrapped_t<_BidIt2>>>(_STD move(current)._Unwrapped());
     }
 
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_BidIt>;
