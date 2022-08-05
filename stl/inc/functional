@@ -14,7 +14,6 @@
 #include <xmemory>
 #include <xstddef>
 #if _HAS_CXX17
-#include <memory>
 #include <unordered_map>
 #endif // _HAS_CXX17
 #ifdef __cpp_lib_concepts
@@ -2176,12 +2175,6 @@ _Ty* _Decode_aligned_block(void*& _Base, const size_t _Count) {
     return static_cast<_Ty*>(_Decode_aligned_block(_Base, sizeof(_Ty) * _Count, alignof(_Ty)));
 }
 
-struct _Global_delete {
-    void operator()(void* const _Ptr) const {
-        ::operator delete(_Ptr);
-    }
-};
-
 template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
 _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
     _FwdItHaystack _First1, _FwdItHaystack _Last1, _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq) {
@@ -2325,6 +2318,41 @@ private:
     _Diff _Table[_Limit];
 };
 
+// _Mini_ptr avoids needing to include <memory> which includes <atomic>.
+// It doesn't attempt to provide all of unique_ptr's safety features; use carefully.
+enum class _Deletion_kind { _Global_scalar, _Normal_array };
+
+template <class _Ty, _Deletion_kind _Del>
+class _Mini_ptr {
+public:
+    explicit _Mini_ptr(_Ty* const _Ptr_) noexcept : _Ptr(_Ptr_) {}
+
+    ~_Mini_ptr() noexcept {
+        if (_Ptr) {
+            if constexpr (_Del == _Deletion_kind::_Global_scalar) {
+                ::operator delete(_Ptr);
+            } else if constexpr (_Del == _Deletion_kind::_Normal_array) {
+                delete[] _Ptr;
+            } else {
+                static_assert(_Always_false<_Ty>, "Unknown _Deletion_kind.");
+            }
+        }
+    }
+
+    _NODISCARD _Ty* _Get() const noexcept {
+        return _Ptr;
+    }
+
+    _NODISCARD _Ty* _Release() noexcept {
+        return _STD exchange(_Ptr, nullptr);
+    }
+
+    _Mini_ptr(const _Mini_ptr&)            = delete;
+    _Mini_ptr& operator=(const _Mini_ptr&) = delete;
+
+private:
+    _Ty* _Ptr;
+};
 
 template <class _RanItPat, class _Pred_eq>
 void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, const _RanItPat _Pat_first,
@@ -2345,7 +2373,8 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
 
     const auto _Mx = static_cast<size_t>(_Pat_size);
 
-    const unique_ptr<size_t[]> _Fx{new size_t[_Mx]};
+    const _Mini_ptr<size_t, _Deletion_kind::_Normal_array> _Fx_ptr{new size_t[_Mx]};
+    size_t* const _Fx = _Fx_ptr._Get();
 
     for (size_t _Kx = 1; _Kx <= _Mx; ++_Kx) {
         _Shifts[_Kx - 1] = static_cast<_Diff>(2 * _Mx - _Kx);
@@ -2496,8 +2525,8 @@ struct _Single_delta1_type_boyer_moore_traits {
             _Add_alloc_size<_Diff>(_Buf_size, _Pat_size);
         }
 
-        unique_ptr<void, _Global_delete> _Buf_bytes(::operator new(_Buf_size));
-        void* _Buf                                      = _Buf_bytes.get();
+        _Mini_ptr<void, _Deletion_kind::_Global_scalar> _Buf_bytes(::operator new(_Buf_size));
+        void* _Buf                                      = _Buf_bytes._Get();
         *_Decode_aligned_block<_Atomic_counter_t>(_Buf) = 1;
         void* const _Delta1                             = _Decode_aligned_block<_Delta1_t>(_Buf);
         if (_Build_delta2) {
@@ -2506,7 +2535,7 @@ struct _Single_delta1_type_boyer_moore_traits {
         }
 
         ::new (_Delta1) _Delta1_t(_First, _UFirst, _Pat_size_raw, _STD move(_Hash_fn), _STD move(_Eq));
-        return _Buf_bytes.release();
+        return _Buf_bytes._Release();
     }
 
     template <class _RanItHaystack>
@@ -2590,8 +2619,8 @@ struct _Boyer_moore_traits_wchar_t_mode {
             _Add_alloc_size<_Diff>(_Buf_size, _Pat_size);
         }
 
-        unique_ptr<void, _Global_delete> _Buf_bytes(::operator new(_Buf_size));
-        void* _Buf                                      = _Buf_bytes.get();
+        _Mini_ptr<void, _Deletion_kind::_Global_scalar> _Buf_bytes(::operator new(_Buf_size));
+        void* _Buf                                      = _Buf_bytes._Get();
         *_Decode_aligned_block<_Atomic_counter_t>(_Buf) = 1;
         *_Decode_aligned_block<bool>(_Buf)              = _Use_large_table;
         if (_Use_large_table) {
@@ -2610,7 +2639,7 @@ struct _Boyer_moore_traits_wchar_t_mode {
                 _Decode_aligned_block<_Diff>(_Buf, _Pat_size), _UFirst, _Pat_size_raw, _Eq);
         }
 
-        return _Buf_bytes.release();
+        return _Buf_bytes._Release();
     }
 
     template <class _RanItHaystack>
