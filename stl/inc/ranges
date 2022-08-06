@@ -1935,7 +1935,8 @@ namespace ranges {
 #if _ITERATOR_DEBUG_LEVEL != 0
             constexpr void _Check_dereference() const noexcept {
                 _STL_VERIFY(_Parent != nullptr, "cannot dereference value-initialized transform_view iterator");
-                _STL_VERIFY(_Current != _RANGES end(_Parent->_Range), "cannot dereference end transform_view iterator");
+                _STL_VERIFY(_Current != _Get_maybe_unwrapped<_Is_unwrapped>(_RANGES end(_Parent->_Range)),
+                    "cannot dereference end transform_view iterator");
             }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
@@ -1960,9 +1961,9 @@ namespace ranges {
                 is_nothrow_move_constructible_v<_Base_iter>) // strengthened
                 : _Current{_STD move(_Current_)}, _Parent{_STD addressof(_Parent_)} {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                _Adl_verify_range(_Current, _RANGES end(_Parent_._Range));
+                _Adl_verify_range(_Current, _Get_maybe_unwrapped<_Is_unwrapped>(_RANGES end(_Parent_._Range)));
                 if constexpr (forward_range<_Base>) {
-                    _Adl_verify_range(_RANGES begin(_Parent_._Range), _Current);
+                    _Adl_verify_range(_Get_maybe_unwrapped<_Is_unwrapped>(_RANGES begin(_Parent_._Range)), _Current);
                 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
             }
@@ -1996,8 +1997,8 @@ namespace ranges {
             constexpr _Iterator& operator++() noexcept(noexcept(++_Current)) /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(_Parent != nullptr, "Cannot increment value-initialized transform_view iterator");
-                _STL_VERIFY(
-                    _Current != _RANGES end(_Parent->_Range), "Cannot increment transform_view iterator past end");
+                _STL_VERIFY(_Current != _Get_maybe_unwrapped<_Is_unwrapped>(_RANGES end(_Parent->_Range)),
+                    "Cannot increment transform_view iterator past end");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
                 ++_Current;
                 return *this;
@@ -2020,7 +2021,7 @@ namespace ranges {
 #if _ITERATOR_DEBUG_LEVEL != 0
                 _STL_VERIFY(_Parent != nullptr, "Cannot decrement value-initialized transform_view iterator");
                 if constexpr (forward_range<_Vw>) {
-                    _STL_VERIFY(_Current != _RANGES begin(_Parent->_Range),
+                    _STL_VERIFY(_Current != _Get_maybe_unwrapped<_Is_unwrapped>(_RANGES begin(_Parent->_Range)),
                         "Cannot decrement transform_view iterator before begin");
                 }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -2046,17 +2047,21 @@ namespace ranges {
                 } else {
                     if (_Off < 0) {
                         if constexpr (sized_sentinel_for<_Base_iter, _Base_iter>) {
-                            _STL_VERIFY(_Off >= _RANGES begin(_Parent->_Range) - _Current,
+                            _STL_VERIFY(
+                                _Off >= _Get_maybe_unwrapped<_Is_unwrapped>(_RANGES begin(_Parent->_Range)) - _Current,
                                 "cannot seek transform_view iterator before begin");
                         }
                     } else if (_Off > 0) {
                         if constexpr (sized_sentinel_for<sentinel_t<_Base>, _Base_iter>) {
-                            _STL_VERIFY(_Off <= _RANGES end(_Parent->_Range) - _Current,
+                            _STL_VERIFY(
+                                _Off <= _Get_maybe_unwrapped<_Is_unwrapped>(_RANGES end(_Parent->_Range)) - _Current,
                                 "cannot seek transform_view iterator after end");
                         } else if constexpr (sized_sentinel_for<_Base_iter, _Base_iter> && sized_range<_Base>) {
                             const auto _Size = _RANGES distance(_Parent->_Range);
-                            _STL_VERIFY(_Off <= _Size - (_Current - _RANGES begin(_Parent->_Range)),
-                                "cannot seek transform_view iterator after end");
+                            const auto _Distance_to_begin =
+                                _Current - _Get_maybe_unwrapped<_Is_unwrapped>(_RANGES begin(_Parent->_Range));
+
+                            _STL_VERIFY(_Off <= _Size - _Distance_to_begin), "cannot seek transform_view iterator after end");
                         }
                     }
                 }
@@ -2169,7 +2174,7 @@ namespace ranges {
                 conditional_t<!_Is_unwrapped && _Unwrappable_v<_Base_iter>, _Iterator, void>;
 
             // clang-format off
-            _Iterator<_Const, true> _Unwrapped() const&
+            constexpr _Iterator<_Const, true> _Unwrapped() const&
                 noexcept(noexcept(_Iterator<_Const, true>{*_Parent, _Current._Unwrapped()}))
                 requires _Unwrappable_v<const _Base_iter&>
             {
@@ -2177,7 +2182,7 @@ namespace ranges {
                 return _Iterator<_Const, true>{*_Parent, _Current._Unwrapped()};
             }
             // clang-format off
-            _Iterator<_Const, true> _Unwrapped() &&
+            constexpr _Iterator<_Const, true> _Unwrapped() &&
                 noexcept(noexcept(_Iterator<_Const, true>{*_Parent, _STD move(_Current)._Unwrapped()}))
                 requires _Unwrappable_v<_Base_iter>
             {
@@ -2186,7 +2191,7 @@ namespace ranges {
             }
 
             // clang-format off
-            void _Seek_to(_Iterator<_Const, true> _Other)
+            constexpr void _Seek_to(_Iterator<_Const, true> _Other)
                 noexcept(noexcept(_Current._Seek_to(_Other._Current)))
                 requires _Unwrappable_v<_Base_iter>
             {

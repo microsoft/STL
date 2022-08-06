@@ -931,10 +931,22 @@ _NODISCARD constexpr decltype(auto) _Get_unwrapped(_Iter&& _It) noexcept(
     }
 }
 
+template <bool _Do_unwrap, class _Iter>
+_NODISCARD constexpr decltype(auto) _Get_maybe_unwrapped(_Iter&& _It) noexcept(
+    !_Do_unwrap || !_Unwrappable_v<_Iter> || _Is_nothrow_unwrappable_v<_Iter>) {
+    if constexpr (is_pointer_v<decay_t<_Iter>>) {
+        return _It + 0;
+    } else if constexpr (_Do_unwrap && _Unwrappable_v<_Iter>) {
+        return static_cast<_Iter&&>(_It)._Unwrapped();
+    } else {
+        return static_cast<_Iter&&>(_It);
+    }
+}
+
 template <class _Iter>
 using _Unwrapped_t = _Remove_cvref_t<decltype(_Get_unwrapped(_STD declval<_Iter>()))>;
-template <class _Iter, bool _Is_unwrapped>
-using _Maybe_unwrapped_t = conditional_t<_Is_unwrapped, _Unwrapped_t<_Iter>, _Remove_cvref_t<_Iter>>;
+template <class _Iter, bool _Do_unwrap>
+using _Maybe_unwrapped_t = _Remove_cvref_t<decltype(_Get_maybe_unwrapped<_Do_unwrap>(_STD declval<_Iter>()))>;
 
 template <class _Iter, class = bool>
 _INLINE_VAR constexpr bool _Do_unwrap_when_unverified_v = false;

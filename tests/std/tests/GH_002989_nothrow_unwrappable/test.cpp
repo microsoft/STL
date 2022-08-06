@@ -52,8 +52,7 @@ void do_full_test() {
 
     // TRANSITION, GH-2997
     do_single_test<ranges::iterator_t<ranges::filter_view<R, Predicate>>, true>();
-    // TRANSITION, GH-2997
-    do_single_test<ranges::iterator_t<ranges::transform_view<R, Predicate>>, true>();
+    do_single_test<ranges::iterator_t<ranges::transform_view<R, Predicate>>, CopyUnwrapNothrow>();
     if constexpr (ranges::bidirectional_range<R>) {
         do_single_test<ranges::iterator_t<ranges::reverse_view<R>>, CopyUnwrapNothrow>();
     }
