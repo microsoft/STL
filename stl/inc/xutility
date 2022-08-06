@@ -912,8 +912,14 @@ _INLINE_VAR constexpr bool _Unwrappable_v<_Iter,
     void_t<decltype(_STD declval<_Remove_cvref_t<_Iter>&>()._Seek_to(_STD declval<_Iter>()._Unwrapped()))>> =
     _Allow_inheriting_unwrap_v<_Remove_cvref_t<_Iter>>;
 
+template <class _Iter, bool _Unwrappable = _Unwrappable_v<_Iter>>
+_INLINE_VAR constexpr bool _Is_nothrow_unwrappable_v = false;
+
 template <class _Iter>
-_NODISCARD constexpr decltype(auto) _Get_unwrapped(_Iter&& _It) {
+_INLINE_VAR constexpr bool _Is_nothrow_unwrappable_v<_Iter, true> = noexcept(declval<_Iter>()._Unwrapped());
+
+template <class _Iter>
+_NODISCARD constexpr decltype(auto) _Get_unwrapped(_Iter&& _It) noexcept(!_Unwrappable_v<_Iter> || _Is_nothrow_unwrappable_v<_Iter>) {
     // unwrap an iterator previously subjected to _Adl_verify_range or otherwise validated
     if constexpr (is_pointer_v<decay_t<_Iter>>) { // special-case pointers and arrays
         return _It + 0;
@@ -1363,8 +1369,14 @@ public:
     }
 
     template <class _BidIt2 = _BidIt, enable_if_t<_Unwrappable_v<const _BidIt2&>, int> = 0>
-    _NODISCARD constexpr reverse_iterator<_Unwrapped_t<const _BidIt2&>> _Unwrapped() const {
+    _NODISCARD constexpr reverse_iterator<_Unwrapped_t<const _BidIt2&>> _Unwrapped() const& noexcept(
+        noexcept(static_cast<reverse_iterator<_Unwrapped_t<const _BidIt2&>>>(current._Unwrapped()))) {
         return static_cast<reverse_iterator<_Unwrapped_t<const _BidIt2&>>>(current._Unwrapped());
+    }
+    template <class _BidIt2 = _BidIt, enable_if_t<_Unwrappable_v<_BidIt2>, int> = 0>
+    _NODISCARD constexpr reverse_iterator<_Unwrapped_t<_BidIt2>> _Unwrapped() && noexcept(
+        noexcept(static_cast<reverse_iterator<_Unwrapped_t<_BidIt2>>>(_STD move(current)._Unwrapped()))) {
+        return static_cast<reverse_iterator<_Unwrapped_t<_BidIt2>>>(_STD move(current)._Unwrapped());
     }
 
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_BidIt>;
@@ -3435,11 +3447,13 @@ public:
     }
 
     template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<const _Iter2&>, int> = 0>
-    _NODISCARD constexpr move_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const& {
+    _NODISCARD constexpr move_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const& noexcept(
+        noexcept(static_cast<move_iterator<_Unwrapped_t<const _Iter2&>>>(_Current._Unwrapped()))) {
         return static_cast<move_iterator<_Unwrapped_t<const _Iter2&>>>(_Current._Unwrapped());
     }
     template <class _Iter2 = iterator_type, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
-    _NODISCARD constexpr move_iterator<_Unwrapped_t<_Iter2>> _Unwrapped() && {
+    _NODISCARD constexpr move_iterator<_Unwrapped_t<_Iter2>> _Unwrapped() && noexcept(
+        noexcept(static_cast<move_iterator<_Unwrapped_t<_Iter2>>>(_STD move(_Current)._Unwrapped()))) {
         return static_cast<move_iterator<_Unwrapped_t<_Iter2>>>(_STD move(_Current)._Unwrapped());
     }
 
