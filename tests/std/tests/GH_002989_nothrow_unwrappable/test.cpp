@@ -25,13 +25,17 @@ struct Predicate {
 
 template <class It, bool CopyUnwrapNothrow = true>
 void do_single_test() {
-    STATIC_ASSERT(_Is_nothrow_unwrappable_v<It>);
-    STATIC_ASSERT(_Is_nothrow_unwrappable_v<It&&>);
+    if constexpr (_Unwrappable_v<It>) {
+        STATIC_ASSERT(_Is_nothrow_unwrappable_v<It>);
+        STATIC_ASSERT(_Is_nothrow_unwrappable_v<It&&>);
+    }
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<It>())));
 
-    STATIC_ASSERT(_Is_nothrow_unwrappable_v<const It&> == CopyUnwrapNothrow);
+    if constexpr (_Unwrappable_v<const It&>) {
+        STATIC_ASSERT(_Is_nothrow_unwrappable_v<const It&> == CopyUnwrapNothrow);
+        STATIC_ASSERT(_Is_nothrow_unwrappable_v<const It&&> == CopyUnwrapNothrow);
+    }
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<const It&>())) == CopyUnwrapNothrow);
-    STATIC_ASSERT(_Is_nothrow_unwrappable_v<const It&&> == CopyUnwrapNothrow);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<const It&&>())) == CopyUnwrapNothrow);
 }
 
