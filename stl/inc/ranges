@@ -6357,6 +6357,354 @@ namespace ranges {
 
         inline constexpr _Chunk_by_fn chunk_by;
     } // namespace views
+
+    template <input_range _Vw>
+        requires view<_Vw>
+    class stride_view : public view_interface<stride_view<_Vw>> {
+    private:
+        /* [[no_unique_address]] */ _Vw _Range;
+        range_difference_t<_Vw> _Stride;
+
+        template <class _BaseTy>
+        class _Category_base {};
+
+        template <forward_range _BaseTy>
+        class _Category_base<_BaseTy> {
+        private:
+            using _BaseCategory = typename iterator_traits<iterator_t<_BaseTy>>::iterator_category;
+
+        public:
+            using iterator_category = conditional_t<derived_from<_BaseCategory, random_access_iterator_tag>,
+                random_access_iterator_tag, _BaseCategory>;
+        };
+
+        template <bool _Const>
+        class _Iterator : public _Category_base<_Maybe_const<_Const, _Vw>> {
+        private:
+            friend stride_view;
+
+            using _ParentTy      = _Maybe_const<_Const, stride_view>;
+            using _Base          = _Maybe_const<_Const, _Vw>;
+            using _Base_iterator = iterator_t<_Base>;
+            using _Base_sentinel = sentinel_t<_Base>;
+
+            /* [[no_unique_address]] */ _Base_iterator _Current{};
+            /* [[no_unique_address]] */ _Base_sentinel _End{};
+            range_difference_t<_Base> _Stride  = 0;
+            range_difference_t<_Base> _Missing = 0;
+
+            constexpr _Iterator(_ParentTy* _Parent, _Base_iterator _Current_,
+                range_difference_t<_Base> _Missing_ = 0) //
+                noexcept(noexcept(_RANGES end(_Parent->_Range)) && is_nothrow_move_constructible_v<_Base_iterator> //
+                         && is_nothrow_move_constructible_v<_Base_sentinel>) // strengthened
+                : _Current(_STD move(_Current_)), _End(_RANGES end(_Parent->_Range)), _Stride(_Parent->_Stride),
+                  _Missing(_Missing_) {}
+
+        public:
+            using difference_type  = range_difference_t<_Base>;
+            using value_type       = range_value_t<_Base>;
+            using iterator_concept = conditional_t<random_access_range<_Base>, random_access_iterator_tag,
+                conditional_t<bidirectional_range<_Base>, bidirectional_iterator_tag,
+                    conditional_t<forward_range<_Base>, forward_iterator_tag, input_iterator_tag>>>;
+
+            // clang-format off
+            _Iterator() requires default_initializable<_Base_iterator> = default;
+            // clang-format on
+
+            constexpr _Iterator(_Iterator<!_Const> _Other) noexcept(
+                is_nothrow_constructible_v<_Base_iterator, iterator_t<_Vw>> //
+                    && is_nothrow_constructible_v<_Base_sentinel, sentinel_t<_Vw>> //
+                ) /* strengthened */ requires _Const
+                && convertible_to<iterator_t<_Vw>, _Base_iterator> && convertible_to<sentinel_t<_Vw>, _Base_sentinel>
+                : _Current(_STD move(_Other._Current)),
+                  _End(_STD move(_Other._End)),
+                  _Stride(_Other._Stride),
+                  _Missing(_Other._Missing) {}
+
+            _NODISCARD constexpr _Base_iterator base() && noexcept(
+                is_nothrow_move_constructible_v<_Base_iterator>) /* strengthened */ {
+                return _STD move(_Current);
+            }
+
+            _NODISCARD constexpr const _Base_iterator& base() const& noexcept {
+                return _Current;
+            }
+
+            _NODISCARD constexpr decltype(auto) operator*() const noexcept(noexcept(*_Current)) /* strengthened */ {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current != _End, "cannot dereference stride_view end iterator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                return *_Current;
+            }
+
+            constexpr _Iterator& operator++() {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Current != _End, "cannot increment stride_view end iterator");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                _Missing = _RANGES advance(_Current, _Stride, _End);
+                return *this;
+            }
+
+            constexpr void operator++(int) {
+                ++*this;
+            }
+
+            constexpr _Iterator operator++(int) requires forward_range<_Base> {
+                auto _Tmp = *this;
+                ++*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator--() requires bidirectional_range<_Base> {
+                _RANGES advance(_Current, _Missing - _Stride);
+                _Missing = 0;
+                return *this;
+            }
+
+            constexpr _Iterator operator--(int) requires bidirectional_range<_Base> {
+                auto _Tmp = *this;
+                --*this;
+                return _Tmp;
+            }
+
+            constexpr _Iterator& operator+=(const difference_type _Off) requires random_access_range<_Base> {
+                if (_Off > 0) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                    _STL_VERIFY(_Off == 1 || _Stride <= (numeric_limits<difference_type>::max)() / (_Off - 1),
+                        "cannot advance stride_view iterator past end (integer overflow)");
+                    _STL_VERIFY(_RANGES distance(_Current, _End) > _Stride * (_Off - 1),
+                        "cannot advance stride_view iterator past end");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+                    _Missing = _RANGES advance(_Current, _Stride * _Off, _End);
+                } else if (_Off < 0) {
+                    _RANGES advance(_Current, _Stride * _Off + _Missing);
+                    _Missing = 0;
+                }
+                return *this;
+            }
+
+            constexpr _Iterator& operator-=(const difference_type _Off) requires random_access_range<_Base> {
+                return *this += -_Off;
+            }
+
+            _NODISCARD constexpr decltype(auto) operator[](const difference_type _Off) const
+                noexcept(noexcept(*(*this + _Off))) /* strengthened */ requires random_access_range<_Base> {
+                return *(*this + _Off);
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _It, default_sentinel_t) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_It._Current == _It._End))) /* strengthened */ {
+                return _It._Current == _It._End;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Right._Current))) // strengthened
+                requires equality_comparable<_Base_iterator> {
+                return _Left._Current == _Right._Current;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_Left._Current < _Right._Current))) // strengthened
+                requires random_access_range<_Base> {
+                return _Left._Current < _Right._Current;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(_Right._Current < _Left._Current))) // strengthened
+                requires random_access_range<_Base> {
+                return _Right._Current < _Left._Current;
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator<=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(!(_Right._Current < _Left._Current)))) // strengthened
+                requires random_access_range<_Base> {
+                return !(_Right._Current < _Left._Current);
+            }
+
+            _NODISCARD_FRIEND constexpr bool operator>=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Implicitly_convert_to<bool>(!(_Left._Current < _Right._Current)))) // strengthened
+                requires random_access_range<_Base> {
+                return !(_Left._Current < _Right._Current);
+            }
+
+            _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_Left._Current <=> _Right._Current)) // strengthened
+                requires random_access_range<_Base> && three_way_comparable<_Base_iterator> {
+                return _Left._Current <=> _Right._Current;
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _It, const difference_type _Off) //
+                requires random_access_range<_Base> {
+                auto _Copy = _It;
+                _Copy += _Off;
+                return _Copy;
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Off, const _Iterator& _It) //
+                requires random_access_range<_Base> {
+                auto _Copy = _It;
+                _Copy += _Off;
+                return _Copy;
+            }
+
+            _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _It, const difference_type _Off) //
+                requires random_access_range<_Base> {
+                auto _Copy = _It;
+                _Copy -= _Off;
+                return _Copy;
+            }
+
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Left, const _Iterator& _Right) //
+                noexcept(noexcept(_Left._Current - _Right._Current)) // strengthened
+                requires sized_sentinel_for<_Base_iterator, _Base_iterator> {
+                const auto _Diff = _Left._Current - _Right._Current;
+                if constexpr (forward_range<_Base>) {
+                    return (_Diff + _Left._Missing - _Right._Missing) / _Left._Stride;
+                } else {
+                    if (_Diff < 0) {
+                        return -_Div_ceil(-_Diff, _Left._Stride);
+                    } else {
+                        return _Div_ceil(_Diff, _Left._Stride);
+                    }
+                }
+            }
+
+            _NODISCARD_FRIEND constexpr difference_type operator-(default_sentinel_t, const _Iterator& _It) noexcept(
+                noexcept(_It._End - _It._Current)) // strengthened
+                requires sized_sentinel_for<_Base_sentinel, _Base_iterator> {
+                return _Div_ceil(_It._End - _It._Current, _It._Stride);
+            }
+
+            _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _It, default_sentinel_t) noexcept(
+                noexcept(_It._End - _It._Current)) // strengthened
+                requires sized_sentinel_for<_Base_sentinel, _Base_iterator> {
+                return -_Div_ceil(_It._End - _It._Current, _It._Stride);
+            }
+
+            _NODISCARD_FRIEND constexpr range_rvalue_reference_t<_Base> iter_move(const _Iterator& _It) noexcept(
+                noexcept(_RANGES iter_move(_It._Current))) {
+                return _RANGES iter_move(_It._Current);
+            }
+
+            friend constexpr void iter_swap(const _Iterator& _Left, const _Iterator& _Right) noexcept(
+                noexcept(_RANGES iter_swap(_Left._Current, _Right._Current))) //
+                requires indirectly_swappable<_Base_iterator> {
+                return _RANGES iter_swap(_Left._Current, _Right._Current);
+            }
+        };
+
+    public:
+        constexpr explicit stride_view(_Vw _Range_, range_difference_t<_Vw> _Stride_) noexcept(
+            is_nothrow_move_constructible_v<_Vw>) // strengthened
+            : _Range(_STD move(_Range_)), _Stride(_Stride_) {
+#if _CONTAINER_DEBUG_LEVEL > 0
+            _STL_VERIFY(_Stride > 0, "stride must be greater than 0");
+#endif // _CONTAINER_DEBUG_LEVEL > 0
+        }
+
+        _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) // strengthened
+            requires copy_constructible<_Vw> {
+            return _Range;
+        }
+
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        _NODISCARD constexpr range_difference_t<_Vw> stride() const noexcept {
+            return _Stride;
+        }
+
+        _NODISCARD constexpr auto begin() noexcept(
+            noexcept(_RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
+            requires(!_Simple_view<_Vw>) {
+            return _Iterator<false>{this, _RANGES begin(_Range)};
+        }
+
+        _NODISCARD constexpr auto begin() const noexcept(
+            noexcept(_RANGES begin(_Range)) && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) // strengthened
+            requires range<const _Vw> {
+            return _Iterator<true>{this, _RANGES begin(_Range)};
+        }
+
+        _NODISCARD constexpr auto end() noexcept(noexcept(_RANGES distance(_Range)) && noexcept(_RANGES end(_Range))
+                                                 && is_nothrow_move_constructible_v<iterator_t<_Vw>>) // strengthened
+            requires(!_Simple_view<_Vw>) {
+            if constexpr (common_range<_Vw> && sized_range<_Vw> && forward_range<_Vw>) {
+                const auto _Missing =
+                    static_cast<range_difference_t<_Vw>>(_Stride - _RANGES distance(_Range) % _Stride);
+                if (_Missing == _Stride) {
+                    return _Iterator<false>{this, _RANGES end(_Range)};
+                } else {
+                    return _Iterator<false>{this, _RANGES end(_Range), _Missing};
+                }
+            } else if constexpr (common_range<_Vw> && !bidirectional_range<_Vw>) {
+                return _Iterator<false>{this, _RANGES end(_Range)};
+            } else {
+                return default_sentinel;
+            }
+        }
+
+        _NODISCARD constexpr auto end() const
+            noexcept(noexcept(_RANGES distance(_Range)) && noexcept(_RANGES end(_Range))
+                     && is_nothrow_move_constructible_v<iterator_t<const _Vw>>) // strengthened
+            requires range<const _Vw> {
+            if constexpr (common_range<const _Vw> && sized_range<const _Vw> && forward_range<const _Vw>) {
+                const auto _Missing =
+                    static_cast<range_difference_t<_Vw>>(_Stride - _RANGES distance(_Range) % _Stride);
+                if (_Missing == _Stride) {
+                    return _Iterator<true>{this, _RANGES end(_Range)};
+                } else {
+                    return _Iterator<true>{this, _RANGES end(_Range), _Missing};
+                }
+            } else if constexpr (common_range<const _Vw> && !bidirectional_range<const _Vw>) {
+                return _Iterator<true>{this, _RANGES end(_Range)};
+            } else {
+                return default_sentinel;
+            }
+        }
+
+        _NODISCARD constexpr auto size() noexcept(noexcept(_RANGES distance(_Range))) // strengthened
+            requires sized_range<_Vw> {
+            return _To_unsigned_like(_Div_ceil(_RANGES distance(_Range), _Stride));
+        }
+
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES distance(_Range))) // strengthened
+            requires sized_range<const _Vw> {
+            return _To_unsigned_like(_Div_ceil(_RANGES distance(_Range), _Stride));
+        }
+    };
+
+    template <class _Rng>
+    stride_view(_Rng&&, range_difference_t<_Rng>) -> stride_view<views::all_t<_Rng>>;
+
+    template <class _Vw>
+    inline constexpr bool enable_borrowed_range<stride_view<_Vw>> = enable_borrowed_range<_Vw>;
+
+    namespace views {
+        struct _Stride_fn {
+            // clang-format off
+            template <viewable_range _Rng>
+            _NODISCARD constexpr auto operator()(_Rng&& _Range, const range_difference_t<_Rng> _Stride) const noexcept(
+                noexcept(stride_view(_STD forward<_Rng>(_Range), _Stride))) requires requires {
+                stride_view(_STD forward<_Rng>(_Range), _Stride);
+            } {
+                // clang-format on
+                return stride_view(_STD forward<_Rng>(_Range), _Stride);
+            }
+
+            // clang-format off
+            template <class _Ty>
+                requires constructible_from<decay_t<_Ty>, _Ty>
+            _NODISCARD constexpr auto operator()(_Ty&& _Stride) const
+                noexcept(is_nothrow_constructible_v<decay_t<_Ty>, _Ty>) {
+                // clang-format on
+                return _Range_closure<_Stride_fn, decay_t<_Ty>>{_STD forward<_Ty>(_Stride)};
+            }
+        };
+
+        inline constexpr _Stride_fn stride;
+    } // namespace views
 #endif // _HAS_CXX23
 } // namespace ranges
 
