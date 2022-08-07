@@ -5710,7 +5710,7 @@ public:
     using _Udiff = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
 
     explicit _Rng_from_urng(_Urng& _Func) : _Ref(_Func), _Bits(CHAR_BIT * sizeof(_Udiff)), _Bmask(_Udiff(-1)) {
-        for (; (_Urng::max)() - (_Urng::min)() < _Bmask; _Bmask >>= 1) {
+        for (; static_cast<_Udiff>((_Urng::max)() - (_Urng::min)()) < _Bmask; _Bmask >>= 1) {
             --_Bits;
         }
     }
