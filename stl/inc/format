@@ -2313,7 +2313,7 @@ _NODISCARD _OutputIt _Fmt_write(_OutputIt _Out, const _Arithmetic _Value) {
                 *_End++ = '-';
             }
 
-            memcpy(_End, "nan", 3);
+            _CSTD memcpy(_End, "nan", 3);
             _End += 3;
         }
     }
@@ -2798,7 +2798,7 @@ _NODISCARD _OutputIt _Fmt_write(
             ++_Result.ptr; // pretend to skip over a '-' that to_chars would put in _Buffer[0]
         }
 
-        memcpy(_Result.ptr, "nan", 3);
+        _CSTD memcpy(_Result.ptr, "nan", 3);
         _Result.ptr += 3;
     } else {
         if (_Precision == -1) {

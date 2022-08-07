@@ -881,6 +881,7 @@ void test_float_specs() {
     assert(format(STR("{:06}"), nan) == STR("   nan"));
     assert(format(STR("{:06}"), -nan) == STR("  -nan"));
     assert(format(STR("{:06}"), inf) == STR("   inf"));
+    assert(format(STR("{:06}"), -inf) == STR("  -inf"));
 
     // Locale
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
@@ -893,6 +894,7 @@ void test_float_specs() {
     assert(format(locale{"en-US"}, STR("{:L}"), nan) == STR("nan"));
     assert(format(locale{"en-US"}, STR("{:L}"), -nan) == STR("-nan"));
     assert(format(locale{"en-US"}, STR("{:L}"), inf) == STR("inf"));
+    assert(format(locale{"en-US"}, STR("{:L}"), -inf) == STR("-inf"));
 
     assert(format(locale{"de-DE"}, STR("{:Lf}"), Float{0}) == STR("0,000000"));
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
