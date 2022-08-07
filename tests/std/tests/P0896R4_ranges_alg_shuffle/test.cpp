@@ -59,7 +59,7 @@ void test_urbg() { // COMPILE-ONLY
         static constexpr bool max() {
             return true;
         }
-        bool operator()() {
+        bool operator()() & {
             return false;
         }
     };
