@@ -19,8 +19,11 @@
 #include <list>
 #include <locale>
 #include <memory>
+#include <system_error>
 #include <utility>
 #include <vector>
+#include <xfilesystem_abi.h>
+#include <xstring>
 
 #if _HAS_CXX20
 #include <compare>
