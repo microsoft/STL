@@ -6842,7 +6842,7 @@ namespace ranges {
     template <template <class...> class _Container, input_range _Rng, class... _Types,
         class _Deduced = remove_pointer_t<decltype(_To_helper<_Container, _Rng, _Types...>())>>
     _NODISCARD constexpr _Deduced to(_Rng&& _Range, _Types&&... _Args) {
-        return to<_Deduced>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
+        return _RANGES to<_Deduced>(_STD forward<_Rng>(_Range), _STD forward<_Types>(_Args)...);
     }
 
     template <template <class...> class _Container>
