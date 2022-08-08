@@ -160,12 +160,8 @@ struct sequence_instantiator {
         test_sequence<R, std::list>();
         test_sequence<R, std::vector>();
 
-#ifdef __cpp_lib_constexpr_string
         static_assert(test_sequence<R, std::basic_string>());
-#endif // __cpp_lib_constexpr_string
-#ifdef __cpp_lib_constexpr_vector
         static_assert(test_sequence<R, std::vector>());
-#endif // __cpp_lib_constexpr_vector
     }
 };
 
@@ -584,12 +580,8 @@ int main() {
     sequence_instantiator::test_copy_move<std::forward_list>();
     sequence_instantiator::test_copy_move<std::list>();
     sequence_instantiator::test_copy_move<std::vector>();
-#ifdef __cpp_lib_constexpr_string
     static_assert(sequence_instantiator::test_copy_move<std::basic_string>());
-#endif // __cpp_lib_constexpr_string
-#ifdef __cpp_lib_constexpr_vector
     static_assert(sequence_instantiator::test_copy_move<std::vector>());
-#endif // __cpp_lib_constexpr_vector
 
     mappish_instantiator::test_copy_move<std::map>();
     mappish_instantiator::test_copy_move<std::multimap>();
@@ -608,7 +600,7 @@ int main() {
     static_assert(test_common_constructible());
 
     test_nested_range();
-#if defined(__cpp_lib_constexpr_vector) && (defined(__clang__) || defined(__EDG__))
+#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1588614
     static_assert(test_nested_range());
-#endif // defined(__cpp_lib_constexpr_vector) && (defined(__clang__) || defined(__EDG__))
+#endif // defined(__clang__) || defined(__EDG__)
 }
