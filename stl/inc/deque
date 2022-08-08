@@ -1377,7 +1377,7 @@ public:
         // insert [_First, _Last) at _Where
         _Adl_verify_range(_First, _Last);
         const size_type _Off = static_cast<size_type>(_Where - begin());
-        return _Insert_range<static_cast<_Is_bidi>(_Is_bidi_iter_v<_Iter>)>(
+        return _Insert_range<static_cast<_Is_bidi>(_Is_cpp17_bidi_iter_v<_Iter>)>(
             _Off, _Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 

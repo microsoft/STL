@@ -694,7 +694,7 @@ public:
         _Adl_verify_range(_First, _Last);
         auto _UFirst = _Get_unwrapped(_First);
         auto _ULast  = _Get_unwrapped(_Last);
-        if constexpr (_Is_fwd_iter_v<_Iter>) {
+        if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Construct_n(_Count, _STD move(_UFirst), _STD move(_ULast));
@@ -1299,7 +1299,7 @@ public:
         auto _UFirst         = _Get_unwrapped(_First);
         auto _ULast          = _Get_unwrapped(_Last);
         const auto _Whereoff = static_cast<size_type>(_Whereptr - _Oldfirst);
-        if constexpr (_Is_fwd_iter_v<_Iter>) {
+        if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Insert_counted_range(_Where, _UFirst, _Count);
@@ -1497,7 +1497,7 @@ public:
         _Adl_verify_range(_First, _Last);
         auto _UFirst = _Get_unwrapped(_First);
         auto _ULast  = _Get_unwrapped(_Last);
-        if constexpr (_Is_fwd_iter_v<_Iter>) {
+        if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             _Assign_counted_range(_UFirst, _Count);
@@ -3392,7 +3392,7 @@ public:
         auto _UFirst      = _Get_unwrapped(_First);
         const auto _ULast = _Get_unwrapped(_Last);
 
-        if constexpr (_Is_fwd_iter_v<_Iter>) {
+        if constexpr (_Is_cpp17_fwd_iter_v<_Iter>) {
             const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
             const auto _Count  = _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));

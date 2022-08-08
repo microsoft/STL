@@ -2674,7 +2674,7 @@ public:
             if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
                 _Construct<_Construct_strategy::_From_ptr>(
                     _UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
-            } else if constexpr (_Is_fwd_iter_v<decltype(_UFirst)>) {
+            } else if constexpr (_Is_cpp17_fwd_iter_v<decltype(_UFirst)>) {
                 const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
                 const auto _Count  = _Convert_size<size_type>(_Length);
                 _Construct_from_iter(_STD move(_UFirst), _STD move(_ULast), _Count);
