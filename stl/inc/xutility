@@ -3729,7 +3729,7 @@ using _Sent_copy_cat = conditional_t<
     is_same_v<_Sent, _InIt> || sized_sentinel_for<_Sent, _InIt>,
 #else // ^^^ Concepts support / no Concepts vvv
     is_same_v<_Sent, _InIt>,
-#endif
+#endif // ^^^ no Concepts ^^^
     _Iter_copy_cat<_InIt, _OutIt>, _False_trivial_cat>;
 
 template <class _InIt, class _Sent, class _OutIt>

@@ -1715,7 +1715,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
 template <class _InIt, class _Alloc>
 _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
     _InIt _First, size_t _Count, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
-    // copy _First +[0, _Count) to raw _Dest, using _Al
+    // copy _First + [0, _Count) to raw _Dest, using _Al
     // note: only called internally from elsewhere in the STL
     using _Ptrval = typename _Alloc::value_type*;
 

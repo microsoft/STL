@@ -2757,7 +2757,7 @@ private:
     template <class _Iter, class _Sent, class _Size = nullptr_t>
     _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Sent _Last, _Size _Count = {}) {
         // Pre: _First models input_iterator or meets the Cpp17InputIterator requirements
-        // Pre: [_First, Last) is a valid range
+        // Pre: [_First, _Last) is a valid range
         // Pre: if is_same_v<_Size, size_type>, _Count is the length of [_First, _Last).
         // Pre: *this is in SSO mode; the lifetime of the SSO elements has already begun
 
@@ -3818,8 +3818,8 @@ public:
 
         const size_type _Growth = static_cast<size_type>(_Count - _Nx);
 
-        // checking for overlapping ranges is technically UB (considering string literals), so just always
-        // reallocate and copy to the new buffer if constant evaluated
+        // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
+        // and copy to the new buffer if constant evaluated
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
