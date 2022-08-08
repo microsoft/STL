@@ -798,8 +798,8 @@ public:
         const auto _Oldsize = _Mysize();
         _Restore_old_size_guard<_Pop_direction::_Front> _Guard{this, _Oldsize};
         if constexpr (_RANGES bidirectional_range<_Rng>) {
-            auto _ULast        = _RANGES _Get_final_iterator_unwrapped(_Range);
             const auto _UFirst = _RANGES _Ubegin(_Range);
+            auto _ULast        = _RANGES _Get_final_iterator_unwrapped(_Range);
             while (_UFirst != _ULast) {
                 _Emplace_front_internal(*--_ULast); // prepend in order
             }
