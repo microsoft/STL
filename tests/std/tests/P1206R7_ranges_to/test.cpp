@@ -21,8 +21,6 @@
 
 using namespace std::literals;
 
-namespace ranges = std::ranges;
-
 template <class T>
 struct myalloc {
     using value_type = T;
