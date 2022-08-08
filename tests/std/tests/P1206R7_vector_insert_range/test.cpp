@@ -54,15 +54,15 @@ constexpr bool test_vector_bool(const size_t presize, Rng&& rng, Expected&& expe
     return true;
 }
 
-static constexpr int other_ints[80]       = { //
+static constexpr int other_ints[80]        = { //
     0, 7, 0, 2, 3, 0, 0, 0, 4, 0, 0, 2, 5, 1, 0, 7, //
     6, 3, 0, 7, 0, 5, 7, 0, 3, 4, 5, 0, 3, 0, 0, 2, //
     2, 0, 3, 0, 0, 0, 0, 0, 0, 1, 0, 0, 5, 0, 0, 0, //
     0, 4, 2, 4, 0, 7, 0, 2, 0, 7, 1, 0, 6, 0, 0, 6, //
     3, 5, 0, 7, 0, 7, 0, 0, 2, 3, 5, 2, 2, 0, 7, 3};
-static constexpr int other_short_result[] = {true, false, true, true, true, true, true, true, true, true, true, true,
+static constexpr bool other_short_result[] = {true, false, true, true, true, true, true, true, true, true, true, true,
     true}; // result of inserting other_ints at offset 1 in a sequence of 5 trues
-static constexpr int other_long_result[]  = {true, false, true, true, true, true, true, true, true, true, true, true,
+static constexpr bool other_long_result[]  = {true, false, true, true, true, true, true, true, true, true, true, true,
      true, true, true, true, true, true, true}; // ditto, in a sequence of 11 trues
 
 struct vector_boo_instantiator {
