@@ -35,7 +35,7 @@ struct vector_instantiator {
 template <ranges::input_range Rng, ranges::random_access_range Expected>
 constexpr bool test_vector_bool(Rng&& rng, Expected&& expected) {
     vector<bool> vec(from_range, forward<Rng>(rng));
-    assert(ranges::equal(vec, expected, std::equal_to<bool>{}));
+    assert(ranges::equal(vec, expected, equal_to<bool>{}));
 
     return true;
 }

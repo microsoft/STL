@@ -60,7 +60,7 @@ constexpr bool test_vector_bool(const size_t capacity, const size_t presize, Rng
     vec.append_range(forward<Rng>(rng));
     const auto length = static_cast<ptrdiff_t>(presize);
     assert(ranges::count(vec | views::take(length), true) == length);
-    assert(ranges::equal(vec | views::drop(length), expected, std::equal_to<bool>{}));
+    assert(ranges::equal(vec | views::drop(length), expected, equal_to<bool>{}));
 
     return true;
 }

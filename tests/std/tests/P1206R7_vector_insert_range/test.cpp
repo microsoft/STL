@@ -49,7 +49,7 @@ constexpr bool test_vector_bool(const size_t presize, Rng&& rng, Expected&& expe
     const same_as<vector<bool>::iterator> auto result =
         vec.insert_range(ranges::next(vec.begin(), presize != 0), forward<Rng>(rng));
     assert(result == ranges::next(vec.begin(), presize != 0));
-    assert(ranges::equal(vec, expected, std::equal_to<bool>{}));
+    assert(ranges::equal(vec, expected, equal_to<bool>{}));
 
     return true;
 }
