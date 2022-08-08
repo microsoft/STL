@@ -662,7 +662,7 @@ STATIC_ASSERT(__cpp_lib_constexpr_vector == 201907L);
 #endif
 #endif
 
-#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG concepts support and GH-1814
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_containers_ranges
 #error __cpp_lib_containers_ranges is not defined
 #elif __cpp_lib_containers_ranges != 202202L
