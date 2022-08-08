@@ -1076,7 +1076,7 @@ private:
     static constexpr unsigned long _Mask = ~((~0UL) << (_Wx % 32));
 };
 
-#if _HAS_CXX17
+#if !_HAS_CXX17
 template <class _Ty, size_t _Wx, size_t _Rx>
 const typename _Swc_01_traits<_Ty, _Wx, _Rx>::_Cy_t _Swc_01_traits<_Ty, _Wx, _Rx>::_Cy;
 
