@@ -476,7 +476,7 @@ tests\P1206R7_deque_insert_range
 tests\P1206R7_deque_prepend_range
 tests\P1206R7_forward_list_assign_range
 tests\P1206R7_forward_list_from_range
-tests\P1206R7_forward_list_insert_range
+tests\P1206R7_forward_list_insert_range_after
 tests\P1206R7_forward_list_prepend_range
 tests\P1206R7_from_range
 tests\P1206R7_list_append_range
