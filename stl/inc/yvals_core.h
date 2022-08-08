@@ -329,6 +329,7 @@
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
 // P2445R1 forward_like()
+// P2446R2 views::as_rvalue
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R0 unexpected<E>::error()
 
@@ -1511,6 +1512,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #ifdef __cpp_lib_concepts
 #define __cpp_lib_out_ptr                 202106L
+#define __cpp_lib_ranges_as_rvalue        202207L
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
 #define __cpp_lib_ranges_contains         202207L

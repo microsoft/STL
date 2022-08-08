@@ -1627,6 +1627,124 @@ namespace ranges {
         using all_t = decltype(all(_STD declval<_Rng>()));
     } // namespace views
 
+#if _HAS_CXX23
+    template <input_range _Vw>
+        requires view<_Vw>
+    class as_rvalue_view : public view_interface<as_rvalue_view<_Vw>> {
+    private:
+        /* [[no_unique_address]] */ _Vw _Range{};
+
+        template <range _Rng>
+        static constexpr bool _Is_end_nothrow_v = noexcept(move_sentinel{_RANGES end(_STD declval<_Rng>())});
+
+        template <common_range _Rng>
+        static constexpr bool _Is_end_nothrow_v<_Rng> = noexcept(move_iterator{_RANGES end(_STD declval<_Rng>())});
+
+    public:
+        // clang-format off
+        as_rvalue_view() requires default_initializable<_Vw> = default;
+        // clang-format on
+
+        constexpr explicit as_rvalue_view(_Vw _Range_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
+            : _Range(_STD move(_Range_)) {}
+
+        _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) // strengthened
+            requires copy_constructible<_Vw> {
+            return _Range;
+        }
+
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        _NODISCARD constexpr auto begin() noexcept(noexcept(move_iterator{_RANGES begin(_Range)})) // strengthened
+            requires(!_Simple_view<_Vw>) {
+            return move_iterator{_RANGES begin(_Range)};
+        }
+
+        _NODISCARD constexpr auto begin() const noexcept(noexcept(move_iterator{_RANGES begin(_Range)})) // strengthened
+            requires range<const _Vw> {
+            return move_iterator{_RANGES begin(_Range)};
+        }
+
+        _NODISCARD constexpr auto end() noexcept(_Is_end_nothrow_v<_Vw>) // strengthened
+            requires(!_Simple_view<_Vw>) {
+            if constexpr (common_range<_Vw>) {
+                return move_iterator{_RANGES end(_Range)};
+            } else {
+                return move_sentinel{_RANGES end(_Range)};
+            }
+        }
+
+        _NODISCARD constexpr auto end() const noexcept(_Is_end_nothrow_v<const _Vw>) // strengthened
+            requires range<const _Vw> {
+            if constexpr (common_range<const _Vw>) {
+                return move_iterator{_RANGES end(_Range)};
+            } else {
+                return move_sentinel{_RANGES end(_Range)};
+            }
+        }
+
+        _NODISCARD constexpr auto size() noexcept(noexcept(_RANGES size(_Range))) // strengthened
+            requires sized_range<_Vw> {
+            return _RANGES size(_Range);
+        }
+
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES size(_Range))) // strengthened
+            requires sized_range<const _Vw> {
+            return _RANGES size(_Range);
+        }
+    };
+
+    template <class _Rng>
+    as_rvalue_view(_Rng&&) -> as_rvalue_view<views::all_t<_Rng>>;
+
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<as_rvalue_view<_Rng>> = enable_borrowed_range<_Rng>;
+
+    namespace views {
+        template <class _Rng>
+        concept _Can_as_rvalue = requires(_Rng&& __r) {
+            as_rvalue_view{static_cast<_Rng&&>(__r)};
+        };
+
+        struct _As_rvalue_fn : _Pipe::_Base<_As_rvalue_fn> {
+        private:
+            enum class _St { _None, _All, _As_rvalue };
+
+            template <class _Rng>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (same_as<range_rvalue_reference_t<_Rng>, range_reference_t<_Rng>>) {
+                    return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
+                } else if constexpr (_Can_as_rvalue<_Rng>) {
+                    return {_St::_As_rvalue, noexcept(as_rvalue_view{_STD declval<_Rng>()})};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Rng>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
+
+        public:
+            template <viewable_range _Rng>
+                requires(_Choice<_Rng>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
+                constexpr _St _Strat = _Choice<_Rng>._Strategy;
+                if constexpr (_Strat == _St::_All) {
+                    return views::all(_STD forward<_Rng>(_Range));
+                } else if constexpr (_Strat == _St::_As_rvalue) {
+                    return as_rvalue_view{_STD forward<_Rng>(_Range)};
+                } else {
+                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                }
+            }
+        };
+
+        inline constexpr _As_rvalue_fn as_rvalue;
+    } // namespace views
+#endif // _HAS_CXX23
+
     template <input_range _Vw, indirect_unary_predicate<iterator_t<_Vw>> _Pr>
         requires view<_Vw> && is_object_v<_Pr>
     class filter_view : public _Cached_position_t<forward_range<_Vw>, _Vw, filter_view<_Vw, _Pr>> {
