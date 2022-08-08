@@ -283,6 +283,11 @@ type CookedPRNode = {
     reviews: DateTime[];
 };
 
+function not_uncharted(node: RawPRNode | RawIssueNode) {
+    const labels = node.labels.nodes.map(label => label.name);
+    return !labels.includes('uncharted');
+}
+
 function transform_pr_nodes(pr_nodes: RawPRNode[]) {
     warn_if_pagination_needed(
         pr_nodes,
@@ -299,11 +304,8 @@ function transform_pr_nodes(pr_nodes: RawPRNode[]) {
 
     const { maintainers, contributors } = read_usernames();
 
-    return pr_nodes
-        .filter(pr_node => {
-            const labels = pr_node.labels.nodes.map(label => label.name);
-            return !labels.includes('uncharted');
-        })
+    return pr_nodes //
+        .filter(not_uncharted)
         .map(pr_node => {
             const maintainer_reviews = pr_node.reviews.nodes
                 .filter(review_node => {
@@ -352,7 +354,7 @@ function transform_issue_nodes(issue_nodes: RawIssueNode[]) {
         (retrieved: number, total: number, id: number) =>
             `WARNING: Retrieved ${retrieved}/${total} labels for issue #${id}.`
     );
-    return issue_nodes.map(node => {
+    return issue_nodes.filter(not_uncharted).map(node => {
         const labels = node.labels.nodes.map(label => label.name);
         const ret: CookedIssueNode = {
             id: node.id,
