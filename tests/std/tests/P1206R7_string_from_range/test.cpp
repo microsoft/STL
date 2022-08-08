@@ -41,8 +41,8 @@ constexpr bool test_string(Rng&& rng, const T* expected) {
     return true;
 }
 
-static constexpr const char hw[]    = "Hello, world!";
-static constexpr const auto span_hw = span{hw}.first<span{hw}.size() - 1>();
+static constexpr char hw[]    = "Hello, world!";
+static constexpr auto span_hw = span{hw}.first<span{hw}.size() - 1>();
 
 struct string_instantiator {
     template <ranges::input_range R>
@@ -52,8 +52,8 @@ struct string_instantiator {
     }
 };
 
-static constexpr const wchar_t whw[] = L"Hello, world!";
-static constexpr const auto span_whw = span{whw}.first<span{whw}.size() - 1>();
+static constexpr wchar_t whw[] = L"Hello, world!";
+static constexpr auto span_whw = span{whw}.first<span{whw}.size() - 1>();
 
 struct wstring_instantiator {
     template <ranges::input_range R>
