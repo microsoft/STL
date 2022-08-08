@@ -1012,8 +1012,10 @@ private:
             _Orphan_range(_Oldlast, _Oldlast);
         }
     }
+#endif // __cpp_lib_containers_ranges
 
 public:
+#ifdef __cpp_lib_containers_ranges
     template <_Container_compatible_range<_Ty> _Rng>
     constexpr void append_range(_Rng&& _Range) {
         if constexpr (_RANGES forward_range<_Rng> || _RANGES sized_range<_Rng>) {
@@ -1026,7 +1028,6 @@ public:
     }
 #endif // __cpp_lib_containers_ranges
 
-public:
     template <class... _Valty>
     _CONSTEXPR20 iterator emplace(const_iterator _Where, _Valty&&... _Val) {
         // insert by perfectly forwarding _Val at _Where
