@@ -6826,16 +6826,16 @@ namespace ranges {
 
     template <template <class...> class _Cnt, class _Rng, class... _Args>
     auto _To_helper() {
-        if constexpr (requires { _Cnt(std::declval<_Rng>(), std::declval<_Args>()...); }) {
-            return static_cast<decltype(_Cnt(std::declval<_Rng>(), std::declval<_Args>()...))*>(nullptr);
-        } else if constexpr (requires { _Cnt(from_range, std::declval<_Rng>(), std::declval<_Args>()...); }) {
-            return static_cast<decltype(_Cnt(from_range, std::declval<_Rng>(), std::declval<_Args>()...))*>(nullptr);
+        if constexpr (requires { _Cnt(_STD declval<_Rng>(), _STD declval<_Args>()...); }) {
+            return static_cast<decltype(_Cnt(_STD declval<_Rng>(), _STD declval<_Args>()...))*>(nullptr);
+        } else if constexpr (requires { _Cnt(from_range, _STD declval<_Rng>(), _STD declval<_Args>()...); }) {
+            return static_cast<decltype(_Cnt(from_range, _STD declval<_Rng>(), _STD declval<_Args>()...))*>(nullptr);
         } else if constexpr (requires {
-                                 _Cnt(std::declval<_Phony_input_iterator<_Rng>>(),
-                                     std::declval<_Phony_input_iterator<_Rng>>(), std::declval<_Args>()...);
+                                 _Cnt(_STD declval<_Phony_input_iterator<_Rng>>(),
+                                     _STD declval<_Phony_input_iterator<_Rng>>(), _STD declval<_Args>()...);
                              }) {
-            return static_cast<decltype(_Cnt(std::declval<_Phony_input_iterator<_Rng>>(),
-                std::declval<_Phony_input_iterator<_Rng>>(), std::declval<_Args>()...))*>(nullptr);
+            return static_cast<decltype(_Cnt(_STD declval<_Phony_input_iterator<_Rng>>(),
+                _STD declval<_Phony_input_iterator<_Rng>>(), _STD declval<_Args>()...))*>(nullptr);
         }
     }
 
