@@ -77,6 +77,7 @@ int main() {
     test_copyable_view();
     test_move_only_view();
 
+    // Validate non-views
     test_c_array();
     test_lvalue_vector();
     test_lvalue_forward_list();

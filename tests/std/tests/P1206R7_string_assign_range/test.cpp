@@ -114,6 +114,7 @@ int main() {
     test_move_only_view();
     STATIC_ASSERT(test_move_only_view());
 
+    // Validate non-views
     test_c_array();
     STATIC_ASSERT(test_c_array());
     test_lvalue_vector();
