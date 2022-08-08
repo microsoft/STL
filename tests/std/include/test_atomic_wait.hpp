@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include <assert.h>
 #include <atomic>
+#include <cassert>
 #include <chrono>
+#include <cstring>
 #include <memory>
-#include <string.h>
 #include <thread>
 
 template <template <class> class Template, class UnderlyingType>

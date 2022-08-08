@@ -33,14 +33,6 @@ struct random_access_iterator_tag : bidirectional_iterator_tag {};
 struct contiguous_iterator_tag : random_access_iterator_tag {};
 
 template <class _Ty>
-using _With_reference = _Ty&;
-
-template <class _Ty>
-concept _Can_reference = requires {
-    typename _With_reference<_Ty>;
-};
-
-template <class _Ty>
 concept _Dereferenceable = requires(_Ty& __t) {
     { *__t } -> _Can_reference;
 };

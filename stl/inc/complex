@@ -18,18 +18,19 @@
 
 #ifdef _M_CEE_PURE
 // no intrinsics for /clr:pure
-#elif defined(__clang__)
-// TRANSITION, not using FMA intrinsics for Clang yet
-#elif defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC))
+#elif defined(_M_ARM64) || defined(_M_ARM64EC)
+// https://docs.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions?view=msvc-170#base-requirements
+// Both floating-point and NEON support are presumed to be present in hardware.
+#define _FMP_USING_STD_FMA
+#elif defined(__clang__) // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+// TRANSITION, not using x86/x64 FMA intrinsics for Clang yet
+#elif defined(_M_IX86) || defined(_M_X64)
 #define _FMP_USING_X86_X64_INTRINSICS
 #include <emmintrin.h>
 #include <isa_availability.h>
 extern "C" int __isa_available;
 extern "C" __m128d __cdecl _mm_fmsub_sd(__m128d, __m128d, __m128d);
-#elif defined(_M_ARM64) || defined(_M_ARM64EC)
-#define _FMP_USING_ARM64_INTRINSICS
-#include <arm64_neon.h>
-#endif // ^^^ defined(_M_ARM64) || defined(_M_ARM64EC) ^^^
+#endif // ^^^ defined(_M_IX86) || defined(_M_X64) ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -78,7 +79,7 @@ namespace _Float_multi_prec {
 
     // 1x precision + 1x precision -> 2x precision
     // the result is exact when:
-    // 1) the result doesn't overflow
+    // 1) no internal overflow occurs
     // 2) either underflow is gradual, or no internal underflow occurs
     // 3) intermediate precision is either the same as _Ty, or greater than twice the precision of _Ty
     // 4) parameters and local variables do not retain extra intermediate precision
@@ -99,7 +100,7 @@ namespace _Float_multi_prec {
     // requires: exponent(_Xval) + countr_zero(significand(_Xval)) >= exponent(_Yval) || _Xval == 0
     // the result is exact when:
     // 0) the requirement above is satisfied
-    // 1) no internal overflow occurs
+    // 1) the result doesn't overflow
     // 2) either underflow is gradual, or no internal underflow occurs
     // 3) intermediate precision is either the same as _Ty, or greater than twice the precision of _Ty
     // 4) parameters and local variables do not retain extra intermediate precision
@@ -160,16 +161,11 @@ namespace _Float_multi_prec {
     }
 #endif // _FMP_USING_X86_X64_INTRINSICS
 
-#ifdef _FMP_USING_ARM64_INTRINSICS
-    _NODISCARD inline double _Sqr_error_arm64_neon(const double _Xval, const double _Prod0) noexcept {
-        const float64x1_t _Mx      = vld1_f64(&_Xval);
-        const float64x1_t _Mprod0  = vld1_f64(&_Prod0);
-        const float64x1_t _Mresult = vfma_f64(vneg_f64(_Mprod0), _Mx, _Mx);
-        double _Result;
-        vst1_f64(&_Result, _Mresult);
-        return _Result;
+#ifdef _FMP_USING_STD_FMA
+    _NODISCARD inline double _Sqr_error_std_fma(const double _Xval, const double _Prod0) noexcept {
+        return _STD fma(_Xval, _Xval, -_Prod0);
     }
-#endif // _FMP_USING_ARM64_INTRINSICS
+#endif // _FMP_USING_STD_FMA
 
     // square(1x precision) -> 2x precision
     // the result is exact when no internal overflow or underflow occurs
@@ -189,11 +185,9 @@ namespace _Float_multi_prec {
         }
 #endif // ^^^ !defined(__AVX2__) ^^^
 
-#elif defined(_FMP_USING_ARM64_INTRINSICS)
-        // https://docs.microsoft.com/en-us/cpp/build/arm64-windows-abi-conventions?view=vs-2019#base-requirements
-        // Both floating-point and NEON support are presumed to be present in hardware.
-        return {_Prod0, _Sqr_error_arm64_neon(_Xval, _Prod0)};
-#else // ^^^ defined(_FMP_USING_ARM64_INTRINSICS) / not using intrinsics vvv
+#elif defined(_FMP_USING_STD_FMA)
+        return {_Prod0, _Sqr_error_std_fma(_Xval, _Prod0)};
+#else // ^^^ defined(_FMP_USING_STD_FMA) / not using intrinsics vvv
         return {_Prod0, _Sqr_error_fallback(_Xval, _Prod0)};
 #endif // ^^^ not using intrinsics ^^^
     }
@@ -201,7 +195,7 @@ namespace _Float_multi_prec {
 #pragma float_control(pop)
 
 #undef _FMP_USING_X86_X64_INTRINSICS
-#undef _FMP_USING_ARM64_INTRINSICS
+#undef _FMP_USING_STD_FMA
 
 #define _FMP _STD _Float_multi_prec::
 
@@ -1402,14 +1396,14 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const complex<_Ty>& _Left, const _Ty& _Right) {
     complex<_Ty> _Tmp(_Left);
-    _Tmp.real(_Tmp.real() + _Right);
+    _Tmp += _Right;
     return _Tmp;
 }
 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator+(const _Ty& _Left, const complex<_Ty>& _Right) {
-    complex<_Ty> _Tmp(_Left);
-    _Tmp += _Right;
+    complex<_Ty> _Tmp(_Right);
+    _Tmp += _Left;
     return _Tmp;
 }
 
@@ -1423,7 +1417,7 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left, const 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator-(const complex<_Ty>& _Left, const _Ty& _Right) {
     complex<_Ty> _Tmp(_Left);
-    _Tmp.real(_Tmp.real() - _Right);
+    _Tmp -= _Right;
     return _Tmp;
 }
 
@@ -1444,15 +1438,14 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const complex<_Ty>& _Left, const _Ty& _Right) {
     complex<_Ty> _Tmp(_Left);
-    _Tmp.real(_Tmp.real() * _Right);
-    _Tmp.imag(_Tmp.imag() * _Right);
+    _Tmp *= _Right;
     return _Tmp;
 }
 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator*(const _Ty& _Left, const complex<_Ty>& _Right) {
-    complex<_Ty> _Tmp(_Left);
-    _Tmp *= _Right;
+    complex<_Ty> _Tmp(_Right);
+    _Tmp *= _Left;
     return _Tmp;
 }
 
@@ -1466,8 +1459,7 @@ _NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const complex<_Ty>& _Left, const 
 template <class _Ty>
 _NODISCARD _CONSTEXPR20 complex<_Ty> operator/(const complex<_Ty>& _Left, const _Ty& _Right) {
     complex<_Ty> _Tmp(_Left);
-    _Tmp.real(_Tmp.real() / _Right);
-    _Tmp.imag(_Tmp.imag() / _Right);
+    _Tmp /= _Right;
     return _Tmp;
 }
 

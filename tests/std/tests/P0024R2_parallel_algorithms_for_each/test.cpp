@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
 #include <atomic>
+#include <cassert>
 #include <execution>
 #include <forward_list>
 #include <iterator>
@@ -19,11 +19,11 @@ int g_forEachNCalls = 0;
 struct for_each_n_tester {
     int calledCount = 0;
 
-    for_each_n_tester()                         = default;
-    for_each_n_tester(const for_each_n_tester&) = delete;
-    for_each_n_tester(for_each_n_tester&&)      = default;
+    for_each_n_tester()                                    = default;
+    for_each_n_tester(const for_each_n_tester&)            = delete;
+    for_each_n_tester(for_each_n_tester&&)                 = default;
     for_each_n_tester& operator=(const for_each_n_tester&) = delete;
-    for_each_n_tester& operator=(for_each_n_tester&&) = delete;
+    for_each_n_tester& operator=(for_each_n_tester&&)      = delete;
 
     void operator()(const int x) {
         assert(calledCount == g_forEachNCalls);

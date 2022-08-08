@@ -41,6 +41,7 @@ enum class __std_win_error : unsigned long {
     _Already_exists            = 183, // #define ERROR_ALREADY_EXISTS             183L
     _Filename_exceeds_range    = 206, // #define ERROR_FILENAME_EXCED_RANGE       206L
     _Directory_name_is_invalid = 267, // #define ERROR_DIRECTORY                  267L
+    _Reparse_tag_invalid       = 4393L, // #define ERROR_REPARSE_TAG_INVALID        4393L
     _Max                       = ~0UL // sentinel not used by Win32
 };
 
@@ -129,7 +130,7 @@ struct __std_fs_stats {
     __std_fs_stats_flags _Available; // which fields are available
 
     _NODISCARD __std_fs_file_attr _Symlink_hint_attributes() const noexcept {
-        if (_Bitmask_includes(_Available, __std_fs_stats_flags::_Attributes)) {
+        if (_STD _Bitmask_includes_any(_Available, __std_fs_stats_flags::_Attributes)) {
             return _Attributes;
         }
 
@@ -309,6 +310,12 @@ _NODISCARD __std_win_error __stdcall __std_fs_create_symbolic_link(
 _NODISCARD __std_win_error __stdcall __std_fs_read_reparse_data_buffer(_In_ __std_fs_file_handle _Handle,
     _Out_writes_bytes_(_Buffer_size) void* _Buffer, _In_ unsigned long _Buffer_size) noexcept;
 
+_NODISCARD __std_win_error __stdcall __std_fs_write_reparse_data_buffer(
+    _In_ __std_fs_file_handle _Handle, _In_ const __std_fs_reparse_data_buffer* _Buffer) noexcept;
+
+_NODISCARD bool __stdcall __std_fs_is_junction_from_reparse_data_buffer(
+    _In_ const __std_fs_reparse_data_buffer* _Buffer) noexcept;
+
 _NODISCARD _Success_(return == __std_win_error::_Success) __std_win_error
     __stdcall __std_fs_read_name_from_reparse_data_buffer(
         _In_ __std_fs_reparse_data_buffer* _Handle, _Out_ wchar_t** _Offset, _Out_ unsigned short* _Length) noexcept;
@@ -348,7 +355,7 @@ struct _Fs_file {
         *_Err = __std_fs_open_handle(&_Raw, _File_name, _Desired_access, _Flags);
     }
 
-    _Fs_file(const _Fs_file&) = delete;
+    _Fs_file(const _Fs_file&)            = delete;
     _Fs_file& operator=(const _Fs_file&) = delete;
 
     ~_Fs_file() {

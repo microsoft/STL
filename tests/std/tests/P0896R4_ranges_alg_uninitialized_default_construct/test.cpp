@@ -53,17 +53,11 @@ struct holder {
     }
 };
 
-template <class R>
-void not_ranges_destroy(R&& r) { // TRANSITION, ranges::destroy
-    for (auto& e : r) {
-        destroy_at(&e);
-    }
-}
-
 struct instantiator {
     template <ranges::forward_range Write>
     static void call() {
-        using ranges::uninitialized_default_construct, ranges::equal, ranges::equal_to, ranges::iterator_t;
+        using ranges::uninitialized_default_construct, ranges::destroy, ranges::equal, ranges::equal_to,
+            ranges::iterator_t;
 
         { // Validate range overload
             holder<int_wrapper, 3> mem;
@@ -74,7 +68,7 @@ struct instantiator {
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 0);
             assert(result == wrapped_input.end());
-            not_ranges_destroy(wrapped_input);
+            destroy(wrapped_input);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
         }
@@ -89,7 +83,7 @@ struct instantiator {
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 0);
             assert(result == wrapped_input.end());
-            not_ranges_destroy(wrapped_input);
+            destroy(wrapped_input);
             assert(int_wrapper::constructions == 3);
             assert(int_wrapper::destructions == 3);
         }

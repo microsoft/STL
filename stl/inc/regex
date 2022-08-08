@@ -1985,7 +1985,7 @@ private:
     template <class _InIt>
     void _Reset(_InIt _First, _InIt _Last, flag_type _Flags) {
         // build regular expression from iterator range
-        if constexpr (_Is_fwd_iter_v<_InIt>) {
+        if constexpr (_Is_ranges_fwd_iter_v<_InIt>) {
 #if _ENHANCED_REGEX_VISUALIZER
             _Visualization.assign(_First, _Last);
 #endif // _ENHANCED_REGEX_VISUALIZER
@@ -1994,7 +1994,7 @@ private:
             _Root_node* _Rx = _Prs._Compile();
             _Reset(_Rx);
         } else {
-            static_assert(_Is_input_iter_v<_InIt>, "Iterators must be at least input iterators");
+            static_assert(_Is_ranges_input_iter_v<_InIt>, "Iterators must be at least input iterators");
 
             basic_string<_Iter_value_t<_InIt>> _Str(_First, _Last);
 
@@ -2417,6 +2417,12 @@ public:
     }
 #endif // !_HAS_CXX20
 
+#ifdef __cpp_lib_concepts
+    _NODISCARD bool operator==(default_sentinel_t) const {
+        return !_MyRe;
+    }
+#endif // __cpp_lib_concepts
+
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0
         _STL_VERIFY(_MyRe, "regex_iterator not dereferenceable");
@@ -2600,6 +2606,12 @@ public:
         return !(*this == _Right);
     }
 #endif // !_HAS_CXX20
+
+#ifdef __cpp_lib_concepts
+    _NODISCARD bool operator==(default_sentinel_t) const {
+        return !_Res;
+    }
+#endif // __cpp_lib_concepts
 
     _NODISCARD const value_type& operator*() const {
 #if _ITERATOR_DEBUG_LEVEL != 0

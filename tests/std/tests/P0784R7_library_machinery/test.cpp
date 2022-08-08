@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <iterator>
 #include <memory>
 #include <type_traits>
@@ -23,7 +23,7 @@ struct int_wrapper_copy {
         return *this;
     }
 
-    int_wrapper_copy(int_wrapper_copy&&) = delete;
+    int_wrapper_copy(int_wrapper_copy&&)            = delete;
     int_wrapper_copy& operator=(int_wrapper_copy&&) = delete;
 
     constexpr bool operator==(const int_wrapper_copy&) const = default;
@@ -35,7 +35,7 @@ struct int_wrapper_move {
     constexpr int_wrapper_move() = default;
     constexpr int_wrapper_move(const int v) : _val(v) {}
 
-    int_wrapper_move(const int_wrapper_move&) = delete;
+    int_wrapper_move(const int_wrapper_move&)            = delete;
     int_wrapper_move& operator=(const int_wrapper_move&) = delete;
 
     constexpr int_wrapper_move(int_wrapper_move&& other) : _val(exchange(other._val, -1)) {}

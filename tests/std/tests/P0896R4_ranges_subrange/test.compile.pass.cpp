@@ -83,6 +83,10 @@ namespace test_view_interface {
 
         S end();
         S end() const requires (to_bool(HasConstRange));
+
+        unsigned int size() requires (to_bool(Diff) && !std::derived_from<Cat, forward_iterator_tag>);
+        unsigned int size() const requires (to_bool(HasConstRange) && to_bool(Diff)
+            && !std::derived_from<Cat, forward_iterator_tag>);
     };
     // clang-format on
 
@@ -133,13 +137,13 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V&>);
         STATIC_ASSERT(!CanEmpty<V const&>);
-        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(CanBool<V&>);
         STATIC_ASSERT(!CanBool<V const&>);
         STATIC_ASSERT(!CanData<V&>);
         STATIC_ASSERT(!CanData<V const&>);
-        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(CanSize<V&>);
         STATIC_ASSERT(!CanSize<V const&>);
         STATIC_ASSERT(!CanMemberFront<V&>);
         STATIC_ASSERT(!CanMemberFront<V const&>);
@@ -154,14 +158,14 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V&>);
-        STATIC_ASSERT(!CanEmpty<V const&>);
-        STATIC_ASSERT(!CanBool<V&>);
-        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
         STATIC_ASSERT(!CanData<V&>);
         STATIC_ASSERT(!CanData<V const&>);
-        STATIC_ASSERT(!CanSize<V&>);
-        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(CanSize<V const&>);
         STATIC_ASSERT(!CanMemberFront<V&>);
         STATIC_ASSERT(!CanMemberFront<V const&>);
         STATIC_ASSERT(!CanMemberBack<V&>);
@@ -217,13 +221,13 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(!ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V&>);
         STATIC_ASSERT(!CanEmpty<V const&>);
-        STATIC_ASSERT(!CanBool<V&>);
+        STATIC_ASSERT(CanBool<V&>);
         STATIC_ASSERT(!CanBool<V const&>);
         STATIC_ASSERT(!CanData<V&>);
         STATIC_ASSERT(!CanData<V const&>);
-        STATIC_ASSERT(!CanSize<V&>);
+        STATIC_ASSERT(CanSize<V&>);
         STATIC_ASSERT(!CanSize<V const&>);
         STATIC_ASSERT(!CanMemberFront<V&>);
         STATIC_ASSERT(!CanMemberFront<V const&>);
@@ -238,14 +242,14 @@ namespace test_view_interface {
         STATIC_ASSERT(ranges::range<V>);
         STATIC_ASSERT(ranges::range<V const>);
         STATIC_ASSERT(ranges::view<V>);
-        STATIC_ASSERT(!CanEmpty<V&>);
-        STATIC_ASSERT(!CanEmpty<V const&>);
-        STATIC_ASSERT(!CanBool<V&>);
-        STATIC_ASSERT(!CanBool<V const&>);
+        STATIC_ASSERT(CanEmpty<V&>);
+        STATIC_ASSERT(CanEmpty<V const&>);
+        STATIC_ASSERT(CanBool<V&>);
+        STATIC_ASSERT(CanBool<V const&>);
         STATIC_ASSERT(!CanData<V&>);
         STATIC_ASSERT(!CanData<V const&>);
-        STATIC_ASSERT(!CanSize<V&>);
-        STATIC_ASSERT(!CanSize<V const&>);
+        STATIC_ASSERT(CanSize<V&>);
+        STATIC_ASSERT(CanSize<V const&>);
         STATIC_ASSERT(!CanMemberFront<V&>);
         STATIC_ASSERT(!CanMemberFront<V const&>);
         STATIC_ASSERT(!CanMemberBack<V&>);
@@ -1079,7 +1083,7 @@ namespace test_subrange {
             iterator() = default;
             iterator(iterator<!IsConst>) requires IsConst;
 
-            iterator(iterator&&) = default;
+            iterator(iterator&&)            = default;
             iterator& operator=(iterator&&) = default;
 
             int operator*() const;

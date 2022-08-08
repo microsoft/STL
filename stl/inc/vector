@@ -602,7 +602,7 @@ private:
 
     class _NODISCARD _Asan_extend_guard {
     public:
-        _Asan_extend_guard(const _Asan_extend_guard&) = delete;
+        _Asan_extend_guard(const _Asan_extend_guard&)            = delete;
         _Asan_extend_guard& operator=(const _Asan_extend_guard&) = delete;
 
         constexpr explicit _Asan_extend_guard(vector* _Myvec_, size_type _Target_size_) noexcept
@@ -633,7 +633,7 @@ private:
 
     class _NODISCARD _Asan_create_guard {
     public:
-        _Asan_create_guard(const _Asan_create_guard&) = delete;
+        _Asan_create_guard(const _Asan_create_guard&)            = delete;
         _Asan_create_guard& operator=(const _Asan_create_guard&) = delete;
 
         constexpr explicit _Asan_create_guard(const vector& _Myvec_) noexcept : _Myvec(_Myvec_) {}
@@ -3397,6 +3397,13 @@ public:
             const auto _Count  = _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
+#ifdef __cpp_lib_concepts
+        } else if constexpr (forward_iterator<_Iter>) {
+            const auto _Length = _To_unsigned_like(_RANGES distance(_UFirst, _ULast));
+            const auto _Count  = _Convert_size<size_type>(_Length);
+            const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
+            _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
+#endif // __cpp_lib_concepts
         } else {
             difference_type _Off = _Saved_offset;
 

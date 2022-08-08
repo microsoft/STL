@@ -4,8 +4,8 @@
 #define _CONTAINER_DEBUG_LEVEL 1
 
 #include <algorithm>
+#include <cstddef>
 #include <span>
-#include <stddef.h>
 #include <vector>
 
 #include <test_death.hpp>

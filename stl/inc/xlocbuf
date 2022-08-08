@@ -109,7 +109,7 @@ public:
         return _State;
     }
 
-    wbuffer_convert(const wbuffer_convert&) = delete;
+    wbuffer_convert(const wbuffer_convert&)            = delete;
     wbuffer_convert& operator=(const wbuffer_convert&) = delete;
 
 protected:
@@ -482,7 +482,7 @@ public:
         return _Bstr;
     }
 
-    wstring_convert(const wstring_convert&) = delete;
+    wstring_convert(const wstring_convert&)            = delete;
     wstring_convert& operator=(const wstring_convert&) = delete;
 
 private:

@@ -363,7 +363,7 @@ void test_inplace_list() {
             }
         }
 
-        in_place_list_constructible(const in_place_list_constructible&) = delete;
+        in_place_list_constructible(const in_place_list_constructible&)            = delete;
         in_place_list_constructible& operator=(const in_place_list_constructible&) = delete;
 
         int operator()(int i) {

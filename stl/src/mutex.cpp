@@ -32,11 +32,9 @@ extern "C" _CRTIMP2_PURE void _Thrd_abort(const char* msg) { // abort on precond
 #define _THREAD_ASSERT(expr, msg) ((void) 0)
 #endif // _THREAD_CHECKX
 
-__stl_sync_api_modes_enum __stl_sync_api_impl_mode = __stl_sync_api_modes_enum::normal;
-
-extern "C" _CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_enum mode) {
-    __stl_sync_api_impl_mode = mode;
-}
+// TRANSITION, ABI: preserved for binary compatibility
+enum class __stl_sync_api_modes_enum { normal, win7, vista, concrt };
+extern "C" _CRTIMP2 void __cdecl __set_stl_sync_api_mode(__stl_sync_api_modes_enum) {}
 
 struct _Mtx_internal_imp_t { // ConcRT mutex
     int type;

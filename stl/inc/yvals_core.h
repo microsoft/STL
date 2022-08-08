@@ -19,8 +19,14 @@
 
 #if _STL_COMPILER_PREPROCESSOR
 
+// This does not use `_EMIT_STL_ERROR`, as it needs to be checked before we include anything else.
+// However, `_EMIT_STL_ERROR` has a dependency on `_CRT_STRINGIZE`, defined in `<vcruntime.h>`.
+// Here, we employ the same technique as `_CRT_STRINGIZE` in order to avoid needing to update the line number.
 #ifndef __cplusplus
-#error STL1003: Unexpected compiler, expected C++ compiler.
+#define _STL_STRINGIZE_(S) #S
+#define _STL_STRINGIZE(S)  _STL_STRINGIZE_(S)
+#pragma message(__FILE__ "(" _STL_STRINGIZE(__LINE__) "): STL1003: Unexpected compiler, expected C++ compiler.")
+#error Error in C++ Standard Library usage
 #endif // __cplusplus
 
 // Implemented unconditionally:
@@ -121,6 +127,7 @@
 // P2162R2 Inheriting From variant
 // P2251R1 Require span And basic_string_view To Be Trivially Copyable
 //     (basic_string_view always provides this behavior)
+// P2517R1 Conditional noexcept For apply()
 
 // _HAS_CXX17 indirectly controls:
 // N4190 Removing auto_ptr, random_shuffle(), And Old <functional> Stuff
@@ -189,6 +196,8 @@
 // P0769R2 shift_left(), shift_right()
 // P0784R7 Library Support For More constexpr Containers
 // P0811R3 midpoint(), lerp()
+// P0849R8 auto(x): decay-copy In The Language
+//     (library part only)
 // P0879R0 constexpr For Swapping Functions
 // P0887R1 type_identity
 // P0896R4 Ranges
@@ -268,10 +277,11 @@
 // P2367R0 Remove Misuses Of List-Initialization From Clause 24 Ranges
 // P2372R3 Fixing Locale Handling In chrono Formatters
 // P2393R1 Cleaning Up Integer-Class Types
+// P2408R5 Ranges Iterators As Inputs To Non-Ranges Algorithms
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
 // P2432R1 Fix istream_view
-// P????R? directory_entry::clear_cache()
+// P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 
 // _HAS_CXX20 indirectly controls:
 // P0619R4 Removing C++17-Deprecated Features
@@ -302,6 +312,7 @@
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
+// P1899R3 views::stride
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
@@ -309,12 +320,16 @@
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
+// P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
+// P2417R2 More constexpr bitset
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 // P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
+// P2445R1 forward_like()
+// P2499R0 string_view Range Constructor Should Be explicit
 // P2549R0 unexpected<E>::error()
 
 // Parallel Algorithms Notes
@@ -414,6 +429,26 @@
 
 #include <vcruntime.h>
 #include <xkeycheck.h> // The _HAS_CXX tags must be defined before including this.
+
+// Note that _STL_PRAGMA is load-bearing;
+// it still needs to exist even once CUDA and ICC support _Pragma.
+#if defined(__CUDACC__) || defined(__INTEL_COMPILER)
+#define _STL_PRAGMA(PRAGMA) __pragma(PRAGMA)
+#else
+#define _STL_PRAGMA(PRAGMA) _Pragma(#PRAGMA)
+#endif
+
+#define _STL_PRAGMA_MESSAGE(MESSAGE) _STL_PRAGMA(message(MESSAGE))
+#define _EMIT_STL_MESSAGE(MESSAGE)   _STL_PRAGMA_MESSAGE(__FILE__ "(" _CRT_STRINGIZE(__LINE__) "): " MESSAGE)
+
+// clang-format off
+#define _EMIT_STL_WARNING(NUMBER, MESSAGE) \
+    _EMIT_STL_MESSAGE("warning " #NUMBER ": " MESSAGE) \
+    static_assert(true, "")
+#define _EMIT_STL_ERROR(NUMBER, MESSAGE) \
+    _EMIT_STL_MESSAGE("error " #NUMBER ": " MESSAGE) \
+    static_assert(false, "Error in C++ Standard Library usage.")
+// clang-format on
 
 #ifndef _STL_WARNING_LEVEL
 #if defined(_MSVC_WARNING_LEVEL) && _MSVC_WARNING_LEVEL >= 4
@@ -611,22 +646,22 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202206L
+#define _MSVC_STL_UPDATE  202207L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
 #if __CUDACC_VER_MAJOR__ < 11 || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ < 6)
-#error STL1002: Unexpected compiler version, expected CUDA 11.6 or newer.
+_EMIT_STL_ERROR(STL1002, "Unexpected compiler version, expected CUDA 11.6 or newer.");
 #endif // ^^^ old CUDA ^^^
 #elif defined(__EDG__)
 // not attempting to detect __EDG_VERSION__ being less than expected
 #elif defined(__clang__)
-#if __clang_major__ < 13
-#error STL1000: Unexpected compiler version, expected Clang 13.0.0 or newer.
+#if __clang_major__ < 14
+_EMIT_STL_ERROR(STL1000, "Unexpected compiler version, expected Clang 14.0.0 or newer.");
 #endif // ^^^ old Clang ^^^
 #elif defined(_MSC_VER)
-#if _MSC_VER < 1932 // Coarse-grained, not inspecting _MSC_FULL_VER
-#error STL1001: Unexpected compiler version, expected MSVC 19.32 or newer.
+#if _MSC_VER < 1933 // Coarse-grained, not inspecting _MSC_FULL_VER
+_EMIT_STL_ERROR(STL1001, "Unexpected compiler version, expected MSVC 19.33 or newer.");
 #endif // ^^^ old MSVC ^^^
 #else // vvv other compilers vvv
 // not attempting to detect other compilers
@@ -683,7 +718,7 @@
 #endif // _HAS_UNEXPECTED
 
 #if _HAS_UNEXPECTED && _HAS_CXX23
-#error STL1004: C++98 unexpected() is incompatible with C++23 unexpected<E>.
+_EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpected<E>.");
 #endif // _HAS_UNEXPECTED && _HAS_CXX23
 
 // P0004R1 Removing Deprecated Iostreams Aliases
@@ -1187,7 +1222,11 @@
 #define _DEPRECATE_NONFLOATING_COMPLEX
 #endif // ^^^ warning disabled ^^^
 
-// next warning number: STL4038
+// STL4038 is used to warn that "The contents of <meow> are available only with C++NN or later."
+
+// STL4039 is used to warn that "The contents of <coroutine> are not available with /await."
+
+// next warning number: STL4040
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
@@ -1349,6 +1388,14 @@
 #endif // __cpp_impl_coroutine
 
 #if _HAS_CXX20
+#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
+#define __cpp_lib_concepts 202002L
+#endif // !defined(__EDG__) || defined(__INTELLISENSE__)
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_algorithm_iterator_requirements 202207L
+#endif // __cpp_lib_concepts
+
 #define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
 #define __cpp_lib_atomic_float                  201711L
@@ -1361,10 +1408,6 @@
 #define __cpp_lib_bit_cast                      201806L
 #define __cpp_lib_bitops                        201907L
 #define __cpp_lib_bounded_array_traits          201902L
-
-#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
-#define __cpp_lib_concepts 202002L
-#endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
 #define __cpp_lib_constexpr_algorithms    201806L
 #define __cpp_lib_constexpr_complex       201711L
@@ -1381,9 +1424,9 @@
 #define __cpp_lib_endian                  201907L
 #define __cpp_lib_erase_if                202002L
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_format 202110L
-#endif // defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1409,11 +1452,16 @@
 #define __cpp_lib_latch                   201907L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
-#define __cpp_lib_polymorphic_allocator   201902L
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_move_iterator_concept 202207L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_polymorphic_allocator 201902L
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_ranges 202110L
-#endif // defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
@@ -1448,6 +1496,7 @@
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
 #define __cpp_lib_byteswap                          202110L
+#define __cpp_lib_constexpr_bitset                  202207L
 #define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
@@ -1455,6 +1504,7 @@
 #define __cpp_lib_expected          202202L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_forward_like       202207L
 #define __cpp_lib_invoke_r           202106L
 #define __cpp_lib_is_scoped_enum     202011L
 #define __cpp_lib_move_only_function 202110L
@@ -1463,10 +1513,12 @@
 #define __cpp_lib_out_ptr                 202106L
 #define __cpp_lib_ranges_chunk            202202L
 #define __cpp_lib_ranges_chunk_by         202202L
+#define __cpp_lib_ranges_contains         202207L
 #define __cpp_lib_ranges_iota             202202L
 #define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
+#define __cpp_lib_ranges_stride           202207L
 #define __cpp_lib_ranges_to_container     202202L
 #endif // __cpp_lib_concepts
 
@@ -1508,7 +1560,7 @@
 #endif // language mode
 #endif // _M_CEE
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
@@ -1522,7 +1574,7 @@
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_shift 201806L // P0769R2 shift_left(), shift_right()
@@ -1581,6 +1633,7 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #endif // defined(MRTDLL) && !defined(_M_CEE_PURE)
 
 #define _STL_WIN32_WINNT_VISTA   0x0600 // _WIN32_WINNT_VISTA from sdkddkver.h
+#define _STL_WIN32_WINNT_WIN7    0x0601 // _WIN32_WINNT_WIN7 from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN8    0x0602 // _WIN32_WINNT_WIN8 from sdkddkver.h
 #define _STL_WIN32_WINNT_WINBLUE 0x0603 // _WIN32_WINNT_WINBLUE from sdkddkver.h
 #define _STL_WIN32_WINNT_WIN10   0x0A00 // _WIN32_WINNT_WIN10 from sdkddkver.h
@@ -1593,9 +1646,9 @@ compiler option, or define _ALLOW_RTCc_IN_STL to acknowledge that you have recei
 #elif defined(_M_ARM) || defined(_ONECORE) || defined(_CRT_APP)
 // The first ARM or OneCore or App Windows was Windows 8
 #define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN8
-#else // ^^^ default to Win8 // default to Vista vvv
-// The earliest Windows supported by this implementation is Windows Vista
-#define _STL_WIN32_WINNT _STL_WIN32_WINNT_VISTA
+#else // ^^^ default to Win8 // default to Win7 vvv
+// The earliest Windows supported by this implementation is Windows 7
+#define _STL_WIN32_WINNT _STL_WIN32_WINNT_WIN7
 #endif // ^^^ !defined(_M_ARM) && !defined(_M_ARM64) && !defined(_ONECORE) && !defined(_CRT_APP) ^^^
 #endif // _STL_WIN32_WINNT
 

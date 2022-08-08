@@ -178,8 +178,8 @@ namespace ranges {
                 _OFirst = _Backout._Release();
             }
 
-            _Seek_wrapped(_First1, _IFirst);
-            _Seek_wrapped(_First2, _OFirst);
+            _Seek_wrapped(_First1, _STD move(_IFirst));
+            _Seek_wrapped(_First2, _STD move(_OFirst));
             return {_STD move(_First1), _STD move(_First2)};
         }
     };
@@ -317,8 +317,8 @@ namespace ranges {
                 _OFirst = _Backout._Release();
             }
 
-            _Seek_wrapped(_First1, _IFirst);
-            _Seek_wrapped(_First2, _OFirst);
+            _Seek_wrapped(_First1, _STD move(_IFirst));
+            _Seek_wrapped(_First2, _STD move(_OFirst));
             return {_STD move(_First1), _STD move(_First2)};
         }
     };
@@ -1072,7 +1072,7 @@ protected:
     constexpr _Ref_count_base() noexcept = default; // non-atomic initializations
 
 public:
-    _Ref_count_base(const _Ref_count_base&) = delete;
+    _Ref_count_base(const _Ref_count_base&)            = delete;
     _Ref_count_base& operator=(const _Ref_count_base&) = delete;
 
     virtual ~_Ref_count_base() noexcept {} // TRANSITION, should be non-virtual
@@ -1258,7 +1258,7 @@ public:
         return _Rep < _Right._Rep;
     }
 
-    _Ptr_base(const _Ptr_base&) = delete;
+    _Ptr_base(const _Ptr_base&)            = delete;
     _Ptr_base& operator=(const _Ptr_base&) = delete;
 
 protected:
@@ -1425,7 +1425,7 @@ struct _Can_scalar_delete<_Yty, void_t<decltype(delete _STD declval<_Yty*>())>> 
 template <class _Yty, class = void>
 struct _Can_array_delete : false_type {};
 template <class _Yty>
-struct _Can_array_delete<_Yty, void_t<decltype(delete[] _STD declval<_Yty*>())>> : true_type {};
+struct _Can_array_delete<_Yty, void_t<decltype(delete[] _STD declval<_Yty*>())>> : true_type{};
 
 template <class _Fx, class _Arg, class = void>
 struct _Can_call_function_object : false_type {};
@@ -1466,7 +1466,7 @@ struct _Temporary_owner {
     _Ux* _Ptr;
 
     explicit _Temporary_owner(_Ux* const _Ptr_) noexcept : _Ptr(_Ptr_) {}
-    _Temporary_owner(const _Temporary_owner&) = delete;
+    _Temporary_owner(const _Temporary_owner&)            = delete;
     _Temporary_owner& operator=(const _Temporary_owner&) = delete;
     ~_Temporary_owner() {
         delete _Ptr;
@@ -1480,7 +1480,7 @@ struct _Temporary_owner_del {
     bool _Call_deleter = true;
 
     explicit _Temporary_owner_del(const _UxptrOrNullptr _Ptr_, _Dx& _Dt_) noexcept : _Ptr(_Ptr_), _Dt(_Dt_) {}
-    _Temporary_owner_del(const _Temporary_owner_del&) = delete;
+    _Temporary_owner_del(const _Temporary_owner_del&)            = delete;
     _Temporary_owner_del& operator=(const _Temporary_owner_del&) = delete;
     ~_Temporary_owner_del() {
         if (_Call_deleter) {
@@ -2130,7 +2130,7 @@ struct _NODISCARD _Uninitialized_rev_destroying_backout {
 
     explicit _Uninitialized_rev_destroying_backout(_NoThrowIt _Dest) noexcept : _First(_Dest), _Last(_Dest) {}
 
-    _Uninitialized_rev_destroying_backout(const _Uninitialized_rev_destroying_backout&) = delete;
+    _Uninitialized_rev_destroying_backout(const _Uninitialized_rev_destroying_backout&)            = delete;
     _Uninitialized_rev_destroying_backout& operator=(const _Uninitialized_rev_destroying_backout&) = delete;
 
     ~_Uninitialized_rev_destroying_backout() {
@@ -2493,7 +2493,7 @@ public:
     _Uninitialized_rev_destroying_backout_al(pointer _Dest, _Alloc& _Al_) noexcept
         : _First(_Dest), _Last(_Dest), _Al(_Al_) {}
 
-    _Uninitialized_rev_destroying_backout_al(const _Uninitialized_rev_destroying_backout_al&) = delete;
+    _Uninitialized_rev_destroying_backout_al(const _Uninitialized_rev_destroying_backout_al&)            = delete;
     _Uninitialized_rev_destroying_backout_al& operator=(const _Uninitialized_rev_destroying_backout_al&) = delete;
 
     ~_Uninitialized_rev_destroying_backout_al() {
@@ -2861,7 +2861,7 @@ struct _Allocate_n_ptr {
         }
     }
 
-    _Allocate_n_ptr(const _Allocate_n_ptr&) = delete;
+    _Allocate_n_ptr(const _Allocate_n_ptr&)            = delete;
     _Allocate_n_ptr& operator=(const _Allocate_n_ptr&) = delete;
 };
 
@@ -3288,7 +3288,7 @@ public:
         }
     }
 
-    unique_ptr(const unique_ptr&) = delete;
+    unique_ptr(const unique_ptr&)            = delete;
     unique_ptr& operator=(const unique_ptr&) = delete;
 
 private:
@@ -3421,7 +3421,7 @@ public:
         }
     }
 
-    unique_ptr(const unique_ptr&) = delete;
+    unique_ptr(const unique_ptr&)            = delete;
     unique_ptr& operator=(const unique_ptr&) = delete;
 
 private:
@@ -3917,7 +3917,7 @@ public:
     }
 
     shared_ptr<_Ty> exchange(shared_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
-        _Check_memory_order(_Order);
+        _Check_memory_order(static_cast<unsigned int>(_Order));
         shared_ptr<_Ty> _Result;
         _Result._Rep = this->_Repptr._Lock_and_load();
         _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
@@ -3945,7 +3945,7 @@ public:
 
     bool compare_exchange_strong(shared_ptr<_Ty>& _Expected, shared_ptr<_Ty> _Desired,
         const memory_order _Order = memory_order_seq_cst) noexcept {
-        _Check_memory_order(_Order);
+        _Check_memory_order(static_cast<unsigned int>(_Order));
         auto _Rep = this->_Repptr._Lock_and_load();
         if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
             remove_extent_t<_Ty>* const _Tmp = _Desired._Ptr;
@@ -3981,7 +3981,7 @@ public:
         _Value._Incref();
     }
 
-    atomic(const atomic&) = delete;
+    atomic(const atomic&)         = delete;
     void operator=(const atomic&) = delete;
 
     void operator=(shared_ptr<_Ty> _Value) noexcept {
@@ -4036,7 +4036,7 @@ public:
     }
 
     weak_ptr<_Ty> exchange(weak_ptr<_Ty> _Value, const memory_order _Order = memory_order_seq_cst) noexcept {
-        _Check_memory_order(_Order);
+        _Check_memory_order(static_cast<unsigned int>(_Order));
         weak_ptr<_Ty> _Result;
         _Result._Rep = this->_Repptr._Lock_and_load();
         _Result._Ptr = this->_Ptr.load(memory_order_relaxed);
@@ -4064,7 +4064,7 @@ public:
 
     bool compare_exchange_strong(
         weak_ptr<_Ty>& _Expected, weak_ptr<_Ty> _Desired, const memory_order _Order = memory_order_seq_cst) noexcept {
-        _Check_memory_order(_Order);
+        _Check_memory_order(static_cast<unsigned int>(_Order));
         auto _Rep = this->_Repptr._Lock_and_load();
         if (this->_Ptr.load(memory_order_relaxed) == _Expected._Ptr && _Rep == _Expected._Rep) {
             remove_extent_t<_Ty>* const _Tmp = _Desired._Ptr;
@@ -4098,7 +4098,7 @@ public:
         _Value._Incwref();
     }
 
-    atomic(const atomic&) = delete;
+    atomic(const atomic&)         = delete;
     void operator=(const atomic&) = delete;
 
     void operator=(weak_ptr<_Ty> _Value) noexcept {
@@ -4114,7 +4114,7 @@ public:
 };
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <class _Ty>
 struct _Pointer_of_helper {};
 

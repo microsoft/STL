@@ -502,8 +502,12 @@ namespace chrono {
     template <class _Rep, class _Period, enable_if_t<numeric_limits<_Rep>::is_signed, int> = 0>
     _NODISCARD constexpr duration<_Rep, _Period> abs(const duration<_Rep, _Period> _Dur) noexcept(
         is_arithmetic_v<_Rep>) /* strengthened */ {
-        // create a duration with count() the absolute value of _Dur.count()
-        return _Dur < duration<_Rep, _Period>::zero() ? duration<_Rep, _Period>::zero() - _Dur : _Dur;
+        // create a duration whose count() is the absolute value of _Dur.count()
+        if (_Dur < duration<_Rep, _Period>::zero()) {
+            return duration<_Rep, _Period>::zero() - _Dur;
+        } else {
+            return _Dur;
+        }
     }
 
     using nanoseconds  = duration<long long, nano>;

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <memory>
 #ifndef _M_CEE
 #include <mutex>
@@ -115,20 +115,20 @@ template <typename T>
 constexpr bool IsBraceAssignableV = IsBraceAssignable<T>::value;
 
 struct Copyable {
-    Copyable()                  = default;
-    Copyable(const ::Copyable&) = default;
+    Copyable()                             = default;
+    Copyable(const ::Copyable&)            = default;
     Copyable& operator=(const ::Copyable&) = default;
 };
 
 struct Movable {
-    Movable()            = default;
-    Movable(::Movable&&) = default;
+    Movable()                       = default;
+    Movable(::Movable&&)            = default;
     Movable& operator=(::Movable&&) = default;
 };
 
 struct NonCopyable {
-    NonCopyable()                   = default;
-    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable()                              = default;
+    NonCopyable(const NonCopyable&)            = delete;
     NonCopyable& operator=(const NonCopyable&) = delete;
 };
 

@@ -713,8 +713,8 @@ public:
     }
 #endif // _HAS_STATIC_RTTI
 
-    _Func_base()                  = default;
-    _Func_base(const _Func_base&) = delete;
+    _Func_base()                             = default;
+    _Func_base(const _Func_base&)            = delete;
     _Func_base& operator=(const _Func_base&) = delete;
     // dtor non-virtual due to _Delete_this()
 
@@ -2186,7 +2186,7 @@ template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
 _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
     _FwdItHaystack _First1, _FwdItHaystack _Last1, _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq) {
     // find first [_First2, _Last2) satisfying _Eq
-    if constexpr (_Is_random_iter_v<_FwdItHaystack> && _Is_random_iter_v<_FwdItPat>) {
+    if constexpr (_Is_ranges_random_iter_v<_FwdItHaystack> && _Is_ranges_random_iter_v<_FwdItPat>) {
         _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
         _Iter_diff_t<_FwdItPat> _Count2      = _Last2 - _First2;
 
@@ -2204,7 +2204,9 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
         }
 
         return {_Last1, _Last1};
-    } else if constexpr (_Is_fwd_iter_v<_FwdItHaystack> && _Is_fwd_iter_v<_FwdItPat>) {
+    } else {
+        static_assert(_Is_ranges_fwd_iter_v<_FwdItHaystack> && _Is_ranges_fwd_iter_v<_FwdItPat>,
+            "Iterators must be at least forward iterators");
         for (;; ++_First1) { // loop until match or end of a sequence
             _FwdItHaystack _Mid1 = _First1;
             for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
@@ -2221,8 +2223,6 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
                 }
             }
         }
-    } else {
-        static_assert(_Always_false<_FwdItHaystack>, "Iterators must be at least forward iterators");
     }
 }
 
