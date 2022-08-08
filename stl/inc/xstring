@@ -2758,7 +2758,7 @@ private:
     _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Sent _Last, _Size _Count = {}) {
         // Pre: _First models input_iterator or meets the Cpp17InputIterator requirements
         // Pre: [_First, Last) is a valid range
-        // Pre: if is_same_v<_Size, size_type>, _Count is the length of [First, Last).
+        // Pre: if is_same_v<_Size, size_type>, _Count is the length of [_First, _Last).
         // Pre: *this is in SSO mode; the lifetime of the SSO elements has already begun
 
         auto& _My_data  = _Mypair._Myval2;
