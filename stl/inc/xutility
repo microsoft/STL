@@ -897,13 +897,14 @@ _INLINE_VAR constexpr bool _Unwrappable_v<_Iter,
     _Allow_inheriting_unwrap_v<_Remove_cvref_t<_Iter>>;
 
 template <class _Iter, bool _Unwrappable = _Unwrappable_v<_Iter>>
-_INLINE_VAR constexpr bool _Is_nothrow_unwrappable_v = true;
+_INLINE_VAR constexpr bool _Is_nothrow_unwrappable_v = noexcept(_STD declval<_Iter>()._Unwrapped());
 
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_nothrow_unwrappable_v<_Iter, true> = noexcept(declval<_Iter>()._Unwrapped());
+_INLINE_VAR constexpr bool _Is_nothrow_unwrappable_v<_Iter, false> = false;
 
 template <class _Iter>
-_NODISCARD constexpr decltype(auto) _Get_unwrapped(_Iter&& _It) noexcept(_Is_nothrow_unwrappable_v<_Iter>) {
+_NODISCARD constexpr decltype(auto) _Get_unwrapped(_Iter&& _It) noexcept(
+    !_Unwrappable_v<_Iter> || _Is_nothrow_unwrappable_v<_Iter>) {
     // unwrap an iterator previously subjected to _Adl_verify_range or otherwise validated
     if constexpr (is_pointer_v<decay_t<_Iter>>) { // special-case pointers and arrays
         return _It + 0;

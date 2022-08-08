@@ -12,7 +12,10 @@
 #endif
 
 using namespace std;
+
+#if _HAS_CXX17
 using filesystem::path;
+#endif
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -23,15 +26,24 @@ struct Predicate {
     }
 };
 
+#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
+#endif
+
 template <class It, bool CopyUnwrapNothrow = true>
 void do_single_test() {
-    STATIC_ASSERT(_Is_nothrow_unwrappable_v<It>);
-    STATIC_ASSERT(_Is_nothrow_unwrappable_v<It&&>);
+    if constexpr (_Unwrappable_v<It>) {
+        STATIC_ASSERT(_Is_nothrow_unwrappable_v<It>);
+        STATIC_ASSERT(_Is_nothrow_unwrappable_v<It&&>);
+    }
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<It>())));
 
-    STATIC_ASSERT(_Is_nothrow_unwrappable_v<const It&> == CopyUnwrapNothrow);
+    if constexpr (_Unwrappable_v<const It&>) {
+        STATIC_ASSERT(_Is_nothrow_unwrappable_v<const It&> == CopyUnwrapNothrow);
+        STATIC_ASSERT(_Is_nothrow_unwrappable_v<const It&&> == CopyUnwrapNothrow);
+    }
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<const It&>())) == CopyUnwrapNothrow);
-    STATIC_ASSERT(_Is_nothrow_unwrappable_v<const It&&> == CopyUnwrapNothrow);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<const It&&>())) == CopyUnwrapNothrow);
 }
 
@@ -44,13 +56,11 @@ void do_full_test() {
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
     using R = ranges::subrange<It, It>;
 
-    do_single_test<ranges::iterator_t<R>, CopyUnwrapNothrow>();
-
     // TRANSITION, GH-2997
     do_single_test<ranges::iterator_t<ranges::filter_view<R, Predicate>>, true>();
     // TRANSITION, GH-2997
     do_single_test<ranges::iterator_t<ranges::transform_view<R, Predicate>>, true>();
-    if constexpr (ranges::bidirectional_range<R>) {
+    if constexpr (bidirectional_iterator<It>) {
         do_single_test<ranges::iterator_t<ranges::reverse_view<R>>, CopyUnwrapNothrow>();
     }
 #endif // __cpp_lib_concepts
@@ -60,22 +70,10 @@ struct BidiIterUnwrapThrowing : vector<int>::iterator {
     using _Base = vector<int>::iterator;
 
     using _Base::_Base;
-    using _Base::iterator_category;
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
-    using _Base::iterator_concept;
-#endif
+    using iterator_concept  = bidirectional_iterator_tag;
+    using iterator_category = bidirectional_iterator_tag;
 
-    using _Base::pointer;
-    using _Base::reference;
-    using _Base::value_type;
-
-    friend bool operator==(const BidiIterUnwrapThrowing& lhs, const BidiIterUnwrapThrowing& rhs) noexcept {
-        return static_cast<const _Base&>(lhs) == static_cast<const _Base&>(rhs);
-    }
-    friend bool operator!=(const BidiIterUnwrapThrowing& lhs, const BidiIterUnwrapThrowing& rhs) noexcept {
-        return static_cast<const _Base&>(lhs) != static_cast<const _Base&>(rhs);
-    }
 
     BidiIterUnwrapThrowing& operator++() {
         _Base::operator++();
@@ -102,7 +100,7 @@ struct BidiIterUnwrapThrowing : vector<int>::iterator {
         return _Base::_Unwrapped();
     }
     int* _Unwrapped() && noexcept {
-        return std::move(*this)._Base::_Unwrapped();
+        return move(*this)._Base::_Unwrapped();
     }
 
     void _Seek_to(int* p) & noexcept {
@@ -120,6 +118,8 @@ int main() {
     do_full_test<list<int>::iterator>();
     do_full_test<list<int>::const_iterator>();
 
-    do_full_test<path::iterator, false>();
     do_full_test<BidiIterUnwrapThrowing, false>();
+#if _HAS_CXX17
+    do_full_test<path::iterator, false>();
+#endif
 }

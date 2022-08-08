@@ -1602,12 +1602,12 @@ namespace filesystem {
         using _Prevent_inheriting_unwrap = _Path_iterator;
 
         template <class _Iter2 = _Base_iter, enable_if_t<_Unwrappable_v<const _Iter2&>, int> = 0>
-        _NODISCARD _Path_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const& noexcept(false) {
+        _NODISCARD _Path_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const& {
             return {_Position._Unwrapped(), _Element, _Mypath};
         }
         template <class _Iter2 = _Base_iter, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
         _NODISCARD _Path_iterator<_Unwrapped_t<_Iter2>> _Unwrapped() && noexcept {
-            _STL_INTERNAL_STATIC_ASSERT(noexcept(_Is_nothrow_unwrappable_v<_Iter2>));
+            _STL_INTERNAL_STATIC_ASSERT(_Is_nothrow_unwrappable_v<_Iter2>);
             return {_Position._Unwrapped(), _STD move(_Element), _Mypath};
         }
 
