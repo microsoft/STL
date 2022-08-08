@@ -6715,21 +6715,22 @@ namespace ranges {
             { _Cont.capacity() } -> same_as<range_size_t<_Container>>;
             { _Cont.max_size() } -> same_as<range_size_t<_Container>>;
         };
+    // clang-format on
 
     template <class _Rng, class _Container>
     concept _Ref_converts = convertible_to<range_reference_t<_Rng>, range_value_t<_Container>>;
 
     template <class _Rng, class _Container, class... _Types>
-    concept _Converts_direct_constructible = _Ref_converts<_Rng, _Container>
+    concept _Converts_direct_constructible = _Ref_converts<_Rng, _Container> //
         && constructible_from<_Container, _Rng, _Types...>;
 
     template <class _Rng, class _Container, class... _Types>
-    concept _Converts_tag_constructible = _Ref_converts<_Rng, _Container>
+    concept _Converts_tag_constructible = _Ref_converts<_Rng, _Container> //
         && constructible_from<_Container, from_range_t, _Rng, _Types...>;
 
     template <class _Rng, class _Container, class... _Types>
-    concept _Converts_and_common_constructible = _Ref_converts<_Rng, _Container> && common_range<_Rng>
-        && _Cpp17_input_iterator<iterator_t<_Rng>>
+    concept _Converts_and_common_constructible = _Ref_converts<_Rng, _Container> && common_range<_Rng> //
+        && _Cpp17_input_iterator<iterator_t<_Rng>> //
         && constructible_from<_Container, iterator_t<_Rng>, iterator_t<_Rng>, _Types...>;
 
     template <class _Container, class _Reference>
@@ -6742,11 +6743,13 @@ namespace ranges {
         _Cont.insert(_Cont.end(), _STD declval<_Reference>());
     };
 
+    // clang-format off
     template <class _Rng, class _Container, class... _Types>
     concept _Converts_constructible_insertable = _Ref_converts<_Rng, _Container>
         && constructible_from<_Container, _Types...>
         && (_Can_push_back<_Container, range_reference_t<_Rng>>
             || _Can_insert_end<_Container, range_reference_t<_Rng>>);
+    // clang-format on
 
     template <class _Reference, class _Container>
     _NODISCARD constexpr auto _Container_inserter(_Container& _Cont) {
@@ -6757,6 +6760,7 @@ namespace ranges {
         }
     }
 
+    // clang-format off
     template <class _Container, input_range _Rng, class... _Types>
         requires (!view<_Container>)
     _NODISCARD constexpr _Container to(_Rng&& _Range, _Types&&... _Args) {
