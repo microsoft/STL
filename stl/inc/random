@@ -1026,8 +1026,7 @@ struct _Swc_01_traits { // traits for subtract_with_carry_01 generator
     using _Mod_t  = _Ty;
     using _Seed_t = unsigned int;
 
-    static constexpr _Cy_t _Cy = static_cast<_Cy_t>(
-        _Cx_ldexp_one(static_cast<int>(-static_cast<ptrdiff_t>(_Wx))));
+    static constexpr _Cy_t _Cy   = static_cast<_Cy_t>(_Cx_ldexp_one(static_cast<int>(-static_cast<ptrdiff_t>(_Wx))));
     static constexpr _Mod_t _Mod = 1;
     static constexpr _Ty _Max    = 1;
     static constexpr int _Nwords = (_Wx + 31) / 32;
