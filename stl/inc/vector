@@ -1485,7 +1485,7 @@ private:
             }
         } else {
             const pointer _Newlast = _Myfirst + _Newsize;
-            _Copy_n_unchecked(_STD move(_First), _Newsize, _Myfirst);
+            _Copy_n_unchecked4(_STD move(_First), _Newsize, _Myfirst);
             _Destroy_range(_Newlast, _Mylast, _Al);
             _ASAN_VECTOR_MODIFY(static_cast<difference_type>(_Newsize - _Oldsize));
             _Mylast = _Newlast;
@@ -3425,7 +3425,7 @@ public:
             const auto _Length = _To_unsigned_like(_RANGES distance(_Range));
             const auto _Count  = _Convert_size<size_type>(_Length);
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
-            _Copy_n_unchecked(_RANGES _Ubegin(_Range), _Count, begin() + _Off);
+            _Copy_n_unchecked4(_RANGES _Ubegin(_Range), _Count, begin() + _Off);
         } else {
             auto _UFirst      = _RANGES _Ubegin(_Range);
             const auto _ULast = _RANGES _Uend(_Range);

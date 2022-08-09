@@ -3700,7 +3700,7 @@ template <class _It, bool _RequiresMutable = false>
 _INLINE_VAR constexpr bool _Is_vb_iterator = false;
 
 template <class _InIt, class _SizeTy, class _OutIt>
-_CONSTEXPR20 _OutIt _Copy_n_unchecked(_InIt _First, _SizeTy _Count, _OutIt _Dest) {
+_CONSTEXPR20 _OutIt _Copy_n_unchecked4(_InIt _First, _SizeTy _Count, _OutIt _Dest) {
     // copy _First + [0, _Count) to _Dest + [0, _Count), returning _Dest + _Count
     // note: has callers outside the copy family
 #ifdef __cpp_lib_concepts
