@@ -3685,7 +3685,7 @@ _CONSTEXPR20 void _Verify_ranges_do_not_overlap(
 #endif // __cpp_lib_concepts
             _STL_VERIFY(_Last1 <= _First2 || _Last2 <= _First1, "ranges should not overlap each other");
         } else if constexpr (_Iterators_are_contiguous<_Iter1, _Iter2>
-#if __cpp_lib_concepts
+#ifdef __cpp_lib_concepts
                              && sized_sentinel_for<_Sent1, _Iter1> && sized_sentinel_for<_Sent2, _Iter2>
 #endif // __cpp_lib_concepts
         ) {
