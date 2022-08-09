@@ -3669,6 +3669,60 @@ struct _Iter_copy_cat<_SourceIt, _DestIt, false> : _False_trivial_cat {};
 template <class _SourceIt, class _DestIt>
 struct _Iter_copy_cat<move_iterator<_SourceIt>, _DestIt, false> : _Iter_move_cat<_SourceIt, _DestIt> {};
 
+template <class _Iter1, class _Sent1, class _Iter2, class _Sent2>
+constexpr void _Verify_ranges_do_not_overlap(
+    const _Iter1& _First1, const _Sent1& _Last1, const _Iter2& _First2, const _Sent2& _Last2) {
+    (void) _First1;
+    (void) _Last1;
+    (void) _First2;
+    (void) _Last2;
+#if _ITERATOR_DEBUG_LEVEL == 2
+    if (!_STD is_constant_evaluated()) {
+#ifdef __cpp_lib_concepts
+        if constexpr (totally_ordered_with<_Iter1, _Sent2> && totally_ordered_with<_Sent1, _Iter2>) {
+#else // ^^^ __cpp_lib_concepts / __cpp_lib_concepts vvv
+        if constexpr (is_same_v<_Iter1, _Sent1> && is_same_v<_Sent1, _Iter2> && is_same_v<_Iter2, _Sent2> //
+                      && _Is_ranges_random_iter_v<_Iter1>) {
+#endif // __cpp_lib_concepts
+            _STL_VERIFY(_Last1 <= _First2 || _Last2 <= _First1, "ranges should not overlap each other");
+        } else if constexpr (_Iterators_are_contiguous<_Iter1, _Iter2>
+#if __cpp_lib_concepts
+                             && sized_sentinel_for<_Sent1, _Iter1> && sized_sentinel_for<_Sent2, _Iter2>
+#endif // __cpp_lib_concepts
+        ) {
+            const auto _Ptr1Offset = (_Last1 - _First1) * sizeof(*_To_address(_First1));
+            const auto _Ptr2Offset = (_Last2 - _First2) * sizeof(*_To_address(_First2));
+            // This cast to `cv char*` allows us to compare pointers to distinct types,
+            // in case one range provides storage for the other.
+            const auto _PtrFirst1 = reinterpret_cast<const volatile char*>(_To_address(_First1));
+            const auto _PtrLast1  = _PtrFirst1 + _Ptr1Offset;
+            const auto _PtrFirst2 = reinterpret_cast<const volatile char*>(_To_address(_First2));
+            const auto _PtrLast2  = _PtrFirst2 + _Ptr2Offset;
+            _STL_VERIFY(_PtrLast1 <= _PtrFirst2 || _PtrLast2 <= _PtrFirst1, "ranges should not overlap each other");
+        }
+    }
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+}
+
+template <class _Iter1, class _Sent1, class _Iter2>
+constexpr void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Sent1& _Last1, const _Iter2& _First2) {
+    (void) _First1;
+    (void) _Last1;
+    (void) _First2;
+#if _ITERATOR_DEBUG_LEVEL == 2
+    if (!_STD is_constant_evaluated()) {
+#ifdef __cpp_lib_concepts
+        if constexpr (sized_sentinel_for<_Sent1, _Iter1> && random_access_iterator<_Iter2>) {
+#else // ^^^ __cpp_lib_concepts / __cpp_lib_concepts vvv
+        if constexpr (is_same_v<_Iter1, _Sent1> //
+                      && _Is_cpp17_random_iter_v<_Iter1> && _Is_cpp17_random_iter_v<_Iter2>) {
+#endif // __cpp_lib_concepts
+            _Verify_ranges_do_not_overlap(_First1, _Last1, _First2, _First2 + (_Last1 - _First1));
+        }
+    }
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+}
+
 template <class _CtgIt, class _OutCtgIt>
 _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     auto _FirstPtr              = _To_address(_First);
@@ -3736,6 +3790,9 @@ template <class _InIt, class _Sent, class _OutIt>
 _CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
     // copy [_First, _Last) to [_Dest, ...)
     // note: _Copy_unchecked has callers other than the copy family
+
+    _Verify_ranges_do_not_overlap(_First, _Last, _Dest);
+
     if constexpr (_Sent_copy_cat<_InIt, _Sent, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
@@ -4355,8 +4412,8 @@ template <class _Elem1, class _Elem2>
 _INLINE_VAR constexpr bool _Can_memcmp_elements<_Elem1, _Elem2, false> = false;
 
 // _Can_memcmp_elements_with_pred<_Elem1, _Elem2, _Pr> reports whether the memcmp optimization is applicable,
-// given contiguously stored elements. (This avoids having to repeat the metaprogramming that finds the element types.)
-// _Elem1 and _Elem2 aren't top-level const here.
+// given contiguously stored elements. (This avoids having to repeat the metaprogramming that finds the element
+// types.) _Elem1 and _Elem2 aren't top-level const here.
 template <class _Elem1, class _Elem2, class _Pr>
 _INLINE_VAR constexpr bool _Can_memcmp_elements_with_pred = false;
 
@@ -4918,7 +4975,8 @@ _INLINE_VAR constexpr bool _Vector_alg_in_find_is_safe = // Can we activate the 
 #endif // __cpp_lib_byte
         conjunction<is_integral<_Ty>, is_integral<_Elem>>, // We're finding an integer in a range of integers.
         // The integer types can be different, which requires careful handling.
-        conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>>; // We're finding a U* in a range of U* (identical types).
+        conjunction<is_pointer<_Ty>, is_same<_Ty, _Elem>>>; // We're finding a U* in a range of U* (identical
+                                                            // types).
 
 template <class _InIt, class _Ty>
 _NODISCARD _CONSTEXPR20 _InIt _Find_unchecked(_InIt _First, const _InIt _Last, const _Ty& _Val) {
@@ -5819,6 +5877,8 @@ _NODISCARD _CONSTEXPR20 _FwdIt upper_bound(_FwdIt _First, _FwdIt _Last, const _T
 template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
+
+    _Verify_ranges_do_not_overlap(_First1, _Last1, _First2);
 
 #if _USE_STD_VECTOR_ALGORITHMS
     using _Elem1 = remove_reference_t<_Iter_ref_t<_FwdIt1>>;
