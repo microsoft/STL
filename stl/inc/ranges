@@ -1635,10 +1635,10 @@ namespace ranges {
         /* [[no_unique_address]] */ _Vw _Range{};
 
         template <range _Rng>
-        static constexpr bool _Is_end_nothrow_v = noexcept(move_sentinel{_RANGES end(_STD declval<_Rng>())});
+        static constexpr bool _Is_end_nothrow_v = noexcept(move_sentinel{_RANGES end(_STD declval<_Rng&>())});
 
         template <common_range _Rng>
-        static constexpr bool _Is_end_nothrow_v<_Rng> = noexcept(move_iterator{_RANGES end(_STD declval<_Rng>())});
+        static constexpr bool _Is_end_nothrow_v<_Rng> = noexcept(move_iterator{_RANGES end(_STD declval<_Rng&>())});
 
     public:
         // clang-format off
