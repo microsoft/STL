@@ -5847,12 +5847,12 @@ template <class _Diff, class _Urng>
 class _Rng_from_urng { // wrap a URNG as an RNG
 public:
     using _Ty0 = make_unsigned_t<_Diff>;
-    using _Ty1 = typename _Urng::result_type;
+    using _Ty1 = _Invoke_result_t<_Urng&>;
 
     using _Udiff = conditional_t<sizeof(_Ty1) < sizeof(_Ty0), _Ty0, _Ty1>;
 
     explicit _Rng_from_urng(_Urng& _Func) : _Ref(_Func), _Bits(CHAR_BIT * sizeof(_Udiff)), _Bmask(_Udiff(-1)) {
-        for (; (_Urng::max)() - (_Urng::min)() < _Bmask; _Bmask >>= 1) {
+        for (; static_cast<_Udiff>((_Urng::max)() - (_Urng::min)()) < _Bmask; _Bmask >>= 1) {
             --_Bits;
         }
     }
@@ -5896,7 +5896,7 @@ public:
 private:
     _Udiff _Get_bits() { // return a random value within [0, _Bmask]
         for (;;) { // repeat until random value is in range
-            _Udiff _Val = _Ref() - (_Urng::min)();
+            _Udiff _Val = static_cast<_Udiff>(_Ref() - (_Urng::min)());
 
             if (_Val <= _Bmask) {
                 return _Val;
