@@ -9,7 +9,6 @@
 // Do not include or define anything else here.
 // In particular, basic_string must not be included here.
 
-#include <atomic>
 #include <clocale>
 #include <corecrt_terminate.h>
 #include <cstdlib>
@@ -794,22 +793,15 @@ _Success_(return == __std_win_error::_Success) __std_win_error
 namespace {
     _Success_(return > 0 && return < nBufferLength) DWORD WINAPI
         _Stl_GetTempPath2W(_In_ DWORD nBufferLength, _Out_writes_to_opt_(nBufferLength, return +1) LPWSTR lpBuffer) {
+        // See GH-3011: This is intentionally not attempting to cache the function pointer.
+        // TRANSITION, ABI: This should use __crtGetTempPath2W after this code is moved into the STL's DLL.
         using _Fun_ptr = decltype(&::GetTempPath2W);
 
-        _Fun_ptr _PfGetTempPath2W;
-        {
-            static _STD atomic<_Fun_ptr> _Static{nullptr};
-
-            _PfGetTempPath2W = _Static.load(_STD memory_order_relaxed);
-            if (!_PfGetTempPath2W) {
-                const auto _Kernel32 = ::GetModuleHandleW(L"kernel32.dll");
-                _Analysis_assume_(_Kernel32);
-                _PfGetTempPath2W = reinterpret_cast<_Fun_ptr>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
-                if (!_PfGetTempPath2W) {
-                    _PfGetTempPath2W = &::GetTempPathW;
-                }
-                _Static.store(_PfGetTempPath2W, _STD memory_order_relaxed); // overwriting with the same value is okay
-            }
+        const auto _Kernel32 = ::GetModuleHandleW(L"kernel32.dll");
+        _Analysis_assume_(_Kernel32);
+        _Fun_ptr _PfGetTempPath2W = reinterpret_cast<_Fun_ptr>(::GetProcAddress(_Kernel32, "GetTempPath2W"));
+        if (!_PfGetTempPath2W) {
+            _PfGetTempPath2W = &::GetTempPathW;
         }
 
         return _PfGetTempPath2W(nBufferLength, lpBuffer);
