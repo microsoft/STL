@@ -662,6 +662,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_vector == 201907L);
 #endif
 #endif
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_containers_ranges
+#error __cpp_lib_containers_ranges is not defined
+#elif __cpp_lib_containers_ranges != 202202L
+#error __cpp_lib_containers_ranges is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_containers_ranges == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_containers_ranges
+#error __cpp_lib_containers_ranges is defined
+#endif
+#endif
+
 #ifdef __cpp_impl_coroutine
 #ifndef __cpp_lib_coroutine
 #error __cpp_lib_coroutine is not defined
@@ -1549,6 +1563,20 @@ STATIC_ASSERT(__cpp_lib_ranges_stride == 202207L);
 #else
 #ifdef __cpp_lib_ranges_stride
 #error __cpp_lib_ranges_stride is defined
+#endif
+#endif
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges_to_container
+#error __cpp_lib_ranges_to_container is not defined
+#elif __cpp_lib_ranges_to_container != 202202L
+#error __cpp_lib_ranges_to_container is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges_to_container == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_ranges_to_container
+#error __cpp_lib_ranges_to_container is defined
 #endif
 #endif
 
