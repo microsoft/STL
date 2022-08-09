@@ -4,6 +4,7 @@
 #include <cassert>
 #include <forward_list>
 #include <ranges>
+#include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -36,15 +37,13 @@ constexpr bool test_equal(R1&& r1, R2&& r2) { // TRANSITION, GH-3009
 
 template <ranges::input_range Rng, class Expected>
 constexpr bool test_one(Rng&& rng, Expected&& expected) {
-    using ranges::as_rvalue_view, ranges::begin, ranges::end, ranges::iterator_t, ranges::sentinel_t, ranges::prev;
-    using ranges::forward_range, ranges::bidirectional_range, ranges::random_access_range, ranges::common_range,
-        ranges::sized_range;
+    using ranges::as_rvalue_view, ranges::begin, ranges::end, ranges::iterator_t, ranges::sentinel_t, ranges::prev,
+        ranges::forward_range, ranges::common_range;
+    using V = views::all_t<Rng>;
+    using R = as_rvalue_view<V>;
 
-    [[maybe_unused]] constexpr bool is_view = ranges::view<remove_cvref_t<Rng>>;
-
-    using V                          = views::all_t<Rng>;
+    constexpr bool is_view           = ranges::view<remove_cvref_t<Rng>>;
     constexpr bool is_already_rvalue = same_as<ranges::range_rvalue_reference_t<V>, ranges::range_reference_t<V>>;
-    using R                          = as_rvalue_view<V>;
 
     STATIC_ASSERT(ranges::view<R>);
     STATIC_ASSERT(ranges::input_range<R> == ranges::input_range<V>);
@@ -166,15 +165,15 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     same_as<R> auto r = as_rvalue_view{std::forward<Rng>(rng)};
 
     // Validate as_const_view::size
-    STATIC_ASSERT(CanMemberSize<R> == sized_range<V>);
+    STATIC_ASSERT(CanMemberSize<R> == ranges::sized_range<V>);
     if constexpr (CanMemberSize<R>) {
         same_as<ranges::range_size_t<V>> auto s = r.size();
         assert(_To_unsigned_like(s) == ranges::size(expected));
-        STATIC_ASSERT(noexcept(r.size()) == noexcept(ranges::size(rng)));
+        STATIC_ASSERT(noexcept(r.size()) == noexcept(ranges::size(as_const(rng))));
     }
 
     // Validate as_const_view::size (const)
-    STATIC_ASSERT(CanMemberSize<const R> == sized_range<const V>);
+    STATIC_ASSERT(CanMemberSize<const R> == ranges::sized_range<const V>);
     if constexpr (CanMemberSize<const R>) {
         same_as<ranges::range_size_t<const V>> auto s = as_const(r).size();
         assert(_To_unsigned_like(s) == ranges::size(expected));
@@ -184,7 +183,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     const bool is_empty = ranges::empty(expected);
 
     // Validate view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == (forward_range<V> || sized_range<V>) );
+    STATIC_ASSERT(CanMemberEmpty<R> == (forward_range<V> || ranges::sized_range<V>) );
     STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);
@@ -192,7 +191,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate view_interface::empty and operator bool (const)
-    STATIC_ASSERT(CanMemberEmpty<const R> == (forward_range<const Rng> || sized_range<const V>) );
+    STATIC_ASSERT(CanMemberEmpty<const R> == (forward_range<const Rng> || ranges::sized_range<const V>) );
     STATIC_ASSERT(CanBool<const R> == CanEmpty<const R>);
     if constexpr (CanMemberEmpty<const R>) {
         assert(as_const(r).empty() == is_empty);
@@ -242,7 +241,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         const same_as<sentinel_t<R>> auto s = r.end();
         assert((r.begin() == s) == is_empty);
         STATIC_ASSERT(common_range<R> == common_range<V>);
-        if constexpr (common_range<R> && bidirectional_range<V>) {
+        if constexpr (common_range<R> && ranges::bidirectional_range<V>) {
             if (!is_empty) {
                 assert(*prev(s) == *prev(end(expected)));
             }
@@ -261,7 +260,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         const same_as<sentinel_t<const R>> auto cs = as_const(r).end();
         assert((as_const(r).begin() == cs) == is_empty);
         STATIC_ASSERT(common_range<const R> == common_range<const V>);
-        if constexpr (common_range<const R> && bidirectional_range<const V>) {
+        if constexpr (common_range<const R> && ranges::bidirectional_range<const V>) {
             if (!is_empty) {
                 assert(*prev(cs) == *prev(end(expected)));
             }
@@ -280,13 +279,13 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     if (!is_empty) {
         // Validate view_interface::operator[]
-        STATIC_ASSERT(CanIndex<R> == random_access_range<V>);
+        STATIC_ASSERT(CanIndex<R> == ranges::random_access_range<V>);
         if constexpr (CanIndex<R>) {
             assert(r[0] == expected[0]);
         }
 
         // Validate view_interface::operator[] (const)
-        STATIC_ASSERT(CanIndex<const R> == random_access_range<const V>);
+        STATIC_ASSERT(CanIndex<const R> == ranges::random_access_range<const V>);
         if constexpr (CanIndex<const R>) {
             assert(as_const(r)[0] == expected[0]);
         }
@@ -304,13 +303,13 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
         }
 
         // Validate view_interface::back
-        STATIC_ASSERT(CanMemberBack<R> == (bidirectional_range<V> && common_range<V>) );
+        STATIC_ASSERT(CanMemberBack<R> == (ranges::bidirectional_range<V> && common_range<V>) );
         if constexpr (CanMemberBack<R>) {
             assert(r.back() == *prev(end(expected)));
         }
 
         // Validate view_interface::back (const)
-        STATIC_ASSERT(CanMemberBack<const R> == (bidirectional_range<const V> && common_range<const V>) );
+        STATIC_ASSERT(CanMemberBack<const R> == (ranges::bidirectional_range<const V> && common_range<const V>) );
         if constexpr (CanMemberBack<const R>) {
             assert(as_const(r).back() == *prev(end(expected)));
         }
@@ -417,6 +416,15 @@ int main() {
         test_one(some_ints, some_ints);
         test_one(some_ints | ranges::to<vector>(), some_ints);
         test_one(some_ints | ranges::to<forward_list>(), some_ints);
+    }
+
+    { // Validate some views
+        STATIC_ASSERT(test_one(views::iota(0, 10), views::iota(0, 10)));
+        test_one(views::iota(0, 10), views::iota(0, 10));
+
+        const string some_strings[] = {"0"s, "3"s, "6"s, "9"s, "12"s, "15"s};
+        auto transformed            = some_ints | views::transform([](int x) { return to_string(x); });
+        test_one(transformed, some_strings);
     }
 
     { // empty range
