@@ -26,23 +26,16 @@ struct Predicate {
     }
 };
 
-#pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
-#ifdef __clang__
-#pragma clang diagnostic ignored "-Wc++17-extensions" // constexpr if is a C++17 extension
-#endif
-
 template <class It, bool CopyUnwrapNothrow = true>
 void do_single_test() {
-    if constexpr (_Unwrappable_v<It>) {
-        STATIC_ASSERT(_Is_nothrow_unwrappable_v<It>);
-        STATIC_ASSERT(_Is_nothrow_unwrappable_v<It&&>);
-    }
+    // !a || b is equivalent to a => b (a implies b)
+    // This is written this way to avoid `if constexpr` in C++14 mode.
+    STATIC_ASSERT(!_Unwrappable_v<It> || _Is_nothrow_unwrappable_v<It>);
+    STATIC_ASSERT(!_Unwrappable_v<It> || _Is_nothrow_unwrappable_v<It&&>);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<It>())));
 
-    if constexpr (_Unwrappable_v<const It&>) {
-        STATIC_ASSERT(_Is_nothrow_unwrappable_v<const It&> == CopyUnwrapNothrow);
-        STATIC_ASSERT(_Is_nothrow_unwrappable_v<const It&&> == CopyUnwrapNothrow);
-    }
+    STATIC_ASSERT(!_Unwrappable_v<It> || _Is_nothrow_unwrappable_v<const It&> == CopyUnwrapNothrow);
+    STATIC_ASSERT(!_Unwrappable_v<It> || _Is_nothrow_unwrappable_v<const It&&> == CopyUnwrapNothrow);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<const It&>())) == CopyUnwrapNothrow);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<const It&&>())) == CopyUnwrapNothrow);
 }
@@ -73,7 +66,6 @@ struct BidiIterUnwrapThrowing : vector<int>::iterator {
 
     using iterator_concept  = bidirectional_iterator_tag;
     using iterator_category = bidirectional_iterator_tag;
-
 
     BidiIterUnwrapThrowing& operator++() {
         _Base::operator++();
