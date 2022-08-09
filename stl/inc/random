@@ -790,14 +790,6 @@ protected:
     typename _Swc_Traits::_Cy_t _Carry;
 };
 
-#if !_HAS_CXX17
-template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::short_lag;
-
-template <class _Ty, size_t _Sx, size_t _Rx, class _Swc_Traits>
-const size_t _Swc_base<_Ty, _Sx, _Rx, _Swc_Traits>::long_lag;
-#endif // !_HAS_CXX17
-
 template <class _Ty, _Ty _Mx, size_t _Nw>
 struct _Swc_traits { // traits for subtract_with_carry generator
     using _Cy_t   = int;
@@ -1076,20 +1068,6 @@ private:
     static constexpr unsigned long _Mask = ~((~0UL) << (_Wx % 32));
 };
 
-#if !_HAS_CXX17
-template <class _Ty, size_t _Wx, size_t _Rx>
-const typename _Swc_01_traits<_Ty, _Wx, _Rx>::_Cy_t _Swc_01_traits<_Ty, _Wx, _Rx>::_Cy;
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const typename _Swc_01_traits<_Ty, _Wx, _Rx>::_Mod_t _Swc_01_traits<_Ty, _Wx, _Rx>::_Mod;
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const _Ty _Swc_01_traits<_Ty, _Wx, _Rx>::_Max;
-
-template <class _Ty, size_t _Wx, size_t _Rx>
-const _Ty _Swc_01_traits<_Ty, _Wx, _Rx>::_Scale1;
-#endif // !_HAS_CXX17
-
 template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
 class _DEPRECATE_TR1_NAMESPACE subtract_with_carry_01
     : public _Swc_base<_Ty, _Sx, _Rx, _Swc_01_traits<_Ty, _Wx, _Rx>> { // subtract_with_carry_01 generator
@@ -1105,14 +1083,6 @@ public:
     template <class _Gen, _Enable_if_seed_seq_t<_Gen, subtract_with_carry_01> = 0>
     subtract_with_carry_01(_Gen& _Gx) : _Mybase(_Gx) {}
 };
-
-#if !_HAS_CXX17
-_STL_DISABLE_DEPRECATED_WARNING
-template <class _Ty, size_t _Wx, size_t _Sx, size_t _Rx>
-const size_t subtract_with_carry_01<_Ty, _Wx, _Sx, _Rx>::word_size;
-_STL_RESTORE_DEPRECATED_WARNING
-#endif // !_HAS_CXX17
-
 #endif // _HAS_TR1_NAMESPACE
 
 template <class _Ty, int _Wx, int _Nx, int _Mx, int _Rx, _Ty _Px, int _Ux, int _Sx, _Ty _Bx, int _Tx, _Ty _Cx, int _Lx>
@@ -1458,14 +1428,6 @@ private:
     base_type _Eng;
     int _Nx;
 };
-
-#if !_HAS_CXX17
-template <class _Engine, int _Px, int _Rx>
-const int discard_block<_Engine, _Px, _Rx>::block_size;
-
-template <class _Engine, int _Px, int _Rx>
-const int discard_block<_Engine, _Px, _Rx>::used_block;
-#endif // !_HAS_CXX17
 
 template <class _Engine, size_t _Px, size_t _Rx>
 class discard_block_engine : public discard_block<_Engine, _Px, _Rx> { // discard_block_engine compound engine
