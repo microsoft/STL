@@ -330,7 +330,7 @@
 // P2443R1 views::chunk_by
 // P2445R1 forward_like()
 // P2499R0 string_view Range Constructor Should Be explicit
-// P2549R0 unexpected<E>::error()
+// P2549R1 unexpected<E>::error()
 
 // Parallel Algorithms Notes
 // C++ allows an implementation to implement parallel algorithms as calls to the serial algorithms.
@@ -646,7 +646,7 @@
 
 #define _CPPLIB_VER       650
 #define _MSVC_STL_VERSION 143
-#define _MSVC_STL_UPDATE  202207L
+#define _MSVC_STL_UPDATE  202208L
 
 #ifndef _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
 #if defined(__CUDACC__) && defined(__CUDACC_VER_MAJOR__)
