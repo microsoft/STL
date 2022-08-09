@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
+#include <algorithm>
 #include <cassert>
 #include <forward_list>
 #include <ranges>
@@ -392,6 +393,18 @@ using move_only_view = test::range<Category, const int, test::Sized{is_random}, 
     IsCommon, test::CanCompare::yes, test::ProxyRef{!derived_from<Category, contiguous_iterator_tag>},
     test::CanView::yes, test::Copyability::move_only>;
 
+void test_example_from_p2446r2() {
+    const vector<string> pattern = {"the", "quick", "brown", "fox", "ate", "a", "pterodactyl"};
+
+    vector<string> words = pattern;
+    vector<string> new_words;
+    ranges::copy(words | views::as_rvalue, back_inserter(new_words)); // moves each string from words into new_words
+
+    assert(ranges::equal(new_words, pattern));
+    assert(words.size() == pattern.size()); // size of words in preserved
+    assert(ranges::all_of(words, ranges::empty)); // all strings from words are empty
+}
+
 int main() {
     { // Validate views
         // ... copyable
@@ -435,4 +448,6 @@ int main() {
 
     STATIC_ASSERT(instantiation_test());
     instantiation_test();
+
+    test_example_from_p2446r2();
 }
