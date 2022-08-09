@@ -1674,30 +1674,70 @@ private:
     _Alloc& _Al;
 };
 
-template <class _InIt, class _Alloc>
+template <class _InIt, class _Se, class _Alloc>
 _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
-    const _InIt _First, const _InIt _Last, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
+    _InIt _First, _Se _Last, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
     // copy [_First, _Last) to raw _Dest, using _Al
     // note: only called internally from elsewhere in the STL
     using _Ptrval = typename _Alloc::value_type*;
 
-    auto _UFirst      = _Get_unwrapped(_First);
-    const auto _ULast = _Get_unwrapped(_Last);
+    auto _UFirst = _Get_unwrapped(_STD move(_First));
+    auto _ULast  = _Get_unwrapped(_STD move(_Last));
 
-    if constexpr (conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
-                      _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>) {
+    constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_assignable //
+                               && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
+
+    if constexpr (_Can_memmove) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            _Copy_memmove(_UFirst, _ULast, _Unfancy(_Dest));
-            _Dest += _ULast - _UFirst;
+            if constexpr (is_same_v<decltype(_UFirst), decltype(_ULast)>) {
+                _Copy_memmove(_To_address(_UFirst), _To_address(_ULast), _Unfancy(_Dest));
+                _Dest += _ULast - _UFirst;
+            } else {
+                const auto _Count = static_cast<size_t>(_ULast - _UFirst);
+                _Copy_memmove_n(_To_address(_UFirst), _Count, _Unfancy(_Dest));
+                _Dest += _Count;
+            }
             return _Dest;
         }
     }
 
     _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
     for (; _UFirst != _ULast; ++_UFirst) {
+        _Backout._Emplace_back(*_UFirst);
+    }
+
+    return _Backout._Release();
+}
+
+template <class _InIt, class _Alloc>
+_CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy_n(
+    _InIt _First, size_t _Count, _Alloc_ptr_t<_Alloc> _Dest, _Alloc& _Al) {
+    // copy _First + [0, _Count) to raw _Dest, using _Al
+    // note: only called internally from elsewhere in the STL
+    using _Ptrval = typename _Alloc::value_type*;
+
+    auto _UFirst = _Get_unwrapped(_STD move(_First));
+
+    constexpr bool _Can_memmove =
+        conjunction_v<bool_constant<_Iter_copy_cat<decltype(_UFirst), _Ptrval>::_Bitcopy_constructible>,
+            _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>>;
+
+    if constexpr (_Can_memmove) {
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            _Copy_memmove_n(_UFirst, _Count, _Unfancy(_Dest));
+            _Dest += _Count;
+            return _Dest;
+        }
+    }
+
+    _Uninitialized_backout_al<_Alloc> _Backout{_Dest, _Al};
+    for (; _Count != 0; ++_UFirst, (void) --_Count) {
         _Backout._Emplace_back(*_UFirst);
     }
 
@@ -2276,6 +2316,27 @@ constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& 
         _STD uses_allocator_construction_args<_Ty>(_Al, _STD forward<_Types>(_Args)...));
 }
 #endif // _HAS_CXX20
+
+#ifdef __cpp_lib_containers_ranges
+struct from_range_t {
+    explicit from_range_t() = default;
+};
+inline constexpr from_range_t from_range;
+
+template <class _Rng, class _Elem>
+concept _Container_compatible_range =
+    _RANGES input_range<_Rng> && convertible_to<_RANGES range_reference_t<_Rng>, _Elem>;
+
+template <_RANGES input_range _Rng>
+using _Range_key_type = remove_const_t<typename _RANGES range_value_t<_Rng>::first_type>;
+
+template <_RANGES input_range _Rng>
+using _Range_mapped_type = typename _RANGES range_value_t<_Rng>::second_type;
+
+template <_RANGES input_range _Rng>
+using _Range_to_alloc_type =
+    pair<const typename _RANGES range_value_t<_Rng>::first_type, typename _RANGES range_value_t<_Rng>::second_type>;
+#endif // __cpp_lib_containers_ranges
 
 template <class _Ty,
     bool = is_empty_v<_Ty> && !is_final_v<_Ty>>

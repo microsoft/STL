@@ -151,6 +151,10 @@ STATIC_ASSERT(is_member_object_pointer_v<int X::*>);
 STATIC_ASSERT(!is_member_function_pointer_v<int X::*>);
 STATIC_ASSERT(!is_member_object_pointer_v<int (X::*)(int, int)>);
 
+// Verify that the machinery for LWG-3617 "function/packaged_task deduction guides and deducing this"
+// doesn't cause such function pointers to be detected as PMFs.
+STATIC_ASSERT(!is_member_function_pointer_v<int (*)(X, int)>);
+
 
 // N4594 20.13.7.6 [meta.trans.other]:
 // Template:

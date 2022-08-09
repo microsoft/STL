@@ -304,6 +304,7 @@
 // P1072R10 basic_string::resize_and_overwrite
 // P1132R7 out_ptr(), inout_ptr()
 // P1147R1 Printing volatile Pointers
+// P1206R7 Conversions From Ranges To Containers
 // P1272R4 byteswap()
 // P1328R1 constexpr type_info::operator==()
 // P1413R3 Deprecate aligned_storage And aligned_union
@@ -311,6 +312,7 @@
 // P1659R3 ranges::starts_with, ranges::ends_with
 // P1679R3 contains() For basic_string/basic_string_view
 // P1682R3 to_underlying() For Enumerations
+// P1899R3 views::stride
 // P1951R1 Default Template Arguments For pair's Forwarding Constructor
 // P1989R2 Range Constructor For string_view
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
@@ -326,6 +328,7 @@
 // P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
 // P2443R1 views::chunk_by
+// P2445R1 forward_like()
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R0 unexpected<E>::error()
 
@@ -1385,13 +1388,13 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // __cpp_impl_coroutine
 
 #if _HAS_CXX20
-#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, EDG concepts support
+#if !defined(__EDG__) || defined(__INTELLISENSE__) // TRANSITION, GH-395
 #define __cpp_lib_concepts 202002L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
-#if defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_algorithm_iterator_requirements 202207L
-#endif
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_assume_aligned                201811L
 #define __cpp_lib_atomic_flag_test              201907L
@@ -1421,9 +1424,9 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_endian                  201907L
 #define __cpp_lib_erase_if                202002L
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_format 202110L
-#endif // defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_generic_unordered_lookup     201811L
 #define __cpp_lib_int_pow2                     202002L
@@ -1449,12 +1452,16 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_latch                   201907L
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
-#define __cpp_lib_move_iterator_concept   202207L
-#define __cpp_lib_polymorphic_allocator   201902L
 
-#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#define __cpp_lib_move_iterator_concept 202207L
+#endif // __cpp_lib_concepts
+
+#define __cpp_lib_polymorphic_allocator 201902L
+
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #define __cpp_lib_ranges 202110L
-#endif // defined(__cpp_lib_concepts)
+#endif // __cpp_lib_concepts
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
@@ -1493,9 +1500,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
-#define __cpp_lib_expected 202202L
+#define __cpp_lib_containers_ranges 202202L
+#define __cpp_lib_expected          202202L
 #endif // __cpp_lib_concepts
 
+#define __cpp_lib_forward_like       202207L
 #define __cpp_lib_invoke_r           202106L
 #define __cpp_lib_is_scoped_enum     202011L
 #define __cpp_lib_move_only_function 202110L
@@ -1509,6 +1518,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_ranges_join_with        202202L
 #define __cpp_lib_ranges_slide            202202L
 #define __cpp_lib_ranges_starts_ends_with 202106L
+#define __cpp_lib_ranges_stride           202207L
+#define __cpp_lib_ranges_to_container     202202L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_spanstream                  202106L
@@ -1549,7 +1560,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // language mode
 #endif // _M_CEE
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_optional 202110L // P0798R8 Monadic Operations For optional
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_optional 202106L // P2231R1 Completing constexpr In optional And variant
@@ -1563,7 +1574,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_shared_ptr_arrays 201611L // P0497R0 Fixing shared_ptr For Arrays
 #endif // _HAS_CXX20
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #define __cpp_lib_shift 202202L // P2440R1 ranges::shift_left, ranges::shift_right
 #elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
 #define __cpp_lib_shift 201806L // P0769R2 shift_left(), shift_right()

@@ -35,8 +35,8 @@ template <class _First, class... _Rest>
 struct _All_same<_First, _Rest...> : bool_constant<conjunction_v<is_same<_First, _Rest>...>> {}; // variadic is_same
 
 template <class _To, class... _From>
-struct _Convertible_from_all : bool_constant<conjunction_v<is_convertible<_From, _To>...>> {
-    // variadic is_convertible
+struct _Convertible_from_all : bool_constant<conjunction_v<_Invoke_convertible<_From, _To>...>> {
+    // variadic _Invoke_convertible
 };
 
 template <class...>

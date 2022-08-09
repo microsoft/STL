@@ -640,29 +640,13 @@ template <class _Fn, class... _Its>
 using indirect_result_t = invoke_result_t<_Fn, iter_reference_t<_Its>...>;
 // clang-format on
 
-#pragma warning(push)
-#pragma warning(disable : 5046) // '%s': Symbol involving type with internal linkage not defined
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundefined-internal" // function '%s' has internal linkage but is not defined
-#endif // __clang__
-
 template <indirectly_readable _It, indirectly_regular_unary_invocable<_It> _Proj>
 struct projected {
     using value_type = remove_cvref_t<indirect_result_t<_Proj&, _It>>;
-#if defined(__clang__) || defined(__EDG__)
-    indirect_result_t<_Proj&, _It> operator*() const;
-#else // ^^^ no workaround / workaround vvv
     indirect_result_t<_Proj&, _It> operator*() const {
-        _CSTD abort(); // TRANSITION, VSO-1308657
+        _CSTD abort();
     }
-#endif // ^^^ workaround ^^^
 };
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
-#pragma warning(pop)
 
 template <weakly_incrementable _It, class _Proj>
 struct incrementable_traits<projected<_It, _Proj>> {
@@ -877,7 +861,7 @@ _INLINE_VAR constexpr bool _Is_cpp17_random_iter_v = is_convertible_v<_Iter_cat_
 
 template <class _Iter>
 _INLINE_VAR constexpr bool _Is_ranges_random_iter_v =
-#if defined(__cpp_lib_concepts)
+#ifdef __cpp_lib_concepts
     random_access_iterator<_Iter> ||
 #endif
     _Is_cpp17_random_iter_v<_Iter>;
@@ -3198,9 +3182,7 @@ namespace ranges {
         }
     }
     // clang-format on
-} // namespace ranges
 
-namespace ranges {
     struct dangling {
         constexpr dangling() noexcept = default;
         template <class... _Args>
@@ -3704,19 +3686,72 @@ _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     }
 }
 
+template <class _CtgIt, class _OutCtgIt>
+_OutCtgIt _Copy_memmove_n(_CtgIt _First, const size_t _Count, _OutCtgIt _Dest) {
+    const auto _Result = _Copy_memmove(_First, _First + _Count, _Dest);
+    if constexpr (is_pointer_v<_OutCtgIt>) {
+        return _Result;
+    } else { // _Result is unused so the compiler can optimize it away
+        return _Dest + static_cast<_Iter_diff_t<_OutCtgIt>>(_Count);
+    }
+}
+
 template <class _It, bool _RequiresMutable = false>
 _INLINE_VAR constexpr bool _Is_vb_iterator = false;
 
-template <class _InIt, class _OutIt>
-_CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _InIt _Last, _OutIt _Dest) {
-    // copy [_First, _Last) to [_Dest, ...)
-    // note: _Copy_unchecked has callers other than the copy family
+template <class _InIt, class _SizeTy, class _OutIt>
+_CONSTEXPR20 _OutIt _Copy_n_unchecked4(_InIt _First, _SizeTy _Count, _OutIt _Dest) {
+    // copy _First + [0, _Count) to _Dest + [0, _Count), returning _Dest + _Count
+    // note: has callers outside the copy family
+#ifdef __cpp_lib_concepts
+    _STL_INTERNAL_STATIC_ASSERT(_Integer_like<_SizeTy>);
+#endif // __cpp_lib_concepts
+
     if constexpr (_Iter_copy_cat<_InIt, _OutIt>::_Bitcopy_assignable) {
 #if _HAS_CXX20
         if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
         {
-            return _Copy_memmove(_First, _Last, _Dest);
+            return _Copy_memmove_n(_First, static_cast<size_t>(_Count), _Dest);
+        }
+    }
+
+    for (; _Count != 0; ++_Dest, (void) ++_First, --_Count) {
+        *_Dest = *_First;
+    }
+
+    return _Dest;
+}
+
+template <class _InIt, class _Sent, class _OutIt>
+using _Sent_copy_cat = conditional_t<
+#ifdef __cpp_lib_concepts
+    is_same_v<_Sent, _InIt> || sized_sentinel_for<_Sent, _InIt>,
+#else // ^^^ Concepts support / no Concepts vvv
+    is_same_v<_Sent, _InIt>,
+#endif // ^^^ no Concepts ^^^
+    _Iter_copy_cat<_InIt, _OutIt>, _False_trivial_cat>;
+
+template <class _InIt, class _Sent, class _OutIt>
+_CONSTEXPR20 _OutIt _Copy_unchecked(_InIt _First, _Sent _Last, _OutIt _Dest) {
+    // copy [_First, _Last) to [_Dest, ...)
+    // note: _Copy_unchecked has callers other than the copy family
+    if constexpr (_Sent_copy_cat<_InIt, _Sent, _OutIt>::_Bitcopy_assignable) {
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+#ifdef __cpp_lib_concepts
+            if constexpr (is_same_v<_InIt, _Sent>)
+#endif // __cpp_lib_concepts
+            {
+                return _Copy_memmove(_First, _Last, _Dest);
+            }
+#ifdef __cpp_lib_concepts
+            else {
+                return _Copy_memmove_n(_First, static_cast<size_t>(_Last - _First), _Dest);
+            }
+#endif // __cpp_lib_concepts
         }
     }
 
@@ -3769,6 +3804,60 @@ namespace ranges {
         }
     };
 
+    // clang-format off
+    template <forward_iterator _Wrapped, class _Se>
+        requires sentinel_for<remove_cvref_t<_Se>, _Wrapped>
+    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrapped_t<_Wrapped>& _UFirst, _Se&& _Last) {
+        // clang-format on
+        // find the iterator in [_UFirst, _Get_unwrapped(_Last)) which equals _Get_unwrapped(_Last) [possibly O(N)]
+        auto _ULast = _Get_unwrapped(_STD forward<_Se>(_Last));
+        if constexpr (is_same_v<remove_cvref_t<_Se>, _Wrapped>) {
+            return _ULast;
+        } else if constexpr (sized_sentinel_for<remove_cvref_t<_Se>, _Wrapped>) {
+            return _RANGES next(_UFirst, _ULast - _UFirst);
+        } else {
+            return _RANGES next(_UFirst, _STD move(_ULast));
+        }
+    }
+
+    template <forward_range _Rng>
+    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(_Rng& _Range) {
+        // find the (unwrapped) iterator in _Range which equals _Uend(_Range) [possibly O(N)]
+        if constexpr (common_range<_Rng>) {
+            if constexpr (same_as<decltype(_Uend(_Range)), _Unwrapped_t<iterator_t<_Rng>>>) {
+                return _Uend(_Range);
+            } else {
+                return _Get_unwrapped(_RANGES end(_Range));
+            }
+        } else if constexpr (sized_range<_Rng>) {
+            return _RANGES next(_Ubegin(_Range), _RANGES distance(_Range));
+        } else {
+            return _RANGES next(_Ubegin(_Range), _Uend(_Range));
+        }
+    }
+
+    template <forward_range _Rng>
+    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(_Rng& _Range, const _Unwrapped_t<iterator_t<_Rng>>& _Mid) {
+        // find the (unwrapped) iterator in _Range which equals _Uend(_Range) [possibly O(N)]
+        // Pre: [ranges::begin(_Range), _Mid) and [_Mid, ranges::end(_Range)) denote ranges
+        if constexpr (common_range<_Rng>) {
+            if constexpr (same_as<decltype(_Uend(_Range)), _Unwrapped_t<iterator_t<_Rng>>>) {
+                return _Uend(_Range);
+            } else {
+                return _Get_unwrapped(_RANGES end(_Range));
+            }
+        } else if constexpr (sized_range<_Rng>) {
+            const auto _Dist = _RANGES distance(_Range);
+            if constexpr (sized_sentinel_for<_Unwrapped_t<iterator_t<_Rng>>, _Unwrapped_t<iterator_t<_Rng>>>) {
+                return _RANGES next(_Mid, _Dist - (_Mid - _Ubegin(_Range)));
+            } else {
+                return _RANGES next(_Ubegin(_Range), _Dist);
+            }
+        } else {
+            return _RANGES next(_Mid, _Uend(_Range));
+        }
+    }
+
 #if _HAS_CXX23
     template <class _Out, class _Ty>
     struct out_value_result {
@@ -3795,11 +3884,17 @@ namespace ranges {
         requires indirectly_copyable<_It, _Out>
     _NODISCARD constexpr copy_result<_It, _Out> _Copy_unchecked(_It _First, _Se _Last, _Out _Result) {
         // clang-format on
-        if constexpr (_Iter_copy_cat<_It, _Out>::_Bitcopy_assignable && sized_sentinel_for<_Se, _It>) {
+        if constexpr (_Sent_copy_cat<_It, _Se, _Out>::_Bitcopy_assignable) {
             if (!_STD is_constant_evaluated()) {
-                auto _Final = _RANGES next(_First, _STD move(_Last));
-                _Result     = _Copy_memmove(_STD move(_First), _Final, _STD move(_Result));
-                return {_STD move(_Final), _STD move(_Result)};
+                if constexpr (is_same_v<_It, _Se>) {
+                    _Result = _Copy_memmove(_STD move(_First), _Last, _STD move(_Result));
+                    return {_STD move(_Last), _STD move(_Result)};
+                } else {
+                    const auto _Count = static_cast<size_t>(_Last - _First);
+                    _Result           = _Copy_memmove_n(_First, _Count, _STD move(_Result));
+                    _First += _Count;
+                    return {_STD move(_First), _STD move(_Result)};
+                }
             }
         }
 
@@ -3853,7 +3948,7 @@ _CONSTEXPR20 _OutIt copy_n(_InIt _First, _Diff _Count_raw, _OutIt _Dest) {
             if (!_STD is_constant_evaluated())
 #endif // _HAS_CXX20
             {
-                _UDest = _Copy_memmove(_UFirst, _UFirst + _Count, _UDest);
+                _UDest = _Copy_memmove_n(_UFirst, static_cast<size_t>(_Count), _UDest);
                 _Seek_wrapped(_Dest, _UDest);
                 return _Dest;
             }

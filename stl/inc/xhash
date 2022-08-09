@@ -9,13 +9,16 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #include <cmath>
-#include <cstring>
-#include <cwchar>
 #include <list>
 #include <tuple>
 #include <vector>
 #include <xbit_ops.h>
+
+#ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
+#include <cstring>
+#include <cwchar>
 #include <xstring>
+#endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 #if _HAS_CXX17
 #include <xnode_handle.h>
@@ -28,6 +31,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #pragma push_macro("new")
 #undef new
 
+#ifdef _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 namespace stdext {
     using _STD basic_string;
     using _STD less;
@@ -86,10 +90,9 @@ namespace stdext {
         _Pr comp{}; // the comparator object
     };
 } // namespace stdext
+#endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 _STD_BEGIN
-using stdext::hash_compare; // TRANSITION, protobuf used this until v3.7.0, released Feb 28, 2019
-
 template <class _Kty, class _Hasher, class _Keyeq, class = void>
 struct _Uhash_choose_transparency {
     // transparency selector for non-transparent hashed containers
@@ -379,7 +382,7 @@ protected:
           _Maxidx(_Right._Maxidx) {
         // construct hash table by copying _Right
         _Vec._Assign_grow(_Right._Vec.size(), _List._Unchecked_end());
-        insert(_Right._Unchecked_begin(), _Right._Unchecked_end());
+        _Insert_range_unchecked(_Right._Unchecked_begin(), _Right._Unchecked_end());
 #ifdef _ENABLE_STL_INTERNAL_CHECK
         _Stl_internal_check_container_invariants();
         _Right._Stl_internal_check_container_invariants();
@@ -937,18 +940,30 @@ public:
         return emplace_hint(_Hint, _STD move(_Val));
     }
 
-    template <class _Iter>
-    void insert(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst      = _Get_unwrapped(_First);
-        const auto _ULast = _Get_unwrapped(_Last);
-        for (; _UFirst != _ULast; ++_UFirst) {
-            emplace(*_UFirst);
+protected:
+    template <class _Iter, class _Sent>
+    void _Insert_range_unchecked(_Iter _First, const _Sent _Last) {
+        for (; _First != _Last; ++_First) {
+            emplace(*_First);
         }
     }
 
+public:
+    template <class _Iter>
+    void insert(_Iter _First, _Iter _Last) {
+        _Adl_verify_range(_First, _Last);
+        _Insert_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+    }
+
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<value_type> _Rng>
+    void insert_range(_Rng&& _Range) {
+        _Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // __cpp_lib_containers_ranges
+
     void insert(initializer_list<value_type> _Ilist) {
-        insert(_Ilist.begin(), _Ilist.end());
+        _Insert_range_unchecked(_Ilist.begin(), _Ilist.end());
     }
 
 private:
