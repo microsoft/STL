@@ -1007,7 +1007,7 @@
         "The hash_meow and unordered_meow containers' non-Standard lower_bound() member was provided for interface " \
         "compatibility with the ordered associative containers, and doesn't match the semantics of the "             \
         "hash_meow or unordered_meow containers. Please use the find() member instead. You can define "              \
-        "_SILENCE_STDEXT_HASH_LOWER_BOUND_DEPRECATION_WARNING to suppress this deprecation.")]]
+        "_SILENCE_STDEXT_HASH_LOWER_BOUND_DEPRECATION_WARNING to suppress this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _DEPRECATE_STDEXT_HASH_LOWER_BOUND
 #endif // ^^^ warning disabled ^^^
@@ -1020,7 +1020,7 @@
         "compatibility with the ordered associative containers, and doesn't match the semantics of the "             \
         "hash_meow or unordered_meow containers. Please use the second iterator returned by the "                    \
         "equal_range() member instead. You can define "                                                              \
-        "_SILENCE_STDEXT_HASH_UPPER_BOUND_DEPRECATION_WARNING to suppress this deprecation.")]]
+        "_SILENCE_STDEXT_HASH_UPPER_BOUND_DEPRECATION_WARNING to suppress this warning.")]]
 #else // ^^^ warning enabled / warning disabled vvv
 #define _DEPRECATE_STDEXT_HASH_UPPER_BOUND
 #endif // ^^^ warning disabled ^^^
