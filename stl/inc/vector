@@ -3411,7 +3411,9 @@ public:
                 insert(end(), *_UFirst);
                 ++_UFirst;
             }
+#if _ITERATOR_DEBUG_LEVEL == 2
             _Orphan_range(static_cast<size_type>(_Saved_offset), _Old_size);
+#endif // _ITERATOR_DEBUG_LEVEL == 2
             _STD rotate(begin() + _Saved_offset, begin() + static_cast<difference_type>(_Old_size), end());
         }
 
@@ -3436,7 +3438,9 @@ public:
                 insert(end(), *_UFirst);
                 ++_UFirst;
             }
+#if _ITERATOR_DEBUG_LEVEL == 2
             _Orphan_range(static_cast<size_type>(_Old_off), _Old_size);
+#endif // _ITERATOR_DEBUG_LEVEL == 2
             _STD rotate(begin() + _Old_off, begin() + static_cast<difference_type>(_Old_size), end());
         }
 
