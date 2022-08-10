@@ -3407,9 +3407,8 @@ public:
 #endif // __cpp_lib_concepts
         } else {
             const auto _Old_size = this->_Mysize;
-            while (_UFirst != _ULast) {
-                insert(end(), *_UFirst);
-                ++_UFirst;
+            for (; _UFirst != _ULast; ++_UFirst) {
+                emplace_back(*_UFirst);
             }
 #if _ITERATOR_DEBUG_LEVEL == 2
             _Orphan_range(static_cast<size_type>(_Saved_offset), _Old_size);
@@ -3434,9 +3433,8 @@ public:
             auto _UFirst         = _RANGES _Ubegin(_Range);
             const auto _ULast    = _RANGES _Uend(_Range);
             const auto _Old_size = this->_Mysize;
-            while (_UFirst != _ULast) {
-                insert(end(), *_UFirst);
-                ++_UFirst;
+            for (; _UFirst != _ULast; ++_UFirst) {
+                emplace_back(*_UFirst);
             }
 #if _ITERATOR_DEBUG_LEVEL == 2
             _Orphan_range(static_cast<size_type>(_Old_off), _Old_size);
