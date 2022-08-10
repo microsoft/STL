@@ -3406,7 +3406,7 @@ public:
             _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
 #endif // __cpp_lib_concepts
         } else {
-            const auto _Old_size       = this->_My_size;
+            const auto _Old_size = this->_My_size;
             while (_UFirst != _ULast) {
                 insert(end(), *_UFirst);
                 ++_UFirst;
