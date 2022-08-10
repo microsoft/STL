@@ -739,7 +739,7 @@
     _CONTAINER " requires that Allocator's value_type match " _VALUE_TYPE                      \
                " (See N4659 26.2.1 [container.requirements.general]/16 allocator_type)"        \
                " Either fix the allocator value_type or define _ENFORCE_MATCHING_ALLOCATORS=0" \
-               " to suppress this diagnostic."
+               " to suppress this error."
 
 // Enforcement of Standard facet specializations
 #ifndef _ENFORCE_FACET_SPECIALIZATIONS
@@ -749,7 +749,7 @@
 #define _FACET_SPECIALIZATION_MESSAGE                                                  \
     "Unsupported facet specialization; see N4800 27.3.1.1.1 [locale.category]. "       \
     "Either use a Standard specialization or define _ENFORCE_FACET_SPECIALIZATIONS=0 " \
-    "to suppress this diagnostic."
+    "to suppress this error."
 
 // To improve compiler throughput, use 'hidden friend' operators in <system_error> instead of non-members that are
 // depicted in the Standard.
@@ -1546,7 +1546,7 @@
 #ifdef _RTC_CONVERSION_CHECKS_ENABLED
 #ifndef _ALLOW_RTCc_IN_STL
 #error /RTCc rejects conformant code, so it is not supported by the C++ Standard Library. Either remove this \
-compiler option, or define _ALLOW_RTCc_IN_STL to suppress this diagnostic.
+compiler option, or define _ALLOW_RTCc_IN_STL to suppress this error.
 #endif // _ALLOW_RTCc_IN_STL
 #endif // _RTC_CONVERSION_CHECKS_ENABLED
 
