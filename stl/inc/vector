@@ -3406,13 +3406,13 @@ public:
             _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
 #endif // __cpp_lib_concepts
         } else {
-            const auto _Old_size = this->_My_size;
+            const auto _Old_size = this->_Mysize;
             while (_UFirst != _ULast) {
                 insert(end(), *_UFirst);
                 ++_UFirst;
             }
             _Orphan_range(static_cast<size_type>(_Saved_offset), _Old_size);
-            _STD rotate(begin() + _Saved_offset, begin() + _Old_size, end());
+            _STD rotate(begin() + _Saved_offset, begin() + static_cast<difference_type>(_Old_size), end());
         }
 
         return begin() + _Saved_offset;
@@ -3431,13 +3431,13 @@ public:
         } else {
             auto _UFirst         = _RANGES _Ubegin(_Range);
             const auto _ULast    = _RANGES _Uend(_Range);
-            const auto _Old_size = this->_My_size;
+            const auto _Old_size = this->_Mysize;
             while (_UFirst != _ULast) {
                 insert(end(), *_UFirst);
                 ++_UFirst;
             }
             _Orphan_range(static_cast<size_type>(_Old_off), _Old_size);
-            _STD rotate(begin() + _Old_off, begin() + _Old_size, end());
+            _STD rotate(begin() + _Old_off, begin() + static_cast<difference_type>(_Old_size), end());
         }
 
         return begin() + _Old_off;
