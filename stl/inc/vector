@@ -3434,7 +3434,7 @@ public:
             auto _UFirst         = _RANGES _Ubegin(_Range);
             const auto _ULast    = _RANGES _Uend(_Range);
             const auto _Old_size = this->_Mysize;
-            while (_UFirst != _ULast) {
+            while (_UFirst != _ULast) { //RERUN
                 insert(end(), *_UFirst);
                 ++_UFirst;
             }
