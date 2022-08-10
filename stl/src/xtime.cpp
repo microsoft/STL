@@ -47,7 +47,7 @@ constexpr long _Nsec100_per_sec = _Nsec_per_sec / 100;
 
 _EXTERN_C
 
-long long _Xtime_get_ticks() { // get system time in 100-nanosecond intervals since the epoch
+_CRTIMP2_PURE long long __cdecl _Xtime_get_ticks() { // get system time in 100-nanosecond intervals since the epoch
     FILETIME ft;
     __crtGetSystemTimePreciseAsFileTime(&ft);
     return ((static_cast<long long>(ft.dwHighDateTime)) << 32) + static_cast<long long>(ft.dwLowDateTime) - _Epoch;
@@ -59,18 +59,18 @@ static void sys_get_time(xtime* xt) { // get system time with nanosecond resolut
     xt->nsec               = static_cast<long>(now % _Nsec100_per_sec) * 100;
 }
 
-long _Xtime_diff_to_millis2(const xtime* xt1, const xtime* xt2) { // convert time to milliseconds
+_CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis2(const xtime* xt1, const xtime* xt2) { // convert time to milliseconds
     xtime diff = xtime_diff(xt1, xt2);
     return static_cast<long>(diff.sec * _Msec_per_sec + (diff.nsec + _Nsec_per_msec - 1) / _Nsec_per_msec);
 }
 
-long _Xtime_diff_to_millis(const xtime* xt) { // convert time to milliseconds
+_CRTIMP2_PURE long __cdecl _Xtime_diff_to_millis(const xtime* xt) { // convert time to milliseconds
     xtime now;
     xtime_get(&now, TIME_UTC);
     return _Xtime_diff_to_millis2(xt, &now);
 }
 
-int xtime_get(xtime* xt, int type) { // get current time
+_CRTIMP2_PURE int __cdecl xtime_get(xtime* xt, int type) { // get current time
     if (type != TIME_UTC || xt == nullptr) {
         type = 0;
     } else {
