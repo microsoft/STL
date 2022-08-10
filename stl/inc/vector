@@ -1364,6 +1364,9 @@ public:
         pointer& _Mylast  = _My_data._Mylast;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif
         {
             const auto _Valptr = _STD addressof(_Val);
             _STL_VERIFY(!(_Unfancy(_Myfirst) <= _Valptr && _Valptr < _Unfancy(_Mylast)),
