@@ -19,8 +19,8 @@ _STL_DISABLE_CLANG_WARNINGS
 #define __alignas_is_defined 1
 #define __alignof_is_defined 1
 
-_CXX17_DEPRECATE_C_HEADER typedef int _Header_cstdalign;
-using _Hdr_cstdalign = _Header_cstdalign;
+using _Header_cstdalign _CXX17_DEPRECATE_C_HEADER = int;
+using _Hdr_cstdalign                              = _Header_cstdalign;
 
 #pragma pop_macro("new")
 _STL_RESTORE_CLANG_WARNINGS
