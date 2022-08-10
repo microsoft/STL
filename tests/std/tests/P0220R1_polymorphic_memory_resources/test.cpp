@@ -286,7 +286,7 @@ namespace {
     };
 
     void analyze_geometric_growth(size_t const* first, size_t const n) {
-        // http://mathworld.wolfram.com/LeastSquaresFittingExponential.html
+        // https://mathworld.wolfram.com/LeastSquaresFittingExponential.html
         // https://en.wikipedia.org/wiki/Pearson_correlation_coefficient#For_a_sample
         double sum_of_x           = 0;
         double sum_of_y           = 0;
