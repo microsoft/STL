@@ -3,9 +3,9 @@
 
 // implement random_device
 
-#include <stdexcept> // for out_of_range
+#include <cstdlib>
+#include <xutility>
 
-//  #include <random>
 _STD_BEGIN
 _CRTIMP2_PURE unsigned int __CLRCALL_PURE_OR_CDECL _Random_device() { // return a random value
     unsigned int ans;
