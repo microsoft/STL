@@ -5569,7 +5569,7 @@ namespace ranges {
                     _STL_VERIFY(_Count <= (numeric_limits<difference_type>::max)() / _Off,
                         "cannot advance chunk_view iterator past end (integer overflow)");
                     if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
-                        _STL_VERIFY(_RANGES distance(_Current, _End) > _Count * (_Off - 1),
+                        _STL_VERIFY(_End - _Current > _Count * (_Off - 1), //
                             "cannot advance chunk_view iterator past end");
                     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
@@ -6473,7 +6473,7 @@ namespace ranges {
                     _STL_VERIFY(_Stride <= (numeric_limits<difference_type>::max)() / _Off,
                         "cannot advance stride_view iterator past end (integer overflow)");
                     if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
-                        _STL_VERIFY(_RANGES distance(_Current, _End) > _Stride * (_Off - 1),
+                        _STL_VERIFY(_End - _Current > _Stride * (_Off - 1), //
                             "cannot advance stride_view iterator past end");
                     }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
