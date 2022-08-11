@@ -1708,7 +1708,7 @@ namespace ranges {
             as_rvalue_view{static_cast<_Rng&&>(__r)};
         };
 
-        struct _As_rvalue_fn : _Pipe::_Base<_As_rvalue_fn> {
+        class _As_rvalue_fn : public _Pipe::_Base<_As_rvalue_fn> {
         private:
             enum class _St { _None, _All, _As_rvalue };
 
