@@ -443,7 +443,7 @@ int main() {
         STATIC_ASSERT(test_one(views::iota(0, 10), views::iota(0, 10)));
         test_one(views::iota(0, 10), views::iota(0, 10));
 
-        const string some_strings[] = {"0"s, "3"s, "6"s, "9"s, "12"s, "15"s};
+        const string some_strings[] = {"0", "3", "6", "9", "12", "15"};
         auto transformed            = some_ints | views::transform([](int x) { return to_string(x); });
         test_one(transformed, some_strings);
     }
