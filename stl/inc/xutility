@@ -1855,7 +1855,7 @@ namespace ranges {
     template <range _Rng, class _Iter>
         requires same_as<remove_cvref_t<_Iter>, iterator_t<_Rng>>
     constexpr decltype(auto) _Unwrap_range_iter(_Iter&& _It)
-        noexcept(noexcept(_Unwrap_iter<sentinel_t<_Rng>>(_STD declval<_Iter>())))
+        noexcept(noexcept(_Unwrap_iter<sentinel_t<_Rng>>(static_cast<_Iter&&>(_It))))
     {
         return _Unwrap_iter<sentinel_t<_Rng>>(static_cast<_Iter&&>(_It));
     }
@@ -1863,7 +1863,7 @@ namespace ranges {
     template <range _Rng, class _Sent>
         requires same_as<remove_cvref_t<_Sent>, sentinel_t<_Rng>>
     constexpr decltype(auto) _Unwrap_range_sent(_Sent&& _Se)
-        noexcept(noexcept(_Unwrap_sent<iterator_t<_Rng>>(_STD declval<_Sent>())))
+        noexcept(noexcept(_Unwrap_sent<iterator_t<_Rng>>(static_cast<_Sent&&>(_Se))))
     {
         return _Unwrap_sent<iterator_t<_Rng>>(static_cast<_Sent&&>(_Se));
     }
@@ -1877,7 +1877,6 @@ namespace ranges {
     using _Unwrapped_iterator_t = _Unwrap_iter_t<iterator_t<_Rng>, sentinel_t<_Rng>>;
     template <range _Rng>
     using _Unwrapped_sentinel_t = _Unwrap_sent_t<sentinel_t<_Rng>, iterator_t<_Rng>>;
-
 
     namespace _Unchecked_begin {
         template <class _Ty>
