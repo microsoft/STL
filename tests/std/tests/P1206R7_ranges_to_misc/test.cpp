@@ -138,6 +138,7 @@ constexpr bool test_nested_range() {
 
 int main() {
     test_reservable();
+    static_assert(test_reservable());
 
     test_common_constructible();
     static_assert(test_common_constructible());
@@ -146,5 +147,4 @@ int main() {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1588614
     static_assert(test_nested_range());
 #endif // defined(__clang__) || defined(__EDG__)
-    static_assert(test_reservable());
 }
