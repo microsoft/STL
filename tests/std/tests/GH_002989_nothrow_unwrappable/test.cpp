@@ -30,8 +30,8 @@ template <class It, bool CopyUnwrapNothrow = true>
 void do_single_test() {
     // !a || b is equivalent to a => b (a implies b)
     // This is written this way to avoid `if constexpr` in C++14 mode.
-    STATIC_ASSERT(!_Unwrappable_v<It> == _Is_nothrow_unwrappable_v<It>);
-    STATIC_ASSERT(!_Unwrappable_v<It> == _Is_nothrow_unwrappable_v<It&&>);
+    STATIC_ASSERT(_Unwrappable_v<It> == _Is_nothrow_unwrappable_v<It>);
+    STATIC_ASSERT(_Unwrappable_v<It> == _Is_nothrow_unwrappable_v<It&&>);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<It>())));
 
     STATIC_ASSERT(!_Unwrappable_v<It> || (_Is_nothrow_unwrappable_v<const It&> == CopyUnwrapNothrow));
