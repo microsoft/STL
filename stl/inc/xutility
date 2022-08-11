@@ -5888,8 +5888,6 @@ template <class _FwdIt1, class _FwdIt2>
 _CONSTEXPR20 _FwdIt2 _Swap_ranges_unchecked(_FwdIt1 _First1, const _FwdIt1 _Last1, _FwdIt2 _First2) {
     // swap [_First1, _Last1) with [_First2, ...)
 
-    _Verify_ranges_do_not_overlap(_First1, _Last1, _First2);
-
 #if _USE_STD_VECTOR_ALGORITHMS
     using _Elem1 = remove_reference_t<_Iter_ref_t<_FwdIt1>>;
     using _Elem2 = remove_reference_t<_Iter_ref_t<_FwdIt2>>;
