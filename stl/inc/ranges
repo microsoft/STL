@@ -5578,11 +5578,11 @@ namespace ranges {
                     if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
                         _Missing = _RANGES advance(_Current, _Count * _Off, _End);
                     } else {
-                        _Current += _Count * (_Off - 1);
+                        _Current += static_cast<difference_type>(_Count * (_Off - 1));
                         _Missing = _RANGES advance(_Current, _Count, _End);
                     }
                 } else if (_Off < 0) {
-                    _Current += _Count * _Off + _Missing;
+                    _Current += static_cast<difference_type>(_Count * _Off + _Missing);
                     _Missing = 0;
                 }
                 return *this;
@@ -6482,11 +6482,11 @@ namespace ranges {
                     if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
                         _Missing = _RANGES advance(_Current, _Stride * _Off, _End);
                     } else {
-                        _Current += _Stride * static_cast<difference_type>(_Off - 1);
+                        _Current += static_cast<difference_type>(_Stride * (_Off - 1));
                         _Missing = _RANGES advance(_Current, _Stride, _End);
                     }
                 } else if (_Off < 0) {
-                    _Current += _Stride * _Off + _Missing;
+                    _Current += static_cast<difference_type>(_Stride * _Off + _Missing);
                     _Missing = 0;
                 }
                 return *this;
