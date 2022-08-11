@@ -3077,7 +3077,7 @@ namespace ranges {
             "We believe that WG21 will be unable to fix this problem without breaking ABI. "
             "To minimize breakage when a fix is implemented, "
             "we are temporarily disabling potentially problematic cases. "
-            "You can define _USE_JOIN_VIEW_INPUT_RANGE to suppress this diagnostic, "
+            "You can define _USE_JOIN_VIEW_INPUT_RANGE to suppress this error, "
             "but be aware that you will almost certainly need to recompile "
             "when we release a fix.");
 #endif // _USE_JOIN_VIEW_INPUT_RANGE
