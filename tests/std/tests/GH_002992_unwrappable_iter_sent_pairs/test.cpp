@@ -18,8 +18,8 @@ using namespace std;
 
 template <class _Rng>
 void test_range() {
-    STATIC_ASSERT(same_as<ranges::_Unwrapped_iterator_t<_Rng>, _Unwrapped_t<iterator_t<_Rng>>>);
-    STATIC_ASSERT(same_as<ranges::_Unwrapped_sentinel_t<_Rng>, _Unwrapped_t<sentinel_t<_Rng>>>);
+    STATIC_ASSERT(same_as<ranges::_Unwrapped_iterator_t<_Rng>, _Unwrapped_t<ranges::iterator_t<_Rng>>>);
+    STATIC_ASSERT(same_as<ranges::_Unwrapped_sentinel_t<_Rng>, _Unwrapped_t<ranges::sentinel_t<_Rng>>>);
 }
 
 int main() {

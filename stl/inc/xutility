@@ -1811,15 +1811,12 @@ namespace ranges {
     template <range _Rng>
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
 
-    // These allow us to check for unwrappability _at all_.
-    template <class _Iter>
-    concept _Weakly_unwrappable_iter = requires(_Iter&& _It) {
+    template <class _Sent, class _Iter>
+    concept _Unwrappable_sentinel_for = requires(
+        _Iter&& _It, remove_cvref_t<_Iter>& _MutIt, const remove_reference_t<_Sent>& _Se) {
         _STD forward<_Iter>(_It)._Unwrapped();
-        _It._Seek_to(_STD forward<_Iter>(_It)._Unwrapped());
-    };
-    template <class _Sent>
-    concept _Weakly_unwrappable_sent = requires {
-        _STD declval<_Sent>()._Unwrapped();
+        _MutIt._Seek_to(_STD forward<_Iter>(_It)._Unwrapped());
+        { _Se._Unwrapped() } -> sentinel_for<decltype(_STD forward<_Iter>(_It)._Unwrapped())>;
     };
 
     // This is a concept since `declval<_Iter>()._Unwrapped()` not compiling will result in false,
@@ -1827,45 +1824,15 @@ namespace ranges {
     template <class _Iter>
     concept _Nothrow_unwrappable = noexcept(_STD declval<_Iter>()._Unwrapped());
 
-    template <class _Iter>
-    decltype(auto) _Weakly_unwrap_iter(_Iter&& _It) noexcept(
-        !_Weakly_unwrappable_iter<_Iter> || _Nothrow_unwrappable<_Iter>) {
-        if constexpr (_Weakly_unwrappable_iter<_Iter>) {
-            return static_cast<_Iter&&>(_It)._Unwrapped();
-        } else {
-            return static_cast<_Iter&&>(_It);
-        }
-    }
-    template <class _Sent>
-    decltype(auto) _Weakly_unwrap_sent(_Sent&& _Se) noexcept(
-        !_Weakly_unwrappable_sent<_Sent> || _Nothrow_unwrappable<_Sent>) {
-        if constexpr (_Weakly_unwrappable_sent<_Sent>) {
-            return static_cast<_Sent&&>(_Se)._Unwrapped();
-        } else {
-            return static_cast<_Sent&&>(_Se);
-        }
-    }
-
-    template <class _Iter>
-    using _Weakly_unwrap_iter_t = remove_cvref_t<decltype(_Weakly_unwrap_iter(_STD declval<_Iter>()))>;
-    template <class _Sent>
-    using _Weakly_unwrap_sent_t = remove_cvref_t<decltype(_Weakly_unwrap_sent(_STD declval<_Sent>()))>;
-
-    template <class _Iter, class _Sent>
-    concept _Unwrappable_iter = _Weakly_unwrappable_iter<_Iter> //
-        && sentinel_for<_Weakly_unwrap_sent_t<_Sent>, _Weakly_unwrap_iter_t<_Iter>>;
-
-    template <class _Sent, class _Iter>
-    concept _Unwrappable_sent = _Weakly_unwrappable_sent<_Sent> //
-        && sentinel_for<_Weakly_unwrap_sent_t<_Sent>, _Weakly_unwrap_iter_t<_Iter>>;
-
     // clang-format off
     template <class _Sent, class _Iter>
         requires sentinel_for<remove_cvref_t<_Sent>, remove_cvref_t<_Iter>>
     constexpr decltype(auto) _Unwrap_iter(_Iter&& _It) noexcept(
-        !_Unwrappable_iter<_Iter, _Sent> || _Nothrow_unwrappable<_Iter>)
+        !_Unwrappable_sentinel_for<_Sent, _Iter> || _Nothrow_unwrappable<_Iter>)
     {
-        if constexpr (_Weakly_unwrappable_iter<_Iter>) {
+        if constexpr (is_pointer_v<remove_cvref_t<_Iter>>) {
+            return _It + 0;
+        } else if constexpr (_Unwrappable_sentinel_for<_Sent, _Iter>) {
             return static_cast<_Iter&&>(_It)._Unwrapped();
         } else {
             return static_cast<_Iter&&>(_It);
@@ -1874,9 +1841,11 @@ namespace ranges {
     template <class _Iter, class _Sent>
         requires sentinel_for<remove_cvref_t<_Sent>, remove_cvref_t<_Iter>>
     constexpr decltype(auto) _Unwrap_sent(_Sent&& _Se) noexcept(
-        !_Unwrappable_sent<_Sent, _Iter> || _Nothrow_unwrappable<_Sent>)
+        !_Unwrappable_sentinel_for<_Sent, _Iter> || _Nothrow_unwrappable<_Sent>)
     {
-        if constexpr (_Weakly_unwrappable_iter<_Sent>) {
+        if constexpr (is_pointer_v<remove_cvref_t<_Sent>>) {
+            return _Se + 0;
+        } else if constexpr (_Unwrappable_sentinel_for<_Sent, _Iter>) {
             return static_cast<_Sent&&>(_Se)._Unwrapped();
         } else {
             return static_cast<_Sent&&>(_Se);
@@ -1885,7 +1854,7 @@ namespace ranges {
 
     template <range _Rng, class _Iter>
         requires same_as<remove_cvref_t<_Iter>, iterator_t<_Rng>>
-    constexpr decltype(auto) _Unwrap_iter(_Iter&& _It)
+    constexpr decltype(auto) _Unwrap_range_iter(_Iter&& _It)
         noexcept(noexcept(_Unwrap_iter<sentinel_t<_Rng>>(_STD declval<_Iter>())))
     {
         return _Unwrap_iter<sentinel_t<_Rng>>(static_cast<_Iter&&>(_It));
@@ -1893,21 +1862,21 @@ namespace ranges {
 
     template <range _Rng, class _Sent>
         requires same_as<remove_cvref_t<_Sent>, sentinel_t<_Rng>>
-    constexpr decltype(auto) _Unwrap_sent(_Sent&& _Se)
+    constexpr decltype(auto) _Unwrap_range_sent(_Sent&& _Se)
         noexcept(noexcept(_Unwrap_sent<iterator_t<_Rng>>(_STD declval<_Sent>())))
     {
         return _Unwrap_sent<iterator_t<_Rng>>(static_cast<_Sent&&>(_Se));
     }
 
-    template <class _Iter, class _Other>
-    using _Unwrap_iter_t = remove_cvref_t<decltype(_Unwrap_iter<_Other>(_STD declval<_Iter>()))>;
-    template <class _Sent, class _Other>
-    using _Unwrap_sent_t = remove_cvref_t<decltype(_Unwrap_sent<_Other>(_STD declval<_Sent>()))>;
+    template <class _Iter, class _Sent>
+    using _Unwrap_iter_t = remove_cvref_t<decltype(_Unwrap_iter<_Sent>(_STD declval<_Iter>()))>;
+    template <class _Sent, class _Iter>
+    using _Unwrap_sent_t = remove_cvref_t<decltype(_Unwrap_sent<_Iter>(_STD declval<_Sent>()))>;
 
     template <range _Rng>
-    using _Unwrapped_iterator_t = _Unwrap_iter_t<iterator_t<_Rng>, _Rng>;
+    using _Unwrapped_iterator_t = _Unwrap_iter_t<iterator_t<_Rng>, sentinel_t<_Rng>>;
     template <range _Rng>
-    using _Unwrapped_sentinel_t = _Unwrap_sent_t<sentinel_t<_Rng>, _Rng>;
+    using _Unwrapped_sentinel_t = _Unwrap_sent_t<sentinel_t<_Rng>, iterator_t<_Rng>>;
 
 
     namespace _Unchecked_begin {
@@ -1918,7 +1887,7 @@ namespace ranges {
 
         template <class _Ty>
         concept _Can_begin = requires(_Ty& __t) {
-            _Unwrap_iter<_Ty>(_RANGES begin(__t));
+            _Unwrap_range_iter<_Ty>(_RANGES begin(__t));
         };
 
         class _Cpo {
@@ -1933,7 +1902,7 @@ namespace ranges {
                         same_as<decltype(_STD declval<_Ty>()._Unchecked_begin()), _Unwrapped_iterator_t<_Ty>>);
                     return {_St::_Member, noexcept(_STD declval<_Ty>()._Unchecked_begin())};
                 } else if constexpr (_Can_begin<_Ty>) {
-                    return {_St::_Unwrap, noexcept(_Unwrap_iter<_Ty>(_RANGES begin(_STD declval<_Ty>())))};
+                    return {_St::_Unwrap, noexcept(_Unwrap_range_iter<_Ty>(_RANGES begin(_STD declval<_Ty>())))};
                 } else {
                     return {_St::_None};
                 }
@@ -1952,7 +1921,7 @@ namespace ranges {
                 if constexpr (_Strat == _St::_Member) {
                     return _Val._Unchecked_begin();
                 } else if constexpr (_Strat == _St::_Unwrap) {
-                    return _Unwrap_iter<_Ty>(_RANGES begin(_Val));
+                    return _Unwrap_range_iter<_Ty>(_RANGES begin(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
                 }
@@ -1974,7 +1943,7 @@ namespace ranges {
 
         template <class _Ty>
         concept _Can_end = requires(_Ty& __t) {
-            _Unwrap_sent<_Ty>(_RANGES end(__t));
+            _Unwrap_range_sent<_Ty>(_RANGES end(__t));
         };
 
         class _Cpo {
@@ -1987,7 +1956,7 @@ namespace ranges {
                 if constexpr (_Has_member<_Ty>) {
                     return {_St::_Member, noexcept(_STD declval<_Ty>()._Unchecked_end())};
                 } else if constexpr (_Can_end<_Ty>) {
-                    return {_St::_Unwrap, noexcept(_Unwrap_sent<_Ty>(_RANGES end(_STD declval<_Ty>())))};
+                    return {_St::_Unwrap, noexcept(_Unwrap_range_sent<_Ty>(_RANGES end(_STD declval<_Ty>())))};
                 } else {
                     return {_St::_None};
                 }
@@ -2006,7 +1975,7 @@ namespace ranges {
                 if constexpr (_Strat == _St::_Member) {
                     return _Val._Unchecked_end();
                 } else if constexpr (_Strat == _St::_Unwrap) {
-                    return _Unwrap_sent<_Ty>(_RANGES end(_Val));
+                    return _Unwrap_range_sent<_Ty>(_RANGES end(_Val));
                 } else {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
                 }
@@ -2568,14 +2537,15 @@ namespace ranges {
             } else {
                 _Adl_verify_range(_Where, _Last);
 
-                decltype(auto) _UWhere = _Unwrap_iter<_Se>(static_cast<_It&&>(_Where));
-                decltype(auto) _ULast  = _Unwrap_sent<_It>(static_cast<_Se&&>(_Last));
+                decltype(auto) _UWhere      = _Unwrap_iter<_Se>(static_cast<_It&&>(_Where));
+                constexpr bool _Need_rewrap = !is_reference_v<decltype(_Unwrap_iter<_Se>(static_cast<_It&&>(_Where)))>;
+                decltype(auto) _ULast       = _Unwrap_sent<_It>(static_cast<_Se&&>(_Last));
 
                 while (_UWhere != _ULast) {
                     ++_UWhere;
                 }
 
-                if constexpr (_Unwrappable_iter<_It, _Se>) {
+                if constexpr (_Need_rewrap) {
                     _Seek_wrapped(_Where, _STD move(_UWhere));
                 }
             }
@@ -3923,7 +3893,7 @@ namespace ranges {
     _NODISCARD constexpr auto _Get_final_iterator_unwrapped(_Rng& _Range) {
         // find the (unwrapped) iterator in _Range which equals _Uend(_Range) [possibly O(N)]
         if constexpr (common_range<_Rng>) {
-            if constexpr (same_as<decltype(_Uend(_Range)), _Unwrapped_t<iterator_t<_Rng>>>) {
+            if constexpr (same_as<decltype(_Uend(_Range)), _Unwrapped_iterator_t<_Rng>>) {
                 return _Uend(_Range);
             } else {
                 return _Get_unwrapped(_RANGES end(_Range));
