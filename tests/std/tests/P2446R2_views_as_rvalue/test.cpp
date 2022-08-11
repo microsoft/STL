@@ -409,8 +409,8 @@ void test_example_from_p2446r2() {
     ranges::copy(words | views::as_rvalue, back_inserter(new_words)); // moves each string from words into new_words
 
     assert(ranges::equal(new_words, pattern));
-    assert(words.size() == pattern.size()); // size of words in preserved
-    assert(ranges::all_of(words, ranges::empty)); // all strings from words are empty
+    assert(words.size() == pattern.size()); // size of words is preserved
+    assert(ranges::all_of(words, ranges::empty)); // all strings from words are empty (implementation assumption)
 }
 
 int main() {
