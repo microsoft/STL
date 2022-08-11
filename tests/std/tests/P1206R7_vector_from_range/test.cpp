@@ -144,12 +144,15 @@ struct counted_item {
 
 int counted_item::count = 0;
 
+static_assert(!is_trivially_copy_constructible_v<counted_item>);
+static_assert(is_trivially_copy_assignable_v<counted_item>);
+
 void test_vso1591034() {
-    // _Uninitialized_copy was using incorrectly using memcpy for types that are
+    // _Uninitialized_copy was incorrectly using memmove for types that are
     // trivially assignable but not trivially constructible.
 
     counted_item::count = 0;
-    std::vector<counted_item> vec;
+    vector<counted_item> vec;
 
     for (int j = 0; j != 6; ++j) {
         vec.push_back(counted_item());
