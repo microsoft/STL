@@ -210,6 +210,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Validate as_rvalue_view::begin
     STATIC_ASSERT(CanMemberBegin<R>);
+    STATIC_ASSERT(same_as<iterator_t<R>, move_iterator<iterator_t<V>>>);
     {
         const same_as<iterator_t<R>> auto i = r.begin();
         if (!is_empty) {
@@ -244,6 +245,12 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
 
     // Validate as_rvalue_view::end
     STATIC_ASSERT(CanMemberEnd<R>);
+    if constexpr (common_range<V>) {
+        STATIC_ASSERT(same_as<sentinel_t<R>, move_iterator<iterator_t<V>>>);
+    } else {
+        STATIC_ASSERT(same_as<sentinel_t<R>, move_sentinel<sentinel_t<V>>>);
+    }
+
     {
         const same_as<sentinel_t<R>> auto s = r.end();
         assert((r.begin() == s) == is_empty);
