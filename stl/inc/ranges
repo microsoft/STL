@@ -5684,35 +5684,35 @@ namespace ranges {
                 requires random_access_range<_Base> {
                 if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    _STL_VERIFY(_Off == 1 || _Count <= (numeric_limits<difference_type>::max)() / (_Off - 1),
+                    _STL_VERIFY(_Count <= (numeric_limits<difference_type>::max)() / _Off,
                         "cannot advance chunk_view iterator past end (integer overflow)");
-                    _STL_VERIFY(_RANGES distance(_Current, _End) > _Count * (_Off - 1),
-                        "cannot advance chunk_view iterator past end");
+                    if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
+                        _STL_VERIFY(_End - _Current > _Count * (_Off - 1), //
+                            "cannot advance chunk_view iterator past end");
+                    }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                    _Missing = _RANGES advance(_Current, _Count * _Off, _End);
+
+                    // Per to-be-filed LWG issue (See GH-2995)
+                    if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
+                        _Missing = _RANGES advance(_Current, _Count * _Off, _End);
+                    } else {
+                        _Current += static_cast<difference_type>(_Count * (_Off - 1));
+                        _Missing = _RANGES advance(_Current, _Count, _End);
+                    }
                 } else if (_Off < 0) {
-                    _RANGES advance(_Current, _Count * _Off + _Missing);
+                    _Current += static_cast<difference_type>(_Count * _Off + _Missing);
                     _Missing = 0;
                 }
                 return *this;
             }
 
-            constexpr _Iterator& operator-=(const difference_type _Raw_off) /* not strengthened, see _RANGES advance */
+            constexpr _Iterator& operator-=(const difference_type _Off) /* not strengthened, see _RANGES advance */
                 requires random_access_range<_Base> {
-                const difference_type _Off = -_Raw_off;
-                if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    _STL_VERIFY(_Off == 1 || _Count <= (numeric_limits<difference_type>::max)() / (_Off - 1),
-                        "cannot advance chunk_view iterator past end (integer overflow)");
-                    _STL_VERIFY(_RANGES distance(_Current, _End) > _Count * (_Off - 1),
-                        "cannot advance chunk_view iterator past end");
+                _STL_VERIFY(_Off != (numeric_limits<difference_type>::min)(),
+                    "cannot advance chunk_view iterator past end (integer overflow)");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                    _Missing = _RANGES advance(_Current, _Count * _Off, _End);
-                } else if (_Off < 0) {
-                    _RANGES advance(_Current, _Count * _Off + _Missing);
-                    _Missing = 0;
-                }
-                return *this;
+                return *this += -_Off;
             }
 
             _NODISCARD constexpr value_type operator[](const difference_type _Off) const
@@ -6588,20 +6588,33 @@ namespace ranges {
             constexpr _Iterator& operator+=(const difference_type _Off) requires random_access_range<_Base> {
                 if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    _STL_VERIFY(_Off == 1 || _Stride <= (numeric_limits<difference_type>::max)() / (_Off - 1),
+                    _STL_VERIFY(_Stride <= (numeric_limits<difference_type>::max)() / _Off,
                         "cannot advance stride_view iterator past end (integer overflow)");
-                    _STL_VERIFY(_RANGES distance(_Current, _End) > _Stride * (_Off - 1),
-                        "cannot advance stride_view iterator past end");
+                    if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
+                        _STL_VERIFY(_End - _Current > _Stride * (_Off - 1), //
+                            "cannot advance stride_view iterator past end");
+                    }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                    _Missing = _RANGES advance(_Current, _Stride * _Off, _End);
+
+                    // Per to-be-filed LWG issue (See GH-2995)
+                    if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
+                        _Missing = _RANGES advance(_Current, _Stride * _Off, _End);
+                    } else {
+                        _Current += static_cast<difference_type>(_Stride * (_Off - 1));
+                        _Missing = _RANGES advance(_Current, _Stride, _End);
+                    }
                 } else if (_Off < 0) {
-                    _RANGES advance(_Current, _Stride * _Off + _Missing);
+                    _Current += static_cast<difference_type>(_Stride * _Off + _Missing);
                     _Missing = 0;
                 }
                 return *this;
             }
 
             constexpr _Iterator& operator-=(const difference_type _Off) requires random_access_range<_Base> {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Off != (numeric_limits<difference_type>::min)(),
+                    "cannot advance stride_view iterator past end (integer overflow)");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
                 return *this += -_Off;
             }
 
