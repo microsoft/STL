@@ -4912,14 +4912,14 @@ using mt19937 = mersenne_twister_engine<unsigned int, 32, 624, 397, 31, 0x9908b0
 
 #if _HAS_TR1_NAMESPACE
 _STL_DISABLE_DEPRECATED_WARNING
-using _Ranbase = subtract_with_carry<unsigned int, 1 << 24, 10, 24>;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<_Ranbase, 223, 24> ranlux3;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<_Ranbase, 389, 24> ranlux4;
+using _Ranbase                         = subtract_with_carry<unsigned int, 1 << 24, 10, 24>;
+using ranlux3 _DEPRECATE_TR1_NAMESPACE = discard_block<_Ranbase, 223, 24>;
+using ranlux4 _DEPRECATE_TR1_NAMESPACE = discard_block<_Ranbase, 389, 24>;
 
-_DEPRECATE_TR1_NAMESPACE typedef subtract_with_carry_01<float, 24, 10, 24> ranlux_base_01;
-_DEPRECATE_TR1_NAMESPACE typedef subtract_with_carry_01<double, 48, 5, 12> ranlux64_base_01;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<ranlux_base_01, 223, 24> ranlux3_01;
-_DEPRECATE_TR1_NAMESPACE typedef discard_block<ranlux_base_01, 389, 24> ranlux4_01;
+using ranlux_base_01 _DEPRECATE_TR1_NAMESPACE   = subtract_with_carry_01<float, 24, 10, 24>;
+using ranlux64_base_01 _DEPRECATE_TR1_NAMESPACE = subtract_with_carry_01<double, 48, 5, 12>;
+using ranlux3_01 _DEPRECATE_TR1_NAMESPACE       = discard_block<ranlux_base_01, 223, 24>;
+using ranlux4_01 _DEPRECATE_TR1_NAMESPACE       = discard_block<ranlux_base_01, 389, 24>;
 _STL_RESTORE_DEPRECATED_WARNING
 #endif // _HAS_TR1_NAMESPACE
 
