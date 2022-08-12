@@ -3414,11 +3414,14 @@ public:
             _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
 #endif // __cpp_lib_concepts
         } else {
-            difference_type _Off = _Saved_offset;
-
-            for (; _UFirst != _ULast; ++_UFirst, (void) ++_Off) {
-                insert(begin() + _Off, *_UFirst);
+            const auto _Old_size = this->_Mysize;
+            for (; _UFirst != _ULast; ++_UFirst) {
+                emplace_back(*_UFirst);
             }
+#if _ITERATOR_DEBUG_LEVEL == 2
+            _Orphan_range(static_cast<size_type>(_Saved_offset), _Old_size);
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+            _STD rotate(begin() + _Saved_offset, begin() + static_cast<difference_type>(_Old_size), end());
         }
 
         return begin() + _Saved_offset;
@@ -3435,11 +3438,16 @@ public:
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _Copy_n_unchecked4(_RANGES _Ubegin(_Range), _Count, begin() + _Off);
         } else {
-            auto _UFirst      = _RANGES _Ubegin(_Range);
-            const auto _ULast = _RANGES _Uend(_Range);
-            for (difference_type _Off = _Old_off; _UFirst != _ULast; ++_UFirst, (void) ++_Off) {
-                insert(begin() + _Off, *_UFirst);
+            auto _UFirst         = _RANGES _Ubegin(_Range);
+            const auto _ULast    = _RANGES _Uend(_Range);
+            const auto _Old_size = this->_Mysize;
+            for (; _UFirst != _ULast; ++_UFirst) {
+                emplace_back(*_UFirst);
             }
+#if _ITERATOR_DEBUG_LEVEL == 2
+            _Orphan_range(static_cast<size_type>(_Old_off), _Old_size);
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+            _STD rotate(begin() + _Old_off, begin() + static_cast<difference_type>(_Old_size), end());
         }
 
         return begin() + _Old_off;
