@@ -1363,6 +1363,17 @@ public:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
+#if _ITERATOR_DEBUG_LEVEL == 2
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            const auto _Valptr = _STD addressof(_Val);
+            _STL_VERIFY(!(_Unfancy(_Myfirst) <= _Valptr && _Valptr < _Unfancy(_Mylast)),
+                "assignment value cannot be a reference into the container");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
         constexpr bool _Nothrow_construct =
             conjunction_v<is_nothrow_copy_constructible<_Ty>, _Uses_default_construct<_Alloc, _Ty*, const _Ty&>>;
 

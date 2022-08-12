@@ -3669,6 +3669,38 @@ struct _Iter_copy_cat<_SourceIt, _DestIt, false> : _False_trivial_cat {};
 template <class _SourceIt, class _DestIt>
 struct _Iter_copy_cat<move_iterator<_SourceIt>, _DestIt, false> : _Iter_move_cat<_SourceIt, _DestIt> {};
 
+template <class _Iter1, class _Sent1, class _Iter2>
+_CONSTEXPR20 void _Verify_ranges_do_not_overlap(const _Iter1& _First1, const _Sent1& _Last1, const _Iter2& _First2) {
+#if _ITERATOR_DEBUG_LEVEL == 2
+    if constexpr (_Iterators_are_contiguous<_Iter1, _Iter2>
+#ifdef __cpp_lib_concepts
+                  && sized_sentinel_for<_Sent1, _Iter1>
+#endif // __cpp_lib_concepts
+    ) {
+#if _HAS_CXX20
+        if (_STD is_constant_evaluated()) {
+            return;
+        }
+#endif // _HAS_CXX20
+
+        const auto _Offset     = _Last1 - _First1;
+        const auto _Ptr1Offset = _Offset * sizeof(*_To_address(_First1));
+        const auto _Ptr2Offset = _Offset * sizeof(*_To_address(_First2));
+        // This cast to `cv char*` allows us to compare pointers to distinct types,
+        // in case one range provides storage for the other.
+        const auto _PtrFirst1 = reinterpret_cast<const volatile char*>(_To_address(_First1));
+        const auto _PtrLast1  = _PtrFirst1 + _Ptr1Offset;
+        const auto _PtrFirst2 = reinterpret_cast<const volatile char*>(_To_address(_First2));
+        const auto _PtrLast2  = _PtrFirst2 + _Ptr2Offset;
+        _STL_VERIFY(_PtrLast1 <= _PtrFirst2 || _PtrLast2 <= _PtrFirst1, "ranges should not overlap each other");
+    }
+#else // ^^^ _ITERATOR_DEBUG_LEVEL == 2 / _ITERATOR_DEBUG_LEVEL != 2 vvv
+    (void) _First1;
+    (void) _Last1;
+    (void) _First2;
+#endif // _ITERATOR_DEBUG_LEVEL != 2 ^^^
+}
+
 template <class _CtgIt, class _OutCtgIt>
 _OutCtgIt _Copy_memmove(_CtgIt _First, _CtgIt _Last, _OutCtgIt _Dest) {
     auto _FirstPtr              = _To_address(_First);
