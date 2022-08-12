@@ -313,7 +313,7 @@ public:
                                           is_assignable<_Ty&, _Ty2>>,
                               int> = 0>
     _CONSTEXPR20 optional& operator=(optional<_Ty2>&& _Right) noexcept(
-        is_nothrow_assignable_v<_Ty&, _Ty2&&>&& is_nothrow_constructible_v<_Ty, _Ty2&&>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty&, _Ty2>&& is_nothrow_constructible_v<_Ty, _Ty2>) /* strengthened */ {
         if (_Right) {
             this->_Assign(_STD move(*_Right));
         } else {
@@ -612,13 +612,14 @@ template <class _Ty>
 optional(_Ty) -> optional<_Ty>;
 
 template <class _Ty1, class _Ty2>
-#ifdef __cpp_lib_concepts
-    requires requires(const _Ty1& _Elem1, const _Ty2& _Elem2) {
-        { _Elem1 == _Elem2 } -> _Implicitly_convertible_to<bool>;
-    }
-#endif // __cpp_lib_concepts
 _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left == *_Right))) /* strengthened */ {
+    noexcept(_Fake_copy_init<bool>(*_Left == *_Right))) /* strengthened */
+#ifdef __cpp_lib_concepts
+    requires requires {
+    { *_Left == *_Right } -> _Implicitly_convertible_to<bool>;
+}
+#endif // __cpp_lib_concepts
+{
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
     if (_Left_has_value && _Right_has_value) {
@@ -628,13 +629,14 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const optional
 }
 
 template <class _Ty1, class _Ty2>
-#ifdef __cpp_lib_concepts
-    requires requires(const _Ty1& _Elem1, const _Ty2& _Elem2) {
-        { _Elem1 != _Elem2 } -> _Implicitly_convertible_to<bool>;
-    }
-#endif // __cpp_lib_concepts
 _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left != *_Right))) /* strengthened */ {
+    noexcept(_Fake_copy_init<bool>(*_Left != *_Right))) /* strengthened */
+#ifdef __cpp_lib_concepts
+    requires requires {
+    { *_Left != *_Right } -> _Implicitly_convertible_to<bool>;
+}
+#endif // __cpp_lib_concepts
+{
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
     if (_Left_has_value && _Right_has_value) {
@@ -644,13 +646,14 @@ _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const optional
 }
 
 template <class _Ty1, class _Ty2>
-#ifdef __cpp_lib_concepts
-    requires requires(const _Ty1& _Elem1, const _Ty2& _Elem2) {
-        { _Elem1 < _Elem2 } -> _Implicitly_convertible_to<bool>;
-    }
-#endif // __cpp_lib_concepts
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left < *_Right))) /* strengthened */ {
+    noexcept(_Fake_copy_init<bool>(*_Left < *_Right))) /* strengthened */
+#ifdef __cpp_lib_concepts
+    requires requires {
+    { *_Left < *_Right } -> _Implicitly_convertible_to<bool>;
+}
+#endif // __cpp_lib_concepts
+{
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
     if (_Left_has_value && _Right_has_value) {
@@ -660,13 +663,14 @@ _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const optional<
 }
 
 template <class _Ty1, class _Ty2>
-#ifdef __cpp_lib_concepts
-    requires requires(const _Ty1& _Elem1, const _Ty2& _Elem2) {
-        { _Elem1 > _Elem2 } -> _Implicitly_convertible_to<bool>;
-    }
-#endif // __cpp_lib_concepts
 _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left > *_Right))) /* strengthened */ {
+    noexcept(_Fake_copy_init<bool>(*_Left > *_Right))) /* strengthened */
+#ifdef __cpp_lib_concepts
+    requires requires {
+    { *_Left > *_Right } -> _Implicitly_convertible_to<bool>;
+}
+#endif // __cpp_lib_concepts
+{
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
     if (_Left_has_value && _Right_has_value) {
@@ -676,13 +680,14 @@ _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const optional<
 }
 
 template <class _Ty1, class _Ty2>
+_NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
+    noexcept(_Fake_copy_init<bool>(*_Left <= *_Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     requires requires(const _Ty1& _Elem1, const _Ty2& _Elem2) {
-        { _Elem1 <= _Elem2 } -> _Implicitly_convertible_to<bool>;
-    }
+    { *_Left <= *_Right } -> _Implicitly_convertible_to<bool>;
+}
 #endif // __cpp_lib_concepts
-_NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left <= *_Right))) /* strengthened */ {
+{
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
     if (_Left_has_value && _Right_has_value) {
@@ -692,13 +697,14 @@ _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const optional
 }
 
 template <class _Ty1, class _Ty2>
-#ifdef __cpp_lib_concepts
-    requires requires(const _Ty1& _Elem1, const _Ty2& _Elem2) {
-        { _Elem1 >= _Elem2 } -> _Implicitly_convertible_to<bool>;
-    }
-#endif // __cpp_lib_concepts
 _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left >= *_Right))) /* strengthened */ {
+    noexcept(_Fake_copy_init<bool>(*_Left >= *_Right))) /* strengthened */
+#ifdef __cpp_lib_concepts
+    requires requires {
+    { *_Left >= *_Right } -> _Implicitly_convertible_to<bool>;
+}
+#endif // __cpp_lib_concepts
+{
     const bool _Left_has_value  = _Left.has_value();
     const bool _Right_has_value = _Right.has_value();
     if (_Left_has_value && _Right_has_value) {
