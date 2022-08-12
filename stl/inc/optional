@@ -299,7 +299,7 @@ public:
                                           is_constructible<_Ty, const _Ty2&>, is_assignable<_Ty&, const _Ty2&>>,
                               int> = 0>
     _CONSTEXPR20 optional& operator=(const optional<_Ty2>& _Right) noexcept(
-        is_nothrow_assignable_v<Ty&, const _Ty2&>&& is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
+        is_nothrow_assignable_v<_Ty&, const _Ty2&>&& is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
         if (_Right) {
             this->_Assign(*_Right);
         } else {
