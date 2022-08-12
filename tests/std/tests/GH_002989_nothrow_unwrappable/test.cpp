@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <filesystem>
 #include <list>
 #include <type_traits>
 #include <vector>
 #include <xutility>
+
+#if _HAS_CXX17
+#include <filesystem>
+#endif
 
 #if _HAS_CXX20
 #include <ranges>
@@ -60,43 +63,43 @@ void do_full_test() {
 }
 
 struct BidiIterUnwrapThrowing : vector<int>::iterator {
-    using _Base = vector<int>::iterator;
+    using Base = vector<int>::iterator;
 
-    using _Base::_Base;
+    using Base::Base;
 
     using iterator_concept  = bidirectional_iterator_tag;
     using iterator_category = bidirectional_iterator_tag;
 
     BidiIterUnwrapThrowing& operator++() {
-        _Base::operator++();
+        Base::operator++();
         return *this;
     }
     BidiIterUnwrapThrowing operator++(int) {
         auto res = *this;
-        _Base::operator++();
+        Base::operator++();
         return res;
     }
     BidiIterUnwrapThrowing& operator--() {
-        _Base::operator--();
+        Base::operator--();
         return *this;
     }
     BidiIterUnwrapThrowing operator--(int) {
         auto res = *this;
-        _Base::operator--();
+        Base::operator--();
         return res;
     }
 
     using _Prevent_inheriting_unwrap = BidiIterUnwrapThrowing;
 
     int* _Unwrapped() const& noexcept(false) {
-        return _Base::_Unwrapped();
+        return Base::_Unwrapped();
     }
     int* _Unwrapped() && noexcept {
-        return move(*this)._Base::_Unwrapped();
+        return move(*this).Base::_Unwrapped();
     }
 
     void _Seek_to(int* p) & noexcept {
-        _Base::_Seek_to(p);
+        Base::_Seek_to(p);
     }
 };
 
