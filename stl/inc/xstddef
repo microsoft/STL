@@ -41,6 +41,30 @@ struct binary_function { // base class for binary functions
 };
 #endif // _HAS_AUTO_PTR_ETC
 
+#pragma warning(push)
+#pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data (/Wall)
+#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message.)
+#pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch (/Wall)
+#pragma warning(disable : 5215) // '%s' a function parameter with a volatile qualified type is deprecated in C++20
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif // __clang__
+
+template <class _Ty>
+_NODISCARD _Ty _Fake_copy_init(_Ty) noexcept;
+// _Fake_copy_init<T>(E):
+// (1) has type T [decay_t<decltype((E))> if T is deduced],
+// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
+// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+
+#pragma warning(pop)
+
 template <class _Ty = void>
 struct plus {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
@@ -81,7 +105,7 @@ struct equal_to {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
-        noexcept(noexcept(_Left == _Right)) {
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left == _Right))) /* strengthened */ {
         return _Left == _Right;
     }
 };
@@ -93,7 +117,7 @@ struct not_equal_to {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
-        noexcept(noexcept(_Left != _Right)) {
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left != _Right))) /* strengthened */ {
         return _Left != _Right;
     }
 };
@@ -104,7 +128,8 @@ struct greater {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
-    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const noexcept(noexcept(_Left > _Right)) {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left > _Right))) /* strengthened */ {
         return _Left > _Right;
     }
 };
@@ -115,7 +140,8 @@ struct less {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
-    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const noexcept(noexcept(_Left < _Right)) {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left < _Right))) /* strengthened */ {
         return _Left < _Right;
     }
 };
@@ -127,7 +153,7 @@ struct greater_equal {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
-        noexcept(noexcept(_Left >= _Right)) {
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left >= _Right))) /* strengthened */ {
         return _Left >= _Right;
     }
 };
@@ -139,7 +165,7 @@ struct less_equal {
     _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
 
     _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
-        noexcept(noexcept(_Left <= _Right)) {
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left <= _Right))) /* strengthened */ {
         return _Left <= _Right;
     }
 };

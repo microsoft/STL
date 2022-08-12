@@ -1383,8 +1383,9 @@ protected:
 };
 
 template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator==(const reverse_iterator<_BidIt1>& _Left,
-    const reverse_iterator<_BidIt2>& _Right) noexcept(noexcept(_Left._Get_current() == _Right._Get_current()))
+_NODISCARD _CONSTEXPR17 bool
+    operator==(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() == _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1395,8 +1396,9 @@ _NODISCARD _CONSTEXPR17 bool operator==(const reverse_iterator<_BidIt1>& _Left,
 { return _Left._Get_current() == _Right._Get_current(); }
 
 template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator!=(const reverse_iterator<_BidIt1>& _Left,
-    const reverse_iterator<_BidIt2>& _Right) noexcept(noexcept(_Left._Get_current() != _Right._Get_current()))
+_NODISCARD _CONSTEXPR17 bool
+    operator!=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() != _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1407,8 +1409,9 @@ _NODISCARD _CONSTEXPR17 bool operator!=(const reverse_iterator<_BidIt1>& _Left,
 { return _Left._Get_current() != _Right._Get_current(); }
 
 template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator<(const reverse_iterator<_BidIt1>& _Left,
-    const reverse_iterator<_BidIt2>& _Right) noexcept(noexcept(_Left._Get_current() > _Right._Get_current()))
+_NODISCARD _CONSTEXPR17 bool
+    operator<(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() > _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1419,8 +1422,9 @@ _NODISCARD _CONSTEXPR17 bool operator<(const reverse_iterator<_BidIt1>& _Left,
 { return _Left._Get_current() > _Right._Get_current(); }
 
 template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator>(const reverse_iterator<_BidIt1>& _Left,
-    const reverse_iterator<_BidIt2>& _Right) noexcept(noexcept(_Left._Get_current() < _Right._Get_current()))
+_NODISCARD _CONSTEXPR17 bool
+    operator>(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() < _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1431,8 +1435,9 @@ _NODISCARD _CONSTEXPR17 bool operator>(const reverse_iterator<_BidIt1>& _Left,
 { return _Left._Get_current() < _Right._Get_current(); }
 
 template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator<=(const reverse_iterator<_BidIt1>& _Left,
-    const reverse_iterator<_BidIt2>& _Right) noexcept(noexcept(_Left._Get_current() >= _Right._Get_current()))
+_NODISCARD _CONSTEXPR17 bool
+    operator<=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() >= _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1443,8 +1448,9 @@ _NODISCARD _CONSTEXPR17 bool operator<=(const reverse_iterator<_BidIt1>& _Left,
 { return _Left._Get_current() >= _Right._Get_current(); }
 
 template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 bool operator>=(const reverse_iterator<_BidIt1>& _Left,
-    const reverse_iterator<_BidIt2>& _Right) noexcept(noexcept(_Left._Get_current() <= _Right._Get_current()))
+_NODISCARD _CONSTEXPR17 bool
+    operator>=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() <= _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1456,22 +1462,24 @@ _NODISCARD _CONSTEXPR17 bool operator>=(const reverse_iterator<_BidIt1>& _Left,
 
 #ifdef __cpp_lib_concepts
 template <class _BidIt1, three_way_comparable_with<_BidIt1> _BidIt2>
-_NODISCARD constexpr compare_three_way_result_t<_BidIt1, _BidIt2> operator<=>(const reverse_iterator<_BidIt1>& _Left,
-    const reverse_iterator<_BidIt2>& _Right) noexcept(noexcept(_Right._Get_current() <=> _Left._Get_current())) {
+_NODISCARD constexpr compare_three_way_result_t<_BidIt1, _BidIt2>
+    operator<=>(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
+        noexcept(_Right._Get_current() <=> _Left._Get_current())) /* strengthened */ {
     return _Right._Get_current() <=> _Left._Get_current();
 }
 #endif // __cpp_lib_concepts
 
 template <class _BidIt1, class _BidIt2>
-_NODISCARD _CONSTEXPR17 auto operator-(const reverse_iterator<_BidIt1>& _Left,
-    const reverse_iterator<_BidIt2>& _Right) noexcept(noexcept(_Right._Get_current() - _Left._Get_current()))
+_NODISCARD _CONSTEXPR17 auto
+    operator-(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
+        noexcept(_Right._Get_current() - _Left._Get_current())) /* strengthened */
     -> decltype(_Right._Get_current() - _Left._Get_current()) {
     return _Right._Get_current() - _Left._Get_current();
 }
 
 template <class _BidIt>
 _NODISCARD _CONSTEXPR17 reverse_iterator<_BidIt> operator+(typename reverse_iterator<_BidIt>::difference_type _Off,
-    const reverse_iterator<_BidIt>& _Right) noexcept(noexcept(_Right + _Off)) {
+    const reverse_iterator<_BidIt>& _Right) noexcept(noexcept(_Right + _Off)) /* strengthened */ {
     return _Right + _Off;
 }
 
@@ -1641,6 +1649,8 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 }
 
 #ifdef __cpp_lib_concepts
+// Note that this is equivalent to xstddef's _Fake_copy_init (and _Implicitly_convert_to).
+// TODO: replace _Fake_decay_copy with _Fake_copy_init.
 template <class _Ty>
 _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 // _Fake_decay_copy<T>(E):
@@ -3464,8 +3474,9 @@ private:
 };
 
 template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator==(const move_iterator<_Iter1>& _Left,
-    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() == _Right.base()))
+_NODISCARD _CONSTEXPR17 bool
+    operator==(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
+        noexcept(_Fake_copy_init<bool>(_Left.base() == _Right.base()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -3477,15 +3488,17 @@ _NODISCARD _CONSTEXPR17 bool operator==(const move_iterator<_Iter1>& _Left,
 
 #if !_HAS_CXX20
 template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator!=(
-    const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left == _Right)) {
+_NODISCARD _CONSTEXPR17 bool
+    operator!=(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
+        noexcept(_Fake_copy_init<bool>(!(_Left == _Right)))) /* strengthened */ {
     return !(_Left == _Right);
 }
 #endif // !_HAS_CXX20
 
 template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator<(const move_iterator<_Iter1>& _Left,
-    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() < _Right.base()))
+_NODISCARD _CONSTEXPR17 bool
+    operator<(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
+        noexcept(_Fake_copy_init<bool>(_Left.base() < _Right.base()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -3496,8 +3509,8 @@ _NODISCARD _CONSTEXPR17 bool operator<(const move_iterator<_Iter1>& _Left,
 { return _Left.base() < _Right.base(); }
 
 template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator>(
-    const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left))
+_NODISCARD _CONSTEXPR17 bool operator>(const move_iterator<_Iter1>& _Left,
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Fake_copy_init<bool>(_Right < _Left))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires { _Right < _Left; }
@@ -3506,8 +3519,8 @@ _NODISCARD _CONSTEXPR17 bool operator>(
 { return _Right < _Left; }
 
 template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator<=(
-    const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left))
+_NODISCARD _CONSTEXPR17 bool operator<=(const move_iterator<_Iter1>& _Left,
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Fake_copy_init<bool>(_Right < _Left))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires { _Right < _Left; }
@@ -3516,8 +3529,8 @@ _NODISCARD _CONSTEXPR17 bool operator<=(
 { return !(_Right < _Left); }
 
 template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool operator>=(
-    const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left < _Right))
+_NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left,
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Fake_copy_init<bool>(_Left < _Right))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires { _Left < _Right; }
@@ -3528,21 +3541,22 @@ _NODISCARD _CONSTEXPR17 bool operator>=(
 #ifdef __cpp_lib_concepts
 template <class _Iter1, three_way_comparable_with<_Iter1> _Iter2>
 _NODISCARD constexpr compare_three_way_result_t<_Iter1, _Iter2> operator<=>(const move_iterator<_Iter1>& _Left,
-    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() <=> _Right.base())) {
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() <=> _Right.base())) /* strengthened */ {
     return _Left.base() <=> _Right.base();
 }
 #endif // __cpp_lib_concepts
 
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 auto operator-(const move_iterator<_Iter1>& _Left,
-    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() - _Right.base()))
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() - _Right.base())) /* strengthened */
     -> decltype(_Left.base() - _Right.base()) {
     return _Left.base() - _Right.base();
 }
 
 template <class _Iter>
-_NODISCARD _CONSTEXPR17 move_iterator<_Iter> operator+(typename move_iterator<_Iter>::difference_type _Off,
-    const move_iterator<_Iter>& _Right) noexcept(noexcept(move_iterator<_Iter>(_Right.base() + _Off)))
+_NODISCARD _CONSTEXPR17 move_iterator<_Iter>
+    operator+(typename move_iterator<_Iter>::difference_type _Off, const move_iterator<_Iter>& _Right) noexcept(
+        noexcept(move_iterator<_Iter>(_Right.base() + _Off))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
