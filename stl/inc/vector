@@ -1542,7 +1542,6 @@ public:
         _Assign_counted_range(_Ilist.begin(), _Count);
     }
 
-public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
         if (this == _STD addressof(_Right)) {
             return *this;
@@ -2998,7 +2997,6 @@ public:
         this->_Swap_proxy_and_iterators(_Right);
     }
 
-public:
     _CONSTEXPR20 vector& operator=(vector&& _Right) noexcept(is_nothrow_move_assignable_v<_Mybase>) {
         if (this == _STD addressof(_Right)) {
             return *this;
@@ -3082,7 +3080,6 @@ public:
 
     _CONSTEXPR20 ~vector() noexcept {}
 
-public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
         if (this == _STD addressof(_Right)) {
             return *this;
