@@ -495,7 +495,10 @@ tests\P1206R7_priority_queue_from_range
 tests\P1206R7_priority_queue_push_range
 tests\P1206R7_queue_from_range
 tests\P1206R7_queue_push_range
-tests\P1206R7_ranges_to
+tests\P1206R7_ranges_to_mappish
+tests\P1206R7_ranges_to_misc
+tests\P1206R7_ranges_to_sequence
+tests\P1206R7_ranges_to_settish
 tests\P1206R7_set_from_range
 tests\P1206R7_set_insert_range
 tests\P1206R7_stack_from_range
