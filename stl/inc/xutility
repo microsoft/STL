@@ -169,7 +169,6 @@ _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 // (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
 // (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
 
-
 template <class _Ty>
 struct _Get_first_parameter;
 
@@ -1213,8 +1212,8 @@ _NODISCARD _CONSTEXPR17 _BidIt prev(_BidIt _First, _Iter_diff_t<_BidIt> _Off = 1
 }
 
 template <class _Iter, class _Pointer, bool = is_pointer_v<_Remove_cvref_t<_Iter>>>
-_INLINE_VAR constexpr bool _Has_nothrow_operator_arrow = noexcept(
-    _Implicitly_convert_to<_Pointer>(_STD declval<_Iter>()));
+_INLINE_VAR constexpr bool _Has_nothrow_operator_arrow = _Is_nothrow_convertible_v<_Iter, _Pointer>;
+
 template <class _Iter, class _Pointer>
 _INLINE_VAR constexpr bool _Has_nothrow_operator_arrow<_Iter, _Pointer, false> = noexcept(
     _Implicitly_convert_to<_Pointer>(_STD declval<_Iter>().operator->()));
@@ -1548,13 +1547,13 @@ _NODISCARD constexpr _Ty* end(_Ty (&_Array)[_Size]) noexcept {
 }
 
 template <class _Container>
-_NODISCARD constexpr auto cbegin(const _Container& _Cont) noexcept(noexcept(_STD begin(_Cont))) /* strengthened */
+_NODISCARD constexpr auto cbegin(const _Container& _Cont) noexcept(noexcept(_STD begin(_Cont)))
     -> decltype(_STD begin(_Cont)) {
     return _STD begin(_Cont);
 }
 
 template <class _Container>
-_NODISCARD constexpr auto cend(const _Container& _Cont) noexcept(noexcept(_STD end(_Cont))) /* strengthened */
+_NODISCARD constexpr auto cend(const _Container& _Cont) noexcept(noexcept(_STD end(_Cont)))
     -> decltype(_STD end(_Cont)) {
     return _STD end(_Cont);
 }
@@ -3536,7 +3535,7 @@ _NODISCARD _CONSTEXPR17 bool
 #if !_HAS_CXX20
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator!=(const move_iterator<_Iter1>& _Left,
-    const move_iterator<_Iter2>& _Right) noexcept(noexcept(!(_Left == _Right))) /* strengthened */ {
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left == _Right)) /* strengthened */ {
     return !(_Left == _Right);
 }
 #endif // !_HAS_CXX20
