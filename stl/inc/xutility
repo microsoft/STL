@@ -1650,7 +1650,7 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 
 #ifdef __cpp_lib_concepts
 // Note that this is equivalent to xstddef's _Fake_copy_init (and _Implicitly_convert_to).
-// TODO: replace _Fake_decay_copy with _Fake_copy_init.
+// Transition, replace _Fake_decay_copy with _Fake_copy_init.
 template <class _Ty>
 _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 // _Fake_decay_copy<T>(E):
@@ -3488,9 +3488,8 @@ _NODISCARD _CONSTEXPR17 bool
 
 #if !_HAS_CXX20
 template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 bool
-    operator!=(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-        noexcept(_Fake_copy_init<bool>(!(_Left == _Right)))) /* strengthened */ {
+_NODISCARD _CONSTEXPR17 bool operator!=(const move_iterator<_Iter1>& _Left,
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left == _Right)) /* strengthened */ {
     return !(_Left == _Right);
 }
 #endif // !_HAS_CXX20
@@ -3510,7 +3509,7 @@ _NODISCARD _CONSTEXPR17 bool
 
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator>(const move_iterator<_Iter1>& _Left,
-    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Fake_copy_init<bool>(_Right < _Left))) /* strengthened */
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires { _Right < _Left; }
@@ -3520,7 +3519,7 @@ _NODISCARD _CONSTEXPR17 bool operator>(const move_iterator<_Iter1>& _Left,
 
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator<=(const move_iterator<_Iter1>& _Left,
-    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Fake_copy_init<bool>(_Right < _Left))) /* strengthened */
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Right < _Left)) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires { _Right < _Left; }
@@ -3530,7 +3529,7 @@ _NODISCARD _CONSTEXPR17 bool operator<=(const move_iterator<_Iter1>& _Left,
 
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool operator>=(const move_iterator<_Iter1>& _Left,
-    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Fake_copy_init<bool>(_Left < _Right))) /* strengthened */
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left < _Right)) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires { _Left < _Right; }

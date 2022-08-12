@@ -1600,7 +1600,7 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
 #endif // __clang__
 
 // Note that this is equivalent to xstddef's _Fake_copy_init (and _Fake_decay_copy).
-// TODO: replace _Implicitly_convert_to with _Fake_copy_init.
+// TRANSITION, replace _Implicitly_convert_to with _Fake_copy_init.
 template <class _To>
 void _Implicitly_convert_to(_To) noexcept; // not defined
 
