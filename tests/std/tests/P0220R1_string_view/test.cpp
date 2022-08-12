@@ -1204,10 +1204,7 @@ static_assert(test_case_ntcts_constructor<constexpr_char_traits>());
 static_assert(test_case_buffer_constructor());
 static_assert(test_case_contiguous_constructor());
 static_assert(test_case_range_constructor());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-284079 "C1XX's C++14 constexpr emits bogus warnings C4146,
-                                           // C4308, C4307 for basic_string_view::iterator"
 static_assert(test_case_iterators<char, constexpr_char_traits>());
-#endif // VSO-284079
 static_assert(test_case_prefix<char, constexpr_char_traits>());
 static_assert(test_case_suffix<char, constexpr_char_traits>());
 static_assert(test_case_swap<char, constexpr_char_traits>());

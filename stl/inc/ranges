@@ -1627,6 +1627,124 @@ namespace ranges {
         using all_t = decltype(all(_STD declval<_Rng>()));
     } // namespace views
 
+#if _HAS_CXX23
+    template <input_range _Vw>
+        requires view<_Vw>
+    class as_rvalue_view : public view_interface<as_rvalue_view<_Vw>> {
+    private:
+        /* [[no_unique_address]] */ _Vw _Range{};
+
+        template <range _Rng>
+        static constexpr bool _Is_end_nothrow_v = noexcept(move_sentinel{_RANGES end(_STD declval<_Rng&>())});
+
+        template <common_range _Rng>
+        static constexpr bool _Is_end_nothrow_v<_Rng> = noexcept(move_iterator{_RANGES end(_STD declval<_Rng&>())});
+
+    public:
+        // clang-format off
+        as_rvalue_view() requires default_initializable<_Vw> = default;
+        // clang-format on
+
+        constexpr explicit as_rvalue_view(_Vw _Range_) noexcept(is_nothrow_move_constructible_v<_Vw>) // strengthened
+            : _Range(_STD move(_Range_)) {}
+
+        _NODISCARD constexpr _Vw base() const& noexcept(is_nothrow_copy_constructible_v<_Vw>) // strengthened
+            requires copy_constructible<_Vw> {
+            return _Range;
+        }
+
+        _NODISCARD constexpr _Vw base() && noexcept(is_nothrow_move_constructible_v<_Vw>) /* strengthened */ {
+            return _STD move(_Range);
+        }
+
+        _NODISCARD constexpr auto begin() noexcept(noexcept(move_iterator{_RANGES begin(_Range)})) // strengthened
+            requires(!_Simple_view<_Vw>) {
+            return move_iterator{_RANGES begin(_Range)};
+        }
+
+        _NODISCARD constexpr auto begin() const noexcept(noexcept(move_iterator{_RANGES begin(_Range)})) // strengthened
+            requires range<const _Vw> {
+            return move_iterator{_RANGES begin(_Range)};
+        }
+
+        _NODISCARD constexpr auto end() noexcept(_Is_end_nothrow_v<_Vw>) // strengthened
+            requires(!_Simple_view<_Vw>) {
+            if constexpr (common_range<_Vw>) {
+                return move_iterator{_RANGES end(_Range)};
+            } else {
+                return move_sentinel{_RANGES end(_Range)};
+            }
+        }
+
+        _NODISCARD constexpr auto end() const noexcept(_Is_end_nothrow_v<const _Vw>) // strengthened
+            requires range<const _Vw> {
+            if constexpr (common_range<const _Vw>) {
+                return move_iterator{_RANGES end(_Range)};
+            } else {
+                return move_sentinel{_RANGES end(_Range)};
+            }
+        }
+
+        _NODISCARD constexpr auto size() noexcept(noexcept(_RANGES size(_Range))) // strengthened
+            requires sized_range<_Vw> {
+            return _RANGES size(_Range);
+        }
+
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_RANGES size(_Range))) // strengthened
+            requires sized_range<const _Vw> {
+            return _RANGES size(_Range);
+        }
+    };
+
+    template <class _Rng>
+    as_rvalue_view(_Rng&&) -> as_rvalue_view<views::all_t<_Rng>>;
+
+    template <class _Rng>
+    inline constexpr bool enable_borrowed_range<as_rvalue_view<_Rng>> = enable_borrowed_range<_Rng>;
+
+    namespace views {
+        template <class _Rng>
+        concept _Can_as_rvalue = requires(_Rng&& __r) {
+            as_rvalue_view{static_cast<_Rng&&>(__r)};
+        };
+
+        class _As_rvalue_fn : public _Pipe::_Base<_As_rvalue_fn> {
+        private:
+            enum class _St { _None, _All, _As_rvalue };
+
+            template <class _Rng>
+            _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
+                if constexpr (same_as<range_rvalue_reference_t<_Rng>, range_reference_t<_Rng>>) {
+                    return {_St::_All, noexcept(views::all(_STD declval<_Rng>()))};
+                } else if constexpr (_Can_as_rvalue<_Rng>) {
+                    return {_St::_As_rvalue, noexcept(as_rvalue_view{_STD declval<_Rng>()})};
+                } else {
+                    return {_St::_None};
+                }
+            }
+
+            template <class _Rng>
+            static constexpr _Choice_t<_St> _Choice = _Choose<_Rng>();
+
+        public:
+            template <viewable_range _Rng>
+                requires(_Choice<_Rng>._Strategy != _St::_None)
+            _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(_Choice<_Rng>._No_throw) {
+                constexpr _St _Strat = _Choice<_Rng>._Strategy;
+                if constexpr (_Strat == _St::_All) {
+                    return views::all(_STD forward<_Rng>(_Range));
+                } else if constexpr (_Strat == _St::_As_rvalue) {
+                    return as_rvalue_view{_STD forward<_Rng>(_Range)};
+                } else {
+                    static_assert(_Always_false<_Rng>, "Should be unreachable");
+                }
+            }
+        };
+
+        inline constexpr _As_rvalue_fn as_rvalue;
+    } // namespace views
+#endif // _HAS_CXX23
+
     template <input_range _Vw, indirect_unary_predicate<iterator_t<_Vw>> _Pr>
         requires view<_Vw> && is_object_v<_Pr>
     class filter_view : public _Cached_position_t<forward_range<_Vw>, _Vw, filter_view<_Vw, _Pr>> {
@@ -3079,7 +3197,7 @@ namespace ranges {
             "We believe that WG21 will be unable to fix this problem without breaking ABI. "
             "To minimize breakage when a fix is implemented, "
             "we are temporarily disabling potentially problematic cases. "
-            "You can define _USE_JOIN_VIEW_INPUT_RANGE to suppress this diagnostic, "
+            "You can define _USE_JOIN_VIEW_INPUT_RANGE to suppress this error, "
             "but be aware that you will almost certainly need to recompile "
             "when we release a fix.");
 #endif // _USE_JOIN_VIEW_INPUT_RANGE
@@ -5566,35 +5684,35 @@ namespace ranges {
                 requires random_access_range<_Base> {
                 if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    _STL_VERIFY(_Off == 1 || _Count <= (numeric_limits<difference_type>::max)() / (_Off - 1),
+                    _STL_VERIFY(_Count <= (numeric_limits<difference_type>::max)() / _Off,
                         "cannot advance chunk_view iterator past end (integer overflow)");
-                    _STL_VERIFY(_RANGES distance(_Current, _End) > _Count * (_Off - 1),
-                        "cannot advance chunk_view iterator past end");
+                    if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
+                        _STL_VERIFY(_End - _Current > _Count * (_Off - 1), //
+                            "cannot advance chunk_view iterator past end");
+                    }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                    _Missing = _RANGES advance(_Current, _Count * _Off, _End);
+
+                    // Per to-be-filed LWG issue (See GH-2995)
+                    if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
+                        _Missing = _RANGES advance(_Current, _Count * _Off, _End);
+                    } else {
+                        _Current += static_cast<difference_type>(_Count * (_Off - 1));
+                        _Missing = _RANGES advance(_Current, _Count, _End);
+                    }
                 } else if (_Off < 0) {
-                    _RANGES advance(_Current, _Count * _Off + _Missing);
+                    _Current += static_cast<difference_type>(_Count * _Off + _Missing);
                     _Missing = 0;
                 }
                 return *this;
             }
 
-            constexpr _Iterator& operator-=(const difference_type _Raw_off) /* not strengthened, see _RANGES advance */
+            constexpr _Iterator& operator-=(const difference_type _Off) /* not strengthened, see _RANGES advance */
                 requires random_access_range<_Base> {
-                const difference_type _Off = -_Raw_off;
-                if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    _STL_VERIFY(_Off == 1 || _Count <= (numeric_limits<difference_type>::max)() / (_Off - 1),
-                        "cannot advance chunk_view iterator past end (integer overflow)");
-                    _STL_VERIFY(_RANGES distance(_Current, _End) > _Count * (_Off - 1),
-                        "cannot advance chunk_view iterator past end");
+                _STL_VERIFY(_Off != (numeric_limits<difference_type>::min)(),
+                    "cannot advance chunk_view iterator past end (integer overflow)");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                    _Missing = _RANGES advance(_Current, _Count * _Off, _End);
-                } else if (_Off < 0) {
-                    _RANGES advance(_Current, _Count * _Off + _Missing);
-                    _Missing = 0;
-                }
-                return *this;
+                return *this += -_Off;
             }
 
             _NODISCARD constexpr value_type operator[](const difference_type _Off) const
@@ -6470,20 +6588,33 @@ namespace ranges {
             constexpr _Iterator& operator+=(const difference_type _Off) requires random_access_range<_Base> {
                 if (_Off > 0) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-                    _STL_VERIFY(_Off == 1 || _Stride <= (numeric_limits<difference_type>::max)() / (_Off - 1),
+                    _STL_VERIFY(_Stride <= (numeric_limits<difference_type>::max)() / _Off,
                         "cannot advance stride_view iterator past end (integer overflow)");
-                    _STL_VERIFY(_RANGES distance(_Current, _End) > _Stride * (_Off - 1),
-                        "cannot advance stride_view iterator past end");
+                    if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
+                        _STL_VERIFY(_End - _Current > _Stride * (_Off - 1), //
+                            "cannot advance stride_view iterator past end");
+                    }
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-                    _Missing = _RANGES advance(_Current, _Stride * _Off, _End);
+
+                    // Per to-be-filed LWG issue (See GH-2995)
+                    if constexpr (sized_sentinel_for<_Base_sentinel, _Base_iterator>) {
+                        _Missing = _RANGES advance(_Current, _Stride * _Off, _End);
+                    } else {
+                        _Current += static_cast<difference_type>(_Stride * (_Off - 1));
+                        _Missing = _RANGES advance(_Current, _Stride, _End);
+                    }
                 } else if (_Off < 0) {
-                    _RANGES advance(_Current, _Stride * _Off + _Missing);
+                    _Current += static_cast<difference_type>(_Stride * _Off + _Missing);
                     _Missing = 0;
                 }
                 return *this;
             }
 
             constexpr _Iterator& operator-=(const difference_type _Off) requires random_access_range<_Base> {
+#if _ITERATOR_DEBUG_LEVEL != 0
+                _STL_VERIFY(_Off != (numeric_limits<difference_type>::min)(),
+                    "cannot advance stride_view iterator past end (integer overflow)");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
                 return *this += -_Off;
             }
 
