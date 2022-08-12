@@ -34,8 +34,8 @@ void do_single_test() {
     STATIC_ASSERT(_Unwrappable_v<It> == _Is_nothrow_unwrappable_v<It&&>);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<It>())));
 
-    STATIC_ASSERT(!_Unwrappable_v<It> || (_Is_nothrow_unwrappable_v<const It&> == CopyUnwrapNothrow));
-    STATIC_ASSERT(!_Unwrappable_v<It> || (_Is_nothrow_unwrappable_v<const It&&> == CopyUnwrapNothrow));
+    STATIC_ASSERT(!_Unwrappable_v<It> || _Is_nothrow_unwrappable_v<const It&> == CopyUnwrapNothrow);
+    STATIC_ASSERT(!_Unwrappable_v<It> || _Is_nothrow_unwrappable_v<const It&&> == CopyUnwrapNothrow);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<const It&>())) == CopyUnwrapNothrow);
     STATIC_ASSERT(noexcept(_Get_unwrapped(declval<const It&&>())) == CopyUnwrapNothrow);
 }
