@@ -3564,7 +3564,7 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter>
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return move_iterator<_Iter>{_Right.base() + _Off}; }
+{ return move_iterator<_Iter>(_Right.base() + _Off); }
 
 template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) { // make move_iterator from iterator
