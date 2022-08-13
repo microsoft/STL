@@ -2344,7 +2344,7 @@ struct _String_constructor_rvalue_allocator_tag {
     _Xlength_error("string too long");
 }
 
-#if 0 // TRANSITION, VSO-1586016: String annotations disabled temporarily.
+#if 1 // HACK // TRANSITION, VSO-1586016: String annotations disabled temporarily.
 #if !defined(_M_CEE_PURE) && !defined(_DISABLE_STRING_ANNOTATION)
 #if defined(__SANITIZE_ADDRESS__)
 #define _ACTIVATE_STRING_ANNOTATION

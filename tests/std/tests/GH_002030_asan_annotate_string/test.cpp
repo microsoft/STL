@@ -3,7 +3,7 @@
 
 // REQUIRES: asan, x64 || x86
 
-#if 0 // TRANSITION, VSO-1586016: String annotations disabled temporarily.
+#if 1 // HACK // TRANSITION, VSO-1586016: String annotations disabled temporarily.
 #pragma warning(disable : 4389) // signed/unsigned mismatch in arithmetic
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 #pragma warning(disable : 6326) // Potential comparison of a constant with another constant.
@@ -1845,6 +1845,6 @@ int main() {
     static_assert(test_DevCom_10116361());
 #endif // _HAS_CXX20
 }
-#endif // TRANSITION, VSO-1586016
-
+#else // ^^^ enabled / disabled vvv
 int main() {}
+#endif // TRANSITION, VSO-1586016
