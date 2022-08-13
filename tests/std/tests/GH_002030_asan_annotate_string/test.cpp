@@ -1822,6 +1822,15 @@ void run_allocator_matrix() {
     run_custom_allocator_matrix<CharType, implicit_allocator>();
 }
 
+_CONSTEXPR20 bool test_DevCom_10116361() {
+    // We failed to null-terminate copies of SSO strings.
+    string s0{"potato"};
+    string s1 = s0;
+    assert(s1.data()[6] == '\0');
+
+    return true;
+}
+
 int main() {
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
@@ -1830,6 +1839,11 @@ int main() {
     run_allocator_matrix<char16_t>();
     run_allocator_matrix<char32_t>();
     run_allocator_matrix<wchar_t>();
+
+    test_DevCom_10116361();
+#if _HAS_CXX20
+    static_assert(test_DevCom_10116361());
+#endif // _HAS_CXX20
 }
 #endif // TRANSITION, VSO-1586016
 
