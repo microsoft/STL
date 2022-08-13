@@ -1822,6 +1822,28 @@ void run_allocator_matrix() {
     run_custom_allocator_matrix<CharType, implicit_allocator>();
 }
 
+void test_DevCom_10116361() {
+    // We failed to null-terminate copies of SSO strings with ASAN annotations active.
+#ifdef _WIN64
+    constexpr const char* text = "testtest";
+    constexpr size_t n         = 8;
+#else
+    constexpr const char* text = "test";
+    constexpr size_t n         = 4;
+#endif
+
+    string s0{text};
+    assert(s0.c_str()[n] == '\0');
+
+    alignas(string) unsigned char space[sizeof(string)];
+    memset(space, 0xff, sizeof(space));
+
+    string& s1 = *::new (&space) string{s0};
+    assert(s1.c_str()[n] == '\0');
+
+    s1.~string();
+}
+
 int main() {
     run_allocator_matrix<char>();
 #ifdef __cpp_char8_t
@@ -1830,6 +1852,8 @@ int main() {
     run_allocator_matrix<char16_t>();
     run_allocator_matrix<char32_t>();
     run_allocator_matrix<wchar_t>();
+
+    test_DevCom_10116361();
 }
 #endif // TRANSITION, VSO-1586016
 
