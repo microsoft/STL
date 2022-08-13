@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
+#include <limits>
 #include <new>
 
 #if _HAS_CXX17 && !defined(_M_CEE)
@@ -20,10 +21,12 @@
 
 using namespace std;
 
+constexpr auto size_max = numeric_limits<size_t>::max();
+
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
 
-constexpr size_t prohibit_attempts_to_allocate = SIZE_MAX; // extension provided by our STL
-constexpr size_t max_allocate                  = SIZE_MAX - 1;
+constexpr size_t prohibit_attempts_to_allocate = size_max; // extension provided by our STL
+constexpr size_t max_allocate                  = size_max - 1;
 size_t g_max_memory                            = max_allocate;
 
 void* operator new(size_t size) {

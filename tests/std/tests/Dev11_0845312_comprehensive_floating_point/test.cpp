@@ -14,9 +14,13 @@
 #include <cstdio>
 #include <iomanip>
 #include <ios>
+#include <limits>
 #include <sstream>
 
 #include <floating_point_test_cases.hpp>
+
+constexpr auto int64_max  = std::numeric_limits<std::int64_t>::max();
+constexpr auto uint64_max = std::numeric_limits<std::uint64_t>::max();
 
 template <typename FloatingType>
 static FloatingType parse_as(char const*);
@@ -197,11 +201,11 @@ int main() {
     }
 
     // Verify a few large integer values:
-    verify_round_trip(static_cast<float>(INT64_MAX));
-    verify_round_trip(static_cast<float>(UINT64_MAX));
+    verify_round_trip(static_cast<float>(int64_max));
+    verify_round_trip(static_cast<float>(uint64_max));
 
-    verify_round_trip(static_cast<double>(INT64_MAX));
-    verify_round_trip(static_cast<double>(UINT64_MAX));
+    verify_round_trip(static_cast<double>(int64_max));
+    verify_round_trip(static_cast<double>(uint64_max));
 
     // https://www.exploringbinary.com/nondeterministic-floating-point-conversions-in-java/
     parse_and_verify_exact_bits_hex<double>("0x0.0000008p-1022", 0x0000000008000000ULL);
