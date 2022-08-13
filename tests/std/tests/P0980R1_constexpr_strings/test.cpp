@@ -165,10 +165,9 @@ struct string_view_convertible {
     }
 };
 
-// TRANSITION, EDG concepts support
 template <class Range1, class Range2>
 constexpr bool equalRanges(const Range1& range1, const Range2& range2) noexcept {
-#ifdef __cpp_lib_concepts
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395 (equalRanges should be replaced by direct calls to ranges::equal)
     return ranges::equal(range1, range2);
 #else // ^^^ __cpp_lib_concepts ^^^ / vvv !__cpp_lib_concepts vvv
     return equal(begin(range1), end(range1), begin(range2), end(range2));
@@ -613,17 +612,7 @@ constexpr bool test_interface() {
         literal_constructed.shrink_to_fit();
 
         const auto c4 = literal_constructed.capacity();
-        if (is_constant_evaluated()) { // check minimum allocation of _BUF_SIZE when constant evaluated
-            assert(c4 == 16 / sizeof(CharType));
-        } else {
-            if constexpr (is_same_v<CharType, char16_t> || is_same_v<CharType, wchar_t>) {
-                assert(c4 == 7);
-            } else if constexpr (is_same_v<CharType, char32_t>) {
-                assert(c4 == 3);
-            } else {
-                assert(c4 == 15);
-            }
-        }
+        assert(c4 == 16 / sizeof(CharType) - 1);
     }
 
     { // clear

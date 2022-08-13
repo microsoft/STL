@@ -161,16 +161,34 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
              (controlled by IncludeInLink and IncludeInImportLib). -->
         <BuildFiles Include="
             $(CrtRoot)\github\stl\src\asan_noop.cpp;
+            $(CrtRoot)\github\stl\src\charconv.cpp;
             $(CrtRoot)\github\stl\src\filesystem.cpp;
             $(CrtRoot)\github\stl\src\format.cpp;
             $(CrtRoot)\github\stl\src\locale0_implib.cpp;
             $(CrtRoot)\github\stl\src\nothrow.cpp;
             $(CrtRoot)\github\stl\src\sharedmutex.cpp;
+            $(CrtRoot)\github\stl\src\stacktrace.cpp;
             $(CrtRoot)\github\stl\src\syserror_import_lib.cpp;
             $(CrtRoot)\github\stl\src\vector_algorithms.cpp;
+            $(CrtRoot)\github\stl\src\xcharconv_ryu_tables.cpp;
+            $(CrtRoot)\github\stl\src\xcharconv_tables_double.cpp;
+            $(CrtRoot)\github\stl\src\xcharconv_tables_float.cpp;
             $(CrtRoot)\github\stl\src\xonce2.cpp;
             ">
             <BuildAs>nativecpp</BuildAs>
+            <IncludeInLink>false</IncludeInLink>
+            <IncludeInImportLib>true</IncludeInImportLib>
+        </BuildFiles>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(BuildArchitecture)' == 'i386' or '$(BuildArchitecture)' == 'amd64'">
+        <!-- Objs that exist in both libcpmt[d][01].lib and msvcprt[d].lib
+             (controlled by IncludeInLink and IncludeInImportLib). -->
+        <BuildFiles Include="
+            $(CrtRoot)\github\stl\src\alias_init_once_begin_initialize.asm;
+            $(CrtRoot)\github\stl\src\alias_init_once_complete.asm;
+            ">
+            <BuildAs>asm</BuildAs>
             <IncludeInLink>false</IncludeInLink>
             <IncludeInImportLib>true</IncludeInImportLib>
         </BuildFiles>

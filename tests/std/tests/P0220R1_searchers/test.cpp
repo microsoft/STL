@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <forward_list>
 #include <functional>
 #include <initializer_list>
 #include <iostream>
 #include <iterator>
 #include <random>
-#include <stddef.h>
-#include <stdint.h>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -164,7 +164,7 @@ void test_case_searcher(const Args... args) {
 struct FancyHash {
     FancyHash() = delete;
     explicit FancyHash(int) {}
-    FancyHash(const FancyHash&) = default;
+    FancyHash(const FancyHash&)            = default;
     FancyHash& operator=(const FancyHash&) = delete;
 
     size_t operator()(const char c) const {
@@ -175,7 +175,7 @@ struct FancyHash {
 struct FancyEqual {
     FancyEqual() = delete;
     explicit FancyEqual(int) {}
-    FancyEqual(const FancyEqual&) = default;
+    FancyEqual(const FancyEqual&)            = default;
     FancyEqual& operator=(const FancyEqual&) = delete;
 
     bool operator()(const char lhs, const char rhs) const {

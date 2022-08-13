@@ -51,6 +51,25 @@ struct instantiator {
     }
 };
 
+void test_urbg() { // COMPILE-ONLY
+    struct RandGen {
+        static constexpr bool min() {
+            return false;
+        }
+        static constexpr bool max() {
+            return true;
+        }
+        bool operator()() & {
+            return false;
+        }
+    };
+
+    STATIC_ASSERT(uniform_random_bit_generator<RandGen>);
+
+    int arr[1] = {};
+    ranges::shuffle(arr, RandGen{});
+}
+
 int main() {
     printf("Using seed: %u\n", seed);
 

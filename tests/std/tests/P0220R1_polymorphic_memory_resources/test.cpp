@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _SILENCE_CXX17_POLYMORPHIC_ALLOCATOR_DESTROY_DEPRECATION_WARNING
+#define _SILENCE_CXX23_ALIGNED_UNION_DEPRECATION_WARNING
 
 #include <algorithm>
 #include <cmath>
@@ -9,6 +10,7 @@
 #include <cstdlib>
 #include <deque>
 #include <forward_list>
+#include <functional>
 #include <list>
 #include <malloc.h>
 #include <map>
@@ -251,7 +253,7 @@ namespace {
             CHECK(allocations_.empty());
         }
 
-        recording_resource(recording_resource const&) = delete;
+        recording_resource(recording_resource const&)            = delete;
         recording_resource& operator=(recording_resource const&) = delete;
 
         void release() noexcept {
@@ -284,7 +286,7 @@ namespace {
     };
 
     void analyze_geometric_growth(size_t const* first, size_t const n) {
-        // http://mathworld.wolfram.com/LeastSquaresFittingExponential.html
+        // https://mathworld.wolfram.com/LeastSquaresFittingExponential.html
         // https://en.wikipedia.org/wiki/Pearson_correlation_coefficient#For_a_sample
         double sum_of_x           = 0;
         double sum_of_y           = 0;
@@ -945,6 +947,45 @@ namespace {
             }
         } // namespace eq
 
+        namespace eq_cvt {
+            void test() {
+                const auto pres                        = std::pmr::get_default_resource();
+                std::pmr::polymorphic_allocator<int> a = pres;
+                const auto ra                          = std::ref(a);
+                const auto cra                         = std::cref(a);
+
+                CHECK(a == pres);
+                CHECK(a == ra);
+                CHECK(a == cra);
+                CHECK(pres == a);
+                CHECK(pres == ra);
+                CHECK(pres == cra);
+                CHECK(ra == a);
+                CHECK(ra == pres);
+                CHECK(ra == ra);
+                CHECK(ra == cra);
+                CHECK(cra == a);
+                CHECK(cra == pres);
+                CHECK(cra == ra);
+                CHECK(cra == cra);
+
+                CHECK(!(a != pres));
+                CHECK(!(a != ra));
+                CHECK(!(a != cra));
+                CHECK(!(pres != a));
+                CHECK(!(pres != ra));
+                CHECK(!(pres != cra));
+                CHECK(!(ra != a));
+                CHECK(!(ra != pres));
+                CHECK(!(ra != ra));
+                CHECK(!(ra != cra));
+                CHECK(!(cra != a));
+                CHECK(!(cra != pres));
+                CHECK(!(cra != ra));
+                CHECK(!(cra != cra));
+            }
+        } // namespace eq_cvt
+
         namespace destroy {
             void test() {
                 bool destroyed = false;
@@ -955,7 +996,7 @@ namespace {
                     ~S() {
                         destroy_ref = true;
                     }
-                    S(const S&) = delete;
+                    S(const S&)            = delete;
                     S& operator=(const S&) = delete;
                 };
                 std::pmr::polymorphic_allocator<S> a{};
@@ -1504,6 +1545,7 @@ int main() {
     polymorphic_allocator::mem::select_on_container_copy_construction::test();
     polymorphic_allocator::mem::resource::test();
     polymorphic_allocator::eq::test();
+    polymorphic_allocator::eq_cvt::test();
     polymorphic_allocator::destroy::test();
 
     monotonic::ctor::buffer_upstream::test();

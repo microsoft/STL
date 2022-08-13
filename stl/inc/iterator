@@ -535,43 +535,44 @@ private:
 };
 
 #ifdef __cpp_lib_concepts
-enum class _Variantish_state : unsigned char { _Nothing, _Holds_iter, _Holds_sentinel };
+enum class _Variantish_state : unsigned char { _Nothing, _Holds_first, _Holds_second };
 
-struct _Common_iterator_construct_tag {
-    explicit _Common_iterator_construct_tag() = default;
+struct _Variantish_empty_tag {
+    explicit _Variantish_empty_tag() = default;
 };
 
-template <input_or_output_iterator _It, sentinel_for<_It> _Se>
+template <class _Ty1, class _Ty2>
 class _Variantish {
 public:
-    constexpr explicit _Variantish(_Common_iterator_construct_tag) noexcept : _Contains{_Variantish_state::_Nothing} {}
+    constexpr explicit _Variantish(_Variantish_empty_tag) noexcept : _Contains{_Variantish_state::_Nothing} {}
 
-    constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_It>) requires default_initializable<_It>
-        : _Iterator{}, _Contains{_Variantish_state::_Holds_iter} {}
-
-    template <class... _Types>
-    constexpr explicit _Variantish(in_place_type_t<_It>, _Types&&... _Args) noexcept(
-        is_nothrow_constructible_v<_It, _Types...>)
-        : _Iterator(_STD forward<_Types>(_Args)...), _Contains{_Variantish_state::_Holds_iter} {}
+    constexpr _Variantish() noexcept(is_nothrow_default_constructible_v<_Ty1>) requires default_initializable<_Ty1>
+        : _First{}, _Contains{_Variantish_state::_Holds_first} {}
 
     template <class... _Types>
-    constexpr explicit _Variantish(in_place_type_t<_Se>, _Types&&... _Args) noexcept(
-        is_nothrow_constructible_v<_Se, _Types...>)
-        : _Sentinel(_STD forward<_Types>(_Args)...), _Contains{_Variantish_state::_Holds_sentinel} {}
+    constexpr explicit _Variantish(in_place_type_t<_Ty1>, _Types&&... _Args) noexcept(
+        is_nothrow_constructible_v<_Ty1, _Types...>)
+        : _First(_STD forward<_Types>(_Args)...), _Contains{_Variantish_state::_Holds_first} {}
+
+    template <class... _Types>
+        requires _Not_same_as<_Ty1, _Ty2>
+    constexpr explicit _Variantish(in_place_type_t<_Ty2>, _Types&&... _Args) noexcept(
+        is_nothrow_constructible_v<_Ty2, _Types...>)
+        : _Second(_STD forward<_Types>(_Args)...), _Contains{_Variantish_state::_Holds_second} {}
 
     // clang-format off
-    template <class _OIter, class _OSe>
-        requires _Not_same_as<_Variantish<_OIter, _OSe>, _Variantish>
-    constexpr _Variantish(const _Variantish<_OIter, _OSe>& _That) noexcept(
-        is_nothrow_constructible_v<_It, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>)
+    template <class _Uty1, class _Uty2>
+        requires _Not_same_as<_Variantish<_Uty1, _Uty2>, _Variantish>
+    constexpr _Variantish(const _Variantish<_Uty1, _Uty2>& _That) noexcept(
+        is_nothrow_constructible_v<_Ty1, const _Uty1&> && is_nothrow_constructible_v<_Ty2, const _Uty2&>)
         : _Contains{_That._Contains} {
         // clang-format on
         switch (_That._Contains) {
-        case _Variantish_state::_Holds_iter:
-            _Construct_in_place(_Iterator, _That._Iterator);
+        case _Variantish_state::_Holds_first:
+            _Construct_in_place(_First, _That._First);
             break;
-        case _Variantish_state::_Holds_sentinel:
-            _Construct_in_place(_Sentinel, _That._Sentinel);
+        case _Variantish_state::_Holds_second:
+            _Construct_in_place(_Second, _That._Second);
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -579,19 +580,19 @@ public:
     }
 
     // clang-format off
-    constexpr _Variantish(const _Variantish&) requires is_trivially_copy_constructible_v<_It>
-        && is_trivially_copy_constructible_v<_Se> = default;
+    constexpr _Variantish(const _Variantish&) requires is_trivially_copy_constructible_v<_Ty1>
+        && is_trivially_copy_constructible_v<_Ty2> = default;
     // clang-format on
 
     constexpr _Variantish(const _Variantish& _That) noexcept(
-        is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>)
+        is_nothrow_copy_constructible_v<_Ty1>&& is_nothrow_copy_constructible_v<_Ty2>)
         : _Contains{_That._Contains} {
         switch (_Contains) {
-        case _Variantish_state::_Holds_iter:
-            _Construct_in_place(_Iterator, _That._Iterator);
+        case _Variantish_state::_Holds_first:
+            _Construct_in_place(_First, _That._First);
             break;
-        case _Variantish_state::_Holds_sentinel:
-            _Construct_in_place(_Sentinel, _That._Sentinel);
+        case _Variantish_state::_Holds_second:
+            _Construct_in_place(_Second, _That._Second);
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -599,19 +600,19 @@ public:
     }
 
     // clang-format off
-    constexpr _Variantish(_Variantish&&) requires is_trivially_move_constructible_v<_It>
-        && is_trivially_move_constructible_v<_Se> = default;
+    constexpr _Variantish(_Variantish&&) requires is_trivially_move_constructible_v<_Ty1>
+        && is_trivially_move_constructible_v<_Ty2> = default;
     // clang-format on
 
     constexpr _Variantish(_Variantish&& _That) noexcept(
-        is_nothrow_move_constructible_v<_It>&& is_nothrow_move_constructible_v<_Se>)
+        is_nothrow_move_constructible_v<_Ty1>&& is_nothrow_move_constructible_v<_Ty2>)
         : _Contains{_That._Contains} {
         switch (_Contains) {
-        case _Variantish_state::_Holds_iter:
-            _Construct_in_place(_Iterator, _STD move(_That._Iterator));
+        case _Variantish_state::_Holds_first:
+            _Construct_in_place(_First, _STD move(_That._First));
             break;
-        case _Variantish_state::_Holds_sentinel:
-            _Construct_in_place(_Sentinel, _STD move(_That._Sentinel));
+        case _Variantish_state::_Holds_second:
+            _Construct_in_place(_Second, _STD move(_That._Second));
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -624,26 +625,26 @@ public:
 
     // TRANSITION, LLVM-46269, destructor order is significant
     // clang-format off
-    constexpr ~_Variantish() requires is_trivially_destructible_v<_It> && is_trivially_destructible_v<_Se> = default;
+    constexpr ~_Variantish() requires is_trivially_destructible_v<_Ty1> && is_trivially_destructible_v<_Ty2> = default;
 
-    constexpr _Variantish& operator=(const _Variantish&) requires is_trivially_destructible_v<_It>
-        && is_trivially_destructible_v<_Se>
-        && is_trivially_copy_constructible_v<_It>
-        && is_trivially_copy_constructible_v<_Se>
-        && is_trivially_copy_assignable_v<_It>
-        && is_trivially_copy_assignable_v<_Se> = default;
+    constexpr _Variantish& operator=(const _Variantish&) requires is_trivially_destructible_v<_Ty1>
+        && is_trivially_destructible_v<_Ty2>
+        && is_trivially_copy_constructible_v<_Ty1>
+        && is_trivially_copy_constructible_v<_Ty2>
+        && is_trivially_copy_assignable_v<_Ty1>
+        && is_trivially_copy_assignable_v<_Ty2> = default;
     // clang-format on
 
     constexpr _Variantish& operator=(const _Variantish& _That) noexcept(
-        is_nothrow_copy_constructible_v<_It>&& is_nothrow_copy_constructible_v<_Se>&&
-            is_nothrow_copy_assignable_v<_It>&& is_nothrow_copy_assignable_v<_Se>) {
+        is_nothrow_copy_constructible_v<_Ty1>&& is_nothrow_copy_constructible_v<_Ty2>&&
+            is_nothrow_copy_assignable_v<_Ty1>&& is_nothrow_copy_assignable_v<_Ty2>) {
         if (_Contains == _That._Contains) {
             switch (_Contains) {
-            case _Variantish_state::_Holds_iter:
-                _Iterator = _That._Iterator;
+            case _Variantish_state::_Holds_first:
+                _First = _That._First;
                 break;
-            case _Variantish_state::_Holds_sentinel:
-                _Sentinel = _That._Sentinel;
+            case _Variantish_state::_Holds_second:
+                _Second = _That._Second;
                 break;
             case _Variantish_state::_Nothing:
                 break;
@@ -655,11 +656,11 @@ public:
         _Clear();
 
         switch (_That._Contains) {
-        case _Variantish_state::_Holds_iter:
-            _Construct_in_place(_Iterator, _That._Iterator);
+        case _Variantish_state::_Holds_first:
+            _Construct_in_place(_First, _That._First);
             break;
-        case _Variantish_state::_Holds_sentinel:
-            _Construct_in_place(_Sentinel, _That._Sentinel);
+        case _Variantish_state::_Holds_second:
+            _Construct_in_place(_Second, _That._Second);
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -671,24 +672,24 @@ public:
     }
 
     // clang-format off
-    constexpr _Variantish& operator=(_Variantish&&) requires is_trivially_destructible_v<_It>
-        && is_trivially_destructible_v<_Se>
-        && is_trivially_move_constructible_v<_It>
-        && is_trivially_move_constructible_v<_Se>
-        && is_trivially_move_assignable_v<_It>
-        && is_trivially_move_assignable_v<_Se> = default;
+    constexpr _Variantish& operator=(_Variantish&&) requires is_trivially_destructible_v<_Ty1>
+        && is_trivially_destructible_v<_Ty2>
+        && is_trivially_move_constructible_v<_Ty1>
+        && is_trivially_move_constructible_v<_Ty2>
+        && is_trivially_move_assignable_v<_Ty1>
+        && is_trivially_move_assignable_v<_Ty2> = default;
     // clang-format on
 
     constexpr _Variantish& operator=(_Variantish&& _That) noexcept(
-        is_nothrow_move_constructible_v<_It>&& is_nothrow_move_constructible_v<_Se>&&
-            is_nothrow_move_assignable_v<_It>&& is_nothrow_move_assignable_v<_Se>) {
+        is_nothrow_move_constructible_v<_Ty1>&& is_nothrow_move_constructible_v<_Ty2>&&
+            is_nothrow_move_assignable_v<_Ty1>&& is_nothrow_move_assignable_v<_Ty2>) {
         if (_Contains == _That._Contains) {
             switch (_Contains) {
-            case _Variantish_state::_Holds_iter:
-                _Iterator = _STD move(_That._Iterator);
+            case _Variantish_state::_Holds_first:
+                _First = _STD move(_That._First);
                 break;
-            case _Variantish_state::_Holds_sentinel:
-                _Sentinel = _STD move(_That._Sentinel);
+            case _Variantish_state::_Holds_second:
+                _Second = _STD move(_That._Second);
                 break;
             case _Variantish_state::_Nothing:
                 break;
@@ -700,11 +701,11 @@ public:
         _Clear();
 
         switch (_That._Contains) {
-        case _Variantish_state::_Holds_iter:
-            _Construct_in_place(_Iterator, _STD move(_That._Iterator));
+        case _Variantish_state::_Holds_first:
+            _Construct_in_place(_First, _STD move(_That._First));
             break;
-        case _Variantish_state::_Holds_sentinel:
-            _Construct_in_place(_Sentinel, _STD move(_That._Sentinel));
+        case _Variantish_state::_Holds_second:
+            _Construct_in_place(_Second, _STD move(_That._Second));
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -716,19 +717,19 @@ public:
     }
 
     // clang-format off
-    template <class _OIter, class _OSe>
-        requires _Not_same_as<_Variantish<_OIter, _OSe>, _Variantish>
-    constexpr _Variantish& operator=(const _Variantish<_OIter, _OSe>& _That) noexcept(
-        is_nothrow_constructible_v<_It, const _OIter&> && is_nothrow_constructible_v<_Se, const _OSe&>
-            && is_nothrow_assignable_v<_It&, const _OIter&> && is_nothrow_assignable_v<_Se&, const _OSe&>) {
+    template <class _Uty1, class _Uty2>
+        requires _Not_same_as<_Variantish<_Uty1, _Uty2>, _Variantish>
+    constexpr _Variantish& operator=(const _Variantish<_Uty1, _Uty2>& _That) noexcept(
+        is_nothrow_constructible_v<_Ty1, const _Uty1&> && is_nothrow_constructible_v<_Ty2, const _Uty2&>
+            && is_nothrow_assignable_v<_Ty1&, const _Uty1&> && is_nothrow_assignable_v<_Ty2&, const _Uty2&>) {
         // clang-format on
         if (_Contains == _That._Contains) {
             switch (_Contains) {
-            case _Variantish_state::_Holds_iter:
-                _Iterator = _That._Iterator;
+            case _Variantish_state::_Holds_first:
+                _First = _That._First;
                 break;
-            case _Variantish_state::_Holds_sentinel:
-                _Sentinel = _That._Sentinel;
+            case _Variantish_state::_Holds_second:
+                _Second = _That._Second;
                 break;
             case _Variantish_state::_Nothing:
                 break;
@@ -740,11 +741,11 @@ public:
         _Clear();
 
         switch (_That._Contains) {
-        case _Variantish_state::_Holds_iter:
-            _Construct_in_place(_Iterator, _That._Iterator);
+        case _Variantish_state::_Holds_first:
+            _Construct_in_place(_First, _That._First);
             break;
-        case _Variantish_state::_Holds_sentinel:
-            _Construct_in_place(_Sentinel, _That._Sentinel);
+        case _Variantish_state::_Holds_second:
+            _Construct_in_place(_Second, _That._Second);
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -757,17 +758,17 @@ public:
 
     // clang-format off
     friend constexpr void swap(_Variantish& _Left, _Variantish& _Right) noexcept(
-        is_nothrow_move_constructible_v<_It> && is_nothrow_move_constructible_v<_Se>
-            && is_nothrow_swappable_v<_It> && is_nothrow_swappable_v<_Se>)
-        requires (!_Is_trivially_swappable_v<_It> || !_Is_trivially_swappable_v<_Se>) {
+        is_nothrow_move_constructible_v<_Ty1> && is_nothrow_move_constructible_v<_Ty2>
+            && is_nothrow_swappable_v<_Ty1> && is_nothrow_swappable_v<_Ty2>)
+        requires (!_Is_trivially_swappable_v<_Ty1> || !_Is_trivially_swappable_v<_Ty2>) {
         // clang-format on
         if (_Left._Contains == _Right._Contains) {
             switch (_Left._Contains) {
-            case _Variantish_state::_Holds_iter:
-                _RANGES swap(_Left._Iterator, _Right._Iterator);
+            case _Variantish_state::_Holds_first:
+                _RANGES swap(_Left._First, _Right._First);
                 break;
-            case _Variantish_state::_Holds_sentinel:
-                _RANGES swap(_Left._Sentinel, _Right._Sentinel);
+            case _Variantish_state::_Holds_second:
+                _RANGES swap(_Left._Second, _Right._Second);
                 break;
             case _Variantish_state::_Nothing:
                 break;
@@ -783,11 +784,11 @@ public:
 
     constexpr void _Raw_clear() noexcept {
         switch (_Contains) {
-        case _Variantish_state::_Holds_iter:
-            _Iterator.~_It();
+        case _Variantish_state::_Holds_first:
+            _First.~_Ty1();
             break;
-        case _Variantish_state::_Holds_sentinel:
-            _Sentinel.~_Se();
+        case _Variantish_state::_Holds_second:
+            _Second.~_Ty2();
             break;
         case _Variantish_state::_Nothing:
             break;
@@ -799,9 +800,25 @@ public:
         _Contains = _Variantish_state::_Nothing;
     }
 
+    template <class... _Types>
+    constexpr void _Emplace_first(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty1, _Types...>) {
+        _Clear();
+
+        _Construct_in_place(_First, _STD forward<_Types>(_Args)...);
+        _Contains = _Variantish_state::_Holds_first;
+    }
+
+    template <class... _Types>
+    constexpr void _Emplace_second(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty2, _Types...>) {
+        _Clear();
+
+        _Construct_in_place(_Second, _STD forward<_Types>(_Args)...);
+        _Contains = _Variantish_state::_Holds_second;
+    }
+
     union {
-        _It _Iterator;
-        _Se _Sentinel;
+        _Ty1 _First;
+        _Ty2 _Second;
     };
 
     _Variantish_state _Contains;
@@ -838,7 +855,7 @@ public:
     constexpr common_iterator(_Se _Right) noexcept(is_nothrow_move_constructible_v<_Se>) // strengthened
         : _Val{in_place_type<_Se>, _STD move(_Right)} {}
 
-    constexpr explicit common_iterator(_Common_iterator_construct_tag _Tag) noexcept : _Val{_Tag} {}
+    constexpr explicit common_iterator(_Variantish_empty_tag _Tag) noexcept : _Val{_Tag} {}
 
     // clang-format off
     template <class _OIter, class _OSe>
@@ -861,34 +878,34 @@ public:
 
     _NODISCARD constexpr decltype(auto) operator*() {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
+        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return *_Val._Iterator;
+        return *_Val._First;
     }
 
     _NODISCARD constexpr decltype(auto) operator*() const requires _Dereferenceable<const _Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
+        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return *_Val._Iterator;
+        return *_Val._First;
     }
 
     // clang-format off
-    _NODISCARD constexpr decltype(auto) operator->() const
+    _NODISCARD constexpr auto operator->() const
         requires indirectly_readable<const _Iter>
             && (_Has_member_arrow<const _Iter&> || is_reference_v<iter_reference_t<_Iter>>
                 || constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>) {
         // clang-format on
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
+        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be dereferenced if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (_Has_member_arrow<const _Iter&> || is_pointer_v<_Iter>) {
-            return (_Val._Iterator); // NB: () are necessary for decltype(auto)
+            return _Val._First;
         } else if constexpr (is_reference_v<iter_reference_t<_Iter>>) {
-            auto&& _Tmp = *_Val._Iterator;
+            auto&& _Tmp = *_Val._First;
             return _STD addressof(_Tmp);
         } else {
             class _Arrow_proxy : private _Proxy_base {
@@ -902,27 +919,27 @@ public:
                 }
             };
 
-            return _Arrow_proxy{*_Val._Iterator};
+            return _Arrow_proxy{*_Val._First};
         }
     }
 
     constexpr common_iterator& operator++() {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
+        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be incremented if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        ++_Val._Iterator;
+        ++_Val._First;
         return *this;
     }
 
     constexpr decltype(auto) operator++(int) {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_iter,
+        _STL_VERIFY(_Val._Contains == _Variantish_state::_Holds_first,
             "common_iterator can only be incremented if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
         if constexpr (forward_iterator<_Iter>) {
             common_iterator _Tmp = *this;
-            ++_Val._Iterator;
+            ++_Val._First;
             return _Tmp;
         } else if constexpr (_Use_postfix_proxy<_Iter>) {
             class _Postfix_proxy : private _Proxy_base {
@@ -936,11 +953,11 @@ public:
                 }
             };
 
-            _Postfix_proxy _Tmp{*_Val._Iterator};
-            ++_Val._Iterator;
+            _Postfix_proxy _Tmp{*_Val._First};
+            ++_Val._First;
             return _Tmp;
         } else {
-            return _Val._Iterator++;
+            return _Val._First++;
         }
     }
 
@@ -957,19 +974,19 @@ public:
             "common_iterators can only be compared if both hold a value");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-        if (_Left._Val._Contains == _Variantish_state::_Holds_iter) {
-            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
+        if (_Left._Val._Contains == _Variantish_state::_Holds_first) {
+            if (_Right_val._Contains == _Variantish_state::_Holds_first) {
                 if constexpr (equality_comparable_with<_Iter, _OIter>) {
-                    return _Left._Val._Iterator == _Right_val._Iterator;
+                    return _Left._Val._First == _Right_val._First;
                 } else {
                     return true;
                 }
             } else {
-                return _Left._Val._Iterator == _Right_val._Sentinel;
+                return _Left._Val._First == _Right_val._Second;
             }
         } else {
-            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
-                return _Left._Val._Sentinel == _Right_val._Iterator;
+            if (_Right_val._Contains == _Variantish_state::_Holds_first) {
+                return _Left._Val._Second == _Right_val._First;
             } else {
                 return true;
             }
@@ -989,15 +1006,15 @@ public:
             "Cannot take difference of valueless common_iterators");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
 
-        if (_Left._Val._Contains == _Variantish_state::_Holds_iter) {
-            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
-                return _Left._Val._Iterator - _Right_val._Iterator;
+        if (_Left._Val._Contains == _Variantish_state::_Holds_first) {
+            if (_Right_val._Contains == _Variantish_state::_Holds_first) {
+                return _Left._Val._First - _Right_val._First;
             } else {
-                return _Left._Val._Iterator - _Right_val._Sentinel;
+                return _Left._Val._First - _Right_val._Second;
             }
         } else {
-            if (_Right_val._Contains == _Variantish_state::_Holds_iter) {
-                return _Left._Val._Sentinel - _Right_val._Iterator;
+            if (_Right_val._Contains == _Variantish_state::_Holds_first) {
+                return _Left._Val._Second - _Right_val._First;
             } else {
                 return 0;
             }
@@ -1005,24 +1022,24 @@ public:
     }
 
     _NODISCARD_FRIEND constexpr iter_rvalue_reference_t<_Iter> iter_move(const common_iterator& _Right) noexcept(
-        noexcept(_RANGES iter_move(_Right._Val._Iterator))) requires input_iterator<_Iter> {
+        noexcept(_RANGES iter_move(_Right._Val._First))) requires input_iterator<_Iter> {
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_iter,
+        _STL_VERIFY(_Right._Val._Contains == _Variantish_state::_Holds_first,
             "can only iter_move from common_iterator if it holds an iterator");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return _RANGES iter_move(_Right._Val._Iterator);
+        return _RANGES iter_move(_Right._Val._First);
     }
 
     template <indirectly_swappable<_Iter> _OIter, class _OSe>
     friend constexpr void iter_swap(const common_iterator& _Left, const common_iterator<_OIter, _OSe>& _Right) noexcept(
-        noexcept(_RANGES iter_swap(_Left._Val._Iterator, _Right._Get_val()._Iterator))) {
+        noexcept(_RANGES iter_swap(_Left._Val._First, _Right._Get_val()._First))) {
         auto& _Right_val = _Right._Get_val();
 #if _ITERATOR_DEBUG_LEVEL != 0
-        _STL_VERIFY(_Left._Val._Contains == _Variantish_state::_Holds_iter
-                        && _Right_val._Contains == _Variantish_state::_Holds_iter,
+        _STL_VERIFY(_Left._Val._Contains == _Variantish_state::_Holds_first
+                        && _Right_val._Contains == _Variantish_state::_Holds_first,
             "can only iter_swap common_iterators if both hold iterators");
 #endif // _ITERATOR_DEBUG_LEVEL != 0
-        return _RANGES iter_swap(_Left._Val._Iterator, _Right_val._Iterator);
+        return _RANGES iter_swap(_Left._Val._First, _Right_val._First);
     }
 
     _NODISCARD constexpr _Variantish<_Iter, _Se>& _Get_val() noexcept {

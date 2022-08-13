@@ -34,6 +34,7 @@
 #define _HAS_DEPRECATED_RESULT_OF       1
 #define _SILENCE_CXX17_IS_LITERAL_TYPE_DEPRECATION_WARNING
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
+#define _SILENCE_CXX20_CISO646_REMOVED_WARNING
 #define _LIBCXX_IN_DEVCRT
 #include <msvc_stdlib_force_include.h> // Must precede any other libc++ headers
 #include <stdlib.h>
@@ -7366,9 +7367,9 @@ namespace msvc {
         struct nontrivial_copy {
             nontrivial_copy() = default;
             nontrivial_copy(const nontrivial_copy&) {}
-            nontrivial_copy(nontrivial_copy&&) = default;
+            nontrivial_copy(nontrivial_copy&&)                 = default;
             nontrivial_copy& operator=(const nontrivial_copy&) = default;
-            nontrivial_copy& operator=(nontrivial_copy&&) = default;
+            nontrivial_copy& operator=(nontrivial_copy&&)      = default;
         };
 
         const std::optional<nontrivial_copy> s;

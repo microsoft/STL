@@ -523,6 +523,50 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
     }
 }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+namespace ranges {
+    template <class _Out, class _Ty>
+    using iota_result = out_value_result<_Out, _Ty>;
+
+    class _Iota_fn : private _Not_quite_object {
+    public:
+        using _Not_quite_object::_Not_quite_object;
+
+        template <input_or_output_iterator _It, sentinel_for<_It> _Se, weakly_incrementable _Ty>
+            requires indirectly_writable<_It, const _Ty&>
+        constexpr iota_result<_It, _Ty> operator()(_It _First, _Se _Last, _Ty _Val) const {
+            _Adl_verify_range(_First, _Last);
+            _Seek_wrapped(
+                _First, _Iota_impl(_Get_unwrapped(_STD move(_First)), _Get_unwrapped(_STD move(_Last)), _Val));
+            return {_STD move(_First), _STD move(_Val)};
+        }
+
+        template <weakly_incrementable _Ty, output_range<const _Ty&> _Rng>
+        constexpr iota_result<borrowed_iterator_t<_Rng>, _Ty> operator()(_Rng&& _Range, _Ty _Val) const {
+            auto _First = _RANGES begin(_Range);
+            _Seek_wrapped(_First, _Iota_impl(_Get_unwrapped(_STD move(_First)), _Uend(_Range), _Val));
+            return {_STD move(_First), _STD move(_Val)};
+        }
+
+    private:
+        template <class _It, class _Se, class _Ty>
+        _NODISCARD static constexpr _It _Iota_impl(_It _First, const _Se _Last, _Ty& _Val) {
+            _STL_INTERNAL_STATIC_ASSERT(sentinel_for<_Se, _It>);
+            _STL_INTERNAL_STATIC_ASSERT(weakly_incrementable<_Ty>);
+            _STL_INTERNAL_STATIC_ASSERT(indirectly_writable<_It, const _Ty&>);
+
+            const _Ty& _Const_val = _Val;
+            for (; _First != _Last; ++_First, (void) ++_Val) {
+                *_First = _Const_val;
+            }
+            return _First;
+        }
+    };
+
+    inline constexpr _Iota_fn iota{_Not_quite_object::_Construct_tag{}};
+} // namespace ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
 #if _HAS_CXX17
 template <class _Integral>
 _NODISCARD constexpr auto _Abs_u(const _Integral _Val) noexcept {

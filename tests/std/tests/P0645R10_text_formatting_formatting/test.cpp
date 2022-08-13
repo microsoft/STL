@@ -74,7 +74,7 @@ struct move_only_back_inserter {
     move_only_back_inserter() = default;
     explicit move_only_back_inserter(basic_string<charT>& str) : it{str} {}
 
-    move_only_back_inserter(const move_only_back_inserter&) = delete;
+    move_only_back_inserter(const move_only_back_inserter&)            = delete;
     move_only_back_inserter& operator=(const move_only_back_inserter&) = delete;
 
     move_only_back_inserter(move_only_back_inserter&& other) : it(other.it) {
@@ -361,6 +361,11 @@ void test_simple_replacement_field() {
     assert(output_string == STR("nan"));
 
     output_string.clear();
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
+        make_testing_format_args<charT>(-numeric_limits<float>::quiet_NaN()));
+    assert(output_string == STR("-nan"));
+
+    output_string.clear();
     vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(0.f));
     assert(output_string == STR("0"));
 
@@ -414,6 +419,11 @@ void test_simple_replacement_field() {
     vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
         make_testing_format_args<charT>(numeric_limits<double>::quiet_NaN()));
     assert(output_string == STR("nan"));
+
+    output_string.clear();
+    vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"),
+        make_testing_format_args<charT>(-numeric_limits<double>::quiet_NaN()));
+    assert(output_string == STR("-nan"));
 
     output_string.clear();
     vformat_to(back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(0.0));
@@ -724,6 +734,10 @@ void test_float_specs() {
     assert(format(STR("{:+}"), nan) == STR("+nan"));
     assert(format(STR("{:-}"), nan) == STR("nan"));
 
+    assert(format(STR("{: }"), -nan) == STR("-nan"));
+    assert(format(STR("{:+}"), -nan) == STR("-nan"));
+    assert(format(STR("{:-}"), -nan) == STR("-nan"));
+
     // Alternate form
     assert(format(STR("{:#}"), Float{0}) == STR("0."));
     assert(format(STR("{:#a}"), Float{0}) == STR("0.p+0"));
@@ -760,6 +774,16 @@ void test_float_specs() {
     assert(format(STR("{:#F} {:#F}"), inf, nan) == STR("INF NAN"));
     assert(format(STR("{:#g} {:#g}"), inf, nan) == STR("inf nan"));
     assert(format(STR("{:#G} {:#G}"), inf, nan) == STR("INF NAN"));
+
+    assert(format(STR("{:#} {:#}"), -inf, -nan) == STR("-inf -nan"));
+    assert(format(STR("{:#a} {:#a}"), -inf, -nan) == STR("-inf -nan"));
+    assert(format(STR("{:#A} {:#A}"), -inf, -nan) == STR("-INF -NAN"));
+    assert(format(STR("{:#e} {:#e}"), -inf, -nan) == STR("-inf -nan"));
+    assert(format(STR("{:#E} {:#E}"), -inf, -nan) == STR("-INF -NAN"));
+    assert(format(STR("{:#f} {:#f}"), -inf, -nan) == STR("-inf -nan"));
+    assert(format(STR("{:#F} {:#F}"), -inf, -nan) == STR("-INF -NAN"));
+    assert(format(STR("{:#g} {:#g}"), -inf, -nan) == STR("-inf -nan"));
+    assert(format(STR("{:#G} {:#G}"), -inf, -nan) == STR("-INF -NAN"));
 
     // Width
     assert(format(STR("{:3}"), Float{0}) == STR("  0"));
@@ -855,7 +879,9 @@ void test_float_specs() {
     assert(format(STR("{:06}"), Float{0}) == STR("000000"));
     assert(format(STR("{:06}"), Float{1.2}) == STR("0001.2"));
     assert(format(STR("{:06}"), nan) == STR("   nan"));
+    assert(format(STR("{:06}"), -nan) == STR("  -nan"));
     assert(format(STR("{:06}"), inf) == STR("   inf"));
+    assert(format(STR("{:06}"), -inf) == STR("  -inf"));
 
     // Locale
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
@@ -866,7 +892,9 @@ void test_float_specs() {
     assert(format(locale{"en-US"}, STR("{:.4Lf}"), value) == STR("1,234.5273"));
     assert(format(locale{"en-US"}, STR("{:#.4Lg}"), Float{0}) == STR("0.000"));
     assert(format(locale{"en-US"}, STR("{:L}"), nan) == STR("nan"));
+    assert(format(locale{"en-US"}, STR("{:L}"), -nan) == STR("-nan"));
     assert(format(locale{"en-US"}, STR("{:L}"), inf) == STR("inf"));
+    assert(format(locale{"en-US"}, STR("{:L}"), -inf) == STR("-inf"));
 
     assert(format(locale{"de-DE"}, STR("{:Lf}"), Float{0}) == STR("0,000000"));
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
@@ -892,6 +920,15 @@ void test_float_specs() {
     assert(format(STR("{:F} {:F}"), inf, nan) == STR("INF NAN"));
     assert(format(STR("{:g} {:g}"), inf, nan) == STR("inf nan"));
     assert(format(STR("{:G} {:G}"), inf, nan) == STR("INF NAN"));
+
+    assert(format(STR("{:a} {:a}"), -inf, -nan) == STR("-inf -nan"));
+    assert(format(STR("{:A} {:A}"), -inf, -nan) == STR("-INF -NAN"));
+    assert(format(STR("{:e} {:e}"), -inf, -nan) == STR("-inf -nan"));
+    assert(format(STR("{:E} {:E}"), -inf, -nan) == STR("-INF -NAN"));
+    assert(format(STR("{:f} {:f}"), -inf, -nan) == STR("-inf -nan"));
+    assert(format(STR("{:F} {:F}"), -inf, -nan) == STR("-INF -NAN"));
+    assert(format(STR("{:g} {:g}"), -inf, -nan) == STR("-inf -nan"));
+    assert(format(STR("{:G} {:G}"), -inf, -nan) == STR("-INF -NAN"));
 }
 
 template <class charT>
@@ -1287,6 +1324,8 @@ void libfmt_formatter_test_runtime_width() {
            == STR("                                               0")); // behavior differs from libfmt, but conforms
     throw_helper(STR("{0:{1}}"), 0, 0.0);
 
+    assert(format(STR("{0:{1}}"), 42, 0) == STR("42")); // LWG-3721: zero dynamic width is OK
+
     assert(format(STR("{0:{1}}"), -42, 4) == STR(" -42"));
     assert(format(STR("{0:{1}}"), 42u, 5) == STR("   42"));
     assert(format(STR("{0:{1}}"), -42l, 6) == STR("   -42"));
@@ -1336,14 +1375,12 @@ void libfmt_formatter_test_runtime_precision() {
 
 template <class charT>
 void test_locale_specific_formatting_without_locale() {
-#ifndef _MSVC_INTERNAL_TESTING // TRANSITION, the Windows version on Contest VMs doesn't always understand ".UTF-8"
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
     locale loc("en-US.UTF-8");
     locale::global(loc);
     assert(format(STR("{:L}"), 12345) == STR("12,345"));
     locale::global(locale::classic());
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
-#endif // _MSVC_INTERNAL_TESTING
 }
 
 template <class charT>

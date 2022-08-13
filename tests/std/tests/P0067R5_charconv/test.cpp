@@ -5,10 +5,14 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <charconv>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <functional>
 #include <limits>
@@ -16,10 +20,6 @@
 #include <optional>
 #include <random>
 #include <set>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
 #include <string_view>
 #include <system_error>

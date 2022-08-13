@@ -230,12 +230,10 @@ _STL_DISABLE_CLANG_WARNINGS
 
 #include <use_ansi.h>
 
-#define _WARNING_MESSAGE(NUMBER, MESSAGE) __FILE__ "(" _CRT_STRINGIZE(__LINE__) "): warning " NUMBER ": " MESSAGE
-
 #ifdef _STATIC_CPPLIB
 #ifndef _DISABLE_DEPRECATE_STATIC_CPPLIB
 #ifdef _DLL
-#pragma message(_WARNING_MESSAGE("STL4000", "_STATIC_CPPLIB is deprecated and will be REMOVED."))
+_EMIT_STL_WARNING(STL4000, "_STATIC_CPPLIB is deprecated and will be REMOVED.");
 #endif
 #ifdef _M_CEE_MIXED
 #error _STATIC_CPPLIB is not supported while building with /clr
@@ -247,7 +245,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #endif // _STATIC_CPPLIB
 
 #if defined(_M_CEE_PURE) && !defined(_SILENCE_CLR_PURE_DEPRECATION_WARNING)
-#pragma message(_WARNING_MESSAGE("STL4001", "/clr:pure is deprecated and will be REMOVED."))
+_EMIT_STL_WARNING(STL4001, "/clr:pure is deprecated and will be REMOVED.");
 #endif
 
 #ifndef _MRTIMP2_PURE
@@ -375,7 +373,7 @@ private:
     static void __cdecl _Lockit_dtor(_Lockit*) noexcept;
 
 public:
-    __CLR_OR_THIS_CALL _Lockit(const _Lockit&) = delete;
+    __CLR_OR_THIS_CALL _Lockit(const _Lockit&)            = delete;
     _Lockit& __CLR_OR_THIS_CALL operator=(const _Lockit&) = delete;
 
 private:
@@ -455,6 +453,7 @@ private:
 #define _RELIABILITY_CONTRACT
 #endif // _M_CEE
 
+#ifdef _CRTBLD
 class _CRTIMP2_PURE_IMPORT _Init_locks { // initialize mutexes
 public:
 #ifdef _M_CEE_PURE
@@ -475,6 +474,7 @@ private:
     static void __cdecl _Init_locks_ctor(_Init_locks*) noexcept;
     static void __cdecl _Init_locks_dtor(_Init_locks*) noexcept;
 };
+#endif // _CRTBLD
 
 #if _HAS_EXCEPTIONS
 #define _TRY_BEGIN try {

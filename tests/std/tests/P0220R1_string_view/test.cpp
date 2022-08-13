@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <deque>
 #include <sstream>
 #include <stdexcept>
-#include <stdlib.h>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -343,7 +343,7 @@ constexpr bool test_case_contiguous_constructor() {
 }
 
 constexpr bool test_case_range_constructor() {
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
     // Also tests the corresponding deduction guide:
     same_as<string_view> auto sv = basic_string_view(expectedData);
@@ -352,7 +352,9 @@ constexpr bool test_case_range_constructor() {
 
     // Also tests some of the constraints:
     static_assert(is_constructible_v<string_view, vector<char>>);
-    static_assert(is_convertible_v<vector<char>, string_view>);
+
+    // P2499R0 string_view Range Constructor Should Be explicit
+    static_assert(!is_convertible_v<vector<char>, string_view>);
 
     static_assert(!is_constructible_v<string_view, deque<char>>); // not contiguous
     static_assert(!is_convertible_v<deque<char>, string_view>);
@@ -1202,10 +1204,7 @@ static_assert(test_case_ntcts_constructor<constexpr_char_traits>());
 static_assert(test_case_buffer_constructor());
 static_assert(test_case_contiguous_constructor());
 static_assert(test_case_range_constructor());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-284079 "C1XX's C++14 constexpr emits bogus warnings C4146,
-                                           // C4308, C4307 for basic_string_view::iterator"
 static_assert(test_case_iterators<char, constexpr_char_traits>());
-#endif // VSO-284079
 static_assert(test_case_prefix<char, constexpr_char_traits>());
 static_assert(test_case_suffix<char, constexpr_char_traits>());
 static_assert(test_case_swap<char, constexpr_char_traits>());

@@ -22,7 +22,7 @@
 #endif // _M_CEE_PURE
 
 #if !_HAS_CXX23
-#pragma message("The contents of <stdatomic.h> are available only with C++23 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <stdatomic.h> are available only with C++23 or later.");
 #else // ^^^ !_HAS_CXX23 / _HAS_CXX23 vvv
 
 #include <atomic>
@@ -117,6 +117,8 @@ using _STD atomic_fetch_sub;
 using _STD atomic_fetch_sub_explicit;
 using _STD atomic_fetch_or;
 using _STD atomic_fetch_or_explicit;
+using _STD atomic_fetch_xor;
+using _STD atomic_fetch_xor_explicit;
 using _STD atomic_fetch_and;
 using _STD atomic_fetch_and_explicit;
 using _STD atomic_flag_test_and_set;

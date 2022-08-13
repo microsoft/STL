@@ -328,7 +328,7 @@ class nested_exception { // wrap an exception_ptr
 public:
     nested_exception() noexcept : _Exc(_STD current_exception()) {}
 
-    nested_exception(const nested_exception&) noexcept = default;
+    nested_exception(const nested_exception&) noexcept            = default;
     nested_exception& operator=(const nested_exception&) noexcept = default;
     virtual ~nested_exception() noexcept {}
 
@@ -388,6 +388,27 @@ void rethrow_if_nested(const _Ty& _Arg) {
 template <class _Ty>
 void rethrow_if_nested(const _Ty&) = delete; // requires /GR option
 #endif // _CPPRTTI
+
+class bad_variant_access
+    : public exception { // exception for visit of a valueless variant or get<I> on a variant with index() != I
+public:
+    bad_variant_access() noexcept = default;
+
+    _NODISCARD const char* __CLR_OR_THIS_CALL what() const noexcept override {
+        return "bad variant access";
+    }
+
+#if !_HAS_EXCEPTIONS
+protected:
+    void _Doraise() const override { // perform class-specific exception handling
+        _RAISE(*this);
+    }
+#endif // !_HAS_EXCEPTIONS
+};
+
+[[noreturn]] inline void _Throw_bad_variant_access() {
+    _THROW(bad_variant_access{});
+}
 
 _STD_END
 
