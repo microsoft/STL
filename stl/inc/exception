@@ -328,7 +328,7 @@ class nested_exception { // wrap an exception_ptr
 public:
     nested_exception() noexcept : _Exc(_STD current_exception()) {}
 
-    nested_exception(const nested_exception&) noexcept = default;
+    nested_exception(const nested_exception&) noexcept            = default;
     nested_exception& operator=(const nested_exception&) noexcept = default;
     virtual ~nested_exception() noexcept {}
 

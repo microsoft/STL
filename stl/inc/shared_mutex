@@ -64,7 +64,7 @@ public:
         return &_Myhandle;
     }
 
-    shared_mutex(const shared_mutex&) = delete;
+    shared_mutex(const shared_mutex&)            = delete;
     shared_mutex& operator=(const shared_mutex&) = delete;
 
 private:
@@ -220,7 +220,7 @@ public:
         }
     }
 
-    shared_timed_mutex(const shared_timed_mutex&) = delete;
+    shared_timed_mutex(const shared_timed_mutex&)            = delete;
     shared_timed_mutex& operator=(const shared_timed_mutex&) = delete;
 
 private:
@@ -291,7 +291,7 @@ public:
         return *this;
     }
 
-    shared_lock(const shared_lock&) = delete;
+    shared_lock(const shared_lock&)            = delete;
     shared_lock& operator=(const shared_lock&) = delete;
 
     void lock() { // lock the mutex

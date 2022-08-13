@@ -43,7 +43,7 @@ public:
         _Mtx_destroy_in_situ(_Mymtx());
     }
 
-    _Mutex_base(const _Mutex_base&) = delete;
+    _Mutex_base(const _Mutex_base&)            = delete;
     _Mutex_base& operator=(const _Mutex_base&) = delete;
 
     void lock() {
@@ -88,7 +88,7 @@ public:
     /* constexpr */ mutex() noexcept // TRANSITION, ABI
         : _Mutex_base() {}
 
-    mutex(const mutex&) = delete;
+    mutex(const mutex&)            = delete;
     mutex& operator=(const mutex&) = delete;
 };
 
@@ -100,7 +100,7 @@ public:
         return _Mutex_base::try_lock();
     }
 
-    recursive_mutex(const recursive_mutex&) = delete;
+    recursive_mutex(const recursive_mutex&)            = delete;
     recursive_mutex& operator=(const recursive_mutex&) = delete;
 };
 #endif // _M_CEE
@@ -186,7 +186,7 @@ public:
         }
     }
 
-    unique_lock(const unique_lock&) = delete;
+    unique_lock(const unique_lock&)            = delete;
     unique_lock& operator=(const unique_lock&) = delete;
 
     void lock() { // lock the mutex
@@ -433,7 +433,7 @@ public:
         _MyMutex.unlock();
     }
 
-    lock_guard(const lock_guard&) = delete;
+    lock_guard(const lock_guard&)            = delete;
     lock_guard& operator=(const lock_guard&) = delete;
 
 private:
@@ -454,7 +454,7 @@ public:
         _STD apply([](_Mutexes&... _Mtxes) { (..., (void) _Mtxes.unlock()); }, _MyMutexes);
     }
 
-    scoped_lock(const scoped_lock&) = delete;
+    scoped_lock(const scoped_lock&)            = delete;
     scoped_lock& operator=(const scoped_lock&) = delete;
 
 private:
@@ -476,7 +476,7 @@ public:
         _MyMutex.unlock();
     }
 
-    scoped_lock(const scoped_lock&) = delete;
+    scoped_lock(const scoped_lock&)            = delete;
     scoped_lock& operator=(const scoped_lock&) = delete;
 
 private:
@@ -490,7 +490,7 @@ public:
     explicit scoped_lock(adopt_lock_t) {}
     ~scoped_lock() noexcept {}
 
-    scoped_lock(const scoped_lock&) = delete;
+    scoped_lock(const scoped_lock&)            = delete;
     scoped_lock& operator=(const scoped_lock&) = delete;
 };
 #endif // _HAS_CXX17
@@ -582,7 +582,7 @@ public:
         _Cnd_destroy_in_situ(_Mycnd());
     }
 
-    condition_variable(const condition_variable&) = delete;
+    condition_variable(const condition_variable&)            = delete;
     condition_variable& operator=(const condition_variable&) = delete;
 
     void notify_one() noexcept { // wake up one waiter
@@ -748,7 +748,7 @@ class timed_mutex { // class for timed mutual exclusion
 public:
     timed_mutex() noexcept : _My_locked(0) {}
 
-    timed_mutex(const timed_mutex&) = delete;
+    timed_mutex(const timed_mutex&)            = delete;
     timed_mutex& operator=(const timed_mutex&) = delete;
 
     void lock() { // lock the mutex
@@ -819,7 +819,7 @@ class recursive_timed_mutex { // class for recursive timed mutual exclusion
 public:
     recursive_timed_mutex() noexcept : _My_locked(0) {}
 
-    recursive_timed_mutex(const recursive_timed_mutex&) = delete;
+    recursive_timed_mutex(const recursive_timed_mutex&)            = delete;
     recursive_timed_mutex& operator=(const recursive_timed_mutex&) = delete;
 
     void lock() { // lock the mutex

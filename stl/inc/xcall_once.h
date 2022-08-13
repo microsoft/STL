@@ -20,7 +20,7 @@ _STD_BEGIN
 struct once_flag { // opaque data structure for call_once()
     constexpr once_flag() noexcept : _Opaque(nullptr) {}
 
-    once_flag(const once_flag&) = delete;
+    once_flag(const once_flag&)            = delete;
     once_flag& operator=(const once_flag&) = delete;
 
     void* _Opaque;
@@ -36,7 +36,7 @@ _CRTIMP2_PURE int __CLRCALL_PURE_OR_CDECL _Execute_once(
 template <class _Ty>
 union _Immortalizer_impl { // constructs _Ty, never destroys
     constexpr _Immortalizer_impl() noexcept : _Storage{} {}
-    _Immortalizer_impl(const _Immortalizer_impl&) = delete;
+    _Immortalizer_impl(const _Immortalizer_impl&)            = delete;
     _Immortalizer_impl& operator=(const _Immortalizer_impl&) = delete;
     ~_Immortalizer_impl() {
         // do nothing

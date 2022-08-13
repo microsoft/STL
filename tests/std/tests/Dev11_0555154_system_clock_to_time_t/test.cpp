@@ -7,9 +7,9 @@
 // restricted to the coarser of the precisions of time_t and time_point. It is
 // implementation defined whether values are rounded or truncated to the required precision."
 
-#include <assert.h>
+#include <cassert>
 #include <chrono>
-#include <stdint.h>
+#include <cstdint>
 
 using namespace std;
 using namespace std::chrono;

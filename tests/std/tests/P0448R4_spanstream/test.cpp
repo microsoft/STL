@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <ios>
 #include <limits>
 #include <span>

@@ -107,7 +107,7 @@ public:
         return *this;
     }
 
-    thread(const thread&) = delete;
+    thread(const thread&)            = delete;
     thread& operator=(const thread&) = delete;
 
     void swap(thread& _Other) noexcept {
@@ -278,8 +278,8 @@ basic_ostream<_Ch, _Tr>& operator<<(basic_ostream<_Ch, _Tr>& _Str, thread::id _I
 
 template <>
 struct hash<thread::id> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef thread::id _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = thread::id;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
     _NODISCARD size_t operator()(const thread::id _Keyval) const noexcept {
         return _Hash_representation(_Keyval._Id);
@@ -307,8 +307,8 @@ public:
         _Try_cancel_and_join();
     }
 
-    jthread(const jthread&)     = delete;
-    jthread(jthread&&) noexcept = default;
+    jthread(const jthread&)            = delete;
+    jthread(jthread&&) noexcept        = default;
     jthread& operator=(const jthread&) = delete;
 
     jthread& operator=(jthread&& _Other) noexcept {

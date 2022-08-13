@@ -182,10 +182,10 @@ STATIC_ASSERT(!is_trivial_v<TriviallyCopyableStruct>);
 struct TriviallyMovableStruct {
     int i;
     TriviallyMovableStruct();
-    TriviallyMovableStruct(const TriviallyMovableStruct&) = delete;
-    TriviallyMovableStruct(TriviallyMovableStruct&&)      = default;
+    TriviallyMovableStruct(const TriviallyMovableStruct&)            = delete;
+    TriviallyMovableStruct(TriviallyMovableStruct&&)                 = default;
     TriviallyMovableStruct& operator=(const TriviallyMovableStruct&) = delete;
-    TriviallyMovableStruct& operator=(TriviallyMovableStruct&&) = default;
+    TriviallyMovableStruct& operator=(TriviallyMovableStruct&&)      = default;
 };
 STATIC_ASSERT(is_trivially_copyable_v<TriviallyMovableStruct>);
 STATIC_ASSERT(!is_trivial_v<TriviallyMovableStruct>);
@@ -213,7 +213,7 @@ struct TriviallyAssignableStruct {
     TriviallyAssignableStruct(TriviallyAssignableStruct&&);
 
     TriviallyAssignableStruct& operator=(const TriviallyAssignableStruct&) = default;
-    TriviallyAssignableStruct& operator=(TriviallyAssignableStruct&&) = default;
+    TriviallyAssignableStruct& operator=(TriviallyAssignableStruct&&)      = default;
 };
 STATIC_ASSERT(!is_trivially_copy_constructible_v<TriviallyAssignableStruct>);
 STATIC_ASSERT(!is_trivially_move_constructible_v<TriviallyAssignableStruct>);

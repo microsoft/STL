@@ -3,6 +3,7 @@
 
 // REQUIRES: asan, x64 || x86
 
+#if 0 // TRANSITION, VSO-1586016: String annotations disabled temporarily.
 #pragma warning(disable : 4389) // signed/unsigned mismatch in arithmetic
 #pragma warning(disable : 4984) // 'if constexpr' is a C++17 language extension
 #pragma warning(disable : 6326) // Potential comparison of a constant with another constant.
@@ -1830,3 +1831,6 @@ int main() {
     run_allocator_matrix<char32_t>();
     run_allocator_matrix<wchar_t>();
 }
+#endif // TRANSITION, VSO-1586016
+
+int main() {}

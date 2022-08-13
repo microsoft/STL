@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
-#include <ctype.h>
+#include <cassert>
+#include <cctype>
 #include <ios>
 #include <system_error>
 
@@ -51,6 +51,17 @@ void test_gh_2572() {
     assert((make_error_condition(errc::timed_out) == error_code{ERROR_SEM_TIMEOUT, system_category()}));
 }
 
+// Also test GH-2893 <system_error>: Several Windows system errors are not mapped
+void test_gh_2893() {
+    assert((errc::filename_too_long == error_code{ERROR_FILENAME_EXCED_RANGE, system_category()}));
+    assert(
+        (make_error_condition(errc::filename_too_long) == error_code{ERROR_FILENAME_EXCED_RANGE, system_category()}));
+
+    assert((errc::no_such_file_or_directory == error_code{ERROR_BAD_NET_NAME, system_category()}));
+    assert(
+        (make_error_condition(errc::no_such_file_or_directory) == error_code{ERROR_BAD_NET_NAME, system_category()}));
+}
+
 int main() {
     // Also test DevDiv-781294 "<system_error>: Visual C++ 2013 RC system_category().equivalent function does not work".
     const error_code code(ERROR_NOT_ENOUGH_MEMORY, system_category());
@@ -71,6 +82,7 @@ int main() {
     test_lwg_3598();
 
     test_gh_2572();
+    test_gh_2893();
 }
 
 

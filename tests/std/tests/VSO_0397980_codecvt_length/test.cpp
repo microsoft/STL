@@ -7,7 +7,7 @@
 #undef _ENFORCE_FACET_SPECIALIZATIONS
 #define _ENFORCE_FACET_SPECIALIZATIONS 0
 
-#include <assert.h>
+#include <cassert>
 #include <codecvt>
 #include <cstdlib>
 #include <iterator>

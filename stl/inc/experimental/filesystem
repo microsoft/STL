@@ -27,7 +27,7 @@ _STL_DISABLE_CLANG_WARNINGS
 #ifndef _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 #error The <experimental/filesystem> header providing std::experimental::filesystem is deprecated by Microsoft \
 and will be REMOVED. It is superseded by the C++17 <filesystem> header providing std::filesystem. \
-You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to acknowledge that you have received this warning.
+You can define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING to suppress this error.
 #endif // _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 #pragma warning(disable : 4365) // conversion from 'type_1' to 'type_2', signed/unsigned mismatch (/Wall)
@@ -128,10 +128,10 @@ public:
     explicit file_status(file_type _Ftype = file_type::none, perms _Prms = perms::unknown) noexcept
         : _Myftype(_Ftype), _Myperms(_Prms) {}
 
-    file_status(const file_status&) noexcept = default;
+    file_status(const file_status&) noexcept            = default;
     file_status& operator=(const file_status&) noexcept = default;
 
-    file_status(file_status&&) = default;
+    file_status(file_status&&)            = default;
     file_status& operator=(file_status&&) = default;
 
     _NODISCARD file_type type() const noexcept {
@@ -1317,7 +1317,7 @@ public:
         return _Mypval2;
     }
 
-    filesystem_error(const filesystem_error&) = default;
+    filesystem_error(const filesystem_error&)            = default;
     filesystem_error& operator=(const filesystem_error&) = default;
 
 private:
@@ -1342,10 +1342,10 @@ public:
 
     directory_entry() : _Mystat(), _Mysymstat() {}
 
-    directory_entry(const directory_entry&) = default;
+    directory_entry(const directory_entry&)            = default;
     directory_entry& operator=(const directory_entry&) = default;
 
-    directory_entry(directory_entry&&) = default;
+    directory_entry(directory_entry&&)            = default;
     directory_entry& operator=(directory_entry&&) = default;
 
     explicit directory_entry(
@@ -1473,10 +1473,10 @@ public:
         _Code = error_code(_Errno, _STD system_category());
     }
 
-    _Directory_iterator(const _Directory_iterator&) = default;
+    _Directory_iterator(const _Directory_iterator&)            = default;
     _Directory_iterator& operator=(const _Directory_iterator&) = default;
 
-    _Directory_iterator(_Directory_iterator&&) = default;
+    _Directory_iterator(_Directory_iterator&&)            = default;
     _Directory_iterator& operator=(_Directory_iterator&&) = default;
 
     _NODISCARD const value_type& operator*() const {
@@ -1617,10 +1617,10 @@ public:
         _Get();
     }
 
-    recursive_directory_iterator(const recursive_directory_iterator&) = default;
+    recursive_directory_iterator(const recursive_directory_iterator&)            = default;
     recursive_directory_iterator& operator=(const recursive_directory_iterator&) = default;
 
-    recursive_directory_iterator(recursive_directory_iterator&&) = default;
+    recursive_directory_iterator(recursive_directory_iterator&&)            = default;
     recursive_directory_iterator& operator=(recursive_directory_iterator&&) = default;
 
     _NODISCARD directory_options options() const {

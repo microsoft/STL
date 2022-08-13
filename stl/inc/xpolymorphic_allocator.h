@@ -282,6 +282,18 @@ namespace pmr {
             return _Resource;
         }
 
+        _NODISCARD_FRIEND bool operator==(
+            const polymorphic_allocator& _Lhs, const polymorphic_allocator& _Rhs) noexcept {
+            return *_Lhs._Resource == *_Rhs._Resource;
+        }
+
+#if !_HAS_CXX20
+        _NODISCARD_FRIEND bool operator!=(
+            const polymorphic_allocator& _Lhs, const polymorphic_allocator& _Rhs) noexcept {
+            return *_Lhs._Resource != *_Rhs._Resource;
+        }
+#endif // !_HAS_CXX20
+
     private:
         memory_resource* _Resource = _STD pmr::get_default_resource();
     };

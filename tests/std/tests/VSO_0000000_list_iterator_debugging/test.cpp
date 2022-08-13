@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <functional>
 #include <iterator>
 #include <list>
 #include <memory>
 #include <stdexcept>
-#include <stdlib.h>
 #include <type_traits>
 #include <vector>
 
@@ -115,7 +115,7 @@ void test_case_empty_target_bad() {
 struct throw_cmp_less_int {
     size_t remainingCompares;
     explicit throw_cmp_less_int(size_t remainingCompares_) : remainingCompares(remainingCompares_) {}
-    throw_cmp_less_int(const throw_cmp_less_int&) = delete;
+    throw_cmp_less_int(const throw_cmp_less_int&)            = delete;
     throw_cmp_less_int& operator=(const throw_cmp_less_int&) = delete;
 
     bool operator()(int a, int b) /* neither const nor noexcept */ {
@@ -234,8 +234,8 @@ template <class T>
 struct liveness_allocator {
     using value_type = T;
 
-    liveness_allocator()                          = default;
-    liveness_allocator(const liveness_allocator&) = default;
+    liveness_allocator()                                     = default;
+    liveness_allocator(const liveness_allocator&)            = default;
     liveness_allocator& operator=(const liveness_allocator&) = default;
     template <class U, enable_if_t<!is_same_v<T, U>, int> = 0>
     liveness_allocator(const liveness_allocator<U>&) {}

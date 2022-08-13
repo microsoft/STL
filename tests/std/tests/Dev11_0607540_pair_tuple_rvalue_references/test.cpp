@@ -22,7 +22,7 @@
 // tuple(const tuple&) = default;
 // tuple(tuple&&) = default;
 
-#include <assert.h>
+#include <cassert>
 #include <tuple>
 #include <type_traits>
 #include <utility>

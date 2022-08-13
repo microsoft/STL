@@ -8,7 +8,7 @@
 // [...]
 // - otherwise, the value is tid and its type Vi is TiD cv &.
 
-#include <assert.h>
+#include <cassert>
 #include <functional>
 #include <memory>
 

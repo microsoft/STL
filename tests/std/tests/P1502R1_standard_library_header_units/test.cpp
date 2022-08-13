@@ -28,9 +28,7 @@ import <coroutine>;
 import <deque>;
 import <exception>;
 import <execution>;
-#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, VSO-1543660 fixed in 17.3 Preview 3
 import <expected>;
-#endif // ^^^ no workaround ^^^
 import <filesystem>;
 import <format>;
 import <forward_list>;
@@ -94,8 +92,8 @@ import <vector>;
 import <version>;
 // clang-format on
 
-#include <assert.h>
-#include <stdio.h>
+#include <assert.h> // intentionally not <cassert>
+#include <stdio.h> // intentionally not <cstdio>
 
 #include <force_include.hpp>
 using namespace std;
@@ -296,13 +294,11 @@ __declspec(dllexport) // for <stacktrace> test export main to have it named even
         assert(count(execution::par, begin(arr), end(arr), 0) == 4);
     }
 
-#ifdef _MSVC_INTERNAL_TESTING // TRANSITION, VSO-1543660 fixed in 17.3 Preview 3
     {
         puts("Testing <expected>.");
         constexpr expected<double, int> test{unexpect, 42};
         assert(test.error() == 42);
     }
-#endif // ^^^ no workaround ^^^
 
     {
         puts("Testing <filesystem>.");
