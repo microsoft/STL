@@ -67,9 +67,6 @@ strings\basic.string\string.nonmembers\string_op+\allocator_propagation.pass.cpp
 # libc++ hasn't updated move_iterator for P2520R0
 iterators\predef.iterators\move.iterators\move.iterator\types.pass.cpp
 
-# libc++ conversion from 'size_t' to 'unsigned long'
-utilities\template.bitset\bitset.members\to_ulong.pass.cpp
-
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
