@@ -1191,6 +1191,10 @@ struct pointer_traits<_String_view_iterator<_Traits>> {
 };
 #endif // _HAS_CXX20
 
+#pragma warning(push)
+// Invalid annotation: 'NullTerminated' property may only be used on buffers whose elements are of integral or pointer
+// type
+#pragma warning(disable : 6510)
 
 template <class _Elem, class _Traits>
 class basic_string_view { // wrapper for any kind of contiguous character buffer
@@ -1223,7 +1227,7 @@ public:
     constexpr basic_string_view(const basic_string_view&) noexcept            = default;
     constexpr basic_string_view& operator=(const basic_string_view&) noexcept = default;
 
-    /* implicit */ constexpr basic_string_view(const const_pointer _Ntcts) noexcept // strengthened
+    /* implicit */ constexpr basic_string_view(_In_z_ const const_pointer _Ntcts) noexcept // strengthened
         : _Mydata(_Ntcts), _Mysize(_Traits::length(_Ntcts)) {}
 
 #if _HAS_CXX23
@@ -1655,6 +1659,8 @@ private:
     const_pointer _Mydata;
     size_type _Mysize;
 };
+
+#pragma warning(pop)
 
 #ifdef __cpp_lib_concepts
 template <contiguous_iterator _Iter, sized_sentinel_for<_Iter> _Sent>
