@@ -6116,7 +6116,7 @@ int run_test()
 #include "variant_test_helpers.h"
 
 namespace visit {
-#if _HAS_CXX20 && !defined(__EDG__)
+#if _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
   Fn obj{};
@@ -6530,11 +6530,11 @@ int run_test() {
 
   return 0;
 }
-#else // ^^ _HAS_CXX20 && !defined(__EDG__) / vv !(_HAS_CXX20 && !defined(__EDG__))
+#else // ^^ real test / vv workaround
 int run_test() {
   return 0;
 }
-#endif // _HAS_CXX20 && !defined(__EDG__)
+#endif // _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
 
 } // namespace visit
 // -- END: test/std/utilities/variant/variant.visit/visit.pass.cpp
@@ -6565,7 +6565,7 @@ int run_test() {
 #include "variant_test_helpers.h"
 
 namespace visit::return_type {
-#if _HAS_CXX20 && !defined(__EDG__)
+#if _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
 template <typename ReturnType>
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
@@ -7060,11 +7060,11 @@ int run_test() {
 
   return 0;
 }
-#else // ^^ _HAS_CXX20 && !defined(__EDG__) / vv !(_HAS_CXX20 && !defined(__EDG__))
+#else // ^^ real tests / vv workaround
 int run_test() {
   return 0;
 }
-#endif // _HAS_CXX20 && !defined(__EDG__)
+#endif // _HAS_CXX20 && !defined(__EDG__) && !defined(TEST_PERMISSIVE)
 } // namespace visit::return_type
 // -- END: test/std/utilities/variant/variant.visit/visit_return_type.pass.cpp
 
