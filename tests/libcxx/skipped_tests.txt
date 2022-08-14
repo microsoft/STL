@@ -382,6 +382,9 @@ language.support\cmp\cmp.alg\weak_order.pass.cpp
 # GH-2987 ranges::distance needs to better emulate the two overload presentation of LWG-3664
 iterators\iterator.primitives\range.iter.ops\range.iter.ops.distance\iterator_sentinel.pass.cpp
 
+# GH-3032 remove annotation 'NullTerminated'
+strings\string.view\string.view.comparison\common_type_specialization.pass.cpp
+
 
 # *** CRT BUGS ***
 # We're permanently missing aligned_alloc().
@@ -873,7 +876,9 @@ utilities\format\format.functions\ascii.pass.cpp
 utilities\format\format.functions\unicode.pass.cpp
 
 # Not yet analyzed
-strings\string.view\string.view.comparison\common_type_specialization.pass.cpp
+thread\thread.threads\thread.thread.class\thread.thread.id\eq.pass.cpp
+algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
+thread\thread.threads\thread.thread.class\thread.thread.id\lt.pass.cpp
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
 algorithms\alg.nonmodifying\alg.any_of\ranges.any_of.pass.cpp
 algorithms\alg.nonmodifying\alg.equal\ranges.equal.pass.cpp
