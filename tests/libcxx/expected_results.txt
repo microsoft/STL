@@ -219,9 +219,6 @@ std/ranges/range.adaptors/range.zip/sentinel/eq.pass.cpp FAIL
 std/ranges/range.adaptors/range.zip/sentinel/minus.pass.cpp FAIL
 std/ranges/range.adaptors/range.zip/size.pass.cpp FAIL
 
-# P1206R7 ranges::to
-std/language.support/support.limits/support.limits.general/string.version.compile.pass.cpp FAIL
-
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 std/language.support/support.limits/support.limits.general/type_traits.version.compile.pass.cpp FAIL
 
@@ -372,9 +369,6 @@ std/language.support/cmp/cmp.alg/weak_order.pass.cpp FAIL
 
 # GH-2987 ranges::distance needs to better emulate the two overload presentation of LWG-3664
 std/iterators/iterator.primitives/range.iter.ops/range.iter.ops.distance/iterator_sentinel.pass.cpp FAIL
-
-# GH-2839 <chrono>: abs(duration) requires a duration with reduced period
-std/time/time.duration/time.duration.alg/abs.pass.cpp FAIL
 
 
 # *** CRT BUGS ***
@@ -609,8 +603,6 @@ std/algorithms/alg.modifying.operations/alg.fill/ranges.fill.pass.cpp FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move.pass.cpp FAIL
 std/algorithms/alg.modifying.operations/alg.move/ranges.move_backward.pass.cpp FAIL
 std/algorithms/alg.modifying.operations/alg.partitions/ranges_partition_copy.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.partitions/ranges_stable_partition.pass.cpp:1 FAIL
-std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp FAIL
 std/algorithms/alg.modifying.operations/alg.remove/ranges.remove.pass.cpp FAIL
 std/algorithms/alg.modifying.operations/alg.remove/ranges.remove_if.pass.cpp FAIL
 std/algorithms/alg.modifying.operations/alg.replace/ranges.replace.pass.cpp:0 FAIL
@@ -871,6 +863,7 @@ std/utilities/format/format.functions/ascii.pass.cpp FAIL
 std/utilities/format/format.functions/unicode.pass.cpp:0 FAIL
 
 # Not yet analyzed
+std/strings/string.view/string.view.comparison/common_type_specialization.pass.cpp:0 FAIL
 std/algorithms/alg.nonmodifying/alg.all_of/ranges.all_of.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.any_of/ranges.any_of.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.equal/ranges.equal.pass.cpp:0 FAIL
@@ -897,7 +890,6 @@ std/algorithms/alg.sorting/alg.set.operations/set.union/ranges_set_union.pass.cp
 std/algorithms/alg.sorting/alg.sort/is.sorted/ranges.is_sorted.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/is.sorted/ranges.is_sorted_until.pass.cpp:0 FAIL
 std/algorithms/alg.sorting/alg.sort/partial.sort.copy/ranges_partial_sort_copy.pass.cpp:1 FAIL
-std/algorithms/alg.sorting/alg.sort/stable.sort/ranges.stable.sort.pass.cpp:1 FAIL
 std/algorithms/algorithms.results/in_found_result.pass.cpp:0 FAIL
 std/algorithms/algorithms.results/min_max_result.pass.cpp:0 FAIL
 std/algorithms/ranges_robust_against_dangling.pass.cpp FAIL
@@ -938,18 +930,7 @@ std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.comp/op
 std/iterators/predef.iterators/move.iterators/move.iterator/iterator_concept_conformance.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cmath.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/cstdlib.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/deque.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/forward_list.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/list.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/list.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/map.version.compile.pass.cpp FAIL
 std/language.support/support.limits/support.limits.general/new.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/queue.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/set.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/stack.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/unordered_map.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/unordered_set.version.compile.pass.cpp FAIL
-std/language.support/support.limits/support.limits.general/vector.version.compile.pass.cpp FAIL
 std/localization/locale.categories/category.monetary/locale.money.get/locale.money.get.members/get_long_double_zh_CN.pass.cpp:0 FAIL
 std/ranges/range.adaptors/range.filter/iterator/arrow.pass.cpp FAIL
 std/ranges/range.adaptors/range.filter/iterator/base.pass.cpp FAIL

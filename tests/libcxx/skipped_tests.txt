@@ -231,9 +231,6 @@ ranges\range.adaptors\range.zip\sentinel\eq.pass.cpp
 ranges\range.adaptors\range.zip\sentinel\minus.pass.cpp
 ranges\range.adaptors\range.zip\size.pass.cpp
 
-# P1206R7 ranges::to
-language.support\support.limits\support.limits.general\string.version.compile.pass.cpp
-
 # P2255R2 "Type Traits To Detect References Binding To Temporaries"
 language.support\support.limits\support.limits.general\type_traits.version.compile.pass.cpp
 
@@ -384,9 +381,6 @@ language.support\cmp\cmp.alg\weak_order.pass.cpp
 
 # GH-2987 ranges::distance needs to better emulate the two overload presentation of LWG-3664
 iterators\iterator.primitives\range.iter.ops\range.iter.ops.distance\iterator_sentinel.pass.cpp
-
-# GH-2839 <chrono>: abs(duration) requires a duration with reduced period
-time\time.duration\time.duration.alg\abs.pass.cpp
 
 
 # *** CRT BUGS ***
@@ -621,8 +615,6 @@ algorithms\alg.modifying.operations\alg.fill\ranges.fill.pass.cpp
 algorithms\alg.modifying.operations\alg.move\ranges.move.pass.cpp
 algorithms\alg.modifying.operations\alg.move\ranges.move_backward.pass.cpp
 algorithms\alg.modifying.operations\alg.partitions\ranges_partition_copy.pass.cpp
-algorithms\alg.modifying.operations\alg.partitions\ranges_stable_partition.pass.cpp
-algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
 algorithms\alg.modifying.operations\alg.remove\ranges.remove.pass.cpp
 algorithms\alg.modifying.operations\alg.remove\ranges.remove_if.pass.cpp
 algorithms\alg.modifying.operations\alg.replace\ranges.replace.pass.cpp
@@ -881,6 +873,7 @@ utilities\format\format.functions\ascii.pass.cpp
 utilities\format\format.functions\unicode.pass.cpp
 
 # Not yet analyzed
+strings\string.view\string.view.comparison\common_type_specialization.pass.cpp
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
 algorithms\alg.nonmodifying\alg.any_of\ranges.any_of.pass.cpp
 algorithms\alg.nonmodifying\alg.equal\ranges.equal.pass.cpp
@@ -907,7 +900,6 @@ algorithms\alg.sorting\alg.set.operations\set.union\ranges_set_union.pass.cpp
 algorithms\alg.sorting\alg.sort\is.sorted\ranges.is_sorted.pass.cpp
 algorithms\alg.sorting\alg.sort\is.sorted\ranges.is_sorted_until.pass.cpp
 algorithms\alg.sorting\alg.sort\partial.sort.copy\ranges_partial_sort_copy.pass.cpp
-algorithms\alg.sorting\alg.sort\stable.sort\ranges.stable.sort.pass.cpp
 algorithms\algorithms.results\in_found_result.pass.cpp
 algorithms\algorithms.results\min_max_result.pass.cpp
 algorithms\ranges_robust_against_dangling.pass.cpp
@@ -948,18 +940,7 @@ iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.comp\op_spa
 iterators\predef.iterators\move.iterators\move.iterator\iterator_concept_conformance.compile.pass.cpp
 language.support\support.limits\support.limits.general\cmath.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\cstdlib.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\deque.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\forward_list.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\list.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\list.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\map.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\new.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\queue.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\set.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\stack.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\unordered_map.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\unordered_set.version.compile.pass.cpp
-language.support\support.limits\support.limits.general\vector.version.compile.pass.cpp
 language.support\support.limits\support.limits.general\version.version.compile.pass.cpp
 localization\locale.categories\category.monetary\locale.money.get\locale.money.get.members\get_long_double_zh_CN.pass.cpp
 ranges\range.adaptors\range.filter\iterator\arrow.pass.cpp
