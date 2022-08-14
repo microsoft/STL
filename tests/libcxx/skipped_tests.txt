@@ -67,6 +67,9 @@ strings\basic.string\string.nonmembers\string_op+\allocator_propagation.pass.cpp
 # libc++ hasn't updated move_iterator for P2520R0
 iterators\predef.iterators\move.iterators\move.iterator\types.pass.cpp
 
+# libc++ conversion from 'size_t' to 'unsigned long'
+utilities\template.bitset\bitset.members\to_ulong.pass.cpp
+
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
 # Tracked by VSO-593630 "<filesystem> Enable libcxx filesystem tests"
@@ -874,6 +877,13 @@ localization\locale.categories\category.numeric\locale.nm.put\facet.num.put.memb
 # Not yet analyzed. These tests use characters that cannot be represented in legacy character encodings
 utilities\format\format.functions\ascii.pass.cpp
 utilities\format\format.functions\unicode.pass.cpp
+
+#Not yet analyzed. "constexpr evaluation hit maximum step limit; possible infinite loop?"
+utilities\template.bitset\bitset.members\left_shift_eq.pass.cpp
+utilities\template.bitset\bitset.members\op_and_eq.pass.cpp
+utilities\template.bitset\bitset.members\op_or_eq.pass.cpp
+utilities\template.bitset\bitset.members\right_shift_eq.pass.cpp
+utilities\template.bitset\bitset.members\to_string.pass.cpp
 
 # Not yet analyzed
 thread\thread.threads\thread.thread.class\thread.thread.id\eq.pass.cpp
