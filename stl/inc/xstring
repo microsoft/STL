@@ -2718,7 +2718,7 @@ private:
                 _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else { // _Strat == _Construct_strategy::_From_string
 #ifdef _INSERT_STRING_ANNOTATION
-                _Traits::move(_My_data._Bx._Buf, _Arg, _Count + 1);
+                _Traits::move(_My_data._Bx._Buf, _Arg, _Count);
 #else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
                 _Traits::move(_My_data._Bx._Buf, _Arg, _BUF_SIZE);
 #endif // !_INSERT_STRING_ANNOTATION
