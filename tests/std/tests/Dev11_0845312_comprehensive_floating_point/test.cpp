@@ -8,7 +8,6 @@
 // diverse floating point values (both single and double precision).
 
 #include <cassert>
-#include <cfloat>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -21,6 +20,16 @@
 
 constexpr auto int64_max  = std::numeric_limits<std::int64_t>::max();
 constexpr auto uint64_max = std::numeric_limits<std::uint64_t>::max();
+
+constexpr auto flt_min_exp = std::numeric_limits<float>::min_exponent;
+constexpr auto flt_max_exp = std::numeric_limits<float>::max_exponent;
+constexpr auto dbl_min_exp = std::numeric_limits<double>::min_exponent;
+constexpr auto dbl_max_exp = std::numeric_limits<double>::max_exponent;
+
+constexpr auto flt_min_10_exp = std::numeric_limits<float>::min_exponent10;
+constexpr auto flt_max_10_exp = std::numeric_limits<float>::max_exponent10;
+constexpr auto dbl_min_10_exp = std::numeric_limits<double>::min_exponent10;
+constexpr auto dbl_max_10_exp = std::numeric_limits<double>::max_exponent10;
 
 template <typename FloatingType>
 static FloatingType parse_as(char const*);
@@ -171,14 +180,14 @@ int main() {
     }
 
     // Verify all representable powers of two and nearby values:
-    for (int32_t i = FLT_MIN_EXP; i != FLT_MAX_EXP; ++i) {
+    for (int32_t i = flt_min_exp; i != flt_max_exp; ++i) {
         auto const f = powf(2.0f, static_cast<float>(i));
         verify_round_trip(from_bits(as_bits(f) - 1));
         verify_round_trip(f);
         verify_round_trip(from_bits(as_bits(f) + 1));
     }
 
-    for (int32_t i = DBL_MIN_EXP; i != DBL_MAX_EXP; ++i) {
+    for (int32_t i = dbl_min_exp; i != dbl_max_exp; ++i) {
         auto const f = pow(2.0, static_cast<double>(i));
         verify_round_trip(from_bits(as_bits(f) - 1));
         verify_round_trip(f);
@@ -186,14 +195,14 @@ int main() {
     }
 
     // Verify all representable powers of ten and nearby values:
-    for (int32_t i = FLT_MIN_10_EXP; i <= FLT_MAX_10_EXP; ++i) {
+    for (int32_t i = flt_min_10_exp; i <= flt_max_10_exp; ++i) {
         auto const f = powf(10.0f, static_cast<float>(i));
         verify_round_trip(from_bits(as_bits(f) - 1));
         verify_round_trip(f);
         verify_round_trip(from_bits(as_bits(f) + 1));
     }
 
-    for (int32_t i = DBL_MIN_10_EXP; i <= DBL_MAX_10_EXP; ++i) {
+    for (int32_t i = dbl_min_10_exp; i <= dbl_max_10_exp; ++i) {
         auto const f = pow(10.0, static_cast<double>(i));
         verify_round_trip(from_bits(as_bits(f) - 1));
         verify_round_trip(f);
