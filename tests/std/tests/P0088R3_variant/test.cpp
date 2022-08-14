@@ -3271,9 +3271,11 @@ int run_test()
     == VariantAllowsNarrowingConversions, "");
   static_assert(!std::is_constructible<std::variant<std::string, bool>, int>::value, "");
 
+#ifndef __EDG__
   static_assert(!std::is_constructible<std::variant<int, bool>, decltype("meow")>::value, "");
   static_assert(!std::is_constructible<std::variant<int, const bool>, decltype("meow")>::value, "");
   static_assert(!std::is_constructible<std::variant<int, const volatile bool>, decltype("meow")>::value, "");
+#endif
   // libc++ is missing P1957R2
   static_assert(std::is_constructible<std::variant<bool>, std::true_type>::value, "");
   static_assert(!std::is_constructible<std::variant<bool>, std::unique_ptr<char> >::value, "");
@@ -6113,6 +6115,7 @@ int run_test()
 #include "test_macros.h"
 #include "variant_test_helpers.h"
 
+#if !defined(__EDG__) && !defined(TEST_PERMISSIVE)
 namespace visit {
 void test_call_operator_forwarding() {
   using Fn = ForwardingCallObject;
@@ -7052,6 +7055,7 @@ int run_test() {
   return 0;
 }
 } // namespace visit::return_type
+#endif // !defined(__EDG__) && !defined(TEST_PERMISSIVE)
 // -- END: test/std/utilities/variant/variant.visit/visit_return_type.pass.cpp
 
 // LLVM SOURCES END
@@ -7826,9 +7830,11 @@ int main() {
 
     member_swap::run_test();
 
-    visit::run_test();
     visit::robust_against_adl::run_test();
+#if !defined(__EDG__) && !defined(TEST_PERMISSIVE)
+    visit::run_test();
     visit::return_type::run_test();
+#endif // !defined(__EDG__) && !defined(TEST_PERMISSIVE)
 
     msvc::big_variant::run_test();
     msvc::derived_variant::run_test();
