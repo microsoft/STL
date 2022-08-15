@@ -6840,19 +6840,19 @@ namespace ranges {
 #ifdef __cpp_lib_ranges_zip
     template <typename... _RangeTypes>
     concept _Zip_is_common = (sizeof...(_RangeTypes) == 1 && (_RANGES common_range<_RangeTypes> && ...)) //
-        || (!(_RANGES bidirectional_range<_RangeTypes> && ...) && (_RANGES common_range<_RangeTypes> && ...)) //
-        || ((_RANGES random_access_range<_RangeTypes> && ...) && (_RANGES sized_range<_RangeTypes> && ...));
+                          || (!(_RANGES bidirectional_range<_RangeTypes> && ...)
+                              && (_RANGES common_range<_RangeTypes> && ...)) //
+                          || ((_RANGES random_access_range<_RangeTypes> && ...)
+                              && (_RANGES sized_range<_RangeTypes> && ...));
 
     template <typename... _RangeTypes>
-    struct _Zip_tuple_or_pair_solver
-    {
+    struct _Zip_tuple_or_pair_solver {
         using _Storage_type = _STD tuple<_RangeTypes...>;
     };
 
     template <typename... _RangeTypes>
         requires(sizeof...(_RangeTypes) == 2)
-    struct _Zip_tuple_or_pair_solver<_RangeTypes...>
-    {
+    struct _Zip_tuple_or_pair_solver<_RangeTypes...> {
         using _Storage_type = _STD pair<_RangeTypes...>;
     };
 
@@ -6872,7 +6872,7 @@ namespace ranges {
     template <typename _CallbackType, typename _TupleType>
     constexpr auto _Zip_tuple_transform(_CallbackType&& _Callback, _TupleType&& _Tuple) noexcept(
         noexcept(_STD apply(_Zip_create_tuple_transform_lambda(_STD forward<_CallbackType>(_Callback)),
-                            _STD forward<_TupleType>(_Tuple)))) /* strengthened */ {
+            _STD forward<_TupleType>(_Tuple)))) /* strengthened */ {
         return _STD apply(_Zip_create_tuple_transform_lambda(_STD forward<_CallbackType>(_Callback)),
             _STD forward<_TupleType>(_Tuple));
     }
@@ -6887,7 +6887,8 @@ namespace ranges {
     }
 
     template <typename _CallbackType, typename _TupleType>
-    constexpr void _Zip_tuple_for_each(_CallbackType&& _Callback, _TupleType&& _Tuple) noexcept(noexcept(_STD apply(_Zip_create_tuple_for_each_lambda(_STD forward<_CallbackType>(_Callback)),
+    constexpr void _Zip_tuple_for_each(_CallbackType&& _Callback, _TupleType&& _Tuple) noexcept(
+        noexcept(_STD apply(_Zip_create_tuple_for_each_lambda(_STD forward<_CallbackType>(_Callback)),
             _STD forward<_TupleType>(_Tuple)))) /* strengthened */ {
         _STD apply(_Zip_create_tuple_for_each_lambda(_STD forward<_CallbackType>(_Callback)),
             _STD forward<_TupleType>(_Tuple));
@@ -6908,7 +6909,7 @@ namespace ranges {
 
     template <_RANGES input_range... _ViewTypes>
         requires _Zip_allow_views<_ViewTypes...>
-    class zip_view : public _RANGES view_interface<zip_view<_ViewTypes...>> { 
+    class zip_view : public _RANGES view_interface<zip_view<_ViewTypes...>> {
     public:
         template <bool>
         class _Iterator;
@@ -6942,30 +6943,31 @@ namespace ranges {
             return _Iterator<false>{_Zip_tuple_transform(_RANGES begin, _M_Views)};
         }
 
-        _NODISCARD constexpr auto begin() const noexcept(
-            noexcept(_Zip_tuple_transform(_RANGES begin, _M_Views))) // strengthened
+        _NODISCARD constexpr auto begin() const
+            noexcept(noexcept(_Zip_tuple_transform(_RANGES begin, _M_Views))) // strengthened
             requires(_RANGES range<const _ViewTypes>&&...) {
             return _Iterator<true>{_Zip_tuple_transform(_RANGES begin, _M_Views)};
         }
 
-        _NODISCARD constexpr auto end() noexcept(noexcept(_Sentinel<false>{
-            _Zip_tuple_transform(_RANGES end, _M_Views)}) && noexcept(_Iterator<false>{_Zip_tuple_transform(_RANGES end, _M_Views)}) && noexcept(_RANGES next(begin(),
+        _NODISCARD constexpr auto end() noexcept(
+            noexcept(_Sentinel<false>{_Zip_tuple_transform(_RANGES end, _M_Views)}) && noexcept(
+                _Iterator<false>{_Zip_tuple_transform(_RANGES end, _M_Views)}) && noexcept(_RANGES next(begin(),
                 _STD iter_difference_t<_Iterator<false>>{_Get_signed_size()}))) // strengthened
             requires(!(_Simple_view<_ViewTypes> && ...)) {
             if constexpr (!_Zip_is_common<_ViewTypes...>) {
                 return _Sentinel<false>{_Zip_tuple_transform(_RANGES end, _M_Views)};
-            }
-            else if constexpr ((_RANGES random_access_range<_ViewTypes> && ...)){
+            } else if constexpr ((_RANGES random_access_range<_ViewTypes> && ...)) {
                 return (begin() + _STD iter_difference_t<_Iterator<false>>{_Get_signed_size()});
             } else {
                 return _Iterator<false>{_Zip_tuple_transform(_RANGES end, _M_Views)};
             }
         }
 
-        _NODISCARD constexpr auto end() const noexcept(noexcept(_Sentinel<true>{
-            _Zip_tuple_transform(_RANGES end, _M_Views)}) && noexcept(_Iterator<true>{_Zip_tuple_transform(_RANGES end, _M_Views)}) && noexcept(_RANGES next(begin(),
+        _NODISCARD constexpr auto end() const
+            noexcept(noexcept(_Sentinel<true>{_Zip_tuple_transform(_RANGES end, _M_Views)}) && noexcept(
+                _Iterator<true>{_Zip_tuple_transform(_RANGES end, _M_Views)}) && noexcept(_RANGES next(begin(),
                 _STD iter_difference_t<_Iterator<true>>{_Get_signed_size()}))) // strengthened
-            requires(_RANGES range<const _ViewTypes> && ...) {
+            requires(_RANGES range<const _ViewTypes>&&...) {
             if constexpr (!_Zip_is_common<const _ViewTypes...>) {
                 return _Sentinel<true>{_Zip_tuple_transform(_RANGES end, _M_Views)};
             } else if constexpr ((_RANGES random_access_range<const _ViewTypes> && ...)) {
@@ -6976,8 +6978,8 @@ namespace ranges {
         }
 
         _NODISCARD constexpr auto size() noexcept(noexcept(_Zip_tuple_for_each(_RANGES size, _M_Views))) // strengthened
-            requires (_RANGES sized_range<_ViewTypes> && ...) {
-            using _Common_size_type = _STD common_type_t<_RANGES range_size_t<_ViewTypes>...>;
+            requires(_RANGES sized_range<_ViewTypes>&&...) {
+            using _Common_size_type          = _STD common_type_t<_RANGES range_size_t<_ViewTypes>...>;
             using _Common_unsigned_size_type = _Make_unsigned_like_t<_Common_size_type>;
 
             auto _Smallest_view_size_value = _STD numeric_limits<_Common_unsigned_size_type>::max();
@@ -6995,8 +6997,9 @@ namespace ranges {
             return _Smallest_view_size_value;
         }
 
-        _NODISCARD constexpr auto size() const noexcept(noexcept(_Zip_tuple_for_each(_RANGES size, _M_Views))) // strengthened
-            requires(_RANGES sized_range<const _ViewTypes> && ...) {
+        _NODISCARD constexpr auto size() const
+            noexcept(noexcept(_Zip_tuple_for_each(_RANGES size, _M_Views))) // strengthened
+            requires(_RANGES sized_range<const _ViewTypes>&&...) {
             using _Common_size_type          = _STD common_type_t<_RANGES range_size_t<_ViewTypes>...>;
             using _Common_unsigned_size_type = _Make_unsigned_like_t<_Common_size_type>;
 
@@ -7044,22 +7047,20 @@ namespace ranges {
     zip_view(_RangeTypes&&...) -> zip_view<_RANGES views::all_t<_RangeTypes>...>;
 
     template <_RANGES input_range... _RangeTypes>
-    inline constexpr bool enable_borrowed_range<zip_view<_RangeTypes...>> =
-        (_RANGES enable_borrowed_range<_RangeTypes> && ...);
+    inline constexpr bool
+        enable_borrowed_range<zip_view<_RangeTypes...>> = (_RANGES enable_borrowed_range<_RangeTypes> && ...);
 
     template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _ViewTypes>
-        requires _Zip_allow_views<_ViewTypes...> _NODISCARD constexpr bool _Zip_iterator_sentinel_equality_impl(
+    requires _Zip_allow_views<_ViewTypes...> _NODISCARD constexpr bool _Zip_iterator_sentinel_equality_impl(
         const typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>& _Lhs,
-        const typename zip_view<_ViewTypes...>::template _Sentinel<_SentinelConst>&
-            _Rhs);
+        const typename zip_view<_ViewTypes...>::template _Sentinel<_SentinelConst>& _Rhs);
 
     template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _ViewTypes>
-        requires _Zip_allow_views<_ViewTypes...>
-    _NODISCARD constexpr _STD common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>
+    requires _Zip_allow_views<_ViewTypes...> _NODISCARD constexpr _STD
+        common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>
         _Zip_get_smallest_iterator_sentinel_distance_impl(
             const typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>& _Lhs,
-            const typename zip_view<_ViewTypes...>::template _Sentinel<_SentinelConst>&
-                _Rhs);
+            const typename zip_view<_ViewTypes...>::template _Sentinel<_SentinelConst>& _Rhs);
 
     template <_RANGES input_range... _ViewTypes>
         requires _Zip_allow_views<_ViewTypes...>
@@ -7071,16 +7072,14 @@ namespace ranges {
         template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _Views>
         requires _Zip_allow_views<_Views...> _NODISCARD_FRIEND constexpr bool _Zip_iterator_sentinel_equality_impl(
             const typename zip_view<_Views...>::template _Iterator<_IteratorConst>& _Lhs,
-            const typename zip_view<_Views...>::template _Sentinel<_SentinelConst>&
-                _Rhs);
+            const typename zip_view<_Views...>::template _Sentinel<_SentinelConst>& _Rhs);
 
         template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _Views>
         requires _Zip_allow_views<_Views...> _NODISCARD_FRIEND constexpr _STD
             common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _Views>>...>
             _Zip_get_smallest_iterator_sentinel_distance_impl(
                 const typename zip_view<_Views...>::template _Iterator<_IteratorConst>& _Lhs,
-                const typename zip_view<_Views...>::template _Sentinel<_SentinelConst>&
-                    _Rhs);
+                const typename zip_view<_Views...>::template _Sentinel<_SentinelConst>& _Rhs);
 
         using _Iterator_tuple_type = _Zip_tuple_or_pair<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
@@ -7107,7 +7106,7 @@ namespace ranges {
                     _STD conditional_t<_Zip_all_forward<_IsConst, _ViewTypes...>, _STD forward_iterator_tag,
                         _STD input_iterator_tag>>>;
 
-        using value_type = _Zip_tuple_or_pair<_RANGES range_value_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
+        using value_type      = _Zip_tuple_or_pair<_RANGES range_value_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
         using difference_type = _STD common_type_t<_RANGES range_difference_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
         _Iterator() noexcept(_STD is_nothrow_default_constructible_v<_Iterator_tuple_type>) = default;
@@ -7133,7 +7132,8 @@ namespace ranges {
             ++(*this);
         }
 
-        constexpr _Iterator operator++(int) noexcept(_Is_nothrow_preincrementable && _STD is_nothrow_copy_assignable_v<_Iterator<_IsConst>>) // strengthened
+        constexpr _Iterator operator++(int) noexcept(
+            _Is_nothrow_preincrementable&& _STD is_nothrow_copy_assignable_v<_Iterator<_IsConst>>) // strengthened
             requires _Zip_all_forward<_IsConst, _ViewTypes...> {
             const auto _Temp = *this;
             ++(*this);
@@ -7147,7 +7147,8 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Iterator operator--(int) noexcept(_Is_nothrow_predecrementable && _STD is_nothrow_copy_assignable_v<_Iterator<_IsConst>>) // strengthened
+        constexpr _Iterator operator--(int) noexcept(
+            _Is_nothrow_predecrementable&& _STD is_nothrow_copy_assignable_v<_Iterator<_IsConst>>) // strengthened
             requires _Zip_all_bidirectional<_IsConst, _ViewTypes...> {
             const auto _Temp = *this;
             --(*this);
@@ -7169,7 +7170,7 @@ namespace ranges {
 
         constexpr _Iterator& operator-=(difference_type _X) noexcept(
             (noexcept(_STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>() -=
-                _STD iter_difference_t<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>{_X})
+                      _STD iter_difference_t<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>{_X})
                 && ...)) // strengthened
             requires _Zip_all_random_access<_IsConst, _ViewTypes...> {
             _Zip_tuple_for_each([&_X]<typename _IteratorType>(
@@ -7179,22 +7180,20 @@ namespace ranges {
             return *this;
         }
 
-        _NODISCARD constexpr auto operator[](difference_type _X) const noexcept(
-            (noexcept((_STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>())[_STD
-                iter_difference_t<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>{_X}])
-                && ...)) // strengthened
-            requires _Zip_all_random_access<_IsConst, _ViewTypes...>
-        {
+        _NODISCARD constexpr auto operator[](difference_type _X) const
+            noexcept((noexcept((_STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>())[_STD
+                              iter_difference_t<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>{_X}])
+                      && ...)) // strengthened
+            requires _Zip_all_random_access<_IsConst, _ViewTypes...> {
             return _Zip_tuple_transform(
                 [&_X]<typename _IteratorType>(
                     _IteratorType& _Itr) -> decltype(auto) { return _Itr[_STD iter_difference_t<_IteratorType>{_X}]; },
                 _M_Current);
         }
 
-        _NODISCARD_FRIEND constexpr bool operator==(
-            const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(noexcept(_Lhs._M_Current == _Rhs._M_Current)) // strengthened
-            requires (_STD equality_comparable<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...)
-        {
+        _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(
+            noexcept(_Lhs._M_Current == _Rhs._M_Current)) // strengthened
+            requires(_STD equality_comparable<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>&&...) {
             if constexpr (_Zip_all_bidirectional<_IsConst, _ViewTypes...>) {
                 return (_Lhs._M_Current == _Rhs._M_Current);
             } else {
@@ -7214,15 +7213,15 @@ namespace ranges {
             }
         }
 
-        _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(noexcept(_Lhs._M_Current <=> _Rhs._M_Current)) // strengthened
+        _NODISCARD_FRIEND constexpr auto operator<=>(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(
+            noexcept(_Lhs._M_Current <=> _Rhs._M_Current)) // strengthened
             requires _Zip_all_random_access<_IsConst, _ViewTypes...> {
             return (_Lhs._M_Current <=> _Rhs._M_Current);
         }
 
         _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _Lhs, difference_type _Rhs) noexcept(
             noexcept(_STD declval<_Iterator>() += _Rhs) && _STD is_nothrow_copy_assignable_v<_Iterator>) // strengthened
-            requires _Zip_all_random_access<_IsConst, _ViewTypes...>
-        {
+            requires _Zip_all_random_access<_IsConst, _ViewTypes...> {
             auto _Modified_iterator = _Lhs;
             _Modified_iterator += _Rhs;
 
@@ -7236,8 +7235,7 @@ namespace ranges {
 
         _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _Lhs, difference_type _Rhs) noexcept(
             noexcept(_STD declval<_Iterator>() -= _Rhs) && _STD is_nothrow_copy_assignable_v<_Iterator>) // strengthened
-            requires _Zip_all_random_access<_IsConst, _ViewTypes...>
-        {
+            requires _Zip_all_random_access<_IsConst, _ViewTypes...> {
             auto _Modified_iterator = _Lhs;
             _Modified_iterator -= _Rhs;
 
@@ -7245,10 +7243,13 @@ namespace ranges {
         }
 
         _NODISCARD_FRIEND constexpr difference_type operator-(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(
-            (noexcept(difference_type{_RANGES distance(_STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>(),
-                    _STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>())}) && ...) && noexcept(_STD declval<difference_type>() < _STD declval<difference_type>()) && _STD is_nothrow_copy_assignable_v<difference_type>) // strengthened
-            requires(_STD sized_sentinel_for<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>, 
-                _RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...) {
+            (noexcept(difference_type{
+                 _RANGES distance(_STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>(),
+                     _STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>())})
+                && ...) && noexcept(_STD declval<difference_type>() < _STD declval<difference_type>())
+            && _STD is_nothrow_copy_assignable_v<difference_type>) // strengthened
+            requires(_STD sized_sentinel_for<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>,
+                _RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>&&...) {
             if constexpr (sizeof...(_ViewTypes) == 1) {
                 return difference_type{_STD get<0>(_Lhs._M_Current) - _STD get<0>(_Rhs._M_Current)};
             } else {
@@ -7291,10 +7292,10 @@ namespace ranges {
             return _Zip_tuple_transform(_RANGES iter_move, _Itr._M_Current);
         }
 
-        friend constexpr void iter_swap(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(
-            (noexcept(_RANGES iter_swap(_STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>(),
-                 _STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>()))
-                && ...)) requires(_STD indirectly_swappable<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...) {
+        friend constexpr void iter_swap(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept((
+            noexcept(_RANGES iter_swap(_STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>(),
+                _STD declval<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>()))
+            && ...)) requires(_STD indirectly_swappable<_RANGES iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>&&...) {
             const auto _Perform_swap_lambda = [&_Lhs, &_Rhs]<_STD size_t _CurrIndex>(this const auto& self) {
                 if constexpr (_CurrIndex != sizeof...(_ViewTypes)) {
                     _RANGES iter_swap(_STD get<_CurrIndex>(_Lhs._M_Current), _STD get<_CurrIndex>(_Rhs._M_Current));
@@ -7321,16 +7322,14 @@ namespace ranges {
         template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _Views>
         requires _Zip_allow_views<_Views...> _NODISCARD_FRIEND constexpr bool _Zip_iterator_sentinel_equality_impl(
             const typename zip_view<_Views...>::template _Iterator<_IteratorConst>& _Lhs,
-            const typename zip_view<_Views...>::template _Sentinel<_SentinelConst>&
-                _Rhs);
+            const typename zip_view<_Views...>::template _Sentinel<_SentinelConst>& _Rhs);
 
         template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _Views>
         requires _Zip_allow_views<_Views...> _NODISCARD_FRIEND constexpr _STD
             common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _Views>>...>
             _Zip_get_smallest_iterator_sentinel_distance_impl(
                 const typename zip_view<_Views...>::template _Iterator<_IteratorConst>& _Lhs,
-                const typename zip_view<_Views...>::template _Sentinel<_SentinelConst>&
-                    _Rhs);
+                const typename zip_view<_Views...>::template _Sentinel<_SentinelConst>& _Rhs);
 
         using _Sentinel_tuple_type = _Zip_tuple_or_pair<_RANGES sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
 
@@ -7339,7 +7338,8 @@ namespace ranges {
             : _M_End(_End) {}
 
         template <bool _IteratorConst>
-        using _Iterator_sentinel_difference_type = _STD common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>;
+        using _Iterator_sentinel_difference_type =
+            _STD common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>;
 
         template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _ViewTypes>
         static constexpr bool _Zip_iterator_sentinel_equality_noexcept =
@@ -7362,24 +7362,26 @@ namespace ranges {
     public:
         _Sentinel() noexcept(_STD is_nothrow_default_constructible_v<_Sentinel_tuple_type>) = default;
 
-        constexpr _Sentinel(_Sentinel<!_IsConst> _Rhs) noexcept(_STD is_nothrow_move_constructible_v<_Sentinel_tuple_type>) // strengthened
+        constexpr _Sentinel(_Sentinel<!_IsConst> _Rhs) noexcept(
+            _STD is_nothrow_move_constructible_v<_Sentinel_tuple_type>) // strengthened
             requires(_IsConst
                      && (_STD convertible_to<_RANGES sentinel_t<_ViewTypes>,
                              _RANGES sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>> && ...))
             : _M_End(_STD move(_Rhs._M_End)) {}
 
         template <bool _IteratorConst>
-            requires(_STD sentinel_for<_RANGES sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>, _RANGES iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>> && ...)
+            requires(_STD sentinel_for<_RANGES sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>,
+                _RANGES iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>>&&...)
         _NODISCARD_FRIEND constexpr bool operator==(
             const typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>& _Lhs,
-            const _Sentinel& _Rhs) noexcept(_Zip_iterator_sentinel_equality_noexcept<_IsConst,
-            _IteratorConst, _ViewTypes...>) /* strengthened */ {
+            const _Sentinel& _Rhs) noexcept(_Zip_iterator_sentinel_equality_noexcept<_IsConst, _IteratorConst,
+            _ViewTypes...>) /* strengthened */ {
             return _Zip_iterator_sentinel_equality_impl<_IsConst, _IteratorConst, _ViewTypes...>(_Lhs, _Rhs);
         }
 
         template <bool _IteratorConst>
-            requires (_STD sized_sentinel_for<_RANGES sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>, 
-                _RANGES iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>> && ...)
+            requires(_STD sized_sentinel_for<_RANGES sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>,
+                _RANGES iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>>&&...)
         _NODISCARD_FRIEND constexpr _Iterator_sentinel_difference_type<_IteratorConst> operator-(
             const typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>& _Lhs,
             const _Sentinel& _Rhs) noexcept(_Zip_get_smallest_iterator_sentinel_distance_noexcept<_IsConst,
@@ -7390,7 +7392,7 @@ namespace ranges {
 
         template <bool _IteratorConst>
             requires(_STD sized_sentinel_for<_RANGES sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>,
-                _RANGES iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>> && ...)
+                _RANGES iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>>&&...)
         _NODISCARD_FRIEND constexpr _Iterator_sentinel_difference_type<_IteratorConst> operator-(const _Sentinel& _Lhs,
             const typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>&
                 _Rhs) noexcept(noexcept(-(_Rhs - _Lhs))) /* strengthened */ {
@@ -7404,8 +7406,7 @@ namespace ranges {
     template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _ViewTypes>
     requires _Zip_allow_views<_ViewTypes...> _NODISCARD constexpr bool _Zip_iterator_sentinel_equality_impl(
         const typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>& _Lhs,
-        const typename zip_view<_ViewTypes...>::template _Sentinel<_SentinelConst>&
-            _Rhs) {
+        const typename zip_view<_ViewTypes...>::template _Sentinel<_SentinelConst>& _Rhs) {
         const auto _Evaluate_tuple_values_lambda = [&_Lhs, &_Rhs]<_STD size_t _CurrIndex>(this const auto& self) {
             if constexpr (_CurrIndex != sizeof...(_ViewTypes)) {
                 if (_STD get<_CurrIndex>(_Lhs._M_Current) == _STD get<_CurrIndex>(_Rhs._M_End))
@@ -7426,8 +7427,7 @@ namespace ranges {
         common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>
         _Zip_get_smallest_iterator_sentinel_distance_impl(
             const typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>& _Lhs,
-            const typename zip_view<_ViewTypes...>::template _Sentinel<_SentinelConst>&
-                _Rhs) {
+            const typename zip_view<_ViewTypes...>::template _Sentinel<_SentinelConst>& _Rhs) {
         using _Difference_type =
             _STD common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>;
 
@@ -7462,13 +7462,13 @@ namespace ranges {
     }
 
     namespace views {
-        class _Zip_function{
+        class _Zip_function {
         public:
             _Zip_function() noexcept = default;
 
             template <_RANGES input_range... _ViewTypes>
             constexpr auto operator()(_ViewTypes&&... _Views) const noexcept(noexcept(
-                _RANGES views::empty<_STD tuple<>>) && noexcept(zip_view{ _STD forward<_ViewTypes>(_Views)... })) {
+                _RANGES views::empty<_STD tuple<>>) && noexcept(zip_view{_STD forward<_ViewTypes>(_Views)...})) {
                 if constexpr (sizeof...(_ViewTypes) == 0) {
                     return _RANGES views::empty<_STD tuple<>>;
                 } else {
