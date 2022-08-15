@@ -163,13 +163,6 @@ _NODISCARD _CONSTEXPR_BIT_CAST _To _Bit_cast(const _From& _Val) noexcept {
 }
 
 template <class _Ty>
-_NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
-// _Fake_decay_copy<T>(E):
-// (1) has type T [decay_t<decltype((E))> if T is deduced],
-// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
-// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
-
-template <class _Ty>
 struct _Get_first_parameter;
 
 template <template <class, class...> class _Ty, class _First, class... _Rest>
@@ -1278,7 +1271,7 @@ public:
 
     _NODISCARD _CONSTEXPR17 pointer operator->() const
         noexcept(is_nothrow_copy_constructible_v<_BidIt>&& noexcept(--(_STD declval<_BidIt&>()))
-                 && _Has_nothrow_operator_arrow<const _BidIt&, pointer>) /* strengthened */
+                 && _Has_nothrow_operator_arrow<_BidIt&, pointer>) /* strengthened */
 #ifdef __cpp_lib_concepts
         requires(is_pointer_v<_BidIt> || requires(const _BidIt __i) { __i.operator->(); })
 #endif
@@ -1385,7 +1378,7 @@ public:
     static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_BidIt>;
 
     template <class _Src, enable_if_t<_Wrapped_seekable_v<_BidIt, const _Src&>, int> = 0>
-    constexpr void _Seek_to(const reverse_iterator<_Src>& _It) noexcept(noexcept(current._Seek_to(_It.base()))) {
+    constexpr void _Seek_to(const reverse_iterator<_Src>& _It) noexcept(noexcept(current._Seek_to(_It.current))) {
         current._Seek_to(_It.current);
     }
 
@@ -1681,6 +1674,13 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 }
 
 #ifdef __cpp_lib_concepts
+template <class _Ty>
+_NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
+// _Fake_decay_copy<T>(E):
+// (1) has type T [decay_t<decltype((E))> if T is deduced],
+// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
+// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
+
 template <class _Ty1, class _Ty2>
 concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
@@ -3508,10 +3508,10 @@ public:
         _Current._Seek_to(_STD move(_It)._Get_current());
     }
 
-    constexpr const iterator_type& _Get_current() const& noexcept {
+    _NODISCARD constexpr const iterator_type& _Get_current() const& noexcept {
         return _Current;
     }
-    constexpr iterator_type&& _Get_current() && noexcept {
+    _NODISCARD constexpr iterator_type&& _Get_current() && noexcept {
         return _STD move(_Current);
     }
 
