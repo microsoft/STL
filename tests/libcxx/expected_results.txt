@@ -852,6 +852,7 @@ std/language.support/support.limits/limits/numeric.limits.members/tinyness_befor
 # Not yet analyzed. the test fails on AMD64 but passes on X86
 std/containers/associative/map/map.access/iterator.pass.cpp:0 SKIPPED
 std/iterators/predef.iterators/move.iterators/move.iter.ops/move.iter.op.-/sentinel.pass.cpp:0 SKIPPED
+std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:0 SKIPPED
 
 # Not yet analyzed. the test fails on X86 but passes on AMD64
 std/algorithms/alg.sorting/alg.set.operations/includes/ranges_includes.pass.cpp:0 SKIPPED
@@ -874,7 +875,6 @@ std/utilities/template.bitset/bitset.members/to_string.pass.cpp:1 FAIL
 
 # Not yet analyzed
 std/thread/thread.threads/thread.thread.class/thread.thread.id/eq.pass.cpp FAIL
-std/algorithms/alg.modifying.operations/alg.random.shuffle/ranges_shuffle.pass.cpp:0 FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.id/lt.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.all_of/ranges.all_of.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.any_of/ranges.any_of.pass.cpp FAIL

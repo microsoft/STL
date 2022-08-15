@@ -862,6 +862,7 @@ language.support\support.limits\limits\numeric.limits.members\tinyness_before.pa
 # Not yet analyzed. the test fails on AMD64 but passes on X86
 containers\associative\map\map.access\iterator.pass.cpp
 iterators\predef.iterators\move.iterators\move.iter.ops\move.iter.op.-\sentinel.pass.cpp
+algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
 
 # Not yet analyzed. the test fails on X86 but passes on AMD64
 algorithms\alg.sorting\alg.set.operations\includes\ranges_includes.pass.cpp
@@ -884,7 +885,6 @@ utilities\template.bitset\bitset.members\to_string.pass.cpp
 
 # Not yet analyzed
 thread\thread.threads\thread.thread.class\thread.thread.id\eq.pass.cpp
-algorithms\alg.modifying.operations\alg.random.shuffle\ranges_shuffle.pass.cpp
 thread\thread.threads\thread.thread.class\thread.thread.id\lt.pass.cpp
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
 algorithms\alg.nonmodifying\alg.any_of\ranges.any_of.pass.cpp
