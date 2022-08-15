@@ -874,6 +874,7 @@ std/utilities/template.bitset/bitset.members/right_shift_eq.pass.cpp FAIL
 std/utilities/template.bitset/bitset.members/to_string.pass.cpp:1 FAIL
 
 # Not yet analyzed
+std/utilities/variant/variant.relops/three_way.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.id/eq.pass.cpp FAIL
 std/thread/thread.threads/thread.thread.class/thread.thread.id/lt.pass.cpp FAIL
 std/algorithms/alg.nonmodifying/alg.all_of/ranges.all_of.pass.cpp FAIL

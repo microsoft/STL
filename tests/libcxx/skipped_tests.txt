@@ -884,6 +884,7 @@ utilities\template.bitset\bitset.members\right_shift_eq.pass.cpp
 utilities\template.bitset\bitset.members\to_string.pass.cpp
 
 # Not yet analyzed
+utilities\variant\variant.relops\three_way.pass.cpp
 thread\thread.threads\thread.thread.class\thread.thread.id\eq.pass.cpp
 thread\thread.threads\thread.thread.class\thread.thread.id\lt.pass.cpp
 algorithms\alg.nonmodifying\alg.all_of\ranges.all_of.pass.cpp
