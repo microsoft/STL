@@ -11,7 +11,7 @@ if ([string]::IsNullOrEmpty($DiffFile)) {
     $DiffFile = [System.IO.Path]::GetTempFileName()
 }
 
-Start-Process -FilePath 'git' -ArgumentList 'diff' `
+Start-Process -FilePath 'git' -ArgumentList 'diff', '--ignore-submodules' `
     -NoNewWindow -Wait `
     -RedirectStandardOutput $DiffFile
 if (0 -ne (Get-Item -LiteralPath $DiffFile).Length) {
