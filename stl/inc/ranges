@@ -6844,7 +6844,20 @@ namespace ranges {
         || ((_RANGES random_access_range<_RangeTypes> && ...) && (_RANGES sized_range<_RangeTypes> && ...));
 
     template <typename... _RangeTypes>
-    using _Zip_tuple_or_pair = _STD conditional_t<(sizeof...(_RangeTypes) == 2), _STD pair<_RangeTypes...>, _STD tuple<_RangeTypes...>>;
+    struct _Zip_tuple_or_pair_solver
+    {
+        using _Storage_type = _STD tuple<_RangeTypes...>;
+    };
+
+    template <typename... _RangeTypes>
+        requires(sizeof...(_RangeTypes) == 2)
+    struct _Zip_tuple_or_pair_solver<_RangeTypes...>
+    {
+        using _Storage_type = _STD pair<_RangeTypes...>;
+    };
+
+    template <typename... _RangeTypes>
+    using _Zip_tuple_or_pair = typename _Zip_tuple_or_pair_solver<_RangeTypes...>::_Storage_type;
 
     template <typename _CallbackType>
     constexpr auto _Zip_create_tuple_transform_lambda(_CallbackType&& _Callback) noexcept {
@@ -7108,7 +7121,7 @@ namespace ranges {
             : _M_Current(_STD move(_Rhs._M_Current)) {}
 
         _NODISCARD constexpr auto operator*() const noexcept(_Is_nothrow_dereferenceable) /* strengthened */ {
-            return _Zip_tuple_transform([](auto& _Itr) { return *_Itr; }, _M_Current);
+            return _Zip_tuple_transform([](auto& _Itr) -> decltype(auto) { return *_Itr; }, _M_Current);
         }
 
         constexpr _Iterator& operator++() noexcept(_Is_nothrow_preincrementable) /* strengthened */ {
@@ -7174,7 +7187,7 @@ namespace ranges {
         {
             return _Zip_tuple_transform(
                 [&_X]<typename _IteratorType>(
-                    _IteratorType& _Itr) { return _Itr[_STD iter_difference_t<_IteratorType>{_X}]; },
+                    _IteratorType& _Itr) -> decltype(auto) { return _Itr[_STD iter_difference_t<_IteratorType>{_X}]; },
                 _M_Current);
         }
 
