@@ -7268,22 +7268,22 @@ namespace ranges {
             }
         }
 
+        // clang-format off
         template <size_t _CurrIndex>
         static constexpr void _Iterator_distance_calculation_impl(const _Iterator& _Lhs, const _Iterator& _Rhs,
             auto& _Smallest_difference_value,
-            auto&
-                _Smallest_abs_difference_value) noexcept((noexcept(difference_type{
-                                                              _RANGES distance(
-                                                                  _STD declval<
-                                                                      iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>(),
-                                                                  _STD declval<iterator_t<
-                                                                      _Maybe_const<_IsConst, _ViewTypes>>>())})
-                                                             && ...) && noexcept(_STD declval<difference_type>()
-                                                                                 < _STD declval<difference_type>())
-                                                         && is_nothrow_copy_assignable_v<
-                                                             difference_type>) requires(sized_sentinel_for<iterator_t<_Maybe_const<_IsConst,
-                                                                                                               _ViewTypes>>,
-            iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>&&...) {
+            auto& _Smallest_abs_difference_value) noexcept(
+                    (noexcept(difference_type{_RANGES distance(
+                                                    _STD declval<
+                                                        iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>(),
+                                                    _STD declval<iterator_t<
+                                                        _Maybe_const<_IsConst, _ViewTypes>>>())})
+                                                && ...) 
+                && noexcept(_STD declval<difference_type>()< _STD declval<difference_type>())
+                && is_nothrow_copy_assignable_v<difference_type>) 
+            requires(sized_sentinel_for<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>, 
+        iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>&&...) {
+            // clang-format on
             if constexpr (_CurrIndex != sizeof...(_ViewTypes)) {
                 const auto _Curr_difference_value =
                     difference_type{_STD get<_CurrIndex>(_Lhs._M_Current) - _STD get<_CurrIndex>(_Rhs._M_Current)};
