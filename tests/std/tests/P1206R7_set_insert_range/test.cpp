@@ -14,14 +14,14 @@
 
 using namespace std;
 
-static constexpr int expected[] = {0, 1, 2, 3, 4, 5, 6, 7};
+static constexpr int expected_vals[] = {0, 1, 2, 3, 4, 5, 6, 7};
 
 template <ranges::input_range Rng>
 void test_set(Rng&& rng) {
     if constexpr (is_reference_v<ranges::range_reference_t<Rng>>) {
         set<int> m;
         m.insert_range(forward<Rng>(rng));
-        assert(ranges::equal(m, expected));
+        assert(ranges::equal(m, expected_vals));
     }
 }
 
