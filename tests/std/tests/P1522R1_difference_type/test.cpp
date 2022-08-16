@@ -11,9 +11,9 @@
 #if _HAS_CXX20
 #include <compare>
 
-#if !defined(__EDG__) // TRANSITION, GH-395
+#ifndef __EDG__ // TRANSITION, GH-395
 #include <concepts>
-#endif // !defined(__EDG__)
+#endif // __EDG__
 #endif // _HAS_CXX20
 
 #if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
