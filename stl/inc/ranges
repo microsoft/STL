@@ -6846,6 +6846,7 @@ namespace ranges {
                           || ((_RANGES random_access_range<_RangeTypes> && ...)
                               && (_RANGES sized_range<_RangeTypes> && ...));
 
+#ifndef __cpp_lib_tuple_like
         template <typename... _RangeTypes>
         struct _Tuple_or_pair_solver {
             using _Storage_type = _STD tuple<_RangeTypes...>;
@@ -6859,6 +6860,10 @@ namespace ranges {
 
         template <typename... _RangeTypes>
         using _Tuple_or_pair = typename _Tuple_or_pair_solver<_RangeTypes...>::_Storage_type;
+#else // ^ Pre-P2165R4 / Post-P2165R4 v
+        template <typename... _RangeTypes>
+        using _Tuple_or_pair = _STD tuple<_RangeTypes...>;
+#endif // !__cpp_lib_tuple_like
 
         template <typename _CallbackType>
         constexpr auto _Create_tuple_transform_lambda(_CallbackType&& _Callback) noexcept {
