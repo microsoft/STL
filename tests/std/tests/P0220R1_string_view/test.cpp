@@ -1267,16 +1267,16 @@ struct std::char_traits<char_wrapper> {
 
     static size_t length(const char_wrapper* a) {
         static_assert(sizeof(char_wrapper) == 1, "strlen requires this");
-        return std::strlen(reinterpret_cast<const char*>(a));
+        return strlen(reinterpret_cast<const char*>(a));
     }
 
-    static int compare(const char_wrapper* lhs, const char_wrapper* rhs, std::size_t count) {
-        return std::char_traits<char>::compare(
+    static int compare(const char_wrapper* lhs, const char_wrapper* rhs, size_t count) {
+        return char_traits<char>::compare(
             reinterpret_cast<const char*>(lhs), reinterpret_cast<const char*>(rhs), count);
     }
 };
 
-using WrappedSV = std::basic_string_view<char_wrapper, std::char_traits<char_wrapper>>;
+using WrappedSV = basic_string_view<char_wrapper, char_traits<char_wrapper>>;
 
 void test_C6510_warning() { // compile-only
     char_wrapper a[] = {{'a'}, {'b'}, {'c'}, {'\0'}};
