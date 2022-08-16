@@ -7467,7 +7467,8 @@ namespace ranges {
                         self.operator()<_Next_index>();
                     };
 
-                _Evaluate_distance_values_lambda.operator()<0>();
+                // Start from index 1, since we already evaluated 0.
+                _Evaluate_distance_values_lambda.operator()<1>();
 
                 return _Smallest_distance_value;
             }
