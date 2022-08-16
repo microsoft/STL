@@ -1320,6 +1320,11 @@ struct _Signed128 : _Base128 {
     }
 
     _TEMPLATE_CLASS_INTEGRAL(_Ty)
+    _NODISCARD_FRIEND constexpr _Signed128 operator%(_Signed128 _Left, const _Ty _Right) noexcept {
+        return _Left % _Signed128{_Right};
+    }
+
+    _TEMPLATE_CLASS_INTEGRAL(_Ty)
     constexpr _Signed128& operator%=(const _Ty _That) noexcept {
         *this = *this % _That;
         return *this;
@@ -1463,7 +1468,7 @@ inline namespace literals {
 
             template <unsigned int _Base, char... _Chars>
             _CONSTEVAL _U128_parse_result _Parse_u128_impl() noexcept {
-                constexpr char _Char_seq[]{_Chars...};
+                constexpr char _Char_seq[]{_Chars..., '\0'};
                 constexpr auto _U128_max = (_STD numeric_limits<_Unsigned128>::max)();
 
                 _Unsigned128 _Val{};
