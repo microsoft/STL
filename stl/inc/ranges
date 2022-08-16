@@ -6837,6 +6837,7 @@ namespace ranges {
         inline constexpr _Stride_fn stride;
     } // namespace views
 
+#ifdef __cpp_lib_ranges_zip
     namespace _Zip {
         template <typename... _RangeTypes>
         concept _Is_common = (sizeof...(_RangeTypes) == 1 && (common_range<_RangeTypes> && ...)) //
@@ -7430,6 +7431,7 @@ namespace ranges {
     namespace views {
         inline constexpr _Zip::_Zip_function zip{};
     } // namespace views
+#endif // __cpp_lib_ranges_zip
 
 #ifdef __cpp_lib_ranges_to_container
     // clang-format off
