@@ -7289,7 +7289,7 @@ namespace ranges {
                 if (_STD get<_CurrIndex>(_Lhs._M_Current) == _STD get<_CurrIndex>(_Rhs._M_Current))
                     return true;
 
-                static constexpr auto _Next_index = (_CurrIndex + 1);
+                constexpr auto _Next_index = (_CurrIndex + 1);
                 return _Iterator_equality_impl<_Next_index>(_Lhs, _Rhs);
             } else {
                 return false;
@@ -7322,7 +7322,7 @@ namespace ranges {
                     _Smallest_abs_difference_value = _Curr_abs_difference_value;
                 }
 
-                static constexpr auto _Next_index = (_CurrIndex + 1);
+                constexpr auto _Next_index = (_CurrIndex + 1);
                 _Iterator_distance_calculation_impl<_Next_index>(
                     _Lhs, _Rhs, _Smallest_difference_value, _Smallest_abs_difference_value);
             }
@@ -7336,7 +7336,7 @@ namespace ranges {
             if constexpr (_CurrIndex != sizeof...(_ViewTypes)) {
                 _RANGES iter_swap(_STD get<_CurrIndex>(_Lhs._M_Current), _STD get<_CurrIndex>(_Rhs._M_Current));
 
-                static constexpr auto _Next_index = (_CurrIndex + 1);
+                constexpr auto _Next_index = (_CurrIndex + 1);
                 _Iterator_swap_impl<_Next_index>(_Lhs, _Rhs);
             }
         }
@@ -7374,23 +7374,23 @@ namespace ranges {
         using _Iterator_sentinel_difference_type =
             _STD common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>;
 
-        template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _ViewTypes>
+        template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _Views>
         static constexpr bool _Iterator_sentinel_equality_noexcept =
-            (noexcept(_STD declval<_RANGES iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>>()
-                      == _STD declval<_RANGES sentinel_t<_Maybe_const<_SentinelConst, _ViewTypes>>>())
+            (noexcept(_STD declval<_RANGES iterator_t<_Maybe_const<_IteratorConst, _Views>>>()
+                      == _STD declval<_RANGES sentinel_t<_Maybe_const<_SentinelConst, _Views>>>())
                 && ...);
 
-        template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _ViewTypes>
+        template <bool _SentinelConst, bool _IteratorConst, _RANGES input_range... _Views>
         static constexpr bool _Get_smallest_iterator_sentinel_distance_noexcept =
-            (noexcept(_STD common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>{
-                 _RANGES distance(_STD declval<_RANGES iterator_t<_Maybe_const<_IteratorConst, _ViewTypes>>>(),
-                     _STD declval<_RANGES sentinel_t<_Maybe_const<_SentinelConst, _ViewTypes>>>())})
+            (noexcept(_STD common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _Views>>...>{
+                 _RANGES distance(_STD declval<_RANGES iterator_t<_Maybe_const<_IteratorConst, _Views>>>(),
+                     _STD declval<_RANGES sentinel_t<_Maybe_const<_SentinelConst, _Views>>>())})
                 && ...) && noexcept(_STD declval<_STD common_type_t<_RANGES
-                                            range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>>()
+                                            range_difference_t<_Maybe_const<_IteratorConst, _Views>>...>>()
                                     < _STD declval<_STD common_type_t<
-                                        _RANGES range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>>())
+                                        _RANGES range_difference_t<_Maybe_const<_IteratorConst, _Views>>...>>())
             && _STD is_nothrow_copy_assignable_v<
-                _STD common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>>;
+                _STD common_type_t<_RANGES range_difference_t<_Maybe_const<_IteratorConst, _Views>>...>>;
 
     public:
         _Sentinel() noexcept(_STD is_nothrow_default_constructible_v<_Sentinel_tuple_type>) = default;
@@ -7460,7 +7460,7 @@ namespace ranges {
                 if (_STD get<_CurrIndex>(_Lhs._M_Current) == _STD get<_CurrIndex>(_Rhs._M_End))
                     return true;
 
-                static constexpr auto _Next_index = (_CurrIndex + 1);
+                constexpr auto _Next_index = (_CurrIndex + 1);
                 return _Zip::_Iterator_sentinel_equality_impl<_Next_index, _SentinelConst, _IteratorConst,
                     _ViewTypes...>(_Lhs, _Rhs);
             } else {
@@ -7487,7 +7487,7 @@ namespace ranges {
                 _Smallest_abs_distance_value = _Curr_abs_distance_value;
             }
 
-            static constexpr auto _Next_index = (_CurrIndex + 1);
+            constexpr auto _Next_index = (_CurrIndex + 1);
             _Zip::_Get_smallest_iterator_sentinel_distance_impl<_Next_index, _SentinelConst, _IteratorConst,
                 _ViewTypes...>(_Lhs, _Rhs, _Smallest_distance_value, _Smallest_abs_distance_value);
         }
