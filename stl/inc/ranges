@@ -6893,7 +6893,7 @@ namespace ranges {
             requires(_Offset <= _OriginalSequenceSize)
         _CONSTEVAL auto _Get_offset_index_sequence() noexcept {
             constexpr auto _Create_index_sequence_lambda = []<size_t... _Indices>(index_sequence<_Indices...>) {
-                return _Offset_index_sequence_solver<_Offset, _Indices>::_Solved_index_sequence;
+                return _Offset_index_sequence_solver<_Offset, _Indices...>::_Solved_index_sequence;
             };
 
             return _Create_index_sequence_lambda(make_index_sequence<_OriginalSequenceSize>{});
@@ -7298,7 +7298,7 @@ namespace ranges {
         template <bool _IteratorConst>
         static constexpr bool _Iterator_sentinel_equality_noexcept = noexcept(
             _Zip::_Evaluate_iterator_sentinel_equality(
-                _Sentinel::_Get_iterator_tuple(
+                _Get_iterator_tuple(
                     _STD declval<const typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>&>()),
                 _STD declval<_Sentinel_tuple_type>()));
 
@@ -7317,7 +7317,7 @@ namespace ranges {
         _NODISCARD_FRIEND constexpr bool operator==(
             const typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>& _Lhs,
             const _Sentinel& _Rhs) noexcept(_Iterator_sentinel_equality_noexcept<_IteratorConst>) /* strengthened */ {
-            return _Zip::_Evaluate_iterator_sentinel_equality(_Sentinel::_Get_iterator_tuple(_Lhs), _Rhs._M_End);
+            return _Zip::_Evaluate_iterator_sentinel_equality(_Get_iterator_tuple(_Lhs), _Rhs._M_End);
         }
 
         template <bool _IteratorConst>
@@ -7328,11 +7328,11 @@ namespace ranges {
             const _Sentinel& _Rhs) noexcept(noexcept(_Zip::
                 _Get_smallest_iterator_sentinel_distance<
                     common_type_t<range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>>(
-                    _Sentinel::_Get_iterator_tuple(_Lhs), _Rhs._M_End))) /* strengthened */
+                    _Get_iterator_tuple(_Lhs), _Rhs._M_End))) /* strengthened */
         {
             using _Difference_type = common_type_t<range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>;
             return _Zip::_Get_smallest_iterator_sentinel_distance<_Difference_type>(
-                _Sentinel::_Get_iterator_tuple(_Lhs), _Rhs._M_End);
+                _Get_iterator_tuple(_Lhs), _Rhs._M_End);
         }
 
         template <bool _IteratorConst>
