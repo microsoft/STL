@@ -322,7 +322,7 @@
 // P2273R3 constexpr unique_ptr
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
-//     (changes to pair, tuple, and vector<bool>::reference only)
+//     (changes to pair, tuple, and vector<bool>::reference and std::views::zip only)
 // P2417R2 More constexpr bitset
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 // P2441R2 views::join_with
