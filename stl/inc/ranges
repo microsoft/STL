@@ -7278,10 +7278,10 @@ namespace ranges {
                                                         iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>(),
                                                     _STD declval<iterator_t<
                                                         _Maybe_const<_IsConst, _ViewTypes>>>())})
-                                                && ...) 
+                                                && ...)
                 && noexcept(_STD declval<difference_type>()< _STD declval<difference_type>())
-                && is_nothrow_copy_assignable_v<difference_type>) 
-            requires(sized_sentinel_for<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>, 
+                && is_nothrow_copy_assignable_v<difference_type>)
+            requires(sized_sentinel_for<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>,
         iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>&&...) {
             // clang-format on
             if constexpr (_CurrIndex != sizeof...(_ViewTypes)) {
