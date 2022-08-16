@@ -137,7 +137,7 @@ struct
     static constexpr void _Knuth_4_3_1_M(
         const uint32_t (&__u)[__m], const uint32_t (&__v)[__n], uint32_t (&__w)[__n + __m]) noexcept {
 #ifdef _ENABLE_STL_INTERNAL_CHECK
-        constexpr auto _Int_max = size_t{(numeric_limits<int>::max) ()};
+        constexpr auto _Int_max = size_t{(numeric_limits<int>::max)()};
         _STL_INTERNAL_STATIC_ASSERT(__m <= _Int_max);
         _STL_INTERNAL_STATIC_ASSERT(__n <= _Int_max);
 #endif // _ENABLE_STL_INTERNAL_CHECK
