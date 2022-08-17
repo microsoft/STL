@@ -6908,15 +6908,11 @@ namespace ranges {
 
         template <bool _IsConst, class... _Views>
         concept _All_forward = (forward_range<_Maybe_const<_IsConst, _Views>> && ...);
-
-        template <class... _ViewTypes>
-        concept _Allow_views = (input_range<_ViewTypes> && ...) && (view<_ViewTypes> && ...)
-                            && (sizeof...(_ViewTypes) > 0);
     } // namespace _Zip
 
     template <input_range... _ViewTypes>
-        requires _Zip::_Allow_views<_ViewTypes...>
-    class zip_view : public view_interface<zip_view<_ViewTypes...>> {
+        requires(view<_ViewTypes>&&...)
+    &&(sizeof...(_ViewTypes) > 0) class zip_view : public view_interface<zip_view<_ViewTypes...>> {
     public:
         template <bool>
         class _Iterator;
@@ -7094,8 +7090,8 @@ namespace ranges {
     } // namespace _Zip
 
     template <input_range... _ViewTypes>
-        requires _Zip::_Allow_views<_ViewTypes...>
-    template <bool _IsConst>
+        requires(view<_ViewTypes>&&...)
+    &&(sizeof...(_ViewTypes) > 0) template <bool _IsConst>
     class zip_view<_ViewTypes...>::_Iterator : public _Iterator_category_container<_Iterator<_IsConst>> {
     private:
         friend zip_view<_ViewTypes...>;
@@ -7299,8 +7295,8 @@ namespace ranges {
     };
 
     template <input_range... _ViewTypes>
-        requires _Zip::_Allow_views<_ViewTypes...>
-    template <bool _IsConst>
+        requires(view<_ViewTypes>&&...)
+    &&(sizeof...(_ViewTypes) > 0) template <bool _IsConst>
     class zip_view<_ViewTypes...>::_Sentinel {
     private:
         friend zip_view<_ViewTypes...>;
