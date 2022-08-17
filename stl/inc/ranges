@@ -7311,14 +7311,13 @@ namespace ranges {
             common_type_t<range_difference_t<_Maybe_const<_IteratorConst, _ViewTypes>>...>;
 
         template <bool _IteratorConst>
-        static constexpr bool _Iterator_sentinel_equality_noexcept = noexcept(
-            _Zip::_Evaluate_iterator_sentinel_equality(
-                _Get_iterator_tuple(
-                    _STD declval<const typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>&>()),
-                _STD declval<_Sentinel_tuple_type>()));
+        using _Iterator_type = typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>;
 
         template <bool _IteratorConst>
-        using _Iterator_type = typename zip_view<_ViewTypes...>::template _Iterator<_IteratorConst>;
+        static constexpr bool _Iterator_sentinel_equality_noexcept = noexcept(
+            _Zip::_Evaluate_iterator_sentinel_equality(
+                _Get_iterator_tuple(_STD declval<const _Iterator_type<_IteratorConst>&>()),
+                _STD declval<_Sentinel_tuple_type>()));
 
     public:
         _Sentinel() noexcept(is_nothrow_default_constructible_v<_Sentinel_tuple_type>) = default;
