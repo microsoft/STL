@@ -1687,7 +1687,7 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 }
 
 #ifdef __cpp_lib_concepts
-// Note that this is equivalent to xstddef's _Fake_copy_init (and _Implicitly_convert_to).
+// Note that this is equivalent to xstddef's _Fake_copy_init.
 // TRANSITION, replace _Fake_decay_copy with _Fake_copy_init.
 template <class _Ty>
 _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;

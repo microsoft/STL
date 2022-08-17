@@ -1597,10 +1597,8 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
 #pragma clang diagnostic ignored "-Wdeprecated-volatile"
 #endif // __clang__
 
-// Note that this is equivalent to xstddef's _Fake_copy_init (and _Fake_decay_copy).
-// TRANSITION, replace _Implicitly_convert_to with _Fake_copy_init.
 template <class _To>
-void _Implicitly_convert_to(_To) noexcept; // not defined
+void _Implicitly_convert_to(_Identity_t<_To>) noexcept; // not defined
 
 template <class _From, class _To, bool = is_convertible_v<_From, _To>, bool = is_void_v<_To>>
 _INLINE_VAR constexpr bool _Is_nothrow_convertible_v = noexcept(_Implicitly_convert_to<_To>(_STD declval<_From>()));
