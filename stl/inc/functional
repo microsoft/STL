@@ -1383,11 +1383,16 @@ public:
         // (The RTTI savings may be significant as with lambdas and binds there may be many distinct callable types.
         // Here we don't have a distinct wrapper class for each callable type, only distinct functions when needed.)
 
+        // _Move and _Destroy are nullptr if trivial. Besides optimization, this enables assigning emtpy function from
+        // a DLL that is unloaded later, and then safely moving/destroying that empty function
+
         // Calls target
         typename _Invoke_t<_Noexcept>::_Call _Invoke;
         // Moves the data, including pointer to "vtable", AND destroys old data (not resetting its "vtable")
+        // nullptr if trivially move two pointers
         void(__stdcall* _Move)(_Move_only_function_data&, _Move_only_function_data&) _NOEXCEPT_FNPTR;
         // Destroys data (not resetting its "vtable")
+        // nullptr if no op destroy
         void(__stdcall* _Destroy)(_Move_only_function_data&) _NOEXCEPT_FNPTR;
     };
 
