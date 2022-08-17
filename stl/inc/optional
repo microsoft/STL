@@ -926,7 +926,8 @@ template <class _Ty1, class _Ty2>
     requires (!_Is_specialization_v<_Ty2, optional>)
         && three_way_comparable_with<_Ty1, _Ty2>
 _NODISCARD constexpr compare_three_way_result_t<_Ty1, _Ty2>
-    operator<=>(const optional<_Ty1>& _Left, const _Ty2& _Right) {
+    operator<=>(const optional<_Ty1>& _Left, const _Ty2& _Right)
+        noexcept(noexcept(*_Left <=> _Right)) /* strengthened */ {
     // clang-format on
     if (_Left) {
         return *_Left <=> _Right;
