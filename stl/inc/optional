@@ -225,13 +225,13 @@ public:
 
     template <class... _Types, enable_if_t<is_constructible_v<_Ty, _Types...>, int> = 0>
     constexpr explicit optional(in_place_t, _Types&&... _Args) noexcept(
-        is_nothrow_constructible_v<_Mybase, in_place_t, _Types...>)
+        is_nothrow_constructible_v<_Mybase, in_place_t, _Types...>) // strengthened
         : _Mybase(in_place, _STD forward<_Types>(_Args)...) {}
 
     template <class _Elem, class... _Types,
         enable_if_t<is_constructible_v<_Ty, initializer_list<_Elem>&, _Types...>, int> = 0>
     constexpr explicit optional(in_place_t, initializer_list<_Elem> _Ilist, _Types&&... _Args) noexcept(
-        is_nothrow_constructible_v<_Mybase, in_place_t, initializer_list<_Elem>&, _Types...>)
+        is_nothrow_constructible_v<_Mybase, in_place_t, initializer_list<_Elem>&, _Types...>) // strengthened
         : _Mybase(in_place, _Ilist, _STD forward<_Types>(_Args)...) {}
 
     template <class _Ty2>
@@ -240,7 +240,7 @@ public:
 
     template <class _Ty2 = _Ty, enable_if_t<_AllowDirectConversion<_Ty2>::value, int> = 0>
     constexpr explicit(!is_convertible_v<_Ty2, _Ty>)
-        optional(_Ty2&& _Right) noexcept(is_nothrow_constructible_v<_Mybase, in_place_t, _Ty2>)
+        optional(_Ty2&& _Right) noexcept(is_nothrow_constructible_v<_Mybase, in_place_t, _Ty2>) // strengthened
         : _Mybase(in_place, _STD forward<_Ty2>(_Right)) {}
 
     template <class _Ty2>
@@ -252,8 +252,8 @@ public:
 
     template <class _Ty2,
         enable_if_t<conjunction_v<_AllowUnwrapping<_Ty2>, is_constructible<_Ty, const _Ty2&>>, int> = 0>
-    _CONSTEXPR20 explicit(!is_convertible_v<const _Ty2&, _Ty>)
-        optional(const optional<_Ty2>& _Right) noexcept(is_nothrow_constructible_v<_Ty, const _Ty2&>) {
+    _CONSTEXPR20 explicit(!is_convertible_v<const _Ty2&, _Ty>) optional(const optional<_Ty2>& _Right) noexcept(
+        is_nothrow_constructible_v<_Ty, const _Ty2&>) /* strengthened */ {
         if (_Right) {
             this->_Construct(*_Right);
         }
@@ -324,7 +324,8 @@ public:
     }
 
     template <class... _Types>
-    _CONSTEXPR20 _Ty& emplace(_Types&&... _Args) noexcept(is_nothrow_constructible_v<_Ty, _Types...>) {
+    _CONSTEXPR20 _Ty& emplace(_Types&&... _Args) noexcept(
+        is_nothrow_constructible_v<_Ty, _Types...>) /* strengthened */ {
         reset();
         return this->_Construct(_STD forward<_Types>(_Args)...);
     }
@@ -332,7 +333,7 @@ public:
     template <class _Elem, class... _Types,
         enable_if_t<is_constructible_v<_Ty, initializer_list<_Elem>&, _Types...>, int> = 0>
     _CONSTEXPR20 _Ty& emplace(initializer_list<_Elem> _Ilist, _Types&&... _Args) noexcept(
-        is_nothrow_constructible_v<_Ty, initializer_list<_Elem>&, _Types...>) {
+        is_nothrow_constructible_v<_Ty, initializer_list<_Elem>&, _Types...>) /* strengthened */ {
         reset();
         return this->_Construct(_Ilist, _STD forward<_Types>(_Args)...);
     }
@@ -818,7 +819,7 @@ using _Enable_if_comparable_with_greater_equal =
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left == _Right))) {
+    noexcept(_Fake_copy_init<bool>(*_Left == _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left == _Right;
     }
@@ -827,7 +828,7 @@ _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const _Ty2& _R
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left == *_Right))) {
+    noexcept(_Fake_copy_init<bool>(_Left == *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left == *_Right;
     }
@@ -836,7 +837,7 @@ _NODISCARD constexpr bool operator==(const _Ty1& _Left, const optional<_Ty2>& _R
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_not_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left != _Right))) {
+    noexcept(_Fake_copy_init<bool>(*_Left != _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left != _Right;
     }
@@ -844,7 +845,7 @@ _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const _Ty2& _R
 }
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_not_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator!=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left != *_Right))) {
+    noexcept(_Fake_copy_init<bool>(_Left != *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left != *_Right;
     }
@@ -853,7 +854,7 @@ _NODISCARD constexpr bool operator!=(const _Ty1& _Left, const optional<_Ty2>& _R
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left < _Right))) {
+    noexcept(_Fake_copy_init<bool>(*_Left < _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left < _Right;
     }
@@ -861,7 +862,7 @@ _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const _Ty2& _Ri
 }
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left < *_Right))) {
+    noexcept(_Fake_copy_init<bool>(_Left < *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left < *_Right;
     }
@@ -870,7 +871,7 @@ _NODISCARD constexpr bool operator<(const _Ty1& _Left, const optional<_Ty2>& _Ri
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left > _Right))) {
+    noexcept(_Fake_copy_init<bool>(*_Left > _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left > _Right;
     }
@@ -878,7 +879,7 @@ _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const _Ty2& _Ri
 }
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left > *_Right))) {
+    noexcept(_Fake_copy_init<bool>(_Left > *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left > *_Right;
     }
@@ -887,7 +888,7 @@ _NODISCARD constexpr bool operator>(const _Ty1& _Left, const optional<_Ty2>& _Ri
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left <= _Right))) {
+    noexcept(_Fake_copy_init<bool>(*_Left <= _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left <= _Right;
     }
@@ -895,7 +896,7 @@ _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const _Ty2& _R
 }
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left <= *_Right))) {
+    noexcept(_Fake_copy_init<bool>(_Left <= *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left <= *_Right;
     }
@@ -904,7 +905,7 @@ _NODISCARD constexpr bool operator<=(const _Ty1& _Left, const optional<_Ty2>& _R
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(*_Left >= _Right))) {
+    noexcept(_Fake_copy_init<bool>(*_Left >= _Right))) /* strengthened */ {
     if (_Left) {
         return *_Left >= _Right;
     }
@@ -912,7 +913,7 @@ _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const _Ty2& _R
 }
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Fake_copy_init<bool>(_Left >= *_Right))) {
+    noexcept(_Fake_copy_init<bool>(_Left >= *_Right))) /* strengthened */ {
     if (_Right) {
         return _Left >= *_Right;
     }
@@ -942,18 +943,18 @@ _CONSTEXPR20 void swap(optional<_Ty>& _Left, optional<_Ty>& _Right) noexcept(noe
 
 template <class _Ty, enable_if_t<is_constructible_v<decay_t<_Ty>, _Ty>, int> = 0> // LWG-3627
 _NODISCARD constexpr optional<decay_t<_Ty>> make_optional(_Ty&& _Value) noexcept(
-    noexcept(optional<decay_t<_Ty>>{_STD forward<_Ty>(_Value)})) {
+    noexcept(optional<decay_t<_Ty>>{_STD forward<_Ty>(_Value)})) /* strengthened */ {
     return optional<decay_t<_Ty>>{_STD forward<_Ty>(_Value)};
 }
 template <class _Ty, class... _Types, enable_if_t<is_constructible_v<_Ty, _Types...>, int> = 0>
 _NODISCARD constexpr optional<_Ty> make_optional(_Types&&... _Args) noexcept(
-    noexcept(optional<_Ty>{in_place, _STD forward<_Types>(_Args)...})) {
+    noexcept(optional<_Ty>{in_place, _STD forward<_Types>(_Args)...})) /* strengthened */ {
     return optional<_Ty>{in_place, _STD forward<_Types>(_Args)...};
 }
 template <class _Ty, class _Elem, class... _Types,
     enable_if_t<is_constructible_v<_Ty, initializer_list<_Elem>&, _Types...>, int> = 0>
 _NODISCARD constexpr optional<_Ty> make_optional(initializer_list<_Elem> _Ilist, _Types&&... _Args) noexcept(
-    noexcept(optional<_Ty>{in_place, _Ilist, _STD forward<_Types>(_Args)...})) {
+    noexcept(optional<_Ty>{in_place, _Ilist, _STD forward<_Types>(_Args)...})) /* strengthened */ {
     return optional<_Ty>{in_place, _Ilist, _STD forward<_Types>(_Args)...};
 }
 
