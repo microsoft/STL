@@ -278,8 +278,8 @@ template <typename T>
 using NonAggAliasedTemplateClass = NonAggTemplateClassCtor<T>;
 STATIC_ASSERT(!is_aggregate_v<NonAggAliasedTemplateClass<Cxx14Agg>>);
 
-int integral;
-STATIC_ASSERT(!is_aggregate_v<decltype(integral)>);
+int intObj;
+STATIC_ASSERT(!is_aggregate_v<decltype(intObj)>);
 
 Cxx17Agg cxx17AggObj;
 STATIC_ASSERT(is_aggregate_v<decltype(cxx17AggObj)>);

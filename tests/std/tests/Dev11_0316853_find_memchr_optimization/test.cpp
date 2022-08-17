@@ -16,7 +16,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <climits>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -25,6 +24,9 @@
 #include <vector>
 
 using namespace std;
+
+constexpr auto long_min = numeric_limits<long>::min();
+constexpr auto long_max = numeric_limits<long>::max();
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -386,13 +388,13 @@ int main() {
 
         // No longer integral promotions, still repeat the applicable part once to be sure
 
-        const long sl[] = {LONG_MIN, LONG_MIN + 1, LONG_MIN + 2, -2, -1, 0, 1, 2, LONG_MAX - 2, LONG_MAX - 1, LONG_MAX};
+        const long sl[] = {long_min, long_min + 1, long_min + 2, -2, -1, 0, 1, 2, long_max - 2, long_max - 1, long_max};
 
         STATIC_ASSERT(static_cast<long>(-1) != static_cast<unsigned short>(0xFFFF));
         STATIC_ASSERT(static_cast<long>(-1) == 0xFFFFFFFFUL);
         STATIC_ASSERT(static_cast<long>(-2) == 0xFFFFFFFEUL);
-        STATIC_ASSERT(static_cast<long>(LONG_MIN + 1) == 0x80000001UL);
-        STATIC_ASSERT(static_cast<long>(LONG_MIN) == 0x80000000UL);
+        STATIC_ASSERT(static_cast<long>(long_min + 1) == 0x80000001UL);
+        STATIC_ASSERT(static_cast<long>(long_min) == 0x80000000UL);
 
         assert(find(begin(sl), end(sl), static_cast<unsigned short>(0xFFFF)) == end(sl));
 

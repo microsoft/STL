@@ -523,7 +523,7 @@ _CONSTEXPR20 void iota(_FwdIt _First, _FwdIt _Last, _Ty _Val) {
     }
 }
 
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 namespace ranges {
     template <class _Out, class _Ty>
     using iota_result = out_value_result<_Out, _Ty>;
