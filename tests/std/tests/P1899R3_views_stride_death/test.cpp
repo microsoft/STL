@@ -47,6 +47,12 @@ void test_iterator_advance_past_end_with_integer_overflow() {
     it += (numeric_limits<ptrdiff_t>::max)() / 2; // cannot advance stride_view iterator past end (integer overflow)
 }
 
+void test_iterator_advance_negative_min() {
+    auto v  = ranges::stride_view(some_ints, 3);
+    auto it = v.begin();
+    it -= (numeric_limits<ptrdiff_t>::min)(); // cannot advance stride_view iterator past end (integer overflow)
+}
+
 int main(int argc, char* argv[]) {
     std_testing::death_test_executive exec;
 
@@ -58,6 +64,7 @@ int main(int argc, char* argv[]) {
         test_iterator_postincrement_past_end,
         test_iterator_advance_past_end,
         test_iterator_advance_past_end_with_integer_overflow,
+        test_iterator_advance_negative_min,
     });
 #else // ^^^ test everything / test only _CONTAINER_DEBUG_LEVEL case vvv
     exec.add_death_tests({

@@ -1363,6 +1363,17 @@ public:
         pointer& _Myfirst = _My_data._Myfirst;
         pointer& _Mylast  = _My_data._Mylast;
 
+#if _ITERATOR_DEBUG_LEVEL == 2
+#if _HAS_CXX20
+        if (!_STD is_constant_evaluated())
+#endif // _HAS_CXX20
+        {
+            const auto _Valptr = _STD addressof(_Val);
+            _STL_VERIFY(!(_Unfancy(_Myfirst) <= _Valptr && _Valptr < _Unfancy(_Mylast)),
+                "assignment value cannot be a reference into the container");
+        }
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+
         constexpr bool _Nothrow_construct =
             conjunction_v<is_nothrow_copy_constructible<_Ty>, _Uses_default_construct<_Alloc, _Ty*, const _Ty&>>;
 
@@ -1531,7 +1542,6 @@ public:
         _Assign_counted_range(_Ilist.begin(), _Count);
     }
 
-public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
         if (this == _STD addressof(_Right)) {
             return *this;
@@ -2987,7 +2997,6 @@ public:
         this->_Swap_proxy_and_iterators(_Right);
     }
 
-public:
     _CONSTEXPR20 vector& operator=(vector&& _Right) noexcept(is_nothrow_move_assignable_v<_Mybase>) {
         if (this == _STD addressof(_Right)) {
             return *this;
@@ -3071,7 +3080,6 @@ public:
 
     _CONSTEXPR20 ~vector() noexcept {}
 
-public:
     _CONSTEXPR20 vector& operator=(const vector& _Right) {
         if (this == _STD addressof(_Right)) {
             return *this;
@@ -3406,11 +3414,14 @@ public:
             _Copy_unchecked(_UFirst, _ULast, begin() + _Off);
 #endif // __cpp_lib_concepts
         } else {
-            difference_type _Off = _Saved_offset;
-
-            for (; _UFirst != _ULast; ++_UFirst, (void) ++_Off) {
-                insert(begin() + _Off, *_UFirst);
+            const auto _Old_size = this->_Mysize;
+            for (; _UFirst != _ULast; ++_UFirst) {
+                emplace_back(*_UFirst);
             }
+#if _ITERATOR_DEBUG_LEVEL == 2
+            _Orphan_range(static_cast<size_type>(_Saved_offset), _Old_size);
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+            _STD rotate(begin() + _Saved_offset, begin() + static_cast<difference_type>(_Old_size), end());
         }
 
         return begin() + _Saved_offset;
@@ -3427,11 +3438,16 @@ public:
             const auto _Off    = static_cast<difference_type>(_Insert_x(_Where, _Count));
             _Copy_n_unchecked4(_RANGES _Ubegin(_Range), _Count, begin() + _Off);
         } else {
-            auto _UFirst      = _RANGES _Ubegin(_Range);
-            const auto _ULast = _RANGES _Uend(_Range);
-            for (difference_type _Off = _Old_off; _UFirst != _ULast; ++_UFirst, (void) ++_Off) {
-                insert(begin() + _Off, *_UFirst);
+            auto _UFirst         = _RANGES _Ubegin(_Range);
+            const auto _ULast    = _RANGES _Uend(_Range);
+            const auto _Old_size = this->_Mysize;
+            for (; _UFirst != _ULast; ++_UFirst) {
+                emplace_back(*_UFirst);
             }
+#if _ITERATOR_DEBUG_LEVEL == 2
+            _Orphan_range(static_cast<size_type>(_Old_off), _Old_size);
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+            _STD rotate(begin() + _Old_off, begin() + static_cast<difference_type>(_Old_size), end());
         }
 
         return begin() + _Old_off;
@@ -3611,8 +3627,8 @@ public:
 
 template <class _Alloc>
 struct hash<vector<bool, _Alloc>> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef vector<bool, _Alloc> _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = vector<bool, _Alloc>;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
     _NODISCARD size_t operator()(const vector<bool, _Alloc>& _Keyval) const noexcept {
         return _Hash_array_representation(_Keyval._Myvec.data(), _Keyval._Myvec.size());
