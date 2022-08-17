@@ -7169,7 +7169,7 @@ namespace ranges {
             return _Temp;
         }
 
-        constexpr _Iterator& operator+=(difference_type _Off) noexcept(
+        constexpr _Iterator& operator+=(const difference_type _Off) noexcept(
             (noexcept(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>() +=
                       iter_difference_t<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>{_Off})
                 && ...)) // strengthened
@@ -7188,7 +7188,7 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Iterator& operator-=(difference_type _Off) noexcept(
+        constexpr _Iterator& operator-=(const difference_type _Off) noexcept(
             (noexcept(_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>() -=
                       iter_difference_t<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>{_Off})
                 && ...)) // strengthened
@@ -7207,7 +7207,7 @@ namespace ranges {
             return *this;
         }
 
-        _NODISCARD constexpr auto operator[](difference_type _Where) const
+        _NODISCARD constexpr auto operator[](const difference_type _Where) const
             noexcept((noexcept((_STD declval<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>())
                               [iter_difference_t<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>>{_Where}])
                       && ...)) // strengthened
@@ -7243,7 +7243,7 @@ namespace ranges {
             return (_Lhs._Current <=> _Rhs._Current);
         }
 
-        _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _Lhs, difference_type _Rhs) noexcept(
+        _NODISCARD_FRIEND constexpr _Iterator operator+(const _Iterator& _Lhs, const difference_type _Rhs) noexcept(
             noexcept(_STD declval<_Iterator>() += _Rhs) && is_nothrow_copy_constructible_v<_Iterator>) // strengthened
             requires _Zip::_All_random_access<_IsConst, _ViewTypes...> {
             auto _Modified_iterator = _Lhs;
@@ -7252,12 +7252,12 @@ namespace ranges {
             return _Modified_iterator;
         }
 
-        _NODISCARD_FRIEND constexpr _Iterator operator+(difference_type _Lhs, const _Iterator& _Rhs) noexcept(
+        _NODISCARD_FRIEND constexpr _Iterator operator+(const difference_type _Lhs, const _Iterator& _Rhs) noexcept(
             noexcept(_Rhs + _Lhs)) /* strengthened */ requires _Zip::_All_random_access<_IsConst, _ViewTypes...> {
             return (_Rhs + _Lhs);
         }
 
-        _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _Lhs, difference_type _Rhs) noexcept(
+        _NODISCARD_FRIEND constexpr _Iterator operator-(const _Iterator& _Lhs, const difference_type _Rhs) noexcept(
             noexcept(_STD declval<_Iterator>() -= _Rhs) && is_nothrow_copy_constructible_v<_Iterator>) // strengthened
             requires _Zip::_All_random_access<_IsConst, _ViewTypes...> {
             auto _Modified_iterator = _Lhs;
