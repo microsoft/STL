@@ -19,14 +19,14 @@
 #include <compare>
 #define _ZERO_OR_NO_INIT
 #else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
-#define _ZERO_OR_NO_INIT = {0}
+#define _ZERO_OR_NO_INIT = {0} // Trivial default initialization is not allowed in constexpr functions before C++20.
 #endif // _HAS_CXX20
 
 #ifdef __cpp_lib_concepts
 #include <concepts>
-#define _TEMPLATE_CLASS_INTEGRAL(type) template <integral _Ty>
+#define _TEMPLATE_CLASS_INTEGRAL(type) template <integral type>
 #else
-#define _TEMPLATE_CLASS_INTEGRAL(type) template <class _Ty, enable_if_t<is_integral_v<type>, int> = 0>
+#define _TEMPLATE_CLASS_INTEGRAL(type) template <class type, enable_if_t<is_integral_v<type>, int> = 0>
 #endif // __cpp_lib_concepts
 
 #pragma pack(push, _CRT_PACKING)
