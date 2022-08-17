@@ -818,69 +818,105 @@ using _Enable_if_comparable_with_greater_equal =
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(*_Left == _Right)) {
-    return _Left ? *_Left == _Right : false;
+    noexcept(_Fake_copy_init<bool>(*_Left == _Right))) {
+    if (_Left) {
+        return *_Left == _Right;
+    }
+    return false;
 }
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator==(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Left == *_Right)) {
-    return _Right ? _Left == *_Right : false;
+    noexcept(_Fake_copy_init<bool>(_Left == *_Right))) {
+    if (_Right) {
+        return _Left == *_Right;
+    }
+    return false;
 }
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_not_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator!=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(*_Left != _Right)) {
-    return _Left ? *_Left != _Right : true;
+    noexcept(_Fake_copy_init<bool>(*_Left != _Right))) {
+    if (_Left) {
+        return *_Left != _Right;
+    }
+    return true;
 }
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_not_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator!=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Left != *_Right)) {
-    return _Right ? _Left != *_Right : true;
+    noexcept(_Fake_copy_init<bool>(_Left != *_Right))) {
+    if (_Right) {
+        return _Left != *_Right;
+    }
+    return true;
 }
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(*_Left < _Right)) {
-    return _Left ? *_Left < _Right : true;
+    noexcept(_Fake_copy_init<bool>(*_Left < _Right))) {
+    if (_Left) {
+        return *_Left < _Right;
+    }
+    return true;
 }
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Left < *_Right)) {
-    return _Right ? _Left < *_Right : false;
+    noexcept(_Fake_copy_init<bool>(_Left < *_Right))) {
+    if (_Right) {
+        return _Left < *_Right;
+    }
+    return false;
 }
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(*_Left > _Right)) {
-    return _Left ? *_Left > _Right : false;
+    noexcept(_Fake_copy_init<bool>(*_Left > _Right))) {
+    if (_Left) {
+        return *_Left > _Right;
+    }
+    return false;
 }
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Left > *_Right)) {
-    return _Right ? _Left > *_Right : true;
+    noexcept(_Fake_copy_init<bool>(_Left > *_Right))) {
+    if (_Right) {
+        return _Left > *_Right;
+    }
+    return true;
 }
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(*_Left <= _Right)) {
-    return _Left ? *_Left <= _Right : true;
+    noexcept(_Fake_copy_init<bool>(*_Left <= _Right))) {
+    if (_Left) {
+        return *_Left <= _Right;
+    }
+    return true;
 }
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_less_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator<=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Left <= *_Right)) {
-    return _Right ? _Left <= *_Right : false;
+    noexcept(_Fake_copy_init<bool>(_Left <= *_Right))) {
+    if (_Right) {
+        return _Left <= *_Right;
+    }
+    return false;
 }
 
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>=(const optional<_Ty1>& _Left, const _Ty2& _Right) noexcept(
-    noexcept(*_Left >= _Right)) {
-    return _Left ? *_Left >= _Right : false;
+    noexcept(_Fake_copy_init<bool>(*_Left >= _Right))) {
+    if (_Left) {
+        return *_Left >= _Right;
+    }
+    return false;
 }
 template <class _Ty1, class _Ty2, _Enable_if_comparable_with_greater_equal<_Ty1, _Ty2> = 0>
 _NODISCARD constexpr bool operator>=(const _Ty1& _Left, const optional<_Ty2>& _Right) noexcept(
-    noexcept(_Left >= *_Right)) {
-    return _Right ? _Left >= *_Right : true;
+    noexcept(_Fake_copy_init<bool>(_Left >= *_Right))) {
+    if (_Right) {
+        return _Left >= *_Right;
+    }
+    return true;
 }
 
 #ifdef __cpp_lib_concepts
