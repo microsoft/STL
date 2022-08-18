@@ -1216,7 +1216,7 @@ _INLINE_VAR constexpr bool _Has_nothrow_operator_arrow = _Is_nothrow_convertible
 
 template <class _Iter, class _Pointer>
 _INLINE_VAR constexpr bool _Has_nothrow_operator_arrow<_Iter, _Pointer, false> = noexcept(
-    _Implicitly_convert_to<_Pointer>(_STD declval<_Iter>().operator->()));
+    _Fake_copy_init<_Pointer>(_STD declval<_Iter>().operator->()));
 
 template <class _BidIt>
 class reverse_iterator {
@@ -1339,7 +1339,7 @@ public:
     }
 
     _NODISCARD _CONSTEXPR17 reference operator[](const difference_type _Off) const
-        noexcept(noexcept(_Implicitly_convert_to<reference>(current[_Off]))) /* strengthened */ {
+        noexcept(noexcept(_Fake_copy_init<reference>(current[_Off]))) /* strengthened */ {
         return current[static_cast<difference_type>(-_Off - 1)];
     }
 
@@ -1406,7 +1406,7 @@ protected:
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator==(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left._Get_current() == _Right._Get_current()))) /* strengthened */
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() == _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1419,7 +1419,7 @@ _NODISCARD _CONSTEXPR17 bool
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator!=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left._Get_current() != _Right._Get_current()))) /* strengthened */
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() != _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1432,7 +1432,7 @@ _NODISCARD _CONSTEXPR17 bool
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator<(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left._Get_current() > _Right._Get_current()))) /* strengthened */
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() > _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1445,7 +1445,7 @@ _NODISCARD _CONSTEXPR17 bool
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator>(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left._Get_current() < _Right._Get_current()))) /* strengthened */
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() < _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1458,7 +1458,7 @@ _NODISCARD _CONSTEXPR17 bool
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator<=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left._Get_current() >= _Right._Get_current()))) /* strengthened */
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() >= _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1471,7 +1471,7 @@ _NODISCARD _CONSTEXPR17 bool
 template <class _BidIt1, class _BidIt2>
 _NODISCARD _CONSTEXPR17 bool
     operator>=(const reverse_iterator<_BidIt1>& _Left, const reverse_iterator<_BidIt2>& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left._Get_current() <= _Right._Get_current()))) /* strengthened */
+        noexcept(_Fake_copy_init<bool>(_Left._Get_current() <= _Right._Get_current()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -1687,15 +1687,6 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 }
 
 #ifdef __cpp_lib_concepts
-// Note that this is equivalent to xstddef's _Fake_copy_init (and _Implicitly_convert_to).
-// TRANSITION, replace _Fake_decay_copy with _Fake_copy_init.
-template <class _Ty>
-_NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
-// _Fake_decay_copy<T>(E):
-// (1) has type T [decay_t<decltype((E))> if T is deduced],
-// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
-// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
-
 template <class _Ty1, class _Ty2>
 concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
@@ -1723,12 +1714,12 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-            { _Fake_decay_copy(__t.begin()) } -> input_or_output_iterator;
+            { _Fake_copy_init(__t.begin()) } -> input_or_output_iterator;
         };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
-            { _Fake_decay_copy(begin(__t)) } -> input_or_output_iterator;
+            { _Fake_copy_init(begin(__t)) } -> input_or_output_iterator;
         };
 
         class _Cpo {
@@ -1745,9 +1736,9 @@ namespace ranges {
                         "and std::ranges::data do not accept arrays with incomplete element types.");
                     return {_St::_Array, true};
                 } else if constexpr (_Has_member<_Ty>) {
-                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().begin()))};
+                    return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().begin()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_decay_copy(begin(_STD declval<_Ty>())))};
+                    return {_St::_Non_member, noexcept(_Fake_copy_init(begin(_STD declval<_Ty>())))};
                 } else {
                     return {_St::_None};
                 }
@@ -1847,12 +1838,12 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-            { _Fake_decay_copy(__t.end()) } -> sentinel_for<iterator_t<_Ty>>;
+            { _Fake_copy_init(__t.end()) } -> sentinel_for<iterator_t<_Ty>>;
         };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
-            { _Fake_decay_copy(end(__t)) } -> sentinel_for<iterator_t<_Ty>>;
+            { _Fake_copy_init(end(__t)) } -> sentinel_for<iterator_t<_Ty>>;
         };
 
         class _Cpo {
@@ -1875,9 +1866,9 @@ namespace ranges {
                         return {_St::_None};
                     }
                 } else if constexpr (_Has_member<_Ty>) {
-                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().end()))};
+                    return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().end()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_decay_copy(end(_STD declval<_Ty>())))};
+                    return {_St::_Non_member, noexcept(_Fake_copy_init(end(_STD declval<_Ty>())))};
                 } else {
                     return {_St::_None};
                 }
@@ -2028,12 +2019,12 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-            { _Fake_decay_copy(__t.rbegin()) } -> input_or_output_iterator;
+            { _Fake_copy_init(__t.rbegin()) } -> input_or_output_iterator;
         };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
-            { _Fake_decay_copy(rbegin(__t)) } -> input_or_output_iterator;
+            { _Fake_copy_init(rbegin(__t)) } -> input_or_output_iterator;
         };
 
         template <class _Ty>
@@ -2050,9 +2041,9 @@ namespace ranges {
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
-                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().rbegin()))};
+                    return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().rbegin()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_decay_copy(rbegin(_STD declval<_Ty>())))};
+                    return {_St::_Non_member, noexcept(_Fake_copy_init(rbegin(_STD declval<_Ty>())))};
                 } else if constexpr (_Can_make_reverse<_Ty>) {
                     return {_St::_Make_reverse, noexcept(_STD make_reverse_iterator(_RANGES end(_STD declval<_Ty>())))};
                 } else {
@@ -2096,12 +2087,12 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-            { _Fake_decay_copy(__t.rend()) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
+            { _Fake_copy_init(__t.rend()) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
         };
 
         template <class _Ty>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && requires(_Ty __t) {
-            { _Fake_decay_copy(rend(__t)) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
+            { _Fake_copy_init(rend(__t)) } -> sentinel_for<decltype(_RANGES rbegin(__t))>;
         };
 
         template <class _Ty>
@@ -2118,9 +2109,9 @@ namespace ranges {
             _NODISCARD static _CONSTEVAL _Choice_t<_St> _Choose() noexcept {
                 _STL_INTERNAL_STATIC_ASSERT(is_lvalue_reference_v<_Ty>);
                 if constexpr (_Has_member<_Ty>) {
-                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().rend()))};
+                    return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().rend()))};
                 } else if constexpr (_Has_ADL<_Ty>) {
-                    return {_St::_Non_member, noexcept(_Fake_decay_copy(rend(_STD declval<_Ty>())))};
+                    return {_St::_Non_member, noexcept(_Fake_copy_init(rend(_STD declval<_Ty>())))};
                 } else if constexpr (_Can_make_reverse<_Ty>) {
                     return {
                         _St::_Make_reverse, noexcept(_STD make_reverse_iterator(_RANGES begin(_STD declval<_Ty>())))};
@@ -2198,12 +2189,12 @@ namespace ranges {
 
         template <class _Ty, class _UnCV>
         concept _Has_member = !disable_sized_range<_UnCV> && requires(_Ty __t) {
-            { _Fake_decay_copy(__t.size()) } -> _Integer_like;
+            { _Fake_copy_init(__t.size()) } -> _Integer_like;
         };
 
         template <class _Ty, class _UnCV>
         concept _Has_ADL = _Has_class_or_enum_type<_Ty> && !disable_sized_range<_UnCV> && requires(_Ty __t) {
-            { _Fake_decay_copy(size(__t)) } -> _Integer_like;
+            { _Fake_copy_init(size(__t)) } -> _Integer_like;
         };
 
         template <class _Ty>
@@ -2228,9 +2219,9 @@ namespace ranges {
                         return {_St::_None};
                     }
                 } else if constexpr (_Has_member<_Ty, _UnCV>) {
-                    return {_St::_Member, noexcept(_Fake_decay_copy(_STD declval<_Ty>().size()))};
+                    return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>().size()))};
                 } else if constexpr (_Has_ADL<_Ty, _UnCV>) {
-                    return {_St::_Non_member, noexcept(_Fake_decay_copy(size(_STD declval<_Ty>())))};
+                    return {_St::_Non_member, noexcept(_Fake_copy_init(size(_STD declval<_Ty>())))};
                 } else if constexpr (_Can_difference<_Ty>) {
                     return {_St::_Subtract,
                         noexcept(_RANGES end(_STD declval<_Ty>()) - _RANGES begin(_STD declval<_Ty>()))};
@@ -2344,7 +2335,7 @@ namespace ranges {
 
         template <class _Ty>
         concept _Has_member = requires(_Ty __t) {
-            { _Fake_decay_copy(__t.data()) } -> _Points_to_object;
+            { _Fake_copy_init(__t.data()) } -> _Points_to_object;
         };
 
         template <class _Ty>
@@ -3446,7 +3437,7 @@ public:
     template <sentinel_for<_Iter> _Sent>
     _NODISCARD_FRIEND constexpr bool
         operator==(const move_iterator& _Left, const move_sentinel<_Sent>& _Right) noexcept(
-            noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Right._Get_last()))) /* strengthened */ {
+            noexcept(_Fake_copy_init<bool>(_Left._Current == _Right._Get_last()))) /* strengthened */ {
         return _Left._Current == _Right._Get_last();
     }
 
@@ -3539,7 +3530,7 @@ private:
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool
     operator==(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left.base() == _Right.base()))) /* strengthened */
+        noexcept(_Fake_copy_init<bool>(_Left.base() == _Right.base()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
@@ -3560,7 +3551,7 @@ _NODISCARD _CONSTEXPR17 bool operator!=(const move_iterator<_Iter1>& _Left,
 template <class _Iter1, class _Iter2>
 _NODISCARD _CONSTEXPR17 bool
     operator<(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left.base() < _Right.base()))) /* strengthened */
+        noexcept(_Fake_copy_init<bool>(_Left.base() < _Right.base()))) /* strengthened */
 #ifdef __cpp_lib_concepts
     // clang-format off
     requires requires {
