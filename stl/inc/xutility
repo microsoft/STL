@@ -1687,6 +1687,8 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 }
 
 #ifdef __cpp_lib_concepts
+// Note that this is equivalent to xstddef's _Fake_copy_init (and _Implicitly_convert_to).
+// TRANSITION, replace _Fake_decay_copy with _Fake_copy_init.
 template <class _Ty>
 _NODISCARD _Ty _Fake_decay_copy(_Ty) noexcept;
 // _Fake_decay_copy<T>(E):
@@ -3607,9 +3609,9 @@ _NODISCARD constexpr compare_three_way_result_t<_Iter1, _Iter2> operator<=>(cons
 #endif // __cpp_lib_concepts
 
 template <class _Iter1, class _Iter2>
-_NODISCARD _CONSTEXPR17 auto
-    operator-(const move_iterator<_Iter1>& _Left, const move_iterator<_Iter2>& _Right) noexcept(
-        noexcept(_Left.base() - _Right.base())) /* strengthened */ -> decltype(_Left.base() - _Right.base()) {
+_NODISCARD _CONSTEXPR17 auto operator-(const move_iterator<_Iter1>& _Left,
+    const move_iterator<_Iter2>& _Right) noexcept(noexcept(_Left.base() - _Right.base())) /* strengthened */
+    -> decltype(_Left.base() - _Right.base()) {
     return _Left.base() - _Right.base();
 }
 
@@ -3624,7 +3626,7 @@ _NODISCARD _CONSTEXPR17 move_iterator<_Iter>
     }
 // clang-format on
 #endif // __cpp_lib_concepts
-{ return move_iterator<_Iter>{_Right.base() + _Off}; }
+{ return move_iterator<_Iter>(_Right.base() + _Off); }
 
 template <class _Iter>
 _NODISCARD _CONSTEXPR17 move_iterator<_Iter> make_move_iterator(_Iter _It) noexcept(
