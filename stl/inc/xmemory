@@ -788,11 +788,11 @@ public:
     using value_type = _Ty;
 
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef _Ty* pointer;
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const _Ty* const_pointer;
+    using pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS       = _Ty*;
+    using const_pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = const _Ty*;
 
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef _Ty& reference;
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const _Ty& const_reference;
+    using reference _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS       = _Ty&;
+    using const_reference _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = const _Ty&;
 #endif // _HAS_DEPRECATED_ALLOCATOR_MEMBERS
 
     using size_type       = size_t;
@@ -871,8 +871,8 @@ class allocator<void> {
 public:
     using value_type = void;
 #if _HAS_DEPRECATED_ALLOCATOR_MEMBERS
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef void* pointer;
-    _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS typedef const void* const_pointer;
+    using pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS       = void*;
+    using const_pointer _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS = const void*;
 
     template <class _Other>
     struct _CXX17_DEPRECATE_OLD_ALLOCATOR_MEMBERS rebind {
@@ -1689,7 +1689,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     auto _ULast = _Get_unwrapped(_STD move(_Last));
 #endif
 
-    constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_assignable //
+    constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
                                && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
 
     if constexpr (_Can_memmove) {

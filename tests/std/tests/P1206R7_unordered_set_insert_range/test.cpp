@@ -15,14 +15,14 @@
 
 using namespace std;
 
-static constexpr int expected[] = {0, 1, 2, 3, 4, 5, 6, 7};
+static constexpr int expected_vals[] = {0, 1, 2, 3, 4, 5, 6, 7};
 
 template <ranges::input_range Rng>
 void test_unordered_set(Rng&& rng) {
     if constexpr (is_reference_v<ranges::range_reference_t<Rng>>) {
         unordered_set<int> m;
         m.insert_range(forward<Rng>(rng));
-        unordered_set<int> e{begin(expected), end(expected)};
+        unordered_set<int> e{begin(expected_vals), end(expected_vals)};
         assert(m == e);
     }
 }

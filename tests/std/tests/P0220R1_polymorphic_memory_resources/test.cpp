@@ -11,6 +11,7 @@
 #include <deque>
 #include <forward_list>
 #include <functional>
+#include <limits>
 #include <list>
 #include <malloc.h>
 #include <map>
@@ -25,6 +26,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+constexpr auto size_max = std::numeric_limits<std::size_t>::max();
 
 #pragma warning(disable : 6326) // Potential comparison of a constant with another constant.
 #pragma warning(disable : 28251) // Inconsistent annotation for 'new': this instance has no annotations.
@@ -286,7 +289,7 @@ namespace {
     };
 
     void analyze_geometric_growth(size_t const* first, size_t const n) {
-        // http://mathworld.wolfram.com/LeastSquaresFittingExponential.html
+        // https://mathworld.wolfram.com/LeastSquaresFittingExponential.html
         // https://en.wikipedia.org/wiki/Pearson_correlation_coefficient#For_a_sample
         double sum_of_x           = 0;
         double sum_of_y           = 0;
@@ -607,7 +610,7 @@ namespace {
                     std::pmr::polymorphic_allocator<T> alloc = &checked;
 
                     try {
-                        (void) alloc.allocate(SIZE_MAX / sizeof(T) + 1);
+                        (void) alloc.allocate(size_max / sizeof(T) + 1);
                         CHECK(false);
                     } catch (std::bad_alloc&) {
                     }

@@ -90,6 +90,11 @@ namespace stdext {
         _Pr comp{}; // the comparator object
     };
 } // namespace stdext
+
+_STD_BEGIN
+using stdext::hash_compare; // Non-Standard, for legacy source compatibility
+_STD_END
+
 #endif // _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 _STD_BEGIN

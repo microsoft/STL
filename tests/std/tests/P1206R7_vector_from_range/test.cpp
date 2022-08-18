@@ -124,6 +124,43 @@ void test_lvalue_forward_list() {
     }
 }
 
+struct counted_item {
+    static int count;
+
+    counted_item() {
+        ++count;
+    }
+
+    counted_item(const counted_item&) {
+        ++count;
+    }
+
+    counted_item& operator=(const counted_item&) = default;
+
+    ~counted_item() {
+        --count;
+    }
+};
+
+int counted_item::count = 0;
+
+static_assert(!is_trivially_copy_constructible_v<counted_item>);
+static_assert(is_trivially_copy_assignable_v<counted_item>);
+
+void test_vso1591034() {
+    // _Uninitialized_copy was incorrectly using memmove for types that are
+    // trivially assignable but not trivially constructible.
+
+    counted_item::count = 0;
+    vector<counted_item> vec;
+
+    for (int j = 0; j != 6; ++j) {
+        vec.push_back(counted_item());
+    }
+
+    assert(counted_item::count == 6);
+}
+
 int main() {
     // Validate views
     test_copyable_views();
@@ -143,4 +180,6 @@ int main() {
 
     test_in<vector_instantiator, const int>();
     test_in<vector_boo_instantiator, const int>();
+
+    test_vso1591034();
 }

@@ -3049,6 +3049,7 @@ _CONSTEXPR20 _FwdIt2 swap_ranges(const _FwdIt1 _First1, const _FwdIt1 _Last1, _F
     const auto _UFirst1 = _Get_unwrapped(_First1);
     const auto _ULast1  = _Get_unwrapped(_Last1);
     const auto _UFirst2 = _Get_unwrapped_n(_First2, _Idl_distance<_FwdIt1>(_UFirst1, _ULast1));
+    _Verify_ranges_do_not_overlap(_UFirst1, _ULast1, _UFirst2);
     _Seek_wrapped(_First2, _Swap_ranges_unchecked(_UFirst1, _ULast1, _UFirst2));
     return _First2;
 }
