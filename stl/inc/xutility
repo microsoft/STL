@@ -3874,7 +3874,8 @@ namespace ranges {
     // clang-format off
     template <forward_iterator _WIter, class _WSent>
         requires sentinel_for<remove_cvref_t<_WSent>, _WIter>
-    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(const _Unwrap_iter_t<_WIter, _WSent>& _UFirst, _WSent&& _Last) {
+    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(
+        const _Unwrap_iter_t<_WIter, _WSent>& _UFirst, _WSent&& _Last) {
         // clang-format on
         // find the iterator in [_UFirst, _Unwrap_sent<_WIter>(_Last)) which equals _Unwrap_sent<_WIter>(_Last)
         // [possibly O(N)]
