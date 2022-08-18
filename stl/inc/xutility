@@ -912,15 +912,15 @@ _INLINE_VAR constexpr bool _Unwrappable_v<_Iter,
     void_t<decltype(_STD declval<_Remove_cvref_t<_Iter>&>()._Seek_to(_STD declval<_Iter>()._Unwrapped()))>> =
     _Allow_inheriting_unwrap_v<_Remove_cvref_t<_Iter>>;
 
-template <class _Iter, bool _Unwrappable = _Unwrappable_v<_Iter>>
-_INLINE_VAR constexpr bool _Is_nothrow_unwrappable_v = noexcept(_STD declval<_Iter>()._Unwrapped());
-
+template <class _Iter, class = void>
+_INLINE_VAR constexpr bool _Has_nothrow_unwrapped = false;
 template <class _Iter>
-_INLINE_VAR constexpr bool _Is_nothrow_unwrappable_v<_Iter, false> = false;
+_INLINE_VAR constexpr bool _Has_nothrow_unwrapped<_Iter, void_t<decltype(_STD declval<_Iter>()._Unwrapped())>> =
+    noexcept(_STD declval<_Iter>()._Unwrapped());
 
 template <class _Iter>
 _NODISCARD constexpr decltype(auto) _Get_unwrapped(_Iter&& _It) noexcept(
-    !_Unwrappable_v<_Iter> || _Is_nothrow_unwrappable_v<_Iter>) {
+    !_Unwrappable_v<_Iter> || _Has_nothrow_unwrapped<_Iter>) {
     // unwrap an iterator previously subjected to _Adl_verify_range or otherwise validated
     if constexpr (is_pointer_v<decay_t<_Iter>>) { // special-case pointers and arrays
         return _It + 0;
@@ -1874,16 +1874,11 @@ namespace ranges {
         { _Se._Unwrapped() } -> sentinel_for<decltype(_STD forward<_Iter>(_It)._Unwrapped())>;
     };
 
-    // This is a concept since `declval<_Iter>()._Unwrapped()` not compiling will result in false,
-    // rather than a compiler error.
-    template <class _Iter>
-    concept _Nothrow_unwrappable = noexcept(_STD declval<_Iter>()._Unwrapped());
-
     // clang-format off
     template <class _Sent, class _Iter>
         requires sentinel_for<remove_cvref_t<_Sent>, remove_cvref_t<_Iter>>
     constexpr decltype(auto) _Unwrap_iter(_Iter&& _It) noexcept(
-        !_Unwrappable_sentinel_for<_Sent, _Iter> || _Nothrow_unwrappable<_Iter>)
+        !_Unwrappable_sentinel_for<_Sent, _Iter> || _Has_nothrow_unwrapped<_Iter>)
     {
         if constexpr (is_pointer_v<remove_cvref_t<_Iter>>) {
             return _It + 0;
@@ -1896,7 +1891,7 @@ namespace ranges {
     template <class _Iter, class _Sent>
         requires sentinel_for<remove_cvref_t<_Sent>, remove_cvref_t<_Iter>>
     constexpr decltype(auto) _Unwrap_sent(_Sent&& _Se) noexcept(
-        !_Unwrappable_sentinel_for<_Sent, _Iter> || _Nothrow_unwrappable<_Sent>)
+        !_Unwrappable_sentinel_for<_Sent, _Iter> || _Has_nothrow_unwrapped<_Sent>)
     {
         if constexpr (is_pointer_v<remove_cvref_t<_Sent>>) {
             return _Se + 0;
@@ -3995,20 +3990,17 @@ namespace ranges {
     };
 
     // clang-format off
-    template <forward_iterator _WIter, class _WSent>
-        requires sentinel_for<remove_cvref_t<_WSent>, _WIter>
-    _NODISCARD constexpr auto _Get_final_iterator_unwrapped(
-        const _Unwrap_iter_t<_WIter, _WSent>& _UFirst, _WSent&& _Last) {
+    template <forward_iterator _It, class _Se>
+        requires sentinel_for<remove_cvref_t<_Se>, _It>
+    _NODISCARD constexpr _Unwrap_iter_t<_It, _Se> _Get_final_iterator_unwrapped(
+        const _Unwrap_iter_t<_It, _Se>& _UFirst, _Se&& _Last) {
         // clang-format on
         // find the iterator in [_UFirst, _Unwrap_sent<_WIter>(_Last)) which equals _Unwrap_sent<_WIter>(_Last)
         // [possibly O(N)]
-        auto _ULast = _Unwrap_sent<_WIter>(_STD forward<_WSent>(_Last));
-        if constexpr (is_same_v<_Unwrap_sent_t<_WSent, _WIter>, _WIter>) {
-            return _ULast;
-        } else if constexpr (sized_sentinel_for<_Unwrap_sent_t<_WSent, _WIter>, _Unwrap_iter_t<_WIter, _WSent>>) {
-            return _RANGES next(_UFirst, _ULast - _UFirst);
+        if constexpr (is_same_v<_Unwrap_iter_t<_It, _Se>, _Unwrap_sent_t<_Se, _It>>) {
+            return _Unwrap_sent<_It>(_STD forward<_Se>(_Last));
         } else {
-            return _RANGES next(_UFirst, _STD move(_ULast));
+            return _RANGES next(_UFirst, _Unwrap_sent<_It>(_STD forward<_Se>(_Last)));
         }
     }
 
