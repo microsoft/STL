@@ -1826,7 +1826,7 @@ namespace ranges {
             as_rvalue_view{static_cast<_Rng&&>(__r)};
         };
 
-        class _As_rvalue_fn : public _Pipe::_Base<_As_rvalue_fn> {
+        class _As_rvalue_fn : public _Range_Adaptor_Base<_As_rvalue_fn> {
         private:
             enum class _St { _None, _All, _As_rvalue };
 
