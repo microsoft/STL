@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <limits>
 #include <sstream>
@@ -1254,6 +1255,38 @@ static_assert(!is_constructible_v<string_view, nullptr_t>, "constructing string_
 static_assert(!is_constructible_v<string, nullptr_t>, "constructing string from nullptr_t is prohibited");
 static_assert(!is_assignable_v<string&, nullptr_t>, "assigning nullptr_t to string is prohibited");
 #endif // _HAS_CXX23
+
+// Also test that no C6510 warning
+struct char_wrapper {
+    char c;
+};
+
+template <>
+struct std::char_traits<char_wrapper> {
+    using char_type = char_wrapper;
+
+    static bool eq(char_wrapper lhs, char_wrapper rhs) {
+        return lhs.c == rhs.c;
+    }
+
+    static size_t length(const char_wrapper* a) {
+        static_assert(sizeof(char_wrapper) == 1, "strlen requires this");
+        return strlen(reinterpret_cast<const char*>(a));
+    }
+
+    static int compare(const char_wrapper* lhs, const char_wrapper* rhs, size_t count) {
+        return char_traits<char>::compare(
+            reinterpret_cast<const char*>(lhs), reinterpret_cast<const char*>(rhs), count);
+    }
+};
+
+using WrappedSV = basic_string_view<char_wrapper, char_traits<char_wrapper>>;
+
+void test_C6510_warning() { // compile-only
+    char_wrapper a[] = {{'a'}, {'b'}, {'c'}, {'\0'}};
+    WrappedSV sv(a);
+    (void) sv;
+}
 
 int main() {
     test_case_default_constructor();
