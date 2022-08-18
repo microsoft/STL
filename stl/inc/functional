@@ -1503,7 +1503,7 @@ public:
             nullptr,
         };
 
-        const _Impl_t* const _Ret = static_cast<const _Impl_t*>(_Data._Impl);
+        const auto _Ret = static_cast<const _Impl_t*>(_Data._Impl);
         return _Ret ? _Ret : &_Null_move_only_function;
     }
 
