@@ -7,7 +7,9 @@
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <forward_list>
 #include <functional>
@@ -19,8 +21,6 @@
 #include <random>
 #include <regex>
 #include <set>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
 #include <type_traits>
 #include <unordered_map>

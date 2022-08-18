@@ -6,10 +6,10 @@
 #define _SILENCE_CXX17_ADAPTOR_TYPEDEFS_DEPRECATION_WARNING
 #define _SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
 
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <functional>
 #include <memory>
-#include <stdlib.h>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -150,6 +150,10 @@ STATIC_ASSERT(is_member_object_pointer_v<int X::*>);
 // Verify that PMFs aren't detected as PMDs and vice versa.
 STATIC_ASSERT(!is_member_function_pointer_v<int X::*>);
 STATIC_ASSERT(!is_member_object_pointer_v<int (X::*)(int, int)>);
+
+// Verify that the machinery for LWG-3617 "function/packaged_task deduction guides and deducing this"
+// doesn't cause such function pointers to be detected as PMFs.
+STATIC_ASSERT(!is_member_function_pointer_v<int (*)(X, int)>);
 
 
 // N4594 20.13.7.6 [meta.trans.other]:

@@ -26,8 +26,8 @@
 
 #define CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
+#include <cstdlib>
 #include <sstream>
-#include <stdlib.h>
 
 #include <Windows.h>
 

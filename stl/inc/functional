@@ -14,7 +14,9 @@
 #include <xmemory>
 #include <xstddef>
 #if _HAS_CXX17
+#ifdef _LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY
 #include <memory>
+#endif // _LEGACY_CODE_ASSUMES_FUNCTIONAL_INCLUDES_MEMORY
 #include <unordered_map>
 #endif // _HAS_CXX17
 #ifdef __cpp_lib_concepts
@@ -46,9 +48,9 @@ _NODISCARD constexpr _Result_type invoke_r(_Callable&& _Obj, _Types&&... _Args) 
 
 template <class _Ty = void>
 struct divides {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
 
     _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left / _Right;
@@ -57,9 +59,9 @@ struct divides {
 
 template <class _Ty = void>
 struct modulus {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
 
     _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left % _Right;
@@ -68,8 +70,8 @@ struct modulus {
 
 template <class _Ty = void>
 struct negate {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = _Ty;
 
     _NODISCARD constexpr _Ty operator()(const _Ty& _Left) const {
         return -_Left;
@@ -80,9 +82,9 @@ struct negate {
 
 template <class _Ty = void>
 struct logical_and {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
     _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left && _Right;
@@ -91,9 +93,9 @@ struct logical_and {
 
 template <class _Ty = void>
 struct logical_or {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
     _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left || _Right;
@@ -102,8 +104,8 @@ struct logical_or {
 
 template <class _Ty = void>
 struct logical_not {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = bool;
 
     _NODISCARD constexpr bool operator()(const _Ty& _Left) const {
         return !_Left;
@@ -112,9 +114,9 @@ struct logical_not {
 
 template <class _Ty = void>
 struct bit_and {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
 
     _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left & _Right;
@@ -123,9 +125,9 @@ struct bit_and {
 
 template <class _Ty = void>
 struct bit_or {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
 
     _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left | _Right;
@@ -134,9 +136,9 @@ struct bit_or {
 
 template <class _Ty = void>
 struct bit_xor {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
 
     _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left ^ _Right;
@@ -145,8 +147,8 @@ struct bit_xor {
 
 template <class _Ty = void>
 struct bit_not {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = _Ty;
 
     _NODISCARD constexpr _Ty operator()(const _Ty& _Left) const {
         return ~_Left;
@@ -1975,7 +1977,7 @@ _CONSTEXPR20 auto _Call_binder(_Invoker_ret<_Ret>, index_sequence<_Ix...>, _Cv_F
 
 template <class _Ret>
 struct _Forced_result_type { // used by bind<R>()
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ret _RESULT_TYPE_NAME;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ret;
 };
 
 template <class _Ret, class _Fx>
@@ -2252,17 +2254,11 @@ _Ty* _Decode_aligned_block(void*& _Base, const size_t _Count) {
     return static_cast<_Ty*>(_Decode_aligned_block(_Base, sizeof(_Ty) * _Count, alignof(_Ty)));
 }
 
-struct _Global_delete {
-    void operator()(void* const _Ptr) const {
-        ::operator delete(_Ptr);
-    }
-};
-
 template <class _FwdItHaystack, class _FwdItPat, class _Pred_eq>
 _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
     _FwdItHaystack _First1, _FwdItHaystack _Last1, _FwdItPat _First2, _FwdItPat _Last2, _Pred_eq& _Eq) {
     // find first [_First2, _Last2) satisfying _Eq
-    if constexpr (_Is_random_iter_v<_FwdItHaystack> && _Is_random_iter_v<_FwdItPat>) {
+    if constexpr (_Is_ranges_random_iter_v<_FwdItHaystack> && _Is_ranges_random_iter_v<_FwdItPat>) {
         _Iter_diff_t<_FwdItHaystack> _Count1 = _Last1 - _First1;
         _Iter_diff_t<_FwdItPat> _Count2      = _Last2 - _First2;
 
@@ -2280,7 +2276,9 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
         }
 
         return {_Last1, _Last1};
-    } else if constexpr (_Is_fwd_iter_v<_FwdItHaystack> && _Is_fwd_iter_v<_FwdItPat>) {
+    } else {
+        static_assert(_Is_ranges_fwd_iter_v<_FwdItHaystack> && _Is_ranges_fwd_iter_v<_FwdItPat>,
+            "Iterators must be at least forward iterators");
         for (;; ++_First1) { // loop until match or end of a sequence
             _FwdItHaystack _Mid1 = _First1;
             for (_FwdItPat _Mid2 = _First2;; ++_Mid1, (void) ++_Mid2) {
@@ -2297,8 +2295,6 @@ _CONSTEXPR20 pair<_FwdItHaystack, _FwdItHaystack> _Search_pair_unchecked(
                 }
             }
         }
-    } else {
-        static_assert(_Always_false<_FwdItHaystack>, "Iterators must be at least forward iterators");
     }
 }
 
@@ -2401,6 +2397,41 @@ private:
     _Diff _Table[_Limit];
 };
 
+// _Mini_ptr avoids needing to include <memory> which includes <atomic>.
+// It doesn't attempt to provide all of unique_ptr's safety features; use carefully.
+enum class _Deletion_kind { _Global_scalar, _Normal_array };
+
+template <class _Ty, _Deletion_kind _Del>
+class _Mini_ptr {
+public:
+    explicit _Mini_ptr(_Ty* const _Ptr_) noexcept : _Ptr(_Ptr_) {}
+
+    ~_Mini_ptr() noexcept {
+        if (_Ptr) {
+            if constexpr (_Del == _Deletion_kind::_Global_scalar) {
+                ::operator delete(_Ptr);
+            } else if constexpr (_Del == _Deletion_kind::_Normal_array) {
+                delete[] _Ptr;
+            } else {
+                static_assert(_Always_false<_Ty>, "Unknown _Deletion_kind.");
+            }
+        }
+    }
+
+    _NODISCARD _Ty* _Get() const noexcept {
+        return _Ptr;
+    }
+
+    _NODISCARD _Ty* _Release() noexcept {
+        return _STD exchange(_Ptr, nullptr);
+    }
+
+    _Mini_ptr(const _Mini_ptr&)            = delete;
+    _Mini_ptr& operator=(const _Mini_ptr&) = delete;
+
+private:
+    _Ty* _Ptr;
+};
 
 template <class _RanItPat, class _Pred_eq>
 void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, const _RanItPat _Pat_first,
@@ -2421,7 +2452,8 @@ void _Build_boyer_moore_delta_2_table(_Iter_diff_t<_RanItPat>* const _Shifts, co
 
     const auto _Mx = static_cast<size_t>(_Pat_size);
 
-    const unique_ptr<size_t[]> _Fx{new size_t[_Mx]};
+    const _Mini_ptr<size_t, _Deletion_kind::_Normal_array> _Fx_ptr{new size_t[_Mx]};
+    size_t* const _Fx = _Fx_ptr._Get();
 
     for (size_t _Kx = 1; _Kx <= _Mx; ++_Kx) {
         _Shifts[_Kx - 1] = static_cast<_Diff>(2 * _Mx - _Kx);
@@ -2572,8 +2604,8 @@ struct _Single_delta1_type_boyer_moore_traits {
             _Add_alloc_size<_Diff>(_Buf_size, _Pat_size);
         }
 
-        unique_ptr<void, _Global_delete> _Buf_bytes(::operator new(_Buf_size));
-        void* _Buf                                      = _Buf_bytes.get();
+        _Mini_ptr<void, _Deletion_kind::_Global_scalar> _Buf_bytes(::operator new(_Buf_size));
+        void* _Buf                                      = _Buf_bytes._Get();
         *_Decode_aligned_block<_Atomic_counter_t>(_Buf) = 1;
         void* const _Delta1                             = _Decode_aligned_block<_Delta1_t>(_Buf);
         if (_Build_delta2) {
@@ -2582,7 +2614,7 @@ struct _Single_delta1_type_boyer_moore_traits {
         }
 
         ::new (_Delta1) _Delta1_t(_First, _UFirst, _Pat_size_raw, _STD move(_Hash_fn), _STD move(_Eq));
-        return _Buf_bytes.release();
+        return _Buf_bytes._Release();
     }
 
     template <class _RanItHaystack>
@@ -2666,8 +2698,8 @@ struct _Boyer_moore_traits_wchar_t_mode {
             _Add_alloc_size<_Diff>(_Buf_size, _Pat_size);
         }
 
-        unique_ptr<void, _Global_delete> _Buf_bytes(::operator new(_Buf_size));
-        void* _Buf                                      = _Buf_bytes.get();
+        _Mini_ptr<void, _Deletion_kind::_Global_scalar> _Buf_bytes(::operator new(_Buf_size));
+        void* _Buf                                      = _Buf_bytes._Get();
         *_Decode_aligned_block<_Atomic_counter_t>(_Buf) = 1;
         *_Decode_aligned_block<bool>(_Buf)              = _Use_large_table;
         if (_Use_large_table) {
@@ -2686,7 +2718,7 @@ struct _Boyer_moore_traits_wchar_t_mode {
                 _Decode_aligned_block<_Diff>(_Buf, _Pat_size), _UFirst, _Pat_size_raw, _Eq);
         }
 
-        return _Buf_bytes.release();
+        return _Buf_bytes._Release();
     }
 
     template <class _RanItHaystack>

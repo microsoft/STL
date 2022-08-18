@@ -6,13 +6,13 @@
 // Regress\intrin\atomic.cpp
 //
 
-#include <assert.h>
 #include <atomic>
+#include <cassert>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <limits>
 #include <new>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
 #include <type_traits>
 
 

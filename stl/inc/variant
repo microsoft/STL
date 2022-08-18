@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX17
-#pragma message("The contents of <variant> are available only with C++17 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <variant> are available only with C++17 or later.");
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <exception>
 #include <initializer_list>
@@ -35,9 +35,8 @@ template <class _First, class... _Rest>
 struct _All_same<_First, _Rest...> : bool_constant<conjunction_v<is_same<_First, _Rest>...>> {}; // variadic is_same
 
 template <class _To, class... _From>
-struct _Convertible_from_all : bool_constant<conjunction_v<is_convertible<_From, _To>...>> {
-    // variadic is_convertible
-};
+using _Convertible_from_all =
+    bool_constant<conjunction_v<_Invoke_convertible<_From, _To>...>>; // variadic _Invoke_convertible
 
 template <class...>
 struct _Meta_list {}; // a sequence of types
@@ -1715,8 +1714,8 @@ struct hash<variant<_Types...>> : _Conditionally_enabled_hash<variant<_Types...>
 
 template <>
 struct hash<monostate> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef monostate _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = monostate;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
     _NODISCARD size_t operator()(monostate) const noexcept {
         return 1729; // Arbitrary value
