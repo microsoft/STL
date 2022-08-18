@@ -5264,6 +5264,7 @@ namespace ranges {
         template <input_iterator _It, sentinel_for<_It> _Se, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         _NODISCARD constexpr _It operator()(_It _First, _Se _Last, const _Ty& _Val, _Pj _Proj = {}) const {
+            // clang-format on
             _Adl_verify_range(_First, _Last);
             auto _UResult = _RANGES _Find_unchecked(
                 _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Val, _Pass_fn(_Proj));
@@ -5272,18 +5273,19 @@ namespace ranges {
             return _First;
         }
 
+        // clang-format off
         template <input_range _Rng, class _Ty, class _Pj = identity>
             requires indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
         _NODISCARD constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, const _Ty& _Val, _Pj _Proj = {}) const {
-            auto _First = _RANGES begin(_Range);
-            auto _UResult =
-                _RANGES _Find_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Val, _Pass_fn(_Proj));
+            // clang-format on
+            auto _First   = _RANGES begin(_Range);
+            auto _UResult = _RANGES _Find_unchecked(
+                _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Val, _Pass_fn(_Proj));
 
             _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
-        // clang-format on
     };
 
     inline constexpr _Find_fn find{_Not_quite_object::_Construct_tag {}};

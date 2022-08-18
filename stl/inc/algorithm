@@ -3248,27 +3248,30 @@ namespace ranges {
                   && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>
         constexpr _It operator()(
             _It _First, _Se _Last, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
+            // clang-format on
             _Adl_verify_range(_First, _Last);
-            auto _UResult = _Replace_unchecked(
-                _Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)), _Oldval, _Newval, _Pass_fn(_Proj));
+            auto _UResult = _Replace_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
+                _Unwrap_sent<_It>(_STD move(_Last)), _Oldval, _Newval, _Pass_fn(_Proj));
 
             _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
+        // clang-format off
         template <input_range _Rng, class _Ty1, class _Ty2, class _Pj = identity>
             requires indirectly_writable<iterator_t<_Rng>, const _Ty2&>
                   && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty1*>
         constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
-            auto _First = _RANGES begin(_Range);
+            // clang-format on
+            auto _First   = _RANGES begin(_Range);
             auto _UResult = _Replace_unchecked(
                 _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Oldval, _Newval, _Pass_fn(_Proj));
 
             _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Ty1, class _Ty2, class _Pj>
         _NODISCARD static constexpr _It _Replace_unchecked(
@@ -3322,19 +3325,22 @@ namespace ranges {
             indirect_unary_predicate<projected<_It, _Pj>> _Pr>
             requires indirectly_writable<_It, const _Ty&>
         constexpr _It operator()(_It _First, _Se _Last, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) const {
+            // clang-format on
             _Adl_verify_range(_First, _Last);
-            auto _UResult = _Replace_if_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
-                _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
+            auto _UResult = _Replace_if_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
+                _Unwrap_sent<_It>(_STD move(_Last)), _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
 
             _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
 
+        // clang-format off
         template <input_range _Rng, class _Ty, class _Pj = identity,
             indirect_unary_predicate<projected<iterator_t<_Rng>, _Pj>> _Pr>
             requires indirectly_writable<iterator_t<_Rng>, const _Ty&>
         constexpr borrowed_iterator_t<_Rng> operator()(
             _Rng&& _Range, _Pr _Pred, const _Ty& _Newval, _Pj _Proj = {}) const {
+            // clang-format on
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _Replace_if_unchecked(
                 _Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range), _Pass_fn(_Pred), _Newval, _Pass_fn(_Proj));
@@ -3342,7 +3348,7 @@ namespace ranges {
             _Seek_wrapped(_First, _STD move(_UResult));
             return _First;
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Ty, class _Pj, class _Pr>
         _NODISCARD static constexpr _It _Replace_if_unchecked(
@@ -3414,19 +3420,22 @@ namespace ranges {
                   && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty1*>
         constexpr replace_copy_result<_It, _Out> operator()(
             _It _First, _Se _Last, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
+            // clang-format on
             _Adl_verify_range(_First, _Last);
-            auto _UResult = _Replace_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
-                _STD move(_Result), _Oldval, _Newval, _Pass_fn(_Proj));
+            auto _UResult = _Replace_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
+                _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _Oldval, _Newval, _Pass_fn(_Proj));
 
             _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
 
+        // clang-format off
         template <input_range _Rng, class _Ty1, class _Ty2, output_iterator<const _Ty2&> _Out, class _Pj = identity>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
                   && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty1*>
         constexpr replace_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, const _Ty1& _Oldval, const _Ty2& _Newval, _Pj _Proj = {}) const {
+            // clang-format on
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _Replace_copy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
                 _STD move(_Result), _Oldval, _Newval, _Pass_fn(_Proj));
@@ -3434,7 +3443,7 @@ namespace ranges {
             _Seek_wrapped(_First, _STD move(_UResult.in));
             return {_STD move(_First), _STD move(_UResult.out)};
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Ty1, class _Ty2, class _Out, class _Pj>
         _NODISCARD static constexpr replace_copy_result<_It, _Out> _Replace_copy_unchecked(
@@ -3897,21 +3906,25 @@ namespace ranges {
             requires indirectly_copyable<_It, _Out>
                   && indirect_binary_predicate<ranges::equal_to, projected<_It, _Pj>, const _Ty*>
         constexpr remove_copy_result<_It, _Out> operator()(
+            // clang-format on
             _It _First, _Se _Last, _Out _Result, const _Ty& _Val, _Pj _Proj = {}) const {
             _Adl_verify_range(_First, _Last);
-            auto _UResult = _Remove_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
-                _Get_unwrapped_unverified(_STD move(_Result)), _Val, _Pass_fn(_Proj));
+            auto _UResult =
+                _Remove_copy_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
+                    _Get_unwrapped_unverified(_STD move(_Result)), _Val, _Pass_fn(_Proj));
 
             _Seek_wrapped(_First, _STD move(_UResult.in));
             _Seek_wrapped(_Result, _STD move(_UResult.out));
             return {_STD move(_First), _STD move(_Result)};
         }
 
+        // clang-format off
         template <input_range _Rng, weakly_incrementable _Out, class _Ty, class _Pj = identity>
             requires indirectly_copyable<iterator_t<_Rng>, _Out>
                   && indirect_binary_predicate<ranges::equal_to, projected<iterator_t<_Rng>, _Pj>, const _Ty*>
         constexpr remove_copy_result<borrowed_iterator_t<_Rng>, _Out> operator()(
             _Rng&& _Range, _Out _Result, const _Ty& _Val, _Pj _Proj = {}) const {
+            // clang-format on
             auto _First   = _RANGES begin(_Range);
             auto _UResult = _Remove_copy_unchecked(_Unwrap_range_iter<_Rng>(_STD move(_First)), _Uend(_Range),
                 _Get_unwrapped_unverified(_STD move(_Result)), _Val, _Pass_fn(_Proj));
@@ -3920,7 +3933,7 @@ namespace ranges {
             _Seek_wrapped(_Result, _STD move(_UResult.out));
             return {_STD move(_First), _STD move(_Result)};
         }
-        // clang-format on
+
     private:
         template <class _It, class _Se, class _Out, class _Ty, class _Pj>
         _NODISCARD static constexpr remove_copy_result<_It, _Out> _Remove_copy_unchecked(
@@ -4806,6 +4819,7 @@ namespace ranges {
             requires (forward_iterator<_It> || random_access_iterator<_Out>)
                   && indirectly_copyable<_It, _Out> && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _Out operator()(_It _First, _Se _Last, _Out _Result, iter_difference_t<_It> _Count, _Urng&& _Func) const {
+            // clang-format on
             _Adl_verify_range(_First, _Last);
             if (_Count <= 0) {
                 return _Result;
@@ -4817,16 +4831,18 @@ namespace ranges {
                 auto _Pop_size = _RANGES distance(_UFirst, _Unwrap_sent<_It>(_STD move(_Last)));
                 return _Sample_selection_unchecked(_STD move(_UFirst), _Pop_size, _STD move(_Result), _Count, _RngFunc);
             } else {
-                return _Sample_reservoir_unchecked(_Unwrap_iter<_Se>(_STD move(_First)), _Unwrap_sent<_It>(_STD move(_Last)),
-                    _STD move(_Result), _Count, _RngFunc);
+                return _Sample_reservoir_unchecked(_Unwrap_iter<_Se>(_STD move(_First)),
+                    _Unwrap_sent<_It>(_STD move(_Last)), _STD move(_Result), _Count, _RngFunc);
             }
         }
 
+        // clang-format off
         template <input_range _Rng, weakly_incrementable _Out, class _Urng>
            requires (forward_range<_Rng> || random_access_iterator<_Out>)
                   && indirectly_copyable<iterator_t<_Rng>, _Out>
                   && uniform_random_bit_generator<remove_reference_t<_Urng>>
         _Out operator()(_Rng&& _Range, _Out _Result, range_difference_t<_Rng> _Count, _Urng&& _Func) const {
+            // clang-format on
             if (_Count <= 0) {
                 return _Result;
             }
@@ -4841,7 +4857,7 @@ namespace ranges {
                     _Ubegin(_Range), _Uend(_Range), _STD move(_Result), _Count, _RngFunc);
             }
         }
-        // clang-format on
+
     private:
         template <class _It, class _Out, class _Rng>
         _NODISCARD static _Out _Sample_selection_unchecked(
