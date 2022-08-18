@@ -66,7 +66,7 @@ namespace ranges {
     class range_adaptor_closure;
 
     template <class _Ty>
-    using _Range_Adaptor_Base = range_adaptor_closure<_Ty>;
+    using _Range_adaptor_Base = range_adaptor_closure<_Ty>;
 #else // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
     namespace _Pipe {
         template <class _Derived>
@@ -74,7 +74,7 @@ namespace ranges {
     } // namespace _Pipe
 
     template <class _Ty>
-    using _Range_Adaptor_Base = _Pipe::_Base<_Ty>;
+    using _Range_adaptor_Base = _Pipe::_Base<_Ty>;
 #endif
 
     namespace _Pipe {
@@ -90,7 +90,7 @@ namespace ranges {
         // clang-format on
 
         template <class _ClosureLeft, class _ClosureRight>
-        struct _Pipeline : _Range_Adaptor_Base<_Pipeline<_ClosureLeft, _ClosureRight>> {
+        struct _Pipeline : _Range_adaptor_Base<_Pipeline<_ClosureLeft, _ClosureRight>> {
             /* [[no_unique_address]] */ _ClosureLeft _Left;
             /* [[no_unique_address]] */ _ClosureRight _Right;
 
@@ -836,7 +836,7 @@ namespace ranges {
     };
 
     template <class _Fn, class... _Types>
-    class _Range_closure : public _Range_Adaptor_Base<_Range_closure<_Fn, _Types...>> {
+    class _Range_closure : public _Range_adaptor_Base<_Range_closure<_Fn, _Types...>> {
     public:
         // We assume that _Fn is the type of a customization point object. That means
         // 1. The behavior of operator() is independent of cvref qualifiers, so we can use `invocable<_Fn, ` without
@@ -1697,7 +1697,7 @@ namespace ranges {
             owning_view{static_cast<_Rng&&>(__r)};
         };
 
-        class _All_fn : public _Range_Adaptor_Base<_All_fn> {
+        class _All_fn : public _Range_adaptor_Base<_All_fn> {
         private:
             enum class _St { _None, _View, _Ref, _Own };
 
@@ -1826,7 +1826,7 @@ namespace ranges {
             as_rvalue_view{static_cast<_Rng&&>(__r)};
         };
 
-        class _As_rvalue_fn : public _Range_Adaptor_Base<_As_rvalue_fn> {
+        class _As_rvalue_fn : public _Range_adaptor_Base<_As_rvalue_fn> {
         private:
             enum class _St { _None, _All, _As_rvalue };
 
@@ -3656,7 +3656,7 @@ namespace ranges {
     explicit join_view(_Rng&&) -> join_view<views::all_t<_Rng>>;
 
     namespace views {
-        class _Join_fn : public _Range_Adaptor_Base<_Join_fn> {
+        class _Join_fn : public _Range_adaptor_Base<_Join_fn> {
         public:
             // clang-format off
             template <viewable_range _Rng>
@@ -4886,7 +4886,7 @@ namespace ranges {
     inline constexpr bool enable_borrowed_range<common_view<_Rng>> = enable_borrowed_range<_Rng>;
 
     namespace views {
-        class _Common_fn : public _Range_Adaptor_Base<_Common_fn> {
+        class _Common_fn : public _Range_adaptor_Base<_Common_fn> {
         private:
             enum class _St { _None, _All, _Common };
 
@@ -5010,7 +5010,7 @@ namespace ranges {
             reverse_view{static_cast<_Rng&&>(__r)};
         };
 
-        class _Reverse_fn : public _Range_Adaptor_Base<_Reverse_fn> {
+        class _Reverse_fn : public _Range_adaptor_Base<_Reverse_fn> {
         private:
             enum class _St { _None, _Base, _Subrange_unsized, _Subrange_sized, _Reverse };
 
@@ -5462,7 +5462,7 @@ namespace ranges {
 
     namespace views {
         template <size_t _Index>
-        class _Elements_fn : public _Range_Adaptor_Base<_Elements_fn<_Index>> {
+        class _Elements_fn : public _Range_adaptor_Base<_Elements_fn<_Index>> {
         public:
             template <viewable_range _Rng>
             _NODISCARD constexpr auto operator()(_Rng&& _Range) const noexcept(
