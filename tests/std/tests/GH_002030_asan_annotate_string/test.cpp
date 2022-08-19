@@ -19,6 +19,7 @@
 #include <cstring>
 #include <iterator>
 #include <memory>
+#include <new>
 #include <sstream>
 #include <string>
 #if _HAS_CXX17
