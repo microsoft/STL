@@ -329,6 +329,7 @@ struct pair { // store a pair of values
     }
 
 #if _HAS_CXX23
+    template <int = 0> // see GH-3013
     constexpr void swap(const pair& _Right) const
         noexcept(is_nothrow_swappable_v<const _Ty1>&& is_nothrow_swappable_v<const _Ty2>) {
         if (this != _STD addressof(_Right)) {
