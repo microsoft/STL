@@ -398,18 +398,34 @@ namespace test {
             return ReferenceType{*ptr_};
         }
 
-        [[nodiscard]] constexpr boolish operator==(sentinel<Element, Wrapped> const& s) const noexcept {
+        // TRANSITION, VSO-1595818 - these should be templated
+        [[nodiscard]] constexpr boolish operator==(sentinel<Element, IsWrapped::yes> const& s) const noexcept {
+            return boolish{ptr_ == s.peek()};
+        }
+        [[nodiscard]] constexpr boolish operator==(sentinel<Element, IsWrapped::no> const& s) const noexcept {
             return boolish{ptr_ == s.peek()};
         }
         [[nodiscard]] friend constexpr boolish operator==(
-            sentinel<Element, Wrapped> const& s, iterator const& i) noexcept {
-            return i == s;
+            sentinel<Element, IsWrapped::yes> const& s, iterator const& i) noexcept {
+            return i.operator==(s);
         }
-        [[nodiscard]] constexpr boolish operator!=(sentinel<Element, Wrapped> const& s) const noexcept {
+        [[nodiscard]] friend constexpr boolish operator==(
+            sentinel<Element, IsWrapped::no> const& s, iterator const& i) noexcept {
+            return i.operator==(s);
+        }
+
+        [[nodiscard]] constexpr boolish operator!=(sentinel<Element, IsWrapped::yes> const& s) const noexcept {
+            return !(*this == s);
+        }
+        [[nodiscard]] constexpr boolish operator!=(sentinel<Element, IsWrapped::no> const& s) const noexcept {
             return !(*this == s);
         }
         [[nodiscard]] friend constexpr boolish operator!=(
-            sentinel<Element, Wrapped> const& s, iterator const& i) noexcept {
+            sentinel<Element, IsWrapped::yes> const& s, iterator const& i) noexcept {
+            return !(i == s);
+        }
+        [[nodiscard]] friend constexpr boolish operator!=(
+            sentinel<Element, IsWrapped::no> const& s, iterator const& i) noexcept {
             return !(i == s);
         }
 

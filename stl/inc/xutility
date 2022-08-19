@@ -4701,7 +4701,7 @@ _NODISCARD bool equal(_ExPo&& _Exec, const _FwdIt1 _First1, const _FwdIt1 _Last1
 namespace ranges {
     template <forward_range _Rng, class _It>
     _NODISCARD constexpr iterator_t<_Rng> _Rewrap_iterator(_Rng&& _Range, _It&& _Val) {
-        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_It>, _Unwrapped_t<iterator_t<_Rng>>>);
+        _STL_INTERNAL_STATIC_ASSERT(is_same_v<remove_cvref_t<_It>, _Unwrapped_iterator_t<_Rng>>);
 
         if constexpr (is_same_v<remove_cvref_t<_It>, iterator_t<_Rng>>) {
             return _STD forward<_It>(_Val);
@@ -5643,7 +5643,7 @@ namespace ranges {
             return _STD move(_UResult);
         } else if constexpr (range<_Wrapped>) {
             _STL_INTERNAL_STATIC_ASSERT(forward_range<_Wrapped>);
-            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped, _Unwrapped_t<iterator_t<_Wrapped>>>);
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Unwrapped, _Unwrapped_iterator_t<_Wrapped>>);
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Result, subrange<iterator_t<_Wrapped>>>);
 
             auto _First = _RANGES begin(_Val);
