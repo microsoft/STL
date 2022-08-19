@@ -67,7 +67,6 @@
 // P1165R1 Consistently Propagating Stateful Allocators In basic_string's operator+()
 // P1902R1 Missing Feature-Test Macros 2017-2019
 // P2401R0 Conditional noexcept For exchange()
-// P2419R2 Clarify Handling Of Encodings In Localized Formatting Of chrono Types
 
 // _HAS_CXX17 directly controls:
 // P0005R4 not_fn()
@@ -273,6 +272,7 @@
 // P2393R1 Cleaning Up Integer-Class Types
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
+// P2419R2 Clarify Handling Of Encodings In Localized Formatting Of chrono Types
 // P2432R1 Fix istream_view
 
 // _HAS_CXX20 indirectly controls:
