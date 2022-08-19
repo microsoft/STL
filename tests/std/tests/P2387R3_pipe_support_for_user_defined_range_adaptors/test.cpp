@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <concepts>
 #include <ranges>
+#include <utility>
 
 using namespace std;
 
@@ -24,7 +24,6 @@ static_assert(!CanInstantiateRangeAdaptorClosure<EmptyTestType&>);
 static_assert(!CanInstantiateRangeAdaptorClosure<int>);
 static_assert(CanInstantiateRangeAdaptorClosure<IncompleteTestType>);
 
-
 template <class LHS, class RHS>
 concept CanPipe = requires(LHS lhs, RHS rhs) {
     forward<LHS>(lhs) | forward<RHS>(rhs);
@@ -38,9 +37,9 @@ concept CanPipe_R = requires(LHS lhs, RHS rhs) {
 using TestRange = array<int, 1>;
 
 template <class T>
-constexpr bool does_not_satisfy_range_adaptor_closure() {
-    return !CanPipe<TestRange, T&> && !CanPipe<TestRange, const T&> //
-        && !CanPipe<TestRange, T&&> && !CanPipe<TestRange, const T&&>;
+constexpr bool is_range_adaptor_closure() {
+    return CanPipe<TestRange, T&> || CanPipe<TestRange, const T&> //
+        || CanPipe<TestRange, T&&> || CanPipe<TestRange, const T&&>;
 }
 
 struct IdentityRangeAdaptorClosure : ranges::range_adaptor_closure<IdentityRangeAdaptorClosure> {
@@ -52,31 +51,31 @@ struct IdentityRangeAdaptorClosure : ranges::range_adaptor_closure<IdentityRange
 
 // Is not a range adaptor closure, because it is not a function object.
 struct NotCallable : ranges::range_adaptor_closure<NotCallable> {};
-static_assert(does_not_satisfy_range_adaptor_closure<NotCallable>());
+static_assert(!is_range_adaptor_closure<NotCallable>());
 
 // Is not a range adaptor closure, because it does not accept a range as argument.
 struct NotCallableWithRange : ranges::range_adaptor_closure<NotCallableWithRange> {
     void operator()() {}
 };
-static_assert(does_not_satisfy_range_adaptor_closure<NotCallableWithRange>());
+static_assert(!is_range_adaptor_closure<NotCallableWithRange>());
 
 // Is not a range adaptor closure, because it doesn't derive from range_adaptor_closure.
 struct NotDerivedFrom {
     void operator()(const TestRange&) {}
 };
-static_assert(does_not_satisfy_range_adaptor_closure<NotDerivedFrom>());
+static_assert(!is_range_adaptor_closure<NotDerivedFrom>());
 
 // Is not a range adaptor closure, because it inherits privately from range_adaptor_closure.
 struct DerivedPrivately : private ranges::range_adaptor_closure<DerivedPrivately> {
     void operator()(const TestRange&) {}
 };
-static_assert(does_not_satisfy_range_adaptor_closure<DerivedPrivately>());
+static_assert(!is_range_adaptor_closure<DerivedPrivately>());
 
 // Is not a range adaptor closure, because it inherits from the wrong specialization of range_adaptor_closure.
 struct DerivedFromWrongSpecialization : ranges::range_adaptor_closure<IdentityRangeAdaptorClosure> {
     void operator()(const TestRange&) {}
 };
-static_assert(does_not_satisfy_range_adaptor_closure<DerivedFromWrongSpecialization>());
+static_assert(!is_range_adaptor_closure<DerivedFromWrongSpecialization>());
 
 // Is not a range adaptor closure, because it has two base classes which are specializations of
 // range_adaptor_closure.
@@ -84,7 +83,7 @@ struct DerivedFromTwoSpecializations : ranges::range_adaptor_closure<DerivedFrom
                                        ranges::range_adaptor_closure<IdentityRangeAdaptorClosure> {
     void operator()(const TestRange&) {}
 };
-static_assert(does_not_satisfy_range_adaptor_closure<DerivedFromTwoSpecializations>());
+static_assert(!is_range_adaptor_closure<DerivedFromTwoSpecializations>());
 
 // Is not a range adaptor closure, because it models ranges::range.
 struct ModelsRange : ranges::range_adaptor_closure<ModelsRange> {
@@ -103,7 +102,8 @@ struct ModelsRange : ranges::range_adaptor_closure<ModelsRange> {
         return nullptr;
     }
 };
-static_assert(does_not_satisfy_range_adaptor_closure<ModelsRange>());
+static_assert(ranges::range<ModelsRange>);
+static_assert(!is_range_adaptor_closure<ModelsRange>());
 
 struct RangeAdaptorClosureMemberRefQualTest : ranges::range_adaptor_closure<RangeAdaptorClosureMemberRefQualTest> {
     constexpr ranges::empty_view<char> operator()(const auto&) & {
