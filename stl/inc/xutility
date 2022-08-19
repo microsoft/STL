@@ -1690,6 +1690,337 @@ _NODISCARD constexpr const _Elem* data(initializer_list<_Elem> _Ilist) noexcept 
 template <class _Ty1, class _Ty2>
 concept _Not_same_as = !same_as<remove_cvref_t<_Ty1>, remove_cvref_t<_Ty2>>;
 
+#if _HAS_CXX23
+template <indirectly_readable _Ty>
+using iter_const_reference_t = common_reference_t<const iter_value_t<_Ty>&&, iter_reference_t<_Ty>>;
+
+template <class _Ty>
+concept _Constant_iterator = input_iterator<_Ty> && same_as<iter_const_reference_t<_Ty>, iter_reference_t<_Ty>>;
+
+template <input_iterator _Iter>
+class basic_const_iterator;
+
+template <input_iterator _Iter>
+using const_iterator = conditional_t<_Constant_iterator<_Iter>, _Iter, basic_const_iterator<_Iter>>;
+
+template <class _Sent>
+struct _Const_sentinel {
+    using type = _Sent;
+};
+
+template <input_iterator _Sent>
+struct _Const_sentinel<_Sent> {
+    using type = const_iterator<_Sent>;
+};
+
+template <class _Sent>
+using const_sentinel = typename _Const_sentinel<_Sent>::type;
+
+template <class>
+inline constexpr bool _Is_basic_const_iterator_v = false;
+
+template <class _Iter>
+inline constexpr bool _Is_basic_const_iterator_v<basic_const_iterator<_Iter>> = true;
+
+template <class _Ty>
+concept _Not_a_const_iterator = !_Is_basic_const_iterator_v<_Ty>;
+
+template <class>
+struct _Basic_const_iterator_category {};
+
+template <forward_iterator _Iter>
+struct _Basic_const_iterator_category<_Iter> {
+    using iterator_category = typename iterator_traits<_Iter>::iterator_category;
+};
+
+template <input_iterator _Iter>
+class basic_const_iterator : public _Basic_const_iterator_category<_Iter> {
+private:
+    /* [[no_unique_address]] */ _Iter _Current{};
+
+    using _Reference = iter_const_reference_t<_Iter>;
+
+    _NODISCARD static _CONSTEVAL auto _Get_iter_concept() noexcept {
+        if constexpr (contiguous_iterator<_Iter>) {
+            return contiguous_iterator_tag{};
+        } else if constexpr (random_access_iterator<_Iter>) {
+            return random_access_iterator_tag{};
+        } else if constexpr (bidirectional_iterator<_Iter>) {
+            return bidirectional_iterator_tag{};
+        } else if constexpr (forward_iterator<_Iter>) {
+            return forward_iterator_tag{};
+        } else {
+            return input_iterator_tag{};
+        }
+    }
+
+public:
+    using iterator_concept = decltype(_Get_iter_concept());
+    using value_type       = iter_value_t<_Iter>;
+    using difference_type  = iter_difference_t<_Iter>;
+
+    // clang-format off
+    basic_const_iterator() requires default_initializable<_Iter> = default;
+    // clang-format on
+
+    constexpr basic_const_iterator(_Iter _Current_) noexcept(is_nothrow_move_constructible_v<_Iter>) // strengthened
+        : _Current(_STD move(_Current_)) {}
+
+    template <convertible_to<_Iter> _Other>
+    constexpr basic_const_iterator(basic_const_iterator<_Other> _Current_) noexcept(
+        is_nothrow_constructible_v<_Iter, _Other>) // strengthened
+        : _Current(_STD move(_Current_._Current)) {}
+
+    template <_Not_same_as<basic_const_iterator> _Other>
+        requires convertible_to<_Other, _Iter>
+    constexpr basic_const_iterator(_Other&& _Current_) noexcept(
+        is_nothrow_constructible_v<_Iter, _Other>) // strengthened
+        : _Current(_STD forward<_Other>(_Current_)) {}
+
+    _NODISCARD constexpr const _Iter& base() const& noexcept {
+        return _Current;
+    }
+
+    _NODISCARD constexpr _Iter base() && noexcept(is_nothrow_move_constructible_v<_Iter>) /* strengthened */ {
+        return _STD move(_Current);
+    }
+
+    _NODISCARD constexpr _Reference operator*() const
+        noexcept(noexcept(static_cast<_Reference>(*_Current))) /* strengthened */ {
+        return static_cast<_Reference>(*_Current);
+    }
+
+    _NODISCARD constexpr const value_type* operator->() const
+        noexcept(contiguous_iterator<_Iter> || noexcept(*_Current)) /* strengthened */ requires
+        is_lvalue_reference_v<iter_reference_t<_Iter>> && same_as<remove_cvref_t<iter_reference_t<_Iter>>, value_type> {
+        if constexpr (contiguous_iterator<_Iter>) {
+            return _STD to_address(_Current);
+        } else {
+            return _STD addressof(*_Current);
+        }
+    }
+
+    constexpr basic_const_iterator& operator++() noexcept(noexcept(++_Current)) /* strengthened */ {
+        ++_Current;
+        return *this;
+    }
+
+    constexpr void operator++(int) noexcept(noexcept(++_Current)) /* strengthened */ {
+        ++_Current;
+    }
+
+    constexpr basic_const_iterator operator++(int) noexcept(
+        noexcept(++*this) && is_nothrow_copy_constructible_v<basic_const_iterator>) // strengthened
+        requires forward_iterator<_Iter> {
+        auto _Tmp = *this;
+        ++*this;
+        return _Tmp;
+    }
+
+    constexpr basic_const_iterator& operator--() noexcept(noexcept(--_Current)) // strengthened
+        requires bidirectional_iterator<_Iter> {
+        --_Current;
+        return *this;
+    }
+
+    constexpr basic_const_iterator operator--(int) noexcept(
+        noexcept(--*this) && is_nothrow_copy_constructible_v<basic_const_iterator>) // strengthened
+        requires bidirectional_iterator<_Iter> {
+        auto _Tmp = *this;
+        --*this;
+        return _Tmp;
+    }
+
+    constexpr basic_const_iterator& operator+=(const difference_type _Off) noexcept(
+        noexcept(_Current += _Off)) // strengthened
+        requires random_access_iterator<_Iter> {
+        _Current += _Off;
+        return *this;
+    }
+
+    constexpr basic_const_iterator& operator-=(const difference_type _Off) noexcept(
+        noexcept(_Current -= _Off)) // strengthened
+        requires random_access_iterator<_Iter> {
+        _Current -= _Off;
+        return *this;
+    }
+
+    _NODISCARD constexpr _Reference operator[](const difference_type _Idx) const
+        noexcept(noexcept(static_cast<_Reference>(_Current[_Idx]))) // strengthened
+        requires random_access_iterator<_Iter> {
+        return static_cast<_Reference>(_Current[_Idx]);
+    }
+
+    template <sentinel_for<_Iter> _Sent>
+    _NODISCARD_FRIEND constexpr bool operator==(const basic_const_iterator& _It, const _Sent& _Se) noexcept(
+        noexcept(_It._Current == _Se)) /* strengthened */ {
+        return _It._Current == _Se;
+    }
+
+    _NODISCARD_FRIEND constexpr bool
+        operator<(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
+            noexcept(_Implicitly_convert_to<bool>(_Left._Current < _Right._Current))) // strengthened
+        requires random_access_iterator<_Iter> {
+        return _Left._Current < _Right._Current;
+    }
+
+    _NODISCARD_FRIEND constexpr bool
+        operator>(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
+            noexcept(_Implicitly_convert_to<bool>(_Left._Current > _Right._Current))) // strengthened
+        requires random_access_iterator<_Iter> {
+        return _Left._Current > _Right._Current;
+    }
+
+    _NODISCARD_FRIEND constexpr bool
+        operator<=(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
+            noexcept(_Implicitly_convert_to<bool>(_Left._Current <= _Right._Current))) // strengthened
+        requires random_access_iterator<_Iter> {
+        return _Left._Current <= _Right._Current;
+    }
+
+    _NODISCARD_FRIEND constexpr bool
+        operator>=(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
+            noexcept(_Implicitly_convert_to<bool>(_Left._Current >= _Right._Current))) // strengthened
+        requires random_access_iterator<_Iter> {
+        return _Left._Current >= _Right._Current;
+    }
+
+    _NODISCARD_FRIEND constexpr auto //
+        operator<=>(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
+            noexcept(_Left._Current <=> _Right._Current)) // strengthened
+        requires random_access_iterator<_Iter> && three_way_comparable<_Iter> {
+        return _Left._Current <=> _Right._Current;
+    }
+
+    template <_Not_same_as<basic_const_iterator> _Other>
+    _NODISCARD_FRIEND constexpr bool operator<(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
+        noexcept(_Implicitly_convert_to<bool>(_Left._Current < _Right))) // strengthened
+        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        return _Left._Current < _Right;
+    }
+
+    template <_Not_same_as<basic_const_iterator> _Other>
+    _NODISCARD_FRIEND constexpr bool operator>(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
+        noexcept(_Implicitly_convert_to<bool>(_Left._Current > _Right))) // strengthened
+        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        return _Left._Current > _Right;
+    }
+
+    template <_Not_same_as<basic_const_iterator> _Other>
+    _NODISCARD_FRIEND constexpr bool operator<=(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
+        noexcept(_Implicitly_convert_to<bool>(_Left._Current <= _Right))) // strengthened
+        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        return _Left._Current <= _Right;
+    }
+
+    template <_Not_same_as<basic_const_iterator> _Other>
+    _NODISCARD_FRIEND constexpr bool operator>=(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
+        noexcept(_Implicitly_convert_to<bool>(_Left._Current >= _Right))) // strengthened
+        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        return _Left._Current >= _Right;
+    }
+
+    template <_Not_same_as<basic_const_iterator> _Other>
+    _NODISCARD_FRIEND constexpr auto operator<=>(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
+        noexcept(_Left._Current <=> _Right)) // strengthened
+        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> && //
+        three_way_comparable_with<_Iter, _Other> {
+        return _Left._Current <=> _Right;
+    }
+
+    template <_Not_a_const_iterator _Other>
+    _NODISCARD_FRIEND constexpr bool operator<(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+        noexcept(_Implicitly_convert_to<bool>(_Left < _Right._Current))) // strengthened
+        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        return _Left < _Right._Current;
+    }
+
+    template <_Not_a_const_iterator _Other>
+    _NODISCARD_FRIEND constexpr bool operator>(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+        noexcept(_Implicitly_convert_to<bool>(_Left > _Right._Current))) // strengthened
+        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        return _Left > _Right._Current;
+    }
+
+    template <_Not_a_const_iterator _Other>
+    _NODISCARD_FRIEND constexpr bool operator<=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+        noexcept(_Implicitly_convert_to<bool>(_Left <= _Right._Current))) // strengthened
+        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        return _Left <= _Right._Current;
+    }
+
+    template <_Not_a_const_iterator _Other>
+    _NODISCARD_FRIEND constexpr bool operator>=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
+        noexcept(_Implicitly_convert_to<bool>(_Left >= _Right._Current))) // strengthened
+        requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
+        return _Left >= _Right._Current;
+    }
+
+    _NODISCARD_FRIEND constexpr basic_const_iterator operator+(
+        const basic_const_iterator& _It, const difference_type _Off) //
+        noexcept(noexcept(basic_const_iterator{_It._Current + _Off})) // strengthened
+        requires random_access_iterator<_Iter> {
+        return basic_const_iterator{_It._Current + _Off};
+    }
+
+    _NODISCARD_FRIEND constexpr basic_const_iterator operator+(
+        const difference_type _Off, const basic_const_iterator& _It) //
+        noexcept(noexcept(basic_const_iterator{_It._Current + _Off})) // strengthened
+        requires random_access_iterator<_Iter> {
+        return basic_const_iterator{_It._Current + _Off};
+    }
+
+    _NODISCARD_FRIEND constexpr basic_const_iterator operator-(
+        const basic_const_iterator& _It, const difference_type _Off) //
+        noexcept(noexcept(basic_const_iterator{_It._Current - _Off})) // strengthened
+        requires random_access_iterator<_Iter> {
+        return basic_const_iterator{_It._Current - _Off};
+    }
+
+    template <sized_sentinel_for<_Iter> _Sent>
+    _NODISCARD_FRIEND constexpr difference_type operator-(const basic_const_iterator& _It, const _Sent& _Se) noexcept(
+        noexcept(_It._Current - _Se)) /* strengthened */ {
+        return _It._Current - _Se;
+    }
+
+    // clang-format off
+    template <sized_sentinel_for<_Iter> _Sent>
+        requires _Not_same_as<_Sent, basic_const_iterator>
+    _NODISCARD_FRIEND constexpr difference_type operator-(const _Sent& _Se, const basic_const_iterator& _It)
+        noexcept(noexcept(_Se - _It._Current)) /* strengthened */ {
+        // clang-format on
+        return _Se - _It._Current;
+    }
+};
+
+template <class _Ty1, common_with<_Ty1> _Ty2>
+struct common_type<basic_const_iterator<_Ty1>, _Ty2> {
+    using type = basic_const_iterator<common_type_t<_Ty1, _Ty2>>;
+};
+
+template <class _Ty1, common_with<_Ty1> _Ty2>
+struct common_type<_Ty2, basic_const_iterator<_Ty1>> {
+    using type = basic_const_iterator<common_type_t<_Ty1, _Ty2>>;
+};
+
+template <class _Ty1, common_with<_Ty1> _Ty2>
+struct common_type<basic_const_iterator<_Ty1>, basic_const_iterator<_Ty2>> {
+    using type = basic_const_iterator<common_type_t<_Ty1, _Ty2>>;
+};
+
+template <input_iterator _Iter>
+_NODISCARD constexpr const_iterator<_Iter> make_const_iterator(_Iter _It) noexcept(
+    is_nothrow_constructible_v<const_iterator<_Iter>, _Iter>) /* strengthened */ {
+    return _It;
+}
+
+template <class _Sent>
+_NODISCARD constexpr const_sentinel<_Sent> make_const_sentinel(_Sent _Se) noexcept(
+    is_nothrow_constructible_v<const_sentinel<_Sent>, _Sent>) /* strengthened */ {
+    return _Se;
+}
+#endif // _HAS_CXX23
+
 namespace ranges {
     template <class>
     inline constexpr bool _Has_complete_elements = false;
