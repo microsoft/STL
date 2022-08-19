@@ -161,9 +161,6 @@ void test1() {
 }
 
 void test2() {
-    STATIC_ASSERT((test_bidi_write<instantiator, const nontrivial_int, nontrivial_int>(), true));
-    test_bidi_write<instantiator, const nontrivial_int, nontrivial_int>();
-
     STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<4>, bytes<4>>(), true));
     STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<8>, bytes<8>>(), true));
     STATIC_ASSERT((test_contiguous_write<test_vector, const bytes<3>, bytes<3>>(), true));
