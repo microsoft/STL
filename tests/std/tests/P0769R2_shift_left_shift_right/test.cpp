@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <forward_list>
 #include <iterator>
 #include <list>
@@ -21,7 +21,7 @@ struct MoveOnly {
     MoveOnly(MoveOnly&&)      = default;
 
     MoveOnly& operator=(const MoveOnly&) = delete;
-    MoveOnly& operator=(MoveOnly&&) = default;
+    MoveOnly& operator=(MoveOnly&&)      = default;
 
     MoveOnly& operator=(const ptrdiff_t x) {
         value = x;

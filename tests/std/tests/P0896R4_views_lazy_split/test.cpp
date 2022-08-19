@@ -254,8 +254,8 @@ struct instantiator {
         "This"sv, "is"sv, "a"sv, "test,"sv, "this"sv, "is"sv, "only"sv, "a"sv, "test."sv};
     static constexpr string_view expected_range[]    = {"Th"sv, " "sv, " a test, th"sv, " "sv, " only a test."sv};
     static constexpr string_view expected_empty[]    = {"T"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "a"sv,
-        " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, "o"sv,
-        "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
+           " "sv, "t"sv, "e"sv, "s"sv, "t"sv, ","sv, " "sv, "t"sv, "h"sv, "i"sv, "s"sv, " "sv, "i"sv, "s"sv, " "sv, //
+           "o"sv, "n"sv, "l"sv, "y"sv, " "sv, "a"sv, " "sv, "t"sv, "e"sv, "s"sv, "t"sv, "."sv};
     static constexpr string_view expected_trailing[] = {"test"sv, ""sv};
     static constexpr string_view expected_lwg3505[]  = {"x"sv, "x"sv, "x"sv};
 
@@ -319,15 +319,13 @@ constexpr bool instantiation_test() {
     // 3. Commonality
     // 4. Length of delimiter pattern (0/static 1/dynamic) [covered in instantiator::call]
 
-    if (!is_constant_evaluated()) { // TRANSITION, P2231R1
-        instantiator::call<test_range<input_iterator_tag, Common::no, CanView::no, Copyability::immobile>>();
-        instantiator::call<test_range<input_iterator_tag, Common::no, CanView::yes, Copyability::move_only>>();
-        instantiator::call<test_range<input_iterator_tag, Common::no, CanView::yes, Copyability::copyable>>();
+    instantiator::call<test_range<input_iterator_tag, Common::no, CanView::no, Copyability::immobile>>();
+    instantiator::call<test_range<input_iterator_tag, Common::no, CanView::yes, Copyability::move_only>>();
+    instantiator::call<test_range<input_iterator_tag, Common::no, CanView::yes, Copyability::copyable>>();
 
-        instantiator::call<test_range<input_iterator_tag, Common::yes, CanView::no, Copyability::immobile>>();
-        instantiator::call<test_range<input_iterator_tag, Common::yes, CanView::yes, Copyability::move_only>>();
-        instantiator::call<test_range<input_iterator_tag, Common::yes, CanView::yes, Copyability::copyable>>();
-    }
+    instantiator::call<test_range<input_iterator_tag, Common::yes, CanView::no, Copyability::immobile>>();
+    instantiator::call<test_range<input_iterator_tag, Common::yes, CanView::yes, Copyability::move_only>>();
+    instantiator::call<test_range<input_iterator_tag, Common::yes, CanView::yes, Copyability::copyable>>();
 
     instantiator::call<test_range<forward_iterator_tag, Common::no, CanView::no, Copyability::immobile>>();
     instantiator::call<test_range<forward_iterator_tag, Common::no, CanView::yes, Copyability::move_only>>();

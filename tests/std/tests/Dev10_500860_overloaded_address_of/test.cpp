@@ -4,12 +4,12 @@
 #define _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
 
 #include <array>
-#include <stddef.h>
-#include <stdlib.h>
+#include <cstddef>
+#include <cstdlib>
 #ifndef _M_CEE_PURE
 #include <atomic>
 #endif // _M_CEE_PURE
-#include <assert.h>
+#include <cassert>
 #include <deque>
 #include <exception>
 #include <forward_list>

@@ -7,7 +7,7 @@ variables:
   tmpDir: 'D:\Temp'
   buildOutputLocation: 'D:\build'
 
-pool: 'StlBuild-2022-06-14-T1744'
+pool: 'StlBuild-2022-08-09-T1544'
 
 stages:
   - stage: Code_Format
@@ -26,6 +26,10 @@ stages:
           - checkout: self
             clean: true
             submodules: false
+          - script: |
+              cd $(Build.SourcesDirectory)
+              git clean --quiet -x -d -f -f
+            displayName: 'Clean after checkout'
           - script: |
               call "%ProgramFiles%\Microsoft Visual Studio\2022\Preview\Common7\Tools\VsDevCmd.bat" ^
                 -host_arch=amd64 -arch=amd64 -no_logo
@@ -82,6 +86,7 @@ stages:
         parameters:
           targetPlatform: arm
           vsDevCmdArch: arm
+          buildBenchmarking: 'OFF'
 
   - stage: Build_ARM64
     dependsOn: Build_And_Test_x64

@@ -3,11 +3,11 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
 #include <iterator>
 #include <numeric>
 #include <random>
-#include <stdio.h>
 #include <type_traits>
 
 #include "adapterator.hpp"

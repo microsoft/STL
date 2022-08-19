@@ -106,7 +106,7 @@ public:
     }
 #endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
-    error_category(const error_category&) = delete;
+    error_category(const error_category&)            = delete;
     error_category& operator=(const error_category&) = delete;
 
 protected:
@@ -403,8 +403,8 @@ _NODISCARD inline error_condition make_error_condition(io_errc _Ec) noexcept {
 
 template <>
 struct hash<error_code> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef error_code _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = error_code;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
     _NODISCARD size_t operator()(const error_code& _Keyval) const noexcept {
         return hash<int>{}(_Keyval.value());
@@ -413,8 +413,8 @@ struct hash<error_code> {
 
 template <>
 struct hash<error_condition> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef error_condition _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = error_condition;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
 
     _NODISCARD size_t operator()(const error_condition& _Keyval) const noexcept {
         return hash<int>{}(_Keyval.value());
@@ -484,7 +484,7 @@ struct _System_error_message {
     explicit _System_error_message(const unsigned long _Ec) noexcept
         : _Str(nullptr), _Length(_CSTD __std_system_error_allocate_message(_Ec, &_Str)) {}
 
-    _System_error_message(const _System_error_message&) = delete;
+    _System_error_message(const _System_error_message&)            = delete;
     _System_error_message& operator=(const _System_error_message&) = delete;
 
     ~_System_error_message() {
@@ -501,12 +501,7 @@ public:
     }
 
     _NODISCARD string message(int _Errcode) const override {
-        // TRANSITION, GH-2561, move the logic to syserror.cpp
-        if (_Errcode == 0) {
-            return "success";
-        } else {
-            return _Syserror_map(_Errcode);
-        }
+        return _Syserror_map(_Errcode);
     }
 };
 
@@ -522,7 +517,7 @@ public:
         if (_Errcode == static_cast<int>(io_errc::stream)) {
             static constexpr char _Iostream_error[] = "iostream stream error";
             constexpr size_t _Iostream_error_length = sizeof(_Iostream_error) - 1; // TRANSITION, DevCom-906503
-            return string(_Iostream_error, _Iostream_error_length);
+            return string{_Iostream_error, _Iostream_error_length};
         } else {
             return _Syserror_map(_Errcode);
         }
@@ -542,9 +537,9 @@ public:
         if (_Msg._Length == 0) {
             static constexpr char _Unknown_error[] = "unknown error";
             constexpr size_t _Unknown_error_length = sizeof(_Unknown_error) - 1; // TRANSITION, DevCom-906503
-            return string(_Unknown_error, _Unknown_error_length);
+            return string{_Unknown_error, _Unknown_error_length};
         } else {
-            return string(_Msg._Str, _Msg._Length);
+            return string{_Msg._Str, _Msg._Length};
         }
     }
 
@@ -620,7 +615,7 @@ struct _Constexpr_immortalize_impl {
 
     constexpr _Constexpr_immortalize_impl() noexcept : _Storage{} {}
 
-    _Constexpr_immortalize_impl(const _Constexpr_immortalize_impl&) = delete;
+    _Constexpr_immortalize_impl(const _Constexpr_immortalize_impl&)            = delete;
     _Constexpr_immortalize_impl& operator=(const _Constexpr_immortalize_impl&) = delete;
 
     _MSVC_NOOP_DTOR ~_Constexpr_immortalize_impl() {

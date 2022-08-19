@@ -27,8 +27,8 @@ STATIC_ASSERT(same_as<decltype(ranges::partial_sort_copy(borrowed<true>{}, borro
 STATIC_ASSERT(same_as<decltype(ranges::partial_sort_copy(borrowed<true>{}, borrowed<true>{})),
     ranges::partial_sort_copy_result<int*, int*>>);
 
-constexpr P source[]   = {{5, 11}, {1, 12}, {3, 13}, {4, 15}, {0, 16}, {2, 17}};
-constexpr P expected[] = {{0, 16}, {1, 12}, {2, 17}, {3, 13}, {4, 15}, {5, 11}};
+constexpr P source[]        = {{5, 11}, {1, 12}, {3, 13}, {4, 15}, {0, 16}, {2, 17}};
+constexpr P expected_vals[] = {{0, 16}, {1, 12}, {2, 17}, {3, 13}, {4, 15}, {5, 11}};
 
 struct instantiator1 {
     template <ranges::input_range In, ranges::random_access_range Out>
@@ -48,7 +48,7 @@ struct instantiator1 {
                 assert(result.in == range1.end());
                 const auto n = min(i, int{size(source)});
                 assert(result.out == range2.begin() + n);
-                assert(equal(range2.begin(), range2.begin() + n, expected, expected + n));
+                assert(equal(range2.begin(), range2.begin() + n, expected_vals, expected_vals + n));
             }
 
             // also with empty input
@@ -81,7 +81,7 @@ struct instantiator2 {
                 assert(result.in == range1.end());
                 const auto n = min(i, int{size(source)});
                 assert(result.out == range2.begin() + n);
-                assert(equal(range2.begin(), range2.begin() + n, expected, expected + n));
+                assert(equal(range2.begin(), range2.begin() + n, expected_vals, expected_vals + n));
             }
 
             // also with empty input

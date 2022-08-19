@@ -219,7 +219,7 @@ constexpr bool test_one(Rng&& rng, Expected&& expected) {
     }
 
     // Validate view_interface::empty and operator bool
-    STATIC_ASSERT(CanMemberEmpty<R> == forward_range<Rng>);
+    STATIC_ASSERT(CanMemberEmpty<R> == (sized_range<Rng> || forward_range<Rng>) );
     STATIC_ASSERT(CanBool<R> == CanEmpty<R>);
     if constexpr (CanMemberEmpty<R>) {
         assert(r.empty() == is_empty);

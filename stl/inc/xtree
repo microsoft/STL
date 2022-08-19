@@ -328,14 +328,16 @@ struct _Tree_node {
     _Nodeptr _Right; // right subtree, or largest element if head
     char _Color; // _Red or _Black, _Black if head
     char _Isnil; // true only if head (also nil) node; TRANSITION, should be bool
-    value_type _Myval; // the stored value, unused if head
+    value_type _Myval = // the stored value, unused if head
+        _Returns_exactly<value_type>(); // fake a viable constructor to workaround GH-2749
 
     enum _Redbl { // colors for link to parent
         _Red,
         _Black
     };
 
-    _Tree_node(const _Tree_node&) = delete;
+    _Tree_node()                             = default;
+    _Tree_node(const _Tree_node&)            = delete;
     _Tree_node& operator=(const _Tree_node&) = delete;
 
     template <class _Alloc>
@@ -784,7 +786,7 @@ struct _Tree_temp_node_alloc : _Alloc_construct_ptr<_Alnode> {
         _Alloc_construct_ptr<_Alnode>::_Allocate();
     }
 
-    _Tree_temp_node_alloc(const _Tree_temp_node_alloc&) = delete;
+    _Tree_temp_node_alloc(const _Tree_temp_node_alloc&)            = delete;
     _Tree_temp_node_alloc& operator=(const _Tree_temp_node_alloc&) = delete;
 };
 
@@ -810,7 +812,7 @@ struct _Tree_temp_node : _Tree_temp_node_alloc<_Alnode> {
         this->_Ptr->_Isnil = false;
     }
 
-    _Tree_temp_node(const _Tree_temp_node&) = delete;
+    _Tree_temp_node(const _Tree_temp_node&)            = delete;
     _Tree_temp_node& operator=(const _Tree_temp_node&) = delete;
 
     ~_Tree_temp_node() {
@@ -1250,19 +1252,31 @@ public:
         return iterator(_Emplace_hint(_Where._Ptr, _STD move(_Val)), _Scary);
     }
 
-    template <class _Iter>
-    void insert(_Iter _First, _Iter _Last) {
-        _Adl_verify_range(_First, _Last);
-        auto _UFirst       = _Get_unwrapped(_First);
-        const auto _ULast  = _Get_unwrapped(_Last);
+protected:
+    template <class _Iter, class _Sent>
+    void _Insert_range_unchecked(_Iter _First, const _Sent _Last) {
         const auto _Myhead = _Get_scary()->_Myhead;
-        for (; _UFirst != _ULast; ++_UFirst) {
-            _Emplace_hint(_Myhead, *_UFirst);
+        for (; _First != _Last; ++_First) {
+            _Emplace_hint(_Myhead, *_First);
         }
     }
 
+public:
+    template <class _Iter>
+    void insert(_Iter _First, _Iter _Last) {
+        _Adl_verify_range(_First, _Last);
+        _Insert_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+    }
+
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<value_type> _Rng>
+    void insert_range(_Rng&& _Range) {
+        _Insert_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // __cpp_lib_containers_ranges
+
     void insert(initializer_list<value_type> _Ilist) {
-        insert(_Ilist.begin(), _Ilist.end());
+        _Insert_range_unchecked(_Ilist.begin(), _Ilist.end());
     }
 
 private:

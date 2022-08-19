@@ -289,9 +289,11 @@ struct _List_node { // list node
     using _Nodeptr   = _Rebind_pointer_t<_Voidptr, _List_node>;
     _Nodeptr _Next; // successor node, or first element if head
     _Nodeptr _Prev; // predecessor node, or last element if head
-    _Value_type _Myval; // the stored value, unused if head
+    _Value_type _Myval = // the stored value, unused if head
+        _Returns_exactly<_Value_type>(); // fake a viable constructor to workaround GH-2749
 
-    _List_node(const _List_node&) = delete;
+    _List_node()                             = default;
+    _List_node(const _List_node&)            = delete;
     _List_node& operator=(const _List_node&) = delete;
 
     template <class _Alnode>
@@ -590,7 +592,7 @@ struct _List_node_emplace_op2 : _Alloc_construct_ptr<_Alnode> {
         }
     }
 
-    _List_node_emplace_op2(const _List_node_emplace_op2&) = delete;
+    _List_node_emplace_op2(const _List_node_emplace_op2&)            = delete;
     _List_node_emplace_op2& operator=(const _List_node_emplace_op2&) = delete;
 
     pointer _Transfer_before(const pointer _Insert_before) noexcept {
@@ -615,7 +617,7 @@ struct _List_node_insert_op2 {
 
     explicit _List_node_insert_op2(_Alnode& _Al_) : _Al(_Al_), _Added(0) {}
 
-    _List_node_insert_op2(const _List_node_insert_op2&) = delete;
+    _List_node_insert_op2(const _List_node_insert_op2&)            = delete;
     _List_node_insert_op2& operator=(const _List_node_insert_op2&) = delete;
 
     template <class... _CArgT>
@@ -848,12 +850,12 @@ public:
     }
 
 private:
-    template <class _Iter>
-    void _Construct_range_unchecked(_Iter _First, _Iter _Last) {
+    template <class _Iter, class _Sent>
+    void _Construct_range_unchecked(_Iter _First, const _Sent _Last) {
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alnode, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _Mypair._Myval2);
         _List_node_insert_op2<_Alnode> _Appended(_Getal());
-        _Appended._Append_range_unchecked(_First, _Last);
+        _Appended._Append_range_unchecked(_STD move(_First), _Last);
         _Appended._Attach_head(_Mypair._Myval2);
         _Proxy._Release();
     }
@@ -880,6 +882,18 @@ public:
         _Construct_range_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Ty> _Rng>
+    list(from_range_t, _Rng&& _Range) : _Mypair(_Zero_then_variadic_args_t{}) {
+        _Construct_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+
+    template <_Container_compatible_range<_Ty> _Rng>
+    list(from_range_t, _Rng&& _Range, const _Alloc& _Al) : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        _Construct_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // __cpp_lib_containers_ranges
+
     list(list&& _Right) : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Alloc_sentinel_and_proxy();
         _Swap_val(_Right);
@@ -898,7 +912,6 @@ public:
         _Swap_val(_Right);
     }
 
-public:
     list& operator=(list&& _Right) noexcept(
         _Choose_pocma_v<_Alnode> == _Pocma_values::_Equal_allocators) /* strengthened */ {
         if (this == _STD addressof(_Right)) {
@@ -1022,8 +1035,7 @@ public:
         assign(_Ilist.begin(), _Ilist.end());
     }
 
-    iterator insert(const_iterator _Where,
-        initializer_list<_Ty> _Ilist) { // insert initializer_list
+    iterator insert(const_iterator _Where, initializer_list<_Ty> _Ilist) { // insert initializer_list
         return insert(_Where, _Ilist.begin(), _Ilist.end());
     }
 
@@ -1223,6 +1235,15 @@ public:
         _Emplace(_Mypair._Myval2._Myhead->_Next, _Val);
     }
 
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Ty> _Rng>
+    void prepend_range(_Rng&& _Range) {
+        _List_node_insert_op2<_Alnode> _Op(_Getal());
+        _Op._Append_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        _Op._Attach_before(_Mypair._Myval2, _Mypair._Myval2._Myhead->_Next);
+    }
+#endif // __cpp_lib_containers_ranges
+
     void pop_front() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
         _STL_VERIFY(_Mypair._Myval2._Mysize != 0, "pop_front called on empty list");
@@ -1234,6 +1255,15 @@ public:
     void push_back(const _Ty& _Val) {
         _Emplace(_Mypair._Myval2._Myhead, _Val);
     }
+
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Ty> _Rng>
+    void append_range(_Rng&& _Range) {
+        _List_node_insert_op2<_Alnode> _Op(_Getal());
+        _Op._Append_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        _Op._Attach_at_end(_Mypair._Myval2);
+    }
+#endif // __cpp_lib_containers_ranges
 
     void pop_back() noexcept /* strengthened */ {
 #if _CONTAINER_DEBUG_LEVEL > 0
@@ -1270,11 +1300,45 @@ private:
         }
     }
 
+    template <class _Iter, class _Sent>
+    void _Assign_unchecked(_Iter _First, const _Sent _Last) {
+        // assign [_First, _Last)
+        const auto _Myend = _Mypair._Myval2._Myhead;
+        auto _Old         = _Myend->_Next;
+        for (;;) { // attempt to reuse a node
+            if (_First == _Last) {
+                // input sequence exhausted; destroy and deallocate any tail of unneeded nodes
+                _Unchecked_erase(_Old, _Myend);
+                return;
+            }
+
+            if (_Old == _Myend) { // no more nodes to reuse, append the rest
+                _List_node_insert_op2<_Alnode> _Op(_Getal());
+                _Op._Append_range_unchecked(_STD move(_First), _Last);
+                _Op._Attach_at_end(_Mypair._Myval2);
+                return;
+            }
+
+            // reuse the node
+            _Old->_Myval = *_First;
+            _Old         = _Old->_Next;
+            ++_First;
+        }
+    }
+
 public:
     template <class _Iter, enable_if_t<_Is_iterator_v<_Iter>, int> = 0>
     void assign(_Iter _First, _Iter _Last) {
-        _Assign_cast<reference>(_Get_unwrapped(_First), _Get_unwrapped(_Last));
+        _Adl_verify_range(_First, _Last);
+        _Assign_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
+
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Ty> _Rng>
+    void assign_range(_Rng&& _Range) {
+        _Assign_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+    }
+#endif // __cpp_lib_containers_ranges
 
     void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) { // assign _Count * _Val
         const auto _Myend = _Mypair._Myval2._Myhead;
@@ -1307,8 +1371,8 @@ public:
         return _Make_iter(_Emplace(_Where._Ptr, _Val));
     }
 
-    iterator insert(const_iterator _Where, _CRT_GUARDOVERFLOW size_type _Count,
-        const _Ty& _Val) { // insert _Count * _Val before _Where
+    iterator insert(const_iterator _Where, _CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) {
+        // insert _Count * _Val before _Where
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list insert iterator outside range");
 #endif // _ITERATOR_DEBUG_LEVEL == 2
@@ -1328,7 +1392,18 @@ public:
         return _Make_iter(_Op._Attach_before(_Mypair._Myval2, _Where._Ptr));
     }
 
-public:
+#ifdef __cpp_lib_containers_ranges
+    template <_Container_compatible_range<_Ty> _Rng>
+    iterator insert_range(const_iterator _Where, _Rng&& _Range) {
+#if _ITERATOR_DEBUG_LEVEL == 2
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list insert_range iterator outside range");
+#endif // _ITERATOR_DEBUG_LEVEL == 2
+        _List_node_insert_op2<_Alnode> _Op(_Getal());
+        _Op._Append_range_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        return _Make_iter(_Op._Attach_before(_Mypair._Myval2, _Where._Ptr));
+    }
+#endif // __cpp_lib_containers_ranges
+
     iterator erase(const const_iterator _Where) noexcept /* strengthened */ {
 #if _ITERATOR_DEBUG_LEVEL == 2
         _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "list erase iterator outside range");
@@ -1518,7 +1593,7 @@ public:
 
         explicit _List_node_remove_op(list& _List_) noexcept : _List(_List_), _Head(), _Tail(_STD addressof(_Head)) {}
 
-        _List_node_remove_op(const _List_node_remove_op&) = delete;
+        _List_node_remove_op(const _List_node_remove_op&)            = delete;
         _List_node_remove_op& operator=(const _List_node_remove_op&) = delete;
 
         _Nodeptr _Transfer_back(const _Nodeptr _Removed) noexcept {
@@ -1528,14 +1603,14 @@ public:
 
             // snip the node out
             --_List._Mypair._Myval2._Mysize;
-            const auto _Next = _STD exchange(_Removed->_Next, _Nodeptr());
+            const auto _Next = _STD exchange(_Removed->_Next, nullptr);
             const auto _Prev = _Removed->_Prev;
             _Prev->_Next     = _Next;
             _Next->_Prev     = _Prev;
 
 #if _ITERATOR_DEBUG_LEVEL == 2
             // mark removed node for IDL to snip out later
-            _Removed->_Prev = _Nodeptr();
+            _Removed->_Prev = nullptr;
 #endif // _ITERATOR_DEBUG_LEVEL == 2
 
             *_Tail = _Removed;
@@ -1578,7 +1653,7 @@ public:
         }
 
         list& _List;
-        _Nodeptr _Head; // singly linked list of nodes to remove; their _Prev pointers set to _Nodeptr()
+        _Nodeptr _Head; // singly linked list of nodes to remove; their _Prev pointers set to nullptr
         _Nodeptr* _Tail;
     };
 
@@ -1782,6 +1857,12 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
     enable_if_t<conjunction_v<_Is_iterator<_Iter>, _Is_allocator<_Alloc>>, int> = 0>
 list(_Iter, _Iter, _Alloc = _Alloc()) -> list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
+
+#ifdef __cpp_lib_containers_ranges
+template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+list(from_range_t, _Rng&&, _Alloc = _Alloc()) -> list<_RANGES range_value_t<_Rng>, _Alloc>;
+#endif // __cpp_lib_containers_ranges
 
 template <class _Ty, class _Alloc>
 void swap(list<_Ty, _Alloc>& _Left, list<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {

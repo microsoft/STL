@@ -145,7 +145,6 @@ struct pair { // store a pair of values
     using first_type  = _Ty1;
     using second_type = _Ty2;
 
-#if _HAS_CONDITIONAL_EXPLICIT
     template <class _Uty1 = _Ty1, class _Uty2 = _Ty2,
         enable_if_t<conjunction_v<is_default_constructible<_Uty1>, is_default_constructible<_Uty2>>, int> = 0>
     constexpr explicit(
@@ -153,52 +152,14 @@ struct pair { // store a pair of values
         pair() noexcept(
             is_nothrow_default_constructible_v<_Uty1>&& is_nothrow_default_constructible_v<_Uty2>) // strengthened
         : first(), second() {}
-#else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Uty1 = _Ty1, class _Uty2 = _Ty2,
-        enable_if_t<conjunction_v<is_default_constructible<_Uty1>, is_default_constructible<_Uty2>,
-                        _Is_implicitly_default_constructible<_Uty1>, _Is_implicitly_default_constructible<_Uty2>>,
-            int> = 0>
-    constexpr pair() noexcept(
-        is_nothrow_default_constructible_v<_Uty1>&& is_nothrow_default_constructible_v<_Uty2>) // strengthened
-        : first(), second() {}
 
-    template <class _Uty1 = _Ty1, class _Uty2 = _Ty2,
-        enable_if_t<conjunction_v<is_default_constructible<_Uty1>, is_default_constructible<_Uty2>,
-                        negation<conjunction<_Is_implicitly_default_constructible<_Uty1>,
-                            _Is_implicitly_default_constructible<_Uty2>>>>,
-            int> = 0>
-    constexpr explicit pair() noexcept(
-        is_nothrow_default_constructible_v<_Uty1>&& is_nothrow_default_constructible_v<_Uty2>) // strengthened
-        : first(), second() {}
-#endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
-
-#if _HAS_CONDITIONAL_EXPLICIT
     template <class _Uty1 = _Ty1, class _Uty2 = _Ty2,
         enable_if_t<conjunction_v<is_copy_constructible<_Uty1>, is_copy_constructible<_Uty2>>, int> = 0>
     constexpr explicit(!conjunction_v<is_convertible<const _Uty1&, _Uty1>, is_convertible<const _Uty2&, _Uty2>>)
         pair(const _Ty1& _Val1, const _Ty2& _Val2) noexcept(
             is_nothrow_copy_constructible_v<_Uty1>&& is_nothrow_copy_constructible_v<_Uty2>) // strengthened
         : first(_Val1), second(_Val2) {}
-#else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Uty1 = _Ty1, class _Uty2 = _Ty2,
-        enable_if_t<conjunction_v<is_copy_constructible<_Uty1>, is_copy_constructible<_Uty2>,
-                        is_convertible<const _Uty1&, _Uty1>, is_convertible<const _Uty2&, _Uty2>>,
-            int> = 0>
-    constexpr pair(const _Ty1& _Val1, const _Ty2& _Val2) noexcept(
-        is_nothrow_copy_constructible_v<_Uty1>&& is_nothrow_copy_constructible_v<_Uty2>) // strengthened
-        : first(_Val1), second(_Val2) {}
 
-    template <class _Uty1 = _Ty1, class _Uty2 = _Ty2,
-        enable_if_t<
-            conjunction_v<is_copy_constructible<_Uty1>, is_copy_constructible<_Uty2>,
-                negation<conjunction<is_convertible<const _Uty1&, _Uty1>, is_convertible<const _Uty2&, _Uty2>>>>,
-            int> = 0>
-    constexpr explicit pair(const _Ty1& _Val1, const _Ty2& _Val2) noexcept(
-        is_nothrow_copy_constructible_v<_Uty1>&& is_nothrow_copy_constructible_v<_Uty2>) // strengthened
-        : first(_Val1), second(_Val2) {}
-#endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
-
-#if _HAS_CONDITIONAL_EXPLICIT
 #if _HAS_CXX23
     template <class _Other1 = _Ty1, class _Other2 = _Ty2,
 #else // ^^^ _HAS_CXX23 / !_HAS_CXX23 vvv
@@ -210,23 +171,6 @@ struct pair { // store a pair of values
             is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {
     }
-#else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>,
-                        is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>,
-            int> = 0>
-    constexpr pair(_Other1&& _Val1, _Other2&& _Val2) noexcept(
-        is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
-        : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {}
-
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>,
-                        negation<conjunction<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>>>,
-            int> = 0>
-    constexpr explicit pair(_Other1&& _Val1, _Other2&& _Val2) noexcept(
-        is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
-        : first(_STD forward<_Other1>(_Val1)), second(_STD forward<_Other2>(_Val2)) {}
-#endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
     pair(const pair&) = default;
     pair(pair&&)      = default;
@@ -240,7 +184,6 @@ struct pair { // store a pair of values
         : first(_Right.first), second(_Right.second) {}
 #endif // _HAS_CXX23
 
-#if _HAS_CONDITIONAL_EXPLICIT
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, const _Other1&>, is_constructible<_Ty2, const _Other2&>>,
             int> = 0>
@@ -248,50 +191,13 @@ struct pair { // store a pair of values
         pair(const pair<_Other1, _Other2>& _Right) noexcept(is_nothrow_constructible_v<_Ty1, const _Other1&>&&
                 is_nothrow_constructible_v<_Ty2, const _Other2&>) // strengthened
         : first(_Right.first), second(_Right.second) {}
-#else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<is_constructible<_Ty1, const _Other1&>, is_constructible<_Ty2, const _Other2&>,
-                        is_convertible<const _Other1&, _Ty1>, is_convertible<const _Other2&, _Ty2>>,
-            int> = 0>
-    constexpr pair(const pair<_Other1, _Other2>& _Right) noexcept(is_nothrow_constructible_v<_Ty1, const _Other1&>&&
-            is_nothrow_constructible_v<_Ty2, const _Other2&>) // strengthened
-        : first(_Right.first), second(_Right.second) {}
 
-    template <class _Other1, class _Other2,
-        enable_if_t<
-            conjunction_v<is_constructible<_Ty1, const _Other1&>, is_constructible<_Ty2, const _Other2&>,
-                negation<conjunction<is_convertible<const _Other1&, _Ty1>, is_convertible<const _Other2&, _Ty2>>>>,
-            int> = 0>
-    constexpr explicit pair(const pair<_Other1, _Other2>& _Right) noexcept(
-        is_nothrow_constructible_v<_Ty1, const _Other1&>&&
-            is_nothrow_constructible_v<_Ty2, const _Other2&>) // strengthened
-        : first(_Right.first), second(_Right.second) {}
-#endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
-
-#if _HAS_CONDITIONAL_EXPLICIT
     template <class _Other1, class _Other2,
         enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>>, int> = 0>
     constexpr explicit(!conjunction_v<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>)
         pair(pair<_Other1, _Other2>&& _Right) noexcept(
             is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
         : first(_STD forward<_Other1>(_Right.first)), second(_STD forward<_Other2>(_Right.second)) {}
-#else // ^^^ _HAS_CONDITIONAL_EXPLICIT ^^^ / vvv !_HAS_CONDITIONAL_EXPLICIT vvv
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>,
-                        is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>,
-            int> = 0>
-    constexpr pair(pair<_Other1, _Other2>&& _Right) noexcept(
-        is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
-        : first(_STD forward<_Other1>(_Right.first)), second(_STD forward<_Other2>(_Right.second)) {}
-
-    template <class _Other1, class _Other2,
-        enable_if_t<conjunction_v<is_constructible<_Ty1, _Other1>, is_constructible<_Ty2, _Other2>,
-                        negation<conjunction<is_convertible<_Other1, _Ty1>, is_convertible<_Other2, _Ty2>>>>,
-            int> = 0>
-    constexpr explicit pair(pair<_Other1, _Other2>&& _Right) noexcept(
-        is_nothrow_constructible_v<_Ty1, _Other1>&& is_nothrow_constructible_v<_Ty2, _Other2>) // strengthened
-        : first(_STD forward<_Other1>(_Right.first)), second(_STD forward<_Other2>(_Right.second)) {}
-#endif // ^^^ !_HAS_CONDITIONAL_EXPLICIT ^^^
 
 #if _HAS_CXX23
     template <class _Other1, class _Other2,
@@ -882,6 +788,22 @@ _NODISCARD constexpr bool in_range(const _Ty _Value) noexcept {
 
     return true;
 }
+
+#ifdef __cpp_lib_concepts
+template <class _Ty>
+using _With_reference = _Ty&;
+
+template <class _Ty>
+concept _Can_reference = requires {
+    typename _With_reference<_Ty>;
+};
+#else // __cpp_lib_concepts
+template <class _Ty, class = void>
+inline constexpr bool _Can_reference = false;
+
+template <class _Ty>
+inline constexpr bool _Can_reference<_Ty, void_t<_Ty&>> = true;
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX20
 
 #if _HAS_CXX23
@@ -895,6 +817,27 @@ _NODISCARD constexpr underlying_type_t<_Ty> to_underlying(_Ty _Value) noexcept {
 #ifdef _DEBUG
     _CSTD abort(); // likely to be called in debug mode, but can't be relied upon - already entered the UB territory
 #endif // _DEBUG
+}
+
+template <class _Ty, class _Uty>
+_NODISCARD constexpr auto&& forward_like(_Uty&& _Ux) noexcept {
+    static_assert(_Can_reference<_Ty>, "std::forward_like's first template argument must be a referenceable type.");
+
+    using _UnrefT = remove_reference_t<_Ty>;
+    using _UnrefU = remove_reference_t<_Uty>;
+    if constexpr (is_const_v<_UnrefT>) {
+        if constexpr (is_lvalue_reference_v<_Ty>) {
+            return static_cast<const _UnrefU&>(_Ux);
+        } else {
+            return static_cast<const _UnrefU&&>(_Ux);
+        }
+    } else {
+        if constexpr (is_lvalue_reference_v<_Ty>) {
+            return static_cast<_UnrefU&>(_Ux);
+        } else {
+            return static_cast<_UnrefU&&>(_Ux);
+        }
+    }
 }
 #endif // _HAS_CXX23
 

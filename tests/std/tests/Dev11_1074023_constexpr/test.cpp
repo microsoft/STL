@@ -9,7 +9,7 @@
 
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #ifndef _M_CEE_PURE
 #include <atomic>
 #endif // _M_CEE_PURE
@@ -29,12 +29,12 @@
 #ifndef _M_CEE
 #include <mutex>
 #endif // _M_CEE
+#include <cstdint>
 #include <new>
 #include <numeric>
 #include <random>
 #include <ratio>
 #include <regex>
-#include <stdint.h>
 #include <string>
 #include <system_error>
 #include <tuple>
@@ -44,6 +44,11 @@
 using namespace std;
 using namespace std::chrono;
 namespace RC = std::regex_constants;
+
+constexpr auto int32_min = numeric_limits<int32_t>::min();
+constexpr auto int32_max = numeric_limits<int32_t>::max();
+constexpr auto int64_min = numeric_limits<int64_t>::min();
+constexpr auto int64_max = numeric_limits<int64_t>::max();
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -445,8 +450,8 @@ STATIC_ASSERT(ratio<252, 105>::num == 12);
 STATIC_ASSERT(ratio<252, 105>::den == 5);
 
 STATIC_ASSERT(duration_values<int32_t>::zero() == 0);
-STATIC_ASSERT(duration_values<int32_t>::min() == INT32_MIN);
-STATIC_ASSERT(duration_values<int32_t>::max() == INT32_MAX);
+STATIC_ASSERT(duration_values<int32_t>::min() == int32_min);
+STATIC_ASSERT(duration_values<int32_t>::max() == int32_max);
 
 constexpr seconds d1{};
 STATIC_ASSERT(d1.count() == 0);
@@ -464,8 +469,8 @@ constexpr milliseconds d5(d4);
 STATIC_ASSERT(d5.count() == 47000);
 
 STATIC_ASSERT(duration<int64_t>::zero().count() == 0);
-STATIC_ASSERT(duration<int64_t>::min().count() == INT64_MIN);
-STATIC_ASSERT(duration<int64_t>::max().count() == INT64_MAX);
+STATIC_ASSERT(duration<int64_t>::min().count() == int64_min);
+STATIC_ASSERT(duration<int64_t>::max().count() == int64_max);
 
 constexpr seconds d6(1700);
 constexpr seconds d7(29);
@@ -538,8 +543,8 @@ constexpr time_point<system_clock, seconds> tp2(16s);
 STATIC_ASSERT(tp2.time_since_epoch().count() == 16);
 constexpr time_point<system_clock, milliseconds> tp3(tp2);
 STATIC_ASSERT(tp3.time_since_epoch().count() == 16000);
-STATIC_ASSERT(time_point<system_clock, duration<int32_t>>::min().time_since_epoch().count() == INT32_MIN);
-STATIC_ASSERT(time_point<system_clock, duration<int32_t>>::max().time_since_epoch().count() == INT32_MAX);
+STATIC_ASSERT(time_point<system_clock, duration<int32_t>>::min().time_since_epoch().count() == int32_min);
+STATIC_ASSERT(time_point<system_clock, duration<int32_t>>::max().time_since_epoch().count() == int32_max);
 
 constexpr time_point<system_clock, seconds> tp4(1000s);
 constexpr time_point<system_clock, seconds> tp5(729s);

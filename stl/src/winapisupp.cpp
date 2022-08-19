@@ -14,11 +14,38 @@
 #pragma warning(disable : 4265) // non-virtual destructor in base class
 #include <wrl/wrappers/corewrappers.h>
 #pragma warning(pop)
-#include <cstdint>
+
+#if !defined(_ONECORE)
+namespace {
+
+    enum wrapKERNEL32Functions {
+#if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
+        eGetCurrentPackageId,
+#endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
+
+#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+        eGetSystemTimePreciseAsFileTime,
+#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+
+        eGetTempPath2W,
+
+        eMaxKernel32Function
+    };
+
+    PVOID __KERNEL32Functions[eMaxKernel32Function]{};
+
+// Use this macro for caching a function pointer from a DLL
+#define STOREFUNCTIONPOINTER(instance, function_name) \
+    __KERNEL32Functions[e##function_name] = reinterpret_cast<PVOID>(GetProcAddress(instance, #function_name))
+
+// Use this macro for retrieving a cached function pointer from a DLL
+#define IFDYNAMICGETCACHEDFUNCTION(name) \
+    if (const auto pf##name = reinterpret_cast<decltype(&name)>(__KERNEL32Functions[e##name]); pf##name)
+
+} // unnamed namespace
+#endif // ^^^ !defined(_ONECORE) ^^^
 
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-// GetCurrentPackageId retrieves the current package id, if the app is deployed via a package.
-using PFNGETCURRENTPACKAGEID = BOOL(WINAPI*)(UINT32*, BYTE*);
 
 #if !defined _CRT_APP
 #if defined _ONECORE
@@ -46,16 +73,14 @@ extern "C" int __crt_IsPackagedAppHelper() {
         L"appmodel.dll" // LNM implementation DLL
     };
 
-    wchar_t const* const* const first_possible_apiset = possible_apisets;
-    wchar_t const* const* const last_possible_apiset  = possible_apisets + _countof(possible_apisets);
-    for (wchar_t const* const* it = first_possible_apiset; it != last_possible_apiset; ++it) {
-        HMODULEHandle const apiset(LoadLibraryExW(*it, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
+    for (auto& dll : possible_apisets) {
+        HMODULEHandle const apiset(LoadLibraryExW(dll, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
         if (!apiset.IsValid()) {
             continue;
         }
 
-        PFNGETCURRENTPACKAGEID const get_current_package_id =
-            reinterpret_cast<PFNGETCURRENTPACKAGEID>(GetProcAddress(apiset.Get(), "GetCurrentPackageId"));
+        auto const get_current_package_id =
+            reinterpret_cast<decltype(&GetCurrentPackageId)>(GetProcAddress(apiset.Get(), "GetCurrentPackageId"));
 
         if (!get_current_package_id) {
             continue;
@@ -79,8 +104,8 @@ extern "C" int __crt_IsPackagedAppHelper() {
     LONG retValue       = APPMODEL_ERROR_NO_PACKAGE;
     UINT32 bufferLength = 0;
 
-    IFDYNAMICGETCACHEDFUNCTION(PFNGETCURRENTPACKAGEID, GetCurrentPackageId, pfn) {
-        retValue = pfn(&bufferLength, nullptr);
+    IFDYNAMICGETCACHEDFUNCTION(GetCurrentPackageId) {
+        retValue = pfGetCurrentPackageId(&bufferLength, nullptr);
     }
 
     if (retValue == ERROR_INSUFFICIENT_BUFFER) {
@@ -110,7 +135,8 @@ extern "C" int __crt_IsPackagedAppHelper() {
 //
 // Exit:
 //        TRUE if Packaged app, FALSE if not.
-extern "C" BOOL __cdecl __crtIsPackagedApp() {
+// TRANSITION, ABI: preserved for binary compatibility
+extern "C" _CRTIMP2 BOOL __cdecl __crtIsPackagedApp() {
 #ifdef _CRT_APP
     return TRUE;
 #else
@@ -193,7 +219,7 @@ extern "C" _CRTIMP2 PTP_TIMER __cdecl __crtCreateThreadpoolTimer(
 
 // TRANSITION, ABI: preserved for binary compatibility
 extern "C" _CRTIMP2 VOID __cdecl __crtSetThreadpoolTimer(_Inout_ PTP_TIMER const pti,
-    _In_opt_ PFILETIME const pftDueTime, _In_ DWORD const msPeriod, _In_opt_ DWORD const msWindowLength) {
+    _In_opt_ PFILETIME const pftDueTime, _In_ DWORD const msPeriod, _In_ DWORD const msWindowLength) {
     SetThreadpoolTimer(pti, pftDueTime, msPeriod, msWindowLength);
 }
 
@@ -337,11 +363,9 @@ extern "C" BOOL __cdecl __crtQueueUserWorkItem(_In_ LPTHREAD_START_ROUTINE, _In_
 
 
 #if _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
-
+// TRANSITION, ABI: preserved for binary compatibility
 extern "C" BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(_Inout_ PSRWLOCK const pLock) {
-    DYNAMICGETCACHEDFUNCTION(PFNTRYACQUIRESRWLOCKEXCLUSIVE, TryAcquireSRWLockExclusive, pfTryAcquireSRWLockExclusive);
-    return pfTryAcquireSRWLockExclusive(pLock);
-    // Don't have fallbacks because the only caller (in primitives.hpp) will check the existence before calling
+    return TryAcquireSRWLockExclusive(pLock);
 }
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN7
@@ -351,8 +375,7 @@ extern "C" BOOLEAN __cdecl __crtTryAcquireSRWLockExclusive(_Inout_ PSRWLOCK cons
 
 extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpSystemTimeAsFileTime) {
     // use GetSystemTimePreciseAsFileTime if it is available (only on Windows 8+)...
-    IFDYNAMICGETCACHEDFUNCTION(
-        PFNGETSYSTEMTIMEPRECISEASFILETIME, GetSystemTimePreciseAsFileTime, pfGetSystemTimePreciseAsFileTime) {
+    IFDYNAMICGETCACHEDFUNCTION(GetSystemTimePreciseAsFileTime) {
         pfGetSystemTimePreciseAsFileTime(lpSystemTimeAsFileTime);
         return;
     }
@@ -363,6 +386,19 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
 
 #endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
 
+extern "C" _Success_(return > 0 && return < BufferLength) DWORD
+    __stdcall __crtGetTempPath2W(_In_ DWORD BufferLength, _Out_writes_to_opt_(BufferLength, return +1) LPWSTR Buffer) {
+#if !defined(_ONECORE)
+    // use GetTempPath2W if it is available (only on Windows 11+)...
+    IFDYNAMICGETCACHEDFUNCTION(GetTempPath2W) {
+        return pfGetTempPath2W(BufferLength, Buffer);
+    }
+#endif // ^^^ !defined(_ONECORE) ^^^
+
+    // ...otherwise use GetTempPathW.
+    return GetTempPathW(BufferLength, Buffer);
+}
+
 
 // Helper to load all necessary Win32 API function pointers
 
@@ -372,64 +408,21 @@ extern "C" void __cdecl __crtGetSystemTimePreciseAsFileTime(_Out_ LPFILETIME lpS
 
 #else // defined _ONECORE
 
-extern "C" PVOID __KERNEL32Functions[eMaxKernel32Function] = {nullptr};
-
 static int __cdecl initialize_pointers() {
     HINSTANCE hKernel32 = GetModuleHandleW(L"kernel32.dll");
     _Analysis_assume_(hKernel32);
 
-    STOREFUNCTIONPOINTER(hKernel32, FlsAlloc);
-    STOREFUNCTIONPOINTER(hKernel32, FlsFree);
-    STOREFUNCTIONPOINTER(hKernel32, FlsGetValue);
-    STOREFUNCTIONPOINTER(hKernel32, FlsSetValue);
-    STOREFUNCTIONPOINTER(hKernel32, InitializeCriticalSectionEx);
-    STOREFUNCTIONPOINTER(hKernel32, InitOnceExecuteOnce);
-    STOREFUNCTIONPOINTER(hKernel32, CreateEventExW);
-    STOREFUNCTIONPOINTER(hKernel32, CreateSemaphoreW);
-    STOREFUNCTIONPOINTER(hKernel32, CreateSemaphoreExW);
-    STOREFUNCTIONPOINTER(hKernel32, CreateThreadpoolTimer);
-    STOREFUNCTIONPOINTER(hKernel32, SetThreadpoolTimer);
-    STOREFUNCTIONPOINTER(hKernel32, WaitForThreadpoolTimerCallbacks);
-    STOREFUNCTIONPOINTER(hKernel32, CloseThreadpoolTimer);
-    STOREFUNCTIONPOINTER(hKernel32, CreateThreadpoolWait);
-    STOREFUNCTIONPOINTER(hKernel32, SetThreadpoolWait);
-    STOREFUNCTIONPOINTER(hKernel32, CloseThreadpoolWait);
-    STOREFUNCTIONPOINTER(hKernel32, FlushProcessWriteBuffers);
-    STOREFUNCTIONPOINTER(hKernel32, FreeLibraryWhenCallbackReturns);
-    STOREFUNCTIONPOINTER(hKernel32, GetCurrentProcessorNumber);
-    STOREFUNCTIONPOINTER(hKernel32, CreateSymbolicLinkW);
-#if defined(_CRT_WINDOWS) || defined(UNDOCKED_WINDOWS_UCRT)
-    STOREFUNCTIONPOINTER(hKernel32, SetDefaultDllDirectories);
-    STOREFUNCTIONPOINTER(hKernel32, EnumSystemLocalesEx);
-    STOREFUNCTIONPOINTER(hKernel32, CompareStringEx);
-    STOREFUNCTIONPOINTER(hKernel32, GetLocaleInfoEx);
-    STOREFUNCTIONPOINTER(hKernel32, GetUserDefaultLocaleName);
-    STOREFUNCTIONPOINTER(hKernel32, IsValidLocaleName);
-    STOREFUNCTIONPOINTER(hKernel32, LCMapStringEx);
-#else
-    STOREFUNCTIONPOINTER(hKernel32, GetCurrentPackageId);
-#endif
-    STOREFUNCTIONPOINTER(hKernel32, GetTickCount64);
-    STOREFUNCTIONPOINTER(hKernel32, GetFileInformationByHandleEx);
-    STOREFUNCTIONPOINTER(hKernel32, SetFileInformationByHandle);
-    STOREFUNCTIONPOINTER(hKernel32, GetSystemTimePreciseAsFileTime);
-    STOREFUNCTIONPOINTER(hKernel32, InitializeConditionVariable);
-    STOREFUNCTIONPOINTER(hKernel32, WakeConditionVariable);
-    STOREFUNCTIONPOINTER(hKernel32, WakeAllConditionVariable);
-    STOREFUNCTIONPOINTER(hKernel32, SleepConditionVariableCS);
-    STOREFUNCTIONPOINTER(hKernel32, InitializeSRWLock);
-    STOREFUNCTIONPOINTER(hKernel32, AcquireSRWLockExclusive);
-    STOREFUNCTIONPOINTER(hKernel32, TryAcquireSRWLockExclusive);
-    STOREFUNCTIONPOINTER(hKernel32, ReleaseSRWLockExclusive);
-    STOREFUNCTIONPOINTER(hKernel32, SleepConditionVariableSRW);
-    STOREFUNCTIONPOINTER(hKernel32, CreateThreadpoolWork);
-    STOREFUNCTIONPOINTER(hKernel32, SubmitThreadpoolWork);
-    STOREFUNCTIONPOINTER(hKernel32, CloseThreadpoolWork);
 #if !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
-    STOREFUNCTIONPOINTER(hKernel32, CompareStringEx);
-    STOREFUNCTIONPOINTER(hKernel32, GetLocaleInfoEx);
-    STOREFUNCTIONPOINTER(hKernel32, LCMapStringEx);
-#endif
+    STOREFUNCTIONPOINTER(hKernel32, GetCurrentPackageId);
+#endif // !defined(_CRT_WINDOWS) && !defined(UNDOCKED_WINDOWS_UCRT)
+
+#if _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+    STOREFUNCTIONPOINTER(hKernel32, GetSystemTimePreciseAsFileTime);
+#endif // _STL_WIN32_WINNT < _WIN32_WINNT_WIN8
+
+    // Note that GetTempPath2W is defined as of Windows 10 Build 20348 (a server release) or Windows 11,
+    // but there is no "_WIN32_WINNT_WIN11" constant, so we will always dynamically load it
+    STOREFUNCTIONPOINTER(hKernel32, GetTempPath2W);
 
     return 0;
 }

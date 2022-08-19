@@ -17,7 +17,7 @@
 // -5- Complexity: At most last - first swaps.
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <forward_list>
 #include <iterator>
 #include <list>

@@ -165,7 +165,7 @@ private:
     _Elem _Fillch; // the fill character
 
 public:
-    __CLR_OR_THIS_CALL basic_ios(const basic_ios&) = delete;
+    __CLR_OR_THIS_CALL basic_ios(const basic_ios&)            = delete;
     basic_ios& __CLR_OR_THIS_CALL operator=(const basic_ios&) = delete;
 };
 

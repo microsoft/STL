@@ -1,15 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <cmath>
-#include <limits.h>
+#include <cstdlib>
+#include <limits>
 #include <stdexcept>
-#include <stdlib.h>
 #include <unordered_set>
 #include <utility>
 
 using namespace std;
+
+constexpr auto size_max = numeric_limits<size_t>::max();
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -120,8 +122,8 @@ void test_LWG_2156() {
     x.emplace(0);
     assert(x.bucket_count() == afterRehashBuckets);
 
-    assert_throws<length_error>([&] { x.rehash(SIZE_MAX); });
-    assert_throws<length_error>([&] { x.rehash(SIZE_MAX / 2); });
+    assert_throws<length_error>([&] { x.rehash(size_max); });
+    assert_throws<length_error>([&] { x.rehash(size_max / 2); });
 
 #ifndef _WIN64
     // make it so rehash can't meet its postcondition, even when not asking for more buckets

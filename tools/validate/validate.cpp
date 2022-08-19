@@ -4,11 +4,11 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <algorithm>
 #include <array>
-#include <assert.h>
+#include <cassert>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
 #include <filesystem>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -46,7 +46,7 @@ public:
         }
     }
 
-    BinaryFile(const BinaryFile&) = delete;
+    BinaryFile(const BinaryFile&)            = delete;
     BinaryFile& operator=(const BinaryFile&) = delete;
 
 private:
@@ -208,6 +208,7 @@ int main() {
         L"__pycache__"sv,
         L"boost-math"sv,
         L"build"sv,
+        L"google-benchmark"sv,
         L"llvm-project"sv,
         L"out"sv,
     };
