@@ -1537,13 +1537,13 @@ namespace ranges {
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
         } else {
-            _IFirst += _Count;
+            _IFirst += static_cast<iter_difference_t<_InIt>>(_Count);
         }
 
         if constexpr (is_pointer_v<_OutIt>) {
             _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count_bytes);
         } else {
-            _OFirst += _Count;
+            _OFirst += static_cast<iter_difference_t<_OutIt>>(_Count);
         }
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
