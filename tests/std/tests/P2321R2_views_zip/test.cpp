@@ -807,7 +807,6 @@ constexpr bool instantiation_test_for_category() {
     using test::Sized, test::CanDifference, test::Common, test::CanCompare;
 
     InstantiatorType<Category, Sized::no, CanDifference::no, Common::no, CanCompare::no>::call();
-    /*
     InstantiatorType<Category, Sized::no, CanDifference::no, Common::no, CanCompare::yes>::call();
     InstantiatorType<Category, Sized::no, CanDifference::no, Common::yes, CanCompare::no>::call();
     InstantiatorType<Category, Sized::no, CanDifference::no, Common::yes, CanCompare::yes>::call();
@@ -823,7 +822,6 @@ constexpr bool instantiation_test_for_category() {
     InstantiatorType<Category, Sized::yes, CanDifference::yes, Common::no, CanCompare::yes>::call();
     InstantiatorType<Category, Sized::yes, CanDifference::yes, Common::yes, CanCompare::no>::call();
     InstantiatorType<Category, Sized::yes, CanDifference::yes, Common::yes, CanCompare::yes>::call();
-    */
 
     return true;
 }
@@ -880,9 +878,9 @@ int main() {
     // all in a constant-evaluated context without hitting the constexpr step limit. So, we split
     // them up by category.
     STATIC_ASSERT(instantiation_test_for_category<std::input_iterator_tag, instantiator>());
-    // STATIC_ASSERT(instantiation_test_for_category<std::bidirectional_iterator_tag, instantiator>());
-    // STATIC_ASSERT(instantiation_test_for_category<std::forward_iterator_tag, instantiator>());
-    // STATIC_ASSERT(instantiation_test_for_category<std::random_access_iterator_tag, instantiator>());
+    STATIC_ASSERT(instantiation_test_for_category<std::bidirectional_iterator_tag, instantiator>());
+    STATIC_ASSERT(instantiation_test_for_category<std::forward_iterator_tag, instantiator>());
+    STATIC_ASSERT(instantiation_test_for_category<std::random_access_iterator_tag, instantiator>());
 
     instantiation_test<instantiator>();
 }
