@@ -49,56 +49,52 @@ public:
     constexpr auto get_element_span() {
         STATIC_ASSERT(ElementIndex < 3);
 
-        if constexpr (ElementIndex == 0)
+        if constexpr (ElementIndex == 0) {
             return std::span<Type1, Type1Size>{type_one_array};
-
-        else if constexpr (ElementIndex == 1)
+        } else if constexpr (ElementIndex == 1) {
             return std::span<Type2, Type2Size>{type_two_array};
-
-        else
+        } else {
             return std::span<Type3, Type3Size>{type_three_array};
+        }
     }
 
     template <std::size_t ElementIndex>
     constexpr auto get_element_span() const {
         STATIC_ASSERT(ElementIndex < 3);
 
-        if constexpr (ElementIndex == 0)
+        if constexpr (ElementIndex == 0) {
             return std::span<std::add_const_t<Type1>, Type1Size>{type_one_array};
-
-        else if constexpr (ElementIndex == 1)
+        } else if constexpr (ElementIndex == 1) {
             return std::span<std::add_const_t<Type2>, Type2Size>{type_two_array};
-
-        else
+        } else {
             return std::span<std::add_const_t<Type3>, Type3Size>{type_three_array};
+        }
     }
 
     template <std::size_t ElementIndex>
     constexpr auto& get_underlying_element_array() {
         STATIC_ASSERT(ElementIndex < 3);
 
-        if constexpr (ElementIndex == 0)
+        if constexpr (ElementIndex == 0) {
             return type_one_array;
-
-        else if constexpr (ElementIndex == 1)
+        } else if constexpr (ElementIndex == 1) {
             return type_two_array;
-
-        else
+        } else {
             return type_three_array;
+        }
     }
 
     template <std::size_t ElementIndex>
     constexpr const auto& get_underlying_element_array() const {
         STATIC_ASSERT(ElementIndex < 3);
 
-        if constexpr (ElementIndex == 0)
+        if constexpr (ElementIndex == 0) {
             return type_one_array;
-
-        else if constexpr (ElementIndex == 1)
+        } else if constexpr (ElementIndex == 1) {
             return type_two_array;
-
-        else
+        } else {
             return type_three_array;
+        }
     }
 
     constexpr reference_tuple_type get_expected_element_tuple(const std::size_t index) {
@@ -240,13 +236,12 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             std::ranges::bidirectional_range<ZipType> == (std::ranges::bidirectional_range<decltype((ranges))> && ...));
         STATIC_ASSERT(
             std::ranges::random_access_range<ZipType> == (std::ranges::random_access_range<decltype((ranges))> && ...));
-        STATIC_ASSERT(
-            std::ranges::common_range<
-                ZipType> == (sizeof...(RangeTypes) == 1 && (std::ranges::common_range<decltype((ranges))> && ...))
-            || (!(std::ranges::bidirectional_range<decltype((ranges))> && ...)
-                && (std::ranges::common_range<decltype((ranges))> && ...))
-            || ((std::ranges::random_access_range<decltype((ranges))> && ...)
-                && (std::ranges::sized_range<decltype((ranges))> && ...)));
+        STATIC_ASSERT(std::ranges::common_range<ZipType> == //
+                          (sizeof...(RangeTypes) == 1 && (std::ranges::common_range<decltype((ranges))> && ...))
+                      || (!(std::ranges::bidirectional_range<decltype((ranges))> && ...)
+                          && (std::ranges::common_range<decltype((ranges))> && ...))
+                      || ((std::ranges::random_access_range<decltype((ranges))> && ...)
+                          && (std::ranges::sized_range<decltype((ranges))> && ...)));
 
         // Validate conditional default-initializability
         STATIC_ASSERT(
@@ -270,8 +265,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         }
 
         // ... with const lvalue arguments
-        STATIC_ASSERT(CanViewZip<const std::remove_reference_t<
-                          RangeTypes>&...> == (!are_views || (std::copy_constructible<AllView<RangeTypes>> && ...)));
+        STATIC_ASSERT(CanViewZip<const std::remove_reference_t<RangeTypes>&...> == //
+                      (!are_views || (std::copy_constructible<AllView<RangeTypes>> && ...)));
         if constexpr (CanViewZip<const std::remove_reference_t<RangeTypes>&...>) {
             using ExpectedZipType      = std::ranges::zip_view<AllView<const std::remove_reference_t<RangeTypes>&>...>;
             constexpr bool is_noexcept = (std::is_nothrow_copy_constructible_v<AllView<RangeTypes>> && ...);
@@ -281,8 +276,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         }
 
         // ... with rvalue argument
-        STATIC_ASSERT(CanViewZip<std::remove_reference_t<
-                          RangeTypes>...> == (are_views || (std::movable<std::remove_reference_t<RangeTypes>> && ...)));
+        STATIC_ASSERT(CanViewZip<std::remove_reference_t<RangeTypes>...> == //
+                      (are_views || (std::movable<std::remove_reference_t<RangeTypes>> && ...)));
         if constexpr (CanViewZip<std::remove_reference_t<RangeTypes>...>) {
             using ExpectedZipType      = std::ranges::zip_view<AllView<std::remove_reference_t<RangeTypes>>...>;
             constexpr bool is_noexcept = (std::is_nothrow_move_constructible_v<AllView<RangeTypes>> && ...);
@@ -292,8 +287,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         }
 
         // ... with const rvalue argument
-        STATIC_ASSERT(CanViewZip<const std::remove_reference_t<
-                          RangeTypes>...> == (are_views && (std::copy_constructible<AllView<RangeTypes>> && ...)));
+        STATIC_ASSERT(CanViewZip<const std::remove_reference_t<RangeTypes>...> == //
+                      (are_views && (std::copy_constructible<AllView<RangeTypes>> && ...)));
         if constexpr (CanViewZip<const std::remove_reference_t<RangeTypes>...>) {
             using ExpectedZipType      = std::ranges::zip_view<AllView<const std::remove_reference_t<RangeTypes>>...>;
             constexpr bool is_noexcept = (std::is_nothrow_copy_constructible_v<AllView<RangeTypes>> && ...);
@@ -372,8 +367,7 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
 
 #pragma warning(push)
 #pragma warning(disable : 4127) // Conditional Expression is Constant
-        if (!(std::ranges::forward_range<AllView<RangeTypes>> && ...)) // intentionally not if constexpr
-        {
+        if (!(std::ranges::forward_range<AllView<RangeTypes>> && ...)) { // intentionally not if constexpr
             return true;
         }
 #pragma warning(pop)
@@ -409,9 +403,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         }
 
         // Validate view_interface::back()
-        STATIC_ASSERT(
-            CanMemberBack<
-                ZipType> == (std::ranges::bidirectional_range<ZipType> && std::ranges::common_range<ZipType>) );
+        STATIC_ASSERT(CanMemberBack<ZipType> == //
+                      (std::ranges::bidirectional_range<ZipType> && std::ranges::common_range<ZipType>) );
         if constexpr (CanMemberBack<ZipType>) {
             assert(do_tuples_reference_same_objects(
                 zipped_range.back(), tuple_element_arr[TestContainerType::smallest_array_size - 1]));
@@ -419,8 +412,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
 
         // clang-format off
         STATIC_ASSERT(
-            CanMemberBack<
-            const ZipType> == (std::ranges::bidirectional_range<const ZipType> &&
+            CanMemberBack<const ZipType> == //
+            (std::ranges::bidirectional_range<const ZipType> &&
                 std::ranges::common_range<const ZipType>));
         // clang-format on
         if constexpr (CanMemberBack<const ZipType>) {
@@ -458,7 +451,7 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             assert(end == std::as_const(zipped_range).end());
         }
 
-        const auto validate_iterators_lambda = []<typename ArrayType, class LocalZipType, class... LocalRangeTypes>(
+        const auto validate_iterators_lambda = []<class ArrayType, class LocalZipType, class... LocalRangeTypes>(
                                                    LocalZipType& relevant_range,
                                                    const ArrayType& relevant_tuple_element_arr) {
             constexpr bool is_const = std::same_as<LocalZipType, std::add_const_t<LocalZipType>>;
@@ -540,12 +533,12 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
                         std::declval<std::ranges::iterator_t<AllView<RangeTypes>>>()))...>>);
             }
 
-            STATIC_ASSERT(noexcept(iter_move(itr))
-                              == (noexcept(std::ranges::iter_move(
-                                      std::declval<const std::ranges::iterator_t<LocalRangeTypes>&>()))
-                                  && ...)
-                          && (std::is_nothrow_move_constructible_v<
-                                  std::ranges::range_rvalue_reference_t<LocalRangeTypes>> && ...));
+            STATIC_ASSERT(
+                noexcept(iter_move(itr)) == //
+                    (noexcept(std::ranges::iter_move(std::declval<const std::ranges::iterator_t<LocalRangeTypes>&>()))
+                        && ...)
+                && (std::is_nothrow_move_constructible_v<std::ranges::range_rvalue_reference_t<LocalRangeTypes>> && //
+                    ...));
 
             assert(do_tuples_reference_same_objects(*itr, iter_move(itr)));
 
@@ -569,11 +562,9 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
 
             // Validate sentinels
             // clang-format off
-            if constexpr (!std::ranges::common_range<LocalZipType>)
-            {
+            if constexpr (!std::ranges::common_range<LocalZipType>) {
                 STATIC_ASSERT(
-                    std::is_default_constructible_v<std::ranges::sentinel_t<
-                    LocalZipType>> ==
+                    std::is_default_constructible_v<std::ranges::sentinel_t<LocalZipType>> == //
                     (std::is_default_constructible_v<std::ranges::sentinel_t<LocalRangeTypes>> && ...));
 
                 const std::same_as<std::ranges::iterator_t<LocalZipType>> auto itr2 = relevant_range.begin();
@@ -654,14 +645,14 @@ constexpr three_element_test_container<int, 7, float, 9, char, 5> three_element_
 // used in another test suite.
 
 template <bool IsMoveOnly>
-struct range_type_solver {
+class range_type_solver {
 protected:
     template <class Category, class Element, test::Sized IsSized, test::Common IsCommon>
     using range_type = test_range<Category, Element, IsSized, IsCommon>;
 };
 
 template <>
-struct range_type_solver<true> {
+class range_type_solver<true> {
 protected:
     template <class Category, class Element, test::Sized IsSized, test::Common IsCommon>
     using range_type = test::range<Category, Element, IsSized,
@@ -673,7 +664,7 @@ protected:
 };
 
 template <bool IsMoveOnly, class Category, test::Sized IsSized, test::Common IsCommon>
-struct instantiator_impl : private range_type_solver<IsMoveOnly> {
+class instantiator_impl : private range_type_solver<IsMoveOnly> {
 private:
     template <class OtherCategory, class Element, test::Sized OtherIsSized, test::Common OtherIsCommon>
     using range_type = typename range_type_solver<IsMoveOnly>::template range_type<OtherCategory, Element, OtherIsSized,
@@ -792,6 +783,7 @@ constexpr bool instantiation_test() {
             && instantiation_test_for_category<std::forward_iterator_tag, InstantiatorType>()
             && instantiation_test_for_category<std::random_access_iterator_tag, InstantiatorType>());
 }
+
 int main() {
     // Validate views
     { // ... copyable, single view
