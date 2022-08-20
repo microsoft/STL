@@ -104,7 +104,6 @@ struct BidiIterUnwrapThrowing : vector<int>::iterator {
 };
 
 int main() {
-#if 0
     do_single_test<int>();
     do_full_test<int*>();
     do_single_test<int[]>();
@@ -118,6 +117,4 @@ int main() {
 #if _HAS_CXX17
     do_full_test<path::iterator, false>();
 #endif
-#endif
-    STATIC_ASSERT(_Has_nothrow_unwrapped<vector<int>::iterator>);
 }

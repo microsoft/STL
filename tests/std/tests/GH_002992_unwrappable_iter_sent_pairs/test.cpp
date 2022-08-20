@@ -40,7 +40,7 @@ void test_algorithms(Rng& rng) {
 
 template <class It, class Se>
 void test_unwrappable_pair() {
-    constexpr static bool is_const_unwrappable = requires(const It& ci) {
+    constexpr bool is_const_unwrappable = requires(const It& ci) {
         ci._Unwrapped();
     };
 
@@ -138,7 +138,7 @@ template <class Element, test::IsWrapped Wrapped>
 using test_sent = test::sentinel<Element, Wrapped>;
 
 void test_both_unwrappable() {
-    constexpr static auto wyes = test::IsWrapped::yes;
+    constexpr auto wyes = test::IsWrapped::yes;
 
     using test::contiguous, test::random, test::bidi, test::input;
 
@@ -157,8 +157,8 @@ void test_both_unwrappable() {
 }
 
 void test_iter_unwrappable() {
-    constexpr static auto wyes = test::IsWrapped::yes;
-    constexpr static auto wno  = test::IsWrapped::no;
+    constexpr auto wyes = test::IsWrapped::yes;
+    constexpr auto wno  = test::IsWrapped::no;
 
     using test::contiguous, test::random, test::bidi, test::input;
 
@@ -177,8 +177,8 @@ void test_iter_unwrappable() {
 }
 
 void test_sent_unwrappable() {
-    constexpr static auto wyes = test::IsWrapped::yes;
-    constexpr static auto wno  = test::IsWrapped::no;
+    constexpr auto wyes = test::IsWrapped::yes;
+    constexpr auto wno  = test::IsWrapped::no;
 
     using test::contiguous, test::random, test::bidi, test::input;
 
@@ -197,7 +197,7 @@ void test_sent_unwrappable() {
 }
 
 void test_no_unwrappable() {
-    constexpr static auto wno = test::IsWrapped::no;
+    constexpr auto wno = test::IsWrapped::no;
 
     using test::contiguous, test::random, test::bidi, test::input;
 
