@@ -348,8 +348,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         // clang-format off
         STATIC_ASSERT(
             CanMemberEmpty<
-                const ZipType> == (std::ranges::sized_range<const ZipType> ||
-                    std::ranges::forward_range<const ZipType>) );
+            const ZipType> == (std::ranges::sized_range<const ZipType> ||
+                std::ranges::forward_range<const ZipType>));
         // clang-format on
         if constexpr (CanMemberEmpty<const ZipType>) {
             assert(std::as_const(zipped_range).empty() == is_empty);
@@ -420,8 +420,8 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         // clang-format off
         STATIC_ASSERT(
             CanMemberBack<
-                const ZipType> == (std::ranges::bidirectional_range<const ZipType> &&
-                    std::ranges::common_range<const ZipType>) );
+            const ZipType> == (std::ranges::bidirectional_range<const ZipType> &&
+                std::ranges::common_range<const ZipType>));
         // clang-format on
         if constexpr (CanMemberBack<const ZipType>) {
             assert(do_tuples_reference_same_objects(std::as_const(zipped_range).back(),
@@ -466,7 +466,7 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
             // clang-format off
             STATIC_ASSERT(
                 std::is_default_constructible_v<std::ranges::iterator_t<
-                    LocalZipType>> ==
+                LocalZipType>> ==
                 (std::is_default_constructible_v<std::ranges::iterator_t<LocalRangeTypes>> && ...));
             // clang-format on
 
@@ -569,14 +569,15 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
 
             // Validate sentinels
             // clang-format off
-            if constexpr (!std::ranges::common_range<LocalZipType>) {
+            if constexpr (!std::ranges::common_range<LocalZipType>)
+            {
                 STATIC_ASSERT(
                     std::is_default_constructible_v<std::ranges::sentinel_t<
-                        LocalZipType>> ==
+                    LocalZipType>> ==
                     (std::is_default_constructible_v<std::ranges::sentinel_t<LocalRangeTypes>> && ...));
 
                 const std::same_as<std::ranges::iterator_t<LocalZipType>> auto itr2 = relevant_range.begin();
-                const std::same_as<std::ranges::sentinel_t<LocalZipType>> auto sen  = relevant_range.end();
+                const std::same_as<std::ranges::sentinel_t<LocalZipType>> auto sen = relevant_range.end();
                 // clang-format on
 
                 if constexpr ((std::sentinel_for<std::ranges::sentinel_t<LocalRangeTypes>,
@@ -626,25 +627,17 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
 // zip_view<RangeTypes...> is sensitive to the following:
 //
 //   - The categories of RangeTypes...
-//   - Whether or not differencing for RangeTypes... is valid; in C++,
-//     (std::sized_sentinel_for<std::ranges::sentinel_t<RangeTypes>, std::ranges::iterator_t<RangeTypes>> && ...)
 //   - The commonality of RangeTypes...
-//   - Whether or not (std::sentinel_for<std::ranges::iterator_t<RangeTypes>, std::ranges::iterator_t<RangeTypes>> &&
-//   ...)
-//     is true
 //   - Whether or not the size() member exists for each of RangeTypes..., as it is used by std::ranges::size()
 //   - The sizeof...(RangeTypes)
 //
-// Other conditions are irrelevant:
-//
-//   - The type of std::ranges::range_reference_t<RangeTypes> for any RangeTypes... is not considered
-//   - The raw types of RangeTypes... need not fulfill the view concept because std::views::all_t<RangeTypes>... is
-//     used instead, which does satisfy the view concept
+// Other conditions are irrelevant.
 
-template <class Category, class Element, test::Sized IsSized, test::CanDifference Diff, test::Common IsCommon,
-    test::CanCompare Eq>
-using test_range = test::range<Category, Element, IsSized, Diff, IsCommon,
-    (std::derived_from<Category, std::forward_iterator_tag> || to_bool(IsCommon) ? test::CanCompare::yes : Eq)>;
+template <class Category, class Element, test::Sized IsSized, test::Common IsCommon>
+using test_range = test::range<Category, Element, IsSized,
+    test::CanDifference{std::derived_from<Category, std::random_access_iterator_tag>}, IsCommon,
+    (to_bool(IsCommon) ? test::CanCompare::yes
+                       : test::CanCompare{std::derived_from<Category, std::forward_iterator_tag>})>;
 
 constexpr std::array default_int_array{0, 1, 2, 3, 4, 5, 6};
 
@@ -663,30 +656,28 @@ constexpr three_element_test_container<int, 7, float, 9, char, 5> three_element_
 template <bool IsMoveOnly>
 struct range_type_solver {
 protected:
-    template <class Category, class Element, test::Sized IsSized, test::CanDifference Diff, test::Common IsCommon,
-        test::CanCompare Eq>
-    using range_type = test_range<Category, Element, IsSized, Diff, IsCommon, Eq>;
+    template <class Category, class Element, test::Sized IsSized, test::Common IsCommon>
+    using range_type = test_range<Category, Element, IsSized, IsCommon>;
 };
 
 template <>
 struct range_type_solver<true> {
 protected:
-    template <class Category, class Element, test::Sized IsSized, test::CanDifference Diff, test::Common IsCommon,
-        test::CanCompare Eq>
-    using range_type = test::range<Category, Element, IsSized, Diff, IsCommon,
-        (std::derived_from<Category, std::forward_iterator_tag> || to_bool(IsCommon) ? test::CanCompare::yes : Eq),
+    template <class Category, class Element, test::Sized IsSized, test::Common IsCommon>
+    using range_type = test::range<Category, Element, IsSized,
+        test::CanDifference{std::derived_from<Category, std::random_access_iterator_tag>}, IsCommon,
+        (to_bool(IsCommon) ? test::CanCompare::yes
+                           : test::CanCompare{std::derived_from<Category, std::forward_iterator_tag>}),
         test::ProxyRef{!std::derived_from<Category, std::contiguous_iterator_tag>}, test::CanView::yes,
         test::Copyability::move_only>;
 };
 
-template <bool IsMoveOnly, class Category, test::Sized IsSized, test::CanDifference Diff, test::Common IsCommon,
-    test::CanCompare Eq>
+template <bool IsMoveOnly, class Category, test::Sized IsSized, test::Common IsCommon>
 struct instantiator_impl : private range_type_solver<IsMoveOnly> {
 private:
-    template <class OtherCategory, class Element, test::Sized OtherIsSized, test::CanDifference OtherDiff,
-        test::Common OtherIsCommon, test::CanCompare OtherEq>
+    template <class OtherCategory, class Element, test::Sized OtherIsSized, test::Common OtherIsCommon>
     using range_type = typename range_type_solver<IsMoveOnly>::template range_type<OtherCategory, Element, OtherIsSized,
-        OtherDiff, OtherIsCommon, OtherEq>;
+        OtherIsCommon>;
 
     template <class... Types>
     struct first_type_solver {};
@@ -696,19 +687,14 @@ private:
         using first_type = FirstType;
     };
 
-    using standard_range_tuple_type = std::tuple<range_type<Category, const int, IsSized, Diff, IsCommon, Eq>,
-        range_type<Category, const float, IsSized, Diff, IsCommon, Eq>,
-        range_type<Category, const char, IsSized, Diff, IsCommon, Eq>>;
+    using standard_range_tuple_type = std::tuple<range_type<Category, const int, IsSized, IsCommon>,
+        range_type<Category, const float, IsSized, IsCommon>, range_type<Category, const char, IsSized, IsCommon>>;
 
-    using differing_category_range_type = range_type<std::input_iterator_tag, const int, IsSized, Diff, IsCommon, Eq>;
-    using differing_size_member_range_type  = range_type<Category, const int,
-        (IsSized == test::Sized::yes ? test::Sized::no : test::Sized::yes), Diff, IsCommon, Eq>;
-    using differing_sentinel_for_range_type = range_type<Category, const int, IsSized,
-        (Diff == test::CanDifference::yes ? test::CanDifference::no : test::CanDifference::yes), IsCommon, Eq>;
-    using differing_is_common_range_type    = range_type<Category, const int, IsSized, Diff,
-        (IsCommon == test::Common::yes ? test::Common::no : test::Common::yes), Eq>;
-    using differing_can_compare_range_tupe  = range_type<Category, const int, IsSized, Diff, IsCommon,
-        (Eq == test::CanCompare::yes ? test::CanCompare::no : test::CanCompare::yes)>;
+    using differing_category_range_type = range_type<std::input_iterator_tag, const int, IsSized, IsCommon>;
+    using differing_size_member_range_type =
+        range_type<Category, const int, (IsSized == test::Sized::yes ? test::Sized::no : test::Sized::yes), IsCommon>;
+    using differing_is_common_range_type = range_type<Category, const int, IsSized,
+        (IsCommon == test::Common::yes ? test::Common::no : test::Common::yes)>;
 
 public:
     static constexpr void call() {
@@ -759,19 +745,7 @@ public:
                 test_one(three_element_container_instance, differing_size_member_range, second_range, third_range);
             }
 
-            // one range having a different std::sized_sentinel_for value,...
-            {
-                auto differing_sentinel_for_range =
-                    differing_sentinel_for_range_type{three_element_container_instance.get_element_span<0>()};
-                auto second_range = std::tuple_element_t<1, standard_range_tuple_type>{
-                    three_element_container_instance.get_element_span<1>()};
-                auto third_range = std::tuple_element_t<2, standard_range_tuple_type>{
-                    three_element_container_instance.get_element_span<2>()};
-
-                test_one(three_element_container_instance, differing_sentinel_for_range, second_range, third_range);
-            }
-
-            // one range having a different commonality,...
+            // and one range having a different commonality.
             {
                 auto differing_is_common_range =
                     differing_is_common_range_type{three_element_container_instance.get_element_span<0>()};
@@ -782,61 +756,36 @@ public:
 
                 test_one(three_element_container_instance, differing_is_common_range, second_range, third_range);
             }
-
-            // and one range having a different iterator/sentinel type equality.
-            {
-                auto differing_can_compare_range =
-                    differing_can_compare_range_tupe{three_element_container_instance.get_element_span<0>()};
-                auto second_range = std::tuple_element_t<1, standard_range_tuple_type>{
-                    three_element_container_instance.get_element_span<1>()};
-                auto third_range = std::tuple_element_t<2, standard_range_tuple_type>{
-                    three_element_container_instance.get_element_span<2>()};
-
-                test_one(three_element_container_instance, differing_can_compare_range, second_range, third_range);
-            }
         };
 
         test_instances_lambda(std::make_index_sequence<3>{});
     }
 };
 
-template <class Category, test::Sized IsSized, test::CanDifference Diff, test::Common IsCommon, test::CanCompare Eq>
-struct instantiator : public instantiator_impl<false, Category, IsSized, Diff, IsCommon, Eq> {};
+template <class Category, test::Sized IsSized, test::Common IsCommon>
+struct instantiator : public instantiator_impl<false, Category, IsSized, IsCommon> {};
 
-template <class Category, test::Sized IsSized, test::CanDifference Diff, test::Common IsCommon, test::CanCompare Eq>
-struct move_only_view_instantiator : public instantiator_impl<true, Category, IsSized, Diff, IsCommon, Eq> {};
+template <class Category, test::Sized IsSized, test::Common IsCommon>
+struct move_only_view_instantiator : public instantiator_impl<true, Category, IsSized, IsCommon> {};
 
-template <class Category,
-    template <class, test::Sized, test::CanDifference, test::Common, test::CanCompare> class InstantiatorType>
+template <class Category, template <class, test::Sized, test::Common> class InstantiatorType>
 constexpr bool instantiation_test_for_category() {
     // Unlike previous tested range/view types, std::views::zip takes an unbounded parameter pack of ranges, so
     // we cannot test every possible combination of sensitive inputs. However, every evaluated condition
     // other than sizeof... is evaluated as (Condition && ...); so, if one condition fails, then the entire
     // constraint should fail to be met.
 
-    using test::Sized, test::CanDifference, test::Common, test::CanCompare;
+    using test::Sized, test::Common;
 
-    InstantiatorType<Category, Sized::no, CanDifference::no, Common::no, CanCompare::no>::call();
-    InstantiatorType<Category, Sized::no, CanDifference::no, Common::no, CanCompare::yes>::call();
-    InstantiatorType<Category, Sized::no, CanDifference::no, Common::yes, CanCompare::no>::call();
-    InstantiatorType<Category, Sized::no, CanDifference::no, Common::yes, CanCompare::yes>::call();
-    InstantiatorType<Category, Sized::no, CanDifference::yes, Common::no, CanCompare::no>::call();
-    InstantiatorType<Category, Sized::no, CanDifference::yes, Common::no, CanCompare::yes>::call();
-    InstantiatorType<Category, Sized::no, CanDifference::yes, Common::yes, CanCompare::no>::call();
-    InstantiatorType<Category, Sized::no, CanDifference::yes, Common::yes, CanCompare::yes>::call();
-    InstantiatorType<Category, Sized::yes, CanDifference::no, Common::no, CanCompare::no>::call();
-    InstantiatorType<Category, Sized::yes, CanDifference::no, Common::no, CanCompare::yes>::call();
-    InstantiatorType<Category, Sized::yes, CanDifference::no, Common::yes, CanCompare::no>::call();
-    InstantiatorType<Category, Sized::yes, CanDifference::no, Common::yes, CanCompare::yes>::call();
-    InstantiatorType<Category, Sized::yes, CanDifference::yes, Common::no, CanCompare::no>::call();
-    InstantiatorType<Category, Sized::yes, CanDifference::yes, Common::no, CanCompare::yes>::call();
-    InstantiatorType<Category, Sized::yes, CanDifference::yes, Common::yes, CanCompare::no>::call();
-    InstantiatorType<Category, Sized::yes, CanDifference::yes, Common::yes, CanCompare::yes>::call();
+    InstantiatorType<Category, Sized::no, Common::no>::call();
+    InstantiatorType<Category, Sized::no, Common::yes>::call();
+    InstantiatorType<Category, Sized::yes, Common::no>::call();
+    InstantiatorType<Category, Sized::yes, Common::yes>::call();
 
     return true;
 }
 
-template <template <class, test::Sized, test::CanDifference, test::Common, test::CanCompare> class InstantiatorType>
+template <template <class, test::Sized, test::Common> class InstantiatorType>
 constexpr bool instantiation_test() {
     return (instantiation_test_for_category<std::input_iterator_tag, InstantiatorType>()
             && instantiation_test_for_category<std::bidirectional_iterator_tag, InstantiatorType>()
@@ -884,13 +833,6 @@ int main() {
     // Empty RangeTypes... parameter pack
     STATIC_ASSERT(std::is_same_v<decltype(std::views::zip()), std::decay_t<decltype(std::views::empty<std::tuple<>>)>>);
 
-    // The number of generated template instances is so large here that we cannot evaluate them
-    // all in a constant-evaluated context without hitting the constexpr step limit. So, we split
-    // them up by category.
-    STATIC_ASSERT(instantiation_test_for_category<std::input_iterator_tag, instantiator>());
-    STATIC_ASSERT(instantiation_test_for_category<std::bidirectional_iterator_tag, instantiator>());
-    STATIC_ASSERT(instantiation_test_for_category<std::forward_iterator_tag, instantiator>());
-    STATIC_ASSERT(instantiation_test_for_category<std::random_access_iterator_tag, instantiator>());
-
+    STATIC_ASSERT(instantiation_test<instantiator>());
     instantiation_test<instantiator>();
 }
