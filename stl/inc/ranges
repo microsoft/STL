@@ -6914,7 +6914,7 @@ namespace ranges {
         requires(view<_ViewTypes>&&...)
     &&(sizeof...(_ViewTypes) > 0) class zip_view : public view_interface<zip_view<_ViewTypes...>> {
     private:
-        tuple<_ViewTypes...> _Ranges;
+        /* [[no_unique_address]] */ tuple<_ViewTypes...> _Ranges;
 
     public:
         template <bool>
@@ -7114,7 +7114,7 @@ namespace ranges {
 
     private:
         using _Iterator_tuple_type = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
-        _Iterator_tuple_type _Current;
+        /* [[no_unique_address]] */ _Iterator_tuple_type _Current;
 
         friend zip_view<_ViewTypes...>;
 
@@ -7360,7 +7360,7 @@ namespace ranges {
     class zip_view<_ViewTypes...>::_Sentinel {
     private:
         using _Sentinel_tuple_type = tuple<sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
-        _Sentinel_tuple_type _End;
+        /* [[no_unique_address]] */ _Sentinel_tuple_type _End;
 
         friend zip_view<_ViewTypes...>;
 
