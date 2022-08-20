@@ -371,7 +371,7 @@ constexpr bool test_one(TestContainerType& test_container, RangeTypes&&... range
         }));
 
 #pragma warning(push)
-#pragma warning(disable : 4127)
+#pragma warning(disable : 4127) // Conditional Expression is Constant
         if (!(std::ranges::forward_range<AllView<RangeTypes>> && ...)) // intentionally not if constexpr
         {
             return true;
