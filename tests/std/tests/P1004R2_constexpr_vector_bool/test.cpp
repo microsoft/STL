@@ -43,7 +43,7 @@ struct demoterator { // demote pointer to input iterator
 };
 
 // Just long enough to force a reallocation when inserting
-static constexpr int numbers[33] = { //
+static constexpr int num_arr[33] = { //
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, //
@@ -502,10 +502,10 @@ constexpr bool test_interface() {
 
             vector<bool> input_inserted;
             const auto result =
-                input_inserted.insert(input_inserted.end(), demoterator{begin(numbers)}, demoterator{end(numbers)});
+                input_inserted.insert(input_inserted.end(), demoterator{begin(num_arr)}, demoterator{end(num_arr)});
             static_assert(is_same_v<decltype(result), const vector<bool>::iterator>);
             assert(result == input_inserted.begin());
-            assert(input_inserted.size() == size(numbers));
+            assert(input_inserted.size() == size(num_arr));
         }
 #endif // __EDG__
     }
