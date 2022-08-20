@@ -542,6 +542,7 @@ tests\P2273R3_constexpr_unique_ptr
 tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
+tests\P2321R2_views_zip
 tests\P2401R0_conditional_noexcept_for_exchange
 tests\P2408R5_ranges_iterators_to_classic_algorithms
 tests\P2415R2_owning_view
