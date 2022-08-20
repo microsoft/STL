@@ -709,7 +709,6 @@ public:
                 single_element_container_instance.get_element_span()};
             test_one(single_element_container_instance, single_range);
 
-            /*
             // Test three ranges with std::views::zip with...
 
             // all of their traits being the same,...
@@ -783,7 +782,6 @@ public:
 
                 test_one(three_element_container_instance, differing_can_compare_range, second_range, third_range);
             }
-            */
         };
 
         test_instances_lambda(std::make_index_sequence<3>{});
