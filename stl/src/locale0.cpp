@@ -5,6 +5,7 @@
 
 #include <crtdbg.h>
 #include <internal_shared.h>
+#include <synchapi.h>
 #include <xfacet>
 
 // This must be as small as possible, because its contents are
@@ -121,7 +122,8 @@ _MRTIMP2_PURE void __CLRCALL_PURE_OR_CDECL std::locale::_Setgloballocale(void* p
 
 __PURE_APPDOMAIN_GLOBAL static locale classic_locale(_Noinit); // "C" locale object, uninitialized
 
-__PURE_APPDOMAIN_GLOBAL locale::_Locimp* locale::_Locimp::_Clocptr = nullptr; // pointer to classic_locale
+__PURE_APPDOMAIN_GLOBAL alignas(
+    sizeof(locale::_Locimp*)) locale::_Locimp* locale::_Locimp::_Clocptr = nullptr; // pointer to classic_locale
 
 __PURE_APPDOMAIN_GLOBAL int locale::id::_Id_cnt = 0; // unique id counter for facets
 
@@ -136,7 +138,12 @@ __PURE_APPDOMAIN_GLOBAL locale::id ctype<unsigned short>::id(0);
 __PURE_APPDOMAIN_GLOBAL locale::id codecvt<unsigned short, char, mbstate_t>::id(0);
 
 _MRTIMP2_PURE const locale& __CLRCALL_PURE_OR_CDECL locale::classic() { // get reference to "C" locale
-    _Init();
+    const auto ptr = reinterpret_cast<locale::_Locimp*>(InterlockedCompareExchangePointerAcquire(
+        reinterpret_cast<volatile PVOID*>(&locale::_Locimp::_Clocptr), nullptr, nullptr));
+    if (ptr == nullptr) {
+        _Init();
+    }
+
     return classic_locale;
 }
 
@@ -157,9 +164,10 @@ _MRTIMP2_PURE locale::_Locimp* __CLRCALL_PURE_OR_CDECL locale::_Init(bool _Do_in
         ptr->_Catmask = all; // set current locale to "C"
         ptr->_Name    = "C";
 
-        _Locimp::_Clocptr = ptr; // set classic to match
-        _Locimp::_Clocptr->_Incref();
-        ::new (&classic_locale) locale(_Locimp::_Clocptr);
+        // set classic to match
+        ptr->_Incref();
+        ::new (&classic_locale) locale(ptr);
+        InterlockedExchangePointer(reinterpret_cast<volatile PVOID*>(&_Locimp::_Clocptr), ptr);
     }
 
     if (_Do_incref) {
