@@ -319,7 +319,7 @@ Wait-Shutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 ####################################################################################################
 Write-Progress `
   -Activity $ProgressActivity `
-  -Status 'Converting VM to Image' `
+  -Status 'Stopping and generalizing VM' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 Stop-AzVM `
@@ -334,25 +334,11 @@ Set-AzVM `
 
 $VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
-$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID -HyperVGeneration 'V2'
-$Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
 
 ####################################################################################################
 Write-Progress `
   -Activity $ProgressActivity `
-  -Status 'Deleting unused VM and disk' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
-
-Remove-AzVM -Id $VM.ID -Force | Out-Null
-Remove-AzDisk `
-  -ResourceGroupName $ResourceGroupName `
-  -DiskName $PrototypeOSDiskName `
-  -Force | Out-Null
-
-####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'FIXME' `
+  -Status 'Creating image version' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 $GalleryRGName = 'stlGalleryRG'
@@ -388,12 +374,30 @@ if ($ImageDefinitionName -notin (Get-AzGalleryImageDefinition `
 
 
 
+# FIXME, DYNAMICALLY GENERATE VERSION NAME
+$ImageVersionName = '1.0.0'
+New-AzGalleryImageVersion `
+  -Location $Location `
+  -ResourceGroupName $GalleryRGName `
+  -GalleryName $GalleryName `
+  -GalleryImageDefinitionName $ImageDefinitionName `
+  -Name $ImageVersionName `
+  -SourceImageId $VM.ID.ToString() `
+  -Tag @{'PrototypeResourceGroup'=$ResourceGroupName} | Out-Null
 
 
 
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Deleting unused VM and disk' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-
-
+Remove-AzVM -Id $VM.ID -Force | Out-Null
+Remove-AzDisk `
+  -ResourceGroupName $ResourceGroupName `
+  -DiskName $PrototypeOSDiskName `
+  -Force | Out-Null
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
