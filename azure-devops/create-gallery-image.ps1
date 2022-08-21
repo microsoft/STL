@@ -3,16 +3,10 @@
 
 <#
 .SYNOPSIS
-Creates a Windows virtual machine scale set, set up for the STL's CI.
+Creates an Azure Compute Gallery image, set up for the STL's CI.
 
 .DESCRIPTION
-create-vmss.ps1 creates an Azure Windows VM scale set, set up for the STL's CI
-system. See https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview
-for more information.
-
-This script assumes you have installed Azure tools into PowerShell by following the instructions
-at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps
-or are running from Azure Cloud Shell.
+See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
 #>
 
 $ErrorActionPreference = 'Stop'
@@ -29,8 +23,8 @@ $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
-$ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 14
+$ProgressActivity = 'Creating Gallery Image'
+$TotalProgress = 14 # FIXME, RECALCULATE THIS
 $CurrentProgress = 1
 
 <#
@@ -144,7 +138,6 @@ Write-Progress `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
 Set-AzContext -SubscriptionName CPP_STL_GitHub | Out-Null
-az account set --subscription CPP_STL_GitHub
 
 ####################################################################################################
 Write-Progress `
@@ -359,84 +352,48 @@ Remove-AzDisk `
 ####################################################################################################
 Write-Progress `
   -Activity $ProgressActivity `
-  -Status 'Creating scale set' `
+  -Status 'FIXME' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$VmssIpConfigName = $ResourceGroupName + '-VmssIpConfig'
-$VmssIpConfig = New-AzVmssIpConfig -SubnetId $Nic.IpConfigurations[0].Subnet.Id -Primary -Name $VmssIpConfigName
-$VmssName = $ResourceGroupName + '-Vmss'
-$Vmss = New-AzVmssConfig `
-  -Location $Location `
-  -SkuCapacity 0 `
-  -SkuName $VMSize `
-  -SkuTier 'Standard' `
-  -Overprovision $false `
-  -UpgradePolicyMode Manual `
-  -EvictionPolicy Delete `
-  -Priority Spot `
-  -MaxPrice -1
+$GalleryRGName = 'stlGalleryRG'
+if ($GalleryRGName -notin (Get-AzResourceGroup).ResourceGroupName) {
+  New-AzResourceGroup `
+    -Location $Location `
+    -Name $GalleryRGName | Out-Null
+}
 
-$Vmss = Add-AzVmssNetworkInterfaceConfiguration `
-  -VirtualMachineScaleSet $Vmss `
-  -Primary $true `
-  -IpConfiguration $VmssIpConfig `
-  -NetworkSecurityGroupId $NetworkSecurityGroup.Id `
-  -Name $NicName
+$GalleryName = 'stlGallery'
+if ($GalleryName -notin (Get-AzGallery -ResourceGroupName $GalleryRGName).Name) {
+  New-AzGallery `
+    -Location $Location `
+    -ResourceGroupName $GalleryRGName `
+    -Name $GalleryName | Out-Null
+}
 
-$Vmss = Set-AzVmssOsProfile `
-  -VirtualMachineScaleSet $Vmss `
-  -ComputerNamePrefix $LiveVMPrefix `
-  -AdminUsername 'AdminUser' `
-  -AdminPassword $AdminPW `
-  -WindowsConfigurationProvisionVMAgent $true `
-  -WindowsConfigurationEnableAutomaticUpdate $true
+$ImageDefinitionName = 'stlImageDefinition'
+if ($ImageDefinitionName -notin (Get-AzGalleryImageDefinition `
+  -ResourceGroupName $GalleryRGName -GalleryName $GalleryName).Name) {
+  New-AzGalleryImageDefinition `
+    -Location $Location `
+    -ResourceGroupName $GalleryRGName `
+    -GalleryName $GalleryName `
+    -Name $ImageDefinitionName `
+    -OsState 'Generalized' `
+    -OsType 'Windows' `
+    -Publisher $ImagePublisher `
+    -Offer $ImageOffer `
+    -Sku $ImageSku `
+    -HyperVGeneration 'V2' | Out-Null
+}
 
-$Vmss = Set-AzVmssStorageProfile `
-  -VirtualMachineScaleSet $Vmss `
-  -OsDiskCreateOption 'FromImage' `
-  -OsDiskCaching ReadWrite `
-  -ImageReferenceId $Image.Id
 
-$Vmss = New-AzVmss `
-  -ResourceGroupName $ResourceGroupName `
-  -Name $VmssName `
-  -VirtualMachineScaleSet $Vmss
 
-####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Enabling VMSS diagnostic logs' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$StorageAccountName = 'stlvmssdiaglogssa'
 
-$ExpirationDate = (Get-Date -AsUTC).AddYears(1).ToString('yyyy-MM-ddTHH:mmZ')
 
-$StorageAccountSASToken = $(az storage account generate-sas `
-  --account-name $StorageAccountName `
-  --expiry $ExpirationDate `
-  --permissions acuw `
-  --resource-types co `
-  --services bt `
-  --https-only `
-  --output tsv `
-  2> $null)
 
-$DiagnosticsDefaultConfig = $(az vmss diagnostics get-default-config --is-windows-os 2> $null). `
-  Replace('__DIAGNOSTIC_STORAGE_ACCOUNT__', $StorageAccountName). `
-  Replace('__VM_OR_VMSS_RESOURCE_ID__', $Vmss.Id)
 
-Out-File -FilePath "$PSScriptRoot\vmss-config.json" -InputObject $DiagnosticsDefaultConfig
 
-$DiagnosticsProtectedSettings = "{'storageAccountName': '$StorageAccountName', "
-$DiagnosticsProtectedSettings += "'storageAccountSasToken': '?$StorageAccountSASToken'}"
-
-az vmss diagnostics set `
-  --resource-group $ResourceGroupName `
-  --vmss-name $VmssName `
-  --settings "$PSScriptRoot\vmss-config.json" `
-  --protected-settings "$DiagnosticsProtectedSettings" `
-  --output none
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
