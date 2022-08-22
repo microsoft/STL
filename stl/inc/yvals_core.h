@@ -280,6 +280,7 @@
 // P2408R5 Ranges Iterators As Inputs To Non-Ranges Algorithms
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
+// P2419R2 Clarify Handling Of Encodings In Localized Formatting Of chrono Types
 // P2432R1 Fix istream_view
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 
