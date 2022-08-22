@@ -372,20 +372,28 @@ if ($ImageDefinitionName -notin (Get-AzGalleryImageDefinition `
     -HyperVGeneration 'V2' | Out-Null
 }
 
+$ExistingImageVersionNames = (Get-AzGalleryImageVersion `
+  -ResourceGroupName $GalleryRGName `
+  -GalleryName $GalleryName `
+  -GalleryImageDefinitionName $ImageDefinitionName).Name
 
+$ImageVersionPrefix = (Get-Date -Format 'yyyyMMdd.HHmm')
+$ImageVersionSuffix = 0
+$ImageVersionName = "$ImageVersionPrefix.$ImageVersionSuffix"
 
-# FIXME, DYNAMICALLY GENERATE VERSION NAME
-$ImageVersionName = '1.0.0'
+while ($ImageVersionName -in $ExistingImageVersionNames) {
+  $ImageVersionSuffix++
+  $ImageVersionName = "$ImageVersionPrefix.$ImageVersionSuffix"
+}
+
 New-AzGalleryImageVersion `
   -Location $Location `
   -ResourceGroupName $GalleryRGName `
   -GalleryName $GalleryName `
   -GalleryImageDefinitionName $ImageDefinitionName `
   -Name $ImageVersionName `
-  -SourceImageId $VM.ID.ToString() `
+  -SourceImageId $VM.ID `
   -Tag @{'PrototypeResourceGroup'=$ResourceGroupName} | Out-Null
-
-
 
 ####################################################################################################
 Write-Progress `
@@ -403,4 +411,5 @@ Remove-AzDisk `
 Write-Progress -Activity $ProgressActivity -Completed
 Write-Host "Location: $Location"
 Write-Host "Resource group name: $ResourceGroupName"
+Write-Host "Image version name: $ImageVersionName"
 Write-Host 'Finished!'
