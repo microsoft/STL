@@ -1867,8 +1867,10 @@ namespace ranges {
     using sentinel_t = decltype(_RANGES end(_STD declval<_Rng&>()));
 
     template <class _Sent, class _Iter>
-    concept _Unwrappable_sentinel_for = requires(
-        _Iter&& _It, remove_cvref_t<_Iter>& _MutIt, const remove_reference_t<_Sent>& _Se) {
+    concept _Unwrappable_sentinel_for = //
+        same_as<typename remove_cvref_t<_Sent>::_Prevent_inheriting_unwrap, remove_cvref_t<_Sent>> && //
+        same_as<typename remove_cvref_t<_Iter>::_Prevent_inheriting_unwrap, remove_cvref_t<_Iter>> && //
+        requires(_Iter&& _It, remove_cvref_t<_Iter>& _MutIt, const remove_reference_t<_Sent>& _Se) {
         _STD forward<_Iter>(_It)._Unwrapped();
         _MutIt._Seek_to(_STD forward<_Iter>(_It)._Unwrapped());
         { _Se._Unwrapped() } -> sentinel_for<decltype(_STD forward<_Iter>(_It)._Unwrapped())>;
@@ -1876,10 +1878,10 @@ namespace ranges {
 
     // clang-format off
     template <class _Sent, class _Iter>
-        requires sentinel_for<remove_cvref_t<_Sent>, remove_cvref_t<_Iter>>
     constexpr decltype(auto) _Unwrap_iter(_Iter&& _It) noexcept(
         !_Unwrappable_sentinel_for<_Sent, _Iter> || _Has_nothrow_unwrapped<_Iter>)
     {
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<remove_cvref_t<_Sent>, remove_cvref_t<_Iter>>);
         if constexpr (is_pointer_v<remove_cvref_t<_Iter>>) {
             return _It + 0;
         } else if constexpr (_Unwrappable_sentinel_for<_Sent, _Iter>) {
@@ -1888,11 +1890,12 @@ namespace ranges {
             return static_cast<_Iter&&>(_It);
         }
     }
+
     template <class _Iter, class _Sent>
-        requires sentinel_for<remove_cvref_t<_Sent>, remove_cvref_t<_Iter>>
     constexpr decltype(auto) _Unwrap_sent(_Sent&& _Se) noexcept(
         !_Unwrappable_sentinel_for<_Sent, _Iter> || _Has_nothrow_unwrapped<_Sent>)
     {
+        _STL_INTERNAL_STATIC_ASSERT(sentinel_for<remove_cvref_t<_Sent>, remove_cvref_t<_Iter>>);
         if constexpr (is_pointer_v<remove_cvref_t<_Sent>>) {
             return _Se + 0;
         } else if constexpr (_Unwrappable_sentinel_for<_Sent, _Iter>) {
@@ -1903,18 +1906,18 @@ namespace ranges {
     }
 
     template <range _Rng, class _Iter>
-        requires same_as<remove_cvref_t<_Iter>, iterator_t<_Rng>>
     constexpr decltype(auto) _Unwrap_range_iter(_Iter&& _It)
         noexcept(noexcept(_Unwrap_iter<sentinel_t<_Rng>>(static_cast<_Iter&&>(_It))))
     {
+        _STL_INTERNAL_STATIC_ASSERT(same_as<remove_cvref_t<_Iter>, iterator_t<_Rng>>);
         return _Unwrap_iter<sentinel_t<_Rng>>(static_cast<_Iter&&>(_It));
     }
 
     template <range _Rng, class _Sent>
-        requires same_as<remove_cvref_t<_Sent>, sentinel_t<_Rng>>
     constexpr decltype(auto) _Unwrap_range_sent(_Sent&& _Se)
         noexcept(noexcept(_Unwrap_sent<iterator_t<_Rng>>(static_cast<_Sent&&>(_Se))))
     {
+        _STL_INTERNAL_STATIC_ASSERT(same_as<remove_cvref_t<_Sent>, sentinel_t<_Rng>>);
         return _Unwrap_sent<iterator_t<_Rng>>(static_cast<_Sent&&>(_Se));
     }
 
@@ -1965,6 +1968,7 @@ namespace ranges {
             template <_Should_range_access _Ty>
                 requires (_Choice<_Ty&>._Strategy != _St::_None)
             _NODISCARD constexpr auto operator()(_Ty&& _Val) const noexcept(_Choice<_Ty&>._No_throw) {
+                // clang-format on
                 constexpr _St _Strat = _Choice<_Ty&>._Strategy;
 
                 if constexpr (_Strat == _St::_Member) {
@@ -1975,7 +1979,6 @@ namespace ranges {
                     static_assert(_Always_false<_Ty>, "Should be unreachable");
                 }
             }
-            // clang-format on
         };
     } // namespace _Unchecked_begin
 
@@ -4011,7 +4014,7 @@ namespace ranges {
             if constexpr (same_as<decltype(_Uend(_Range)), _Unwrapped_iterator_t<_Rng>>) {
                 return _Uend(_Range);
             } else {
-                return _Get_unwrapped(_RANGES end(_Range));
+                return _Unwrap_range_sent<_Rng>(_RANGES end(_Range));
             }
         } else if constexpr (sized_range<_Rng>) {
             return _RANGES next(_Ubegin(_Range), _RANGES distance(_Range));
@@ -4028,7 +4031,7 @@ namespace ranges {
             if constexpr (same_as<decltype(_Uend(_Range)), _Unwrapped_iterator_t<_Rng>>) {
                 return _Uend(_Range);
             } else {
-                return _Unwrap_sent<_Rng>(_RANGES end(_Range));
+                return _Unwrap_range_sent<_Rng>(_RANGES end(_Range));
             }
         } else if constexpr (sized_range<_Rng>) {
             const auto _Dist = _RANGES distance(_Range);
@@ -4785,9 +4788,8 @@ namespace ranges {
                     _Count1 = static_cast<decltype(_Count1)>(_Count2);
                 }
 
-                auto _Result =
-                    _RANGES _Mismatch_n(_Unwrap_iter<_Se1>(_STD move(_First1)), _Unwrap_iter<_Se2>(_STD move(_First2)),
-                        _Count1, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
+                auto _Result = _RANGES _Mismatch_n(_Get_unwrapped(_STD move(_First1)),
+                    _Get_unwrapped(_STD move(_First2)), _Count1, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 _Seek_wrapped(_First1, _STD move(_Result.in1));
                 _Seek_wrapped(_First2, _STD move(_Result.in2));
                 return {_STD move(_First1), _STD move(_First2)};
@@ -4817,9 +4819,8 @@ namespace ranges {
 
                 auto _First1 = _RANGES begin(_Range1);
                 auto _First2 = _RANGES begin(_Range2);
-                auto _Result = _RANGES _Mismatch_n(_Unwrap_range_iter<_Rng1>(_STD move(_First1)),
-                    _Unwrap_range_iter<_Rng2>(_STD move(_First2)), _Count1, _Pass_fn(_Pred), _Pass_fn(_Proj1),
-                    _Pass_fn(_Proj2));
+                auto _Result = _RANGES _Mismatch_n(_Get_unwrapped(_STD move(_First1)),
+                    _Get_unwrapped(_STD move(_First2)), _Count1, _Pass_fn(_Pred), _Pass_fn(_Proj1), _Pass_fn(_Proj2));
                 _Seek_wrapped(_First1, _STD move(_Result.in1));
                 _Seek_wrapped(_First2, _STD move(_Result.in2));
                 return {_STD move(_First1), _STD move(_First2)};
