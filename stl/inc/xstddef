@@ -42,10 +42,8 @@ struct binary_function { // base class for binary functions
 #endif // _HAS_AUTO_PTR_ETC
 
 #pragma warning(push)
-#pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data (/Wall)
-#pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message.)
-#pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch (/Wall)
 #pragma warning(disable : 5215) // '%s' a function parameter with a volatile qualified type is deprecated in C++20
+#pragma warning(disable : 5216) // '%s' a volatile qualified return type is deprecated in C++20
 
 #ifdef __clang__
 #pragma clang diagnostic push
