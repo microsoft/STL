@@ -272,6 +272,20 @@ STATIC_ASSERT(__cpp_lib_barrier == 201907L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_bind_back
+#error __cpp_lib_bind_back is not defined
+#elif __cpp_lib_bind_back != 202202L
+#error __cpp_lib_bind_back is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_bind_back == 202202L);
+#endif
+#else
+#ifdef __cpp_lib_bind_back
+#error __cpp_lib_bind_back is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_bind_front
 #error __cpp_lib_bind_front is not defined
@@ -1440,7 +1454,15 @@ STATIC_ASSERT(__cpp_lib_polymorphic_allocator == 201902L);
 STATIC_ASSERT(__cpp_lib_quoted_string_io == 201304L);
 #endif
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifndef __cpp_lib_ranges
+#error __cpp_lib_ranges is not defined
+#elif __cpp_lib_ranges != 202202L
+#error __cpp_lib_ranges is not 202202L
+#else
+STATIC_ASSERT(__cpp_lib_ranges == 202202L);
+#endif
+#elif _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 #ifndef __cpp_lib_ranges
 #error __cpp_lib_ranges is not defined
 #elif __cpp_lib_ranges != 202110L
