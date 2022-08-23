@@ -106,7 +106,7 @@ namespace test {
     }
 
     template <WrappedState W1, WrappedState W2>
-    concept wrapped_state_compatible = (W1 == W2) || (W1 == WrappedState::wrapped && W2 == WrappedState::ignorant)
+    concept compatible_wrapped_state = (W1 == W2) || (W1 == WrappedState::wrapped && W2 == WrappedState::ignorant)
                                     || (W1 == WrappedState::ignorant && W2 == WrappedState::wrapped);
 
     template <class T>
@@ -413,52 +413,27 @@ namespace test {
             return ReferenceType{*ptr_};
         }
 
-        // TRANSITION, VSO-1595818 - these should be templated
-        [[nodiscard]] constexpr boolish operator==(sentinel<Element, Wrapped> const& s) const noexcept {
-            return boolish{ptr_ == s.peek()};
-        }
-        [[nodiscard]] constexpr boolish operator==(sentinel<Element, WrappedState::ignorant> const& s) const noexcept
-            requires(Wrapped == WrappedState::wrapped) {
-            return boolish{ptr_ == s.peek()};
-        }
-        [[nodiscard]] constexpr boolish operator==(sentinel<Element, WrappedState::wrapped> const& s) const noexcept
-            requires(Wrapped == WrappedState::ignorant) {
-            return boolish{ptr_ == s.peek()};
-        }
+        template <WrappedState OtherWrapped>
         [[nodiscard]] friend constexpr boolish operator==(
-            sentinel<Element, Wrapped> const& s, iterator const& i) noexcept {
-            return i.operator==(s);
+            const iterator& i, sentinel<Element, OtherWrapped> const& s) noexcept requires
+            compatible_wrapped_state<Wrapped, OtherWrapped> {
+            return boolish{i.peek() == s.peek()};
         }
-        [[nodiscard]] friend constexpr boolish operator==(sentinel<Element, WrappedState::ignorant> const& s,
-            iterator const& i) noexcept requires(Wrapped == WrappedState::wrapped) {
-            return i.operator==(s);
-        }
-        [[nodiscard]] friend constexpr boolish operator==(sentinel<Element, WrappedState::wrapped> const& s,
-            iterator const& i) noexcept requires(Wrapped == WrappedState::ignorant) {
-            return i.operator==(s);
+        template <WrappedState OtherWrapped>
+        [[nodiscard]] friend constexpr boolish operator==(const sentinel<Element, OtherWrapped>& s,
+            const iterator& i) noexcept requires compatible_wrapped_state<Wrapped, OtherWrapped> {
+            return i == s;
         }
 
-        [[nodiscard]] constexpr boolish operator!=(sentinel<Element, Wrapped> const& s) const noexcept {
-            return !(*this == s);
-        }
-        [[nodiscard]] constexpr boolish operator!=(sentinel<Element, WrappedState::ignorant> const& s) const noexcept
-            requires(Wrapped == WrappedState::wrapped) {
-            return !(*this == s);
-        }
-        [[nodiscard]] constexpr boolish operator!=(sentinel<Element, WrappedState::wrapped> const& s) const noexcept
-            requires(Wrapped == WrappedState::ignorant) {
-            return !(*this == s);
-        }
+        template <WrappedState OtherWrapped>
         [[nodiscard]] friend constexpr boolish operator!=(
-            sentinel<Element, Wrapped> const& s, iterator const& i) noexcept {
+            iterator const& i, sentinel<Element, OtherWrapped> const& s) noexcept requires
+            compatible_wrapped_state<Wrapped, OtherWrapped> {
             return !(i == s);
         }
-        [[nodiscard]] friend constexpr boolish operator!=(sentinel<Element, WrappedState::ignorant> const& s,
-            iterator const& i) noexcept requires(Wrapped == WrappedState::wrapped) {
-            return !(i == s);
-        }
-        [[nodiscard]] friend constexpr boolish operator!=(sentinel<Element, WrappedState::wrapped> const& s,
-            iterator const& i) noexcept requires(Wrapped == WrappedState::ignorant) {
+        template <WrappedState OtherWrapped>
+        [[nodiscard]] friend constexpr boolish operator!=(sentinel<Element, OtherWrapped> const& s,
+            iterator const& i) noexcept requires compatible_wrapped_state<Wrapped, OtherWrapped> {
             return !(i == s);
         }
 
@@ -592,20 +567,26 @@ namespace test {
         }
 
         // sized_sentinel_for operations:
+        // clang-format off
         [[nodiscard]] constexpr ptrdiff_t operator-(iterator const& that) const noexcept
-            requires(to_bool(Diff) && to_bool(Eq))
-            || at_least<random> {
+            requires at_least<random> || (to_bool(Diff) && to_bool(Eq)) {
+            // clang-format on
             return ptr_ - that.ptr_;
         }
 
+        // clang-format off
         template <WrappedState OtherWrapped>
         [[nodiscard]] constexpr ptrdiff_t operator-(sentinel<Element, OtherWrapped> const& s) const noexcept
-            requires(to_bool(Diff) && wrapped_state_compatible<Wrapped, OtherWrapped>) {
+            requires compatible_wrapped_state<Wrapped, OtherWrapped> && (to_bool(Diff)) {
+            // clang-format on
             return ptr_ - s.peek();
         }
+        // clang-format off
         template <WrappedState OtherWrapped>
-        [[nodiscard]] friend constexpr ptrdiff_t operator-(sentinel<Element, OtherWrapped> const& s,
-            iterator const& i) noexcept requires(to_bool(Diff) && wrapped_state_compatible<Wrapped, OtherWrapped>) {
+        [[nodiscard]] friend constexpr ptrdiff_t operator-(
+            sentinel<Element, OtherWrapped> const& s, iterator const& i) noexcept
+            requires compatible_wrapped_state<Wrapped, OtherWrapped> && (to_bool(Diff)) {
+            // clang-format on
             return -(i - s);
         }
 

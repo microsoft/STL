@@ -179,7 +179,7 @@ void test_sent_unwrappable() {
     test_not_unwrappable_pair<test::iterator<input, Nontrivial>::unwrapping_ignorant, sent_nt>();
 }
 
-void test_no_unwrappable() {
+void test_neither_unwrappable() {
     using test::contiguous, test::random, test::bidi, test::input;
 
     using sent_int = test::sentinel<int, test::WrappedState::ignorant>;
