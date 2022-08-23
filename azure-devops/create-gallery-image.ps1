@@ -27,6 +27,15 @@ $ImageSku = '2022-datacenter-g2'
 $ProgressActivity = 'Creating Gallery Image'
 $TotalProgress = 14 # FIXME, RECALCULATE THIS
 $CurrentProgress = 1
+function Display-Progress-Bar {
+  [CmdletBinding()]
+  Param([string]$Status)
+
+  Write-Progress `
+    -Activity $ProgressActivity `
+    -Status $Status `
+    -PercentComplete (100 / $TotalProgress * $script:CurrentProgress++)
+}
 
 <#
 .SYNOPSIS
@@ -106,18 +115,12 @@ function Wait-Shutdown {
 
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Setting the subscription context' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Setting the subscription context'
 
 Set-AzContext -SubscriptionName CPP_STL_GitHub | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating resource group' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Creating resource group'
 
 $ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
 $AdminPW = New-Password
@@ -128,10 +131,7 @@ $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating virtual network' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Creating virtual network'
 
 $allowHttp = New-AzNetworkSecurityRuleConfig `
   -Name AllowHTTP `
@@ -203,10 +203,7 @@ $VirtualNetwork = New-AzVirtualNetwork `
   -Subnet $Subnet
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating prototype VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Creating prototype VM'
 
 $NicName = $ResourceGroupName + '-NIC'
 $Nic = New-AzNetworkInterface `
@@ -238,10 +235,7 @@ New-AzVm `
   -VM $VM | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Running provisioning script provision-image.ps1 in VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Running provisioning script provision-image.ps1 in VM'
 
 $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
@@ -253,28 +247,19 @@ $ProvisionImageResult = Invoke-AzVMRunCommand `
 Write-Host "provision-image.ps1 output: $($ProvisionImageResult.value.Message)"
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Restarting VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Restarting VM'
 
 Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Sleeping after restart' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Sleeping after restart'
 
 # The VM appears to be busy immediately after restarting.
 # This workaround waits for a minute before attempting to run sysprep.ps1.
 Start-Sleep -Seconds 60
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Running provisioning script sysprep.ps1 in VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Running provisioning script sysprep.ps1 in VM'
 
 Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
@@ -283,18 +268,12 @@ Invoke-AzVMRunCommand `
   -ScriptPath "$PSScriptRoot\sysprep.ps1" | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Waiting for VM to shut down' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Waiting for VM to shut down'
 
 Wait-Shutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Stopping and generalizing VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Stopping and generalizing VM'
 
 Stop-AzVM `
   -ResourceGroupName $ResourceGroupName `
@@ -310,24 +289,18 @@ $VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating gallery' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Creating gallery'
 
-$GalleryName = 'StlGallery-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
+$GalleryName = 'StlBuild_' + $CurrentDate.ToString('yyyy_MM_dd_THHmm') + '_Gallery'
 New-AzGallery `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
   -Name $GalleryName | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating image definition' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Creating image definition'
 
-$ImageDefinitionName = 'StlImageDefinition-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
+$ImageDefinitionName = $ResourceGroupName + '-ImageDefinition'
 New-AzGalleryImageDefinition `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
@@ -341,10 +314,7 @@ New-AzGalleryImageDefinition `
   -HyperVGeneration 'V2' | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating image version' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Creating image version'
 
 $ImageVersionName = $CurrentDate.ToString('yyyyMMdd.HHmm.0')
 New-AzGalleryImageVersion `
@@ -356,10 +326,7 @@ New-AzGalleryImageVersion `
   -SourceImageId $VM.ID | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Deleting unused VM and disk' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Deleting unused VM and disk'
 
 Remove-AzVM -Id $VM.ID -Force | Out-Null
 Remove-AzDisk `
@@ -369,9 +336,9 @@ Remove-AzDisk `
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
-Write-Host "             Location: $Location"
-Write-Host "  Resource group name: $ResourceGroupName"
-Write-Host "         Gallery name: $GalleryName"
-Write-Host "Image definition name: $ImageDefinitionName"
-Write-Host "   Image version name: $ImageVersionName"
+Write-Host "        Location: $Location"
+Write-Host "  Resource group: $ResourceGroupName"
+Write-Host "         Gallery: $GalleryName"
+Write-Host "Image definition: $ImageDefinitionName"
+Write-Host "   Image version: $ImageVersionName"
 Write-Host 'Finished!'
