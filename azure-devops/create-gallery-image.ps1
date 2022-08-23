@@ -24,7 +24,7 @@ $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Creating Gallery Image'
-$TotalProgress = 16
+$TotalProgress = 17
 $CurrentProgress = 1
 
 <#
@@ -318,10 +318,20 @@ $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
 Display-Progress-Bar -Status 'Creating gallery'
 
 $GalleryName = 'StlBuild_' + $CurrentDate.ToString('yyyy_MM_dd_THHmm') + '_Gallery'
-New-AzGallery `
+$Gallery = New-AzGallery `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
-  -Name $GalleryName | Out-Null
+  -Name $GalleryName
+
+####################################################################################################
+Display-Progress-Bar -Status 'Granting access to 1ES Resource Management'
+
+$ServicePrincipalObjectId = (Get-AzADServicePrincipal -DisplayName '1ES Resource Management').Id
+
+New-AzRoleAssignment `
+  -ObjectId $ServicePrincipalObjectId `
+  -RoleDefinitionName 'Reader' `
+  -Scope $Gallery.Id | Out-Null
 
 ####################################################################################################
 Display-Progress-Bar -Status 'Creating image definition'
