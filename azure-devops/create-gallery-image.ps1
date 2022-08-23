@@ -16,7 +16,7 @@ $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
 $CurrentDate = Get-Date
 
-$Location = 'northeurope'
+$Location = 'eastus'
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
