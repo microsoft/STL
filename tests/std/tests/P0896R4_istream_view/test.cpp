@@ -14,7 +14,7 @@
 using namespace std;
 
 constexpr int expected_empty[] = {-1, -1, -1, -1, -1};
-constexpr int expected[]       = {0, 1, 2, 3, -1};
+constexpr int expected_vals[]  = {0, 1, 2, 3, -1};
 
 struct streamable {
     streamable() = default;
@@ -78,14 +78,14 @@ void test_one_type() {
         wistringstream wintstream{L"0 1 2 3"};
         T input_value[] = {-1, -1, -1, -1, -1};
         ranges::copy(basic_istream_view<T, wchar_t>{wintstream}, input_value);
-        assert(ranges::equal(input_value, expected));
+        assert(ranges::equal(input_value, expected_vals));
     }
 
     { // using ranges::basic_istream_view with narrow stream
         istringstream intstream{"0 1 2 3"};
         T input_value[] = {-1, -1, -1, -1, -1};
         ranges::copy(basic_istream_view<T, char>{intstream}, input_value);
-        assert(ranges::equal(input_value, expected));
+        assert(ranges::equal(input_value, expected_vals));
     }
 
     { // Using ranges::istream_view
@@ -93,7 +93,7 @@ void test_one_type() {
         T input[] = {-1, -1, -1, -1, -1};
         ranges::copy(ranges::istream_view<T>(intstream), input);
         static_assert(noexcept(ranges::istream_view<T>(intstream)));
-        assert(ranges::equal(input, expected));
+        assert(ranges::equal(input, expected_vals));
     }
 
     { // Using ranges::wistream_view
@@ -101,7 +101,7 @@ void test_one_type() {
         T input[] = {-1, -1, -1, -1, -1};
         ranges::copy(ranges::wistream_view<T>(wintstream), input);
         static_assert(noexcept(ranges::wistream_view<T>(wintstream)));
-        assert(ranges::equal(input, expected));
+        assert(ranges::equal(input, expected_vals));
     }
 
     { // Using views::istream with narrow stream
@@ -109,7 +109,7 @@ void test_one_type() {
         T input[] = {-1, -1, -1, -1, -1};
         ranges::copy(views::istream<T>(intstream), input);
         static_assert(noexcept(views::istream<T>(intstream)));
-        assert(ranges::equal(input, expected));
+        assert(ranges::equal(input, expected_vals));
     }
 
     { // Using views::istream with wide stream
@@ -117,7 +117,7 @@ void test_one_type() {
         T input[] = {-1, -1, -1, -1, -1};
         ranges::copy(views::istream<T>(wintstream), input);
         static_assert(noexcept(views::istream<T>(wintstream)));
-        assert(ranges::equal(input, expected));
+        assert(ranges::equal(input, expected_vals));
     }
 }
 

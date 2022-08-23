@@ -27,14 +27,13 @@ _STL_DISABLE_CLANG_WARNINGS
 #undef new
 
 #if defined(__clang__) && !defined(_SILENCE_CLANG_COROUTINE_MESSAGE)
-#error The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> headers currently do not \
-support Clang. You can define _SILENCE_CLANG_COROUTINE_MESSAGE to silence this message and acknowledge that this is \
-unsupported.
+#error The <experimental/coroutine>, <experimental/generator>, and <experimental/resumable> \
+headers do not support Clang, but the C++20 <coroutine> header does.
 #endif // defined(__clang__) && !defined(_SILENCE_CLANG_COROUTINE_MESSAGE)
 
 #ifdef __cpp_impl_coroutine
-#error The <experimental/coroutine> and <experimental/resumable> headers are only supported \
-with /await and implement pre-C++20 coroutine support. Use <coroutine> for standard C++20 coroutines.
+#error The <experimental/coroutine> and <experimental/resumable> headers are only supported with \
+/await and implement pre-C++20 coroutine support. Use <coroutine> for standard C++20 coroutines.
 #endif // __cpp_impl_coroutine
 
 // intrinsics used in implementation of coroutine_handle

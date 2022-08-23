@@ -231,6 +231,24 @@ constexpr void instantiation_test() {
 #endif // TEST_EVERYTHING
 }
 
+void test_gh_2889() { // COMPILE-ONLY
+    // GH-2889 <ranges>: chunk_by_view's helper lambda does not specify return type
+    struct Bool { // NB: poor model of boolean-testable; don't use in runtime code.
+        Bool()            = default;
+        Bool(const Bool&) = delete;
+        Bool& operator!() {
+            return *this;
+        }
+        operator bool() {
+            return true;
+        }
+    };
+
+    Bool x[3];
+    auto r = x | views::chunk_by([](Bool& b, Bool&) -> Bool& { return b; });
+    (void) r.begin();
+}
+
 template <class Category, test::Common IsCommon, bool is_random = derived_from<Category, random_access_iterator_tag>>
 using move_only_view = test::range<Category, const char, test::Sized{is_random}, test::CanDifference{is_random},
     IsCommon, test::CanCompare{derived_from<Category, forward_iterator_tag>},

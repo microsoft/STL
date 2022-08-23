@@ -80,10 +80,6 @@ std/iterators/predef.iterators/reverse.iterators/iterator_concept_conformance.co
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp FAIL
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cons/assign.pass.cpp FAIL
 
-# optional's comparisons aren't portably constrained (https://reviews.llvm.org/D116884)
-std/concepts/concepts.compare/concepts.totallyordered/totally_ordered.pass.cpp FAIL
-std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable.compile.pass.cpp FAIL
-
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
 std/utilities/format/format.functions/vformat_to.pass.cpp FAIL
@@ -92,6 +88,9 @@ std/utilities/format/format.functions/vformat.pass.cpp FAIL
 
 # libc++ doesn't implement P2321R2's changes to vector<bool>::reference
 std/containers/sequences/vector.bool/iterator_concept_conformance.compile.pass.cpp FAIL
+
+# libc++ hasn't updated move_iterator for P2520R0
+std/iterators/predef.iterators/move.iterators/move.iterator/types.pass.cpp FAIL
 
 
 # *** INTERACTIONS WITH CONTEST / C1XX THAT UPSTREAM LIKELY WON'T FIX ***
@@ -790,9 +789,6 @@ std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char16_t_unshift.pass.cpp FAIL
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_encoding.pass.cpp FAIL
 std/localization/locale.categories/category.ctype/locale.codecvt/locale.codecvt.members/char32_t_max_length.pass.cpp FAIL
-
-# Likely STL bug in <chrono>: "result type of conditional expression is ambiguous"
-std/utilities/time/time.duration/time.duration.alg/abs.pass.cpp FAIL
 
 # Likely STL bug in <format>: we check argument ids at compiletime in next_arg_id
 std/utilities/format/format.formatter/format.parse.ctx/next_arg_id.pass.cpp FAIL

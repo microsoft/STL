@@ -3,8 +3,11 @@
 
 #include <array>
 #include <cassert>
+#include <cstddef>
 #include <cstdlib>
+#include <cstring>
 #include <deque>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -15,6 +18,8 @@
 #include <constexpr_char_traits.hpp>
 
 using namespace std;
+
+constexpr auto ptrdiff_max = numeric_limits<ptrdiff_t>::max();
 
 template <typename Expected, typename Fn>
 void assert_throws(Fn fn) {
@@ -343,7 +348,7 @@ constexpr bool test_case_contiguous_constructor() {
 }
 
 constexpr bool test_case_range_constructor() {
-#if _HAS_CXX23 && defined(__cpp_lib_concepts)
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     const array expectedData{'n', 'o', ' ', 'n', 'u', 'l', 'l'};
     // Also tests the corresponding deduction guide:
     same_as<string_view> auto sv = basic_string_view(expectedData);
@@ -1204,10 +1209,7 @@ static_assert(test_case_ntcts_constructor<constexpr_char_traits>());
 static_assert(test_case_buffer_constructor());
 static_assert(test_case_contiguous_constructor());
 static_assert(test_case_range_constructor());
-#if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-284079 "C1XX's C++14 constexpr emits bogus warnings C4146,
-                                           // C4308, C4307 for basic_string_view::iterator"
 static_assert(test_case_iterators<char, constexpr_char_traits>());
-#endif // VSO-284079
 static_assert(test_case_prefix<char, constexpr_char_traits>());
 static_assert(test_case_suffix<char, constexpr_char_traits>());
 static_assert(test_case_swap<char, constexpr_char_traits>());
@@ -1224,14 +1226,14 @@ static_assert(test_case_contains<char, constexpr_char_traits, false>());
 static_assert(test_case_operators<char, constexpr_char_traits>());
 static_assert(test_case_find<char, constexpr_char_traits>());
 
-static_assert(string_view{}.max_size() == PTRDIFF_MAX, "bad max_size for string_view");
+static_assert(string_view{}.max_size() == ptrdiff_max, "bad max_size for string_view");
 #ifdef __cpp_lib_char8_t
-static_assert(u8string_view{}.max_size() == PTRDIFF_MAX, "bad max_size for u8string_view");
+static_assert(u8string_view{}.max_size() == ptrdiff_max, "bad max_size for u8string_view");
 #endif // __cpp_lib_char8_t
-static_assert(u16string_view{}.max_size() == PTRDIFF_MAX, "bad max_size for u16string_view");
+static_assert(u16string_view{}.max_size() == ptrdiff_max, "bad max_size for u16string_view");
 static_assert(
     u32string_view{}.max_size() == static_cast<size_t>(-1) / sizeof(char32_t), "bad max_size for u32string_view");
-static_assert(wstring_view{}.max_size() == PTRDIFF_MAX, "bad max_size for wstring_view");
+static_assert(wstring_view{}.max_size() == ptrdiff_max, "bad max_size for wstring_view");
 
 // P0403R1 UDLs For <string_view> ("meow"sv, etc.)
 static_assert("abc"sv[1] == 'b');
@@ -1253,6 +1255,38 @@ static_assert(!is_constructible_v<string_view, nullptr_t>, "constructing string_
 static_assert(!is_constructible_v<string, nullptr_t>, "constructing string from nullptr_t is prohibited");
 static_assert(!is_assignable_v<string&, nullptr_t>, "assigning nullptr_t to string is prohibited");
 #endif // _HAS_CXX23
+
+// Also test that no C6510 warning
+struct char_wrapper {
+    char c;
+};
+
+template <>
+struct std::char_traits<char_wrapper> {
+    using char_type = char_wrapper;
+
+    static bool eq(char_wrapper lhs, char_wrapper rhs) {
+        return lhs.c == rhs.c;
+    }
+
+    static size_t length(const char_wrapper* a) {
+        static_assert(sizeof(char_wrapper) == 1, "strlen requires this");
+        return strlen(reinterpret_cast<const char*>(a));
+    }
+
+    static int compare(const char_wrapper* lhs, const char_wrapper* rhs, size_t count) {
+        return char_traits<char>::compare(
+            reinterpret_cast<const char*>(lhs), reinterpret_cast<const char*>(rhs), count);
+    }
+};
+
+using WrappedSV = basic_string_view<char_wrapper, char_traits<char_wrapper>>;
+
+void test_C6510_warning() { // compile-only
+    char_wrapper a[] = {{'a'}, {'b'}, {'c'}, {'\0'}};
+    WrappedSV sv(a);
+    (void) sv;
+}
 
 int main() {
     test_case_default_constructor();
