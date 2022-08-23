@@ -198,7 +198,7 @@ void test_common_to_chars(
 
 template <typename T>
 _CONSTEXPR23 void test_integer_to_chars(const T value, const optional<int> opt_base, const string_view correct) {
-    // This reaches constexpr step limit to quickly
+    // This reaches the constexpr step limit too quickly
     if (!_Is_constant_evaluated()) {
         test_common_to_chars(value, opt_base, nullopt, correct);
     }
