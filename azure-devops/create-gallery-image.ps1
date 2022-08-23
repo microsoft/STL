@@ -369,7 +369,9 @@ Remove-AzDisk `
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
-Write-Host "Location: $Location"
-Write-Host "Resource group name: $ResourceGroupName"
-Write-Host "Image version name: $ImageVersionName"
+Write-Host "             Location: $Location"
+Write-Host "  Resource group name: $ResourceGroupName"
+Write-Host "         Gallery name: $GalleryName"
+Write-Host "Image definition name: $ImageDefinitionName"
+Write-Host "   Image version name: $ImageVersionName"
 Write-Host 'Finished!'
