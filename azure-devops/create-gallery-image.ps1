@@ -17,7 +17,6 @@ $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 $CurrentDate = Get-Date
 
 $Location = 'northeurope'
-$Prefix = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
@@ -28,33 +27,6 @@ $ImageSku = '2022-datacenter-g2'
 $ProgressActivity = 'Creating Gallery Image'
 $TotalProgress = 14 # FIXME, RECALCULATE THIS
 $CurrentProgress = 1
-
-<#
-.SYNOPSIS
-Attempts to find a name that does not collide with any resources in the resource group.
-
-.DESCRIPTION
-Find-ResourceGroupName takes a set of resources from Get-AzResourceGroup, and finds the
-first name in {$Prefix, $Prefix-1, $Prefix-2, ...} such that the name doesn't collide with
-any of the resources in the resource group.
-
-.PARAMETER Prefix
-The prefix of the final name; the returned name will be of the form "$Prefix(-[1-9][0-9]*)?"
-#>
-function Find-ResourceGroupName {
-  [CmdletBinding()]
-  Param([string] $Prefix)
-
-  $existingNames = (Get-AzResourceGroup).ResourceGroupName
-  $result = $Prefix
-  $suffix = 0
-  while ($result -in $existingNames) {
-    $suffix++
-    $result = "$Prefix-$suffix"
-  }
-
-  return $result
-}
 
 <#
 .SYNOPSIS
@@ -147,7 +119,7 @@ Write-Progress `
   -Status 'Creating resource group' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$ResourceGroupName = Find-ResourceGroupName $Prefix
+$ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
 $AdminPW = New-Password
 # TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
 $SimplySecureV2OptInTag = @{'NRMSV2OptIn'=$CurrentDate.ToString('yyyyMMdd')}
@@ -340,62 +312,48 @@ $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
 ####################################################################################################
 Write-Progress `
   -Activity $ProgressActivity `
+  -Status 'Creating gallery' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+$GalleryName = 'StlGallery-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
+New-AzGallery `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $GalleryName | Out-Null
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
+  -Status 'Creating image definition' `
+  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+
+$ImageDefinitionName = 'StlImageDefinition-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
+New-AzGalleryImageDefinition `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -GalleryName $GalleryName `
+  -Name $ImageDefinitionName `
+  -OsState 'Generalized' `
+  -OsType 'Windows' `
+  -Publisher $ImagePublisher `
+  -Offer $ImageOffer `
+  -Sku $ImageSku `
+  -HyperVGeneration 'V2' | Out-Null
+
+####################################################################################################
+Write-Progress `
+  -Activity $ProgressActivity `
   -Status 'Creating image version' `
   -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
 
-$GalleryRGName = 'stlGalleryRG'
-if ($GalleryRGName -notin (Get-AzResourceGroup).ResourceGroupName) {
-  New-AzResourceGroup `
-    -Location $Location `
-    -Name $GalleryRGName | Out-Null
-}
-
-$GalleryName = 'stlGallery'
-if ($GalleryName -notin (Get-AzGallery -ResourceGroupName $GalleryRGName).Name) {
-  New-AzGallery `
-    -Location $Location `
-    -ResourceGroupName $GalleryRGName `
-    -Name $GalleryName | Out-Null
-}
-
-$ImageDefinitionName = 'stlImageDefinition'
-if ($ImageDefinitionName -notin (Get-AzGalleryImageDefinition `
-  -ResourceGroupName $GalleryRGName -GalleryName $GalleryName).Name) {
-  New-AzGalleryImageDefinition `
-    -Location $Location `
-    -ResourceGroupName $GalleryRGName `
-    -GalleryName $GalleryName `
-    -Name $ImageDefinitionName `
-    -OsState 'Generalized' `
-    -OsType 'Windows' `
-    -Publisher $ImagePublisher `
-    -Offer $ImageOffer `
-    -Sku $ImageSku `
-    -HyperVGeneration 'V2' | Out-Null
-}
-
-$ExistingImageVersionNames = (Get-AzGalleryImageVersion `
-  -ResourceGroupName $GalleryRGName `
-  -GalleryName $GalleryName `
-  -GalleryImageDefinitionName $ImageDefinitionName).Name
-
-$ImageVersionPrefix = $CurrentDate.ToString('yyyyMMdd.HHmm')
-$ImageVersionSuffix = 0
-$ImageVersionName = "$ImageVersionPrefix.$ImageVersionSuffix"
-
-while ($ImageVersionName -in $ExistingImageVersionNames) {
-  $ImageVersionSuffix++
-  $ImageVersionName = "$ImageVersionPrefix.$ImageVersionSuffix"
-}
-
+$ImageVersionName = $CurrentDate.ToString('yyyyMMdd.HHmm.0')
 New-AzGalleryImageVersion `
   -Location $Location `
-  -ResourceGroupName $GalleryRGName `
+  -ResourceGroupName $ResourceGroupName `
   -GalleryName $GalleryName `
   -GalleryImageDefinitionName $ImageDefinitionName `
   -Name $ImageVersionName `
-  -SourceImageId $VM.ID `
-  -Tag @{'PrototypeResourceGroup'=$ResourceGroupName} | Out-Null
+  -SourceImageId $VM.ID | Out-Null
 
 ####################################################################################################
 Write-Progress `
