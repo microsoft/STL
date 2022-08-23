@@ -1876,11 +1876,9 @@ namespace ranges {
         { _Se._Unwrapped() } -> sentinel_for<decltype(_STD forward<_Iter>(_It)._Unwrapped())>;
     };
 
-    // clang-format off
     template <class _Sent, class _Iter>
     constexpr decltype(auto) _Unwrap_iter(_Iter&& _It) noexcept(
-        !_Unwrappable_sentinel_for<_Sent, _Iter> || _Has_nothrow_unwrapped<_Iter>)
-    {
+        !_Unwrappable_sentinel_for<_Sent, _Iter> || _Has_nothrow_unwrapped<_Iter>) {
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<remove_cvref_t<_Sent>, remove_cvref_t<_Iter>>);
         if constexpr (is_pointer_v<remove_cvref_t<_Iter>>) {
             return _It + 0;
@@ -1893,8 +1891,7 @@ namespace ranges {
 
     template <class _Iter, class _Sent>
     constexpr decltype(auto) _Unwrap_sent(_Sent&& _Se) noexcept(
-        !_Unwrappable_sentinel_for<_Sent, _Iter> || _Has_nothrow_unwrapped<_Sent>)
-    {
+        !_Unwrappable_sentinel_for<_Sent, _Iter> || _Has_nothrow_unwrapped<_Sent>) {
         _STL_INTERNAL_STATIC_ASSERT(sentinel_for<remove_cvref_t<_Sent>, remove_cvref_t<_Iter>>);
         if constexpr (is_pointer_v<remove_cvref_t<_Sent>>) {
             return _Se + 0;
@@ -1906,17 +1903,15 @@ namespace ranges {
     }
 
     template <range _Rng, class _Iter>
-    constexpr decltype(auto) _Unwrap_range_iter(_Iter&& _It)
-        noexcept(noexcept(_Unwrap_iter<sentinel_t<_Rng>>(static_cast<_Iter&&>(_It))))
-    {
+    constexpr decltype(auto) _Unwrap_range_iter(_Iter&& _It) noexcept(
+        noexcept(_Unwrap_iter<sentinel_t<_Rng>>(static_cast<_Iter&&>(_It)))) {
         _STL_INTERNAL_STATIC_ASSERT(same_as<remove_cvref_t<_Iter>, iterator_t<_Rng>>);
         return _Unwrap_iter<sentinel_t<_Rng>>(static_cast<_Iter&&>(_It));
     }
 
     template <range _Rng, class _Sent>
-    constexpr decltype(auto) _Unwrap_range_sent(_Sent&& _Se)
-        noexcept(noexcept(_Unwrap_sent<iterator_t<_Rng>>(static_cast<_Sent&&>(_Se))))
-    {
+    constexpr decltype(auto) _Unwrap_range_sent(_Sent&& _Se) noexcept(
+        noexcept(_Unwrap_sent<iterator_t<_Rng>>(static_cast<_Sent&&>(_Se)))) {
         _STL_INTERNAL_STATIC_ASSERT(same_as<remove_cvref_t<_Sent>, sentinel_t<_Rng>>);
         return _Unwrap_sent<iterator_t<_Rng>>(static_cast<_Sent&&>(_Se));
     }
@@ -1954,7 +1949,8 @@ namespace ranges {
                         same_as<decltype(_STD declval<_Ty>()._Unchecked_begin()), _Unwrapped_iterator_t<_Ty>>);
                     return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>()._Unchecked_begin()))};
                 } else if constexpr (_Can_begin<_Ty>) {
-                    return {_St::_Unwrap, noexcept(_Fake_copy_init(_Unwrap_range_iter<_Ty>(_RANGES begin(_STD declval<_Ty>()))))};
+                    return {_St::_Unwrap,
+                        noexcept(_Fake_copy_init(_Unwrap_range_iter<_Ty>(_RANGES begin(_STD declval<_Ty>()))))};
                 } else {
                     return {_St::_None};
                 }
