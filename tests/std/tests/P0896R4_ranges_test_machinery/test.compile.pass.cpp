@@ -50,7 +50,7 @@ constexpr bool iter_test() {
         STATIC_ASSERT(!sentinel_for<sentinel<Element, WrappedState::unwrapped>, I>);
 
         STATIC_ASSERT(!_Unwrappable_v<I>);
-        STATIC_ASSERT(!_Unwrappable_v<S>)
+        STATIC_ASSERT(!_Unwrappable_v<S>);
     } else if constexpr (Wrapped == WrappedState::wrapped) {
         STATIC_ASSERT(sentinel_for<S, iterator<Category, Element, Diff, Eq, Proxy, WrappedState::ignorant>>);
         STATIC_ASSERT(!sentinel_for<S, iterator<Category, Element, Diff, Eq, Proxy, WrappedState::unwrapped>>);
