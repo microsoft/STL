@@ -164,3 +164,5 @@ static_assert(same_as<const_sentinel<default_sentinel_t>, default_sentinel_t>);
 static_assert(!CanIterConstRef<unreachable_sentinel_t>);
 static_assert(!CanConstIterator<unreachable_sentinel_t>);
 static_assert(same_as<const_sentinel<unreachable_sentinel_t>, unreachable_sentinel_t>);
+
+int main() {} // COMPILE-ONLY

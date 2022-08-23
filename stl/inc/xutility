@@ -1859,28 +1859,28 @@ public:
 
     _NODISCARD_FRIEND constexpr bool
         operator<(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
-            noexcept(_Implicitly_convert_to<bool>(_Left._Current < _Right._Current))) // strengthened
+            noexcept(_Fake_copy_init<bool>(_Left._Current < _Right._Current))) // strengthened
         requires random_access_iterator<_Iter> {
         return _Left._Current < _Right._Current;
     }
 
     _NODISCARD_FRIEND constexpr bool
         operator>(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
-            noexcept(_Implicitly_convert_to<bool>(_Left._Current > _Right._Current))) // strengthened
+            noexcept(_Fake_copy_init<bool>(_Left._Current > _Right._Current))) // strengthened
         requires random_access_iterator<_Iter> {
         return _Left._Current > _Right._Current;
     }
 
     _NODISCARD_FRIEND constexpr bool
         operator<=(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
-            noexcept(_Implicitly_convert_to<bool>(_Left._Current <= _Right._Current))) // strengthened
+            noexcept(_Fake_copy_init<bool>(_Left._Current <= _Right._Current))) // strengthened
         requires random_access_iterator<_Iter> {
         return _Left._Current <= _Right._Current;
     }
 
     _NODISCARD_FRIEND constexpr bool
         operator>=(const basic_const_iterator& _Left, const basic_const_iterator& _Right) noexcept(
-            noexcept(_Implicitly_convert_to<bool>(_Left._Current >= _Right._Current))) // strengthened
+            noexcept(_Fake_copy_init<bool>(_Left._Current >= _Right._Current))) // strengthened
         requires random_access_iterator<_Iter> {
         return _Left._Current >= _Right._Current;
     }
@@ -1894,28 +1894,28 @@ public:
 
     template <_Not_same_as<basic_const_iterator> _Other>
     _NODISCARD_FRIEND constexpr bool operator<(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left._Current < _Right))) // strengthened
+        noexcept(_Fake_copy_init<bool>(_Left._Current < _Right))) // strengthened
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
         return _Left._Current < _Right;
     }
 
     template <_Not_same_as<basic_const_iterator> _Other>
     _NODISCARD_FRIEND constexpr bool operator>(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left._Current > _Right))) // strengthened
+        noexcept(_Fake_copy_init<bool>(_Left._Current > _Right))) // strengthened
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
         return _Left._Current > _Right;
     }
 
     template <_Not_same_as<basic_const_iterator> _Other>
     _NODISCARD_FRIEND constexpr bool operator<=(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left._Current <= _Right))) // strengthened
+        noexcept(_Fake_copy_init<bool>(_Left._Current <= _Right))) // strengthened
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
         return _Left._Current <= _Right;
     }
 
     template <_Not_same_as<basic_const_iterator> _Other>
     _NODISCARD_FRIEND constexpr bool operator>=(const basic_const_iterator& _Left, const _Other& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left._Current >= _Right))) // strengthened
+        noexcept(_Fake_copy_init<bool>(_Left._Current >= _Right))) // strengthened
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
         return _Left._Current >= _Right;
     }
@@ -1930,28 +1930,28 @@ public:
 
     template <_Not_a_const_iterator _Other>
     _NODISCARD_FRIEND constexpr bool operator<(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left < _Right._Current))) // strengthened
+        noexcept(_Fake_copy_init<bool>(_Left < _Right._Current))) // strengthened
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
         return _Left < _Right._Current;
     }
 
     template <_Not_a_const_iterator _Other>
     _NODISCARD_FRIEND constexpr bool operator>(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left > _Right._Current))) // strengthened
+        noexcept(_Fake_copy_init<bool>(_Left > _Right._Current))) // strengthened
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
         return _Left > _Right._Current;
     }
 
     template <_Not_a_const_iterator _Other>
     _NODISCARD_FRIEND constexpr bool operator<=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left <= _Right._Current))) // strengthened
+        noexcept(_Fake_copy_init<bool>(_Left <= _Right._Current))) // strengthened
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
         return _Left <= _Right._Current;
     }
 
     template <_Not_a_const_iterator _Other>
     _NODISCARD_FRIEND constexpr bool operator>=(const _Other& _Left, const basic_const_iterator& _Right) noexcept(
-        noexcept(_Implicitly_convert_to<bool>(_Left >= _Right._Current))) // strengthened
+        noexcept(_Fake_copy_init<bool>(_Left >= _Right._Current))) // strengthened
         requires random_access_iterator<_Iter> && totally_ordered_with<_Iter, _Other> {
         return _Left >= _Right._Current;
     }
