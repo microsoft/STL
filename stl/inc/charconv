@@ -35,7 +35,7 @@ inline constexpr char _Charconv_digits[] = {'0', '1', '2', '3', '4', '5', '6', '
 _STL_INTERNAL_STATIC_ASSERT(_STD size(_Charconv_digits) == 36);
 
 template <class _RawTy>
-_NODISCARD to_chars_result _Integer_to_chars(
+_NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
     char* _First, char* const _Last, const _RawTy _Raw_value, const int _Base) noexcept {
     _Adl_verify_range(_First, _Last);
     _STL_ASSERT(_Base >= 2 && _Base <= 36, "invalid base in to_chars()");
@@ -152,52 +152,55 @@ _NODISCARD to_chars_result _Integer_to_chars(
         return {_Last, errc::value_too_large};
     }
 
-    _CSTD memcpy(_First, _RNext, static_cast<size_t>(_Digits_written));
+    _STD copy_n(_RNext, static_cast<size_t>(_Digits_written), _First);
 
     return {_First + _Digits_written, errc{}};
 }
 
-inline to_chars_result to_chars(char* const _First, char* const _Last, const char _Value, const int _Base = 10) noexcept
+_CONSTEXPR23 to_chars_result to_chars(
+    char* const _First, char* const _Last, const char _Value, const int _Base = 10) noexcept
 /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(
+_CONSTEXPR23 to_chars_result to_chars(
     char* const _First, char* const _Last, const signed char _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const unsigned char _Value,
+_CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned char _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(
+_CONSTEXPR23 to_chars_result to_chars(
     char* const _First, char* const _Last, const short _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const unsigned short _Value,
+_CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned short _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const int _Value, const int _Base = 10) noexcept
+_CONSTEXPR23 to_chars_result to_chars(
+    char* const _First, char* const _Last, const int _Value, const int _Base = 10) noexcept
 /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const unsigned int _Value,
+_CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned int _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const long _Value, const int _Base = 10) noexcept
+_CONSTEXPR23 to_chars_result to_chars(
+    char* const _First, char* const _Last, const long _Value, const int _Base = 10) noexcept
 /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const unsigned long _Value,
+_CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned long _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(
+_CONSTEXPR23 to_chars_result to_chars(
     char* const _First, char* const _Last, const long long _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
-inline to_chars_result to_chars(char* const _First, char* const _Last, const unsigned long long _Value,
+_CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned long long _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
@@ -213,27 +216,27 @@ struct from_chars_result {
 #endif // _HAS_CXX20
 };
 
-_NODISCARD inline unsigned char _Digit_from_char(const char _Ch) noexcept {
-    // convert ['0', '9'] ['A', 'Z'] ['a', 'z'] to [0, 35], everything else to 255
-    static constexpr unsigned char _Digit_from_byte[] = {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 255, 255,
-        255, 255, 255, 255, 255, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-        32, 33, 34, 35, 255, 255, 255, 255, 255, 255, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-        26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255};
-    _STL_INTERNAL_STATIC_ASSERT(_STD size(_Digit_from_byte) == 256);
+// convert ['0', '9'] ['A', 'Z'] ['a', 'z'] to [0, 35], everything else to 255
+static constexpr unsigned char _Digit_from_byte[] = {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 255, 255, 255, 255, 255,
+    255, 255, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+    255, 255, 255, 255, 255, 255, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+    31, 32, 33, 34, 35, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+_STL_INTERNAL_STATIC_ASSERT(_STD size(_Digit_from_byte) == 256);
 
+_NODISCARD _CONSTEXPR23 unsigned char _Digit_from_char(const char _Ch) noexcept {
+    // convert ['0', '9'] ['A', 'Z'] ['a', 'z'] to [0, 35], everything else to 255
     return _Digit_from_byte[static_cast<unsigned char>(_Ch)];
 }
 
 template <class _RawTy>
-_NODISCARD from_chars_result _Integer_from_chars(
+_NODISCARD _CONSTEXPR23 from_chars_result _Integer_from_chars(
     const char* const _First, const char* const _Last, _RawTy& _Raw_value, const int _Base) noexcept {
     _Adl_verify_range(_First, _Last);
     _STL_ASSERT(_Base >= 2 && _Base <= 36, "invalid base in from_chars()");
@@ -309,47 +312,47 @@ _NODISCARD from_chars_result _Integer_from_chars(
     return {_Next, errc{}};
 }
 
-inline from_chars_result from_chars(
+_CONSTEXPR23 from_chars_result from_chars(
     const char* const _First, const char* const _Last, char& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, signed char& _Value,
+_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, signed char& _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned char& _Value,
+_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned char& _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, short& _Value,
+_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, short& _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned short& _Value,
+_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned short& _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-inline from_chars_result from_chars(
+_CONSTEXPR23 from_chars_result from_chars(
     const char* const _First, const char* const _Last, int& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned int& _Value,
+_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned int& _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-inline from_chars_result from_chars(
+_CONSTEXPR23 from_chars_result from_chars(
     const char* const _First, const char* const _Last, long& _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned long& _Value,
+_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned long& _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, long long& _Value,
+_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, long long& _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
-inline from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned long long& _Value,
+_CONSTEXPR23 from_chars_result from_chars(const char* const _First, const char* const _Last, unsigned long long& _Value,
     const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_from_chars(_First, _Last, _Value, _Base);
 }
