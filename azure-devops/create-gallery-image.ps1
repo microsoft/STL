@@ -19,14 +19,24 @@ $CurrentDate = Get-Date
 $Location = 'eastus'
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
-$LiveVMPrefix = 'BUILD'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Creating Gallery Image'
-$TotalProgress = 14 # FIXME, RECALCULATE THIS
+$TotalProgress = 16
 $CurrentProgress = 1
+
+<#
+.SYNOPSIS
+Displays an updated progress bar.
+
+.DESCRIPTION
+Display-Progress-Bar increments $CurrentProgress and displays $Status in the progress bar.
+
+.PARAMETER Status
+A message describing the current operation being performed.
+#>
 function Display-Progress-Bar {
   [CmdletBinding()]
   Param([string]$Status)
@@ -117,7 +127,8 @@ function Wait-Shutdown {
 ####################################################################################################
 Display-Progress-Bar -Status 'Setting the subscription context'
 
-Set-AzContext -SubscriptionName CPP_STL_GitHub | Out-Null
+Set-AzContext `
+  -SubscriptionName CPP_STL_GitHub | Out-Null
 
 ####################################################################################################
 Display-Progress-Bar -Status 'Creating resource group'
@@ -126,7 +137,12 @@ $ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
 $AdminPW = New-Password
 # TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
 $SimplySecureV2OptInTag = @{'NRMSV2OptIn'=$CurrentDate.ToString('yyyyMMdd')}
-New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Tag $SimplySecureV2OptInTag | Out-Null
+
+New-AzResourceGroup `
+  -Name $ResourceGroupName `
+  -Location $Location `
+  -Tag $SimplySecureV2OptInTag | Out-Null
+
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
@@ -212,7 +228,12 @@ $Nic = New-AzNetworkInterface `
   -Location $Location `
   -Subnet $VirtualNetwork.Subnets[0]
 
-$VM = New-AzVMConfig -Name $ProtoVMName -VMSize $VMSize -Priority 'Spot' -MaxPrice -1
+$VM = New-AzVMConfig `
+  -Name $ProtoVMName `
+  -VMSize $VMSize `
+  -Priority 'Spot' `
+  -MaxPrice -1
+
 $VM = Set-AzVMOperatingSystem `
   -VM $VM `
   -Windows `
@@ -220,7 +241,10 @@ $VM = Set-AzVMOperatingSystem `
   -Credential $Credential `
   -ProvisionVMAgent
 
-$VM = Add-AzVMNetworkInterface -VM $VM -Id $Nic.Id
+$VM = Add-AzVMNetworkInterface `
+  -VM $VM `
+  -Id $Nic.Id
+
 $VM = Set-AzVMSourceImage `
   -VM $VM `
   -PublisherName $ImagePublisher `
@@ -228,14 +252,17 @@ $VM = Set-AzVMSourceImage `
   -Skus $ImageSku `
   -Version latest
 
-$VM = Set-AzVMBootDiagnostic -VM $VM -Disable
+$VM = Set-AzVMBootDiagnostic `
+  -VM $VM `
+  -Disable
+
 New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
   -VM $VM | Out-Null
 
 ####################################################################################################
-Display-Progress-Bar -Status 'Running provisioning script provision-image.ps1 in VM'
+Display-Progress-Bar -Status 'Running provision-image.ps1 in VM'
 
 $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
@@ -259,7 +286,7 @@ Display-Progress-Bar -Status 'Sleeping after restart'
 Start-Sleep -Seconds 60
 
 ####################################################################################################
-Display-Progress-Bar -Status 'Running provisioning script sysprep.ps1 in VM'
+Display-Progress-Bar -Status 'Running sysprep.ps1 in VM'
 
 Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
@@ -273,19 +300,25 @@ Display-Progress-Bar -Status 'Waiting for VM to shut down'
 Wait-Shutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 
 ####################################################################################################
-Display-Progress-Bar -Status 'Stopping and generalizing VM'
+Display-Progress-Bar -Status 'Stopping VM'
 
 Stop-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
   -Force | Out-Null
 
+####################################################################################################
+Display-Progress-Bar -Status 'Generalizing VM'
+
 Set-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
   -Generalized | Out-Null
 
-$VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+$VM = Get-AzVM `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $ProtoVMName
+
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
 
 ####################################################################################################
@@ -326,9 +359,15 @@ New-AzGalleryImageVersion `
   -SourceImageId $VM.ID | Out-Null
 
 ####################################################################################################
-Display-Progress-Bar -Status 'Deleting unused VM and disk'
+Display-Progress-Bar -Status 'Deleting unused VM'
 
-Remove-AzVM -Id $VM.ID -Force | Out-Null
+Remove-AzVM `
+  -Id $VM.ID `
+  -Force | Out-Null
+
+####################################################################################################
+Display-Progress-Bar -Status 'Deleting unused disk'
+
 Remove-AzDisk `
   -ResourceGroupName $ResourceGroupName `
   -DiskName $PrototypeOSDiskName `
@@ -336,6 +375,7 @@ Remove-AzDisk `
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
+
 Write-Host "        Location: $Location"
 Write-Host "  Resource group: $ResourceGroupName"
 Write-Host "         Gallery: $GalleryName"
