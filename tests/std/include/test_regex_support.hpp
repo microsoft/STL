@@ -3,7 +3,6 @@
 
 #pragma once
 #include <cstdio>
-#include <numeric>
 #include <regex>
 #include <string>
 
@@ -157,10 +156,11 @@ public:
                 }
             }
         } catch (const std::regex_error& e) {
-            std::string groups_string = std::accumulate(groups.cbegin(), groups.cend(), std::string(),
-                [](const std::string& result, const std::string& value) -> std::string {
-                    return !result.empty() ? result + ";" + value : value;
-                });
+            std::string groups_string = "|";
+            for (const auto& el : groups) {
+                groups_string.append(el);
+                groups_string.push_back('|');
+            }
 
             printf(R"(should_capture("%s", "%s", "%s"): regex_error: "%s")"
                    "\n",
