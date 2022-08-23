@@ -1952,9 +1952,9 @@ namespace ranges {
                 if constexpr (_Has_member<_Ty>) {
                     _STL_INTERNAL_STATIC_ASSERT(
                         same_as<decltype(_STD declval<_Ty>()._Unchecked_begin()), _Unwrapped_iterator_t<_Ty>>);
-                    return {_St::_Member, noexcept(_STD declval<_Ty>()._Unchecked_begin())};
+                    return {_St::_Member, noexcept(_Fake_copy_init(_STD declval<_Ty>()._Unchecked_begin()))};
                 } else if constexpr (_Can_begin<_Ty>) {
-                    return {_St::_Unwrap, noexcept(_Unwrap_range_iter<_Ty>(_RANGES begin(_STD declval<_Ty>())))};
+                    return {_St::_Unwrap, noexcept(_Fake_copy_init(_Unwrap_range_iter<_Ty>(_RANGES begin(_STD declval<_Ty>()))))};
                 } else {
                     return {_St::_None};
                 }

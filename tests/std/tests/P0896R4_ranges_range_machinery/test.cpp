@@ -1918,20 +1918,20 @@ namespace unwrapped_begin_end {
         using std::same_as, ranges::_Ubegin, ranges::_Uend;
 
         range<WrappedState::unwrapped> unwrapped;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(not_wrapped)), range<WrappedState::unwrapped>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(not_wrapped)), range<WrappedState::unwrapped>::S>);
+        STATIC_ASSERT(same_as<decltype(_Ubegin(unwrapped)), range<WrappedState::unwrapped>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(unwrapped)), range<WrappedState::unwrapped>::S>);
 
         range<WrappedState::wrapped> wrapped;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(wrapped)), range<WrappedState::wrapped>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(wrapped)), range<WrappedState::wrapped>::S>);
+        STATIC_ASSERT(same_as<decltype(_Ubegin(wrapped)), range<WrappedState::unwrapped>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(wrapped)), range<WrappedState::unwrapped>::S>);
 
         range<WrappedState::wrapped, WrappedState::ignorant> it_wrapped_se_ignorant;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(wrapped)), range<WrappedState::wrapped>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(wrapped)), range<WrappedState::ignorant>::S>);
+        STATIC_ASSERT(same_as<decltype(_Ubegin(it_wrapped_se_ignorant)), range<WrappedState::wrapped>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(it_wrapped_se_ignorant)), range<WrappedState::ignorant>::S>);
 
         range<WrappedState::ignorant, WrappedState::wrapped> it_ignorant_se_wrapped;
-        STATIC_ASSERT(same_as<decltype(_Ubegin(wrapped)), range<WrappedState::ignorant>::I>);
-        STATIC_ASSERT(same_as<decltype(_Uend(wrapped)), range<WrappedState::wrapped>::S>);
+        STATIC_ASSERT(same_as<decltype(_Ubegin(it_ignorant_se_wrapped)), range<WrappedState::ignorant>::I>);
+        STATIC_ASSERT(same_as<decltype(_Uend(it_ignorant_se_wrapped)), range<WrappedState::wrapped>::S>);
 
         with_unchecked uncheckable;
         STATIC_ASSERT(same_as<decltype(_Ubegin(uncheckable)), range<WrappedState::unwrapped>::I>);
