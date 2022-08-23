@@ -552,6 +552,9 @@ void test_gh_731() {
 
     groups.assign({"AAA", "BBB"});
     g_regexTester.should_capture_groups("AAA BBB", R"((A+)\s*(B+)?\s*B*)", groups);
+
+    groups.assign({"c"});
+    g_regexTester.should_capture_groups("aabaac", "(aa|aabaac|ba|b|c)*", groups, std::regex_constants::extended);
 }
 
 void test_gh_993() {

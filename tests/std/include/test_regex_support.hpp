@@ -117,10 +117,11 @@ public:
         }
     }
 
-    void should_capture_groups(
-        const std::string& subject, const std::string& pattern, const std::vector<std::string>& groups) {
+    void should_capture_groups(const std::string& subject, const std::string& pattern,
+        const std::vector<std::string>& groups,
+        const std::regex_constants::syntax_option_type flags = std::regex_constants::ECMAScript) {
         try {
-            const std::regex r(pattern);
+            const std::regex r(pattern, flags);
             std::smatch m;
 
             if (!std::regex_match(subject, m, r)) {
@@ -132,9 +133,10 @@ public:
             }
 
             if (m[0] != subject) {
-                printf(R"(should_capture("%s", "%s"): m[0] == "%s")"
-                       "\n",
-                    subject.c_str(), pattern.c_str(), m[0].str().c_str());
+                printf(R"(should_capture("%s", "%s"): not a full match)"
+                       "\nexpected: \"%s\""
+                       "\nfound:    \"%s\"\n",
+                    subject.c_str(), pattern.c_str(), subject.c_str(), m[0].str().c_str());
                 fail_regex();
             }
 
@@ -150,7 +152,7 @@ public:
                     printf(R"(should_capture("%s", "%s"): index %zd)"
                            "\nexpected: \"%s\""
                            "\nfound:    \"%s\"\n",
-                        subject.c_str(), pattern.c_str(), i, m[i + 1].str().c_str(), groups[i].c_str());
+                        subject.c_str(), pattern.c_str(), i, groups[i].c_str(), m[i + 1].str().c_str());
                     fail_regex();
                 }
             }

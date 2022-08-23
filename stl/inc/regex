@@ -3399,7 +3399,8 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
-bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for better match under leftmost-longest rules
+bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() {
+    // check for better match under the rules of the current regex implementation
     for (unsigned int _Ix = 0; _Ix < _Get_ncap(); ++_Ix) { // check each capture group
         const auto& _Res_grp = _Res._Grps[_Ix];
         const auto& _Tgt_grp = _Tgt_state._Grps[_Ix];
@@ -3418,11 +3419,16 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for bet
         }
 
         if (_Res_grp._Begin != _Tgt_grp._Begin) {
-            // If one of the matches starts before the other, it is considered better.
-            // This is also known as "leftmost", in languages written from left to right.
             ptrdiff_t _Res_dist_from_begin = _STD distance(_Begin, _Res_grp._Begin);
             ptrdiff_t _Tgt_dist_from_begin = _STD distance(_Begin, _Tgt_grp._Begin);
-            return _Tgt_dist_from_begin < _Res_dist_from_begin;
+            if (_Sflags & regex_constants::ECMAScript) {
+                // If one of the matches starts before the other, in ECMAScript, it is considered better.
+                // This is also known as "leftmost", in languages written from left to right.
+                return _Tgt_dist_from_begin < _Res_dist_from_begin;
+            } else {
+                // Otherwise, Unix uses "rightmost" rules.
+                return _Res_dist_from_begin < _Tgt_dist_from_begin;
+            }
         }
 
         if (_Res_grp._End != _Tgt_grp._End) {
