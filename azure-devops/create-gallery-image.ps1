@@ -109,15 +109,8 @@ function Wait-Shutdown {
   Param([string]$ResourceGroupName, [string]$Name)
 
   Write-Host "Waiting for $Name to stop..."
-  while ($true) {
-    $Vm = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status
-    $highestStatus = $Vm.Statuses.Count
-    for ($idx = 0; $idx -lt $highestStatus; $idx++) {
-      if ($Vm.Statuses[$idx].Code -eq 'PowerState/stopped') {
-        return
-      }
-    }
-
+  $StoppedCode = 'PowerState/stopped'
+  while ($StoppedCode -notin (Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status).Statuses.Code) {
     Write-Host '... not stopped yet, sleeping for 10 seconds'
     Start-Sleep -Seconds 10
   }
@@ -377,6 +370,7 @@ Remove-AzDisk `
 Write-Progress -Activity $ProgressActivity -Completed
 
 Write-Host "        Location: $Location"
+Write-Host "         VM size: $VMSize"
 Write-Host "  Resource group: $ResourceGroupName"
 Write-Host "         Gallery: $GalleryName"
 Write-Host "Image definition: $ImageDefinitionName"
