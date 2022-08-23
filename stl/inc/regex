@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cctype>
 #include <climits>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cwchar>
@@ -3398,33 +3399,43 @@ bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Do_class(_Node_base* _Nx) { // ap
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>
-bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for better match under UNIX rules
-    unsigned int _Res_valid_count       = 0;
-    unsigned int _Tgt_state_valid_count = 0;
-
+bool _Matcher<_BidIt, _Elem, _RxTraits, _It>::_Better_match() { // check for better match under leftmost-longest rules
     for (unsigned int _Ix = 0; _Ix < _Get_ncap(); ++_Ix) { // check each capture group
-        if (_Res._Grp_valid[_Ix] && _Tgt_state._Grp_valid[_Ix]) {
-            if (_Res._Grps[_Ix]._Begin != _Tgt_state._Grps[_Ix]._Begin) {
-                return _STD distance(_Begin, _Res._Grps[_Ix]._Begin)
-                     < _STD distance(_Begin, _Tgt_state._Grps[_Ix]._Begin);
+        const auto& _Res_grp = _Res._Grps[_Ix];
+        const auto& _Tgt_grp = _Tgt_state._Grps[_Ix];
+        if (_Res_grp._Begin == _Res_grp._End) {
+            if (_Tgt_grp._Begin == _Tgt_grp._End) {
+                // Both groups are empty or invalid - matches are equivalent.
+                continue;
             }
-
-            if (_Res._Grps[_Ix]._End != _Tgt_state._Grps[_Ix]._End) {
-                return _STD distance(_Begin, _Res._Grps[_Ix]._End) < _STD distance(_Begin, _Tgt_state._Grps[_Ix]._End);
-            }
+            // Target group is valid and non-empty, and current group is either empty or invalid.
+            return true;
+        }
+        if (_Tgt_grp._Begin == _Tgt_grp._End) {
+            // Target group is invalid or empty, and current group is valid and non-empty,
+            // so our current group is the better match.
+            return false;
         }
 
-        if (_Res._Grp_valid[_Ix]) {
-            ++_Res_valid_count;
+        if (_Res_grp._Begin != _Tgt_grp._Begin) {
+            // If one of the matches starts before the other, it is considered better.
+            // This is also known as "leftmost", in languages written from left to right.
+            ptrdiff_t _Res_dist_from_begin = _STD distance(_Begin, _Res_grp._Begin);
+            ptrdiff_t _Tgt_dist_from_begin = _STD distance(_Begin, _Tgt_grp._Begin);
+            return _Tgt_dist_from_begin < _Res_dist_from_begin;
         }
 
-        if (_Tgt_state._Grp_valid[_Ix]) {
-            ++_Tgt_state_valid_count;
+        if (_Res_grp._End != _Tgt_grp._End) {
+            // If one of the matches is longer than the other, and they start at the same point,
+            // it is considered better.
+            ptrdiff_t _Res_size = _STD distance(_Res_grp._Begin, _Res_grp._End);
+            ptrdiff_t _Tgt_size = _STD distance(_Tgt_grp._Begin, _Tgt_grp._End);
+            return _Tgt_size > _Res_size;
         }
     }
 
-    // more captured groups means a better match
-    return _Tgt_state_valid_count > _Res_valid_count;
+    // Use the current match if target isn't better.
+    return false;
 }
 
 template <class _BidIt, class _Elem, class _RxTraits, class _It>

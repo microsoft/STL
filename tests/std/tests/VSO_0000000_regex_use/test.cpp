@@ -546,6 +546,14 @@ void test_VSO_226914_word_boundaries() {
     aWordAny.should_search_fail("aa", match_not_bow | match_not_eow);
 }
 
+void test_gh_731() {
+    std::vector<std::string> groups{"AAA", "BBB", ""};
+    g_regexTester.should_capture_groups("AAA BBB", R"((A+)\s*(B+)?\s*B*(B*)?)", groups);
+
+    groups.assign({"AAA", "BBB"});
+    g_regexTester.should_capture_groups("AAA BBB", R"((A+)\s*(B+)?\s*B*)", groups);
+}
+
 void test_gh_993() {
     // GH-993 regex::icase is not handled correctly for some input.
     {
@@ -579,11 +587,6 @@ void test_gh_993() {
         z_case_regex.should_search_match(lowercase_subject, L"z");
         z_icase_regex.should_search_match(lowercase_subject, L"z");
     }
-}
-
-void test_gh_731() {
-    std::vector<std::string> groups{"AAA", "BBB"};
-    g_regexTester.should_capture_groups("AAA BBB", R"((A+)\s*(B+)?\s*B*)", groups);
 }
 
 int main() {

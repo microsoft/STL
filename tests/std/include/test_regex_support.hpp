@@ -138,11 +138,19 @@ public:
                 fail_regex();
             }
 
+            if (m.size() != groups.size() + 1) {
+                printf(R"(should_capture("%s", "%s"): captures: %zd != %zd)"
+                       "\n",
+                    subject.c_str(), pattern.c_str(), m.size() - 1, groups.size());
+                fail_regex();
+            }
+
             for (size_t i = 0; i < groups.size(); ++i) {
                 if (m[i + 1] != groups[i]) {
-                    printf(R"(should_capture("%s", "%s"): m[%zd] == "%s")"
-                           "\n",
-                        groups[i].c_str(), pattern.c_str(), i, m[i + 1].str().c_str());
+                    printf(R"(should_capture("%s", "%s"): index %zd)"
+                           "\nexpected: \"%s\""
+                           "\nfound:    \"%s\"\n",
+                        subject.c_str(), pattern.c_str(), i, m[i + 1].str().c_str(), groups[i].c_str());
                     fail_regex();
                 }
             }
