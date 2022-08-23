@@ -152,7 +152,7 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
         return {_Last, errc::value_too_large};
     }
 
-    _STD copy_n(_RNext, static_cast<size_t>(_Digits_written), _First);
+    _Copy_n_unchecked4(_RNext, static_cast<size_t>(_Digits_written), _First);
 
     return {_First + _Digits_written, errc{}};
 }

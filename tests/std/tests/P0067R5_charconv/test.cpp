@@ -197,9 +197,11 @@ void test_common_to_chars(
 }
 
 template <typename T>
-void test_integer_to_chars(const T value, const optional<int> opt_base, const string_view correct) {
-
-    test_common_to_chars(value, opt_base, nullopt, correct);
+_CONSTEXPR23 void test_integer_to_chars(const T value, const optional<int> opt_base, const string_view correct) {
+    // This reaches constexpr step limit to quickly
+    if (!_Is_constant_evaluated()) {
+        test_common_to_chars(value, opt_base, nullopt, correct);
+    }
 
     { // Also test successful from_chars() scenarios.
         const char* const correct_first = correct.data();
@@ -387,7 +389,7 @@ constexpr pair<int64_t, array<const char*, 37>> output_negative[] = {
 };
 
 template <typename T>
-void test_integer_to_chars() {
+_CONSTEXPR23 bool test_integer_to_chars() {
     for (int base = 2; base <= 36; ++base) {
         test_integer_to_chars(static_cast<T>(0), base, "0");
         test_integer_to_chars(static_cast<T>(1), base, "1");
@@ -413,12 +415,14 @@ void test_integer_to_chars() {
     }
 
     test_integer_to_chars(static_cast<T>(42), nullopt, "42");
+
+    return true;
 }
 
 enum class TestFromCharsMode { Normal, SignalingNaN };
 
 template <typename T, typename BaseOrFmt>
-void test_from_chars(const string_view input, const BaseOrFmt base_or_fmt, const size_t correct_idx,
+_CONSTEXPR23 void test_from_chars(const string_view input, const BaseOrFmt base_or_fmt, const size_t correct_idx,
     const errc correct_ec, const optional<T> opt_correct = nullopt,
     const TestFromCharsMode mode = TestFromCharsMode::Normal) {
 
@@ -460,7 +464,17 @@ constexpr errc inv_arg = errc::invalid_argument;
 constexpr errc out_ran = errc::result_out_of_range;
 
 template <typename T>
-void test_integer_from_chars() {
+_CONSTEXPR23 bool test_integer_from_chars() {
+    string hundred_zeroes              = string(100, '0');
+    string hundred_zeroes_and_11       = hundred_zeroes + "11"s;
+    string minus_hundred_zeroes        = "-"s + hundred_zeroes;
+    string minus_hundred_zeroes_and_11 = "-"s + hundred_zeroes_and_11;
+
+    string hundred_ones                  = string(100, '1');
+    string hundred_ones_and_atatat       = hundred_ones + "@@@"s;
+    string minus_hundred_ones            = "-"s + hundred_ones;
+    string minus_hundred_ones_and_atatat = "-"s + hundred_ones_and_atatat;
+
     for (int base = 2; base <= 36; ++base) {
         test_from_chars<T>("", base, 0, inv_arg); // no characters
         test_from_chars<T>("@1", base, 0, inv_arg); // '@' is bogus
@@ -497,14 +511,14 @@ void test_integer_from_chars() {
         }
 
         // Test leading zeroes.
-        test_from_chars<T>(string(100, '0'), base, 100, errc{}, static_cast<T>(0));
-        test_from_chars<T>(string(100, '0') + "11"s, base, 102, errc{}, static_cast<T>(base + 1));
+        test_from_chars<T>(hundred_zeroes, base, 100, errc{}, static_cast<T>(0));
+        test_from_chars<T>(hundred_zeroes_and_11, base, 102, errc{}, static_cast<T>(base + 1));
 
         // Test negative zero and negative leading zeroes.
         if constexpr (is_signed_v<T>) {
             test_from_chars<T>("-0", base, 2, errc{}, static_cast<T>(0));
-            test_from_chars<T>("-"s + string(100, '0'), base, 101, errc{}, static_cast<T>(0));
-            test_from_chars<T>("-"s + string(100, '0') + "11"s, base, 103, errc{}, static_cast<T>(-base - 1));
+            test_from_chars<T>(minus_hundred_zeroes, base, 101, errc{}, static_cast<T>(0));
+            test_from_chars<T>(minus_hundred_zeroes_and_11, base, 103, errc{}, static_cast<T>(-base - 1));
         }
 
         // N4713 23.20.3 [charconv.from.chars]/1 "The member ptr of the return value points to the
@@ -513,12 +527,12 @@ void test_integer_from_chars() {
         test_from_chars<T>("11@@@", base, 2, errc{}, static_cast<T>(base + 1));
 
         // When overflowing, we need to keep consuming valid digits, in order to return ptr correctly.
-        test_from_chars<T>(string(100, '1'), base, 100, out_ran);
-        test_from_chars<T>(string(100, '1') + "@@@"s, base, 100, out_ran);
+        test_from_chars<T>(hundred_ones, base, 100, out_ran);
+        test_from_chars<T>(hundred_ones_and_atatat, base, 100, out_ran);
 
         if constexpr (is_signed_v<T>) {
-            test_from_chars<T>("-"s + string(100, '1'), base, 101, out_ran);
-            test_from_chars<T>("-"s + string(100, '1') + "@@@"s, base, 101, out_ran);
+            test_from_chars<T>(minus_hundred_ones, base, 101, out_ran);
+            test_from_chars<T>(minus_hundred_ones_and_atatat, base, 101, out_ran);
         }
     }
 
@@ -538,27 +552,22 @@ void test_integer_from_chars() {
         test_from_chars<T>("-0x1729", 16, 2, errc{}, static_cast<T>(0)); // reads "-0", stops at 'x'
         test_from_chars<T>("-0X1729", 16, 2, errc{}, static_cast<T>(0)); // reads "-0", stops at 'X'
     }
+
+    return true;
 }
 
 template <typename T>
 void test_integer() {
     test_integer_to_chars<T>();
     test_integer_from_chars<T>();
+
+#if _HAS_CXX23
+    static_assert(test_integer_to_chars<T>());
+    static_assert(test_integer_from_chars<T>());
+#endif // _HAS_CXX23
 }
 
-void all_integer_tests() {
-    test_integer<char>();
-    test_integer<signed char>();
-    test_integer<unsigned char>();
-    test_integer<short>();
-    test_integer<unsigned short>();
-    test_integer<int>();
-    test_integer<unsigned int>();
-    test_integer<long>();
-    test_integer<unsigned long>();
-    test_integer<long long>();
-    test_integer<unsigned long long>();
-
+_CONSTEXPR23 bool test_integer_overflow_scenarios() {
     // Test overflow scenarios.
     test_from_chars<unsigned int>("4294967289", 10, 10, errc{}, 4294967289U); // not risky
     test_from_chars<unsigned int>("4294967294", 10, 10, errc{}, 4294967294U); // risky with good digit
@@ -577,6 +586,27 @@ void all_integer_tests() {
     test_from_chars<int>("-2147483648", 10, 11, errc{}, -2147483647 - 1); // risky with max digit
     test_from_chars<int>("-2147483649", 10, 11, out_ran); // risky with bad digit
     test_from_chars<int>("-2147483650", 10, 11, out_ran); // beyond risky
+
+    return true;
+}
+
+void all_integer_tests() {
+    test_integer<char>();
+    test_integer<signed char>();
+    test_integer<unsigned char>();
+    test_integer<short>();
+    test_integer<unsigned short>();
+    test_integer<int>();
+    test_integer<unsigned int>();
+    test_integer<long>();
+    test_integer<unsigned long>();
+    test_integer<long long>();
+    test_integer<unsigned long long>();
+
+    test_integer_overflow_scenarios();
+#if _HAS_CXX23
+    static_assert(test_integer_overflow_scenarios());
+#endif // _HAS_CXX23
 }
 
 void assert_message_bits(const bool b, const char* const msg, const uint32_t bits) {
