@@ -619,6 +619,14 @@ SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
       </Expand>
   </Type>
 
+  <Type Name="std::_Back_binder&lt;*&gt;">
+    <DisplayString>bind_back({_Mypair}, {_Mypair._Myval2,view(noparens)})</DisplayString>
+    <Expand>
+      <Item Name="[f]">_Mypair</Item>
+      <Item Name="[bound_args]">_Mypair._Myval2</Item>
+    </Expand>
+  </Type>
+
 
   <!-- VC 2015 -->
   <Type Name="std::_Mem_fn&lt;*&gt;">

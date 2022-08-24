@@ -280,6 +280,7 @@
 // P2408R5 Ranges Iterators As Inputs To Non-Ranges Algorithms
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
+// P2419R2 Clarify Handling Of Encodings In Localized Formatting Of chrono Types
 // P2432R1 Fix istream_view
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 
@@ -317,12 +318,15 @@
 // P1989R2 Range Constructor For string_view
 // P2077R3 Heterogeneous Erasure Overloads For Associative Containers
 // P2136R3 invoke_r()
+// P2165R4 Compatibility Between tuple, pair, And tuple-like Objects
+//     (changes to std::views::zip)
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
-//     (changes to pair, tuple, vector<bool>::reference and std::views::zip only)
+//     (changes to pair, tuple, vector<bool>::reference, and std::views::zip only)
+// P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2417R2 More constexpr bitset
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 // P2441R2 views::join_with
@@ -1459,10 +1463,6 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 
 #define __cpp_lib_polymorphic_allocator 201902L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
-#define __cpp_lib_ranges 202110L
-#endif // __cpp_lib_concepts
-
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
 #define __cpp_lib_smart_ptr_for_overwrite 202002L
@@ -1495,6 +1495,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
+#define __cpp_lib_bind_back                         202202L
 #define __cpp_lib_byteswap                          202110L
 #define __cpp_lib_constexpr_bitset                  202207L
 #define __cpp_lib_constexpr_typeinfo                202106L
@@ -1569,6 +1570,14 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
 #endif // _HAS_CXX17
+
+#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
+#define __cpp_lib_ranges 202202L // P2387R3 Pipe Support For User-Defined Range Adaptors
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#define __cpp_lib_ranges 202110L // P2415R2 What Is A `view`?
+#endif // _HAS_CXX20
+#endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays

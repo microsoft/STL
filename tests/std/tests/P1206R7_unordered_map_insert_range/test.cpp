@@ -15,14 +15,15 @@
 
 using namespace std;
 
-static constexpr pair<int, int> expected[] = {{0, 20}, {1, 19}, {2, 18}, {3, 17}, {4, 16}, {5, 13}, {6, 12}, {7, 11}};
+static constexpr pair<int, int> expected_vals[] = {
+    {0, 20}, {1, 19}, {2, 18}, {3, 17}, {4, 16}, {5, 13}, {6, 12}, {7, 11}};
 
 template <ranges::input_range Rng>
 void test_unordered_map(Rng&& rng) {
     if constexpr (is_reference_v<ranges::range_reference_t<Rng>>) {
         unordered_map<int, int> m;
         m.insert_range(forward<Rng>(rng));
-        unordered_map<int, int> e{begin(expected), end(expected)};
+        unordered_map<int, int> e{begin(expected_vals), end(expected_vals)};
         assert(m == e);
     }
 }

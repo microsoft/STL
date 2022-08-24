@@ -582,6 +582,7 @@ public:
     }
 
 #if _HAS_CXX23
+    template <int = 0> // see GH-3013
     constexpr void swap(const tuple& _Right) const
         noexcept(conjunction_v<is_nothrow_swappable<const _This>, is_nothrow_swappable<const _Rest>...>) {
         _Swap_adl(_Myfirst._Val, _Right._Myfirst._Val);

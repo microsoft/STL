@@ -1590,22 +1590,9 @@ _CONSTEXPR17 auto invoke(_Callable&& _Obj, _Ty1&& _Arg1, _Types2&&... _Args2) no
 #pragma warning(disable : 4242) // '%s': conversion from '%s' to '%s', possible loss of data (/Wall)
 #pragma warning(disable : 4244) // '%s': conversion from '%s' to '%s', possible loss of data (Yes, duplicated message.)
 #pragma warning(disable : 4365) // '%s': conversion from '%s' to '%s', signed/unsigned mismatch (/Wall)
-#pragma warning(disable : 5215) // '%s' a function parameter with a volatile qualified type is deprecated in C++20
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-volatile"
-#endif // __clang__
-
-template <class _To>
-void _Implicitly_convert_to(_To) noexcept; // not defined
 
 template <class _From, class _To, bool = is_convertible_v<_From, _To>, bool = is_void_v<_To>>
-_INLINE_VAR constexpr bool _Is_nothrow_convertible_v = noexcept(_Implicitly_convert_to<_To>(_STD declval<_From>()));
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif // __clang__
+_INLINE_VAR constexpr bool _Is_nothrow_convertible_v = noexcept(_Fake_copy_init<_To>(_STD declval<_From>()));
 
 #pragma warning(pop)
 
@@ -1632,11 +1619,11 @@ template <class _From, class _To, class = void>
 struct _Invoke_convertible : false_type {};
 
 template <class _From, class _To>
-struct _Invoke_convertible<_From, _To, void_t<decltype(_Implicitly_convert_to<_To>(_Returns_exactly<_From>()))>>
-    : true_type {};
+struct _Invoke_convertible<_From, _To, void_t<decltype(_Fake_copy_init<_To>(_Returns_exactly<_From>()))>> : true_type {
+};
 
 template <class _From, class _To>
-struct _Invoke_nothrow_convertible : bool_constant<noexcept(_Implicitly_convert_to<_To>(_Returns_exactly<_From>()))> {};
+struct _Invoke_nothrow_convertible : bool_constant<noexcept(_Fake_copy_init<_To>(_Returns_exactly<_From>()))> {};
 
 template <class _Result, bool _Nothrow>
 struct _Invoke_traits_common {

@@ -80,10 +80,6 @@ std/iterators/predef.iterators/reverse.iterators/iterator_concept_conformance.co
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cmp/three-way.pass.cpp FAIL
 std/iterators/predef.iterators/reverse.iterators/reverse.iter.cons/assign.pass.cpp FAIL
 
-# optional's comparisons aren't portably constrained (https://reviews.llvm.org/D116884)
-std/concepts/concepts.compare/concepts.totallyordered/totally_ordered.pass.cpp FAIL
-std/concepts/concepts.compare/concept.equalitycomparable/equality_comparable.compile.pass.cpp FAIL
-
 # libc++ doesn't implement LWG-3648: "format should not print bool with 'c'"
 std/utilities/format/format.functions/vformat_to.locale.pass.cpp FAIL
 std/utilities/format/format.functions/vformat_to.pass.cpp FAIL

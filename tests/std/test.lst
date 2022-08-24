@@ -210,6 +210,7 @@ tests\GH_002711_Zc_alignedNew-
 tests\GH_002760_syncstream_memory_leak
 tests\GH_002769_handle_deque_block_pointers
 tests\GH_002789_Hash_vec_Tidy
+tests\GH_002989_nothrow_unwrappable
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3121_constrained_tuple_forwarding_ctor
@@ -543,6 +544,8 @@ tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
 tests\P2321R2_views_zip
+tests\P2387R3_bind_back
+tests\P2387R3_pipe_support_for_user_defined_range_adaptors
 tests\P2401R0_conditional_noexcept_for_exchange
 tests\P2408R5_ranges_iterators_to_classic_algorithms
 tests\P2415R2_owning_view
