@@ -23,8 +23,8 @@ $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
-$ProgressActivity = 'Creating Gallery Image'
-$TotalProgress = 17
+$ProgressActivity = 'Preparing STL CI pool'
+$TotalProgress = 20
 $CurrentProgress = 1
 
 <#
@@ -361,15 +361,16 @@ $ImageVersion = New-AzGalleryImageVersion `
   -Name $ImageVersionName `
   -SourceImageId $VM.ID
 
-
-
-# FIXME EXPERIMENT:
+####################################################################################################
+Display-Progress-Bar -Status 'Registering CloudTest resource provider'
 
 Register-AzResourceProvider `
   -ProviderNamespace 'Microsoft.CloudTest' | Out-Null
 
-$ImageName = $ResourceGroupName + '-Image'
+####################################################################################################
+Display-Progress-Bar -Status 'Creating 1ES image'
 
+$ImageName = $ResourceGroupName + '-Image'
 New-AzResource `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
@@ -378,7 +379,8 @@ New-AzResource `
   -Properties @{ 'imageType' = 'SharedImageGallery'; 'resourceId' = $ImageVersion.Id; } `
   -Force | Out-Null
 
-# FIXME DO WE NEED TO WAIT HERE?
+####################################################################################################
+Display-Progress-Bar -Status 'Creating 1ES Hosted Pool'
 
 $PoolName = $ResourceGroupName + '-Pool'
 
@@ -398,10 +400,6 @@ New-AzResource `
   -ResourceName $PoolName `
   -Properties $PoolProperties `
   -Force | Out-Null
-
-# FIXME DO WE NEED TO WAIT HERE?
-
-
 
 ####################################################################################################
 Display-Progress-Bar -Status 'Deleting unused VM'
