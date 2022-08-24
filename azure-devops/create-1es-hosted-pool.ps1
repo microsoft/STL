@@ -3,7 +3,7 @@
 
 <#
 .SYNOPSIS
-Creates an Azure Compute Gallery image, set up for the STL's CI.
+Creates a 1ES Hosted Pool, set up for the STL's CI.
 
 .DESCRIPTION
 See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
