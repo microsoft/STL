@@ -158,8 +158,7 @@ _NODISCARD _CONSTEXPR23 to_chars_result _Integer_to_chars(
 }
 
 _CONSTEXPR23 to_chars_result to_chars(
-    char* const _First, char* const _Last, const char _Value, const int _Base = 10) noexcept
-/* strengthened */ {
+    char* const _First, char* const _Last, const char _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
 _CONSTEXPR23 to_chars_result to_chars(
@@ -179,8 +178,7 @@ _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, con
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
 _CONSTEXPR23 to_chars_result to_chars(
-    char* const _First, char* const _Last, const int _Value, const int _Base = 10) noexcept
-/* strengthened */ {
+    char* const _First, char* const _Last, const int _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
 _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned int _Value,
@@ -188,8 +186,7 @@ _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, con
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
 _CONSTEXPR23 to_chars_result to_chars(
-    char* const _First, char* const _Last, const long _Value, const int _Base = 10) noexcept
-/* strengthened */ {
+    char* const _First, char* const _Last, const long _Value, const int _Base = 10) noexcept /* strengthened */ {
     return _Integer_to_chars(_First, _Last, _Value, _Base);
 }
 _CONSTEXPR23 to_chars_result to_chars(char* const _First, char* const _Last, const unsigned long _Value,
