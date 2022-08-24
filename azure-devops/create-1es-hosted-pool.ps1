@@ -419,12 +419,4 @@ Remove-AzDisk `
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
 
-Write-Host "        Location: $Location"
-Write-Host "         VM size: $VMSize"
-Write-Host "  Resource group: $ResourceGroupName"
-Write-Host "         Gallery: $GalleryName"
-Write-Host "Image definition: $ImageDefinitionName"
-Write-Host "   Image version: $ImageVersionName"
-Write-Host "           Image: $ImageName"
-Write-Host "            Pool: $PoolName"
-Write-Host 'Finished!'
+Write-Host "Finished creating pool: $PoolName"
