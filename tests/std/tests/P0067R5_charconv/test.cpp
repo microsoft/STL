@@ -465,12 +465,12 @@ constexpr errc out_ran = errc::result_out_of_range;
 
 template <typename T>
 _CONSTEXPR23 bool test_integer_from_chars() {
-    const string hundred_zeroes              = string(100, '0');
+    const string hundred_zeroes(100, '0');
     const string hundred_zeroes_and_11       = hundred_zeroes + "11"s;
     const string minus_hundred_zeroes        = "-"s + hundred_zeroes;
     const string minus_hundred_zeroes_and_11 = "-"s + hundred_zeroes_and_11;
 
-    const string hundred_ones                  = string(100, '1');
+    const string hundred_ones(100, '1');
     const string hundred_ones_and_atatat       = hundred_ones + "@@@"s;
     const string minus_hundred_ones            = "-"s + hundred_ones;
     const string minus_hundred_ones_and_atatat = "-"s + hundred_ones_and_atatat;
