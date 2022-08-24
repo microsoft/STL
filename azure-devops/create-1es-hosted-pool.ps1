@@ -129,7 +129,7 @@ Display-Progress-Bar -Status 'Creating resource group'
 $ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
 $AdminPW = New-Password
 # TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
-$SimplySecureV2OptInTag = @{'NRMSV2OptIn'=$CurrentDate.ToString('yyyyMMdd')}
+$SimplySecureV2OptInTag = @{ 'NRMSV2OptIn' = $CurrentDate.ToString('yyyyMMdd'); }
 
 New-AzResourceGroup `
   -Name $ResourceGroupName `
@@ -262,7 +262,7 @@ $ProvisionImageResult = Invoke-AzVMRunCommand `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\provision-image.ps1" `
-  -Parameter @{AdminUserPassword = $AdminPW }
+  -Parameter @{ AdminUserPassword = $AdminPW }
 
 Write-Host "provision-image.ps1 output: $($ProvisionImageResult.value.Message)"
 
@@ -353,13 +353,55 @@ New-AzGalleryImageDefinition `
 Display-Progress-Bar -Status 'Creating image version'
 
 $ImageVersionName = $CurrentDate.ToString('yyyyMMdd.HHmm.0')
-New-AzGalleryImageVersion `
+$ImageVersion = New-AzGalleryImageVersion `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
   -GalleryName $GalleryName `
   -GalleryImageDefinitionName $ImageDefinitionName `
   -Name $ImageVersionName `
-  -SourceImageId $VM.ID | Out-Null
+  -SourceImageId $VM.ID
+
+
+
+# FIXME EXPERIMENT:
+
+Register-AzResourceProvider `
+  -ProviderNamespace 'Microsoft.CloudTest' | Out-Null
+
+$ImageName = $ResourceGroupName + '-Image'
+
+New-AzResource `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -ResourceType 'Microsoft.CloudTest/Images' `
+  -ResourceName $ImageName `
+  -Properties @{ 'imageType' = 'SharedImageGallery'; 'resourceId' = $ImageVersion.Id; } `
+  -Force | Out-Null
+
+# FIXME DO WE NEED TO WAIT HERE?
+
+$PoolName = $ResourceGroupName + '-Pool'
+
+$PoolProperties = @{
+  'organization' = 'https://dev.azure.com/vclibs'
+  'projects' = @('STL')
+  'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; }
+  'images' = @(@{ 'imageName' = $ImageName; 'poolBufferPercentage' = '100'; })
+  'maxPoolSize' = 64
+  'agentProfile' = @{ 'type' = 'Stateless'; }
+}
+
+New-AzResource `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -ResourceType 'Microsoft.CloudTest/hostedpools' `
+  -ResourceName $PoolName `
+  -Properties $PoolProperties `
+  -Force | Out-Null
+
+# FIXME DO WE NEED TO WAIT HERE?
+
+
 
 ####################################################################################################
 Display-Progress-Bar -Status 'Deleting unused VM'
@@ -385,4 +427,6 @@ Write-Host "  Resource group: $ResourceGroupName"
 Write-Host "         Gallery: $GalleryName"
 Write-Host "Image definition: $ImageDefinitionName"
 Write-Host "   Image version: $ImageVersionName"
+Write-Host "           Image: $ImageName"
+Write-Host "            Pool: $PoolName"
 Write-Host 'Finished!'
