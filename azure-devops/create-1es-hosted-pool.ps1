@@ -24,7 +24,7 @@ $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Preparing STL CI pool'
-$TotalProgress = 20
+$TotalProgress = 23
 $CurrentProgress = 1
 
 <#
@@ -415,6 +415,30 @@ Remove-AzDisk `
   -ResourceGroupName $ResourceGroupName `
   -DiskName $PrototypeOSDiskName `
   -Force | Out-Null
+
+####################################################################################################
+Display-Progress-Bar -Status 'Deleting unused network interface'
+
+Remove-AzNetworkInterface `
+-ResourceGroupName $ResourceGroupName `
+-Name $NicName `
+-Force | Out-Null
+
+####################################################################################################
+Display-Progress-Bar -Status 'Deleting unused virtual network'
+
+Remove-AzVirtualNetwork `
+-ResourceGroupName $ResourceGroupName `
+-Name $VirtualNetworkName `
+-Force | Out-Null
+
+####################################################################################################
+Display-Progress-Bar -Status 'Deleting unused network security group'
+
+Remove-AzNetworkSecurityGroup `
+-ResourceGroupName $ResourceGroupName `
+-Name $NetworkSecurityGroupName `
+-Force | Out-Null
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
