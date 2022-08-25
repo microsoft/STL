@@ -39,7 +39,7 @@ A message describing the current operation being performed.
 #>
 function Display-ProgressBar {
   [CmdletBinding(PositionalBinding=$false)]
-  Param([string]$Status)
+  Param([Parameter(Mandatory)][string]$Status)
 
   Write-Progress `
     -Activity $ProgressActivity `
@@ -107,7 +107,10 @@ The name of the virtual machine to wait on.
 #>
 function Wait-Shutdown {
   [CmdletBinding(PositionalBinding=$false)]
-  Param([string]$ResourceGroupName, [string]$Name)
+  Param(
+    [Parameter(Mandatory)][string]$ResourceGroupName,
+    [Parameter(Mandatory)][string]$Name
+  )
 
   Write-Host "Waiting for $Name to stop..."
   $StoppedCode = 'PowerState/stopped'
