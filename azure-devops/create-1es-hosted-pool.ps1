@@ -38,7 +38,7 @@ Display-ProgressBar increments $CurrentProgress and displays $Status in the prog
 A message describing the current operation being performed.
 #>
 function Display-ProgressBar {
-  [CmdletBinding()]
+  [CmdletBinding(PositionalBinding=$false)]
   Param([string]$Status)
 
   Write-Progress `
@@ -59,6 +59,7 @@ only alphanumeric characters, underscore, and dash.
 The length of the returned password.
 #>
 function New-Password {
+  [CmdletBinding(PositionalBinding=$false)]
   Param ([int] $Length = 32)
 
   # This 64-character alphabet generates 6 bits of entropy per character.
@@ -105,7 +106,7 @@ The name of the resource group to look up the VM in.
 The name of the virtual machine to wait on.
 #>
 function Wait-Shutdown {
-  [CmdletBinding()]
+  [CmdletBinding(PositionalBinding=$false)]
   Param([string]$ResourceGroupName, [string]$Name)
 
   Write-Host "Waiting for $Name to stop..."
