@@ -11,16 +11,27 @@
 #if _HAS_CXX20
 #include <compare>
 
-#ifndef __EDG__ // TRANSITION, GH-395
-#include <concepts>
-#endif // __EDG__
+namespace ordtest {
+    using std::strong_ordering;
+}
+#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+namespace ordtest {
+    enum class strong_ordering : signed char {
+        less       = -1,
+        equal      = 0,
+        equivalent = 0,
+        greater    = 1,
+    };
+}
 #endif // _HAS_CXX20
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#include <concepts>
+
 #define SAME_AS std::same_as
 #else // ^^^ has concepts / vvv has no concepts
 #define SAME_AS std::is_same_v
-#endif // _HAS_CXX20 && !defined(__EDG__)
+#endif // __cpp_lib_concepts
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -41,32 +52,33 @@ constexpr void check_equal(const I& x) {
 #endif // _HAS_CXX20
 }
 
+template <class I1, class I2>
+constexpr void check_order(const I1& x, const I2& y, const ordtest::strong_ordering ord) {
+    assert((x == y) == (ord == ordtest::strong_ordering::equal));
+    assert((x != y) == (ord != ordtest::strong_ordering::equal));
+    assert((x < y) == (ord == ordtest::strong_ordering::less));
+    assert((x > y) == (ord == ordtest::strong_ordering::greater));
+    assert((x <= y) == (ord != ordtest::strong_ordering::greater));
+    assert((x >= y) == (ord != ordtest::strong_ordering::less));
+
+    assert((y == x) == (ord == ordtest::strong_ordering::equal));
+    assert((y != x) == (ord != ordtest::strong_ordering::equal));
+    assert((y < x) == (ord == ordtest::strong_ordering::greater));
+    assert((y > x) == (ord == ordtest::strong_ordering::less));
+    assert((y <= x) == (ord != ordtest::strong_ordering::less));
+    assert((y >= x) == (ord != ordtest::strong_ordering::greater));
+
 #if _HAS_CXX20
-constexpr void check_order(const auto& x, const auto& y, const std::strong_ordering ord) {
-    assert((x == y) == (ord == std::strong_ordering::equal));
-    assert((x != y) == (ord != std::strong_ordering::equal));
-    assert((x < y) == (ord == std::strong_ordering::less));
-    assert((x > y) == (ord == std::strong_ordering::greater));
-    assert((x <= y) == (ord != std::strong_ordering::greater));
-    assert((x >= y) == (ord != std::strong_ordering::less));
-
-    assert((y == x) == (ord == std::strong_ordering::equal));
-    assert((y != x) == (ord != std::strong_ordering::equal));
-    assert((y < x) == (ord == std::strong_ordering::greater));
-    assert((y > x) == (ord == std::strong_ordering::less));
-    assert((y <= x) == (ord != std::strong_ordering::less));
-    assert((y >= x) == (ord != std::strong_ordering::greater));
-
     assert((x <=> y) == (ord <=> 0));
     assert((y <=> x) == (0 <=> ord));
-}
 #endif // _HAS_CXX20
+}
 
 constexpr bool test_unsigned() {
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     STATIC_ASSERT(std::regular<_Unsigned128>);
-    STATIC_ASSERT(std::three_way_comparable<_Unsigned128, std::strong_ordering>);
-#endif // _HAS_CXX20 && !defined(__EDG__)
+    STATIC_ASSERT(std::three_way_comparable<_Unsigned128, ordtest::strong_ordering>);
+#endif // __cpp_lib_concepts
 
     STATIC_ASSERT(std::numeric_limits<_Unsigned128>::min() == 0);
     STATIC_ASSERT(std::numeric_limits<_Unsigned128>::max() == ~_Unsigned128{});
@@ -113,13 +125,13 @@ constexpr bool test_unsigned() {
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, unsigned long long>, _Unsigned128>);
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Unsigned128, _Signed128>, _Unsigned128>);
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     STATIC_ASSERT(std::_Integer_class<_Unsigned128>);
     STATIC_ASSERT(std::_Integer_like<_Unsigned128>);
     STATIC_ASSERT(!std::_Signed_integer_like<_Unsigned128>);
     STATIC_ASSERT(SAME_AS<std::_Make_unsigned_like_t<_Unsigned128>, _Unsigned128>);
     STATIC_ASSERT(SAME_AS<std::_Make_signed_like_t<_Unsigned128>, _Signed128>);
-#endif // _HAS_CXX20 && !defined(__EDG__)
+#endif // __cpp_lib_concepts
 
     check_equal(_Unsigned128{});
     check_equal(_Unsigned128{42});
@@ -127,15 +139,13 @@ constexpr bool test_unsigned() {
     check_equal(_Unsigned128{0x11111111'11111111, 0x22222222'22222222});
     check_equal(0x22222222'22222222'11111111'11111111__u128);
 
-#if _HAS_CXX20
-    check_order(_Unsigned128{42}, _Unsigned128{-42}, std::strong_ordering::less);
-    check_order(_Unsigned128{0, 42}, _Unsigned128{0, 52}, std::strong_ordering::less); // ordered only by MSW
-    check_order(_Unsigned128{42}, _Unsigned128{52}, std::strong_ordering::less); // ordered only by LSW
+    check_order(_Unsigned128{42}, _Unsigned128{-42}, ordtest::strong_ordering::less);
+    check_order(_Unsigned128{0, 42}, _Unsigned128{0, 52}, ordtest::strong_ordering::less); // ordered only by MSW
+    check_order(_Unsigned128{42}, _Unsigned128{52}, ordtest::strong_ordering::less); // ordered only by LSW
     check_order(_Unsigned128{0x11111111'11111111, 0x22222222'22222222},
-        _Unsigned128{0x01010101'01010101, 0x01010101'01010101}, std::strong_ordering::greater);
+        _Unsigned128{0x01010101'01010101, 0x01010101'01010101}, ordtest::strong_ordering::greater);
     check_order(0x22222222'22222222'11111111'11111111__u128, 0x01010101'01010101'01010101'01010101__u128,
-        std::strong_ordering::greater);
-#endif // _HAS_CXX20
+        ordtest::strong_ordering::greater);
 
     {
         _Unsigned128 u{42};
@@ -382,10 +392,10 @@ constexpr bool test_unsigned() {
 }
 
 constexpr bool test_signed() {
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     STATIC_ASSERT(std::regular<_Signed128>);
-    STATIC_ASSERT(std::three_way_comparable<_Signed128, std::strong_ordering>);
-#endif // _HAS_CXX20 && !defined(__EDG__)
+    STATIC_ASSERT(std::three_way_comparable<_Signed128, ordtest::strong_ordering>);
+#endif // __cpp_lib_concepts
 
     STATIC_ASSERT(std::numeric_limits<_Signed128>::min() == _Signed128{0, 1ull << 63});
     STATIC_ASSERT(std::numeric_limits<_Signed128>::max() == _Signed128{~0ull, ~0ull >> 1});
@@ -430,13 +440,13 @@ constexpr bool test_signed() {
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, long long>, _Signed128>);
     STATIC_ASSERT(SAME_AS<std::common_type_t<_Signed128, unsigned long long>, _Signed128>);
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     STATIC_ASSERT(std::_Integer_class<_Signed128>);
     STATIC_ASSERT(std::_Integer_like<_Signed128>);
     STATIC_ASSERT(std::_Signed_integer_like<_Signed128>);
     STATIC_ASSERT(SAME_AS<std::_Make_unsigned_like_t<_Signed128>, _Unsigned128>);
     STATIC_ASSERT(SAME_AS<std::_Make_signed_like_t<_Signed128>, _Signed128>);
-#endif // _HAS_CXX20 && !defined(__EDG__)
+#endif // __cpp_lib_concepts
 
     check_equal(_Signed128{});
     check_equal(_Signed128{42});
@@ -444,34 +454,30 @@ constexpr bool test_signed() {
     check_equal(_Signed128{0x11111111'11111111, 0x22222222'22222222});
     check_equal(0x22222222'22222222'11111111'11111111__i128);
 
-#if _HAS_CXX20
-    check_order(_Signed128{42}, _Signed128{-42}, std::strong_ordering::greater);
+    check_order(_Signed128{42}, _Signed128{-42}, ordtest::strong_ordering::greater);
     check_order(_Signed128{0x11111111'11111111, 0x22222222'22222222},
-        _Signed128{0x01010101'01010101, 0x01010101'01010101}, std::strong_ordering::greater);
+        _Signed128{0x01010101'01010101, 0x01010101'01010101}, ordtest::strong_ordering::greater);
     check_order(0x22222222'22222222'11111111'11111111__i128, 0x01010101'01010101'01010101'01010101__i128,
-        std::strong_ordering::greater);
-    check_order(_Signed128{~0ull, ~0ull}, _Signed128{-1}, std::strong_ordering::equal);
+        ordtest::strong_ordering::greater);
+    check_order(_Signed128{~0ull, ~0ull}, _Signed128{-1}, ordtest::strong_ordering::equal);
 
-    check_order(_Signed128{-2}, _Signed128{-1}, std::strong_ordering::less);
-    check_order(_Signed128{-2}, _Signed128{1}, std::strong_ordering::less);
-    check_order(_Signed128{2}, _Signed128{-1}, std::strong_ordering::greater);
-    check_order(_Signed128{2}, _Signed128{1}, std::strong_ordering::greater);
-#endif // _HAS_CXX20
+    check_order(_Signed128{-2}, _Signed128{-1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{-2}, _Signed128{1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{2}, _Signed128{-1}, ordtest::strong_ordering::greater);
+    check_order(_Signed128{2}, _Signed128{1}, ordtest::strong_ordering::greater);
 
     check_equal(_Signed128{0, 0});
-#if _HAS_CXX20
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 0}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, (1ull << 63)}, std::strong_ordering::equal);
-    check_order(_Signed128{0, 0}, _Signed128{1, 0}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 0}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, (1ull << 63)}, std::strong_ordering::less);
-    check_order(_Signed128{0, 0}, _Signed128{0, 1}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 1}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 1 | (1ull << 63)}, std::strong_ordering::less);
-    check_order(_Signed128{0, 0}, _Signed128{1, 1}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 1}, std::strong_ordering::less);
-    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 1 | (1ull << 63)}, std::strong_ordering::less);
-#endif // _HAS_CXX20
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 0}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, (1ull << 63)}, ordtest::strong_ordering::equal);
+    check_order(_Signed128{0, 0}, _Signed128{1, 0}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 0}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, (1ull << 63)}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, 0}, _Signed128{0, 1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{0, 1 | (1ull << 63)}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, 0}, _Signed128{1, 1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 1}, ordtest::strong_ordering::less);
+    check_order(_Signed128{0, (1ull << 63)}, _Signed128{1, 1 | (1ull << 63)}, ordtest::strong_ordering::less);
 
     assert((_Signed128{-2} == _Unsigned128{0ull - 2, ~0ull}));
     assert((_Unsigned128{_Signed128{-2}} == _Unsigned128{0ull - 2, ~0ull}));
@@ -836,7 +842,7 @@ constexpr bool test_signed() {
 template <class T>
 T val() noexcept;
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
 template <class T, class U>
 concept CanConditional = requires {
     true ? val<T>() : val<U>();
@@ -847,7 +853,7 @@ constexpr bool CanConditional = false;
 
 template <class T, class U>
 constexpr bool CanConditional<T, U, std::void_t<decltype(true ? val<T>() : val<U>())>> = true;
-#endif // _HAS_CXX20 && !defined(__EDG__)
+#endif // __cpp_lib_concepts
 
 constexpr bool test_cross() {
     // Test the behavior of cross-type operations.
@@ -900,13 +906,13 @@ constexpr bool test_cross() {
     STATIC_ASSERT(!CanConditional<_Unsigned128, _Signed128>);
     STATIC_ASSERT(!CanConditional<_Signed128, _Unsigned128>);
 
-#if _HAS_CXX20 && !defined(__EDG__) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts // TRANSITION, GH-395
     // Conversions between integer-class types with the same width and differing
     // signedness are narrowing, so the three-way comparison operator should
     // reject mixed operands of such types.
     STATIC_ASSERT(!std::three_way_comparable_with<_Unsigned128, _Signed128>);
     STATIC_ASSERT(!std::three_way_comparable_with<_Signed128, _Unsigned128>);
-#endif // _HAS_CXX20 && !defined(__EDG__)
+#endif // __cpp_lib_concepts
 
     // Other comparison operators behave as they do for operands of mixed
     // integral types; when the operands have the same width, the signed operand
