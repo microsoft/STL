@@ -154,7 +154,7 @@ constexpr bool test_leap_second() {
     static_assert(noexcept(equal >= leap));
     static_assert(noexcept(leap >= equal));
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
     static_assert(is_eq(leap <=> equal));
     static_assert(is_lt(leap <=> larger));
     static_assert(is_gt(leap <=> smaller));

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <version> // TRANSITION, GH-395
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
 
 #include <ranges>
 
@@ -10,6 +10,6 @@
 
 static_assert(std::is_eq(std::partial_ordering::equivalent));
 
-#endif // TRANSITION, GH-395
+#endif // __cpp_lib_concepts
 
 void test_ranges() {}
