@@ -25,13 +25,12 @@ $CurrentDate = Get-Date
 $Location = 'northeurope'
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
-$LiveVMPrefix = 'BUILD'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 15
+$TotalProgress = 13
 $CurrentProgress = 1
 
 <#
@@ -129,7 +128,6 @@ Display-Progress-Bar -Status 'Setting the subscription context'
 
 Set-AzContext `
   -SubscriptionName CPP_STL_GitHub | Out-Null
-az account set --subscription CPP_STL_GitHub
 
 ####################################################################################################
 Display-Progress-Bar -Status 'Creating resource group'
@@ -321,8 +319,6 @@ $VM = Get-AzVM `
   -Name $ProtoVMName
 
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
-$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID -HyperVGeneration 'V2'
-$Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
 
 ####################################################################################################
 Display-Progress-Bar -Status 'Deleting unused VM'
@@ -338,82 +334,6 @@ Remove-AzDisk `
   -ResourceGroupName $ResourceGroupName `
   -DiskName $PrototypeOSDiskName `
   -Force | Out-Null
-
-####################################################################################################
-Display-Progress-Bar -Status 'Creating scale set'
-
-$VmssIpConfigName = $ResourceGroupName + '-VmssIpConfig'
-$VmssIpConfig = New-AzVmssIpConfig -SubnetId $Nic.IpConfigurations[0].Subnet.Id -Primary -Name $VmssIpConfigName
-$VmssName = $ResourceGroupName + '-Vmss'
-$Vmss = New-AzVmssConfig `
-  -Location $Location `
-  -SkuCapacity 0 `
-  -SkuName $VMSize `
-  -SkuTier 'Standard' `
-  -Overprovision $false `
-  -UpgradePolicyMode Manual `
-  -EvictionPolicy Delete `
-  -Priority Spot `
-  -MaxPrice -1
-
-$Vmss = Add-AzVmssNetworkInterfaceConfiguration `
-  -VirtualMachineScaleSet $Vmss `
-  -Primary $true `
-  -IpConfiguration $VmssIpConfig `
-  -NetworkSecurityGroupId $NetworkSecurityGroup.Id `
-  -Name $NicName
-
-$Vmss = Set-AzVmssOsProfile `
-  -VirtualMachineScaleSet $Vmss `
-  -ComputerNamePrefix $LiveVMPrefix `
-  -AdminUsername 'AdminUser' `
-  -AdminPassword $AdminPW `
-  -WindowsConfigurationProvisionVMAgent $true `
-  -WindowsConfigurationEnableAutomaticUpdate $true
-
-$Vmss = Set-AzVmssStorageProfile `
-  -VirtualMachineScaleSet $Vmss `
-  -OsDiskCreateOption 'FromImage' `
-  -OsDiskCaching ReadWrite `
-  -ImageReferenceId $Image.Id
-
-$Vmss = New-AzVmss `
-  -ResourceGroupName $ResourceGroupName `
-  -Name $VmssName `
-  -VirtualMachineScaleSet $Vmss
-
-####################################################################################################
-Display-Progress-Bar -Status 'Enabling VMSS diagnostic logs'
-
-$StorageAccountName = 'stlvmssdiaglogssa'
-
-$ExpirationDate = (Get-Date -AsUTC).AddYears(1).ToString('yyyy-MM-ddTHH:mmZ')
-
-$StorageAccountSASToken = $(az storage account generate-sas `
-  --account-name $StorageAccountName `
-  --expiry $ExpirationDate `
-  --permissions acuw `
-  --resource-types co `
-  --services bt `
-  --https-only `
-  --output tsv `
-  2> $null)
-
-$DiagnosticsDefaultConfig = $(az vmss diagnostics get-default-config --is-windows-os 2> $null). `
-  Replace('__DIAGNOSTIC_STORAGE_ACCOUNT__', $StorageAccountName). `
-  Replace('__VM_OR_VMSS_RESOURCE_ID__', $Vmss.Id)
-
-Out-File -FilePath "$PSScriptRoot\vmss-config.json" -InputObject $DiagnosticsDefaultConfig
-
-$DiagnosticsProtectedSettings = "{'storageAccountName': '$StorageAccountName', "
-$DiagnosticsProtectedSettings += "'storageAccountSasToken': '?$StorageAccountSASToken'}"
-
-az vmss diagnostics set `
-  --resource-group $ResourceGroupName `
-  --vmss-name $VmssName `
-  --settings "$PSScriptRoot\vmss-config.json" `
-  --protected-settings "$DiagnosticsProtectedSettings" `
-  --output none
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
