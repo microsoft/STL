@@ -126,7 +126,7 @@ Set-AzContext `
 ####################################################################################################
 Display-Progress-Bar -Status 'Creating resource group'
 
-$ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
+$ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 $AdminPW = New-Password
 # TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
 $SimplySecureV2OptInTag = @{ 'NRMSV2OptIn' = $CurrentDate.ToString('yyyyMMdd'); }
@@ -317,7 +317,7 @@ $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
 ####################################################################################################
 Display-Progress-Bar -Status 'Creating gallery'
 
-$GalleryName = 'StlBuild_' + $CurrentDate.ToString('yyyy_MM_dd_THHmm') + '_Gallery'
+$GalleryName = 'StlBuild_' + $CurrentDate.ToString('yyyy_MM_ddTHHmm') + '_Gallery'
 $Gallery = New-AzGallery `
   -Location $Location `
   -ResourceGroupName $ResourceGroupName `
