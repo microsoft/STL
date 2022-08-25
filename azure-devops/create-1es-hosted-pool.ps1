@@ -137,7 +137,7 @@ Display-Progress-Bar -Status 'Creating resource group'
 $ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
 $AdminPW = New-Password
 # TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
-$SimplySecureV2OptInTag = @{'NRMSV2OptIn'=$CurrentDate.ToString('yyyyMMdd')}
+$SimplySecureV2OptInTag = @{ 'NRMSV2OptIn' = $CurrentDate.ToString('yyyyMMdd'); }
 
 New-AzResourceGroup `
   -Name $ResourceGroupName `
@@ -270,7 +270,7 @@ $ProvisionImageResult = Invoke-AzVMRunCommand `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\provision-image.ps1" `
-  -Parameter @{AdminUserPassword = $AdminPW }
+  -Parameter @{ AdminUserPassword = $AdminPW; }
 
 Write-Host "provision-image.ps1 output: $($ProvisionImageResult.value.Message)"
 
