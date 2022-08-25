@@ -418,6 +418,5 @@ Remove-AzDisk `
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
-Write-Host "Location: $Location"
-Write-Host "Resource group name: $ResourceGroupName"
-Write-Host 'Finished!'
+
+Write-Host "Finished creating pool: $PoolName"
