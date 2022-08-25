@@ -19,7 +19,7 @@
 #include <compare>
 #define _ZERO_OR_NO_INIT
 #else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
-#define _ZERO_OR_NO_INIT = {0} // Trivial default initialization is not allowed in constexpr functions before C++20.
+#define _ZERO_OR_NO_INIT {} // Trivial default initialization is not allowed in constexpr functions before C++20.
 #endif // _HAS_CXX20
 
 #ifdef __cpp_lib_concepts
@@ -1468,26 +1468,30 @@ inline namespace literals {
 
             template <unsigned int _Base, char... _Chars>
             _CONSTEVAL _U128_parse_result _Parse_u128_impl() noexcept {
-                constexpr char _Char_seq[]{_Chars..., '\0'};
-                constexpr auto _U128_max = (_STD numeric_limits<_Unsigned128>::max)();
+                if constexpr (sizeof...(_Chars) == 0) {
+                    return {_U128_parse_status::_Valid, 0};
+                } else {
+                    constexpr char _Char_seq[]{_Chars...};
+                    constexpr auto _U128_max = (_STD numeric_limits<_Unsigned128>::max)();
 
-                _Unsigned128 _Val{};
-                for (size_t _Ind = 0; _Ind != sizeof...(_Chars); ++_Ind) {
-                    if (_Char_seq[_Ind] == '\'') {
-                        continue;
-                    }
+                    _Unsigned128 _Val{};
+                    for (const char _Ch : _Char_seq) {
+                        if (_Ch == '\'') {
+                            continue;
+                        }
 
-                    const unsigned int _Digit = _Char_to_digit(_Char_seq[_Ind]);
-                    if (_Digit == static_cast<unsigned int>(-1)) {
-                        return {_U128_parse_status::_Invalid, _Unsigned128{}};
-                    }
-                    if ((_Val > _U128_max / _Base) || (_Base * _Val > _U128_max - _Digit)) {
-                        return {_U128_parse_status::_Overflow, _Unsigned128{}};
-                    }
+                        const unsigned int _Digit = _Char_to_digit(_Ch);
+                        if (_Digit == static_cast<unsigned int>(-1)) {
+                            return {_U128_parse_status::_Invalid, _Unsigned128{}};
+                        }
+                        if ((_Val > _U128_max / _Base) || (_Base * _Val > _U128_max - _Digit)) {
+                            return {_U128_parse_status::_Overflow, _Unsigned128{}};
+                        }
 
-                    _Val = _Base * _Val + _Digit;
+                        _Val = _Base * _Val + _Digit;
+                    }
+                    return {_U128_parse_status::_Valid, _Val};
                 }
-                return {_U128_parse_status::_Valid, _Val};
             }
 
             template <char... _Chars>
