@@ -279,7 +279,7 @@ New-AzVm `
   -VM $VM | Out-Null
 
 ####################################################################################################
-Display-Progress-Bar -Status 'Running provisioning script provision-image.ps1 in VM'
+Display-Progress-Bar -Status 'Running provision-image.ps1 in VM'
 
 $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
@@ -303,7 +303,7 @@ Display-Progress-Bar -Status 'Sleeping after restart'
 Start-Sleep -Seconds 60
 
 ####################################################################################################
-Display-Progress-Bar -Status 'Running provisioning script sysprep.ps1 in VM'
+Display-Progress-Bar -Status 'Running sysprep.ps1 in VM'
 
 Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
