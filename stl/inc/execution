@@ -1189,7 +1189,7 @@ struct _Static_partitioned_for_each2 { // for_each task scheduled on the system 
 template <class _ExPo, class _FwdIt, class _Fn, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 void for_each(_ExPo&&, _FwdIt _First, _FwdIt _Last, _Fn _Func) noexcept /* terminates */ {
     // perform function for each element [_First, _Last) with the indicated execution policy
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _Adl_verify_range(_First, _Last);
     auto _UFirst      = _Get_unwrapped(_First);
     const auto _ULast = _Get_unwrapped(_Last);
