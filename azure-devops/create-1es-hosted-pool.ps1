@@ -127,7 +127,8 @@ function Wait-Shutdown {
 ####################################################################################################
 Display-Progress-Bar -Status 'Setting the subscription context'
 
-Set-AzContext -SubscriptionName CPP_STL_GitHub | Out-Null
+Set-AzContext `
+  -SubscriptionName CPP_STL_GitHub | Out-Null
 az account set --subscription CPP_STL_GitHub
 
 ####################################################################################################
@@ -137,7 +138,12 @@ $ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
 $AdminPW = New-Password
 # TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
 $SimplySecureV2OptInTag = @{"NRMSV2OptIn"=$CurrentDate.ToString('yyyyMMdd')}
-New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Tag $SimplySecureV2OptInTag | Out-Null
+
+New-AzResourceGroup `
+  -Name $ResourceGroupName `
+  -Location $Location `
+  -Tag $SimplySecureV2OptInTag | Out-Null
+
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
@@ -223,7 +229,12 @@ $Nic = New-AzNetworkInterface `
   -Location $Location `
   -Subnet $VirtualNetwork.Subnets[0]
 
-$VM = New-AzVMConfig -Name $ProtoVMName -VMSize $VMSize -Priority 'Spot' -MaxPrice -1
+$VM = New-AzVMConfig `
+  -Name $ProtoVMName `
+  -VMSize $VMSize `
+  -Priority 'Spot' `
+  -MaxPrice -1
+
 $VM = Set-AzVMOperatingSystem `
   -VM $VM `
   -Windows `
@@ -231,7 +242,10 @@ $VM = Set-AzVMOperatingSystem `
   -Credential $Credential `
   -ProvisionVMAgent
 
-$VM = Add-AzVMNetworkInterface -VM $VM -Id $Nic.Id
+$VM = Add-AzVMNetworkInterface `
+  -VM $VM `
+  -Id $Nic.Id
+
 $VM = Set-AzVMSourceImage `
   -VM $VM `
   -PublisherName $ImagePublisher `
@@ -239,7 +253,10 @@ $VM = Set-AzVMSourceImage `
   -Skus $ImageSku `
   -Version latest
 
-$VM = Set-AzVMBootDiagnostic -VM $VM -Disable
+$VM = Set-AzVMBootDiagnostic `
+  -VM $VM `
+  -Disable
+
 New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
@@ -296,7 +313,10 @@ Set-AzVM `
   -Name $ProtoVMName `
   -Generalized | Out-Null
 
-$VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+$VM = Get-AzVM `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $ProtoVMName
+
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
 $ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID -HyperVGeneration 'V2'
 $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
@@ -304,7 +324,10 @@ $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupN
 ####################################################################################################
 Display-Progress-Bar -Status 'Deleting unused VM and disk'
 
-Remove-AzVM -Id $VM.ID -Force | Out-Null
+Remove-AzVM `
+  -Id $VM.ID `
+  -Force | Out-Null
+
 Remove-AzDisk `
   -ResourceGroupName $ResourceGroupName `
   -DiskName $PrototypeOSDiskName `
