@@ -24,7 +24,7 @@ $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Preparing STL CI pool'
-$TotalProgress = 13
+$TotalProgress = 20
 $CurrentProgress = 1
 
 <#
@@ -313,6 +313,93 @@ $VM = Get-AzVM `
   -Name $ProtoVMName
 
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
+
+####################################################################################################
+Display-Progress-Bar -Status 'Creating gallery'
+
+$GalleryName = 'StlBuild_' + $CurrentDate.ToString('yyyy_MM_dd_THHmm') + '_Gallery'
+$Gallery = New-AzGallery `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $GalleryName
+
+####################################################################################################
+Display-Progress-Bar -Status 'Granting access to 1ES Resource Management'
+
+$ServicePrincipalObjectId = (Get-AzADServicePrincipal -DisplayName '1ES Resource Management').Id
+
+New-AzRoleAssignment `
+  -ObjectId $ServicePrincipalObjectId `
+  -RoleDefinitionName 'Reader' `
+  -Scope $Gallery.Id | Out-Null
+
+####################################################################################################
+Display-Progress-Bar -Status 'Creating image definition'
+
+$ImageDefinitionName = $ResourceGroupName + '-ImageDefinition'
+New-AzGalleryImageDefinition `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -GalleryName $GalleryName `
+  -Name $ImageDefinitionName `
+  -OsState 'Generalized' `
+  -OsType 'Windows' `
+  -Publisher $ImagePublisher `
+  -Offer $ImageOffer `
+  -Sku $ImageSku `
+  -HyperVGeneration 'V2' | Out-Null
+
+####################################################################################################
+Display-Progress-Bar -Status 'Creating image version'
+
+$ImageVersionName = $CurrentDate.ToString('yyyyMMdd.HHmm.0')
+$ImageVersion = New-AzGalleryImageVersion `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -GalleryName $GalleryName `
+  -GalleryImageDefinitionName $ImageDefinitionName `
+  -Name $ImageVersionName `
+  -SourceImageId $VM.ID
+
+####################################################################################################
+Display-Progress-Bar -Status 'Registering CloudTest resource provider'
+
+Register-AzResourceProvider `
+  -ProviderNamespace 'Microsoft.CloudTest' | Out-Null
+
+####################################################################################################
+Display-Progress-Bar -Status 'Creating 1ES image'
+
+$ImageName = $ResourceGroupName + '-Image'
+New-AzResource `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -ResourceType 'Microsoft.CloudTest/Images' `
+  -ResourceName $ImageName `
+  -Properties @{ 'imageType' = 'SharedImageGallery'; 'resourceId' = $ImageVersion.Id; } `
+  -Force | Out-Null
+
+####################################################################################################
+Display-Progress-Bar -Status 'Creating 1ES Hosted Pool'
+
+$PoolName = $ResourceGroupName + '-Pool'
+
+$PoolProperties = @{
+  'organization' = 'https://dev.azure.com/vclibs'
+  'projects' = @('STL')
+  'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; }
+  'images' = @(@{ 'imageName' = $ImageName; 'poolBufferPercentage' = '100'; })
+  'maxPoolSize' = 64
+  'agentProfile' = @{ 'type' = 'Stateless'; }
+}
+
+New-AzResource `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -ResourceType 'Microsoft.CloudTest/hostedpools' `
+  -ResourceName $PoolName `
+  -Properties $PoolProperties `
+  -Force | Out-Null
 
 ####################################################################################################
 Display-Progress-Bar -Status 'Deleting unused VM'
