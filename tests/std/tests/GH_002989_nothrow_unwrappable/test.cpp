@@ -49,7 +49,7 @@ void do_full_test() {
     do_single_test<reverse_iterator<It>, CopyUnwrapNothrow>();
     do_single_test<move_iterator<It>, CopyUnwrapNothrow>();
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
     using R = ranges::subrange<It, It>;
 
     // TRANSITION, GH-2997
