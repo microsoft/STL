@@ -3,16 +3,10 @@
 
 <#
 .SYNOPSIS
-Creates a Windows virtual machine scale set, set up for the STL's CI.
+Creates a 1ES Hosted Pool, set up for the STL's CI.
 
 .DESCRIPTION
-create-vmss.ps1 creates an Azure Windows VM scale set, set up for the STL's CI
-system. See https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview
-for more information.
-
-This script assumes you have installed Azure tools into PowerShell by following the instructions
-at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps
-or are running from Azure Cloud Shell.
+See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
 #>
 
 $ErrorActionPreference = 'Stop'
@@ -29,7 +23,7 @@ $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
-$ProgressActivity = 'Creating Scale Set'
+$ProgressActivity = 'Preparing STL CI pool'
 $TotalProgress = 13
 $CurrentProgress = 1
 
