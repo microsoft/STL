@@ -44,7 +44,7 @@ function Display-Progress-Bar {
   Write-Progress `
     -Activity $ProgressActivity `
     -Status $Status `
-    -PercentComplete (100 / $TotalProgress * $script:CurrentProgress++)
+    -PercentComplete (100 * $script:CurrentProgress++ / $TotalProgress)
 }
 
 <#
