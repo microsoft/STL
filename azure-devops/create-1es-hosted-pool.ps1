@@ -35,6 +35,26 @@ $CurrentProgress = 1
 
 <#
 .SYNOPSIS
+Displays an updated progress bar.
+
+.DESCRIPTION
+Display-Progress-Bar increments $CurrentProgress and displays $Status in the progress bar.
+
+.PARAMETER Status
+A message describing the current operation being performed.
+#>
+function Display-Progress-Bar {
+  [CmdletBinding()]
+  Param([string]$Status)
+
+  Write-Progress `
+    -Activity $ProgressActivity `
+    -Status $Status `
+    -PercentComplete (100 / $TotalProgress * $script:CurrentProgress++)
+}
+
+<#
+.SYNOPSIS
 Attempts to find a name that does not collide with any resources in the resource group.
 
 .DESCRIPTION
@@ -138,19 +158,13 @@ function Wait-Shutdown {
 
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Setting the subscription context' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Setting the subscription context'
 
 Set-AzContext -SubscriptionName CPP_STL_GitHub | Out-Null
 az account set --subscription CPP_STL_GitHub
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating resource group' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Creating resource group'
 
 $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
@@ -161,10 +175,7 @@ $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating virtual network' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Creating virtual network'
 
 $allowHttp = New-AzNetworkSecurityRuleConfig `
   -Name AllowHTTP `
@@ -236,10 +247,7 @@ $VirtualNetwork = New-AzVirtualNetwork `
   -Subnet $Subnet
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating prototype VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Creating prototype VM'
 
 $NicName = $ResourceGroupName + '-NIC'
 $Nic = New-AzNetworkInterface `
@@ -271,10 +279,7 @@ New-AzVm `
   -VM $VM | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Running provisioning script provision-image.ps1 in VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Running provisioning script provision-image.ps1 in VM'
 
 $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
@@ -286,28 +291,19 @@ $ProvisionImageResult = Invoke-AzVMRunCommand `
 Write-Host "provision-image.ps1 output: $($ProvisionImageResult.value.Message)"
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Restarting VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Restarting VM'
 
 Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Sleeping after restart' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Sleeping after restart'
 
 # The VM appears to be busy immediately after restarting.
 # This workaround waits for a minute before attempting to run sysprep.ps1.
 Start-Sleep -Seconds 60
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Running provisioning script sysprep.ps1 in VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Running provisioning script sysprep.ps1 in VM'
 
 Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
@@ -316,18 +312,12 @@ Invoke-AzVMRunCommand `
   -ScriptPath "$PSScriptRoot\sysprep.ps1" | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Waiting for VM to shut down' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Waiting for VM to shut down'
 
 Wait-Shutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Converting VM to Image' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Converting VM to Image'
 
 Stop-AzVM `
   -ResourceGroupName $ResourceGroupName `
@@ -345,10 +335,7 @@ $ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM
 $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Deleting unused VM and disk' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Deleting unused VM and disk'
 
 Remove-AzVM -Id $VM.ID -Force | Out-Null
 Remove-AzDisk `
@@ -357,10 +344,7 @@ Remove-AzDisk `
   -Force | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating scale set' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Creating scale set'
 
 $VmssIpConfigName = $ResourceGroupName + '-VmssIpConfig'
 $VmssIpConfig = New-AzVmssIpConfig -SubnetId $Nic.IpConfigurations[0].Subnet.Id -Primary -Name $VmssIpConfigName
@@ -403,10 +387,7 @@ $Vmss = New-AzVmss `
   -VirtualMachineScaleSet $Vmss
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Enabling VMSS diagnostic logs' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-Progress-Bar -Status 'Enabling VMSS diagnostic logs'
 
 $StorageAccountName = 'stlvmssdiaglogssa'
 
