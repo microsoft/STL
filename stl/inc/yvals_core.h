@@ -599,10 +599,6 @@
     _NODISCARD_CTOR_MSG("Thread is implicitly joined at the end of the statement, is this an intention? " \
                         "(You can add '.join()' to avoid this warning if so)")
 
-#define _NODISCARD_CTOR_PURE \
-    _NODISCARD_CTOR_MSG(     \
-        "Construction of the object has no side effects; it is not useful to construct an object just to discard it")
-
 #define _NODISCARD_ASYNC                                                                                               \
     _NODISCARD_MSG(                                                                                                    \
         "'std::async' result should be saved into a variable. If the return value is discarded, the temporary future " \
