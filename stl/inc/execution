@@ -1235,7 +1235,7 @@ _FwdIt _For_each_n_ivdep(_FwdIt _First, _Diff _Count, _Fn _Func) {
 template <class _ExPo, class _FwdIt, class _Diff, class _Fn, _Enable_if_execution_policy_t<_ExPo> /* = 0 */>
 _FwdIt for_each_n(_ExPo&&, _FwdIt _First, const _Diff _Count_raw, _Fn _Func) noexcept /* terminates */ {
     // perform function for each element [_First, _First + _Count)
-    _REQUIRE_CPP17_MUTABLE_ITERATOR(_FwdIt);
+    _REQUIRE_PARALLEL_ITERATOR(_FwdIt);
     _Algorithm_int_t<_Diff> _Count = _Count_raw;
     if (0 < _Count) {
         auto _UFirst = _Get_unwrapped_n(_First, _Count);
