@@ -19,7 +19,8 @@
 #include <compare>
 #define _ZERO_OR_NO_INIT
 #else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
-#define _ZERO_OR_NO_INIT {} // Trivial default initialization is not allowed in constexpr functions before C++20.
+#define _ZERO_OR_NO_INIT \
+    {} // Trivial default initialization is not allowed in constexpr functions before C++20.
 #endif // _HAS_CXX20
 
 #ifdef __cpp_lib_concepts
