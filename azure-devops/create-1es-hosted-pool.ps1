@@ -60,7 +60,7 @@ The length of the returned password.
 #>
 function New-Password {
   [CmdletBinding(PositionalBinding=$false)]
-  Param ([int] $Length = 32)
+  Param([int]$Length = 32)
 
   # This 64-character alphabet generates 6 bits of entropy per character.
   # The power-of-2 alphabet size allows us to select a character by masking a random Byte with bitwise-AND.
