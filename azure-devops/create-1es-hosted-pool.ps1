@@ -20,8 +20,10 @@ $ErrorActionPreference = 'Stop'
 # https://aka.ms/azps-changewarnings
 $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
+$CurrentDate = Get-Date
+
 $Location = 'northeurope'
-$Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd-THHmm')
+$Prefix = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
@@ -169,7 +171,7 @@ Display-Progress-Bar -Status 'Creating resource group'
 $ResourceGroupName = Find-ResourceGroupName $Prefix
 $AdminPW = New-Password
 # TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
-$SimplySecureV2OptInTag = @{"NRMSV2OptIn"=(Get-Date -Format 'yyyyMMdd')}
+$SimplySecureV2OptInTag = @{"NRMSV2OptIn"=$CurrentDate.ToString('yyyyMMdd')}
 New-AzResourceGroup -Name $ResourceGroupName -Location $Location -Tag $SimplySecureV2OptInTag | Out-Null
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
