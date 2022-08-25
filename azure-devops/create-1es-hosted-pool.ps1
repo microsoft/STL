@@ -23,7 +23,6 @@ $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 $CurrentDate = Get-Date
 
 $Location = 'northeurope'
-$Prefix = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
 $VMSize = 'Standard_D32ads_v5'
 $ProtoVMName = 'PROTOTYPE'
 $LiveVMPrefix = 'BUILD'
@@ -53,33 +52,6 @@ function Display-Progress-Bar {
     -Activity $ProgressActivity `
     -Status $Status `
     -PercentComplete (100 / $TotalProgress * $script:CurrentProgress++)
-}
-
-<#
-.SYNOPSIS
-Attempts to find a name that does not collide with any resources in the resource group.
-
-.DESCRIPTION
-Find-ResourceGroupName takes a set of resources from Get-AzResourceGroup, and finds the
-first name in {$Prefix, $Prefix-1, $Prefix-2, ...} such that the name doesn't collide with
-any of the resources in the resource group.
-
-.PARAMETER Prefix
-The prefix of the final name; the returned name will be of the form "$Prefix(-[1-9][0-9]*)?"
-#>
-function Find-ResourceGroupName {
-  [CmdletBinding()]
-  Param([string] $Prefix)
-
-  $existingNames = (Get-AzResourceGroup).ResourceGroupName
-  $result = $Prefix
-  $suffix = 0
-  while ($result -in $existingNames) {
-    $suffix++
-    $result = "$Prefix-$suffix"
-  }
-
-  return $result
 }
 
 <#
@@ -161,7 +133,7 @@ az account set --subscription CPP_STL_GitHub
 ####################################################################################################
 Display-Progress-Bar -Status 'Creating resource group'
 
-$ResourceGroupName = Find-ResourceGroupName $Prefix
+$ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-dd-THHmm')
 $AdminPW = New-Password
 # TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
 $SimplySecureV2OptInTag = @{"NRMSV2OptIn"=$CurrentDate.ToString('yyyyMMdd')}
