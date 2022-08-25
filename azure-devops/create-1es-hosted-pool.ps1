@@ -16,8 +16,8 @@ $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
 $CurrentDate = Get-Date
 
-$Location = 'northeurope'
-$VMSize = 'Standard_D32ads_v5'
+$Location = 'eastus'
+$VMSize = 'Standard_D32ds_v5'
 $ProtoVMName = 'PROTOTYPE'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
