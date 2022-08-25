@@ -30,7 +30,7 @@ $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 14
+$TotalProgress = 13
 $CurrentProgress = 1
 
 <#
