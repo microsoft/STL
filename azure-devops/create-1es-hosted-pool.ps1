@@ -121,7 +121,7 @@ function Wait-Shutdown {
 Display-Progress-Bar -Status 'Setting the subscription context'
 
 Set-AzContext `
-  -SubscriptionName CPP_STL_GitHub | Out-Null
+  -SubscriptionName 'CPP_STL_GitHub' | Out-Null
 
 ####################################################################################################
 Display-Progress-Bar -Status 'Creating resource group'
@@ -243,7 +243,7 @@ $VM = Set-AzVMSourceImage `
   -PublisherName $ImagePublisher `
   -Offer $ImageOffer `
   -Skus $ImageSku `
-  -Version latest
+  -Version 'latest'
 
 $VM = Set-AzVMBootDiagnostic `
   -VM $VM `
