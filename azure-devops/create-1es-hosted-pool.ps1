@@ -31,7 +31,7 @@ $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
 $ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 13
+$TotalProgress = 15
 $CurrentProgress = 1
 
 <#
@@ -301,12 +301,15 @@ Display-Progress-Bar -Status 'Waiting for VM to shut down'
 Wait-Shutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 
 ####################################################################################################
-Display-Progress-Bar -Status 'Converting VM to Image'
+Display-Progress-Bar -Status 'Stopping VM'
 
 Stop-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
   -Force | Out-Null
+
+####################################################################################################
+Display-Progress-Bar -Status 'Generalizing VM'
 
 Set-AzVM `
   -ResourceGroupName $ResourceGroupName `
@@ -322,11 +325,14 @@ $ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM
 $Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
 
 ####################################################################################################
-Display-Progress-Bar -Status 'Deleting unused VM and disk'
+Display-Progress-Bar -Status 'Deleting unused VM'
 
 Remove-AzVM `
   -Id $VM.ID `
   -Force | Out-Null
+
+####################################################################################################
+Display-Progress-Bar -Status 'Deleting unused disk'
 
 Remove-AzDisk `
   -ResourceGroupName $ResourceGroupName `
