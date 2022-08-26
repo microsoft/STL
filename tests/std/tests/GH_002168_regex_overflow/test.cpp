@@ -37,4 +37,34 @@ int main() {
     } catch (const regex_error& e) {
         assert(e.code() == regex_constants::error_escape);
     }
+
+    // Also test 2147483648 = 2^31, the first value that overflows for int:
+
+    try {
+        regex testRegex{R"((a)\2147483648)", regex_constants::ECMAScript};
+        assert(false);
+    } catch (const regex_error& e) {
+        assert(e.code() == regex_constants::error_backref);
+    }
+
+    try {
+        regex testRegex{"a{2147483648}", regex_constants::ECMAScript};
+        assert(false);
+    } catch (const regex_error& e) {
+        assert(e.code() == regex_constants::error_badbrace);
+    }
+
+    try {
+        regex testRegex{"a{100,2147483648}", regex_constants::ECMAScript};
+        assert(false);
+    } catch (const regex_error& e) {
+        assert(e.code() == regex_constants::error_badbrace);
+    }
+
+    try {
+        regex testRegex{R"([\2147483648-1])", regex_constants::ECMAScript};
+        assert(false);
+    } catch (const regex_error& e) {
+        assert(e.code() == regex_constants::error_escape);
+    }
 }
