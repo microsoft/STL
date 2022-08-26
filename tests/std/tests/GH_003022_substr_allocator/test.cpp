@@ -160,6 +160,25 @@ CONSTEXPR20 bool test_substr_allocator() {
         TEST_ASSERT(string_type{string_type{full_str}, test_case.offset, myator}.get_allocator().get_payload() == 42);
     }
 
+    // Also test well-formedness change before/after P2438R2
+    struct ambiguator {
+        string_type str;
+
+        operator const string_type&() {
+            return str;
+        }
+
+        operator string_type&&() {
+            return move(str);
+        }
+    };
+
+#if _HAS_CXX23
+    static_assert(!is_constructible_v<string_type, ambiguator&, size_t, size_t>, "Ambiguous");
+#else
+    static_assert(is_constructible_v<string_type, ambiguator&, size_t, size_t>, "Not ambiguous");
+#endif // _HAS_CXX23
+
     return true;
 }
 
