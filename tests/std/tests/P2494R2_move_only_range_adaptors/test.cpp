@@ -13,8 +13,8 @@ using namespace std;
 
 struct BaseTransform {
     explicit BaseTransform(int v) : val(v) {}
-    int operator()(int x) {
-        return val++ * x;
+    int operator()(int x) const {
+        return val * x;
     }
     int val;
 };
@@ -49,11 +49,11 @@ struct Transform : BaseTransform {
 template <SmfKind CCtor, SmfKind MCtor, SmfKind CAssign, SmfKind MAssign>
 void test_transform() {
     using T = Transform<CCtor, MCtor, CAssign, MAssign>;
-    T t{1};
+    T t{11};
 
     vector<int> v;
     ranges::copy(array{0, 1, 2, 3, 4, 5} | views::transform(move(t)), back_inserter(v));
-    assert(ranges::equal(v, array{0, 2, 6, 12, 20, 30}));
+    assert(ranges::equal(v, array{0, 11, 22, 33, 44, 55}));
 
     if constexpr (is_copy_constructible_v<T>
                       ? copyable<T> || (is_nothrow_copy_constructible_v<T> && is_nothrow_move_constructible_v<T>)
