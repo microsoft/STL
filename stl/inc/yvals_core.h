@@ -549,14 +549,9 @@
         "This member function returns the state of the synchronization object and does not do anything else; it is " \
         "not useful to call this method and discard the return value")
 
-#define _NODISCARD_TRY_CHANGE_STATE                                                                                 \
-    _NODISCARD_MSG(                                                                                                 \
-        "This member function returns whether the operation succeeds in modifying the state of the object or not. " \
-        "It is dangerous to ignore the return value")
-
-#define _NODISCARD_TRY_CHANGE_STATE_FN                                                                          \
-    _NODISCARD_MSG("This function returns whether the operation succeeds in modifying the state of the passed " \
-                   "objects or not. It is dangerous to ignore the return value")
+#define _NODISCARD_TRY_CHANGE_STATE                                                                          \
+    _NODISCARD_MSG("This function returns whether the operation succeeds in modifying object state or not. " \
+                   "It is dangerous to ignore the return value")
 
 #define _NODISCARD_PTR_ALLOC_FN                                                                                     \
     _NODISCARD_MSG("This function constructs an object wrapped by a pointer, and has no other side effects; it is " \
