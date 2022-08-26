@@ -1678,8 +1678,8 @@ private:
     void _Expect(_Meta_type, regex_constants::error_type);
 
     // parsing
-    int _Do_digits(int _Base, int _Count, regex_constants::error_type);
-    bool _DecimalDigits(regex_constants::error_type);
+    int _Do_digits(int _Base, int _Count, regex_constants::error_type _Error_type);
+    bool _DecimalDigits(regex_constants::error_type _Error_type);
     void _HexDigits(int);
     bool _OctalDigits();
     void _Do_ex_class(_Meta_type);
@@ -3900,12 +3900,12 @@ void _Parser<_FwdIt, _Elem, _RxTraits>::_Expect(_Meta_type _St, regex_constants:
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
-    int _Base, int _Count, regex_constants::error_type _ErrorType) { // translate digits to numeric value
+    int _Base, int _Count, regex_constants::error_type _Error_type) { // translate digits to numeric value
     int _Chv;
     _Val = 0;
     while (_Count != 0 && (_Chv = _Traits.value(_Char, _Base)) != -1) { // append next digit
-        if (_Val > ((INT_MAX - _Chv) / _Base)) {
-            _Error(_ErrorType);
+        if (_Val > (INT_MAX - _Chv) / _Base) {
+            _Error(_Error_type);
         }
         --_Count;
         _Val *= _Base;
@@ -3917,8 +3917,8 @@ int _Parser<_FwdIt, _Elem, _RxTraits>::_Do_digits(
 
 template <class _FwdIt, class _Elem, class _RxTraits>
 bool _Parser<_FwdIt, _Elem, _RxTraits>::_DecimalDigits(
-    regex_constants::error_type _ErrorType) { // check for decimal value
-    return _Do_digits(10, INT_MAX, _ErrorType) != INT_MAX;
+    regex_constants::error_type _Error_type) { // check for decimal value
+    return _Do_digits(10, INT_MAX, _Error_type) != INT_MAX;
 }
 
 template <class _FwdIt, class _Elem, class _RxTraits>

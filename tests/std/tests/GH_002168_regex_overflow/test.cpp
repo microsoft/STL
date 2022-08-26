@@ -32,7 +32,7 @@ int main() {
 
     try {
         // 4294967296 = 0 mod 2^32, so this will succeed if we don't check for overflow.
-        regex testRegex{"[\\4294967296-1]", regex_constants::ECMAScript};
+        regex testRegex{R"([\4294967296-1])", regex_constants::ECMAScript};
         assert(false);
     } catch (const regex_error& e) {
         assert(e.code() == regex_constants::error_escape);
