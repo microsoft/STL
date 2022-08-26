@@ -100,6 +100,43 @@ type RawNodes = {
     rate_limit: RateLimit;
 };
 
+type ResponseTotalCounts = {
+    rateLimit: {
+        cost: number;
+        limit: number;
+    };
+    repository: {
+        pullRequests: {
+            totalCount: number;
+        };
+        issues: {
+            totalCount: number;
+        };
+    };
+};
+
+type PageInfo = {
+    hasNextPage: boolean;
+    endCursor: string;
+};
+
+type ResponsePRsAndIssues = {
+    rateLimit: {
+        cost: number;
+        remaining: number;
+    };
+    repository: {
+        pullRequests: {
+            nodes: RawPRNode[];
+            pageInfo: PageInfo;
+        };
+        issues: {
+            nodes: RawIssueNode[];
+            pageInfo: PageInfo;
+        };
+    };
+};
+
 async function retrieve_nodes_from_network() {
     const progress = {
         multi_bar: new cliProgress.MultiBar(
@@ -132,7 +169,7 @@ async function retrieve_nodes_from_network() {
                     pullRequests: { totalCount: total_prs },
                     issues: { totalCount: total_issues },
                 },
-            } = await authorized_graphql(query_total_counts);
+            } = (await authorized_graphql(query_total_counts)) as ResponseTotalCounts;
 
             spent = rateLimit.cost;
             limit = rateLimit.limit;
@@ -157,7 +194,7 @@ async function retrieve_nodes_from_network() {
             const {
                 rateLimit,
                 repository: { pullRequests, issues },
-            } = await authorized_graphql(variables);
+            } = (await authorized_graphql(variables)) as ResponsePRsAndIssues;
 
             spent += rateLimit.cost;
             remaining = rateLimit.remaining;
