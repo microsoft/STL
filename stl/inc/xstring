@@ -376,7 +376,23 @@ public:
         _In_reads_(_Count) const _Elem* const _First2, const size_t _Count) noexcept /* strengthened */ {
         // compare [_First1, _First1 + _Count) with [_First2, ...)
 #if _HAS_CXX17
+#ifdef __EDG__ // TRANSITION, EDG's __builtin_memcmp is buggy for constexpr dynamic allocation
+        if (_Is_constant_evaluated()) {
+            for (size_t _Ind = 0; _Ind != _Count; ++_Ind) {
+                if (static_cast<unsigned char>(_First1[_Ind]) < static_cast<unsigned char>(_First2[_Ind])) {
+                    return -1;
+                }
+                if (static_cast<unsigned char>(_First2[_Ind]) < static_cast<unsigned char>(_First1[_Ind])) {
+                    return 1;
+                }
+            }
+            return 0;
+        } else {
+            return _CSTD memcmp(_First1, _First2, _Count);
+        }
+#else // ^^^ workaround for EDG / vvv no workaround needed for MSVC and Clang
         return __builtin_memcmp(_First1, _First2, _Count);
+#endif // __EDG__
 #else // _HAS_CXX17
         return _CSTD memcmp(_First1, _First2, _Count);
 #endif // _HAS_CXX17
