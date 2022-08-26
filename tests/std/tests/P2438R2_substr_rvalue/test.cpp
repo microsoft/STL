@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <type_traits>
 
 #define TEST_ASSERT(...) assert((__VA_ARGS__))
