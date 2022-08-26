@@ -513,29 +513,29 @@
         "The 'unique' algorithm returns the iterator past the last non-removed element. " \
         "Normally you need to use the result to call container's 'erase' method afterwards to erase elements")
 
-#define _NODISCARD_EMPTY_MEM_FN                                                                               \
+#define _NODISCARD_EMPTY_MEMBER                                                                               \
     _NODISCARD_MSG(                                                                                           \
         "This member function returns a bool value whether the container is empty and has no other effects. " \
         "It is not useful to call this method and discard the returned value. "                               \
         "Use 'clear()' method if you intend to clear the container instead")
 
-#define _NODISCARD_EMPTY_MEM_FN_ARRAY                                                                         \
+#define _NODISCARD_EMPTY_ARRAY_MEMBER                                                                         \
     _NODISCARD_MSG(                                                                                           \
         "This member function returns a bool value whether the container is empty and has no other effects. " \
         "It is not useful to call this method and discard the returned value. "                               \
         "There's no way to clear an array as its size is fixed")
 
-#define _NODISCARD_EMPTY_MEM_FN_STACKTRACE                                                                    \
+#define _NODISCARD_EMPTY_STACKTRACE_MEMBER                                                                    \
     _NODISCARD_MSG(                                                                                           \
         "This member function returns a bool value whether the container is empty and has no other effects. " \
         "It is not useful to call this method and discard the returned value. "                               \
         "'std::stacktrace' can be cleared by re-assigning with an empty value")
 
-#define _NODISCARD_EMPTY_FUNCTION                                                                                    \
+#define _NODISCARD_EMPTY_NON_MEMBER                                                                                  \
     _NODISCARD_MSG("This function returns a bool value whether the container or container-like object is empty and " \
                    "has no other effects. It is not useful to call this method and discard the returned value. ")
 
-#define _NODISCARD_EMPTY_MEM_FN_ADAPTER                                                                       \
+#define _NODISCARD_EMPTY_ADAPTER_MEMBER                                                                       \
     _NODISCARD_MSG(                                                                                           \
         "This member function returns a bool value whether the container is empty and has no other effects. " \
         "It is not useful to call this method and discard the returned value. "                               \

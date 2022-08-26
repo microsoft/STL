@@ -1649,19 +1649,19 @@ _NODISCARD constexpr ptrdiff_t ssize(const _Ty (&)[_Size]) noexcept {
 #endif // _HAS_CXX20
 
 template <class _Container>
-_NODISCARD_EMPTY_FUNCTION constexpr auto empty(const _Container& _Cont) noexcept(
+_NODISCARD_EMPTY_NON_MEMBER constexpr auto empty(const _Container& _Cont) noexcept(
     noexcept(_Cont.empty())) /* strengthened */
     -> decltype(_Cont.empty()) {
     return _Cont.empty();
 }
 
 template <class _Ty, size_t _Size>
-_NODISCARD_EMPTY_FUNCTION constexpr bool empty(const _Ty (&)[_Size]) noexcept {
+_NODISCARD_EMPTY_NON_MEMBER constexpr bool empty(const _Ty (&)[_Size]) noexcept {
     return false;
 }
 
 template <class _Elem>
-_NODISCARD_EMPTY_FUNCTION constexpr bool empty(initializer_list<_Elem> _Ilist) noexcept {
+_NODISCARD_EMPTY_NON_MEMBER constexpr bool empty(initializer_list<_Elem> _Ilist) noexcept {
     return _Ilist.size() == 0;
 }
 

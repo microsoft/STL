@@ -506,7 +506,7 @@ public:
         return _Size;
     }
 
-    _NODISCARD_EMPTY_MEM_FN_ARRAY constexpr bool empty() const noexcept {
+    _NODISCARD_EMPTY_ARRAY_MEMBER constexpr bool empty() const noexcept {
         return false;
     }
 
@@ -685,7 +685,7 @@ public:
         return 0;
     }
 
-    _NODISCARD_EMPTY_MEM_FN_ARRAY constexpr bool empty() const noexcept {
+    _NODISCARD_EMPTY_ARRAY_MEMBER constexpr bool empty() const noexcept {
         return true;
     }
 
