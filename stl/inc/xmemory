@@ -542,12 +542,12 @@ struct _Normal_allocator_traits { // defines traits for allocators
     template <class _Other>
     using rebind_traits = allocator_traits<rebind_alloc<_Other>>;
 
-    _NODISCARD static _CONSTEXPR20 __declspec(allocator) pointer
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
         return _Al.allocate(_Count);
     }
 
-    _NODISCARD static _CONSTEXPR20 __declspec(allocator) pointer
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const const_void_pointer _Hint) {
         if constexpr (_Has_allocate_hint<_Alloc, size_type, const_void_pointer>::value) {
             return _Al.allocate(_Count, _Hint);
@@ -628,7 +628,7 @@ struct _Default_allocator_traits { // traits for std::allocator
     template <class _Other>
     using rebind_traits = allocator_traits<allocator<_Other>>;
 
-    _NODISCARD static _CONSTEXPR20 __declspec(allocator) pointer
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count) {
 #if _HAS_CXX20 // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
@@ -642,7 +642,7 @@ struct _Default_allocator_traits { // traits for std::allocator
         }
     }
 
-    _NODISCARD static _CONSTEXPR20 __declspec(allocator) pointer
+    _NODISCARD_RAW_PTR_ALLOC static _CONSTEXPR20 __declspec(allocator) pointer
         allocate(_Alloc& _Al, _CRT_GUARDOVERFLOW const size_type _Count, const_void_pointer) {
 #if _HAS_CXX20 // TRANSITION, GH-1532
         if (_STD is_constant_evaluated()) {
