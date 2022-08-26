@@ -557,7 +557,7 @@
     _NODISCARD_MSG("This function constructs an object wrapped by a pointer, and has no other side effects; it is " \
                    "not useful to call this function and discard the return value")
 
-#define _NODISCARD_PTR_RAW_ALLOC_FN                                                  \
+#define _NODISCARD_RAW_PTR_ALLOC                                                     \
     _NODISCARD_MSG("This function allocates some memory and returns a raw pointer. " \
                    "It is an error to discard the result, it causes a memory leak")
 
