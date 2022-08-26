@@ -2959,7 +2959,7 @@ namespace iter_ops {
             trace t{};
             I first{t};
             same_as<iter_difference_t<I>> auto const result = distance(move(first), default_sentinel);
-            STATIC_ASSERT(noexcept(distance(move(first), default_sentinel))); // No conditional noexcept
+            STATIC_ASSERT(noexcept(distance(move(first), default_sentinel)));
             assert(result == sentinel_position);
             assert((t == trace{.compares_ = sentinel_position + 1, .increments_ = sentinel_position}));
         }
