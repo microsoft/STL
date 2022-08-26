@@ -174,11 +174,11 @@ CONSTEXPR20 bool test_substr_allocator() {
         }
     };
 
-#if _HAS_CXX23
+#if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG doesn't perform overload resolution correctly
     static_assert(!is_constructible_v<string_type, ambiguator&, size_t, size_t>, "Ambiguous");
 #else
     static_assert(is_constructible_v<string_type, ambiguator&, size_t, size_t>, "Not ambiguous");
-#endif // _HAS_CXX23
+#endif // _HAS_CXX23 && !defined(__EDG__)
 
     return true;
 }
