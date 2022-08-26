@@ -553,7 +553,7 @@
     _NODISCARD_MSG("This function returns whether the operation succeeds in modifying object state or not. " \
                    "It is dangerous to ignore the return value")
 
-#define _NODISCARD_PTR_ALLOC_FN                                                                                     \
+#define _NODISCARD_SMART_PTR_ALLOC                                                                                  \
     _NODISCARD_MSG("This function constructs an object wrapped by a pointer, and has no other side effects; it is " \
                    "not useful to call this function and discard the return value")
 
