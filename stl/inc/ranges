@@ -47,7 +47,13 @@ namespace ranges {
         && same_as<sentinel_t<_Rng>, sentinel_t<const _Rng>>;
 
     template <class _Ty>
-    concept _Copy_constructible_object = copy_constructible<_Ty> && _Destructible_object<_Ty>;
+    concept _Valid_movable_box_object =
+#if _HAS_CXX23
+    move_constructible<_Ty>
+#else // ^^^ C++23 / C++20 vvv
+    copy_constructible<_Ty>
+#endif // C++20
+    && _Destructible_object<_Ty>;
 
     template <class _It>
     concept _Has_arrow = input_iterator<_It>
@@ -61,108 +67,80 @@ namespace ranges {
     using _Maybe_wrapped = conditional_t<_IsWrapped, _Ty, _Unwrapped_t<_Ty>>;
 
     namespace _Pipe {
-        // clang-format off
-        template <class _Left, class _Right>
-        concept _Can_pipe = requires(_Left&& __l, _Right&& __r) {
-            static_cast<_Right&&>(__r)(static_cast<_Left&&>(__l));
-        };
-
-        template <class _Left, class _Right>
-        concept _Can_compose = constructible_from<remove_cvref_t<_Left>, _Left>
-            && constructible_from<remove_cvref_t<_Right>, _Right>;
-        // clang-format on
-
-        template <class, class>
-        struct _Pipeline;
-
         template <class _Derived>
-        struct _Base {
-            template <class _Other>
-                requires _Can_compose<_Derived, _Other>
-            constexpr auto operator|(_Base<_Other>&& __r) && noexcept(
-                noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)})) {
-                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
-                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
-                return _Pipeline{static_cast<_Derived&&>(*this), static_cast<_Other&&>(__r)};
-            }
+        struct _Base {};
 
-            template <class _Other>
-                requires _Can_compose<_Derived, const _Other&>
-            constexpr auto operator|(const _Base<_Other>& __r) && noexcept(
-                noexcept(_Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)})) {
-                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
-                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
-                return _Pipeline{static_cast<_Derived&&>(*this), static_cast<const _Other&>(__r)};
-            }
+        template <class _Ty>
+        _Ty* _Derived_from_range_adaptor_closure(_Base<_Ty>&); // not defined
 
-            template <class _Other>
-                requires _Can_compose<const _Derived&, _Other>
-            constexpr auto operator|(_Base<_Other>&& __r) const& noexcept(
-                noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)})) {
-                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
-                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
-                return _Pipeline{static_cast<const _Derived&>(*this), static_cast<_Other&&>(__r)};
-            }
-
-            template <class _Other>
-                requires _Can_compose<const _Derived&, const _Other&>
-            constexpr auto operator|(const _Base<_Other>& __r) const& noexcept(
-                noexcept(_Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)})) {
-                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Derived, _Base<_Derived>>);
-                _STL_INTERNAL_STATIC_ASSERT(derived_from<_Other, _Base<_Other>>);
-                return _Pipeline{static_cast<const _Derived&>(*this), static_cast<const _Other&>(__r)};
-            }
-
-            template <_Can_pipe<const _Derived&> _Left>
-            friend constexpr auto operator|(_Left&& __l, const _Base& __r)
-#ifdef __EDG__ // TRANSITION, VSO-1222776
-                noexcept(noexcept(_STD declval<const _Derived&>()(_STD forward<_Left>(__l))))
-#else // ^^^ workaround / no workaround vvv
-                noexcept(noexcept(static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l))))
-#endif // TRANSITION, VSO-1222776
-            {
-                return static_cast<const _Derived&>(__r)(_STD forward<_Left>(__l));
-            }
-
-            template <_Can_pipe<_Derived> _Left>
-            friend constexpr auto operator|(_Left&& __l, _Base&& __r)
-#ifdef __EDG__ // TRANSITION, VSO-1222776
-                noexcept(noexcept(_STD declval<_Derived>()(_STD forward<_Left>(__l))))
-#else // ^^^ workaround / no workaround vvv
-                noexcept(noexcept(static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l))))
-#endif // TRANSITION, VSO-1222776
-            {
-                return static_cast<_Derived&&>(__r)(_STD forward<_Left>(__l));
-            }
+        template <class _Ty>
+        concept _Range_adaptor_closure_object = !range<remove_cvref_t<_Ty>> && requires(remove_cvref_t<_Ty> & __t) {
+            { _Pipe::_Derived_from_range_adaptor_closure(__t) } -> same_as<remove_cvref_t<_Ty>*>;
         };
 
-        template <class _Left, class _Right>
-        struct _Pipeline : _Base<_Pipeline<_Left, _Right>> {
-            /* [[no_unique_address]] */ _Left __l;
-            /* [[no_unique_address]] */ _Right __r;
+        template <class _ClosureLeft, class _ClosureRight>
+        struct _Pipeline : _Base<_Pipeline<_ClosureLeft, _ClosureRight>> {
+            _STL_INTERNAL_STATIC_ASSERT(_Range_adaptor_closure_object<_ClosureLeft>);
+            _STL_INTERNAL_STATIC_ASSERT(_Range_adaptor_closure_object<_ClosureRight>);
+
+            /* [[no_unique_address]] */ _ClosureLeft _Left;
+            /* [[no_unique_address]] */ _ClosureRight _Right;
 
             template <class _Ty1, class _Ty2>
             constexpr explicit _Pipeline(_Ty1&& _Val1, _Ty2&& _Val2) noexcept(
-                is_nothrow_convertible_v<_Ty1, _Left>&& is_nothrow_convertible_v<_Ty2, _Right>)
-                : __l(_STD forward<_Ty1>(_Val1)), __r(_STD forward<_Ty2>(_Val2)) {}
+                is_nothrow_constructible_v<_Ty1, _ClosureLeft>&& is_nothrow_constructible_v<_Ty2, _ClosureRight>)
+                : _Left(_STD forward<_Ty1>(_Val1)), _Right(_STD forward<_Ty2>(_Val2)) {}
 
             template <class _Ty>
-            _NODISCARD constexpr auto operator()(_Ty&& _Val) noexcept(
-                noexcept(__r(__l(_STD forward<_Ty>(_Val))))) requires requires {
-                __r(__l(static_cast<_Ty&&>(_Val)));
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) & noexcept(
+                noexcept(_Right(_Left(_STD forward<_Ty>(_Val))))) requires requires {
+                _Right(_Left(_STD forward<_Ty>(_Val)));
             }
-            { return __r(__l(_STD forward<_Ty>(_Val))); }
+            { return _Right(_Left(_STD forward<_Ty>(_Val))); }
 
             template <class _Ty>
-            _NODISCARD constexpr auto operator()(_Ty&& _Val) const
-                noexcept(noexcept(__r(__l(_STD forward<_Ty>(_Val))))) requires requires {
-                __r(__l(static_cast<_Ty&&>(_Val)));
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const& noexcept(
+                noexcept(_Right(_Left(_STD forward<_Ty>(_Val))))) requires requires {
+                _Right(_Left(_STD forward<_Ty>(_Val)));
             }
-            { return __r(__l(_STD forward<_Ty>(_Val))); }
+            { return _Right(_Left(_STD forward<_Ty>(_Val))); }
+
+            template <class _Ty>
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) && noexcept(
+                noexcept(_STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))))) requires requires {
+                _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val)));
+            }
+            { return _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))); }
+
+            template <class _Ty>
+            _NODISCARD constexpr auto operator()(_Ty&& _Val) const&& noexcept(
+                noexcept(_STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))))) requires requires {
+                _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val)));
+            }
+            { return _STD move(_Right)(_STD move(_Left)(_STD forward<_Ty>(_Val))); }
         };
 
         template <class _Ty1, class _Ty2>
         _Pipeline(_Ty1, _Ty2) -> _Pipeline<_Ty1, _Ty2>;
+
+        template <class _Left, class _Right>
+        requires _Range_adaptor_closure_object<_Left> //
+            && _Range_adaptor_closure_object<_Right> //
+            && constructible_from<remove_cvref_t<_Left>, _Left> //
+            && constructible_from<remove_cvref_t<_Right>, _Right> //
+                _NODISCARD constexpr auto operator|(_Left&& __l, _Right&& __r) noexcept(
+                    noexcept(_Pipeline{static_cast<_Left&&>(__l), static_cast<_Right&&>(__r)})) {
+            return _Pipeline{static_cast<_Left&&>(__l), static_cast<_Right&&>(__r)};
+        }
+
+        template <class _Left, class _Right>
+        requires _Range_adaptor_closure_object<_Right> && range<_Left> //
+            _NODISCARD constexpr auto operator|(_Left&& __l, _Right&& __r) noexcept(
+                noexcept(_STD forward<_Right>(__r)(_STD forward<_Left>(__l)))) //
+            requires requires {
+            static_cast<_Right&&>(__r)(static_cast<_Left&&>(__l));
+        }
+        { return _STD forward<_Right>(__r)(_STD forward<_Left>(__l)); }
     } // namespace _Pipe
 
     template <range _Rng, class _Derived>
@@ -260,18 +238,21 @@ namespace ranges {
     template <bool _Enable, class _Rng, class _Derived>
     using _Cached_position_t = conditional_t<_Enable, _Cached_position<_Rng, _Derived>, view_interface<_Derived>>;
 
-    template <_Copy_constructible_object _Ty>
-    class _Copyable_box { // a simplified optional that augments copy_constructible types with full copyability
+    // A simplified optional that augments copy_constructible types with full copyability,
+    // and move_constructible types with full movability.
+    // In C++20, this corresponds to copyable-box.
+    template <_Valid_movable_box_object _Ty>
+    class _Movable_box {
     public:
-        constexpr _Copyable_box() noexcept(is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
+        constexpr _Movable_box() noexcept(is_nothrow_default_constructible_v<_Ty>) requires default_initializable<_Ty>
             : _Val(), _Engaged{true} {}
 
         template <class... _Types>
-        constexpr _Copyable_box(in_place_t, _Types&&... _Args) noexcept(
+        constexpr _Movable_box(in_place_t, _Types&&... _Args) noexcept(
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             : _Val(_STD forward<_Types>(_Args)...), _Engaged{true} {}
 
-        constexpr ~_Copyable_box() {
+        constexpr ~_Movable_box() {
             if (_Engaged) {
                 _Val.~_Ty();
             }
@@ -279,33 +260,33 @@ namespace ranges {
 
         // TRANSITION, LLVM-46269, destructor order is significant
         // clang-format off
-        ~_Copyable_box() requires is_trivially_destructible_v<_Ty> = default;
+        ~_Movable_box() requires is_trivially_destructible_v<_Ty> = default;
 
-        _Copyable_box(const _Copyable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
+        _Movable_box(const _Movable_box&) requires is_trivially_copy_constructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Copyable_box(const _Copyable_box& _That) : _Engaged{_That._Engaged} {
+        constexpr _Movable_box(const _Movable_box& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _That._Val);
             }
         }
 
         // clang-format off
-        _Copyable_box(_Copyable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
+        _Movable_box(_Movable_box&&) requires is_trivially_move_constructible_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Copyable_box(_Copyable_box&& _That) : _Engaged{_That._Engaged} {
+        constexpr _Movable_box(_Movable_box&& _That) : _Engaged{_That._Engaged} {
             if (_That._Engaged) {
                 _Construct_in_place(_Val, _STD move(_That._Val));
             }
         }
 
         // clang-format off
-        _Copyable_box& operator=(const _Copyable_box&) noexcept
+        _Movable_box& operator=(const _Movable_box&) noexcept
             requires copyable<_Ty> && is_trivially_copy_assignable_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Copyable_box& operator=(const _Copyable_box& _That) noexcept(
+        constexpr _Movable_box& operator=(const _Movable_box& _That) noexcept(
             is_nothrow_copy_constructible_v<_Ty>&& is_nothrow_copy_assignable_v<_Ty>) // strengthened
             requires copyable<_Ty> {
             if (_Engaged) {
@@ -327,7 +308,8 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Copyable_box& operator=(const _Copyable_box& _That) noexcept(is_nothrow_copy_constructible_v<_Ty>) {
+        constexpr _Movable_box& operator=(const _Movable_box& _That) noexcept(
+            is_nothrow_copy_constructible_v<_Ty>) requires copy_constructible<_Ty> {
             if (_STD addressof(_That) == this) {
                 return *this;
             }
@@ -346,11 +328,11 @@ namespace ranges {
         }
 
         // clang-format off
-        _Copyable_box& operator=(_Copyable_box&&) noexcept
+        _Movable_box& operator=(_Movable_box&&) noexcept
             requires movable<_Ty> && is_trivially_move_assignable_v<_Ty> = default;
         // clang-format on
 
-        constexpr _Copyable_box& operator=(_Copyable_box&& _That) noexcept(
+        constexpr _Movable_box& operator=(_Movable_box&& _That) noexcept(
             is_nothrow_move_constructible_v<_Ty>&& is_nothrow_move_assignable_v<_Ty>) // strengthened
             requires movable<_Ty> {
             if (_Engaged) {
@@ -372,7 +354,7 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Copyable_box& operator=(_Copyable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
+        constexpr _Movable_box& operator=(_Movable_box&& _That) noexcept(is_nothrow_move_constructible_v<_Ty>) {
             if (_STD addressof(_That) == this) {
                 return *this;
             }
@@ -410,32 +392,39 @@ namespace ranges {
         bool _Engaged;
     };
 
-    // clang-format off
-    template <_Copy_constructible_object _Ty>
-        requires (copyable<_Ty>
-            || (is_nothrow_copy_constructible_v<_Ty>
-                && (movable<_Ty> || is_nothrow_move_constructible_v<_Ty>)))
-    class _Copyable_box<_Ty> { // provide the same API more efficiently when we can avoid the disengaged state
-        // clang-format on
+    // [range.move.wrap]
+    template <class _Ty>
+    concept _Use_simple_movable_box_wrapper =
+        (copy_constructible<_Ty>
+                // 1. If copy_constructible<T> is true, movable-box<T> should store only a T if either T models
+                // copyable, or is_nothrow_move_constructible_v<T> && is_nothrow_copy_constructible_v<T> is true.
+                ? copyable<_Ty> || (is_nothrow_move_constructible_v<_Ty> && is_nothrow_copy_constructible_v<_Ty>)
+                // 2. Otherwise, movable-box<T> should store only a T if either T models movable or
+                // is_nothrow_move_constructible_v<T> is true.
+                : movable<_Ty> || is_nothrow_move_constructible_v<_Ty>);
+
+    template <_Valid_movable_box_object _Ty>
+        requires _Use_simple_movable_box_wrapper<_Ty>
+    class _Movable_box<_Ty> { // provide the same API more efficiently when we can avoid the disengaged state
     public:
         // clang-format off
-        _Copyable_box() requires default_initializable<_Ty> = default;
+        _Movable_box() requires default_initializable<_Ty> = default;
         // clang-format on
 
         template <class... _Types>
-        constexpr _Copyable_box(in_place_t, _Types&&... _Args) noexcept(
+        constexpr _Movable_box(in_place_t, _Types&&... _Args) noexcept(
             is_nothrow_constructible_v<_Ty, _Types...>) // strengthened
             : _Val(_STD forward<_Types>(_Args)...) {}
 
-        _Copyable_box(const _Copyable_box&) = default;
-        _Copyable_box(_Copyable_box&&)      = default;
+        _Movable_box(const _Movable_box&) = default;
+        _Movable_box(_Movable_box&&)      = default;
 
         // clang-format off
-        _Copyable_box& operator=(const _Copyable_box&) requires copyable<_Ty> = default;
-        _Copyable_box& operator=(_Copyable_box&&) requires movable<_Ty> = default;
+        _Movable_box& operator=(const _Movable_box&) requires copyable<_Ty> = default;
+        _Movable_box& operator=(_Movable_box&&) requires movable<_Ty> = default;
         // clang-format on
 
-        constexpr _Copyable_box& operator=(const _Copyable_box& _That) noexcept {
+        constexpr _Movable_box& operator=(const _Movable_box& _That) noexcept requires copy_constructible<_Ty> {
             if (_STD addressof(_That) != this) {
                 _Val.~_Ty();
                 _Construct_in_place(_Val, _That._Val);
@@ -444,7 +433,7 @@ namespace ranges {
             return *this;
         }
 
-        constexpr _Copyable_box& operator=(_Copyable_box&& _That) noexcept {
+        constexpr _Movable_box& operator=(_Movable_box&& _That) noexcept {
             if (_STD addressof(_That) != this) {
                 _Val.~_Ty();
                 _Construct_in_place(_Val, _STD move(_That._Val));
@@ -805,6 +794,13 @@ namespace ranges {
         };
     };
 
+#if _HAS_CXX23
+    template <class _Derived>
+        requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
+    class range_adaptor_closure : public _Pipe::_Base<_Derived> {
+    };
+#endif // _HAS_CXX23
+
     template <class _Fn, class... _Types>
     class _Range_closure : public _Pipe::_Base<_Range_closure<_Fn, _Types...>> {
     public:
@@ -904,8 +900,7 @@ namespace ranges {
         inline constexpr empty_view<_Ty> empty;
     } // namespace views
 
-    template <copy_constructible _Ty>
-        requires is_object_v<_Ty>
+    template <_Valid_movable_box_object _Ty>
     class single_view : public view_interface<single_view<_Ty>> {
     public:
         // clang-format off
@@ -913,7 +908,7 @@ namespace ranges {
         // clang-format on
 
         constexpr explicit single_view(const _Ty& _Val_) noexcept(is_nothrow_copy_constructible_v<_Ty>) // strengthened
-            : _Val{in_place, _Val_} {}
+            requires copy_constructible<_Ty> : _Val{in_place, _Val_} {}
         constexpr explicit single_view(_Ty&& _Val_) noexcept(is_nothrow_move_constructible_v<_Ty>) // strengthened
             : _Val{in_place, _STD move(_Val_)} {}
 
@@ -949,7 +944,7 @@ namespace ranges {
         }
 
     private:
-        /* [[no_unique_address]] */ _Copyable_box<_Ty> _Val{};
+        /* [[no_unique_address]] */ _Movable_box<_Ty> _Val{};
     };
 
     template <class _Ty>
@@ -1750,7 +1745,7 @@ namespace ranges {
     class filter_view : public _Cached_position_t<forward_range<_Vw>, _Vw, filter_view<_Vw, _Pr>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
+        /* [[no_unique_address]] */ _Movable_box<_Pr> _Pred{};
 
         template <class _View>
         struct _Category_base {};
@@ -1891,7 +1886,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr bool _Equal(const sentinel_t<_Vw>& _Last) const
-                noexcept(noexcept(_Implicitly_convert_to<bool>(_Current == _Last))) {
+                noexcept(noexcept(_Fake_copy_init<bool>(_Current == _Last))) {
                 return _Current == _Last;
             }
         };
@@ -2008,15 +2003,15 @@ namespace ranges {
 #define _NOEXCEPT_IDL0(...)
 #endif // _ITERATOR_DEBUG_LEVEL == 0
 
-    template <input_range _Vw, copy_constructible _Fn>
-        requires view<_Vw> && is_object_v<_Fn>
+    template <input_range _Vw, _Valid_movable_box_object _Fn>
+        requires view<_Vw>
             && regular_invocable<_Fn&, range_reference_t<_Vw>>
             && _Can_reference<invoke_result_t<_Fn&, range_reference_t<_Vw>>>
     class transform_view : public view_interface<transform_view<_Vw, _Fn>> {
         // clang-format on
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ _Copyable_box<_Fn> _Fun{};
+        /* [[no_unique_address]] */ _Movable_box<_Fn> _Fun{};
 
         template <bool _Const>
         class _Sentinel;
@@ -2713,7 +2708,7 @@ namespace ranges {
     class take_while_view : public view_interface<take_while_view<_Vw, _Pr>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
+        /* [[no_unique_address]] */ _Movable_box<_Pr> _Pred{};
 
         template <bool _Const, bool _Wrapped = true>
         class _Sentinel {
@@ -3085,7 +3080,7 @@ namespace ranges {
     class drop_while_view : public _Cached_position_t<forward_range<_Vw>, _Vw, drop_while_view<_Vw, _Pr>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
+        /* [[no_unique_address]] */ _Movable_box<_Pr> _Pred{};
 
     public:
         // clang-format off
@@ -3396,7 +3391,7 @@ namespace ranges {
 
             // clang-format off
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Outer == _Right._Outer
+                noexcept(_Fake_copy_init<bool>(_Left._Outer == _Right._Outer
                     && _Left._Inner == _Right._Inner))) /* strengthened */
                 requires _Deref_is_glvalue && equality_comparable<_OuterIter> && equality_comparable<_InnerIter> {
                 // clang-format on
@@ -3447,7 +3442,7 @@ namespace ranges {
             template <bool _OtherConst>
                 requires sentinel_for<sentinel_t<_Base>, _Maybe_const_iter<_OtherConst>>
             _NODISCARD constexpr bool _Equal(const _Iterator<_OtherConst>& _It) const noexcept(
-                    noexcept(_Implicitly_convert_to<bool>(_It._Outer == _Last))) {
+                    noexcept(_Fake_copy_init<bool>(_It._Outer == _Last))) {
                 // clang-format on
                 return _It._Outer == _Last;
             }
@@ -3905,7 +3900,7 @@ namespace ranges {
 
             template <bool _OtherConst>
             _NODISCARD constexpr bool _Equal(const _Iterator<_OtherConst>& _It) const
-                noexcept(noexcept(_Implicitly_convert_to<bool>(_It._Outer_it == _Last))) {
+                noexcept(noexcept(_Fake_copy_init<bool>(_It._Outer_it == _Last))) {
                 _STL_INTERNAL_STATIC_ASSERT(
                     sentinel_for<sentinel_t<_Base>, iterator_t<_Maybe_const<_OtherConst, _Vw>>>);
                 return _It._Outer_it == _Last;
@@ -4113,7 +4108,7 @@ namespace ranges {
             }
 
             _NODISCARD constexpr bool _At_end() const
-                noexcept(noexcept(_Implicitly_convert_to<bool>(_Get_current() == _RANGES end(_Parent->_Range)))) {
+                noexcept(noexcept(_Fake_copy_init<bool>(_Get_current() == _RANGES end(_Parent->_Range)))) {
                 return _Get_current() == _RANGES end(_Parent->_Range);
             }
 
@@ -4288,7 +4283,6 @@ namespace ranges {
                     return false;
                 }
             }
-
 
         public:
             using iterator_concept = typename _Outer_iter<_Const>::iterator_concept;
@@ -4506,7 +4500,7 @@ namespace ranges {
 #else // ^^^ no workaround / workaround vvv
                 auto _Match = _RANGES search(subrange{_Current, _Last}, _Parent->_Pattern);
                 auto _Begin = _Match.begin();
-                auto _End = _Match.end();
+                auto _End   = _Match.end();
 #endif // TRANSITION, DevCom-1559808
                 if (_Begin != _Last && _RANGES empty(_Parent->_Pattern)) {
                     ++_Begin;
@@ -4534,7 +4528,7 @@ namespace ranges {
             /* [[no_unique_address]] */ sentinel_t<_Vw> _Last{};
 
             _NODISCARD constexpr bool _Equal(const _Iterator& _It) const
-                noexcept(noexcept(_Implicitly_convert_to<bool>(_It._Current == _Last))) {
+                noexcept(noexcept(_Fake_copy_init<bool>(_It._Current == _Last))) {
                 return !_It._Trailing_empty && _It._Current == _Last;
             }
 
@@ -4558,7 +4552,7 @@ namespace ranges {
 #else // ^^^ no workaround / workaround vvv
             auto _Match = _RANGES search(subrange{_It, _Last}, _Pattern);
             auto _Begin = _Match.begin();
-            auto _End = _Match.end();
+            auto _End   = _Match.end();
 #endif // TRANSITION, DevCom-1559808
             if (_Begin != _Last && _RANGES empty(_Pattern)) {
                 ++_Begin;
@@ -5086,7 +5080,7 @@ namespace ranges {
                 (void) _Off;
 #else // ^^^ _ITERATOR_DEBUG_LEVEL == 0 / _ITERATOR_DEBUG_LEVEL != 0 vvv
                 if constexpr (_Offset_verifiable_v<iterator_t<_Base>>) {
-                    _Current._Verify_offset(_Off);
+                      _Current._Verify_offset(_Off);
                 }
 #endif // _ITERATOR_DEBUG_LEVEL == 0
             }
@@ -5727,35 +5721,35 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Right._Current))) /* strengthened */ {
+                noexcept(_Fake_copy_init<bool>(_Left._Current == _Right._Current))) /* strengthened */ {
                 return _Left._Current == _Right._Current;
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, default_sentinel_t) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Left._End))) /* strengthened */ {
+                noexcept(_Fake_copy_init<bool>(_Left._Current == _Left._End))) /* strengthened */ {
                 return _Left._Current == _Left._End;
             }
 
             _NODISCARD_FRIEND constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Current < _Right._Current))) /* strengthened */
+                noexcept(_Fake_copy_init<bool>(_Left._Current < _Right._Current))) /* strengthened */
                 requires random_access_range<_Base> {
                 return _Left._Current < _Right._Current;
             }
 
             _NODISCARD_FRIEND constexpr bool operator>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Right._Current < _Left._Current))) /* strengthened */
+                noexcept(_Fake_copy_init<bool>(_Right._Current < _Left._Current))) /* strengthened */
                 requires random_access_range<_Base> {
                 return _Right._Current < _Left._Current;
             }
 
             _NODISCARD_FRIEND constexpr bool operator<=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(!(_Right._Current < _Left._Current)))) /* strengthened */
+                noexcept(_Fake_copy_init<bool>(!(_Right._Current < _Left._Current)))) /* strengthened */
                 requires random_access_range<_Base> {
                 return !(_Right._Current < _Left._Current);
             }
 
             _NODISCARD_FRIEND constexpr bool operator>=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(!(_Left._Current < _Right._Current)))) /* strengthened */
+                noexcept(_Fake_copy_init<bool>(!(_Left._Current < _Right._Current)))) /* strengthened */
                 requires random_access_range<_Base> {
                 return !(_Left._Current < _Right._Current);
             }
@@ -6065,7 +6059,7 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Right._Current))) /* strengthened */ {
+                noexcept(_Fake_copy_init<bool>(_Left._Current == _Right._Current))) /* strengthened */ {
                 if constexpr (_Slide_caches_first<_Base>) {
                     return _Left._Last_element == _Right._Last_element;
                 } else {
@@ -6074,25 +6068,25 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Current < _Right._Current))) /* strengthened */
+                noexcept(_Fake_copy_init<bool>(_Left._Current < _Right._Current))) /* strengthened */
                 requires random_access_range<_Base> {
                 return _Left._Current < _Right._Current;
             }
 
             _NODISCARD_FRIEND constexpr bool operator>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Right._Current < _Left._Current))) /* strengthened */
+                noexcept(_Fake_copy_init<bool>(_Right._Current < _Left._Current))) /* strengthened */
                 requires random_access_range<_Base> {
                 return _Right._Current < _Left._Current;
             }
 
             _NODISCARD_FRIEND constexpr bool operator<=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(!(_Right._Current < _Left._Current)))) /* strengthened */
+                noexcept(_Fake_copy_init<bool>(!(_Right._Current < _Left._Current)))) /* strengthened */
                 requires random_access_range<_Base> {
                 return !(_Right._Current < _Left._Current);
             }
 
             _NODISCARD_FRIEND constexpr bool operator>=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(!(_Left._Current < _Right._Current)))) /* strengthened */
+                noexcept(_Fake_copy_init<bool>(!(_Left._Current < _Right._Current)))) /* strengthened */
                 requires random_access_range<_Base> {
                 return !(_Left._Current < _Right._Current);
             }
@@ -6151,8 +6145,8 @@ namespace ranges {
             _Sentinel() = default;
 
             _NODISCARD_FRIEND constexpr bool
-                operator==(const _Iterator<false>& _Left, const _Sentinel& _Right) noexcept(noexcept(
-                    _Implicitly_convert_to<bool>(_Left._Get_last_element() == _Right._Last))) /* strengthened */ {
+                operator==(const _Iterator<false>& _Left, const _Sentinel& _Right) noexcept(
+                    noexcept(_Fake_copy_init<bool>(_Left._Get_last_element() == _Right._Last))) /* strengthened */ {
                 return _Left._Get_last_element() == _Right._Last;
             }
 
@@ -6311,7 +6305,7 @@ namespace ranges {
     class chunk_by_view : public _Cached_position<_Vw, chunk_by_view<_Vw, _Pr>> {
     private:
         /* [[no_unique_address]] */ _Vw _Range{};
-        /* [[no_unique_address]] */ _Copyable_box<_Pr> _Pred{};
+        /* [[no_unique_address]] */ _Movable_box<_Pr> _Pred{};
 
         class _Iterator {
         private:
@@ -6375,12 +6369,12 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Right._Current))) /* strengthened */ {
+                noexcept(_Fake_copy_init<bool>(_Left._Current == _Right._Current))) /* strengthened */ {
                 return _Left._Current == _Right._Current;
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, default_sentinel_t) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Left._Next))) /* strengthened */ {
+                noexcept(_Fake_copy_init<bool>(_Left._Current == _Left._Next))) /* strengthened */ {
                 return _Left._Current == _Left._Next;
             }
         };
@@ -6630,36 +6624,36 @@ namespace ranges {
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _It, default_sentinel_t) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_It._Current == _It._End))) /* strengthened */ {
+                noexcept(_Fake_copy_init<bool>(_It._Current == _It._End))) /* strengthened */ {
                 return _It._Current == _It._End;
             }
 
             _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Current == _Right._Current))) // strengthened
+                noexcept(_Fake_copy_init<bool>(_Left._Current == _Right._Current))) // strengthened
                 requires equality_comparable<_Base_iterator> {
                 return _Left._Current == _Right._Current;
             }
 
             _NODISCARD_FRIEND constexpr bool operator<(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Left._Current < _Right._Current))) // strengthened
+                noexcept(_Fake_copy_init<bool>(_Left._Current < _Right._Current))) // strengthened
                 requires random_access_range<_Base> {
                 return _Left._Current < _Right._Current;
             }
 
             _NODISCARD_FRIEND constexpr bool operator>(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(_Right._Current < _Left._Current))) // strengthened
+                noexcept(_Fake_copy_init<bool>(_Right._Current < _Left._Current))) // strengthened
                 requires random_access_range<_Base> {
                 return _Right._Current < _Left._Current;
             }
 
             _NODISCARD_FRIEND constexpr bool operator<=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(!(_Right._Current < _Left._Current)))) // strengthened
+                noexcept(_Fake_copy_init<bool>(!(_Right._Current < _Left._Current)))) // strengthened
                 requires random_access_range<_Base> {
                 return !(_Right._Current < _Left._Current);
             }
 
             _NODISCARD_FRIEND constexpr bool operator>=(const _Iterator& _Left, const _Iterator& _Right) noexcept(
-                noexcept(_Implicitly_convert_to<bool>(!(_Left._Current < _Right._Current)))) // strengthened
+                noexcept(_Fake_copy_init<bool>(!(_Left._Current < _Right._Current)))) // strengthened
                 requires random_access_range<_Base> {
                 return !(_Left._Current < _Right._Current);
             }

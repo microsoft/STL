@@ -855,12 +855,6 @@ private:
     _Callable _Callee;
 };
 
-#ifdef __CUDACC__ // TRANSITION, CUDA
-#define _USE_FUNCTION_INT_0_SFINAE 0
-#else
-#define _USE_FUNCTION_INT_0_SFINAE 1
-#endif // __CUDACC__
-
 template <class _Ret, class... _Types>
 class _Func_class : public _Arg_types<_Types...> {
 public:
@@ -1044,11 +1038,7 @@ public:
         this->_Reset_copy(_Right);
     }
 
-#if _USE_FUNCTION_INT_0_SFINAE
     template <class _Fx, typename _Mybase::template _Enable_if_callable_t<_Fx, function> = 0>
-#else // ^^^ _USE_FUNCTION_INT_0_SFINAE // !_USE_FUNCTION_INT_0_SFINAE vvv
-    template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<_Fx, function>>
-#endif // _USE_FUNCTION_INT_0_SFINAE
     function(_Fx&& _Func) {
         this->_Reset(_STD forward<_Fx>(_Func));
     }
@@ -1065,11 +1055,7 @@ public:
         this->_Reset_alloc(_Right, _Ax);
     }
 
-#if _USE_FUNCTION_INT_0_SFINAE
     template <class _Fx, class _Alloc, typename _Mybase::template _Enable_if_callable_t<_Fx, function> = 0>
-#else // ^^^ _USE_FUNCTION_INT_0_SFINAE // !_USE_FUNCTION_INT_0_SFINAE vvv
-    template <class _Fx, class _Alloc, class = typename _Mybase::template _Enable_if_callable_t<_Fx, function>>
-#endif // _USE_FUNCTION_INT_0_SFINAE
     function(allocator_arg_t, const _Alloc& _Ax, _Fx&& _Func) {
         this->_Reset_alloc(_STD forward<_Fx>(_Func), _Ax);
     }
@@ -1099,11 +1085,7 @@ public:
         return *this;
     }
 
-#if _USE_FUNCTION_INT_0_SFINAE
     template <class _Fx, typename _Mybase::template _Enable_if_callable_t<_Fx, function> = 0>
-#else // ^^^ _USE_FUNCTION_INT_0_SFINAE // !_USE_FUNCTION_INT_0_SFINAE vvv
-    template <class _Fx, class = typename _Mybase::template _Enable_if_callable_t<_Fx, function>>
-#endif // _USE_FUNCTION_INT_0_SFINAE
     function& operator=(_Fx&& _Func) {
         function(_STD forward<_Fx>(_Func)).swap(*this);
         return *this;
@@ -2147,6 +2129,83 @@ _NODISCARD constexpr auto bind_front(_Fx&& _Func, _Types&&... _Args) {
     return _Front_binder<decay_t<_Fx>, decay_t<_Types>...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
 }
 #endif // _HAS_CXX20
+
+#if _HAS_CXX23
+template <size_t... _Ix, class _Cv_FD, class _Cv_tuple_TiD, class... _Unbound>
+constexpr auto _Call_back_binder(index_sequence<_Ix...>, _Cv_FD&& _Obj, _Cv_tuple_TiD&& _Tpl,
+    _Unbound&&... _Unbargs) noexcept(noexcept(_STD invoke(_STD forward<_Cv_FD>(_Obj),
+    _STD forward<_Unbound>(_Unbargs)..., _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)))
+    -> decltype(_STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
+        _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...)) {
+    return _STD invoke(_STD forward<_Cv_FD>(_Obj), _STD forward<_Unbound>(_Unbargs)...,
+        _STD get<_Ix>(_STD forward<_Cv_tuple_TiD>(_Tpl))...);
+}
+
+template <class _Fx, class... _Types>
+class _Back_binder { // wrap bound callable object and arguments
+private:
+    using _Seq = index_sequence_for<_Types...>;
+
+    _Compressed_pair<_Fx, tuple<_Types...>> _Mypair;
+
+    _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Fx, decay_t<_Fx>>);
+    _STL_INTERNAL_STATIC_ASSERT((is_same_v<_Types, decay_t<_Types>> && ...));
+
+public:
+    template <class _FxInit, class... _TypesInit,
+        enable_if_t<sizeof...(_TypesInit) != 0 || !is_same_v<remove_cvref_t<_FxInit>, _Back_binder>, int> = 0>
+    constexpr explicit _Back_binder(_FxInit&& _Func, _TypesInit&&... _Args)
+        : _Mypair(_One_then_variadic_args_t{}, _STD forward<_FxInit>(_Func), _STD forward<_TypesInit>(_Args)...) {}
+
+    template <class... _Unbound>
+    constexpr auto operator()(_Unbound&&... _Unbargs) & noexcept(
+        noexcept(_Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
+        -> decltype(_Call_back_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
+        return _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound>
+    constexpr auto operator()(_Unbound&&... _Unbargs) const& noexcept(
+        noexcept(_Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)))
+        -> decltype(_Call_back_binder(
+            _Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...)) {
+        return _Call_back_binder(_Seq{}, _Mypair._Get_first(), _Mypair._Myval2, _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound>
+    constexpr auto operator()(_Unbound&&... _Unbargs) && noexcept(noexcept(_Call_back_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)))
+        -> decltype(_Call_back_binder(
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)) {
+        return _Call_back_binder(
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
+    }
+
+    template <class... _Unbound>
+    constexpr auto operator()(_Unbound&&... _Unbargs) const&& noexcept(noexcept(_Call_back_binder(
+        _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)))
+        -> decltype(_Call_back_binder(
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...)) {
+        return _Call_back_binder(
+            _Seq{}, _STD move(_Mypair._Get_first()), _STD move(_Mypair._Myval2), _STD forward<_Unbound>(_Unbargs)...);
+    }
+};
+
+template <class _Fx, class... _Types>
+_NODISCARD constexpr auto bind_back(_Fx&& _Func, _Types&&... _Args) {
+    static_assert(is_constructible_v<decay_t<_Fx>, _Fx>,
+        "std::bind_back requires the decayed callable to be constructible from an undecayed callable");
+    static_assert(
+        is_move_constructible_v<decay_t<_Fx>>, "std::bind_back requires the decayed callable to be move constructible");
+    static_assert(conjunction_v<is_constructible<decay_t<_Types>, _Types>...>,
+        "std::bind_back requires the decayed bound arguments to be constructible from undecayed bound arguments");
+    static_assert(conjunction_v<is_move_constructible<decay_t<_Types>>...>,
+        "std::bind_back requires the decayed bound arguments to be move constructible");
+
+    return _Back_binder<decay_t<_Fx>, decay_t<_Types>...>(_STD forward<_Fx>(_Func), _STD forward<_Types>(_Args)...);
+}
+#endif // _HAS_CXX23
 
 #if _HAS_FUNCTION_ALLOCATOR_SUPPORT
 template <class _Fty, class _Alloc>
