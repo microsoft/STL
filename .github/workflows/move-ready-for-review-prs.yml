@@ -27,6 +27,7 @@ jobs:
               return project.name === 'Code Reviews';
             })
             if (!code_reviews) {
+              console.error("'Code Reviews' project not found!")
               return
             }
 
@@ -39,11 +40,13 @@ jobs:
 
             const work_in_progress = columns.data.find(column => column.name === 'Work In Progress')
             if (!work_in_progress) {
+              console.error("'Work In Progress' column not found!")
               return
             }
 
             const initial_review = columns.data.find(column => column.name === 'Initial Review')
             if (!initial_review) {
+              console.error("'Initial Review' column not found!")
               return
             }
 
@@ -52,6 +55,7 @@ jobs:
             })
             const pr_card = work_in_progress_cards.data.find(card => card.content_url === context.payload.issue.url)
             if (!pr_card) {
+              console.error("Corresponding card for PR not found!")
               return
             }
 
@@ -60,5 +64,5 @@ jobs:
               position: 'bottom',
               column_id: initial_review.id,
             }).catch(error => {
-              console.error("Error occured while moving card to Initial Review!")
+              console.error("Error occured while moving card to 'Initial Review'!")
             })
