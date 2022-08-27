@@ -500,6 +500,20 @@ STATIC_ASSERT(__cpp_lib_constexpr_bitset == 202207L);
 #endif
 #endif
 
+#if _HAS_CXX23
+#ifndef __cpp_lib_constexpr_charconv
+#error __cpp_lib_constexpr_charconv is not defined
+#elif __cpp_lib_constexpr_charconv != 202207L
+#error __cpp_lib_constexpr_charconv  is not 202207L
+#else
+STATIC_ASSERT(__cpp_lib_constexpr_charconv == 202207L);
+#endif
+#else
+#ifdef __cpp_lib_constexpr_charconv
+#error __cpp_lib_constexpr_charconv is defined
+#endif
+#endif
+
 #if _HAS_CXX20
 #ifndef __cpp_lib_constexpr_complex
 #error __cpp_lib_constexpr_complex is not defined
