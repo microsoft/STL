@@ -33,7 +33,7 @@
     "@octokit/graphql": "^5.0.1",
     "@types/cli-progress": "^3.11.0",
     "@types/luxon": "^3.0.0",
-    "@types/node": "^18.7.6",
+    "@types/node": "^18.7.13",
     "@types/yargs": "^17.0.11",
     "chart.js": "^3.9.1",
     "chartjs-adapter-luxon": "^1.2.0",
@@ -42,7 +42,7 @@
     "esbuild": "^0.15.5",
     "http-server": "^14.1.1",
     "luxon": "^3.0.1",
-    "typescript": "^4.7.4",
+    "typescript": "^4.8.2",
     "yargs": "^17.5.1"
   }
 }
