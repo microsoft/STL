@@ -71,10 +71,7 @@ public:
         _Addr = reinterpret_cast<uintptr_t>(this);
     }
 
-#ifdef __cpp_constexpr_dynamic_alloc
-    constexpr
-#endif
-        virtual ~error_category() noexcept = default;
+    _CONSTEXPR20 virtual ~error_category() noexcept = default;
 
     _NODISCARD virtual const char* name() const noexcept = 0;
 
@@ -566,8 +563,8 @@ public:
 // * can't use magic statics in standard modes, because that would inject a .TLS section into all binaries using
 //   <system_error> and would likely put borderline programs over the TLS slot count limit, and would destroy the
 //   variable during DLL unload
-// * can't declare the error_category as an ordinary constexpr variable for most compilers, because error_category
-//   has a virtual destructor (TRANSITION, __cpp_constexpr_dynamic_alloc)
+// * can't declare the error_category as an ordinary constexpr variable for most compilers before C++20, because
+//   error_category has a virtual destructor
 // * can't declare the error_category as an ordinary non-constexpr variable even with a constexpr constructor, because
 //   the compiler will emit code to destroy it which invalidates its use in these DLL shutdown scenarios
 //
@@ -594,7 +591,7 @@ _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     /* MAGIC */ static _Immortalizer_impl<_Ty> _Static;
     return _Static._Storage;
 }
-#elif defined(__cpp_constexpr_dynamic_alloc)
+#elif _HAS_CXX20
 template <class _Ty>
 _NODISCARD const _Ty& _Immortalize_memcpy_image() noexcept {
     static constexpr _Ty _Static;
