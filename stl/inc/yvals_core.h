@@ -539,7 +539,7 @@
     _NODISCARD_MSG(                                                                                           \
         "This member function returns a bool value whether the container is empty and has no other effects. " \
         "It is not useful to call this method and discard the returned value. "                               \
-        "There's no way to clear a queue or stack, it intentionally limits access to the udnerlying container")
+        "There's no way to clear a queue or stack, it intentionally limits access to the underlying container")
 
 #define _NODISCARD_BARRIER_TOKEN \
     _NODISCARD_MSG("The token from 'arrive()' should not be discarded; it should be passed to 'wait()'")
@@ -561,8 +561,8 @@
     _NODISCARD_MSG("This function allocates some memory and returns a raw pointer. " \
                    "It is an error to discard the result, it causes a memory leak")
 
-#define _NODISCARD_ASSUME_ALIGNED                                                                                     \
-    _NODISCARD_MSG("Implementation might take advantage of alignment assumption only if the object is accesssed via " \
+#define _NODISCARD_ASSUME_ALIGNED                                                                                    \
+    _NODISCARD_MSG("Implementation might take advantage of alignment assumption only if the object is accessed via " \
                    "the returned pointer")
 
 #define _NODISCARD_LAUNDER                                                                            \
