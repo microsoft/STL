@@ -534,7 +534,7 @@
         "This function returns a bool indicating whether the container or container-like object is empty and " \
         "has no other effects. It is not useful to call this function and discard the return value.")
 
-#define _NODISCARD_EMPTY_ADAPTER_MEMBER                                                                            \
+#define _NODISCARD_EMPTY_ADAPTOR_MEMBER                                                                            \
     _NODISCARD_MSG(                                                                                                \
         "This member function returns a bool indicating whether the container is empty and has no other effects. " \
         "It is not useful to call this member function and discard the return value. "                             \
