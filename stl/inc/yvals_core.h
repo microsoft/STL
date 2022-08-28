@@ -569,26 +569,26 @@
     _NODISCARD_MSG("'std::launder' has an effect on the return value (not on the passed parameter). " \
                    "It is not useful to call 'std::launder' and discard the returned value")
 
-#ifdef _NODISCARD_LOCK_SUPPRESS
+#ifdef _SILENCE_NODISCARD_LOCK_WARNINGS
 
 #define _NODISCARD_LOCK
 #define _NODISCARD_CTOR_LOCK
 
-#else // ^^^ defined(_NODISCARD_LOCK_SUPPRESS) ^^^ / vvv !defined(_NODISCARD_LOCK_SUPPRESS) vvv
+#else // ^^^ defined(_SILENCE_NODISCARD_LOCK_WARNINGS) ^^^ / vvv !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) vvv
 
 #define _NODISCARD_LOCK                                                                                               \
     _NODISCARD_MSG(                                                                                                   \
         "A lock should be saved in a variable to protect the scope. (If the intention is to protect the rest of the " \
         "current expression, using comma operator, please use cast to void to suppress this warning. "                \
-        "Alternatively, define _NODISCARD_LOCK_SUPPRESS)")
+        "Alternatively, define _SILENCE_NODISCARD_LOCK_WARNINGS)")
 
 #define _NODISCARD_CTOR_LOCK                                                                                          \
     _NODISCARD_CTOR_MSG(                                                                                              \
         "A lock should be saved in a variable to protect the scope. (If the intention is to protect the rest of the " \
         "current expression, using comma operator, please use cast to void to suppress this warning. "                \
-        "Alternatively, define _NODISCARD_LOCK_SUPPRESS)")
+        "Alternatively, define _SILENCE_NODISCARD_LOCK_WARNINGS)")
 
-#endif // ^^^ !defined(_NODISCARD_LOCK_SUPPRESS) ^^^
+#endif // ^^^ !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) ^^^
 
 #define _NODISCARD_CTOR_THREAD \
     _NODISCARD_CTOR_MSG("Thread is not joined or detached, 'terminate' will be called at the end of the statement")
