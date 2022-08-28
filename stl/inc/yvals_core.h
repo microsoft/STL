@@ -564,8 +564,8 @@
     _NODISCARD_MSG("'std::assume_aligned' has a potential effect on the return value (not on the passed argument). " \
                    "It is not useful to call 'std::assume_aligned' and discard the return value.")
 
-#define _NODISCARD_LAUNDER                                                                           \
-    _NODISCARD_MSG("'std::launder' has an effect on the return value (not on the passed argument). " \
+#define _NODISCARD_LAUNDER                                                                             \
+    _NODISCARD_MSG("'std::launder' has a potential on the return value (not on the passed argument). " \
                    "It is not useful to call 'std::launder' and discard the return value.")
 
 #ifdef _SILENCE_NODISCARD_LOCK_WARNINGS
