@@ -2693,7 +2693,7 @@ private:
 #endif // _HAS_CXX20
 
 template <class _Ty, class... _Types>
-_NODISCARD
+_NODISCARD_SMART_PTR_ALLOC
 #if _HAS_CXX20
     enable_if_t<!is_array_v<_Ty>, shared_ptr<_Ty>>
 #else // _HAS_CXX20
