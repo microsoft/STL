@@ -10,7 +10,7 @@ on:
 
 jobs:
   move-pr-to-initial-review:
-    if: github.event.comment.body == '/pr mark ready' && github.event.issue.pull_request
+    if: contains(github.event.comment.body, '/pr mark ready') && github.event.issue.pull_request
     runs-on: ubuntu-latest
     steps:
       - name: Move To Initial Review
@@ -23,9 +23,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
             })
-            const code_reviews = projects.data.find(project => {
-              return project.name === 'Code Reviews';
-            })
+            const code_reviews = projects.data.find(project => project.name === 'Code Reviews');
             if (!code_reviews) {
               console.error("'Code Reviews' project not found!")
               return
@@ -64,5 +62,5 @@ jobs:
               position: 'bottom',
               column_id: initial_review.id,
             }).catch(error => {
-              console.error("Error occured while moving card to 'Initial Review'!")
+              console.error("Error occured while moving card to 'Initial Review': {error}")
             })
