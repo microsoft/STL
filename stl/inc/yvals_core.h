@@ -280,6 +280,7 @@
 // P2408R5 Ranges Iterators As Inputs To Non-Ranges Algorithms
 // P2415R2 What Is A view?
 // P2418R2 Add Support For std::generator-like Types To std::format
+// P2419R2 Clarify Handling Of Encodings In Localized Formatting Of chrono Types
 // P2432R1 Fix istream_view
 // P2520R0 move_iterator<T*> Should Be A Random-Access Iterator
 
@@ -320,9 +321,11 @@
 // P2166R1 Prohibiting basic_string And basic_string_view Construction From nullptr
 // P2186R2 Removing Garbage Collection Support
 // P2273R3 constexpr unique_ptr
+// P2291R3 constexpr Integral <charconv>
 // P2302R4 ranges::contains, ranges::contains_subrange
 // P2321R2 zip
 //     (changes to pair, tuple, and vector<bool>::reference only)
+// P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2417R2 More constexpr bitset
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 // P2441R2 views::join_with
@@ -330,6 +333,7 @@
 // P2443R1 views::chunk_by
 // P2445R1 forward_like()
 // P2446R2 views::as_rvalue
+// P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
 // P2499R0 string_view Range Constructor Should Be explicit
 // P2549R0 unexpected<E>::error()
 
@@ -1392,7 +1396,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_concepts 202002L
 #endif // !defined(__EDG__) || defined(__INTELLISENSE__)
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
 #define __cpp_lib_algorithm_iterator_requirements 202207L
 #endif // __cpp_lib_concepts
 
@@ -1424,7 +1428,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_endian                  201907L
 #define __cpp_lib_erase_if                202002L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
 #define __cpp_lib_format 202110L
 #endif // __cpp_lib_concepts
 
@@ -1453,15 +1457,11 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants          201907L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
 #define __cpp_lib_move_iterator_concept 202207L
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_polymorphic_allocator 201902L
-
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
-#define __cpp_lib_ranges 202110L
-#endif // __cpp_lib_concepts
 
 #define __cpp_lib_remove_cvref            201711L
 #define __cpp_lib_semaphore               201907L
@@ -1476,7 +1476,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_starts_ends_with 201711L
 #define __cpp_lib_syncbuf          201803L
 
-#ifdef __cpp_lib_concepts // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
 #define __cpp_lib_three_way_comparison 201907L
 #endif // __cpp_lib_concepts
 
@@ -1495,8 +1495,10 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #endif // __cpp_lib_concepts
 
 #define __cpp_lib_associative_heterogeneous_erasure 202110L
+#define __cpp_lib_bind_back                         202202L
 #define __cpp_lib_byteswap                          202110L
 #define __cpp_lib_constexpr_bitset                  202207L
+#define __cpp_lib_constexpr_charconv                202207L
 #define __cpp_lib_constexpr_typeinfo                202106L
 
 #ifdef __cpp_lib_concepts
@@ -1539,7 +1541,7 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #define __cpp_lib_array_constexpr 201803L // P0858R0 Constexpr Iterator Requirements
 #endif // _HAS_CXX17
 
-#if _HAS_CXX20 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#ifdef __cpp_lib_concepts
 #define __cpp_lib_chrono 201907L // P1466R3 Miscellaneous Minor Fixes For <chrono>
 #elif _HAS_CXX17
 #define __cpp_lib_chrono 201611L // P0505R0 constexpr For <chrono> (Again)
@@ -1568,6 +1570,14 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 #elif _HAS_CXX17 // ^^^ _HAS_CXX20 / _HAS_CXX17 vvv
 #define __cpp_lib_optional 201606L // P0307R2 Making Optional Greater Equal Again
 #endif // _HAS_CXX17
+
+#if defined(__cpp_lib_concepts) // TRANSITION, GH-395
+#if _HAS_CXX23
+#define __cpp_lib_ranges 202207L // P2494R2 Relaxing Range Adaptors To Allow Move-Only Types
+#elif _HAS_CXX20 // ^^^ _HAS_CXX23 / _HAS_CXX20 vvv
+#define __cpp_lib_ranges 202110L // P2415R2 What Is A view?
+#endif // _HAS_CXX20
+#endif // defined(__cpp_lib_concepts)
 
 #if _HAS_CXX20
 #define __cpp_lib_shared_ptr_arrays 201707L // P0674R1 make_shared() For Arrays

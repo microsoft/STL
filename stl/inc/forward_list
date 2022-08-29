@@ -607,7 +607,7 @@ public:
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     forward_list(from_range_t, _Rng&& _Range) : _Mypair(_Zero_then_variadic_args_t{}) {
         _Flist_insert_after_op2<_Alnode> _Insert_op(_Getal());
@@ -623,7 +623,7 @@ public:
         _Alloc_proxy();
         _Insert_op._Attach_after(_Mypair._Myval2._Before_head());
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     forward_list(forward_list&& _Right) noexcept // strengthened
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
@@ -915,12 +915,12 @@ public:
         _Insert_after(_Mypair._Myval2._Before_head(), _Val);
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     void prepend_range(_Rng&& _Range) {
         _Insert_range_after(_Mypair._Myval2._Before_head(), _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     void pop_front() noexcept /* strengthened */ {
         _Erase_after(_Mypair._Myval2._Before_head());
@@ -960,12 +960,12 @@ public:
         _Assign_unchecked(_Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     void assign_range(_Rng&& _Range) {
         _Assign_unchecked(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     void assign(_CRT_GUARDOVERFLOW size_type _Count, const _Ty& _Val) {
         clear();
@@ -1022,7 +1022,7 @@ public:
         return _Insert_range_after(_Where._Ptr, _Get_unwrapped(_First), _Get_unwrapped(_Last));
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Ty> _Rng>
     iterator insert_range_after(const_iterator _Where, _Rng&& _Range) {
 #if _ITERATOR_DEBUG_LEVEL == 2
@@ -1031,7 +1031,7 @@ public:
 #endif // _ITERATOR_DEBUG_LEVEL == 2
         return _Insert_range_after(_Where._Ptr, _RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 private:
     void _Erase_after(_Nodeptr _Pnode) noexcept { // erase element after _Pnode
@@ -1555,11 +1555,11 @@ template <class _Iter, class _Alloc = allocator<_Iter_value_t<_Iter>>,
 forward_list(_Iter, _Iter, _Alloc = _Alloc()) -> forward_list<_Iter_value_t<_Iter>, _Alloc>;
 #endif // _HAS_CXX17
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 forward_list(from_range_t, _Rng&&, _Alloc = _Alloc()) -> forward_list<_RANGES range_value_t<_Rng>, _Alloc>;
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class _Ty, class _Alloc>
 void swap(forward_list<_Ty, _Alloc>& _Left, forward_list<_Ty, _Alloc>& _Right) noexcept /* strengthened */ {

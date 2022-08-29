@@ -2324,7 +2324,7 @@ constexpr _Ty* uninitialized_construct_using_allocator(_Ty* _Ptr, const _Alloc& 
 }
 #endif // _HAS_CXX20
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 struct from_range_t {
     explicit from_range_t() = default;
 };
@@ -2343,7 +2343,7 @@ using _Range_mapped_type = typename _RANGES range_value_t<_Rng>::second_type;
 template <_RANGES input_range _Rng>
 using _Range_to_alloc_type =
     pair<const typename _RANGES range_value_t<_Rng>::first_type, typename _RANGES range_value_t<_Rng>::second_type>;
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class _Ty,
     bool = is_empty_v<_Ty> && !is_final_v<_Ty>>
