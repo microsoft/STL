@@ -59,7 +59,7 @@ jobs:
                         position: 'bottom',
                         column_id: work_in_progress.id,
                       }).catch(error => {
-                        console.error("Error occured while moving card to 'Work In Progress': {error}")
+                        console.error(`Error occured while moving card to 'Work In Progress': ${error}`)
                       })
                     }
                   })
