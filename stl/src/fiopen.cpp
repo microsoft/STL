@@ -40,6 +40,14 @@ namespace {
             ios_base::in | ios_base::out | ios_base::binary,
             ios_base::in | ios_base::out | ios_base::trunc | ios_base::binary,
             ios_base::in | ios_base::out | ios_base::app | ios_base::binary,
+#ifdef __cpp_lib_ios_noreplace
+            ios_base::out | ios_base::noreplace,
+            ios_base::out | ios_base::trunc | ios_base::noreplace,
+            ios_base::out | ios_base::in | ios_base::trunc | ios_base::noreplace,
+            ios_base::out | ios_base::binary | ios_base::noreplace,
+            ios_base::out | ios_base::binary | ios_base::trunc | ios_base::noreplace,
+            ios_base::out | ios_base::in | ios_base::trunc | ios_base::binary | ios_base::noreplace,
+#endif
         };
 
         FILE* fp                     = nullptr;
