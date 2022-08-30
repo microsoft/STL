@@ -73,7 +73,7 @@ public:
     using propagate_on_container_swap            = true_type;
 
     payloaded_allocator() = default;
-    explicit constexpr payloaded_allocator(int payload) noexcept : payload_{payload} {}
+    constexpr explicit payloaded_allocator(int payload) noexcept : payload_{payload} {}
 
     template <class U>
     constexpr payloaded_allocator(const payloaded_allocator<U>& other) noexcept : payload_{other.get_payload()} {}
