@@ -125,23 +125,23 @@ constexpr bool test_rvalue_substr() {
 
         // Test non-portable implementation details
         {
-            auto source_str     = string_type{str_view};
+            string_type source_str{str_view};
             const auto old_data = source_str.data();
-            auto dest_str       = string_type{move(source_str), offset, count};
+            string_type dest_str{move(source_str), offset, count};
 
             TEST_ASSERT((dest_str.data() == old_data) == (dest_str.size() > sso_buffer_capacity));
         }
 
         {
-            auto source_str     = string_type{str_view};
+            string_type source_str{str_view};
             const auto old_data = source_str.data();
-            auto dest_str       = string_type{move(source_str), offset};
+            string_type dest_str{move(source_str), offset};
 
             TEST_ASSERT((dest_str.data() == old_data) == (dest_str.size() > sso_buffer_capacity));
         }
 
         {
-            auto source_str     = string_type{str_view};
+            string_type source_str{str_view};
             const auto old_data = source_str.data();
             auto dest_str       = move(source_str).substr(offset, count);
 
@@ -152,61 +152,60 @@ constexpr bool test_rvalue_substr() {
 
         using payloaded_string_type = basic_string<CharT, char_traits<CharT>, payloaded_allocator<CharT>>;
 
-        auto non_default_allocator = payloaded_allocator<CharT>{42};
+        payloaded_allocator<CharT> non_default_allocator{42};
         {
-            auto source_str     = payloaded_string_type{str_view};
+            payloaded_string_type source_str{str_view};
             const auto old_data = source_str.data();
-            auto dest_str       = payloaded_string_type{move(source_str), offset, count};
+            payloaded_string_type dest_str{move(source_str), offset, count};
 
             TEST_ASSERT((dest_str.data() == old_data) == (dest_str.size() > sso_buffer_capacity));
         }
         {
-            auto source_str     = payloaded_string_type{str_view, non_default_allocator};
+            payloaded_string_type source_str{str_view, non_default_allocator};
             const auto old_data = source_str.data();
-            auto dest_str       = payloaded_string_type{move(source_str), offset, count};
+            payloaded_string_type dest_str{move(source_str), offset, count};
 
             TEST_ASSERT(dest_str.data() != old_data);
         }
         {
-            auto source_str     = payloaded_string_type{str_view, non_default_allocator};
+            payloaded_string_type source_str{str_view, non_default_allocator};
             const auto old_data = source_str.data();
-            auto dest_str       = payloaded_string_type{move(source_str), offset, count, non_default_allocator};
+            payloaded_string_type dest_str{move(source_str), offset, count, non_default_allocator};
 
             TEST_ASSERT((dest_str.data() == old_data) == (dest_str.size() > sso_buffer_capacity));
         }
 
         {
-            auto source_str     = payloaded_string_type{str_view};
+            payloaded_string_type source_str{str_view};
             const auto old_data = source_str.data();
-            auto dest_str       = payloaded_string_type{move(source_str), offset};
+            payloaded_string_type dest_str{move(source_str), offset};
 
             TEST_ASSERT((dest_str.data() == old_data) == (dest_str.size() > sso_buffer_capacity));
         }
         {
-            auto source_str     = payloaded_string_type{str_view, non_default_allocator};
+            payloaded_string_type source_str{str_view, non_default_allocator};
             const auto old_data = source_str.data();
-            auto dest_str       = payloaded_string_type{move(source_str), offset};
+            payloaded_string_type dest_str{move(source_str), offset};
 
             TEST_ASSERT(dest_str.data() != old_data);
         }
         {
-            auto source_str     = payloaded_string_type{str_view, non_default_allocator};
+            payloaded_string_type source_str{str_view, non_default_allocator};
             const auto old_data = source_str.data();
-            auto dest_str       = payloaded_string_type{move(source_str), offset, non_default_allocator};
+            payloaded_string_type dest_str{move(source_str), offset, non_default_allocator};
 
             TEST_ASSERT((dest_str.data() == old_data) == (dest_str.size() > sso_buffer_capacity));
         }
 
         {
-            auto source_str     = payloaded_string_type{str_view};
+            payloaded_string_type source_str{str_view};
             const auto old_data = source_str.data();
             auto dest_str       = move(source_str).substr(offset, count);
 
             TEST_ASSERT((dest_str.data() == old_data) == (dest_str.size() > sso_buffer_capacity));
         }
         {
-            auto source_str = payloaded_string_type{str_view, non_default_allocator};
-
+            payloaded_string_type source_str{str_view, non_default_allocator};
             const auto old_data = source_str.data();
             auto dest_str       = move(source_str).substr(offset, count);
 

@@ -134,10 +134,10 @@ CONSTEXPR20 bool test_substr_allocator() {
 
     using string_type = basic_string<CharT, char_traits<CharT>, payloaded_allocator<CharT>>;
 
-    auto myator = payloaded_allocator<CharT>{42};
+    payloaded_allocator<CharT> myator{42};
 
     for (const auto& test_case : substring_test_cases) {
-        auto full_str = string_type{test_case.ntcts, myator};
+        string_type full_str{test_case.ntcts, myator};
 
         const auto offset = test_case.offset;
         const auto count  = test_case.count;
