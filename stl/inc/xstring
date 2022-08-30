@@ -382,6 +382,7 @@ public:
                 if (static_cast<unsigned char>(_First1[_Idx]) < static_cast<unsigned char>(_First2[_Idx])) {
                     return -1;
                 }
+
                 if (static_cast<unsigned char>(_First2[_Idx]) < static_cast<unsigned char>(_First1[_Idx])) {
                     return 1;
                 }
