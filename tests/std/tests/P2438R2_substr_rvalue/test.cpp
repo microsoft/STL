@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 
 #define TEST_ASSERT(...) assert((__VA_ARGS__))
 
