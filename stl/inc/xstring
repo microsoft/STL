@@ -3202,7 +3202,7 @@ private:
 
         const auto _Result_size = _Right_data._Clamp_suffix_size(_Roff, _Size_max);
         const auto _Right_ptr   = _Right_data._Myptr();
-        if (_Allocators_equal(_Al, _Right._Getal()) && _Result_size >= _Scary_val::_BUF_SIZE) {
+        if (_Allocators_equal(_Al, _Right._Getal()) && _Result_size >= _BUF_SIZE) {
             if (_Roff != 0) {
                 _Traits::move(_Right_ptr, _Right_ptr + _Roff, _Result_size);
             }
