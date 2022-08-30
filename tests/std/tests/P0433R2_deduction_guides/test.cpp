@@ -507,13 +507,13 @@ void test_basic_string() {
     static_assert(is_same_v<decltype(str17), basic_string<wchar_t, char_traits<wchar_t>, MyAlloc<wchar_t>>>);
     static_assert(is_same_v<decltype(str18), basic_string<wchar_t, char_traits<wchar_t>, MyAlloc<wchar_t>>>);
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     basic_string str19(from_range, first);
     basic_string str20(from_range, first, myal);
 
     static_assert(is_same_v<decltype(str19), wstring>);
     static_assert(is_same_v<decltype(str20), basic_string<wchar_t, char_traits<wchar_t>, MyAlloc<wchar_t>>>);
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 }
 
 void test_basic_string_view() {
@@ -573,13 +573,13 @@ void test_sequence_container() {
     static_assert(is_same_v<decltype(c6), Sequence<long, MyAlloc<long>>>);
     static_assert(is_same_v<decltype(c7), Sequence<long, MyAlloc<long>>>);
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     Sequence c8(from_range, first);
     Sequence c9(from_range, first, myal);
 
     static_assert(is_same_v<decltype(c8), Sequence<long>>);
     static_assert(is_same_v<decltype(c9), Sequence<long, MyAlloc<long>>>);
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 }
 
 void test_vector_bool() {
@@ -604,13 +604,13 @@ void test_vector_bool() {
     static_assert(is_same_v<decltype(vb6), vector<bool, MyAlloc<bool>>>);
     static_assert(is_same_v<decltype(vb7), vector<bool, MyAlloc<bool>>>);
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     vector vb8(from_range, first);
     vector vb9(from_range, first, myal);
 
     static_assert(is_same_v<decltype(vb8), vector<bool>>);
     static_assert(is_same_v<decltype(vb9), vector<bool, MyAlloc<bool>>>);
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 }
 
 template <template <typename K, typename V, typename C = less<K>, typename A = allocator<pair<const K, V>>> typename M>
@@ -647,7 +647,7 @@ void test_map_or_multimap() {
     static_assert(is_same_v<decltype(m12), M<long, char, MyGreater, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(m13), M<long, char, less<long>, MyAlloc<CPurr>>>);
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     M m14(from_range, first);
     M m15(from_range, first, gt);
     M m16(from_range, first, gt, myal);
@@ -657,7 +657,7 @@ void test_map_or_multimap() {
     static_assert(is_same_v<decltype(m15), M<long, char, MyGreater>>);
     static_assert(is_same_v<decltype(m16), M<long, char, MyGreater, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(m17), M<long, char, less<long>, MyAlloc<CPurr>>>);
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 }
 
 template <template <typename K, typename C = less<K>, typename A = allocator<K>> typename S>
@@ -688,7 +688,7 @@ void test_set_or_multiset() {
     static_assert(is_same_v<decltype(s8), S<long, less<long>, MyAlloc<long>>>);
     static_assert(is_same_v<decltype(s9), S<long, less<long>, MyAlloc<long>>>);
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     S s10(from_range, first);
     S s11(from_range, first, gt);
     S s12(from_range, first, gt, myal);
@@ -698,7 +698,7 @@ void test_set_or_multiset() {
     static_assert(is_same_v<decltype(s11), S<long, MyGreater>>);
     static_assert(is_same_v<decltype(s12), S<long, MyGreater, MyAlloc<long>>>);
     static_assert(is_same_v<decltype(s13), S<long, less<long>, MyAlloc<long>>>);
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 }
 
 template <template <typename K, typename V, typename H = hash<K>, typename P = equal_to<K>,
@@ -752,7 +752,7 @@ void test_unordered_map_or_unordered_multimap() {
     static_assert(is_same_v<decltype(um24), UM<long, char, hash<long>, equal_to<long>, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(um25), UM<long, char, MyHash, equal_to<long>, MyAlloc<CPurr>>>);
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     UM um26(from_range, first);
     UM um27(from_range, first, 7);
     UM um28(from_range, first, 7, hf);
@@ -770,7 +770,7 @@ void test_unordered_map_or_unordered_multimap() {
     static_assert(is_same_v<decltype(um31), UM<long, char, hash<long>, equal_to<long>, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(um32), UM<long, char, hash<long>, equal_to<long>, MyAlloc<CPurr>>>);
     static_assert(is_same_v<decltype(um33), UM<long, char, MyHash, equal_to<long>, MyAlloc<CPurr>>>);
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 }
 
 template <template <typename K, typename H = hash<K>, typename P = equal_to<K>, typename A = allocator<K>> typename US>
@@ -814,7 +814,7 @@ void test_unordered_set_or_unordered_multiset() {
     static_assert(is_same_v<decltype(us14), US<long, MyHash, equal_to<long>, MyAlloc<long>>>);
     static_assert(is_same_v<decltype(us15), US<long, MyHash, MyEqual, MyAlloc<long>>>);
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     US us16(from_range, first);
     US us17(from_range, first, 7);
     US us18(from_range, first, 7, hf);
@@ -830,7 +830,7 @@ void test_unordered_set_or_unordered_multiset() {
     static_assert(is_same_v<decltype(us20), US<long, MyHash, MyEqual, MyAlloc<long>>>);
     static_assert(is_same_v<decltype(us21), US<long, hash<long>, equal_to<long>, MyAlloc<long>>>);
     static_assert(is_same_v<decltype(us22), US<long, MyHash, equal_to<long>, MyAlloc<long>>>);
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 }
 
 void test_queue_and_stack() {
@@ -855,13 +855,13 @@ void test_queue_and_stack() {
     static_assert(is_same_v<decltype(q4), queue<long>>);
     static_assert(is_same_v<decltype(q5), queue<long, deque<long, MyAlloc<long>>>>);
 
-#ifdef __cpp_lib_containers_ranges
+#ifdef __cpp_lib_concepts
     queue q6(from_range, first);
     queue q7(from_range, first, myal);
 
     static_assert(is_same_v<decltype(q6), queue<long>>);
     static_assert(is_same_v<decltype(q7), queue<long, deque<long, MyAlloc<long>>>>);
-#endif // __cpp_lib_containers_ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 
     stack s1(lst);
@@ -879,13 +879,13 @@ void test_queue_and_stack() {
     static_assert(is_same_v<decltype(s4), stack<long>>);
     static_assert(is_same_v<decltype(s5), stack<long, deque<long, MyAlloc<long>>>>);
 
-#ifdef __cpp_lib_containers_ranges
+#ifdef __cpp_lib_concepts
     stack s6(from_range, first);
     stack s7(from_range, first, myal);
 
     static_assert(is_same_v<decltype(s6), stack<long>>);
     static_assert(is_same_v<decltype(s7), stack<long, deque<long, MyAlloc<long>>>>);
-#endif // __cpp_lib_containers_ranges
+#endif // __cpp_lib_concepts
 #endif // _HAS_CXX23
 }
 
@@ -916,7 +916,7 @@ void test_priority_queue() {
     static_assert(is_same_v<decltype(pq8), priority_queue<long, deque<long, MyAlloc<long>>, MyGreater>>);
     static_assert(is_same_v<decltype(pq9), priority_queue<long, deque<long, MyAlloc<long>>, MyGreater>>);
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     priority_queue pq10(from_range, first);
     priority_queue pq11(from_range, first, gt);
     priority_queue pq12(from_range, first, gt, myal);
@@ -926,7 +926,7 @@ void test_priority_queue() {
     static_assert(is_same_v<decltype(pq11), priority_queue<long, vector<long>, MyGreater>>);
     static_assert(is_same_v<decltype(pq12), priority_queue<long, vector<long, MyAlloc<long>>, MyGreater>>);
     static_assert(is_same_v<decltype(pq13), priority_queue<long, vector<long, MyAlloc<long>>>>);
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 }
 
 void test_iterator_adaptors() {
