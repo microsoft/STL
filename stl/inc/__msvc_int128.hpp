@@ -1453,7 +1453,7 @@ struct common_type<_Unsigned128, _Signed128> {
 
 inline namespace literals {
     inline namespace _Int128_literals {
-        namespace _Detail {
+        namespace _Int128_detail {
             enum class _U128_parse_status : unsigned char {
                 _Valid,
                 _Overflow,
@@ -1530,24 +1530,24 @@ inline namespace literals {
 
             template <char... _Chars>
             _INLINE_VAR constexpr _U128_parse_result _Parsed_u128<'0', _Chars...> = _Parse_u128_impl<8, _Chars...>();
-        } // namespace _Detail
+        } // namespace _Int128_detail
 
         template <char... _Chars>
         _CONSTEVAL _Unsigned128 operator"" __u128() noexcept {
-            constexpr const auto& _Parsed_result = _Detail::_Parsed_u128<_Chars...>;
-            static_assert(_Parsed_result._Status_code != _Detail::_U128_parse_status::_Invalid,
+            constexpr const auto& _Parsed_result = _Int128_detail::_Parsed_u128<_Chars...>;
+            static_assert(_Parsed_result._Status_code != _Int128_detail::_U128_parse_status::_Invalid,
                 "Invalid characters in the integer literal");
-            static_assert(_Parsed_result._Status_code != _Detail::_U128_parse_status::_Overflow,
+            static_assert(_Parsed_result._Status_code != _Int128_detail::_U128_parse_status::_Overflow,
                 "The integer literal is too large for an unsigned 128-bit number");
             return _Parsed_result._Value;
         }
 
         template <char... _Chars>
         _CONSTEVAL _Signed128 operator"" __i128() noexcept {
-            constexpr const auto& _Parsed_result = _Detail::_Parsed_u128<_Chars...>;
-            static_assert(_Parsed_result._Status_code != _Detail::_U128_parse_status::_Invalid,
+            constexpr const auto& _Parsed_result = _Int128_detail::_Parsed_u128<_Chars...>;
+            static_assert(_Parsed_result._Status_code != _Int128_detail::_U128_parse_status::_Invalid,
                 "Invalid characters in the integer literal");
-            static_assert(_Parsed_result._Status_code != _Detail::_U128_parse_status::_Overflow
+            static_assert(_Parsed_result._Status_code != _Int128_detail::_U128_parse_status::_Overflow
                               && _Parsed_result._Value._Word[1] < (static_cast<uint64_t>(1) << 63),
                 "The integer literal is too large for a signed 128-bit number");
             return static_cast<_Signed128>(_Parsed_result._Value);
