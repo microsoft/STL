@@ -327,6 +327,7 @@
 //     (changes to pair, tuple, and vector<bool>::reference only)
 // P2387R3 Pipe Support For User-Defined Range Adaptors
 // P2417R2 More constexpr bitset
+// P2438R2 string::substr() &&
 // P2440R1 ranges::iota, ranges::shift_left, ranges::shift_right
 // P2441R2 views::join_with
 // P2442R1 Windowing Range Adaptors: views::chunk, views::slide
