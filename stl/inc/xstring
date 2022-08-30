@@ -4730,7 +4730,7 @@ public:
     _NODISCARD _CONSTEXPR20 basic_string substr(const size_type _Off = 0, const size_type _Count = npos)
 #if _HAS_CXX23
         const&
-#else
+#else // _HAS_CXX23
         const
 #endif // _HAS_CXX23
     {

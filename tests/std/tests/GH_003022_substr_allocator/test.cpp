@@ -12,17 +12,17 @@ using namespace std;
 
 #if _HAS_CXX20
 #define CONSTEXPR20 constexpr
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 #define CONSTEXPR20 inline
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #define TEST_ASSERT(...) assert((__VA_ARGS__))
 
 #ifdef __cpp_char8_t
 using char8_type = char8_t;
-#else // ^^^ defined(__cpp_char8_t) / vvv !defined(__cpp_char8_t)
+#else // ^^^ defined(__cpp_char8_t) / !defined(__cpp_char8_t) vvv
 using char8_type = unsigned char;
-#endif // __cpp_char8_t
+#endif // ^^^ !defined(__cpp_char8_t) ^^^
 
 template <class CharT, enable_if_t<is_same_v<CharT, char>, int> = 0>
 constexpr auto statically_widen_impl(
@@ -56,9 +56,9 @@ constexpr auto statically_widen_impl(
 
 #ifdef __cpp_char8_t
 #define STATICALLY_WIDEN(CT, S) (statically_widen_impl<CT>(S, u8##S, u##S, U##S, L##S))
-#else // ^^^ defined(__cpp_char8_t) / vvv !defined(__cpp_char8_t)
+#else // ^^^ defined(__cpp_char8_t) / !defined(__cpp_char8_t) vvv
 #define STATICALLY_WIDEN(CT, S) (statically_widen_impl<CT>(S, nullptr, u##S, U##S, L##S))
-#endif // __cpp_char8_t
+#endif // ^^^ !defined(__cpp_char8_t) ^^^
 
 template <class T>
 class payloaded_allocator {
@@ -176,7 +176,7 @@ CONSTEXPR20 bool test_substr_allocator() {
 
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG doesn't perform overload resolution correctly
     static_assert(!is_constructible_v<string_type, ambiguator&, size_t, size_t>, "This should be ambiguous");
-#else
+#else // _HAS_CXX23 && !defined(__EDG__)
     static_assert(is_constructible_v<string_type, ambiguator&, size_t, size_t>, "This should be unambiguous");
 #endif // _HAS_CXX23 && !defined(__EDG__)
 

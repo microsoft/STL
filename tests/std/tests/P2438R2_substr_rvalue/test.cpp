@@ -76,9 +76,9 @@ consteval auto statically_widen_impl(string_view sv,
 
 #ifdef __cpp_char8_t
 #define STATICALLY_WIDEN(CT, S) (statically_widen_impl<CT>(S##sv, u8##S##sv, u##S##sv, U##S##sv, L##S##sv))
-#else // ^^^ defined(__cpp_char8_t) / vvv !defined(__cpp_char8_t)
+#else // ^^^ defined(__cpp_char8_t) / !defined(__cpp_char8_t) vvv
 #define STATICALLY_WIDEN(CT, S) (statically_widen_impl<CT>(S##sv, u##S##sv, U##S##sv, L##S##sv))
-#endif // __cpp_char8_t
+#endif // ^^^ !defined(__cpp_char8_t) ^^^
 
 template <class CharT>
 constexpr bool test_rvalue_substr() {
