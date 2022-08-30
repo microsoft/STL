@@ -1465,7 +1465,7 @@ inline namespace literals {
                 _Unsigned128 _Value;
             };
 
-            _CONSTEVAL unsigned int _Char_to_digit(const char _Ch) noexcept {
+            _NODISCARD _CONSTEVAL unsigned int _Char_to_digit(const char _Ch) noexcept {
                 if (_Ch >= '0' && _Ch <= '9') {
                     return static_cast<unsigned int>(_Ch - '0');
                 }
@@ -1482,7 +1482,7 @@ inline namespace literals {
             }
 
             template <unsigned int _Base, char... _Chars>
-            _CONSTEVAL _U128_parse_result _Parse_u128_impl() noexcept {
+            _NODISCARD _CONSTEVAL _U128_parse_result _Parse_u128_impl() noexcept {
                 if constexpr (sizeof...(_Chars) == 0) {
                     return {_U128_parse_status::_Valid, 0};
                 } else {
