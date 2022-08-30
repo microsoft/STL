@@ -99,7 +99,7 @@ namespace test {
         using _Prevent_inheriting_unwrap = Derived;
     };
     template <class Derived>
-    struct _Prevent_inheriting_unwrap_base<Derived, WrappedState::ignorant> {};
+    struct prevent_inheriting_unwrap_base<Derived, WrappedState::ignorant> {};
 
     [[nodiscard]] constexpr bool is_wrapped(WrappedState s) {
         return s == WrappedState::wrapped;
@@ -116,7 +116,7 @@ namespace test {
     }
 
     template <class Element, WrappedState Wrapped = WrappedState::wrapped>
-    class sentinel : public _Prevent_inheriting_unwrap_base<sentinel<Element, Wrapped>, Wrapped> {
+    class sentinel : public prevent_inheriting_unwrap_base<sentinel<Element, Wrapped>, Wrapped> {
         Element* ptr_ = nullptr;
 
     public:
@@ -362,7 +362,7 @@ namespace test {
         requires (to_bool(Eq) || !derived_from<Category, fwd>)
             && (Proxy == ProxyRef::no || !derived_from<Category, contiguous>)
     class iterator
-        : public _Prevent_inheriting_unwrap_base<iterator<Category, Element, Diff, Eq, Proxy, Wrapped>, Wrapped> {
+        : public prevent_inheriting_unwrap_base<iterator<Category, Element, Diff, Eq, Proxy, Wrapped>, Wrapped> {
         // clang-format on
         Element* ptr_;
 
@@ -420,7 +420,7 @@ namespace test {
             return boolish{i.peek() == s.peek()};
         }
         template <WrappedState OtherWrapped>
-        [[nodiscard]] friend constexpr boolish operator==(const sentinel<Element, OtherWrapped>& s,
+        [[nodiscard]] friend constexpr boolish operator==(sentinel<Element, OtherWrapped> const& s,
             iterator const& i) noexcept requires compatible_wrapped_state<Wrapped, OtherWrapped> {
             return i == s;
         }

@@ -1689,7 +1689,7 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     // and sentinel of the same type, so `_Get_unwrapped` is fine to call.
     auto _UFirst = _Get_unwrapped(_STD move(_First));
     auto _ULast = _Get_unwrapped(_STD move(_Last));
-#endif
+#endif // ^^^ !__cpp_lib_concepts ^^^
 
     constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
                                && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
