@@ -14,7 +14,7 @@
 namespace ordtest {
     using std::strong_ordering;
 }
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 namespace ordtest {
     enum class strong_ordering : signed char {
         less       = -1,
@@ -23,15 +23,15 @@ namespace ordtest {
         greater    = 1,
     };
 }
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #ifdef __cpp_lib_concepts // TRANSITION, GH-395
 #include <concepts>
 
 #define SAME_AS std::same_as
-#else // ^^^ has concepts / vvv has no concepts
+#else // ^^^ has concepts / has no concepts vvv
 #define SAME_AS std::is_same_v
-#endif // __cpp_lib_concepts
+#endif // ^^^ has no concepts ^^^
 
 #define STATIC_ASSERT(...) static_assert(__VA_ARGS__, #__VA_ARGS__)
 
@@ -847,13 +847,13 @@ template <class T, class U>
 concept CanConditional = requires {
     true ? val<T>() : val<U>();
 };
-#else // ^^^ has concepts / vvv has no concepts
+#else // ^^^ has concepts / has no concepts vvv
 template <class T, class U, class = void>
 constexpr bool CanConditional = false;
 
 template <class T, class U>
 constexpr bool CanConditional<T, U, std::void_t<decltype(true ? val<T>() : val<U>())>> = true;
-#endif // __cpp_lib_concepts
+#endif // ^^^ has no concepts ^^^
 
 constexpr bool test_cross() {
     // Test the behavior of cross-type operations.

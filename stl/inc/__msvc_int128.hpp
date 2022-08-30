@@ -18,17 +18,17 @@
 #include <bit>
 #include <compare>
 #define _ZERO_OR_NO_INIT
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
 #define _ZERO_OR_NO_INIT \
     {} // Trivial default initialization is not allowed in constexpr functions before C++20.
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
 #ifdef __cpp_lib_concepts
 #include <concepts>
 #define _TEMPLATE_CLASS_INTEGRAL(type) template <integral type>
-#else
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 #define _TEMPLATE_CLASS_INTEGRAL(type) template <class type, enable_if_t<is_integral_v<type>, int> = 0>
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 #pragma pack(push, _CRT_PACKING)
 #pragma warning(push, _STL_WARNING_LEVEL)
@@ -249,9 +249,9 @@ struct
 
 #if _HAS_CXX20
         const auto __d = _STD countl_zero(static_cast<uint32_t>(_Div >> 32));
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         const auto __d = _Countl_zero_fallback(static_cast<uint32_t>(_Div >> 32));
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
         if (__d >= 32) { // _Div < 2^32
             auto _Rem    = (_High << 32) | (_Low >> 32);
             auto _Result = _Rem / static_cast<uint32_t>(_Div);
@@ -318,7 +318,7 @@ struct
 
 #if _HAS_CXX20
     _NODISCARD_FRIEND constexpr bool operator==(const _Base128&, const _Base128&) noexcept = default;
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD_FRIEND constexpr bool operator==(const _Base128& _Left, const _Base128& _Right) noexcept {
         return _Left._Word[0] == _Right._Word[0] && _Left._Word[1] == _Right._Word[1];
     }
@@ -326,7 +326,7 @@ struct
     _NODISCARD_FRIEND constexpr bool operator!=(const _Base128& _Left, const _Base128& _Right) noexcept {
         return !(_Left == _Right);
     }
-#endif
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _NODISCARD_FRIEND constexpr bool operator<(const _Base128& _Left, const _Base128& _Right) noexcept {
         if (_Left._Word[1] < _Right._Word[1]) {
@@ -461,9 +461,9 @@ struct
         // Normalize by shifting both left until _Den's high bit is set (So _Den's high digit is >= b / 2)
 #if _HAS_CXX20
         const auto __d = _STD countl_zero(_Den._Word[1]);
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         const auto __d = _Countl_zero_fallback(_Den._Word[1]);
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
         _Den <<= __d;
         auto _High_digit = __d == 0 ? 0 : _Num._Word[1] >> (64 - __d); // This creates a third digit for _Num
         _Num <<= __d;
@@ -510,9 +510,9 @@ struct
 #else // ^^^ 128-bit intrinsics / no such intrinsics vvv
 #if _HAS_CXX20
         auto __d = _STD countl_zero(_Den._Word[1]);
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         auto __d = _Countl_zero_fallback(_Den._Word[1]);
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
         const bool _Three_word_den = __d >= 32;
         __d &= 31;
         uint32_t __u[5]{
@@ -594,9 +594,9 @@ struct
         // Normalize by shifting both left until _Den's high bit is set (So _Den's high digit is >= b / 2)
 #if _HAS_CXX20
         const auto __d = _STD countl_zero(_Den._Word[1]);
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         const auto __d = _Countl_zero_fallback(_Den._Word[1]);
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
         _Den <<= __d;
         auto _High_digit = __d == 0 ? 0 : _Num._Word[1] >> (64 - __d); // This creates a third digit for _Num
         _Num <<= __d;
@@ -645,9 +645,9 @@ struct
 #else // ^^^ 128-bit intrinsics / no such intrinsics vvv
 #if _HAS_CXX20
         auto __d = _STD countl_zero(_Den._Word[1]);
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
         auto __d = _Countl_zero_fallback(_Den._Word[1]);
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
         const bool _Three_word_den = __d >= 32;
         __d &= 31;
         uint32_t __u[5]{
@@ -733,7 +733,7 @@ struct _Unsigned128 : _Base128 {
         }
         return _Ord;
     }
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD_FRIEND constexpr bool operator<(const _Unsigned128& _Left, const _Unsigned128& _Right) noexcept {
         if (_Left._Word[1] < _Right._Word[1])
             return true;
@@ -753,7 +753,7 @@ struct _Unsigned128 : _Base128 {
     _NODISCARD_FRIEND constexpr bool operator>=(const _Unsigned128& _Left, const _Unsigned128& _Right) noexcept {
         return !(_Left < _Right);
     }
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _NODISCARD_FRIEND constexpr _Unsigned128 operator<<(const _Unsigned128& _Left, const _Base128& _Right) noexcept {
         auto _Tmp{_Left};
@@ -1030,12 +1030,12 @@ template <integral _Ty>
 struct common_type<_Unsigned128, _Ty> {
     using type = _Unsigned128;
 };
-#else // ^^^ defined(__cpp_lib_concepts) / vvv !defined(__cpp_lib_concepts)
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty>
 struct common_type<_Ty, _Unsigned128> : enable_if<is_integral_v<_Ty>, _Unsigned128> {};
 template <class _Ty>
 struct common_type<_Unsigned128, _Ty> : enable_if<is_integral_v<_Ty>, _Unsigned128> {};
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 struct _Signed128 : _Base128 {
     using _Signed_type   = _Signed128;
@@ -1062,7 +1062,7 @@ struct _Signed128 : _Base128 {
         }
         return _Ord;
     }
-#else // ^^^ _HAS_CXX20 / vvv !_HAS_CXX20
+#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD_FRIEND constexpr bool operator<(const _Signed128& _Left, const _Signed128& _Right) noexcept {
         if (static_cast<int64_t>(_Left._Word[1]) < static_cast<int64_t>(_Right._Word[1]))
             return true;
@@ -1082,7 +1082,7 @@ struct _Signed128 : _Base128 {
     _NODISCARD_FRIEND constexpr bool operator>=(const _Signed128& _Left, const _Signed128& _Right) noexcept {
         return !(_Left < _Right);
     }
-#endif // _HAS_CXX20
+#endif // ^^^ !_HAS_CXX20 ^^^
 
     _NODISCARD_FRIEND constexpr _Signed128 operator<<(const _Signed128& _Left, const _Base128& _Right) noexcept {
         auto _Tmp{_Left};
@@ -1427,12 +1427,12 @@ template <integral _Ty>
 struct common_type<_Signed128, _Ty> {
     using type = _Signed128;
 };
-#else // ^^^ defined(__cpp_lib_concepts) / vvv !defined(__cpp_lib_concepts)
+#else // ^^^ defined(__cpp_lib_concepts) / !defined(__cpp_lib_concepts) vvv
 template <class _Ty>
 struct common_type<_Ty, _Signed128> : enable_if<is_integral_v<_Ty>, _Signed128> {};
 template <class _Ty>
 struct common_type<_Signed128, _Ty> : enable_if<is_integral_v<_Ty>, _Signed128> {};
-#endif // __cpp_lib_concepts
+#endif // ^^^ !defined(__cpp_lib_concepts) ^^^
 
 template <>
 struct common_type<_Signed128, _Unsigned128> {
