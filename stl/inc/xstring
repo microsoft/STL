@@ -3207,7 +3207,6 @@ private:
                 _Traits::move(_Right_ptr, _Right_ptr + _Roff, _Result_size);
             }
             _Right._Eos(_Result_size);
-            _Right_data._Mysize = _Result_size;
 
             _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
             _Take_contents(_Right);
