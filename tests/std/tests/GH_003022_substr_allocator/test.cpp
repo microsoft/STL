@@ -176,9 +176,9 @@ CONSTEXPR20 bool test_substr_allocator() {
     };
 
 #if _HAS_CXX23 && !defined(__EDG__) // TRANSITION, EDG doesn't perform overload resolution correctly
-    static_assert(!is_constructible_v<string_type, ambiguator&, size_t, size_t>, "Ambiguous");
+    static_assert(!is_constructible_v<string_type, ambiguator&, size_t, size_t>, "This should be ambiguous");
 #else
-    static_assert(is_constructible_v<string_type, ambiguator&, size_t, size_t>, "Not ambiguous");
+    static_assert(is_constructible_v<string_type, ambiguator&, size_t, size_t>, "This should be unambiguous");
 #endif // _HAS_CXX23 && !defined(__EDG__)
 
     return true;
