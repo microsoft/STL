@@ -7231,13 +7231,14 @@ namespace ranges {
             (is_nothrow_move_constructible_v<_ViewTypes> && ...)) // strengthened
             : _Views(_STD move(_Args)...) {}
 
-        _NODISCARD constexpr auto begin() noexcept(noexcept(_Tuple_transform(_RANGES begin, _Views))) // strengthened
+        _NODISCARD constexpr auto begin() noexcept(
+            noexcept(_Iterator<false>{_Tuple_transform(_RANGES begin, _Views)})) // strengthened
             requires(!(_Simple_view<_ViewTypes> && ...)) {
             return _Iterator<false>{_Tuple_transform(_RANGES begin, _Views)};
         }
 
         _NODISCARD constexpr auto begin() const
-            noexcept(noexcept(_Tuple_transform(_RANGES begin, _Views))) // strengthened
+            noexcept(noexcept(_Iterator<true>{_Tuple_transform(_RANGES begin, _Views)})) // strengthened
             requires(range<const _ViewTypes>&&...) {
             return _Iterator<true>{_Tuple_transform(_RANGES begin, _Views)};
         }
@@ -7306,23 +7307,11 @@ namespace ranges {
 
     private:
         _NODISCARD constexpr auto _Get_signed_size() noexcept(noexcept(size())) {
-            const auto _Possibly_unsigned_size = size();
-
-            if constexpr (is_unsigned_v<decltype(_Possibly_unsigned_size)>) {
-                return static_cast<_Make_signed_like_t<decltype(_Possibly_unsigned_size)>>(_Possibly_unsigned_size);
-            } else {
-                return _Possibly_unsigned_size;
-            }
+            return static_cast<_Make_signed_like_t<decltype(size())>>(size());
         }
 
         _NODISCARD constexpr auto _Get_signed_size() const noexcept(noexcept(size())) {
-            const auto _Possibly_unsigned_size = size();
-
-            if constexpr (is_unsigned_v<decltype(_Possibly_unsigned_size)>) {
-                return static_cast<_Make_signed_like_t<decltype(_Possibly_unsigned_size)>>(_Possibly_unsigned_size);
-            } else {
-                return _Possibly_unsigned_size;
-            }
+            return static_cast<_Make_signed_like_t<decltype(size())>>(size());
         }
 
         template <bool _IteratorConst>
