@@ -6923,7 +6923,7 @@ namespace ranges {
             if constexpr (!_Zip_is_common<_ViewTypes...>) {
                 return _Sentinel<false>{_Tuple_transform(_RANGES end, _Ranges)};
             } else if constexpr ((random_access_range<_ViewTypes> && ...)) {
-                return _RANGES next(begin(), iter_difference_t<_Iterator<false>>{_Get_signed_size()});
+                return begin() + iter_difference_t<_Iterator<false>>{_Get_signed_size()};
             } else {
                 return _Iterator<false>{_Tuple_transform(_RANGES end, _Ranges)};
             }
@@ -6934,7 +6934,7 @@ namespace ranges {
             if constexpr (!_Zip_is_common<const _ViewTypes...>) {
                 return _Sentinel<true>{_Tuple_transform(_RANGES end, _Ranges)};
             } else if constexpr ((random_access_range<const _ViewTypes> && ...)) {
-                return _RANGES next(begin(), iter_difference_t<_Iterator<true>>{_Get_signed_size()});
+                return begin() + iter_difference_t<_Iterator<true>>{_Get_signed_size()};
             } else {
                 return _Iterator<true>{_Tuple_transform(_RANGES end, _Ranges)};
             }
@@ -7014,36 +7014,22 @@ namespace ranges {
     template <class... _ViewTypes>
     inline constexpr bool enable_borrowed_range<zip_view<_ViewTypes...>> = (enable_borrowed_range<_ViewTypes> && ...);
 
-    template <class _ResultType, class _LHSTuple, class _RHSTuple>
-    struct _Zip_misc_iterator_sentinel_noexcept_solver {};
-
     template <class _ResultType, class... _LHSTupleTypes, class... _RHSTupleTypes>
-    struct _Zip_misc_iterator_sentinel_noexcept_solver<_ResultType, tuple<_LHSTupleTypes...>,
-        tuple<_RHSTupleTypes...>> {
-        static constexpr bool _Is_get_smallest_distance_noexcept =
-            (noexcept(_ResultType{_STD declval<_LHSTupleTypes>() - _STD declval<_RHSTupleTypes>()}) && ...)
-            && (noexcept(_ResultType{_RANGES distance(_STD declval<_LHSTupleTypes>(), _STD declval<_RHSTupleTypes>())})
-                && ...)&& noexcept(_STD declval<_ResultType>() < _STD declval<_ResultType>())
-            && is_nothrow_copy_assignable_v<_ResultType> && is_nothrow_move_constructible_v<_ResultType>;
-    };
+        requires(sizeof...(_LHSTupleTypes) == sizeof...(_RHSTupleTypes))
+    _NODISCARD constexpr _ResultType _Zip_get_smallest_iterator_sentinel_distance(
+        const tuple<_LHSTupleTypes...>& _Lhs_tuple, const tuple<_RHSTupleTypes...>& _Rhs_tuple)
+        // clang-format off
+        noexcept((noexcept(static_cast<_ResultType>(_STD declval<_LHSTupleTypes>() - _STD declval<_RHSTupleTypes>()))
+            && ...));
+    // clang-format on
 
     template <class... _LHSTupleTypes, class... _RHSTupleTypes>
-    struct _Zip_misc_iterator_sentinel_noexcept_solver<bool, tuple<_LHSTupleTypes...>, tuple<_RHSTupleTypes...>> {
-        static constexpr bool _Is_evaluate_equality_noexcept =
-            (noexcept(_STD declval<_LHSTupleTypes>() == _STD declval<_RHSTupleTypes>()) && ...);
-    };
-
-    template <class _ResultType, class _LHSItrOrSentTuple, class _RHSItrOrSentTuple>
-        requires(tuple_size_v<decay_t<_LHSItrOrSentTuple>> == tuple_size_v<decay_t<_RHSItrOrSentTuple>>)
-    _NODISCARD constexpr _ResultType _Zip_get_smallest_iterator_sentinel_distance(_LHSItrOrSentTuple&& _Lhs_tuple,
-        _RHSItrOrSentTuple&& _Rhs_tuple) noexcept(_Zip_misc_iterator_sentinel_noexcept_solver<_ResultType,
-        decay_t<_LHSItrOrSentTuple>, decay_t<_RHSItrOrSentTuple>>::_Is_get_smallest_distance_noexcept);
-
-    template <class _LHSItrOrSentTuple, class _RHSItrOrSentTuple>
-        requires(tuple_size_v<decay_t<_LHSItrOrSentTuple>> == tuple_size_v<decay_t<_RHSItrOrSentTuple>>)
-    _NODISCARD constexpr bool _Zip_evaluate_iterator_sentinel_equality(_LHSItrOrSentTuple&& _Lhs_tuple,
-        _RHSItrOrSentTuple&& _Rhs_tuple) noexcept(_Zip_misc_iterator_sentinel_noexcept_solver<bool,
-        decay_t<_LHSItrOrSentTuple>, decay_t<_RHSItrOrSentTuple>>::_Is_evaluate_equality_noexcept);
+        requires(sizeof...(_LHSTupleTypes) == sizeof...(_RHSTupleTypes))
+    _NODISCARD constexpr bool _Zip_evaluate_iterator_sentinel_equality(
+        const tuple<_LHSTupleTypes...>& _Lhs_tuple, const tuple<_RHSTupleTypes...>& _Rhs_tuple)
+        // clang-format off
+        noexcept((noexcept(_STD declval<_LHSTupleTypes>() == _STD declval<_RHSTupleTypes>()) && ...));
+    // clang-format on
 
     template <input_range... _ViewTypes>
         requires(view<_ViewTypes>&&...)
@@ -7064,7 +7050,7 @@ namespace ranges {
         using _Iterator_tuple_type = tuple<iterator_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
         /* [[no_unique_address]] */ _Iterator_tuple_type _Current;
 
-        friend zip_view<_ViewTypes...>;
+        friend zip_view;
 
         constexpr explicit _Iterator(_Iterator_tuple_type _Current) noexcept(
             is_nothrow_move_constructible_v<_Iterator_tuple_type>)
@@ -7190,32 +7176,18 @@ namespace ranges {
 
         constexpr _Iterator& operator+=(const difference_type _Off) noexcept(_Is_plus_equals_nothrow) // strengthened
             requires _All_random_access<_IsConst, _ViewTypes...> {
-            if constexpr (is_arithmetic_v<difference_type>) {
-                _Tuple_for_each(
-                    [&_Off]<class _IteratorType>(
-                        _IteratorType& _Itr) { _Itr += static_cast<iter_difference_t<_IteratorType>>(_Off); },
-                    _Current);
-            } else {
-                _Tuple_for_each([&_Off]<class _IteratorType>(
-                                    _IteratorType& _Itr) { _Itr += iter_difference_t<_IteratorType>{_Off}; },
-                    _Current);
-            }
+            _Tuple_for_each([&_Off]<class _IteratorType>(
+                                _IteratorType& _Itr) { _Itr += static_cast<iter_difference_t<_IteratorType>>(_Off); },
+                _Current);
 
             return *this;
         }
 
         constexpr _Iterator& operator-=(const difference_type _Off) noexcept(_Is_minus_equals_nothrow) // strengthened
             requires _All_random_access<_IsConst, _ViewTypes...> {
-            if constexpr (is_arithmetic_v<difference_type>) {
-                _Tuple_for_each(
-                    [&_Off]<class _IteratorType>(
-                        _IteratorType& _Itr) { _Itr -= static_cast<iter_difference_t<_IteratorType>>(_Off); },
-                    _Current);
-            } else {
-                _Tuple_for_each([&_Off]<class _IteratorType>(
-                                    _IteratorType& _Itr) { _Itr -= iter_difference_t<_IteratorType>{_Off}; },
-                    _Current);
-            }
+            _Tuple_for_each([&_Off]<class _IteratorType>(
+                                _IteratorType& _Itr) { _Itr -= static_cast<iter_difference_t<_IteratorType>>(_Off); },
+                _Current);
 
             return *this;
         }
@@ -7223,19 +7195,11 @@ namespace ranges {
         _NODISCARD constexpr auto operator[](const difference_type _Where) const
             noexcept(_Is_brace_indexing_nothrow) // strengthened
             requires _All_random_access<_IsConst, _ViewTypes...> {
-            if constexpr (is_arithmetic_v<difference_type>) {
-                return _Tuple_transform(
-                    [&_Where]<class _IteratorType>(_IteratorType& _Itr) -> decltype(auto) {
-                        return _Itr[static_cast<iter_difference_t<_IteratorType>>(_Where)];
-                    },
-                    _Current);
-            } else {
-                return _Tuple_transform(
-                    [&_Where]<class _IteratorType>(_IteratorType& _Itr) -> decltype(auto) {
-                        return _Itr[iter_difference_t<_IteratorType>{_Where}];
-                    },
-                    _Current);
-            }
+            return _Tuple_transform(
+                [&_Where]<class _IteratorType>(_IteratorType& _Itr) -> decltype(auto) {
+                    return _Itr[static_cast<iter_difference_t<_IteratorType>>(_Where)];
+                },
+                _Current);
         }
 
         _NODISCARD_FRIEND constexpr bool operator==(const _Iterator& _Lhs, const _Iterator& _Rhs) noexcept(
@@ -7310,7 +7274,7 @@ namespace ranges {
         using _Sentinel_tuple_type = tuple<sentinel_t<_Maybe_const<_IsConst, _ViewTypes>>...>;
         /* [[no_unique_address]] */ _Sentinel_tuple_type _End;
 
-        friend zip_view<_ViewTypes...>;
+        friend zip_view;
 
         constexpr explicit _Sentinel(_Sentinel_tuple_type _End) noexcept(
             is_nothrow_copy_constructible_v<_Sentinel_tuple_type>) // strengthened
@@ -7373,40 +7337,43 @@ namespace ranges {
         }
     };
 
-    template <class _ResultType, class _LHSItrOrSentTuple, class _RHSItrOrSentTuple>
-        requires(tuple_size_v<decay_t<_LHSItrOrSentTuple>> == tuple_size_v<decay_t<_RHSItrOrSentTuple>>)
-    _NODISCARD constexpr _ResultType _Zip_get_smallest_iterator_sentinel_distance(_LHSItrOrSentTuple&& _Lhs_tuple,
-        _RHSItrOrSentTuple&& _Rhs_tuple) noexcept(_Zip_misc_iterator_sentinel_noexcept_solver<_ResultType,
-        decay_t<_LHSItrOrSentTuple>, decay_t<_RHSItrOrSentTuple>>::_Is_get_smallest_distance_noexcept) {
+    template <class _ResultType, class... _LHSTupleTypes, class... _RHSTupleTypes>
+        requires(sizeof...(_LHSTupleTypes) == sizeof...(_RHSTupleTypes))
+    _NODISCARD constexpr _ResultType _Zip_get_smallest_iterator_sentinel_distance(
+        const tuple<_LHSTupleTypes...>& _Lhs_tuple, const tuple<_RHSTupleTypes...>& _Rhs_tuple)
         // clang-format off
+        noexcept((noexcept(static_cast<_ResultType>(_STD declval<_LHSTupleTypes>() - _STD declval<_RHSTupleTypes>()))
+            && ...)) {
         const auto _Get_smallest_distance_lambda = [&_Lhs_tuple, &_Rhs_tuple]
             <std::size_t _FirstIdx /* = 0 */, std::size_t... _Idxs>(index_sequence<_FirstIdx, _Idxs...>) {
             // clang-format on
-            const _ResultType _First_size = _STD get<0>(_Lhs_tuple) - _STD get<0>(_Rhs_tuple);
+            const _ResultType _First_size = static_cast<_ResultType>(_STD get<0>(_Lhs_tuple) - _STD get<0>(_Rhs_tuple));
 
             if (_First_size == 0) {
-                return 0;
+                return static_cast<_ResultType>(0);
             }
             const initializer_list<_ResultType> _Sizes = {
                 _First_size, (_STD get<_Idxs>(_Lhs_tuple) - _STD get<_Idxs>(_Rhs_tuple))...};
-            return (_First_size < 0 ? (_STD max)(_Sizes) : (_STD min)(_Sizes));
+            return (_First_size < 0 ? static_cast<_ResultType>((_STD max)(_Sizes))
+                                    : static_cast<_ResultType>((_STD min)(_Sizes)));
         };
 
-        return _Get_smallest_distance_lambda(make_index_sequence<tuple_size_v<_LHSItrOrSentTuple>>{});
+        return _Get_smallest_distance_lambda(index_sequence_for<_LHSTupleTypes...>{});
     }
 
-    template <class _LHSItrOrSentTuple, class _RHSItrOrSentTuple>
-        requires(tuple_size_v<decay_t<_LHSItrOrSentTuple>> == tuple_size_v<decay_t<_RHSItrOrSentTuple>>)
-    _NODISCARD constexpr bool _Zip_evaluate_iterator_sentinel_equality(_LHSItrOrSentTuple&& _Lhs_tuple,
-        _RHSItrOrSentTuple&& _Rhs_tuple) noexcept(_Zip_misc_iterator_sentinel_noexcept_solver<bool,
-        decay_t<_LHSItrOrSentTuple>, decay_t<_RHSItrOrSentTuple>>::_Is_evaluate_equality_noexcept) {
-        constexpr auto _Index_sequence = make_index_sequence<tuple_size_v<decay_t<_LHSItrOrSentTuple>>>{};
+    template <class... _LHSTupleTypes, class... _RHSTupleTypes>
+        requires(sizeof...(_LHSTupleTypes) == sizeof...(_RHSTupleTypes))
+    _NODISCARD constexpr bool _Zip_evaluate_iterator_sentinel_equality(
+        const tuple<_LHSTupleTypes...>& _Lhs_tuple, const tuple<_RHSTupleTypes...>& _Rhs_tuple)
+        // clang-format off
+        noexcept((noexcept(_STD declval<_LHSTupleTypes>() == _STD declval<_RHSTupleTypes>()) && ...)) {
+        // clang-format on
         const auto _Evaluate_equality_lambda =
             [&_Lhs_tuple, &_Rhs_tuple ]<size_t... _Indices>(index_sequence<_Indices...>) {
             return ((_STD get<_Indices>(_Lhs_tuple) == _STD get<_Indices>(_Rhs_tuple)) || ...);
         };
 
-        return _Evaluate_equality_lambda(_Index_sequence);
+        return _Evaluate_equality_lambda(index_sequence_for<_LHSTupleTypes...>{});
     }
 
     struct _Zip_fn {
