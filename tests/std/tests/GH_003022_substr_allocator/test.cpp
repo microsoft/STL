@@ -128,7 +128,7 @@ CONSTEXPR20 bool test_substr_allocator() {
         {STATICALLY_WIDEN(CharT, "Take a short substring from a long string"), 21, 2},
         {STATICALLY_WIDEN(CharT, "Take some substring from a long string"), 15, 6},
         {STATICALLY_WIDEN(CharT, "Take a longer substring from a long string"), 20, 13},
-        {STATICALLY_WIDEN(CharT, "Take a quiet longer substring..."), 10, 20},
+        {STATICALLY_WIDEN(CharT, "Take a quite longer substring..."), 10, 20},
         {STATICALLY_WIDEN(CharT, "Take the whole long string as a substring"), 0, 41},
     };
 
