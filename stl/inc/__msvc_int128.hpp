@@ -1499,6 +1499,7 @@ inline namespace literals {
                         if (_Digit == static_cast<unsigned int>(-1)) {
                             return {_U128_parse_status::_Invalid, _Unsigned128{}};
                         }
+
                         if ((_Val > _U128_max / _Base) || (_Base * _Val > _U128_max - _Digit)) {
                             return {_U128_parse_status::_Overflow, _Unsigned128{}};
                         }
