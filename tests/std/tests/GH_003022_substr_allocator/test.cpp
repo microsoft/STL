@@ -139,27 +139,26 @@ CONSTEXPR20 bool test_substr_allocator() {
     for (const auto& test_case : substring_test_cases) {
         auto full_str = string_type{test_case.ntcts, myator};
 
+        const auto offset = test_case.offset;
+        const auto count  = test_case.count;
+
         // Test const lvalue overloads
-        TEST_ASSERT(string_type{full_str, test_case.offset, test_case.count}.get_allocator().get_payload() == 0);
-        TEST_ASSERT(string_type{full_str, test_case.offset}.get_allocator().get_payload() == 0);
+        TEST_ASSERT(string_type{full_str, offset, count}.get_allocator().get_payload() == 0);
+        TEST_ASSERT(string_type{full_str, offset}.get_allocator().get_payload() == 0);
 
-        TEST_ASSERT(full_str.substr(test_case.offset, test_case.count).get_allocator().get_payload() == 0);
+        TEST_ASSERT(full_str.substr(offset, count).get_allocator().get_payload() == 0);
 
-        TEST_ASSERT(
-            string_type{full_str, test_case.offset, test_case.count, myator}.get_allocator().get_payload() == 42);
-        TEST_ASSERT(string_type{full_str, test_case.offset, myator}.get_allocator().get_payload() == 42);
+        TEST_ASSERT(string_type{full_str, offset, count, myator}.get_allocator().get_payload() == 42);
+        TEST_ASSERT(string_type{full_str, offset, myator}.get_allocator().get_payload() == 42);
 
         // Test non-const rvalue overloads
-        TEST_ASSERT(
-            string_type{string_type{full_str}, test_case.offset, test_case.count}.get_allocator().get_payload() == 0);
-        TEST_ASSERT(string_type{string_type{full_str}, test_case.offset}.get_allocator().get_payload() == 0);
+        TEST_ASSERT(string_type{string_type{full_str}, offset, count}.get_allocator().get_payload() == 0);
+        TEST_ASSERT(string_type{string_type{full_str}, offset}.get_allocator().get_payload() == 0);
 
-        TEST_ASSERT(string_type{full_str}.substr(test_case.offset, test_case.count).get_allocator().get_payload() == 0);
+        TEST_ASSERT(string_type{full_str}.substr(offset, count).get_allocator().get_payload() == 0);
 
-        TEST_ASSERT(
-            string_type{string_type{full_str}, test_case.offset, test_case.count, myator}.get_allocator().get_payload()
-            == 42);
-        TEST_ASSERT(string_type{string_type{full_str}, test_case.offset, myator}.get_allocator().get_payload() == 42);
+        TEST_ASSERT(string_type{string_type{full_str}, offset, count, myator}.get_allocator().get_payload() == 42);
+        TEST_ASSERT(string_type{string_type{full_str}, offset, myator}.get_allocator().get_payload() == 42);
     }
 
     // Also test well-formedness change before/after P2438R2
