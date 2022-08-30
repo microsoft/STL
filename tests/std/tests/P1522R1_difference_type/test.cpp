@@ -369,6 +369,8 @@ constexpr bool test_unsigned() {
         STATIC_ASSERT(noexcept(0x2'A__u128));
         STATIC_ASSERT(noexcept(0b101010__u128));
         STATIC_ASSERT(noexcept(0b1'0101'0__u128));
+        STATIC_ASSERT(noexcept(0B101010__u128));
+        STATIC_ASSERT(noexcept(0B1'0101'0__u128));
         STATIC_ASSERT(noexcept(340282366920938463463374607431768211455__u128));
         STATIC_ASSERT(noexcept(0xffffffff'FFFFFFFF'ffffFFFF'FFFFffff__u128));
 
@@ -380,6 +382,8 @@ constexpr bool test_unsigned() {
         STATIC_ASSERT(4'2__u128 == 0X2a__u128);
         STATIC_ASSERT(42__u128 == 0b101010__u128);
         STATIC_ASSERT(4'2__u128 == 0b101010__u128);
+        STATIC_ASSERT(42__u128 == 0B101010__u128);
+        STATIC_ASSERT(4'2__u128 == 0B101010__u128);
         STATIC_ASSERT(
             340'2823'6692'0938'4634'6337'4607'4317'6821'1455__u128 == 0xffffffff'FFFFFFFF'ffffFFFF'FFFFffff__u128);
 
@@ -813,6 +817,8 @@ constexpr bool test_signed() {
         STATIC_ASSERT(noexcept(0x2'A__i128));
         STATIC_ASSERT(noexcept(0b101010__i128));
         STATIC_ASSERT(noexcept(0b1'0101'0__i128));
+        STATIC_ASSERT(noexcept(0B101010__i128));
+        STATIC_ASSERT(noexcept(0B1'0101'0__i128));
         STATIC_ASSERT(noexcept(170141183460469231731687303715884105727__i128));
         STATIC_ASSERT(noexcept(0x7fffffff'FFFFFFFF'ffffFFFF'FFFFffff__i128));
 
@@ -824,6 +830,8 @@ constexpr bool test_signed() {
         STATIC_ASSERT(4'2__i128 == 0X2a__i128);
         STATIC_ASSERT(42__i128 == 0b101010__i128);
         STATIC_ASSERT(4'2__i128 == 0b101010__i128);
+        STATIC_ASSERT(42__i128 == 0B101010__i128);
+        STATIC_ASSERT(4'2__i128 == 0B101010__i128);
         STATIC_ASSERT(
             170'1411'8346'0469'2317'3168'7303'7158'8410'5727__i128 == 0x7fffffff'FFFFFFFF'ffffFFFF'FFFFffff__i128);
 
