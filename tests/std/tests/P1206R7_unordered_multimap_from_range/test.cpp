@@ -15,14 +15,14 @@
 
 using namespace std;
 
-static constexpr pair<int, int> expected[] = {
+static constexpr pair<int, int> expected_vals[] = {
     {0, 20}, {1, 19}, {2, 18}, {3, 17}, {4, 16}, {4, 15}, {4, 14}, {5, 13}, {5, 13}, {6, 12}, {7, 11}};
 
 template <ranges::input_range Rng>
 void test_unordered_multimap(Rng&& rng) {
     if constexpr (is_reference_v<ranges::range_reference_t<Rng>>) {
         unordered_multimap<int, int> m{from_range, forward<Rng>(rng)};
-        unordered_multimap<int, int> e{begin(expected), end(expected)};
+        unordered_multimap<int, int> e{begin(expected_vals), end(expected_vals)};
         assert(m == e);
     }
 }

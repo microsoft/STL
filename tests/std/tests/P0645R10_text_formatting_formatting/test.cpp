@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <climits>
 #include <cstdio>
 #include <exception>
 #include <format>
@@ -17,6 +16,13 @@
 #include <utility>
 
 using namespace std;
+
+constexpr auto int_min    = numeric_limits<int>::min();
+constexpr auto int_max    = numeric_limits<int>::max();
+constexpr auto uint_max   = numeric_limits<unsigned int>::max();
+constexpr auto llong_min  = numeric_limits<long long>::min();
+constexpr auto llong_max  = numeric_limits<long long>::max();
+constexpr auto ullong_max = numeric_limits<unsigned long long>::max();
 
 // copied from the string_view tests
 template <typename CharT>
@@ -275,22 +281,22 @@ void test_simple_replacement_field() {
 
     output_string.clear();
     vformat_to(
-        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(INT_MIN));
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(int_min));
     assert(output_string == STR("-2147483648"));
 
     output_string.clear();
     vformat_to(
-        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(INT_MAX));
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(int_max));
     assert(output_string == STR("2147483647"));
 
     output_string.clear();
     vformat_to(
-        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(LLONG_MAX));
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(llong_max));
     assert(output_string == STR("9223372036854775807"));
 
     output_string.clear();
     vformat_to(
-        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(LLONG_MIN));
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(llong_min));
     assert(output_string == STR("-9223372036854775808"));
 
     // Test unsigned integers
@@ -306,12 +312,12 @@ void test_simple_replacement_field() {
 
     output_string.clear();
     vformat_to(
-        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(UINT_MAX));
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(uint_max));
     assert(output_string == STR("4294967295"));
 
     output_string.clear();
     vformat_to(
-        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(ULLONG_MAX));
+        back_insert_iterator{output_string}, locale::classic(), STR("{}"), make_testing_format_args<charT>(ullong_max));
     assert(output_string == STR("18446744073709551615"));
 
     // Test float
@@ -1317,9 +1323,9 @@ void libfmt_formatter_test_runtime_width() {
     throw_helper(STR("{0:{1}}"), 0);
     throw_helper(STR("{0:{0:}}"), 0);
     throw_helper(STR("{0:{1}}"), 0, -1);
-    throw_helper(STR("{0:{1}}"), 0, (INT_MAX + 1u));
+    throw_helper(STR("{0:{1}}"), 0, (int_max + 1u));
     throw_helper(STR("{0:{1}}"), 0, -1l);
-    throw_helper(STR("{0:{1}}"), 0, (INT_MAX + 1ul));
+    throw_helper(STR("{0:{1}}"), 0, (int_max + 1ul));
     assert(format(STR("{0:{1}}"), 0, '0')
            == STR("                                               0")); // behavior differs from libfmt, but conforms
     throw_helper(STR("{0:{1}}"), 0, 0.0);
@@ -1348,9 +1354,9 @@ void libfmt_formatter_test_runtime_precision() {
     throw_helper(STR("{0:.{1}}"), 0);
     throw_helper(STR("{0:.{0:}}"), 0);
     throw_helper(STR("{0:.{1}}"), 0, -1);
-    throw_helper(STR("{0:.{1}}"), 0, (INT_MAX + 1u));
+    throw_helper(STR("{0:.{1}}"), 0, (int_max + 1u));
     throw_helper(STR("{0:.{1}}"), 0, -1l);
-    throw_helper(STR("{0:.{1}}"), 0, (INT_MAX + 1ul));
+    throw_helper(STR("{0:.{1}}"), 0, (int_max + 1ul));
     throw_helper(STR("{0:.{1}}"), 0, '0');
     throw_helper(STR("{0:.{1}}"), 0, 0.0);
     throw_helper(STR("{0:.{1}}"), 42, 2);

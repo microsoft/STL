@@ -15,13 +15,14 @@
 
 using namespace std;
 
-static constexpr pair<int, int> expected[] = {{0, 20}, {1, 19}, {2, 18}, {3, 17}, {4, 16}, {5, 13}, {6, 12}, {7, 11}};
+static constexpr pair<int, int> expected_vals[] = {
+    {0, 20}, {1, 19}, {2, 18}, {3, 17}, {4, 16}, {5, 13}, {6, 12}, {7, 11}};
 
 template <ranges::input_range Rng>
 void test_map(Rng&& rng) {
     if constexpr (is_reference_v<ranges::range_reference_t<Rng>>) {
         map<int, int> m{from_range, forward<Rng>(rng)};
-        assert(ranges::equal(m, expected, equal_to<pair<int, int>>{}));
+        assert(ranges::equal(m, expected_vals, equal_to<pair<int, int>>{}));
     }
 }
 

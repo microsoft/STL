@@ -1191,6 +1191,10 @@ struct pointer_traits<_String_view_iterator<_Traits>> {
 };
 #endif // _HAS_CXX20
 
+#pragma warning(push)
+// Invalid annotation: 'NullTerminated' property may only be used on buffers whose elements are of integral or pointer
+// type
+#pragma warning(disable : 6510)
 
 template <class _Elem, class _Traits>
 class basic_string_view { // wrapper for any kind of contiguous character buffer
@@ -1655,6 +1659,8 @@ private:
     const_pointer _Mydata;
     size_type _Mysize;
 };
+
+#pragma warning(pop)
 
 #ifdef __cpp_lib_concepts
 template <contiguous_iterator _Iter, sized_sentinel_for<_Iter> _Sent>
@@ -2411,11 +2417,11 @@ _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
 #pragma detect_mismatch("annotate_string", "0")
 #endif // !_INSERT_STRING_ANNOTATION
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <class _Rng, class _Ty>
 concept _Contiguous_range_of =
     _RANGES contiguous_range<_Rng> && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
@@ -2690,7 +2696,9 @@ private:
     enum class _Construct_strategy : uint8_t { _From_char, _From_ptr, _From_string };
     template <_Construct_strategy _Strat, class _Char_or_ptr>
     _CONSTEXPR20 void _Construct(const _Char_or_ptr _Arg, _CRT_GUARDOVERFLOW const size_type _Count) {
-        // Pre: *this is in SSO mode; the lifetime of the SSO elements has already begun
+        auto& _My_data = _Mypair._Myval2;
+        _STL_INTERNAL_CHECK(!_My_data._Large_string_engaged());
+        _STL_INTERNAL_CHECK(_STD count(_My_data._Bx._Buf, _My_data._Bx._Buf + _BUF_SIZE, _Elem()) == _BUF_SIZE);
 
         if constexpr (_Strat == _Construct_strategy::_From_char) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Char_or_ptr, _Elem>);
@@ -2702,7 +2710,6 @@ private:
             _Xlen_string(); // result too long
         }
 
-        auto& _My_data  = _Mypair._Myval2;
         auto& _Al       = _Getal();
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
@@ -2712,10 +2719,8 @@ private:
             _My_data._Myres  = _BUF_SIZE - 1;
             if constexpr (_Strat == _Construct_strategy::_From_char) {
                 _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
-                _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
                 _Traits::move(_My_data._Bx._Buf, _Arg, _Count);
-                _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else { // _Strat == _Construct_strategy::_From_string
 #ifdef _INSERT_STRING_ANNOTATION
                 _Traits::move(_My_data._Bx._Buf, _Arg, _Count);
@@ -2831,7 +2836,7 @@ private:
     }
 
 public:
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc())
         : _Mypair(_One_then_variadic_args_t{}, _Al) {
@@ -2847,7 +2852,7 @@ public:
             _Construct_from_iter(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
         }
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 basic_string(basic_string&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
@@ -3423,7 +3428,7 @@ public:
         }
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string& append_range(_Rng&& _Range) {
         if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
@@ -3434,7 +3439,7 @@ public:
             return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 basic_string& assign(const basic_string& _Right) {
         *this = _Right;
@@ -3528,7 +3533,7 @@ public:
         }
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string& assign_range(_Rng&& _Range) {
         if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
@@ -3545,7 +3550,7 @@ public:
             }
         }
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 basic_string& insert(const size_type _Off, const basic_string& _Right) {
         // insert _Right at _Off
@@ -3697,7 +3702,7 @@ public:
         return begin() + static_cast<difference_type>(_Off);
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr iterator insert_range(const const_iterator _Where, _Rng&& _Range) {
 #if _ITERATOR_DEBUG_LEVEL != 0
@@ -3715,7 +3720,7 @@ public:
 
         return begin() + static_cast<difference_type>(_Off);
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 basic_string& erase(const size_type _Off = 0) { // erase elements [_Off, ...)
         _Mypair._Myval2._Check_offset(_Off);
@@ -3981,7 +3986,7 @@ public:
         }
     }
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
     template <_Container_compatible_range<_Elem> _Rng>
     constexpr basic_string& replace_with_range(const const_iterator _First, const const_iterator _Last, _Rng&& _Range) {
         _Adl_verify_range(_First, _Last);
@@ -3999,7 +4004,7 @@ public:
             return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
         }
     }
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _NODISCARD _CONSTEXPR20 iterator begin() noexcept {
         return iterator(_Refancy<pointer>(_Mypair._Myval2._Myptr()), _STD addressof(_Mypair._Myval2));
@@ -4986,12 +4991,12 @@ template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
 basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Guide_size_type_t<_Alloc>,
     const _Alloc& = _Alloc()) -> basic_string<_Elem, _Traits, _Alloc>;
 
-#ifdef __cpp_lib_containers_ranges
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
 template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 basic_string(from_range_t, _Rng&&, _Alloc = _Alloc())
     -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
-#endif // __cpp_lib_containers_ranges
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
 template <class _Elem, class _Traits, class _Alloc>

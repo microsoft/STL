@@ -197,6 +197,7 @@ tests\GH_002039_byte_is_not_trivially_swappable
 tests\GH_002045_put_time_changes_errno
 tests\GH_002058_debug_iterator_race
 tests\GH_002120_streambuf_seekpos_and_seekoff
+tests\GH_002168_regex_overflow
 tests\GH_002299_implicit_sfinae_constraints
 tests\GH_002307_usual_scope_guard
 tests\GH_002334_branchless_clamp
@@ -210,6 +211,7 @@ tests\GH_002711_Zc_alignedNew-
 tests\GH_002760_syncstream_memory_leak
 tests\GH_002769_handle_deque_block_pointers
 tests\GH_002789_Hash_vec_Tidy
+tests\GH_002989_nothrow_unwrappable
 tests\LWG2597_complex_branch_cut
 tests\LWG3018_shared_ptr_function
 tests\LWG3121_constrained_tuple_forwarding_ctor
@@ -542,6 +544,8 @@ tests\P2273R3_constexpr_unique_ptr
 tests\P2302R4_ranges_alg_contains
 tests\P2302R4_ranges_alg_contains_subrange
 tests\P2321R2_proxy_reference
+tests\P2387R3_bind_back
+tests\P2387R3_pipe_support_for_user_defined_range_adaptors
 tests\P2401R0_conditional_noexcept_for_exchange
 tests\P2408R5_ranges_iterators_to_classic_algorithms
 tests\P2415R2_owning_view
@@ -557,6 +561,7 @@ tests\P2443R1_views_chunk_by
 tests\P2443R1_views_chunk_by_death
 tests\P2445R1_forward_like
 tests\P2446R2_views_as_rvalue
+tests\P2494R2_move_only_range_adaptors
 tests\P2517R1_apply_conditional_noexcept
 tests\VSO_0000000_allocator_propagation
 tests\VSO_0000000_any_calling_conventions
