@@ -735,10 +735,14 @@ struct _Unsigned128 : _Base128 {
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD_FRIEND constexpr bool operator<(const _Unsigned128& _Left, const _Unsigned128& _Right) noexcept {
-        if (_Left._Word[1] < _Right._Word[1])
+        if (_Left._Word[1] < _Right._Word[1]) {
             return true;
-        if (_Right._Word[1] < _Left._Word[1])
+        }
+
+        if (_Right._Word[1] < _Left._Word[1]) {
             return false;
+        }
+
         return _Left._Word[0] < _Right._Word[0];
     }
 
@@ -1064,10 +1068,14 @@ struct _Signed128 : _Base128 {
     }
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
     _NODISCARD_FRIEND constexpr bool operator<(const _Signed128& _Left, const _Signed128& _Right) noexcept {
-        if (static_cast<int64_t>(_Left._Word[1]) < static_cast<int64_t>(_Right._Word[1]))
+        if (static_cast<int64_t>(_Left._Word[1]) < static_cast<int64_t>(_Right._Word[1])) {
             return true;
-        if (static_cast<int64_t>(_Right._Word[1]) < static_cast<int64_t>(_Left._Word[1]))
+        }
+
+        if (static_cast<int64_t>(_Right._Word[1]) < static_cast<int64_t>(_Left._Word[1])) {
             return false;
+        }
+
         return _Left._Word[0] < _Right._Word[0];
     }
 
@@ -1458,12 +1466,18 @@ inline namespace literals {
             };
 
             _CONSTEVAL unsigned int _Char_to_digit(const char _Ch) noexcept {
-                if (_Ch >= '0' && _Ch <= '9')
+                if (_Ch >= '0' && _Ch <= '9') {
                     return static_cast<unsigned int>(_Ch - '0');
-                if (_Ch >= 'A' && _Ch <= 'F')
+                }
+
+                if (_Ch >= 'A' && _Ch <= 'F') {
                     return static_cast<unsigned int>(_Ch - 'A' + 10);
-                if (_Ch >= 'a' && _Ch <= 'f')
+                }
+
+                if (_Ch >= 'a' && _Ch <= 'f') {
                     return static_cast<unsigned int>(_Ch - 'a' + 10);
+                }
+
                 return static_cast<unsigned int>(-1);
             }
 
