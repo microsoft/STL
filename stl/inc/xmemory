@@ -1681,12 +1681,12 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     // note: only called internally from elsewhere in the STL
     using _Ptrval = typename _Alloc::value_type*;
 
-// In pre-concepts world, _Uninitialized_copy should only ever be called with an iterator
-// and sentinel of the same type, so `_Get_unwrapped` is fine to call.
 #ifdef __cpp_lib_concepts
     auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
     auto _ULast  = _RANGES _Unwrap_sent<_InIt>(_STD move(_Last));
 #else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    // In pre-concepts world, _Uninitialized_copy should only ever be called with an iterator
+    // and sentinel of the same type, so `_Get_unwrapped` is fine to call.
     auto _UFirst = _Get_unwrapped(_STD move(_First));
     auto _ULast = _Get_unwrapped(_STD move(_Last));
 #endif

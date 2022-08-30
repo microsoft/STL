@@ -95,7 +95,7 @@ namespace test {
     };
 
     template <class Derived, WrappedState Wrapped>
-    struct _Prevent_inheriting_unwrap_base {
+    struct prevent_inheriting_unwrap_base {
         using _Prevent_inheriting_unwrap = Derived;
     };
     template <class Derived>
@@ -361,8 +361,8 @@ namespace test {
         WrappedState Wrapped = WrappedState::wrapped>
         requires (to_bool(Eq) || !derived_from<Category, fwd>)
             && (Proxy == ProxyRef::no || !derived_from<Category, contiguous>)
-    class iterator :
-        public _Prevent_inheriting_unwrap_base<iterator<Category, Element, Diff, Eq, Proxy, Wrapped>, Wrapped> {
+    class iterator
+        : public _Prevent_inheriting_unwrap_base<iterator<Category, Element, Diff, Eq, Proxy, Wrapped>, Wrapped> {
         // clang-format on
         Element* ptr_;
 
@@ -415,13 +415,13 @@ namespace test {
 
         template <WrappedState OtherWrapped>
         [[nodiscard]] friend constexpr boolish operator==(
-            const iterator& i, sentinel<Element, OtherWrapped> const& s) noexcept requires
+            iterator const& i, sentinel<Element, OtherWrapped> const& s) noexcept requires
             compatible_wrapped_state<Wrapped, OtherWrapped> {
             return boolish{i.peek() == s.peek()};
         }
         template <WrappedState OtherWrapped>
         [[nodiscard]] friend constexpr boolish operator==(const sentinel<Element, OtherWrapped>& s,
-            const iterator& i) noexcept requires compatible_wrapped_state<Wrapped, OtherWrapped> {
+            iterator const& i) noexcept requires compatible_wrapped_state<Wrapped, OtherWrapped> {
             return i == s;
         }
 
@@ -816,7 +816,7 @@ namespace test {
         }
 
         using UI = typename I::unwrap;
-        using US = conditional_t<to_bool(IsCommon), UI, sentinel<Element, WrappedState::wrapped>>;
+        using US = conditional_t<to_bool(IsCommon), UI, sentinel<Element, WrappedState::unwrapped>>;
 
         [[nodiscard]] constexpr UI _Unchecked_begin() const noexcept {
             assert(!moved_from());

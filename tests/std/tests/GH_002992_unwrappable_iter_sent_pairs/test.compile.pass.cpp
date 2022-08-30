@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <array>
+#include <deque>
 #include <filesystem>
 #include <forward_list>
 #include <list>
@@ -19,8 +20,8 @@ using namespace std;
 
 template <class Rng>
 void test_algorithms(Rng& rng) {
-    auto dist  = ranges::distance(rng);
-    auto other = vector<ranges::range_value_t<Rng>>(static_cast<size_t>(dist));
+    auto dist = ranges::distance(rng);
+    vector<ranges::range_value_t<Rng>> other(static_cast<size_t>(dist));
 
     (void) ranges::mismatch(rng.begin(), rng.end(), other.begin(), other.end());
     (void) ranges::mismatch(other.begin(), other.end(), rng.begin(), rng.end());
@@ -103,6 +104,7 @@ void test_classic_ranges() {
     test_classic_range<wstring>();
 
     test_classic_range<array<int, 32>>();
+    test_classic_range<deque<int>>();
     test_classic_range<forward_list<int>>();
     test_classic_range<list<int>>();
     test_classic_range<set<int>>();
@@ -129,7 +131,7 @@ struct Nontrivial {
 };
 
 void test_both_unwrappable() {
-    using test::contiguous, test::random, test::bidi, test::input;
+    using test::contiguous, test::random, test::bidi, test::fwd, test::input;
 
     using sent_int = test::sentinel<int>;
     using sent_nt  = test::sentinel<Nontrivial>;
@@ -137,16 +139,18 @@ void test_both_unwrappable() {
     test_unwrappable_pair<test::iterator<contiguous, int>, sent_int>();
     test_unwrappable_pair<test::iterator<random, int>, sent_int>();
     test_unwrappable_pair<test::iterator<bidi, int>, sent_int>();
+    test_unwrappable_pair<test::iterator<fwd, int>, sent_int>();
     test_unwrappable_pair<test::iterator<input, int>, sent_int>();
 
     test_unwrappable_pair<test::iterator<contiguous, Nontrivial>, sent_nt>();
     test_unwrappable_pair<test::iterator<random, Nontrivial>, sent_nt>();
     test_unwrappable_pair<test::iterator<bidi, Nontrivial>, sent_nt>();
+    test_unwrappable_pair<test::iterator<fwd, Nontrivial>, sent_nt>();
     test_unwrappable_pair<test::iterator<input, Nontrivial>, sent_nt>();
 }
 
 void test_iter_unwrappable() {
-    using test::contiguous, test::random, test::bidi, test::input;
+    using test::contiguous, test::random, test::bidi, test::fwd, test::input;
 
     using sent_int = test::sentinel<int, test::WrappedState::ignorant>;
     using sent_nt  = test::sentinel<Nontrivial, test::WrappedState::ignorant>;
@@ -154,16 +158,18 @@ void test_iter_unwrappable() {
     test_not_unwrappable_pair<test::iterator<contiguous, int>, sent_int>();
     test_not_unwrappable_pair<test::iterator<random, int>, sent_int>();
     test_not_unwrappable_pair<test::iterator<bidi, int>, sent_int>();
+    test_not_unwrappable_pair<test::iterator<fwd, int>, sent_int>();
     test_not_unwrappable_pair<test::iterator<input, int>, sent_int>();
 
     test_not_unwrappable_pair<test::iterator<contiguous, Nontrivial>, sent_nt>();
     test_not_unwrappable_pair<test::iterator<random, Nontrivial>, sent_nt>();
     test_not_unwrappable_pair<test::iterator<bidi, Nontrivial>, sent_nt>();
+    test_not_unwrappable_pair<test::iterator<fwd, Nontrivial>, sent_nt>();
     test_not_unwrappable_pair<test::iterator<input, Nontrivial>, sent_nt>();
 }
 
 void test_sent_unwrappable() {
-    using test::contiguous, test::random, test::bidi, test::input;
+    using test::contiguous, test::random, test::bidi, test::fwd, test::input;
 
     using sent_int = test::sentinel<int>;
     using sent_nt  = test::sentinel<Nontrivial>;
@@ -171,16 +177,18 @@ void test_sent_unwrappable() {
     test_not_unwrappable_pair<test::iterator<contiguous, int>::unwrapping_ignorant, sent_int>();
     test_not_unwrappable_pair<test::iterator<random, int>::unwrapping_ignorant, sent_int>();
     test_not_unwrappable_pair<test::iterator<bidi, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_pair<test::iterator<fwd, int>::unwrapping_ignorant, sent_int>();
     test_not_unwrappable_pair<test::iterator<input, int>::unwrapping_ignorant, sent_int>();
 
     test_not_unwrappable_pair<test::iterator<contiguous, Nontrivial>::unwrapping_ignorant, sent_nt>();
     test_not_unwrappable_pair<test::iterator<random, Nontrivial>::unwrapping_ignorant, sent_nt>();
     test_not_unwrappable_pair<test::iterator<bidi, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_pair<test::iterator<fwd, Nontrivial>::unwrapping_ignorant, sent_nt>();
     test_not_unwrappable_pair<test::iterator<input, Nontrivial>::unwrapping_ignorant, sent_nt>();
 }
 
 void test_neither_unwrappable() {
-    using test::contiguous, test::random, test::bidi, test::input;
+    using test::contiguous, test::random, test::bidi, test::fwd, test::input;
 
     using sent_int = test::sentinel<int, test::WrappedState::ignorant>;
     using sent_nt  = test::sentinel<Nontrivial, test::WrappedState::ignorant>;
@@ -188,10 +196,14 @@ void test_neither_unwrappable() {
     test_not_unwrappable_pair<test::iterator<contiguous, int>::unwrapping_ignorant, sent_int>();
     test_not_unwrappable_pair<test::iterator<random, int>::unwrapping_ignorant, sent_int>();
     test_not_unwrappable_pair<test::iterator<bidi, int>::unwrapping_ignorant, sent_int>();
+    test_not_unwrappable_pair<test::iterator<fwd, int>::unwrapping_ignorant, sent_int>();
     test_not_unwrappable_pair<test::iterator<input, int>::unwrapping_ignorant, sent_int>();
 
     test_not_unwrappable_pair<test::iterator<contiguous, Nontrivial>::unwrapping_ignorant, sent_nt>();
     test_not_unwrappable_pair<test::iterator<random, Nontrivial>::unwrapping_ignorant, sent_nt>();
     test_not_unwrappable_pair<test::iterator<bidi, Nontrivial>::unwrapping_ignorant, sent_nt>();
+    test_not_unwrappable_pair<test::iterator<fwd, Nontrivial>::unwrapping_ignorant, sent_nt>();
     test_not_unwrappable_pair<test::iterator<input, Nontrivial>::unwrapping_ignorant, sent_nt>();
 }
+
+int main() {} // COMPILE-ONLY
