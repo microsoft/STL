@@ -6883,7 +6883,7 @@ namespace ranges {
     class zip_view : public view_interface<zip_view<_ViewTypes...>> {
         // clang-format on
     private:
-        /* [[no_unique_address]] */ tuple<_ViewTypes...> _Ranges;
+        /* [[no_unique_address]] */ tuple<_ViewTypes...> _Views;
 
         template <bool>
         class _Iterator;
@@ -7211,60 +7211,60 @@ namespace ranges {
             }
         };
 
-        template <bool _IsConst, input_range... _Views>
+        template <bool _IsConst>
         static constexpr bool _Is_end_noexcept = []() {
-            if constexpr (!_Zip_is_common<_Views...>) {
-                return noexcept(_Sentinel<_IsConst>{_Tuple_transform(_RANGES end, _Ranges)});
-            } else if constexpr ((random_access_range<_Views> && ...)) {
+            if constexpr (!_Zip_is_common<_ViewTypes...>) {
+                return noexcept(_Sentinel<_IsConst>{_Tuple_transform(_RANGES end, _Views)});
+            } else if constexpr ((random_access_range<_ViewTypes> && ...)) {
                 return noexcept(_RANGES next(_STD declval<_Maybe_const<_IsConst, zip_view<_ViewTypes...>>>().begin(),
                     iter_difference_t<_Iterator<_IsConst>>{
                         _STD declval<_Maybe_const<_IsConst, zip_view<_ViewTypes...>>>()._Get_signed_size()}));
             } else {
-                return noexcept(_Iterator<_IsConst>{_Tuple_transform(_RANGES end, _Ranges)});
+                return noexcept(_Iterator<_IsConst>{_Tuple_transform(_RANGES end, _Views)});
             }
         }();
 
     public:
         zip_view() noexcept((is_nothrow_default_constructible_v<_ViewTypes> && ...)) = default;
 
-        constexpr explicit zip_view(_ViewTypes... _Views) noexcept(
+        constexpr explicit zip_view(_ViewTypes... _Args) noexcept(
             (is_nothrow_move_constructible_v<_ViewTypes> && ...)) // strengthened
-            : _Ranges(_STD move(_Views)...) {}
+            : _Views(_STD move(_Args)...) {}
 
-        _NODISCARD constexpr auto begin() noexcept(noexcept(_Tuple_transform(_RANGES begin, _Ranges))) // strengthened
+        _NODISCARD constexpr auto begin() noexcept(noexcept(_Tuple_transform(_RANGES begin, _Views))) // strengthened
             requires(!(_Simple_view<_ViewTypes> && ...)) {
-            return _Iterator<false>{_Tuple_transform(_RANGES begin, _Ranges)};
+            return _Iterator<false>{_Tuple_transform(_RANGES begin, _Views)};
         }
 
         _NODISCARD constexpr auto begin() const
-            noexcept(noexcept(_Tuple_transform(_RANGES begin, _Ranges))) // strengthened
+            noexcept(noexcept(_Tuple_transform(_RANGES begin, _Views))) // strengthened
             requires(range<const _ViewTypes>&&...) {
-            return _Iterator<true>{_Tuple_transform(_RANGES begin, _Ranges)};
+            return _Iterator<true>{_Tuple_transform(_RANGES begin, _Views)};
         }
 
-        _NODISCARD constexpr auto end() noexcept(_Is_end_noexcept<false, _ViewTypes...>) // strengthened
+        _NODISCARD constexpr auto end() noexcept(_Is_end_noexcept<false>) // strengthened
             requires(!(_Simple_view<_ViewTypes> && ...)) {
             if constexpr (!_Zip_is_common<_ViewTypes...>) {
-                return _Sentinel<false>{_Tuple_transform(_RANGES end, _Ranges)};
+                return _Sentinel<false>{_Tuple_transform(_RANGES end, _Views)};
             } else if constexpr ((random_access_range<_ViewTypes> && ...)) {
                 return begin() + iter_difference_t<_Iterator<false>>{_Get_signed_size()};
             } else {
-                return _Iterator<false>{_Tuple_transform(_RANGES end, _Ranges)};
+                return _Iterator<false>{_Tuple_transform(_RANGES end, _Views)};
             }
         }
 
-        _NODISCARD constexpr auto end() const noexcept(_Is_end_noexcept<true, const _ViewTypes...>) // strengthened
+        _NODISCARD constexpr auto end() const noexcept(_Is_end_noexcept<true>) // strengthened
             requires(range<const _ViewTypes>&&...) {
             if constexpr (!_Zip_is_common<const _ViewTypes...>) {
-                return _Sentinel<true>{_Tuple_transform(_RANGES end, _Ranges)};
+                return _Sentinel<true>{_Tuple_transform(_RANGES end, _Views)};
             } else if constexpr ((random_access_range<const _ViewTypes> && ...)) {
                 return begin() + iter_difference_t<_Iterator<true>>{_Get_signed_size()};
             } else {
-                return _Iterator<true>{_Tuple_transform(_RANGES end, _Ranges)};
+                return _Iterator<true>{_Tuple_transform(_RANGES end, _Views)};
             }
         }
 
-        _NODISCARD constexpr auto size() noexcept(noexcept(_Tuple_for_each(_RANGES size, _Ranges))) // strengthened
+        _NODISCARD constexpr auto size() noexcept(noexcept(_Tuple_for_each(_RANGES size, _Views))) // strengthened
             requires(sized_range<_ViewTypes>&&...) {
             using _Common_size_type          = common_type_t<range_size_t<_ViewTypes>...>;
             using _Common_unsigned_size_type = _Make_unsigned_like_t<_Common_size_type>;
@@ -7279,13 +7279,12 @@ namespace ranges {
                     if (_Curr_view_size_value < _Smallest_view_size_value)
                         _Smallest_view_size_value = _Curr_view_size_value;
                 },
-                _Ranges);
+                _Views);
 
             return _Smallest_view_size_value;
         }
 
-        _NODISCARD constexpr auto size() const
-            noexcept(noexcept(_Tuple_for_each(_RANGES size, _Ranges))) // strengthened
+        _NODISCARD constexpr auto size() const noexcept(noexcept(_Tuple_for_each(_RANGES size, _Views))) // strengthened
             requires(sized_range<const _ViewTypes>&&...) {
             using _Common_size_type          = common_type_t<range_size_t<_ViewTypes>...>;
             using _Common_unsigned_size_type = _Make_unsigned_like_t<_Common_size_type>;
@@ -7300,7 +7299,7 @@ namespace ranges {
                     if (_Curr_view_size_value < _Smallest_view_size_value)
                         _Smallest_view_size_value = _Curr_view_size_value;
                 },
-                _Ranges);
+                _Views);
 
             return _Smallest_view_size_value;
         }
