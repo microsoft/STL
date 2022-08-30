@@ -1534,7 +1534,7 @@ inline namespace literals {
         } // namespace _Int128_detail
 
         template <char... _Chars>
-        _CONSTEVAL _Unsigned128 operator"" __u128() noexcept {
+        _NODISCARD _CONSTEVAL _Unsigned128 operator"" __u128() noexcept {
             constexpr const auto& _Parsed_result = _Int128_detail::_Parsed_u128<_Chars...>;
             static_assert(_Parsed_result._Status_code != _Int128_detail::_U128_parse_status::_Invalid,
                 "Invalid characters in the integer literal");
@@ -1544,7 +1544,7 @@ inline namespace literals {
         }
 
         template <char... _Chars>
-        _CONSTEVAL _Signed128 operator"" __i128() noexcept {
+        _NODISCARD _CONSTEVAL _Signed128 operator"" __i128() noexcept {
             constexpr const auto& _Parsed_result = _Int128_detail::_Parsed_u128<_Chars...>;
             static_assert(_Parsed_result._Status_code != _Int128_detail::_U128_parse_status::_Invalid,
                 "Invalid characters in the integer literal");
