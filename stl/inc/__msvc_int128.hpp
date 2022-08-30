@@ -1500,7 +1500,7 @@ inline namespace literals {
                             return {_U128_parse_status::_Invalid, _Unsigned128{}};
                         }
 
-                        if ((_Val > _U128_max / _Base) || (_Base * _Val > _U128_max - _Digit)) {
+                        if (_Val > _U128_max / _Base || _Base * _Val > _U128_max - _Digit) {
                             return {_U128_parse_status::_Overflow, _Unsigned128{}};
                         }
 
