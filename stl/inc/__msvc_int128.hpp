@@ -296,7 +296,7 @@ struct
 #ifdef __cpp_lib_concepts
         if constexpr (signed_integral<_Ty>)
 #else
-        if constexpr (is_integral_v<_Ty> && is_signed_v<_Ty>)
+        if constexpr (is_signed_v<_Ty>)
 #endif
         {
             if (_Val < 0) {
