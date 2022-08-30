@@ -19,11 +19,11 @@ jobs:
           script: |
             // Find "Code Reviews" project manually by name matching
             // This avoids hardcoding the project ID
-            const projects = await github.rest.projects.listForRepo({
+            const projects = await github.paginate(github.rest.projects.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
             })
-            const code_reviews = projects.data.find(project => project.name === 'Code Reviews');
+            const code_reviews = projects.find(project => project.name === 'Code Reviews');
             if (!code_reviews) {
               console.error("'Code Reviews' project not found!")
               return
@@ -32,26 +32,25 @@ jobs:
             // Find "Initial Review" column manually by name matching
             // This assumes the card is in "Work In Progress" column
             // This avoids hardcoding the column ID and card ID
-            const columns = await github.rest.projects.listColumns({
+            const columns = await github.paginate(github.rest.projects.listColumns, {
               project_id: code_reviews.id,
             });
 
-            const work_in_progress = columns.data.find(column => column.name === 'Work In Progress')
+            const work_in_progress = columns.find(column => column.name === 'Work In Progress')
             if (!work_in_progress) {
               console.error("'Work In Progress' column not found!")
               return
             }
 
-            const initial_review = columns.data.find(column => column.name === 'Initial Review')
+            const initial_review = columns.find(column => column.name === 'Initial Review')
             if (!initial_review) {
               console.error("'Initial Review' column not found!")
               return
             }
 
-            const work_in_progress_cards = await github.rest.projects.listCards({
+            const pr_card = await github.paginate(github.rest.projects.listCards, {
               column_id: work_in_progress.id,
-            })
-            const pr_card = work_in_progress_cards.data.find(card => card.content_url === context.payload.issue.url)
+            }).then(cards => cards.find(card => card.content_url === context.payload.issue.url))
             if (!pr_card) {
               console.error("Corresponding card for PR not found!")
               return

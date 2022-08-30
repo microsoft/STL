@@ -19,11 +19,11 @@ jobs:
           script: |
             // Find "Code Reviews" project manually by name matching
             // This avoids hardcoding the project ID
-            const projects = await github.rest.projects.listForRepo({
+            const projects = await github.paginate(github.rest.projects.listForRepo, {
               owner: context.repo.owner,
               repo: context.repo.repo,
             })
-            const code_reviews = projects.data.find(project => project.name === 'Code Reviews');
+            const code_reviews = projects.find(project => project.name === 'Code Reviews');
             if (!code_reviews) {
               console.error("'Code Reviews' project not found!")
               return
@@ -32,39 +32,39 @@ jobs:
             // Find "Work In Progress" column manually by name matching
             // Also find the card of the PR in either "Initial Review" or "Final Review"
             // This avoids hardcoding the column ID and card ID
-            const columns = await github.rest.projects.listColumns({
+            const columns = await github.paginate(github.rest.projects.listColumns, {
               project_id: code_reviews.id,
             });
 
-            const work_in_progress = columns.data.find(column => column.name === 'Work In Progress')
+            const work_in_progress = columns.find(column => column.name === 'Work In Progress')
             if (!work_in_progress) {
               console.error("'Work In Progress' column not found!")
               return
             }
 
-            columns.data.forEach(column => {
+            const move_card_in_column = async (column) => {
+              const cards = await github.paginate(github.rest.projects.listCards, {
+                column_id: column.id,
+              })
+
+              const pr_card = cards.find(card => card.content_url === context.payload.issue.url)
+              if (!pr_card) {
+                return // the PR card is not in this column
+              }
+
+              await github.rest.projects.moveCard({
+                card_id: pr_card.id,
+                position: 'bottom',
+                column_id: work_in_progress.id,
+              })
+            }
+
+            columns.forEach(column => {
               if (column.name !== 'Initial Review' && column.name !== 'Final Review') {
                 return // no reason to search through other columns and avoids unnecessary API calls
               }
 
-              github.rest.projects.listCards({
-                column_id: column.id,
-              }).then(cards => {
-                  cards.data.forEach(card => {
-                    if (card.content_url === context.payload.issue.url) {
-                      // card is the PR card
-
-                      github.rest.projects.moveCard({
-                        card_id: card.id,
-                        position: 'bottom',
-                        column_id: work_in_progress.id,
-                      }).catch(error => {
-                        console.error(`Error occured while moving card to 'Work In Progress': ${error}`)
-                      })
-                    }
-                  })
-                })
-                .catch(error => {
-                  console.error("Error while fetching cards from column ID " + column.id)
-                })
+              move_card_in_column(column).catch(error => {
+                console.error(`Error occured while moving card to 'Work In Progress': ${error}`)
+              })
             })
