@@ -95,7 +95,7 @@ public:
     public:
         __CLR_OR_THIS_CALL id(size_t _Val = 0) : _Id(_Val) {}
 
-        id(const id&) = delete;
+        id(const id&)            = delete;
         id& operator=(const id&) = delete;
 
         __CLR_OR_THIS_CALL operator size_t() { // get stamp, with lazy allocation
@@ -151,7 +151,7 @@ public:
         __CLR_OR_THIS_CALL ~facet() noexcept override {}
 
     public:
-        __CLR_OR_THIS_CALL facet(const facet&) = delete;
+        __CLR_OR_THIS_CALL facet(const facet&)            = delete;
         facet& __CLR_OR_THIS_CALL operator=(const facet&) = delete;
     };
 
@@ -358,7 +358,7 @@ public:
     }
 
     string name() const {
-        return _Ptr ? _Ptr->_Name.c_str() : string();
+        return _Ptr ? _Ptr->_Name.c_str() : string{};
     }
 
     _Ret_z_ const char* c_str() const {
@@ -1386,7 +1386,7 @@ struct _NODISCARD _Codecvt_guard {
     _Codecvt_guard(const _From* const& _First1_, const _From*& _Mid1_, _To* const& _First2_, _To*& _Mid2_)
         : _First1{_First1_}, _Mid1{_Mid1_}, _First2{_First2_}, _Mid2{_Mid2_} {}
 
-    _Codecvt_guard(const _Codecvt_guard&) = delete;
+    _Codecvt_guard(const _Codecvt_guard&)            = delete;
     _Codecvt_guard& operator=(const _Codecvt_guard&) = delete;
 
     ~_Codecvt_guard() {

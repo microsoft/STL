@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <chrono>
 #include <clocale>
 #include <concepts>
+#include <cstdio>
 #include <format>
 #include <iostream>
 #include <locale>
 #include <sstream>
-#include <stdio.h>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -255,6 +255,10 @@ void test_duration_formatter() {
     empty_braces_helper(duration<int, ratio<3, 1>>{40}, STR("40[3]s"));
     empty_braces_helper(duration<int, ratio<3, 7>>{40}, STR("40[3/7]s"));
 
+    // formatting small types needs to work as iostreams << VSO-1521926
+    empty_braces_helper(duration<long long, atto>{123}, STR("123as"));
+    assert(format(STR("{:%j}"), duration<long long, atto>{123}) == STR("0"));
+
     assert(format(STR("{:%T}"), 4083007ms) == STR("01:08:03.007"));
     assert(format(STR("{:%T}"), -4083007ms) == STR("-01:08:03.007"));
 
@@ -275,6 +279,8 @@ void test_clock_formatter() {
     empty_braces_helper(gps_seconds{}, STR("1980-01-06 00:00:00"));
     empty_braces_helper(file_time<seconds>{}, STR("1601-01-01 00:00:00"));
     empty_braces_helper(local_seconds{}, STR("1970-01-01 00:00:00"));
+
+    assert(format(STR("{:%j}"), utc_seconds{}) == STR("001"));
 
     assert(format(STR("{:%Z %z %Oz %Ez}"), sys_seconds{}) == STR("UTC +0000 +00:00 +00:00"));
     assert(format(STR("{:%Z %z %Oz %Ez}"), sys_days{}) == STR("UTC +0000 +00:00 +00:00"));
@@ -1113,6 +1119,7 @@ void test() {
 
 #if !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING
     test_locale<wchar_t>();
+    test_locale<char>();
     assert(setlocale(LC_ALL, ".UTF-8") != nullptr);
     test_locale<char>();
 #endif // !defined(_DLL) || _ITERATOR_DEBUG_LEVEL == DEFAULT_IDL_SETTING

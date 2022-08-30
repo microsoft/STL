@@ -5,9 +5,9 @@
 #include <cassert>
 #include <charconv>
 #include <chrono>
-#include <climits>
 #include <cstdint>
 #include <iterator>
+#include <limits>
 #include <locale>
 #include <ratio>
 #include <sstream>
@@ -20,6 +20,8 @@
 
 using namespace std;
 using namespace std::chrono;
+
+constexpr auto intmax_max = numeric_limits<intmax_t>::max();
 
 template <class CharT, class Rep, class Period>
 bool test_duration_basic_out(const duration<Rep, Period>& d, const CharT* expected) {
@@ -65,7 +67,7 @@ bool test_duration_locale_out() {
 }
 
 void test_duration_output() {
-    using LongRatio = ratio<INTMAX_MAX - 1, INTMAX_MAX>;
+    using LongRatio = ratio<intmax_max - 1, intmax_max>;
     assert(test_duration_basic_out(duration<int, atto>{1}, "1as"));
     assert(test_duration_basic_out(duration<int, femto>{2}, "2fs"));
     assert(test_duration_basic_out(duration<int, pico>{3}, "3ps"));
@@ -907,7 +909,7 @@ void parse_whitespace() {
     fail_parse("", "%n", time);
 }
 
-void insert_leap_second(const sys_days& date, const seconds& value) {
+tzdb copy_tzdb() {
     const auto& my_tzdb = get_tzdb_list().front();
     vector<time_zone> zones;
     vector<time_zone_link> links;
@@ -917,10 +919,7 @@ void insert_leap_second(const sys_days& date, const seconds& value) {
         return time_zone_link{link.name(), link.target()};
     });
 
-    auto leap_vec = my_tzdb.leap_seconds;
-    leap_vec.emplace_back(date, value == 1s, leap_vec.back()._Elapsed());
-    get_tzdb_list()._Emplace_front(
-        tzdb{my_tzdb.version, move(zones), move(links), move(leap_vec), my_tzdb._All_ls_positive && (value == 1s)});
+    return {my_tzdb.version, move(zones), move(links), my_tzdb.leap_seconds, my_tzdb._All_ls_positive};
 }
 
 void test_gh_1952() {
@@ -1055,8 +1054,15 @@ void parse_timepoints() {
 
     // Historical leap seconds don't allow complete testing, because they've all been positive and there haven't been
     // any since 2016 (as of 2021).
-    insert_leap_second(1d / January / 2020y, -1s);
-    insert_leap_second(1d / January / 2022y, 1s);
+    {
+        auto my_tzdb   = copy_tzdb();
+        auto& leap_vec = my_tzdb.leap_seconds;
+        leap_vec.erase(leap_vec.begin() + 27, leap_vec.end());
+        leap_vec.emplace_back(sys_days{1d / January / 2020y}, false, leap_vec.back()._Elapsed());
+        leap_vec.emplace_back(sys_days{1d / January / 2022y}, true, leap_vec.back()._Elapsed());
+        my_tzdb._All_ls_positive = false;
+        get_tzdb_list()._Emplace_front(move(my_tzdb));
+    }
 
     utc_seconds ut_ref = utc_clock::from_sys(sys_days{1d / July / 1972y}) - 1s; // leap second insertion
     test_parse("june 30 23:59:60 1972", "%c", ut);
@@ -1075,10 +1081,24 @@ void parse_timepoints() {
 
     fail_parse("june 30 23:59:60 1973", "%c", ut); // not a leap second insertion
 
+    // the last leap second insertion that file_clock is not aware of
+    test_parse("dec 31 23:59:59 2016", "%c", ut);
+    test_parse("dec 31 23:59:59 2016", "%c", ft);
+    assert(ft == clock_cast<file_clock>(ut));
+
+    test_parse("dec 31 23:59:60 2016", "%c", ut);
+    fail_parse("dec 31 23:59:60 2016", "%c", ft);
+
+    test_parse("jan 01 00:00:00 2017", "%c", ut);
+    test_parse("jan 01 00:00:00 2017", "%c", ft);
+    assert(ft == clock_cast<file_clock>(ut));
+
     ref = sys_days{1d / January / 2020y} - 1s; // negative leap second, UTC time doesn't exist
     fail_parse("dec 31 23:59:59 2019", "%c", ut);
-    fail_parse("dec 31 23:59:59 2019", "%c", st);
     fail_parse("dec 31 23:59:59 2019", "%c", ft);
+
+    test_parse("dec 31 23:59:59 2019", "%c", st);
+    assert(st == ref);
 
     test_parse("dec 31 23:59:59 2019", "%c", lt); // Not UTC, might be valid depending on the time zone.
     assert(lt.time_since_epoch() == ref.time_since_epoch());
@@ -1177,6 +1197,13 @@ void parse_timepoints() {
     assert(st == sys_days{23d / March / 1882y});
 
     test_gh_1952();
+
+    // GH-2698: 00:00:60 incorrectly parsed
+    fail_parse("2021-08-28 00:00:60", "%F %T", ut);
+
+    fail_parse("2017-01-01 05:29:60", "%F %T", ut);
+    test_parse("2017-01-01 05:29:60 +05:30", "%F %T %Ez", ut);
+    assert(ut == clock_cast<utc_clock>(sys_days{1d / January / 2017y}) - 1s);
 }
 
 template <class CharT, class CStringOrStdString>

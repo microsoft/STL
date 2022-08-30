@@ -9,7 +9,7 @@
 #include <yvals_core.h>
 #if _STL_COMPILER_PREPROCESSOR
 #if !_HAS_CXX20
-#pragma message("The contents of <numbers> are available only with C++20 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <numbers> are available only with C++20 or later.");
 #else // ^^^ !_HAS_CXX20 / _HAS_CXX20 vvv
 #ifdef __cpp_lib_concepts
 #include <concepts>

@@ -3,16 +3,10 @@
 
 <#
 .SYNOPSIS
-Creates a Windows virtual machine scale set, set up for the STL's CI.
+Creates a 1ES Hosted Pool, set up for the STL's CI.
 
 .DESCRIPTION
-create-vmss.ps1 creates an Azure Windows VM scale set, set up for the STL's CI
-system. See https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/overview
-for more information.
-
-This script assumes you have installed Azure tools into PowerShell by following the instructions
-at https://docs.microsoft.com/en-us/powershell/azure/install-az-ps
-or are running from Azure Cloud Shell.
+See https://github.com/microsoft/STL/wiki/Checklist-for-Toolset-Updates for more information.
 #>
 
 $ErrorActionPreference = 'Stop'
@@ -20,44 +14,37 @@ $ErrorActionPreference = 'Stop'
 # https://aka.ms/azps-changewarnings
 $Env:SuppressAzurePowerShellBreakingChangeWarnings = 'true'
 
-$Location = 'northeurope'
-$Prefix = 'StlBuild-' + (Get-Date -Format 'yyyy-MM-dd-THHmm')
-$VMSize = 'Standard_D32ads_v5'
+$CurrentDate = Get-Date
+
+$Location = 'eastus'
+$VMSize = 'Standard_D32ds_v5'
 $ProtoVMName = 'PROTOTYPE'
-$LiveVMPrefix = 'BUILD'
 $ImagePublisher = 'MicrosoftWindowsServer'
 $ImageOffer = 'WindowsServer'
 $ImageSku = '2022-datacenter-g2'
 
-$ProgressActivity = 'Creating Scale Set'
-$TotalProgress = 14
+$ProgressActivity = 'Preparing STL CI pool'
+$TotalProgress = 23
 $CurrentProgress = 1
 
 <#
 .SYNOPSIS
-Attempts to find a name that does not collide with any resources in the resource group.
+Displays an updated progress bar.
 
 .DESCRIPTION
-Find-ResourceGroupName takes a set of resources from Get-AzResourceGroup, and finds the
-first name in {$Prefix, $Prefix-1, $Prefix-2, ...} such that the name doesn't collide with
-any of the resources in the resource group.
+Display-ProgressBar increments $CurrentProgress and displays $Status in the progress bar.
 
-.PARAMETER Prefix
-The prefix of the final name; the returned name will be of the form "$Prefix(-[1-9][0-9]*)?"
+.PARAMETER Status
+A message describing the current operation being performed.
 #>
-function Find-ResourceGroupName {
-  [CmdletBinding()]
-  Param([string] $Prefix)
+function Display-ProgressBar {
+  [CmdletBinding(PositionalBinding=$false)]
+  Param([Parameter(Mandatory)][string]$Status)
 
-  $existingNames = (Get-AzResourceGroup).ResourceGroupName
-  $result = $Prefix
-  $suffix = 0
-  while ($result -in $existingNames) {
-    $suffix++
-    $result = "$Prefix-$suffix"
-  }
-
-  return $result
+  Write-Progress `
+    -Activity $ProgressActivity `
+    -Status $Status `
+    -PercentComplete (100 * $script:CurrentProgress++ / $TotalProgress)
 }
 
 <#
@@ -72,7 +59,8 @@ only alphanumeric characters, underscore, and dash.
 The length of the returned password.
 #>
 function New-Password {
-  Param ([int] $Length = 32)
+  [CmdletBinding(PositionalBinding=$false)]
+  Param([int]$Length = 32)
 
   # This 64-character alphabet generates 6 bits of entropy per character.
   # The power-of-2 alphabet size allows us to select a character by masking a random Byte with bitwise-AND.
@@ -118,19 +106,15 @@ The name of the resource group to look up the VM in.
 The name of the virtual machine to wait on.
 #>
 function Wait-Shutdown {
-  [CmdletBinding()]
-  Param([string]$ResourceGroupName, [string]$Name)
+  [CmdletBinding(PositionalBinding=$false)]
+  Param(
+    [Parameter(Mandatory)][string]$ResourceGroupName,
+    [Parameter(Mandatory)][string]$Name
+  )
 
   Write-Host "Waiting for $Name to stop..."
-  while ($true) {
-    $Vm = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status
-    $highestStatus = $Vm.Statuses.Count
-    for ($idx = 0; $idx -lt $highestStatus; $idx++) {
-      if ($Vm.Statuses[$idx].Code -eq 'PowerState/stopped') {
-        return
-      }
-    }
-
+  $StoppedCode = 'PowerState/stopped'
+  while ($StoppedCode -notin (Get-AzVM -ResourceGroupName $ResourceGroupName -Name $Name -Status).Statuses.Code) {
     Write-Host '... not stopped yet, sleeping for 10 seconds'
     Start-Sleep -Seconds 10
   }
@@ -138,31 +122,29 @@ function Wait-Shutdown {
 
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Setting the subscription context' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Setting the subscription context'
 
-Set-AzContext -SubscriptionName CPP_STL_GitHub | Out-Null
-az account set --subscription CPP_STL_GitHub
+Set-AzContext `
+  -SubscriptionName 'CPP_STL_GitHub' | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating resource group' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Creating resource group'
 
-$ResourceGroupName = Find-ResourceGroupName $Prefix
+$ResourceGroupName = 'StlBuild-' + $CurrentDate.ToString('yyyy-MM-ddTHHmm')
 $AdminPW = New-Password
-New-AzResourceGroup -Name $ResourceGroupName -Location $Location | Out-Null
+# TRANSITION, this opt-in tag should be unnecessary after 2022-09-30.
+$SimplySecureV2OptInTag = @{ 'NRMSV2OptIn' = $CurrentDate.ToString('yyyyMMdd'); }
+
+New-AzResourceGroup `
+  -Name $ResourceGroupName `
+  -Location $Location `
+  -Tag $SimplySecureV2OptInTag | Out-Null
+
 $AdminPWSecure = ConvertTo-SecureString $AdminPW -AsPlainText -Force
 $Credential = New-Object System.Management.Automation.PSCredential ('AdminUser', $AdminPWSecure)
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating virtual network' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Creating virtual network'
 
 $allowHttp = New-AzNetworkSecurityRuleConfig `
   -Name AllowHTTP `
@@ -234,10 +216,7 @@ $VirtualNetwork = New-AzVirtualNetwork `
   -Subnet $Subnet
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating prototype VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Creating prototype VM'
 
 $NicName = $ResourceGroupName + '-NIC'
 $Nic = New-AzNetworkInterface `
@@ -246,7 +225,12 @@ $Nic = New-AzNetworkInterface `
   -Location $Location `
   -Subnet $VirtualNetwork.Subnets[0]
 
-$VM = New-AzVMConfig -Name $ProtoVMName -VMSize $VMSize -Priority 'Spot' -MaxPrice -1
+$VM = New-AzVMConfig `
+  -Name $ProtoVMName `
+  -VMSize $VMSize `
+  -Priority 'Spot' `
+  -MaxPrice -1
+
 $VM = Set-AzVMOperatingSystem `
   -VM $VM `
   -Windows `
@@ -254,58 +238,52 @@ $VM = Set-AzVMOperatingSystem `
   -Credential $Credential `
   -ProvisionVMAgent
 
-$VM = Add-AzVMNetworkInterface -VM $VM -Id $Nic.Id
+$VM = Add-AzVMNetworkInterface `
+  -VM $VM `
+  -Id $Nic.Id
+
 $VM = Set-AzVMSourceImage `
   -VM $VM `
   -PublisherName $ImagePublisher `
   -Offer $ImageOffer `
   -Skus $ImageSku `
-  -Version latest
+  -Version 'latest'
 
-$VM = Set-AzVMBootDiagnostic -VM $VM -Disable
+$VM = Set-AzVMBootDiagnostic `
+  -VM $VM `
+  -Disable
+
 New-AzVm `
   -ResourceGroupName $ResourceGroupName `
   -Location $Location `
   -VM $VM | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Running provisioning script provision-image.ps1 in VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Running provision-image.ps1 in VM'
 
 $ProvisionImageResult = Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
   -VMName $ProtoVMName `
   -CommandId 'RunPowerShellScript' `
   -ScriptPath "$PSScriptRoot\provision-image.ps1" `
-  -Parameter @{AdminUserPassword = $AdminPW }
+  -Parameter @{ 'AdminUserPassword' = $AdminPW; }
 
 Write-Host "provision-image.ps1 output: $($ProvisionImageResult.value.Message)"
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Restarting VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Restarting VM'
 
 Restart-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Sleeping after restart' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Sleeping after restart'
 
 # The VM appears to be busy immediately after restarting.
 # This workaround waits for a minute before attempting to run sysprep.ps1.
 Start-Sleep -Seconds 60
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Running provisioning script sysprep.ps1 in VM' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Running sysprep.ps1 in VM'
 
 Invoke-AzVMRunCommand `
   -ResourceGroupName $ResourceGroupName `
@@ -314,130 +292,159 @@ Invoke-AzVMRunCommand `
   -ScriptPath "$PSScriptRoot\sysprep.ps1" | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Waiting for VM to shut down' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Waiting for VM to shut down'
 
 Wait-Shutdown -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Converting VM to Image' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Stopping VM'
 
 Stop-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
   -Force | Out-Null
 
+####################################################################################################
+Display-ProgressBar -Status 'Generalizing VM'
+
 Set-AzVM `
   -ResourceGroupName $ResourceGroupName `
   -Name $ProtoVMName `
   -Generalized | Out-Null
 
-$VM = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $ProtoVMName
+$VM = Get-AzVM `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $ProtoVMName
+
 $PrototypeOSDiskName = $VM.StorageProfile.OsDisk.Name
-$ImageConfig = New-AzImageConfig -Location $Location -SourceVirtualMachineId $VM.ID -HyperVGeneration 'V2'
-$Image = New-AzImage -Image $ImageConfig -ImageName $ProtoVMName -ResourceGroupName $ResourceGroupName
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Deleting unused VM and disk' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Creating gallery'
 
-Remove-AzVM -Id $VM.ID -Force | Out-Null
+$GalleryName = 'StlBuild_' + $CurrentDate.ToString('yyyy_MM_ddTHHmm') + '_Gallery'
+$Gallery = New-AzGallery `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -Name $GalleryName
+
+####################################################################################################
+Display-ProgressBar -Status 'Granting access to 1ES Resource Management'
+
+$ServicePrincipalObjectId = (Get-AzADServicePrincipal -DisplayName '1ES Resource Management').Id
+
+New-AzRoleAssignment `
+  -ObjectId $ServicePrincipalObjectId `
+  -RoleDefinitionName 'Reader' `
+  -Scope $Gallery.Id | Out-Null
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating image definition'
+
+$ImageDefinitionName = $ResourceGroupName + '-ImageDefinition'
+New-AzGalleryImageDefinition `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -GalleryName $GalleryName `
+  -Name $ImageDefinitionName `
+  -OsState 'Generalized' `
+  -OsType 'Windows' `
+  -Publisher $ImagePublisher `
+  -Offer $ImageOffer `
+  -Sku $ImageSku `
+  -HyperVGeneration 'V2' | Out-Null
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating image version'
+
+$ImageVersionName = $CurrentDate.ToString('yyyyMMdd.HHmm.0')
+$ImageVersion = New-AzGalleryImageVersion `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -GalleryName $GalleryName `
+  -GalleryImageDefinitionName $ImageDefinitionName `
+  -Name $ImageVersionName `
+  -SourceImageId $VM.ID
+
+####################################################################################################
+Display-ProgressBar -Status 'Registering CloudTest resource provider'
+
+Register-AzResourceProvider `
+  -ProviderNamespace 'Microsoft.CloudTest' | Out-Null
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating 1ES image'
+
+$ImageName = $ResourceGroupName + '-Image'
+New-AzResource `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -ResourceType 'Microsoft.CloudTest/Images' `
+  -ResourceName $ImageName `
+  -Properties @{ 'imageType' = 'SharedImageGallery'; 'resourceId' = $ImageVersion.Id; } `
+  -Force | Out-Null
+
+####################################################################################################
+Display-ProgressBar -Status 'Creating 1ES Hosted Pool'
+
+$PoolName = $ResourceGroupName + '-Pool'
+
+$PoolProperties = @{
+  'organization' = 'https://dev.azure.com/vclibs'
+  'projects' = @('STL')
+  'sku' = @{ 'name' = $VMSize; 'tier' = 'StandardSSD'; }
+  'images' = @(@{ 'imageName' = $ImageName; 'poolBufferPercentage' = '100'; })
+  'maxPoolSize' = 64
+  'agentProfile' = @{ 'type' = 'Stateless'; }
+}
+
+New-AzResource `
+  -Location $Location `
+  -ResourceGroupName $ResourceGroupName `
+  -ResourceType 'Microsoft.CloudTest/hostedpools' `
+  -ResourceName $PoolName `
+  -Properties $PoolProperties `
+  -Force | Out-Null
+
+####################################################################################################
+Display-ProgressBar -Status 'Deleting unused VM'
+
+Remove-AzVM `
+  -Id $VM.ID `
+  -Force | Out-Null
+
+####################################################################################################
+Display-ProgressBar -Status 'Deleting unused disk'
+
 Remove-AzDisk `
   -ResourceGroupName $ResourceGroupName `
   -DiskName $PrototypeOSDiskName `
   -Force | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Creating scale set' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Deleting unused network interface'
 
-$VmssIpConfigName = $ResourceGroupName + '-VmssIpConfig'
-$VmssIpConfig = New-AzVmssIpConfig -SubnetId $Nic.IpConfigurations[0].Subnet.Id -Primary -Name $VmssIpConfigName
-$VmssName = $ResourceGroupName + '-Vmss'
-$Vmss = New-AzVmssConfig `
-  -Location $Location `
-  -SkuCapacity 0 `
-  -SkuName $VMSize `
-  -SkuTier 'Standard' `
-  -Overprovision $false `
-  -UpgradePolicyMode Manual `
-  -EvictionPolicy Delete `
-  -Priority Spot `
-  -MaxPrice -1
-
-$Vmss = Add-AzVmssNetworkInterfaceConfiguration `
-  -VirtualMachineScaleSet $Vmss `
-  -Primary $true `
-  -IpConfiguration $VmssIpConfig `
-  -NetworkSecurityGroupId $NetworkSecurityGroup.Id `
-  -Name $NicName
-
-$Vmss = Set-AzVmssOsProfile `
-  -VirtualMachineScaleSet $Vmss `
-  -ComputerNamePrefix $LiveVMPrefix `
-  -AdminUsername 'AdminUser' `
-  -AdminPassword $AdminPW `
-  -WindowsConfigurationProvisionVMAgent $true `
-  -WindowsConfigurationEnableAutomaticUpdate $true
-
-$Vmss = Set-AzVmssStorageProfile `
-  -VirtualMachineScaleSet $Vmss `
-  -OsDiskCreateOption 'FromImage' `
-  -OsDiskCaching ReadWrite `
-  -ImageReferenceId $Image.Id
-
-$Vmss = New-AzVmss `
-  -ResourceGroupName $ResourceGroupName `
-  -Name $VmssName `
-  -VirtualMachineScaleSet $Vmss
+Remove-AzNetworkInterface `
+-ResourceGroupName $ResourceGroupName `
+-Name $NicName `
+-Force | Out-Null
 
 ####################################################################################################
-Write-Progress `
-  -Activity $ProgressActivity `
-  -Status 'Enabling VMSS diagnostic logs' `
-  -PercentComplete (100 / $TotalProgress * $CurrentProgress++)
+Display-ProgressBar -Status 'Deleting unused virtual network'
 
-$StorageAccountName = 'stlvmssdiaglogssa'
+Remove-AzVirtualNetwork `
+-ResourceGroupName $ResourceGroupName `
+-Name $VirtualNetworkName `
+-Force | Out-Null
 
-$ExpirationDate = (Get-Date -AsUTC).AddYears(1).ToString('yyyy-MM-ddTHH:mmZ')
+####################################################################################################
+Display-ProgressBar -Status 'Deleting unused network security group'
 
-$StorageAccountSASToken = $(az storage account generate-sas `
-  --account-name $StorageAccountName `
-  --expiry $ExpirationDate `
-  --permissions acuw `
-  --resource-types co `
-  --services bt `
-  --https-only `
-  --output tsv `
-  2> $null)
-
-$DiagnosticsDefaultConfig = $(az vmss diagnostics get-default-config --is-windows-os 2> $null). `
-  Replace('__DIAGNOSTIC_STORAGE_ACCOUNT__', $StorageAccountName). `
-  Replace('__VM_OR_VMSS_RESOURCE_ID__', $Vmss.Id)
-
-Out-File -FilePath "$PSScriptRoot\vmss-config.json" -InputObject $DiagnosticsDefaultConfig
-
-$DiagnosticsProtectedSettings = "{'storageAccountName': '$StorageAccountName', "
-$DiagnosticsProtectedSettings += "'storageAccountSasToken': '?$StorageAccountSASToken'}"
-
-az vmss diagnostics set `
-  --resource-group $ResourceGroupName `
-  --vmss-name $VmssName `
-  --settings "$PSScriptRoot\vmss-config.json" `
-  --protected-settings "$DiagnosticsProtectedSettings" `
-  --output none
+Remove-AzNetworkSecurityGroup `
+-ResourceGroupName $ResourceGroupName `
+-Name $NetworkSecurityGroupName `
+-Force | Out-Null
 
 ####################################################################################################
 Write-Progress -Activity $ProgressActivity -Completed
-Write-Host "Location: $Location"
-Write-Host "Resource group name: $ResourceGroupName"
-Write-Host 'Finished!'
+
+Write-Host "Finished creating pool: $PoolName"

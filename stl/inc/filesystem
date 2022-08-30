@@ -10,7 +10,7 @@
 #if _STL_COMPILER_PREPROCESSOR
 
 #if !_HAS_CXX17
-#pragma message("The contents of <filesystem> are available only with C++17 or later.")
+_EMIT_STL_WARNING(STL4038, "The contents of <filesystem> are available only with C++17 or later.");
 #else // ^^^ !_HAS_CXX17 / _HAS_CXX17 vvv
 #include <algorithm>
 #include <chrono>
@@ -19,7 +19,6 @@
 #include <list>
 #include <locale>
 #include <memory>
-#include <string_view>
 #include <system_error>
 #include <utility>
 #include <vector>
@@ -39,29 +38,6 @@ _STL_DISABLE_CLANG_WARNINGS
 
 _STD_BEGIN
 namespace filesystem {
-    // We would really love to use the proper way of building error_code by specializing
-    // is_error_code_enum and make_error_code for __std_win_error, but because:
-    //   1. We would like to keep the definition of __std_win_error in xfilesystem_abi.h
-    //   2. and xfilesystem_abi.h cannot include <system_error>
-    //   3. and specialization of is_error_code_enum and overload of make_error_code
-    //      need to be kept together with the enum (see limerick in N4810 [temp.expl.spec]/7)
-    // we resort to using this _Make_ec helper.
-    _NODISCARD inline error_code _Make_ec(__std_win_error _Errno) noexcept { // make an error_code
-        return {static_cast<int>(_Errno), _STD system_category()};
-    }
-
-    [[noreturn]] inline void _Throw_system_error_from_std_win_error(const __std_win_error _Errno) {
-        _THROW(system_error{_Make_ec(_Errno)});
-    }
-
-    _NODISCARD inline int _Check_convert_result(const __std_fs_convert_result _Result) {
-        if (_Result._Err != __std_win_error::_Success) {
-            _Throw_system_error_from_std_win_error(_Result._Err);
-        }
-
-        return _Result._Len;
-    }
-
     _NODISCARD inline wstring _Convert_narrow_to_wide(const __std_code_page _Code_page, const string_view _Input) {
         wstring _Output;
 
@@ -77,30 +53,6 @@ namespace filesystem {
 
             (void) _Check_convert_result(__std_fs_convert_narrow_to_wide(
                 _Code_page, _Input.data(), static_cast<int>(_Input.size()), _Output.data(), _Len));
-        }
-
-        return _Output;
-    }
-
-    template <class _Traits, class _Alloc>
-    _NODISCARD basic_string<typename _Traits::char_type, _Traits, _Alloc> _Convert_wide_to_narrow(
-        const __std_code_page _Code_page, const wstring_view _Input, const _Alloc& _Al) {
-        basic_string<typename _Traits::char_type, _Traits, _Alloc> _Output(_Al);
-
-        if (!_Input.empty()) {
-            if (_Input.size() > static_cast<size_t>(INT_MAX)) {
-                _Throw_system_error(errc::invalid_argument);
-            }
-
-            const int _Len = _Check_convert_result(__std_fs_convert_wide_to_narrow(
-                _Code_page, _Input.data(), static_cast<int>(_Input.size()), nullptr, 0));
-
-            _Output.resize(static_cast<size_t>(_Len));
-
-            const auto _Data_as_char = reinterpret_cast<char*>(_Output.data());
-
-            (void) _Check_convert_result(__std_fs_convert_wide_to_narrow(
-                _Code_page, _Input.data(), static_cast<int>(_Input.size()), _Data_as_char, _Len));
         }
 
         return _Output;
@@ -254,7 +206,7 @@ namespace filesystem {
     _NODISCARD wstring _Convert_stringoid_to_wide(const wstring_view _Input, _Conversion) {
         static_assert(
             is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
-        return wstring(_Input);
+        return wstring{_Input};
     }
 
 #ifdef __cpp_char8_t
@@ -271,7 +223,7 @@ namespace filesystem {
     _NODISCARD wstring _Convert_stringoid_to_wide(const u16string_view _Input, _Conversion) {
         static_assert(
             is_same_v<_Conversion, _Normal_conversion>, "invalid value_type, see N4810 D.17 [depr.fs.path.factory]/1");
-        return wstring(_Input.data(), _Input.data() + _Input.size());
+        return wstring{_Input.data(), _Input.data() + _Input.size()};
     }
 
     template <class _Conversion>
@@ -680,11 +632,11 @@ namespace filesystem {
 
         enum format { auto_format, native_format, generic_format };
 
-        path()            = default;
-        path(const path&) = default;
-        path(path&&)      = default;
-        ~path()           = default;
-        path& operator=(const path&) = default;
+        path()                           = default;
+        path(const path&)                = default;
+        path(path&&)                     = default;
+        ~path()                          = default;
+        path& operator=(const path&)     = default;
         path& operator=(path&&) noexcept = default;
 
         path(string_type&& _Source) : _Text(_STD move(_Source)) {}
@@ -1455,13 +1407,15 @@ namespace filesystem {
         _Path_iterator(const _Base_iter& _Position_, const path* _Mypath_) noexcept
             : _Position(_Position_), _Element(), _Mypath(_Mypath_) {}
 
-        _Path_iterator(const _Base_iter& _Position_, wstring_view _Element_text, const path* _Mypath_)
-            : _Position(_Position_), _Element(_Element_text), _Mypath(_Mypath_) {}
+        _Path_iterator(const _Base_iter& _Position_, const path& _Element_, const path* _Mypath_)
+            : _Position(_Position_), _Element(_Element_), _Mypath(_Mypath_) {}
+        _Path_iterator(const _Base_iter& _Position_, path&& _Element_, const path* _Mypath_)
+            : _Position(_Position_), _Element(_STD move(_Element_)), _Mypath(_Mypath_) {}
 
-        _Path_iterator(const _Path_iterator&) = default;
-        _Path_iterator(_Path_iterator&&)      = default;
+        _Path_iterator(const _Path_iterator&)            = default;
+        _Path_iterator(_Path_iterator&&)                 = default;
         _Path_iterator& operator=(const _Path_iterator&) = default;
-        _Path_iterator& operator=(_Path_iterator&&) = default;
+        _Path_iterator& operator=(_Path_iterator&&)      = default;
 
         _NODISCARD reference operator*() const noexcept {
             return _Element;
@@ -1600,8 +1554,13 @@ namespace filesystem {
         using _Prevent_inheriting_unwrap = _Path_iterator;
 
         template <class _Iter2 = _Base_iter, enable_if_t<_Unwrappable_v<const _Iter2&>, int> = 0>
-        _NODISCARD _Path_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const {
-            return {_Position._Unwrapped(), _Element.native(), _Mypath};
+        _NODISCARD _Path_iterator<_Unwrapped_t<const _Iter2&>> _Unwrapped() const& {
+            return {_Position._Unwrapped(), _Element, _Mypath};
+        }
+        template <class _Iter2 = _Base_iter, enable_if_t<_Unwrappable_v<_Iter2>, int> = 0>
+        _NODISCARD _Path_iterator<_Unwrapped_t<_Iter2>> _Unwrapped() && noexcept {
+            _STL_INTERNAL_STATIC_ASSERT(_Is_nothrow_unwrappable_v<_Iter2>);
+            return {_Position._Unwrapped(), _STD move(_Element), _Mypath};
         }
 
         static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<_Base_iter>;
@@ -1667,32 +1626,51 @@ namespace filesystem {
         return _Val;
     }
 
+    _NODISCARD inline bool _Starts_with_root_name(const wchar_t* const _First, const wchar_t* const _Last) {
+        return _Find_root_name_end(_First, _Last) != _First;
+    }
+
     _NODISCARD inline bool _Relative_path_contains_root_name(const path& _Path) {
-        for (const auto& _File_name : _Path.relative_path()) {
-            if (!_Parse_root_name(_File_name.native()).empty()) {
+        const auto& _Native = _Path.native();
+        auto _First         = _Native.data();
+        const auto _Last    = _First + _Native.size();
+        _First              = _Find_relative_path(_First, _Last);
+        while (_First != _Last) {
+            const auto _Next = _STD find_if(_First, _Last, _Is_slash);
+            if (_Starts_with_root_name(_First, _Next)) {
                 return true;
             }
+            _First = _STD find_if_not(_Next, _Last, _Is_slash);
         }
         return false;
     }
 
-    _NODISCARD inline path path::lexically_relative(const path& _Base) const {
+    _NODISCARD inline path path::lexically_relative(const path& _Base_raw) const {
         constexpr wstring_view _Dot     = L"."sv;
         constexpr wstring_view _Dot_dot = L".."sv;
 
+        // LWG-3699: `lexically_relative` on UNC drive paths (`\\?\C:\...`) results in a default-constructed value
+        // This avoids doing any unnecessary copies;
+        // the return value of `relative_path()` is lifetime-extended if necessary.
+        const bool _Both_unc_paths = _Is_drive_prefix_with_slash_slash_question(_Text)
+                                  && _Is_drive_prefix_with_slash_slash_question(_Base_raw._Text);
+        const path& _This = _Both_unc_paths ? relative_path() : *this;
+        const path& _Base = _Both_unc_paths ? _Base_raw.relative_path() : _Base_raw;
+
         path _Result;
 
-        if (root_name() != _Base.root_name() || is_absolute() != _Base.is_absolute()
-            || (!has_root_directory() && _Base.has_root_directory()) || _Relative_path_contains_root_name(*this)
-            || _Relative_path_contains_root_name(_Base)) {
+        if (_This.root_name() != _Base.root_name() || _This.is_absolute() != _Base.is_absolute()
+            || (!_This.has_root_directory() && _Base.has_root_directory())
+            || (_Relative_path_contains_root_name(_This) || _Relative_path_contains_root_name(_Base))) {
             return _Result;
         }
 
-        const iterator _This_end   = end();
+
+        const iterator _This_end   = _This.end();
         const iterator _Base_begin = _Base.begin();
         const iterator _Base_end   = _Base.end();
 
-        auto _Mismatched  = _STD mismatch(begin(), _This_end, _Base_begin, _Base_end);
+        auto _Mismatched  = _STD mismatch(_This.begin(), _This_end, _Base_begin, _Base_end);
         iterator& _A_iter = _Mismatched.first;
         iterator& _B_iter = _Mismatched.second;
 
@@ -1936,7 +1914,7 @@ namespace filesystem {
 
         // assignments
         file_status& operator=(const file_status&) noexcept = default;
-        file_status& operator=(file_status&&) noexcept = default;
+        file_status& operator=(file_status&&) noexcept      = default;
 
         // [fs.file_status.mods], modifiers
         void type(file_type _Ft) noexcept {
@@ -1966,13 +1944,13 @@ namespace filesystem {
             if (_Error == __std_win_error::_Success) {
                 const auto _Attrs = _Stats._Attributes;
 
-                if (_Bitmask_includes(_Attrs, __std_fs_file_attr::_Readonly)) {
+                if (_Bitmask_includes_any(_Attrs, __std_fs_file_attr::_Readonly)) {
                     this->permissions(perms::_File_attribute_readonly);
                 } else {
                     this->permissions(perms::all);
                 }
 
-                if (_Bitmask_includes(_Attrs, __std_fs_file_attr::_Reparse_point)) {
+                if (_Bitmask_includes_any(_Attrs, __std_fs_file_attr::_Reparse_point)) {
                     if (_Stats._Reparse_point_tag == __std_fs_reparse_tag::_Symlink) {
                         this->type(file_type::symlink);
                         return;
@@ -1986,7 +1964,7 @@ namespace filesystem {
                     // All other reparse points considered ordinary files or directories
                 }
 
-                if (_Bitmask_includes(_Attrs, __std_fs_file_attr::_Directory)) {
+                if (_Bitmask_includes_any(_Attrs, __std_fs_file_attr::_Directory)) {
                     this->type(file_type::directory);
                 } else {
                     this->type(file_type::regular);
@@ -2111,63 +2089,63 @@ namespace filesystem {
         directory_entry(const directory_entry&)     = default;
         directory_entry(directory_entry&&) noexcept = default;
         explicit directory_entry(const filesystem::path& _Path_arg) : _Cached_data{}, _Path(_Path_arg) {
-            (void) _Refresh(_Cached_data, _Path);
+            refresh();
         }
 
         directory_entry(const filesystem::path& _Path_arg, error_code& _Ec) : _Cached_data{}, _Path(_Path_arg) {
-            _Ec.clear();
-            (void) _Refresh(_Cached_data, _Path);
+            refresh(_Ec);
+            if (_Ec) {
+                _Path.clear();
+            }
         }
 
         ~directory_entry() = default;
 
         // assignments
-        directory_entry& operator=(const directory_entry&) = default;
+        directory_entry& operator=(const directory_entry&)     = default;
         directory_entry& operator=(directory_entry&&) noexcept = default;
 
         // [fs.dir.entry.mods], modifiers
         void assign(const filesystem::path& _Path_arg) {
             _Path.assign(_Path_arg);
-            (void) _Refresh(_Cached_data, _Path);
+            refresh();
         }
 
         void assign(const filesystem::path& _Path_arg, error_code& _Ec) {
             _Ec.clear(); // for exception safety
             _Path.assign(_Path_arg);
-            (void) _Refresh(_Cached_data, _Path);
+            refresh(_Ec);
         }
 
         void replace_filename(const filesystem::path& _Path_arg) {
             _Path.replace_filename(_Path_arg);
-            (void) _Refresh(_Cached_data, _Path);
+            refresh();
         }
 
         void replace_filename(const filesystem::path& _Path_arg, error_code& _Ec) {
             _Ec.clear(); // for exception safety
             _Path.replace_filename(_Path_arg);
-            (void) _Refresh(_Cached_data, _Path);
+            refresh(_Ec);
         }
 
         void refresh() {
             const auto _Error = _Refresh(_Cached_data, _Path);
-            if (_Error != __std_win_error::_Success) {
+            if (_Error != __std_win_error::_Success && !__std_is_file_not_found(_Error)) {
                 _Throw_fs_error("directory_entry::refresh", _Error, _Path);
             }
         }
 
         void refresh(error_code& _Ec) noexcept {
-            _Ec = _Make_ec(_Refresh(_Cached_data, _Path));
+            _Ec.clear();
+            const auto _Error = _Refresh(_Cached_data, _Path);
+            if (_Error != __std_win_error::_Success && !__std_is_file_not_found(_Error)) {
+                _Ec = _Make_ec(_Error);
+            }
         }
-
-#if _HAS_CXX20
-        void clear_cache() noexcept {
-            _Cached_data._Available = __std_fs_stats_flags::_None;
-        }
-#endif // _HAS_CXX20
 
     private:
         _NODISCARD bool _Has_cached_attribute(const __std_fs_file_attr _Attrs) const noexcept {
-            return _Bitmask_includes(_Cached_data._Attributes, _Attrs);
+            return _Bitmask_includes_any(_Cached_data._Attributes, _Attrs);
         }
 
     public:
@@ -2265,7 +2243,7 @@ namespace filesystem {
         }
 
         _NODISCARD bool _Available(const __std_fs_stats_flags _Flags) const noexcept {
-            return _Bitmask_includes(_Cached_data._Available, _Flags);
+            return _Bitmask_includes_any(_Cached_data._Available, _Flags);
         }
 
     private:
@@ -2471,7 +2449,7 @@ namespace filesystem {
             _Cached_data._Attributes        = _Data._Attributes;
             _Cached_data._Reparse_point_tag = _Data._Reparse_point_tag;
             _Cached_data._Available         = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
-            if (!_Bitmask_includes(_Data._Attributes, __std_fs_file_attr::_Reparse_point)) {
+            if (!_Bitmask_includes_any(_Data._Attributes, __std_fs_file_attr::_Reparse_point)) {
                 _Cached_data._File_size = (static_cast<uintmax_t>(_Data._File_size_high) << 32)
                                         + static_cast<uintmax_t>(_Data._File_size_low);
                 _CSTD memcpy(
@@ -2483,7 +2461,7 @@ namespace filesystem {
         _NODISCARD static __std_win_error _Refresh(__std_fs_stats& _Stats, const filesystem::path& _Path) noexcept {
             const auto _Error = __std_fs_get_stats(_Path.c_str(), &_Stats, __std_fs_stats_flags::_All_data);
             if (_Error == __std_win_error::_Success) {
-                if (_Bitmask_includes(_Stats._Attributes, __std_fs_file_attr::_Reparse_point)) {
+                if (_Bitmask_includes_any(_Stats._Attributes, __std_fs_file_attr::_Reparse_point)) {
                     _Stats._Available = __std_fs_stats_flags::_Attributes | __std_fs_stats_flags::_Reparse_tag;
                 } else {
                     _Stats._Available = __std_fs_stats_flags::_All_data;
@@ -2552,7 +2530,7 @@ namespace filesystem {
             }
 
             if (_Error == __std_win_error::_Access_denied
-                && _Bitmask_includes(_Options_arg, directory_options::skip_permission_denied)) {
+                && _Bitmask_includes_any(_Options_arg, directory_options::skip_permission_denied)) {
                 _Error = __std_win_error::_No_more_files;
             }
 
@@ -2663,7 +2641,7 @@ namespace filesystem {
         ~directory_iterator() noexcept                         = default;
 
         directory_iterator& operator=(const directory_iterator&) noexcept = default; // strengthened
-        directory_iterator& operator=(directory_iterator&&) noexcept = default;
+        directory_iterator& operator=(directory_iterator&&) noexcept      = default;
 
         _NODISCARD const directory_entry& operator*() const noexcept /* strengthened */ {
             return _Impl->_Entry;
@@ -2697,6 +2675,12 @@ namespace filesystem {
             return _Impl != _Rhs._Impl;
         }
 #endif // !_HAS_CXX20
+
+#ifdef __cpp_lib_concepts
+        _NODISCARD bool operator==(default_sentinel_t) const noexcept {
+            return !_Impl;
+        }
+#endif // __cpp_lib_concepts
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -2735,7 +2719,7 @@ namespace filesystem {
             __std_win_error _Error = __std_win_error::_Success;
             if (_Recursion_pending) {
                 if (_Entry._Is_symlink_or_junction()) {
-                    if (_Bitmask_includes(_Options, directory_options::follow_directory_symlink)) {
+                    if (_Bitmask_includes_any(_Options, directory_options::follow_directory_symlink)) {
                         // check for broken symlink/junction
                         __std_fs_stats _Target_stats;
                         constexpr auto _Flags =
@@ -2744,10 +2728,10 @@ namespace filesystem {
                             _Entry._Path.c_str(), &_Target_stats, _Flags, _Entry._Cached_data._Attributes);
                         if (_Error == __std_win_error::_Success) {
                             _Should_recurse =
-                                _Bitmask_includes(_Target_stats._Attributes, __std_fs_file_attr::_Directory);
+                                _Bitmask_includes_any(_Target_stats._Attributes, __std_fs_file_attr::_Directory);
                         } else if (__std_is_file_not_found(_Error)
                                    || (_Error == __std_win_error::_Access_denied
-                                       && _Bitmask_includes(_Options, directory_options::skip_permission_denied))) {
+                                       && _Bitmask_includes_any(_Options, directory_options::skip_permission_denied))) {
                             // skip broken symlinks and permission denied (when configured)
                             _Error = __std_win_error::_Success;
                         }
@@ -2906,7 +2890,7 @@ namespace filesystem {
         }
 
         // [fs.rec.dir.itr.members], modifiers
-        recursive_directory_iterator& operator=(recursive_directory_iterator&&) noexcept = default;
+        recursive_directory_iterator& operator=(recursive_directory_iterator&&) noexcept      = default;
         recursive_directory_iterator& operator=(const recursive_directory_iterator&) noexcept = default; // strengthened
 
         recursive_directory_iterator& operator++() {
@@ -2947,6 +2931,12 @@ namespace filesystem {
             return _Impl != _Rhs._Impl;
         }
 #endif // !_HAS_CXX20
+
+#ifdef __cpp_lib_concepts
+        _NODISCARD bool operator==(default_sentinel_t) const noexcept {
+            return !_Impl;
+        }
+#endif // __cpp_lib_concepts
 
         _Directory_entry_proxy operator++(int) {
             _Directory_entry_proxy _Proxy(**this);
@@ -3184,7 +3174,7 @@ namespace filesystem {
         }
     }
 
-    _NODISCARD inline __std_win_error _Read_symlink_reparse_data(
+    _NODISCARD inline __std_win_error _Read_reparse_data(
         const _Fs_file& _Handle, unique_ptr<char[]>& _Buffer_unique_ptr) noexcept {
         constexpr auto _Buffer_size = 16 * 1024 + sizeof(wchar_t); // MAXIMUM_REPARSE_DATA_BUFFER_SIZE + sizeof(wchar_t)
 
@@ -3212,7 +3202,7 @@ namespace filesystem {
                 return _Err;
             }
 
-            _Err = _Read_symlink_reparse_data(_Handle, _Buffer_unique_ptr);
+            _Err = _Read_reparse_data(_Handle, _Buffer_unique_ptr);
             if (_Err != __std_win_error::_Success) {
                 return _Err;
             }
@@ -3259,7 +3249,7 @@ namespace filesystem {
                 return _Err;
             }
 
-            _Err = _Read_symlink_reparse_data(_Handle, _Buffer_unique_ptr);
+            _Err = _Read_reparse_data(_Handle, _Buffer_unique_ptr);
             if (_Err != __std_win_error::_Success) {
                 return _Err;
             }
@@ -3274,6 +3264,14 @@ namespace filesystem {
         } // Close _Handle
 
         const auto _Buffer = reinterpret_cast<__std_fs_reparse_data_buffer*>(_Buffer_unique_ptr.get());
+
+        // LWG-3744: `copy_symlink(junction, new_symlink)`'s behavior is unclear
+        // `read_symlink(junction)` should be allowed, but `copy_symlink(junction)` is not.
+        if (__std_fs_is_junction_from_reparse_data_buffer(_Buffer)) {
+            _Err = __std_win_error::_Reparse_tag_invalid;
+            return _Err;
+        }
+
         unsigned short _Length;
         wchar_t* _Offset;
         _Err = __std_fs_read_name_from_reparse_data_buffer(_Buffer, &_Offset, &_Length);
@@ -3287,6 +3285,56 @@ namespace filesystem {
             _Err = __std_fs_create_directory_symbolic_link(_New_symlink.c_str(), _Offset);
         } else {
             _Err = __std_fs_create_symbolic_link(_New_symlink.c_str(), _Offset);
+        }
+
+        return _Err;
+    }
+
+    _NODISCARD inline __std_win_error _Copy_junction(const path& _Junction, const path& _New_junction) noexcept {
+        __std_win_error _Err;
+        unique_ptr<char[]> _Buffer_unique_ptr;
+        {
+            const _Fs_file _Handle(_Junction.c_str(), __std_access_rights::_File_read_attributes,
+                __std_fs_file_flags::_Backup_semantics | __std_fs_file_flags::_Open_reparse_point, &_Err);
+            if (_Err != __std_win_error::_Success) {
+                return _Err;
+            }
+
+            _Err = _Read_reparse_data(_Handle, _Buffer_unique_ptr);
+            if (_Err != __std_win_error::_Success) {
+                return _Err;
+            }
+        } // Close _Handle
+
+        const auto _Buffer = reinterpret_cast<__std_fs_reparse_data_buffer*>(_Buffer_unique_ptr.get());
+
+        const auto _Create_dir_res = __std_fs_create_directory(_New_junction.c_str());
+
+        if (_Create_dir_res._Error != __std_win_error::_Success) {
+            return _Create_dir_res._Error;
+        } else if (!_Create_dir_res._Created) {
+            return __std_win_error::_Already_exists;
+        }
+
+        struct _NODISCARD _Delete_directory_scope_guard {
+            const wchar_t* _Path;
+            ~_Delete_directory_scope_guard() {
+                if (_Path) {
+                    (void) __std_fs_remove(_Path);
+                }
+            }
+        };
+        _Delete_directory_scope_guard _Delete_directory{_New_junction.c_str()};
+
+        _Fs_file _To_handle{_New_junction.c_str(), __std_access_rights::_File_write_attributes,
+            __std_fs_file_flags::_Backup_semantics, &_Err};
+        if (_Err != __std_win_error::_Success) {
+            return _Err;
+        }
+        _Err = __std_fs_write_reparse_data_buffer(_To_handle._Raw, _Buffer);
+        if (_Err == __std_win_error::_Success) {
+            // don't delete the directory if we succeeded in making it a junction
+            _Delete_directory._Path = nullptr;
         }
 
         return _Err;
@@ -3526,12 +3574,12 @@ namespace filesystem {
     }
 
     _NODISCARD inline bool is_other(const path& _Path) {
-        // tests whether _Path is an other file (such as a junction)
+        // tests whether _Path is an "other" file (such as a junction)
         return _STD filesystem::is_other(_STD filesystem::status(_Path));
     }
 
     _NODISCARD inline bool is_other(const path& _Path, error_code& _Ec) noexcept {
-        // tests whether _Path is an other file (such as a junction)
+        // tests whether _Path is an "other" file (such as a junction)
         return _STD filesystem::is_other(_STD filesystem::status(_Path, _Ec));
     }
 
@@ -4197,8 +4245,12 @@ namespace filesystem {
             }
         }
 
-        if (_STD filesystem::is_other(_Fstat._Status) || _STD filesystem::is_other(_Tstat._Status)) {
-            // report an error if is_other(f) || is_other(t) is true
+        const bool _Fstat_is_other =
+            _STD filesystem::is_other(_Fstat._Status) && _Fstat._Status.type() != file_type::junction;
+        const bool _Tstat_is_other =
+            _STD filesystem::is_other(_Tstat._Status) && _Tstat._Status.type() != file_type::junction;
+        if (_Fstat_is_other || _Tstat_is_other) {
+            // report an error if is_other(f) || is_other(t) is true, and it's not a junction
             _Ec = _STD make_error_code(errc::operation_not_supported);
             return;
         }
@@ -4209,14 +4261,26 @@ namespace filesystem {
             return;
         }
 
+        if (_Fstat._Status.type() == file_type::junction) {
+            if ((_Options & copy_options::skip_symlinks) != copy_options::none) {
+                return;
+            }
+
+            // _Options includes copy_options::copy_symlinks,
+            // since _Fstat is only allowed to be a symbolic link when either skip_symlinks or copy_symlinks
+            if (!_STD filesystem::exists(_Tstat._Status)) {
+                _Ec = _Make_ec(_Copy_junction(_From, _To));
+            }
+        }
+
         if (_STD filesystem::is_symlink(_Fstat._Status)) {
             if ((_Options & copy_options::skip_symlinks) != copy_options::none) {
                 return;
             }
 
-            if (!_STD filesystem::exists(_Tstat._Status)
-                && (_Options & copy_options::copy_symlinks) != copy_options::none) {
-                // if (condition) then copy_symlink(from, to)
+            // _Options includes copy_options::copy_symlinks,
+            // since _Fstat is only allowed to be a symbolic link when either skip_symlinks or copy_symlinks
+            if (!_STD filesystem::exists(_Tstat._Status)) {
                 _STD filesystem::copy_symlink(_From, _To, _Ec);
                 return;
             }
@@ -4330,8 +4394,8 @@ namespace filesystem {
 
 template <>
 struct hash<filesystem::path> {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef filesystem::path _ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef size_t _RESULT_TYPE_NAME;
+    using _ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = filesystem::path;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS   = size_t;
     _NODISCARD size_t operator()(const filesystem::path& _Path) const noexcept {
         return _STD filesystem::hash_value(_Path);
     }

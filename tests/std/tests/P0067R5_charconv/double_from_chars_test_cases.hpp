@@ -5,7 +5,7 @@
 #define DOUBLE_FROM_CHARS_TEST_CASES_HPP
 
 #include <charconv>
-#include <stddef.h>
+#include <cstddef>
 #include <system_error>
 using namespace std;
 

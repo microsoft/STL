@@ -1043,6 +1043,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND constexpr _String_view_iterator operator+(
+        const difference_type _Off, _String_view_iterator _Right) noexcept {
+        _Right += _Off;
+        return _Right;
+    }
+
     constexpr _String_view_iterator& operator-=(const difference_type _Off) noexcept {
 #if _ITERATOR_DEBUG_LEVEL >= 1
         if (_Off != 0) {
@@ -1172,14 +1178,6 @@ private:
 #endif // _ITERATOR_DEBUG_LEVEL
 };
 
-template <class _Traits>
-_NODISCARD constexpr _String_view_iterator<_Traits> operator+(
-    const typename _String_view_iterator<_Traits>::difference_type _Off,
-    _String_view_iterator<_Traits> _Right) noexcept {
-    _Right += _Off;
-    return _Right;
-}
-
 #if _HAS_CXX20
 template <class _Traits>
 struct pointer_traits<_String_view_iterator<_Traits>> {
@@ -1193,6 +1191,10 @@ struct pointer_traits<_String_view_iterator<_Traits>> {
 };
 #endif // _HAS_CXX20
 
+#pragma warning(push)
+// Invalid annotation: 'NullTerminated' property may only be used on buffers whose elements are of integral or pointer
+// type
+#pragma warning(disable : 6510)
 
 template <class _Elem, class _Traits>
 class basic_string_view { // wrapper for any kind of contiguous character buffer
@@ -1222,7 +1224,7 @@ public:
 
     constexpr basic_string_view() noexcept : _Mydata(), _Mysize(0) {}
 
-    constexpr basic_string_view(const basic_string_view&) noexcept = default;
+    constexpr basic_string_view(const basic_string_view&) noexcept            = default;
     constexpr basic_string_view& operator=(const basic_string_view&) noexcept = default;
 
     /* implicit */ constexpr basic_string_view(_In_z_ const const_pointer _Ntcts) noexcept // strengthened
@@ -1242,9 +1244,9 @@ public:
 
 #ifdef __cpp_lib_concepts
     // clang-format off
-    template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
-        requires (is_same_v<iter_value_t<_It>, _Elem> && !is_convertible_v<_Se, size_type>)
-    constexpr basic_string_view(_It _First, _Se _Last) noexcept(noexcept(_Last - _First)) // strengthened
+    template <contiguous_iterator _Iter, sized_sentinel_for<_Iter> _Sent>
+        requires (is_same_v<iter_value_t<_Iter>, _Elem> && !is_convertible_v<_Sent, size_type>)
+    constexpr basic_string_view(_Iter _First, _Sent _Last) noexcept(noexcept(_Last - _First)) // strengthened
         : _Mydata(_STD to_address(_First)), _Mysize(static_cast<size_type>(_Last - _First)) {}
     // clang-format on
 
@@ -1262,7 +1264,7 @@ public:
             && (!requires {
                 typename remove_reference_t<_Range>::traits_type;
             } || same_as<typename remove_reference_t<_Range>::traits_type, _Traits>))
-    constexpr basic_string_view(_Range&& _Rng) noexcept(
+    constexpr explicit basic_string_view(_Range&& _Rng) noexcept(
         noexcept(_RANGES data(_Rng)) && noexcept(_RANGES size(_Rng))) // strengthened
         : _Mydata(_RANGES data(_Rng)), _Mysize(static_cast<size_t>(_RANGES size(_Rng))) {}
     // clang-format on
@@ -1658,9 +1660,11 @@ private:
     size_type _Mysize;
 };
 
+#pragma warning(pop)
+
 #ifdef __cpp_lib_concepts
-template <contiguous_iterator _It, sized_sentinel_for<_It> _Se>
-basic_string_view(_It, _Se) -> basic_string_view<iter_value_t<_It>>;
+template <contiguous_iterator _Iter, sized_sentinel_for<_Iter> _Sent>
+basic_string_view(_Iter, _Sent) -> basic_string_view<iter_value_t<_Iter>>;
 
 #if _HAS_CXX23
 template <_RANGES contiguous_range _Range>
@@ -1988,6 +1992,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _String_const_iterator operator+(
+        const difference_type _Off, _String_const_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _CONSTEXPR20 _String_const_iterator& operator-=(const difference_type _Off) noexcept {
         return *this += -_Off;
     }
@@ -2070,13 +2080,6 @@ public:
 
     pointer _Ptr; // pointer to element in string
 };
-
-template <class _Mystr>
-_NODISCARD _CONSTEXPR20 _String_const_iterator<_Mystr> operator+(
-    typename _String_const_iterator<_Mystr>::difference_type _Off, _String_const_iterator<_Mystr> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 #if _HAS_CXX20
 template <class _Mystr>
@@ -2166,6 +2169,12 @@ public:
         return _Tmp;
     }
 
+    _NODISCARD_FRIEND _CONSTEXPR20 _String_iterator operator+(
+        const difference_type _Off, _String_iterator _Next) noexcept {
+        _Next += _Off;
+        return _Next;
+    }
+
     _CONSTEXPR20 _String_iterator& operator-=(const difference_type _Off) noexcept {
         _Mybase::operator-=(_Off);
         return *this;
@@ -2189,13 +2198,6 @@ public:
         return const_cast<value_type*>(_Unfancy(this->_Ptr));
     }
 };
-
-template <class _Mystr>
-_NODISCARD _CONSTEXPR20 _String_iterator<_Mystr> operator+(
-    typename _String_iterator<_Mystr>::difference_type _Off, _String_iterator<_Mystr> _Next) noexcept {
-    _Next += _Off;
-    return _Next;
-}
 
 #if _HAS_CXX20
 template <class _Mystr>
@@ -2279,12 +2281,18 @@ public:
     }
 
     _CONSTEXPR20 bool _Large_string_engaged() const noexcept {
+        return _BUF_SIZE <= _Myres;
+    }
+
+    constexpr void _Activate_SSO_buffer() noexcept {
+        // begin the lifetime of the array elements (e.g., before copying into them)
 #if _HAS_CXX20
         if (_STD is_constant_evaluated()) {
-            return true;
+            for (size_type _Idx = 0; _Idx < _BUF_SIZE; ++_Idx) {
+                _Bx._Buf[_Idx] = value_type();
+            }
         }
 #endif // _HAS_CXX20
-        return _BUF_SIZE <= _Myres;
     }
 
     _CONSTEXPR20 void _Check_offset(const size_type _Off) const {
@@ -2311,7 +2319,7 @@ public:
     }
 
     union _Bxty { // storage for small buffer or pointer to larger one
-        _CONSTEXPR20 _Bxty() noexcept : _Ptr() {} // user-provided, for fancy pointers
+        _CONSTEXPR20 _Bxty() noexcept : _Buf() {} // user-provided, for fancy pointers
 
         _CONSTEXPR20 ~_Bxty() noexcept {} // user-provided, for fancy pointers
 
@@ -2342,6 +2350,7 @@ struct _String_constructor_rvalue_allocator_tag {
     _Xlength_error("string too long");
 }
 
+#if 0 // TRANSITION, VSO-1586016: String annotations disabled temporarily.
 #if !defined(_M_CEE_PURE) && !defined(_DISABLE_STRING_ANNOTATION)
 #if defined(__SANITIZE_ADDRESS__)
 #define _ACTIVATE_STRING_ANNOTATION
@@ -2361,6 +2370,7 @@ struct _String_constructor_rvalue_allocator_tag {
 #pragma comment(lib, "stl_asan")
 #pragma detect_mismatch("annotate_string", "1")
 #endif // _ACTIVATE_STRING_ANNOTATION
+#endif // TRANSITION, VSO-1586016
 
 #ifdef _INSERT_STRING_ANNOTATION
 extern "C" {
@@ -2406,6 +2416,12 @@ _INLINE_VAR constexpr bool _Has_minimum_allocation_alignment_string<_String,
 #else // ^^^ _INSERT_STRING_ANNOTATION ^^^ // vvv !_INSERT_STRING_ANNOTATION vvv
 #pragma detect_mismatch("annotate_string", "0")
 #endif // !_INSERT_STRING_ANNOTATION
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <class _Rng, class _Ty>
+concept _Contiguous_range_of =
+    _RANGES contiguous_range<_Rng> && same_as<remove_cvref_t<_RANGES range_reference_t<_Rng>>, _Ty>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
 template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
 class basic_string { // null-terminated transparent array of elements
@@ -2469,6 +2485,8 @@ private:
     static constexpr size_t _Memcpy_val_size   = sizeof(_Scary_val) - _Memcpy_val_offset;
 
     template <class _Iter>
+    // TRANSITION, /clr:pure is incompatible with templated static constexpr data members
+    // static constexpr bool _Is_elem_cptr =_Is_any_of_v<_Iter, const _Elem* const, _Elem* const, const _Elem*, _Elem*>;
     using _Is_elem_cptr = bool_constant<_Is_any_of_v<_Iter, const _Elem* const, _Elem* const, const _Elem*, _Elem*>>;
 
 #if _HAS_CXX17
@@ -2664,6 +2682,10 @@ public:
             if constexpr (_Is_elem_cptr<decltype(_UFirst)>::value) {
                 _Construct<_Construct_strategy::_From_ptr>(
                     _UFirst, _Convert_size<size_type>(static_cast<size_t>(_ULast - _UFirst)));
+            } else if constexpr (_Is_cpp17_fwd_iter_v<decltype(_UFirst)>) {
+                const auto _Length = static_cast<size_t>(_STD distance(_UFirst, _ULast));
+                const auto _Count  = _Convert_size<size_type>(_Length);
+                _Construct_from_iter(_STD move(_UFirst), _STD move(_ULast), _Count);
             } else {
                 _Construct_from_iter(_STD move(_UFirst), _STD move(_ULast));
             }
@@ -2674,6 +2696,10 @@ private:
     enum class _Construct_strategy : uint8_t { _From_char, _From_ptr, _From_string };
     template <_Construct_strategy _Strat, class _Char_or_ptr>
     _CONSTEXPR20 void _Construct(const _Char_or_ptr _Arg, _CRT_GUARDOVERFLOW const size_type _Count) {
+        auto& _My_data = _Mypair._Myval2;
+        _STL_INTERNAL_CHECK(!_My_data._Large_string_engaged());
+        _STL_INTERNAL_CHECK(_STD count(_My_data._Bx._Buf, _My_data._Bx._Buf + _BUF_SIZE, _Elem()) == _BUF_SIZE);
+
         if constexpr (_Strat == _Construct_strategy::_From_char) {
             _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Char_or_ptr, _Elem>);
         } else {
@@ -2684,37 +2710,17 @@ private:
             _Xlen_string(); // result too long
         }
 
-        auto& _My_data  = _Mypair._Myval2;
         auto& _Al       = _Getal();
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
 
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _My_data._Myres = _BUF_SIZE; // TRANSITION: constexpr SSO
-        }
-
-        const bool _Stay_small = _Count < _BUF_SIZE && !_STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const bool _Stay_small = _Count < _BUF_SIZE;
-#endif // _HAS_CXX20
-
-        if (_Stay_small) {
-#if _HAS_CXX20
-            // TRANSITION: This is currently unused until SSO support is merged
-            if (_STD is_constant_evaluated()) {
-                _Construct_in_place(_My_data._Bx);
-            }
-#endif // _HAS_CXX20
-
+        if (_Count < _BUF_SIZE) {
             _My_data._Mysize = _Count;
             _My_data._Myres  = _BUF_SIZE - 1;
             if constexpr (_Strat == _Construct_strategy::_From_char) {
                 _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
-                _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
                 _Traits::move(_My_data._Bx._Buf, _Arg, _Count);
-                _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
             } else { // _Strat == _Construct_strategy::_From_string
 #ifdef _INSERT_STRING_ANNOTATION
                 _Traits::move(_My_data._Bx._Buf, _Arg, _Count);
@@ -2755,8 +2761,13 @@ private:
         _Proxy._Release();
     }
 
-    template <class _Iter>
-    _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Iter _Last) {
+    template <class _Iter, class _Sent, class _Size = nullptr_t>
+    _CONSTEXPR20 void _Construct_from_iter(_Iter _First, const _Sent _Last, _Size _Count = {}) {
+        // Pre: _First models input_iterator or meets the Cpp17InputIterator requirements
+        // Pre: [_First, _Last) is a valid range
+        // Pre: if is_same_v<_Size, size_type>, _Count is the length of [_First, _Last).
+        // Pre: *this is in SSO mode; the lifetime of the SSO elements has already begun
+
         auto& _My_data  = _Mypair._Myval2;
         auto& _Al       = _Getal();
         auto&& _Alproxy = _GET_PROXY_ALLOCATOR(_Alty, _Al);
@@ -2764,25 +2775,13 @@ private:
 
         _My_data._Mysize = 0;
         _My_data._Myres  = _BUF_SIZE - 1;
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _Construct_in_place(_My_data._Bx);
-            _My_data._Myres = _BUF_SIZE; // TRANSITION: constexpr SSO
-        }
-#endif // _HAS_CXX20
 
-        if constexpr (_Is_fwd_iter_v<_Iter>) {
-            const auto _Count = _Convert_size<size_type>(static_cast<size_t>(_STD distance(_First, _Last)));
+        if constexpr (is_same_v<_Size, size_type>) {
             if (_Count > max_size()) {
                 _Xlen_string(); // result too long
             }
 
-#if _HAS_CXX20
-            const bool _Become_large = _Count >= _BUF_SIZE || _STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-            const bool _Become_large = _Count >= _BUF_SIZE;
-#endif // _HAS_CXX20
-            if (_Become_large) {
+            if (_Count >= _BUF_SIZE) {
                 const size_type _New_capacity = _Calculate_growth(_Count);
                 const pointer _New_ptr        = _Al.allocate(_New_capacity + 1); // throws
                 _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
@@ -2798,7 +2797,7 @@ private:
 
         _Tidy_deallocate_guard<basic_string> _Guard{this};
         for (; _First != _Last; ++_First) {
-            if constexpr (!_Is_fwd_iter_v<_Iter>) {
+            if constexpr (!is_same_v<_Size, size_type>) {
                 if (_My_data._Mysize == _My_data._Myres) { // Need to grow
                     if (_My_data._Mysize == max_size()) {
                         _Xlen_string(); // result too long
@@ -2837,6 +2836,24 @@ private:
     }
 
 public:
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Elem> _Rng>
+    constexpr basic_string(from_range_t, _Rng&& _Range, const _Alloc& _Al = _Alloc())
+        : _Mypair(_One_then_variadic_args_t{}, _Al) {
+        if constexpr (_RANGES sized_range<_Rng> || _RANGES forward_range<_Rng>) {
+            const auto _Length = _To_unsigned_like(_RANGES distance(_Range));
+            const auto _Count  = _Convert_size<size_type>(_Length);
+            if constexpr (_Contiguous_range_of<_Rng, _Elem>) {
+                _Construct<_Construct_strategy::_From_ptr>(_RANGES data(_Range), _Count);
+            } else {
+                _Construct_from_iter(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range), _Count);
+            }
+        } else {
+            _Construct_from_iter(_RANGES _Ubegin(_Range), _RANGES _Uend(_Range));
+        }
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     _CONSTEXPR20 basic_string(basic_string&& _Right) noexcept
         : _Mypair(_One_then_variadic_args_t{}, _STD move(_Right._Getal())) {
         _Mypair._Myval2._Alloc_proxy(_GET_PROXY_ALLOCATOR(_Alty, _Getal()));
@@ -2873,18 +2890,10 @@ public:
         auto&& _Alproxy         = _GET_PROXY_ALLOCATOR(_Alty, _Getal());
         _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data); // throws
 
-#if _HAS_CXX20
-        const bool _Activate_large_mode = _New_capacity < _New_size || _STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const bool _Activate_large_mode = _New_capacity < _New_size;
-#endif // _HAS_CXX20
-
-        if (_Activate_large_mode) {
-            // we should never allocate less than _BUF_SIZE space (_New_size could be small if constant evaluated)
-            const size_type _Requested_size = (_STD max)(_New_size, _BUF_SIZE);
-            _New_capacity                   = _Calculate_growth(_Requested_size, _BUF_SIZE - 1, max_size());
-            const pointer _Fancyptr         = _Getal().allocate(_New_capacity + 1); // throws
-            _Ptr                            = _Unfancy(_Fancyptr);
+        if (_New_capacity < _New_size) {
+            _New_capacity           = _Calculate_growth(_New_size, _BUF_SIZE - 1, max_size());
+            const pointer _Fancyptr = _Getal().allocate(_New_capacity + 1); // throws
+            _Ptr                    = _Unfancy(_Fancyptr);
             _Construct_in_place(_My_data._Bx._Ptr, _Fancyptr);
 
 #if _HAS_CXX20
@@ -3146,11 +3155,7 @@ private:
             _Right_data._Bx._Ptr = nullptr;
             _Swap_proxy_and_iterators(_Right);
         } else { // copy small string buffer
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
-                _Construct_in_place(_Mypair._Myval2._Bx);
-            }
-#endif // _HAS_CXX20
+            _My_data._Activate_SSO_buffer();
             _Traits::copy(_My_data._Bx._Buf, _Right_data._Bx._Buf, _Right_data._Mysize + 1);
             _Right_data._Orphan_all();
         }
@@ -3222,9 +3227,6 @@ public:
 private:
     _CONSTEXPR20 void _Copy_assign_val_from_small(const basic_string& _Right) {
         // TRANSITION, VSO-761321; inline into only caller when that's fixed
-#if _HAS_CXX20
-        _STL_ASSERT(!_STD is_constant_evaluated(), "SSO should be disabled in a constexpr context");
-#endif // _HAS_CXX20
         _Tidy_deallocate();
         if constexpr (_Can_memcpy_val) {
 #if _HAS_CXX20
@@ -3426,6 +3428,19 @@ public:
         }
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Elem> _Rng>
+    constexpr basic_string& append_range(_Rng&& _Range) {
+        if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
+            return append(_RANGES data(_Range), _Count);
+        } else {
+            const basic_string _Right(from_range, _Range, get_allocator());
+            return append(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        }
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     _CONSTEXPR20 basic_string& assign(const basic_string& _Right) {
         *this = _Right;
         return *this;
@@ -3518,6 +3533,25 @@ public:
         }
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Elem> _Rng>
+    constexpr basic_string& assign_range(_Rng&& _Range) {
+        if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
+            return assign(_RANGES data(_Range), _Count);
+        } else {
+            basic_string _Right(from_range, _Range, get_allocator());
+            if (_Mypair._Myval2._Myres < _Right._Mypair._Myval2._Myres) {
+                _Mypair._Myval2._Orphan_all();
+                _Swap_data(_Right);
+                return *this;
+            } else {
+                return assign(_Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+            }
+        }
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     _CONSTEXPR20 basic_string& insert(const size_type _Off, const basic_string& _Right) {
         // insert _Right at _Off
         return insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
@@ -3554,8 +3588,8 @@ public:
         _Mypair._Myval2._Check_offset(_Off);
         const size_type _Old_size = _Mypair._Myval2._Mysize;
 
-        // checking for overlapping ranges is technically UB (considering string literals), so just always reallocate
-        // and copy to the new buffer if constant evaluated
+        // We can't check for overlapping ranges when constant evaluated since comparison of pointers into string
+        // literals is unspecified, so always reallocate and copy to the new buffer if constant evaluated.
 #if _HAS_CXX20
         const bool _Check_overlap = _Count <= _Mypair._Myval2._Myres - _Old_size && !_STD is_constant_evaluated();
 #else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
@@ -3667,6 +3701,26 @@ public:
 
         return begin() + static_cast<difference_type>(_Off);
     }
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Elem> _Rng>
+    constexpr iterator insert_range(const const_iterator _Where, _Rng&& _Range) {
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_Where._Getcont() == _STD addressof(_Mypair._Myval2), "string iterator incompatible");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        const auto _Off = static_cast<size_type>(_Unfancy(_Where._Ptr) - _Mypair._Myval2._Myptr());
+
+        if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
+            insert(_Off, _RANGES data(_Range), _Count);
+        } else {
+            const basic_string _Right(from_range, _Range, get_allocator());
+            insert(_Off, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        }
+
+        return begin() + static_cast<difference_type>(_Off);
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 
     _CONSTEXPR20 basic_string& erase(const size_type _Off = 0) { // erase elements [_Off, ...)
         _Mypair._Myval2._Check_offset(_Off);
@@ -3932,6 +3986,26 @@ public:
         }
     }
 
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+    template <_Container_compatible_range<_Elem> _Rng>
+    constexpr basic_string& replace_with_range(const const_iterator _First, const const_iterator _Last, _Rng&& _Range) {
+        _Adl_verify_range(_First, _Last);
+#if _ITERATOR_DEBUG_LEVEL != 0
+        _STL_VERIFY(_First._Getcont() == _STD addressof(_Mypair._Myval2), "string iterators incompatible");
+#endif // _ITERATOR_DEBUG_LEVEL != 0
+        const auto _Off    = static_cast<size_type>(_Unfancy(_First._Ptr) - _Mypair._Myval2._Myptr());
+        const auto _Length = static_cast<size_type>(_Last._Ptr - _First._Ptr);
+
+        if constexpr (_RANGES sized_range<_Rng> && _Contiguous_range_of<_Rng, _Elem>) {
+            const auto _Count = _Convert_size<size_type>(_To_unsigned_like(_RANGES size(_Range)));
+            return replace(_Off, _Length, _RANGES data(_Range), _Count);
+        } else {
+            const basic_string _Right(from_range, _Range, get_allocator());
+            return replace(_Off, _Length, _Right._Mypair._Myval2._Myptr(), _Right._Mypair._Myval2._Mysize);
+        }
+    }
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
+
     _NODISCARD _CONSTEXPR20 iterator begin() noexcept {
         return iterator(_Refancy<pointer>(_Mypair._Myval2._Myptr()), _STD addressof(_Mypair._Myval2));
     }
@@ -4007,22 +4081,12 @@ public:
             return;
         }
 
-#if _HAS_CXX20
-        const bool _Do_become_small = _My_data._Mysize < _BUF_SIZE && !_STD is_constant_evaluated();
-#else // ^^^ _HAS_CXX20 / !_HAS_CXX20 vvv
-        const bool _Do_become_small = _My_data._Mysize < _BUF_SIZE;
-#endif // _HAS_CXX20
-        if (_Do_become_small) {
+        if (_My_data._Mysize < _BUF_SIZE) {
             _Become_small();
             return;
         }
 
-        size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
-#if _HAS_CXX20
-        // must allocate at least _BUF_SIZE space
-        _Target_capacity = (_STD max)(_Target_capacity, _BUF_SIZE);
-#endif // _HAS_CXX20
-
+        const size_type _Target_capacity = (_STD min)(_My_data._Mysize | _ALLOC_MASK, max_size());
         if (_Target_capacity < _My_data._Myres) { // worth shrinking, do it
             auto& _Al              = _Getal();
             const pointer _New_ptr = _Al.allocate(_Target_capacity + 1); // throws
@@ -4280,11 +4344,7 @@ public:
         // exchange a string in large mode with one in small mode
         const pointer _Ptr = _Starts_large._Bx._Ptr;
         _Destroy_in_place(_Starts_large._Bx._Ptr);
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _Construct_in_place(_Starts_large._Bx);
-        }
-#endif // _HAS_CXX20
+        _Starts_large._Activate_SSO_buffer();
         _Traits::copy(_Starts_large._Bx._Buf, _Starts_small._Bx._Buf, _BUF_SIZE);
         _Construct_in_place(_Starts_small._Bx._Ptr, _Ptr);
     }
@@ -4617,7 +4677,7 @@ public:
 
     _NODISCARD _CONSTEXPR20 basic_string substr(const size_type _Off = 0, const size_type _Count = npos) const {
         // return [_Off, _Off + _Count) as new string
-        return basic_string(*this, _Off, _Count, get_allocator());
+        return basic_string{*this, _Off, _Count, get_allocator()};
     }
 
     _CONSTEXPR20 bool _Equal(const basic_string& _Right) const noexcept {
@@ -4853,11 +4913,7 @@ private:
         const pointer _Ptr = _My_data._Bx._Ptr;
         auto& _Al          = _Getal();
         _Destroy_in_place(_My_data._Bx._Ptr);
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
-            _Construct_in_place(_Mypair._Myval2._Bx);
-        }
-#endif // _HAS_CXX20
+        _My_data._Activate_SSO_buffer();
         _Traits::copy(_My_data._Bx._Buf, _Unfancy(_Ptr), _My_data._Mysize + 1);
         _Al.deallocate(_Ptr, _My_data._Myres + 1);
         _My_data._Myres = _BUF_SIZE - 1;
@@ -4872,24 +4928,11 @@ private:
     _CONSTEXPR20 void _Tidy_init() noexcept { // initialize basic_string data members
         auto& _My_data   = _Mypair._Myval2;
         _My_data._Mysize = 0;
+        _My_data._Myres  = _BUF_SIZE - 1;
+        _My_data._Activate_SSO_buffer();
 
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _My_data._Myres        = _BUF_SIZE; // SSO disabled in constexpr context
-            auto& _Al              = _Getal();
-            const pointer _New_ptr = _Al.allocate(_BUF_SIZE + 1); // throws
-            _My_data._Bx._Ptr      = _New_ptr;
-
-            _Elem* const _Raw_new = _Unfancy(_New_ptr);
-            _Traits::assign(_Raw_new, _BUF_SIZE + 1, _Elem());
-        } else
-#endif // _HAS_CXX20
-        {
-            _My_data._Myres = _BUF_SIZE - 1;
-            // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-            _Traits::assign(_My_data._Bx._Buf[0], _Elem());
-        }
-
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
         _ASAN_STRING_CREATE(*this);
     }
 
@@ -4901,25 +4944,14 @@ private:
             const pointer _Ptr = _My_data._Bx._Ptr;
             auto& _Al          = _Getal();
             _Destroy_in_place(_My_data._Bx._Ptr);
-#if _HAS_CXX20
-            if (_STD is_constant_evaluated()) { // begin the lifetime of the array elements before copying into them
-                _Construct_in_place(_My_data._Bx);
-            }
-#endif // _HAS_CXX20
+            _My_data._Activate_SSO_buffer();
             _Al.deallocate(_Ptr, _My_data._Myres + 1);
         }
 
         _My_data._Mysize = 0;
-#if _HAS_CXX20
-        if (_STD is_constant_evaluated()) {
-            _My_data._Myres = 0;
-        } else
-#endif // _HAS_CXX20
-        {
-            _My_data._Myres = _BUF_SIZE - 1;
-            // the _Traits::assign is last so the codegen doesn't think the char write can alias this
-            _Traits::assign(_My_data._Bx._Buf[0], _Elem());
-        }
+        _My_data._Myres  = _BUF_SIZE - 1;
+        // the _Traits::assign is last so the codegen doesn't think the char write can alias this
+        _Traits::assign(_My_data._Bx._Buf[0], _Elem());
     }
 
 public:
@@ -4958,6 +4990,13 @@ template <class _Elem, class _Traits, class _Alloc = allocator<_Elem>,
     enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
 basic_string(basic_string_view<_Elem, _Traits>, _Guide_size_type_t<_Alloc>, _Guide_size_type_t<_Alloc>,
     const _Alloc& = _Alloc()) -> basic_string<_Elem, _Traits, _Alloc>;
+
+#if _HAS_CXX23 && defined(__cpp_lib_concepts) // TRANSITION, GH-395
+template <_RANGES input_range _Rng, class _Alloc = allocator<_RANGES range_value_t<_Rng>>,
+    enable_if_t<_Is_allocator<_Alloc>::value, int> = 0>
+basic_string(from_range_t, _Rng&&, _Alloc = _Alloc())
+    -> basic_string<_RANGES range_value_t<_Rng>, char_traits<_RANGES range_value_t<_Rng>>, _Alloc>;
+#endif // _HAS_CXX23 && defined(__cpp_lib_concepts)
 #endif // _HAS_CXX17
 
 template <class _Elem, class _Traits, class _Alloc>
@@ -5197,7 +5236,7 @@ using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32
 
 template <class _Elem, class _Alloc>
 struct hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>>
-    : _Conditionally_enabled_hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>, _Is_EcharT<_Elem>> { // per LWG-3705
+    : _Conditionally_enabled_hash<basic_string<_Elem, char_traits<_Elem>, _Alloc>, _Is_EcharT<_Elem>> {
     _NODISCARD static size_t _Do_hash(const basic_string<_Elem, char_traits<_Elem>, _Alloc>& _Keyval) noexcept {
         return _Hash_array_representation(_Keyval.c_str(), _Keyval.size());
     }
@@ -5268,25 +5307,25 @@ inline namespace literals {
 #endif // ^^^ no workaround ^^^
 
         _NODISCARD _CONSTEXPR20_STRING_LITERALS string operator"" s(const char* _Str, size_t _Len) {
-            return string(_Str, _Len);
+            return string{_Str, _Len};
         }
 
         _NODISCARD _CONSTEXPR20_STRING_LITERALS wstring operator"" s(const wchar_t* _Str, size_t _Len) {
-            return wstring(_Str, _Len);
+            return wstring{_Str, _Len};
         }
 
 #ifdef __cpp_char8_t
         _NODISCARD _CONSTEXPR20_STRING_LITERALS basic_string<char8_t> operator"" s(const char8_t* _Str, size_t _Len) {
-            return basic_string<char8_t>(_Str, _Len);
+            return basic_string<char8_t>{_Str, _Len};
         }
 #endif // __cpp_char8_t
 
         _NODISCARD _CONSTEXPR20_STRING_LITERALS u16string operator"" s(const char16_t* _Str, size_t _Len) {
-            return u16string(_Str, _Len);
+            return u16string{_Str, _Len};
         }
 
         _NODISCARD _CONSTEXPR20_STRING_LITERALS u32string operator"" s(const char32_t* _Str, size_t _Len) {
-            return u32string(_Str, _Len);
+            return u32string{_Str, _Len};
         }
 
 #undef _CONSTEXPR20_STRING_LITERALS // TRANSITION, VSO-1273381

@@ -178,7 +178,7 @@ template <class _Ty, class _Derived, class _Alloc>
 struct _State_deleter : _Deleter_base<_Ty> { // manage allocator and deletion state objects
     _State_deleter(const _Alloc& _Al) : _My_alloc(_Al) {}
 
-    _State_deleter(const _State_deleter&) = delete;
+    _State_deleter(const _State_deleter&)            = delete;
     _State_deleter& operator=(const _State_deleter&) = delete;
 
     void _Delete(_Associated_state<_Ty>* _State) override;
@@ -322,8 +322,8 @@ public:
         _Set_value_raw(_Val, &_Lock, _At_thread_exit);
     }
 
-    void _Set_value_raw(const _Ty& _Val, unique_lock<mutex>* _Lock,
-        bool _At_thread_exit) { // store a result while inside a locked block
+    void _Set_value_raw(const _Ty& _Val, unique_lock<mutex>* _Lock, bool _At_thread_exit) {
+        // store a result while inside a locked block
         if (_Already_has_stored_result()) {
             _Throw_future_error2(future_errc::promise_already_satisfied);
         }
@@ -337,8 +337,8 @@ public:
         _Set_value_raw(_STD forward<_Ty>(_Val), &_Lock, _At_thread_exit);
     }
 
-    void _Set_value_raw(_Ty&& _Val, unique_lock<mutex>* _Lock,
-        bool _At_thread_exit) { // store a result while inside a locked block
+    void _Set_value_raw(_Ty&& _Val, unique_lock<mutex>* _Lock, bool _At_thread_exit) {
+        // store a result while inside a locked block
         if (_Already_has_stored_result()) {
             _Throw_future_error2(future_errc::promise_already_satisfied);
         }
@@ -352,8 +352,8 @@ public:
         _Set_exception_raw(_Exc, &_Lock, _At_thread_exit);
     }
 
-    void _Set_exception_raw(exception_ptr _Exc, unique_lock<mutex>* _Lock,
-        bool _At_thread_exit) { // store a result while inside a locked block
+    void _Set_exception_raw(exception_ptr _Exc, unique_lock<mutex>* _Lock, bool _At_thread_exit) {
+        // store a result while inside a locked block
         if (_Already_has_stored_result()) {
             _Throw_future_error2(future_errc::promise_already_satisfied);
         }
@@ -449,13 +449,13 @@ private:
     _Mydel* _Deleter;
 
 public:
-    _Associated_state(const _Associated_state&) = delete;
+    _Associated_state(const _Associated_state&)            = delete;
     _Associated_state& operator=(const _Associated_state&) = delete;
 };
 
 template <class _Ty, class _Derived, class _Alloc>
-void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(
-    _Associated_state<_Ty>* _State) { // delete _State and this using stored allocator
+void _State_deleter<_Ty, _Derived, _Alloc>::_Delete(_Associated_state<_Ty>* _State) {
+    // delete _State and this using stored allocator
     using _State_allocator = _Rebind_alloc_t<_Alloc, _Derived>;
     _State_allocator _St_alloc(_My_alloc);
 
@@ -916,7 +916,7 @@ public:
         return shared_future<_Ty>(_STD move(*this));
     }
 
-    future(const future&) = delete;
+    future(const future&)            = delete;
     future& operator=(const future&) = delete;
 };
 
@@ -950,7 +950,7 @@ public:
         return shared_future<_Ty&>(_STD move(*this));
     }
 
-    future(const future&) = delete;
+    future(const future&)            = delete;
     future& operator=(const future&) = delete;
 };
 
@@ -982,7 +982,7 @@ public:
 
     _NODISCARD shared_future<void> share() noexcept;
 
-    future(const future&) = delete;
+    future(const future&)            = delete;
     future& operator=(const future&) = delete;
 };
 
@@ -1151,7 +1151,7 @@ public:
         return _State._Is_ready_at_thread_exit();
     }
 
-    _Promise(const _Promise&) = delete;
+    _Promise(const _Promise&)            = delete;
     _Promise& operator=(const _Promise&) = delete;
 
 private:
@@ -1217,7 +1217,7 @@ public:
         _MyPromise._Get_state_for_set()._Set_exception(_Exc, true);
     }
 
-    promise(const promise&) = delete;
+    promise(const promise&)            = delete;
     promise& operator=(const promise&) = delete;
 
 private:
@@ -1271,7 +1271,7 @@ public:
         _MyPromise._Get_state_for_set()._Set_exception(_Exc, true);
     }
 
-    promise(const promise&) = delete;
+    promise(const promise&)            = delete;
     promise& operator=(const promise&) = delete;
 
 private:
@@ -1325,7 +1325,7 @@ public:
         _MyPromise._Get_state_for_set()._Set_exception(_Exc, true);
     }
 
-    promise(const promise&) = delete;
+    promise(const promise&)            = delete;
     promise& operator=(const promise&) = delete;
 
 private:
@@ -1434,7 +1434,7 @@ public:
         _MyPromise._Swap(_New_promise);
     }
 
-    packaged_task(const packaged_task&) = delete;
+    packaged_task(const packaged_task&)            = delete;
     packaged_task& operator=(const packaged_task&) = delete;
 
 private:
@@ -1494,9 +1494,9 @@ public:
         _STD terminate(); // Very Bad Things
     }
 
-    _Fake_no_copy_callable_adapter(_Fake_no_copy_callable_adapter&& _Other) = default;
+    _Fake_no_copy_callable_adapter(_Fake_no_copy_callable_adapter&& _Other)          = default;
     _Fake_no_copy_callable_adapter& operator=(const _Fake_no_copy_callable_adapter&) = delete;
-    _Fake_no_copy_callable_adapter& operator=(_Fake_no_copy_callable_adapter&&) = delete;
+    _Fake_no_copy_callable_adapter& operator=(_Fake_no_copy_callable_adapter&&)      = delete;
 
     auto operator()() -> decltype(_Invoke_stored(_STD move(_STD declval<_Storaget&>()))) {
         return _Invoke_stored(_STD move(_Storage));
@@ -1507,8 +1507,8 @@ private:
 };
 
 template <class _Ret, class _Fty>
-_Associated_state<typename _P_arg_type<_Ret>::type>* _Get_associated_state(
-    launch _Psync, _Fty&& _Fnarg) { // construct associated asynchronous state object for the launch type
+_Associated_state<typename _P_arg_type<_Ret>::type>* _Get_associated_state(launch _Psync, _Fty&& _Fnarg) {
+    // construct associated asynchronous state object for the launch type
     switch (_Psync) { // select launch type
     case launch::deferred:
         return new _Deferred_async_state<_Ret>(_STD forward<_Fty>(_Fnarg));

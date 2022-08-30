@@ -3,7 +3,7 @@
 
 #include <yvals_core.h>
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <synchapi.h>
 
 // This must be as small as possible, because its contents are

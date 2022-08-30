@@ -719,8 +719,8 @@ namespace permutable_test {
         using difference_type = int;
 
         struct proxy {
-            proxy()             = default;
-            proxy(proxy const&) = delete;
+            proxy()                        = default;
+            proxy(proxy const&)            = delete;
             proxy& operator=(proxy const&) = delete;
 
             operator int() const;

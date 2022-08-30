@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <iterator>
 #include <memory>
 #include <type_traits>
@@ -23,7 +23,7 @@ struct int_wrapper_copy {
         return *this;
     }
 
-    int_wrapper_copy(int_wrapper_copy&&) = delete;
+    int_wrapper_copy(int_wrapper_copy&&)            = delete;
     int_wrapper_copy& operator=(int_wrapper_copy&&) = delete;
 
     constexpr bool operator==(const int_wrapper_copy&) const = default;
@@ -35,7 +35,7 @@ struct int_wrapper_move {
     constexpr int_wrapper_move() = default;
     constexpr int_wrapper_move(const int v) : _val(v) {}
 
-    int_wrapper_move(const int_wrapper_move&) = delete;
+    int_wrapper_move(const int_wrapper_move&)            = delete;
     int_wrapper_move& operator=(const int_wrapper_move&) = delete;
 
     constexpr int_wrapper_move(int_wrapper_move&& other) : _val(exchange(other._val, -1)) {}
@@ -59,6 +59,16 @@ constexpr bool test() {
         int_wrapper_copy output[4] = {5, 6, 7, 8};
 
         const auto result = _Copy_unchecked(begin(input), end(input), begin(output));
+        static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_copy*>);
+        assert(result == end(output));
+        assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));
+    }
+
+    { // _Copy_n_unchecked4
+        int_wrapper_copy input[]   = {1, 2, 3, 4};
+        int_wrapper_copy output[4] = {5, 6, 7, 8};
+
+        const auto result = _Copy_n_unchecked4(begin(input), size(input), begin(output));
         static_assert(is_same_v<remove_const_t<decltype(result)>, int_wrapper_copy*>);
         assert(result == end(output));
         assert(equal(begin(expected_copy), end(expected_copy), begin(output), end(output)));

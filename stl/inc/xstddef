@@ -41,11 +41,33 @@ struct binary_function { // base class for binary functions
 };
 #endif // _HAS_AUTO_PTR_ETC
 
+#pragma warning(push)
+#pragma warning(disable : 5215) // '%s' a function parameter with a volatile qualified type is deprecated in C++20
+#pragma warning(disable : 5216) // '%s' a volatile qualified return type is deprecated in C++20
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
+#endif // __clang__
+
+template <class _Ty>
+_NODISCARD _Ty _Fake_copy_init(_Ty) noexcept;
+// _Fake_copy_init<T>(E):
+// (1) has type T [decay_t<decltype((E))> if T is deduced],
+// (2) is well-formed if and only if E is implicitly convertible to T and T is destructible, and
+// (3) is non-throwing if and only if both conversion from decltype((E)) to T and destruction of T are non-throwing.
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif // __clang__
+
+#pragma warning(pop)
+
 template <class _Ty = void>
 struct plus {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
 
     _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left + _Right;
@@ -54,9 +76,9 @@ struct plus {
 
 template <class _Ty = void>
 struct minus {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
 
     _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left - _Right;
@@ -65,9 +87,9 @@ struct minus {
 
 template <class _Ty = void>
 struct multiplies {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = _Ty;
 
     _NODISCARD constexpr _Ty operator()(const _Ty& _Left, const _Ty& _Right) const {
         return _Left * _Right;
@@ -76,66 +98,72 @@ struct multiplies {
 
 template <class _Ty = void>
 struct equal_to {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
-    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left == _Right))) /* strengthened */ {
         return _Left == _Right;
     }
 };
 
 template <class _Ty = void>
 struct not_equal_to {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
-    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left != _Right))) /* strengthened */ {
         return _Left != _Right;
     }
 };
 
 template <class _Ty = void>
 struct greater {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
-    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left > _Right))) /* strengthened */ {
         return _Left > _Right;
     }
 };
 
 template <class _Ty = void>
 struct less {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
-    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left < _Right))) /* strengthened */ {
         return _Left < _Right;
     }
 };
 
 template <class _Ty = void>
 struct greater_equal {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
-    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left >= _Right))) /* strengthened */ {
         return _Left >= _Right;
     }
 };
 
 template <class _Ty = void>
 struct less_equal {
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _FIRST_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef _Ty _SECOND_ARGUMENT_TYPE_NAME;
-    _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS typedef bool _RESULT_TYPE_NAME;
+    using _FIRST_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS  = _Ty;
+    using _SECOND_ARGUMENT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS = _Ty;
+    using _RESULT_TYPE_NAME _CXX17_DEPRECATE_ADAPTOR_TYPEDEFS          = bool;
 
-    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const {
+    _NODISCARD constexpr bool operator()(const _Ty& _Left, const _Ty& _Right) const
+        noexcept(noexcept(_Fake_copy_init<bool>(_Left <= _Right))) /* strengthened */ {
         return _Left <= _Right;
     }
 };

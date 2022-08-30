@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-# https://releases.llvm.org/13.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+# https://releases.llvm.org/14.0.0/tools/clang/docs/ClangFormatStyleOptions.html
 
 ---
 # Language:        Cpp
@@ -25,7 +25,6 @@ AlignOperands: AlignAfterOperator
 # AlignTrailingComments: true
 AlignTrailingComments: false
 # AllowAllArgumentsOnNextLine: true
-# AllowAllConstructorInitializersOnNextLine: true
 # AllowAllParametersOfDeclarationOnNextLine: true
 # AllowShortEnumsOnASingleLine: true
 # AllowShortBlocksOnASingleLine: Never
@@ -77,8 +76,8 @@ BreakBeforeBinaryOperators: NonAssignment
 # ColumnLimit:     80
 ColumnLimit:     120
 # CommentPragmas:  '^ IWYU pragma:'
+# QualifierAlignment: Leave
 # CompactNamespaces: false
-# ConstructorInitializerAllOnOneLineOrOnePerLine: false
 # ConstructorInitializerIndentWidth: 4
 # ContinuationIndentWidth: 4
 # Cpp11BracedListStyle: true
@@ -89,6 +88,10 @@ DeriveLineEnding: false
 # EmptyLineAfterAccessModifier: Never
 # EmptyLineBeforeAccessModifier: LogicalBlock
 # ExperimentalAutoDetectBinPacking: false
+# PackConstructorInitializers: BinPack
+# BasedOnStyle:    ''
+# ConstructorInitializerAllOnOneLineOrOnePerLine: false
+# AllowAllConstructorInitializersOnNextLine: true
 # FixNamespaceComments: true
 # ForEachMacros:
 #   - foreach
@@ -162,6 +165,7 @@ NamespaceIndentation: All
 # PenaltyBreakBeforeFirstCallParameter: 19
 # PenaltyBreakComment: 300
 # PenaltyBreakFirstLessLess: 120
+# PenaltyBreakOpenParenthesis: 0
 # PenaltyBreakString: 1000
 # PenaltyBreakTemplateDeclaration: 10
 # PenaltyExcessCharacter: 1000000
@@ -172,6 +176,8 @@ PointerAlignment: Left
 # PPIndentWidth:   -1
 # ReferenceAlignment: Pointer
 # ReflowComments:  true
+# RemoveBracesLLVM: false
+# SeparateDefinitionBlocks: Leave
 # ShortNamespaceLines: 1
 # SortIncludes:    CaseSensitive
 # SortJavaStaticImport: Before
@@ -186,6 +192,14 @@ SpaceAfterCStyleCast: true
 # SpaceBeforeCtorInitializerColon: true
 # SpaceBeforeInheritanceColon: true
 # SpaceBeforeParens: ControlStatements
+# SpaceBeforeParensOptions:
+#   AfterControlStatements: true
+#   AfterForeachMacros: true
+#   AfterFunctionDefinitionName: false
+#   AfterFunctionDeclarationName: false
+#   AfterIfMacros:   true
+#   AfterOverloadedOperator: false
+#   BeforeNonEmptyParentheses: false
 # SpaceAroundPointerQualifiers: Default
 # SpaceBeforeRangeBasedForLoopColon: true
 # SpaceInEmptyBlock: false

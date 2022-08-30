@@ -9,8 +9,10 @@
 #include <queue>
 #include <set>
 #include <stack>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #if _HAS_CXX20
@@ -50,3 +52,7 @@ struct __declspec(dllexport) ExportedStack : stack<int> {};
 struct __declspec(dllexport) ExportedSpan : span<int> {};
 struct __declspec(dllexport) ExportedSpanThree : span<int, 3> {};
 #endif // _HAS_CXX20
+
+// Test GH-3013 "<utility>: pair::swap(const pair&) interacts badly with __declspec(dllexport)"
+struct __declspec(dllexport) ExportedPair : pair<int, int> {};
+struct __declspec(dllexport) ExportedTuple : tuple<int, int, int> {};

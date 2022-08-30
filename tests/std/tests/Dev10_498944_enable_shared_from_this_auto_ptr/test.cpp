@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _HAS_AUTO_PTR_ETC 1
-#include <assert.h>
+#include <cassert>
 #include <memory>
 #include <utility>
 

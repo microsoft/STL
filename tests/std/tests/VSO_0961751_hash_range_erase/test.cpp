@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #define _STL_INTERNAL_CHECK_EXHAUSTIVE
-#include <assert.h>
+#include <cassert>
+#include <cstdlib>
 #include <functional>
 #include <iterator>
-#include <limits.h>
+#include <limits>
 #include <memory>
 #include <stdexcept>
-#include <stdlib.h>
 #include <type_traits>
 #include <unordered_set>
 #include <utility>
@@ -18,14 +18,16 @@
 
 using namespace std;
 
+constexpr auto size_max = (numeric_limits<size_t>::max)();
+
 static size_t liveness_alive_objects;
 
 template <class T>
 struct liveness_allocator {
     using value_type = T;
 
-    liveness_allocator()                          = default;
-    liveness_allocator(const liveness_allocator&) = default;
+    liveness_allocator()                                     = default;
+    liveness_allocator(const liveness_allocator&)            = default;
     liveness_allocator& operator=(const liveness_allocator&) = default;
     template <class U, enable_if_t<!is_same_v<T, U>, int> = 0>
     liveness_allocator(const liveness_allocator<U>&) {}
@@ -215,17 +217,17 @@ struct throwing_hash {
 };
 
 void fill_throwing_elems(unordered_set<elem, throwing_hash>& theHash) {
-    const size_t oldAllowed = exchange(allowed_hash_calls, SIZE_MAX);
-    allowed_hash_calls      = SIZE_MAX;
+    const size_t oldAllowed = exchange(allowed_hash_calls, size_max);
+    allowed_hash_calls      = size_max;
     theHash.max_load_factor(2.0f);
     for (size_t idx = 0; idx < 50; ++idx) {
         theHash.insert({0, idx});
     }
     for (size_t idx = 50; idx < 100; ++idx) {
-        theHash.insert({SIZE_MAX & (~size_t{15}), idx});
+        theHash.insert({size_max & (~size_t{15}), idx});
     }
     for (size_t idx = 100; idx < 150; ++idx) {
-        theHash.insert({SIZE_MAX, idx});
+        theHash.insert({size_max, idx});
     }
     // this loop will terminate because the max load factor is 2
     const auto buckets = theHash.bucket_count();
@@ -241,7 +243,7 @@ void test_case_throwing_hash_not_called_in_clear() {
     allowed_hash_calls = 0; // ban calling the hash function
     theHash.clear(); // should choose the 'bulk' strategy always
     theHash.clear(); // should choose the 'no-op' strategy always
-    allowed_hash_calls = SIZE_MAX;
+    allowed_hash_calls = size_max;
     theHash.insert({0, 0});
     allowed_hash_calls = 0;
     theHash.clear(); // would want to choose the 'elementwise' strategy, but can't do so because the hash is throwing
@@ -250,25 +252,25 @@ void test_case_throwing_hash_not_called_in_clear() {
 void test_case_consistent_after_throwing_hash() {
     unordered_set<elem, throwing_hash> theHash;
     fill_throwing_elems(theHash);
-    allowed_hash_calls = SIZE_MAX;
+    allowed_hash_calls = size_max;
     size_t total_hash_calls;
     { // determine how many hash calls are necessary
         auto theCopy       = theHash;
-        allowed_hash_calls = SIZE_MAX;
+        allowed_hash_calls = size_max;
         theCopy.erase(theCopy.begin(), theCopy.end());
-        total_hash_calls = SIZE_MAX - allowed_hash_calls;
+        total_hash_calls = size_max - allowed_hash_calls;
     }
 
     // throw for each number of calls less than that and make sure the container is okay
     for (size_t callsNow = 0; callsNow < total_hash_calls; ++callsNow) {
-        allowed_hash_calls = SIZE_MAX;
+        allowed_hash_calls = size_max;
         auto theCopy       = theHash;
         try {
             allowed_hash_calls = callsNow;
             theCopy.erase(theCopy.begin(), theCopy.end());
             abort();
         } catch (const runtime_error&) {
-            allowed_hash_calls = SIZE_MAX;
+            allowed_hash_calls = size_max;
             theCopy._Stl_internal_check_container_invariants();
         }
     }
@@ -319,15 +321,15 @@ struct erase_bucket_consistency_fixture {
             theHash.insert({0, idx});
         }
         for (size_t idx = 5; idx < 10; ++idx) {
-            theHash.insert({SIZE_MAX & (~size_t{15}), idx});
+            theHash.insert({size_max & (~size_t{15}), idx});
         }
         for (size_t idx = 10; idx < 15; ++idx) {
-            theHash.insert({SIZE_MAX, idx});
+            theHash.insert({size_max, idx});
         }
 
         zeroBucket = theHash.bucket({0, 0});
-        midBucket  = theHash.bucket({SIZE_MAX & (~size_t{15}), 10});
-        maxBucket  = theHash.bucket({SIZE_MAX, 20});
+        midBucket  = theHash.bucket({size_max & (~size_t{15}), 10});
+        maxBucket  = theHash.bucket({size_max, 20});
     }
 
     void assert_equal(size_t expected, size_t actual) {
@@ -446,7 +448,7 @@ void test_case_elementwise_clear_called() {
     {
         unordered_set<elem, counting_hash> theHash;
         theHash.max_load_factor(0.1f); // 10 buckets per element
-        for (size_t idx = 1; idx < SIZE_MAX / 2; idx <<= 1) {
+        for (size_t idx = 1; idx < size_max / 2; idx <<= 1) {
             theHash.insert({idx, idx});
         }
 

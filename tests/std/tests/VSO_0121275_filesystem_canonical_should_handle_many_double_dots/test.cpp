@@ -4,13 +4,13 @@
 #define _SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cwctype>
 #include <experimental/filesystem>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <system_error>
-#include <wctype.h>
 
 #include <Windows.h>
 

@@ -52,7 +52,7 @@ namespace {
 
         constexpr _Constexpr_excptptr_immortalize_impl() noexcept : _Storage{} {}
 
-        _Constexpr_excptptr_immortalize_impl(const _Constexpr_excptptr_immortalize_impl&) = delete;
+        _Constexpr_excptptr_immortalize_impl(const _Constexpr_excptptr_immortalize_impl&)            = delete;
         _Constexpr_excptptr_immortalize_impl& operator=(const _Constexpr_excptptr_immortalize_impl&) = delete;
 
         _MSVC_NOOP_DTOR ~_Constexpr_excptptr_immortalize_impl() {
@@ -79,7 +79,7 @@ namespace {
     _Ty& _Immortalize() { // return a reference to an object that will live forever
         static once_flag _Flag;
         alignas(_Ty) static unsigned char _Storage[sizeof(_Ty)];
-        if (_Execute_once(_Flag, _Immortalize_impl<_Ty>, &_Storage) == 0) {
+        if (!_Execute_once(_Flag, _Immortalize_impl<_Ty>, &_Storage)) {
             // _Execute_once should never fail if the callback never fails
             _STD terminate();
         }

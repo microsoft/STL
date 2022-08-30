@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <compare>
 #include <concepts>
 #include <cstddef>
@@ -1543,8 +1543,8 @@ namespace borrowed_range_testing {
 
 template <bool AllowNonConst, bool AllowConst, bool AllowSize>
 struct arbitrary_range {
-    arbitrary_range()                  = default;
-    arbitrary_range(arbitrary_range&&) = default;
+    arbitrary_range()                             = default;
+    arbitrary_range(arbitrary_range&&)            = default;
     arbitrary_range& operator=(arbitrary_range&&) = default;
 
     int* begin() requires AllowNonConst;
@@ -1565,8 +1565,8 @@ using immutable_sized_range      = arbitrary_range<false, true, true>;
 
 template <class Base>
 struct badsized_range : Base { // size() launches the missiles.
-    badsized_range()                 = default;
-    badsized_range(badsized_range&&) = default;
+    badsized_range()                            = default;
+    badsized_range(badsized_range&&)            = default;
     badsized_range& operator=(badsized_range&&) = default;
 
     [[noreturn]] int size() const {
@@ -1587,8 +1587,8 @@ constexpr bool ranges::disable_sized_range<badsized_range<T>> = true;
 
 // "strange" in that const-ness affects the iterator type
 struct strange_view {
-    strange_view()               = default;
-    strange_view(strange_view&&) = default;
+    strange_view()                          = default;
+    strange_view(strange_view&&)            = default;
     strange_view& operator=(strange_view&&) = default;
 
     int* begin();
@@ -1608,6 +1608,23 @@ struct strange_view5 : strange_view4, ranges::view_interface<strange_view5> {
 // Verify that specializations of view_interface do not inherit from view_base
 STATIC_ASSERT(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<strange_view4>>);
 STATIC_ASSERT(!std::is_base_of_v<std::ranges::view_base, ranges::view_interface<strange_view5>>);
+
+// Verify that enable_view<T&> or enable_view<T&&> is never true
+STATIC_ASSERT(ranges::enable_view<strange_view4>);
+STATIC_ASSERT(!ranges::enable_view<strange_view4&>);
+STATIC_ASSERT(!ranges::enable_view<const strange_view4&>);
+STATIC_ASSERT(!ranges::enable_view<strange_view4&&>);
+STATIC_ASSERT(!ranges::enable_view<const strange_view4&&>);
+
+// Verify that the derived-from-view_interface mechanism can handle uses of incomplete types whenever possible
+struct incomplet;
+
+template <class T>
+struct value_holder {
+    T t;
+};
+
+STATIC_ASSERT(!ranges::enable_view<value_holder<incomplet>*>);
 
 template <>
 inline constexpr bool ranges::enable_view<strange_view> = true;

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
 #include <execution>
 #include <functional>
 #include <iterator>
@@ -117,21 +117,21 @@ void test_case_transform_inclusive_scan_init_parallel_associative_in_place(const
 struct inputType {
     inputType() = delete;
     /* implicit */ inputType(int) {} // so that the test can make an array
-    inputType(const inputType&) = delete;
+    inputType(const inputType&)            = delete;
     inputType& operator=(const inputType&) = delete;
 };
 
 struct transformedType {
     transformedType() = delete;
     /* implicit */ transformedType(int) {}
-    transformedType(const transformedType&) = delete;
+    transformedType(const transformedType&)            = delete;
     transformedType& operator=(const transformedType&) = delete;
 };
 
 struct bopResult {
     bopResult() = delete;
     /* implicit */ bopResult(int) {}
-    bopResult(const bopResult&) = delete;
+    bopResult(const bopResult&)            = delete;
     bopResult& operator=(const bopResult&) = delete;
 };
 
@@ -141,10 +141,10 @@ struct intermediateType {
     explicit intermediateType(transformedType&&) {} // Intermediate tmp(unary_op(*first))
     // Intermediate tmp(binary_op((one of tmp, move(tmp), unary_op(*first)), unary_op(*first)))
     explicit intermediateType(bopResult&&) {}
-    intermediateType(const intermediateType&) = delete;
-    intermediateType(intermediateType&&)      = default; // tmp = move(tmp)
+    intermediateType(const intermediateType&)            = delete;
+    intermediateType(intermediateType&&)                 = default; // tmp = move(tmp)
     intermediateType& operator=(const intermediateType&) = delete;
-    intermediateType& operator=(intermediateType&&) = delete;
+    intermediateType& operator=(intermediateType&&)      = delete;
     // tmp = binary_op((one of tmp, move(tmp), *first), *first)
     intermediateType& operator=(bopResult&&) {
         return *this;
@@ -154,9 +154,9 @@ struct intermediateType {
 struct outputType {
     outputType() = delete;
     /* implicit */ outputType(int) {} // so that the test can make an array
-    outputType(const outputType&) = delete;
+    outputType(const outputType&)            = delete;
     outputType& operator=(const outputType&) = delete;
-    outputType& operator=(outputType&&) = delete;
+    outputType& operator=(outputType&&)      = delete;
 
     // in the first pass
     outputType& operator=(intermediateType&) {

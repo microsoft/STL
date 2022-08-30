@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 #include <array>
+#include <cstddef>
 #include <iterator>
-#include <stddef.h>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -17,7 +17,7 @@ class int_iterator // models InputIterator
 public:
     explicit int_iterator(int* start) : m_ptr(start) {}
 
-    int_iterator(const int_iterator&) = default;
+    int_iterator(const int_iterator&)            = default;
     int_iterator& operator=(const int_iterator&) = default;
 
     int_iterator& operator++() { // prefix

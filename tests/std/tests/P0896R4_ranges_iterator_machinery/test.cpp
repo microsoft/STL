@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-#include <assert.h>
+#include <cassert>
 #include <compare>
 #include <concepts>
 #include <iterator>
@@ -67,8 +67,8 @@ struct empty_type {
 };
 
 struct move_only {
-    move_only()            = default;
-    move_only(move_only&&) = default;
+    move_only()                       = default;
+    move_only(move_only&&)            = default;
     move_only& operator=(move_only&&) = default;
 };
 
@@ -1072,7 +1072,7 @@ namespace iterator_cust_move_test {
 #if defined(__clang__) || defined(__EDG__) // TRANSITION, VSO-1008447
     STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&)(int)>);
 #else // ^^^ no workaround / workaround vvv
-    STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int(&&)(int)>);
+    STATIC_ASSERT(same_as<iter_rvalue_reference_t<int (*)(int)>, int (&&)(int)>);
 #endif // TRANSITION, VSO-1008447
     STATIC_ASSERT(ranges::iter_move (&f)(42) == 43);
     STATIC_ASSERT(noexcept(ranges::iter_move(&f)));
@@ -1131,7 +1131,7 @@ namespace iterator_cust_swap_test {
         void iter_swap(T, U) = delete;
 
         template <class T, class U = T>
-        concept bullet1 = requires(T && t, U && u) {
+        concept bullet1 = requires(T&& t, U&& u) {
             iter_swap(std::forward<T>(t), std::forward<U>(u));
         };
     } // namespace adl_barrier
@@ -2959,7 +2959,7 @@ namespace iter_ops {
             trace t{};
             I first{t};
             same_as<iter_difference_t<I>> auto const result = distance(move(first), default_sentinel);
-            STATIC_ASSERT(!noexcept(distance(move(first), default_sentinel))); // No conditional noexcept
+            STATIC_ASSERT(noexcept(distance(move(first), default_sentinel)));
             assert(result == sentinel_position);
             assert((t == trace{.compares_ = sentinel_position + 1, .increments_ = sentinel_position}));
         }
@@ -3215,11 +3215,11 @@ namespace move_iterator_test {
             }
         };
 
-        input_iter()                                   = default;
-        input_iter(input_iter const&) requires CanCopy = default;
-        input_iter(input_iter&&)                       = default;
+        input_iter()                                              = default;
+        input_iter(input_iter const&) requires CanCopy            = default;
+        input_iter(input_iter&&)                                  = default;
         input_iter& operator=(input_iter const&) requires CanCopy = default;
-        input_iter& operator=(input_iter&&) = default;
+        input_iter& operator=(input_iter&&)                       = default;
 
         reference operator*() const;
         input_iter& operator++();
@@ -3271,17 +3271,19 @@ struct std::common_type<move_iterator_test::input_iter<true>::rvalue_reference,
 
 namespace move_iterator_test {
     // Validate the iterator_concept/iterator_category metaprogramming
-    STATIC_ASSERT(same_as<move_iterator<simple_contiguous_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_contiguous_iter<>>::iterator_concept, random_access_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_contiguous_iter<>>::iterator_category, random_access_iterator_tag>);
-    STATIC_ASSERT(same_as<move_iterator<simple_random_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_random_iter<>>::iterator_concept, random_access_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_random_iter<>>::iterator_category, random_access_iterator_tag>);
-    STATIC_ASSERT(same_as<move_iterator<simple_bidi_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_bidi_iter<>>::iterator_concept, bidirectional_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_bidi_iter<>>::iterator_category, bidirectional_iterator_tag>);
-    STATIC_ASSERT(same_as<move_iterator<simple_forward_iter<>>::iterator_concept, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<simple_forward_iter<>>::iterator_concept, forward_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_forward_iter<>>::iterator_category, forward_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(same_as<move_iterator<simple_input_iter>::iterator_category, input_iterator_tag>);
+    STATIC_ASSERT(same_as<move_iterator<input_iter<true>>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<true>>>);
+    STATIC_ASSERT(same_as<move_iterator<input_iter<false>>::iterator_concept, input_iterator_tag>);
     STATIC_ASSERT(!has_member_iter_category<move_iterator<input_iter<false>>>);
 
     // Validate that move_iterator<some_proxy_iterator>::reference is iter_rvalue_reference_t<some_proxy_iterator>
@@ -3338,8 +3340,8 @@ namespace move_iterator_test {
         typename move_sentinel<T>;
     };
     struct moveonly {
-        moveonly()           = default;
-        moveonly(moveonly&&) = default;
+        moveonly()                      = default;
+        moveonly(moveonly&&)            = default;
         moveonly& operator=(moveonly&&) = default;
     };
     STATIC_ASSERT(!CanMoveSentinel<void>);

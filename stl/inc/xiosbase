@@ -551,7 +551,7 @@ private:
     static void __CLRCALL_PURE_OR_CDECL _Ios_base_dtor(ios_base*);
 
 public:
-    ios_base(const ios_base&) = delete;
+    ios_base(const ios_base&)            = delete;
     ios_base& operator=(const ios_base&) = delete;
 };
 _STD_END
