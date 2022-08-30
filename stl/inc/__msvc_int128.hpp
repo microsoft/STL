@@ -1487,7 +1487,7 @@ inline namespace literals {
                     return {_U128_parse_status::_Valid, 0};
                 } else {
                     constexpr char _Char_seq[]{_Chars...};
-                    constexpr auto _U128_max = (_STD numeric_limits<_Unsigned128>::max)();
+                    constexpr auto _U128_max = (numeric_limits<_Unsigned128>::max)();
 
                     _Unsigned128 _Val{};
                     for (const char _Ch : _Char_seq) {
