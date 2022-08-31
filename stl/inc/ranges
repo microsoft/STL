@@ -2503,17 +2503,17 @@ namespace ranges {
 
             // clang-format off
             _NODISCARD constexpr auto _Unwrapped() const&
-                noexcept(noexcept(_Sentinel<_Const, false>{_Get_unwrapped(_Last)}))
-                requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_t>&> {
+                noexcept(noexcept(_Sentinel<_Const, false>{_Last._Unwrapped()}))
+                requires _Wrapped && _Unwrappable_sentinel_for<sentinel_t<_Base_t>, const iterator_t<_Base_t>&> {
                 // clang-format on
-                return _Sentinel<_Const, false>{_Get_unwrapped(_Last)};
+                return _Sentinel<_Const, false>{_Last._Unwrapped()};
             }
             // clang-format off
             _NODISCARD constexpr auto _Unwrapped() &&
-                noexcept(noexcept(_Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last))}))
-                requires _Wrapped && _Unwrappable_v<iterator_t<_Base_t>> {
+                noexcept(noexcept(_Sentinel<_Const, false>{_STD move(_Last)._Unwrapped()}))
+                requires _Wrapped && _Unwrappable_sentinel_for<sentinel_t<_Base_t>, iterator_t<_Base_t>> {
                 // clang-format on
-                return _Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last))};
+                return _Sentinel<_Const, false>{_STD move(_Last)._Unwrapped()};
             }
 
             static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_t<_Base_t>>;
@@ -2762,17 +2762,17 @@ namespace ranges {
 
             // clang-format off
             _NODISCARD constexpr auto _Unwrapped() const&
-                noexcept(noexcept(_Sentinel<_Const, false>{_Get_unwrapped(_Last), _Pred}))
-                requires _Wrapped && _Unwrappable_v<const iterator_t<_Base_t>&> {
+                noexcept(noexcept(_Sentinel<_Const, false>{_Last._Unwrapped(), _Pred}))
+                requires _Wrapped && _Unwrappable_sentinel_for<sentinel_t<_Base_t>, const iterator_t<_Base_t>&> {
                 // clang-format on
-                return _Sentinel<_Const, false>{_Get_unwrapped(_Last), _Pred};
+                return _Sentinel<_Const, false>{_Last._Unwrapped(), _Pred};
             }
             // clang-format off
             _NODISCARD constexpr auto _Unwrapped() &&
-                noexcept(noexcept(_Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last)), _Pred}))
-                requires _Wrapped && _Unwrappable_v<iterator_t<_Base_t>> {
+                noexcept(noexcept(_Sentinel<_Const, false>{_STD move(_Last)._Unwrapped(), _Pred}))
+                requires _Wrapped && _Unwrappable_sentinel_for<sentinel_t<_Base_t>, iterator_t<_Base_t>> {
                 // clang-format on
-                return _Sentinel<_Const, false>{_Get_unwrapped(_STD move(_Last)), _Pred};
+                return _Sentinel<_Const, false>{_STD move(_Last)._Unwrapped(), _Pred};
             }
 
             static constexpr bool _Unwrap_when_unverified = _Do_unwrap_when_unverified_v<iterator_t<_Base_t>>;

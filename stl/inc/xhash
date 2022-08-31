@@ -830,7 +830,7 @@ public:
         return _List.max_size();
     }
 
-    _NODISCARD bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER bool empty() const noexcept {
         return _List.empty();
     }
 

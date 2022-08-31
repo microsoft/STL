@@ -1922,7 +1922,7 @@ public:
         return _Mypair._Myval2._Mylast;
     }
 
-    _NODISCARD _CONSTEXPR20 bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
         auto& _My_data = _Mypair._Myval2;
         return _My_data._Myfirst == _My_data._Mylast;
     }
@@ -3224,7 +3224,7 @@ public:
         return _Ints_max * _VBITS;
     }
 
-    _NODISCARD _CONSTEXPR20 bool empty() const noexcept {
+    _NODISCARD_EMPTY_MEMBER _CONSTEXPR20 bool empty() const noexcept {
         return this->_Mysize == 0;
     }
 

@@ -475,12 +475,26 @@
 // _HAS_NODISCARD (in vcruntime.h) controls:
 // [[nodiscard]] attributes on STL functions
 
+// TRANSITION, This should go to vcruntime.h
+#ifndef __has_cpp_attribute
+#define _NODISCARD_MSG(_Msg)
+#elif __has_cpp_attribute(nodiscard) >= 201907L
+#define _NODISCARD_MSG(_Msg) [[nodiscard(_Msg)]]
+#elif __has_cpp_attribute(nodiscard) >= 201603L
+#define _NODISCARD_MSG(_Msg) [[nodiscard]]
+#else
+#define _NODISCARD_MSG(_Msg)
+#endif
+
 #ifndef __has_cpp_attribute
 #define _NODISCARD_CTOR
+#define _NODISCARD_CTOR_MSG(_Msg)
 #elif __has_cpp_attribute(nodiscard) >= 201907L
-#define _NODISCARD_CTOR _NODISCARD
+#define _NODISCARD_CTOR           _NODISCARD
+#define _NODISCARD_CTOR_MSG(_Msg) _NODISCARD_MSG(_Msg)
 #else
 #define _NODISCARD_CTOR
+#define _NODISCARD_CTOR_MSG(_Msg)
 #endif
 
 #if defined(__CUDACC__) && !defined(__clang__) // TRANSITION, VSO-568006
@@ -488,6 +502,110 @@
 #else // ^^^ workaround ^^^ / vvv no workaround vvv
 #define _NODISCARD_FRIEND _NODISCARD friend
 #endif // TRANSITION, VSO-568006
+
+#define _NODISCARD_REMOVE_ALG                                                                                    \
+    _NODISCARD_MSG("The 'remove' and 'remove_if' algorithms return the iterator past the last element "          \
+                   "that should be kept. You need to call container.erase(result, container.end()) afterwards. " \
+                   "In C++20, 'std::erase' and 'std::erase_if' are simpler replacements for these two steps.")
+
+#define _NODISCARD_UNIQUE_ALG                                                                                \
+    _NODISCARD_MSG("The 'unique' algorithm returns the iterator past the last element that should be kept. " \
+                   "You need to call container.erase(result, container.end()) afterwards.")
+
+#define _NODISCARD_EMPTY_MEMBER                                                                                    \
+    _NODISCARD_MSG(                                                                                                \
+        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                             \
+        "Use the 'clear()' member function if you want to erase all elements.")
+
+#define _NODISCARD_EMPTY_ARRAY_MEMBER                                                                              \
+    _NODISCARD_MSG(                                                                                                \
+        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                             \
+        "There's no way to clear an array as its size is fixed.")
+
+#define _NODISCARD_EMPTY_STACKTRACE_MEMBER                                                                         \
+    _NODISCARD_MSG(                                                                                                \
+        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                             \
+        "'std::stacktrace' can be cleared by assigning an empty value to it.")
+
+#define _NODISCARD_EMPTY_NON_MEMBER                                                                            \
+    _NODISCARD_MSG(                                                                                            \
+        "This function returns a bool indicating whether the container or container-like object is empty and " \
+        "has no other effects. It is not useful to call this function and discard the return value.")
+
+#define _NODISCARD_EMPTY_ADAPTOR_MEMBER                                                                            \
+    _NODISCARD_MSG(                                                                                                \
+        "This member function returns a bool indicating whether the container is empty and has no other effects. " \
+        "It is not useful to call this member function and discard the return value. "                             \
+        "Container adaptors don't provide 'clear()' member functions, but you can assign an empty object to them.")
+
+#define _NODISCARD_BARRIER_TOKEN \
+    _NODISCARD_MSG("The token from 'arrive()' should not be discarded; it should be passed to 'wait()'.")
+
+#define _NODISCARD_TRY_WAIT                                                                                    \
+    _NODISCARD_MSG(                                                                                            \
+        "This member function returns the state of the synchronization object and does not do anything else; " \
+        "it is not useful to call this member function and discard the return value.")
+
+#define _NODISCARD_TRY_CHANGE_STATE                                                                    \
+    _NODISCARD_MSG("This function returns whether the operation succeeded in modifying object state. " \
+                   "It is dangerous to ignore the return value.")
+
+#define _NODISCARD_SMART_PTR_ALLOC                                                                            \
+    _NODISCARD_MSG("This function constructs an object wrapped by a smart pointer and has no other effects; " \
+                   "it is not useful to call this function and discard the return value.")
+
+#define _NODISCARD_RAW_PTR_ALLOC                                                \
+    _NODISCARD_MSG("This function allocates memory and returns a raw pointer. " \
+                   "Discarding the return value will cause a memory leak.")
+
+#define _NODISCARD_ASSUME_ALIGNED                                                                                    \
+    _NODISCARD_MSG("'std::assume_aligned' has a potential effect on the return value (not on the passed argument). " \
+                   "It is not useful to call 'std::assume_aligned' and discard the return value.")
+
+#define _NODISCARD_LAUNDER                                                                                    \
+    _NODISCARD_MSG("'std::launder' has a potential effect on the return value (not on the passed argument). " \
+                   "It is not useful to call 'std::launder' and discard the return value.")
+
+#ifdef _SILENCE_NODISCARD_LOCK_WARNINGS
+
+#define _NODISCARD_LOCK
+#define _NODISCARD_CTOR_LOCK
+
+#else // ^^^ defined(_SILENCE_NODISCARD_LOCK_WARNINGS) ^^^ / vvv !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) vvv
+
+#define _NODISCARD_LOCK                                                                                                \
+    _NODISCARD_MSG("A lock should be stored in a variable to protect the scope. If you're intentionally constructing " \
+                   "a temporary to protect the rest of the current expression using the comma operator, you can cast " \
+                   "the temporary to void or define _SILENCE_NODISCARD_LOCK_WARNINGS to suppress this warning.")
+
+#define _NODISCARD_CTOR_LOCK                                                                                \
+    _NODISCARD_CTOR_MSG(                                                                                    \
+        "A lock should be stored in a variable to protect the scope. If you're intentionally constructing " \
+        "a temporary to protect the rest of the current expression using the comma operator, you can cast " \
+        "the temporary to void or define _SILENCE_NODISCARD_LOCK_WARNINGS to suppress this warning.")
+
+#endif // ^^^ !defined(_SILENCE_NODISCARD_LOCK_WARNINGS) ^^^
+
+#define _NODISCARD_CTOR_THREAD                                                     \
+    _NODISCARD_CTOR_MSG("This temporary 'std::thread' is not joined or detached, " \
+                        "so 'std::terminate' will be called at the end of the statement.")
+
+#define _NODISCARD_CTOR_JTHREAD                                                                            \
+    _NODISCARD_CTOR_MSG("This temporary 'std::jthread' is implicitly joined at the end of the statement. " \
+                        "If this is intentional, you can add '.join()' to suppress this warning. "         \
+                        "Otherwise, this 'std::jthread' should be stored in a variable.")
+
+#define _NODISCARD_ASYNC                                                                                           \
+    _NODISCARD_MSG("The result of 'std::async' should be stored in a variable. If the return value is discarded, " \
+                   "the temporary 'std::future' is destroyed, waiting for an async result or evaluating "          \
+                   "a deferred result, thus defeating the purpose of 'std::async'.")
+
+#define _NODISCARD_GET_FUTURE                                                                              \
+    _NODISCARD_MSG("Getting the future more than once or not satisfying the obtained future will throw a " \
+                   "future_error exception, so it is incorrect to call 'get_future' and discard the return value.")
 
 #pragma push_macro("msvc")
 #pragma push_macro("known_semantics")
@@ -1232,6 +1350,8 @@ _EMIT_STL_ERROR(STL1004, "C++98 unexpected() is incompatible with C++23 unexpect
 // STL4039 is used to warn that "The contents of <coroutine> are not available with /await."
 
 // next warning number: STL4040
+
+// next error number: STL1006
 
 // P0619R4 Removing C++17-Deprecated Features
 #ifndef _HAS_FEATURES_REMOVED_IN_CXX20
