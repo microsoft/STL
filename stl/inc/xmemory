@@ -1538,13 +1538,13 @@ namespace ranges {
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
         } else {
-            _IFirst += _Count;
+            _IFirst += static_cast<iter_difference_t<_InIt>>(_Count);
         }
 
         if constexpr (is_pointer_v<_OutIt>) {
             _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count_bytes);
         } else {
-            _OFirst += _Count;
+            _OFirst += static_cast<iter_difference_t<_OutIt>>(_Count);
         }
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
@@ -1593,13 +1593,13 @@ namespace ranges {
         if constexpr (is_pointer_v<_InIt>) {
             _IFirst = reinterpret_cast<_InIt>(_IFirst_ch + _Count_bytes);
         } else {
-            _IFirst += _Count_bytes / sizeof(iter_value_t<_InIt>);
+            _IFirst += static_cast<iter_difference_t<_InIt>>(_Count_bytes / sizeof(iter_value_t<_InIt>));
         }
 
         if constexpr (is_pointer_v<_OutIt>) {
             _OFirst = reinterpret_cast<_OutIt>(_OFirst_ch + _Count_bytes);
         } else {
-            _OFirst += _Count_bytes / sizeof(iter_value_t<_OutIt>);
+            _OFirst += static_cast<iter_difference_t<_OutIt>>(_Count_bytes / sizeof(iter_value_t<_OutIt>));
         }
         return {_STD move(_IFirst), _STD move(_OFirst)};
     }
@@ -1682,8 +1682,15 @@ _CONSTEXPR20 _Alloc_ptr_t<_Alloc> _Uninitialized_copy(
     // note: only called internally from elsewhere in the STL
     using _Ptrval = typename _Alloc::value_type*;
 
+#ifdef __cpp_lib_concepts
+    auto _UFirst = _RANGES _Unwrap_iter<_Se>(_STD move(_First));
+    auto _ULast  = _RANGES _Unwrap_sent<_InIt>(_STD move(_Last));
+#else // ^^^ __cpp_lib_concepts / !__cpp_lib_concepts vvv
+    // In pre-concepts world, _Uninitialized_copy should only ever be called with an iterator
+    // and sentinel of the same type, so `_Get_unwrapped` is fine to call.
     auto _UFirst = _Get_unwrapped(_STD move(_First));
-    auto _ULast  = _Get_unwrapped(_STD move(_Last));
+    auto _ULast = _Get_unwrapped(_STD move(_Last));
+#endif // ^^^ !__cpp_lib_concepts ^^^
 
     constexpr bool _Can_memmove = _Sent_copy_cat<decltype(_UFirst), decltype(_ULast), _Ptrval>::_Bitcopy_constructible
                                && _Uses_default_construct<_Alloc, _Ptrval, decltype(*_UFirst)>::value;
